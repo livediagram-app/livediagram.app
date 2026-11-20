@@ -3,13 +3,13 @@
 //   GET   /api/documents/<id>/pages/<tab>/backlinks   the pages whose writing links here, in tree order
 //   GET   /api/documents/<id>/pages/<tab>/health      the fields, the state, the week's reads (Page Health)
 //   POST  /api/documents/<id>/pages/<tab>/verify      Verify: now, by the caller, who owns a page with no owner
-//   PUT   /api/documents/<id>/pages/<tab>/knowledge   owner, review interval, Always in Context (each optional)
-// Reading is every role's; Verify and the fields are an Editor's (verification.md "Share roles").
+//   PUT   /api/documents/<id>/pages/<tab>/knowledge   owner, Always in Context (each optional)
+// Reading is every role's; Verify and the fields are an Editor's (verification.md "Share roles"). When a page's
+// review comes due is the knowledgebase's Review Period (knowledge-settings-routes.ts), never the page's.
 import { verifyMoment } from '../knowledge/model-door';
 import { pageTreeRows } from '@liveknowledge/document';
 import {
   CONTEXT_BUDGET_TOKENS,
-  REVIEW_INTERVALS,
   backlinkRows,
   backlinks,
   countPageReads,
@@ -68,7 +68,10 @@ export async function handlePageHealth(
   const page = await readPageKnowledge(ctx.env, document.id, tab);
   if (!page) return notFound();
   const reads = pageReads(await rowsOf<PageReadsRow>(ctx.env, countPageReads(tab, now)));
-  return json({ knowledge: pageKnowledgeOf(page, now), reads });
+  return json({
+    knowledge: pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now),
+    reads,
+  });
 }
 
 // The write, repeated once when the tab moved between the read and the write (an autosave landing), then told to
@@ -110,7 +113,9 @@ async function saveFields(
       ],
       '[knowledge]',
     );
-    return json({ knowledge: pageKnowledgeOf(after, now) });
+    return json({
+      knowledge: pageKnowledgeOf(after, document.knowledgeSettings.reviewEvery, now),
+    });
   }
   return conflict('tab_busy');
 }
@@ -155,27 +160,30 @@ export async function handleKnowledgePatch(
 ): Promise<Response> {
   const body = (await ctx.request.json().catch(() => null)) as PageKnowledgePatch | null;
   if (!body || typeof body !== 'object' || Array.isArray(body))
-    return invalid('invalid_body', 'Send owner, reviewEvery or context.');
-  const { owner, reviewEvery, context } = body;
+    return invalid('invalid_body', 'Send owner or context.');
+  // A page has no review period of its own (verification.md "The fields").
+  if ('reviewEvery' in body)
+    return invalid(
+      'review_period_is_the_knowledgebases',
+      'A page has no review period of its own. Set the Review Period for the whole knowledgebase: PUT /api/documents/<id>/knowledge-settings with { "reviewEvery": 30 | 90 | 180 | 365 | "never" }.',
+    );
+  const { owner, context } = body;
   if (
     owner !== undefined &&
     owner !== null &&
     (typeof owner !== 'string' || !owner || owner.length > 128)
   )
     return invalid('invalid_owner', 'owner is an account id, or null for none.');
-  if (reviewEvery !== undefined && !REVIEW_INTERVALS.includes(reviewEvery))
-    return invalid('invalid_review_every', 'reviewEvery is 30, 90, 180, 365 or "never".');
   if (context !== undefined && typeof context !== 'boolean')
     return invalid('invalid_context', 'context is true or false.');
-  if (owner === undefined && reviewEvery === undefined && context === undefined)
-    return invalid('invalid_body', 'Send owner, reviewEvery or context.');
+  if (owner === undefined && context === undefined)
+    return invalid('invalid_body', 'Send owner or context.');
   if (typeof owner === 'string' && !(await hasAccess(ctx, document, owner)))
     return invalid('owner_no_access', 'The owner must be someone who can open this knowledgebase.');
   return saveFields(ctx, document, tab, async (page) => {
     const next: KnowledgeFields = { ...page.fields };
     if (owner === null) delete next.owner;
     else if (owner !== undefined) next.owner = owner;
-    if (reviewEvery !== undefined) next.reviewEvery = reviewEvery;
     if (context === false) delete next.context;
     if (context === true && !page.fields.context) {
       // Always in Context holds what fits the budget every agent is handed (ai-knowledge.md).

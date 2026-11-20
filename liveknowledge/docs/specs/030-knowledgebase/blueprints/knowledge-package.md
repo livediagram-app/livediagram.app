@@ -13,65 +13,66 @@ emails" below.
 
 ## Domain and naming
 
-| Term (spec)         | Identifier                                                                                  |
-| ------------------- | ------------------------------------------------------------------------------------------- |
-| passage             | `Passage` (`passages.ts`); a found one is `FoundPassage` (`sql/search.ts`)                  |
-| page (in the SQL)   | `tab`: the tab's id, as the specs' own table names have it (`page_links(from_tab, to_tab)`) |
-| page link           | a run with `PAGE_LINK_KEY` (`'page'`): `PageLinkRun`, `isPageLinkRun` (`page-links.ts`)     |
-| knowledge fields    | `KnowledgeFields`: `owner`, `verifiedAt`, `verifiedBy`, `reviewEvery`, `context`            |
-| Verified and so on  | `TrustStateName`: `'verified'`, `'review-due'`, `'never-verified'`                          |
-| reader, asker       | `Reader`: `{ kind: 'person' }` or `{ kind: 'agent', name }`                                 |
-| unanswered question | `QuestionGroup`, keyed by `questionKey(question)`                                           |
-| conflict            | `Conflict` (`a`, `b`: `ConflictSide`), a candidate pair is `ConflictCandidate`              |
-| the team's key      | `apiKey` in memory, an **envelope** once sealed (`sealApiKey`), a **hint** for Settings     |
-| provider            | `ModelProviderId`: `'anthropic'` or `'openai'`; a `ModelProvider` holds its name, host and models |
+| Term (spec)         | Identifier                                                                                            |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| passage             | `Passage` (`passages.ts`); a found one is `FoundPassage` (`sql/search.ts`)                            |
+| page (in the SQL)   | `tab`: the tab's id, as the specs' own table names have it (`page_links(from_tab, to_tab)`)           |
+| page link           | a run with `PAGE_LINK_KEY` (`'page'`): `PageLinkRun`, `isPageLinkRun` (`page-links.ts`)               |
+| knowledge fields    | `KnowledgeFields`: `owner`, `verifiedAt`, `verifiedBy`, `context` (a page's own)                      |
+| Review Period       | `KnowledgeSettings`: `{ reviewEvery }`, `ReviewEvery`: the knowledgebase's, never a page's            |
+| Verified and so on  | `TrustStateName`: `'verified'`, `'review-due'`, `'never-verified'`                                    |
+| reader, asker       | `Reader`: `{ kind: 'person' }` or `{ kind: 'agent', name }`                                           |
+| unanswered question | `QuestionGroup`, keyed by `questionKey(question)`                                                     |
+| conflict            | `Conflict` (`a`, `b`: `ConflictSide`), a candidate pair is `ConflictCandidate`                        |
+| the team's key      | `apiKey` in memory, an **envelope** once sealed (`sealApiKey`), a **hint** for Settings               |
+| provider            | `ModelProviderId`: `'anthropic'` or `'openai'`; a `ModelProvider` holds its name, host and models     |
 | a model call        | `callModel`, over a `ModelRequest` (`system`, `messages`, `maxTokens`, `effort`); never "Claude call" |
-| a suggested page    | `SetupPage` in a `SetupSuggestion` (`setup-suggestion.ts`)                                  |
+| a suggested page    | `SetupPage` in a `SetupSuggestion` (`setup-suggestion.ts`)                                            |
 
 ## Modules
 
 Every module is one file under `packages/knowledge/src`, with its tests beside it.
 
-| Module                | Holds                                                                                                                                           |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hash.ts`             | `stableHash(...parts)`: 64 bits as 16 hex characters, synchronous, the same in a Worker, Node and a browser                                     |
-| `writing-text.ts`     | `blockText(block)`, `writingText(flow)`: the words of a block and of a page, no Markdown syntax                                                 |
-| `passages.ts`         | `pagePassages(tab, flow)`, `passagePieces(text)`, `MAX_PASSAGE_CHARS`                                                                           |
-| `trust.ts`            | `parseKnowledgeFields`, `trustState(fields, now)`, `reviewDays`, `verified(fields, person, now)`, `knowledgeHealth(pages, now)`                 |
-| `changed-since.ts`    | `changedFraction(before, after)`, `changedSinceVerified(before, after)`                                                                         |
-| `page-links.ts`       | `PAGE_LINK_KEY`, `isPageLinkRun`, `isPageLinkTarget`, `pageLinkTargets(flow)`, `backlinks(tab, fromTabs, treeOrder)`                            |
-| `context-budget.ts`   | `CONTEXT_BUDGET_TOKENS`, `estimateTokens(text)`, `fitsContextBudget`, `assembleContext(pages)`                                                  |
-| `questions.ts`        | `wordsOf`, `contentWords`, `stemWord`, `questionKey`, `groupQuestions`                                                                          |
-| `days.ts`             | `dayOf`, `hourOf`, `daysBefore`: the UTC windows the counts use                                                                                 |
-| `key-seal.ts`         | `sealApiKey(secret, apiKey, boundTo)`, `openApiKey(secret, envelope, boundTo)`, `keyHint(apiKey)`, `KeySealError`                               |
-| `ask-limits.ts`       | the `ASK_*` constants, `askRefusal(question, used)`                                                                                             |
-| `ask-passages.ts`     | `askSearch(question, options)`, `chooseAskPassages(found)`                                                                                      |
-| `ask-request.ts`      | `ASK_SYSTEM`, `askMessage`, `askRequest({ question, passages, turns })`: a `ModelRequest`, the same for both providers                         |
-| `ask-answer.ts`       | `parseAskAnswer(reply, passages)`, `askAnswerStream(passages)` (`push`, `finish`)                                                               |
-| `claude-models.ts`    | `CLAUDE_MODELS`, `DEFAULT_CLAUDE_MODEL`, `claudeModel(id)`                                                                                      |
-| `model-failure.ts`    | `ModelProviderId`, `ModelFailureKind`, `modelFailureWords(provider, kind)`, `ModelCallError`                                                    |
-| `model-request.ts`    | `ModelRequest`, `ModelMessage`, `ModelEffort`, `fenced(text)`                                                                                   |
-| `sse.ts`              | `eventData(body)`, `parseEvent(data)`: a server-sent event stream as its `data:` payloads, for both clients                                     |
-| `claude-request.ts`   | `claudeRequest(...)`, the URL, API version and beta header                                                                                      |
-| `claude-client.ts`    | `callClaude({ fetch, apiKey, request, onText, signal })`, `ClaudeCallError`, `claudeFailureKind`, `CLAUDE_FAILURE_WORDS`                        |
-| `openai-models.ts`    | `OPENAI_MODELS`, `DEFAULT_OPENAI_MODEL`, `openAiModel(id)`                                                                                      |
-| `openai-request.ts`   | `OPENAI_RESPONSES_URL`, `openAiRequest(model, request)`                                                                                         |
-| `openai-client.ts`    | `callOpenAi({ fetch, apiKey, request, onText, signal })`, `OpenAiCallError`, `openAiFailureKind`, `openAiHeaders`                               |
-| `model-providers.ts`  | `MODEL_PROVIDERS`, `modelProvider(id)`, `isModelProviderId`, `isProviderModel`, `providerModel`, `callModel(...)`                               |
-| `setup-limits.ts`     | the `SETUP_*` constants, `setupRefusal(description, used)`                                                                                      |
-| `setup-request.ts`    | `SETUP_SYSTEM`, `setupMessage(description, existing)`, `setupRequest({ description, existing })`                                                |
-| `setup-suggestion.ts` | `parseSetupSuggestion(reply)`, `SetupPage`, `SetupSuggestion`, `SETUP_MAX_REPLY_CHARS`                                                          |
-| `conflicts.ts`        | the `CONFLICT_*` constants, `conflictCheckRefusal`, `conflictProbes`, `probeSearch`, `chooseConflictCandidates`, `conflictId`, `conflictClosed` |
-| `conflict-request.ts` | `CONFLICT_SYSTEM`, `conflictRequest({ candidates })` (a `ModelRequest`), `parseConflictVerdicts(reply, candidates)`                             |
-| `sql/statement.ts`    | `SqlStatement` (`{ sql, params }`), `MAX_BOUND_PARAMETERS`, `insertRows`                                                                        |
-| `sql/schema.ts`       | `KNOWLEDGE_SCHEMA`, `TITLE_ORDINAL`, `SEARCH_TOKENIZER`                                                                                         |
-| `sql/page-index.ts`   | `replacePageIndex(page)`, `deletePageIndex(tab)`, `putPageTrust`, `closeChangedConflicts`, `backlinkRows`                                       |
-| `sql/search.ts`       | `searchTerms`, `ftsExpression`, `searchPassages(query, options)`, `searchByTerms`, `foundPassage(row)`                                          |
-| `sql/reads.ts`        | `recordRead`, `pruneReads`, `countPageReads` + `pageReads`, `countAgentReads` + `agentReads`                                                    |
-| `sql/questions.ts`    | `upsertQuestion`, `listQuestions`, `listQuestionAgents` + `questionGroups`, `dismissQuestion`, `pruneQuestions`                                 |
-| `sql/conflicts.ts`    | `insertConflict`, `listConflicts` + `conflictOfRow`, `dismissConflict`, `knownConflictIds`, `lastConflictCheck`, `noteConflictCheck`            |
-| `sql/counters.ts`     | `readCounter`, `bumpCounter`, `pruneCounters`, `askCounters(person, now)`, `setupCounters(person, now)`, the scope names                        |
-| `sql/settings.ts`     | `readSetting`, `putSetting`, `putAiKey(envelope, hint, provider)`, `removeAiKey`, `removeAiModel`, the setting names                            |
+| Module                | Holds                                                                                                                                                                                                                                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hash.ts`             | `stableHash(...parts)`: 64 bits as 16 hex characters, synchronous, the same in a Worker, Node and a browser                                                                                                                                                                                                         |
+| `writing-text.ts`     | `blockText(block)`, `writingText(flow)`: the words of a block and of a page, no Markdown syntax                                                                                                                                                                                                                     |
+| `passages.ts`         | `pagePassages(tab, flow)`, `passagePieces(text)`, `MAX_PASSAGE_CHARS`                                                                                                                                                                                                                                               |
+| `trust.ts`            | `parseKnowledgeFields`, `trustState(fields, every, now)`, `reviewDays(every)`, `verified(fields, person, now)`, `knowledgeHealth(pages, every, now)`; re-exports `KnowledgeSettings`, `parseKnowledgeSettings`, `storedKnowledgeSettings`, `isReviewEvery` from `@liveknowledge/document` (`knowledge-settings.ts`) |
+| `changed-since.ts`    | `changedFraction(before, after)`, `changedSinceVerified(before, after)`                                                                                                                                                                                                                                             |
+| `page-links.ts`       | `PAGE_LINK_KEY`, `isPageLinkRun`, `isPageLinkTarget`, `pageLinkTargets(flow)`, `backlinks(tab, fromTabs, treeOrder)`                                                                                                                                                                                                |
+| `context-budget.ts`   | `CONTEXT_BUDGET_TOKENS`, `estimateTokens(text)`, `fitsContextBudget`, `assembleContext(pages)`                                                                                                                                                                                                                      |
+| `questions.ts`        | `wordsOf`, `contentWords`, `stemWord`, `questionKey`, `groupQuestions`                                                                                                                                                                                                                                              |
+| `days.ts`             | `dayOf`, `hourOf`, `daysBefore`: the UTC windows the counts use                                                                                                                                                                                                                                                     |
+| `key-seal.ts`         | `sealApiKey(secret, apiKey, boundTo)`, `openApiKey(secret, envelope, boundTo)`, `keyHint(apiKey)`, `KeySealError`                                                                                                                                                                                                   |
+| `ask-limits.ts`       | the `ASK_*` constants, `askRefusal(question, used)`                                                                                                                                                                                                                                                                 |
+| `ask-passages.ts`     | `askSearch(question, options)`, `chooseAskPassages(found)`                                                                                                                                                                                                                                                          |
+| `ask-request.ts`      | `ASK_SYSTEM`, `askMessage`, `askRequest({ question, passages, turns })`: a `ModelRequest`, the same for both providers                                                                                                                                                                                              |
+| `ask-answer.ts`       | `parseAskAnswer(reply, passages)`, `askAnswerStream(passages)` (`push`, `finish`)                                                                                                                                                                                                                                   |
+| `claude-models.ts`    | `CLAUDE_MODELS`, `DEFAULT_CLAUDE_MODEL`, `claudeModel(id)`                                                                                                                                                                                                                                                          |
+| `model-failure.ts`    | `ModelProviderId`, `ModelFailureKind`, `modelFailureWords(provider, kind)`, `ModelCallError`                                                                                                                                                                                                                        |
+| `model-request.ts`    | `ModelRequest`, `ModelMessage`, `ModelEffort`, `fenced(text)`                                                                                                                                                                                                                                                       |
+| `sse.ts`              | `eventData(body)`, `parseEvent(data)`: a server-sent event stream as its `data:` payloads, for both clients                                                                                                                                                                                                         |
+| `claude-request.ts`   | `claudeRequest(...)`, the URL, API version and beta header                                                                                                                                                                                                                                                          |
+| `claude-client.ts`    | `callClaude({ fetch, apiKey, request, onText, signal })`, `ClaudeCallError`, `claudeFailureKind`, `CLAUDE_FAILURE_WORDS`                                                                                                                                                                                            |
+| `openai-models.ts`    | `OPENAI_MODELS`, `DEFAULT_OPENAI_MODEL`, `openAiModel(id)`                                                                                                                                                                                                                                                          |
+| `openai-request.ts`   | `OPENAI_RESPONSES_URL`, `openAiRequest(model, request)`                                                                                                                                                                                                                                                             |
+| `openai-client.ts`    | `callOpenAi({ fetch, apiKey, request, onText, signal })`, `OpenAiCallError`, `openAiFailureKind`, `openAiHeaders`                                                                                                                                                                                                   |
+| `model-providers.ts`  | `MODEL_PROVIDERS`, `modelProvider(id)`, `isModelProviderId`, `isProviderModel`, `providerModel`, `callModel(...)`                                                                                                                                                                                                   |
+| `setup-limits.ts`     | the `SETUP_*` constants, `setupRefusal(description, used)`                                                                                                                                                                                                                                                          |
+| `setup-request.ts`    | `SETUP_SYSTEM`, `setupMessage(description, existing)`, `setupRequest({ description, existing })`                                                                                                                                                                                                                    |
+| `setup-suggestion.ts` | `parseSetupSuggestion(reply)`, `SetupPage`, `SetupSuggestion`, `SETUP_MAX_REPLY_CHARS`                                                                                                                                                                                                                              |
+| `conflicts.ts`        | the `CONFLICT_*` constants, `conflictCheckRefusal`, `conflictProbes`, `probeSearch`, `chooseConflictCandidates`, `conflictId`, `conflictClosed`                                                                                                                                                                     |
+| `conflict-request.ts` | `CONFLICT_SYSTEM`, `conflictRequest({ candidates })` (a `ModelRequest`), `parseConflictVerdicts(reply, candidates)`                                                                                                                                                                                                 |
+| `sql/statement.ts`    | `SqlStatement` (`{ sql, params }`), `MAX_BOUND_PARAMETERS`, `insertRows`                                                                                                                                                                                                                                            |
+| `sql/schema.ts`       | `KNOWLEDGE_SCHEMA`, `TITLE_ORDINAL`, `SEARCH_TOKENIZER`                                                                                                                                                                                                                                                             |
+| `sql/page-index.ts`   | `replacePageIndex(page)`, `deletePageIndex(tab)`, `putPageTrust`, `closeChangedConflicts`, `backlinkRows`                                                                                                                                                                                                           |
+| `sql/search.ts`       | `searchTerms`, `ftsExpression`, `searchPassages(query, options)`, `searchByTerms`, `foundPassage(row)`                                                                                                                                                                                                              |
+| `sql/reads.ts`        | `recordRead`, `pruneReads`, `countPageReads` + `pageReads`, `countAgentReads` + `agentReads`                                                                                                                                                                                                                        |
+| `sql/questions.ts`    | `upsertQuestion`, `listQuestions`, `listQuestionAgents` + `questionGroups`, `dismissQuestion`, `pruneQuestions`                                                                                                                                                                                                     |
+| `sql/conflicts.ts`    | `insertConflict`, `listConflicts` + `conflictOfRow`, `dismissConflict`, `knownConflictIds`, `lastConflictCheck`, `noteConflictCheck`                                                                                                                                                                                |
+| `sql/counters.ts`     | `readCounter`, `bumpCounter`, `pruneCounters`, `askCounters(person, now)`, `setupCounters(person, now)`, the scope names                                                                                                                                                                                            |
+| `sql/settings.ts`     | `readSetting`, `putSetting`, `putAiKey(envelope, hint, provider)`, `removeAiKey`, `removeAiModel`, the setting names                                                                                                                                                                                                |
 
 **Markdown is not this package's.** A page as Markdown (the MCP's read, the Markdown export, the context pages) is
 `articleToMarkdown(flow)` in `@liveknowledge/document` (`article-markdown-io.ts`), which already lives in a package and
@@ -143,8 +144,9 @@ CREATE VIRTUAL TABLE IF NOT EXISTS passages_fts USING fts5(
   title, text, content='passages', content_rowid='rowid', tokenize='porter unicode61 remove_diacritics 2'
 );
 CREATE TABLE IF NOT EXISTS page_trust (
-  tab TEXT PRIMARY KEY, title TEXT NOT NULL, verified_at INTEGER, review_days INTEGER
+  tab TEXT PRIMARY KEY, title TEXT NOT NULL, verified_at INTEGER
 );
+CREATE INDEX IF NOT EXISTS page_trust_verified ON page_trust (verified_at);
 CREATE TABLE IF NOT EXISTS page_links (
   from_tab TEXT NOT NULL, to_tab TEXT NOT NULL, PRIMARY KEY (from_tab, to_tab)
 );
@@ -182,8 +184,10 @@ CREATE TABLE IF NOT EXISTS knowledge_settings (name TEXT PRIMARY KEY, value TEXT
   kept in step by hand, inside `replacePageIndex` and `deletePageIndex` (no triggers): the page's rows are handed to
   the index's `'delete'` command before they leave `passages`, and inserted from `passages` after they are written.
 - **`page_trust`** is what search needs of a page without reading its tab: its title and when it was verified.
-  `review_days` NULL is a page that does not age ("Never"). Whether it is verified is worked out in the query from
-  `verified_at`, `review_days` and the `now` bound to it: nothing is written when a review comes due.
+  When its review is due is not stored. Whether it is verified is worked out in the query from `verified_at` and
+  one bound value, `now` minus the knowledgebase's Review Period (null for Never, which no page is at or before):
+  nothing is written when a review comes due, and nothing when the period changes. `page_trust_verified` makes
+  the due pages, and the count of them (`countReviewDue(days, now)`), a range of an index.
 - **`page_reads`**: `agent` is `''` for a person. No reader's identity is kept beyond an agent's name.
 - **`questions`** has a row a group; `people` counts the asks by people, `question_agents` each agent's.
 - **`conflicts`**: `state` is `'open'` or `'dismissed'` ("Not a Conflict" keeps the row, so the pair is never raised
@@ -211,16 +215,24 @@ CREATE TABLE IF NOT EXISTS knowledge_settings (name TEXT PRIMARY KEY, value TEXT
   `titleMarked` (`highlight()` over the title), the matched words wrapped in `MATCH_START` (U+0002) and `MATCH_END`
   (U+0003). Control characters, so no writing can hold them and the client marks the words without parsing HTML.
 - Options: `passagesOnly` (no title rows: Ask, the conflict check), `exceptTab` (the conflict check looks on other
-  pages), `limit`, `mode`, `now`.
+  pages), `limit`, `mode`, `now`, and `reviewEvery` (required: the knowledgebase's Review Period, which every
+  caller reads from the document and passes; `askSearch` and `probeSearch` take it too).
 
 ## Trust
 
 - `parseKnowledgeFields` keeps what is valid and drops the rest: `owner` and `verifiedBy` are ids of 1 to 128
-  characters; `verifiedAt` a positive finite number (epoch ms, floored); `reviewEvery` one of 30, 90, 180, 365,
-  `'never'`; `context` only `true`. A `verifiedBy` without a `verifiedAt` is dropped.
-- `trustState(fields, now)`: no `verifiedAt` is `never-verified`; else `reviewAt = verifiedAt + reviewEvery days`
-  (90 when absent, `DEFAULT_REVIEW_EVERY`) and the state is `review-due` once `reviewAt <= now`, `verified` before.
-  A page that never ages is `verified` with no `reviewAt`.
+  characters; `verifiedAt` a positive finite number (epoch ms, floored); `context` only `true`. A `verifiedBy`
+  without a `verifiedAt` is dropped. A stored `reviewEvery` is ignored and dropped: a page has no review period of
+  its own, and liveknowledge has no stored data, so there is no migration.
+- **The Review Period** is the knowledgebase's: `KnowledgeSettings = { reviewEvery }`, one of 30, 90, 180, 365 or
+  `'never'` (`REVIEW_INTERVALS`), 90 by default (`DEFAULT_REVIEW_EVERY`, `DEFAULT_KNOWLEDGE_SETTINGS`).
+  `parseKnowledgeSettings` reads an object or the JSON text a column holds and answers the default for anything
+  else; `storedKnowledgeSettings` answers `null` for the default, so a knowledgebase that never chose stores
+  nothing. The type and its parser live in `@liveknowledge/document` (`knowledge-settings.ts`), because the
+  document's file envelope carries the settings and the document package cannot import this one.
+- `trustState(fields, every, now)`: no `verifiedAt` is `never-verified`; else `reviewAt = verifiedAt + every days`
+  and the state is `review-due` once `reviewAt <= now`, `verified` before. Under `'never'` a verified page is
+  `verified` with no `reviewAt`. The period is a parameter, so no caller can forget it.
 - `verified(fields, person, now)` is Verify: `verifiedAt` now, `verifiedBy` the person, who becomes the owner of a
   page with none.
 - `changedSinceVerified(before, after)`: more than `CHANGED_SINCE_FRACTION` (a fifth) of the characters changed. Not a
@@ -228,7 +240,7 @@ CREATE TABLE IF NOT EXISTS knowledge_settings (name TEXT PRIMARY KEY, value TEXT
   counts twice) are what did not change; the rest, over the longer version's length, is the fraction. Sentences that
   only moved do not count. One pass over each version. Bounded at `CHANGED_SINCE_MAX_CHARS` (400,000): what is past
   it is compared by its length alone.
-- `knowledgeHealth(pages, now)`: the counts of each state and the total.
+- `knowledgeHealth(pages, every, now)`: the counts of each state and the total.
 
 ## Links
 
@@ -396,15 +408,15 @@ Read from OpenAI's documentation on **2026-11-20**; written by hand over `fetch`
 - **Failures** ([Error codes](https://developers.openai.com/api/docs/guides/error-codes); the body is
   `{ error: { message, type, param, code } }`):
 
-  | Kind                | From                                                                                                                                                                                  |
-  | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `bad-key`           | 401; `code: invalid_api_key`                                                                                                                                                          |
+  | Kind                | From                                                                                                                                                                                         |
+  | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `bad-key`           | 401; `code: invalid_api_key`                                                                                                                                                                 |
   | `no-credit`         | a 429 whose `code` (or `type`) is `insufficient_quota`, `credit_balance_exhausted`, `organization_spend_limit_exceeded`, `project_spend_limit_exceeded`, `organization_usage_limit_exceeded` |
-  | `rate-limited`      | any other 429; `rate_limit_exceeded`, `slow_down`, also from a failed response                                                                                                         |
-  | `overloaded`        | 503; `server_is_overloaded`, `service_unavailable_error`, also as an `error` event mid-stream                                                                                          |
-  | `model-unavailable` | 404; `model_not_found`                                                                                                                                                                |
-  | `refused`           | `response.refusal.delta`; `response.incomplete` not for the token ceiling; a failed response with `invalid_prompt`, `bio_policy` or `misalignment_policy_violation`                      |
-  | `other`             | anything else: no network, 400, 403, 500, a body that is not JSON, a stream cut short                                                                                                  |
+  | `rate-limited`      | any other 429; `rate_limit_exceeded`, `slow_down`, also from a failed response                                                                                                               |
+  | `overloaded`        | 503; `server_is_overloaded`, `service_unavailable_error`, also as an `error` event mid-stream                                                                                                |
+  | `model-unavailable` | 404; `model_not_found`                                                                                                                                                                       |
+  | `refused`           | `response.refusal.delta`; `response.incomplete` not for the token ceiling; a failed response with `invalid_prompt`, `bio_policy` or `misalignment_policy_violation`                          |
+  | `other`             | anything else: no network, 400, 403, 500, a body that is not JSON, a stream cut short                                                                                                        |
 
 - **Not confirmed from the documentation read:** that a wrong key's body carries `code: invalid_api_key` and a
   missing model's `model_not_found` (the error page lists the 401 and names neither code; the status alone maps
@@ -452,15 +464,15 @@ the request's signal; `200` the suggestion; `502` `{ error: <kind>, provider, me
 `{ error: 'no-structure' }` for a reply with no page. Logs `[knowledge] setup suggested` (provider, page count,
 model), `setup no structure`, `setup failed` (kind): never the description, a title or the key.
 
-| Rule                                                      | Test                                         |
-| --------------------------------------------------------- | -------------------------------------------- |
-| 20 to 1,000 characters; 5 an hour, 20 a day, apart from Ask | `setup.test.ts`; `knowledge-setup-route.test.ts` |
-| The description and existing titles are fenced data       | `setup.test.ts`; the route's test            |
-| 30 pages, 3 levels, 80, 200, 6 headings of 80             | `setup.test.ts` "reading a reply"            |
-| No duplicate sibling titles; parents resolved; the rest dropped | the same                                |
-| No valid page is a failure, never a raw error             | the same; the route's test                   |
-| Markup in a reply stays text                              | the same; the route's test                   |
-| Per role, per limit, per provider                         | `knowledge-setup-route.test.ts`              |
+| Rule                                                            | Test                                             |
+| --------------------------------------------------------------- | ------------------------------------------------ |
+| 20 to 1,000 characters; 5 an hour, 20 a day, apart from Ask     | `setup.test.ts`; `knowledge-setup-route.test.ts` |
+| The description and existing titles are fenced data             | `setup.test.ts`; the route's test                |
+| 30 pages, 3 levels, 80, 200, 6 headings of 80                   | `setup.test.ts` "reading a reply"                |
+| No duplicate sibling titles; parents resolved; the rest dropped | the same                                         |
+| No valid page is a failure, never a raw error                   | the same; the route's test                       |
+| Markup in a reply stays text                                    | the same; the route's test                       |
+| Per role, per limit, per provider                               | `knowledge-setup-route.test.ts`                  |
 
 **Risk not ruled out:** thinking counts against the 4,000 token ceiling on both providers, so a long structure
 from a model that thinks at length can be cut off. The prompt asks for a compact reply and effort is `low`; a cut
@@ -520,7 +532,7 @@ payload)`: what the alarm owes.
   one write.
 - **A settle** (`settlePage`) reads the stored tab, takes `pagePassages`, `pageLinkTargets` and
   `parseKnowledgeFields`, and compares two hashes with `knowledge_pages`: `index_hash` (the title, the passages' ids
-  and text hashes, the links) and `trust_hash` (`verifiedAt`, the review days). Both the same: nothing is written.
+  and text hashes, the links) and `trust_hash` (`verifiedAt` alone). Both the same: nothing is written.
   Only the trust: `putPageTrust`. Else `replacePageIndex`. No tab: `deletePageIndex`. A page's writing is its
   articles' blocks in page order.
 - **Bounds.** One write settles at most 12 pages inline (`SETTLE_INLINE_MAX`); more (an import of 500 pages) are
@@ -585,7 +597,8 @@ sent from a deployed Worker.
   `@liveworkspace/settings`' catalogue of this app by its generator. `notifyRecipients` reads it with the
   addresses in two requests whatever the count.
 - **Storage.** `knowledge_email_marks (kind, key, at, PRIMARY KEY (kind, key))`, schema step 14
-  (`emailMarksSchemaStep`): `review-page` / the tab (`at` the `reviewAt` its owner was told of), `review-owner` /
+  (`emailMarksSchemaStep`): `review-page` / the tab (`at` the `verifiedAt` whose review its owner was told of, so
+  a change of Review Period never tells an owner twice of one review), `review-owner` /
   the owner (when last emailed), `remind` / `owners`, `ask` / the conflict's id. Ids and times, never an address
   or a word. The day's count is `usage_counters` scope `emails`, period the UTC day. All through `knowledgeDb`.
   Pruned daily: page marks whose tab is gone, ask marks whose conflict is gone (`pruneEmailMarks`).
@@ -595,18 +608,22 @@ sent from a deployed Worker.
   transaction and counts emails tried. `notifyKnowledgeReviews` then drops whoever turned the switch off or has
   no verified address, and answers the ids sent.
 - **Review Due** (`runReviewEmails`, the alarm's `review-email` / `daily` work). The pages are the document's tab
-  summaries (`parseKnowledgeFields`, `trustState`): no page's writing is read. A due page is new while its mark
-  is not its `reviewAt`. An owner with a new page and no email in `REVIEW_EMAIL_GAP_MS` (24 hours) gets
+  summaries (`parseKnowledgeFields`, `trustState` under the document's `knowledgeSettings.reviewEvery`, read once
+  with the document): no page's writing is read. A due page is new while its mark is not its `verifiedAt`. Under
+  Never no page is due and none has a `reviewAt`: nothing is sent and the check answers `null`, so nothing is
+  armed. An owner with a new page and no email in `REVIEW_EMAIL_GAP_MS` (24 hours) gets
   `reviewDueEmail` of all their due pages; their pages are then marked, sent or not (the switch off, or no longer
   theirs to open, is settled too), and the owner is marked when sent. An owner inside the 24 hours, or held by
   the ceiling, keeps their pages unmarked. Answers when to run again: the earliest of the next `reviewAt` not yet
   due, an owner's 24 hours ending, and the next UTC day when the ceiling held someone; `null` (the row goes) when
   nothing is left to wait for or the deployment sends no email.
 - **What owes the check.** `settlePage` answers `trust` or `indexed-trust` when a page's trust hash changed (a
-  Verify, a new interval; not a page first indexed unverified); `Settled.trust` counts them and
+  Verify; not a page first indexed unverified); `Settled.trust` counts them and
   `KnowledgeIndexEvents.onTrust` tells the room once a write, which owes the row at now plus
   `REVIEW_CHECK_DELAY_MS` (one minute) and wakes its alarm. The schema step owes it at once for a room that
-  already holds a verified page that ages. Never on a write's own path: the email is the alarm's.
+  already holds a verified page. A change of the Review Period owes it too: `setKnowledgeSettings` calls the
+  room's `REVIEW_PERIOD_CHANGED`, the same one row and wake. Never on a write's own path: the email is the
+  alarm's.
 - **Remind the Owners** (`remindOwners`): `unavailable` with email off; `nothing_due`; `no_owners`; else
   `claimMark('remind', 'owners', now, now - REMIND_OWNERS_GAP_MS)` (one statement: two presses send once), or
   `already_sent` with `sentAt` and `nextAt`. Each owner gets `remindOwnersEmail` of their Review Due and Never
@@ -646,11 +663,67 @@ asked`, `email asked` (the route's outcome), `email not sent` (`email_off`), `em
 | Escaping, one-line subjects, the text alternative, the excerpt's cut | `email/knowledge-templates.test.ts`                  |
 | The three emails byte for byte                                       | `email/knowledge-templates.test.ts` (pinned hashes)  |
 | What owes the review check                                           | `knowledge/review-check-owed.test.ts`                |
+| The emails follow the knowledgebase's period; Never sends nothing    | `routes/knowledge-email-routes.test.ts`              |
+| The period said in the email ("reviews pages every 90 days")         | `email/knowledge-templates.test.ts`                  |
 | The notifier's door                                                  | `packages/index-app/src/notifier.test.ts`            |
 
 **FTS5 in workerd: not confirmed by a test.** The api's tests run in Node on `node:sqlite` (the same FTS5 the
 package's tests use), not in the Workers pool: `porter`, `bm25()`, `snippet()` and `highlight()` are proven there,
 inside the real routes, and remain unproven in workerd itself.
+
+## The Review Period in the room and the api
+
+Spec: [Verification](../verification.md) "The Review Period". Built 2026-11-20.
+
+- **Storage.** `document.knowledge_settings` (schema step 15, an `ALTER` that asks first): JSON of
+  `{ reviewEvery }`, `NULL` for the default. Read with the document's row (`DOCUMENT_HEAD_COLS`), so
+  `DocumentMeta.knowledgeSettings` and the document read's `knowledgeSettings` are always present, and every route
+  and alarm turn has the period from the one read it already made: never a read a page.
+- **The write** (`setKnowledgeSettings`, `document-content.ts`): `UPDATE document SET knowledge_settings, saved_at`
+  on a started document. One row, whatever the knowledgebase holds: O(1). No tab, `page_trust` row,
+  `knowledge_pages` row or passage is touched, and nothing is marked for the index (`trust_hash` does not hold the
+  period). The last save moves, so the Drive file follows. It then calls `env.REVIEW_PERIOD_CHANGED`, which the
+  room binds to the function that owes its review check.
+- **Routes** (`routes/knowledge-settings-routes.ts`):
+
+  | Route                                         | Who                                            | Answers                                                                |
+  | --------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------- |
+  | `GET knowledge-settings`                      | every role, whole knowledgebase                | `{ knowledgeSettings: { reviewEvery } }`                               |
+  | `PUT knowledge-settings` `{ reviewEvery }`    | Editor (in person, or a token granted `write`) | the same; `400 invalid_review_every`, `400 invalid_body`, `403`, `405` |
+  | `GET knowledge-settings/preview?reviewEvery=` | Editor                                         | `{ reviewEvery, reviewDue, reviewDueNow }`; `400 invalid_review_every` |
+
+  A `PUT` of the period already set writes and relays nothing. After a write the room's editors are told with the
+  `document-meta` op (`knowledgeSettings` beside the name and the tab list as it stands). A session's own
+  `document-meta` never carries the settings: the room deletes the key from a client's op
+  (`document-room-frames.ts`), so no peer hears a period that was not stored.
+
+- **The preview** is `reviewDueCount` twice (the period asked about, the period held): each
+  `SELECT COUNT(*) FROM page_trust WHERE verified_at IS NOT NULL AND verified_at <= ?`, a range of
+  `page_trust_verified`, at most 500 rows. Never for `'never'`, which answers 0 without a read.
+- **`PUT pages/<tab>/knowledge`** refuses a body holding `reviewEvery` with
+  `400 review_period_is_the_knowledgebases` and a message naming `PUT /api/documents/<id>/knowledge-settings`.
+- **What follows the period, each at read time:** `GET summary` (`reviewEvery`, the counts, `yoursToReview`, whose
+  `reviewAt` is `verified_at` plus the period), `GET knowledge` (`reviewEvery`, Knowledge Health, each conflict
+  side's trust), `GET pages` and `GET context` (`reviewEvery`, said once), a page's health and read, search's
+  verified preference and an agent's `reviewAt`, Ask's passages, the conflict check's lookups (the period read
+  once a check with `readDocumentMeta`), `write_page`'s refusal on a verified or due page, and the three emails.
+- **It travels with the document.** A copy of the whole knowledgebase (`DocumentCopy.knowledgeSettings`, absent
+  for the default and for a copy of one page), the file envelope (`document.knowledgeSettings`, so the export,
+  the Drive file and a snapshot hold it; a snapshot's revert sets it back, to the default when the snapshot named
+  none), an import of that file, and the create that syncs a knowledgebase kept Offline
+  (`POST /api/documents` `knowledgeSettings`; an unknown period is left out). Version History is a page's: a page
+  holds no period, so a restored version changes none.
+- **Observability.** `[knowledge] review period` `{ documentId, reviewEvery, was }`.
+
+| Rule                                                             | Test                                                                           |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Per role: read, set, preview                                     | `routes/knowledge-settings-routes.test.ts`                                     |
+| A change writes the document's row and no other row              | the same, "writes one row and rewrites no page"                                |
+| States, due dates, counts, Yours to Review, search, `write_page` | the same, "what follows the Review Period"                                     |
+| The preview's counts; 500 verified pages within 50 ms of CPU     | the same, "preview"                                                            |
+| Copy, file, snapshot, Offline sync                               | the same, "travels with the knowledgebase"                                     |
+| A per-page `reviewEvery` is refused, saying where the setting is | `routes/knowledge-page-routes.test.ts`                                         |
+| The envelope and the parser                                      | `packages/document`: `knowledge-settings.test.ts`, `document-envelope.test.ts` |
 
 ## Errors and edge cases
 
@@ -725,7 +798,8 @@ Measured on an M-series Mac, Node 22, CPU time (not wall-clock), 2026-11-20:
 | A 100,000 character page indexes within 50 ms of CPU                 | `passages.test.ts` "the cost of indexing a save" |
 | A page's rows are rewritten with its links in one transaction        | `sql/page-index.test.ts`                         |
 | Titles first, verified pages preferred, at most 20, 200 characters   | `sql/search.test.ts`                             |
-| States worked out when read, from the fields and the clock           | `trust.test.ts`, `sql/search.test.ts`            |
+| States worked out when read, from the fields, the period, the clock  | `trust.test.ts`, `sql/search.test.ts`            |
+| A change of Review Period rewrites no row; the due count is indexed  | `sql/search.test.ts`, `sql/page-index.test.ts`   |
 | More than a fifth changed adds "Changed since verified"              | `changed-since.test.ts`                          |
 | A page link is a run with `page: <tab id>`; backlinks from the table | `page-links.test.ts`, `sql/page-index.test.ts`   |
 | Reads by day, reader kind and agent, kept 90 days                    | `sql/bookkeeping.test.ts` "page reads"           |

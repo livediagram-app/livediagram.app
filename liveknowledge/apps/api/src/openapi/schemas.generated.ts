@@ -2302,6 +2302,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       id: {
         type: 'string',
       },
+      knowledgeSettings: {
+        $ref: '#/components/schemas/KnowledgeSettingsWire',
+      },
       name: {
         type: 'string',
       },
@@ -2357,6 +2360,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'teamId',
       'source',
       'presentation',
+      'knowledgeSettings',
       'savedAt',
       'createdAt',
       'ownerName',
@@ -3644,6 +3648,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         type: 'array',
       },
+      reviewEvery: {
+        $ref: '#/components/schemas/KnowledgeReviewEvery',
+        description: "The knowledgebase's Review Period.",
+      },
       role: {
         enum: ['edit', 'participate', 'view'],
         type: 'string',
@@ -3658,7 +3666,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'number',
       },
     },
-    required: ['name', 'role', 'scopes', 'budget', 'tokens', 'pages', 'leftOut', 'pageCount'],
+    required: [
+      'name',
+      'role',
+      'scopes',
+      'budget',
+      'tokens',
+      'reviewEvery',
+      'pages',
+      'leftOut',
+      'pageCount',
+    ],
     type: 'object',
   },
   KnowledgeAgentDoor: {
@@ -3978,6 +3996,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         required: ['available'],
         type: 'object',
       },
+      reviewEvery: {
+        $ref: '#/components/schemas/KnowledgeReviewEvery',
+        description: "The knowledgebase's Review Period, which `health` is worked out under.",
+      },
       suggestions: {
         items: {
           $ref: '#/components/schemas/KnowledgeSuggestion',
@@ -3992,6 +4014,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'suggestions',
       'context',
       'health',
+      'reviewEvery',
       'hasKey',
       'reviewEmails',
     ],
@@ -4152,6 +4175,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   KnowledgePagesResponse: {
     additionalProperties: false,
+    description:
+      "`reviewEvery` is the knowledgebase's Review Period, said once for every page's `reviewAt`.",
     properties: {
       pages: {
         items: {
@@ -4159,8 +4184,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         type: 'array',
       },
+      reviewEvery: {
+        $ref: '#/components/schemas/KnowledgeReviewEvery',
+      },
     },
-    required: ['pages'],
+    required: ['reviewEvery', 'pages'],
     type: 'object',
   },
   KnowledgeQuestion: {
@@ -4304,6 +4332,57 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'lastBlock',
       'trust',
     ],
+    type: 'object',
+  },
+  KnowledgeSettingsPreviewResponse: {
+    additionalProperties: false,
+    description:
+      '`GET .../knowledge-settings/preview?reviewEvery=`: how many pages are Review Due now and how many would be under the period asked about, so a dialog can say so before a shorter period is applied.',
+    properties: {
+      reviewDue: {
+        type: 'number',
+      },
+      reviewDueNow: {
+        type: 'number',
+      },
+      reviewEvery: {
+        $ref: '#/components/schemas/KnowledgeReviewEvery',
+      },
+    },
+    required: ['reviewEvery', 'reviewDue', 'reviewDueNow'],
+    type: 'object',
+  },
+  KnowledgeSettingsRequest: {
+    additionalProperties: false,
+    description: '`PUT .../knowledge-settings`: Editor only. Answers the settings as stored.',
+    properties: {
+      reviewEvery: {
+        $ref: '#/components/schemas/KnowledgeReviewEvery',
+      },
+    },
+    required: ['reviewEvery'],
+    type: 'object',
+  },
+  KnowledgeSettingsResponse: {
+    additionalProperties: false,
+    properties: {
+      knowledgeSettings: {
+        $ref: '#/components/schemas/KnowledgeSettingsWire',
+      },
+    },
+    required: ['knowledgeSettings'],
+    type: 'object',
+  },
+  KnowledgeSettingsWire: {
+    additionalProperties: false,
+    description:
+      'What a knowledgebase decides for every page (verification.md "The Review Period"): how long after it was last verified a page comes due for review. In a document read, the `document-meta` op and the routes below.',
+    properties: {
+      reviewEvery: {
+        $ref: '#/components/schemas/KnowledgeReviewEvery',
+      },
+    },
+    required: ['reviewEvery'],
     type: 'object',
   },
   KnowledgeSetupPage: {
@@ -4465,6 +4544,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         type: 'array',
       },
+      reviewEvery: {
+        $ref: '#/components/schemas/KnowledgeReviewEvery',
+        description:
+          "The knowledgebase's Review Period, which the counts and `yoursToReview` are worked out under.",
+      },
       yoursToReview: {
         items: {
           $ref: '#/components/schemas/KnowledgeDuePage',
@@ -4472,7 +4556,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'array',
       },
     },
-    required: ['pages', 'health', 'recent', 'yoursToReview'],
+    required: ['pages', 'reviewEvery', 'health', 'recent', 'yoursToReview'],
     type: 'object',
   },
   KnowledgeTrustState: {
@@ -5648,12 +5732,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       reviewAt: {
         description:
-          'When the review comes due; absent for a page never verified or one that does not age.',
+          "When the review comes due under the knowledgebase's Review Period; absent for a page never verified or a knowledgebase whose period is Never.",
         type: 'number',
-      },
-      reviewEvery: {
-        $ref: '#/components/schemas/KnowledgeReviewEvery',
-        description: 'Absent is the default, 90 days.',
       },
       state: {
         $ref: '#/components/schemas/KnowledgeTrustState',
@@ -5677,16 +5757,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   PageKnowledgePatch: {
     additionalProperties: false,
-    description: '`PUT .../pages/<tab>/knowledge`: each field optional; `owner: null` clears it.',
+    description:
+      "`PUT .../pages/<tab>/knowledge`: each field optional; `owner: null` clears it. The Review Period is the knowledgebase's (`PUT .../knowledge-settings`): a `reviewEvery` here is refused.",
     properties: {
       context: {
         type: 'boolean',
       },
       owner: {
         type: ['string', 'null'],
-      },
-      reviewEvery: {
-        $ref: '#/components/schemas/KnowledgeReviewEvery',
       },
     },
     type: 'object',
@@ -7700,7 +7778,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   TabKnowledge: {
     additionalProperties: false,
     description:
-      "A page's knowledge fields as stored. Every one is optional: absent is no owner, never verified, a review every 90 days, not in context.",
+      "A page's knowledge fields as stored. Every one is optional: absent is no owner, never verified, not in context. When a verified page's review comes due is the knowledgebase's (`KnowledgeSettings.reviewEvery`), not the page's.",
     properties: {
       context: {
         const: true,
@@ -7708,10 +7786,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       owner: {
         type: 'string',
-      },
-      reviewEvery: {
-        enum: [30, 90, 180, 365, 'never'],
-        type: ['number', 'string'],
       },
       verifiedAt: {
         type: 'number',

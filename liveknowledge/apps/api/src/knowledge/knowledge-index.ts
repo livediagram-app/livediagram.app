@@ -26,7 +26,6 @@ import {
   parseKnowledgeFields,
   putPageTrust,
   replacePageIndex,
-  reviewDays,
   stableHash,
   writingText,
   type KnowledgeFields,
@@ -75,8 +74,9 @@ export function pageSourceOf(tab: string, title: string, data: string): PageSour
   return { tab, title, blocks: pageBlocks(body), fields: parseKnowledgeFields(body.knowledge) };
 }
 
-export const trustHashOf = (fields: KnowledgeFields): string =>
-  `${fields.verifiedAt ?? ''}/${reviewDays(fields) ?? ''}`;
+// When the page was verified, and nothing else: the Review Period is the knowledgebase's, bound to each read, so
+// changing it settles no page.
+export const trustHashOf = (fields: KnowledgeFields): string => `${fields.verifiedAt ?? ''}`;
 
 // `indexed-trust`: the writing was indexed anew and the page's verification changed with it.
 export type SettledPage =
@@ -120,7 +120,7 @@ export function settlePage(sql: ItemSql, tab: string, indexed?: IndexedPage[]): 
     .exec('SELECT index_hash AS i, trust_hash AS t FROM knowledge_pages WHERE tab = ?', tab)
     .toArray()[0] as { i: string; t: string } | undefined;
   if (was?.i === indexHash && was.t === trustHash) return 'unchanged';
-  const trust = { verifiedAt: fields.verifiedAt, reviewDays: reviewDays(fields) };
+  const trust = { verifiedAt: fields.verifiedAt };
   const writingChanged = was?.i !== indexHash;
   if (writingChanged && indexed)
     indexed.push({
@@ -165,7 +165,7 @@ export function storedWritingText(sql: ItemSql, tab: string): string | null {
   }
 }
 
-/** `trust` counts the pages whose verification or review interval changed. */
+/** `trust` counts the pages whose verification changed. */
 export type Settled = { pages: number; indexed: IndexedPage[]; queued: number; trust: number };
 
 // Settle the marked pages of one kind (`queued` 0: this write's; 1: the alarm's), at most `limit`.
@@ -213,7 +213,7 @@ export type KnowledgeIndexEvents = {
   onQueued?: () => void;
   /** These pages' writing was indexed anew (a conflict check may follow). */
   onIndexed?: (pages: readonly IndexedPage[]) => void;
-  /** A page's verification or review interval changed (the review check may have a new date to wait for). */
+  /** A page's verification changed (the review check may have a new date to wait for). */
   onTrust?: () => void;
 };
 

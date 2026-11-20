@@ -37,7 +37,7 @@ export class RoomKnowledge {
   private readonly arm: () => void;
   /** Told the pages whose writing a write indexed anew. */
   onIndexed: ((pages: readonly IndexedPage[]) => void) | null = null;
-  /** Told that a page's verification or review interval changed. */
+  /** Told that a page's verification changed. */
   onTrust: (() => void) | null = null;
 
   constructor(storage: KnowledgeStorage, arm: () => void) {

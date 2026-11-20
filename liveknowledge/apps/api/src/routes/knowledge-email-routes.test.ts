@@ -59,9 +59,15 @@ const setFields = (tab: string, fields: object) =>
       `UPDATE tabs SET data = json_set(data, '$.knowledge', json(?)), rev = rev + 1 WHERE id = ?`,
     )
     .run(JSON.stringify(fields), tab);
-/** A page verified `days` ago with the default 90 day interval. */
+/** A page verified `days` ago; the knowledgebase reviews every 90 days unless a test says otherwise. */
 const verifiedDaysAgo = (tab: string, owner: string, days: number, now = T0) =>
   setFields(tab, { owner, verifiedAt: now - days * DAY, verifiedBy: owner });
+/** The knowledgebase's Review Period, set as its Editor sets it. */
+const setPeriod = async (reviewEvery: number | 'never') =>
+  expect(
+    (await kit.call('editor', 'PUT', '/api/documents/kb/knowledge-settings', { reviewEvery }))
+      .status,
+  ).toBe(200);
 const post = (who: Who, path: string) => kit.call(who, 'POST', `/api/documents/kb/${path}`);
 const result = async (who: Who, path: string) =>
   await (await post(who, path)).json<KnowledgeEmailResult>();
@@ -168,9 +174,36 @@ describe('Review Due: the alarm’s check', () => {
   it('answers the next review to wait for when nothing is due, and nothing for no verified page', async () => {
     expect(await run()).toBeNull();
     verifiedDaysAgo('deploys', OWNER, 30);
-    setFields('holidays', { owner: OWNER, verifiedAt: T0 - 5 * DAY, reviewEvery: 'never' });
+    verifiedDaysAgo('holidays', OWNER, 5);
     expect(await runKnowledgeEmail(kit.db.env, 'kb', work('review-email'), T0)).toBe(T0 + 60 * DAY);
     expect(sent()).toEqual([]);
+  });
+
+  it("follows the knowledgebase's Review Period, read when the check runs", async () => {
+    verifiedDaysAgo('deploys', OWNER, 40);
+    verifiedDaysAgo('holidays', BOB, 10);
+    expect(await run()).toBe(T0 + 50 * DAY);
+    expect(sent()).toEqual([]);
+    // A shorter period makes the page due: its owner is told, and the next wait is Bob's page under it.
+    await setPeriod(30);
+    expect(await run()).toBe(T0 + 20 * DAY);
+    expect(sent().map((e) => e.to)).toEqual(['owner@x.test']);
+    expect(lastEmail().text).toContain('This knowledgebase reviews pages every 30 days.');
+    // A page is told of once a review: another change of period, with the page still due, sends nothing more.
+    await setPeriod(90);
+    await setPeriod(30);
+    await run(T0 + 2 * DAY);
+    expect(sent()).toHaveLength(1);
+  });
+
+  it('sends nothing and waits for nothing under Never', async () => {
+    verifiedDaysAgo('deploys', OWNER, 4000);
+    verifiedDaysAgo('holidays', BOB, 10);
+    await setPeriod('never');
+    expect(await run()).toBeNull();
+    expect(await runKnowledgeEmail(kit.db.env, 'kb', work('review-email'), T0)).toBeNull();
+    expect(sent()).toEqual([]);
+    expect(marks('review-page')).toEqual([]);
   });
 
   it('sends one email for a knowledgebase of 500 due pages, short enough not to be clipped', async () => {

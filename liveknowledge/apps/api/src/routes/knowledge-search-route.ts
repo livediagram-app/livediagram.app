@@ -50,12 +50,13 @@ async function searchLimited(ctx: DocumentRouteContext): Promise<boolean> {
 
 export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Response> {
   const { ctx, grant } = route;
+  const { reviewEvery } = route.document.knowledgeSettings;
   const query = ctx.url.searchParams.get('q') ?? '';
   if (query.length > SEARCH_MAX_QUERY_CHARS)
     return invalid('query_too_long', `A search is at most ${SEARCH_MAX_QUERY_CHARS} characters.`);
   if (await searchLimited(ctx)) return rateLimited();
   const now = Date.now();
-  const statement = searchPassages(query, { now });
+  const statement = searchPassages(query, { now, reviewEvery });
   const found = statement ? (await rowsOf<SearchRow>(ctx.env, statement)).map(foundPassage) : [];
   // A link confined to one page (tab-scoped-share-links.md) finds only what that page holds.
   const results = grant.tabScope === null ? found : found.filter((r) => r.tab === grant.tabScope);
@@ -67,7 +68,7 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
     const knowledge = new Map(document.tabs.map((t) => [t.id, t.knowledge]));
     const conflicts = results.length > 0 ? await openConflictPages(ctx.env, document.tabs) : null;
     const answered = results.map((found) => {
-      const trust = pageTrustOf(knowledge.get(found.tab), now);
+      const trust = pageTrustOf(knowledge.get(found.tab), reviewEvery, now);
       const against = conflicts?.byPassage.get(found.id);
       return {
         ...searchResultOf(found),

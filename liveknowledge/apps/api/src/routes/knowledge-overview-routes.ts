@@ -18,12 +18,14 @@ import {
   listQuestions,
   questionGroups,
   questionKey,
+  trustState,
   upsertQuestion,
   type AgentReadsRow,
   type ConflictRow,
   type ConflictSide,
   type QuestionAgentRow,
   type QuestionRow,
+  type ReviewEvery,
 } from '@liveknowledge/knowledge';
 import type {
   KnowledgeConflict,
@@ -43,7 +45,6 @@ import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
 import { pendingSuggestions } from './knowledge-suggestion-routes';
 
-const DAY_MS = 86_400_000;
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
 
 type SideRow = {
@@ -53,20 +54,16 @@ type SideRow = {
   text: string;
   title: string | null;
   verifiedAt: number | null;
-  reviewDays: number | null;
 };
 
-const trustOf = (row: SideRow, now: number): KnowledgeTrustState =>
-  row.verifiedAt === null
-    ? 'never-verified'
-    : row.reviewDays !== null && row.verifiedAt + row.reviewDays * DAY_MS <= now
-      ? 'review-due'
-      : 'verified';
+const trustOf = (row: SideRow, every: ReviewEvery, now: number): KnowledgeTrustState =>
+  trustState(row.verifiedAt === null ? {} : { verifiedAt: row.verifiedAt }, every, now).state;
 
 // The open conflicts with each side's passage and page as they stand, read in bounded statements (at most 50
 // passage ids a statement, under the 100 bound values a query may take).
 export async function openConflicts(
   env: KnowledgeRoute['ctx']['env'],
+  every: ReviewEvery,
   now: number,
 ): Promise<KnowledgeConflict[]> {
   const rows = await rowsOf<ConflictRow>(env, listConflicts());
@@ -79,7 +76,7 @@ export async function openConflicts(
       env,
       sqlOf(
         `SELECT p.id AS id, p.tab AS tab, p.first_block AS firstBlock, p.text AS text, t.title AS title,
-                t.verified_at AS verifiedAt, t.review_days AS reviewDays
+                t.verified_at AS verifiedAt
            FROM passages p LEFT JOIN page_trust t ON t.tab = p.tab
           WHERE p.id IN (${chunk.map(() => '?').join(', ')})`,
         ...chunk,
@@ -96,7 +93,7 @@ export async function openConflicts(
       firstBlock: row.firstBlock,
       title: row.title ?? '',
       text: row.text,
-      trust: trustOf(row, now),
+      trust: trustOf(row, every, now),
       ...(row.verifiedAt === null ? {} : { verifiedAt: row.verifiedAt }),
     };
   };
@@ -114,6 +111,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
   const { ctx, document, grant } = route;
   const { env } = ctx;
   const now = Date.now();
+  const every = document.knowledgeSettings.reviewEvery;
   const titles = new Map(document.tabs.map((t) => [t.id, t.name]));
   const [
     reads,
@@ -132,9 +130,9 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     seenAgents(env, now),
     rowsOf<QuestionRow>(env, listQuestions()),
     rowsOf<QuestionAgentRow>(env, listQuestionAgents()),
-    openConflicts(env, now),
+    openConflicts(env, every, now),
     contextPages(env, document.id),
-    knowledgeHealthCounts(env, document.id, now),
+    knowledgeHealthCounts(env, document.id, every, now),
     readAiSettings(env, grant.role === 'edit'),
     pendingSuggestions(route, now),
     // What the review emails remember (knowledge/email-marks.ts): a row a conflict asked about, one for the week.
@@ -170,6 +168,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
       pages,
     },
     health,
+    reviewEvery: every,
     hasKey: ai.hasKey,
     reviewEmails: {
       available: emailEnabled(env),

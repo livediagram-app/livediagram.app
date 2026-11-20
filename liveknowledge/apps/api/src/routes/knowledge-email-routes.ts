@@ -29,7 +29,9 @@ export async function handleEmailRoutes(route: KnowledgeRoute): Promise<Response
   let result: KnowledgeEmailResult;
   if (remind) result = await remindOwners(env, document, now);
   else {
-    const conflict = (await openConflicts(env, now)).find((c) => c.id === segments[4]);
+    const conflict = (await openConflicts(env, document.knowledgeSettings.reviewEvery, now)).find(
+      (c) => c.id === segments[4],
+    );
     if (!conflict)
       return json(
         { error: 'conflict_unknown', message: 'This disagreement is closed or was dismissed.' },

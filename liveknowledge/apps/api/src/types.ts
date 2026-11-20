@@ -166,4 +166,7 @@ export type DocumentEnv = Env & {
   KNOWLEDGE_DB?: D1Database;
   ROOM_PEOPLE?: () => ReadonlySet<string>;
   SNAPSHOT_REVERTED?: (generation: number) => void;
+  // The knowledgebase's Review Period changed (document-content.ts setKnowledgeSettings): the room owes its
+  // review check, since the next review to wait for moved.
+  REVIEW_PERIOD_CHANGED?: () => void;
 };

@@ -340,6 +340,19 @@ const V13 = agentSeenSchemaStep;
 // that already holds verified pages (knowledge/email-marks.ts). Additive, IF NOT EXISTS.
 const V14 = emailMarksSchemaStep;
 
+// The knowledgebase's settings (docs/specs/030-knowledgebase/verification.md "The Review Period"),
+// `document.knowledge_settings`: JSON of `{ reviewEvery }`, NULL for the default (every 90 days). Asks before the
+// ALTER, so it is safe however far a room got; every knowledgebase already there reads as the default.
+const V15 = (exec: Exec) => {
+  const have = new Set(
+    exec('PRAGMA table_info(document)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('knowledge_settings'))
+    exec('ALTER TABLE document ADD COLUMN knowledge_settings TEXT NULL');
+};
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -355,6 +368,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V12,
   V13,
   V14,
+  V15,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

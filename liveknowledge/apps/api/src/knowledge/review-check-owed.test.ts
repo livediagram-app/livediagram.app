@@ -6,7 +6,7 @@ import { settleWrite, withKnowledgeIndex } from './knowledge-index';
 import { dueWork, knowledgeWorkDueAt } from './knowledge-work';
 
 // What makes the room owe its review check (docs/specs/030-knowledgebase/verification.md "Reminders"): a page's
-// verification or interval changing, and the schema step for a knowledgebase that already holds verified pages.
+// verification changing, the knowledgebase's Review Period changing (knowledge-settings-routes.test.ts), and the schema step for a knowledgebase that already holds verified pages.
 describe('the review check is owed', () => {
   const setKnowledge = (
     kit: Awaited<ReturnType<typeof knowledgeKit>>,
@@ -19,14 +19,17 @@ describe('the review check is owed', () => {
       )
       .run(JSON.stringify(fields), tab);
 
-  it('counts a page whose verification or interval changed, and not one whose writing or owner did', async () => {
+  it('counts a page whose verification changed, and not one whose writing, owner or stored period did', async () => {
     const kit = await knowledgeKit();
     const sql = nodeItemSql(kit.db.sql);
     setKnowledge(kit, 'deploys', { verifiedAt: 5, verifiedBy: 'user_o', owner: 'user_o' });
     expect(settleWrite(sql).trust).toBe(1);
     setKnowledge(kit, 'deploys', { verifiedAt: 5, verifiedBy: 'user_o', owner: 'user_p' });
     expect(settleWrite(sql)).toMatchObject({ pages: 1, trust: 0 });
+    // A period a page once stored is nothing to the index: the Review Period is the knowledgebase's.
     setKnowledge(kit, 'deploys', { verifiedAt: 5, verifiedBy: 'user_o', reviewEvery: 30 });
+    expect(settleWrite(sql)).toMatchObject({ pages: 1, trust: 0 });
+    setKnowledge(kit, 'deploys', { verifiedAt: 6, verifiedBy: 'user_o' });
     expect(settleWrite(sql).trust).toBe(1);
     kit.db.sql
       .prepare(`UPDATE tabs SET name = 'Deploying', rev = rev + 1 WHERE id = 'deploys'`)

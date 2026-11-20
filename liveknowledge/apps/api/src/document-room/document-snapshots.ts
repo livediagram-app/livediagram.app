@@ -3,7 +3,7 @@
 // reads it back keeping every tab's id, writes its tabs and deck in place, then tells the room, which forgets its
 // ledger and closes every socket so each open editor reloads onto the reverted document.
 
-import type { Tab } from '@liveknowledge/document';
+import { DEFAULT_KNOWLEDGE_SETTINGS, type Tab } from '@liveknowledge/document';
 import {
   serveSnapshots,
   type SnapshotCaller,
@@ -12,7 +12,7 @@ import {
 import { replaceTabs } from '../db/tabs';
 import { authorOf } from '../routes/changesets';
 import { gateEdit, type DocumentRouteContext } from '../routes/context';
-import { setDocumentPresentation } from './document-content';
+import { setDocumentPresentation, setKnowledgeSettings } from './document-content';
 import { exportDocumentFile, readDocumentFile } from './document-file';
 
 export function documentSnapshotDoor(
@@ -34,6 +34,13 @@ export function documentSnapshotDoor(
       }));
       await replaceTabs(env, documentId, tabs);
       await setDocumentPresentation(env, documentId, read.content.presentation);
+      // The Review Period as the snapshot held it; one that names none held the default.
+      await setKnowledgeSettings(
+        env,
+        documentId,
+        read.content.knowledgeSettings ?? DEFAULT_KNOWLEDGE_SETTINGS,
+        Date.now(),
+      );
       return 'ok';
     },
     afterRevert: (generation) => env.SNAPSHOT_REVERTED?.(generation),

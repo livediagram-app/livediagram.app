@@ -29,6 +29,7 @@ import {
   type SearchRow,
 } from '@liveknowledge/knowledge';
 import type { DocumentEnv } from '../types';
+import { readDocumentMeta } from '../document-room/document-content';
 import { openAi } from './ai-settings';
 import { modelDoorFor } from './model-door';
 import type { IndexedPage } from './knowledge-index';
@@ -116,9 +117,12 @@ export async function runConflictCheck(
   const probes = conflictProbes(beforeOf(work.payload), after);
   if (probes.length === 0) return null;
   await runAll(env, [noteConflictCheck(tab, now), bumpCounter(CONFLICT_CHECK_SCOPE, dayOf(now))]);
+  // The Review Period, read once a check: which of the pages found count as verified.
+  const every = (await readDocumentMeta(env, documentId))?.knowledgeSettings.reviewEvery;
+  if (every === undefined) return null;
   const lookups = [];
   for (const probe of probes) {
-    const search = probeSearch(probe, now);
+    const search = probeSearch(probe, every, now);
     const found = search ? (await rowsOf<SearchRow>(env, search)).map(foundPassage) : [];
     lookups.push({ probe, found });
   }

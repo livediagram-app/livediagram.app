@@ -5,5 +5,6 @@ const DAY_MS = 86_400_000;
 export const REVIEW_EMAIL_GAP_MS = DAY_MS;
 /** The owners are reminded once in this long, a knowledgebase. */
 export const REMIND_OWNERS_GAP_MS = 7 * DAY_MS;
-/** How long after a page's verification or interval changes the review check runs: a burst is one check. */
+/** How long after a page's verification, or the knowledgebase's Review Period, changes the review check runs: a
+ *  burst is one check. */
 export const REVIEW_CHECK_DELAY_MS = 60_000;

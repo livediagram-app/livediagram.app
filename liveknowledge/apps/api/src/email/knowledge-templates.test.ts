@@ -36,6 +36,9 @@ const FIXTURES: Record<string, unknown[][]> = {
       ],
     ],
     [KB, Array.from({ length: 130 }, (_, i) => ({ tab: `t${i}`, title: `Page ${i}` }))],
+    // The knowledgebase's own Review Period, said in the email.
+    [{ ...KB, knowledgeSettings: { reviewEvery: 365 } }, [{ tab: 't1', title: 'Yearly' }]],
+    [{ ...KB, knowledgeSettings: { reviewEvery: 30 } }, [{ tab: 't1', title: 'Monthly' }]],
   ],
   remindOwnersEmail: [
     [KB, [{ tab: 't1', title: 'One <b>', state: 'review-due' }]],
@@ -46,14 +49,20 @@ const FIXTURES: Record<string, unknown[][]> = {
         { tab: 't2', title: 'Never', state: 'never-verified' },
       ],
     ],
+    // Under Never no page comes due, and the email says nothing of a period.
+    [
+      { ...KB, knowledgeSettings: { reviewEvery: 'never' } },
+      [{ tab: 't2', title: 'Never', state: 'never-verified' }],
+    ],
+    [{ ...KB, knowledgeSettings: { reviewEvery: 180 } }, [{ tab: 't1', title: 'Due' }]],
   ],
   pagesDisagreeEmail: [[KB, CONFLICT]],
 };
 
 const EXPECTED: Record<string, string> = {
   pagesDisagreeEmail: 'a8c37a3b46ed8cec3632fd636a2589c64e3a336d74fefb19965dd55d30315014',
-  remindOwnersEmail: 'ee90bac7e60c93c283a32abdd910558d56fef75ad91e932d35748b29aee57618',
-  reviewDueEmail: 'd42e90105d658fd2946fc3415be09f1573a3b4233cbc8da1927f2ce4070c6033',
+  remindOwnersEmail: '2543a86f52503a6df8ab3cc79b72185c99e349bc00a221b0f6c872042071affe',
+  reviewDueEmail: '77e3d091b74e39c42447e8cd13a64455d902b5dc5e6aee3a76b6aadb0b832c69',
 };
 
 function renders(): Record<string, string> {
@@ -150,5 +159,38 @@ describe('what they do with other people’s text', () => {
       expect(email.html).toContain('And 400 pages more.');
       expect(new TextEncoder().encode(email.html).length).toBeLessThan(60_000);
     }
+  });
+});
+
+describe("the knowledgebase's Review Period in the emails", () => {
+  const env = { APP_BASE_URL: 'https://app.test' } as unknown as Env;
+  const page = [{ tab: 't1', title: 'One' }];
+  const kb = (reviewEvery?: 30 | 90 | 180 | 365 | 'never') => ({
+    id: 'kb',
+    name: 'Handbook',
+    ...(reviewEvery ? { knowledgeSettings: { reviewEvery } } : {}),
+  });
+
+  it('says the period once, in the HTML and the text, every 90 days when none is stored', () => {
+    for (const email of [reviewDueEmail, remindOwnersEmail]) {
+      for (const [every, words] of [
+        [undefined, 'every 90 days'],
+        [30, 'every 30 days'],
+        [180, 'every 180 days'],
+        [365, 'every year'],
+      ] as const) {
+        const line = `This knowledgebase reviews pages ${words}.`;
+        const sent = email(env, kb(every), page);
+        expect(sent.html.split(line)).toHaveLength(2);
+        expect((sent.text ?? '').split(line)).toHaveLength(2);
+      }
+    }
+  });
+
+  it('says nothing of a period under Never', () => {
+    const sent = remindOwnersEmail(env, kb('never'), page);
+    expect(sent.html).not.toContain('reviews pages');
+    expect(sent.text).not.toContain('reviews pages');
+    expect(sent.html).toContain('Verify a page that is right, and fix one that is not.');
   });
 });

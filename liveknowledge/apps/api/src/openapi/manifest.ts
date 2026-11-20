@@ -593,11 +593,55 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      'What Home shows of a knowledgebase: its page count, how many pages are Verified, Review Due and Never Verified, the eight pages changed most recently, and the pages the caller owns whose review is due (oldest first, ten at most; none for a caller with no account). Cacheable for a minute.',
+      'What Home shows of a knowledgebase: its page count, its Review Period, how many pages are Verified, Review Due and Never Verified under it, the eight pages changed most recently, and the pages the caller owns whose review is due (oldest first, ten at most; none for a caller with no account). Cacheable for a minute.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeSummaryResponse',
     statuses: [200, 401, 403, 404, 410],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/knowledge-settings',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "The knowledgebase's settings: its Review Period (`reviewEvery`: 30, 90, 180 or 365 days, or `never`; 90 until an Editor chooses). A verified page comes due for review this long after it was last verified.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'KnowledgeSettingsResponse',
+    statuses: [200, 401, 403, 404, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/knowledge-settings',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "Set the knowledgebase's Review Period. Editor only (in person, or a token granted `write`). Every page's state, due date and the counts follow at once: they are worked out when read, so one row is written however many pages there are. `never` makes no page Review Due and sends no review email.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'KnowledgeSettingsRequest',
+    responseSchema: 'KnowledgeSettingsResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/knowledge-settings/preview',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'How many pages would be Review Due under a Review Period, beside how many are due now. Changes nothing. Editor only.',
+    query: [
+      {
+        name: 'reviewEvery',
+        required: true,
+        description: 'The period to count under: 30, 90, 180, 365 or never.',
+      },
+    ],
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'KnowledgeSettingsPreviewResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
     method: 'GET',
@@ -641,7 +685,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Change a page's owner, review interval or Always in Context; send only the fields to change. Editor only. The owner must be someone who can open the knowledgebase; a page that would pass the 8,000 token context budget is refused with 409 `context_budget`.",
+      "Change a page's owner or Always in Context; send only the fields to change. Editor only. The owner must be someone who can open the knowledgebase; a page that would pass the 8,000 token context budget is refused with 409 `context_budget`. A page has no review period of its own: `reviewEvery` here is refused with 400 `review_period_is_the_knowledgebases` (set it with `PUT /documents/{id}/knowledge-settings`).",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'PageKnowledgePatch',

@@ -28,6 +28,7 @@ function documentOf(
     teamId: meta.teamId,
     source: isDocumentSource(meta.source) ? meta.source : null,
     presentation: outline.presentation,
+    knowledgeSettings: meta.knowledgeSettings,
     savedAt: outline.savedAt,
     createdAt: meta.createdAt,
     ownerName: owner?.name ?? null,

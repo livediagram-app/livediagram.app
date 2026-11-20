@@ -544,6 +544,7 @@ describe('AI Knowledge', () => {
           pages: [{ tab: 'holidays', title: 'Holidays', tokens: 20 }],
         },
         health: { verified: 1, reviewDue: 0, neverVerified: 2, total: 3 },
+        reviewEvery: 90,
         hasKey: false,
         // This deployment sends no email, and nobody was reminded.
         reviewEmails: { available: false },

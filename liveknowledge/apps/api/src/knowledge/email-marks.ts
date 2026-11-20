@@ -1,7 +1,7 @@
 // What the Knowledgebase Reviews emails remember, so their caps hold across alarms and requests (docs/specs/
 // 030-knowledgebase/verification.md "Reminders"): `knowledge_email_marks`, a row a kind and key with one time.
 //
-//   kind `review-page`,  key the page:      the review date (`reviewAt`) its owner was last told about
+//   kind `review-page`,  key the page:      the verification (`verifiedAt`) whose review its owner was last told of
 //   kind `review-owner`, key the owner:     when that owner was last sent a Review Due email (one a day)
 //   kind `remind`,       key `owners`:      when an Editor last reminded the owners (one a week)
 //   kind `ask`,          key the conflict:  when both owners were asked (once a conflict)
@@ -28,7 +28,7 @@ export function emailMarksSchemaStep(exec: Exec): void {
   )`);
   exec(`INSERT OR IGNORE INTO knowledge_work (kind, key, due_at, payload)
     SELECT 'review-email', 'daily', 0, ''
-     WHERE EXISTS (SELECT 1 FROM page_trust WHERE verified_at IS NOT NULL AND review_days IS NOT NULL)`);
+     WHERE EXISTS (SELECT 1 FROM page_trust WHERE verified_at IS NOT NULL)`);
 }
 
 /** Every mark of a kind, by key: at most a row a page, an owner or a conflict. */

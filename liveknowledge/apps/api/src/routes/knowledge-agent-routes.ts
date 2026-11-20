@@ -20,6 +20,7 @@ import {
   type KnowledgePageRead,
   type KnowledgePageRef,
   type KnowledgePageRow,
+  type KnowledgePagesResponse,
   type MovePageRequest,
 } from '@liveknowledge/api-schema';
 import {
@@ -89,6 +90,7 @@ const refOf = (t: Summary): KnowledgePageRef => ({ tab: t.id, title: t.name });
 
 async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> {
   const now = Date.now();
+  const { reviewEvery } = document.knowledgeSettings;
   const { byTab } = await openConflictPages(ctx.env, document.tabs);
   const pages: KnowledgePageRow[] = treeOf(document).map(({ page, depth, subpages }) => {
     const fields = parseKnowledgeFields(page.knowledge);
@@ -99,10 +101,13 @@ async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> 
       subpages,
       ...(fields.owner ? { owner: fields.owner } : {}),
       ...(fields.context ? { context: true as const } : {}),
-      trust: pageTrustOf(page.knowledge, now, { conflictsWith: byTab.get(page.id) }),
+      trust: pageTrustOf(page.knowledge, reviewEvery, now, {
+        conflictsWith: byTab.get(page.id),
+      }),
     };
   });
-  return json({ pages });
+  // The Review Period, said once: every page's `reviewAt` is its `verifiedAt` plus this.
+  return json({ reviewEvery, pages } satisfies KnowledgePagesResponse);
 }
 
 async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Response> {
@@ -145,7 +150,7 @@ async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Resp
     chars: whole.length,
     leftOut: whole.length - cut.markdown.length,
     headings,
-    trust: pageTrustOf(summary.knowledge, now, {
+    trust: pageTrustOf(summary.knowledge, document.knowledgeSettings.reviewEvery, now, {
       conflictsWith: conflicts.byTab.get(summary.id),
       verifiedBy: verifier?.name || undefined,
     }),
@@ -190,12 +195,13 @@ async function handleContext({ ctx, document, grant }: KnowledgeRoute): Promise<
       agentScopesFor({ readOnly: false, role: grant.role, granted: ['write', 'suggest'] }),
     budget: CONTEXT_BUDGET_TOKENS,
     tokens: context.tokens,
+    reviewEvery: document.knowledgeSettings.reviewEvery,
     pages: context.pages.map((p) => ({
       tab: p.id,
       title: p.title,
       markdown: p.markdown,
       tokens: p.tokens,
-      trust: pageTrustOf(knowledgeOf.get(p.id), now),
+      trust: pageTrustOf(knowledgeOf.get(p.id), document.knowledgeSettings.reviewEvery, now),
     })),
     leftOut: context.leftOut.map((p) => ({ tab: p.id, title: p.title, tokens: p.tokens })),
     pageCount: document.tabs.length,

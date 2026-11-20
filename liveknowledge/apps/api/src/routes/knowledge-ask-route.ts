@@ -105,7 +105,10 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
     return refused(ai === 'no-secret' ? 503 : 409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
   // Counted before the model is called: a question that fails still spent a call on the team's key.
   await runAll(env, counters.bump);
-  const search = askSearch(question, { now });
+  const search = askSearch(question, {
+    now,
+    reviewEvery: document.knowledgeSettings.reviewEvery,
+  });
   const passages = chooseAskPassages(
     search ? (await rowsOf<SearchRow>(env, search)).map(foundPassage) : [],
   );

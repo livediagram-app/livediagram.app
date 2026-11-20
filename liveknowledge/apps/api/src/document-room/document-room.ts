@@ -267,13 +267,14 @@ export class DocumentRoom extends DurableObject<Env> {
       if (oweConflictChecks(state.storage.sql, pages, now) > 0)
         this.knowledge.wake(now + CONFLICT_CHECK_DELAY_MS);
     };
-    // A page verified, or its interval changed: the review check looks again, since the next date to wait for
-    // may have moved (knowledge/knowledge-emails.ts). One row however many pages changed.
-    this.knowledge.onTrust = () => {
+    // A page verified, or the knowledgebase's Review Period changed: the review check looks again, since the next
+    // date to wait for may have moved (knowledge/knowledge-emails.ts). One row however many pages changed.
+    const oweReviewCheck = () => {
       const dueAt = Date.now() + REVIEW_CHECK_DELAY_MS;
       oweWork(state.storage.sql, { kind: 'review-email', key: 'daily', dueAt, payload: '' });
       this.knowledge.wake(dueAt);
     };
+    this.knowledge.onTrust = oweReviewCheck;
     this.knowledge.work = async (now) =>
       this.roomEnv && this.documentId
         ? runKnowledgeWork(this.roomEnv, state.storage.sql, this.documentId, now)
@@ -304,6 +305,7 @@ export class DocumentRoom extends DurableObject<Env> {
           DOCUMENT_ROOM: localNamespace(this, env.DOCUMENT_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
+          REVIEW_PERIOD_CHANGED: oweReviewCheck,
         }
       : undefined;
     this.drainEnv = this.roomEnv ? { ...this.roomEnv, DOCUMENT_DB: quiet } : undefined;

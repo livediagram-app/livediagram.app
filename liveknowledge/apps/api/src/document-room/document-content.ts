@@ -5,11 +5,14 @@
 import {
   applyDeckSlidePatch,
   mergePresentationNoteCards,
+  parseKnowledgeSettings,
   parseStoredPresentation,
   remapTabLinks,
   settleStoredArticlesData,
+  storedKnowledgeSettings,
   type DeckSlidePatch,
   type Element,
+  type KnowledgeSettings,
 } from '@liveknowledge/document';
 import { MAX_DECK_LEN } from '../limits';
 import { redactTabDataForCommunity } from '@liveworkspace/community/app';
@@ -30,6 +33,8 @@ export type DocumentMeta = {
   teamId: string | null;
   source: string | null;
   createdAt: number;
+  // The knowledgebase's settings (the Review Period), read with the row: every 90 days when none is stored.
+  knowledgeSettings: KnowledgeSettings;
 };
 
 // What a document read takes from the document: its tabs in order (no body), its slide deck, and what it knows of
@@ -50,9 +55,11 @@ type DocumentHeadRow = {
   owner_id: string;
   team_id: string | null;
   source: string | null;
+  knowledge_settings: string | null;
 };
 
-const DOCUMENT_HEAD_COLS = 'presentation, saved_at, created_at, name, owner_id, team_id, source';
+const DOCUMENT_HEAD_COLS =
+  'presentation, saved_at, created_at, name, owner_id, team_id, source, knowledge_settings';
 
 function metaOf(head: DocumentHeadRow | null): DocumentMeta | null {
   if (!head || !head.created_at) return null;
@@ -62,6 +69,7 @@ function metaOf(head: DocumentHeadRow | null): DocumentMeta | null {
     teamId: head.team_id,
     source: head.source,
     createdAt: head.created_at,
+    knowledgeSettings: parseKnowledgeSettings(head.knowledge_settings),
   };
 }
 
@@ -148,6 +156,9 @@ export type DocumentStart = {
   // The slide deck a create carries (an Offline Mode sync's, docs/specs/006-document/offline-mode.md). A started
   // document keeps its deck.
   presentation?: string | null;
+  // The knowledgebase's settings a create carries (an Offline sync's, a Drive file's). A started document, and a
+  // copy that landed with its source's, keeps its own.
+  knowledgeSettings?: KnowledgeSettings;
 };
 
 // Start the document (docs/specs/015-api/api.md "Storage"), or on a document already started rename it and move
@@ -158,10 +169,12 @@ export async function initDocument(
   d: DocumentStart,
 ): Promise<void> {
   await env.DOCUMENT_DB.prepare(
-    `INSERT INTO document (id, presentation, saved_at, created_at, name, owner_id, team_id, source)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+    `INSERT INTO document (id, presentation, saved_at, created_at, name, owner_id, team_id, source,
+                           knowledge_settings)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
      ON CONFLICT (id) DO UPDATE SET
        presentation = COALESCE(document.presentation, excluded.presentation),
+       knowledge_settings = COALESCE(document.knowledge_settings, excluded.knowledge_settings),
        saved_at = excluded.saved_at,
        -- A copy lands unstarted with the index's title for it (its import): starting it keeps that name.
        name = CASE WHEN document.created_at = 0 AND document.name <> '' THEN document.name ELSE excluded.name END,
@@ -179,8 +192,29 @@ export async function initDocument(
       d.ownerId,
       d.teamId,
       d.source,
+      d.knowledgeSettings ? storedKnowledgeSettings(d.knowledgeSettings) : null,
     )
     .run();
+}
+
+// The knowledgebase's settings (docs/specs/030-knowledgebase/verification.md "The Review Period") on a started
+// document: one row written, whatever the knowledgebase holds, since every page's state is worked out when read.
+// False when the document is not started. It is an edit: the last save moves, so the Drive file follows.
+export async function setKnowledgeSettings(
+  env: DocumentEnv,
+  documentId: string,
+  settings: KnowledgeSettings,
+  savedAt: number,
+): Promise<boolean> {
+  const res = await env.DOCUMENT_DB.prepare(
+    'UPDATE document SET knowledge_settings = ?, saved_at = ? WHERE id = ? AND created_at > 0',
+  )
+    .bind(storedKnowledgeSettings(settings), savedAt, documentId)
+    .run();
+  if ((res.meta.changes ?? 0) === 0) return false;
+  // The next review to wait for moved (knowledge-emails.ts): the room looks again.
+  env.REVIEW_PERIOD_CHANGED?.();
+  return true;
 }
 
 // A rename (and its save time) on a started document; false when the document is not started.
@@ -299,6 +333,8 @@ export type DocumentCopy = {
   // The copy's name, the index's title for it (internal-items.ts); absent from an index that does not send one,
   // and from a Drive file's import, which names the document as it starts it.
   name?: string;
+  // The source's settings (its Review Period) when they are not the default; a copy of one tab carries none.
+  knowledgeSettings?: KnowledgeSettings;
   tabs: {
     id: string;
     name: string;
@@ -383,6 +419,10 @@ export async function exportDocumentCopy(
   };
   const placed = copyImageIds(copy);
   if (placed.length > 0) copy.images = [...(await servableImageIds(env, documentId, placed))];
+  if (onlyTabId === null) {
+    const settings = (await readDocumentMeta(env, documentId))?.knowledgeSettings;
+    if (settings && storedKnowledgeSettings(settings) !== null) copy.knowledgeSettings = settings;
+  }
   return copy;
 }
 
@@ -454,12 +494,18 @@ export async function importDocumentCopy(
       .prepare(
         // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initDocument).
         // Its name is the index's title for it, which that start keeps (initDocument).
-        `INSERT INTO document (id, saved_at, created_at, name) VALUES (?1, ?2, 0, ?3)
+        `INSERT INTO document (id, saved_at, created_at, name, knowledge_settings) VALUES (?1, ?2, 0, ?3, ?4)
          ON CONFLICT (id) DO UPDATE SET saved_at = excluded.saved_at,
+           knowledge_settings = COALESCE(excluded.knowledge_settings, document.knowledge_settings),
            name = CASE WHEN document.created_at = 0 AND excluded.name <> '' THEN excluded.name
                        ELSE document.name END`,
       )
-      .bind(documentId, now, copy.name ?? ''),
+      .bind(
+        documentId,
+        now,
+        copy.name ?? '',
+        copy.knowledgeSettings ? storedKnowledgeSettings(copy.knowledgeSettings) : null,
+      ),
   ];
   for (const tab of copy.tabs) {
     const images = imageRefIdsFromData(tab.data);

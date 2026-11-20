@@ -12,6 +12,7 @@ import {
   writingPrint,
   writingText,
   type KnowledgeFields,
+  type ReviewEvery,
 } from '@liveknowledge/knowledge';
 import type { PageKnowledge } from '@liveknowledge/api-schema';
 import type { DocumentEnv } from '../types';
@@ -68,9 +69,13 @@ export async function readPageKnowledge(
   }
 }
 
-/** The fields as a client reads them, with the state the clock gives them. */
-export function pageKnowledgeOf(page: StoredPageKnowledge, now: number): PageKnowledge {
-  const state = trustState(page.fields, now);
+/** The fields as a client reads them, with the state the knowledgebase's Review Period and the clock give them. */
+export function pageKnowledgeOf(
+  page: StoredPageKnowledge,
+  every: ReviewEvery,
+  now: number,
+): PageKnowledge {
+  const state = trustState(page.fields, every, now);
   const print = page.fields.verifiedAt === undefined ? undefined : openWritingPrint(page.print);
   return {
     tab: page.tab,

@@ -17,6 +17,7 @@ import {
   withoutSheetSources,
   type EnvelopeTab,
   type Tab,
+  type KnowledgeSettings,
 } from '@liveknowledge/document';
 import { APP_FILE_FORMATS } from '@liveworkspace/drive/formats';
 import { storedTabConnection, tabConnectionOf, type ExportResult } from '@liveworkspace/index-app';
@@ -65,12 +66,17 @@ export async function exportDocumentFile(
   ifVersion: number | null,
 ): Promise<ExportResult> {
   const { meta, savedAt, presentation } = await readDocumentHead(env, documentId);
+  const knowledgeSettings = meta?.knowledgeSettings;
   if (!meta) return { status: 'not_found' };
   if (ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
   const tabs = (await readContentTabRows(env, documentId, null)).map(envelopeTabOf);
   return {
     status: 'ok',
-    body: documentToEnvelopeText({ id: documentId, name: meta.name, presentation }, tabs, savedAt),
+    body: documentToEnvelopeText(
+      { id: documentId, name: meta.name, presentation, knowledgeSettings },
+      tabs,
+      savedAt,
+    ),
     contentType: DOCUMENT_FILE_FORMAT.mimeType,
     version: savedAt,
   };
@@ -80,7 +86,12 @@ export async function exportDocumentFile(
 
 // What a new document is made of: its deck and its tabs as a copy carries them (fresh ids, links re-pointed). No
 // placement grants travel: the file names images, it holds no right to serve them.
-export type DocumentFileContent = { presentation: string | null; copy: DocumentCopy };
+export type DocumentFileContent = {
+  presentation: string | null;
+  // The file's Review Period when it names one that is not the default.
+  knowledgeSettings?: KnowledgeSettings;
+  copy: DocumentCopy;
+};
 
 export type DocumentFileRead =
   { ok: true; content: DocumentFileContent } | { ok: false; failure: 'invalid_file' | 'too_large' };
@@ -110,6 +121,7 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
         presentation: parsed.envelope.document.presentation ?? null,
       }
     : copyDocumentEnvelope(parsed.envelope);
+  const knowledgeSettings = parsed.envelope.document.knowledgeSettings;
   if (presentation !== null && presentation.length > MAX_DECK_LEN) {
     return { ok: false, failure: 'too_large' };
   }
@@ -139,7 +151,14 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
       connection: tabConnectionOf(incoming) ?? null,
     });
   }
-  return { ok: true, content: { presentation, copy: { tabs: copied, images: [] } } };
+  return {
+    ok: true,
+    content: {
+      presentation,
+      ...(knowledgeSettings ? { knowledgeSettings } : {}),
+      copy: { tabs: copied, images: [] },
+    },
+  };
 }
 
 export type DocumentFileImport = DocumentFileContent & { name: string; ownerId: string };
@@ -161,5 +180,6 @@ export async function importDocumentFile(
     savedAt: now,
     createdAt: now,
     presentation: file.presentation,
+    knowledgeSettings: file.knowledgeSettings,
   });
 }

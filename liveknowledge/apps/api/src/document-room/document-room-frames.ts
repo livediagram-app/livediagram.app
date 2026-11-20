@@ -146,6 +146,10 @@ export function webSocketMessage(
     // room's check").
     if (!gate.presence && refusesPageTreeOp(room, ws, session.documentId ?? null, msg)) return;
     const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
+    // The knowledgebase's settings are the api's to send (routes/knowledge-settings-routes.ts, after it stored
+    // them): a session's own `document-meta` never carries them, so no peer hears a period that was not saved.
+    if (opKind === 'document-meta')
+      delete (msg.op as { knowledgeSettings?: unknown }).knowledgeSettings;
     const isPresenceOp = gate.presence;
     // A paragraph hold is the room's to give, never relayed as sent (docs/specs/007-editor/article-pages.md
     // "Holding a paragraph").

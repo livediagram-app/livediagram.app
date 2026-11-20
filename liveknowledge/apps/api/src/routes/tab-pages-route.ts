@@ -37,7 +37,7 @@ export async function handleTabPages(
   // accepts.
   if (ctx.token && 'article' in parsed) {
     const fields = parseKnowledgeFields(document.tabs.find((t) => t.id === tabId)?.knowledge);
-    const state = trustState(fields, Date.now()).state;
+    const state = trustState(fields, document.knowledgeSettings.reviewEvery, Date.now()).state;
     // A page whose review is due is refused as a verified one is: it is the page most likely to need a person's
     // eye, and a rewrite by an agent would bury what the review was for.
     if (state !== 'never-verified') {

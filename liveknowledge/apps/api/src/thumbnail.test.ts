@@ -56,6 +56,7 @@ function liveDoc(over: Partial<DocumentDTO> = {}): DocumentDTO {
     shareCode: null,
     folderId: null,
     presentation: null,
+    knowledgeSettings: { reviewEvery: 90 },
     teamId: null,
     source: null,
     savedAt: 1000,

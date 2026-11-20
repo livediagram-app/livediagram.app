@@ -419,8 +419,8 @@ describe('GET summary', () => {
     const kit = await knowledgeKit({}, many);
     kit.db.sql.exec(
       `UPDATE tabs SET rev = rev + 1, data = json_set(data, '$.knowledge.owner', 'user_o');
-       INSERT OR REPLACE INTO page_trust (tab, title, verified_at, review_days)
-         SELECT id, name, 1000 + rowid, 30 FROM tabs`,
+       INSERT OR REPLACE INTO page_trust (tab, title, verified_at)
+         SELECT id, name, 1000 + rowid FROM tabs`,
     );
     // Once to warm the statement, then measured.
     await kit.call('editor', 'GET', '/api/documents/kb/summary');

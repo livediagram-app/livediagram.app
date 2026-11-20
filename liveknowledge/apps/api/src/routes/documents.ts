@@ -4,7 +4,12 @@
 // answered from it (document-index-routes.ts).
 
 import type { Tab } from '@liveknowledge/document';
-import { isValidTab, migrateIncomingTab } from '@liveknowledge/document';
+import {
+  isReviewEvery,
+  isValidTab,
+  migrateIncomingTab,
+  parseKnowledgeSettings,
+} from '@liveknowledge/document';
 import {
   createItemGrant,
   itemSourceOf,
@@ -382,6 +387,11 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
         savedAt,
         createdAt: dates.createdAt,
         presentation: clash ? null : presentation,
+        // The Review Period a knowledgebase kept Offline chose, on the create that syncs it (verification.md "The
+        // Review Period"); a period the api does not know is left out, and the knowledgebase reads as the default.
+        ...(!clash && isReviewEvery(body.knowledgeSettings?.reviewEvery)
+          ? { knowledgeSettings: parseKnowledgeSettings(body.knowledgeSettings) }
+          : {}),
       });
       // Seed tabs if the caller provided them. The editor app's
       // welcome flow uses this when it commits a fresh document

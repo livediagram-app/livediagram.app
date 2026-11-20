@@ -21,7 +21,6 @@ type Health = {
     owner?: string;
     verifiedAt?: number;
     verifiedBy?: string;
-    reviewEvery?: number | 'never';
     context?: true;
     state: string;
     reviewAt?: number;
@@ -63,10 +62,8 @@ describe('POST pages/:tab/verify', () => {
     // The tab's revision advances, as a rename's does, and search reads the page as verified.
     expect(rev()).toBe(before + 1);
     expect(
-      kit.db.sql
-        .prepare("SELECT verified_at, review_days FROM page_trust WHERE tab = 'deploys'")
-        .get(),
-    ).toEqual({ verified_at: knowledge.verifiedAt, review_days: 90 });
+      kit.db.sql.prepare("SELECT verified_at FROM page_trust WHERE tab = 'deploys'").get(),
+    ).toEqual({ verified_at: knowledge.verifiedAt });
     for (const who of ['participant', 'viewer', 'link'] as const)
       expect((await read(kit, who)).knowledge.state).toBe('verified');
   });
@@ -99,25 +96,31 @@ describe('POST pages/:tab/verify', () => {
     },
   );
 
-  it('comes due when the interval passes, with nothing written, and never for a page that does not age', async () => {
+  it("comes due when the knowledgebase's Review Period passes, with nothing written, and never under Never", async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
     const kit = await knowledgeKit();
     await kit.call('editor', 'POST', '/api/documents/kb/pages/deploys/verify');
     await kit.call('editor', 'POST', '/api/documents/kb/pages/holidays/verify');
-    await kit.call('editor', 'PUT', '/api/documents/kb/pages/holidays/knowledge', {
+    vi.setSystemTime(new Date('2026-04-02T00:00:00Z'));
+    const summary = async () =>
+      await (
+        await kit.call('viewer', 'GET', '/api/documents/kb/summary')
+      ).json<{ health: object; reviewEvery: unknown }>();
+    expect((await read(kit)).knowledge.state).toBe('review-due');
+    expect(await summary()).toMatchObject({
+      reviewEvery: 90,
+      health: { verified: 0, reviewDue: 2, neverVerified: 1, total: 3 },
+    });
+    await kit.call('editor', 'PUT', '/api/documents/kb/knowledge-settings', {
       reviewEvery: 'never',
     });
-    vi.setSystemTime(new Date('2026-04-02T00:00:00Z'));
-    expect((await read(kit)).knowledge.state).toBe('review-due');
     const never = (await read(kit, 'viewer', 'holidays')).knowledge;
     expect([never.state, never.reviewAt]).toEqual(['verified', undefined]);
-    const summary = await (
-      await kit.call('viewer', 'GET', '/api/documents/kb/summary')
-    ).json<{
-      health: object;
-    }>();
-    expect(summary.health).toEqual({ verified: 1, reviewDue: 1, neverVerified: 1, total: 3 });
+    expect(await summary()).toMatchObject({
+      reviewEvery: 'never',
+      health: { verified: 2, reviewDue: 0, neverVerified: 1, total: 3 },
+    });
   });
 
   it('says Changed since verified once more than a fifth of the writing changed, until verified again', async () => {
@@ -163,22 +166,20 @@ describe('POST pages/:tab/verify', () => {
 });
 
 describe('PUT pages/:tab/knowledge', () => {
-  it('sets the owner, the interval and Always in Context for an Editor', async () => {
+  it('sets the owner and Always in Context for an Editor', async () => {
     const kit = await knowledgeKit();
     const res = await kit.call('editor', 'PUT', '/api/documents/kb/pages/deploys/knowledge', {
       owner: OWNER,
-      reviewEvery: 30,
       context: true,
     });
     expect(res.status).toBe(200);
-    expect(stored(kit).knowledge).toEqual({ owner: OWNER, reviewEvery: 30, context: true });
+    expect(stored(kit).knowledge).toEqual({ owner: OWNER, context: true });
     const cleared = await kit.call('editor', 'PUT', '/api/documents/kb/pages/deploys/knowledge', {
       owner: null,
       context: false,
-      reviewEvery: 90,
     });
     expect((await cleared.json<Health>()).knowledge).toMatchObject({ state: 'never-verified' });
-    expect(stored(kit).knowledge).toEqual({ reviewEvery: 90 });
+    expect(stored(kit).knowledge).toBeUndefined();
   });
 
   it.each(['participant', 'viewer', 'link', 'page-link', 'stranger'] as const)(
@@ -186,7 +187,7 @@ describe('PUT pages/:tab/knowledge', () => {
     async (who) => {
       const kit = await knowledgeKit();
       const res = await kit.call(who, 'PUT', '/api/documents/kb/pages/holidays/knowledge', {
-        reviewEvery: 30,
+        context: true,
       });
       expect(res.status).toBe(403);
       expect(stored(kit, 'holidays').knowledge).toBeUndefined();
@@ -203,7 +204,13 @@ describe('PUT pages/:tab/knowledge', () => {
     };
     expect(await error({ owner: 'user_x' })).toEqual([400, 'owner_no_access']);
     expect(await error({ owner: '' })).toEqual([400, 'invalid_owner']);
-    expect(await error({ reviewEvery: 45 })).toEqual([400, 'invalid_review_every']);
+    // A page has no review period of its own: the refusal says where the setting lives.
+    for (const body of [{ reviewEvery: 30 }, { owner: OWNER, reviewEvery: 'never' }]) {
+      const res = await put(body);
+      const refusal = await res.json<{ error: string; message: string }>();
+      expect([res.status, refusal.error]).toEqual([400, 'review_period_is_the_knowledgebases']);
+      expect(refusal.message).toContain('/knowledge-settings');
+    }
     expect(await error({ context: 'yes' })).toEqual([400, 'invalid_context']);
     expect(await error({})).toEqual([400, 'invalid_body']);
     expect(await error([1])).toEqual([400, 'invalid_body']);

@@ -14,6 +14,7 @@ import {
   parseKnowledgeFields,
   trustState,
   type ConflictRow,
+  type ReviewEvery,
 } from '@liveknowledge/knowledge';
 import type { KnowledgePageRef, KnowledgePageTrust } from '@liveknowledge/api-schema';
 import type { DocumentDTO, DocumentEnv } from '../types';
@@ -104,13 +105,15 @@ export async function openConflictPages(
   return { byTab, byPassage };
 }
 
-/** How far a page can be trusted, from its stored fields and the clock. `stale` is review due. */
+/** How far a page can be trusted, from its stored fields, the knowledgebase's Review Period and the clock.
+ *  `stale` is review due. */
 export function pageTrustOf(
   knowledge: unknown,
+  every: ReviewEvery,
   now: number,
   extra: { conflictsWith?: KnowledgePageRef[] | undefined; verifiedBy?: string | undefined } = {},
 ): KnowledgePageTrust {
-  const state = trustState(parseKnowledgeFields(knowledge), now);
+  const state = trustState(parseKnowledgeFields(knowledge), every, now);
   return {
     state: state.state,
     ...('verifiedAt' in state ? { verifiedAt: state.verifiedAt } : {}),

@@ -2,6 +2,8 @@
 // /api/documents/<id>/ and answered inside the document's room:
 //   GET    search?q=                     knowledge-search-route.ts
 //   GET    summary                       Home's numbers, cacheable for a minute
+//   GET    knowledge-settings, PUT knowledge-settings, GET knowledge-settings/preview
+//                                        the Review Period (knowledge-settings-routes.ts)
 //   GET    pages/<tab>/backlinks         knowledge-page-routes.ts
 //   GET    pages/<tab>/health
 //   POST   pages/<tab>/verify
@@ -45,6 +47,7 @@ import {
   handleVerify,
 } from './knowledge-page-routes';
 import { handleKnowledgeSearch } from './knowledge-search-route';
+import { handleSettingsRoutes } from './knowledge-settings-routes';
 import { handleSetupSuggest } from './knowledge-setup-route';
 import { handleSuggest, handleSuggestionRoutes } from './knowledge-suggestion-routes';
 
@@ -72,13 +75,15 @@ async function handleSummary({ ctx, document }: KnowledgeRoute): Promise<Respons
   const now = Date.now();
   // Yours to Review is the caller's own: a guest, or a visitor through a link, owns no page.
   const account = accountOf(ctx);
+  // The Review Period, read once with the document: the counts and the due pages are worked out under it.
+  const { reviewEvery } = document.knowledgeSettings;
   const [health, recent, yoursToReview] = await Promise.all([
-    knowledgeHealthCounts(ctx.env, document.id, now),
+    knowledgeHealthCounts(ctx.env, document.id, reviewEvery, now),
     recentPages(ctx.env, document.id),
-    account ? ownDuePages(ctx.env, document.id, account, now) : [],
+    account ? ownDuePages(ctx.env, document.id, account, reviewEvery, now) : [],
   ]);
   return json(
-    { pages: health.total, health, recent, yoursToReview },
+    { pages: health.total, reviewEvery, health, recent, yoursToReview },
     { headers: { 'Cache-Control': `private, max-age=${SUMMARY_MAX_AGE_SECONDS}` } },
   );
 }
@@ -117,7 +122,7 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
     return method === 'GET' ? handlePageHealth(ctx, document, tab) : methodNotAllowed();
   if (segments[5] !== 'verify' && segments[5] !== 'knowledge') return notFound();
   if (method !== (segments[5] === 'verify' ? 'POST' : 'PUT')) return methodNotAllowed();
-  // Verify, owner, interval and Always in Context: Editor only, and the whole knowledgebase's to decide.
+  // Verify, owner and Always in Context: Editor only, and the whole knowledgebase's to decide.
   if (!isEditor(grant) || !wholeKnowledgebase(grant)) return forbidden();
   return segments[5] === 'verify'
     ? handleVerify(ctx, document, tab)
@@ -135,6 +140,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
       segments[3] === 'ai' ||
       segments[3] === 'ask' ||
       segments[3] === 'knowledge' ||
+      segments[3] === 'knowledge-settings' ||
       segments[3] === 'questions' ||
       segments[3] === 'pages' ||
       segments[3] === 'context' ||
@@ -144,6 +150,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
     return (
       (segments[3] === 'ai' && (segments[4] === 'key' || segments[4] === 'model')) ||
       (segments[3] === 'knowledge' && segments[4] === 'remind-owners') ||
+      (segments[3] === 'knowledge-settings' && segments[4] === 'preview') ||
       (segments[3] === 'setup' && segments[4] === 'suggest') ||
       segments[3] === 'questions' ||
       segments[3] === 'pages'
@@ -201,6 +208,7 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   if (segments[3] === 'setup')
     return request.method === 'POST' ? handleSetupSuggest(route) : methodNotAllowed();
   return (
+    (await handleSettingsRoutes(route)) ??
     (await handleAgentRoutes(route)) ??
     (await handleSuggestionRoutes(route)) ??
     (await handleEmailRoutes(route)) ??

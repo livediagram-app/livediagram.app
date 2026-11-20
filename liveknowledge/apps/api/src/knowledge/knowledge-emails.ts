@@ -37,13 +37,15 @@ const DAY_MS = 86_400_000;
 /** What an email route answers: what was sent, or why nothing was. */
 export type KnowledgeEmailOutcome = KnowledgeEmailResult;
 
-type OwnedPage = EmailPage & { owner: string; reviewAt?: number };
+type OwnedPage = EmailPage & { owner: string; verifiedAt?: number };
 
-// Each page with what its stored fields and the clock say (`trustState`): no page's writing is read.
+// Each page with what its stored fields, the knowledgebase's Review Period (read once, with the document) and
+// the clock say (`trustState`): no page's writing is read.
 function pagesOf(document: DocumentDTO, now: number) {
+  const { reviewEvery } = document.knowledgeSettings;
   return document.tabs.map((tab) => {
     const fields = parseKnowledgeFields(tab.knowledge);
-    const trust = trustState(fields, now);
+    const trust = trustState(fields, reviewEvery, now);
     return { tab: tab.id, title: tab.name, owner: fields.owner, ...trust };
   });
 }
@@ -129,7 +131,7 @@ export async function runReviewEmails(
   };
   const due = pages.flatMap((p): OwnedPage[] =>
     p.state === 'review-due' && p.owner
-      ? [{ tab: p.tab, title: p.title, owner: p.owner, reviewAt: p.reviewAt }]
+      ? [{ tab: p.tab, title: p.title, owner: p.owner, verifiedAt: p.verifiedAt }]
       : [],
   );
   if (due.length === 0) return next;
@@ -140,7 +142,9 @@ export async function runReviewEmails(
   const emails = new Map<string, RenderedEmail>();
   const owed = new Map<string, OwnedPage[]>();
   for (const [owner, own] of byOwner(due)) {
-    if (!own.some((page) => told.get(page.tab) !== page.reviewAt)) continue;
+    // A page is new until its owner was told of the review of this verification: a change of Review Period moves
+    // when it is due, never whether they were told.
+    if (!own.some((page) => told.get(page.tab) !== page.verifiedAt)) continue;
     const last = lastSent.get(owner);
     if (last !== undefined && last > now - REVIEW_EMAIL_GAP_MS) {
       sooner(last + REVIEW_EMAIL_GAP_MS);
@@ -159,7 +163,7 @@ export async function runReviewEmails(
   await putMarks(
     env,
     'review-page',
-    settled.map((page) => ({ key: page.tab, at: page.reviewAt ?? 0 })),
+    settled.map((page) => ({ key: page.tab, at: page.verifiedAt ?? 0 })),
   );
   await putMarks(
     env,

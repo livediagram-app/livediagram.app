@@ -8,6 +8,7 @@
 // knowledgebase (knowledge/knowledge-emails.ts checks before it builds one).
 import { xmlEscape } from '@liveworkspace/icons';
 import { mentionQuote, subjectText } from '@liveworkspace/email/layout';
+import { DEFAULT_REVIEW_EVERY, type ReviewEvery } from '@liveknowledge/knowledge';
 import type { Env } from '../types';
 import { EMAIL_BRAND, manageNotificationsFooter, profilePath, shell } from './brand-layout';
 import { appBaseUrl } from './client';
@@ -17,7 +18,12 @@ import type { RenderedEmail } from './templates';
  *  Gmail clips a message, where 500 rows (a whole knowledgebase due at once) would pass it. */
 export const EMAIL_PAGES_LISTED = 100;
 
-export type EmailKnowledgebase = { id: string; name: string };
+/** `knowledgeSettings` is the knowledgebase's own (its Review Period): absent reads as every 90 days. */
+export type EmailKnowledgebase = {
+  id: string;
+  name: string;
+  knowledgeSettings?: { reviewEvery: ReviewEvery };
+};
 export type EmailPage = { tab: string; title: string; state?: 'review-due' | 'never-verified' };
 export type EmailConflict = {
   question: string;
@@ -33,6 +39,18 @@ const pageUrl = (env: Env, kb: EmailKnowledgebase, tab: string) =>
 const link = (href: string, text: string) =>
   `<a href="${xmlEscape(href)}" style="color:${EMAIL_BRAND};font-weight:600">${xmlEscape(text)}</a>`;
 const pagesWord = (n: number) => `${n.toLocaleString('en')} ${n === 1 ? 'page' : 'pages'}`;
+// What the knowledgebase's Review Period is, in a sentence; nothing under Never, where no page comes due.
+const PERIOD_WORDS: Record<ReviewEvery, string> = {
+  30: 'every 30 days',
+  90: 'every 90 days',
+  180: 'every 180 days',
+  365: 'every year',
+  never: '',
+};
+function reviewPeriodLine(kb: EmailKnowledgebase): string {
+  const words = PERIOD_WORDS[kb.knowledgeSettings?.reviewEvery ?? DEFAULT_REVIEW_EVERY];
+  return words ? `This knowledgebase reviews pages ${words}.` : '';
+}
 const STATE_WORDS = { 'review-due': 'Review Due', 'never-verified': 'Never Verified' } as const;
 
 // The pages as list rows and as text lines, the first EMAIL_PAGES_LISTED of them, with what is left counted.
@@ -69,6 +87,7 @@ export function reviewDueEmail(
   const count = pagesWord(pages.length);
   const intro = `${count} you own in <strong>${xmlEscape(name)}</strong> ${pages.length === 1 ? 'is' : 'are'} due for review. Read each one, then mark it Still Right or fix it.`;
   const reason = 'You’re receiving this because you own these pages.';
+  const period = reviewPeriodLine(kb);
   return {
     kind: 'ReviewDue',
     subject: subjectText(`Pages Due for Review in ${name}`),
@@ -78,7 +97,7 @@ export function reviewDueEmail(
       intro,
       points,
       outro:
-        'A page stays marked Review Due, for people and for agents, until someone verifies it again.',
+        `${period} A page stays marked Review Due, for people and for agents, until someone verifies it again.`.trim(),
       ctaText: 'Open the Knowledgebase',
       ctaHref: kbUrl(env, kb),
       footer: manageNotificationsFooter(env, reason),
@@ -91,6 +110,7 @@ export function reviewDueEmail(
         `${count} you own ${pages.length === 1 ? 'is' : 'are'} due for review. Read each one, then mark it Still Right or fix it.`,
         '',
         ...lines,
+        ...(period ? ['', period] : []),
         '',
         `Open the knowledgebase: ${kbUrl(env, kb)}`,
       ],
@@ -113,6 +133,7 @@ export function remindOwnersEmail(
   const says = `${count} you own ${pages.length === 1 ? 'is' : 'are'} due for review or ${pages.length === 1 ? 'was' : 'were'} never verified.`;
   const reason =
     'You’re receiving this because you own these pages and an Editor reminded the owners.';
+  const period = reviewPeriodLine(kb);
   return {
     kind: 'OwnersReminded',
     subject: subjectText(`Pages to Review in ${name}`),
@@ -121,7 +142,7 @@ export function remindOwnersEmail(
       preheader: says,
       intro: `${lead(`<strong>${xmlEscape(name)}</strong>`)} ${says}`,
       points,
-      outro: 'Verify a page that is right, and fix one that is not.',
+      outro: `${period} Verify a page that is right, and fix one that is not.`.trim(),
       ctaText: 'Open the Knowledgebase',
       ctaHref: kbUrl(env, kb),
       footer: manageNotificationsFooter(env, reason),
@@ -134,6 +155,7 @@ export function remindOwnersEmail(
         `${lead(subjectText(name))} ${says}`,
         '',
         ...lines,
+        ...(period ? ['', period] : []),
         '',
         `Open the knowledgebase: ${kbUrl(env, kb)}`,
       ],
