@@ -73,6 +73,10 @@ export type PagesModeView = {
   // A finger's pan over an article page begun from the view now: moves it by a screen-px drag.
   // Absent where nothing pans the view from a page (presenting).
   panFrom?: () => (dx: number, dy: number) => void;
+  // Whether the view is on its way to a page just added, duplicated or gone back to (the go-to waiting for its page, or
+  // its glide under way): the caret's reveal holds off then, as the frame brings the page's writing into view and a
+  // reveal begun from where the view was would pull it back short (pages-mode.md "A new page comes into view").
+  framing?: () => boolean;
   // Backgrounds drawn from the tab's theme, offered first in the page panel.
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab theme's accent: a document's accent unless it picked one of its own.
@@ -409,9 +413,16 @@ export function usePagesMode(deps: {
   // A page just added or duplicated, or the one before a deleted page: framed once it is in the
   // row (a frame later, as its sheet mounts or the row closes up).
   const [goTo, setGoTo] = useState<string | null>(null);
+  // The go-to now, read by `framing` between renders.
+  const goingTo = useRef<string | null>(null);
+  const goToPage = (id: string) => {
+    goingTo.current = id;
+    setGoTo(id);
+  };
   const goToLanded = useEffectEvent(() => {
     const page = layOutPages(pagesOf(activeTab)).find((p) => p.id === goTo);
     if (!page) return;
+    goingTo.current = null;
     setGoTo(null);
     frame(page, false, true);
   });
@@ -484,6 +495,7 @@ export function usePagesMode(deps: {
     fitPageInView,
     readPage,
     panFrom,
+    framing: () => goingTo.current !== null || motion.current.gliding,
     themeBackgrounds,
     themeAccent: themeAccent(theme),
     tabFont,
@@ -511,7 +523,7 @@ export function usePagesMode(deps: {
       elements: activeTab.elements,
       layers: activeTab.layers,
       commitTabs,
-      onGoTo: setGoTo,
+      onGoTo: goToPage,
       onArticleCreated: deps.onArticleCreated,
       onLayoutPlaced: deps.clearSelection,
       mayEdit,

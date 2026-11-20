@@ -85,7 +85,11 @@ export function useEditorArticles({
       if (opens === 'popover') openActionPopover(id);
       else if (opens === 'assign') openAssignActionDialog(id);
     },
-    reveal: (x, y, w, h) => scrollIntoView(x, y, w, h),
+    // Not while the view glides to a page just added: that frame brings its writing into view (usePagesMode framing).
+    reveal: (x, y, w, h) => {
+      if (pagesMode.framing?.()) return;
+      scrollIntoView(x, y, w, h);
+    },
   });
   useAssignRef(articleFocusRef, (flow: string) => articles?.requestFocus(flow, 'start'));
   // Set once element creation exists (below): an Insert at the caret places through it.
