@@ -8,8 +8,8 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import {
   TOAST_EDGE_PX,
   TOAST_FLOOR_CHANGED_EVENT,
-  TOAST_FLOOR_POPOVER,
   TOAST_FLOOR_SELECTOR,
+  TOAST_RISEN_SELECTOR,
   TOAST_SIDE_SELECTOR,
   toastFloor,
   toastPlacement,
@@ -26,23 +26,10 @@ export function useToastFloor(active: boolean, count: number): ToastPlacement {
     const floors: FloorRect[] = [];
     const sides: FloorRect[] = [];
     for (const el of found) {
-      if (el.matches(TOAST_SIDE_SELECTOR)) {
-        sides.push(el.getBoundingClientRect());
-        continue;
-      }
-      const r = el.getBoundingClientRect();
-      floors.push(
-        el.getAttribute('data-toast-floor') === TOAST_FLOOR_POPOVER
-          ? {
-              top: r.top,
-              left: r.left,
-              right: r.right,
-              width: r.width,
-              height: r.height,
-              rises: true,
-            }
-          : r,
-      );
+      // A fresh rect per call, so marking it is safe. Kept terse: this hook is in the Explorer's first load.
+      const r: FloorRect = el.getBoundingClientRect();
+      r.rises = el.matches(TOAST_RISEN_SELECTOR);
+      (el.matches(TOAST_SIDE_SELECTOR) ? sides : floors).push(r);
     }
     const next = toastPlacement({
       viewportWidth: window.innerWidth,

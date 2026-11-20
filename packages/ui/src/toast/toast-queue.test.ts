@@ -26,7 +26,7 @@ describe('pushToast', () => {
     const one = pushToast([], { message: 'Saved', tone: 'success' }, 1);
     expect(pushToast(one, { message: 'Saved', tone: 'success' }, 2)).toBe(one);
     expect(pushToast(one, { message: 'Saved', tone: 'info' }, 2)).toHaveLength(2);
-    const leaving = retireToasts(one, () => true);
+    const leaving = retireToasts(one, () => true, 'missed');
     expect(live(pushToast(leaving, { message: 'Saved', tone: 'success' }, 2))).toEqual(['Saved']);
   });
 
@@ -99,8 +99,8 @@ describe('upsertActionToast', () => {
 describe('retireToasts', () => {
   it('marks the matches leaving, and returns the same list when nothing matches', () => {
     const list = pushToast([], { message: 'Saved', tone: 'success' }, 1);
-    expect(retireToasts(list, (t) => t.id === 9)).toBe(list);
-    expect(retireToasts(list, (t) => t.id === 1)[0]!.leaving).toBe(true);
+    expect(retireToasts(list, (t) => t.id === 9, 'seen')).toBe(list);
+    expect(retireToasts(list, (t) => t.id === 1, 'closed')[0]!.leaving).toBe('closed');
   });
 });
 

@@ -16,7 +16,6 @@ import {
   settleToast,
   subscribeToastHistory,
   touchScopeIndex,
-  forgetToast,
 } from './toast-history';
 
 // liveworkspace/docs/specs/016-notifications/toasts.md "What is kept" and "The footer button".
@@ -164,9 +163,9 @@ describe('the notification list', () => {
   it('forgets a closed toast, and leaves the list alone for an unknown id', () => {
     recordToast({ id: 'a', tone: 'info', message: 'Kept' }, 'live');
     recordToast({ id: 'b', tone: 'info', message: 'Closed' }, 'live');
-    forgetToast('b');
+    settleToast('b', 'closed');
     expect(readToastHistory().map((r) => r.message)).toEqual(['Kept']);
-    forgetToast('nope');
+    settleToast('nope', 'closed');
     expect(readToastHistory().map((r) => r.message)).toEqual(['Kept']);
   });
 });

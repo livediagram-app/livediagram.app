@@ -39,6 +39,8 @@ export function announceToastFloorChange(): void {
  * reaches, since its foot stands on that chrome.
  */
 export const TOAST_FLOOR_POPOVER = 'popover';
+/** A popover risen from the bottom chrome, among the measured floors. */
+export const TOAST_RISEN_SELECTOR = `[data-toast-floor=${TOAST_FLOOR_POPOVER}]`;
 
 export type FloorRect = {
   top: number;

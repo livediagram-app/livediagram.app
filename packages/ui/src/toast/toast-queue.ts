@@ -45,10 +45,9 @@ export type ToastEntry = {
   actions?: ToastAction[];
   sticky?: boolean;
   onDismiss?: () => void;
-  // Dismissed, still playing its exit before the stack removes it.
-  leaving?: boolean;
-  // Closed by the person: it fades where it is (no collapse into the bell) and is gone from the list.
-  dismissed?: boolean;
+  // Dismissed, still playing its exit before the stack removes it, or how it left (ToastLeft). `closed`: the person
+  // closed it, so it fades where it is (no collapse into the bell) and is gone from the list.
+  leaving?: boolean | ToastLeft;
   // Arrived on a full stack and retired an older toast: it enters with a bolder pop, so the change is seen.
   full?: boolean;
 };
@@ -147,8 +146,15 @@ export function upsertActionToast(
   return next;
 }
 
-/** Mark the matching toasts leaving (their exit plays, then they are removed). */
-export function retireToasts(list: ToastEntry[], match: (t: ToastEntry) => boolean): ToastEntry[] {
+/** How a toast left: answered (`seen`), timed out or retired (`missed`), or closed by the person (`closed`). */
+export type ToastLeft = 'missed' | 'seen' | 'closed';
+
+/** Mark the matching toasts leaving (their exit plays, then they are removed), with how they left when known. */
+export function retireToasts(
+  list: ToastEntry[],
+  match: (t: ToastEntry) => boolean,
+  leaving: true | ToastLeft,
+): ToastEntry[] {
   if (!list.some((t) => !t.leaving && match(t))) return list;
-  return list.map((t) => (!t.leaving && match(t) ? { ...t, leaving: true } : t));
+  return list.map((t) => (!t.leaving && match(t) ? { ...t, leaving } : t));
 }

@@ -192,24 +192,22 @@ export function recordToast(
   write(scope, [...list, record].slice(-TOAST_HISTORY_LIMIT));
 }
 
-/** A toast left: closed or answered (`seen`), or timed out or retired (`missed`). Only a live record changes. */
-export function settleToast(id: string, state: 'missed' | 'seen', scope = scopeOf()): void {
+/**
+ * A toast left: answered (`seen`), timed out or retired (`missed`), or closed by the person (`closed`: it leaves the
+ * list too). Only a live record changes.
+ */
+export function settleToast(
+  id: string,
+  state: 'missed' | 'seen' | 'closed',
+  scope = scopeOf(),
+): void {
   const list = readToastHistory(scope);
   const at = list.findIndex((r) => r.id === id);
   if (at === -1 || list[at]!.state !== 'live') return;
   const next = list.slice();
-  next[at] = { ...list[at]!, state };
+  if (state === 'closed') next.splice(at, 1);
+  else next[at] = { ...list[at]!, state };
   write(scope, next);
-}
-
-/** A toast the person closed: it leaves the list too. */
-export function forgetToast(id: string, scope = scopeOf()): void {
-  const list = readToastHistory(scope);
-  if (!list.some((r) => r.id === id)) return;
-  write(
-    scope,
-    list.filter((r) => r.id !== id),
-  );
 }
 
 /** The list was opened: everything missed in it is seen. */
