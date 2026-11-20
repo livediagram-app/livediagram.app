@@ -422,7 +422,8 @@ export function startItems({
     kind: 'form',
     starter: f.id,
     name: f.name,
-    line: f.line,
+    // A starter's line is a short phrase in the form builder; here it sits among sentences.
+    line: `${f.line}.`,
     keywords: [
       'form',
       'survey',
