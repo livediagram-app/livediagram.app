@@ -4,64 +4,37 @@
 // packages/icons/src/sticker-catalog.ts, and the technology marks from tech-icon-catalog.ts.
 
 import type { ReactNode } from 'react';
-import { Label, Panel, Scene, Tile } from '@liveworkspace/help-site/art/primitives';
+import { Label, Scene, Tile } from '@liveworkspace/help-site/art/primitives';
+import { Strip, stripSlot, type StripItem } from './editor-chrome';
+import { Flyout } from './palette-flyout';
 
-/** The palette body as a panel: its title bar, then the header band (selection mode on the
- *  left, the category picker on the right) the body hangs under. */
+// Each category's strip item and its flyout's tagline (palette/category-flyout-groups.ts).
+const CATEGORY: Record<string, { item: StripItem; blurb: string }> = {
+  Write: { item: 'write', blurb: 'Words on the canvas: text, notes and comments.' },
+  Icons: { item: 'icons', blurb: 'Single-colour glyphs for any idea.' },
+  Tech: { item: 'tech', blurb: 'Cloud and infrastructure marks for architecture.' },
+};
+
+/** A category open: the palette strip across the top with the category pressed, and its flyout hanging under it from
+ *  y 40 to 10 + h, the body (children) from y 74. */
 function PaletteFrame({
   category,
   h,
   children,
 }: {
-  category: string;
+  category: keyof typeof CATEGORY;
   h: number;
   children: ReactNode;
 }) {
+  const { item, blurb } = CATEGORY[category]!;
+  const sx = 210 - (stripSlot(0, item) - 0);
   return (
-    <Panel x={60} y={10} w={300} h={h} title="PALETTE">
-      {/* Selection mode picker */}
-      <rect
-        x={72}
-        y={42}
-        width={40}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-100"
-        strokeWidth={1}
-      />
-      <path
-        d="M80 48 L80 60 L83.5 57 L85.5 61 L87.5 60 L85.5 56 L89.5 55.5 Z"
-        className="fill-brand-600"
-      />
-      <path
-        d="M100 52 l3 3 l3 -3"
-        className="stroke-brand-600"
-        strokeWidth={1.4}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Category picker */}
-      <rect
-        x={244}
-        y={42}
-        width={104}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-100"
-        strokeWidth={1}
-      />
-      <Label x={254} y={55} size={10} weight={700} className="fill-brand-700">
-        {category}
-      </Label>
-      <path
-        d="M334 52 l3 3 l3 -3"
-        className="stroke-brand-600"
-        strokeWidth={1.4}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {children}
-    </Panel>
+    <g>
+      <Strip x={sx} y={8} open={item} />
+      <Flyout x={60} y={40} w={300} h={h - 30} item={item} blurb={blurb} footer="">
+        {children}
+      </Flyout>
+    </g>
   );
 }
 

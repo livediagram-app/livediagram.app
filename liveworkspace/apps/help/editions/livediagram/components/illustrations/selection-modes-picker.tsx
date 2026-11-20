@@ -3,7 +3,8 @@
 // apps/editor canvas-tool-options.tsx (tool names, shortcuts, bands).
 
 import type { ReactNode } from 'react';
-import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
+import { Scene, Label, Lift } from '@liveworkspace/help-site/art/primitives';
+import { Strip } from './editor-chrome';
 import {
   EraserGlyph,
   HandGlyph,
@@ -46,51 +47,46 @@ export function Chevron({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** The start of the palette strip across the top of the canvas: the canvas-tool picker on the
- *  left (showing the chosen tool) and the category picker beside it. Sits at the top of every
- *  mode scene. */
-export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number; tool: ToolKey }) {
+/** The palette strip across the top of the canvas with the canvas-tool picker at its start showing the chosen tool's
+ *  glyph, and the tool's name in a tooltip under it (unless `open`, when the picker's grid hangs there instead). Sits
+ *  at the top of every mode scene. */
+export function PickerTrigger({
+  x = 24,
+  y = 14,
+  tool,
+  open = false,
+}: {
+  x?: number;
+  y?: number;
+  tool: ToolKey;
+  open?: boolean;
+}) {
   const t = TOOLS.find((o) => o.key === tool) ?? TOOLS[0];
-  const w = 236;
+  const sy = y + 22;
+  const tipW = Math.round(t.label.length * 5.4 + 16 + (t.shortcut ? 14 : 0));
   return (
     <g>
-      <rect
-        x={x}
-        y={y + 22}
-        width={w}
-        height={36}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <rect
-        x={x + 8}
-        y={y + 28}
-        width={122}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-200"
-        strokeWidth={1.2}
-      />
-      <g transform={`translate(${x + 21} ${y + 40})`}>
-        <t.Glyph />
-      </g>
-      <Label x={x + 34} y={y + 41} size={11} weight={600} tone="strong">
-        {t.label}
-      </Label>
-      <Chevron x={x + 120} y={y + 40} />
-      <line
-        x1={x + 140}
-        y1={y + 30}
-        x2={x + 140}
-        y2={y + 50}
-        className="stroke-slate-200"
-        strokeWidth={1.2}
-      />
-      <Label x={x + 150} y={y + 41} size={11} weight={500} tone="body">
-        Popular
-      </Label>
-      <Chevron x={x + w - 16} y={y + 40} />
+      <Strip x={x} y={sy} modeGlyph={<t.Glyph />} modeOpen={open} />
+      {!open && (
+        <g className="help-art-as-drawn">
+          <rect x={x + 3} y={sy + 30} width={tipW} height={15} rx={4} className="fill-slate-800" />
+          <Label x={x + 11} y={sy + 38} size={9} weight={500} className="fill-white">
+            {t.label}
+          </Label>
+          {t.shortcut && (
+            <Label
+              x={x + 3 + tipW - 8}
+              y={sy + 38}
+              size={9}
+              weight={500}
+              anchor="end"
+              className="fill-slate-400"
+            >
+              {t.shortcut}
+            </Label>
+          )}
+        </g>
+      )}
     </g>
   );
 }
@@ -176,15 +172,16 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
   const menuH = cy - 80 + 6;
   return (
     <Scene w={420} h={menuH + 92}>
-      <PickerTrigger x={mx} y={10} tool={active} />
+      <PickerTrigger x={mx} y={10} tool={active} open />
+      <Lift x={mx} y={66} w={menuW} h={menuH + 10} r={7} />
       <rect
         x={mx}
-        y={76}
+        y={66}
         width={menuW}
-        height={menuH}
-        rx={10}
+        height={menuH + 10}
+        rx={7}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {body}
     </Scene>

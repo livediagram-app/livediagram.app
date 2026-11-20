@@ -1,12 +1,14 @@
 import type { ReactNode } from 'react';
 import { Arrow, Cursor, Label, SelectionBox, Shape } from '@liveworkspace/help-site/art/primitives';
 import { Card, Stage } from '@liveworkspace/help-site/art/parts';
+import {
+  STRIP_W,
+  Strip,
+  StripGlyph,
+  stripSlot,
+} from '@/editions/livediagram/components/illustrations/editor-chrome';
 
-const TABS = ['Shapes', 'Draw', 'Build', 'Concepts', 'Icons', 'Tech'];
-// Each tab's centre, spaced by its label's width.
-const TAB_X = [117, 158, 195, 241, 288, 325];
-
-const S = 'fill-none stroke-slate-500';
+const S = 'fill-none stroke-brand-500';
 
 // One shape outline per tile, centred on (cx, cy).
 const TILE_GLYPHS: ((cx: number, cy: number) => ReactNode)[] = [
@@ -66,41 +68,33 @@ const TILE_GLYPHS: ((cx: number, cy: number) => ReactNode)[] = [
   ),
 ];
 
-// Palette: the strip of categories with Shapes open, its grid of tiles, and a diamond on its way from the
-// panel to the canvas.
+// Palette: the strip with Shapes open, its flyout's grid of tiles, and a diamond on its way from the flyout to the
+// canvas.
 export function PaletteArt() {
+  const sx = (400 - STRIP_W) / 2;
+  const fx = stripSlot(sx, 'shapes') - 22;
   return (
     <Stage>
-      <Card x={40} y={14} w={320} h={30} r={10}>
-        <path
-          d="M54 22 v13 l3.4 -3.1 2.2 4.6 2.2 -1 -2.1 -4.4 4.4 -0.3 Z"
-          className="fill-slate-500"
-        />
-        <line x1={84} y1={21} x2={84} y2={37} className="stroke-slate-200" strokeWidth={1.2} />
-        {TABS.map((t, i) => (
-          <Label
-            key={t}
-            x={TAB_X[i]!}
-            y={29.5}
-            anchor="middle"
-            size={9.5}
-            weight={i === 0 ? 700 : 500}
-            tone={i === 0 ? 'accent' : 'body'}
-          >
-            {t}
-          </Label>
-        ))}
-        <rect x={100} y={38} width={34} height={2.5} rx={1.2} className="fill-brand-500" />
-      </Card>
+      <Strip x={sx} y={12} open="shapes" />
 
-      {/* The Shapes panel. */}
-      <Card x={48} y={52} w={170} h={132} r={10}>
-        <Label x={60} y={64} size={9} weight={700} tone="muted">
-          SHAPES
+      {/* The Shapes flyout. */}
+      <Card x={fx} y={44} w={170} h={140} r={7}>
+        <rect x={fx + 8} y={51} width={18} height={18} rx={4.5} className="fill-brand-50" />
+        <StripGlyph item="shapes" x={fx + 17} y={60} size={9} className="stroke-brand-700" />
+        <Label x={fx + 32} y={60.5} size={10} weight={650} tone="strong">
+          Shapes
         </Label>
+        <line
+          x1={fx}
+          y1={76}
+          x2={fx + 170}
+          y2={76}
+          className="stroke-slate-100"
+          strokeWidth={0.75}
+        />
         {TILE_GLYPHS.map((glyph, i) => {
-          const tx = 58 + (i % 3) * 52;
-          const ty = 74 + Math.floor(i / 3) * 34;
+          const tx = fx + 10 + (i % 3) * 52;
+          const ty = 84 + Math.floor(i / 3) * 33;
           const on = i === 3;
           return (
             <g key={i}>
@@ -108,12 +102,12 @@ export function PaletteArt() {
                 x={tx}
                 y={ty}
                 width={46}
-                height={30}
-                rx={6}
-                className={on ? 'fill-brand-50 stroke-brand-400' : 'fill-slate-50 stroke-slate-200'}
-                strokeWidth={on ? 1.6 : 1}
+                height={29}
+                rx={5}
+                className={on ? 'fill-brand-50 stroke-brand-300' : 'fill-slate-50 stroke-slate-100'}
+                strokeWidth={0.75}
               />
-              {glyph(tx + 23, ty + 15)}
+              {glyph(tx + 23, ty + 14.5)}
             </g>
           );
         })}

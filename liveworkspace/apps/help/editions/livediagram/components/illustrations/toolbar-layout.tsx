@@ -1,328 +1,154 @@
-// Scenes for the Toolbar Layout article (docs/specs/007-editor/toolbar-layout.md): the strip across the top
-// of the canvas as the category bar, and a category's flyout opening under it. `Strip` and `MenuCard`
-// are exported so other scenes draw the editor's top row the same way.
-// Composed only from the shared primitives, like every other help scene.
-import type { ReactNode } from 'react';
-import { Label, Panel, Scene, Tile } from '@liveworkspace/help-site/art/primitives';
-import { SelectGlyph } from './palette-modes-parts';
+// Scenes for the Toolbar Layout article (docs/specs/007-editor/toolbar-layout.md): the editor's top row with the
+// palette strip as the category bar, its fixed corners, and a category's flyout opening under it. The chrome is the
+// kit's (./editor-chrome), the flyout ./palette-flyout's.
 
-// The strip's element tiles, drawn as the simple outlines the real tiles use.
-function ShapeGlyph({
+import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
+import {
+  BottomBar,
+  CLUSTER_W,
+  CornerCluster,
+  CORNER_W,
+  LOGO_W,
+  MENU_W,
+  stripSlot,
+  TopRow,
+  topRowStripX,
+} from './editor-chrome';
+import { Flyout, FlyoutGroup, FlyoutTile } from './palette-flyout';
+
+/** A Shapes tile's outline, about 18 units across, centred on the origin. */
+export function ShapeOutline({
   kind,
 }: {
-  kind:
-    'square' | 'circle' | 'diamond' | 'text' | 'arrow' | 'cylinder' | 'parallelogram' | 'hexagon';
+  kind: 'square' | 'circle' | 'diamond' | 'triangle' | 'hexagon';
 }) {
-  const s = { className: 'stroke-slate-500', strokeWidth: 1.6, fill: 'none' } as const;
+  const s = {
+    className: 'fill-brand-50 stroke-brand-500',
+    strokeWidth: 1.1,
+    strokeLinejoin: 'round',
+  } as const;
   switch (kind) {
     case 'square':
-      return <rect x={-5} y={-5} width={10} height={10} rx={1.5} {...s} />;
+      return <rect x={-7.5} y={-7.5} width={15} height={15} rx={1.5} {...s} />;
     case 'circle':
-      return <circle r={5.5} {...s} />;
+      return <circle r={8} {...s} />;
     case 'diamond':
-      return <path d="M0 -6 L6 0 L0 6 L-6 0 Z" {...s} />;
-    case 'text':
-      return <path d="M-5 -5 H5 M0 -5 V6" {...s} strokeLinecap="round" />;
-    case 'arrow':
-      return <path d="M-6 0 H5 M2 -3 L5 0 L2 3" {...s} strokeLinecap="round" />;
-    case 'cylinder':
-      return <path d="M-5 -4 a5 2 0 0 0 10 0 a5 2 0 0 0 -10 0 V4 a5 2 0 0 0 10 0 V-4" {...s} />;
-    case 'parallelogram':
-      return <path d="M-3 -5 H6 L3 5 H-6 Z" {...s} strokeLinejoin="round" />;
+      return <path d="M0 -8.5 L8.5 0 L0 8.5 L-8.5 0 Z" {...s} />;
+    case 'triangle':
+      return <path d="M0 -7.5 L8.5 7 H-8.5 Z" {...s} />;
     case 'hexagon':
-      return <path d="M-3 -5 H3 L6 0 L3 5 H-3 L-6 0 Z" {...s} strokeLinejoin="round" />;
+      return <path d="M-4.5 -7.5 H4.5 L9 0 L4.5 7.5 H-4.5 L-9 0 Z" {...s} />;
   }
 }
 
-// A pill-shaped dropdown in the strip: tinted, so it reads as a menu beside
-// the plain tiles, the way the real strip draws its selection mode, category
-// and More controls.
-function Pill({
-  x,
-  y,
-  w,
-  active = false,
-  children,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  active?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={24}
-        rx={6}
-        className={active ? 'fill-brand-100 stroke-brand-300' : 'fill-brand-50 stroke-brand-100'}
-        strokeWidth={1}
-      />
-      {children}
-      <path
-        d={`M${x + w - 12} ${y + 10} l3 3 l3 -3`}
-        className="stroke-brand-600"
-        strokeWidth={1.4}
-        fill="none"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
+const W = 540;
 
-// Diagram's category bar, in order: category names, and '|' for the divider between the bands.
-const BAR: readonly string[] = [
-  'Shapes',
-  'Write',
-  'Draw',
-  '|',
-  'Diagrams',
-  'Concepts',
-  'Layout',
-  '|',
-  'Icons',
-  'Tech',
-];
-// A name's width at the strip's 8px type, and the padding either side of it. Tight enough that the whole
-// strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in liveworkspace/docs/specs/017-help/help-centre.md).
-const charW = 4.1;
-const PAD = 3.5;
-// A divider between the bands, and where the first category starts after the selection mode.
-const DIVIDER_W = 7;
-const LEAD = 47;
-const nameW = (name: string) => Math.round(name.length * charW + 2 * PAD);
-
-/** The width of the strip drawn by `Strip`. */
-export const STRIP_W = LEAD + BAR.reduce((w, c) => w + (c === '|' ? DIVIDER_W : nameW(c)), 0) + 30;
-
-/** The palette strip as Diagram's category bar, top-left corner at (x, y), STRIP_W wide and 32 tall: the selection
- *  mode, the categories by name (`open` pressed, its flyout showing), and Search. */
-export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
-  const slots = barSlots(x);
-  const end = slots.at(-1)!.left + slots.at(-1)!.w;
-  const items = slots.map((slot, i) => {
-    if (slot.name === '|')
-      return (
-        <path
-          key={i}
-          d={`M${slot.left + 3.5} ${y + 8}v16`}
-          className="stroke-slate-200"
-          strokeWidth={1}
-        />
-      );
-    const { name, left: at, w } = slot;
-    const pressed = name === open;
-    return (
-      <g key={name}>
-        {pressed ? (
-          <rect x={at} y={y + 4} width={w} height={24} rx={6} className="fill-brand-100" />
-        ) : null}
-        <Label
-          x={at + w / 2}
-          y={y + 19}
-          size={8}
-          weight={pressed ? 700 : 500}
-          anchor="middle"
-          className={pressed ? 'fill-brand-700' : 'fill-slate-600'}
-        >
-          {name}
-        </Label>
-        {pressed ? (
-          <rect x={at + 6} y={y + 27} width={w - 12} height={2} rx={1} className="fill-brand-500" />
-        ) : null}
-      </g>
-    );
-  });
-
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={STRIP_W}
-        height={32}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Pill x={x + 4} y={y + 4} w={34}>
-        <g transform={`translate(${x + 15} ${y + 16}) scale(0.8)`}>
-          <SelectGlyph />
-        </g>
-      </Pill>
-      <path d={`M${x + 43} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
-      {items}
-      {/* Search, last on the strip behind its own divider. */}
-      <path d={`M${end + 5} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
-      <circle
-        cx={end + 17}
-        cy={y + 15}
-        r={5}
-        className="fill-none stroke-slate-500"
-        strokeWidth={1.6}
-      />
-      <path
-        d={`M${end + 21} ${y + 19} l4 4`}
-        className="stroke-slate-500"
-        strokeWidth={1.6}
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
-
-// Each of the bar's items on a strip drawn at x: its left edge and width (a divider is DIVIDER_W wide).
-function barSlots(x: number): { name: string; left: number; w: number }[] {
-  return BAR.reduce<{ name: string; left: number; w: number }[]>((out, name) => {
-    const prev = out.at(-1);
-    const left = prev ? prev.left + prev.w : x + LEAD;
-    return [...out, { name, left, w: name === '|' ? DIVIDER_W : nameW(name) }];
-  }, []);
-}
-
-/** Where a category's button sits on a strip drawn at x: its left edge and width. */
-export function stripCategory(x: number, name: string): { left: number; w: number } {
-  const slot = barSlots(x).find((s) => s.name === name);
-  return slot ? { left: slot.left, w: slot.w } : { left: x, w: 0 };
-}
-
-/** The top-left card, its top-left corner at (x, y): the menu button (☰) and, unless `menuOnly`
- *  (a phone), the open tab's name beside it. 62 wide (34 menu-only) and 32 tall. */
-export function MenuCard({ x, y, menuOnly = false }: { x: number; y: number; menuOnly?: boolean }) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={menuOnly ? 34 : 62}
-        height={32}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <path
-        d={`M${x + 8} ${y + 10}h14M${x + 8} ${y + 16}h14M${x + 8} ${y + 22}h14`}
-        className="stroke-slate-500"
-        strokeWidth={1.6}
-        strokeLinecap="round"
-      />
-      {!menuOnly && (
-        <>
-          <line x1={x + 29} y1={y + 9} x2={x + 29} y2={y + 23} className="stroke-slate-200" />
-          <Label x={x + 34} y={y + 16} size={10} tone="strong">
-            Tab 1
-          </Label>
-        </>
-      )}
-    </g>
-  );
-}
-
-/** The editor's top row and bottom row: the menu button and the tab's name top-left,
- *  the strip across the top (ending in Search), and Undo and Redo, Layers and the Theme
- *  paintbrush, then the zoom bottom-right. */
+/** The editor's fixed frame, named: the logo and the menu with the mode switch top-left, the strip (the selection mode,
+ *  the categories, Library and Search), Share and Sign In top-right, then the corner cluster and the bottom bar. */
 export function ToolbarLayoutOverview() {
-  const leader = { className: 'stroke-slate-300', strokeWidth: 1 } as const;
-  const ink = { className: 'stroke-slate-500', strokeWidth: 1.4, fill: 'none' } as const;
+  const sx = topRowStripX(W);
+  const leader = { className: 'stroke-slate-300', strokeWidth: 0.75 } as const;
+  const name = (x: number, text: string, accent = false, y = 54) => (
+    <g>
+      <line x1={x} y1={38} x2={x} y2={y - 7} {...leader} />
+      <Label
+        x={x}
+        y={y}
+        size={9.5}
+        anchor="middle"
+        weight={accent ? 650 : 500}
+        tone={accent ? 'accent' : 'muted'}
+      >
+        {text}
+      </Label>
+    </g>
+  );
+  const H = 200;
   return (
-    <Scene w={420} h={200}>
-      <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} />
-      {/* Two rows of labels: side by side, neighbouring labels ran into each other. The lower row
-          hangs from its control on a thin leader through the gap in the row above. */}
-      <Label x={10} y={62} size={10} tone="muted">
-        Explorer, mode
+    <Scene w={W} h={H}>
+      <TopRow w={W} />
+      {name(8 + LOGO_W / 2, 'Logo')}
+      {name(8 + LOGO_W + 6 + MENU_W / 2 + 10, 'Menu, mode switch')}
+      {name(sx + 17, 'Selection mode', false, 72)}
+      {name(stripSlot(sx, 'concepts'), 'Categories', true)}
+      {name(stripSlot(sx, 'library') + 12, 'Library, Search', false, 72)}
+      {name(W - 8 - CORNER_W / 2, 'Share, Sign In')}
+      <CornerCluster x={W - 8 - CLUSTER_W} y={H - 26 - 8 - 24} />
+      <Label x={W - 8 - CLUSTER_W - 8} y={H - 46} size={9.5} anchor="end" tone="muted">
+        Undo, tidy, layers, theme, zoom
       </Label>
-      <line x1={99} y1={51} x2={99} y2={70} {...leader} />
-      <Label x={99} y={80} size={10} anchor="middle" tone="muted">
-        Selection mode
-      </Label>
-      <line x1={250} y1={51} x2={250} y2={70} {...leader} />
-      <Label x={250} y={80} size={10} anchor="middle" tone="accent" weight={700}>
-        Categories
-      </Label>
-      <line x1={78 + STRIP_W - 18} y1={51} x2={78 + STRIP_W - 18} y2={70} {...leader} />
-      <Label x={78 + STRIP_W - 18} y={80} size={10} anchor="middle" tone="muted">
-        Search
-      </Label>
-      {/* The bottom row: Undo and Redo, Layers and the paintbrush, then zoom. */}
-      <rect
-        x={170}
-        y={158}
-        width={60}
-        height={26}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <line x1={200} y1={163} x2={200} y2={179} className="stroke-slate-200" strokeWidth={1.2} />
-      <path d="M190 168 h-8 l3 -3 M182 168 l3 3 M182 168 h5 a4.5 4.5 0 0 1 0 9 h-2" {...ink} />
-      <path d="M210 168 h8 l-3 -3 M218 168 l-3 3 M218 168 h-5 a4.5 4.5 0 0 0 0 9 h2" {...ink} />
-      <rect
-        x={238}
-        y={158}
-        width={60}
-        height={26}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <line x1={268} y1={163} x2={268} y2={179} className="stroke-slate-200" strokeWidth={1.2} />
-      <path
-        d="M247 170 L253 167 L259 170 L253 173 Z M247 174 L253 177 L259 174"
-        {...ink}
-        strokeLinejoin="round"
-      />
-      <path
-        d="M286 164 l2 2 l-6 6 l-2 -2 Z M280 172 c-2.5 0 -3.5 1.5 -3.5 4 c2.5 0 4 -1 4 -3.5"
-        {...ink}
-        strokeLinejoin="round"
-      />
-      <rect
-        x={306}
-        y={158}
-        width={98}
-        height={26}
-        rx={6}
-        className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={355} y={172} size={10} anchor="middle" tone="muted">
-        100%
+      <BottomBar y={H - 26} w={W} />
+      <line x1={30} y1={H - 39} x2={30} y2={H - 22} {...leader} />
+      <Label x={14} y={H - 46} size={9.5} tone="muted">
+        Tabs along the bottom
       </Label>
     </Scene>
   );
 }
 
-/** A category open: resting on Shapes hangs its flyout under it, its tiles in named groups. */
+/** A category open: resting on Shapes hangs its flyout under it, Basics as a grid and the optional groups as rows. */
 export function ToolbarCategoryFlyout() {
-  const groups = [
-    { title: 'Basics', tiles: ['square', 'circle', 'diamond'] as const },
-    { title: 'Flowchart', tiles: ['cylinder', 'parallelogram', 'hexagon'] as const },
-  ];
-  const shapes = stripCategory(78, 'Shapes');
-  const panelX = Math.round(shapes.left + shapes.w / 2 - 90);
+  const cx = stripSlot(topRowStripX(W), 'shapes');
+  const fw = 252;
+  const fx = Math.round(cx - fw / 2);
+  const basics = [
+    ['square', 'Square'],
+    ['circle', 'Circle'],
+    ['diamond', 'Diamond'],
+    ['triangle', 'Triangle'],
+    ['hexagon', 'Hexagon'],
+  ] as const;
+  const fy = 40;
   return (
-    <Scene w={420} h={236}>
-      <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} open="Shapes" />
-      <Panel x={panelX} y={58} w={180} h={166} title="SHAPES">
-        {groups.map((g, gi) => (
-          <g key={g.title}>
-            <Label x={panelX + 10} y={96 + gi * 60} size={9} weight={600} tone="muted">
-              {g.title}
-            </Label>
-            {g.tiles.map((kind, i) => (
-              <Tile key={kind} x={panelX + 10 + i * 54} y={102 + gi * 60} size={34}>
-                <ShapeGlyph kind={kind} />
-              </Tile>
-            ))}
-          </g>
+    <Scene w={W} h={250}>
+      <TopRow w={W} open="shapes" />
+      <Flyout
+        x={fx}
+        y={fy}
+        w={fw}
+        h={200}
+        item="shapes"
+        blurb="The basics, the flowchart vocabulary, BPMN and more."
+      >
+        <FlyoutGroup x={fx + 10} y={fy + 46} w={fw - 20} name="Basics" />
+        {basics.map(([kind, label], i) => (
+          <FlyoutTile
+            key={kind}
+            x={fx + 13 + i * 46}
+            y={fy + 54}
+            w={38}
+            name={label}
+            hover={i === 2}
+          >
+            <ShapeOutline kind={kind} />
+          </FlyoutTile>
         ))}
-      </Panel>
+        {['Flowchart', 'More Shapes', 'BPMN'].map((g, i) => {
+          const ry = fy + 116 + i * 20;
+          return (
+            <g key={g}>
+              <rect
+                x={fx + 8}
+                y={ry}
+                width={fw - 16}
+                height={16}
+                rx={4}
+                className="fill-slate-50"
+              />
+              <path
+                d={`M${fx + 15} ${ry + 5.5} l2.5 2.5 l-2.5 2.5`}
+                className="fill-none stroke-slate-500"
+                strokeWidth={1}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <Label x={fx + 23} y={ry + 8.5} size={9} weight={600} tone="body">
+                {g}
+              </Label>
+            </g>
+          );
+        })}
+      </Flyout>
     </Scene>
   );
 }

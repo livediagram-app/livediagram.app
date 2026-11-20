@@ -3,6 +3,7 @@
 // Composed only from the shared primitives so the house style holds.
 
 import { Scene, Shape, Arrow, Label } from '@liveworkspace/help-site/art/primitives';
+import { BottomBar } from './editor-chrome';
 
 // Zen mode lives in tools-zen.tsx, and Markdown import (the tree and its dialog) in tools-markdown.tsx.
 export { ZenBefore, ZenAfter } from './tools-zen';
@@ -82,7 +83,7 @@ function ChromeButton({
         height={26}
         rx={7}
         className={on ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-200'}
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {glyph === 'sun' && <SunGlyph x={x + 15} y={y + 13} />}
       {glyph === 'moon' && <MoonGlyph x={x + 15} y={y + 13} />}
@@ -105,30 +106,9 @@ function ChromeButton({
 export function LightDarkToggle() {
   return (
     <Scene w={420} h={210} bg="canvas">
-      {/* The tab bar along the bottom of the editor. */}
-      <rect
-        x={0}
-        y={150}
-        width={420}
-        height={44}
-        className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <rect
-        x={14}
-        y={159}
-        width={70}
-        height={26}
-        rx={7}
-        className="fill-brand-500 stroke-brand-600"
-        strokeWidth={1.5}
-      />
-      <Label x={49} y={173} size={11} weight={600} anchor="middle" tone="onAccent">
-        Tab 1
-      </Label>
-      <ChromeButton x={226} y={159} w={66} label="Tools" />
-      <ChromeButton x={298} y={159} w={70} label="Settings" />
-      <ChromeButton x={374} y={159} w={30} label="" glyph="sun" />
+      {/* The bottom bar, its appearance switch (the monitor at the right end) ringed. */}
+      <BottomBar y={184} w={420} />
+      <circle cx={407} cy={199} r={9} className="fill-none stroke-brand-500" strokeWidth={1.25} />
       {/* The cycle each click walks through. */}
       <ChromeButton x={58} y={44} w={74} label="Light" glyph="sun" on />
       <Arrow from={[138, 57]} to={[168, 57]} tone="muted" />
