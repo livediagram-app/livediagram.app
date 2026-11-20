@@ -403,6 +403,8 @@ function namedFields(
   for (const [key, value] of Object.entries(fields)) {
     // A repeat reads as its own entry (listedRepeat), in words.
     if (key === REPEAT_FIELD) continue;
+    // The title and the status stand on the card itself (`title`, `status`, `column`), so they are said once.
+    if (key === 'title' || key === 'status') continue;
     // An AI assistant Assignee says it is one, and who it works for (plan-agents.md "Cards handed to an assistant").
     if (key === 'assignee') {
       const assistant = itemAssistantOf(item);

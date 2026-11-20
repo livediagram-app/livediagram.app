@@ -1031,9 +1031,13 @@ as they can be without saying less.
 
 - **Tool list size.** A schema built from shared parts repeats their descriptions wherever the part is used. In the
   `tools/list` answer each description of 200 characters or more is said once per tool: a repeat reads
-  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). Only the
+  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). A shorter
+  description said again of a property of the same name (`tabId` under each of a tool's ops, in the same words) is
+  left out of the repeats, since the first already said what that property is and a pointer would be longer than
+  the words; other words for the same name, and the same words for another name, are kept. Only the
   listing changes; a call is validated against the tool's own schema
-  (`../packages/mcp-kit/src/tool-list-compact.ts`).
+  (`../packages/mcp-kit/src/tool-list-compact.ts`). Nothing points from one tool to another: a host that loads
+  tools one at a time would be left with a pointer to a schema it never read.
 - **An answer's text** is its structured result as one-line JSON (§4.17).
 - **A tab by its name.** Where a tool reads a tab (`read_document`, `update_document` and the tools that load a tab the same
   way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name

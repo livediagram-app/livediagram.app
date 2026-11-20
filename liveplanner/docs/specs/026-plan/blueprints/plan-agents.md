@@ -320,3 +320,12 @@ Bug Report, Release` when it has any), `type apply <project> -f <file|->` (a JSO
 ## Defaults ledger
 
 D31 to D34 in [DEFAULTS.md](DEFAULTS.md).
+
+## Adding many cards
+
+`applyItemChanges` (`packages/agent-verbs/src/plan/item-changes.ts`) reads and checks each `add` with `prepareAdd`
+and holds it in `waiting`; `landAdds` writes the run before any other change and at the end of the call: one card by
+`POST /items`, more by `POST /items/bulk` in parts of `ITEM_BULK_MAX`, with `withDefaultStatuses` applied first. A 4xx
+from the bulk route writes the part a card at a time; a 5xx, or an answer with fewer cards than were sent, is thrown.
+A `Stop` while cards wait writes them and reads the change once more. `namedFields`
+(`packages/agent-verbs/src/plan/plan-listing.ts`) leaves `title` and `status` out of a listed card’s `fields`.
