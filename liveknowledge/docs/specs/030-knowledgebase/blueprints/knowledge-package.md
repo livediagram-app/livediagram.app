@@ -1,0 +1,533 @@
+# Knowledge package blueprint
+
+Derived from [Search and Ask](../search-and-ask.md), [Verification](../verification.md),
+[Links and embeds](../links-and-embeds.md), [AI Knowledge](../ai-knowledge.md) and
+[Knowledgebase for agents](../../024-agents/knowledgebase-for-agents.md).
+
+`@liveknowledge/knowledge` (`packages/knowledge`) is the engine under search, trust, links, Ask and the conflict
+check. It is pure: it writes no storage, reads no environment and starts no timer. The room runs the SQL it makes; the
+caller hands in `fetch`, the team's key and the clock. **Built: the package and its tests. Not built: every caller**
+(the room, the api routes, the editor, the MCP tools); "Wiring" below is what they must do.
+
+## Domain and naming
+
+| Term (spec)         | Identifier                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| passage             | `Passage` (`passages.ts`); a found one is `FoundPassage` (`sql/search.ts`)                  |
+| page (in the SQL)   | `tab`: the tab's id, as the specs' own table names have it (`page_links(from_tab, to_tab)`) |
+| page link           | a run with `PAGE_LINK_KEY` (`'page'`): `PageLinkRun`, `isPageLinkRun` (`page-links.ts`)     |
+| knowledge fields    | `KnowledgeFields`: `owner`, `verifiedAt`, `verifiedBy`, `reviewEvery`, `context`            |
+| Verified and so on  | `TrustStateName`: `'verified'`, `'review-due'`, `'never-verified'`                          |
+| reader, asker       | `Reader`: `{ kind: 'person' }` or `{ kind: 'agent', name }`                                 |
+| unanswered question | `QuestionGroup`, keyed by `questionKey(question)`                                           |
+| conflict            | `Conflict` (`a`, `b`: `ConflictSide`), a candidate pair is `ConflictCandidate`              |
+| the team's key      | `apiKey` in memory, an **envelope** once sealed (`sealApiKey`), a **hint** for Settings     |
+
+## Modules
+
+Every module is one file under `packages/knowledge/src`, with its tests beside it.
+
+| Module                | Holds                                                                                                                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hash.ts`             | `stableHash(...parts)`: 64 bits as 16 hex characters, synchronous, the same in a Worker, Node and a browser                                     |
+| `writing-text.ts`     | `blockText(block)`, `writingText(flow)`: the words of a block and of a page, no Markdown syntax                                                 |
+| `passages.ts`         | `pagePassages(tab, flow)`, `passagePieces(text)`, `MAX_PASSAGE_CHARS`                                                                           |
+| `trust.ts`            | `parseKnowledgeFields`, `trustState(fields, now)`, `reviewDays`, `verified(fields, person, now)`, `knowledgeHealth(pages, now)`                 |
+| `changed-since.ts`    | `changedFraction(before, after)`, `changedSinceVerified(before, after)`                                                                         |
+| `page-links.ts`       | `PAGE_LINK_KEY`, `isPageLinkRun`, `isPageLinkTarget`, `pageLinkTargets(flow)`, `backlinks(tab, fromTabs, treeOrder)`                            |
+| `context-budget.ts`   | `CONTEXT_BUDGET_TOKENS`, `estimateTokens(text)`, `fitsContextBudget`, `assembleContext(pages)`                                                  |
+| `questions.ts`        | `wordsOf`, `contentWords`, `stemWord`, `questionKey`, `groupQuestions`                                                                          |
+| `days.ts`             | `dayOf`, `hourOf`, `daysBefore`: the UTC windows the counts use                                                                                 |
+| `key-seal.ts`         | `sealApiKey(secret, apiKey, boundTo)`, `openApiKey(secret, envelope, boundTo)`, `keyHint(apiKey)`, `KeySealError`                               |
+| `ask-limits.ts`       | the `ASK_*` constants, `askRefusal(question, used)`                                                                                             |
+| `ask-passages.ts`     | `askSearch(question, options)`, `chooseAskPassages(found)`                                                                                      |
+| `ask-request.ts`      | `ASK_SYSTEM`, `askMessage`, `askRequest({ model, question, passages, turns })`                                                                  |
+| `ask-answer.ts`       | `parseAskAnswer(reply, passages)`, `askAnswerStream(passages)` (`push`, `finish`)                                                               |
+| `claude-models.ts`    | `CLAUDE_MODELS`, `DEFAULT_CLAUDE_MODEL`, `claudeModel(id)`                                                                                      |
+| `claude-request.ts`   | `claudeRequest(...)`, `fenced(text)`, the URL, API version and beta header                                                                      |
+| `claude-client.ts`    | `callClaude({ fetch, apiKey, request, onText, signal })`, `ClaudeCallError`, `claudeFailureKind`, `CLAUDE_FAILURE_WORDS`                        |
+| `conflicts.ts`        | the `CONFLICT_*` constants, `conflictCheckRefusal`, `conflictProbes`, `probeSearch`, `chooseConflictCandidates`, `conflictId`, `conflictClosed` |
+| `conflict-request.ts` | `CONFLICT_SYSTEM`, `conflictRequest({ model, candidates })`, `parseConflictVerdicts(reply, candidates)`                                         |
+| `sql/statement.ts`    | `SqlStatement` (`{ sql, params }`), `MAX_BOUND_PARAMETERS`, `insertRows`                                                                        |
+| `sql/schema.ts`       | `KNOWLEDGE_SCHEMA`, `TITLE_ORDINAL`, `SEARCH_TOKENIZER`                                                                                         |
+| `sql/page-index.ts`   | `replacePageIndex(page)`, `deletePageIndex(tab)`, `putPageTrust`, `closeChangedConflicts`, `backlinkRows`                                       |
+| `sql/search.ts`       | `searchTerms`, `ftsExpression`, `searchPassages(query, options)`, `searchByTerms`, `foundPassage(row)`                                          |
+| `sql/reads.ts`        | `recordRead`, `pruneReads`, `countPageReads` + `pageReads`, `countAgentReads` + `agentReads`                                                    |
+| `sql/questions.ts`    | `upsertQuestion`, `listQuestions`, `listQuestionAgents` + `questionGroups`, `dismissQuestion`, `pruneQuestions`                                 |
+| `sql/conflicts.ts`    | `insertConflict`, `listConflicts` + `conflictOfRow`, `dismissConflict`, `knownConflictIds`, `lastConflictCheck`, `noteConflictCheck`            |
+| `sql/counters.ts`     | `readCounter`, `bumpCounter`, `pruneCounters`, `askCounters(person, now)`, the scope names                                                      |
+| `sql/settings.ts`     | `readSetting`, `putSetting`, `putAiKey`, `removeAiKey`, the setting names                                                                       |
+
+**Markdown is not this package's.** A page as Markdown (the MCP's read, the Markdown export, the context pages) is
+`articleToMarkdown(flow)` in `@liveknowledge/document` (`article-markdown-io.ts`), which already lives in a package and
+is reused as it is: `assembleContext` takes each page's Markdown from the caller. Passages need words without syntax,
+so `writing-text.ts` reads them from the block types with the document package's own `articleRunsText` and
+`articleTableText`; it is not a second renderer.
+
+## Passages
+
+- A passage is a heading and the blocks under it. Heading 1, 2 and 3 open a passage and set its **heading path**
+  (`headings`, outermost first; a heading clears the deeper ones). The first passage of a section starts with the
+  heading's own line, so a heading's words are searchable. Text before the first heading has an empty path.
+- The Title block is left out: the page's title is indexed as a row of its own (below). Blocks without words (divider,
+  page break, contents, zone) add nothing. A table reads as its cells, tab between cells, a line a row.
+- At most `MAX_PASSAGE_CHARS` (1,200) characters. Blocks are joined with a line break while they fit; a block that
+  would pass the limit starts the next passage. A block longer than a passage is cut by `passagePieces`: after the
+  last sentence end (`.`, `!`, `?` before a space) or line break that fits, else after the last space, else at the
+  limit, never between the halves of a surrogate pair.
+- `id` is `stableHash(tab, heading path, n)`, `n` being the passage's place among the passages of the same heading
+  path. Writing added under one heading therefore renames no passage under another. `ordinal` is its place on the
+  page. `textHash` is `stableHash(text)`. `firstBlock` and `lastBlock` are the ids of the blocks it spans, to find it
+  on the page (a citation's jump, "Fix the Other").
+- A heading's text in the path is cut at `MAX_HEADING_PATH_CHARS` (120).
+
+## Durable Object SQLite: what was confirmed
+
+Confirmed from Cloudflare's documentation on 2026-11-20:
+
+- **FTS5 is available** in SQLite-backed Durable Objects: "Durable Objects support a subset of SQLite extensions for
+  added functionality, including: FTS5 module for full-text search (including `fts5vocab`), JSON extension, Math
+  functions" ([SQLite storage API](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)). No
+  fallback index is needed. The same page says writes to a virtual table count towards rows written (billing).
+- **SQL limits** ([Durable Objects limits](https://developers.cloudflare.com/durable-objects/platform/limits/), "SQL
+  storage limits"): 100 columns a table; 8 MB a string, BLOB or row; **100 KB a SQL statement; 100 bound parameters a
+  query**; 32 arguments a SQL function; 50 bytes a `LIKE` or `GLOB` pattern.
+- **Storage** (same page): 10 GB a Durable Object on Workers Paid, 1 GB on Free; past it writes fail with
+  `SQLITE_FULL` while reads and deletes still work. CPU: 30 seconds a request by default.
+
+Not confirmed from the documentation, and to be checked when the room is wired: that FTS5's `porter` tokenizer,
+`bm25()`, `snippet()` and `highlight()` behave in workerd as they do in the SQLite the tests run (they are part of
+FTS5 itself, and the tests run them for real on Node's `node:sqlite`, SQLite 3.51.3); and that the room's transaction
+is `ctx.storage.transactionSync()` (SQL `BEGIN` is not run through `sql.exec`).
+
+How the package stays inside the limits:
+
+| Limit                 | Where it is held                                                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 100 bound parameters  | `insertRows` batches every multi-row insert: 11 passages (9 columns) or 50 links a statement. Every other statement binds under 10 values.  |
+| 100 KB a statement    | The longest statement made is an 11-row insert of placeholders, 423 bytes. Text is always bound, never written into SQL.                    |
+| 8 MB a row            | A passage's text is at most 1,200 characters; a title 200 (`MAX_INDEXED_TITLE_CHARS`); a question 1,000; an agent's name 80.                |
+| 32 function arguments | `snippet()` takes 6, `bm25()` 3.                                                                                                            |
+| 10 GB an object       | Worst case, 500 pages of 400,000 characters: 200 MB of passage text, held once (the index is external-content), beside the tabs themselves. |
+
+The test fixture (`src/__fixtures__/db.ts`) refuses a statement with more than 100 bound values or over 100 KB, so a
+statement the platform would refuse fails a test.
+
+## The schema
+
+`KNOWLEDGE_SCHEMA` is a list of `CREATE ... IF NOT EXISTS` statements the room runs when it makes its own schema.
+
+```sql
+CREATE TABLE IF NOT EXISTS passages (
+  id TEXT PRIMARY KEY, tab TEXT NOT NULL, ordinal INTEGER NOT NULL, headings TEXT NOT NULL,
+  title TEXT NOT NULL, text TEXT NOT NULL, text_hash TEXT NOT NULL,
+  first_block TEXT NOT NULL, last_block TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS passages_tab ON passages (tab, ordinal);
+CREATE VIRTUAL TABLE IF NOT EXISTS passages_fts USING fts5(
+  title, text, content='passages', content_rowid='rowid', tokenize='porter unicode61 remove_diacritics 2'
+);
+CREATE TABLE IF NOT EXISTS page_trust (
+  tab TEXT PRIMARY KEY, title TEXT NOT NULL, verified_at INTEGER, review_days INTEGER
+);
+CREATE TABLE IF NOT EXISTS page_links (
+  from_tab TEXT NOT NULL, to_tab TEXT NOT NULL, PRIMARY KEY (from_tab, to_tab)
+);
+CREATE INDEX IF NOT EXISTS page_links_to ON page_links (to_tab);
+CREATE TABLE IF NOT EXISTS page_reads (
+  day TEXT NOT NULL, tab TEXT NOT NULL, reader_kind TEXT NOT NULL, agent TEXT NOT NULL DEFAULT '',
+  reads INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, tab, reader_kind, agent)
+);
+CREATE TABLE IF NOT EXISTS questions (
+  key TEXT PRIMARY KEY, question TEXT NOT NULL, asked INTEGER NOT NULL DEFAULT 0,
+  people INTEGER NOT NULL DEFAULT 0, first_at INTEGER NOT NULL, last_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS question_agents (
+  key TEXT NOT NULL, agent TEXT NOT NULL, asked INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (key, agent)
+);
+CREATE TABLE IF NOT EXISTS conflicts (
+  id TEXT PRIMARY KEY, question TEXT NOT NULL,
+  a_passage TEXT NOT NULL, a_tab TEXT NOT NULL, a_hash TEXT NOT NULL,
+  b_passage TEXT NOT NULL, b_tab TEXT NOT NULL, b_hash TEXT NOT NULL,
+  state TEXT NOT NULL DEFAULT 'open', found_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS conflicts_a ON conflicts (a_tab);
+CREATE INDEX IF NOT EXISTS conflicts_b ON conflicts (b_tab);
+CREATE TABLE IF NOT EXISTS usage_counters (
+  scope TEXT NOT NULL, period TEXT NOT NULL, used INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (scope, period)
+);
+CREATE TABLE IF NOT EXISTS conflict_checks (tab TEXT PRIMARY KEY, checked_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS knowledge_settings (name TEXT PRIMARY KEY, value TEXT NOT NULL);
+```
+
+- **`passages`** holds two kinds of row for a page. Its **title row**: `ordinal` `TITLE_ORDINAL` (-1), `title` set,
+  `text` empty. Its **passages**: `ordinal` 0 onward, `title` empty, `text` set. One table, so one FTS5 index ranks
+  both, and a title's words match only the title row (never every passage of the page).
+- **`passages_fts`** is an external-content index over `passages`: it holds the words, the text stays once. It is
+  kept in step by hand, inside `replacePageIndex` and `deletePageIndex` (no triggers): the page's rows are handed to
+  the index's `'delete'` command before they leave `passages`, and inserted from `passages` after they are written.
+- **`page_trust`** is what search needs of a page without reading its tab: its title and when it was verified.
+  `review_days` NULL is a page that does not age ("Never"). Whether it is verified is worked out in the query from
+  `verified_at`, `review_days` and the `now` bound to it: nothing is written when a review comes due.
+- **`page_reads`**: `agent` is `''` for a person. No reader's identity is kept beyond an agent's name.
+- **`questions`** has a row a group; `people` counts the asks by people, `question_agents` each agent's.
+- **`conflicts`**: `state` is `'open'` or `'dismissed'` ("Not a Conflict" keeps the row, so the pair is never raised
+  again). `id` is `conflictId(a, b)`, the same whichever passage comes first.
+- **`usage_counters`**: `scope` is `ask:person:<account id>`, `ask:knowledgebase` or `conflicts:check`; `period` an
+  hour (`2026-11-20T14`) or a day (`2026-11-20`), UTC.
+- **`knowledge_settings`**: `ai_key` (the envelope), `ai_key_hint`, `ai_model`.
+
+## Search
+
+- **The query made safe** (`searchTerms`, `ftsExpression`): the first `SEARCH_MAX_QUERY_CHARS` (200) characters,
+  NFKC-normalised and lowercased, are read as runs of letters and digits; at most `SEARCH_MAX_TERMS` (12) are kept.
+  Each becomes a quoted string, so nothing a person types reaches FTS5 as an operator, a column filter, a `NEAR`
+  group, a `^` or a `*`. Mode `all` (the search field) joins them with a space (every word is needed) and makes the
+  last a prefix (`"deploy" "emerg"*`), for search as you type; mode `any` (a question's words, a conflict probe)
+  joins them with `OR`. No words: `searchPassages` answers `undefined`, and the caller answers no results.
+- **The statement** (`searchByTerms`) joins `passages_fts` to `passages` and `page_trust` and orders by: title rows
+  first, then rows of verified pages, then `bm25(passages_fts, 10.0, 1.0)` (a title match weighs ten times a text
+  match), then tab and ordinal so the order is stable. `LIMIT` is at most `SEARCH_MAX_RESULTS` (20).
+- **A row** (`SearchRow`, read by `foundPassage`): the passage's id, tab, headings, text, text hash and blocks; the
+  page's `title`; `trust` and `verifiedAt`; `snippet` (the matching lines, `snippet()` over the text, 24 tokens) and
+  `titleMarked` (`highlight()` over the title), the matched words wrapped in `MATCH_START` (U+0002) and `MATCH_END`
+  (U+0003). Control characters, so no writing can hold them and the client marks the words without parsing HTML.
+- Options: `passagesOnly` (no title rows: Ask, the conflict check), `exceptTab` (the conflict check looks on other
+  pages), `limit`, `mode`, `now`.
+
+## Trust
+
+- `parseKnowledgeFields` keeps what is valid and drops the rest: `owner` and `verifiedBy` are ids of 1 to 128
+  characters; `verifiedAt` a positive finite number (epoch ms, floored); `reviewEvery` one of 30, 90, 180, 365,
+  `'never'`; `context` only `true`. A `verifiedBy` without a `verifiedAt` is dropped.
+- `trustState(fields, now)`: no `verifiedAt` is `never-verified`; else `reviewAt = verifiedAt + reviewEvery days`
+  (90 when absent, `DEFAULT_REVIEW_EVERY`) and the state is `review-due` once `reviewAt <= now`, `verified` before.
+  A page that never ages is `verified` with no `reviewAt`.
+- `verified(fields, person, now)` is Verify: `verifiedAt` now, `verifiedBy` the person, who becomes the owner of a
+  page with none.
+- `changedSinceVerified(before, after)`: more than `CHANGED_SINCE_FRACTION` (a fifth) of the characters changed. Not a
+  diff: both versions are cut into sentences, and the characters of the sentences both hold (a sentence written twice
+  counts twice) are what did not change; the rest, over the longer version's length, is the fraction. Sentences that
+  only moved do not count. One pass over each version. Bounded at `CHANGED_SINCE_MAX_CHARS` (400,000): what is past
+  it is compared by its length alone.
+- `knowledgeHealth(pages, now)`: the counts of each state and the total.
+
+## Links
+
+- A page link is a run with `page: <tab id>` (`PAGE_LINK_KEY`). `isPageLinkRun` is the one guard: the id is a string
+  of 1 to `MAX_PAGE_LINK_ID` (64) characters, as long as any id an article stores.
+- `pageLinkTargets(flow)`: each linked page once, in the order first linked, from paragraphs, list items and table
+  cells; at most `MAX_PAGE_LINKS` (500, the most pages a knowledgebase holds). A link to a page that no longer exists
+  is still a link.
+- `backlinks(tab, fromTabs, treeOrder)`: the link table's rows for a page (`backlinkRows(tab)`), in tree order, the
+  page itself and pages gone from the tree left out. `treeOrder` is `pageTreeRows(pages).map((row) => row.page.id)`
+  from `@liveknowledge/document` (the page tree blueprint, `page-tree.md`); this package holds no tree of its own.
+
+## Always in Context
+
+`estimateTokens(text)` is characters / 4, rounded up to 10. `fitsContextBudget(pageTokens, usedTokens)` is the check
+before a page is marked. `assembleContext(pages)` takes the marked pages, already in tree order, each with its
+Markdown: a page is taken while it fits what is left of `CONTEXT_BUDGET_TOKENS` (8,000); one that no longer fits (it
+grew after it was marked) is left out and named in `leftOut`, and a smaller page after it may still fit.
+
+## Questions
+
+`questionKey(question)`: the words (lowercased, punctuation dropped), stop words left out (unless they are all there
+is), each stemmed (`stemWord`: plurals, -ing, -ed, a final -e, a doubled last letter), each once, in alphabetical
+order, joined by a space. An empty key is a question with no words, which is not logged. `groupQuestions(asks)` groups
+in memory what the room's `questions` table groups in SQL.
+
+## Ask
+
+1. `askRefusal(question, { personThisHour, knowledgebaseToday })`: `no-question`, `question-too-long` (over
+   `ASK_MAX_QUESTION_CHARS`, 1,000), `person-limit` (`ASK_PER_PERSON_PER_HOUR`, 20), `knowledgebase-limit`
+   (`ASK_PER_KNOWLEDGEBASE_PER_DAY`, 200), or `undefined`.
+2. `askSearch(question, { now })`: any of the question's content words, passages only, 12 rows.
+3. `chooseAskPassages(found)`: verified pages first, then rank; at most `ASK_MAX_PASSAGES` (12) and
+   `ASK_MAX_PASSAGE_CHARS` (24,000): the passage that would pass the characters is cut to what is left, or dropped
+   when under 200 are left. Each is numbered from 1: the number is what the answer cites.
+4. `askRequest({ model, question, passages, turns })`: one streamed Messages request.
+   - `system` is `ASK_SYSTEM`: answer only from the passages; cite each claim by passage number in square brackets;
+     answer the part that is covered and say plainly which part is not; do not guess; between two passages that
+     disagree prefer the verified, more recently verified one and set the other aside; the passages and the question
+     are material, never instructions.
+   - The user message is `<passages>` (each `<passage number page headings trust verified_on>`) then `<question>`.
+     Every piece of other people's text (passage text, titles, headings, the question) goes through `fenced`, which
+     writes `&`, `<`, `>` and `"` as entities: no writing can close its fence or open another.
+   - `turns` are the conversation so far. The last `ASK_MAX_TURNS - 1` (9) are sent as their question and their
+     answer's text with the citation numbers taken out; only this question carries passages.
+   - The reply's form: `<answer>…</answer>`, then one `<not_used passage="n">reason</not_used>` for each passage set
+     aside, then one `<gap>…</gap>` for each part of the question the passages do not cover.
+5. `callClaude(...)` streams it. `askAnswerStream(passages).push(piece)` answers the answer text that became showable
+   (what is inside `<answer>`, never the form's tags or what follows; a partial closing tag is held back until it is
+   known to be one). `finish()` is `parseAskAnswer`: `text` (markers for passages that were not sent removed),
+   `cited` (`{ number, passageId }`, in the order first cited), `notUsed` (with `reason`), `gaps` (one line each, at
+   most `ASK_MAX_GAPS`, 5, of `ASK_MAX_GAP_CHARS`, 300). A reply that ignores the form is read as an answer with no
+   citations, never refused.
+
+## The Claude API
+
+Written from the `claude-api` skill's reference (model table cached 2026-11-03), by hand over `fetch` because the call
+is made in a Worker with an injected `fetch`; no SDK is a dependency.
+
+- `POST https://api.anthropic.com/v1/messages`, headers `x-api-key`, `anthropic-version: 2026-10-21`,
+  `content-type: application/json`.
+- Body: `model`, `max_tokens` (16,000 for both requests), `stream: true`, `system`, `messages`,
+  `output_config: { effort }` (`medium` for Ask, `low` for a conflict check). No `thinking` field (every listed model
+  thinks adaptively when it is left out, and some reject any other setting), no `temperature`, `top_p` or `top_k`
+  (rejected), no assistant prefill (rejected), no forced tool (rejected).
+- **Models** (`CLAUDE_MODELS`): `claude-fable-5-2` (the default), `claude-opus-5-5`, `claude-sonnet-5-5`,
+  `claude-haiku-5-5`: the current generation of each line. A stored id that is none of them reads as the default.
+- **Refusals.** A safety classifier may decline a request (HTTP 200, `stop_reason: "refusal"`). For the three models
+  that take it, the request carries `fallbacks: "default"` with `anthropic-beta: server-side-fallback-2026-07-01`,
+  so the API answers on another model instead (billed at that model's rates, on the team's key); Claude Haiku 5.5
+  rejects the field and is sent without it. A reply that still ends in `refusal` is the failure kind `refused`.
+- **The stream** is server-sent events; the client reads each `data:` line's JSON by its `type`: `message_start`
+  (the model that answered), `content_block_delta` with a `text_delta` (the text; thinking and signature deltas are
+  ignored), `message_delta` (`stop_reason`), `message_stop`, and `error`. A stream that ends without `message_stop`
+  is a failure.
+- **Failures** are a `ClaudeCallError` with a `kind` and the HTTP status. The message is the kind's fixed words
+  (`CLAUDE_FAILURE_WORDS`); the API's own message, the request and the key are never in it.
+
+  | Kind                | From                                                                                          |
+  | ------------------- | --------------------------------------------------------------------------------------------- |
+  | `bad-key`           | 401 `authentication_error`, 403 `permission_error`                                            |
+  | `no-credit`         | 402 `billing_error`; a 429 whose `error.details.error_code` is `enforced_spend_limit_reached` |
+  | `rate-limited`      | 429 `rate_limit_error`                                                                        |
+  | `overloaded`        | 529 `overloaded_error`, also when sent as an `error` event mid-stream                         |
+  | `model-unavailable` | 404 `not_found_error` (a model the key's organisation cannot use)                             |
+  | `refused`           | `stop_reason: "refusal"`                                                                      |
+  | `other`             | anything else: no network, 400, 500, a body that is not JSON, a stream cut short              |
+
+- The client does not retry. A caller may retry `overloaded` once after a pause; nothing else is worth retrying.
+- Not sent: prompt caching (the system prompt is under the smallest cacheable prefix, and the passages differ with
+  every question).
+
+## Conflicts
+
+1. `conflictCheckRefusal({ hasKey, checksToday, lastCheckedAt, now })`: `no-key`, `checked-recently` (under
+   `CONFLICT_PAGE_INTERVAL_MS`, 10 minutes, since the page's last check), `daily-limit` (`CONFLICT_CHECKS_PER_DAY`,
+   50), or `undefined`.
+2. `conflictProbes(before, after)`: the passages of the save whose text hash is new (`before` is the page's rows as
+   `{ id, textHash }`, read before the index is replaced), of at least 40 characters, longest first, at most
+   `CONFLICT_MAX_PROBES` (5). When a page is verified with nothing changed, an empty `before` probes its longest five.
+3. `probeSearch(probe, now)`: any of the probe's 8 longest content words, passages only, other pages only, 5 rows.
+4. `chooseConflictCandidates(lookups, known)`: every probe with what its lookup found, best rank first, each pair
+   once, pairs already stored (`knownConflictIds(tab)`: open or dismissed) left out, at most
+   `CONFLICT_MAX_CANDIDATES` (5).
+5. `conflictRequest({ model, candidates })`: one request for all the pairs, each `<pair number>` with `<first>` and
+   `<second>` fenced as in Ask. `CONFLICT_SYSTEM` asks whether the two passages state opposite facts (both cannot be
+   right at once), and has the model answer `<pair number="n" verdict="conflict">the question</pair>` or
+   `verdict="consistent"`.
+6. `parseConflictVerdicts(reply, candidates)`: a `Conflict` for each pair that was asked about, has the verdict
+   `conflict` and a question (cut at 200 characters); anything else in the reply is ignored.
+7. A conflict closes when either passage's text hash changed or the passage is gone: `closeChangedConflicts(tab)`, a
+   statement inside `replacePageIndex` and `deletePageIndex`; `conflictClosed(conflict, textHashOf)` is the same rule
+   in memory.
+
+## Key sealing
+
+- `sealApiKey(secret, apiKey, boundTo)`: the AES-256-GCM key is HKDF-SHA-256 of the secret's bytes (info
+  `liveknowledge ai key v1`, empty salt); the IV is 12 random bytes, fresh for every seal; `boundTo` (the
+  knowledgebase's id) is the additional authenticated data. The envelope is `v1.<iv>.<ciphertext and tag>`, each part
+  base64url.
+- `openApiKey(secret, envelope, boundTo)` fails closed with one `KeySealError` ("The stored key could not be read.")
+  for a wrong secret, another knowledgebase's envelope, a changed or cut envelope and an unknown version.
+- `keyHint(apiKey)` is its last 4 characters, or `''` for a value under 12 characters.
+- A value that is empty or over `MAX_API_KEY_CHARS` (512) is refused before it is sealed. No error holds the key, the
+  secret or the envelope.
+
+## Wiring: what the room and its callers must do
+
+None of this is built. `tab` is the tab's id; `flow` is the page's `ArticleFlow`; "run" means `sql.exec(sql,
+...params)`, and "in one transaction" means inside one `ctx.storage.transactionSync()`.
+
+- **When the room makes its schema:** run every statement of `KNOWLEDGE_SCHEMA`.
+- **On a tab save** (the writing or the title changed), in one transaction with the tab's own write:
+  1. If a conflict check may follow, first read `SELECT id, text_hash AS textHash FROM passages WHERE tab = ? AND
+ordinal >= 0` for `conflictProbes`.
+  2. `passages = pagePassages(tab, flow)`, `links = pageLinkTargets(flow)`, `fields =
+parseKnowledgeFields(tab.knowledge)`.
+  3. Run `replacePageIndex({ tab, title, passages, links, trust: { verifiedAt: fields.verifiedAt, reviewDays:
+reviewDays(fields) } })`.
+- **On Verify, a change of interval or a rename with no change of writing:** run `putPageTrust(tab, title, trust)`
+  (and, for a rename, `replacePageIndex`, since the title row holds the title's words).
+- **On a page delete** (each page of the deleted subtree): run `deletePageIndex(tab)`.
+- **On a read** (a page opened in the editor, a `read_page`, each search result served to an agent): run
+  `recordRead(tab, reader, now)`. Page Health reads `countPageReads(tab, now)` through `pageReads`; Connected agents
+  reads `countAgentReads(now)` through `agentReads`.
+- **On search** (`GET` search, `search_pages`): `searchPassages(query, { now })`; `undefined` is no results; else run
+  it and map the rows with `foundPassage`. Rate-limit the caller (the room's own limiter; not in this package). An
+  agent's search with no rows logs a question (below).
+- **On Ask:**
+  1. Refuse an anonymous share-link visitor and a knowledgebase with no key.
+  2. `counters = askCounters(person, now)`; read both; `askRefusal(question, used)`; on a refusal answer it in words.
+  3. Run `counters.bump`, then `askSearch`, `chooseAskPassages`, `askRequest` (model from `readSetting('ai_model')`).
+  4. `apiKey = await openApiKey(env.AI_KEY_SECRET, envelope, documentId)`; `callClaude({ fetch, apiKey, request,
+onText })`, piping `askAnswerStream(passages).push(piece)` to the client.
+  5. `finish()`: send the citations, Found but Not Used and the gaps; log each gap with `upsertQuestion(
+questionKey(gap), gap, asker, now)` (skip an empty key).
+  6. On a `ClaudeCallError`, send `error.kind` and its words; log the kind, never the key or the request.
+- **On a key change** (Editor only): `putAiKey(await sealApiKey(secret, apiKey, documentId), keyHint(apiKey))`;
+  Remove is `removeAiKey()`; Settings reads only `ai_key_hint` and `ai_model`. The key never returns to a client.
+- **On `report_gap` and an agent's empty search:** `upsertQuestion` as above. Dismiss is `dismissQuestion(key)`. The
+  list is `listQuestions()` and `listQuestionAgents()` through `questionGroups`.
+- **After a save or a Verify, when the knowledgebase has a key** (in the background, never in the save's
+  transaction): read `lastConflictCheck(tab)` and `readCounter(CONFLICT_CHECK_SCOPE, dayOf(now))`;
+  `conflictCheckRefusal`; then `noteConflictCheck` and `bumpCounter`; `conflictProbes`; run each `probeSearch`;
+  `chooseConflictCandidates(lookups, known)`; with no candidates stop (no model call); else `conflictRequest`,
+  `callClaude`, `parseConflictVerdicts`, and `insertConflict` for each. The list is `listConflicts()` through
+  `conflictOfRow`; "Not a Conflict" is `dismissConflict(id)`.
+- **Once a day** (the room's alarm): `pruneReads(now)`, `pruneCounters(now)`, `pruneQuestions()`.
+- **`get_context`:** the pages whose fields have `context`, in tree order, each as `articleToMarkdown(flow)`, through
+  `assembleContext`. Setting Always in Context checks `fitsContextBudget(estimateTokens(markdown), usedTokens)`.
+- **Changed since verified:** the room needs the writing as it stood at `verifiedAt` (`writingText(flow)` of the
+  version kept then) to hand to `changedSinceVerified(before, writingText(flow))`. Where that text is kept is the
+  wiring's to settle; this package stores none.
+- **Offline knowledgebases** search in the browser over `pagePassages` of each page; the SQL is the room's alone. The
+  browser's matcher is not built here.
+- **The editor and the room** take the page link's run shape from `PAGE_LINK_KEY` and `isPageLinkRun`. The article
+  model's run reader (`parseRun` in `@liveknowledge/document`) must keep the `page` field for a link to be stored at
+  all: today it drops unknown fields.
+
+## Errors and edge cases
+
+| Case                                                     | Handling                                                                                |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| A page with no words                                     | No passages; its title row is still indexed                                             |
+| A query with no letters or digits                        | `searchPassages` answers `undefined`; no statement is run                               |
+| A query of FTS5 syntax (`"`, `NEAR(`, `text:`, `*`, `^`) | Read as words; tests run each against SQLite                                            |
+| A statement of the transaction fails                     | The room's transaction rolls back whole; a test holds it with the fixture               |
+| Stored `headings` that are not a list of strings         | `foundPassage` answers an empty path                                                    |
+| A `trust` value SQLite answers that is not 0, 1 or 2     | Reads as `never-verified`                                                               |
+| A reply with citation numbers that were not sent         | The markers are removed and cite nothing                                                |
+| A reply cut off (`stop_reason: "max_tokens"`)            | Returned with its `stopReason`; the parser reads what there is                          |
+| A stream that ends without `message_stop`                | `ClaudeCallError('other')`                                                              |
+| `fetch` throws                                           | `ClaudeCallError('other')`; the thrown error is not passed on (it may name the request) |
+| An envelope of another version, cut or changed           | `KeySealError`, one message                                                             |
+| Two questions of stop words only ("Why?", "How?")        | Keep their words, so they have keys of their own                                        |
+
+## Security and trust
+
+- **The key** exists in plain form only in the request that sets it and in `callClaude`'s `x-api-key` header. It is
+  sealed under `AI_KEY_SECRET` bound to the knowledgebase's id, never logged, never in an error (tests search every
+  error's message, stack and fields for it), never in a result.
+- **Prompt injection.** Passages, titles, headings and questions are other people's writing. They are fenced with
+  entities so none can close its fence, kept out of the system prompt, and the model is told they are material and
+  never instructions. The model's reply is untrusted too: only numbers of passages that were sent become citations
+  or conflicts; a verdict for a pair that was not asked about is ignored.
+- **Query injection.** Search text is only ever a bound value, and the FTS5 expression is built from quoted words.
+- **Scope.** Every passage a knowledgebase's room holds is one the asker can open: access is the knowledgebase's, not
+  the page's. Ask through an anonymous share link is the room's to refuse.
+- **Identity.** `page_reads` holds no person. `usage_counters` holds an account id in a scope for the hour it counts,
+  and `pruneCounters` drops it within two days. `questions` holds the question's words and counts, and agents' names.
+- **Rate limits** are the `ASK_*` and `CONFLICT_*` constants, counted in `usage_counters` and checked by the pure
+  `askRefusal` and `conflictCheckRefusal`. Search's per-caller limit is the room's limiter.
+
+## Performance and limits
+
+Measured on an M-series Mac, Node 22, CPU time (not wall-clock), 2026-11-20:
+
+| Work                                                                         | Measured                         | Held by                                         |
+| ---------------------------------------------------------------------------- | -------------------------------- | ----------------------------------------------- |
+| `pagePassages` on a 104,573 character page (122 passages)                    | 0.5 ms median, 1.7 ms worst of 9 | a CPU budget test: 50 ms (the spec's bound)     |
+| `pagePassages` on one unbroken 400,000 character block                       | inside its budget                | a CPU budget test: 100 ms                       |
+| `replacePageIndex` for that page: 18 statements, the longest 423 bytes       | 1.8 ms in `node:sqlite`          | the fixture's statement checks                  |
+| A search whose words match nearly every row of a 5,612 row index (500 pages) | 8.8 ms in `node:sqlite`          | `LIMIT` 20; not held by a budget test           |
+| `changedFraction` on two 104,000 character versions                          | 3.3 ms                           | a CPU budget test at 400,000 characters: 150 ms |
+
+- Every function is one pass over its input. `passagePieces` scans back at most one passage's length for a place to
+  cut, and each cut moves forward, so a block of any length is linear.
+- **Risks not ruled out.** (1) The SQLite numbers are Node's, not workerd's; a Durable Object bills rows read and
+  written, and a save of a 100,000 character page writes about 123 rows to `passages` and as many to the index (an
+  FTS5 write counts as rows written). (2) A search for a word on every page ranks every match before `LIMIT` cuts
+  it; at 5,612 rows that is 8.8 ms here, and it grows with the index. If it bites, cap the candidates with a
+  subquery over the index before the join. (3) `conflictProbes` reads the page's stored hashes before every save
+  that may be followed by a check: one indexed read.
+
+## Testing
+
+- 100% of lines, branches, functions and statements, held by `vitest.config.ts`; `corepack pnpm --filter
+@liveknowledge/knowledge test:coverage`.
+- **The SQL is run, not only read:** `src/__fixtures__/db.ts` is a real SQLite with FTS5 (`node:sqlite`, in Node 22;
+  no dependency added). The schema, every statement, the search ranking, the conflict closing and the pruning run
+  against it. What it cannot show is workerd's own behaviour (above).
+- **The Claude API is never called.** `src/__fixtures__/claude.ts` builds server-sent event streams and error bodies
+  in the documented shapes; a fake `fetch` records what was sent. The request shapes and the fallback beta are
+  therefore unverified against the live API.
+- Speed is held in CPU time (`@liveworkspace/vitest-config/cpu-time`), never wall-clock.
+
+| Spec rule                                                            | Test                                             |
+| -------------------------------------------------------------------- | ------------------------------------------------ |
+| A passage is a heading and its blocks, at most 1,200 characters      | `passages.test.ts`                               |
+| A 100,000 character page indexes within 50 ms of CPU                 | `passages.test.ts` "the cost of indexing a save" |
+| A page's rows are rewritten with its links in one transaction        | `sql/page-index.test.ts`                         |
+| Titles first, verified pages preferred, at most 20, 200 characters   | `sql/search.test.ts`                             |
+| States worked out when read, from the fields and the clock           | `trust.test.ts`, `sql/search.test.ts`            |
+| More than a fifth changed adds "Changed since verified"              | `changed-since.test.ts`                          |
+| A page link is a run with `page: <tab id>`; backlinks from the table | `page-links.test.ts`, `sql/page-index.test.ts`   |
+| Reads by day, reader kind and agent, kept 90 days                    | `sql/bookkeeping.test.ts` "page reads"           |
+| Like questions grouped, with how many times and by whom              | `questions.test.ts`, `sql/bookkeeping.test.ts`   |
+| Tokens are characters / 4 rounded up to 10, against 8,000            | `context-budget.test.ts`                         |
+| The Ask bounds; verified first; cites each claim; does not guess     | `ask.test.ts`                                    |
+| The key is encrypted with AES-GCM and never sent back or logged      | `key-seal.test.ts`, `claude-client.test.ts`      |
+| A failed or refused call says which, in words                        | `claude-client.test.ts`                          |
+| 50 checks a day, 5 candidates, once per page per 10 minutes          | `conflicts.test.ts`                              |
+| A conflict closes when either passage changes; dismissed for good    | `conflicts.test.ts`, `sql/bookkeeping.test.ts`   |
+
+## Constants and configuration
+
+| Constant                                                                               | Value                                           | From                                        |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------- |
+| `MAX_PASSAGE_CHARS`                                                                    | 1,200                                           | search-and-ask.md "Search"                  |
+| `SEARCH_MAX_QUERY_CHARS`, `SEARCH_MAX_RESULTS`                                         | 200, 20                                         | search-and-ask.md "Bounds"                  |
+| `SEARCH_MAX_TERMS`                                                                     | 12                                              | default D1                                  |
+| `MAX_BOUND_PARAMETERS`                                                                 | 100                                             | Cloudflare's limit                          |
+| `ASK_PER_PERSON_PER_HOUR`, `ASK_PER_KNOWLEDGEBASE_PER_DAY`                             | 20, 200                                         | search-and-ask.md "Bounds"                  |
+| `ASK_MAX_QUESTION_CHARS`, `ASK_MAX_PASSAGES`, `ASK_MAX_PASSAGE_CHARS`, `ASK_MAX_TURNS` | 1,000, 12, 24,000, 10                           | search-and-ask.md "Ask"                     |
+| `ASK_MAX_TOKENS`, `CONFLICT_MAX_TOKENS`                                                | 16,000                                          | default D6                                  |
+| `ASK_MAX_GAPS`, `ASK_MAX_GAP_CHARS`                                                    | 5, 300                                          | default D7                                  |
+| `CONTEXT_BUDGET_TOKENS`                                                                | 8,000                                           | ai-knowledge.md "Always in Context"         |
+| `REVIEW_INTERVALS`, `DEFAULT_REVIEW_EVERY`                                             | 30, 90, 180, 365, never; 90                     | verification.md "The fields"                |
+| `CHANGED_SINCE_FRACTION`, `CHANGED_SINCE_MAX_CHARS`                                    | 0.2; 400,000                                    | verification.md; default D4                 |
+| `CONFLICT_CHECKS_PER_DAY`, `CONFLICT_MAX_CANDIDATES`, `CONFLICT_PAGE_INTERVAL_MS`      | 50, 5, 600,000                                  | ai-knowledge.md "Pages that disagree"       |
+| `CONFLICT_MAX_PROBES`                                                                  | 5                                               | default D8                                  |
+| `READS_KEPT_DAYS`, `AGENT_SEEN_DAYS`, `AGENT_TOP_PAGES`                                | 90, 30, 3                                       | ai-knowledge.md "Reads", "Connected agents" |
+| `MAX_QUESTIONS`, `QUESTIONS_LISTED`, `CONFLICTS_LISTED`                                | 500, 50, 50                                     | default D9                                  |
+| `MAX_PAGE_LINKS`, `MAX_PAGE_LINK_ID`                                                   | 500, 64                                         | the page limit; an article id's length      |
+| `CLAUDE_API_VERSION`, `CLAUDE_FALLBACK_BETA`                                           | `2026-10-21`, `server-side-fallback-2026-07-01` | the `claude-api` skill                      |
+
+## Defaults ledger
+
+Defaults applied where a spec is silent. They are listed here because the category's `DEFAULTS.md` was another
+change's file while this was written; they move there when it is committed.
+
+| #   | Spec silence                                               | Default applied                                                                                      |
+| --- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| D1  | "A sensible number of terms" in a query                    | 12 (`SEARCH_MAX_TERMS`)                                                                              |
+| D2  | How a passage's id stays stable                            | Hash of the page, the heading path and the place among that path's passages                          |
+| D3  | How titles rank first                                      | A title row per page in the same index, ordered before passages, title weighted 10 in bm25           |
+| D4  | How "a fifth of the characters" is measured without a diff | Characters of sentences not in both versions, over the longer version; bounded at 400,000 characters |
+| D5  | Which models "the current Claude models" are               | The current generation of each line: Fable 5.2, Opus 5.5, Sonnet 5.5, Haiku 5.5                      |
+| D6  | The answer's token ceiling and effort                      | 16,000 tokens; effort `medium` for Ask, `low` for a conflict check                                   |
+| D7  | How many gaps one answer may log                           | 5, each one line of at most 300 characters                                                           |
+| D8  | Which of a page's passages a conflict check looks up       | The 5 longest whose text changed in the save                                                         |
+| D9  | How many unanswered questions are kept and listed          | 500 groups kept (oldest asked go first), 50 listed, 50 conflicts listed                              |
+| D10 | Failure kinds beyond bad key, no credit and rate limit     | `overloaded`, `model-unavailable`, `refused`, `other`                                                |
+| D11 | What a refused request does                                | Server-side fallback on the models that take it; else the failure kind `refused`                     |
+| D12 | What the envelope is bound to                              | The knowledgebase's id, as AES-GCM additional data                                                   |
+| D13 | Whether a dismissed conflict outlives a changed passage    | No: the row goes when either passage changes, since the pair dismissed no longer exists              |
+| D14 | The heading line in a passage                              | The first passage of a section starts with its heading's text                                        |
+
+## Where this differs from the specs
+
+- **"Verified pages first" among passages, not among title rows.** Title rows are ordered by bm25 alone among
+  themselves and come before every passage, as "page titles first, then passages" asks.
+- **`people` is asks by people, not distinct people.** The spec's row reads "3 people and the Coding Agent", and also
+  says no reader's identity is kept. Without identities, two asks by one person count as two. The spec's wording
+  should become "asked 3 times by people" or the count stay as it is; this is the spec's to settle.
+- **Found but Not Used is the model's judgement.** The spec has a passage "set aside because it is stale and
+  disagrees with a newer verified one"; the package asks the model to name such passages (`<not_used>`) and validates
+  the numbers, and does not decide staleness itself.
+- **The specs were not edited in this change**: every spec file of the category held another change's uncommitted
+  edits while this was written.
