@@ -11,7 +11,7 @@ export const SKILL_FRONTMATTER_MAX_TOKENS = 80;
 export const SKILL_BODY_MAX_TOKENS = 1500;
 
 export const SKILL_DESCRIPTION =
-  'Read, edit and comment on documents with the liveknowledge CLI. Use to write or change an article, slide deck or infographic on liveknowledge.app, or when a message carries a [liveknowledge] line.';
+  "Search, read and suggest edits to a team's knowledgebase with the liveknowledge CLI. Use to answer from the team's pages on liveknowledge.app, change a page, or when a message carries a [liveknowledge] line.";
 
 export const SKILL_DIRECTORIES: readonly { path: string; agent: string }[] = [
   { path: '~/.claude/skills', agent: 'Claude Code, every project' },
@@ -32,10 +32,14 @@ export function renderSkill(): string {
     '',
     'Start:',
     '',
-    '- `liveknowledge document ls <query>`: find a document',
-    '- `liveknowledge tab view <doc>`: its first tab, as an outline',
-    '- `liveknowledge edit <doc> -f -`: edit operations from stdin, as one changeset',
-    '- `liveknowledge tab lint <doc>`: what is wrong with how it is drawn',
+    '- `liveknowledge document ls <query>`: find a knowledgebase',
+    '- `liveknowledge context <kb>`: the pages every agent reads first, and what this credential may do',
+    '- `liveknowledge search <kb> <words>`: passages, each with how far it can be trusted',
+    '- `liveknowledge read <kb> <page>`: a page as Markdown',
+    '- `liveknowledge suggest <kb> <page> --reason ... --old ... --new ...`: an edit for a person to accept',
+    '- `liveknowledge gap <kb> <question>`: record what the knowledgebase could not answer',
+    '',
+    'Prefer verified pages; say so when a page is due a review or in conflict with another.',
     '',
     'Guides, each a command:',
     '',

@@ -1,6 +1,6 @@
 // The api as a knowledgebase tool reaches it (docs/specs/024-agents/knowledgebase-for-agents.md): the caller's
 // token, the MCP door, and the client's name, so each read is counted under the agent that made it
-// (agent-name.ts). And the link and the page reference every one of those tools builds.
+// (agent-name.ts). The routes' paths and the trust fields are the CLI's too (@liveknowledge/agent-verbs).
 import type { ApiClient } from '@liveworkspace/api-client';
 import { CLIENT_HEADER } from '@liveknowledge/api-schema';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -17,12 +17,3 @@ export async function knowledgeApi(server: McpServer, env: Env, extra: Extra): P
     ...(name ? { [AGENT_NAME_HEADER]: name } : {}),
   });
 }
-
-/** `/documents/<id>` and what follows, each part encoded: a page may be named by its title. */
-export const knowledgePath = (documentId: string, ...parts: string[]) =>
-  `/documents/${[documentId, ...parts].map(encodeURIComponent).join('/')}`;
-
-export const jsonBody = (method: 'POST' | 'PUT', body: unknown): RequestInit => ({
-  method,
-  body: JSON.stringify(body),
-});

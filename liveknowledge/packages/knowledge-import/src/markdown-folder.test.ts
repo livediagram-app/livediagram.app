@@ -28,6 +28,33 @@ describe('Markdown Folder', () => {
       'docs/notes.txt': 'not a page',
     });
 
+  it('takes a file beside a folder of its name as that folder’s page, as an export writes one', async () => {
+    const plan = await planImport(
+      'markdown-folder',
+      archiveOf({
+        'deploys.md': '# Deploys\n\nSee [rollbacks](deploys/rollbacks.md).',
+        'deploys/rollbacks.md': '# Rollbacks\n\nBack to [deploys](../deploys.md).',
+        'deploys/rollbacks/Steps.md': '# Steps',
+        'holidays.md': '# Holidays',
+        // A folder with a page of its own keeps it: the file beside it is a page like any other.
+        'guides.md': '# Guides (beside)',
+        'guides/README.md': '# Guides',
+        'guides/setup.md': '# Setup',
+      }),
+    );
+    expect(tree(plan)).toEqual([
+      ['p1', 'Deploys', null],
+      ['p2', 'Rollbacks', 'p1'],
+      ['p3', 'Steps', 'p2'],
+      ['p4', 'Guides (beside)', null],
+      ['p5', 'Guides', null],
+      ['p6', 'Setup', 'p5'],
+      ['p7', 'Holidays', null],
+    ]);
+    expect(plan.pages[0]!.links).toEqual([{ target: 'p2', text: 'rollbacks' }]);
+    expect(plan.pages[1]!.links).toEqual([{ target: 'p1', text: 'deploys' }]);
+  });
+
   it('makes the tree from the folders, a README its folder’s own page', async () => {
     const plan = await planImport('markdown-folder', handbook());
     expect(tree(plan)).toEqual([

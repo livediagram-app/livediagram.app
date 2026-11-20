@@ -308,33 +308,77 @@ export const EXPORT_FORMATS = ['json', 'svg', 'png', 'md'] as const;
 export const exportAll = defineVerb({
   id: 'export',
   files: true,
-  summary: 'Every document to files, for backups and docs',
+  summary: 'A knowledgebase as a folder of Markdown; or every one to files',
   description:
-    'Writes every document the token can read: <slug>.liveknowledge.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png or .md. Prints the paths written, then the totals.',
+    'export <knowledgebase> <dir> writes a knowledgebase as a folder of Markdown to keep beside a repository: one file a page, a page’s subpages in a folder of its name, links between pages as relative links, and its pictures as files under pictures/. Pages are read and written one at a time. export --all --to <dir> writes every knowledgebase the token can read instead: <slug>.liveknowledge.json (json, the default), and per page <slug>/<page-slug>.svg, .png or .md. Prints the paths written, then the totals.',
   behaviour: 'read',
   local: true,
   input: z.object({
-    all: z.boolean().optional().describe('Every document; required'),
-    to: z.string().describe('The directory to write to'),
+    doc: z
+      .string()
+      .optional()
+      .describe('The knowledgebase: a name, id prefix or liveknowledge URL'),
+    dir: z.string().optional().describe('The folder to write its Markdown to'),
+    all: z.boolean().optional().describe('Every knowledgebase, as --format says'),
+    to: z.string().optional().describe('With --all: the directory to write to'),
     format: z
       .string()
       .default('json')
-      .describe(`A comma-separated list of ${EXPORT_FORMATS.join(', ')}`),
+      .describe(`With --all: a comma-separated list of ${EXPORT_FORMATS.join(', ')}`),
   }),
   output: z.object({ paths: z.array(z.string()), documents: z.number(), exit: z.number() }),
   text: ({ paths, documents }) => [
     ...paths,
-    `${documents} document${documents === 1 ? '' : 's'} · ${paths.length} file${paths.length === 1 ? '' : 's'}`,
+    `${documents} knowledgebase${documents === 1 ? '' : 's'} · ${paths.length} file${paths.length === 1 ? '' : 's'}`,
   ],
   quiet: ({ paths }) => paths,
   exitCode: ({ exit }) => exit,
   cli: {
-    positionals: [],
+    positionals: ['doc', 'dir'],
     examples: [
-      'liveknowledge export --all --to backup',
-      'liveknowledge export --all --to docs --format svg,md',
+      'liveknowledge export Handbook docs/handbook',
+      'liveknowledge export --all --to backup --format json,md',
     ],
-    prints: 'the paths written, then <n> documents · <m> files',
+    prints: 'the paths written, then <n> knowledgebases · <m> files',
+  },
+});
+
+/** Where an import reads from: what `--source` takes. */
+export const IMPORT_SOURCES = ['markdown', 'notion', 'confluence'] as const;
+
+export const importFiles = defineVerb({
+  id: 'import',
+  files: true,
+  summary: 'A Markdown folder or a Notion export into a knowledgebase',
+  description:
+    'Reads a folder, or a .zip of one, and makes its pages: each Markdown file a page, a folder’s files the subpages of the page of its name, links between files links between pages. Into a new knowledgebase (--name, else the folder’s name), or with --to into an existing one, under --into. Written parents first, twenty pages at a time; none is verified. --dry-run prints the plan and writes nothing. A Confluence export, and pictures, are imported in the app (Import, in the page list’s menu): here a picture is left as its caption.',
+  behaviour: 'write',
+  local: true,
+  input: z.object({
+    path: z.string().describe('The folder, or .zip file, to import'),
+    to: z.string().optional().describe('An existing knowledgebase to import into'),
+    into: z.string().optional().describe('With --to: the page to put the pages under'),
+    name: z.string().optional().describe('The new knowledgebase’s name'),
+    source: z.enum(IMPORT_SOURCES).default('markdown').describe(IMPORT_SOURCES.join(', ')),
+    dryRun: z.boolean().optional().describe('Print the plan and write nothing'),
+  }),
+  output: z.object({
+    lines: z.array(z.string()),
+    documentId: z.string().nullable(),
+    imported: z.number(),
+    failed: z.number(),
+    exit: z.number(),
+  }),
+  text: ({ lines }) => lines,
+  quiet: ({ documentId }) => (documentId ? [documentId] : []),
+  exitCode: ({ exit }) => exit,
+  cli: {
+    positionals: ['path'],
+    examples: [
+      'liveknowledge import ./docs --name Handbook --dry-run',
+      'liveknowledge import notion-export.zip --source notion --to Handbook --into Imported',
+    ],
+    prints: 'the plan’s summary, then a line a batch and the totals',
   },
 });
 

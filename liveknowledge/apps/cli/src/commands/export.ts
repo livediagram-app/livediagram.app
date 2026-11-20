@@ -1,3 +1,4 @@
+// `export <knowledgebase> <dir>` is one knowledgebase as a folder of Markdown (knowledge-export.ts). This file is
 // `export --all --to <dir> [--format json,svg,png,md]` (docs/specs/015-api/blueprints/cli.md "Pull and push",
 // CLI29): every document the token can read, written read-only for backups and docs. `json` is the editor's
 // `liveknowledge.document` envelope; the other formats are one file per tab under `<slug>/`. Two documents at a time;
@@ -30,7 +31,13 @@ export const EXPORT_RATE_RETRY_MS = 60_000;
 const EXPORT_RATE_RETRIES = 3;
 
 type ExportFormat = (typeof EXPORT_FORMATS)[number];
-export type ExportInput = { all?: boolean; to: string; format: string };
+export type ExportInput = {
+  doc?: string;
+  dir?: string;
+  all?: boolean;
+  to?: string;
+  format: string;
+};
 
 const isFormat = (value: string): value is ExportFormat =>
   EXPORT_FORMATS.some((format) => format === value);
@@ -52,7 +59,7 @@ function formatsOf(list: string): ExportFormat[] {
 }
 
 // A read, waiting out the token's rate limit: a 429 is tried again after a minute, at most three times (E24).
-async function patiently<T>(ctx: VerbContext, read: () => Promise<T>): Promise<T> {
+export async function patiently<T>(ctx: VerbContext, read: () => Promise<T>): Promise<T> {
   for (let attempt = 0; ; attempt += 1) {
     try {
       return await read();
@@ -155,17 +162,30 @@ export async function exportAll(
   host: string,
   input: ExportInput,
 ): Promise<{ paths: string[]; documents: number; exit: number }> {
-  if (!input.all)
+  // One knowledgebase as a folder of Markdown (knowledge-export.ts); `--all` is every one, as --format says.
+  if (!input.all) {
+    if (input.doc === undefined || input.dir === undefined)
+      throw new CliError({
+        exit: EXIT.usage,
+        code: 'usage',
+        message: 'export needs a knowledgebase and a folder, or --all --to <dir>',
+        hint: 'liveknowledge export <knowledgebase> <dir>',
+      });
+    const { exportKnowledgebase } = await import('./knowledge-export');
+    return exportKnowledgebase(io, ctx, { doc: input.doc, dir: input.dir });
+  }
+  const to = input.to ?? input.doc;
+  if (to === undefined)
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
-      message: 'export writes every document: add --all',
-      hint: 'one document: liveknowledge pull <doc>',
+      message: 'export --all needs somewhere to write: --to <dir>',
+      hint: 'liveknowledge export --all --to backup',
     });
   const formats = formatsOf(input.format);
   const documents = await patiently(ctx, () => listAllDocuments(ctx.api));
   const slugs = uniqueSlugs(documents);
-  await io.files.mkdir(input.to);
+  await io.files.mkdir(to);
   ctx.log(`export ${documents.length} documents as ${formats.join(',')}`);
   const results = new Array<string[] | null>(documents.length).fill(null);
   let exit: ExitCode = EXIT.done;
@@ -175,14 +195,7 @@ export async function exportAll(
       const index = next++;
       const doc = documents[index]!;
       try {
-        results[index] = await exportDocument(
-          io,
-          ctx,
-          doc.id,
-          slugs.get(doc.id)!,
-          input.to,
-          formats,
-        );
+        results[index] = await exportDocument(io, ctx, doc.id, slugs.get(doc.id)!, to, formats);
       } catch (err) {
         const failure = failureOf(err, host);
         io.stderr(

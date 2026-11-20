@@ -72,7 +72,7 @@ async function cli(argv: string[], io = signedIn()) {
 describe('run', () => {
   it('prints help at each level and the version, reaching no host', async () => {
     const io = fakeIo();
-    expect((await cli([], io)).out).toContain('Usage: liveknowledge <resource> <verb>');
+    expect((await cli([], io)).out).toContain('liveknowledge <resource> <verb>');
     expect((await cli(['tab'], fakeIo())).out).toContain('liveknowledge tab: ');
     expect((await cli(['tab', 'view', '--help'], fakeIo())).out).toContain(
       'Usage: liveknowledge tab view <doc>',
@@ -131,12 +131,12 @@ describe('run', () => {
     expect(missing).toMatchObject({
       code: 3,
       out: '',
-      err: 'error: no document matches "nope"\nhint: liveknowledge document ls\n',
+      err: 'error: no knowledgebase matches "nope"\nhint: liveknowledge document ls\n',
     });
     const json = await cli(['tab', 'ls', 'nope', '--json']);
     expect(JSON.parse(json.err)).toEqual({
       error: 'not_found',
-      message: 'no document matches "nope"',
+      message: 'no knowledgebase matches "nope"',
       hint: 'liveknowledge document ls',
     });
   });

@@ -21,7 +21,7 @@ const GROUPED_ROWS = [
   {
     words: ['pull', 'push'],
     after: 'presence',
-    summary: 'one document to a file and back; export --all',
+    summary: 'one knowledgebase to a file and back',
   },
 ] as const;
 const NAMED_ONLY = [
@@ -56,8 +56,12 @@ export function topHelp(): string {
   );
   const pad = (s: string) => s.padEnd(width + 2);
   return [
-    'liveknowledge: read, build, edit and discuss documents.',
-    'Usage: liveknowledge <resource> <verb> [args] [flags]',
+    "liveknowledge: read, search and change a team's knowledgebase.",
+    'Usage: liveknowledge <command> <kb> [args], or liveknowledge <resource> <verb> [args] [flags]',
+    '',
+    '  context, pages, search, read    read a knowledgebase',
+    '  new, suggest, write, move, gap  change its pages; report a gap',
+    '  import, export                  a Markdown folder in or out',
     '',
     ...rows.flatMap((r) => [
       `  ${pad(label(r))}${verbsOf(r.name).map(verbWithAlias).join(', ')}`,
@@ -67,15 +71,14 @@ export function topHelp(): string {
     ]),
     `  ${NAMED_ONLY.join(', ')}`,
     '',
-    '<doc> is a name, id prefix or link; --tab a tab name or id prefix (first by default).',
+    '<kb>, <doc>: a name, id prefix or link. A page: its id or title.',
     'stdout is data, hints stderr; --json (=a,b picks fields), -q refs only.',
     'Exit 0 done, 1 refused, 2 usage, 3 not found, 4 auth, 5 conflict, 6 rate limit, 7 network.',
     '',
     'Start',
-    '  liveknowledge document ls launch        find a document',
-    '  liveknowledge tab view "Launch deck"    its first tab, as an outline',
-    '  liveknowledge tab lint "Launch deck"    what is wrong with how it is drawn',
-    '  liveknowledge guide edit                change a tab with edit operations',
+    '  liveknowledge context Handbook          the pages to read first, your scopes',
+    '  liveknowledge search Handbook deploys   passages, each with its trust',
+    '  liveknowledge guide knowledgebase       how to read, suggest and write',
     '',
     'Sign in: LIVEKNOWLEDGE_TOKEN, or auth login --with-token. Never prompts.',
     'More: liveknowledge <resource> --help, liveknowledge guide <topic>',

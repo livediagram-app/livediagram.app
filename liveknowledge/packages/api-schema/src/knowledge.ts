@@ -221,7 +221,16 @@ export type KnowledgeAgentContextResponse = {
   pageCount: number;
 };
 /** `POST .../pages`: a new page from Markdown, under `parent` (a page's id or title; the top level when absent). */
-export type CreatePageRequest = { title: string; markdown?: string; parent?: string };
+export type CreatePageRequest = {
+  title: string;
+  markdown?: string;
+  parent?: string;
+  /** An import's own id for the page (a UUID), minted before its first page is written. */
+  id?: string;
+  /** Titles the Markdown may link to with `[[Title]]` beside the knowledgebase's own pages, each with its page's id:
+   *  an import's pages, some not written yet. */
+  pageIds?: Record<string, string>;
+};
 export type CreatePageResponse = { page: KnowledgePageRef & { parent?: string; rev: number } };
 /** `PUT .../pages/<tab>`: the page's writing replaced by the Markdown, or the Markdown added after it. Answers as
  *  the article write does (`PagesAnswer`). */

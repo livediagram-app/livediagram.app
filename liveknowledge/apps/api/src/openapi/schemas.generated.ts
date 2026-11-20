@@ -2568,8 +2568,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "`POST .../pages`: a new page from Markdown, under `parent` (a page's id or title; the top level when absent).",
     "properties": {
+      "id": {
+        "description": "An import's own id for the page (a UUID), minted before its first page is written.",
+        "type": "string"
+      },
       "markdown": {
         "type": "string"
+      },
+      "pageIds": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Titles the Markdown may link to with `[[Title]]` beside the knowledgebase's own pages, each with its page's id: an import's pages, some not written yet.",
+        "type": "object"
       },
       "parent": {
         "type": "string"

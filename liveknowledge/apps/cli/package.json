@@ -19,6 +19,7 @@
     "@liveknowledge/api-schema": "workspace:*",
     "@liveknowledge/document": "workspace:*",
     "@liveknowledge/document-views": "workspace:*",
+    "@liveknowledge/knowledge-import": "workspace:*",
     "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/cli-kit": "workspace:*",

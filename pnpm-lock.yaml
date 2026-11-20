@@ -4405,6 +4405,9 @@ importers:
       '@liveknowledge/document-views':
         specifier: workspace:*
         version: link:../../packages/document-views
+      '@liveknowledge/knowledge-import':
+        specifier: workspace:*
+        version: link:../../packages/knowledge-import
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client

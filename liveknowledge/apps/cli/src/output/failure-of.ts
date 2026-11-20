@@ -47,7 +47,8 @@ function apiFailure(err: ApiError, host: string): CliFailure {
         message:
           err.status === 401
             ? `${host} did not accept the credential (${code})`
-            : `refused: ${code}`,
+            : // A refusal the api worded says what to do instead (a scope the credential lacks, a verified page).
+              (message ?? `refused: ${code}`),
         hint:
           err.status === 401
             ? 'liveknowledge auth login --with-token, or set LIVEKNOWLEDGE_TOKEN'

@@ -112,7 +112,7 @@ describe('export --all', () => {
       'backup/shop-aaaa0001.liveknowledge.json',
       'backup/shop-bbbb0002.liveknowledge.json',
       'backup/notes.liveknowledge.json',
-      '3 documents · 3 files',
+      '3 knowledgebases · 3 files',
     ]);
     const envelope = JSON.parse(
       io.fileMap.get('backup/shop-aaaa0001.liveknowledge.json')!.data,
@@ -133,7 +133,7 @@ describe('export --all', () => {
       'out/shop/flow-flow-0001.md',
       'out/shop/flow-flow-0002.svg',
       'out/shop/flow-flow-0002.md',
-      '1 document · 4 files',
+      '1 knowledgebase · 4 files',
     ]);
     expect(io.fileMap.get('out/shop/flow-flow-0001.md')!.data).toContain('Web app');
   });
@@ -158,13 +158,16 @@ describe('export --all', () => {
       }),
     );
     expect(code).toBe(4);
-    expect(out).toContain('3 documents · 3 files');
+    expect(out).toContain('3 knowledgebases · 3 files');
     expect(err).toContain('"Locked":');
   });
 
   it('needs --all and a known format', async () => {
     const without = await cli(['export', '--to', 'b'], host(docs));
-    expect([without.code, without.err]).toEqual([2, expect.stringContaining('add --all')]);
+    expect([without.code, without.err]).toEqual([
+      2,
+      expect.stringContaining('export needs a knowledgebase and a folder, or --all --to <dir>'),
+    ]);
     const unknown = await cli(['export', '--all', '--to', 'b', '--format', 'json,gif'], host(docs));
     expect([unknown.code, unknown.err]).toEqual([2, expect.stringContaining('unknown format gif')]);
     expect((await cli(['export', '--all', '--to', 'b', '--format', ','], host(docs))).code).toBe(2);

@@ -24,6 +24,7 @@ import {
 } from '@liveknowledge/api-schema';
 import {
   ARTICLE_MARKDOWN_MAX,
+  MAX_KNOWLEDGEBASE_PAGES,
   pageByTitleIn,
   pageMoveRefusal,
   pageTreeRows,
@@ -259,6 +260,24 @@ async function relayTree(route: KnowledgeRoute): Promise<DocumentDTO | null> {
   return after;
 }
 
+const PAGE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const linkKey = (title: string) => title.toLowerCase().replace(/\s+/g, ' ').trim();
+
+// The titles a new page may link to beside the knowledgebase's own, each with its page's id: at most as many as a
+// knowledgebase holds pages. Null for anything else.
+function linkedPages(given: unknown): Map<string, string> | null {
+  if (given === undefined) return new Map();
+  if (!given || typeof given !== 'object' || Array.isArray(given)) return null;
+  const entries = Object.entries(given as Record<string, unknown>);
+  if (entries.length > MAX_KNOWLEDGEBASE_PAGES) return null;
+  const linked = new Map<string, string>();
+  for (const [title, id] of entries) {
+    if (typeof id !== 'string' || !PAGE_ID.test(id)) return null;
+    if (!linked.has(linkKey(title))) linked.set(linkKey(title), id);
+  }
+  return linked;
+}
+
 async function handleCreate(route: KnowledgeRoute): Promise<Response> {
   const { ctx, document, grant } = route;
   // A page is an Editor's to add; an Editor's agent adds one with `suggest` (a page it makes is never Verified,
@@ -277,16 +296,22 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
     return invalid('invalid_markdown', '"markdown" is the page\'s writing as Markdown text.');
   const under = body?.parent === undefined ? undefined : placeOf(document, body.parent);
   if (under instanceof Response) return under;
-  const id = crypto.randomUUID();
+  // An import mints its pages' ids before it writes the first, so a link to a page further down the tree is
+  // written once, with the page that holds it: `id` is this page's, `pageIds` the ids of the titles it links to.
+  if (body?.id !== undefined && (typeof body.id !== 'string' || !PAGE_ID.test(body.id)))
+    return invalid('invalid_id', '"id" is a new page id: a UUID.');
+  const linked = linkedPages(body?.pageIds);
+  if (!linked) return invalid('invalid_page_ids', '"pageIds" maps a title to a page id (a UUID).');
+  const id = body?.id ?? crypto.randomUUID();
+  if (document.tabs.some((t) => t.id === id)) return conflict('page_exists');
   const refusal = tabParentRefusal(await readStoredPages(ctx.env, document.id), id, under);
   if (refusal) return conflict(refusal);
+  const existing = pageByTitleIn(
+    document.tabs.map((t) => ({ id: t.id, name: t.name, parent: t.parent })),
+  );
   const made = newPageFromMarkdown(
     { id, title, markdown, ...(under ? { parent: under } : {}) },
-    {
-      pageByTitle: pageByTitleIn(
-        document.tabs.map((t) => ({ id: t.id, name: t.name, parent: t.parent })),
-      ),
-    },
+    { pageByTitle: (title) => linked.get(linkKey(title)) ?? existing(title) },
   );
   if ('refusal' in made) {
     const { code, ...rest } = made.refusal;

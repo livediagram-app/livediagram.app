@@ -103,7 +103,7 @@ describe('export --format png', () => {
     expect(out.trim().split('\n')).toEqual([
       'b/shop/main.png',
       'b/shop/main.md',
-      '1 document · 2 files',
+      '1 knowledgebase · 2 files',
     ]);
     expect([...io.byteMap.get('b/shop/main.png')!.slice(0, 4)]).toEqual(PNG);
   });

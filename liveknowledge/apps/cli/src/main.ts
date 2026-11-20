@@ -7,6 +7,7 @@ import { DOCUMENT_FORMAT } from '@liveknowledge/api-schema';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
+import type { KnowledgeImportInput } from './commands/knowledge-import';
 import { pullDocument, type PullInput } from './commands/pull';
 import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
 import { pushFile, type PushInput } from './commands/push';
@@ -139,6 +140,10 @@ async function runOnline(
     return renderTab(io, ctx, input as { doc: string; tab?: string; png?: string; svg?: string });
   }
   if (verb.id === 'export') return exportAll(io, ctx, profile.host, input as ExportInput);
+  if (verb.id === 'import') {
+    const { importKnowledge } = await import('./commands/knowledge-import');
+    return importKnowledge(io, ctx, input as KnowledgeImportInput);
+  }
   if (verb.id === 'pull') return pullDocument(io, ctx, input as PullInput);
   if (verb.id === 'push') return pushFile(io, ctx, profile.host, input as PushInput);
   if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);

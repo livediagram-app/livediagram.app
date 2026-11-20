@@ -79,7 +79,7 @@ export async function scopeRefusalOf(ctx: DocumentRouteContext, res: Response): 
       scopes: access.scopes,
       message:
         needs === 'write'
-          ? "This connection holds the read and suggest scopes here, so it does not change the knowledgebase directly. Suggest a change to a page instead (the MCP's suggest_edit, the CLI's suggest, POST pages/<page>/suggestions), or ask an Editor of the knowledgebase to grant this connection the write scope."
+          ? 'This connection holds the read and suggest scopes here, so it does not change the knowledgebase directly. Suggest a change to a page instead with suggest_edit, or ask an Editor of the knowledgebase to grant this connection the write scope.'
           : 'This connection holds the read scope alone here. Ask an Editor of the knowledgebase to grant it the suggest scope.',
     },
     { status: 403 },

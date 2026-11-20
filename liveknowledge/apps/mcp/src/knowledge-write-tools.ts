@@ -17,7 +17,8 @@ import {
   mcpWritePage,
 } from '@liveknowledge/agent-verbs/mcp';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { jsonBody, knowledgeApi, knowledgePath } from './knowledge-client';
+import { jsonBody, knowledgePath } from '@liveknowledge/agent-verbs';
+import { knowledgeApi } from './knowledge-client';
 import { registerTool } from './tool-annotations';
 import { deepLink, errorResult, textResult } from './tool-helpers';
 

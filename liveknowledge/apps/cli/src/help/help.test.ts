@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { COMMAND_ALIASES, defineVerb, RESOURCES, TOP_LEVEL, VERBS } from '@liveknowledge/agent-verbs';
+import {
+  COMMAND_ALIASES,
+  defineVerb,
+  RESOURCES,
+  TOP_LEVEL,
+  VERBS,
+} from '@liveknowledge/agent-verbs';
 import { estimateTokens } from '@liveknowledge/document-views';
 import {
   HELP_RESOURCE_MAX_TOKENS,

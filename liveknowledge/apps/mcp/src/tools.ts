@@ -16,7 +16,7 @@ import {
 import { templateCatalogue } from '@liveknowledge/templates';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { deleteRefusal, searchDocuments } from '@liveknowledge/agent-verbs';
+import { deleteRefusal, knowledgePath, searchDocuments } from '@liveknowledge/agent-verbs';
 import { deepLink, errorResult, requireToken, shareUrl, textResult } from './tool-helpers';
 import { registerImageTools } from './image-tools';
 import { registerTool } from './tool-annotations';
@@ -25,7 +25,7 @@ import { registerThreadTools } from './thread-tools';
 import { registerCreateTool } from './create-tool';
 import { registerKnowledgeReadTools } from './knowledge-read-tools';
 import { registerKnowledgeWriteTools } from './knowledge-write-tools';
-import { knowledgePath } from './knowledge-client';
+
 import { pageRowNamed } from './page-named';
 import {
   mcpDeleteDocument,

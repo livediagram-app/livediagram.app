@@ -265,6 +265,40 @@ describe('POST pages', () => {
     expect((await read('deploys')).backlinks.map((b) => b.tab)).toContain(page.tab);
   });
 
+  it('takes an import’s own ids, so a page links to one not written yet', async () => {
+    const first = '11111111-1111-4111-8111-111111111111';
+    const second = '22222222-2222-4222-8222-222222222222';
+    const pageIds = { Second: second, ' first ': first };
+    const made = await create('agent-stored', {
+      id: first,
+      title: 'First',
+      markdown: 'See [[Second]] and [[Deploys]].',
+      pageIds,
+    });
+    expect(made.status).toBe(201);
+    expect((await made.json<CreatePageResponse>()).page.tab).toBe(first);
+    // Until the page it links to is written, the link reads as a page that is gone.
+    expect((await read(first)).markdown).toContain('See [[Deleted Page]] and [[Deploys]].');
+    expect(
+      (await create('agent-stored', { id: second, title: 'Second', markdown: 'x', pageIds }))
+        .status,
+    ).toBe(201);
+    expect((await read(first)).markdown).toContain('See [[Second]] and [[Deploys]].');
+    expect((await read(second)).backlinks.map((b) => b.tab)).toEqual([first]);
+    // The same id twice, an id that is none, and a map that is none are refused.
+    const again = await create('editor', { id: first, title: 'Again' });
+    expect(again.status).toBe(409);
+    expect((await again.json<{ error: string }>()).error).toBe('page_exists');
+    for (const bad of [
+      { id: 'deploys' },
+      { id: 7 },
+      { pageIds: [] },
+      { pageIds: { A: 'nope' } },
+      { pageIds: Object.fromEntries(Array.from({ length: 501 }, (_, i) => [`t${i}`, first])) },
+    ])
+      expect((await create('editor', { title: 'T', ...bad })).status).toBe(400);
+  });
+
   it('makes an empty page when no Markdown is sent', async () => {
     const res = await create('editor', { title: 'Later' });
     expect(res.status).toBe(201);

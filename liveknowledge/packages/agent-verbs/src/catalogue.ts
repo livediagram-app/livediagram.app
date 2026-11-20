@@ -25,6 +25,7 @@ import {
   telemetryOff,
   telemetryOn,
   exportAll,
+  importFiles,
   pull,
   push,
   tabRender,
@@ -47,10 +48,13 @@ import {
 import { documentArchive, documentUnarchive } from './verbs/archive';
 import { tabLint, tabLs, tabView } from './verbs/tab';
 import { pagesVerbs } from './verbs/pages';
+import { knowledgeVerbs } from './verbs/knowledge';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
 
 export const VERBS: readonly Verb[] = [
+  // The knowledgebase commands first: what an agent reaches for (verbs/knowledge.ts).
+  ...knowledgeVerbs,
   documentLs,
   documentView,
   documentCreate,
@@ -104,6 +108,7 @@ export const VERBS: readonly Verb[] = [
   pull,
   push,
   exportAll,
+  importFiles,
   workbenchOpen,
   workbenchPair,
   folderLs,
@@ -114,10 +119,10 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   {
     name: 'document',
     alias: 'doc',
-    summary: 'Documents: find, read, create, rename, share and remove them',
+    summary: 'Knowledgebases: find, read, create, rename, share and remove them',
   },
   { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
-  { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
+  { name: 'tab', summary: 'Pages as tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'page', summary: 'Pages: slides, infographics' },
   { name: 'article', summary: 'Articles as Markdown' },
@@ -137,7 +142,25 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 ];
 
 // Top-level commands that are verbs without a resource word.
-export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push', 'export'] as const;
+export const TOP_LEVEL = [
+  'context',
+  'pages',
+  'search',
+  'read',
+  'new',
+  'suggest',
+  'write',
+  'move',
+  'gap',
+  'import',
+  'export',
+  'guide',
+  'api',
+  'wait',
+  'watch',
+  'pull',
+  'push',
+] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
   doc: 'document',

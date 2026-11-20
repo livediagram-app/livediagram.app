@@ -17,23 +17,23 @@ describe('the CLI words for MCP tools', () => {
   });
 
   it('writes a tool in a message as the command', () => {
-    expect(inCliWords('That tab has no article. Write one with write_article.')).toBe(
-      'That tab has no article. Write one with liveknowledge article set.',
+    expect(inCliWords('This page is verified. Suggest the change instead with suggest_edit.')).toBe(
+      'This page is verified. Suggest the change instead with liveknowledge suggest.',
     );
-    expect(inCliWords('read_document lists its pages; read_documents stays')).toBe(
-      'liveknowledge document view lists its pages; read_documents stays',
+    expect(inCliWords('list_pages lists its pages; list_pagess stays')).toBe(
+      'liveknowledge pages lists its pages; list_pagess stays',
     );
   });
 
   it('prints an error in those words, text and JSON alike', () => {
     const failure = {
       exit: 3 as const,
-      code: 'page_none',
-      message: 'Write one with write_article.',
+      code: 'page_verified',
+      message: 'Suggest it with suggest_edit.',
     };
-    expect(formatError(failure, false)).toBe('error: Write one with liveknowledge article set.\n');
+    expect(formatError(failure, false)).toBe('error: Suggest it with liveknowledge suggest.\n');
     expect((JSON.parse(formatError(failure, true)) as { message: string }).message).toBe(
-      'Write one with liveknowledge article set.',
+      'Suggest it with liveknowledge suggest.',
     );
   });
 });

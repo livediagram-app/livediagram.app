@@ -55,7 +55,7 @@ export function pageUnknownBody(
   const some = tabs.slice(0, PAGES_NAMED).map((t) => `"${t.name}" (${t.id})`);
   const more =
     tabs.length > PAGES_NAMED
-      ? `, and ${tabs.length - PAGES_NAMED} more (list_pages, the CLI's pages, or GET pages lists them all)`
+      ? `, and ${tabs.length - PAGES_NAMED} more (list_pages lists them all)`
       : '';
   return {
     error: 'page_unknown',

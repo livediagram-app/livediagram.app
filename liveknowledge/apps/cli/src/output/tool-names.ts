@@ -1,18 +1,21 @@
 // The CLI's words for the MCP tools the shared refusals name (docs/specs/015-api/cli.md "Output"): one engine answers
-// both, and its messages say "read it with read_document", which is no command here. Each tool maps to the command that
+// both, and its messages say "suggest the change with suggest_edit", which is no command here. Each tool maps to the command that
 // does its job, and an error names that instead.
 
 // Each MCP tool by the command that does what it does: `<resource> <verb>`, or a top-level command and its words.
 export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
+  get_context: 'context',
+  list_pages: 'pages',
+  search_pages: 'search',
+  read_page: 'read',
+  report_gap: 'gap',
+  create_page: 'new',
+  suggest_edit: 'suggest',
+  write_page: 'write',
+  move_page: 'move',
   find_documents: 'document ls',
-  read_document: 'document view',
-  view_tab: 'tab view',
-  view_live: 'watch',
   list_templates: 'template ls',
-  search_icons: 'icon search',
   create_document: 'document create',
-  add_tab: 'tab add',
-  update_document: 'changeset apply',
   share_document: 'document share',
   rename_document: 'document rename',
   delete_document: 'document rm',
@@ -25,14 +28,11 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   list_images: 'image ls',
   upload_image: 'image add',
   delete_image: 'image rm',
-  write_article: 'article set',
-  list_versions: 'api GET /documents/<id>/tabs/<tabId>/versions',
-  restore_version: 'api POST /documents/<id>/tabs/<tabId>/versions/<versionId>/restore',
 };
 
 const TOOL_WORD = new RegExp(`\\b(${Object.keys(COMMAND_OF_TOOL).join('|')})\\b`, 'g');
 
-/** `text` with each MCP tool it names written as the CLI command: "add_tab" → "liveknowledge tab add". */
+/** `text` with each MCP tool it names written as the CLI command: "read_page" → "liveknowledge read". */
 export function inCliWords(text: string): string {
   return text.replace(TOOL_WORD, (tool) => `liveknowledge ${COMMAND_OF_TOOL[tool]}`);
 }

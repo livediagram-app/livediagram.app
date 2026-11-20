@@ -21,13 +21,19 @@ import {
   mcpSearchPages,
 } from '@liveknowledge/agent-verbs/mcp';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { jsonBody, knowledgeApi, knowledgePath } from './knowledge-client';
+import {
+  jsonBody,
+  knowledgePath,
+  pageRefOf,
+  resultTrustOf,
+  trustFieldsOf,
+} from '@liveknowledge/agent-verbs';
+import { knowledgeApi } from './knowledge-client';
 import { pageRowNamed } from './page-named';
 import { registerTool } from './tool-annotations';
 import { textResult } from './tool-helpers';
-import { resultTrustOf, trustFieldsOf } from './trust';
 
-const ref = (p: { tab: string; title: string }) => ({ page: p.tab, title: p.title });
+const ref = pageRefOf;
 
 const rowOf = (row: KnowledgePageRow) => ({
   ...ref(row),

@@ -1,6 +1,7 @@
 // The trust fields every page and passage answer carries (docs/specs/024-agents/knowledgebase-for-agents.md), from
 // the api's: the state under `verified`, dates as ISO timestamps a model reads without arithmetic, `stale` for a
-// review that is due, and the pages an open conflict names.
+// review that is due, and the pages an open conflict names. The MCP's tools and the CLI's commands answer the same
+// fields, so an agent reads a page the same way through either door.
 import type {
   KnowledgePageRef,
   KnowledgePageTrust,
@@ -17,8 +18,9 @@ export type TrustFields = {
 };
 
 const iso = (ms: number) => new Date(ms).toISOString();
-const refs = (pages: readonly KnowledgePageRef[]) =>
-  pages.map((p) => ({ page: p.tab, title: p.title }));
+
+/** A page as every answer names it: its id under `page`, beside its title. */
+export const pageRefOf = (p: KnowledgePageRef) => ({ page: p.tab, title: p.title });
 
 export function trustFieldsOf(trust: KnowledgePageTrust): TrustFields {
   return {
@@ -27,7 +29,7 @@ export function trustFieldsOf(trust: KnowledgePageTrust): TrustFields {
     ...(trust.verifiedBy ? { verified_by: trust.verifiedBy } : {}),
     ...(trust.reviewAt === undefined ? {} : { review_due: iso(trust.reviewAt) }),
     stale: trust.stale,
-    ...(trust.conflictsWith?.length ? { conflicts_with: refs(trust.conflictsWith) } : {}),
+    ...(trust.conflictsWith?.length ? { conflicts_with: trust.conflictsWith.map(pageRefOf) } : {}),
   };
 }
 
@@ -40,3 +42,20 @@ export const resultTrustOf = (result: KnowledgeSearchResult): TrustFields =>
     stale: result.trust === 'review-due',
     ...(result.conflictsWith ? { conflictsWith: result.conflictsWith } : {}),
   });
+
+const day = (isoDate: string) => isoDate.slice(0, 10);
+
+/** The trust fields as one line of a listing: "verified 2026-10-01 by Webber, review due 2026-12-30". */
+export function trustLine(trust: TrustFields): string {
+  const parts =
+    trust.verified === 'never-verified'
+      ? ['never verified']
+      : [
+          `${trust.stale ? 'REVIEW DUE, last verified' : 'verified'} ${day(trust.verified_at!)}` +
+            (trust.verified_by ? ` by ${trust.verified_by}` : ''),
+          ...(trust.review_due && !trust.stale ? [`review due ${day(trust.review_due)}`] : []),
+        ];
+  if (trust.conflicts_with?.length)
+    parts.push(`CONFLICTS WITH ${trust.conflicts_with.map((p) => `"${p.title}"`).join(', ')}`);
+  return parts.join(', ');
+}
