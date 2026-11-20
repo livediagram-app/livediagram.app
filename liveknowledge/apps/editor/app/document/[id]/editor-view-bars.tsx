@@ -20,6 +20,7 @@ import { BottomBar } from '@/components/chrome/BottomBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { offersHistory, openHistoryFromFooter } from '@/components/versions/history-tools-item';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
+import { KnowledgeCornerSwitch } from '@/components/ask/KnowledgeViewHost';
 import { useEditorChrome, useEditorChromeStore } from './EditorContext';
 import { sameTabExcept } from './editor-chrome-equal';
 
@@ -62,6 +63,8 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
         approval={<ApprovalBadge corner />}
+        // Pages | Ask | AI Knowledge (docs/specs/030-knowledgebase/search-and-ask.md "The three views").
+        leadAction={<KnowledgeCornerSwitch />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}
         // The Share button's colour reads the document's visibility, as the header's badge did.

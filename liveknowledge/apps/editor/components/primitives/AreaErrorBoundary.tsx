@@ -27,5 +27,6 @@ export const { AreaErrorBoundary, MenuErrorBoundary } = createAreaErrorBoundary(
     Menu: 'the menu',
     ExplorerSidebar: 'the sidebar',
     ExplorerPane: 'this page',
+    KnowledgeView: 'this view',
   },
 });

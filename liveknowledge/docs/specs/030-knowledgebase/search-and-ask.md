@@ -50,3 +50,15 @@ Ask answers a question in plain words from the wiki's own pages, and says where 
 | Draft a page from a gap                 | yes    | no          | no     |
 
 Ask through an anonymous share link is off: it would spend the team's key for strangers.
+
+## The three views
+
+- A knowledgebase has three views: **Pages** (the editor), **Ask** and **AI Knowledge**
+  ([AI Knowledge](ai-knowledge.md)). A segmented switch, **Pages | Ask | AI Knowledge**, sits in the top row's card
+  beside Share on a desktop; on a phone it has a row of its own above the top row.
+- The view is in the address (`?view=ask`, `?view=ai`; none is Pages), not the hash, which is the open page's. A
+  reload keeps it, each change is a history entry, so Back returns to the view before, and each segment is a link.
+- Ask and AI Knowledge cover the canvas, the page tree and the bottom bar; the top row's card stays over their top
+  right corner. The editor under them takes no key, press or focus.
+- Not offered in an embed, in zen mode, in a workbench, behind the welcome flow, to a Community visitor or through a
+  link confined to one page.

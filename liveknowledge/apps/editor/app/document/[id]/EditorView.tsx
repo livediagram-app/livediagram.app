@@ -68,6 +68,7 @@ import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 import { EditorFindHost } from '@/components/find/FindHost';
+import { KnowledgeSwitchRow, KnowledgeViewHost } from '@/components/ask/KnowledgeViewHost';
 import { VersionHistoryHost } from '@/components/versions/VersionHistoryHost';
 import { SnapshotsDoorProvider, useEditorSnapshotsDoor } from '@liveworkspace/snapshots/ui';
 import {
@@ -146,6 +147,10 @@ const TOURS = (
   </AreaErrorBoundary>
 );
 const START_PANELS = <EditorStartPanels />;
+// Ask and AI Knowledge (docs/specs/030-knowledgebase/search-and-ask.md "The three views"): a phone's switch row in the
+// flow above the top row, and the view drawn over the editor while the address names one.
+const KNOWLEDGE_SWITCH_ROW = <KnowledgeSwitchRow />;
+const KNOWLEDGE_VIEW = <KnowledgeViewHost />;
 // An editor older than the server's document format offers a reload, once its edits are saved
 // (docs/specs/016-platform/new-version-prompt.md). It reads the unsaved state from the chrome store, so the view's
 // renders never reach it.
@@ -450,6 +455,7 @@ export function EditorView() {
                             {/* The approver's banner above the corner card's zero-height layer, so the card floats below it and
                                 never over its buttons (approvals.md "Where it sits"). */}
                             <ApprovalBanner />
+                            {KNOWLEDGE_SWITCH_ROW}
                             {headerInColumn}
                             {sessionCommunity && appChrome && hydrated ? (
                               <CommunityBar
@@ -561,6 +567,8 @@ export function EditorView() {
                                 pendingDraw !== null
                               }
                             />
+
+                            {KNOWLEDGE_VIEW}
 
                             {NEW_VERSION_PROMPT}
                           </div>
