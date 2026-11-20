@@ -405,7 +405,7 @@ describe('the stored choice', () => {
     expect(readUnusedImageChoice({ unusedImageChoice: 'nonsense' })).toBe('ask');
     expect(readUnusedImageChoice({ unusedImageChoice: 'delete' })).toBe('delete');
     expect(readUnusedImageChoice({ unusedImageChoice: 'keep' })).toBe('keep');
-    expect(withUnusedImageChoice({ other: 1 }, 'keep')).toEqual({
+    expect(withUnusedImageChoice({ other: 1, unusedImageChoice: 'delete' }, 'keep')).toEqual({
       other: 1,
       unusedImageChoice: 'keep',
     });
