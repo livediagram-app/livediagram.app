@@ -78,18 +78,21 @@ export function HuddleScene() {
     <div className="relative aspect-[16/10] bg-emerald-50/60 bg-[radial-gradient(circle,rgb(16_185_129/0.22)_1px,transparent_1.2px)] [background-size:16px_16px] dark:bg-slate-950/40 dark:bg-[radial-gradient(circle,rgb(71_85_105/0.6)_1px,transparent_1.2px)]">
       <svg viewBox="0 0 320 200" className="absolute inset-0 size-full" fill="none">
         <defs>
+          <pattern id="lw-pod-planks" width="40" height="8" patternUnits="userSpaceOnUse">
+            <rect width="40" height="8" className="fill-[#f3e3c8] dark:fill-[#3b3024]" />
+            <path
+              d="M0 7.6h40M14 0v8M34 0v8"
+              className="stroke-[#e2cba6] dark:stroke-[#2c241b]"
+              strokeWidth="0.6"
+            />
+          </pattern>
           <clipPath id="lw-pod-floor">
             <rect x="18" y="30" width="176" height="118" />
           </clipPath>
         </defs>
-        {/* The room: its floor, its back wall's face, and its walls with a doorway on the right. */}
-        <rect
-          x="16"
-          y="14"
-          width="180"
-          height="136"
-          className="fill-white dark:fill-slate-800/70"
-        />
+        {/* The room: an oak floor, its back wall with a window and a screen, and its walls with a doorway on
+            the right. */}
+        <rect x="16" y="14" width="180" height="136" fill="url(#lw-pod-planks)" />
         <rect
           x="16"
           y="14"
@@ -97,7 +100,57 @@ export function HuddleScene() {
           height="16"
           className="fill-slate-200 dark:fill-slate-700"
         />
-        {/* The rug, the meeting table and its chairs. */}
+        <rect x="16" y="28" width="180" height="3" className="fill-slate-900/10" />
+        {[
+          [44, 18],
+          [168, 18],
+        ].map(([x, w]) => (
+          <g key={x}>
+            <rect
+              x={x}
+              y="17"
+              width={w! - 8}
+              height="10"
+              rx="1"
+              className="fill-sky-100 dark:fill-sky-900/60"
+            />
+            <path
+              d={`M${x} 22h${w! - 8}M${x! + (w! - 8) / 2} 17v10`}
+              className="stroke-white/80 dark:stroke-slate-600"
+              strokeWidth="0.75"
+            />
+          </g>
+        ))}
+        {/* The wall screen, the morning's numbers on it. */}
+        <rect
+          x="76"
+          y="16"
+          width="44"
+          height="13"
+          rx="1.5"
+          className="fill-slate-800 dark:fill-slate-950"
+        />
+        <rect x="78" y="18" width="40" height="9" rx="0.5" className="fill-slate-700" />
+        {[
+          [81, 5],
+          [86, 3.5],
+          [91, 6],
+          [96, 4.5],
+          [101, 7],
+          [106, 6.5],
+          [111, 8],
+        ].map(([x, h]) => (
+          <rect
+            key={x}
+            x={x}
+            y={27 - h!}
+            width="3"
+            height={h}
+            rx="0.5"
+            className="fill-emerald-400"
+          />
+        ))}
+        {/* The rug, the meeting table with its laptops and mugs, and its chairs. */}
         <ellipse
           cx="100"
           cy="88"
@@ -106,21 +159,68 @@ export function HuddleScene() {
           className="fill-amber-50 stroke-amber-200 dark:fill-amber-900/25 dark:stroke-amber-700/40"
           strokeWidth="1.5"
         />
-        {[78, 108].map((x) => (
-          <g key={x} className="fill-slate-300 dark:fill-slate-600">
-            <rect x={x} y="66" width="14" height="8" rx="2" />
-            <rect x={x} y="104" width="14" height="8" rx="2" />
+        <ellipse
+          cx="100"
+          cy="88"
+          rx="55"
+          ry="32"
+          className="stroke-amber-300/70 dark:stroke-amber-700/40"
+          strokeWidth="0.75"
+          strokeDasharray="3 2"
+        />
+        {[74, 93, 112].map((x) => (
+          <g key={x} className="fill-slate-600 dark:fill-slate-500">
+            <rect x={x} y="64" width="14" height="10" rx="3" />
+            <rect
+              x={x + 1}
+              y="63"
+              width="12"
+              height="3"
+              rx="1.5"
+              className="fill-slate-700 dark:fill-slate-400"
+            />
+            <rect x={x} y="103" width="14" height="10" rx="3" />
+            <rect
+              x={x + 1}
+              y="111"
+              width="12"
+              height="3"
+              rx="1.5"
+              className="fill-slate-700 dark:fill-slate-400"
+            />
           </g>
         ))}
+        <rect x="66" y="76" width="68" height="28" rx="6" className="fill-amber-900/25" />
         <rect
-          x="68"
-          y="75"
-          width="64"
-          height="27"
+          x="66"
+          y="74"
+          width="68"
+          height="28"
           rx="6"
-          className="fill-slate-200 stroke-slate-300 dark:fill-slate-700 dark:stroke-slate-600"
-          strokeWidth="1.5"
+          className="fill-amber-700 stroke-amber-800 dark:fill-amber-800 dark:stroke-amber-900"
+          strokeWidth="1"
         />
+        <rect x="69" y="76" width="62" height="4" rx="2" className="fill-white/15" />
+        {[
+          [74, 80],
+          [112, 80],
+          [92, 90],
+        ].map(([x, y]) => (
+          <g key={`${x}-${y}`}>
+            <rect x={x} y={y} width="13" height="8" rx="1" className="fill-slate-300" />
+            <rect x={x! + 1} y={y! + 1} width="11" height="5" rx="0.5" className="fill-sky-200" />
+          </g>
+        ))}
+        {[
+          [89, 81],
+          [108, 94],
+          [127, 92],
+        ].map(([x, y]) => (
+          <g key={`${x}-${y}`}>
+            <circle cx={x} cy={y} r="2.2" className="fill-white" />
+            <circle cx={x} cy={y} r="1.3" className="fill-amber-900" />
+          </g>
+        ))}
         {/* A coffee machine in the corner and a plant by the door. */}
         <rect
           x="24"
@@ -156,8 +256,8 @@ export function HuddleScene() {
         </g>
         <path
           d="M196 96V14H16v136h180v-24"
-          className="stroke-slate-300 dark:stroke-slate-600"
-          strokeWidth="4"
+          className="stroke-slate-400 dark:stroke-slate-500"
+          strokeWidth="4.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />

@@ -4,6 +4,7 @@
  * (liveworkspace/docs/specs/010-site/site.md "Stylesheets"). */
 @source inline("dark:bg-amber-400");
 @source inline("dark:bg-amber-400/10");
+@source inline("dark:bg-amber-400/50");
 @source inline("dark:bg-amber-500");
 @source inline("dark:bg-brand-400/10");
 @source inline("dark:bg-brand-500/60");
@@ -14,7 +15,6 @@
 @source inline("dark:bg-orange-500");
 @source inline("dark:bg-pink-400");
 @source inline("dark:bg-rose-400/10");
-@source inline("dark:bg-sky-950");
 @source inline("dark:bg-slate-500");
 @source inline("dark:bg-slate-800/40");
 @source inline("dark:bg-slate-800/50");
@@ -23,7 +23,6 @@
 @source inline("dark:bg-slate-800/95");
 @source inline("dark:bg-slate-900/60");
 @source inline("dark:bg-slate-900/80");
-@source inline("dark:bg-slate-950/40");
 @source inline("dark:bg-slate-950/50");
 @source inline("dark:bg-transparent");
 @source inline("dark:bg-violet-400");
@@ -40,7 +39,6 @@
 @source inline("dark:border-slate-700/60");
 @source inline("dark:border-transparent");
 @source inline("dark:fill-amber-300/70");
-@source inline("dark:fill-amber-400/80");
 @source inline("dark:fill-brand-500/15");
 @source inline("dark:fill-brand-700");
 @source inline("dark:fill-brand-700/60");
@@ -50,11 +48,13 @@
 @source inline("dark:fill-brand-900/40");
 @source inline("dark:fill-brand-900/50");
 @source inline("dark:fill-emerald-300/60");
+@source inline("dark:fill-emerald-500/20");
 @source inline("dark:fill-sky-300/60");
 @source inline("dark:fill-sky-800");
-@source inline("dark:fill-sky-900");
+@source inline("dark:fill-slate-100");
+@source inline("dark:fill-slate-400");
 @source inline("dark:fill-slate-700");
-@source inline("dark:fill-slate-800/70");
+@source inline("dark:fill-slate-950");
 @source inline("dark:focus-visible:outline-slate-400");
 @source inline("dark:focus-visible:ring-brand-400");
 @source inline("dark:from-brand-500/20");
@@ -86,12 +86,14 @@
 @source inline("dark:stroke-brand-800");
 @source inline("dark:stroke-brand-800/80");
 @source inline("dark:stroke-slate-500");
+@source inline("dark:stroke-slate-950");
 @source inline("dark:text-blue-950");
 @source inline("dark:text-brand-300/80");
 @source inline("dark:text-emerald-950");
 @source inline("dark:text-pink-300");
 @source inline("dark:text-pink-950");
 @source inline("dark:text-red-400");
+@source inline("dark:text-sky-200");
 @source inline("dark:text-slate-950");
 @source inline("dark:text-violet-200");
 @source inline("dark:text-violet-950");
