@@ -53,7 +53,7 @@ function Steps({ at }: { at: number }) {
                 : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >
-            {index + 1}
+            <span className="text-optical-centre">{index + 1}</span>
           </span>
           {name}
           {index < STEPS.length - 1 ? (
