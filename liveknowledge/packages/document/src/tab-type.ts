@@ -10,13 +10,12 @@ import type { TabId, TextSize } from '@liveworkspace/model-core/basics';
 import type { BackgroundPattern } from './retired-patterns';
 import type { Element } from './element-union';
 
-/** A page's knowledge fields as stored. Every one is optional: absent is no owner, never verified, a review every
- *  90 days, not in context. */
+/** A page's knowledge fields as stored. Every one is optional: absent is no owner, never verified, not in context.
+ *  When a verified page's review comes due is the knowledgebase's (`KnowledgeSettings.reviewEvery`), not the page's. */
 export type TabKnowledge = {
   owner?: string;
   verifiedAt?: number;
   verifiedBy?: string;
-  reviewEvery?: 30 | 90 | 180 | 365 | 'never';
   context?: true;
 };
 

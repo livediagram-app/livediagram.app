@@ -5,6 +5,7 @@ import type { Passage } from './passages';
 import { contentWords } from './questions';
 import { searchByTerms, type FoundPassage } from './sql/search';
 import type { SqlStatement } from './sql/statement';
+import type { ReviewEvery } from './trust';
 
 export const CONFLICT_CHECKS_PER_DAY = 50;
 /** The most pairs of passages one check puts to the model. */
@@ -73,12 +74,17 @@ export function conflictProbes(
 
 /** The lookup of one probe on other pages: any of its most telling words (the longest, each once). Undefined for
  *  a passage with no words. */
-export function probeSearch(probe: Passage, now: number): SqlStatement | undefined {
+export function probeSearch(
+  probe: Passage,
+  reviewEvery: ReviewEvery,
+  now: number,
+): SqlStatement | undefined {
   const words = [...new Set(contentWords(probe.text))]
     .sort((a, b) => b.length - a.length || (a < b ? -1 : 1))
     .slice(0, PROBE_TERMS);
   return searchByTerms(words, {
     now,
+    reviewEvery,
     mode: 'any',
     passagesOnly: true,
     exceptTab: probe.tab,

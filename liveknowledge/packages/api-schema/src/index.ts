@@ -17,6 +17,7 @@ import type { Team } from '@liveworkspace/api-schema/teams';
 import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { Tab } from '@liveknowledge/document';
+import type { KnowledgeSettingsWire } from './knowledge';
 
 // ---------------------------------------------------------------------
 // Documents
@@ -57,6 +58,9 @@ export type LiveDoc = {
   // has no use for their decks, and a deck is the one metadata field that can
   // grow with the document.
   presentation: string | null;
+  // The knowledgebase's settings (docs/specs/030-knowledgebase/verification.md "The Review Period"): always
+  // present, every 90 days for a knowledgebase that never chose.
+  knowledgeSettings: KnowledgeSettingsWire;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the

@@ -7,6 +7,7 @@ import type { IdListStep } from '@liveworkspace/model-core/id-list-steps';
 import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@liveknowledge/document';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
+import type { KnowledgeSettingsWire } from './knowledge';
 import type { ChangesetRoomOp } from './changesets';
 import type {
   CursorMessage,
@@ -339,6 +340,9 @@ export type RoomOp =
   | {
       kind: 'document-meta';
       name: string;
+      // The knowledgebase's settings (docs/specs/030-knowledgebase/verification.md "The Review Period"), when they
+      // changed: an op without the key leaves them as they are.
+      knowledgeSettings?: KnowledgeSettingsWire;
       // `folder` (docs/specs/006-document/tab-folders.md) is the per-document folder name, optional so
       // an older peer that omits it is treated as loose — no parse break.
       // `outOfScope` marks a tab outside a tab-scoped session's scope

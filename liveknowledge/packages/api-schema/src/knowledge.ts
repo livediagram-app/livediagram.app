@@ -5,6 +5,19 @@
 /** A page's verified state, worked out when read (verification.md "States"). */
 export type KnowledgeTrustState = 'verified' | 'review-due' | 'never-verified';
 export type KnowledgeReviewEvery = 30 | 90 | 180 | 365 | 'never';
+/** What a knowledgebase decides for every page (verification.md "The Review Period"): how long after it was last
+ *  verified a page comes due for review. In a document read, the `document-meta` op and the routes below. */
+export type KnowledgeSettingsWire = { reviewEvery: KnowledgeReviewEvery };
+/** `PUT .../knowledge-settings`: Editor only. Answers the settings as stored. */
+export type KnowledgeSettingsRequest = { reviewEvery: KnowledgeReviewEvery };
+export type KnowledgeSettingsResponse = { knowledgeSettings: KnowledgeSettingsWire };
+/** `GET .../knowledge-settings/preview?reviewEvery=`: how many pages are Review Due now and how many would be
+ *  under the period asked about, so a dialog can say so before a shorter period is applied. */
+export type KnowledgeSettingsPreviewResponse = {
+  reviewEvery: KnowledgeReviewEvery;
+  reviewDue: number;
+  reviewDueNow: number;
+};
 
 /** One search result: a page's title row, or a passage of its writing. `titleMarked` and `snippet` wrap each
  *  matched word in U+0002 and U+0003, so a client marks them without parsing HTML. */
@@ -41,11 +54,10 @@ export type PageKnowledge = {
   owner?: string;
   verifiedAt?: number;
   verifiedBy?: string;
-  /** Absent is the default, 90 days. */
-  reviewEvery?: KnowledgeReviewEvery;
   context?: true;
   state: KnowledgeTrustState;
-  /** When the review comes due; absent for a page never verified or one that does not age. */
+  /** When the review comes due under the knowledgebase's Review Period; absent for a page never verified or a
+   *  knowledgebase whose period is Never. */
   reviewAt?: number;
   /** More than a fifth of the writing changed since it was verified. */
   changedSinceVerified: boolean;
@@ -57,10 +69,10 @@ export type PageKnowledgeResponse = { knowledge: PageKnowledge };
 export type PageHealthResponse = PageKnowledgeResponse & {
   reads: { people: number; agents: number };
 };
-/** `PUT .../pages/<tab>/knowledge`: each field optional; `owner: null` clears it. */
+/** `PUT .../pages/<tab>/knowledge`: each field optional; `owner: null` clears it. The Review Period is the
+ *  knowledgebase's (`PUT .../knowledge-settings`): a `reviewEvery` here is refused. */
 export type PageKnowledgePatch = {
   owner?: string | null;
-  reviewEvery?: KnowledgeReviewEvery;
   context?: boolean;
 };
 
@@ -77,6 +89,8 @@ export type KnowledgeDuePage = { tab: string; title: string; reviewAt: number };
  *  own pages whose review is due, oldest first, ten at most; empty for a caller with no account. */
 export type KnowledgeSummaryResponse = {
   pages: number;
+  /** The knowledgebase's Review Period, which the counts and `yoursToReview` are worked out under. */
+  reviewEvery: KnowledgeReviewEvery;
   health: KnowledgeHealthCounts;
   recent: KnowledgeRecentPage[];
   yoursToReview: KnowledgeDuePage[];
@@ -250,7 +264,11 @@ export type KnowledgePageRow = KnowledgePageRef & {
   context?: true;
   trust: KnowledgePageTrust;
 };
-export type KnowledgePagesResponse = { pages: KnowledgePageRow[] };
+/** `reviewEvery` is the knowledgebase's Review Period, said once for every page's `reviewAt`. */
+export type KnowledgePagesResponse = {
+  reviewEvery: KnowledgeReviewEvery;
+  pages: KnowledgePageRow[];
+};
 /** `GET .../pages/<tab>`: one page as Markdown, its page links by their current titles. `heading` and `maxChars`
  *  narrow it; `leftOut` counts the characters not sent and `headings` lists the page's sections. */
 export type KnowledgePageRead = KnowledgePageRef & {
@@ -273,6 +291,8 @@ export type KnowledgeAgentContextResponse = {
   scopes: AgentScope[];
   budget: number;
   tokens: number;
+  /** The knowledgebase's Review Period. */
+  reviewEvery: KnowledgeReviewEvery;
   pages: (KnowledgePageRef & { markdown: string; tokens: number; trust: KnowledgePageTrust })[];
   leftOut: (KnowledgePageRef & { tokens: number })[];
   pageCount: number;
@@ -308,6 +328,8 @@ export type KnowledgeOverviewResponse = {
   suggestions: KnowledgeSuggestion[];
   context: { budget: number; used: number; pages: KnowledgeContextPage[] };
   health: KnowledgeHealthCounts;
+  /** The knowledgebase's Review Period, which `health` is worked out under. */
+  reviewEvery: KnowledgeReviewEvery;
   hasKey: boolean;
   /** The Knowledgebase Reviews emails: whether this deployment sends email, and when the owners were last
    *  reminded (Remind the Owners is once a week). */

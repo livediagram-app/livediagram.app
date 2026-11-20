@@ -6,6 +6,7 @@ import {
   MAX_INDEXED_TITLE_CHARS,
   backlinkRows,
   deletePageIndex,
+  countReviewDue,
   putPageTrust,
   replacePageIndex,
 } from './page-index';
@@ -88,9 +89,11 @@ describe('a page in the index', () => {
       { from_tab: 'tab-1', to_tab: 'tab-3' },
     ]);
     expect(db.rows('SELECT * FROM page_trust')).toEqual([
-      { tab: 'tab-1', title: 'Release Process', verified_at: null, review_days: null },
+      { tab: 'tab-1', title: 'Release Process', verified_at: null },
     ]);
-    expect(db.all<SearchRow>(searchPassages('fridays', { now: NOW })!)).toHaveLength(1);
+    expect(
+      db.all<SearchRow>(searchPassages('fridays', { now: NOW, reviewEvery: 90 })!),
+    ).toHaveLength(1);
   });
 
   it('replaces a page whole: old words no longer match, other pages are untouched', () => {
@@ -99,7 +102,7 @@ describe('a page in the index', () => {
     db.run(index('tab-2', 'Support', ['Ask in the channel on Fridays.']));
     db.run(index('tab-1', 'Logistics', ['We ship on Tuesdays.'], ['tab-3']));
     const found = (query: string) =>
-      db.all<SearchRow>(searchPassages(query, { now: NOW })!).map((r) => r.tab);
+      db.all<SearchRow>(searchPassages(query, { now: NOW, reviewEvery: 90 })!).map((r) => r.tab);
     expect(found('fridays')).toEqual(['tab-2']);
     expect(found('tuesdays')).toEqual(['tab-1']);
     expect(found('release')).toEqual([]);
@@ -161,7 +164,9 @@ describe('a page in the index', () => {
       { from_tab: 'tab-2', to_tab: 'tab-1' },
     ]);
     expect(db.rows('SELECT tab FROM page_trust')).toEqual([{ tab: 'tab-2' }]);
-    expect(db.all<SearchRow>(searchPassages('fridays', { now: NOW })!)).toEqual([]);
+    expect(db.all<SearchRow>(searchPassages('fridays', { now: NOW, reviewEvery: 90 })!)).toEqual(
+      [],
+    );
     // Deleting a page that is not there is no error.
     db.run(deletePageIndex('tab-9'));
   });
@@ -182,9 +187,33 @@ describe('a page in the index', () => {
   it('writes Verify without touching the passages', () => {
     const db = knowledgeDb();
     db.run(index('tab-1', 'A', ['a']));
-    db.run(putPageTrust('tab-1', 'A', { verifiedAt: NOW, reviewDays: 30 }));
+    db.run(putPageTrust('tab-1', 'A', { verifiedAt: NOW }));
     expect(db.rows('SELECT * FROM page_trust')).toEqual([
-      { tab: 'tab-1', title: 'A', verified_at: NOW, review_days: 30 },
+      { tab: 'tab-1', title: 'A', verified_at: NOW },
     ]);
+  });
+
+  it('counts the pages a Review Period makes due, from the index on verified_at', () => {
+    const db = knowledgeDb();
+    const DAY = 86_400_000;
+    db.run(index('never', 'N', ['n']));
+    for (const [tab, days] of [
+      ['a', 10],
+      ['b', 30],
+      ['c', 100],
+      ['d', 400],
+    ] as const) {
+      db.run(index(tab, tab, [tab]));
+      db.run(putPageTrust(tab, tab, { verifiedAt: NOW - days * DAY }));
+    }
+    const due = (days: number) => db.all<{ due: number }>(countReviewDue(days, NOW))[0]!.due;
+    expect([due(30), due(90), due(180), due(365)]).toEqual([3, 2, 1, 1]);
+    const plan = db
+      .rows<{ detail: string }>(
+        `EXPLAIN QUERY PLAN SELECT COUNT(*) FROM page_trust WHERE verified_at IS NOT NULL AND verified_at <= 1`,
+      )
+      .map((r) => r.detail)
+      .join(' ');
+    expect(plan).toContain('page_trust_verified');
   });
 });

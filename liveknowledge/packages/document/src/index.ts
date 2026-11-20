@@ -209,6 +209,7 @@ export * from './comment-thread';
 // The whole-document `liveknowledge.document` envelope and the per-tab JSON and Markdown export (the editor and the
 // CLI's pull files).
 export * from './document-envelope';
+export * from './knowledge-settings';
 export * from './export-tab-text';
 export * from '@liveworkspace/model-core/comment-mentions';
 // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): the six, the stored shape and the toggle.

@@ -1,16 +1,26 @@
 // How far a page can be trusted (docs/specs/030-knowledgebase/verification.md): the fields a page carries
-// (`Tab.knowledge`), read defensively, and the state worked out from them and the clock. Nothing is written when a
-// review comes due.
+// (`Tab.knowledge`) and the knowledgebase's one Review Period (`knowledgeSettings.reviewEvery`), both read
+// defensively, and the state worked out from them and the clock. Nothing is written when a review comes due, and
+// nothing a page stores changes when the period does.
 
-export type ReviewEvery = 30 | 90 | 180 | 365 | 'never';
-export const REVIEW_INTERVALS: readonly ReviewEvery[] = [30, 90, 180, 365, 'never'];
-export const DEFAULT_REVIEW_EVERY: ReviewEvery = 90;
+import type { ReviewEvery } from '@liveknowledge/document';
+
+export {
+  DEFAULT_KNOWLEDGE_SETTINGS,
+  DEFAULT_REVIEW_EVERY,
+  REVIEW_INTERVALS,
+  isReviewEvery,
+  parseKnowledgeSettings,
+  storedKnowledgeSettings,
+  type KnowledgeSettings,
+  type ReviewEvery,
+} from '@liveknowledge/document';
 
 const DAY_MS = 86_400_000;
 const MAX_PERSON_ID = 128;
 
-/** A page's knowledge fields. Every one is optional: absent is no owner, never verified, the default interval,
- *  not in context. */
+/** A page's knowledge fields. Every one is optional: absent is no owner, never verified, not in context. A page
+ *  has no review period of its own: a stored `reviewEvery` is ignored and dropped. */
 export type KnowledgeFields = {
   /** The person answerable for the page being right: an account id. */
   owner?: string;
@@ -18,7 +28,6 @@ export type KnowledgeFields = {
   verifiedAt?: number;
   /** Who verified it: an account id. */
   verifiedBy?: string;
-  reviewEvery?: ReviewEvery;
   /** Always in Context (docs/specs/030-knowledgebase/ai-knowledge.md). */
   context?: true;
 };
@@ -39,9 +48,6 @@ export function parseKnowledgeFields(v: unknown): KnowledgeFields {
     const by = personId(raw.verifiedBy);
     if (by) fields.verifiedBy = by;
   }
-  if (REVIEW_INTERVALS.includes(raw.reviewEvery as ReviewEvery)) {
-    fields.reviewEvery = raw.reviewEvery as ReviewEvery;
-  }
   if (raw.context === true) fields.context = true;
   return fields;
 }
@@ -53,17 +59,16 @@ export type TrustState =
   /** `reviewAt` (epoch ms) is when the review is, or was, due; absent on a page that does not age. */
   | { state: 'verified' | 'review-due'; verifiedAt: number; reviewAt?: number };
 
-/** The days until a page's review, or undefined for a page that does not age ("Never"). */
-export function reviewDays(fields: Pick<KnowledgeFields, 'reviewEvery'>): number | undefined {
-  const every = fields.reviewEvery ?? DEFAULT_REVIEW_EVERY;
+/** The days of a Review Period, or undefined for a knowledgebase whose pages do not age ("Never"). */
+export function reviewDays(every: ReviewEvery): number | undefined {
   return every === 'never' ? undefined : every;
 }
 
-/** A page's state at `now` (epoch ms). */
-export function trustState(fields: KnowledgeFields, now: number): TrustState {
+/** A page's state at `now` (epoch ms), under its knowledgebase's Review Period. */
+export function trustState(fields: KnowledgeFields, every: ReviewEvery, now: number): TrustState {
   const { verifiedAt } = fields;
   if (verifiedAt === undefined) return { state: 'never-verified' };
-  const days = reviewDays(fields);
+  const days = reviewDays(every);
   if (days === undefined) return { state: 'verified', verifiedAt };
   const reviewAt = verifiedAt + days * DAY_MS;
   return { state: reviewAt <= now ? 'review-due' : 'verified', verifiedAt, reviewAt };
@@ -82,7 +87,11 @@ export type KnowledgeHealth = {
   total: number;
 };
 
-export function knowledgeHealth(pages: readonly KnowledgeFields[], now: number): KnowledgeHealth {
+export function knowledgeHealth(
+  pages: readonly KnowledgeFields[],
+  every: ReviewEvery,
+  now: number,
+): KnowledgeHealth {
   const health: KnowledgeHealth = {
     verified: 0,
     reviewDue: 0,
@@ -90,7 +99,7 @@ export function knowledgeHealth(pages: readonly KnowledgeFields[], now: number):
     total: pages.length,
   };
   for (const fields of pages) {
-    const { state } = trustState(fields, now);
+    const { state } = trustState(fields, every, now);
     if (state === 'verified') health.verified++;
     else if (state === 'review-due') health.reviewDue++;
     else health.neverVerified++;

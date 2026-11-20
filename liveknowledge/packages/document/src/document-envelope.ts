@@ -6,6 +6,7 @@
 
 import { remapTabLinks } from './duplicate';
 import type { Tab } from './index';
+import { DEFAULT_REVIEW_EVERY, isReviewEvery, type KnowledgeSettings } from './knowledge-settings';
 import type { StoredPresentation } from './slide-deck';
 
 export const DOCUMENT_ENVELOPE_KIND = 'liveknowledge.document';
@@ -21,14 +22,29 @@ export type DocumentEnvelope = {
     id: string;
     name: string;
     presentation: string | null;
+    /** The knowledgebase's settings (the Review Period); absent is the default, every 90 days. */
+    knowledgeSettings?: KnowledgeSettings;
     tabs: EnvelopeTab[];
   };
 };
 
+// The settings a file carries: a period that is known and not the default, or nothing.
+function fileSettings(v: unknown): { knowledgeSettings?: KnowledgeSettings } {
+  const every = v && typeof v === 'object' ? (v as { reviewEvery?: unknown }).reviewEvery : 0;
+  return isReviewEvery(every) && every !== DEFAULT_REVIEW_EVERY
+    ? { knowledgeSettings: { reviewEvery: every } }
+    : {};
+}
+
 type DocumentEnvelopeFailure = 'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
 
 export function documentToEnvelopeText(
-  liveDoc: { id: string; name: string; presentation: string | null },
+  liveDoc: {
+    id: string;
+    name: string;
+    presentation: string | null;
+    knowledgeSettings?: KnowledgeSettings;
+  },
   tabs: EnvelopeTab[],
   exportedAt: number,
 ): string {
@@ -40,6 +56,7 @@ export function documentToEnvelopeText(
       id: liveDoc.id,
       name: liveDoc.name,
       presentation: liveDoc.presentation,
+      ...fileSettings(liveDoc.knowledgeSettings),
       tabs,
     },
   };
@@ -96,6 +113,7 @@ export function parseDocumentEnvelope(
         id: d.id,
         name: d.name,
         presentation: d.presentation ?? null,
+        ...fileSettings(d.knowledgeSettings),
         tabs: d.tabs,
       },
     },
@@ -108,6 +126,7 @@ export function parseDocumentEnvelope(
 export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
   tabs: EnvelopeTab[];
   presentation: string | null;
+  knowledgeSettings?: KnowledgeSettings;
 } {
   const idMap = new Map(envelope.document.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
   const tabs = envelope.document.tabs.map((t) => ({
@@ -127,5 +146,5 @@ export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
       presentation = null;
     }
   }
-  return { tabs, presentation };
+  return { tabs, presentation, ...fileSettings(envelope.document.knowledgeSettings) };
 }

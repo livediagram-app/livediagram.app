@@ -97,16 +97,16 @@ describe('what a check looks up', () => {
       'tab-1',
       'We deploy the application on Tuesdays and the deploy is automatic.',
     );
-    const statement = probeSearch(probe, NOW)!;
+    const statement = probeSearch(probe, 90, NOW)!;
     expect(statement.params).toEqual([
-      NOW,
+      NOW - 90 * 86_400_000,
       '"application" OR "automatic" OR "tuesdays" OR "deploy"',
       'tab-1',
       CONFLICT_MAX_CANDIDATES,
     ]);
-    expect(probeSearch(passage('p2', 'tab-1', '...'), NOW)).toBeUndefined();
+    expect(probeSearch(passage('p2', 'tab-1', '...'), 90, NOW)).toBeUndefined();
     // Words of one length go in alphabetical order, so the same passage always asks the same thing.
-    expect(probeSearch(passage('p3', 'tab-1', 'zeta beta alpha gamma'), NOW)!.params[1]).toBe(
+    expect(probeSearch(passage('p3', 'tab-1', 'zeta beta alpha gamma'), 90, NOW)!.params[1]).toBe(
       '"alpha" OR "gamma" OR "beta" OR "zeta"',
     );
   });
@@ -132,7 +132,7 @@ describe('what a check looks up', () => {
       'tab-1',
       flowOf(para('Deploys to production happen on Tuesdays after review.')),
     );
-    const found = db.all<SearchRow>(probeSearch(probe!, NOW)!).map(foundPassage);
+    const found = db.all<SearchRow>(probeSearch(probe!, 90, NOW)!).map(foundPassage);
     expect(found.map((f) => f.tab)).toEqual(['tab-2']);
     expect(chooseConflictCandidates([{ probe: probe!, found }])).toHaveLength(1);
   });

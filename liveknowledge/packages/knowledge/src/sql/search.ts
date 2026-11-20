@@ -1,7 +1,7 @@
 // Search over a knowledgebase's passages (docs/specs/030-knowledgebase/search-and-ask.md "Search"): the person's
 // words made into a safe FTS5 expression, and the query that ranks page titles first, verified pages before the
 // rest, then by bm25.
-import type { TrustStateName } from '../trust';
+import { reviewDays, type ReviewEvery, type TrustStateName } from '../trust';
 import type { SqlStatement, SqlValue } from './statement';
 
 export const SEARCH_MAX_QUERY_CHARS = 200;
@@ -48,6 +48,8 @@ export function ftsExpression(terms: readonly string[], mode: 'all' | 'any'): st
 export type SearchOptions = {
   /** Now (epoch ms): a page is verified until its review is due. */
   now: number;
+  /** The knowledgebase's Review Period: when a verified page's review comes due. */
+  reviewEvery: ReviewEvery;
   /** At most SEARCH_MAX_RESULTS, which is also the default. */
   limit?: number;
   /** `all` (the default) for the search field, `any` for a question's words. */
@@ -110,7 +112,10 @@ export function searchByTerms(
     Math.max(1, Math.floor(options.limit ?? SEARCH_MAX_RESULTS)),
   );
   const where = ['passages_fts MATCH ?'];
-  const params: SqlValue[] = [options.now, match];
+  // A page verified at or before this is due; null (Never) is before every page, so none is.
+  const days = reviewDays(options.reviewEvery);
+  const dueBefore = days === undefined ? null : options.now - days * DAY_MS;
+  const params: SqlValue[] = [dueBefore, match];
   if (options.passagesOnly) where.push('p.ordinal >= 0');
   if (options.exceptTab !== undefined) {
     where.push('p.tab <> ?');
@@ -123,7 +128,7 @@ export function searchByTerms(
         COALESCE(t.title, '') AS title, t.verified_at AS verifiedAt,
         CASE
           WHEN t.verified_at IS NULL THEN 0
-          WHEN t.review_days IS NOT NULL AND t.verified_at + t.review_days * ${DAY_MS} <= ? THEN 1
+          WHEN t.verified_at <= ? THEN 1
           ELSE 2
         END AS trust,
         highlight(passages_fts, 0, char(2), char(3)) AS titleMarked,

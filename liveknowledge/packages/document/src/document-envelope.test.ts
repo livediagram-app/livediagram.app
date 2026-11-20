@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DOCUMENT_ENVELOPE_KIND,
+  copyDocumentEnvelope,
   documentToEnvelopeText,
   parseDocumentEnvelope,
   type EnvelopeTab,
@@ -62,5 +63,40 @@ describe('parseDocumentEnvelope', () => {
       '{"kind":"liveknowledge.document","schemaVersion":1,"exportedAt":1,"document":{"id":"d","name":"n","tabs":[]}}',
     );
     expect(parsed.ok && parsed.envelope.document.presentation).toBeNull();
+  });
+});
+
+describe("the knowledgebase's settings in the file", () => {
+  const text = (knowledgeSettings?: unknown) =>
+    documentToEnvelopeText(
+      { id: 'd1', name: 'Plan', presentation: null, knowledgeSettings: knowledgeSettings as never },
+      [tab],
+      42,
+    );
+  const written = (settings?: unknown) =>
+    JSON.parse(text(settings)) as { document: Record<string, unknown> };
+  const read = (file: string) => {
+    const parsed = parseDocumentEnvelope(file);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    return parsed.envelope;
+  };
+
+  it('carries a Review Period that is not the default, through a write, a read and a copy', () => {
+    for (const reviewEvery of [30, 180, 365, 'never'] as const) {
+      const envelope = read(text({ reviewEvery }));
+      expect(envelope.document.knowledgeSettings).toEqual({ reviewEvery });
+      expect(copyDocumentEnvelope(envelope).knowledgeSettings).toEqual({ reviewEvery });
+    }
+  });
+
+  it('leaves the default and anything unknown out, so an old file reads as every 90 days', () => {
+    for (const settings of [undefined, { reviewEvery: 90 }, { reviewEvery: 45 }, 'never', null]) {
+      expect(written(settings).document).not.toHaveProperty('knowledgeSettings');
+    }
+    const old = written();
+    old.document.knowledgeSettings = { reviewEvery: 'monthly' };
+    const envelope = read(JSON.stringify(old));
+    expect(envelope.document).not.toHaveProperty('knowledgeSettings');
+    expect(copyDocumentEnvelope(envelope)).not.toHaveProperty('knowledgeSettings');
   });
 });

@@ -117,17 +117,21 @@ describe('the passages of a question', () => {
           title,
           passages: pagePassages(tab, flowOf(para(text))),
           links: [],
-          trust: verifiedAt ? { verifiedAt, reviewDays: 90 } : {},
+          trust: verifiedAt ? { verifiedAt } : {},
         }),
       );
     add('old', 'Deploy Notes', 'We deploy the API on Fridays.');
     add('new', 'Release Process', 'We deploy the API on Tuesdays.', NOW - DAY);
     add('other', 'Lunch', 'The canteen opens at noon.');
-    const statement = askSearch('How do we deploy the API?', { now: NOW })!;
-    expect(statement.params).toEqual([NOW, '"deploy" OR "api"', ASK_MAX_PASSAGES]);
+    const statement = askSearch('How do we deploy the API?', { now: NOW, reviewEvery: 90 })!;
+    expect(statement.params).toEqual([
+      NOW - 90 * 86_400_000,
+      '"deploy" OR "api"',
+      ASK_MAX_PASSAGES,
+    ]);
     const chosen = chooseAskPassages(db.all<SearchRow>(statement).map(foundPassage));
     expect(chosen.map((c) => c.passage.tab)).toEqual(['new', 'old']);
-    expect(askSearch('?!', { now: NOW })).toBeUndefined();
+    expect(askSearch('?!', { now: NOW, reviewEvery: 90 })).toBeUndefined();
   });
 });
 

@@ -11,11 +11,11 @@ import { insertRows, type SqlStatement, type SqlValue } from './statement';
 /** A title is indexed up to here; a tab's name is far shorter. */
 export const MAX_INDEXED_TITLE_CHARS = 200;
 
+/** When the review comes due is not stored: it is `verifiedAt` plus the knowledgebase's Review Period, worked out
+ *  by each read, so a change of period rewrites no row. */
 export type PageTrustRow = {
   /** When the page was verified (epoch ms); absent is never. */
   verifiedAt?: number;
-  /** Days until the review is due; absent is a page that does not age. */
-  reviewDays?: number;
 };
 
 export type PageIndex = {
@@ -58,17 +58,21 @@ export const closeChangedConflicts = (tab: string): SqlStatement => ({
   params: [tab, tab],
 });
 
-/** The page's title and verification, as search reads them. Also what Verify and a change of interval write. */
+/** The page's title and verification, as search reads them. Also what Verify writes. */
 export const putPageTrust = (tab: string, title: string, trust: PageTrustRow): SqlStatement => ({
-  sql: `INSERT INTO page_trust (tab, title, verified_at, review_days) VALUES (?, ?, ?, ?)
-    ON CONFLICT (tab) DO UPDATE SET title = excluded.title, verified_at = excluded.verified_at,
-      review_days = excluded.review_days`,
-  params: [
-    tab,
-    title.slice(0, MAX_INDEXED_TITLE_CHARS),
-    trust.verifiedAt ?? null,
-    trust.reviewDays ?? null,
-  ],
+  sql: `INSERT INTO page_trust (tab, title, verified_at) VALUES (?, ?, ?)
+    ON CONFLICT (tab) DO UPDATE SET title = excluded.title, verified_at = excluded.verified_at`,
+  params: [tab, title.slice(0, MAX_INDEXED_TITLE_CHARS), trust.verifiedAt ?? null],
+});
+
+/**
+ * How many pages would be Review Due at `now` under a Review Period of `days` (the dialog's count before a
+ * shorter period is applied; verification.md "The Review Period"): one read of `page_trust_verified`, a row a
+ * verified page, 500 pages at most. Undefined days (Never) makes nothing due: the caller answers 0 without asking.
+ */
+export const countReviewDue = (days: number, now: number): SqlStatement => ({
+  sql: `SELECT COUNT(*) AS due FROM page_trust WHERE verified_at IS NOT NULL AND verified_at <= ?`,
+  params: [now - days * 86_400_000],
 });
 
 /** Replaces everything the index holds of one page. Run in order, in one transaction. */

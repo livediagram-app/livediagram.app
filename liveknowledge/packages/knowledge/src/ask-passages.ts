@@ -16,7 +16,7 @@ export type AskPassage = { number: number; passage: FoundPassage };
  *  question has no words. */
 export const askSearch = (
   question: string,
-  options: Pick<SearchOptions, 'now' | 'exceptTab'>,
+  options: Pick<SearchOptions, 'now' | 'reviewEvery' | 'exceptTab'>,
 ): SqlStatement | undefined =>
   searchByTerms(contentWords(question), {
     ...options,

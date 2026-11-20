@@ -39,17 +39,15 @@ function seeded() {
   add('never', 'Deploy Notes', ['Old Notes', 'We deploy the api on Fridays, said someone once.']);
   add('verified', 'Release Process', ['Deploys', 'We deploy the api on Tuesdays after review.'], {
     verifiedAt: NOW - DAY,
-    reviewDays: 90,
   });
   add('due', 'Runbook', ['Emergency', 'To deploy the api in an emergency, page the owner.'], {
     verifiedAt: NOW - 100 * DAY,
-    reviewDays: 90,
   });
   add('ageless', 'Glossary', ['Terms', 'API: the service we deploy. Café: where we meet.'], {
-    verifiedAt: NOW - 5000 * DAY,
+    verifiedAt: NOW - 2 * DAY,
   });
   const search = (query: string, options: Partial<SearchOptions> = {}) => {
-    const statement = searchPassages(query, { now: NOW, ...options });
+    const statement = searchPassages(query, { now: NOW, reviewEvery: 90, ...options });
     return statement ? db.all<SearchRow>(statement).map(foundPassage) : undefined;
   };
   return { db, search };
@@ -88,8 +86,8 @@ describe('a query made safe', () => {
   });
 
   it('answers no statement for a query without words', () => {
-    expect(searchPassages(' "*" ', { now: NOW })).toBeUndefined();
-    expect(searchByTerms([], { now: NOW })).toBeUndefined();
+    expect(searchPassages(' "*" ', { now: NOW, reviewEvery: 90 })).toBeUndefined();
+    expect(searchByTerms([], { now: NOW, reviewEvery: 90 })).toBeUndefined();
   });
 });
 
@@ -136,6 +134,27 @@ describe('search', () => {
     const trustAt = (now: number) => search('tuesdays', { now })![0]!.trust;
     expect(trustAt(NOW)).toBe('verified');
     expect(trustAt(NOW + 89 * DAY)).toBe('review-due');
+  });
+
+  it("works out due from the knowledgebase's Review Period, with no row rewritten", () => {
+    const { db, search } = seeded();
+    const rows = () => db.rows('SELECT * FROM page_trust ORDER BY tab');
+    const before = rows();
+    const trustOf = (reviewEvery: SearchOptions['reviewEvery']) =>
+      Object.fromEntries(
+        search('deploy', { reviewEvery, passagesOnly: true })!.map((f) => [f.tab, f.trust]),
+      );
+    expect(trustOf(90)).toMatchObject({ verified: 'verified', due: 'review-due' });
+    expect(trustOf(365)).toMatchObject({ verified: 'verified', due: 'verified' });
+    expect(trustOf('never')).toMatchObject({ due: 'verified', never: 'never-verified' });
+    // To the millisecond: a page verified exactly a period ago is due.
+    expect(search('tuesdays', { reviewEvery: 30, now: NOW + 29 * DAY })![0]!.trust).toBe(
+      'review-due',
+    );
+    expect(search('tuesdays', { reviewEvery: 30, now: NOW + 29 * DAY - 1 })![0]!.trust).toBe(
+      'verified',
+    );
+    expect(rows()).toEqual(before);
   });
 
   it('needs every word, the last as a prefix', () => {

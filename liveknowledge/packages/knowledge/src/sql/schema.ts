@@ -27,14 +27,15 @@ export const KNOWLEDGE_SCHEMA: readonly string[] = [
   `CREATE VIRTUAL TABLE IF NOT EXISTS passages_fts USING fts5(
     title, text, content='passages', content_rowid='rowid', tokenize='${SEARCH_TOKENIZER}'
   )`,
-  // What search needs of a page without reading its tab: its title and when it was verified. `review_days` NULL is
-  // a page that does not age ("Never").
+  // What search needs of a page without reading its tab: its title and when it was verified. When its review is due
+  // is not stored: the knowledgebase's Review Period is bound to each read (verification.md "The Review Period").
   `CREATE TABLE IF NOT EXISTS page_trust (
     tab TEXT PRIMARY KEY,
     title TEXT NOT NULL,
-    verified_at INTEGER,
-    review_days INTEGER
+    verified_at INTEGER
   )`,
+  // The count of pages a period makes due, and the pages due, are a range of this index.
+  `CREATE INDEX IF NOT EXISTS page_trust_verified ON page_trust (verified_at)`,
   `CREATE TABLE IF NOT EXISTS page_links (
     from_tab TEXT NOT NULL,
     to_tab TEXT NOT NULL,
