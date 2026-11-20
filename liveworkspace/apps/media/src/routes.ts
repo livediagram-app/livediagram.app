@@ -23,6 +23,7 @@ import {
   MEDIA_REFS_PER_DOCUMENT_MAX,
   MEDIA_REFS_SYNC_MAX,
   ORIGINAL_NAME_MAX,
+  parseUnusedImageIds,
   sniffMediaType,
   type MediaApp,
   type MediaImage,
@@ -43,6 +44,7 @@ import {
   mergeOwner,
   ownerTotals,
   rowToImage,
+  unusedOf,
   usageOf,
   type Caps,
 } from './images';
@@ -239,6 +241,17 @@ export async function handleApp(
   if (segments[0] === 'usage' && segments.length === 1 && method === 'GET') {
     if (!isId(owner)) return badRequest('invalid_owner');
     return json(await usageOf(env, owner));
+  }
+
+  // GET /app/unused?owner=&document=&ids=: which of those images nothing but that document uses (media.md "Unused
+  // after a delete").
+  if (segments[0] === 'unused' && segments.length === 1 && method === 'GET') {
+    if (!isId(owner)) return badRequest('invalid_owner');
+    const document = url.searchParams.get('document');
+    if (!isId(document)) return badRequest('invalid_document');
+    const ids = parseUnusedImageIds(url.searchParams.get('ids'));
+    if (!ids) return badRequest('invalid_ids');
+    return json({ unused: await unusedOf(env, app, owner, document, ids) });
   }
 
   // POST /app/refs: the images each listed document places now.
