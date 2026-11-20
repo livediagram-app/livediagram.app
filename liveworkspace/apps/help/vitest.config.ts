@@ -41,6 +41,8 @@ export default defineProject({
         resolve: { alias: scoped(scope) },
         test: {
           name: scope,
+          // The build's next.config sets HELP_ART_APP from the scope; the edition's suites render as that build does.
+          env: { HELP_ART_APP: scope === 'all' ? '' : scope },
           include: [`editions/${scope}/tests/**/*.test.{ts,tsx}`],
           exclude: [
             ...SCOPES.filter((other) => other !== scope).map((other) => `editions/${other}/**`),
