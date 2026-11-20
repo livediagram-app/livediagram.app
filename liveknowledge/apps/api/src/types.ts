@@ -86,6 +86,9 @@ export type Env = {
   // "Ask"; @liveknowledge/knowledge key-seal.ts). A secret (wrangler secret put AI_KEY_SECRET). Unset: no key can be
   // stored, Ask answers `ask_unavailable`, and search and everything else work.
   AI_KEY_SECRET?: string;
+  // Set by the e2e stack alone (scripts/e2e-stack.mjs), never by a deployment: the loopback origin of its stand-in
+  // for the Anthropic API (knowledge/claude-door.ts `claudeDoorFor`, which ignores any value that is not one).
+  E2E_CLAUDE_STAND_IN?: string;
   // Per-caller limiter for a knowledgebase's search (GET /api/documents/<id>/search). Absent binding: allowed.
   SEARCH_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // liveknowledge' secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the

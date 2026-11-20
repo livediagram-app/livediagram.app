@@ -30,7 +30,7 @@ import {
 } from '@liveknowledge/knowledge';
 import type { DocumentEnv } from '../types';
 import { openAi } from './ai-settings';
-import { claudeDoor } from './claude-door';
+import { claudeDoorFor } from './claude-door';
 import type { IndexedPage } from './knowledge-index';
 import { rowsOf, runAll, sqlOf } from './knowledge-db';
 import { oweWork, type Work } from './knowledge-work';
@@ -129,7 +129,7 @@ export async function runConflictCheck(
   if (candidates.length === 0) return null;
   try {
     const reply = await callClaude({
-      fetch: claudeDoor,
+      fetch: claudeDoorFor(env),
       apiKey: ai.apiKey,
       request: conflictRequest({ model: ai.model, candidates }),
     });

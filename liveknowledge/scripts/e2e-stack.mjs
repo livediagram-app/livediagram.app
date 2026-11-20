@@ -32,11 +32,15 @@ import {
 // Every page enforces Trusted Types in production (docs/specs/016-platform/trusted-types.md), so the suite runs
 // against the same header: a violation throws in the page, and the pageErrors fixture fails the spec on it.
 import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
+import { startClaudeStandIn } from './e2e-claude-stand-in.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3602);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 9287);
 const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8319);
+// No request of this stack reaches Anthropic: the api's door to the model opens on the stand-in instead
+// (e2e-claude-stand-in.mjs), on a free loopback port. Not started beside an api that is already up.
+const claude = process.env.E2E_EDITOR_ONLY === '1' ? null : await startClaudeStandIn();
 
 runE2EStack({
   product: 'liveknowledge',
@@ -67,5 +71,6 @@ runE2EStack({
   apiVars: [
     `AUTH_ORIGIN:http://localhost:${EDITOR_PORT}`,
     'AI_KEY_SECRET:e2e-liveknowledge-ai-key-secret',
+    ...(claude ? [`E2E_CLAUDE_STAND_IN:${claude.origin}`] : []),
   ],
 });

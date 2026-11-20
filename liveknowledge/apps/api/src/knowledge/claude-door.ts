@@ -13,3 +13,38 @@ export const claudeDoor: typeof fetch = (input, init) => {
     return Promise.reject(new Error('outbound host refused'));
   return fetch(input, init);
 };
+
+/** The var only the e2e stack sets (scripts/e2e-stack.mjs): the origin of its stand-in for the Anthropic API. */
+export type ClaudeDoorEnv = { E2E_CLAUDE_STAND_IN?: string };
+
+// The stand-in's origin, or undefined for anything that is not plain HTTP on a port of this machine's loopback: a
+// value that names another host (a deployment given the var by mistake, or on purpose) is ignored, so the door stays
+// the Anthropic API's.
+function standInOrigin(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return undefined;
+  }
+  const loopback = url.hostname === '127.0.0.1' || url.hostname === 'localhost';
+  return url.protocol === 'http:' && loopback && url.port ? url.origin : undefined;
+}
+
+/**
+ * The door for this Worker's environment: `claudeDoor`, except under the e2e stack, whose `E2E_CLAUDE_STAND_IN` names
+ * a stand-in on the loopback (docs/specs/003-system-architecture/e2e-smoke.md "The Claude stand-in"). There a request
+ * for the Anthropic API goes to the stand-in instead, and nothing reaches Anthropic at all; an address that is not
+ * the Anthropic API's is refused either way. The var is in no wrangler.toml, hosted var or secret list.
+ */
+export function claudeDoorFor(env: ClaudeDoorEnv): typeof fetch {
+  const standIn = standInOrigin(env.E2E_CLAUDE_STAND_IN);
+  if (!standIn) return claudeDoor;
+  return (input, init) => {
+    const url = new URL(addressOf(input));
+    if (url.protocol !== 'https:' || url.host !== CLAUDE_HOST)
+      return Promise.reject(new Error('outbound host refused'));
+    return fetch(`${standIn}${url.pathname}${url.search}`, init);
+  };
+}

@@ -27,7 +27,7 @@ import {
 } from '@liveknowledge/knowledge';
 import type { AskEvent, AskSource, AskTurn } from '@liveknowledge/api-schema';
 import { ASK_UNAVAILABLE_WORDS, openAi } from '../knowledge/ai-settings';
-import { claudeDoor } from '../knowledge/claude-door';
+import { claudeDoorFor } from '../knowledge/claude-door';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { CORS_HEADERS, json } from '../responses';
@@ -121,7 +121,7 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
       const answer = askAnswerStream(passages);
       try {
         const reply = await callClaude({
-          fetch: claudeDoor,
+          fetch: claudeDoorFor(env),
           apiKey: ai.apiKey,
           request,
           signal: ctx.request.signal,
