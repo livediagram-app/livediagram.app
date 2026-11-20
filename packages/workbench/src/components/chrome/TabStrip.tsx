@@ -8,8 +8,22 @@ import {
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react';
-import { scrollLeftToReveal, TAB_REVEAL_PAD } from './tab-strip-scroll';
-import { TAB_ADD_CLASS, TAB_LIST_CLASS, TAB_SLIDER_CLASS, TAB_STRIP_CLASS } from './tab-shape';
+import { Glyph, Tooltip } from '@liveworkspace/ui';
+import {
+  edgeMask,
+  pageScrollLeft,
+  scrollEdges,
+  scrollLeftToReveal,
+  TAB_REVEAL_PAD,
+} from './tab-strip-scroll';
+import {
+  TAB_ADD_CLASS,
+  TAB_LIST_CLASS,
+  TAB_SCROLL_BUTTON_CLASS,
+  TAB_SLIDER_CLASS,
+  TAB_STRIP_CLASS,
+  TAB_STRIP_FRAME_CLASS,
+} from './tab-shape';
 import { useTabSlider } from './useTabSlider';
 import { useStripRoving } from './useStripRoving';
 import { TabFolderGroup, type TabFolderGroupProps } from './TabFolderGroup';
@@ -41,6 +55,10 @@ export type TabStripProps<T extends { id: string }> = {
 
 const still = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
+// A tab dragged over a scroll button pages the strip once per this long, so a held drag walks the row at a pace the
+// eye can follow (dragover fires every ~50ms).
+const DRAG_PAGE_MS = 450;
+
 export function TabStrip<T extends { id: string }>({
   runs,
   activeId,
@@ -52,9 +70,9 @@ export function TabStrip<T extends { id: string }>({
   renderRenameField,
   folderPresence,
 }: TabStripProps<T>) {
-  const stripRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
 
   // Which folders are open: this visit's own, never stored or broadcast. On load a small bar on desktop starts with
   // every folder open, any other with every folder shut (foldersOpenOnLoad), decided once, the first time the strip has
@@ -155,6 +173,90 @@ export function TabStrip<T extends { id: string }>({
     return () => observer.disconnect();
   }, [revealActive]);
 
+  // Which edges have tabs beyond them: a scroll button shows over each (scrollEdges). Read on scroll (once a frame at
+  // most) and whenever the strip or its row changes size (a tab added, removed, renamed, a folder opened), never on a
+  // timer; it re-renders only when an edge changes.
+  const [edges, setEdges] = useState({ left: false, right: false });
+  useEffect(() => {
+    const strip = stripRef.current;
+    const list = listRef.current;
+    if (!strip) return;
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      // Sideways only: focusing a control whose 44px tap area reaches past the row (Add tab, after a click) scrolled
+      // the strip down, lifting every tab 8px off the bar's foot until the page reloaded.
+      if (strip.scrollTop !== 0) strip.scrollTop = 0;
+      const next = scrollEdges(strip);
+      setEdges((prev) => (prev.left === next.left && prev.right === next.right ? prev : next));
+    };
+    const soon = () => {
+      if (!frame) frame = requestAnimationFrame(read);
+    };
+    read();
+    strip.addEventListener('scroll', soon, { passive: true });
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(soon);
+    observer?.observe(strip);
+    if (list) observer?.observe(list);
+    return () => {
+      strip.removeEventListener('scroll', soon);
+      observer?.disconnect();
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  // A scroll button's click: about a strip width on, stopping on a tab's edge (pageScrollLeft).
+  const page = useCallback((direction: 'left' | 'right') => {
+    const strip = stripRef.current;
+    if (!strip) return;
+    const s = strip.getBoundingClientRect();
+    const items = [...strip.querySelectorAll<HTMLElement>('[data-tab], [data-folder-chip]')]
+      .map((el) => el.getBoundingClientRect())
+      .filter((r) => r.right > r.left);
+    const to = pageScrollLeft(
+      direction,
+      {
+        left: s.left,
+        width: s.width,
+        scrollLeft: strip.scrollLeft,
+        scrollWidth: strip.scrollWidth,
+      },
+      items,
+    );
+    if (to !== strip.scrollLeft)
+      strip.scrollTo({ left: to, behavior: still() ? 'auto' : 'smooth' });
+  }, []);
+  const lastDragPage = useRef(0);
+  const onDragOverButton = (direction: 'left' | 'right') => () => {
+    const now = Date.now();
+    if (now - lastDragPage.current < DRAG_PAGE_MS) return;
+    lastDragPage.current = now;
+    page(direction);
+  };
+  const scrollButton = (direction: 'left' | 'right') => {
+    const label = direction === 'left' ? 'Scroll Tabs Left' : 'Scroll Tabs Right';
+    const shown = edges[direction];
+    return (
+      <Tooltip label={label}>
+        <button
+          type="button"
+          aria-label={label}
+          aria-hidden={shown ? undefined : true}
+          tabIndex={shown ? undefined : -1}
+          data-shown={shown}
+          data-tab-scroll={direction}
+          onClick={() => page(direction)}
+          onDragOver={onDragOverButton(direction)}
+          className={`${TAB_SCROLL_BUTTON_CLASS} ${direction === 'left' ? 'left-1' : 'right-1'}`}
+        >
+          <Glyph size={12} units={12}>
+            <path d={direction === 'left' ? 'M7.5 2.5 4 6l3.5 3.5' : 'M4.5 2.5 8 6 4.5 9.5'} />
+          </Glyph>
+        </button>
+      </Tooltip>
+    );
+  };
+
   // The open tab's card slides to each tab you open (useTabSlider); a reorder moves it at once.
   useTabSlider(listRef, sliderRef, activeId, order);
 
@@ -182,52 +284,56 @@ export function TabStrip<T extends { id: string }>({
   return (
     // A landmark: the footer sits outside the editor's header and main, so without one every tab was content no
     // landmark held (axe region) and a screen reader's landmark list had no way to the tabs.
-    <nav ref={stripRef} aria-label="Tab bar" className={TAB_STRIP_CLASS}>
-      <div
-        ref={listRef}
-        role="toolbar"
-        aria-label="Tabs"
-        aria-orientation="horizontal"
-        onKeyDown={onKeyDown}
-        onClick={onClick}
-        className={TAB_LIST_CLASS}
-      >
-        {/* First, so every tab and chip paints over it. */}
-        <div ref={sliderRef} aria-hidden data-tab-slider="" className={TAB_SLIDER_CLASS} />
-        {runs.map((run) =>
-          run.kind === 'loose' ? (
-            renderTab(run.tab)
-          ) : (
-            <TabFolderGroup
-              key={`folder:${run.name}`}
-              name={run.name}
-              tabs={run.tabs}
-              activeId={activeId}
-              expanded={expanded.has(run.name)}
-              readOnly={readOnly}
-              onToggle={() => toggleFolder(run.name)}
-              renderTab={renderTab}
-              onJoin={(src, first) => onReorder(src, first)}
-              onRename={renameFolder}
-              renderRenameField={renderRenameField}
-              hiddenPresence={folderPresence}
-              onOpened={revealGroup}
-              onClosed={revealActive}
-            />
-          ),
+    <nav aria-label="Tab bar" className={TAB_STRIP_FRAME_CLASS}>
+      {scrollButton('left')}
+      <div ref={stripRef} className={TAB_STRIP_CLASS} style={{ maskImage: edgeMask(edges) }}>
+        <div
+          ref={listRef}
+          role="toolbar"
+          aria-label="Tabs"
+          aria-orientation="horizontal"
+          onKeyDown={onKeyDown}
+          onClick={onClick}
+          className={TAB_LIST_CLASS}
+        >
+          {/* First, so every tab and chip paints over it. */}
+          <div ref={sliderRef} aria-hidden data-tab-slider="" className={TAB_SLIDER_CLASS} />
+          {runs.map((run) =>
+            run.kind === 'loose' ? (
+              renderTab(run.tab)
+            ) : (
+              <TabFolderGroup
+                key={`folder:${run.name}`}
+                name={run.name}
+                tabs={run.tabs}
+                activeId={activeId}
+                expanded={expanded.has(run.name)}
+                readOnly={readOnly}
+                onToggle={() => toggleFolder(run.name)}
+                renderTab={renderTab}
+                onJoin={(src, first) => onReorder(src, first)}
+                onRename={renameFolder}
+                renderRenameField={renderRenameField}
+                hiddenPresence={folderPresence}
+                onOpened={revealGroup}
+                onClosed={revealActive}
+              />
+            ),
+          )}
+        </div>
+        {readOnly || !onAdd ? null : (
+          <button
+            type="button"
+            onClick={onAdd}
+            aria-label="Add tab"
+            data-tour-id="add-tab"
+            className={TAB_ADD_CLASS}
+          >
+            +
+          </button>
         )}
       </div>
-      {readOnly || !onAdd ? null : (
-        <button
-          type="button"
-          onClick={onAdd}
-          aria-label="Add tab"
-          data-tour-id="add-tab"
-          className={TAB_ADD_CLASS}
-        >
-          +
-        </button>
-      )}
+      {scrollButton('right')}
     </nav>
   );
 }

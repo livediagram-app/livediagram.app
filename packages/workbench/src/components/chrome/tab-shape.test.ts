@@ -5,6 +5,7 @@ import {
   TAB_ADD_CLASS,
   TAB_BAR_CLASS,
   TAB_DASHED_CLASS,
+  TAB_SCROLL_BUTTON_CLASS,
   TAB_STRIP_CLASS,
   tabShapeClass,
 } from './tab-shape';
@@ -82,13 +83,26 @@ describe('tabShapeClass', () => {
 });
 
 describe('the strip and bar', () => {
-  it('stands the tabs at the bar’s foot and scrolls sideways only, its edges fading', () => {
+  it('stands the tabs at the bar’s foot and scrolls sideways only', () => {
     expect(classes(TAB_STRIP_CLASS)).toEqual(
+      expect.arrayContaining(['items-end', 'overflow-x-auto', 'overflow-y-hidden']),
+    );
+  });
+
+  it('draws no scrollbar on the strip, in any browser', () => {
+    expect(classes(TAB_STRIP_CLASS)).toEqual(
+      expect.arrayContaining(['[scrollbar-width:none]', '[&::-webkit-scrollbar]:hidden']),
+    );
+    expect(classes(TAB_STRIP_CLASS)).not.toContain('scrollbar-slim');
+  });
+
+  it('gives a scroll button a full tap area, and none of the pointer while hidden', () => {
+    expect(classes(TAB_SCROLL_BUTTON_CLASS)).toEqual(
       expect.arrayContaining([
-        'items-end',
-        'overflow-x-auto',
-        'overflow-y-hidden',
-        'scroll-edge-fade',
+        'touch-target',
+        'cursor-pointer',
+        'data-[shown=false]:pointer-events-none',
+        'data-[shown=false]:opacity-0',
       ]),
     );
   });

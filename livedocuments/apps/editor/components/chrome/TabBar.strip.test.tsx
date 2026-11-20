@@ -44,8 +44,8 @@ describe('TabBar strip', () => {
     vi.spyOn(openTab, 'getBoundingClientRect').mockReturnValue({ left: 60, right: 140 } as DOMRect);
     fireEvent.click(screen.getByRole('button', { name: 'First' }));
     expect(onSelect).not.toHaveBeenCalled();
-    // Measured on the whole tab, not its name, and clear of the 20px edge fade.
-    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 68 }));
+    // Measured on the whole tab, not its name, and clear of the edge fade and its scroll button (48px in).
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 88 }));
   });
 
   it('switches to another tab as before', () => {

@@ -362,7 +362,7 @@ describe('TabStrip', () => {
     vi.spyOn(open, 'getBoundingClientRect').mockReturnValue({ left: 60, right: 140 } as DOMRect);
     fireEvent.click(tabNamed('Overview'));
     expect(scrollTo).toHaveBeenCalledWith(
-      expect.objectContaining({ left: 68, behavior: 'smooth' }),
+      expect.objectContaining({ left: 88, behavior: 'smooth' }),
     );
     // A tap elsewhere does not.
     scrollTo.mockClear();
@@ -401,7 +401,7 @@ describe('TabStrip', () => {
     };
     rerender(<TabStrip {...last} />);
     expect(container).toBeTruthy();
-    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 58 }));
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 78 }));
   });
 
   // The open tab's menu button eases open (TabFrame's slots, over the sliding card's time), so the first measure is
@@ -417,7 +417,7 @@ describe('TabStrip', () => {
       if (this === scroller) return { left: 0, right: 200, width: 200 } as DOMRect;
       const shift = grown ? 30 : 0;
       if (this.dataset.tourId === 'add-tab')
-        return { left: 140 + shift, right: 170 + shift } as DOMRect;
+        return { left: 120 + shift, right: 150 + shift } as DOMRect;
       return { left: 100, right: 140 + shift } as DOMRect;
     });
     let land: () => void = () => {};
@@ -445,8 +445,13 @@ describe('TabStrip', () => {
     vi.stubGlobal(
       'ResizeObserver',
       class {
+        // Every observer the strip makes (the open tab's and the scroll buttons' edges) hears a resize.
         constructor(cb: () => void) {
-          resized = cb;
+          const before = resized;
+          resized = () => {
+            before();
+            cb();
+          };
         }
         observe() {}
         disconnect() {}
@@ -471,7 +476,7 @@ describe('TabStrip', () => {
     expect(scrollTo).not.toHaveBeenCalled();
     width = 210;
     resized();
-    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 58 }));
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 78 }));
     delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
   });
 
@@ -481,8 +486,13 @@ describe('TabStrip', () => {
     vi.stubGlobal(
       'ResizeObserver',
       class {
+        // Every observer the strip makes (the open tab's and the scroll buttons' edges) hears a resize.
         constructor(cb: () => void) {
-          resized = cb;
+          const before = resized;
+          resized = () => {
+            before();
+            cb();
+          };
         }
         observe() {}
         disconnect() {}
@@ -509,7 +519,7 @@ describe('TabStrip', () => {
     expect(scrollTo).not.toHaveBeenCalled();
     tabWidth = 150;
     resized();
-    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 78 }));
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 98 }));
     delete (HTMLElement.prototype as { offsetWidth?: number }).offsetWidth;
   });
 
@@ -551,7 +561,7 @@ describe('TabStrip', () => {
       vi.advanceTimersByTime(COLLAPSE_WIDTH_MS + 20);
     });
     // Shows from the chip: 250 to 250 + (300 - 56), past the right edge's pad.
-    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 222 }));
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 202 }));
   });
 
   it('joins a tab dropped on a chip at the head of the folder', () => {
