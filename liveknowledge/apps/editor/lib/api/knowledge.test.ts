@@ -102,10 +102,10 @@ describe('verify and the fields', () => {
 
   it('sets the fields with a PUT of the patch', async () => {
     const calls = stub({ knowledge });
-    await apiSetPageKnowledge(who, 'd1', 't1', { owner: null, reviewEvery: 'never' });
+    await apiSetPageKnowledge(who, 'd1', 't1', { owner: null, context: true });
     expect(calls[0]!.init.method).toBe('PUT');
     expect(calls[0]!.url).toMatch(/\/pages\/t1\/knowledge$/);
-    expect(bodyOf(calls[0]!)).toEqual({ owner: null, reviewEvery: 'never' });
+    expect(bodyOf(calls[0]!)).toEqual({ owner: null, context: true });
     expect(new Headers(calls[0]!.init.headers).get('Content-Type')).toBe('application/json');
   });
 

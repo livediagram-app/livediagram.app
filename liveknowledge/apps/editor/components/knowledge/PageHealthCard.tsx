@@ -1,24 +1,23 @@
 'use client';
 
 // The Page Health card (docs/specs/030-knowledgebase/verification.md "Page Health"): the page's owner, when it was
-// last verified, how often it is reviewed, how many times people and agents read it this week, and Verify Again.
-// An Editor changes the owner and the interval in place; everyone else reads them. Every row keeps its height
-// while the reads load, so the card never grows under the pointer.
+// last verified, when its review is due, the knowledgebase's Review Period, how many times people and agents read
+// it this week, and Verify Again. An Editor changes the owner in place; the Review Period is the knowledgebase's,
+// so the card has no control for it, only a link to the setting. Every row keeps its height while the reads load
+// and when the period changes, so the card never grows under the pointer.
 import type { ReactNode } from 'react';
-import type { KnowledgeReviewEvery } from '@liveknowledge/api-schema';
+import type { ReviewEvery } from '@liveknowledge/knowledge';
 import { Button, Select } from '@liveknowledge/ui';
-import {
-  REVIEW_OPTIONS,
-  reviewEveryOf,
-  shortDate,
-  type PageTrust,
-} from '@/lib/knowledge/page-trust';
+import { NO_REVIEW_PERIOD, reviewPeriodLabel } from '@/lib/knowledge-settings/review-period-words';
+import { shortDate, type PageTrust } from '@/lib/knowledge/page-trust';
 import type { KnowledgePerson } from './usePageKnowledge';
 
 const NO_OWNER = '';
 
 export type PageHealthCardProps = {
   trust: PageTrust;
+  /** The knowledgebase's Review Period, which `trust` was worked out under. */
+  reviewEvery: ReviewEvery;
   now: number;
   // The week's reads; absent until Page Health is read (and for a knowledgebase kept Offline).
   reads: { people: number; agents: number } | undefined;
@@ -26,7 +25,8 @@ export type PageHealthCardProps = {
   nameOf: (id: string | undefined) => string | undefined;
   // Absent for anyone who may not change the fields: the rows read as text.
   onSetOwner: ((owner: string | null) => void) | undefined;
-  onSetReviewEvery: ((every: KnowledgeReviewEvery) => void) | undefined;
+  // Opens Knowledgebase Settings; absent for anyone who may not change the Review Period.
+  onChangeReviewPeriod: (() => void) | undefined;
   onVerify: (() => void) | undefined;
 };
 
@@ -59,16 +59,16 @@ function Row({
 
 export function PageHealthCard({
   trust,
+  reviewEvery,
   now,
   reads,
   people,
   nameOf,
   onSetOwner,
-  onSetReviewEvery,
+  onChangeReviewPeriod,
   onVerify,
 }: PageHealthCardProps) {
-  const { owner, verifiedAt, verifiedBy, reviewEvery } = trust.fields;
-  const every = reviewEvery ?? 90;
+  const { owner, verifiedAt, verifiedBy } = trust.fields;
   const ownerName = nameOf(owner);
   const verifier = nameOf(verifiedBy);
   // An owner the editor cannot name (someone outside the team it can read) still shows as chosen.
@@ -126,27 +126,30 @@ export function PageHealthCard({
             </>
           )}
         </Row>
-        <Row label="Review">
-          {onSetReviewEvery ? (
-            <Select
-              aria-label="Review Interval"
-              size="md"
-              value={String(every)}
-              onChange={(e) => {
-                const next = reviewEveryOf(e.target.value);
-                if (next !== undefined) onSetReviewEvery(next);
-              }}
-              className="cursor-pointer"
-            >
-              {REVIEW_OPTIONS.map((option) => (
-                <option key={option.value} value={String(option.value)}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
-          ) : (
-            REVIEW_OPTIONS.find((option) => option.value === every)?.label
-          )}
+        <Row label="Review Due">
+          <span data-review-due="">
+            {reviewEvery === 'never'
+              ? NO_REVIEW_PERIOD
+              : trust.reviewAt === undefined
+                ? 'Once Verified'
+                : shortDate(trust.reviewAt, now)}
+          </span>
+        </Row>
+        <Row label="Review Period">
+          <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
+          {onChangeReviewPeriod ? (
+            <>
+              {', '}
+              <button
+                type="button"
+                onClick={onChangeReviewPeriod}
+                aria-label="Change the Review Period"
+                className="cursor-pointer rounded-sm font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-300 dark:hover:text-brand-200"
+              >
+                Change
+              </button>
+            </>
+          ) : null}
         </Row>
         <Row label="Reads by People This Week">
           <span className="tabular-nums">{count(reads?.people)}</span>

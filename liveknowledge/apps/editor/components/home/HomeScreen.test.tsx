@@ -54,6 +54,7 @@ const item = (id: string, title: string, updatedAt: number) => ({
 });
 const summary = (over: Partial<KnowledgeSummaryResponse> = {}): KnowledgeSummaryResponse => ({
   pages: 64,
+  reviewEvery: 90,
   health: { verified: 59, reviewDue: 3, neverVerified: 2, total: 64 },
   recent: [{ tab: 't1', title: 'Release Process', updatedAt: Date.now() - 3_600_000 }],
   yoursToReview: [],

@@ -19,6 +19,7 @@ import { track } from '@/lib/telemetry';
 import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
+import { useKnowledgebaseSettings } from '@/components/knowledge-settings/KnowledgeSettingsHost';
 import { PageHealthCard } from './PageHealthCard';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 
@@ -100,11 +101,14 @@ export function PageRailBody() {
     [chrome, writing.flow],
   );
   const { rights, pageId } = page;
+  // Knowledgebase Settings, for an Editor: where the Review Period is changed (the card has no control of its own).
+  const changeReviewPeriod = useKnowledgebaseSettings();
   return (
     <div className="flex flex-col gap-6">
       <OnThisPage headings={writing.headings} current={current} onGo={go} />
       <PageHealthCard
         trust={page.trust}
+        reviewEvery={page.reviewEvery}
         now={page.now}
         reads={page.health?.reads}
         people={people}
@@ -112,11 +116,7 @@ export function PageRailBody() {
         onSetOwner={
           rights.editFields ? (owner) => page.setFields(pageId, { owner }, 'owner') : undefined
         }
-        onSetReviewEvery={
-          rights.editFields
-            ? (reviewEvery) => page.setFields(pageId, { reviewEvery }, 'interval')
-            : undefined
-        }
+        onChangeReviewPeriod={changeReviewPeriod?.onSelect}
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
       />
     </div>

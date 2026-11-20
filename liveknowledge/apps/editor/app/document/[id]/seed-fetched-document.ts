@@ -1,3 +1,4 @@
+import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 import { setCommunityState } from '@/lib/community-state-store';
 import type {
   LastSeenCopy,
@@ -74,6 +75,8 @@ function showDocument(
   resetTabs(tabs);
   setDocumentName(fetched.name);
   setDocumentPresentation(fetched.presentation ?? null);
+  // The knowledgebase's Review Period (verification.md): every state the editor works out reads it from here.
+  knowledgeSettingsStore.take(fetched.id, fetched.knowledgeSettings);
   // Prefer the tab id pinned in the URL fragment (#t=<id>) when
   // it points at a real loaded tab — round-trips the user back
   // to whichever tab they last had open before a refresh.

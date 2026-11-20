@@ -132,6 +132,7 @@ const full = (over: Partial<KnowledgeOverviewResponse> = {}): KnowledgeOverviewR
     used: 4410,
     pages: [{ tab: 'p1', title: 'Release Process', tokens: 4410 }],
   },
+  reviewEvery: 90,
   health: { verified: 59, reviewDue: 3, neverVerified: 2, total: 64 },
   hasKey: true,
   reviewEmails: { available: true },

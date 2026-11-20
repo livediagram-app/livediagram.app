@@ -15,9 +15,9 @@ import { REVIEW_DUE_PILL, TrustBadge, VERIFIED_PILL } from './TrustBadge';
 
 const DAY = 86_400_000;
 const NOW = Date.UTC(2026, 10, 20, 12);
-const verified = pageTrust({ verifiedAt: NOW - 10 * DAY, verifiedBy: 'u1', owner: 'u1' }, NOW);
-const due = pageTrust({ verifiedAt: NOW - 100 * DAY, verifiedBy: 'u1' }, NOW);
-const never = pageTrust(undefined, NOW);
+const verified = pageTrust({ verifiedAt: NOW - 10 * DAY, verifiedBy: 'u1', owner: 'u1' }, 90, NOW);
+const due = pageTrust({ verifiedAt: NOW - 100 * DAY, verifiedBy: 'u1' }, 90, NOW);
+const never = pageTrust(undefined, 90, NOW);
 
 afterEach(cleanup);
 
@@ -98,6 +98,7 @@ describe('the meta row', () => {
 describe('Page Health', () => {
   const props = (over: Partial<PageHealthCardProps> = {}): PageHealthCardProps => ({
     trust: verified,
+    reviewEvery: 90,
     now: NOW,
     reads: { people: 12, agents: 1400 },
     people: [
@@ -106,29 +107,25 @@ describe('Page Health', () => {
     ],
     nameOf: (id) => ({ u1: 'Priya Nair', u2: 'Marcus Oyelaran' })[id ?? ''],
     onSetOwner: vi.fn(),
-    onSetReviewEvery: vi.fn(),
+    onChangeReviewPeriod: vi.fn(),
     onVerify: vi.fn(),
     ...over,
   });
 
-  it('an Editor changes the owner and the interval, and verifies again', () => {
+  it('an Editor changes the owner, verifies again, and is linked to the Review Period, with no control of its own', () => {
     const p = props();
     render(<PageHealthCard {...p} />);
     fireEvent.change(screen.getByLabelText('Owner'), { target: { value: 'u2' } });
     expect(p.onSetOwner).toHaveBeenCalledWith('u2');
     fireEvent.change(screen.getByLabelText('Owner'), { target: { value: '' } });
     expect(p.onSetOwner).toHaveBeenLastCalledWith(null);
-    const interval = screen.getByLabelText<HTMLSelectElement>('Review Interval');
-    expect([...interval.options].map((o) => o.textContent)).toEqual([
-      'Every 30 Days',
-      'Every 90 Days',
-      'Every 180 Days',
-      'Every 365 Days',
-      'Never',
-    ]);
-    expect(interval.value).toBe('90');
-    fireEvent.change(interval, { target: { value: 'never' } });
-    expect(p.onSetReviewEvery).toHaveBeenCalledWith('never');
+    // The Review Period is the knowledgebase's: the card says it and links to the setting.
+    expect(screen.queryByLabelText('Review Interval')).toBeNull();
+    expect(screen.getAllByRole('combobox')).toHaveLength(1);
+    const period = screen.getByText('Every 90 Days').closest('dd')!;
+    expect(period.textContent).toBe('Every 90 Days, Change');
+    fireEvent.click(screen.getByRole('button', { name: 'Change the Review Period' }));
+    expect(p.onChangeReviewPeriod).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: 'Verify Again' }));
     expect(p.onVerify).toHaveBeenCalledTimes(1);
     expect(screen.getByText('12')).toBeTruthy();
@@ -138,7 +135,11 @@ describe('Page Health', () => {
   it.each(['Participant', 'Viewer'])('a %s reads the card and changes nothing', () => {
     render(
       <PageHealthCard
-        {...props({ onSetOwner: undefined, onSetReviewEvery: undefined, onVerify: undefined })}
+        {...props({
+          onSetOwner: undefined,
+          onChangeReviewPeriod: undefined,
+          onVerify: undefined,
+        })}
       />,
     );
     expect(screen.queryByRole('combobox')).toBeNull();
@@ -171,14 +172,41 @@ describe('Page Health', () => {
 
   it('keeps every row while the reads load, and names a page never verified', () => {
     const { container } = render(<PageHealthCard {...props({ trust: never, reads: undefined })} />);
-    expect(container.querySelectorAll('dt')).toHaveLength(5);
+    expect(container.querySelectorAll('dt')).toHaveLength(6);
+    expect(container.querySelector('[data-review-due]')!.textContent).toBe('Once Verified');
     expect(screen.getAllByText('–')).toHaveLength(2);
     expect(screen.getByText('Never', { selector: 'dd' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Verify' })).toBeTruthy();
   });
 
+  it('says when the review is due under the knowledgebase’s period, and No Review Period under Never', () => {
+    const dueOf = (over: Partial<PageHealthCardProps>) => {
+      const { container, unmount } = render(<PageHealthCard {...props(over)} />);
+      const shown = [
+        container.querySelector('[data-review-due]')!.textContent,
+        container.querySelector('[data-review-period]')!.textContent,
+      ];
+      const rows = container.querySelectorAll('dt').length;
+      unmount();
+      return { shown, rows };
+    };
+    const fields = { verifiedAt: NOW - 10 * DAY, verifiedBy: 'u1', owner: 'u1' };
+    const at = (days: number) =>
+      new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+        .format(NOW - 10 * DAY + days * DAY)
+        .replace(/,? 2026$/, '');
+    expect(dueOf({}).shown[1]).toBe('Every 90 Days');
+    expect(dueOf({}).shown[0]).toContain(at(90).split(' ')[0]);
+    const yearly = dueOf({ trust: pageTrust(fields, 365, NOW), reviewEvery: 365 });
+    expect(yearly.shown).toEqual([expect.stringContaining('2027'), 'Every Year']);
+    const never = dueOf({ trust: pageTrust(fields, 'never', NOW), reviewEvery: 'never' });
+    expect(never.shown).toEqual(['No Review Period', 'Never']);
+    // The same rows whatever the period: nothing in the card moves when it changes.
+    expect(new Set([dueOf({}).rows, yearly.rows, never.rows])).toEqual(new Set([6]));
+  });
+
   it('keeps an owner it cannot name as the chosen one', () => {
-    render(<PageHealthCard {...props({ trust: pageTrust({ owner: 'u9' }, NOW) })} />);
+    render(<PageHealthCard {...props({ trust: pageTrust({ owner: 'u9' }, 90, NOW) })} />);
     expect(screen.getByLabelText<HTMLSelectElement>('Owner').value).toBe('u9');
     expect(screen.getByRole('option', { name: 'Someone Else' })).toBeTruthy();
   });

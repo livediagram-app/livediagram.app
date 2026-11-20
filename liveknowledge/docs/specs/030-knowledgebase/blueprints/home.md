@@ -35,13 +35,17 @@ illustration alone was looked at: drawn to a PNG from the same coordinates, ligh
   `HOME_KNOWLEDGEBASES_MAX` (12) with the total, for **See All** (the Explorer).
 - **Summaries:** `apiKnowledgeSummary` for each of the twelve, all at once (`Promise.all`), through
   `createSummaryCache`: a summary's promise is kept `HOME_SUMMARY_TTL_MS` (60,000) per account for the tab's life; a
-  failed read is dropped so the next ask reads again. Each summary sets state as it lands.
+  failed read is dropped so the next ask reads again. Each summary sets state as it lands. A knowledgebase whose
+  Review Period was changed in this browser is marked stale (`markSummaryStale`, from the editor's `applyPeriod`):
+  the next ask for it reads past the kept promise and the browser's own copy (`cache: 'reload'`), so the card's
+  verified share and Yours to Review follow the new period on the next visit, not a minute later.
 - **Requests on open:** 1 list, then for each of at most 12 knowledgebases 1 grant (the api funnel's, kept ten
   minutes) and 1 summary: 25 at most, none repeated inside a minute. Not measured against a server.
 - **`recentPagesAcross`** merges the summaries' `recent` and keeps the newest `HOME_RECENT_PAGES` (8).
 - **Yours to Review** (`reviewPagesAcross`, `useStillRight`): each summary carries `yoursToReview`, the caller's own
   pages whose review is due (`ownDuePages` in the api's `knowledge-reads.ts`: the page's `knowledge.owner` is the
-  caller's account, it is verified, has a review interval and that interval is past; the longest overdue first,
+  caller's account, it is verified, and the knowledgebase's Review Period is past since then (none under Never);
+  each `reviewAt` is its `verifiedAt` plus that period, worked out by the read; the longest overdue first,
   `OWN_DUE_PAGES` (10) a knowledgebase; none for a caller with no account). Home merges them, the longest overdue
   first, so the section costs no request beyond the summaries. **Still Right** hides the row at once and calls
   `apiVerifyPage`; a refusal or a failure brings the row back with the toast "Could not verify “<title>”. Try

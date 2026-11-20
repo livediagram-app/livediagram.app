@@ -14,6 +14,7 @@ import { receiveArticleCaret } from '@/lib/article/article-carets-store';
 import { receiveArticleHold } from '@/lib/article/article-holds-store';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
 import { remoteSelectionOf } from '@/lib/presence-rows';
+import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 
 type RoomOpFrom = Parameters<NonNullable<RoomHandlers['onOp']>>[0];
 type RoomOp = Parameters<NonNullable<RoomHandlers['onOp']>>[1];
@@ -67,6 +68,10 @@ export function receiveRoomOp(
     // change is known to be the peer's and is never saved or broadcast
     // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
     if (op.kind === 'document-meta') setDocumentName(op.name);
+    // The knowledgebase's Review Period, when the api stored a new one (verification.md "The Review Period"):
+    // every tick, Due pill and due date on screen follows it.
+    if (op.kind === 'document-meta' && op.knowledgeSettings && opts.documentId)
+      knowledgeSettingsStore.take(opts.documentId, op.knowledgeSettings);
     // A tab not fetched yet is a placeholder: an element added to it would make it look edited, so
     // its fetch would be thrown away and the next save would write the placeholder over the real
     // tab. Its fetch brings the element. A whole tab from a peer is its content: loaded.

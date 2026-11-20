@@ -11,6 +11,7 @@
 // dispatch can answer "is this id offline?" cheaply (./offline-ids, which keeps
 // every tab of the browser in step).
 
+import { parseKnowledgeSettings, type KnowledgeSettings } from '@liveknowledge/document';
 import type { LiveDoc, DocumentSummary, TabSummary } from '@liveknowledge/api-schema';
 import { utcDay } from '@liveknowledge/api-schema';
 import { drawnCount, migrateStoredTab, parseTabParent } from '@liveknowledge/document';
@@ -56,6 +57,9 @@ export type OfflineDocumentRecord = {
   // whole product minus the server, not a reduced one. Optional so records
   // written before the field existed stay valid.
   presentation?: string | null;
+  // The knowledgebase's settings (docs/specs/030-knowledgebase/verification.md "The Review Period"): kept with the
+  // record so the period survives a reload, and travels when the knowledgebase is synced. Absent is every 90 days.
+  knowledgeSettings?: KnowledgeSettings;
   // When the document was moved to this browser's local Trash
   // (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
@@ -109,6 +113,7 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
     name: rec.name,
     tabs: rec.tabs.map((t, i) => tabToSummary(t, rec.id, i, rec.savedAt)),
     presentation: rec.presentation ?? null,
+    knowledgeSettings: parseKnowledgeSettings(rec.knowledgeSettings),
     shareable: false,
     shareCode: null,
     folderId: rec.folderId,
@@ -150,10 +155,14 @@ export function applyMeta(
     // Absent leaves the stored deck alone; null clears it. Same contract as
     // the server's PUT, so an offline document behaves identically.
     presentation?: string | null;
+    // Absent leaves the stored Review Period alone.
+    knowledgeSettings?: KnowledgeSettings;
   },
   at: number,
 ): OfflineDocumentRecord {
-  const next = applyMetaShared(rec, patch, at);
+  const { knowledgeSettings, ...shared } = patch;
+  const moved = applyMetaShared(rec, shared, at);
+  const next = knowledgeSettings ? { ...moved, knowledgeSettings, savedAt: at } : moved;
   // A page's parent rides the metadata save (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"), as on
   // the server: an entry that carries the key places its page.
   const placed = new Map(
@@ -289,6 +298,7 @@ export async function offlineSaveDocumentMeta(
     name?: string;
     tabs?: { id: string; folder?: string; parent?: unknown }[];
     presentation?: string | null;
+    knowledgeSettings?: KnowledgeSettings;
   },
   now: number,
 ): Promise<void> {

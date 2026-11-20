@@ -1,3 +1,4 @@
+import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import type { Tab } from '@liveknowledge/document';
 import { apiLoadDocument, apiLoadShared, apiLoadTabRevisioned } from '@/lib/api-client';
@@ -75,6 +76,7 @@ export function useRoomResync(opts: {
           }
         }),
       ]);
+      if (list?.knowledgeSettings) knowledgeSettingsStore.take(documentId, list.knowledgeSettings);
       const byId = new Map<string, Tab>();
       const revs = new Map<string, number>();
       for (const loaded of fetched) {

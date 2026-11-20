@@ -2,12 +2,18 @@
 // its Page Health (the fields as the server reads them, Changed since verified, the week's reads), read once when the
 // page opens and kept for the session, and the fields a Verify or a Page Health change has just set, shown at once
 // and rolled back if the server refuses. Outside React: a reader subscribes to one page's entry.
-import { trustState, verified, type KnowledgeFields } from '@liveknowledge/knowledge';
+import {
+  trustState,
+  verified,
+  type KnowledgeFields,
+  type ReviewEvery,
+} from '@liveknowledge/knowledge';
 import type {
   PageHealthResponse,
   PageKnowledge,
   PageKnowledgePatch,
 } from '@liveknowledge/api-schema';
+import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 import {
   apiPageHealth,
   apiSetPageKnowledge,
@@ -26,7 +32,7 @@ export type KnowledgePage = { id: string; knowledge?: unknown };
 
 type Override = { fields: KnowledgeFields; base: unknown };
 
-const FIELD_KEYS = ['owner', 'verifiedAt', 'verifiedBy', 'reviewEvery', 'context'] as const;
+const FIELD_KEYS = ['owner', 'verifiedAt', 'verifiedBy', 'context'] as const;
 
 const fieldsOfKnowledge = (knowledge: PageKnowledge): KnowledgeFields => {
   const fields: KnowledgeFields = {};
@@ -36,9 +42,15 @@ const fieldsOfKnowledge = (knowledge: PageKnowledge): KnowledgeFields => {
   return fields;
 };
 
-// The fields with the state the clock gives them, in the route's shape; what only the server knows is kept.
-function withFields(was: PageKnowledge, fields: KnowledgeFields, now: number): PageKnowledge {
-  const trust = trustState(fields, now);
+// The fields with the state the knowledgebase's Review Period and the clock give them, in the route's shape; what
+// only the server knows is kept.
+function withFields(
+  was: PageKnowledge,
+  fields: KnowledgeFields,
+  every: ReviewEvery,
+  now: number,
+): PageKnowledge {
+  const trust = trustState(fields, every, now);
   return {
     tab: was.tab,
     ...fields,
@@ -53,7 +65,6 @@ function patched(fields: KnowledgeFields, patch: PageKnowledgePatch): KnowledgeF
   const next: KnowledgeFields = { ...fields };
   if (patch.owner === null) delete next.owner;
   else if (patch.owner !== undefined) next.owner = patch.owner;
-  if (patch.reviewEvery !== undefined) next.reviewEvery = patch.reviewEvery;
   if (patch.context === true) next.context = true;
   else if (patch.context === false) delete next.context;
   return next;
@@ -65,6 +76,8 @@ export function createPageKnowledgeStore(
     verify: apiVerifyPage,
     set: apiSetPageKnowledge,
   },
+  // The knowledgebase's Review Period, read when a change is shown before the server answers.
+  reviewEveryOf: (documentId: string) => ReviewEvery = knowledgeSettingsStore.reviewEveryOf,
 ) {
   const health = new Map<string, PageHealthResponse>();
   const loading = new Map<string, Promise<void>>();
@@ -156,11 +169,14 @@ export function createPageKnowledgeStore(
         documentId,
         page,
         next,
-        (was) => ({ ...withFields(was, next, now), changedSinceVerified: false }),
+        (was) => ({
+          ...withFields(was, next, reviewEveryOf(documentId), now),
+          changedSinceVerified: false,
+        }),
         () => api.verify(who, documentId, page.id),
       );
     },
-    /** Owner, review interval or Always in Context. Rejects, rolled back, on a refusal. */
+    /** Owner or Always in Context. Rejects, rolled back, on a refusal. */
     setFields(
       who: KnowledgeCaller,
       documentId: string,
@@ -173,7 +189,7 @@ export function createPageKnowledgeStore(
         documentId,
         page,
         next,
-        (was) => withFields(was, next, now),
+        (was) => withFields(was, next, reviewEveryOf(documentId), now),
         () => api.set(who, documentId, page.id, patch),
       );
     },

@@ -20,6 +20,8 @@ the share code, the index's grant, the release signal and the failure report are
 | `apiPageHealth(who, id, tab, signal?)`                                                | `GET pages/<tab>/health`                                                  | `PageHealthResponse`                                     |
 | `apiVerifyPage(who, id, tab)`                                                         | `POST pages/<tab>/verify`                                                 | `PageKnowledge`                                          |
 | `apiSetPageKnowledge(who, id, tab, patch)`                                            | `PUT pages/<tab>/knowledge`                                               | `PageKnowledge`; throws `ContextBudgetError`             |
+| `apiSetReviewPeriod(who, id, reviewEvery)`                                            | `PUT knowledge-settings`                                                  | the period as stored                                     |
+| `apiPreviewReviewPeriod(who, id, reviewEvery, signal?)`                               | `GET knowledge-settings/preview?reviewEvery=`                             | `{ reviewEvery, reviewDue, reviewDueNow }`               |
 | `apiKnowledgeAi`, `apiSetKnowledgeAiKey`, `apiRemoveKnowledgeAiKey`, `...AiModel`     | `GET ai`, `PUT`/`DELETE ai/key`...                                        | `KnowledgeAiSettings`                                    |
 | `apiAskKnowledge(who, id, request, { onDelta, signal })`                              | `POST ask`                                                                | the `done` event, or an `error` event; never a rejection |
 | `apiKnowledgeOverview(who, id, signal?)`                                              | `GET knowledge`                                                           | `KnowledgeOverviewResponse`                              |
@@ -44,27 +46,31 @@ the share code, the index's grant, the release signal and the failure report are
 Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowledge/` (pure and the store) and
 `apps/editor/components/knowledge/`.
 
-| Piece                                              | File                                                             |
-| -------------------------------------------------- | ---------------------------------------------------------------- |
-| a page's state from its fields and the clock       | `lib/knowledge/page-trust.ts` (`pageTrust`, `trustMarks`)        |
-| Page Health and the fields just set, outside React | `lib/knowledge/page-knowledge-store.ts` (`pageKnowledgeStore`)   |
-| who may verify and set the fields                  | `lib/knowledge/knowledge-rights.ts` (`knowledgeRights`)          |
-| a refusal in words                                 | `lib/knowledge/knowledge-words.ts` (`knowledgeFailureText`)      |
-| the headings of the writing                        | `lib/knowledge/page-headings.ts` (`pageHeadings`)                |
-| room in the writing for the meta row and the foot  | `lib/knowledge/page-slots-plugin.ts` (`createPageSlots`)         |
-| the store's slices, the people, the actions        | `components/knowledge/usePageKnowledge.ts`                       |
-| tick and pill                                      | `components/knowledge/TrustBadge.tsx`                            |
-| the meta row                                       | `components/knowledge/PageMetaRow.tsx`, `PageKnowledgeSlots.tsx` |
-| the right rail                                     | `PageRail.tsx`, `usePageRailChrome.tsx`, `OnThisPage.tsx`        |
-| Page Health                                        | `components/knowledge/PageHealthCard.tsx`                        |
+| Piece                                                 | File                                                             |
+| ----------------------------------------------------- | ---------------------------------------------------------------- |
+| a page's state from its fields, the period, the clock | `lib/knowledge/page-trust.ts` (`pageTrust`, `trustMarks`)        |
+| the knowledgebase's Review Period, outside React      | `lib/knowledge-settings/knowledge-settings-store.ts`             |
+| Page Health and the fields just set, outside React    | `lib/knowledge/page-knowledge-store.ts` (`pageKnowledgeStore`)   |
+| who may verify and set the fields                     | `lib/knowledge/knowledge-rights.ts` (`knowledgeRights`)          |
+| a refusal in words                                    | `lib/knowledge/knowledge-words.ts` (`knowledgeFailureText`)      |
+| the headings of the writing                           | `lib/knowledge/page-headings.ts` (`pageHeadings`)                |
+| room in the writing for the meta row and the foot     | `lib/knowledge/page-slots-plugin.ts` (`createPageSlots`)         |
+| the store's slices, the people, the actions           | `components/knowledge/usePageKnowledge.ts`                       |
+| tick and pill                                         | `components/knowledge/TrustBadge.tsx`                            |
+| the meta row                                          | `components/knowledge/PageMetaRow.tsx`, `PageKnowledgeSlots.tsx` |
+| the right rail                                        | `PageRail.tsx`, `usePageRailChrome.tsx`, `OnThisPage.tsx`        |
+| Page Health                                           | `components/knowledge/PageHealthCard.tsx`                        |
 
 - **Every page's fields ride the tab summaries.** `readDocumentOutline` reads `json_extract(t.data, '$.knowledge')`
   beside each summary, `rowToTabSummary` answers it through `parseKnowledgeFields` as `TabSummary.knowledge` (absent
   for a page with none, and outside a tab-scoped visitor's scope), and `placeholdersFromSummaries` carries it onto
   the placeholder tab. The room's `tab-meta` patch after a Verify or a field change lands on the tab whether its
   body is loaded or not. **So the page tree's ticks come from the tab list: one pass a change, no request a row.**
-- **States** are `trustState` over `parseKnowledgeFields(tab.knowledge)` and the editor's shared 30 second clock
-  (`useRelativeNow`): a review that comes due shows within 30 seconds, with nothing written.
+- **States** are `trustState` over `parseKnowledgeFields(tab.knowledge)`, the knowledgebase's Review Period and the
+  editor's shared 30 second clock (`useRelativeNow`): a review that comes due shows within 30 seconds, with nothing
+  written. The period is read from `knowledgeSettingsStore` (`useReviewEvery(documentId)` in a component), so the
+  tree's tick and Due pill, the meta row, Page Health, the page link's hover card and the Offline search all follow
+  a change of it at once, with no request and no page touched ("The Review Period" below).
 - **The meta row** is drawn inside the writing, under the Title block: `createPageSlots()` makes two host elements
   per article (`meta`, `foot`) and a ProseMirror plugin that places each as a widget decoration (constant work a
   transaction: the first block's size and the document's); `ArticleEditor` hands the plugin to `mountArticleView`
@@ -75,10 +81,15 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   Again" once verified.
 - **Verify** (`pageKnowledgeStore.verify`) is optimistic: the fields `verified(fields, person, now)` would give show
   at once in the meta row, the rail and the tree; the server's answer replaces them; a refusal puts back what was
-  held and raises a toast in words. The same for owner, interval and Always in Context (`setFields`). What was set
+  held and raises a toast in words. The same for owner and Always in Context (`setFields`). What was set
   here shows until the tab's own `knowledge` changes (the room's patch, or a peer's later change).
 - **Page Health** is read (`GET pages/<tab>/health`) once per page for the session, when the page opens; concurrent
   asks share one request. A failed read leaves the fields showing from the tab and the reads as a dash.
+- **Page Health has no control for the review.** Its rows are Owner, Last Verified, **Review Due** (the date under
+  the knowledgebase's period, "Once Verified" for a page never verified, "No Review Period" under Never), **Review
+  Period** ("Every 90 Days", and for an Editor ", Change": a link button named "Change the Review Period" that
+  opens Knowledgebase Settings), and the two reads. Six rows whatever the period, each of a fixed least height, so
+  nothing in the card moves when the period changes.
 - **Last Verified** shows the date and who verified, each whole: the value is two blocks (`data-verified-date`,
   `data-verified-by`) in a row that wraps (`Row`'s `wrap`), so at the card's width the name takes a line of its own
   under the date. It was one truncated line ("Nov 20 by Priya N…"). The other rows keep one line.
@@ -112,12 +123,68 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
 | --------------------------------------------------- | -------------------- | ----------- | ------ |
 | See the states, the meta row, Page Health, the rail | yes                  | yes         | yes    |
 | Verify, Verify Again                                | yes, with an account | no          | no     |
-| Owner, review interval, Always in Context           | yes                  | no          | no     |
+| Owner, Always in Context                            | yes                  | no          | no     |
+| Knowledgebase Settings: the Review Period           | yes                  | no          | no     |
 
 `knowledgeRights({ can, isStructureReadOnly, accountUserId, offline })`: `editFields` is `can.editPages` on the
 whole knowledgebase (never a link confined to one page) that is not kept Offline; `verify` also needs an account,
 since Verify says who vouches. Tests, a role at a time: `page-knowledge.test.ts` "who may verify and change the
 fields", `page-knowledge-ui.test.tsx`, `page-knowledge-store-ui.test.tsx`, `PageTree.knowledge.test.tsx`.
+
+### The Review Period (built)
+
+Derived from [Verification](../verification.md) "The Review Period". Modules: `apps/editor/lib/knowledge-settings/`
+(pure, the store, the open state) and `apps/editor/components/knowledge-settings/`.
+
+| Piece                                                     | File                                                                            |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| the period a knowledgebase, taken from reads and the room | `lib/knowledge-settings/knowledge-settings-store.ts`                            |
+| the words (labels, the count, the toasts)                 | `lib/knowledge-settings/review-period-words.ts`                                 |
+| the count without a server, the preview, the one write    | `lib/knowledge-settings/review-period-change.ts`                                |
+| whether the dialog is open; the offer the palette reads   | `lib/knowledge-settings/settings-open.ts`                                       |
+| who is offered it                                         | `components/knowledge-settings/useSettingsOffered.ts`                           |
+| the host, the opener (`useKnowledgebaseSettings()`)       | `components/knowledge-settings/KnowledgeSettingsHost.tsx`                       |
+| the dialog, its rows, its flow                            | `KnowledgeSettingsDialog.tsx`, `ReviewPeriodRows.tsx`, `useReviewPeriodFlow.ts` |
+| the period for a component                                | `components/knowledge-settings/useReviewEvery.ts`                               |
+
+- **Where the period comes from.** `knowledgeSettingsStore.take(documentId, settings)` is called with the document
+  read's `knowledgeSettings` (`seed-fetched-document.ts`, cloud or Offline), with the `document-meta` op's when the
+  api stored a new one (`room-op-receive.ts`), and with the stored list's on a resync (`useRoomResync.ts`,
+  `tabListOf`), so an op lost in a reconnect gap is recovered. Anything unknown reads as every 90 days.
+- **The dialog.** `Dialog` size `md` (a sheet on a phone), titled **Knowledgebase Settings**, body one height
+  (`h-[29rem]`, less on a short window). One section, **Reviews**: **Review Period**, the line "A verified page
+  comes due for review this long after it was last verified.", and five bordered rows (`role="radiogroup"` named by
+  the label and described by the line; each row `role="radio"`, 44 px at least, one tab stop on the chosen row,
+  arrows move between rows, a press picks). The chosen row carries a filled tick as well as its tint. Under the
+  rows a strip of fixed least height (`min-h-14`, `aria-live="polite"`) holds one quiet line, or the question.
+- **Picking.** The same period: nothing. A longer one, or Never: applied at once. A shorter one
+  (`isShorterPeriod`): the strip says it is counting, `GET knowledge-settings/preview` is asked (the request ends
+  when another row is picked, on Cancel and when the dialog closes), and when the count is more than what is due
+  now the strip says "**12 pages will be due for review** with Every 30 Days." with **Apply** and Cancel; when it
+  is not more, the period applies at once. A preview that fails, and a knowledgebase kept Offline, count from the
+  fields the editor holds of every page (`countDuePages`: one pass, no request).
+- **Applying** (`applyPeriod`) is optimistic: the store takes the period, so every state on screen moves; then
+  `PUT knowledge-settings` (or, kept Offline, the record's `knowledgeSettings`). A refusal puts the period back
+  (unless a newer choice was made since) with a toast in words ("Only an Editor can change the Review Period.
+  Nothing was changed."); success is a toast ("Pages are now reviewed every 30 days.") with **Undo**, which applies
+  the period it replaced. Home's kept summary of the knowledgebase is marked stale (`markSummaryStale`), so its
+  next visit reads the counts and Yours to Review again, past both kept copies.
+- **Ways in.** Page Health's link, the command palette's **Knowledgebase Settings** (listed from the offer the host
+  publishes), and `useKnowledgebaseSettings()`: `{ label, onSelect } | null`, ready for the knowledgebase menu's
+  row, which is not built here (the menu was not in the tree when this was).
+- **Who.** `settingsOfferedOf`: `can.editPages` on the whole knowledgebase, not an embed, a workbench or a
+  Community visit. A Participant and a Viewer are offered nothing and the host draws nothing for them; the api
+  refuses them too. A knowledgebase kept Offline is its one person's to set.
+- **Kept Offline.** `OfflineDocumentRecord.knowledgeSettings`; the sync's create carries it; a cloud knowledgebase
+  moved to this browser keeps its period.
+- **Telemetry.** `UI·Opened·KnowledgebaseSettings`, `UI·Used·ReviewPeriodChanged` (before the write).
+- **Tests.** `lib/knowledge-settings/knowledge-settings.test.ts` (the store, the words, the count, the write and
+  its rollback, Home's reread); `components/knowledge-settings/KnowledgeSettings.test.tsx` (each role, the rows and
+  their keys, at once or asked, Apply and Cancel, Undo, the refusal, a peer's change, Offline, one height, 4.5:1 in
+  light and dark); `page-knowledge-ui.test.tsx` and `page-knowledge-store-ui.test.tsx` (Page Health's rows and
+  link, every reader following the store).
+- **Not as the spec says.** "One undoable edit" is the toast's Undo: the editor's undo stack holds a page's
+  elements and writing, and the period is the document's, so Cmd+Z does not reach it.
 
 ### Measured
 

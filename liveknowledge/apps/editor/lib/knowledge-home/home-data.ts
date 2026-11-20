@@ -140,17 +140,25 @@ export function mergeSearchResults(
 
 type Cached = { at: number; summary: Promise<KnowledgeSummaryResponse> };
 
-/** Summaries by knowledgebase, each kept `HOME_SUMMARY_TTL_MS`; a failed read is not kept. */
+// Knowledgebases whose numbers changed under a summary that may still be kept (a new Review Period, set in the
+// editor: every count and due page moved at once). The next ask for one reads it again, past the kept copies.
+const stale = new Set<string>();
+/** A knowledgebase's summary is out of date: Home reads it fresh the next time it is asked for. */
+export const markSummaryStale = (documentId: string): void => void stale.add(documentId);
+
+/** Summaries by knowledgebase, each kept `HOME_SUMMARY_TTL_MS`; a failed read is not kept. `read` is told `fresh`
+ *  for a knowledgebase marked stale, so it reads past the browser's own copy as well. */
 export function createSummaryCache(
-  read: (documentId: string) => Promise<KnowledgeSummaryResponse>,
+  read: (documentId: string, fresh: boolean) => Promise<KnowledgeSummaryResponse>,
   now: () => number = Date.now,
 ) {
   const held = new Map<string, Cached>();
   return {
     get(documentId: string): Promise<KnowledgeSummaryResponse> {
+      const fresh = stale.delete(documentId);
       const cached = held.get(documentId);
-      if (cached && now() - cached.at < HOME_SUMMARY_TTL_MS) return cached.summary;
-      const summary = read(documentId);
+      if (!fresh && cached && now() - cached.at < HOME_SUMMARY_TTL_MS) return cached.summary;
+      const summary = read(documentId, fresh);
       held.set(documentId, { at: now(), summary });
       summary.catch(() => {
         if (held.get(documentId)?.summary === summary) held.delete(documentId);

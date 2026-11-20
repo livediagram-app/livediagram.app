@@ -40,7 +40,7 @@ function mount(level: AccessLevel, accountUserId: string | null = 'u1') {
     offline: false,
   });
   const knowledge: PageTreeKnowledge = {
-    marks: trustMarks(TABS, NOW),
+    marks: trustMarks(TABS, 90, NOW),
     inContext: new Set(['c']),
     canVerify: rights.verify,
     canEditFields: rights.editFields,

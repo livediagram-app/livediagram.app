@@ -26,6 +26,11 @@ vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 vi.mock('@/hooks/persistence/useIsOfflineDocument', () => ({ useIsOfflineDocument: () => false }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
+import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
+import {
+  closeKnowledgeSettings,
+  isKnowledgeSettingsOpen,
+} from '@/lib/knowledge-settings/settings-open';
 import { PageMetaRow } from './PageMetaRow';
 import { PageRailBody } from './PageRail';
 
@@ -59,6 +64,11 @@ function mount(level: AccessLevel, accountUserId: string | null = 'u1') {
     activeTab: tabs[0],
     can: resolveEditorCapabilities(level),
     isStructureReadOnly: level !== 'edit',
+    // A plain editor session: not an embed, a workbench or a Community visit.
+    hydrated: true,
+    embedMode: false,
+    workbench: false,
+    sessionCommunity: false,
     accountUserId,
     selfParticipant: { id: accountUserId ?? 'guest_1', name: 'Priya Nair' },
     sessionShareCode: null,
@@ -169,24 +179,51 @@ describe('a page’s knowledge in the editor', () => {
     expect(screen.getAllByRole('button', { name: 'Verify' })).toHaveLength(2);
   });
 
-  it('an Editor changes the review interval; a refusal puts it back', async () => {
-    api.apiSetPageKnowledge.mockRejectedValue(new Error('down'));
-    const { pageId } = mount('edit');
+  it('shows the due date under the knowledgebase’s Review Period, and follows a change of it at once', async () => {
+    const verifiedAt = Date.now() - 40 * 86_400_000;
+    const { documentId, pageId, store, valueOf, tabs } = mount('edit');
+    const verified = [{ ...tabs[0]!, knowledge: { verifiedAt, verifiedBy: 'u1' } }, tabs[1]!];
+    act(() => store.set(valueOf({ tabs: verified, activeTab: verified[0] })));
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-    const interval = () => screen.getByLabelText<HTMLSelectElement>('Review Interval');
-    fireEvent.change(interval(), { target: { value: '30' } });
-    expect(api.apiSetPageKnowledge.mock.calls[0]!.slice(1)).toEqual([
-      expect.any(String),
-      pageId,
-      { reviewEvery: 30 },
-    ]);
-    expect(interval().value).toBe('30');
-    await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith(
-        'The review interval could not be changed. Try again.',
-      ),
-    );
-    expect(interval().value).toBe('90');
+    const rail = () => document.querySelector('[data-page-health]')!;
+    const shown = () => [
+      rail().querySelector('[data-review-due]')!.textContent,
+      rail().querySelector('[data-review-period]')!.textContent,
+    ];
+    expect(shown()[1]).toBe('Every 90 Days');
+    // The amber pill, apart from the card's own "Review Due" row label.
+    const pill = () => screen.queryAllByText('Review Due').filter((el) => el.tagName !== 'DT');
+    expect(screen.getByText(/^Review due /)).toBeTruthy();
+    expect(pill()).toHaveLength(0);
+    // The room's op (or this editor's own change): one store, every reader follows.
+    act(() => void knowledgeSettingsStore.take(documentId, { reviewEvery: 30 }));
+    expect(shown()[1]).toBe('Every 30 Days');
+    expect(screen.getByText(/^Review was due /)).toBeTruthy();
+    expect(pill()).toHaveLength(1);
+    act(() => void knowledgeSettingsStore.take(documentId, { reviewEvery: 'never' }));
+    expect(shown()).toEqual(['No Review Period', 'Never']);
+    expect(screen.queryByText(/^Review (was )?due /)).toBeNull();
+    expect(pill()).toHaveLength(0);
+    // No request a change, and no page written.
+    expect(api.apiSetPageKnowledge).not.toHaveBeenCalled();
+    expect(pageId).toBeTruthy();
+  });
+
+  it('an Editor is linked to Knowledgebase Settings from Page Health; nobody else is', async () => {
+    mount('edit');
+    await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    expect(isKnowledgeSettingsOpen()).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'Change the Review Period' }));
+    expect(isKnowledgeSettingsOpen()).toBe(true);
+    closeKnowledgeSettings();
+    cleanup();
+    for (const level of ['participate', 'view'] as const) {
+      mount(level);
+      await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+      expect(screen.queryByRole('button', { name: 'Change the Review Period' })).toBeNull();
+      expect(screen.getByText('Every 90 Days')).toBeTruthy();
+      cleanup();
+    }
   });
 
   it.each(['participate', 'view'] as const)(
@@ -204,6 +241,8 @@ describe('a page’s knowledge in the editor', () => {
     mount('edit', null);
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
     expect(screen.queryByRole('button', { name: /Verify/ })).toBeNull();
-    expect(screen.getByLabelText('Review Interval')).toBeTruthy();
+    // The owner is theirs to set, and so is the knowledgebase's Review Period, through its settings.
+    expect(screen.getByLabelText('Owner')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Change the Review Period' })).toBeTruthy();
   });
 });

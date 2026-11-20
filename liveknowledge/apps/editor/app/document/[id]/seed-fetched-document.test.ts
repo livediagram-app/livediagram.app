@@ -27,6 +27,7 @@ const fetched = {
   teamId: null,
   source: null,
   presentation: null,
+  knowledgeSettings: { reviewEvery: 90 },
   savedAt: 1,
   createdAt: 1,
   ownerName: null,

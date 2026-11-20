@@ -26,6 +26,7 @@ const item = (id: string, updatedAt: number, over = {}) => ({
 });
 const summary = (over: Partial<KnowledgeSummaryResponse> = {}): KnowledgeSummaryResponse => ({
   pages: 64,
+  reviewEvery: 90,
   health: { verified: 59, reviewDue: 3, neverVerified: 2, total: 64 },
   recent: [],
   yoursToReview: [],

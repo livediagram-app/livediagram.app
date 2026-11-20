@@ -7,7 +7,7 @@ import { knowledgeRights } from './knowledge-rights';
 import { contextBudgetText, knowledgeFailureText } from './knowledge-words';
 import { currentHeading, pageHeadings, sameHeadings } from './page-headings';
 import { createPageKnowledgeStore } from './page-knowledge-store';
-import { pageTrust, reviewDueText, reviewEveryOf, trustMarks } from './page-trust';
+import { pageTrust, reviewDueText, trustMarks } from './page-trust';
 
 // docs/specs/030-knowledgebase/verification.md: the states, who may change them, and the optimistic store.
 
@@ -17,14 +17,30 @@ const who = { ownerId: 'u1', shareCode: null };
 
 describe('a page’s state, worked out when read', () => {
   it('is Never Verified with no verifiedAt, Verified until the review, then Review Due', () => {
-    expect(pageTrust(undefined, NOW).state).toBe('never-verified');
-    const fresh = pageTrust({ verifiedAt: NOW - 10 * DAY, verifiedBy: 'u1' }, NOW);
+    expect(pageTrust(undefined, 90, NOW).state).toBe('never-verified');
+    const fresh = pageTrust({ verifiedAt: NOW - 10 * DAY, verifiedBy: 'u1' }, 90, NOW);
     expect(fresh).toMatchObject({ state: 'verified', reviewAt: NOW + 80 * DAY });
-    expect(pageTrust({ verifiedAt: NOW - 91 * DAY }, NOW).state).toBe('review-due');
-    // A page that does not age is verified with no review date.
-    const never = pageTrust({ verifiedAt: NOW - 900 * DAY, reviewEvery: 'never' }, NOW);
+    expect(pageTrust({ verifiedAt: NOW - 91 * DAY }, 90, NOW).state).toBe('review-due');
+    // Under a period of Never a page is verified with no review date.
+    const never = pageTrust({ verifiedAt: NOW - 900 * DAY }, 'never', NOW);
     expect(never.state).toBe('verified');
     expect(never.reviewAt).toBeUndefined();
+  });
+
+  it('follows the knowledgebase’s Review Period, never one a page once stored', () => {
+    const stored = { verifiedAt: NOW - 100 * DAY, reviewEvery: 'never' };
+    expect(pageTrust(stored, 90, NOW)).toMatchObject({
+      state: 'review-due',
+      fields: { verifiedAt: NOW - 100 * DAY },
+    });
+    expect(pageTrust(stored, 90, NOW).fields).not.toHaveProperty('reviewEvery');
+    expect(pageTrust(stored, 180, NOW)).toMatchObject({
+      state: 'verified',
+      reviewAt: NOW + 80 * DAY,
+    });
+    const pages = [{ id: 'a', knowledge: { verifiedAt: NOW - 40 * DAY } }];
+    expect([...trustMarks(pages, 30, NOW)]).toEqual([['a', 'review-due']]);
+    expect([...trustMarks(pages, 'never', NOW)]).toEqual([['a', 'verified']]);
   });
 
   it('marks only pages that were verified, in one pass over the list', () => {
@@ -35,6 +51,7 @@ describe('a page’s state, worked out when read', () => {
         { id: 'c' },
         { id: 'd', knowledge: { owner: 'u1' } },
       ],
+      90,
       NOW,
     );
     expect([...marks]).toEqual([
@@ -46,9 +63,6 @@ describe('a page’s state, worked out when read', () => {
   it('says when the review is, or was, due', () => {
     expect(reviewDueText(Date.UTC(2027, 0, 14, 12), NOW)).toMatch(/^Review due 14 Jan/);
     expect(reviewDueText(NOW - 5 * DAY, NOW)).toMatch(/^Review was due 15 Nov/);
-    expect(reviewEveryOf('never')).toBe('never');
-    expect(reviewEveryOf('180')).toBe(180);
-    expect(reviewEveryOf('7')).toBeUndefined();
   });
 });
 
@@ -170,16 +184,16 @@ describe('the store', () => {
     });
     const set = vi
       .fn()
-      .mockResolvedValueOnce(answer({ reviewEvery: 30, owner: 'u2' }))
+      .mockResolvedValueOnce(answer({ owner: 'u3' }))
       .mockRejectedValueOnce(refusal);
     const store = createPageKnowledgeStore({ health: vi.fn(), verify: vi.fn(), set });
     const page = { id: 't1', knowledge: { owner: 'u2' } };
-    await store.setFields(who, 'd1', page, { reviewEvery: 30 }, NOW);
-    expect(store.fieldsOf(page)).toEqual({ owner: 'u2', reviewEvery: 30 });
+    await store.setFields(who, 'd1', page, { owner: 'u3' }, NOW);
+    expect(store.fieldsOf(page)).toEqual({ owner: 'u3' });
     const pending = store.setFields(who, 'd1', page, { context: true }, NOW);
     expect(store.fieldsOf(page)).toMatchObject({ context: true });
     await expect(pending).rejects.toBe(refusal);
-    expect(store.fieldsOf(page)).toEqual({ owner: 'u2', reviewEvery: 30 });
+    expect(store.fieldsOf(page)).toEqual({ owner: 'u3' });
     expect(knowledgeFailureText(refusal, 'context')).toBe(contextBudgetText(refusal));
   });
 

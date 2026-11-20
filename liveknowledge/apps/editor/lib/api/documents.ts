@@ -198,6 +198,8 @@ export async function apiCreateDocument(
     createdAt?: number;
     savedAt?: number;
     presentation?: string | null;
+    // The Review Period a knowledgebase kept Offline chose (verification.md "The Review Period").
+    knowledgeSettings?: { reviewEvery: 30 | 90 | 180 | 365 | 'never' };
   },
   // Set by the Offline Mode sync path (docs/specs/006-document/offline-mode.md). A sync is a plain POST, so
   // without this the worker records it as a brand-new document being created.
@@ -252,6 +254,7 @@ export async function apiCreateDocument(
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
       ...(d.presentation ? { presentation: d.presentation } : {}),
+      ...(d.knowledgeSettings ? { knowledgeSettings: d.knowledgeSettings } : {}),
     }),
   });
   const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'create document');

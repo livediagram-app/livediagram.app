@@ -162,7 +162,7 @@ describe('searching a knowledgebase kept Offline', () => {
   const now = Date.UTC(2026, 10, 20);
 
   it('finds titles first, then passages, with the words marked and the passage’s blocks', () => {
-    const found = searchLoadedPages(pages, 'rollb', now);
+    const found = searchLoadedPages(pages, 'rollb', 90, now);
     expect(found.map((r) => [r.tab, r.isTitle])).toEqual([
       ['c', true],
       ['a', false],
@@ -178,9 +178,9 @@ describe('searching a knowledgebase kept Offline', () => {
   });
 
   it('needs every word, and finds nothing for none', () => {
-    expect(searchLoadedPages(pages, 'release channel', now).map((r) => r.tab)).toEqual(['a']);
-    expect(searchLoadedPages(pages, 'release holidays', now)).toEqual([]);
-    expect(searchLoadedPages(pages, '  ', now)).toEqual([]);
+    expect(searchLoadedPages(pages, 'release channel', 90, now).map((r) => r.tab)).toEqual(['a']);
+    expect(searchLoadedPages(pages, 'release holidays', 90, now)).toEqual([]);
+    expect(searchLoadedPages(pages, '  ', 90, now)).toEqual([]);
   });
 });
 
@@ -295,7 +295,7 @@ describe('the pages opened most recently', () => {
   ];
 
   it('lists them newest first while the field is empty, a page that is gone left out', () => {
-    const got = recentResults(pages, ['b', 'gone', 'a'], Date.now());
+    const got = recentResults(pages, ['b', 'gone', 'a'], 90, Date.now());
     expect(got.map((r) => r.tab)).toEqual(['b', 'a']);
     expect(got.every((r) => r.isTitle && r.firstBlock === '')).toBe(true);
     expect(resultPlace(pages, got[0]!)).toBe('Handbook');

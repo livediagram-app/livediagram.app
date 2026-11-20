@@ -6,6 +6,7 @@
 // nothing here.
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { PageHealthResponse, PageKnowledgePatch } from '@liveknowledge/api-schema';
+import type { ReviewEvery } from '@liveknowledge/knowledge';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useToast } from '@/hooks/ui/useToast';
@@ -14,6 +15,7 @@ import { knowledgeRights, type KnowledgeRights } from '@/lib/knowledge/knowledge
 import { knowledgeFailureText, type KnowledgeAction } from '@/lib/knowledge/knowledge-words';
 import { pageKnowledgeStore } from '@/lib/knowledge/page-knowledge-store';
 import { pageTrust, type PageTrust } from '@/lib/knowledge/page-trust';
+import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
 import { useRelativeNow } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 
@@ -96,6 +98,8 @@ export function useKnowledgeActions(): KnowledgeActions {
 export type PageKnowledgeView = KnowledgeActions & {
   pageId: string;
   trust: PageTrust;
+  /** The knowledgebase's Review Period, which `trust` was worked out under. */
+  reviewEvery: ReviewEvery;
   /** Page Health, once read; absent while loading, on a failure, and for a knowledgebase kept Offline. */
   health: PageHealthResponse | undefined;
   now: number;
@@ -125,7 +129,9 @@ export function usePageKnowledge(): PageKnowledgeView {
     );
   }, [chrome, documentId, pageId, offline]);
   const fields = pageKnowledgeStore.fieldsOf({ id: pageId, knowledge: stored });
-  const trust = useMemo(() => pageTrust(fields, now), [fields, now]);
+  // The knowledgebase's Review Period: a change of it moves the state and the due date at once.
+  const every = useReviewEvery(documentId);
+  const trust = useMemo(() => pageTrust(fields, every, now), [fields, every, now]);
   const health = documentId ? pageKnowledgeStore.healthOf(documentId, pageId) : undefined;
-  return { ...actions, pageId, trust, health, now };
+  return { ...actions, pageId, trust, reviewEvery: every, health, now };
 }

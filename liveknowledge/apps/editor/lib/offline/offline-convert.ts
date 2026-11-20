@@ -120,6 +120,10 @@ async function downloadAndRemoveCloudCopy(
     savedAt: now,
     tabs,
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
+    // Its Review Period stays with it; the default is not written down.
+    ...(liveDoc.knowledgeSettings && liveDoc.knowledgeSettings.reviewEvery !== 90
+      ? { knowledgeSettings: liveDoc.knowledgeSettings }
+      : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching

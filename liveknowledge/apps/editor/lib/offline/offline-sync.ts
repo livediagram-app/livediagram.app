@@ -63,6 +63,8 @@ async function upload(rec: OfflineDocumentRecord, ownerId: string): Promise<Map<
         folderId,
         createdAt: rec.createdAt,
         presentation: rec.presentation ?? null,
+        // The Review Period chosen while it was kept here goes with it.
+        ...(rec.knowledgeSettings ? { knowledgeSettings: rec.knowledgeSettings } : {}),
       },
       { conversion: 'sync' },
     );

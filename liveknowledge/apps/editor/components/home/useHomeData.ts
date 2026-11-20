@@ -33,7 +33,9 @@ const caches = new Map<string, ReturnType<typeof createSummaryCache>>();
 function cacheFor(ownerId: string) {
   let cache = caches.get(ownerId);
   if (!cache) {
-    cache = createSummaryCache((id) => apiKnowledgeSummary({ ownerId, shareCode: null }, id));
+    cache = createSummaryCache((id, fresh) =>
+      apiKnowledgeSummary({ ownerId, shareCode: null }, id, undefined, fresh),
+    );
     caches.set(ownerId, cache);
   }
   return cache;

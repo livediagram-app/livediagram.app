@@ -9,6 +9,7 @@ import {
   SEARCH_MAX_RESULTS,
   pagePassages,
   searchTerms,
+  type ReviewEvery,
 } from '@liveknowledge/knowledge';
 import type { KnowledgeSearchResult } from '@liveknowledge/api-schema';
 import type { ArticleBlock } from '@liveknowledge/document';
@@ -149,6 +150,7 @@ function snippetOf(text: string, terms: readonly string[]): string {
 export function searchLoadedPages(
   pages: readonly SearchPage[],
   query: string,
+  every: ReviewEvery,
   now: number,
 ): KnowledgeSearchResult[] {
   const terms = searchTerms(query);
@@ -160,7 +162,7 @@ export function searchLoadedPages(
   const titles: KnowledgeSearchResult[] = [];
   const passages: KnowledgeSearchResult[] = [];
   for (const page of pages) {
-    const trust = pageTrust(page.knowledge, now);
+    const trust = pageTrust(page.knowledge, every, now);
     const base = {
       tab: page.id,
       title: page.name,

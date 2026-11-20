@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import { readClosedPages, writeClosedPages } from '@/lib/page-tree-open';
 import { track } from '@/lib/telemetry';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
+import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
 import { useKnowledgeActions } from '@/components/knowledge/usePageKnowledge';
 import { pageKnowledgeStore } from '@/lib/knowledge/page-knowledge-store';
 import { pageTrust, trustMarks } from '@/lib/knowledge/page-trust';
@@ -135,22 +136,25 @@ export function usePageTreeModel(): PageTreeModel {
     pageKnowledgeStore.version,
   );
   const now = useRelativeNow();
+  // The knowledgebase's Review Period: a change of it moves every row's tick or Due pill at once.
+  const reviewEvery = useReviewEvery(documentId);
   const knowledge = useMemo<PageTreeKnowledge>(() => {
     // Read for the memo's sake: a field set here moves the version, not the tab list.
     void knowledgeVersion;
     const inContext = new Set<string>();
     for (const tab of tabs) {
-      if (pageTrust(pageKnowledgeStore.fieldsOf(tab), now).fields.context) inContext.add(tab.id);
+      if (pageTrust(pageKnowledgeStore.fieldsOf(tab), reviewEvery, now).fields.context)
+        inContext.add(tab.id);
     }
     return {
-      marks: trustMarks(tabs, now, pageKnowledgeStore.fieldsOf),
+      marks: trustMarks(tabs, reviewEvery, now, pageKnowledgeStore.fieldsOf),
       inContext,
       canVerify: knowledgeActions.rights.verify,
       canEditFields: knowledgeActions.rights.editFields,
       onVerify: knowledgeActions.verify,
       onSetContext: (id, on) => knowledgeActions.setFields(id, { context: on }, 'context'),
     };
-  }, [tabs, now, knowledgeVersion, knowledgeActions]);
+  }, [tabs, now, reviewEvery, knowledgeVersion, knowledgeActions]);
 
   const onRenameKnowledgebase = useCallback(
     (next: string) => {

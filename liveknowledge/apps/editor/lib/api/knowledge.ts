@@ -10,6 +10,9 @@ import type {
   KnowledgeOverviewResponse,
   KnowledgeSearchResponse,
   KnowledgeSearchResult,
+  KnowledgeSettingsPreviewResponse,
+  KnowledgeSettingsResponse,
+  KnowledgeReviewEvery,
   KnowledgeSummaryResponse,
   PageHealthResponse,
   PageKnowledge,
@@ -163,7 +166,35 @@ export async function apiVerifyPage(
   return (await expectOk<PageKnowledgeResponse>(res, 'verify page', expected)).knowledge;
 }
 
-/** Set a page's owner, review interval or Always in Context. Throws `ContextBudgetError` when the page does not fit
+/** Set the knowledgebase's Review Period (verification.md "The Review Period"): one row written, every page's due
+ *  date following at once. Answers the period as stored. Editor only: anyone else is refused with 403. */
+export async function apiSetReviewPeriod(
+  who: KnowledgeCaller,
+  documentId: string,
+  reviewEvery: KnowledgeReviewEvery,
+): Promise<KnowledgeReviewEvery> {
+  const res = await write(who, knowledgeUrl(documentId, 'knowledge-settings'), 'PUT', {
+    reviewEvery,
+  });
+  const answer = await expectOk<KnowledgeSettingsResponse>(res, 'set review period', expected);
+  return answer.knowledgeSettings.reviewEvery;
+}
+
+/** How many pages would be Review Due under a Review Period, beside how many are now. Changes nothing. */
+export function apiPreviewReviewPeriod(
+  who: KnowledgeCaller,
+  documentId: string,
+  reviewEvery: KnowledgeReviewEvery,
+  signal?: AbortSignal,
+): Promise<KnowledgeSettingsPreviewResponse> {
+  const url = knowledgeUrl(
+    documentId,
+    `knowledge-settings/preview?reviewEvery=${encodeURIComponent(String(reviewEvery))}`,
+  );
+  return read(who, url, 'preview review period', signal);
+}
+
+/** Set a page's owner or Always in Context. Throws `ContextBudgetError` when the page does not fit
  *  the budget, and `owner_no_access` (400) for an owner who cannot open the knowledgebase. */
 export async function apiSetPageKnowledge(
   who: KnowledgeCaller,

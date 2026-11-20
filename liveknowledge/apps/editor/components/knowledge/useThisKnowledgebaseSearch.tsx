@@ -26,6 +26,9 @@ import {
   type SearchRunner,
 } from '@/lib/knowledge/knowledge-search';
 import { knowledgeFailureText } from '@/lib/knowledge/knowledge-words';
+import type { ReviewEvery } from '@liveknowledge/knowledge';
+import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
+import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 import { pageTrust } from '@/lib/knowledge/page-trust';
 import { readRecentPages } from '@/lib/knowledge/recent-pages';
 import { track } from '@/lib/telemetry';
@@ -52,13 +55,14 @@ export function resultPlace(
 export function recentResults(
   pages: readonly Page[],
   recent: readonly string[],
+  every: ReviewEvery,
   now: number,
 ): KnowledgeSearchResult[] {
   const byId = new Map(pages.map((page) => [page.id, page]));
   return recent.flatMap((id) => {
     const page = byId.get(id);
     if (!page) return [];
-    const trust = pageTrust(page.knowledge, now);
+    const trust = pageTrust(page.knowledge, every, now);
     return [
       {
         id: `recent:${id}`,
@@ -80,8 +84,8 @@ export function recentResults(
 const NO_RESULTS: KnowledgeSearchResult[] = [];
 
 // The recent pages as the panel opens: read from this browser once, with the time their trust is told at.
-const recentNow = (pages: readonly Page[], documentId: string | null) =>
-  recentResults(pages, readRecentPages(documentId), Date.now());
+const recentNow = (pages: readonly Page[], documentId: string | null, every: ReviewEvery) =>
+  recentResults(pages, readRecentPages(documentId), every, Date.now());
 
 // The one runner a panel's life has: the room's index, or the pages this editor holds for a knowledgebase kept
 // Offline.
@@ -95,7 +99,14 @@ function knowledgeRunner(
     (q, signal) => {
       const editor = editorNow();
       if (!editor.documentId || offline)
-        return Promise.resolve(searchLoadedPages(editor.tabs, q, Date.now()));
+        return Promise.resolve(
+          searchLoadedPages(
+            editor.tabs,
+            q,
+            knowledgeSettingsStore.reviewEveryOf(editor.documentId),
+            Date.now(),
+          ),
+        );
       return apiSearchKnowledge(
         { ownerId: editor.selfParticipant.id, shareCode: editor.sessionShareCode },
         editor.documentId,
@@ -116,6 +127,7 @@ export function useThisKnowledgebaseSearch(
   const documentId = useEditorChrome((s) => s.documentId);
   const offline = useIsOfflineDocument(documentId);
   const pages = useEditorChrome((s) => s.tabs, sameTabsForBar);
+  const every = useReviewEvery(documentId);
   const [outcome, setOutcome] = useState<SearchOutcome>({ status: 'idle' });
   // What is listed: the last results, kept while the next search is on its way so the group does not blink.
   const [results, setResults] = useState<KnowledgeSearchResult[]>([]);
@@ -145,8 +157,8 @@ export function useThisKnowledgebaseSearch(
   const typed = query.trim() !== '';
   // Read as the panel opens (and per knowledgebase), not per keystroke.
   const recent = useMemo(
-    () => (enabled ? recentNow(pages, documentId) : NO_RESULTS),
-    [enabled, pages, documentId],
+    () => (enabled ? recentNow(pages, documentId, every) : NO_RESULTS),
+    [enabled, pages, documentId, every],
   );
   return useMemo(() => {
     if (!enabled) return undefined;

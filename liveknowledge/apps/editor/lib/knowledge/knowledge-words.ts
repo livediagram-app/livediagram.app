@@ -11,12 +11,11 @@ export function contextBudgetText(sizes: { tokens: number; used: number; budget:
   return `This page is ${count(sizes.tokens)} tokens and ${count(sizes.used)} of ${count(sizes.budget)} are in use. Take another page out of Always in Context first.`;
 }
 
-export type KnowledgeAction = 'verify' | 'owner' | 'interval' | 'context' | 'search';
+export type KnowledgeAction = 'verify' | 'owner' | 'context' | 'search';
 
 const FALLBACK: Record<KnowledgeAction, string> = {
   verify: 'The page could not be verified. Try again.',
   owner: 'The owner could not be changed. Try again.',
-  interval: 'The review interval could not be changed. Try again.',
   context: 'Always in Context could not be changed. Try again.',
   search: 'Search is not answering. Check your connection and try again.',
 };

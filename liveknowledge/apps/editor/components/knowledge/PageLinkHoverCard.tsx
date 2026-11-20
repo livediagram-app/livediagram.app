@@ -9,6 +9,7 @@ import type { EditorView } from 'prosemirror-view';
 import { Portal } from '@liveknowledge/ui';
 import type { EditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { firstLines } from '@/lib/knowledge/page-link-pick';
+import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 import { pageKnowledgeStore } from '@/lib/knowledge/page-knowledge-store';
 import { pageTrust, trustMark, type TrustMark } from '@/lib/knowledge/page-trust';
 import { TrustBadge } from './TrustBadge';
@@ -56,7 +57,13 @@ export function PageLinkHoverCard({
           top: r.bottom + 6,
           page: tab && {
             title: tab.name || 'Untitled Page',
-            mark: trustMark(pageTrust(pageKnowledgeStore.fieldsOf(tab), Date.now()).state),
+            mark: trustMark(
+              pageTrust(
+                pageKnowledgeStore.fieldsOf(tab),
+                knowledgeSettingsStore.reviewEveryOf(store.get().documentId),
+                Date.now(),
+              ).state,
+            ),
             lines: firstLines(Object.values(tab.articles ?? {})[0]?.blocks ?? []),
           },
         });
