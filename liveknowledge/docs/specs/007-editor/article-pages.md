@@ -295,8 +295,7 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
     picking it again steps on to the next. With none, it stays a line to read: picking it does
     nothing and the menu stays open. It steps through the whole article whatever is selected.
   - It is read only while the menu is open (as it opens, and again as the selection moves), so
-    typing with the menu shut never counts and a long article types as fast with it as without. A
-    flashcard's menu has it too (a card's length is its speaking time's).
+    typing with the menu shut never counts and a long article types as fast with it as without.
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
 - **On a phone** the toolbar is a bar fixed along the top of the canvas, across it (its controls
   scroll sideways), in the Toolbar strip's place: the strip (its menu and palette) stands aside
@@ -476,8 +475,7 @@ undoes and copies with the text it sits in.
 
 - **Putting one in**: **Footnote** in the slash menu or the page toolbar's Insert, or ⌘⌥F, at the
   caret (after the selection, when text is selected). The reference goes in and the caret goes to
-  its note at the foot of the page, empty, to type it. One edit. Not in a code block, and not on a
-  flashcard (a card holds text only and never reflows). A Participant does not put one in (an insert),
+  its note at the foot of the page, empty, to type it. One edit. Not in a code block. A Participant does not put one in (an insert),
   as with every insert.
 - **Numbering**: through the whole article, 1, 2, 3, in the writing's order (a table's cells in
   reading order), never restarting on a page. A reference put in, moved or deleted renumbers every
@@ -646,7 +644,7 @@ article, the same on each page but for the fields in them. They are part of the 
 - They are a view, never elements, and never edited on the page. Exports (PDF, PNG, SVG) and
   presenting draw them; a Word document has them as its own header and footer, the page number and
   page count as Word fields, Different First Page as Word's own.
-- A look keeps them, as it keeps the margins and page numbers. A flashcard has none.
+- A look keeps them, as it keeps the margins and page numbers.
 
 ## Type
 

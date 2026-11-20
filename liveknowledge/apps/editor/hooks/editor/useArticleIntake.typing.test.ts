@@ -12,7 +12,7 @@ vi.mock('@/lib/article/article-editor-store', () => ({
   forgetZonesReleased: vi.fn(),
 }));
 
-// docs/specs/007-editor/flashcards.md "Long stacks stay quick" and blueprints/article-pages.md "Zones", steps 5 and 6:
+// docs/specs/007-editor/blueprints/article-pages.md "Zones", steps 5 and 6:
 // a typing commit on a long stack does no work for the rest of it. Writing without zones leaves the intake nothing to
 // settle, so it does not tick (no second render of the editor); writing with zones is fitted with the pages laid out
 // once, so a settle grows with the stack, not with its square.
@@ -41,9 +41,8 @@ function stack(n: number, zones: boolean): Tab {
   for (let i = 0; i < n; i++) {
     pages.push({
       id: `c${i}`,
-      orientation: 'landscape',
-      size: 'card',
-      kind: 'flashcard',
+      orientation: 'portrait',
+      kind: 'article',
       flow: `f${i}`,
     });
     articles[`f${i}`] = { blocks: card(i, zones), style: { margins: 'narrow' } };

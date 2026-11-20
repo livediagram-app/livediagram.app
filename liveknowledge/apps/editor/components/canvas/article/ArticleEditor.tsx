@@ -26,7 +26,6 @@ import {
 } from '@/lib/article/article-editor-store';
 import { articleSchema } from '@/lib/article/article-schema';
 import { columnAt } from '@/lib/article/article-flow-geometry';
-import { FlashcardTooLong } from './FlashcardTooLong';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import { removeSlashQuery } from '@/lib/article/article-slash';
 import { filterSlashItems, type SlashItem } from '@/lib/article/article-slash-items';
@@ -121,8 +120,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     at: { left: number; top: number; bottom: number };
   } | null>(null);
   const [slashIndex, setSlashIndex] = useState(0);
-  const slashItems =
-    slash && props.reshape !== false ? filterSlashItems(slash.query, props.card === true) : [];
+  const slashItems = slash && props.reshape !== false ? filterSlashItems(slash.query) : [];
   const slashLive = useRef({ items: slashItems, index: slashIndex, open: false });
   useLayoutEffect(() => {
     const open = !!slash && slashItems.length > 0;
@@ -242,10 +240,6 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       const p = latest.current;
       if (!v || !p.editable || !v.hasFocus() || !p.onRevealCaret) return;
       const rect = caretCanvasRect(v, p);
-      // A card never flows: a caret past its foot is in writing kept but hidden (the Too long
-      // marker says so), and the view stays on the card rather than following it off.
-      const card = p.card ? p.pages[0] : undefined;
-      if (card && rect && rect.x >= card.rect.x + card.rect.width) return;
       if (rect) p.onRevealCaret(rect);
     });
   };
@@ -385,11 +379,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   return (
     <>
       {linkCard}
-      {cutOff && props.card ? (
-        <FlashcardTooLong page={props.pages[0]!} zoom={props.zoom} split={props.split} />
-      ) : cutOff ? (
-        <PageLimitNotice page={props.pages[props.pages.length - 1]!} />
-      ) : null}
+      {cutOff ? <PageLimitNotice page={props.pages[props.pages.length - 1]!} /> : null}
       {slash && props.editable && props.reshape !== false ? (
         <SlashMenu
           at={slash.at}

@@ -286,8 +286,7 @@ describe('the row anchor', () => {
 
 // docs/specs/007-editor/pages-mode.md "Stacked or side by side".
 describe('how a tab’s pages stand', () => {
-  it('keeps each kind’s own by default: cards stack; infographics, slides and articles stand in a row', () => {
-    expect(tabStacksPages([{ kind: 'flashcard' }])).toBe(true);
+  it('stands every kind in a row by default', () => {
     expect(tabStacksPages([{}])).toBe(false);
     expect(tabStacksPages([{ kind: 'infographic' }])).toBe(false);
     expect(tabStacksPages([{ kind: 'slide' }])).toBe(false);
@@ -299,7 +298,6 @@ describe('how a tab’s pages stand', () => {
     expect(tabStacksPages([{ kind: 'slide' }], 'stack')).toBe(true);
     expect(tabStacksPages([{ kind: 'infographic' }], 'stack')).toBe(true);
     expect(tabStacksPages([{}], 'stack')).toBe(true);
-    expect(tabStacksPages([{ kind: 'flashcard' }], 'row')).toBe(false);
     expect(tabStacksPages([{ kind: 'infographic' }], 'row')).toBe(false);
     expect(tabStacksPages([{ kind: 'article' }], 'stack')).toBe(false);
     expect(tabStacksPages([{ kind: 'slide' }], 'sideways')).toBe(false);

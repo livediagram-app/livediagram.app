@@ -2,7 +2,7 @@
 
 // The presenter's card viewer (docs/specs/012-collaboration/speaker-note-cards.md "Presenting"): the slide's note
 // cards one at a time under the HUD, the card in front with the cards still to come peeking out below it as a
-// flashcard stack does, Previous Card / Next Card and a dot per card, and the flip between them. Read only: presenting
+// page stack does, Previous Card / Next Card and a dot per card, and the flip between them. Read only: presenting
 // changes nothing.
 import { useLayoutEffect, useRef, useState } from 'react';
 import { lucideClock } from '@liveworkspace/icons/lucide';
@@ -17,9 +17,9 @@ const ClockIcon = lucideGlyph(lucideClock, 11);
 export const VIEWER_STACK_MAX = 3;
 // Dots between the buttons, one a card; past this "Card n of m" says enough.
 export const VIEWER_DOTS_MAX = 10;
-// As a flashcard turns: deep enough to read as a card's, at the viewer's size.
+// As a card turns: deep enough to read as a card's, at the viewer's size.
 const PERSPECTIVE = 'perspective(1200px)';
-// The same quiet lift as a flashcard's flip (flashcards.md "Flipping"): a small tilt, a touch higher, a shade smaller.
+// A quiet lift: a small tilt, a touch higher, a shade smaller.
 const TURNED = {
   transform: `${PERSPECTIVE} rotateX(14deg) translateY(-3%) scale(0.985)`,
   opacity: 0,
@@ -77,7 +77,7 @@ export function PresenterNoteCards({
   const shown = useRef({ index, slideId, card });
   const [ghost, setGhost] = useState<Ghost | null>(null);
 
-  // The flip (docs/specs/007-editor/flashcards.md "Flipping"): forward, a picture of the card that was in front turns
+  // The flip: forward, a picture of the card that was in front turns
   // up over its top edge and fades, uncovering the next; back, the earlier card comes down over the stack.
   useLayoutEffect(() => {
     const was = shown.current;

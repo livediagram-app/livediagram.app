@@ -27,7 +27,6 @@ import {
 } from '@liveknowledge/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { pagesClipPath } from '@/components/canvas/PageClip';
-import { cardFlowsToMount } from '@/lib/flashcard-stack';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { ArticleInk } from '@/lib/article/article-style-vars';
 import {
@@ -111,12 +110,7 @@ export function ArticleFlows({
     [reshape, flows, openByFlow, zoneId, zoneFlow, selectedIds, elements],
   );
   const articlePages = useMemo(
-    () =>
-      row.flatMap((p) =>
-        p.flow && !held.has(p.flow)
-          ? [{ id: p.id, flow: p.flow, card: p.kind === 'flashcard' }]
-          : [],
-      ),
+    () => row.flatMap((p) => (p.flow && !held.has(p.flow) ? [{ id: p.id, flow: p.flow }] : [])),
     [row, held],
   );
   const zoneDrag = useZoneDrag({
@@ -158,18 +152,6 @@ export function ArticleFlows({
     zoom,
     pagesOf: (flow) => byFlow.get(flow),
   });
-  // A too-long card's Split Onto a New Card, from its marker: an Editor's page edit.
-  const edit = view.edit;
-  const cardSplit = useMemo(
-    () => (edit ? { state: edit.cardSplitState, run: edit.splitCard } : undefined),
-    [edit],
-  );
-  // A long stack mounts only the writing near the card in front (flashcards.md "Long stacks stay quick").
-  const focusFlow = articles?.focusRequest?.flow ?? null;
-  const mountable = useMemo(
-    () => cardFlowsToMount(row, view.cardStack, [zoneFlow, focusFlow]),
-    [row, view.cardStack, zoneFlow, focusFlow],
-  );
   if (!articles || byFlow.size === 0) return null;
   const writable = (flow: string) => articles.editable && !held.has(flow);
   return (
@@ -218,7 +200,7 @@ export function ArticleFlows({
         <Suspense fallback={null}>
           {[...byFlow].map(([flow, pages]) => {
             const doc = articles.flows[flow];
-            if (!doc || (mountable && !mountable.has(flow))) return null;
+            if (!doc) return null;
             const lead = pages[0]!;
             return (
               <ArticleEditor
@@ -226,8 +208,6 @@ export function ArticleFlows({
                 flow={flow}
                 pages={pages}
                 atPageLimit={row.length >= MAX_PAGES}
-                card={lead.kind === 'flashcard'}
-                split={lead.kind === 'flashcard' && writable(flow) ? cardSplit : undefined}
                 doc={doc}
                 editable={writable(flow)}
                 reshape={articles.reshape && writable(flow)}

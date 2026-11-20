@@ -37,7 +37,7 @@ const RETIRED: ReadonlySet<string> = new Set([
 ]);
 
 // Every page kind the Pages tour has a track for (apps/editor/lib/pages-tour.ts PAGES_TOUR_KINDS).
-const PAGES_TOUR_KINDS: readonly PageKind[] = ['slide', 'infographic', 'article', 'flashcard'];
+const PAGES_TOUR_KINDS: readonly PageKind[] = ['slide', 'infographic', 'article'];
 
 export function upgradeLegacyPreferences<T extends Record<string, unknown>>(prefs: T): T {
   const keys = Object.keys(prefs);

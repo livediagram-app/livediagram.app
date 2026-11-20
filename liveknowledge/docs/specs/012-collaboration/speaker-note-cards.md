@@ -1,6 +1,6 @@
 # Speaker note cards
 
-A slide's speaker notes are a short stack of **note cards**: the smaller form of [Flashcards](../007-editor/flashcards.md),
+A slide's speaker notes are a short stack of **note cards**,
 made for talking a room through a deck. Each card holds one point to make; a slide can have as many as it needs, and
 the presenter flips through them while the slide is on screen. One long box of script is hard to glance at in front
 of a room; a card per point is what speakers already hold in their hand.
@@ -12,21 +12,20 @@ pages.
 
 ## Domain language
 
-| Term                | Means                                                                                                                             |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| **note card**       | One card of a slide's speaker notes: plain text, one point to make. "Card" for short in the UI.                                   |
-| **a slide's cards** | Its note cards in order (`Slide.noteCards`), the slide's own, never a page's or an element's.                                     |
-| **card in front**   | While presenting, the note card the presenter is on. Every slide starts on its first card.                                        |
-| **flip**            | Moving to another note card while presenting, turned as a flashcard turns ([Flashcards](../007-editor/flashcards.md) "Flipping"). |
+| Term                | Means                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| **note card**       | One card of a slide's speaker notes: plain text, one point to make. "Card" for short in the UI. |
+| **a slide's cards** | Its note cards in order (`Slide.noteCards`), the slide's own, never a page's or an element's.   |
+| **card in front**   | While presenting, the note card the presenter is on. Every slide starts on its first card.      |
+| **flip**            | Moving to another note card while presenting, turned over the next.                             |
 
 The interface keeps **Notes** for the whole ("Notes", "Speaker Notes"), says **card** for one of them ("Add Card",
-"Card 2 of 4"), and never calls a note card a flashcard, a page or a slide.
+"Card 2 of 4"), and never calls a note card a page or a slide.
 
-## How it differs from a flashcard
+## What a note card is
 
-A flashcard is a page of a tab, with rich text, a title and its own editor. A note card is a few lines of **plain
-text** on the deck's slide: no title, no formatting, no page, no editor of its own. What it keeps from flashcards:
-one point a card, the speaking time in its corner, the stack showing what is still to come, and the flip.
+A note card is a few lines of **plain text** on the deck's slide: no title, no formatting, no page, no editor of its
+own. One point a card, the speaking time in its corner, the stack showing what is still to come, and the flip.
 
 ## The model
 
@@ -41,8 +40,8 @@ one point a card, the speaking time in its corner, the stack showing what is sti
 - **Limits**: at most **20** cards a slide (`NOTE_CARDS_MAX`); a card takes up to **1,000** characters as typed
   (`NOTE_CARD_TEXT_MAX`). A longer old note or imported notes page is kept whole as one card, never cut; it can only be
   shortened. A stored deck with more than 20 cards on a slide reads its first 20.
-- Each card's **speaking time** is its words at 130 words a minute, as a flashcard's is
-  ([Flashcards](../007-editor/flashcards.md) "Card number and speaking time"): "25 sec", "2 min".
+- Each card's **speaking time** is its words at 130 words a minute: "25 sec" (to the next 5 seconds under a
+  minute), "2 min" (the nearest minute).
 
 ## Writing note cards
 
@@ -92,7 +91,7 @@ not blank; `N` toggles it. It opens the **card viewer** under the HUD:
 - **The card in front**, 352 px wide, as an index card on the HUD's dark glass: "Card 2 of 4" at the top left, its
   speaking time at the top right, its text in 15 px type, scrolling past half the screen's height.
 - **The cards still to come** peek out below it as a stack, each sheet a little lower, narrower and dimmer (10 px,
-  14 px, as a flashcard stack, at most 3 shown); the last card has none behind it.
+  14 px, at most 3 shown); the last card has none behind it.
 - **Previous Card** and **Next Card** buttons under it, with a dot per card (up to 10, each a "Go to Card n" button)
   between them; ↑ and ↓ flip back and forward while the viewer is open. At the first and last card the button is
   disabled; a slide with one card shows no buttons or dots.
@@ -206,8 +205,7 @@ The deck is document metadata saved through the document's PUT, which is `gateEd
 
 ## Non-goals
 
-- Rich text, titles or pictures on a note card (a flashcard has them; a note card is a line or two to glance at).
-- A card per page of a flashcard stack, or turning a slide's cards into a flashcard tab.
+- Rich text, titles or pictures on a note card (a note card is a line or two to glance at).
 - A second-window presenter console (still out of scope, [Presentation mode](presentation-mode.md)).
 - Showing another person's cards live while both write: they arrive with the next load ("Two people writing at once").
   See Decisions.

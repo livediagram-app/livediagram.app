@@ -106,7 +106,7 @@ no way to turn them off for themselves.
 - **Only where cursors are drawn.** The switch shows, in Settings and in the Collaborators modal, only while
   the tab you are on draws other people's cursors. Where none are drawn it is absent from both, and from search
   (the Settings dialog's and the editor's), since there it could change nothing. The stored value is untouched:
-  back on a tab that draws cursors, the switch is there again as you left it. In liveknowledge every tab draws them: infographic, slide, article and flashcard pages all sit on the one canvas the cursors move over, so the switch always shows.
+  back on a tab that draws cursors, the switch is there again as you left it. In liveknowledge every tab draws them: infographic, slide and article pages all sit on the one canvas the cursors move over, so the switch always shows.
 
 ### Implementation notes
 

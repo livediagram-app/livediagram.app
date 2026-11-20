@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newFlashcardPage } from '@liveknowledge/document';
+import { layOutPages } from '@liveknowledge/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {
   cardInFrontOf,
-  cardFlowsToMount,
   cardStageOf,
   flashcardStage,
-  FLASHCARD_MOUNT_SPAN,
   FLASHCARD_FAN,
   FLASHCARD_STACK_MAX,
   shownPagesOf,
@@ -14,23 +12,29 @@ import {
   stacksPages,
 } from './flashcard-stack';
 
-// docs/specs/007-editor/flashcards.md "The stack".
-const cards = layOutPages(['a', 'b', 'c', 'd'].map((id, i) => newFlashcardPage(id, `f${i}`)));
+// docs/specs/007-editor/pages-mode.md "Stacked infographics".
+const cards = layOutPages(
+  ['a', 'b', 'c', 'd'].map((id) => ({
+    id,
+    orientation: 'landscape' as const,
+    kind: 'infographic' as const,
+  })),
+);
 const view = (extra: Partial<PagesModeView> = {}) =>
   ({ pages: cards, ...extra }) as unknown as PagesModeView;
 
 describe('the card in front', () => {
   it('is the card asked for while it is in the stack, else the first', () => {
-    expect(cardInFrontOf(cards, 'c')).toBe('c');
-    expect(cardInFrontOf(cards, 'gone')).toBe('a');
-    expect(cardInFrontOf(cards, null)).toBe('a');
+    expect(cardInFrontOf(cards, 'c', 0, 'stack')).toBe('c');
+    expect(cardInFrontOf(cards, 'gone', 0, 'stack')).toBe('a');
+    expect(cardInFrontOf(cards, null, 0, 'stack')).toBe('a');
   });
 
   it('brings the card before its place to the front when the card asked for has gone', () => {
     // An undone split took away card 3 of 4, the card in front: card 2 comes to the front, not card 1.
-    expect(cardInFrontOf(cards, 'gone', 2)).toBe('b');
-    expect(cardInFrontOf(cards, 'gone', 0)).toBe('a');
-    expect(cardInFrontOf(cards, 'gone', 9)).toBe('d');
+    expect(cardInFrontOf(cards, 'gone', 2, 'stack')).toBe('b');
+    expect(cardInFrontOf(cards, 'gone', 0, 'stack')).toBe('a');
+    expect(cardInFrontOf(cards, 'gone', 9, 'stack')).toBe('d');
   });
 
   it('is none off a stack', () => {
@@ -39,8 +43,8 @@ describe('the card in front', () => {
   });
 });
 
-// pages-mode.md "Stacking infographics": only flashcards stack by default; an infographic tab stacked from Contents
-// Options stands as a stack too; an article never does.
+// pages-mode.md "Stacking infographics": no tab stacks by default; an infographic tab stacked from Contents Options
+// stands as a stack; an article never does.
 describe('which tabs stack', () => {
   const sheets = layOutPages([
     { id: 'p1', orientation: 'portrait' },
@@ -48,8 +52,7 @@ describe('which tabs stack', () => {
     { id: 'p3', orientation: 'portrait' },
   ]);
 
-  it('stacks flashcards by default, and an infographic tab only once stacked', () => {
-    expect(stacksPages(cards)).toBe(true);
+  it('stacks an infographic tab only once stacked', () => {
     expect(stacksPages(sheets)).toBe(false);
     expect(stacksPages(sheets, 'stack')).toBe(true);
     expect(cardInFrontOf(sheets, 'p2')).toBeNull();
@@ -144,35 +147,5 @@ describe('the sheets behind', () => {
     expect(stackSheets(rect, 40)).toHaveLength(FLASHCARD_STACK_MAX);
     expect(stackSheets(rect, 0)).toEqual([]);
     expect(stackSheets(rect, -1)).toEqual([]);
-  });
-});
-
-// flashcards.md "Long stacks stay quick".
-describe('the writing a stack mounts', () => {
-  const stack = (index: number) => ({
-    index,
-    count: cards.length,
-    behind: cards.length - index - 1,
-  });
-
-  it('is the card in front and one each side', () => {
-    expect(FLASHCARD_MOUNT_SPAN).toBe(1);
-    expect([...cardFlowsToMount(cards, stack(1), [])!]).toEqual(['f0', 'f1', 'f2']);
-    expect([...cardFlowsToMount(cards, stack(0), [])!]).toEqual(['f0', 'f1']);
-    expect([...cardFlowsToMount(cards, stack(3), [])!]).toEqual(['f2', 'f3']);
-  });
-
-  it('keeps the card being written and one asked to take focus', () => {
-    expect([...cardFlowsToMount(cards, stack(0), ['f3', null, undefined])!]).toEqual([
-      'f0',
-      'f1',
-      'f3',
-    ]);
-  });
-
-  it('skips a page with no writing, and mounts every article off a stack', () => {
-    const row = [{ ...cards[0]!, flow: undefined }, cards[1]!];
-    expect([...cardFlowsToMount(row, stack(0), [])!]).toEqual(['f1']);
-    expect(cardFlowsToMount(cards, undefined, ['f0'])).toBeNull();
   });
 });

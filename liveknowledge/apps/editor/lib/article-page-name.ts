@@ -1,4 +1,4 @@
-// The name an unnamed article page or flashcard goes by (docs/specs/007-editor/pages-mode.md "Page names"): its
+// The name an unnamed article page goes by (docs/specs/007-editor/pages-mode.md "Page names"): its
 // article's own title, so naming a card is writing its title. Never stored on the page: the name keeps following the
 // title as it changes, and a name typed in the page's panel still wins.
 import { articleTitleOf, type ArticleFlow } from '@liveknowledge/document';

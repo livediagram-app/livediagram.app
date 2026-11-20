@@ -32,7 +32,7 @@ export function pageWritingFonts(tab: Tab, page: LaidOutPage): string[] {
 export function pageWriting(tab: Tab, page: LaidOutPage): PageWriting | null {
   if (!page.flow) return null;
   const doc = articlesOf(tab)[page.flow];
-  // A card whose writing is not mounted (a long stack's, flashcards.md "Long stacks stay quick") is set as the
+  // An article whose writing is not mounted is set as the
   // headless estimate sets it.
   const snap = articleHandleOf(page.flow)?.snapshot() ?? estimatedPageOps(tab, page);
   if (!doc || !snap) return null;

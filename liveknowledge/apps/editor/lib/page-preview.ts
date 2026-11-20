@@ -32,8 +32,6 @@ const SAMPLE_BLOCKS = (articleFromMarkdown(ARTICLE_MARKDOWN) as { blocks: Articl
 function samplePage(kind: PageKind, background: PageBackground | undefined): Page {
   const own = background && (background.fill || background.pattern) ? { background } : {};
   if (kind === 'slide') return { ...newSlidePage(PAGE_ID), ...own };
-  if (kind === 'flashcard')
-    return { id: PAGE_ID, orientation: 'landscape', size: 'card', kind, flow: PAGE_ID, ...own };
   if (kind === 'article')
     return { id: PAGE_ID, orientation: 'portrait', kind, flow: PAGE_ID, ...own };
   return { id: PAGE_ID, orientation: 'landscape', kind: 'infographic', ...own };
@@ -96,7 +94,7 @@ export function pagePreviewSvg(opts: {
   textSize?: TextSize;
 }): string {
   const page = layOutPages([samplePage(opts.kind, opts.background)])[0]!;
-  const written = opts.kind === 'article' || opts.kind === 'flashcard';
+  const written = opts.kind === 'article';
   const blank: Tab = {
     id: 'tab-style-sample',
     name: 'Sample',

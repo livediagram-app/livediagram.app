@@ -43,7 +43,7 @@ const ShareOfflineGate = dynamic(
 // are "act on this tab / document as a whole" modals launched from the
 // header, distinct from the global editor modals in EditorModals.
 // The tab and document dialogs, open or not.
-// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/typing.md "Performance and
 // limits"): a typing commit renders nothing here.
 export function EditorTabDialogs() {
   const open = useEditorChrome((s) => s.exportOpen || s.importOpen || s.shareDialogOpen);

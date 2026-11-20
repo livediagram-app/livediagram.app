@@ -107,7 +107,7 @@ export function useEditorArticles({
     start: startDeck,
   } = slideDeck;
   // The verbs are new on every render (a typing commit among them), so the controls call the newest through a ref and
-  // change only with the deck, the tab and the role (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+  // change only with the deck, the tab and the role (docs/specs/007-editor/blueprints/typing.md "Performance and
   // limits": the chrome showing the pages renders for none of those commits).
   const deckVerbs = useLatest({
     newPageSlide,

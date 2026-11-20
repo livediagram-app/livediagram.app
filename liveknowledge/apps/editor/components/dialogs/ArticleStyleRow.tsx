@@ -11,9 +11,9 @@ const TileIcon = lucideGlyph(lucideALargeSmall, 15);
 const ChevronIcon = lucideGlyph(lucideChevronRight, 14);
 
 export function ArticleStyleRow() {
-  const { kind, onOpenArticleStyle } = useTabStylePages();
+  const { onOpenArticleStyle } = useTabStylePages();
   if (!onOpenArticleStyle) return null;
-  const name = kind === 'flashcard' ? 'Card Style' : 'Article Style';
+  const name = 'Article Style';
   return (
     <button
       type="button"

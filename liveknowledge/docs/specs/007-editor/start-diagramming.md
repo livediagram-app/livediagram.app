@@ -60,8 +60,8 @@ are, the panel draws them.
 
 ### Groups
 
-**Blank Pages** leads, chosen as the start opens: Blank Slide Deck, Blank Article, Blank Infographic and Blank
-Flashcards, one empty page of the kind meant. Then one group per catalogue category, in the same alphabetical order
+**Blank Pages** leads, chosen as the start opens: Blank Slide Deck, Blank Article and Blank Infographic, one empty
+page of the kind meant. Then one group per catalogue category, in the same alphabetical order
 and with the same names as every other picker
 ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)), each template under its primary
 category (`components/start/start-template-items.ts` derives them, so a new template or category needs no change
@@ -82,7 +82,7 @@ the same way: a field inset in the rail's top, on its own paper with a border an
 in the brand ink and a chevron (the shared `StartKindFilter`,
 `../packages/workbench/src/components/start/StartKindFilter.tsx`). It opens a menu of `menuitemradio` rows, each
 a glyph on a soft plate, the name, a line under it and a check on the chosen one: **All Pages** first, then
-**Slide Deck**, **Article**, **Infographic** and **Flashcards** (`components/start/start-page-types.ts`). On a phone the menu spans the row it opens from.
+**Slide Deck**, **Article** and **Infographic** (`components/start/start-page-types.ts`). On a phone the menu spans the row it opens from.
 
 - **All Pages** is chosen each time the start opens: nothing is hidden until asked.
 - **A page type** narrows the whole start to the templates that open on that kind of page (`templatePageKind`, in the

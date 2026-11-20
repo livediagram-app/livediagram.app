@@ -65,7 +65,7 @@ describe('the start by page type', () => {
   const listed = TEMPLATES.filter(
     (t) => !t.hidden && t.kind !== 'blank-illustration' && t.kind !== 'blank',
   ).map((t) => t.kind);
-  const TYPES = ['slide', 'article', 'infographic', 'flashcard'] as const;
+  const TYPES = ['slide', 'article', 'infographic'] as const;
 
   it('is the whole start under All Pages', () => {
     expect(templateStartFor('all')).toBe(TEMPLATE_START);

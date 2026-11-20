@@ -13,7 +13,6 @@ import {
   withArticleRemoved,
   withUnitMoved,
 } from './article-pages';
-import { withFlashcardAdded } from './flashcards';
 import type { Element, Tab } from './index';
 import {
   pagesOf,
@@ -245,10 +244,6 @@ function pageAppended<T extends PagesTab>(
   // The new page starts on the tab's new-page background when it has one (the plain paper included), else wears the
   // background of the page before it (the last page of `after`'s unit, else the last).
   const carried = startingBackground(tab, pages, after);
-  if (kind === 'flashcard') {
-    const out = withFlashcardAdded(tab, { id, ...(carried ? { background: carried } : {}) }, flow);
-    return out ? { tab: out } : refused('page_limit');
-  }
   if (kind === 'article') {
     const last = pages[pages.length - 1];
     const paper = last && ['a4', 'letter', 'a3'].includes(last.size ?? 'a4');

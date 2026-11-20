@@ -708,8 +708,8 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
   Pan): a phone has no hover and no middle button.
 
-  **Getting Started** is a category of its own: **Pages Tours** (over **Slides Tour**, **Infographic Tour**, **Article
-  Tour** and **Flashcards Tour**), with a line saying where it runs and a **Learn More** to its article, under
+  **Getting Started** is a category of its own: **Pages Tours** (over **Slides Tour**, **Infographic Tour** and **Article
+  Tour**), with a line saying where it runs and a **Learn More** to its article, under
   one **Offer Again** section note. No tour offers itself: every tour is started from the footer's
   **Get Started** button, left of Tools, and leaves it once taken until its switch here is turned back on ([Pages tour](pages-tour.md)).
   These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages

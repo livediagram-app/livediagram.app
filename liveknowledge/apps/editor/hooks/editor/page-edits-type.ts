@@ -8,7 +8,6 @@ import type {
 } from '@liveknowledge/document';
 import type { PageLayoutId } from '@liveknowledge/templates';
 import type { BackgroundCopyEdits } from './pages-background-copy-edits';
-import type { CardSplitState } from './page-split-edits';
 
 export type PageEdits = BackgroundCopyEdits & {
   setOrientation: (pageId: string, next: PageOrientation) => void;
@@ -38,11 +37,6 @@ export type PageEdits = BackgroundCopyEdits & {
   // A Fit to Content page split into one page per cluster of its content, nothing scaled
   // (docs/specs/007-editor/pages-mode.md "Split Into Pages").
   splitPage: (pageId: string) => void;
-  // Split Onto a New Card (docs/specs/007-editor/flashcards.md "Never flows"): a too-long card's
-  // writing from its first block that does not fit moves onto a new card right after it.
-  splitCard: (pageId: string) => void;
-  // Whether a card can be split now: it fits ('fits'), it can ('ready'), or why not.
-  cardSplitState: (pageId: string) => CardSplitState;
   // Whether the page's unit can move left / right (not at the row's end).
   canMove: (pageId: string, by: -1 | 1) => boolean;
   // Puts a layout onto the page in place of everything on it (the panel asks first when there is

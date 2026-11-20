@@ -8,11 +8,10 @@ import {
   type LayoutInviteContext,
 } from './layout-invite';
 
-const [slide, infographic, article, card, locked] = layOutPages([
+const [slide, infographic, article, locked] = layOutPages([
   { id: 's', orientation: 'landscape', kind: 'slide', size: 'slide' },
   { id: 'i', orientation: 'portrait', kind: 'infographic' },
   { id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' },
-  { id: 'c', orientation: 'landscape', kind: 'flashcard', flow: 'g' },
   { id: 'l', orientation: 'landscape', kind: 'slide', size: 'slide', locked: true },
 ] as Page[]);
 const ok: LayoutInviteContext = {
@@ -31,9 +30,8 @@ describe('layoutInviteShows', () => {
     expect(layoutInviteShows(infographic!, ok)).toBe(true);
   });
 
-  it('never on an article or a flashcard page, nor a locked one', () => {
+  it('never on an article page, nor a locked one', () => {
     expect(layoutInviteShows(article!, ok)).toBe(false);
-    expect(layoutInviteShows(card!, ok)).toBe(false);
     expect(layoutInviteShows(locked!, ok)).toBe(false);
   });
 

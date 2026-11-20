@@ -14,7 +14,6 @@ export type TemplateKind =
   | 'blank-slide-deck'
   | 'blank-article'
   | 'blank-infographic'
-  | 'blank-flashcards'
   // A six-slide pitch on 16:9 slide pages.
   | 'slide-deck'
   // Group card: a greeting card the whole team signs (cover + message wall). The kind id predates the name.
@@ -40,11 +39,6 @@ export type TemplateKind =
   | 'quarterly-review'
   | 'team-welcome'
   | 'workshop-kickoff'
-  // Flashcards to speak from (docs/specs/007-editor/flashcards.md "Making flashcards"; flashcard-templates.ts).
-  | 'talk-flashcards'
-  | 'wedding-toast'
-  | 'pitch-flashcards'
-  | 'class-presentation'
   // Written documents (article-templates.ts): articles that use tables, contents, headers and footers as a real
   // document of their kind would.
   | 'meeting-notes'
@@ -107,12 +101,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-infographic',
     title: 'Blank Infographic',
     description: 'One empty A4 infographic page: lay it out yourself or start from a layout.',
-    extra: true,
-  },
-  {
-    kind: 'blank-flashcards',
-    title: 'Blank Flashcards',
-    description: 'One empty flashcard: a title and a few lines to say, flipped one card at a time.',
     extra: true,
   },
   {
@@ -239,34 +227,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Workshop Kickoff',
     description:
       'A six-slide workshop opener on rolling waves: the outcomes, the agenda, how each round runs, the one rule and the close.',
-    extra: true,
-  },
-  {
-    kind: 'talk-flashcards',
-    title: 'Conference Talk',
-    description:
-      "A conference talk on six cue cards, from the opening question to the close, with cues for where to pause and each card's speaking time.",
-    extra: true,
-  },
-  {
-    kind: 'wedding-toast',
-    title: 'Wedding Toast',
-    description:
-      'A warm best-person toast on five flashcards: a story from back then, meeting the partner, the wishes, the raised glass.',
-    extra: true,
-  },
-  {
-    kind: 'pitch-flashcards',
-    title: 'Product Pitch',
-    description:
-      'A short investor pitch on five cue cards: the hook, the problem, the answer, the proof and the ask.',
-    extra: true,
-  },
-  {
-    kind: 'class-presentation',
-    title: 'School Presentation',
-    description:
-      'A class talk on the water cycle, on five cue cards: the question, three stages and what to remember.',
     extra: true,
   },
   {

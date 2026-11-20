@@ -1,16 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import {
-  laidOutPagesOf,
-  newFlashcardPage,
-  type ArticleDrawOp,
-  type Tab,
-} from '@liveknowledge/document';
+import { laidOutPagesOf, type ArticleDrawOp, type Tab } from '@liveknowledge/document';
 import { estimatedBars, estimatedPageOps } from './article-estimate-cache';
 import { pageWriting, pageWritingBars } from './article-export';
 import { registerArticleHandle, type ArticleEditorHandle } from './article-editor-store';
 
-// docs/specs/007-editor/flashcards.md "Long stacks stay quick": a card whose writing is not mounted is drawn from
-// its estimated lines.
+// An article whose writing is not mounted is drawn from its estimated lines.
 type Text = Extract<ArticleDrawOp, { k: 'text' }>;
 type Rect = Extract<ArticleDrawOp, { k: 'rect' }>;
 const card = (n: number) => ({
@@ -21,7 +15,12 @@ const stack = (count: number): Tab =>
     id: 't',
     name: 'Tab',
     elements: [],
-    pages: Array.from({ length: count }, (_, i) => newFlashcardPage(`p${i}`, `f${i}`)),
+    pages: Array.from({ length: count }, (_, i) => ({
+      id: `p${i}`,
+      orientation: 'portrait' as const,
+      kind: 'article' as const,
+      flow: `f${i}`,
+    })),
     articles: Object.fromEntries(Array.from({ length: count }, (_, i) => [`f${i}`, card(i + 1)])),
   }) as unknown as Tab;
 

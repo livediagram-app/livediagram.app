@@ -31,7 +31,7 @@ const CanvasThemeDialog = dynamic(
 // popovers stay inline in EditorView — they're anchored to canvas elements,
 // not global modals.
 // Settings and the canvas theme dialog, open or not.
-// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/typing.md "Performance and
 // limits"): a typing commit renders nothing here.
 export function EditorModals() {
   const open = useEditorChrome(
@@ -77,7 +77,7 @@ function OpenEditorModals() {
   // What the dialog knows of the tab's pages (tab-style-pages.ts), worked out when the tab or the page kind changes.
   const pages = useMemo<TabStylePages>(() => {
     const own = newPageBackgroundOf(activeTab);
-    const written = pageKind === 'article' || pageKind === 'flashcard';
+    const written = pageKind === 'article';
     return {
       kind: pageKind,
       newPageBackground: own,

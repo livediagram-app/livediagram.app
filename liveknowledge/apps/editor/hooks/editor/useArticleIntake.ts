@@ -154,7 +154,7 @@ export function useArticleIntake({
       );
       if (res) intakes.push({ flow, ids, plan, res });
     }
-    // Nothing to settle (a typing commit on writing without zones, as every flashcard's is): no tick, so no second
+    // Nothing to settle (a typing commit on writing without zones): no tick, so no second
     // render of the editor on each commit (blueprints/article-pages.md "Zones", step 6).
     const pending = relocations.length + goneZones.size + intakes.length;
     if (!intakeHasWork({ was, now: activeTab, held, pending })) return;

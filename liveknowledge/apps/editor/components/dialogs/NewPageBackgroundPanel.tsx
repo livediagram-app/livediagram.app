@@ -49,7 +49,7 @@ export function NewPageBackgroundPanel({
   const pages = useTabStylePages();
   const { themeId } = pages;
   const own = pages.newPageBackground;
-  const written = pages.kind === 'article' || pages.kind === 'flashcard';
+  const written = pages.kind === 'article';
   const themePresets = useMemo(() => themeBackgroundPresets(getTheme(themeId)), [themeId]);
   // The page panel's Background section, over a page of the tab's kind wearing the tab's choice.
   const sample: Page = {

@@ -16,7 +16,6 @@ kind (its first page's, [Pages](../007-editor/pages-mode.md) "One kind a tab"), 
 | Slide       | **PowerPoint** | "Every page as an editable slide, with its notes. Opens in Keynote and Google Slides too." |
 | Article     | **Word**       | "The article as an editable document, its headings as Word styles. Opens in Google Docs."  |
 | Infographic | none           | PNG, SVG and PDF already fit a laid-out page.                                              |
-| Flashcard   | none           | A card is spoken from, not handed over.                                                    |
 
 A tab with no page yet, and an export of a selection, show neither card.
 
@@ -155,7 +154,7 @@ panel. See the [blueprint](blueprints/office-export.md).
 
 ## Non-goals
 
-- PowerPoint for an infographic or flashcard tab, Word for a slide or infographic tab, or either for a selection.
+- PowerPoint for an infographic tab, Word for a slide or infographic tab, or either for a selection.
 - Element animations, slide transitions and auto-advance in the deck; links on elements.
 - Tables as native tables, charts as native charts, arrows as native connectors: each is a picture.
 - Embedding the fonts in the file.

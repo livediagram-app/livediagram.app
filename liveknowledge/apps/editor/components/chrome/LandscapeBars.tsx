@@ -70,7 +70,7 @@ function LandscapeBarsHandleView({ shown, onToggle }: { shown: boolean; onToggle
   );
 }
 
-/** Behind a memo boundary that forwards its toggle (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+/** Behind a memo boundary that forwards its toggle (docs/specs/007-editor/blueprints/typing.md "Performance and
  *  limits"): the editor view hands it a new function on every render, a typing commit among them, and it renders only
  *  when `shown` changes. */
 export const LandscapeBarsHandle = withStableEventProps(LandscapeBarsHandleView);

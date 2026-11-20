@@ -122,8 +122,7 @@ export function PageToolbar({
   // The article pages on the tab that may be written on, each with its article: what a hover or a
   // press is measured on. An article with a locked page is left out (it is read-only), so the
   // toolbar never shows for it, hovered or worked on.
-  // `card`: a flashcard's, which holds text only (docs/specs/007-editor/flashcards.md "Text only").
-  articlePages: readonly { id: string; flow: string; card?: boolean }[];
+  articlePages: readonly { id: string; flow: string }[];
   // The screen px of a page's top margin at the current zoom: the room the band sits in.
   topRoomOf: (pageId: string) => number;
   // The article's accent (the theme's when it has none of its own).
@@ -151,11 +150,9 @@ export function PageToolbar({
   useEffect(() => {
     if (commentRequest === seenComment.current) return;
     seenComment.current = commentRequest;
-    const { active: a, onNote: note, articlePages: pages } = noteNow.current;
-    // A card takes no margin notes.
-    const onCard = pages.some((p) => p.flow === a?.handle.flow && p.card === true);
-    // Nor does text in a table's cell (a note marks a block's own runs).
-    if (a?.selection.hasText && !a.selection.inTable && !onCard) note?.(a.handle.flow, 'comment');
+    const { active: a, onNote: note } = noteNow.current;
+    // Text in a table's cell takes no margin note (a note marks a block's own runs).
+    if (a?.selection.hasText && !a.selection.inTable) note?.(a.handle.flow, 'comment');
   }, [commentRequest]);
   // A menu hangs where it opened: the view panning or zooming away from it closes it.
   const gesture = useCanvasGesture();
@@ -175,8 +172,6 @@ export function PageToolbar({
 
   if (!shown) return null;
   const { handle, selection } = shown;
-  // A card: no Insert, no margin notes (a note is an element in its margin).
-  const card = articlePages.some((p) => p.flow === handle.flow && p.card === true);
   const run = (command: Parameters<typeof handle.run>[0], event?: keyof typeof FORMAT_EVENT) => {
     handle.run(command);
     if (event) track('Element', 'Changed', FORMAT_EVENT[event]);
@@ -352,49 +347,45 @@ export function PageToolbar({
       >
         <More />
       </Button>
-      {card ? null : (
-        <>
-          <Divider />
-          <Button
-            label="Insert"
-            anchor="insert"
-            menu
-            expanded={open === 'insert'}
-            onPress={() => toggleOpen('insert')}
-          >
-            <Plus />
-          </Button>
-          {selection.inTable ? (
-            <Button
-              label="Table"
-              anchor="table"
-              menu
-              expanded={open === 'table'}
-              onPress={() => toggleOpen('table')}
-            >
-              <TableIcon />
-            </Button>
-          ) : null}
-          <Divider />
-          <Button
-            label="Comment"
-            keys="Mod-Alt-m"
-            disabled={!selection.hasText || selection.inTable || !onNote}
-            why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
-            onPress={() => onNote?.(handle.flow, 'comment')}
-          >
-            <CommentIcon />
-          </Button>
-          <Button
-            label="Assign Action"
-            disabled={!selection.hasText || selection.inTable || !onNote}
-            why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
-            onPress={() => onNote?.(handle.flow, 'action')}
-          >
-            <ActionIcon />
-          </Button>
-        </>
-      )}
+      <Divider />
+      <Button
+        label="Insert"
+        anchor="insert"
+        menu
+        expanded={open === 'insert'}
+        onPress={() => toggleOpen('insert')}
+      >
+        <Plus />
+      </Button>
+      {selection.inTable ? (
+        <Button
+          label="Table"
+          anchor="table"
+          menu
+          expanded={open === 'table'}
+          onPress={() => toggleOpen('table')}
+        >
+          <TableIcon />
+        </Button>
+      ) : null}
+      <Divider />
+      <Button
+        label="Comment"
+        keys="Mod-Alt-m"
+        disabled={!selection.hasText || selection.inTable || !onNote}
+        why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
+        onPress={() => onNote?.(handle.flow, 'comment')}
+      >
+        <CommentIcon />
+      </Button>
+      <Button
+        label="Assign Action"
+        disabled={!selection.hasText || selection.inTable || !onNote}
+        why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
+        onPress={() => onNote?.(handle.flow, 'action')}
+      >
+        <ActionIcon />
+      </Button>
     </div>
   );
 
@@ -477,7 +468,6 @@ export function PageToolbar({
         <ToolbarPopover anchor="more" menu onClose={close} label="More Formatting" width={272}>
           <MorePanel
             selection={selection}
-            card={card}
             // Read only while the menu is open, from the writing as typed: never on the typing path.
             counts={articleCountsOf(handle.state())}
             onAction={(a) => choose(() => more(a))}

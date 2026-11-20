@@ -101,7 +101,7 @@ describe('useCanvasPinchZoom view', () => {
   });
 });
 
-// docs/specs/007-editor/flashcards.md "Getting around a stack": a stack has no row to pan along.
+// docs/specs/007-editor/pages-mode.md "Stacked infographics": a stack has no row to pan along.
 describe('useCanvasPinchZoom on a stack', () => {
   it('pans up and down only, a sideways or Shift wheel moving nothing sideways; Ctrl still zooms', () => {
     viewport = createViewportStore(1);

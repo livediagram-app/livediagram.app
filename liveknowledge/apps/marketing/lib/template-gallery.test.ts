@@ -74,7 +74,7 @@ describe('groupGallery', () => {
     expect(holding('floor-plan')).toEqual(['home']);
     expect(holding('lesson-plan')).toEqual(['learning']);
     // A cross-listed template shows on each of its categories.
-    expect(holding('wedding-toast')).toEqual(['events', 'speeches']);
+    expect(holding('how-it-works')).toEqual(['learning', 'marketing']);
   });
 
   it('finds a template by its search words, as the editor does', () => {
@@ -95,7 +95,6 @@ describe('the shelves, as the template step lays them out', () => {
       'blank-illustration',
       'blank-slide-deck',
       'blank-article',
-      'blank-flashcards',
     ]);
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(

@@ -1,5 +1,5 @@
 // The canvas's arrow labels and the selection chrome's input (docs/specs/008-canvas/arrow-labels.md,
-// docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved"), with the flashcard stack's
+// docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved"), with the page stack's
 // staging they sit beside, derived once per change. Called by Canvas in the same place its body ran them,
 // so the hooks keep their order.
 import { useMemo } from 'react';
@@ -57,8 +57,8 @@ export function useCanvasSelectionInput({
   // quick-connect pluses on it (docs/specs/007-editor/article-pages.md "Zones"). A predicate the
   // selection derivation applies, so the canvas itself still doesn't read the selection.
   const articlePages = pagesMode?.pages;
-  // A stack of flashcards draws its card in front alone (docs/specs/007-editor/flashcards.md
-  // "The stack"); the chrome, the snap and the Contents keep the whole row.
+  // A stack draws its page in front alone (docs/specs/007-editor/pages-mode.md
+  // "Stacked infographics"); the chrome, the snap and the Contents keep the whole row.
   const staged = useMemo(() => (pagesMode ? flashcardStage(pagesMode) : undefined), [pagesMode]);
   const plusBlocked = useMemo(
     () => articlePlusBlocked(articlePages, elements),

@@ -430,8 +430,7 @@ ARTICLE_DRAWING_PAD)` tall), `handle.insertZone(spec, centre)`, `withZoneLanded`
      not N layouts of every page.
   6. **Nothing to settle, no tick**: when no object was dragged out, no zone left the writing, nothing was
      taken in, no note marker or note text is gone and no unheld article holds a zone (`intakeHasWork`), the
-     intake calls no `tickTabs` at all, so a typing commit on zone-less writing (every flashcard, most
-     articles) costs no second render of the editor.
+     intake calls no `tickTabs` at all, so a typing commit on zone-less writing (most articles) costs no second render of the editor.
 - **`insertObject`** counts `INSERT_EVENT[what]` only after the insert went in (`insertZone`
   returned a zone, or `placeAt` was called at a caret point), never for a refused one.
 - **`insertZone(spec, near)`**: at `boundaryNear(near)` or after the caret's block; an empty

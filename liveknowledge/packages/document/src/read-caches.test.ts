@@ -3,9 +3,8 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { articlesOf } from './article-flow';
 import { pagesOf } from './page';
 
-// docs/specs/007-editor/blueprints/flashcards.md "Performance and limits" (Work Tracker 728): a typing commit on a
-// 100-card stack changes one card's writing and no page, and the editor reads the tab's pages and writing on every
-// render and every keystroke's checks. Each is read once per stored object, so a commit reads one card again.
+// Work Tracker 728: a typing commit on a tab of 100 articles changes one article's writing and no page, and the editor reads the tab's pages and writing on every
+// render and every keystroke's checks. Each is read once per stored object, so a commit reads one article again.
 
 function stack(n: number) {
   const pages = [];
@@ -13,15 +12,14 @@ function stack(n: number) {
   for (let i = 0; i < n; i++) {
     pages.push({
       id: `c${i}`,
-      orientation: 'landscape',
-      size: 'card',
-      kind: 'flashcard',
+      orientation: 'portrait',
+      kind: 'article',
       flow: `f${i}`,
     });
     articles[`f${i}`] = {
       blocks: [
-        { id: `t${i}`, type: 'paragraph', style: 'title', runs: [{ text: `Card ${i}` }] },
-        { id: `p${i}`, type: 'paragraph', runs: [{ text: `What card ${i} says.` }] },
+        { id: `t${i}`, type: 'paragraph', style: 'title', runs: [{ text: `Article ${i}` }] },
+        { id: `p${i}`, type: 'paragraph', runs: [{ text: `What article ${i} says.` }] },
       ],
       style: { margins: 'narrow' },
     };
@@ -47,7 +45,7 @@ describe('the pages read from a tab', () => {
     expect(pagesOf({ pageOrientation: 'landscape' })[0]!.orientation).toBe('landscape');
   });
 
-  it('cost nothing to read again: 1,000 reads of a 100-card stack', () => {
+  it('cost nothing to read again: 1,000 reads of a tab of 100 articles', () => {
     const tab = stack(100);
     pagesOf(tab);
     const ms = cpuMsOf(() => {

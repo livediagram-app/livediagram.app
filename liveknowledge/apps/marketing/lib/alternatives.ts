@@ -36,11 +36,6 @@ const LIST: Alternative[] = [
         them: 'Speaker notes, presenter view, audience Q&A, animations and transitions',
       },
       {
-        label: 'Rehearsing',
-        us: 'Flashcards to speak from, each with how long it takes to say',
-        them: 'Speaker notes and a timer in presenter view',
-      },
-      {
         label: 'Review and history',
         us: 'Version history per tab, whole-document snapshots and Request Approval, free',
         them: 'Version history with named versions; Drive approvals on some Workspace plans',
@@ -68,13 +63,12 @@ const LIST: Alternative[] = [
       'Any page can be a slide, from any tab, ordered in one deck that is saved with the document.',
       'Present with presenter notes, a time budget per slide, transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
       'Builds bring a slide’s points in one click at a time, with Appear, Fade or Rise, in the order you set.',
-      'Rehearse from Flashcards: each card shows how long it takes to say, and Contents adds up the whole talk.',
       'Review a deck before it goes out: ask named people to approve it, keep named versions of each tab, and snapshot the whole document to revert in one step.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
       'Export the deck as an editable PowerPoint file, speaker notes included, or as an animated GIF for a chat, an email or a README.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can build the deck for you from slide layouts.',
-      '41 templates to start from, from a launch keynote and a class lesson to a board update.',
+      '36 templates to start from, from a launch keynote and a class lesson to a board update.',
       'Free and MIT-licensed, with no paid tier.',
     ],
     sections: [
@@ -89,7 +83,7 @@ const LIST: Alternative[] = [
         heading: 'Presenting, built for the room',
         paragraphs: [
           'Presenting runs full screen on your screen alone: nobody is dragged into your slide, and collaborators with the document open carry on working. Each slide carries its own presenter notes behind a button, and an optional time budget you can watch as you talk. Builds bring a slide’s points in one click at a time, and a laser pointer and a spotlight guide the room.',
-          'Nothing on a slide can be changed by a stray click, so a projector is safe, and a deck can advance on its own and loop for a screen in a lobby. To rehearse, write the talk on Flashcards: each card shows how long it takes to say, and Contents shows how long the whole talk runs.',
+          'Nothing on a slide can be changed by a stray click, so a projector is safe, and a deck can advance on its own and loop for a screen in a lobby.',
         ],
       },
       {

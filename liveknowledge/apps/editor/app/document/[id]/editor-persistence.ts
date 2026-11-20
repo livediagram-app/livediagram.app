@@ -14,7 +14,7 @@ import { SAVE_FORBIDDEN_MESSAGE, SAVE_SIGNED_OUT_MESSAGE } from './save-failure'
 // The setters are written by the autosave, hydration/bootstrap and room-op paths.
 //
 // The autosave's status and the time of its last write are held in refs, not state (docs/specs/007-editor/
-// blueprints/flashcards.md "Performance and limits"): nothing draws them any more, only a failed save's toast reads
+// blueprints/typing.md "Performance and limits"): nothing draws them any more, only a failed save's toast reads
 // the status, and as state each save rendered the whole editor twice more ('saving', then 'saved' and its time)
 // after every typing commit. A move into a failed state raises its toast as it is set.
 export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useToast> }) {

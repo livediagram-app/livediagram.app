@@ -76,7 +76,7 @@ missing.
 - **Enter** or the **Next** button goes to the next match; **Shift+Enter** or **Previous** to the
   one before; both wrap round at the ends.
 - **Going to a match** brings it into view: a match on another page frames that page whole (as a
-  page's label does), turning a flashcard to its card; a match on the page in view pans the least
+  page's label does); a match on the page in view pans the least
   that shows it. The keyboard stays in the Find field.
 - **The search follows the tab.** An edit (anyone's) searches again; the current match stays the
   one at the same place where it can, else the next.

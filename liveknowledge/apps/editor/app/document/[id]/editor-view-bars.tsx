@@ -31,7 +31,7 @@ const workbenchDocumentHref = (documentId: string, shareCode: string | null) =>
 // side (docs/specs/007-editor/split-view.md) lays it across both panes.
 //
 // Each bar reads the chrome store one slice at a time and is memoised on its props, so a typing commit (a new
-// document, the same header and tabs) renders neither (docs/specs/007-editor/blueprints/flashcards.md "Performance
+// document, the same header and tabs) renders neither (docs/specs/007-editor/blueprints/typing.md "Performance
 // and limits"). Its handlers read the newest view-model when they run.
 export const EditorViewHeader = memo(function EditorViewHeader(view: {
   isOffline: boolean;

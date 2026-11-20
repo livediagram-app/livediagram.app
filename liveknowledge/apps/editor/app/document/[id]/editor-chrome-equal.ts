@@ -1,4 +1,4 @@
-// How the chrome tells a typing commit from a change it shows (docs/specs/007-editor/blueprints/flashcards.md
+// How the chrome tells a typing commit from a change it shows (docs/specs/007-editor/blueprints/typing.md
 // "Performance and limits"). A typing commit hands the page a new view-model whose only change is a tab's writing
 // (its `articles`, and for the tab bar its `elements` too) and a new function for every handler, so a reader that
 // compares these ways renders for none of them.

@@ -75,7 +75,7 @@ describe('upgradeLegacyPreferences', () => {
       autoRebindArrows: false,
       elementToursSeen: true,
       pagesTourSeen: true,
-      pagesTourKinds: ['slide', 'infographic', 'article', 'flashcard'],
+      pagesTourKinds: ['slide', 'infographic', 'article'],
     });
   });
 
@@ -86,14 +86,14 @@ describe('upgradeLegacyPreferences', () => {
         pagesTourSeen: true,
         pagesTourKinds: ['article'],
       }).pagesTourKinds,
-    ).toEqual(['article', 'slide', 'infographic', 'flashcard']);
+    ).toEqual(['article', 'slide', 'infographic']);
     // The Illustrate names, carried over first, count too.
     expect(
       upgradeLegacyPreferences<Record<string, unknown>>({
         powerUserMode: true,
         illustrateTourSeen: true,
       }).pagesTourKinds,
-    ).toEqual(['slide', 'infographic', 'article', 'flashcard']);
+    ).toEqual(['slide', 'infographic', 'article']);
   });
 
   it('leaves the Pages tour kinds alone when the mode was off or the tour was offered again', () => {

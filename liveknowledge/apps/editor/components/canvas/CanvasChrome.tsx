@@ -490,7 +490,7 @@ function CanvasChromeView(props: CanvasChromeProps) {
   );
 }
 
-/** Behind a memo boundary that forwards its `on…` props (docs/specs/007-editor/blueprints/flashcards.md "Performance
+/** Behind a memo boundary that forwards its `on…` props (docs/specs/007-editor/blueprints/typing.md "Performance
  *  and limits"): the Canvas hands it only the props it reads (pickCanvasChromeProps), the pages' view without the
  *  writing (useChromePagesView) and the writing as a store, so a typing commit renders none of it. */
 export const CanvasChrome = withStableEventProps(CanvasChromeView);

@@ -12,7 +12,7 @@ export const { EditorContext, useEditorContext, useOptionalEditorContext } =
 
 export type EditorContextValue = ReturnType<typeof useEditorState>;
 
-// The editor's chrome store (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits"): the same
+// The editor's chrome store (docs/specs/007-editor/blueprints/typing.md "Performance and limits"): the same
 // view-model as EditorContext, held outside React. EditorContext hands every reader a new value on every render of
 // the page, so each typing commit re-rendered every reader, the chrome that never reads the document among them. The
 // chrome reads this store instead, one slice at a time (`useEditorChrome`), and renders only when its slice changed;

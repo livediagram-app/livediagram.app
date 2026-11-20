@@ -7,7 +7,7 @@ and open it in another app first.
 ## Where it is offered
 
 The Export dialog ([Pages](../007-editor/pages-mode.md) "Export") offers a **Print** card on every tab with pages,
-whatever their kind (infographic, slide, article, flashcard), after PDF: "Send the current page or the whole
+whatever their kind (infographic, slide, article), after PDF: "Send the current page or the whole
 document to your printer, each page its own sheet." A selection's export (no pages) does not offer it. Print sits
 where Export sits, so whoever may export may print, a Viewer included.
 

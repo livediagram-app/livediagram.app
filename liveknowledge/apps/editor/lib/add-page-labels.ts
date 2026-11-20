@@ -7,7 +7,6 @@ const KIND_NOUN: Record<PageKind, string> = {
   infographic: 'Infographic Page',
   article: 'Article',
   slide: 'Slide',
-  flashcard: 'Card',
 };
 
 /** The page a press of the + adds, in words: its kind. */
@@ -15,12 +14,12 @@ export function anotherPageNoun(page: Pick<Page, 'kind'>): string {
   return KIND_NOUN[pageKindOf(page)];
 }
 
-/** The + button's name: "Add Slide", "Add Card". */
+/** The + button's name: "Add Slide". */
 export function addAnotherLabel(page: Pick<Page, 'kind'>): string {
   return `Add ${anotherPageNoun(page)}`;
 }
 
-/** Contents' footer button, short enough for its row: "Add Slide", "Add Card", "Add Article"; an
+/** Contents' footer button, short enough for its row: "Add Slide", "Add Article"; an
  *  infographic page's plain "Add Page". */
 export function addPageLabel(page: Pick<Page, 'kind'> | undefined): string {
   if (!page || pageKindOf(page) === 'infographic') return 'Add Page';

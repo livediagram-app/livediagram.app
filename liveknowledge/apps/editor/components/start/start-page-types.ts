@@ -4,7 +4,6 @@ import { lucideGlyph } from '@liveknowledge/ui';
 import {
   lucideChartColumn,
   lucideFileText,
-  lucideLayers,
   lucideLayoutGrid,
   lucidePresentation,
 } from '@liveworkspace/icons/lucide';
@@ -35,11 +34,5 @@ export const START_PAGE_TYPES: readonly StartKindOption<StartPageType>[] = [
     name: 'Infographic',
     line: 'Pages to lay out with charts, icons and pictures.',
     icon: lucideGlyph(lucideChartColumn, 16),
-  },
-  {
-    id: 'flashcard',
-    name: 'Flashcards',
-    line: 'Cards to speak from, flipped one at a time.',
-    icon: lucideGlyph(lucideLayers, 16),
   },
 ];

@@ -128,7 +128,7 @@ export function articleKeymap(host: {
   onLink: () => void;
   // ⌘⌥M: a comment on the selected text.
   onComment: () => void;
-  // ⌘⌥F: a footnote at the caret (false where none may go: a card, a code block, a Participant).
+  // ⌘⌥F: a footnote at the caret (false where none may go: a code block, a Participant).
   onFootnote?: Command;
   onEscape: () => void;
 }): Plugin[] {

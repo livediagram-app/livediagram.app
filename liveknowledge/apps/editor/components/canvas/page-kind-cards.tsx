@@ -45,11 +45,6 @@ export const PAGE_KINDS: readonly PageKindChoice[] = [
     name: 'Slide',
     line: 'A slide for a deck: widescreen, ready to present.',
   },
-  {
-    kind: 'flashcard',
-    name: 'Flashcards',
-    line: 'Cards to speak from: a title and a few lines each, flipped one at a time.',
-  },
 ];
 
 /** Whether the card at `i` goes across both columns: the last of an odd number. */
@@ -87,8 +82,6 @@ export function PageKindCard({
           <ArticleMiniature />
         ) : choice.kind === 'slide' ? (
           <SlideMiniature />
-        ) : choice.kind === 'flashcard' ? (
-          <FlashcardMiniature />
         ) : (
           <InfographicMiniature />
         )}
@@ -218,32 +211,6 @@ function SlideMiniature() {
         rx="2"
         className="fill-brand-100 dark:fill-brand-500/25"
       />
-    </svg>
-  );
-}
-
-// A stack of cards: the card in front with a title and two lines, two more peeking out below it,
-// and its number in the corner.
-function FlashcardMiniature() {
-  const line = 'fill-slate-300 dark:fill-slate-500';
-  const behind = 'fill-white stroke-slate-200 dark:fill-slate-700 dark:stroke-slate-600';
-  return (
-    <svg width="80" height="58" viewBox="0 0 80 58" aria-hidden className="drop-shadow-sm">
-      <rect x="9" y="12" width="62" height="40" rx="3" strokeWidth="0.75" className={behind} />
-      <rect x="5" y="8" width="70" height="42" rx="3" strokeWidth="0.75" className={behind} />
-      <rect x="1" y="2" width="78" height="46" rx="3" className="fill-white dark:fill-slate-700" />
-      <rect
-        x="8"
-        y="9"
-        width="32"
-        height="5"
-        rx="2"
-        className="fill-slate-700 dark:fill-slate-200"
-      />
-      <rect x="8" y="19" width="56" height="2.5" rx="1.25" className={line} />
-      <rect x="8" y="24" width="50" height="2.5" rx="1.25" className={line} />
-      <rect x="8" y="29" width="38" height="2.5" rx="1.25" className={line} />
-      <rect x="56" y="40" width="16" height="2.2" rx="1.1" className="fill-brand-500" />
     </svg>
   );
 }

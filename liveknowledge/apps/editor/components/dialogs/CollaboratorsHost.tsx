@@ -15,7 +15,7 @@ const CollaboratorsDialog = dynamic(
 // closes the modal: both are "take me there", and the modal would sit over
 // exactly what you asked to see.
 // The Collaborators dialog, open or not.
-// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/typing.md "Performance and
 // limits"): a typing commit renders nothing here.
 export function CollaboratorsHost() {
   const open = useEditorChrome((s) => !!s.collaborators);

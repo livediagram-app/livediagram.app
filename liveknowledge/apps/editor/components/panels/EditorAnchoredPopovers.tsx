@@ -28,7 +28,7 @@ const AssignActionDialog = dynamic(
 // EditorContext, so EditorView just renders <EditorAnchoredPopovers />. It bypasses the autosave path for view-role
 // visitors, persisting directly through the dedicated comment endpoints.
 // The element-anchored popovers, open or not.
-// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/typing.md "Performance and
 // limits"): a typing commit renders nothing here.
 export function EditorAnchoredPopovers() {
   const open = useEditorChrome(

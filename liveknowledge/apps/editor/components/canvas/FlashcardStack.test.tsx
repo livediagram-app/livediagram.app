@@ -1,25 +1,17 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  layOutPages,
-  newFlashcardPage,
-  type ArticleFlow,
-  type LaidOutPage,
-} from '@liveknowledge/document';
-import { publishCardOverflow } from '@/lib/flashcard-overflow-store';
-import type { CardSplit } from '@/lib/flashcard-split';
-import { FlashcardFooter, FlashcardStackSheets, PageStackNav, StackNav } from './FlashcardStack';
-import { FlashcardTooLong } from './article/FlashcardTooLong';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { layOutPages, type LaidOutPage } from '@liveknowledge/document';
+import { FlashcardStackSheets, PageStackNav, StackNav } from './FlashcardStack';
 
-// docs/specs/007-editor/flashcards.md "The stack", "Card number and speaking time", "Never flows"
-// and "Share roles".
-const cards = layOutPages(['a', 'b', 'c', 'd'].map((id, i) => newFlashcardPage(id, `f${i}`)));
-const flow = (text: string): ArticleFlow => ({
-  blocks: [{ id: 'p', type: 'paragraph', runs: [{ text }] }],
-});
-
-afterEach(() => publishCardOverflow('f0', null));
+// docs/specs/007-editor/pages-mode.md "Stacked infographics".
+const cards = layOutPages(
+  ['a', 'b', 'c', 'd'].map((id) => ({
+    id,
+    orientation: 'landscape' as const,
+    kind: 'infographic' as const,
+  })),
+);
 
 describe('the cards behind', () => {
   it('draws one sheet per card still to come, a view taking no presses', () => {
@@ -32,7 +24,7 @@ describe('the cards behind', () => {
     }
   });
 
-  // flashcards.md "The cards behind": a flip moves the stack a page with the view, so only the fan eases.
+  // pages-mode.md "Stacked infographics": a flip moves the stack a page with the view, so only the fan eases.
   it('stands every card behind at the card in front, its fan place a transform, so a flip eases only the fan', () => {
     const at = (front: LaidOutPage, behind: readonly LaidOutPage[]) => [
       ...render(
@@ -51,7 +43,7 @@ describe('the cards behind', () => {
     }
   });
 
-  // flashcards.md "The card in front stands out".
+  // pages-mode.md "Stacked infographics".
   it('lifts the card in front off the fan, with a rim that suits its background, only while cards stand behind', () => {
     const lift = (card: LaidOutPage, behind: readonly LaidOutPage[]) =>
       render(
@@ -83,41 +75,7 @@ describe('the cards behind', () => {
   });
 });
 
-describe('the footer', () => {
-  it('says the card’s place and how long its words take to say', () => {
-    const { container } = render(
-      <FlashcardFooter
-        card={cards[1]!}
-        stack={{ index: 1, count: 4, behind: 2 }}
-        row={cards}
-        flow={flow(Array.from({ length: 130 }, () => 'word').join(' '))}
-        margin={48}
-        font="serif"
-      />,
-    );
-    expect(screen.getByText('Card 2 of 4')).toBeTruthy();
-    expect(container.querySelector('[data-speaking-time]')!.textContent).toBe('1 min');
-  });
-
-  it('shows the number alone on an empty card, light on a dark one', () => {
-    const dark = { ...cards[0]!, background: { fill: { kind: 'solid', color: '#0f172a' } } };
-    const { container } = render(
-      <FlashcardFooter
-        card={dark as LaidOutPage}
-        stack={{ index: 0, count: 1, behind: 0 }}
-        row={cards.slice(0, 1)}
-        flow={undefined}
-        margin={48}
-        font={undefined}
-      />,
-    );
-    const footer = container.querySelector<HTMLElement>('[data-flashcard-footer]')!;
-    expect(footer.textContent).toBe('Card 1 of 1');
-    expect(footer.style.color).toContain('255');
-  });
-});
-
-// flashcards.md "Getting around a stack": Previous and Next under the page in front, for everyone who sees it.
+// pages-mode.md "Stacked infographics": Previous and Next under the page in front, for everyone who sees it.
 describe('getting around a stack', () => {
   it('goes to the card before or after, and stops at the ends', () => {
     const onGo = vi.fn();
@@ -151,58 +109,6 @@ describe('getting around a stack', () => {
     );
   });
 
-  // Drawn over the card's writing, whose paper (ArticleFlows, painted after the sheets) would otherwise take the press.
-  it('lifts a card’s footer and an infographic’s nav above the writing', () => {
-    const { container } = render(
-      <>
-        <FlashcardFooter
-          card={cards[1]!}
-          stack={{ index: 1, count: 4, behind: 2 }}
-          row={cards}
-          flow={undefined}
-          margin={48}
-          font={undefined}
-          onGo={vi.fn()}
-        />
-        <PageStackNav
-          page={cards[0]!}
-          stack={{ index: 0, count: 4, behind: 3 }}
-          row={cards}
-          zoom={1}
-          onGo={vi.fn()}
-        />
-      </>,
-    );
-    expect(container.querySelector('[data-flashcard-footer]')!.className).toContain('z-[2]');
-    expect(container.querySelector('[data-page-stack-nav]')!.className).toContain('z-[2]');
-  });
-
-  it('sits in a card’s footer beside its speaking time when it may flip, the place alone when not', () => {
-    const { rerender } = render(
-      <FlashcardFooter
-        card={cards[1]!}
-        stack={{ index: 1, count: 4, behind: 2 }}
-        row={cards}
-        flow={undefined}
-        margin={48}
-        font={undefined}
-        onGo={vi.fn()}
-      />,
-    );
-    expect(screen.getByRole('button', { name: 'Next card' })).toBeTruthy();
-    rerender(
-      <FlashcardFooter
-        card={cards[1]!}
-        stack={{ index: 1, count: 4, behind: 2 }}
-        row={cards}
-        flow={undefined}
-        margin={48}
-        font={undefined}
-      />,
-    );
-    expect(screen.queryByRole('button')).toBeNull();
-  });
-
   it('says Page under an infographic page, held at one screen size under its bottom-right corner', () => {
     const page = cards[0]!;
     const { container } = render(
@@ -218,43 +124,5 @@ describe('getting around a stack', () => {
     const host = container.querySelector<HTMLElement>('[data-page-stack-nav]')!;
     expect(host.style.left).toBe(`${page.rect.x + page.rect.width}px`);
     expect(host.style.transform).toContain('scale(2)');
-  });
-});
-
-describe('Too long for this card', () => {
-  const split = (state: ReturnType<CardSplit['state']>): CardSplit => ({
-    state: vi.fn(() => state),
-    run: vi.fn(),
-  });
-
-  it('an Editor splits the card from it', () => {
-    const s = split('ready');
-    render(<FlashcardTooLong page={cards[0]!} zoom={1} split={s} />);
-    expect(screen.getByRole('status').textContent).toContain('Too long for this card');
-    fireEvent.click(screen.getByRole('button', { name: 'Split Onto a New Card' }));
-    expect(s.run).toHaveBeenCalledWith('a');
-  });
-
-  it('says why it cannot split, and does nothing pressed', () => {
-    const s = split('one-paragraph');
-    render(<FlashcardTooLong page={cards[0]!} zoom={1} split={s} />);
-    const button = screen.getByRole('button', { name: 'Split Onto a New Card' });
-    expect(button.getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(button);
-    expect(s.run).not.toHaveBeenCalled();
-  });
-
-  it.each(['Participant', 'Viewer'])('a %s sees the marker without its button', () => {
-    render(<FlashcardTooLong page={cards[0]!} zoom={2} />);
-    expect(screen.getByRole('status').textContent).toBe('Too long for this card');
-    expect(screen.queryByRole('button')).toBeNull();
-  });
-
-  it('reads the split again as the writing past the foot changes', () => {
-    const s = split('ready');
-    render(<FlashcardTooLong page={cards[0]!} zoom={1} split={s} />);
-    const before = vi.mocked(s.state).mock.calls.length;
-    act(() => publishCardOverflow('f0', 'p'));
-    expect(vi.mocked(s.state).mock.calls.length).toBeGreaterThan(before);
   });
 });

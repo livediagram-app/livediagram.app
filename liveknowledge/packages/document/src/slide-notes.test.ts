@@ -110,7 +110,7 @@ describe('newNoteCardId', () => {
 });
 
 describe('noteCardSpeakingSeconds', () => {
-  it('times the words at a flashcard pace', () => {
+  it('times the words at a speaking pace', () => {
     expect(noteCardSpeakingSeconds('')).toBe(0);
     // 130 words is a minute.
     expect(noteCardSpeakingSeconds(Array.from({ length: 130 }, () => 'word').join(' '))).toBe(60);

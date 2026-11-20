@@ -84,16 +84,16 @@ page is and offers; this section is the basics.
 
 ## Domain language
 
-| Term                | Means                                                                                                                                            |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **page**            | One sheet of a tab (`Page`) , stored in `Tab.pages` in row order.                                                                                |
-| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article**, **slide** or **flashcard** page. Every page of a tab is of one kind. |
-| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                                          |
-| **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                               |
-| **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                                                        |
-| **page background** | What the sheet is painted with (`PageBackground`): a solid colour, a two-stop gradient or a picture under an overlay, plus a pattern.            |
-| **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.                                            |
-| **page panel**      | The page's settings, opened from the cog above its top-right corner.                                                                             |
+| Term                | Means                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **page**            | One sheet of a tab (`Page`) , stored in `Tab.pages` in row order.                                                                     |
+| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article** or **slide** page. Every page of a tab is of one kind.     |
+| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                               |
+| **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                    |
+| **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                                             |
+| **page background** | What the sheet is painted with (`PageBackground`): a solid colour, a two-stop gradient or a picture under an overlay, plus a pattern. |
+| **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.                                 |
+| **page panel**      | The page's settings, opened from the cog above its top-right corner.                                                                  |
 
 ## Selecting on a page
 
@@ -121,8 +121,6 @@ one category.
   formatting in place of the category bar: its page toolbar, docked ([Article pages](article-pages.md)
   "The page toolbar"). Search keeps the Design palette. Offered on an article page alone
   (anywhere else the strip would be empty).
-- **Flashcard** (flashcards): the strip holds the card's page toolbar, docked, as Article does, and
-  nothing else: no Search, whose tiles would place elements on a card ([Flashcards](flashcards.md) "Text only").
 
 The kind changes with the tab: opening a document or going to a tab of another kind, or an empty
 first page taking its kind. A tab stored before the one-kind rule, holding pages of more than one
@@ -148,14 +146,10 @@ one kind ("One kind a tab"):
   present. Always landscape, in a slide size (16:9, or the classic 4:3); it offers no orientation
   and no other size. It starts from the **slide layouts** rather than the infographic ones.
   Everything in this spec for infographic pages applies to it except where a rule says otherwise.
-- **Flashcard** (`kind: 'flashcard'`): one card of a stack to speak from, text only, its writing its own one-page
-  article that never flows ([Flashcards](flashcards.md)). Always **Flashcard (5:3)**, landscape. A tab of them shows
-  one card at a time, the rest stacked behind it, and moves between them by flipping. This spec applies to it as to an
-  article page except where [Flashcards](flashcards.md) says otherwise.
 
 ### One kind a tab
 
-A tab is a deck, an infographic, a set of articles or a stack of flashcards, never a mix: **every page of a tab is of
+A tab is a deck, an infographic or a set of articles, never a mix: **every page of a tab is of
 the tab's kind**, the kind of its first page (`tabPageKind`, `packages/document/src/page.ts`; an
 unchosen first page reads as infographic). A deck holds only slides, an infographic tab only
 infographic pages, an article tab only articles (one or more, each flowing over its own pages).
@@ -221,19 +215,17 @@ A tab with no pages stored starts with one page, its kind unchosen.
 inside itself, for someone who may edit: a card centred on the page, held at one screen size (420 px
 wide, never wider than the screen less a 16 px gutter a side, so a phone shows all of it, and over the
 canvas's + after the page),
-**What Is This Page For?** ("Choose now: every page of this tab will be this kind."), over four
+**What Is This Page For?** ("Choose now: every page of this tab will be this kind."), over three
 cards:
 
 - **Infographic**: "A page to lay out: layouts, icons, charts and media."
 - **Article**: "A page to write on, flowing onto new pages as it grows."
 - **Slide**: "A slide for a deck: widescreen, ready to present."
-- **Flashcards**: "Cards to speak from: a title and a few lines each, flipped one at a time."
 
 **Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
 choice goes; **Article** makes it the first page of a new article, the caret in its title (a page set to a size
 an article does not offer, the 16:9 Slide, becomes A4);
-**Slide** turns it into a 16:9 landscape slide (`kind: 'slide'`), its slide layouts inviting;
-**Flashcards** makes it the first card of a stack (`kind: 'flashcard'`, Flashcard (5:3)), the caret in its title. One
+**Slide** turns it into a 16:9 landscape slide (`kind: 'slide'`), its slide layouts inviting. One
 edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
 empty page offers nothing on itself, so the choice is the only card on it. Not offered in zen,
@@ -314,24 +306,22 @@ a slide of a deleted page can never find a new page under the old id.
 
 ## Sizes
 
-| Size id         | Label (portrait / landscape)               | Short x long side (px) | For                        |
-| --------------- | ------------------------------------------ | ---------------------- | -------------------------- |
-| `a4`            | A4                                         | 794 x 1123             | Print, the default         |
-| `letter`        | US Letter                                  | 816 x 1056             | Print in North America     |
-| `a3`            | A3                                         | 1123 x 1587            | Posters                    |
-| `square`        | Square                                     | 1080 x 1080            | Social posts               |
-| `social`        | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn     |
-| `wide`          | Story (9:16) / Widescreen (16:9)           | 1080 x 1920            | Stories, and screens wide  |
-| `slide`         | Slide (16:9)                               | 1080 x 1920            | Slides, landscape only     |
-| `slide-classic` | Classic slide (4:3)                        | 1080 x 1440            | Slides for 4:3 screens     |
-| `fit`           | Fit to Content                             | its own (`fit`)        | Content put onto a page    |
-| `card`          | Flashcard (5:3)                            | 540 x 900              | Flashcards, landscape only |
+| Size id         | Label (portrait / landscape)               | Short x long side (px) | For                       |
+| --------------- | ------------------------------------------ | ---------------------- | ------------------------- |
+| `a4`            | A4                                         | 794 x 1123             | Print, the default        |
+| `letter`        | US Letter                                  | 816 x 1056             | Print in North America    |
+| `a3`            | A3                                         | 1123 x 1587            | Posters                   |
+| `square`        | Square                                     | 1080 x 1080            | Social posts              |
+| `social`        | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn    |
+| `wide`          | Story (9:16) / Widescreen (16:9)           | 1080 x 1920            | Stories, and screens wide |
+| `slide`         | Slide (16:9)                               | 1080 x 1920            | Slides, landscape only    |
+| `slide-classic` | Classic slide (4:3)                        | 1080 x 1440            | Slides for 4:3 screens    |
+| `fit`           | Fit to Content                             | its own (`fit`)        | Content put onto a page   |
 
 - **Which sizes a page offers** depends on its kind. An **infographic** or **article** page: A4,
   US Letter, A3, Square, Post and Story (never a slide size: a deck is made of slide pages; an
   infographic page already on the Slide size keeps that tile until it moves off it). A **slide** page:
-  **Slide** (16:9) and **Classic** (4:3) only. A **flashcard**: **Flashcard (5:3)** only (`card`, landscape only,
-  [Flashcards](flashcards.md) "A card").
+  **Slide** (16:9) and **Classic** (4:3) only.
 - The **slide sizes** (`slide`, `slide-classic`) are **landscape only**: like a square they show no
   Portrait / Landscape choice, a page in one is always drawn landscape, and a turn is refused. An
   infographic page left on one keeps whatever orientation it had, so turning it back to a paper
@@ -373,7 +363,7 @@ a slide of a deleted page can never find a new page under the old id.
 
 ## Backgrounds
 
-Every page kind (infographic, article, slide and flashcard) is painted the same way. The page panel's
+Every page kind (infographic, article and slide) is painted the same way. The page panel's
 **Background** section sorts its fills into three **categories**, a row of tiles at its top read like the
 Pattern tiles: each a small sheet picturing what it makes (the page's own fill on its category's tile, else
 the theme's colour, a theme gradient, a sky over a meadow with a picture glyph), its name under it:
@@ -543,8 +533,7 @@ drawing only, never stored:
 
 ### Animated backgrounds
 
-A slide's or a flashcard's Background has a fourth category, **Animated**, after Solid, Gradient and Image
-(a card plays it on the card in front; the cards peeking out behind show its gradient still) (the
+A slide's Background has a fourth category, **Animated**, after Solid, Gradient and Image (the
 four tiles share the row, each a quarter, Animated's sheet a theme gradient under a sparkle). Its **Motion** carousel holds twenty-four
 motions, six to a page across four pages (two rows of three) with the carousel's arrows and page dots, opening on
 the page holding the slide's motion; each tile plays in the tab theme's colours, 16:9 like the
@@ -1291,7 +1280,7 @@ way). On a phone the Layout sheet closes by a swipe, with no X.
   drag to draw: the page is where it lands), while a layout is previewed on the page, on the first
   page while it still offers its kind, on a locked page, in zen, and when the page is too small on
   screen to hold it (under 240 by 160 px). A press anywhere else on the page is the canvas's, so
-  starting blank is never harder. Not on article or flashcard pages, which flow their writing. A
+  starting blank is never harder. Not on article pages, which flow their writing. A
   Participant or Viewer never sees it. (This replaces the earlier rule that an empty page offered
   nothing on itself, after the retired Start From a Layout card of Work Tracker #172: the owner asked
   for a simple invite back, 2026-11-04; the card's size and its search stay retired.)
@@ -1596,7 +1585,7 @@ lies on; one between pages is on none.
 
 ## Locking a page
 
-Any page, of every kind (infographic, article, slide, flashcard), can be **locked**, so it stays as it
+Any page, of every kind (infographic, article, slide), can be **locked**, so it stays as it
 is while the rest of the tab is worked on.
 
 - **Where**: a padlock button in the page's title bar, before its cog, for someone who may edit: **Lock page** while open, **Unlock page** (pressed, the
@@ -1631,11 +1620,12 @@ is while the rest of the tab is worked on.
 ## Stacked infographics
 
 A tab of infographic pages switched to stand as a **stack** (Stack Pages in Contents Options, "Stacked or side by
-side"; they stand side by side by default) stands as a tab of flashcards does ([Flashcards](flashcards.md) "The
-stack", "Flipping", "Getting around a stack"), rather than in a row side by side: the **page in front**, framed as any
-page is, with the pages after it fanned out behind it (the same fan, `FLASHCARD_FAN`, each in its own background,
-dimmer the further back) and pages before it not drawn. One stage serves both (`lib/flashcard-stack.ts`:
-`stacksPages`, `cardInFrontOf`, `cardStageOf`, `flashcardStage`, `shownPagesOf`).
+side"; they stand side by side by default) shows one page at a time rather than a row side by side: the **page in
+front**, framed as any page is, with up to six of the pages after it fanned out behind it (`FLASHCARD_FAN`, each in
+its own background, dimmer the further back) and pages before it not drawn (`lib/flashcard-stack.ts`:
+`stacksPages`, `cardInFrontOf`, `cardStageOf`, `flashcardStage`, `shownPagesOf`). Going to another page **flips**:
+the page in front turns away over the next (`FLASHCARD_FLIP_MS`, at once under reduced motion;
+`lib/flashcard-flip.ts`).
 
 - **Only the page in front's elements show**: the elements are cut to the page in front (`PageClip` takes
   `shownPagesOf`), so a page behind shows its sheet in the fan and none of its content. The pages keep their places in
@@ -1648,12 +1638,11 @@ dimmer the further back) and pages before it not drawn. One stage serves both (`
   toward a neighbour, and the page's own **Previous** and **Next** bring a page to the front by the flip, the leaving
   page pictured with its elements. A delete brings the page before forward; undo works as ever; a peer's edit to a page
   behind changes it in the fan, never the page in front.
-- **Its own Previous and Next**: inside the page in front's bottom-right corner, 10 screen px in from its edges (as a
-  card's sits in its corner; below the page it fell on the bottom-right cluster's row, which a framed page sits just
+- **Its own Previous and Next**: inside the page in front's bottom-right corner, 10 screen px in from its edges (below the page it fell on the bottom-right cluster's row, which a framed page sits just
   above), held at one screen size (as the title bar is) in a small card like the title bar's: Previous, **Page 3 of 10**,
   Next (**Slide 3 of 10** on stacked slides; `PageStackNav`). For every role; not in zen or presenting; left out of
   exports. On a stack the cluster's page navigator is not shown ("Getting around the pages").
-- **The wheel** pans up and down only on a stack ([Flashcards](flashcards.md) "The stack").
+- **The wheel** pans up and down only on a stack: it has no row to pan along.
 - The **title bar** and the **page label** are the page in front's alone; the **+ (Add Page)** sits beside the page
   in front, adds a page as Add Page does, and the new page comes to the front. **Zoom to fit** frames the page in
   front. **Alignment** keeps to the page anyway ("Snapping on a page"). Contents reorders a stack.
@@ -1663,8 +1652,7 @@ dimmer the further back) and pages before it not drawn. One stage serves both (`
 ## Stacked or side by side
 
 How a tab's pages stand is the tab's own (`Tab.pageArrangement`: `stack` or `row`; absent, its kind's default, read
-by `tabStacksPages` in `@liveknowledge/document`): **flashcards stack; infographic pages and slides stand side by
-side**, as before. Whatever the kind, the stack's Previous and Next, its flip and its up-and-down-only wheel follow
+by `tabStacksPages` in `@liveknowledge/document`): **every kind stands side by side by default**. Whatever the kind, the stack's Previous and Next, its flip and its up-and-down-only wheel follow
 whether the tab stands as a stack, not its kind. **Stack Pages** in Contents Options switches it for the tab, for any kind but an article.
 
 - **Not for an article**: an article's writing runs on from page to page, so it is read along the row; its Contents

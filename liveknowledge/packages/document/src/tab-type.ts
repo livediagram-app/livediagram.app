@@ -25,8 +25,8 @@ export type Tab = {
   // is absent; dropped the first time the pages change (`withPages`).
   pageOrientation?: PageOrientation;
   // How the tab's pages stand (docs/specs/007-editor/pages-mode.md "Stacked or side by side"): `stack`, one page in
-  // front and the rest fanned behind it, or `row`, side by side. Absent, its kind's own (flashcards and infographic
-  // pages stack, slides and articles stand in a row): read via `tabStacksPages`.
+  // front and the rest fanned behind it, or `row`, side by side. Absent, side by side: read via
+  // `tabStacksPages`.
   pageArrangement?: PageArrangement;
   // The colours someone picked with + in a colour picker on this tab, newest first, lower-case
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via

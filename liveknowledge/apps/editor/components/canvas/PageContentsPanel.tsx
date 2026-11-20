@@ -50,7 +50,6 @@ export function PageContentsPanel({
       onDock={onDock}
       footer={<ContentsAddPage contents={contents} />}
       badges={contentsBadges}
-      summary={contents.summary}
       frame={(body, headerActions, titleAdornment) => (
         <MovablePanel
           title="Contents"

@@ -113,7 +113,7 @@ function laidOutBlockPages(tab: Tab, pages: readonly LaidOutPage[]): Map<string,
   for (const flow of Object.keys(articlesOf(tab))) {
     const handle = articleHandleOf(flow);
     const own = pages.filter((p) => p.flow === flow);
-    // A card whose writing is not mounted (a long stack, flashcards.md "Long stacks stay quick") is one page: all its
+    // An article whose writing is not mounted is one page: all its
     // blocks are on it.
     if (!handle) {
       const [page] = own;
@@ -211,7 +211,7 @@ export function useFindReplace(deps: FindDeps): FindView {
     return sameMatchAgain(hand, found.matches, found.targets);
   }, [found, hand, pages, search.from]);
 
-  // Brings a match into view: its page framed when it is another page (a flashcard turned), else the least pan.
+  // Brings a match into view: its page framed when it is another page, else the least pan.
   const goTo = (match: FindMatch, targets: readonly FindTarget[]) => {
     const d = latest.current;
     const target = targets[match.target];

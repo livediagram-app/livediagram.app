@@ -17,14 +17,13 @@ describe('how a template stands', () => {
     }
   });
 
-  it('lands the stacked templates as a stack, the flashcards by their kind, a deck and an article in a row', () => {
+  it('lands the stacked templates as a stack, a deck and an article in a row', () => {
     const stands = (kind: (typeof TEMPLATES)[number]['kind']) => {
       const o = templateCanvasOverrides(kind);
       return tabStacksPages(o.pages ?? [], o.pageArrangement);
     };
     expect(stands('social-carousel')).toBe(true);
     expect(stands('live-card')).toBe(true);
-    expect(stands('talk-flashcards')).toBe(true);
     expect(stands('launch-keynote')).toBe(false);
     expect(stands('year-in-review')).toBe(false);
     expect(stands('research-report')).toBe(false);

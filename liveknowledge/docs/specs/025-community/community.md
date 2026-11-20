@@ -51,14 +51,13 @@ category.
 | id          | Label          | For                                               |
 | ----------- | -------------- | ------------------------------------------------- |
 | `careers`   | Careers        | Résumés and cover letters for the next job.       |
-| `events`    | Events         | Posters, group cards and toasts for big days.     |
+| `events`    | Events         | Posters and group cards for the big days ahead.   |
 | `home`      | Home           | Recipes to share and floor plans of a home.       |
-| `learning`  | Learning       | Lesson plans, class slides and school talks.      |
+| `learning`  | Learning       | Lesson plans and class slides for a classroom.    |
 | `marketing` | Marketing      | Social posts, explainers, ads and comparisons.    |
-| `pitches`   | Pitches        | Decks and cue cards to pitch or launch an idea.   |
+| `pitches`   | Pitches        | Decks to pitch an idea or launch a product.       |
 | `plans`     | Plans          | Briefs, proposals, PR/FAQs and design docs.       |
 | `reports`   | Reports        | Status reports, reviews and stories in numbers.   |
-| `speeches`  | Talks          | Cue cards for talks, toasts and presentations.    |
 | `team`      | Teams          | Meeting notes, workshops and welcomes for a team. |
 | `other`     | Something Else | Anything that fits nowhere above.                 |
 

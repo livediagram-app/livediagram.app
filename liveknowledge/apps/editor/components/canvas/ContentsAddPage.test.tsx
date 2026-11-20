@@ -26,14 +26,6 @@ describe('ContentsAddPage', () => {
     expect(c.addLike).toHaveBeenCalled();
   });
 
-  // docs/specs/007-editor/flashcards.md "Contents".
-  it('reads Add Card on a stack of flashcards', () => {
-    const c = contents({ lastPage: { id: 'c', kind: 'flashcard' } as PageContents['lastPage'] });
-    render(<ContentsAddPage contents={c} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add Card' }));
-    expect(c.addLike).toHaveBeenCalled();
-  });
-
   it('offers no other kind: the tab holds one (One kind a tab)', () => {
     render(<ContentsAddPage contents={contents()} />);
     expect(screen.getAllByRole('button')).toHaveLength(1);

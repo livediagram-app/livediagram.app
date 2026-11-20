@@ -26,7 +26,6 @@ describe('template categories', () => {
       'Pitches',
       'Plans',
       'Reports',
-      'Talks',
       'Teams',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
@@ -58,12 +57,11 @@ describe('template categories', () => {
       careers: 2,
       events: 2,
       home: 2,
-      learning: 3,
+      learning: 2,
       marketing: 6,
-      pitches: 3,
+      pitches: 2,
       plans: 5,
       reports: 6,
-      speeches: 2,
       team: 4,
     });
   });
@@ -79,8 +77,8 @@ describe('template categories', () => {
     }
     expect(isInTemplateCategory('slide-deck', 'pitches')).toBe(true);
     expect(isInTemplateCategory('floor-plan', 'home')).toBe(true);
-    // Cross-listed: the toast is a speech for a big day.
-    expect(templateCategories('wedding-toast')).toEqual(['speeches', 'events']);
+    // Cross-listed: an explainer teaches.
+    expect(templateCategories('how-it-works')).toEqual(['marketing', 'learning']);
     expect(isInTemplateCategory('blank', 'pitches')).toBe(false);
   });
 
@@ -116,7 +114,7 @@ describe('template search words', () => {
     expect(find('careers')).toEqual(expect.arrayContaining(['resume', 'cover-letter']));
     // A category's search words find what is in it, cross-listed or not.
     expect(find('school')).toEqual(
-      expect.arrayContaining(['lesson-plan', 'class-lesson', 'class-presentation', 'how-it-works']),
+      expect.arrayContaining(['lesson-plan', 'class-lesson', 'how-it-works']),
     );
     expect(find('minutes')).toEqual(['meeting-notes']);
     expect(find('rfc')).toEqual(['design-doc']);

@@ -16,8 +16,6 @@ import {
   type ArticleEditorHandle,
 } from '@/lib/article/article-editor-store';
 import { flowFrame } from '@/lib/article/article-flow-geometry';
-import { publishCardOverflow } from '@/lib/flashcard-overflow-store';
-import { announceTextOnly } from '@/lib/flashcard-guard';
 import { articleStyleVars } from '@/lib/article/article-style-vars';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import { slashKey, slashPlugin, type SlashBridge } from '@/lib/article/article-slash';
@@ -31,7 +29,6 @@ import { SLASH_MENU_ID, slashOptionId } from './SlashMenu';
 import { createArticleHandle, writingScale } from './article-editor-handle';
 import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
 import { articlePasteProps } from '@/lib/article/article-paste';
-import { cardPasteSlice } from '@/lib/article/article-card-paste';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import {
@@ -159,10 +156,10 @@ export function mountArticleView({
         redo: () => undoRedo('redo'),
         onLink: () => latest.current.onLinkRequest(),
         onComment: () => requestArticleComment(),
-        // Not on a card, and not by a Participant (an insert).
+        // Not by a Participant (an insert).
         onFootnote: (state, dispatch, v) => {
           const p = latest.current;
-          if (p.card || p.reshape === false || !p.editable) return false;
+          if (p.reshape === false || !p.editable) return false;
           const done = insertFootnote(state, dispatch, v);
           if (done && dispatch) track('Element', 'Added', 'ArticleFootnote');
           return done;
@@ -246,14 +243,6 @@ export function mountArticleView({
     // The canvas is not a scrolling page: ProseMirror must never scroll its ancestors.
     handleScrollToSelection: () => true,
     ...pasteProps,
-    // A card holds text only: a pasted table comes as a list, a page break or a zone not at all
-    // (docs/specs/007-editor/flashcards.md "Text only").
-    transformPasted: (slice) => {
-      if (!latest.current.card) return slice;
-      const onCard = cardPasteSlice(slice);
-      if (onCard.cut) announceTextOnly();
-      return onCard.slice;
-    },
     nodeViews: {
       footnote: footnoteNodeView,
       ...tableNodeViews(rights, (v, id) =>
@@ -292,14 +281,7 @@ export function mountArticleView({
       // An image, or elements copied from a canvas: not the writing's to take. Left alone (no
       // preventDefault), the paste reaches the canvas, which puts it into the writing as a zone.
       paste: (_v, e) => {
-        if (!articlePasteIsCanvas(e.clipboardData)) return false;
-        // A card holds text only: a picture or canvas elements pasted on it are dropped
-        // (docs/specs/007-editor/flashcards.md "Text only").
-        if (latest.current.card) {
-          e.preventDefault();
-          announceTextOnly();
-        }
-        return true;
+        return articlePasteIsCanvas(e.clipboardData);
       },
       click: (_v, e) => {
         // A plain click on a margin note's text opens what it carries; a drag that selects
@@ -409,7 +391,6 @@ export function mountArticleView({
     view.destroy();
     viewRef.current = null;
     clearActiveArticle(latest.current.flow);
-    if (latest.current.card) publishCardOverflow(latest.current.flow, null);
     setLocalArticleCaret(latest.current.flow, null);
     releaseArticleHold(latest.current.flow);
   };

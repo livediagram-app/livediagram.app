@@ -7,7 +7,6 @@ import { deriveTabLoadState, patchTab } from '../editor-page-helpers';
 import { useCollabDeepLink } from '../useCollabDeepLink';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { announcePageLocked } from '@/lib/page-lock-guard';
-import { setTextOnlyToast } from '@/lib/flashcard-guard';
 import { setArticleCapsToast } from '@/lib/article/article-caps-notice';
 import { setArticleHeldToast } from '@/lib/article/article-hold-notice';
 import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
@@ -110,13 +109,11 @@ export function useEditorPages({
     // Said after the commit: the guard runs inside a state update, where no toast may be set.
     onBlocked: () => queueMicrotask(() => announcePageLocked(toast.info)),
   });
-  // Where a card's "text only" notice and the writing's caps notice go (lib/flashcard-guard, lib/article/article-caps).
+  // Where the writing's caps notice goes (lib/article/article-caps).
   useEffect(() => {
-    setTextOnlyToast(toast.info);
     setArticleCapsToast(toast.info);
     setArticleHeldToast(toast.info);
     return () => {
-      setTextOnlyToast(null);
       setArticleCapsToast(null);
       setArticleHeldToast(null);
     };

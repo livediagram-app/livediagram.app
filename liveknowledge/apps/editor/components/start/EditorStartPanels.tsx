@@ -18,7 +18,7 @@ const StartFromTemplates = dynamic(
 // What an empty tab shows in the canvas's place: its template start. Always mounted, so the template-pick handoff
 // (useTemplatePickMove) keeps watching the tab.
 // It reads the tab's id, name and whether it has content, never its elements (docs/specs/007-editor/blueprints/
-// flashcards.md "Performance and limits"): a typing commit renders nothing here.
+// typing.md "Performance and limits"): a typing commit renders nothing here.
 export function EditorStartPanels() {
   const chrome = useEditorChromeStore();
   const documentId = useEditorChrome((s) => s.documentId);

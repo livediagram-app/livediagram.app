@@ -1,23 +1,15 @@
 'use client';
 
-// A stack on the canvas (docs/specs/007-editor/flashcards.md "The stack", "Getting around a stack"; pages-mode.md
-// "Stacked infographics"): the pages still to come fanned out behind the page in front, its Previous and Next, and a
-// card's footer. Views in canvas space, never elements, left out of exports; only Previous and Next take presses.
-import { lucideChevronLeft, lucideChevronRight, lucideClock } from '@liveworkspace/icons/lucide';
-import {
-  flashcardSpeakingSeconds,
-  pageIsDark,
-  speakingTimeLabel,
-  type ArticleFlow,
-  type LaidOutPage,
-} from '@liveknowledge/document';
+// A stack on the canvas (docs/specs/007-editor/pages-mode.md "Stacked infographics"): the pages still to come fanned
+// out behind the page in front, and its Previous and Next. Views in canvas space, never elements, left out of exports; only Previous and Next take presses.
+import { lucideChevronLeft, lucideChevronRight } from '@liveworkspace/icons/lucide';
+import { pageIsDark, type LaidOutPage } from '@liveknowledge/document';
 import { lucideGlyph } from '@liveknowledge/ui';
 import { track } from '@/lib/telemetry';
 import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { stackSheets, type CardStack } from '@/lib/flashcard-stack';
 
-const ClockIcon = lucideGlyph(lucideClock, 12);
 const PrevIcon = lucideGlyph(lucideChevronLeft, 16);
 const NextIcon = lucideGlyph(lucideChevronRight, 16);
 // The rim round the card in front, canvas px: a hairline that still reads zoomed out.
@@ -65,7 +57,7 @@ export function FlashcardStackSheets({
             }}
           ></div>
         ))}
-      {/* The card in front lifted off the fan (flashcards.md "The card in front stands out"): a shadow cast onto the
+      {/* The card in front lifted off the fan (pages-mode.md "Stacked infographics"): a shadow cast onto the
           cards behind and a thin rim just outside its edge, both drawn under the card so they never cover it. Its
           edge then reads on any background, the cards behind being in the same tone. */}
       {sheets.length > 0 ? (
@@ -158,64 +150,6 @@ export function StackNav({
       >
         <NextIcon />
       </button>
-    </div>
-  );
-}
-
-// The ink a stack's nav and footer take on a page: muted, light on a dark page.
-const footerInk = (dark: boolean) => (dark ? 'rgb(255 255 255 / 0.7)' : 'rgb(71 85 105 / 0.9)');
-
-/** A card's footer in its bottom-right margin: its Previous, "Card 3 of 10" and Next (StackNav), and its speaking
- *  time when it has words. */
-export function FlashcardFooter({
-  card,
-  stack,
-  row,
-  flow,
-  margin,
-  font,
-  onGo,
-}: {
-  card: LaidOutPage;
-  stack: CardStack;
-  row: readonly Pick<LaidOutPage, 'id'>[];
-  flow: ArticleFlow | undefined;
-  // The card's margin (canvas px): the footer sits in it, right-aligned to the text's edge.
-  margin: number;
-  font: string | undefined;
-  // Absent where nothing may flip (a picture of the card): the place shows without its buttons.
-  onGo?: (pageId: string) => void;
-}) {
-  const time = flow ? speakingTimeLabel(flashcardSpeakingSeconds(flow)) : null;
-  const dark = pageIsDark(card);
-  return (
-    <div
-      {...{ [GIF_OMIT_ATTR]: '' }}
-      data-flashcard-footer=""
-      // Over the card's writing (ArticleFlows' paper is drawn after the sheets and would take the press): the page
-      // sheet makes no stacking context, so this lifts it within the canvas world.
-      className="pointer-events-none absolute z-[2] flex items-center gap-3 whitespace-nowrap text-[13px] tabular-nums"
-      style={{
-        right: margin,
-        bottom: Math.max(2, margin / 2 - 15),
-        color: footerInk(dark),
-        fontFamily: font,
-      }}
-    >
-      {onGo ? (
-        <StackNav stack={stack} row={row} noun="Card" dark={dark} onGo={onGo} />
-      ) : (
-        <span aria-hidden>
-          Card {stack.index + 1} of {stack.count}
-        </span>
-      )}
-      {time ? (
-        // Contents' rows say the same to a screen reader.
-        <span aria-hidden className="flex items-center gap-1" data-speaking-time="">
-          <ClockIcon />
-          {time}
-        </span>
-      ) : null}
     </div>
   );
 }

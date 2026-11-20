@@ -4,7 +4,7 @@
 // it reads the selection from the store and builds the bar's view from it, so a selection change
 // renders this and the bar, never the editor root that hands it everything else. Its other inputs it reads from the
 // editor's chrome store, so a typing commit (new writing, nothing it styles changed) renders neither
-// (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits").
+// (docs/specs/007-editor/blueprints/typing.md "Performance and limits").
 
 import { memo, useMemo, type ComponentProps } from 'react';
 import type { QuickStyleBar as QuickStyleBarComponent } from '@/components/canvas/QuickStyleBar';

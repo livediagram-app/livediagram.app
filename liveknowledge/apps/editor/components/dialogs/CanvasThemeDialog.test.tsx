@@ -372,16 +372,4 @@ describe('CanvasThemeDialog on an article', () => {
     fireEvent.click(screen.getByRole('button', { name: /Article Style/ }));
     expect(onOpenArticleStyle).toHaveBeenCalledTimes(1);
   });
-
-  it('names the row Card Style on a card', () => {
-    render(
-      <CanvasThemeDialog
-        {...props}
-        tab="looks"
-        surface="flashcard"
-        pages={{ ...props.pages, kind: 'flashcard', onOpenArticleStyle: vi.fn() }}
-      />,
-    );
-    expect(screen.getByRole('button', { name: /Card Style/ })).toBeTruthy();
-  });
 });

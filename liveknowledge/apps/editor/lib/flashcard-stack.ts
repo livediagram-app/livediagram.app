@@ -1,5 +1,5 @@
-// The stack (docs/specs/007-editor/flashcards.md "The stack", pages-mode.md "Stacked infographics"): a tab of
-// flashcards (by default), or any other tab but an article's stacked from Contents Options, shows one page at a time,
+// The stack (docs/specs/007-editor/pages-mode.md "Stacked infographics"): any tab but an article's, stacked from
+// Contents Options, shows one page at a time,
 // the page in front, with the pages still to come fanned out behind it. The canvas's world
 // layers (the sheets, the writing, the elements) are given the view narrowed to that card
 // (flashcardStage); the chrome keeps the whole row. Pure.
@@ -12,7 +12,7 @@ export const FLASHCARD_STACK_MAX = 6;
 // narrower each side.
 export const FLASHCARD_STACK_STEP_Y = 10;
 export const FLASHCARD_STACK_INSET_X = 14;
-// The cards behind recede rather than compete (flashcards.md "The cards behind"): the nearest at this opacity, each
+// The cards behind recede rather than compete (pages-mode.md "Stacked infographics"): the nearest at this opacity, each
 // further back this much fainter, never below the floor.
 const STACK_NEAR_OPACITY = 0.5;
 const STACK_FADE_STEP = 0.06;
@@ -52,30 +52,7 @@ export function flashcardStage(view: PagesModeView): PagesModeView {
   };
 }
 
-// Cards each side of the card in front whose writing stays mounted (flashcards.md "Long stacks stay quick"): the
-// card a flip leaves (forward) or arrives at (back) is pictured from its writing, so one each side is enough.
-export const FLASHCARD_MOUNT_SPAN = 1;
-
-/** The writing to mount on a stack: the cards within FLASHCARD_MOUNT_SPAN of the card in front, and `keep` (the
- *  article being written, a card asked to take focus). Null off a stack: every article's writing mounts. */
-export function cardFlowsToMount(
-  row: readonly LaidOutPage[],
-  stack: CardStack | undefined,
-  keep: readonly (string | null | undefined)[],
-): ReadonlySet<string> | null {
-  if (!stack) return null;
-  const out = new Set<string>();
-  const from = Math.max(0, stack.index - FLASHCARD_MOUNT_SPAN);
-  const to = Math.min(row.length - 1, stack.index + FLASHCARD_MOUNT_SPAN);
-  for (let i = from; i <= to; i++) {
-    const flow = row[i]?.flow;
-    if (flow) out.add(flow);
-  }
-  for (const flow of keep) if (flow) out.add(flow);
-  return out;
-}
-
-// The fan behind the card in front (flashcards.md "The cards behind"), nearest first: each card's turn about its
+// The fan behind the card in front (pages-mode.md "Stacked infographics"), nearest first: each card's turn about its
 // centre (degrees, + clockwise) and its nudge off the card (canvas px). Alternating sides, turning further the deeper
 // it sits, so corners show all round the card. Set by depth, never at random, so it looks the same every time.
 export const FLASHCARD_FAN: readonly { turn: number; dx: number; dy: number }[] = [
@@ -104,7 +81,7 @@ export function stackSheets(rect: PageRect, behind: number): StackSheet[] {
 }
 
 /** Whether a tab's pages stand as a stack (pages-mode.md "Stacked or side by side"): the tab's own arrangement, else
- *  its kind's (flashcards stack; infographic pages and slides stand in a row; an article never stacks). */
+ *  side by side (an article never stacks). */
 export function stacksPages(
   pages: readonly Pick<LaidOutPage, 'kind'>[],
   arrangement?: unknown,

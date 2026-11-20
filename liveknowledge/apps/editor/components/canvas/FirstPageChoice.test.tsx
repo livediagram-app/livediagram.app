@@ -8,11 +8,11 @@ import { kindCardIsWide } from './page-kind-cards';
 afterEach(() => cleanup());
 
 describe('FirstPageChoice', () => {
-  it('moves between the four cards with the arrow keys, as the Add a Page popover does', () => {
+  it('moves between the three cards with the arrow keys, as the Add a Page popover does', () => {
     const onChoose = vi.fn();
     render(<FirstPageChoice zoom={1} onChoose={onChoose} />);
     const cards = screen.getAllByRole('button');
-    expect(cards).toHaveLength(4);
+    expect(cards).toHaveLength(3);
     cards[0]!.focus();
     fireEvent.keyDown(cards[0]!, { key: 'ArrowRight' });
     expect(document.activeElement).toBe(cards[1]);
@@ -20,20 +20,12 @@ describe('FirstPageChoice', () => {
     expect(document.activeElement).toBe(cards[0]);
     fireEvent.keyDown(cards[0]!, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(cards[2]);
-    fireEvent.keyDown(cards[2]!, { key: 'ArrowDown' });
+    fireEvent.keyDown(cards[2]!, { key: 'ArrowRight' });
     expect(document.activeElement).toBe(cards[0]);
     fireEvent.keyDown(cards[0]!, { key: 'ArrowLeft' });
-    expect(document.activeElement).toBe(cards[3]);
+    expect(document.activeElement).toBe(cards[2]);
     fireEvent.click(cards[2]!);
     expect(onChoose).toHaveBeenCalledWith('slide');
-  });
-
-  // docs/specs/007-editor/flashcards.md "Making flashcards".
-  it('offers Flashcards, which makes the first card of a stack', () => {
-    const onChoose = vi.fn();
-    render(<FirstPageChoice zoom={1} onChoose={onChoose} />);
-    fireEvent.click(screen.getByRole('button', { name: /Flashcards/ }));
-    expect(onChoose).toHaveBeenCalledWith('flashcard');
   });
 
   it('puts an odd last card across both columns, never an even one', () => {

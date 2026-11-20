@@ -377,13 +377,13 @@ The dialog is the one every editor shares ([Tab Style dialog](../../../../livewo
 `apps/editor/components/dialogs/CanvasThemeDialog.tsx` hands it this editor's profile
 (`apps/editor/components/dialogs/tab-style-profile.tsx`) and the tab's pages (`tab-style-pages.ts`: the kind on show,
 the New Page Background and its setters, the article's Style door), and the profile decides what it shows. The editor
-names the **surface** as it opens the dialog: the kind of the page someone is on (`article`, `slide`, `infographic`
-or `flashcard`), and `canvas` on a tab with no pages yet.
+names the **surface** as it opens the dialog: the kind of the page someone is on (`article`, `slide` or
+`infographic`), and `canvas` on a tab with no pages yet.
 
 | Surface                          | Panels                                     | Home                                    |
 | -------------------------------- | ------------------------------------------ | --------------------------------------- |
 | `slide`, `infographic`, `canvas` | Colours, Finish, Text, New Page Background | Looks, Fine-tune                        |
-| `article`, `flashcard`           | Colours, New Page Background               | Looks, the Article Style row, Fine-tune |
+| `article`                        | Colours, New Page Background               | Looks, the Article Style row, Fine-tune |
 
 - **Looks.** Every look in `apps/editor/lib/tab-looks.ts` on every surface.
 - **New Page Background.** In the Canvas panel's place on every surface ("New Page Background" above).
@@ -396,9 +396,9 @@ or `flashcard`), and `canvas` on a tab with no pages yet.
 
 ### Articles
 
-An article's (or a card's) writing has its own Style ([Article pages](../007-editor/article-pages.md) "Article
+An article's writing has its own Style ([Article pages](../007-editor/article-pages.md) "Article
 style"): its look, typeface, size and spacing. The tab's finish and font do not reach it; the theme's accent does,
-and so does the page background. So on the `article` and `flashcard` surfaces the dialog shows what reaches the
+and so does the page background. So on the `article` surface the dialog shows what reaches the
 writing and no more:
 
 - **Panels:** Colours and New Page Background only; no Finish, no Text, and the panel's patterns are left out (an

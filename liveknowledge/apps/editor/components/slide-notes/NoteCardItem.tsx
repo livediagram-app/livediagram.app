@@ -3,7 +3,7 @@
 // One note card in a slide's list (docs/specs/012-collaboration/speaker-note-cards.md "Writing note cards"): closed,
 // a small index card showing its number, its words and its speaking time, its grip and buttons beside the number;
 // open, the same card grown into a text box in place. Only the open card mounts a text box, so a slide of twenty
-// cards costs one editor, never twenty (the cost flashcards pay, filed as Work Tracker #234).
+// cards costs one editor, never twenty.
 import { useLayoutEffect, useRef, type KeyboardEvent, type PointerEvent } from 'react';
 import {
   lucideChevronDown,

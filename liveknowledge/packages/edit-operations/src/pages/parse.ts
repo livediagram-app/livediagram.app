@@ -22,7 +22,7 @@ import {
   PAGE_SIZE_IDS,
 } from '@liveknowledge/document';
 
-const PAGE_KINDS = ['infographic', 'article', 'slide', 'flashcard'] as const;
+const PAGE_KINDS = ['infographic', 'article', 'slide'] as const;
 
 type Raw = Record<string, unknown>;
 

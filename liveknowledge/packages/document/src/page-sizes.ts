@@ -1,5 +1,5 @@
 // The page sizes and orientations Pages mode offers (docs/specs/007-editor/pages-mode.md "The pages"): A4 and the
-// other paper and screen sizes, the slide and flashcard sizes, and a page's dimensions and size label from them.
+// other paper and screen sizes, the slide sizes, and a page's dimensions and size label from them.
 // Re-exported from ./page.
 import type { Page } from './page';
 
@@ -20,16 +20,7 @@ export const MAX_PAGES = 100;
 
 // A page's format (docs/specs/007-editor/pages-mode.md "Sizes"): its short and long side.
 export type PageSizeId =
-  | 'a4'
-  | 'letter'
-  | 'a3'
-  | 'square'
-  | 'social'
-  | 'wide'
-  | 'slide'
-  | 'slide-classic'
-  | 'fit'
-  | 'card';
+  'a4' | 'letter' | 'a3' | 'square' | 'social' | 'wide' | 'slide' | 'slide-classic' | 'fit';
 
 export const PAGE_SIZES: Readonly<
   Record<
@@ -79,15 +70,6 @@ export const PAGE_SIZES: Readonly<
     landscape: 'Fit to Content',
     fitOnly: true,
   },
-  // A flashcard (docs/specs/007-editor/flashcards.md "A card"): a 5:3 index card at screen size,
-  // room for a title and a couple of paragraphs.
-  card: {
-    short: 540,
-    long: 900,
-    portrait: 'Flashcard (5:3)',
-    landscape: 'Flashcard (5:3)',
-    landscapeOnly: true,
-  },
 };
 
 export const PAGE_SIZE_IDS = Object.keys(PAGE_SIZES) as PageSizeId[];
@@ -95,8 +77,6 @@ export const PAGE_SIZE_IDS = Object.keys(PAGE_SIZES) as PageSizeId[];
 // The sizes a slide page may take (docs/specs/007-editor/pages-mode.md "Sizes"), the first
 // its default.
 export const SLIDE_PAGE_SIZE_IDS: readonly PageSizeId[] = ['slide', 'slide-classic'];
-// The one size a flashcard takes (docs/specs/007-editor/flashcards.md "A card").
-export const FLASHCARD_PAGE_SIZE_IDS: readonly PageSizeId[] = ['card'];
 export const PAPER_AND_SCREEN_SIZE_IDS: readonly PageSizeId[] = [
   'a4',
   'letter',
@@ -106,8 +86,8 @@ export const PAPER_AND_SCREEN_SIZE_IDS: readonly PageSizeId[] = [
   'wide',
 ];
 
-/** The sizes a page of this kind offers in its panel: a slide page only the slide sizes, a
- *  flashcard only the card, an infographic or article page the paper and screen ones (a slide size
+/** The sizes a page of this kind offers in its panel: a slide page only the slide sizes,
+ *  an infographic or article page the paper and screen ones (a slide size
  *  is a slide page's alone: a deck is made of slide pages). */
 export function isPageSizeId(v: unknown): v is PageSizeId {
   return typeof v === 'string' && v in PAGE_SIZES;

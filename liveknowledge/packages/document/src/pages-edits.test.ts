@@ -228,15 +228,6 @@ describe('adding', () => {
       expect(out[2]!.flow).toBe('h');
     });
 
-    it('puts a new card after the card in front', () => {
-      let tab = withPageKindChosen(tabOf([a4('c1')]), 'c1', 'flashcard', 'f1')!;
-      tab = ok(pageAdded(tab, 'flashcard', 'c2', 'f2'));
-      tab = ok(pageAdded(tab, 'flashcard', 'c3', 'f3'));
-      const out = pagesAfter(pageAdded(tab, 'flashcard', 'n', 'fn', 'c1'));
-      expect(out.map((p) => p.id)).toEqual(['c1', 'n', 'c2', 'c3']);
-      expect(out[1]!.flow).toBe('fn');
-    });
-
     it('adds a page like another right after it', () => {
       const tab = tabOf([a4('p1'), a4('p2', { size: 'a3' }), a4('p3')]);
       const out = pagesAfter(pageAddedLike(tab, 'p2', 'n', 'f', 'p2'));

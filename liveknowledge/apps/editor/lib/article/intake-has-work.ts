@@ -1,6 +1,6 @@
 // Whether a local edit leaves the article intake anything to settle (docs/specs/007-editor/blueprints/article-pages.md
 // "Zones", step 6). The intake's settle runs in a `tickTabs` updater, and any tick renders the editor again; a typing
-// commit on writing with no zones (every flashcard, most articles) has nothing to settle, so asking first spares
+// commit on writing with no zones (most articles) has nothing to settle, so asking first spares
 // that render on every commit. Linear in the tab's elements and writing; no page is laid out.
 import {
   articleNoteIds,

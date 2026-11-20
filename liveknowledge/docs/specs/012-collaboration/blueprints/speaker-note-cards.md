@@ -15,7 +15,7 @@ Derived from [Speaker note cards](../speaker-note-cards.md). The model is pure a
 | has notes       | `slideHasNotes(slide)` (a card not blank)                                                                      |
 | mirror          | `noteCardsText(cards)` (not blank, trimmed, joined by `\n\n`)                                                  |
 | write           | `withNoteCards(slide, cards)` (sets `noteCards` and `notes`, or removes both when empty)                       |
-| speaking time   | `noteCardSpeakingSeconds(text)`; labelled with `speakingTimeLabel` (`flashcards.ts`)                           |
+| speaking time   | `noteCardSpeakingSeconds(text)`; labelled with `speakingTimeLabel` (`speaking-time.ts`)                        |
 | new id          | `newNoteCardId(cards)` (`c` + base-36 counter past the highest, `_` + 4 random base-36 characters)             |
 | merge           | `mergeNoteCards(base, mine, theirs)`, `mergePresentationNoteCards(mine, base, theirs)`, `slide-notes-merge.ts` |
 | deck base       | the PUT body's `presentationBase`; the editor's `deckBaseRef` (`useEditorState`)                               |
@@ -42,7 +42,7 @@ Derived from [Speaker note cards](../speaker-note-cards.md). The model is pure a
 | `VIEWER_STACK_MAX`        | 3      | `PresenterNoteCards.tsx` | Sheets behind the card in front; uses `FLASHCARD_STACK_STEP_Y` / `_INSET_X`   |
 | `VIEWER_DOTS_MAX`         | 10     | `PresenterNoteCards.tsx` | Dots between the buttons; more and "Card n of m" says enough                  |
 | `NOTES_POPOVER_WIDTH`     | 360    | `PageNotesButton.tsx`    | Room for a card's line at 13 px                                               |
-| flip                      | 420 ms | `FLASHCARD_FLIP_MS`      | Shared with flashcards                                                        |
+| flip                      | 420 ms | `FLASHCARD_FLIP_MS`      | The page stack's flip                                                         |
 
 ## Data and persistence
 

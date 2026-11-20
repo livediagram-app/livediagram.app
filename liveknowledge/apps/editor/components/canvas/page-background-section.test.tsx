@@ -223,7 +223,7 @@ describe('BackgroundSection', () => {
 });
 
 describe('the Animated category', () => {
-  const slide = (fill?: PageFill, kind: 'slide' | 'flashcard' = 'slide') => {
+  const slide = (fill?: PageFill, kind: 'slide' = 'slide') => {
     const page = {
       id: 's',
       orientation: 'landscape',
@@ -243,14 +243,11 @@ describe('the Animated category', () => {
     return onBackground;
   };
 
-  it('is offered on a slide and a flashcard, not an infographic page', () => {
+  it('is offered on a slide, not an infographic page', () => {
     show();
     expect(screen.queryByRole('radio', { name: 'Animated' })).toBeNull();
     cleanup();
     slide();
-    expect(radio('Animated')).toBeTruthy();
-    cleanup();
-    slide(undefined, 'flashcard');
     expect(radio('Animated')).toBeTruthy();
   });
 

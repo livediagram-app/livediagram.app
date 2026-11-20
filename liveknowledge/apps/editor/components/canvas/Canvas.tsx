@@ -123,7 +123,7 @@ function CanvasView(props: CanvasProps) {
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
   // The chrome's own props, its pages view and the writing it leaves out (docs/specs/007-editor/blueprints/
-  // flashcards.md "Performance and limits"): a typing commit changes only the writing, which Contents reads from its
+  // typing.md "Performance and limits"): a typing commit changes only the writing, which Contents reads from its
   // store.
   const chromeProps = useCanvasChromeProps(props);
   // No text selection starts on the canvas (docs/specs/008-canvas/canvas-performance.md "A press on the canvas
@@ -183,7 +183,7 @@ function CanvasView(props: CanvasProps) {
     setZoomTo: handleSetZoom,
   } = useZoomControls(setViewportZoom);
 
-  // Every arrow label, laid out once per element change, the flashcard stack's staging and what the
+  // Every arrow label, laid out once per element change, the page stack's staging and what the
   // selection chrome derives from (useCanvasSelectionInput).
   const { hasArrows, arrowLabels, staged, selectionInput } = useCanvasSelectionInput({
     elements,

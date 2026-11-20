@@ -39,17 +39,9 @@ describe('blanks of a page kind', () => {
     ]);
   });
 
-  it('carries no writing but the article and the flashcard', () => {
-    for (const kind of KINDS.filter((k) => k !== 'blank-article' && k !== 'blank-flashcards'))
+  it('carries no writing but the article', () => {
+    for (const kind of KINDS.filter((k) => k !== 'blank-article'))
       expect(blankPageTemplateOverrides(kind)!.articles).toBeUndefined();
-  });
-
-  it('opens Blank Flashcards on one empty card, its writing new', () => {
-    const out = blankPageTemplateOverrides('blank-flashcards')!;
-    expect(out.pages).toEqual([
-      { id: 'page-1', orientation: 'landscape', size: 'card', kind: 'flashcard', flow: 'art-1' },
-    ]);
-    expect(out.articles!['art-1']!.style).toEqual({ margins: 'narrow' });
   });
 
   it('are blanks: in no category, keeping the tab name rules of a blank', () => {

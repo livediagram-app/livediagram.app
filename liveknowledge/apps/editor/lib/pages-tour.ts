@@ -17,12 +17,7 @@ export function requestPagesTourRelaunch(): void {
 // single tour before it split stands for no kind in particular, so each is offered once more. The one place it meant
 // "every kind" was the retired Power user mode's preset, and that is folded into the list as the blob is read
 // (upgradeLegacyPreferences in @liveknowledge/api-schema).
-export const PAGES_TOUR_KINDS: readonly PageKind[] = [
-  'slide',
-  'infographic',
-  'article',
-  'flashcard',
-];
+export const PAGES_TOUR_KINDS: readonly PageKind[] = ['slide', 'infographic', 'article'];
 
 export function pagesKindSeen(prefs: UserPreferences | null | undefined, kind: PageKind): boolean {
   return (prefs?.pagesTourKinds ?? []).includes(kind);

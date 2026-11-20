@@ -7,7 +7,6 @@ import { articleTemplateOverrides } from './article-template';
 import { workingBackwardsOverrides } from './template-working-backwards';
 import { articleTemplateOverridesFor, isArticleTemplate } from './article-templates';
 import { blankPageTemplateOverrides } from './blank-page-templates';
-import { flashcardTemplateOverrides, isFlashcardTemplate } from './flashcard-templates';
 import { templateArrangement } from './template-arrangement';
 import { templateLayers } from './template-layers';
 import { templatePages } from './template-pages';
@@ -37,8 +36,6 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   if (kind === 'working-backwards') Object.assign(overrides, workingBackwardsOverrides());
   // The written templates are articles too, each in its own look (article-templates.ts).
   if (isArticleTemplate(kind)) Object.assign(overrides, articleTemplateOverridesFor(kind));
-  // The flashcard stacks open on their cards (flashcard-templates.ts).
-  if (isFlashcardTemplate(kind)) Object.assign(overrides, flashcardTemplateOverrides(kind));
   // A blank of a page kind opens on its one page, its kind already chosen (blank-page-templates.ts).
   const blankPage = blankPageTemplateOverrides(kind);
   if (blankPage) Object.assign(overrides, blankPage);

@@ -98,8 +98,8 @@ export type PagesModeView = {
   deck?: PageDeckControls;
   // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.
   letterbox?: boolean;
-  // A stack (a tab of flashcards or infographic pages): the page in front, for the world layers to draw alone
-  // (flashcardStage, docs/specs/007-editor/flashcards.md "The stack", pages-mode.md "Stacked infographics").
+  // A stack (a tab of infographic pages, stacked): the page in front, for the world layers to draw alone
+  // (flashcardStage, docs/specs/007-editor/pages-mode.md "Stacked infographics").
   cardStage?: CardStage;
   // Set by flashcardStage on the view the world layers draw: the card in front's place in the stack.
   cardStack?: CardStack;
@@ -221,7 +221,7 @@ export function usePagesMode(deps: {
   const frame = (page?: LaidOutPage, read = false, glides = false, lands = false) => {
     const m = measure();
     if (!m) return;
-    // In a stack (flashcards, infographic pages) the page in front changes, by a flip, rather than the view gliding
+    // In a stack the page in front changes, by a flip, rather than the view gliding
     // along the row.
     const flips = !!page && stacksPages(pages, activeTab.pageArrangement);
     if (flips) toCard(page, !lands);
@@ -251,8 +251,8 @@ export function usePagesMode(deps: {
     [storedPages, legacyOrientation],
   );
   const pages = useMemo(() => layOutPages(current), [current]);
-  // A tab of flashcards shows one card at a time, the card in front (docs/specs/007-editor/
-  // flashcards.md "The stack"): the one gone to on this tab, else the first.
+  // A stacked tab shows one page at a time, the page in front (docs/specs/007-editor/pages-mode.md "Stacked
+  // infographics"): the one gone to on this tab, else the first.
   const [wantedCard, setWantedCard] = useState<{ tabId: string; id: string } | null>(null);
   // Where the card in front last stood, so a card taken away under it (an undo, a peer) hands the
   // front to the card before it.

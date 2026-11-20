@@ -1,6 +1,5 @@
-// An article's lines broken as the browser breaks them (docs/specs/007-editor/flashcards.md "Long stacks stay
-// quick"): where the estimate runs in a browser (an unmounted flashcard's writing in an export, a thumbnail or the
-// Map), each word is measured in its own face, size and weight, and the lines break as app/article-pages.css breaks
+// An article's lines broken as the browser breaks them: where the estimate runs in a browser (an unmounted article's
+// writing in an export, a thumbnail or the Map), each word is measured in its own face, size and weight, and the lines break as app/article-pages.css breaks
 // them (white-space: pre-wrap, overflow-wrap: break-word): at spaces and after a hyphen inside a word, a word wider
 // than the line alone broken at the last character that fits. Without a measure the estimate keeps its average glyph
 // (wrapEstimated). Pure: the measuring is the caller's.

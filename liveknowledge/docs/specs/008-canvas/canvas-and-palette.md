@@ -589,21 +589,20 @@ Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships 
 
 **A template's backgrounds are the theme's own.** Every page background a template ships (solid, gradient or animated) is one the theme owns: a Theme gradient (Dawn, Haze, Glow, Dusk, Twilight, Aurora and the rest), an animated background in a theme colouring (Night, Deep and the rest), or the plain paper. Never a colour of the template's own, which would stay put when the theme changes. They are written against the Default theme's light half (`TEMPLATE_THEME`, `packages/templates/src/template-backgrounds.ts`) and land through the same follow a theme change runs (`withPageBackgroundsFollowingTheme`, from the Default theme to the theme the template is applied in, its content re-inked), so a template applied in Ocean opens on Ocean's backgrounds, and changing the theme later moves them on as it moves any page on a theme fill ([Pages mode](../007-editor/pages-mode.md) "It follows the theme"). Every application path (the picker, `/new`, the api and the MCP worker) runs it, through `withBlankPageThemed`. A guard test fails on any template page whose fill is not the Default theme's own (`template-backgrounds.test.ts`). Some of them:
 
-| Template            | Pages                                                                                                                                                                                                             |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Article             | One A4 portrait article page of writing ([Article pages](../007-editor/article-pages.md)).                                                                                                                        |
-| Working Backwards   | A4 portrait article pages of writing (the PR/FAQ flows onto as many as it fills, a page break before the Internal FAQ).                                                                                           |
-| Written documents   | A4 portrait article pages of writing: Meeting Notes, Lesson Plan, Business Proposal, Design Doc, Status Report, Cover Letter, Product One-Pager, Research Report, Newsletter, Case Study and Onboarding Handbook. |
-| Class Lesson        | Six 16:9 slide pages built from the slide layouts, like the other layout decks.                                                                                                                                   |
-| Board Update        | Seven 16:9 slide pages built from the slide layouts, like the other layout decks; its charts carry the update's own figures.                                                                                      |
-| School Presentation | Five flashcards, like the other stacks ([Flashcards](../007-editor/flashcards.md)).                                                                                                                               |
-| Slide deck          | Six 16:9 slide pages, one per slide; the title on the theme's Dusk, the ask on its Haze.                                                                                                                          |
-| Group card          | Two Portrait post (4:5) pages: the Cover (the theme's Glow) and the Inside (the plain paper), standing as a stack.                                                                                                |
-| Event Poster        | One A3 portrait page.                                                                                                                                                                                             |
-| Year in Review      | Four A4 portrait pages: Cover, Numbers, Timeline, Thanks.                                                                                                                                                         |
-| Résumé              | One A4 portrait page, on paper of its own: its ink is locked against the theme, so the main column's white and the side column's tint are too (on a dark theme's paper the ink would vanish).                     |
-| Recipe Card         | A Square page (the dish) and a Portrait post (4:5) page (the method).                                                                                                                                             |
-| Design              | One page each: the Storyboard and Floor plan, A3 landscape.                                                                                                                                                       |
+| Template          | Pages                                                                                                                                                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Article           | One A4 portrait article page of writing ([Article pages](../007-editor/article-pages.md)).                                                                                                                        |
+| Working Backwards | A4 portrait article pages of writing (the PR/FAQ flows onto as many as it fills, a page break before the Internal FAQ).                                                                                           |
+| Written documents | A4 portrait article pages of writing: Meeting Notes, Lesson Plan, Business Proposal, Design Doc, Status Report, Cover Letter, Product One-Pager, Research Report, Newsletter, Case Study and Onboarding Handbook. |
+| Class Lesson      | Six 16:9 slide pages built from the slide layouts, like the other layout decks.                                                                                                                                   |
+| Board Update      | Seven 16:9 slide pages built from the slide layouts, like the other layout decks; its charts carry the update's own figures.                                                                                      |
+| Slide deck        | Six 16:9 slide pages, one per slide; the title on the theme's Dusk, the ask on its Haze.                                                                                                                          |
+| Group card        | Two Portrait post (4:5) pages: the Cover (the theme's Glow) and the Inside (the plain paper), standing as a stack.                                                                                                |
+| Event Poster      | One A3 portrait page.                                                                                                                                                                                             |
+| Year in Review    | Four A4 portrait pages: Cover, Numbers, Timeline, Thanks.                                                                                                                                                         |
+| Résumé            | One A4 portrait page, on paper of its own: its ink is locked against the theme, so the main column's white and the side column's tint are too (on a dark theme's paper the ink would vanish).                     |
+| Recipe Card       | A Square page (the dish) and a Portrait post (4:5) page (the method).                                                                                                                                             |
+| Design            | One page each: the Storyboard and Floor plan, A3 landscape.                                                                                                                                                       |
 
 ### What a template shows off
 
@@ -613,7 +612,7 @@ telemetry, so it never changes.
 
 - **Stack Pages** (`Tab.pageArrangement: 'stack'`, [Pages](../007-editor/pages-mode.md) "Stacked or side by side")
   where a sequence is the point and one page is looked at at a time: **Social Carousel** (five slides swiped one by
-  one) and **Group Card** (the cover, then the inside, as a card is opened). The flashcard stacks stack by their kind.
+  one) and **Group Card** (the cover, then the inside, as a card is opened).
   Everything else stands side by side: a deck reads along its filmstrip, a report or a recipe is read across its pages,
   an article never stacks, and a one-page template (a poster, a storyboard, a résumé) has nothing to flip.
 - **Builds** ([Presentation mode](../012-collaboration/presentation-mode.md) "Builds") on the layout decks' slides
@@ -625,8 +624,6 @@ telemetry, so it never changes.
 - **Footnotes** where a figure needs its source (Business Proposal, Design Doc, Status Report, Research Report, Case
   Study, Onboarding Handbook), **contents** where a reader jumps between sections (Business Proposal, Design Doc,
   Research Report, Newsletter, Onboarding Handbook), **headers and footers** on anything printed or passed round.
-- **Speaking time** ([Flashcards](../007-editor/flashcards.md) "Card number and speaking time") on every card of the
-  talk stacks; their descriptions never promise a length the cards do not hold.
 - **Not in a template**, because each needs new editor code rather than template content: a chart in a written
   template's writing (where the writing puts a zone is known only once the editor lays it out, and the editor settles a
   zone's place only for the person who wrote it, so a template's chart would wait off the page); a connected tab (a
@@ -670,7 +667,7 @@ what is `BESIDE_TEMPLATE_OFFERS` (`packages/templates/src/beside-offers.ts`), re
 
 ### Template categories
 
-liveknowledge' categories are its own: they need not match the other products'. They are grouped by **what the document is for** (the use case), never by page kind, so a deck, an article and a stack of flashcards for the same job sit together. Every template but the blanks has one primary category and may be cross-listed where people would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it has a home). Every picker shows them alphabetically by label.
+liveknowledge' categories are its own: they need not match the other products'. They are grouped by **what the document is for** (the use case), never by page kind, so a deck and an article for the same job sit together. Every template but the blanks has one primary category and may be cross-listed where people would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it has a home). Every picker shows them alphabetically by label.
 
 | Category  | Holds                                                                                      | Also lists                         |
 | --------- | ------------------------------------------------------------------------------------------ | ---------------------------------- |
@@ -979,7 +976,7 @@ over. There is no Caption: small print sits below the slider's 24, and a Caption
 **On a slide, a style spans the slide.** A text style tapped onto a slide (or a double-click there) is **80%** of the
 slide's width, centred across it (a 10% margin each side) and wrapping there, its height a line, so every title,
 heading and paragraph on a deck starts at the same left edge and lines up without measuring. Its top-to-bottom place
-is where it was tapped. A drag still sets its own width, and off a slide (an infographic, a flashcard, an article, the
+is where it was tapped. A drag still sets its own width, and off a slide (an infographic, an article, the
 canvas) a tap keeps the table's box above (owner, 2026-11-04).
 
 A tap drops the style's box centred on the tap (never the selected element's size); a drag sets its width, so it

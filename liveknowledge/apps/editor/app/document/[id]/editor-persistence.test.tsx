@@ -69,7 +69,7 @@ describe('useEditorPersistence save toast', () => {
   });
 });
 
-// docs/specs/007-editor/blueprints/flashcards.md "Performance and limits" (Work Tracker 728): a save renders nothing.
+// docs/specs/007-editor/blueprints/typing.md "Performance and limits" (Work Tracker 728): a save renders nothing.
 // As state, the status and the time of the last write rendered the whole editor twice more after every typing commit.
 describe('useEditorPersistence while saving', () => {
   it('renders nothing as a save starts, lands or is timed', () => {

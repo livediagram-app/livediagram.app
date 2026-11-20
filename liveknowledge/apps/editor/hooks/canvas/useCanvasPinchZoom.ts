@@ -33,7 +33,7 @@ type Deps = {
   canvasMainRef: React.RefObject<HTMLElement | null>;
   // The view, read when a gesture fires and written back (docs/specs/008-canvas/blueprints/viewport-store.md).
   viewport: ViewportStore;
-  // Whether the pages stand as a stack (docs/specs/007-editor/flashcards.md "Getting around a stack"): a wheel's
+  // Whether the pages stand as a stack (docs/specs/007-editor/pages-mode.md "Stacked infographics"): a wheel's
   // sideways part then pans nothing, as there is no row to pan along. Read per event.
   stacked?: () => boolean;
 };

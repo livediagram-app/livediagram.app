@@ -21,9 +21,9 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @liveknowledge/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 41;
+export const TEMPLATE_COUNT = 36;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 10;
+export const TEMPLATE_CATEGORY_COUNT = 9;
 // The slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
 export const SLIDE_LAYOUT_COUNT = 64;
 // The infographic page layouts, pinned the same way.
@@ -56,7 +56,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I start my first document?',
-        a: `Press Start and choose what you are making: an article, a slide deck, an infographic or flashcards. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        a: `Press Start and choose what you are making: an article, a slide deck or an infographic. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -151,7 +151,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, grouped by what the document is for (reports, proposals, meetings, lessons, pitches, speeches, careers and more), and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a page starts from ${PAGE_LAYOUT_COUNT} infographic layouts or ${SLIDE_LAYOUT_COUNT} slide layouts. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, grouped by what the document is for (reports, proposals, meetings, lessons, pitches, careers and more), and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a page starts from ${PAGE_LAYOUT_COUNT} infographic layouts or ${SLIDE_LAYOUT_COUNT} slide layouts. You can also build and save a colour scheme of your own.`,
       },
       {
         q: 'Can I write documents in it?',

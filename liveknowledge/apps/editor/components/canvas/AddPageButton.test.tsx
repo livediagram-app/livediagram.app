@@ -45,6 +45,5 @@ describe('addAnotherLabel', () => {
     expect(addAnotherLabel({ kind: 'slide' })).toBe('Add Slide');
     expect(addAnotherLabel({})).toBe('Add Infographic Page');
     expect(addAnotherLabel({ kind: 'article' })).toBe('Add Article');
-    expect(addAnotherLabel({ kind: 'flashcard' })).toBe('Add Card');
   });
 });

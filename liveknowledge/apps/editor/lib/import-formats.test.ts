@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { newFlashcardPage, newSlidePage, type Tab } from '@liveknowledge/document';
+import { newSlidePage, type Tab } from '@liveknowledge/document';
 import { importFormatsFor } from './import-formats';
 
 const tab = (pages: unknown[] | undefined, elements: unknown[] = []) =>
@@ -23,11 +23,10 @@ describe('importFormatsFor: Import offers each format on its own kind of tab', (
     expect(importFormatsFor(tab([newSlidePage('s')]))).toEqual(['json', 'powerpoint']);
   });
 
-  it('offers JSON alone on an infographic or flashcards, and on an unchosen page with something on it', () => {
+  it('offers JSON alone on an infographic, and on an unchosen page with something on it', () => {
     expect(
       importFormatsFor(tab([{ id: 'i', orientation: 'portrait', kind: 'infographic' }])),
     ).toEqual(['json']);
-    expect(importFormatsFor(tab([newFlashcardPage('c', 'f')]))).toEqual(['json']);
     expect(importFormatsFor(tab([{ id: 'p', orientation: 'portrait' }], [{ id: 'x' }]))).toEqual([
       'json',
     ]);

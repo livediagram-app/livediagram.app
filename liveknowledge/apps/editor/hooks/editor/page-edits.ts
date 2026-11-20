@@ -59,7 +59,6 @@ import { backgroundCopyEdits } from './pages-background-copy-edits';
 import { pageSplitEdits } from './page-split-edits';
 import { pageTidyEdits } from './page-tidy-edits';
 
-export type { CardSplitState } from './page-split-edits';
 import type { PageEdits } from './page-edits-type';
 export type { PageEdits } from './page-edits-type';
 
@@ -75,13 +74,11 @@ const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
   infographic: 'PageKindInfographic',
   article: 'PageKindArticle',
   slide: 'PageKindSlide',
-  flashcard: 'PageKindFlashcard',
 };
 const KIND_ADDED_EVENT: Record<PageKind, string> = {
   infographic: 'PageAdded',
   article: 'ArticleAdded',
   slide: 'SlidePageAdded',
-  flashcard: 'FlashcardAdded',
 };
 
 export function pageEdits({
@@ -277,10 +274,10 @@ export function pageEdits({
     const flow = nextArticleFlowId(new Set());
     commitTab((t) => {
       const chosen = withPageKindChosen(t, pageId, kind, flow);
-      // An article or a card starts on the paper unless the tab has a new-page background (withDefaultPageBackgrounds).
+      // An article starts on the paper unless the tab has a new-page background (withDefaultPageBackgrounds).
       return themed(chosen, pageId);
     });
-    if (kind === 'article' || kind === 'flashcard') onArticleCreated?.(flow);
+    if (kind === 'article') onArticleCreated?.(flow);
     debugLog('[page] first page kind chosen', { tabId, pageId, kind });
   };
   const addPage = (kind: PageKind) => {
@@ -298,7 +295,7 @@ export function pageEdits({
       const added = edited(t, pageAdded(t, kind, id, flow, after));
       return themed(added, id);
     });
-    if (kind === 'article' || kind === 'flashcard') {
+    if (kind === 'article') {
       onGoTo(id);
       onArticleCreated?.(flow);
       debugLog('[page] article added', { tabId, flow, count: current.length + 1 });
@@ -320,7 +317,7 @@ export function pageEdits({
       const added = edited(t, pageAddedLike(t, pageId, id, flow, after));
       return themed(added, id);
     });
-    if (kind === 'article' || kind === 'flashcard') {
+    if (kind === 'article') {
       onGoTo(id);
       onArticleCreated?.(flow);
       return;
@@ -444,7 +441,7 @@ export function pageEdits({
     refusedLocked,
     isLocked,
   });
-  const { splitPage, cardSplitState, splitCard } = pageSplitEdits({
+  const { splitPage } = pageSplitEdits({
     tabId,
     tab,
     current,
@@ -453,7 +450,6 @@ export function pageEdits({
     toastInfo,
     takesEdits,
     refusedLocked,
-    page,
   });
 
   const room = current.length < MAX_PAGES;
@@ -483,8 +479,6 @@ export function pageEdits({
     },
     removePage,
     splitPage,
-    splitCard,
-    cardSplitState,
     applyLayout,
     contentCount,
     isLocked,

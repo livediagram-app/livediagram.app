@@ -1,6 +1,5 @@
-// A page's writing when its editor is not mounted (docs/specs/007-editor/flashcards.md "Long stacks stay quick"): a
-// long flashcard stack mounts only the writing near the card in front, so the other cards are drawn where they show
-// away from the canvas (an export, a thumbnail, the Map) from the headless estimate an export of a document that is
+// A page's writing when its editor is not mounted: it is drawn where it shows away from the canvas (an export, a
+// thumbnail, the Map) from the headless estimate an export of a document that is
 // not open uses (estimateArticle). Cached per stored writing object and page place: a card's estimate is made again
 // only when its own writing, its place or the theme changes. In the browser its lines break where the card's editor
 // would break them, each word measured by a canvas (canvas-text-measure.ts); a web font that loads makes it again.

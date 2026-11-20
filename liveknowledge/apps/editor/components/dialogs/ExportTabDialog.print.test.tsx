@@ -6,13 +6,7 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  layOutPages,
-  newFlashcardPage,
-  newSlidePage,
-  pagesOf,
-  type Tab,
-} from '@liveknowledge/document';
+import { layOutPages, newSlidePage, pagesOf, type Tab } from '@liveknowledge/document';
 import { ExportTabDialog } from './ExportTabDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -63,7 +57,10 @@ const cardsTab = {
   id: 'c',
   name: 'Cards',
   elements: [],
-  pages: [newFlashcardPage('c1', 'f1'), newFlashcardPage('c2', 'f2')],
+  pages: [
+    { id: 'c1', orientation: 'portrait' as const, kind: 'article' as const, flow: 'f1' },
+    { id: 'c2', orientation: 'portrait' as const, kind: 'article' as const, flow: 'f2' },
+  ],
   articles: { f1: { blocks: [] }, f2: { blocks: [] } },
 } as unknown as Tab;
 // A tab still on the Start screen: nothing to print.

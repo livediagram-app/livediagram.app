@@ -4,8 +4,7 @@
 import type { Tab } from '@liveknowledge/document';
 import type { TemplateKind } from './templates';
 
-// A carousel is swiped one slide at a time; a group card is opened, cover first, then the inside. The flashcard
-// stacks stack by their kind, so they need no entry.
+// A carousel is swiped one slide at a time; a group card is opened, cover first, then the inside.
 export const STACKED_TEMPLATES: ReadonlySet<TemplateKind> = new Set<TemplateKind>([
   'social-carousel',
   'live-card',

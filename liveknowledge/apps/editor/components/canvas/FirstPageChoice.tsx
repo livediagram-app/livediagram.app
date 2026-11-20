@@ -3,8 +3,7 @@
 // The first page's own choice (docs/specs/007-editor/pages-mode.md "Page kinds"): while a tab's
 // only page is unchosen and empty, it offers the kinds of page inside itself. Infographic keeps the
 // page and puts the choice away; Article makes it the first page of an article, the caret in its
-// title; Slide turns it into a 16:9 landscape slide; Flashcards makes it the first card of a stack
-// (docs/specs/007-editor/flashcards.md "Making flashcards").
+// title; Slide turns it into a 16:9 landscape slide.
 // Held at one screen size, centred on the page, never wider than the screen less a 16 px gutter a
 // side (a 375 px phone would otherwise cut both edges off).
 import type { PageKind } from '@liveknowledge/document';

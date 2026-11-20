@@ -1,5 +1,5 @@
-// The browser's own text widths for the article estimate (docs/specs/007-editor/flashcards.md "Long stacks stay
-// quick"): an unmounted flashcard's lines are broken where its editor would break them, each word measured by a
+// The browser's own text widths for the article estimate : an unmounted
+// article's lines are broken where its editor would break them, each word measured by a
 // canvas in the face the writing is drawn in. Widths are kept per face and text (most words repeat), the store
 // dropped when it grows past MEASURE_CACHE_MAX, and when a web font finishes loading (a width read before it loaded
 // was the fallback face's), which also moves `measureGeneration` on so cached estimates are made again.

@@ -30,7 +30,7 @@ export function previewPageBackground(
   themeId: string,
 ): PageBackground | undefined {
   if (own) return own;
-  if (kind === 'article' || kind === 'flashcard') return undefined;
+  if (kind === 'article') return undefined;
   return defaultPageBackground(getTheme(themeId), kind === 'slide' ? 'slide' : 'infographic');
 }
 

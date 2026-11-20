@@ -5,10 +5,6 @@
 import { articleOwnTitle } from './article-page-name';
 import {
   articleTitleOf,
-  flashcardSpeakingSeconds,
-  flashcardStackSummary,
-  isFlashcardStack,
-  speakingTimeLabel,
   pageHasOrientation,
   pageKindOf,
   pageSizeLabel,
@@ -28,8 +24,6 @@ export type ContentsRow = ContentsRowBase & {
   kind: PageKind;
   // A slide page with a slide in the deck; absent where there is no deck to ask.
   inDeck?: boolean;
-  // A card's speaking time ("45 sec"), shown beside its name; absent off a card or on an empty one.
-  speakingTime?: string;
   // A slide's builds ("3 builds", presentation-mode.md "Setting builds up"), shown beside its name; absent on a page
   // with none.
   builds?: string;
@@ -41,7 +35,6 @@ const KIND_NAME = {
   infographic: 'Infographic',
   slide: 'Slide',
   article: 'Article',
-  flashcard: 'Flashcard',
 } as const;
 
 export function contentsRows(
@@ -62,7 +55,6 @@ export function contentsRows(
   return pages.map((p, i) => {
     const kind = pageKindOf(p);
     let line: string = KIND_NAME[kind];
-    let speakingTime: string | null = null;
     let builds: string | null = null;
     // What the page goes by when nobody has named it: its own title (an article's, a card deck's, or
     // the biggest words on a slide or an infographic), then its place.
@@ -76,7 +68,7 @@ export function contentsRows(
       const count = opts.buildsOf?.(p.id) ?? 0;
       builds = count > 0 ? `${count} ${count === 1 ? 'build' : 'builds'}` : null;
       if (builds) line += ` · ${builds}`;
-    } else if ((kind === 'article' || kind === 'flashcard') && p.flow) {
+    } else if (kind === 'article' && p.flow) {
       const flow = opts.articles?.[p.flow];
       const title = flow ? articleTitleOf(flow).trim() : '';
       // A real title names the row (articleOwnTitle, as the page's label does), and is said again on
@@ -84,16 +76,11 @@ export function contentsRows(
       const own = articleOwnTitle(flow);
       titled = own;
       if (title && (p.name?.trim() || !own)) line += ` · ${title}`;
-      // A card says how long it takes to say (docs/specs/007-editor/flashcards.md "Card number and
-      // speaking time").
-      speakingTime =
-        kind === 'flashcard' && flow ? speakingTimeLabel(flashcardSpeakingSeconds(flow)) : null;
-      if (speakingTime) line += ` · ${speakingTime}`;
     }
     return {
       id: p.id,
       number: i + 1,
-      name: p.name?.trim() || titled || `${kind === 'flashcard' ? 'Card' : 'Page'} ${i + 1}`,
+      name: p.name?.trim() || titled || `Page ${i + 1}`,
       line,
       locked: p.locked === true,
       aspect: p.rect.width / p.rect.height,
@@ -101,20 +88,9 @@ export function contentsRows(
       ...(kind === 'slide' && opts.inDeck ? { inDeck: opts.inDeck(p.id) } : {}),
       // A page (any kind) whose slide the deck skips when presenting: set aside under a Hidden veil.
       ...(opts.hiddenInSlides?.(p.id) ? { setAside: HIDDEN_IN_SLIDES } : {}),
-      ...(speakingTime ? { speakingTime } : {}),
       ...(builds ? { builds } : {}),
     };
   });
-}
-
-/** What Contents' header says of the whole tab: a stack's talk, "10 cards · about 6 min"
- *  (docs/specs/007-editor/flashcards.md "The whole talk"); null off a stack, or on one with no words. */
-export function contentsSummary(
-  pages: readonly Pick<Page, 'kind' | 'flow'>[],
-  articles: Readonly<Record<string, ArticleFlow>> | undefined,
-): string | null {
-  if (!isFlashcardStack(pages)) return null;
-  return flashcardStackSummary(pages.map((p) => (p.flow ? articles?.[p.flow] : undefined)));
 }
 
 /** The place (among the row's units, 0 first) a page dropped beside the row at `drop.index` moves

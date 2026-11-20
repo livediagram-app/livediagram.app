@@ -2,10 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { estimateArticle, wrapMeasured, type ArticleTextMeasure } from './article-layout-estimate';
 import type { Style } from './article-layout-set';
-import { laidOutPagesOf, newFlashcardPage } from './index';
+import { laidOutPagesOf } from './index';
 
-// docs/specs/007-editor/flashcards.md "Long stacks stay quick": in a browser an unmounted card's lines break where its
-// editor would break them. A stand-in measure: a glyph is 10 px in a 400 face, 12 in a 700, 11 in an italic.
+// In a browser an unmounted article's lines break where its editor would break them. A stand-in measure: a glyph is 10 px in a 400 face, 12 in a 700, 11 in an italic.
 const measure: ArticleTextMeasure = (text, font) =>
   text.length * (font.includes('700') ? 12 : font.startsWith('italic') ? 11 : 10);
 const fontOf = (s: Style) => `${s.i ? 'italic ' : ''}${s.b ? '700' : '400'} 16px Inter`;
@@ -85,13 +84,13 @@ describe('wrapMeasured', () => {
     ]);
   });
 
-  it('lays a whole card out by measure, and finishes a 50,000-character paragraph quickly', () => {
+  it('lays a whole article out by measure, and finishes a 50,000-character paragraph quickly', () => {
     const words = Array.from({ length: 60 }, (_, i) => (i % 3 ? 'mm' : 'i')).join(' ');
     const tab = {
       id: 't',
       name: 'Tab',
       elements: [],
-      pages: [newFlashcardPage('p0', 'f0')],
+      pages: [{ id: 'p0', orientation: 'portrait', kind: 'article', flow: 'f0' }],
       articles: { f0: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: words }] }] } },
     };
     const pages = laidOutPagesOf(tab as never);
@@ -119,7 +118,7 @@ describe('wrapMeasured', () => {
         id: 't',
         name: 'Tab',
         elements: [],
-        pages: [newFlashcardPage('p0', 'f0')],
+        pages: [{ id: 'p0', orientation: 'portrait', kind: 'article', flow: 'f0' }],
         articles: {
           f0: {
             blocks: [

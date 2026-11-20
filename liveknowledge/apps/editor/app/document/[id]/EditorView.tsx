@@ -102,7 +102,7 @@ const CommunityBar = dynamic(
   { ssr: false },
 );
 
-// The editor's hosts that read no document (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// The editor's hosts that read no document (docs/specs/007-editor/blueprints/typing.md "Performance and
 // limits"): made once, so the view's render (each typing commit) passes them over. Each renders only when what it
 // reads changes: whether its dialog is open (the chrome store), or its own context.
 const TAB_DIALOGS = (

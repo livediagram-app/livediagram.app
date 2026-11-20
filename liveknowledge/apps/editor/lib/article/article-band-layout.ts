@@ -33,7 +33,7 @@ export type PageBandLayout = {
 const HEADER_FROM_TEXT = 16;
 
 /**
- * A page's header and footer, or null when it shows none: a flashcard, a page with no article, the first
+ * A page's header and footer, or null when it shows none: a page with no article, the first
  * page with Different First Page on, or no header, footer or page number at all. `own` is the article's
  * pages in order.
  */
@@ -44,7 +44,6 @@ export function pageBandLayout(
   name: string,
   date?: string,
 ): PageBandLayout | null {
-  if (page.kind === 'flashcard') return null;
   // Most articles have neither: nothing to work out (this runs for every page on every render).
   if (!style?.header && !style?.footer && !style?.pageNumbers) return null;
   const index = own.findIndex((p) => p.id === page.id);

@@ -1931,9 +1931,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "livediagram.app",
       "liveplanner.app",
-      "liveknowledge.app",
+      "livedocuments.app",
       "livedesign.app",
-      "livehuddle.app"
+      "livehuddle.app",
+      "liveknowledge.app"
     ],
     "type": "string"
   },
@@ -1967,10 +1968,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "careers",
       "decisions",
       "education",
+      "engineering",
       "events",
       "finance",
       "games",
       "goals",
+      "handbooks",
       "health",
       "hiring",
       "home",
@@ -4444,7 +4447,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "livediagram",
       "liveplanner",
-      "liveknowledge",
+      "livedocuments",
       "livedesign"
     ],
     "type": "string"
@@ -4680,9 +4683,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "additionalProperties": false,
                 "properties": {
                   "article": {
-                    "type": "number"
-                  },
-                  "flashcard": {
                     "type": "number"
                   },
                   "infographic": {
@@ -5217,8 +5217,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "infographic",
       "article",
-      "slide",
-      "flashcard"
+      "slide"
     ],
     "type": "string"
   },
@@ -5322,8 +5321,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wide",
       "slide",
       "slide-classic",
-      "fit",
-      "card"
+      "fit"
     ],
     "type": "string"
   },
@@ -7463,9 +7461,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "livediagram",
       "liveplanner",
-      "liveknowledge",
+      "livedocuments",
       "livedesign",
-      "livehuddle"
+      "livehuddle",
+      "liveknowledge"
     ],
     "type": "string"
   },
@@ -8989,9 +8988,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "additionalProperties": false,
             "properties": {
               "article": {
-                "type": "number"
-              },
-              "flashcard": {
                 "type": "number"
               },
               "infographic": {

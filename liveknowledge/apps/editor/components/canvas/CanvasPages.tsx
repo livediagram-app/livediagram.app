@@ -187,7 +187,7 @@ export function CanvasPages({
     previewArticleStyle: (flow, style) => articles?.setStylePreview(style ? { flow, style } : null),
     focusPage: (id) => view.focusPage(id),
   });
-  // A stack (flashcards, infographic pages): the page in front's place, and the pages still to come behind it.
+  // A stack (infographic pages, slides): the page in front's place, and the pages still to come behind it.
   const stack = view.cardStack;
   const row = view.rowPages ?? pages;
   return (
@@ -256,9 +256,6 @@ export function CanvasPages({
             empty={emptyPages?.has(page.id) === true}
             previewing={view.layoutPreview?.pageId === page.id}
             layoutsOpen={layoutsOpenFor === page.id}
-            stack={stack}
-            row={stack ? row : undefined}
-            flow={stack && page.flow ? articles?.flows[page.flow] : undefined}
             act={act}
           />
         );

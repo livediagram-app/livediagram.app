@@ -54,11 +54,6 @@ describe('TEMPLATES catalogue', () => {
     'quarterly-review',
     'team-welcome',
     'workshop-kickoff',
-    'blank-flashcards',
-    'talk-flashcards',
-    'wedding-toast',
-    'pitch-flashcards',
-    'class-presentation',
     'meeting-notes',
     'lesson-plan',
     'business-proposal',
@@ -79,15 +74,15 @@ describe('TEMPLATES catalogue', () => {
   // The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 41 templates (1 default + 40 extra)', () => {
-    expect(listed).toHaveLength(41);
+  it('lists exactly 36 templates (1 default + 35 extra)', () => {
+    expect(listed).toHaveLength(36);
   });
 
-  it('splits cleanly into 1 default + 40 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 1 default + 35 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(1);
-    expect(extras).toHaveLength(40);
+    expect(extras).toHaveLength(35);
   });
 
   it('ships no hidden templates', () => {
@@ -123,16 +118,11 @@ describe('TEMPLATES catalogue', () => {
       // Illustration are one empty page that asks what it is for, a blank of a page kind one empty page of its kind.
       // An article's writing is tab data, not elements (templateCanvasOverrides). Every other kind seeds content.
       // Either way the switch must handle the union member.
-      // A stack of flashcards is writing too (docs/specs/007-editor/flashcards.md).
       const empty =
         isBlankTemplate(kind) ||
         kind === 'article' ||
         kind === 'working-backwards' ||
         [
-          'talk-flashcards',
-          'wedding-toast',
-          'pitch-flashcards',
-          'class-presentation',
           'meeting-notes',
           'lesson-plan',
           'business-proposal',

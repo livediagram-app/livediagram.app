@@ -14,7 +14,6 @@ import {
   ContentsSidebarArt,
   ExpiryArt,
   FindReplaceArt,
-  FlashcardStackArt,
   FollowAlongArt,
   FontsArt,
   FullScreenSlideArt,
@@ -216,14 +215,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Slide pages, ready-made layouts',
         description:
           'Add a 16:9 or classic 4:3 slide page and start it from one of 64 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
-      },
-      {
-        art: <FlashcardStackArt />,
-        href: '/help/pages/flashcards/',
-        group: 'Build',
-        title: 'Flashcards to speak from',
-        description:
-          'Rather hold notes than show slides? Make a stack of flashcards: a title and a couple of paragraphs on each, text only. Flip through them as you speak, each card telling you its place and how long its words take to say, Contents adding up the whole talk, and start from a conference talk, a wedding toast or a product pitch.',
       },
       {
         art: <PowerPointImportArt />,

@@ -2,8 +2,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { EditorView } from 'prosemirror-view';
 import type { ArticleNotePlace } from '@liveknowledge/document';
 import { noteArticleLaidOut } from '@/lib/article/article-editor-store';
-import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
-import { publishCardOverflow } from '@/lib/flashcard-overflow-store';
+import { columnAt, pagePlaceOf } from '@/lib/article/article-flow-geometry';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import { writingScale } from './article-editor-handle';
 import { measureRepeats } from '@/lib/article/article-table-repeat';
@@ -75,7 +74,7 @@ export function measureArticleLayout({
   // Then the footnotes: each page's notes at its foot and its text ended above them, measured again once the
   // breaks have moved (the header rows repeat above the notes).
   const footNotes = notesRef.current;
-  if (footNotes && !p.card) {
+  if (footNotes) {
     const laid = layoutFootnotes(view, { frame, root, z, pages: p.pages, notes: footNotes });
     footLimits.current = laid.limits;
     if (laid.changed && footTries.current < REPEAT_SETTLE_TRIES) {
@@ -103,14 +102,9 @@ export function measureArticleLayout({
       right = Math.max(right, (r.left - root.left) / z + 1);
     }
   }
-  const reached = columnAt(frame, Math.max(0, right - 2)) + 1;
-  // A card never grows: what runs past its foot waits unseen, and the first block that does not
-  // fit whole is where a split would start (docs/specs/007-editor/flashcards.md "Never flows").
-  const pagesNeeded = p.card ? 1 : reached;
-  if (p.card)
-    publishCardOverflow(p.flow, reached > 1 ? firstBlockPastFoot(view, frame, root, z) : null);
+  const pagesNeeded = columnAt(frame, Math.max(0, right - 2)) + 1;
   // At the tab's page limit the writing past the last page waits unseen: say so on that page.
-  const cut = (p.atPageLimit === true || p.card === true) && reached > p.pages.length;
+  const cut = p.atPageLimit === true && pagesNeeded > p.pages.length;
   setCutOff((was) => (was === cut ? was : cut));
   const zones: FlowLayout['zones'] = [];
   view.dom.querySelectorAll<HTMLElement>('.article-zone').forEach((el) => {
@@ -146,23 +140,4 @@ export function measureArticleLayout({
     announced.current = true;
     noteArticleLaidOut();
   }
-}
-
-// The id of the first top-level block that does not fit whole on the first page (a box of it in a
-// later column), or null.
-function firstBlockPastFoot(
-  view: EditorView,
-  frame: ReturnType<typeof flowFrame>,
-  root: DOMRect,
-  z: number,
-): string | null {
-  for (const child of Array.from(view.dom.children)) {
-    const id = (child as HTMLElement).dataset.blockId;
-    if (!id) continue;
-    for (const r of Array.from(child.getClientRects())) {
-      if (r.width === 0 && r.height === 0) continue;
-      if (columnAt(frame, Math.max(0, (r.right - root.left) / z - 2)) >= 1) return id;
-    }
-  }
-  return null;
 }

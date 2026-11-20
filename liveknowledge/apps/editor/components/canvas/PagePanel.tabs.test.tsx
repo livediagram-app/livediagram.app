@@ -33,8 +33,6 @@ const edits = (): PageEdits => ({
   isLocked: () => false,
   setLocked: vi.fn(),
   splitPage: vi.fn(),
-  splitCard: vi.fn(),
-  cardSplitState: vi.fn(() => 'fits' as const),
   removePage: vi.fn(),
 });
 
@@ -67,15 +65,6 @@ describe('the page panel', () => {
     expect(
       pageHasPageSection(laidOut({ id: 'p', orientation: 'portrait', kind: 'infographic' })),
     ).toBe(true);
-  });
-
-  it("shows an unnamed card's title as its name, in the name's own ink, so typing a name overrides it", () => {
-    renderPanel({ id: 'c', orientation: 'landscape', kind: 'flashcard', flow: 'f' }, 'Opening');
-    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Page name' });
-    expect(field.value).toBe('');
-    expect(field.placeholder).toBe('Opening');
-    expect(field.className).toContain('placeholder:text-slate-900');
-    expect(screen.getByRole('dialog').getAttribute('aria-label')).toBe('Opening settings');
   });
 
   it('keeps the hint look on a page with no title to go by', () => {

@@ -5,8 +5,8 @@
 // itself at its corner. A press on them keeps an article's toolbar. The slot sits first in the row, left of it, empty
 // until the selection is on this page; the row itself takes no presses, only the cards in it.
 //
-// Its own memoised component, out of CanvasPageSheet (docs/specs/007-editor/blueprints/flashcards.md "Performance and
-// limits"): the sheet renders for its card's writing on every typing commit (FlashcardFooter reads it), and this row
+// Its own memoised component, out of CanvasPageSheet (docs/specs/007-editor/blueprints/typing.md "Performance and
+// limits"): the sheet renders for its page's writing on every typing commit, and this row
 // reads none of it, so it skips those renders.
 
 import { memo, type CSSProperties } from 'react';
@@ -113,7 +113,6 @@ function PageSheetTitleBarView({
     page.flow && hasArticle ? (
       <ArticleStyleSection
         part={part}
-        card={page.kind === 'flashcard'}
         style={storedArticleStyle}
         themeAccent={themeAccent}
         onChange={(change) => act.setArticleStyle(page.flow!, change)}

@@ -29,7 +29,7 @@ Every other line is a paragraph. The article flows onto as many pages as the wri
 
 Markdown always becomes an article, so the dialog offers it only where an article is what the tab already is
 or may still become: an **article tab**, and an **empty tab** (its only page still offering the choice of kind,
-the Start screen). On a slide deck, an infographic or a flashcard tab it would throw the tab's pages and their
+the Start screen). On a slide deck or an infographic it would throw the tab's pages and their
 kind away for a different kind, so the card is not shown there (hidden, not disabled, as the Export dialog hides a
 format a tab cannot take). Checked in the editor on 2026-11-04: on a slide deck and an infographic tab the import
 left one A4 article, the deck's slides and the infographic's theme gone.
@@ -43,7 +43,6 @@ kind a tab"):
 | Article     | yes  | yes      | yes  | no         |
 | Slide deck  | yes  | no       | no   | yes        |
 | Infographic | yes  | no       | no   | no         |
-| Flashcards  | yes  | no       | no   | no         |
 
 On an empty tab, Markdown and Word make it an article and PowerPoint makes it a slide deck
 ([Word and PowerPoint import](office-import.md)). A tab offered JSON alone opens straight at the JSON panel, as

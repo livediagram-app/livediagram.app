@@ -7,17 +7,13 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { createTab } from '../editor-page-helpers';
 import { guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
-import { announceTextOnly, guardFlashcardsIn } from '@/lib/flashcard-guard';
 
-// The guards every local edit of the active tab passes (Pages mode): locked pages, then text-only
-// flashcards (docs/specs/007-editor/flashcards.md "Text only"), each saying why after the commit.
+// The guard every local edit of the active tab passes (Pages mode): locked pages, saying why after the commit.
 const guardPagesIn = (prev: readonly Tab[], next: Tab[], guard: PageLockGuard | null): Tab[] =>
-  guardFlashcardsIn(prev, guardLockedPagesIn(prev, next, guard), guard?.tabId ?? null, () =>
-    queueMicrotask(() => announceTextOnly()),
-  );
+  guardLockedPagesIn(prev, next, guard);
 
 // The document itself: where the editor runs (surface), the signed-in account, the tabs and their undo history with
-// the commit choke point every local edit passes (page locks, flashcards, badges, layer stamps), the tab summaries,
+// the commit choke point every local edit passes (page locks, badges, layer stamps), the tab summaries,
 // and the document's load flags (found, failed, loading, joined).
 //
 // One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones

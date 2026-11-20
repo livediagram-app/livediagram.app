@@ -11,7 +11,7 @@ import {
   pictureCard,
 } from './flashcard-flip';
 
-// docs/specs/007-editor/flashcards.md "Flipping".
+// docs/specs/007-editor/pages-mode.md "Stacked infographics".
 const a = { id: 'a', rect: { x: 0, y: 0, width: 900, height: 540 }, flow: 'fa' };
 const b = { id: 'b', rect: { x: 1000, y: 0, width: 900, height: 540 }, flow: 'fb' };
 
@@ -86,7 +86,7 @@ describe('the flip', () => {
     expect(flips()).toHaveLength(0);
   });
 
-  // flashcards.md "Only the card leaving moves": the card now in front is the real one, its writing on throughout.
+  // pages-mode.md "Stacked infographics": the card now in front is the real one, its writing on throughout.
   it('back: only the card leaving moves, sinking away, never a picture of the card coming in', () => {
     world();
     flipCard(pictureCard(b), a, false, false);

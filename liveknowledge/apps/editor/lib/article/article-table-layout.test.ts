@@ -386,9 +386,8 @@ describe('headers and footers on a page', () => {
     expect(layout.right).toBe(794 - layout.left);
   });
 
-  it('shows none on a card, off the article, or on a first page set apart', () => {
+  it('shows none off the article, or on a first page set apart', () => {
     const style = { footer: { left: 'x' }, differentFirstPage: true as const };
-    expect(pageBandLayout(style, own, { ...page, kind: 'flashcard' }, '')).toBeNull();
     expect(pageBandLayout(style, [{ id: 'other' }], page, '')).toBeNull();
     expect(pageBandLayout(style, own, { ...page, id: 'p1' }, '')).toBeNull();
     expect(pageBandLayout(undefined, own, page, '')).toBeNull();

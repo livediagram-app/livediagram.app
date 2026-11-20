@@ -47,11 +47,6 @@ const ALL_KINDS = [
   'quarterly-review',
   'team-welcome',
   'workshop-kickoff',
-  'blank-flashcards',
-  'talk-flashcards',
-  'wedding-toast',
-  'pitch-flashcards',
-  'class-presentation',
   'meeting-notes',
   'lesson-plan',
   'business-proposal',
@@ -143,7 +138,7 @@ describe('templates on pages', () => {
     'board-update',
   ]);
   // Every template that opens on infographic or slide pages of its own is in the list, so a new one is checked as it
-  // lands (Class Lesson was not). The blanks hold no content, and articles and flashcards are written, not placed.
+  // lands (Class Lesson was not). The blanks hold no content, and articles are written, not placed.
   it('checks every template that opens on infographic or slide pages', () => {
     const paged = ALL_KINDS.filter((k) => {
       const pages = templateCanvasOverrides(k).pages ?? [];

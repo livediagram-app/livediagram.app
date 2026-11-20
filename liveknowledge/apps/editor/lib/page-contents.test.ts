@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, newFlashcardPage, type Page } from '@liveknowledge/document';
-import { contentsRows, contentsSummary, pageInView } from './page-contents';
+import { layOutPages, type Page } from '@liveknowledge/document';
+import { contentsRows, pageInView } from './page-contents';
 import { contentsDropUnit } from './page-contents';
 
 // docs/specs/007-editor/pages-mode.md "Contents".
@@ -10,48 +10,6 @@ const pages = layOutPages([
   { id: 'c', orientation: 'portrait', kind: 'article', flow: 'f1', locked: true },
   { id: 'd', orientation: 'portrait', kind: 'slide', size: 'slide-classic' },
 ] as Page[]);
-
-// docs/specs/007-editor/flashcards.md "Contents": each card's row says its speaking time.
-describe('a stack in Contents', () => {
-  it('names each card by its title and says how long it takes to say', () => {
-    const stack = layOutPages([newFlashcardPage('a', 'f1'), newFlashcardPage('b', 'f2')]);
-    const words = Array.from({ length: 130 }, () => 'word').join(' ');
-    const rows = contentsRows(stack, {
-      articles: {
-        f1: {
-          blocks: [
-            { type: 'paragraph', style: 'title', runs: [{ text: 'Opening' }] },
-            { type: 'paragraph', runs: [{ text: words }] },
-          ],
-        } as never,
-        f2: { blocks: [] },
-      },
-    });
-    expect(rows.map((r) => [r.name, r.line])).toEqual([
-      ['Opening', 'Flashcard · 1 min'],
-      ['Card 2', 'Flashcard · Untitled'],
-    ]);
-    expect(rows.map((r) => r.speakingTime)).toEqual(['1 min', undefined]);
-  });
-
-  // docs/specs/007-editor/flashcards.md "The whole talk".
-  it("heads the stack with the whole talk's length, none off a stack or with no words", () => {
-    const stack = layOutPages([
-      newFlashcardPage('a', 'f1'),
-      newFlashcardPage('b', 'f2'),
-      newFlashcardPage('c', 'f3'),
-    ]);
-    const words = (n: number) => ({
-      blocks: [{ id: 'p', type: 'paragraph' as const, runs: [{ text: 'word '.repeat(n).trim() }] }],
-    });
-    expect(contentsSummary(stack, { f1: words(260), f2: words(130), f3: { blocks: [] } })).toBe(
-      '3 cards · about 3 min',
-    );
-    expect(contentsSummary(stack, { f1: { blocks: [] } })).toBeNull();
-    expect(contentsSummary(stack, undefined)).toBeNull();
-    expect(contentsSummary(pages, { f1: words(260) })).toBeNull();
-  });
-});
 
 describe('the Contents list', () => {
   const rows = contentsRows(pages, {

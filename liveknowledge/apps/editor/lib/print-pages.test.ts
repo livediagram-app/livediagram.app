@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  layOutPages,
-  newFlashcardPage,
-  newSlidePage,
-  pagesOf,
-  type Tab,
-} from '@liveknowledge/document';
+import { layOutPages, newSlidePage, pagesOf, type Tab } from '@liveknowledge/document';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { renderTabToSvg } from './export-tab';
 import {
@@ -22,7 +16,9 @@ const tab = (id: string, pages?: unknown[], elements: unknown[] = []) =>
   ({ id, name: id, elements, ...(pages ? { pages } : {}) }) as unknown as Tab;
 const deck = tab('deck', [newSlidePage('s1'), newSlidePage('s2')]);
 const poster = tab('poster', [{ id: 'p1', orientation: 'portrait', kind: 'infographic' }]);
-const cards = tab('cards', [newFlashcardPage('c1', 'f')]);
+const cards = tab('cards', [
+  { id: 'c1', orientation: 'portrait' as const, kind: 'article' as const, flow: 'f' },
+]);
 const start = tab('start');
 const current = (t: Tab, at = 0) => {
   const pages = layOutPages(pagesOf(t));
@@ -63,12 +59,12 @@ describe('printDocumentHtml', () => {
 
   it('sizes each sheet exactly its page through one named @page rule per size', () => {
     const rules = [...html.matchAll(/@page (s\d+x\d+)\{size:(\d+)px (\d+)px;margin:0\}/g)];
-    expect(rules.map((r) => r[1])).toEqual(['s794x1123', 's1920x1080', 's900x540']);
+    expect(rules.map((r) => r[1])).toEqual(['s794x1123', 's1920x1080']);
     const styles = [...html.matchAll(/class="sheet" style="([^"]+)"/g)].map((m) => m[1]);
     expect(styles[0]).toBe('page:s794x1123;width:794px;height:1123px;break-after:page');
     expect(styles[1]).toContain('page:s1920x1080');
     // The last sheet breaks after nothing, so no blank page follows.
-    expect(styles.at(-1)).toBe('page:s900x540;width:900px;height:540px');
+    expect(styles.at(-1)).toBe('page:s794x1123;width:794px;height:1123px');
   });
 
   it('holds only the sheets, backgrounds printed, the first size the default', () => {

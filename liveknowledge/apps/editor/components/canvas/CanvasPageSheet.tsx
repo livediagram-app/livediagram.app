@@ -25,9 +25,6 @@ import {
   pageIsDark,
   pageKindOf,
   pageLabel,
-  resolveArticleStyle,
-  resolveFontStack,
-  type ArticleFlow,
   type ArticleStyle,
   type LaidOutPage,
   type PageBackground,
@@ -37,8 +34,6 @@ import {
 import type { PageLayoutId } from '@liveknowledge/templates';
 import type { PageDeckControls, PageEdits } from '@/hooks/editor/usePagesMode';
 import { pageSheetStyle } from '@/lib/page-paint';
-import { FlashcardFooter } from './FlashcardStack';
-import type { CardStack } from '@/lib/flashcard-stack';
 import type { ArticleStyleChange } from '@/hooks/editor/useArticles';
 import { pageBandLayout } from '@/lib/article/article-band-layout';
 import { PageBands } from './article/PageBands';
@@ -111,10 +106,6 @@ export type PageSheetProps = {
   empty: boolean;
   previewing: boolean;
   layoutsOpen: boolean;
-  // A stack's card in front: its place, the row and its article (FlashcardFooter).
-  stack: CardStack | undefined;
-  row: readonly LaidOutPage[] | undefined;
-  flow: ArticleFlow | undefined;
   act: PageSheetActions;
 };
 
@@ -151,9 +142,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   empty,
   previewing,
   layoutsOpen,
-  stack,
-  row,
-  flow,
   act,
 }: PageSheetProps) {
   const id = page.id;
@@ -166,8 +154,7 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           top: articleTopMarginPx(articleStyle),
         }
       : undefined;
-  // An article page's header and footer (its page number among them), when its article has them. A card
-  // says its place in the stack instead (FlashcardFooter).
+  // An article page's header and footer (its page number among them), when its article has them.
   const bands =
     page.flow && hasArticle
       ? pageBandLayout(
@@ -344,18 +331,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
       ) : null}
       {bands ? (
         <PageBands layout={bands} {...(page.background?.fill ? { dark: pageIsDark(page) } : {})} />
-      ) : null}
-      {stack && row && page.flow ? (
-        <FlashcardFooter
-          card={page}
-          stack={stack}
-          row={row}
-          // Zen shows the card alone: its place, no buttons.
-          {...(bare ? {} : { onGo: act.focusPage })}
-          flow={flow}
-          margin={articleMarginPx(articleStyle)}
-          font={resolveFontStack(resolveArticleStyle(articleStyle).bodyFont)}
-        />
       ) : null}
     </div>
   );

@@ -503,7 +503,7 @@ export function articlesOf(tab: object | undefined): Readonly<Record<string, Art
 }
 
 // Each stored article's writing as read, by its stored object: a typing commit changes one article of the tab, so the
-// rest are read once, not again at every commit (100 cards of a flashcard stack), and keep the same object for readers
+// rest are read once, not again at every commit and keep the same object for readers
 // that memo on it. Keyed with the flow id too, which names an empty article's block.
 const parsedFlows = new WeakMap<object, { flow: string; parsed: ArticleFlow }>();
 
@@ -547,20 +547,6 @@ export function newArticleFlow(): ArticleFlow {
       { id: title, type: 'paragraph', style: 'title', runs: [] },
       { id: body, type: 'paragraph', runs: [] },
     ],
-  };
-}
-
-/** A new card's writing (docs/specs/007-editor/flashcards.md "A card"): an empty Title and an
- *  empty paragraph, Narrow margins so a card holds a title and a couple of paragraphs. */
-export function newFlashcardFlow(): ArticleFlow {
-  const title = nextArticleBlockId();
-  const body = nextArticleBlockId(new Set([title]));
-  return {
-    blocks: [
-      { id: title, type: 'paragraph', style: 'title', runs: [] },
-      { id: body, type: 'paragraph', runs: [] },
-    ],
-    style: { margins: 'narrow' },
   };
 }
 

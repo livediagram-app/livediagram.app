@@ -21,7 +21,6 @@ import {
 } from '@liveworkspace/page-background';
 import { parsePageImageFill, type PageImageFill } from './page-image';
 import {
-  FLASHCARD_PAGE_SIZE_IDS,
   MAX_PAGES,
   PAPER_AND_SCREEN_SIZE_IDS,
   type PageOrientation,
@@ -36,7 +35,6 @@ import { layOutPages, rowPageAt } from './page-layout';
 export {
   A4_LONG_SIDE,
   A4_SHORT_SIDE,
-  FLASHCARD_PAGE_SIZE_IDS,
   MAX_PAGES,
   PAGE_GAP,
   PAGE_ORIENTATIONS,
@@ -60,7 +58,6 @@ export {
 
 export function pageSizesFor(kind: PageKind): readonly PageSizeId[] {
   if (kind === 'slide') return SLIDE_PAGE_SIZE_IDS;
-  if (kind === 'flashcard') return FLASHCARD_PAGE_SIZE_IDS;
   return PAPER_AND_SCREEN_SIZE_IDS;
 }
 
@@ -99,9 +96,8 @@ export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 export const PAGE_NAME_MAX = 60;
 
 // What a page is for, fixed when it is made (docs/specs/007-editor/pages-mode.md "Page
-// kinds"): an infographic page to lay out, an article page to write on, a slide of a deck, or a
-// flashcard to speak from (docs/specs/007-editor/flashcards.md).
-export type PageKind = 'infographic' | 'article' | 'slide' | 'flashcard';
+// kinds"): an infographic page to lay out, an article page to write on, or a slide of a deck.
+export type PageKind = 'infographic' | 'article' | 'slide';
 
 export type Page = {
   id: string;
@@ -120,10 +116,9 @@ export type Page = {
   name?: string;
   // Absent is an infographic page nobody has chosen yet (the first page offers the choice while
   // it is the only page and empty); 'infographic' once chosen; 'article' for an article page;
-  // 'slide' for a slide, always landscape in a slide size; 'flashcard' for a card, always the card size.
+  // 'slide' for a slide, always landscape in a slide size.
   kind?: PageKind;
-  // The article an article page belongs to (`Tab.articles[flow]`); present exactly on article pages
-  // and flashcards (a card's own one-page writing, never shared with another card).
+  // The article an article page belongs to (`Tab.articles[flow]`); present exactly on article pages.
   flow?: string;
   // Locked (docs/specs/007-editor/pages-mode.md "Locking a page"): it and what is on it stay
   // as they are. Absent is unlocked.
@@ -176,22 +171,9 @@ function parsePageFields(v: unknown): Page | undefined {
   const background = parseBackground(p.background);
   const name = typeof p.name === 'string' ? cutText(p.name.trim(), PAGE_NAME_MAX) : '';
   const lock = p.locked === true ? { locked: true as const } : {};
-  // An article page (or a card) without a readable flow is an article of its own.
+  // An article page without a readable flow is an article of its own.
   const ownFlow =
     typeof p.flow === 'string' && p.flow.length > 0 && p.flow.length <= 64 ? p.flow : p.id;
-  if (p.kind === 'flashcard') {
-    // A card is always the card size, landscape.
-    return {
-      id: p.id,
-      orientation: 'landscape',
-      size: 'card',
-      ...(background ? { background } : {}),
-      ...(name ? { name } : {}),
-      kind: 'flashcard',
-      flow: ownFlow,
-      ...lock,
-    };
-  }
   const kindFields =
     p.kind === 'article'
       ? { kind: 'article' as const, flow: ownFlow }
@@ -229,7 +211,7 @@ function parsePageFields(v: unknown): Page | undefined {
   };
 }
 
-/** The page's kind: an article, slide or flashcard page, or else an infographic page. */
+/** The page's kind: an article or slide page, or else an infographic page. */
 /** How a tab's pages stand (pages-mode.md "Stacked or side by side"): one page in front with the rest fanned behind
  *  it, or side by side. */
 export type PageArrangement = 'stack' | 'row';
@@ -239,7 +221,7 @@ export function isPageArrangement(v: unknown): v is PageArrangement {
 }
 
 /** Whether a tab's pages stand as a stack: its own choice, else its kind's (its first page's, one kind a tab):
- *  flashcards stack; infographic pages and slides stand in a row. An article never stacks: its writing runs on
+ *  infographic pages and slides stand in a row. An article never stacks: its writing runs on
  *  from page to page, so it is read along the row. */
 export function tabStacksPages(
   pages: readonly Pick<Page, 'kind'>[],
@@ -249,7 +231,7 @@ export function tabStacksPages(
   const kind = pageKindOf(pages[0]);
   if (kind === 'article') return false;
   if (isPageArrangement(arrangement)) return arrangement === 'stack';
-  return kind === 'flashcard';
+  return false;
 }
 
 /** Whether a tab's pages may be stacked or set side by side at will: every kind but an article. */
@@ -258,9 +240,7 @@ export function tabArrangesPages(pages: readonly Pick<Page, 'kind'>[]): boolean 
 }
 
 export function pageKindOf(page: Pick<Page, 'kind'>): PageKind {
-  return page.kind === 'article' || page.kind === 'slide' || page.kind === 'flashcard'
-    ? page.kind
-    : 'infographic';
+  return page.kind === 'article' || page.kind === 'slide' ? page.kind : 'infographic';
 }
 
 /** The tab's kind (docs/specs/007-editor/pages-mode.md "One kind a tab"): its first page's, so a
@@ -278,22 +258,6 @@ export function newSlidePage(id: string, size: PageSizeId = 'slide'): Page {
     size: SLIDE_PAGE_SIZE_IDS.includes(size) ? size : 'slide',
     kind: 'slide',
   };
-}
-
-/** A new flashcard (docs/specs/007-editor/flashcards.md "A card"): the card size, landscape, its
- *  writing its own (`flow`). */
-export function newFlashcardPage(id: string, flow: string): Page {
-  return { id, orientation: 'landscape', size: 'card', kind: 'flashcard', flow };
-}
-
-/** Whether a page is a flashcard. */
-export function isFlashcardPage(page: Pick<Page, 'kind'>): boolean {
-  return page.kind === 'flashcard';
-}
-
-/** A tab of flashcards (docs/specs/007-editor/flashcards.md "The stack"): its first page is one. */
-export function isFlashcardStack(pages: readonly Pick<Page, 'kind'>[]): boolean {
-  return tabPageKind(pages) === 'flashcard';
 }
 
 export function isArticlePage(
@@ -351,25 +315,6 @@ function withArticlesTogether(pages: Page[]): Page[] {
   return out;
 }
 
-/** Pages where no two cards share a flow (docs/specs/007-editor/flashcards.md "A card"): a card
- *  whose flow another card already holds takes its own id as its flow. Same array back when none
- *  do. */
-function withOwnCardFlows(pages: Page[]): Page[] {
-  const seen = new Set<string>();
-  let changed = false;
-  const out = pages.map((p) => {
-    if (p.kind !== 'flashcard' || !p.flow) return p;
-    if (!seen.has(p.flow)) {
-      seen.add(p.flow);
-      return p;
-    }
-    changed = true;
-    seen.add(p.id);
-    return { ...p, flow: p.id };
-  });
-  return changed ? out : pages;
-}
-
 /** Pages with the row anchor on the first page found carrying it, dropped from any other. Same
  *  array back when at most one carries it. */
 function withOneRowAnchor(pages: Page[]): Page[] {
@@ -404,9 +349,7 @@ export function pagesOf(tab: { pages?: unknown; pageOrientation?: unknown } | un
       })
     : [];
   if (stored.length > 0) {
-    const pages = withArticlesTogether(
-      withOwnCardFlows(withOneRowAnchor(stored.slice(0, MAX_PAGES))),
-    );
+    const pages = withArticlesTogether(withOneRowAnchor(stored.slice(0, MAX_PAGES)));
     for (const p of pages) Object.freeze(p);
     parsedPages.set(tab!.pages as object, Object.freeze(pages));
     return pages;
@@ -446,7 +389,6 @@ const PAGE_KIND_LABEL: Record<PageKind, string> = {
   infographic: 'Infographic',
   article: 'Article',
   slide: 'Slide',
-  flashcard: 'Flashcard',
 };
 
 /** The page's own margin, in canvas px: what layouts keep clear and snapping offers. */

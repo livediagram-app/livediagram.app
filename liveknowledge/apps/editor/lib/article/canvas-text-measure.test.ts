@@ -7,7 +7,7 @@ import {
   resetCanvasTextMeasure,
 } from './canvas-text-measure';
 
-// docs/specs/007-editor/flashcards.md "Long stacks stay quick": an unmounted card's words are measured by a canvas.
+// An unmounted article's words are measured by a canvas.
 // Node has no canvas, so one is stood in for: a glyph is 10 px in a 400 face, 12 in a 700.
 const measured: string[] = [];
 function standIn(withFonts = true) {

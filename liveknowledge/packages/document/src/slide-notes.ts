@@ -1,8 +1,8 @@
 // Speaker note cards (docs/specs/012-collaboration/speaker-note-cards.md): a slide's speaker notes as a short
-// stack of plain-text cards, the smaller form of flashcards. Reading the stored cards (and a slide written before
+// stack of plain-text cards. Reading the stored cards (and a slide written before
 // cards existed, whose one `notes` string reads as one card), the mirror older readers keep reading, and each
 // card's speaking time. Pure.
-import { speakingSecondsFor, spokenWordCount } from './flashcards';
+import { speakingSecondsFor, spokenWordCount } from './speaking-time';
 import type { Slide } from './slide-deck';
 
 export type NoteCard = { id: string; text: string };
@@ -106,7 +106,7 @@ export function newNoteCardId(cards: readonly NoteCard[]): string {
   return `c${(high + 1).toString(36)}_${random}`;
 }
 
-/** How long a card's words take to say aloud, in seconds (0 for none), at a flashcard's pace. */
+/** How long a card's words take to say aloud, in seconds (0 for none). */
 export function noteCardSpeakingSeconds(text: string): number {
   return speakingSecondsFor(spokenWordCount(text));
 }

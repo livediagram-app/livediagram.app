@@ -1,5 +1,5 @@
 // A slide's note cards (docs/specs/012-collaboration/speaker-note-cards.md): a card in front, lined, with one more
-// peeking out behind it, the stack a flashcard tab draws, at glyph size. The title bar's Notes, the HUD's notes button and the empty state all wear it, so "these are cards" reads the same everywhere.
+// peeking out behind it, at glyph size. The title bar's Notes, the HUD's notes button and the empty state all wear it, so "these are cards" reads the same everywhere.
 import { Glyph } from '@liveknowledge/ui';
 
 export function NoteCardsIcon({ size = 14 }: { size?: number }) {

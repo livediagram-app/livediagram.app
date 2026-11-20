@@ -50,7 +50,7 @@ type FindHostProps = {
   canvasMainRef: RefObject<HTMLElement | null>;
 };
 
-// The editor's Find (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits"): its deps from the
+// The editor's Find (docs/specs/007-editor/blueprints/typing.md "Performance and limits"): its deps from the
 // chrome store. While the bar is shut a typing commit renders nothing here (nothing it shows changed); while it is open
 // every commit does, so the matches follow the writing.
 export const EditorFindHost = memo(function EditorFindHost(props: FindHostProps) {

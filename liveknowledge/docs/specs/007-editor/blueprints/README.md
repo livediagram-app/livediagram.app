@@ -7,7 +7,7 @@ Follow the references below only as needed; never upfront.
 - ./article-tables-contents.md - when implementing or changing an article's tables (the block, cell ops, the editor's table nodes, keys, paste, the repeated header row), its table of contents, or its headers and footers
 - ./find-and-replace.md - when implementing or changing find and replace: gathering a tab's text, the linear matcher, the current match and stepping, replacing through runs, the highlight store and its painters, the bar
 - ./pages-mode.md - when implementing or changing pages: the page model and its parsing, page kinds and adding a page, sizes, backgrounds, the page panel, layouts, page edits, the page navigator, snapping, re-fit, pagination, page export and page slides
-- ./flashcards.md - when implementing or changing flashcards: the card kind and size, text only, the overflow marker and split, the stack and the flip, the footer
+- ./typing.md - when changing what a typed change renders or reads: the chrome store, the read caches, the article estimate for writing that is not mounted, and the measurements they were set against
 - ./load-recovery.md - when implementing or changing the load watchdog, the self-healing reload, the offline-store and session-token limits, the diagnostics report, the browser repair or its kept list
 - ./ui-scale.md - when implementing or changing the UI scale preference, its resolver, or how a scaled surface converts screen px
 - ./DEFAULTS.md - when an editor blueprint applies a default the spec leaves open

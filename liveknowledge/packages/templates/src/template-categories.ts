@@ -1,6 +1,6 @@
 // The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): liveknowledge'
-// own, grouped by what the document is for (the use case) rather than its page kind, so a deck, an article and a stack
-// of flashcards for the same job sit together. Every template but the blanks has exactly one primary category and may
+// own, grouped by what the document is for (the use case) rather than its page kind, so a deck and an article for the same
+// job sit together. Every template but the blanks has exactly one primary category and may
 // be cross-listed in others where people would genuinely look for it.
 // Read by the template step (Quick Start and /new), the marketing gallery and the agents' catalogue. Pure data plus
 // three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
@@ -15,7 +15,6 @@ export type TemplateCategory =
   | 'pitches'
   | 'plans'
   | 'reports'
-  | 'speeches'
   | 'team';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
@@ -41,7 +40,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'events',
     label: 'Events',
     searchWords: 'celebrations celebration party birthday wedding celebrate invitation',
-    description: 'Posters, group cards and toasts for big days.',
+    description: 'Posters and group cards for the big days ahead.',
   },
   {
     id: 'home',
@@ -53,7 +52,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'learning',
     label: 'Learning',
     searchWords: 'lessons lesson school teacher teaching class education student',
-    description: 'Lesson plans, class slides and school talks.',
+    description: 'Lesson plans and class slides for a classroom.',
   },
   {
     id: 'marketing',
@@ -65,7 +64,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'pitches',
     label: 'Pitches',
     searchWords: 'launches launch pitch investor startup sales keynote',
-    description: 'Decks and cue cards to pitch or launch an idea.',
+    description: 'Decks to pitch an idea or launch a product.',
   },
   {
     id: 'plans',
@@ -78,12 +77,6 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     label: 'Reports',
     searchWords: 'report review update results numbers',
     description: 'Status reports, reviews and stories in numbers.',
-  },
-  {
-    id: 'speeches',
-    label: 'Talks',
-    searchWords: 'speeches speech talk speaking cue cards',
-    description: 'Cue cards for talks, toasts and presentations.',
   },
   {
     id: 'team',
@@ -106,12 +99,7 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 // "Groups"). Mirrors isBlankTemplate (BLANK_TEMPLATE, EXTRA_BLANK_TEMPLATES and Blank Tab);
 // the categories test pins them together.
 type BlankKind =
-  | 'blank'
-  | 'blank-illustration'
-  | 'blank-slide-deck'
-  | 'blank-article'
-  | 'blank-infographic'
-  | 'blank-flashcards';
+  'blank' | 'blank-illustration' | 'blank-slide-deck' | 'blank-article' | 'blank-infographic';
 
 // Every non-blank template's primary category: the job it does.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
@@ -123,7 +111,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'floor-plan': 'home',
   'lesson-plan': 'learning',
   'class-lesson': 'learning',
-  'class-presentation': 'learning',
   'social-carousel': 'marketing',
   versus: 'marketing',
   'how-it-works': 'marketing',
@@ -132,7 +119,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   // A six-slide pitch.
   'slide-deck': 'pitches',
   'launch-keynote': 'pitches',
-  'pitch-flashcards': 'pitches',
   // The Project Brief.
   article: 'plans',
   'working-backwards': 'plans',
@@ -142,8 +128,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'quarterly-review': 'reports',
   'data-story': 'reports',
   'status-report': 'reports',
-  'talk-flashcards': 'speeches',
-  'wedding-toast': 'speeches',
   'meeting-notes': 'team',
   'workshop-kickoff': 'team',
   'team-welcome': 'team',
@@ -160,11 +144,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
 export const TEMPLATE_ALSO_IN: Readonly<
   Partial<Record<TemplateKind, readonly TemplateCategory[]>>
 > = {
-  // A toast is for a big day as much as it is a speech.
-  'wedding-toast': ['events'],
-  // Cue cards to speak from, whatever the occasion.
-  'pitch-flashcards': ['speeches'],
-  'class-presentation': ['speeches'],
   // An explainer teaches.
   'how-it-works': ['learning'],
   // A poster is how an event is marketed.

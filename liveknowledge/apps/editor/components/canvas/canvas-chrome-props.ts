@@ -1,4 +1,4 @@
-// The canvas props the chrome reads (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits"). The
+// The canvas props the chrome reads (docs/specs/007-editor/blueprints/typing.md "Performance and limits"). The
 // Canvas hands the chrome these and nothing else, behind a memo boundary, so a canvas prop the chrome never reads (the
 // chart palette, the arrow preview) changing on a typing commit never renders it. CanvasChromeProps is typed from this
 // list, so the chrome reading a prop that is not here fails the typecheck rather than going stale.

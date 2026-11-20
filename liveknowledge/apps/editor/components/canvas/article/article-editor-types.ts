@@ -5,7 +5,6 @@ import type {
   ArticleNotePlace,
   LaidOutPage,
 } from '@liveknowledge/document';
-import type { CardSplit } from '@/lib/flashcard-split';
 import type { ArticleInk } from '@/lib/article/article-style-vars';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
 
@@ -31,11 +30,6 @@ export type ArticleEditorProps = {
   // The tab holds as many pages as it can (MAX_PAGES): no page is added for writing that
   // runs past the last.
   atPageLimit?: boolean;
-  // A flashcard (docs/specs/007-editor/flashcards.md): text only, laid out on its one card and
-  // never grown; writing past its foot is cut off there and said so.
-  card?: boolean;
-  // Split Onto a New Card from the Too long marker: given to someone who may change the pages.
-  split?: CardSplit | undefined;
   doc: ArticleFlow;
   editable: boolean;
   // Whether the writer may reshape the article too (the slash menu's inserts): an Editor. A Participant writes

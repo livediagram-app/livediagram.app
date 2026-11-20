@@ -74,7 +74,7 @@ painters: a ProseMirror plugin in the writing and a ring overlay on the canvas. 
 - `step(±1)`: `(index ± 1) mod n`, then `goTo`.
 - `goTo(match)`: the match's canvas rect, for a block `handle.rangeRect(blockId, start, end)` (null when no editor is
   mounted), for an element `elementBounds`. Its page (`rowPageAt` of the rect's centre, else the target's page): when it
-  is not the page in view, `pagesMode.focusPage(page)` (frames it; turns a flashcard); else `scrollIntoView(rect)`.
+  is not the page in view, `pagesMode.focusPage(page)` (frames it); else `scrollIntoView(rect)`.
 - Shortcuts: one `keydown` listener on `window` while the document is open. Cmd/Ctrl+F (no Alt) when no modal is open
   (`anyModalOpen`), nothing presents, not an embed, and the target is not a typing target (`isTypingTarget`) or is
   inside the writing (`.article-flow`) or the bar itself: `preventDefault`, open (focus and select the field, seeded

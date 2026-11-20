@@ -133,9 +133,7 @@ export function useOffPagePressClears(
 // docked in the Toolbar strip, the one last worked on or hovered, else the first, so the strip never
 // loses its controls as the pointer leaves a page for it. A press off the worked-on article's pages ends
 // the work on it.
-export function useShownArticle(
-  articlePages: readonly { id: string; flow: string; card?: boolean }[],
-) {
+export function useShownArticle(articlePages: readonly { id: string; flow: string }[]) {
   const worked = useActiveArticle();
   const selected =
     worked && articlePages.some((p) => p.flow === worked.handle.flow) ? worked : null;

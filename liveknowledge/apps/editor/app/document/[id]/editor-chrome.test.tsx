@@ -5,7 +5,7 @@ import { act, render, screen } from '@testing-library/react';
 import type { Tab } from '@liveknowledge/document';
 import type { EditorContextValue } from './EditorContext';
 
-// docs/specs/007-editor/blueprints/flashcards.md "Performance and limits": the chrome that never reads the document
+// docs/specs/007-editor/blueprints/typing.md "Performance and limits": the chrome that never reads the document
 // reads the chrome store a slice at a time, so a typing commit (a new view-model whose only change is a tab's
 // writing) renders none of it, while the document's readers still render.
 
@@ -488,8 +488,8 @@ describe('the canvas chrome and the page title bar (Work Tracker 907)', () => {
     expect(chromeBox.last!.pagesMode).toBeNull();
   });
 
-  it("skips the page title bar while only its card's writing changes", () => {
-    const page = { id: 'card-1', flow: 'card-1', kind: 'flashcard', index: 0, locked: false };
+  it("skips the page title bar while only its article's writing changes", () => {
+    const page = { id: 'card-1', flow: 'card-1', kind: 'article', index: 0, locked: false };
     const act0 = new Proxy({}, { get: () => () => {} });
     const presets: never[] = [];
     const bar = (style: object) => (

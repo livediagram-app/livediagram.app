@@ -46,7 +46,7 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'floor-plan':
       return buildOnDesignPage('floor-plan', buildFloorPlan);
     // An article's writing and page are tab data (templateCanvasOverrides), not elements, as are the written
-    // templates' (article-templates.ts) and a stack of flashcards'; a blank illustration is its one empty page, which
+    // templates' (article-templates.ts); a blank illustration is its one empty page, which
     // asks what it is for, and a blank of a page kind its one empty page of that kind (blank-page-templates.ts).
     case 'article':
     case 'working-backwards':
@@ -54,11 +54,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'blank-slide-deck':
     case 'blank-article':
     case 'blank-infographic':
-    case 'blank-flashcards':
-    case 'talk-flashcards':
-    case 'wedding-toast':
-    case 'pitch-flashcards':
-    case 'class-presentation':
     case 'meeting-notes':
     case 'lesson-plan':
     case 'business-proposal':

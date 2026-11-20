@@ -33,7 +33,7 @@ const ReadOnlyElementMenuHost = dynamic(
 //
 // Only the menu's state is read until a menu is open: the editor renders on every change of the document (each typing
 // commit), and the open menu's wiring (about 150 of the editor's values) costs a render of its own each time
-// (docs/specs/007-editor/blueprints/flashcards.md "Performance and limits").
+// (docs/specs/007-editor/blueprints/typing.md "Performance and limits").
 export function EditorContextMenuHost() {
   const mode = useEditorChrome((s) => s.contextMenu?.mode ?? null);
   const isReadOnly = useEditorChrome((s) => s.isReadOnly);

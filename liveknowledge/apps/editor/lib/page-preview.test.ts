@@ -13,8 +13,8 @@ describe('pagePreviewSvg', () => {
     }
   });
 
-  it('draws an article and a card from their writing', () => {
-    for (const kind of ['article', 'flashcard'] as const)
+  it('draws an article from its writing', () => {
+    for (const kind of ['article'] as const)
       expect(pagePreviewSvg({ ...base, kind, background: undefined }), kind).toContain(
         'Quarterly review',
       );

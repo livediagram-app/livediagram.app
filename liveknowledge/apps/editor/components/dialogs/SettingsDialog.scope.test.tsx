@@ -85,7 +85,7 @@ describe('SettingsDialog tours on close', () => {
   it('reruns the Pages tour only when a kind is owed again', async () => {
     const { requestPagesTourRelaunch } = await import('@/lib/pages-tour');
     const { relaunchTours } = await import('./SettingsDialog');
-    const all = { pagesTourKinds: ['slide', 'infographic', 'article', 'flashcard'] } as never;
+    const all = { pagesTourKinds: ['slide', 'infographic', 'article'] } as never;
     relaunchTours(all, all);
     expect(requestPagesTourRelaunch).not.toHaveBeenCalled();
     relaunchTours(all, { pagesTourKinds: ['slide'] } as never);

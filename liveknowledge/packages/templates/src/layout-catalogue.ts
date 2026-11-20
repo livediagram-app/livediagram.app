@@ -25,7 +25,7 @@ const INFOGRAPHIC: LayoutCatalogue = {
 };
 const SLIDE: LayoutCatalogue = { categories: SLIDE_LAYOUT_CATEGORIES, layouts: SLIDE_LAYOUTS };
 
-/** The layouts a page of this kind starts from (an article page or a flashcard has none, and gets
+/** The layouts a page of this kind starts from (an article page has none, and gets
  *  the infographic ones should it ever ask). */
 export function layoutCatalogueFor(kind: PageKind): LayoutCatalogue {
   return kind === 'slide' ? SLIDE : INFOGRAPHIC;

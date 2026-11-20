@@ -64,7 +64,7 @@ const ImagePicker = dynamic(
 // EditorView just renders <EditorElementDialogs />. Distinct from the
 // global modals (EditorModals) and the tab/share dialogs (EditorTabDialogs).
 // The element dialogs, open or not.
-// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/flashcards.md "Performance and
+// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/typing.md "Performance and
 // limits"): a typing commit renders nothing here.
 export function EditorElementDialogs() {
   const open = useEditorChrome(

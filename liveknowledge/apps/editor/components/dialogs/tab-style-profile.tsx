@@ -109,5 +109,5 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
       panelTitles: { canvas: 'New Page Background' },
     }),
   },
-  surfaces: { article: written('an article'), flashcard: written('a card') },
+  surfaces: { article: written('an article') },
 };

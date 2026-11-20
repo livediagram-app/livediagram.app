@@ -9,13 +9,13 @@ dimming spotlight, Skip, Back and a closing card, driven by the tour engine ever
 
 ## Domain language
 
-| Term                   | Means                                                                                       |
-| ---------------------- | ------------------------------------------------------------------------------------------- |
-| **Pages tour**         | This tour, whichever track it runs                                                          |
-| **Track**              | One page kind's steps: the **Slides**, **Infographic**, **Article** or **Flashcards** track |
-| **Tour page**          | The page a track runs on: the person's own page of that kind, fixed when the tour starts    |
-| **Page Show Me**       | The same track run on demand from a page's panel ([Show Me](show-me.md))                    |
-| **Start Making Pages** | An empty tab's template start, [Template start](start-diagramming.md)                       |
+| Term                   | Means                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| **Pages tour**         | This tour, whichever track it runs                                                       |
+| **Track**              | One page kind's steps: the **Slides**, **Infographic** or **Article** track              |
+| **Tour page**          | The page a track runs on: the person's own page of that kind, fixed when the tour starts |
+| **Page Show Me**       | The same track run on demand from a page's panel ([Show Me](show-me.md))                 |
+| **Start Making Pages** | An empty tab's template start, [Template start](start-diagramming.md)                    |
 
 ## Where it appears
 
@@ -49,9 +49,7 @@ and the closing card. This tour's part:
   kind taken: its preset's flag is folded into `pagesTourKinds` as the stored preferences are read.
 - **Rerun from Settings**: in Settings' **Getting Started** category, **Pages Tours** switches every kind at once (on
   while any is untaken; off marks them all taken, on forgets every record), and one switch per kind sits nested beneath
-  it, named for its kind (**Slides Tour**, **Infographic Tour**, **Article Tour**, **Flashcards Tour**; the Flashcards
-  row came with the button leaving once a track is taken, since without it a taken Flashcards track had no switch of
-  its own to bring it back). On means that kind has not been taken. Turning one off marks that kind alone;
+  it, named for its kind (**Slides Tour**, **Infographic Tour**, **Article Tour**). On means that kind has not been taken. Turning one off marks that kind alone;
   turning one on forgets that kind alone (and clears the single `pagesTourSeen`, so the other kinds stay as they
   were). Closing Settings with a kind newly on starts the tour when it is on offer right now; otherwise it does
   nothing, and the button is there when the person is in Pages.

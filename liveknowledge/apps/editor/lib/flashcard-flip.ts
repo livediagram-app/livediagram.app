@@ -1,12 +1,12 @@
-// The flip (docs/specs/007-editor/flashcards.md "Flipping"): going to another page in a stack (flashcards, infographic
-// pages) turns the page in front over its top edge instead of gliding the view along the row. Drawn over the canvas
+// The flip (docs/specs/007-editor/pages-mode.md "Stacked infographics"): going to another page in a stack
+// turns the page in front over its top edge instead of gliding the view along the row. Drawn over the canvas
 // as a picture of the pages (a copy of their sheet and writing, or an infographic page's elements, inert), so the real
 // page in front is ready for the caret and presses at once. One flip at a time: a second finishes the first.
 import type { PageRect } from '@liveknowledge/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
-// Short and small (flashcards.md "Flipping"): a flip happens again and again while someone talks, so it reads at a
+// Short and small (pages-mode.md "Stacked infographics"): a flip happens again and again while someone talks, so it reads at a
 // glance and never pulls the eye.
 export const FLASHCARD_FLIP_MS = 240;
 // In canvas px (the world is scaled by the zoom): deep enough that the slight tilt reads as a card's.

@@ -51,7 +51,7 @@ import {
 // The one selected element, or null for none or a multi-selection.
 const singleOf = (s: Selection) => (s.multiSelectedIds.size > 0 ? null : s.selectedId);
 
-// What the tours read of the editor, a slice of its chrome store (docs/specs/007-editor/blueprints/flashcards.md
+// What the tours read of the editor, a slice of its chrome store (docs/specs/007-editor/blueprints/typing.md
 // "Performance and limits"): no writing, so a typing commit renders nothing here. Its handlers read the store when
 // they run.
 const tourSlice = (s: EditorContextValue) => ({

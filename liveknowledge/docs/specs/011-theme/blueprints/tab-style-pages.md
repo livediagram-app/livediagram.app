@@ -44,7 +44,7 @@ background".
 - `CanvasThemeDialog` takes the shared props and `pages: TabStylePages`, provides `TabStylePagesContext` and passes
   `canvasSummary` from `newPageBackgroundLabel`.
 - `EditorModals` builds `pages` in a `useMemo` over the active tab, the page kind and the setters;
-  `onOpenArticleStyle` only for `article` and `flashcard`: closes the dialog, then `requestStylePanel(currentPageIdNow())`.
+  `onOpenArticleStyle` only for `article`: closes the dialog, then `requestStylePanel(currentPageIdNow())`.
 - The OpenAPI `Tab` schema carries `newPageBackground` (regenerated, `gen:openapi`).
 
 ## Data and persistence
