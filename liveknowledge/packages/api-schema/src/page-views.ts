@@ -14,6 +14,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'embed',
   'explorer',
   'get-started',
+  // /home, the Knowledgebase Home (docs/specs/030-knowledgebase/knowledgebase-home.md).
+  'home',
   'join',
   'new',
   'oauth',

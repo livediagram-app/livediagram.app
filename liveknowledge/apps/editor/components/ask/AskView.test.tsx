@@ -61,6 +61,7 @@ import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import { resetAskSession } from '@/lib/knowledge-ask/ask-session-store';
 import { closeAiSettings, useAiSettingsOpen } from '@/lib/knowledge-ask/ai-settings-open';
 import { recentQuestionsKey } from '@/lib/knowledge-ask/recent-questions';
+import { handArrival } from '@/lib/knowledge-home/arrival-handoff';
 import { AskView } from './AskView';
 import { ROLES, chromeValue, renderInEditor, type Role } from './test-chrome';
 
@@ -116,6 +117,7 @@ afterEach(() => {
   aiSettingsStore.reset();
   knowledgeSearch.close();
   localStorage.clear();
+  sessionStorage.clear();
   window.history.replaceState(null, '', '/document/d1');
   vi.unstubAllGlobals();
   vi.clearAllMocks();
@@ -581,5 +583,24 @@ describe('recent questions', () => {
     );
     expect(screen.queryByText('First.')).toBeNull();
     expect(screen.getByText('No Questions Yet')).toBeTruthy();
+  });
+});
+
+// knowledgebase-home.md "Hero": a question typed on Home is asked here, once.
+describe('a question handed over by the Knowledgebase Home', () => {
+  it('is asked as a new question when the view opens, and not again', async () => {
+    handArrival({ kind: 'ask', documentId: 'd1', question: 'When do we release?' });
+    const first = await open();
+    await waitFor(() => expect(wire.calls).toHaveLength(1));
+    expect(wire.calls[0]!.request).toEqual({ question: 'When do we release?' });
+    first.unmount();
+    await open();
+    expect(wire.calls).toHaveLength(1);
+  });
+
+  it('is left alone when it is for another knowledgebase', async () => {
+    handArrival({ kind: 'ask', documentId: 'elsewhere', question: 'Not here?' });
+    await open();
+    expect(wire.calls).toHaveLength(0);
   });
 });

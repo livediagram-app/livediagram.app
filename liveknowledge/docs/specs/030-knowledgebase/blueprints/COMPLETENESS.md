@@ -67,3 +67,20 @@
 - [x] Testing
 - [x] Constants and configuration
 - [ ] Defaults ledger
+
+## home
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Errors and edge cases
+- [x] Security and trust
+- [x] Performance and limits
+- [x] Presentation and UX
+- [ ] Accessibility
+- [ ] Web Experience
+- [ ] Observability
+- [x] Testing
+- [x] Constants and configuration
+- [ ] Defaults ledger

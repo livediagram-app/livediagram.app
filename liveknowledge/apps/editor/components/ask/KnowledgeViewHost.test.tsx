@@ -16,11 +16,13 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { track } from '@/lib/telemetry';
 import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
+import { handArrival } from '@/lib/knowledge-home/arrival-handoff';
 import { KnowledgeCornerSwitch, KnowledgeSwitchRow, KnowledgeViewHost } from './KnowledgeViewHost';
 import { chromeValue, renderInEditor } from './test-chrome';
 
 afterEach(() => {
   cleanup();
+  sessionStorage.clear();
   window.history.replaceState(null, '', '/document/d1');
   vi.clearAllMocks();
 });
@@ -121,5 +123,27 @@ describe('the view over the editor', () => {
     expect(screen.queryByRole('region')).toBeNull();
     expect(screen.getByTestId('canvas').hasAttribute('inert')).toBe(false);
     expect(anyModalOpen()).toBe(false);
+  });
+});
+
+// knowledgebase-home.md "Start a Page From": Import asked for on Home opens here, for someone who may import.
+describe('Import handed over by the Knowledgebase Home', () => {
+  it.each([
+    ['edit', true],
+    ['participate', false],
+    ['view', false],
+  ] as const)('as %s', (role, opens) => {
+    handArrival({ kind: 'import', documentId: 'd1' });
+    const setImportOpen = vi.fn();
+    renderInEditor(<KnowledgeViewHost />, chromeValue(role, { setImportOpen }));
+    expect(setImportOpen.mock.calls).toEqual(opens ? [[true]] : []);
+  });
+
+  it('opens once', () => {
+    handArrival({ kind: 'import', documentId: null });
+    const setImportOpen = vi.fn();
+    renderInEditor(<KnowledgeViewHost />, chromeValue('edit', { setImportOpen })).unmount();
+    renderInEditor(<KnowledgeViewHost />, chromeValue('edit', { setImportOpen }));
+    expect(setImportOpen).toHaveBeenCalledTimes(1);
   });
 });

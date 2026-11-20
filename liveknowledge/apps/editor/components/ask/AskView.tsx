@@ -10,6 +10,7 @@ import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { useKnowledgePeople } from '@/components/knowledge/usePageKnowledge';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import { askConversationFor, recentQuestionsStore } from '@/lib/knowledge-ask/ask-session-store';
+import { takeArrival } from '@/lib/knowledge-home/arrival-handoff';
 import { useRelativeNow } from '@/lib/relative-time';
 import { AiSettingsButton } from './AiSettingsButton';
 import { AskConversationPane } from './AskConversationPane';
@@ -84,6 +85,14 @@ function AskReady({ session }: { session: AskSession }) {
   const { nameOf } = useKnowledgePeople();
   const now = useRelativeNow();
   const [recentOpen, setRecentOpen] = useState(false);
+
+  // A question typed on the Knowledgebase Home (knowledgebase-home.md "Hero"): asked here as a new question, once.
+  useEffect(() => {
+    const arrival = takeArrival('ask', documentId);
+    if (!arrival) return;
+    conversation.reset();
+    conversation.ask(arrival.question);
+  }, [conversation, documentId]);
 
   const askNew = (question?: string) => {
     conversation.reset();

@@ -4,6 +4,9 @@
 // views"): the switch in the top row's card, a phone's switch row, and the view drawn over the editor when the
 // address names Ask or AI Knowledge. Each view's code is fetched when it is first shown, never with the editor.
 import dynamic from 'next/dynamic';
+import { useEffect } from 'react';
+import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
+import { takeArrival } from '@/lib/knowledge-home/arrival-handoff';
 import { useKnowledgeView } from '@/lib/knowledge-ask/useKnowledgeView';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import {
@@ -44,10 +47,23 @@ export function KnowledgeSwitchRow() {
   );
 }
 
+// Import, asked for on the Knowledgebase Home (docs/specs/030-knowledgebase/knowledgebase-home.md "Start a Page
+// From"): opened once this knowledgebase is here, for someone who may import into it.
+function useImportArrival(offered: boolean): void {
+  const chrome = useEditorChromeStore();
+  const documentId = useEditorChrome((s) => s.documentId);
+  const canImport = useEditorChrome((s) => s.can.editPages && !s.isStructureReadOnly);
+  useEffect(() => {
+    if (!offered || !documentId || !canImport) return;
+    if (takeArrival('import', documentId)) chrome.get().setImportOpen(true);
+  }, [offered, documentId, canImport, chrome]);
+}
+
 /** Ask or AI Knowledge over the editor; nothing while Pages shows. */
 export function KnowledgeViewHost() {
   const view = useKnowledgeView();
   const offered = useKnowledgeViewsOffered();
+  useImportArrival(offered);
   if (!offered || view === 'pages') return null;
   return (
     <>
