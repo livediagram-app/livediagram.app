@@ -95,8 +95,18 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   A locked page keeps its own and the line says how many did ("Gave 34 other slide pages the background of page 1;
   2 locked kept their own"). With no other page of the kind it is refused (`no_other_pages`). It is how an agent
   gives a whole deck one background: `set` the first slide's, then this, in the same call.
-- **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`); any other is refused (`layout_unknown`)
-  naming the kind's layouts. Laid out in the page's content box, in the tab's theme.
+- **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`). **A layout by its plain name**: ids carry
+  their page kind as a prefix (`slide-`), which a caller does not know before a first refusal, so a name is also read
+  without it, in any case and with spaces for hyphens, when exactly one of the kind's layouts has it (a slide asked for `title` is `slide-title`, `Three Points` is `slide-three-points`;
+  `layoutNamed`, `../packages/edit-operations/src/layout-named.ts`). Any other is refused (`layout_unknown`)
+  naming what was asked, the closest ids when some are near, and the kind's layouts. Laid out in the page's content
+  box, in the tab's theme.
+- **Empty pictures**: a layout's picture frames start empty. An assistant left to itself filled the text and
+  shipped the grey frames, so a deck about a product or a game showed none of it. Three things now say so: the
+  server's instructions tell it to use the subject's own pictures (what the person gave, the gallery, or ones found
+  on the web that they may use, added with `upload_image`) or to ask for some; `change_pages` ends its answer with
+  how many frames the call added empty; and the views mark a frame with no picture `no-picture`
+  (`attributesOf`). A frame holding a picture, by `imageId` or `src`, is not marked.
 - **Locks**: a locked page refuses every change but `set { locked: false }`, `move` and `duplicate` (`page_locked`), as the page panel lets a locked page move and be copied ([Pages](../007-editor/pages-mode.md)); on an article any
   locked page refuses the changes that reach all its pages, as in the editor.
 - **Limit**: a tab holds at most 100 pages (`MAX_PAGES`); an `add` or `duplicate` past it is refused

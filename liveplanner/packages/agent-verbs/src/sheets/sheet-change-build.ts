@@ -107,25 +107,72 @@ const flag = (v: boolean | undefined) => (v === undefined ? undefined : v ? true
 const mapped = <K extends string, V>(map: Record<K, V>, v: K | null | undefined) =>
   v === undefined ? undefined : v === null ? null : map[v];
 
+// A refused value quoted in its refusal, cut where it runs long. A formula refusal always carries its input (a1-io).
+const quoted = (input: string) => ` (${input.length > 80 ? `${input.slice(0, 80)}…` : input})`;
+
+// A currency given as its code, as its symbol: a cell's currency is the symbol it shows.
+const CURRENCY_OF_CODE: Readonly<Record<string, string>> = {
+  GBP: '£',
+  USD: '$',
+  AUD: '$',
+  CAD: '$',
+  NZD: '$',
+  EUR: '€',
+  JPY: '¥',
+  CNY: '¥',
+  INR: '₹',
+  KRW: '₩',
+  BRL: 'R$',
+  PLN: 'zł',
+  SEK: 'kr',
+  NOK: 'kr',
+  DKK: 'kr',
+  RUB: '₽',
+  TRY: '₺',
+  ILS: '₪',
+  VND: '₫',
+};
+const currencyOf = (currency: string | null | undefined) =>
+  typeof currency === 'string' ? (CURRENCY_OF_CODE[currency.toUpperCase()] ?? currency) : currency;
+
+/** The formats of `input` a cell does not take, as change_sheet names them ("currency"); none when it is empty. */
+export function badFormatsOf(input: SheetFormatInput): string[] {
+  return formatEntries(input)
+    .filter(([, key, value]) => value !== undefined && !validFormatPatch({ [key]: value }))
+    .map(([word]) => word);
+}
+
 // The words as the engine's format keys; null when a value is not one a cell takes.
 export function formatPatchOf(input: SheetFormatInput): FormatPatch | null {
-  const raw: Record<string, unknown> = {
-    b: flag(input.bold),
-    i: flag(input.italic),
-    u: flag(input.underline),
-    st: flag(input.strikethrough),
-    fc: typeof input.color === 'string' ? input.color.toLowerCase() : input.color,
-    bg: typeof input.background === 'string' ? input.background.toLowerCase() : input.background,
-    fs: input.fontSize,
-    ha: mapped(ALIGN, input.align),
-    va: mapped(VALIGN, input.verticalAlign),
-    wr: mapped(WRAP, input.wrap),
-    nf: input.numberFormat,
-    dp: input.decimals,
-    cur: input.currency,
-  };
-  const patch = Object.fromEntries(Object.entries(raw).filter(([, v]) => v !== undefined));
+  const patch = Object.fromEntries(
+    formatEntries(input)
+      .filter(([, , value]) => value !== undefined)
+      .map(([, key, value]) => [key, value]),
+  );
   return Object.keys(patch).length && validFormatPatch(patch) ? patch : null;
+}
+
+// Each format given: its name in change_sheet, the engine's key, and its value as the engine holds it.
+function formatEntries(input: SheetFormatInput): [word: string, key: string, value: unknown][] {
+  return [
+    ['bold', 'b', flag(input.bold)],
+    ['italic', 'i', flag(input.italic)],
+    ['underline', 'u', flag(input.underline)],
+    ['strikethrough', 'st', flag(input.strikethrough)],
+    ['color', 'fc', typeof input.color === 'string' ? input.color.toLowerCase() : input.color],
+    [
+      'background',
+      'bg',
+      typeof input.background === 'string' ? input.background.toLowerCase() : input.background,
+    ],
+    ['fontSize', 'fs', input.fontSize],
+    ['align', 'ha', mapped(ALIGN, input.align)],
+    ['verticalAlign', 'va', mapped(VALIGN, input.verticalAlign)],
+    ['wrap', 'wr', mapped(WRAP, input.wrap)],
+    ['numberFormat', 'nf', input.numberFormat],
+    ['decimals', 'dp', input.decimals],
+    ['currency', 'cur', currencyOf(input.currency)],
+  ];
 }
 
 // Each format of the row (or column) at `source`, onto the rows (columns) `ids` made beside it.
@@ -179,7 +226,10 @@ export function buildSheetChange(
       const made = writeRows(wb, sheetId, change.at, change.rows, rand);
       if (!made.ok)
         return made.error === 'formula_invalid'
-          ? refuse('formula_invalid', `The formula in ${made.at} cannot be read: ${made.why}.`)
+          ? refuse(
+              'formula_invalid',
+              `The formula in ${made.at}${quoted(String(made.input))} cannot be read: ${made.why}. Nothing of this set was written.`,
+            )
           : badRange(change.at);
       // A value a Reject rule refuses is refused here, naming the cell and what its rule allows (data-validation.md
       // "Agents"); the api would refuse it too.
@@ -214,12 +264,15 @@ export function buildSheetChange(
       const range = parseRangeText(change.range);
       if (!range) return badRange(change.range);
       const patch = formatPatchOf(change.format);
-      if (!patch)
+      if (!patch) {
+        const bad = badFormatsOf(change.format);
         return refuse(
           'format_invalid',
-          'Give at least one format, each a value a cell takes: colours as #rrggbb, a font size of 10, 11, 12, ' +
-            '13, 14, 16, 18, 24 or 36, decimals 0 to 10, a currency symbol like £, $ or €.',
+          (bad.length ? `Not a value a cell takes: ${bad.join(', ')}. ` : '') +
+            'Give at least one format, each a value a cell takes: colours as #rrggbb, a font size of 10, 11, 12, ' +
+            '13, 14, 16, 18, 24 or 36, decimals 0 to 10, a currency symbol like £, $ or € (or a code such as GBP, USD or EUR).',
         );
+      }
       // formatRanges answers null only for a sheet the workbook lacks, and this one was read above.
       const write = formatRanges(wb, sheetId, [range], patch)!;
       return { ok: true, writes: [write], line: `formatted ${formatRange(range)}` };

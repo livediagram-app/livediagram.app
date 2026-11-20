@@ -78,20 +78,34 @@ export function elementsIssue(elements: readonly unknown[], name?: string): stri
   return null;
 }
 
-// A graph node whose icon names no icon, as a sentence; null when every icon is one.
-export function graphIconIssue(
-  nodes: readonly { id: string; icon?: string | undefined }[],
-): string | null {
-  const bad = nodes.find((n) => n.icon !== undefined && !isIconId(n.icon));
-  if (!bad) return null;
-  const like = iconsLike(bad.icon!).map((i) => i.id);
-  return (
-    `node "${bad.id}": icon ${JSON.stringify(bad.icon)} is not an icon` +
-    (like.length
-      ? `; icons like it: ${like.join(', ')}.`
-      : '; search_icons finds one by what it shows.')
-  );
+// A graph with each icon that names none taken off its node, and a note saying which and the icons like it
+// (docs/specs/015-api/mcp-server.md §4.7 "What a graph leaves out"). An icon is decoration: a guessed id ("envelope"
+// for mail) used to refuse the whole diagram, a second call of the same graph for one missing glyph.
+export function withKnownIcons<N extends { id: string; icon?: string | undefined }>(
+  nodes: readonly N[],
+): { nodes: N[]; note: string | null } {
+  const unknown = nodes.filter((n) => n.icon !== undefined && !isIconId(n.icon));
+  if (unknown.length === 0) return { nodes: [...nodes], note: null };
+  const said = unknown.slice(0, UNKNOWN_ICONS_NAMED).map((n) => {
+    const like = iconsLike(n.icon!).map((i) => i.id);
+    return `${n.id} ${JSON.stringify(n.icon)}${like.length ? ` (like it: ${like.join(', ')})` : ''}`;
+  });
+  const more = unknown.length - said.length;
+  return {
+    nodes: nodes.map((n) => {
+      if (!unknown.includes(n)) return n;
+      const { icon: _icon, ...rest } = n;
+      return rest as N;
+    }),
+    note:
+      `${unknown.length} ${unknown.length === 1 ? 'icon' : 'icons'} left off, naming no icon: ${said.join('; ')}` +
+      `${more > 0 ? ` and ${more} more` : ''}. search_icons finds an id; set it with update_document ` +
+      '(edits: set <node> iconId=<id>)',
+  };
 }
+
+// The most unknown icons a note names before it counts the rest.
+const UNKNOWN_ICONS_NAMED = 5;
 
 // Why a tab's finished elements are not a valid tab, as a sentence naming the element and the field; null when they
 // are. create_document said only that "every element needs id/type/x/y/width/height" whatever was wrong (a card's

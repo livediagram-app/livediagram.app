@@ -1352,6 +1352,9 @@ same words.
   rule needs attention until the agent names the one it means by id.
 - **Whose time it is**: an agent has no clock of its own, so `timeZone` (an IANA zone) is the agent's to give. Left
   out, an added rule takes `UTC` and a changed one keeps its own.
+- **A kind that is not one** is refused naming the ones there are: a trigger, a condition, a comparison (`op`) or an
+  action that the rule format does not have answers with the list ("conditions.0.op is not a comparison (the
+  comparisons: is, is_not, ...)"), so the next call is right without reading the format again.
 - **Refusals** answer with the api's code and, for a rule that does not read, the part at fault as the api names it
   (`steps.2.status`, `rule.trigger.at` for a test's body), with the words an agent acts on: what was wrong and the next
   call to make ("Run Rule takes only a Run from a Card rule that is on: test it with test instead"). A refusal is a

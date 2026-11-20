@@ -65,8 +65,22 @@ function iconRank(query: string, icon: { id: string; label: string; keywords: st
   const found = words.filter((w) => has(w) || (w.endsWith('s') && has(w.slice(0, -1))));
   if (found.length === words.length) return 4;
   if (found.length === 0) return 7;
-  return 5 + (words.length - found.length) / words.length;
+  // Among icons holding the same share of the words, one named by a word outranks one that only starts a keyword
+  // with it: "kubernetes pod autoscaler" is Kubernetes (its label) before Headphones (its keyword "podcast").
+  const named = new Set(`${icon.label} ${idWords(icon.id)}`.toLowerCase().split(/[^a-z0-9]+/));
+  const wholeWords = new Set(hayWords);
+  const nearness = found.some((w) => named.has(w))
+    ? 0
+    : found.some((w) => wholeWords.has(w))
+      ? PARTIAL_KEYWORD_AFTER
+      : PARTIAL_PREFIX_AFTER;
+  return 5 + (words.length - found.length) / words.length + nearness;
 }
+
+// How far a partial match drops when no word of the query names the icon: its keyword whole, then only the start of
+// one. Both under EMOJI_AFTER, so they order icons within one share of the words and never across two.
+const PARTIAL_KEYWORD_AFTER = 0.02;
+const PARTIAL_PREFIX_AFTER = 0.04;
 
 // The best `limit` icons for a query, and how many more matched.
 export function searchIcons(query: string, limit: number): { icons: IconHit[]; more: number } {

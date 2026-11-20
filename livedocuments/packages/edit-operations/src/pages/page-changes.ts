@@ -2,6 +2,7 @@
 // "change_pages"), through the page panel's own edits (@livedocuments/document pages-edits) so
 // an agent's edit is a person's. In order, each against the tab as the ones before it left it; the
 // first refusal stops them all and nothing is written.
+import { layoutNamed } from '@liveworkspace/edit-operations/layout-named';
 import type { PagesRefusal, PageBackgroundInput, PageChange } from '@livedocuments/api-schema';
 import {
   articlesOf,
@@ -168,7 +169,8 @@ export function applyPageChanges(
         const kind = pageKindOf(page);
         const written = kind === 'article' || kind === 'flashcard';
         const offered = written ? [] : layoutCatalogueFor(kind).layouts;
-        const found = offered.find((l) => l.id === layout);
+        const named = layoutNamed(offered, layout);
+        const found = named.layout;
         if (!found)
           stop(
             'layout_unknown',
@@ -176,7 +178,8 @@ export function applyPageChanges(
               ? 'An article page takes no layout: write it with write_article.'
               : kind === 'flashcard'
                 ? 'A flashcard takes no layout: write it with write_article.'
-                : `A ${kind} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`,
+                : `No ${kind} layout "${layout}".${named.closest.length ? ` Closest: ${named.closest.join(', ')}.` : ''} ` +
+                  `A ${kind} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`,
           );
         const laid = layOutPages(pages()).find((p) => p.id === page.id)!;
         const replaced = onPage(page.id);
@@ -342,5 +345,16 @@ export function applyPageChanges(
     if (err instanceof Stop) return { refusal: err.refusal };
     throw err;
   }
+  // Picture frames a layout left empty, said once for the call (pages-for-agents.md "Empty pictures"): unsaid, a
+  // deck went out with grey boxes where its subject's pictures belonged.
+  const empty = current.elements.filter(
+    (el) =>
+      el.type === 'image' && !el.imageId && !tab.elements.some((before) => before.id === el.id),
+  ).length;
+  if (empty > 0)
+    lines.push(
+      `${plural(empty, 'picture frame')} added empty (the pages view marks each "no-picture"): find the subject's ` +
+        'own pictures, add each with upload_image, then set the frame’s imageId with the update tool.',
+    );
   return { tab: current, lines };
 }

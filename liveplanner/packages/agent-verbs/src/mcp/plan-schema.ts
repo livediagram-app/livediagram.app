@@ -124,7 +124,7 @@ export const listItemsShape = {
     .max(LIST_ITEMS_LIMIT_MAX)
     .optional()
     .describe(
-      'The most cards one answer lists. Whatever it is, an answer stays under about 200,000 characters.',
+      'The most cards one answer lists. Whatever it is, an answer stays under about 140,000 characters.',
     ),
   cursor: z
     .string()
@@ -151,7 +151,12 @@ const itemChange = z.discriminatedUnion('op', [
       .describe(
         'Its title. Required unless a template gives one (else the type’s new-card title).',
       ),
-    type: typeArg.default('task'),
+    type: typeArg
+      .optional()
+      .describe(
+        'Its card type, by name or id ("Task", "bug"), as list_items lists them. Left out, it is Task where the plan ' +
+          'has it, else the first type the board holding its column takes, else the plan’s only type.',
+      ),
     status: statusArg
       .optional()
       .describe(

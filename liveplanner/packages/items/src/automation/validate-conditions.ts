@@ -105,7 +105,10 @@ export function readTrigger(v: unknown): AutomationTrigger {
   const t = obj(v, 'trigger');
   const kind = t['kind'];
   if (!AUTOMATION_TRIGGER_KINDS.includes(kind as AutomationTrigger['kind']))
-    refuse('trigger.kind', 'trigger.kind is not a trigger');
+    refuse(
+      'trigger.kind',
+      `trigger.kind is not a trigger (the triggers: ${AUTOMATION_TRIGGER_KINDS.join(', ')})`,
+    );
   switch (kind as AutomationTrigger['kind']) {
     case 'card_created':
       return t['status'] === undefined
@@ -241,7 +244,10 @@ function readCondition(v: unknown, path: string): AutomationCondition {
     case 'field': {
       const op = c['op'];
       if (typeof op !== 'string' || !FIELD_OPS.has(op))
-        refuse(`${path}.op`, `${path}.op is not a comparison`);
+        refuse(
+          `${path}.op`,
+          `${path}.op is not a comparison (the comparisons: ${[...FIELD_OPS].join(', ')})`,
+        );
       const field = id(c['field'], `${path}.field`);
       return {
         kind: 'field',
@@ -267,7 +273,10 @@ function readCondition(v: unknown, path: string): AutomationCondition {
         filter: id(c['filter'], `${path}.filter`),
       };
     default:
-      return refuse(`${path}.kind`, `${path}.kind is not a condition`);
+      return refuse(
+        `${path}.kind`,
+        `${path}.kind is not a condition (the conditions: type, column, field, who, saved_filter)`,
+      );
   }
 }
 

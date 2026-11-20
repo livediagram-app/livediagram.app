@@ -4,7 +4,7 @@
 // card (a later section's title), a progress bar past one section, the section's questions, an error summary on Next
 // or Submit, Back / Next / Submit, and then the confirmation. The form link's page and the builder's Preview both draw
 // it; only what Submit does differs.
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { Button, lucideGlyph } from '@liveplanner/ui';
 import { lucideClock } from '@liveworkspace/icons/lucide';
 import {
@@ -25,6 +25,35 @@ import { Callout } from '@liveworkspace/ui/callout';
 export const FORM_ACCENT = 'var(--form-accent)';
 
 const ClockIcon = lucideGlyph(lucideClock, 14);
+
+// The boxes Enter moves on from (forms.md "Filling in a form", Enter): one line of text. A text area keeps Enter for
+// its own new line, and a pick or a tick has nothing to finish.
+const ONE_LINE = new Set(['text', 'email', 'url', 'tel', 'number', 'date', 'datetime-local']);
+// What Enter moves on to in a question: its first control a Tab would stop on.
+const NEXT_STOP =
+  'input:not([tabindex="-1"]):not([type="hidden"]), textarea, select, [role="radio"][tabindex="0"]';
+
+// Enter in a one-line answer goes to the next question's answer, or to Next or Submit after the last: never sends
+// the form on its own.
+function moveOnEnter(e: KeyboardEvent<HTMLElement>) {
+  const box = e.target as HTMLElement;
+  if (e.key !== 'Enter' || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.nativeEvent.isComposing || !(box instanceof HTMLInputElement) || !ONE_LINE.has(box.type))
+    return;
+  const cards = [...e.currentTarget.querySelectorAll<HTMLElement>('[id^="form-q-"]')];
+  const at = cards.findIndex((card) => card.contains(box));
+  if (at < 0) return;
+  e.preventDefault();
+  for (const card of cards.slice(at + 1)) {
+    const stop = card.querySelector<HTMLElement>(NEXT_STOP);
+    if (stop) return stop.focus();
+  }
+  e.currentTarget.querySelector<HTMLElement>('[data-form-forward]')?.focus();
+}
+
+// Clear Form and its answer: quiet text buttons under the form.
+const QUIET_BUTTON =
+  'flex h-9 cursor-pointer items-center rounded-md px-2 text-[14px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
 
 // A mouse press on Back, Next or Submit leaves focus in the field (see the buttons).
 const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
@@ -62,6 +91,8 @@ export function FormFill({
     () => secondsLeft(form, fill.state.answers, fill.order, fill.section),
     [form, fill.state.answers, fill.order, fill.section],
   );
+  // Clear Form asks once before it empties the form.
+  const [clearing, setClearing] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
   // The error summary takes focus when Next or Submit is refused, so a screen reader hears it and the keyboard starts
@@ -106,7 +137,7 @@ export function FormFill({
   const questions = fill.current.questions;
   const cardId = (id: string) => `form-q-${id}`;
   return (
-    <div ref={topRef} className="flex scroll-mt-4 flex-col gap-3">
+    <div ref={topRef} onKeyDown={moveOnEnter} className="flex scroll-mt-4 flex-col gap-3">
       <div className="form-box form-ink overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900">
         <FormCoverBand cover={form.cover} accent={FORM_ACCENT} />
         <div
@@ -170,6 +201,24 @@ export function FormFill({
           ) : null}
         </div>
       </div>
+
+      {fill.restored ? (
+        <p
+          role="status"
+          className="form-box form-ink flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-slate-200 bg-white px-5 py-3 text-[14px] text-slate-700 max-sm:px-4 dark:border-slate-700/80 dark:bg-slate-900 dark:text-slate-200"
+        >
+          <span className="min-w-0 flex-1 basis-56">
+            Your answers from earlier are still here, kept in this browser.
+          </span>
+          <button
+            type="button"
+            onClick={fill.clear}
+            className="-mx-2 flex h-9 shrink-0 cursor-pointer items-center rounded-md px-2 text-[14px] font-semibold text-[var(--form-accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)]"
+          >
+            Start Again
+          </button>
+        </p>
+      ) : null}
 
       {fill.summary.length ? (
         <div
@@ -250,6 +299,39 @@ export function FormFill({
           down between the press and the release, so the click missed and the first Submit did nothing. Next and
           Submit check that field with the rest. */}
       <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
+        {/* Clear Form, at the row's start: there once anything is answered, and it asks before it empties. */}
+        {fill.answered && fill.status !== 'sending' ? (
+          <div className="mr-auto flex min-h-11 flex-wrap items-center gap-x-1 text-[14px] text-slate-600 dark:text-slate-300">
+            {clearing ? (
+              <>
+                <span className="mr-1">Clear every answer?</span>
+                <button
+                  type="button"
+                  autoFocus
+                  onClick={() => {
+                    setClearing(false);
+                    fill.clear();
+                    topRef.current?.scrollIntoView?.({ block: 'start' });
+                  }}
+                  className={QUIET_BUTTON}
+                >
+                  Clear
+                </button>
+                <button type="button" onClick={() => setClearing(false)} className={QUIET_BUTTON}>
+                  Keep
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setClearing(true)}
+                className={`-ml-2 ${QUIET_BUTTON}`}
+              >
+                Clear Form
+              </button>
+            )}
+          </div>
+        ) : null}
         {!first ? (
           <button
             type="button"
@@ -263,6 +345,7 @@ export function FormFill({
         {lastSection ? (
           <Button
             variant="none"
+            data-form-forward=""
             onMouseDown={keepFocus}
             onClick={() => void fill.send()}
             busy={fill.status === 'sending'}
@@ -279,6 +362,7 @@ export function FormFill({
         ) : (
           <button
             type="button"
+            data-form-forward=""
             onMouseDown={keepFocus}
             onClick={() => fill.next()}
             className="h-11 cursor-pointer form-box rounded-lg bg-[var(--form-accent)] px-6 text-[15px] font-semibold text-[var(--form-on-accent)] shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"

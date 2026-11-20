@@ -1,7 +1,7 @@
 // The api's refusals as agents read them ("Errors that teach"): what was wrong and the next call to make, the same
 // words on the CLI and the MCP. A 5xx or anything not from the api is not a refusal: the caller lets it throw.
 // The words name the product's files and its MCP tools (`find_<collection>`, `restore_<noun>`).
-import { ApiError } from '@liveworkspace/api-client';
+import { ApiError, READ_ONLY_TOKEN_CODE, READ_ONLY_TOKEN_WORDS } from '@liveworkspace/api-client';
 import { VerbRefusal } from './define';
 import { wordOf, type AgentProduct } from './product';
 
@@ -37,7 +37,10 @@ export function createApiRefusal(product: Pick<AgentProduct, 'noun' | 'collectio
     // A burst past the per-token limit (docs/specs/015-api/public-api-and-tokens.md §3.5): the window is a minute.
     429: 'too many calls in the last minute (the limit is per token). Wait about a minute, then make the same call again.',
   };
-  const BY_CODE = archiveRefusalWords(product);
+  const BY_CODE: Readonly<Record<string, string>> = {
+    ...archiveRefusalWords(product),
+    [READ_ONLY_TOKEN_CODE]: READ_ONLY_TOKEN_WORDS,
+  };
 
   return function apiRefusalOf(err: unknown): ApiRefusal | null {
     // A refusal a shared verb words itself (an upload too large, a full gallery), said as it is.
@@ -58,7 +61,8 @@ export function createDeleteRefusal(product: AgentProduct) {
   const word = wordOf(product);
   return function deleteRefusal(status: number, tab: boolean): string {
     if (status === 410) return 'It is already in the Trash (see list_trash).';
-    if (status === 403) return `You may view this ${word} but not change it.`;
+    if (status === 403)
+      return `You may view this ${word} but not change it (a read-only connection changes nothing).`;
     if (status === 404)
       return tab
         ? `No such tab in this ${word}: read_${noun} lists its tabs.`

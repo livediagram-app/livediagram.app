@@ -340,9 +340,41 @@ describe('the board view', () => {
     expect(f.el('note').textContent).toBe('This plan has no board yet.');
   });
 
+  // "The reason, said": a host that refuses the view's own call, a tool that failed and an empty answer read apart.
+  it('says why the board could not be shown: the host’s refusal, or the tool’s own words', async () => {
+    const failing = async (result: unknown, error?: unknown) => {
+      const f = frame(boardViewerScript('liveplanner', { idKey: 'projectId', word: 'plan' }));
+      f.answer('ui/initialize', {});
+      await f.flush();
+      f.result({ projectId: 'p1', boards: [] });
+      await f.flush();
+      f.answer('view_tab', result, error);
+      await f.flush();
+      return f.el('note').textContent;
+    };
+    expect(await failing(undefined, { code: -32601, message: 'Tool view_tab not allowed' })).toBe(
+      'This board could not be shown. (host -32601: Tool view_tab not allowed)',
+    );
+    expect(await failing(undefined, { code: -32000 })).toBe(
+      'This board could not be shown. (host -32000)',
+    );
+    expect(
+      await failing({ isError: true, content: [{ type: 'text', text: 'no such plan' }] }),
+    ).toBe('This board could not be shown. (no such plan)');
+    expect(await failing({ isError: true })).toBe(
+      'This board could not be shown. (the tool answered an error)',
+    );
+    expect(
+      await failing({ isError: true, content: [{ type: 'text', text: 'x'.repeat(400) }] }),
+    ).toBe(`This board could not be shown. (${'x'.repeat(160)})`);
+    expect(await failing(undefined, 'gone')).toBe('This board could not be shown.');
+  });
+
   it('says so when the board cannot be read, or the host never starts it, or a result names nothing', async () => {
     const f = await board({ name: 'x' });
-    expect(f.el('note').textContent).toBe('This board could not be shown.');
+    expect(f.el('note').textContent).toBe(
+      'This board could not be shown. (the answer held no drawing)',
+    );
     f.el('open').onclick!();
     expect(f.pendingCall('ui/open-link')).toBeUndefined();
     f.result({ name: 'nothing' });

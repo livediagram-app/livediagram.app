@@ -1577,6 +1577,14 @@ export const FORMS_NOT_TAKING_OPENED = chart(
   },
 );
 
+export const FORMS_SUMMARY_OPENED = chart(
+  'Form',
+  'Opened',
+  'Form Summaries Opened',
+  "A form's Summary opened from its status bar: its responses summed up question by question.",
+  { types: ['Summary'] },
+);
+
 export const FORMS_SYNCED_TO_SHARE = chart(
   'Form',
   'Moved',
@@ -1619,6 +1627,7 @@ export const FORMS: MetricStack = {
     FORMS_SHARED_MORE,
     FORMS_OPENED_CLOSED,
     FORMS_NOT_TAKING_OPENED,
+    FORMS_SUMMARY_OPENED,
     FORMS_SYNCED_TO_SHARE,
     ANIMATED_BACKGROUNDS,
     FORM_RESPONSES,

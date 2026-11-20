@@ -75,6 +75,8 @@ type RowsWrite =
       error: 'range_invalid' | 'sheet_not_found' | 'formula_invalid';
       at?: string;
       why?: string;
+      // formula_invalid: the value as it was given, so a refusal can quote it.
+      input?: string;
     };
 
 // Rows of values written from an A1 cell: JSON numbers and booleans as they are, text read as typed in en-GB
@@ -146,7 +148,7 @@ export function writeRows(
           read.reason === 'input_too_long'
             ? 'The value is too long'
             : PARSE_FAILURE_COPY[read.reason];
-        return { ok: false, error: 'formula_invalid', at: a1, why };
+        return { ok: false, error: 'formula_invalid', at: a1, why, input: String(v) };
       }
       const ch: CellChange = { r, c, i: read.kind === 'clear' ? null : read.input };
       // A formula's hint is taken only by a cell whose own format is Automatic.

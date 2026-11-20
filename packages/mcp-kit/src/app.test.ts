@@ -92,3 +92,39 @@ describe('refusals in words', () => {
     quiet.mockRestore();
   });
 });
+
+describe('the tool list', () => {
+  it('says a long description once per tool (tool-list-compact.ts)', async () => {
+    const { z } = await import('zod');
+    const long = z.string().describe('What the rule does when it runs. '.repeat(10));
+    const listed = createMcpApp<OauthEnv>({
+      buildServer: () => {
+        const server = new McpServer(serverIdentity(LISTING));
+        server.registerTool('change', { inputSchema: { first: long, second: long } }, () => ({
+          content: [],
+        }));
+        return server;
+      },
+      oauth: { appBase: () => 'https://www.liveexample.app', builtInClients: {} },
+      listing: LISTING,
+    });
+    const res = await listed.request(
+      'https://mcp.liveexample.app/mcp',
+      {
+        ...RPC,
+        headers: {
+          ...RPC.headers,
+          Authorization: 'Bearer lwt_abc',
+          'Content-Length': String(RPC.body.length),
+        },
+      },
+      { OAUTH_KV: KV },
+    );
+    const { result } = await res.json<{
+      result: { tools: { inputSchema: { properties: Record<string, { description: string }> } }[] };
+    }>();
+    expect(result.tools[0]!.inputSchema.properties.second!.description).toBe(
+      'Same as "first" above.',
+    );
+  });
+});

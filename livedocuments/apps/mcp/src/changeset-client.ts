@@ -17,6 +17,7 @@ import {
   type Finish,
   type Tab,
 } from '@livedocuments/document';
+import { READ_ONLY_TOKEN_CODE, READ_ONLY_TOKEN_WORDS } from '@liveworkspace/api-client';
 import { ApiError, apiJson } from './api';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
@@ -190,6 +191,8 @@ export function changesetErrorText(err: ApiError): string {
       held?: { id: string; by: { name: string } }[];
       conflicts?: { id: string; reason: string }[];
     };
+    if (body.error === READ_ONLY_TOKEN_CODE)
+      return `${READ_ONLY_TOKEN_CODE}: ${READ_ONLY_TOKEN_WORDS}`;
     if (body.text) return body.text;
     if (body.held?.length) {
       const who = body.held.map((h) => `${h.id} (held by ${h.by.name})`).join(', ');

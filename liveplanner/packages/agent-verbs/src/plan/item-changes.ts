@@ -313,11 +313,35 @@ export async function applyItemChanges(
       );
     }
   };
+  // The card type of a new card (plan-agents.md "A new card's type"): the one it names; else Task where the plan has
+  // it, the first type the board holding its column takes, or the plan's only type. A plan with several and nothing
+  // to tell them apart is asked which, with the ones there are.
+  const typeOfAdd = (c: Extract<ItemChange, { op: 'add' }>): ItemTypeDef | string => {
+    if (c.type) {
+      const named = resolveType(c.type, types);
+      return named.ok ? named.type : named.message;
+    }
+    const task = types.find((t) => t.id === 'task');
+    if (task) return task;
+    const column = c.status ? resolveStatus(c.status, state.plan.statuses) : null;
+    if (column?.ok)
+      for (const board of state.plan.boards) {
+        if (board.kind !== 'board' || !board.columns.some((col) => col.status === column.status))
+          continue;
+        const taken = types.find((t) => board.types?.includes(t.id));
+        if (taken) return taken;
+      }
+    if (types.length === 1) return types[0]!;
+    return (
+      `Say which card type the new card is ("type"). Card types: ` +
+      `${types.map((t) => `${t.label} (${t.id})`).join(', ')}.`
+    );
+  };
   // The card type a change writes, when it can be read before any change is made.
   const typeBefore = (c: Extract<ItemChange, { op: 'add' | 'set' }>): ItemTypeDef | null => {
     if (c.op === 'add') {
-      const t = resolveType(c.type ?? 'task', types);
-      return t.ok ? t.type : null;
+      const t = typeOfAdd(c);
+      return typeof t === 'string' ? null : t;
     }
     if (c.type) {
       const t = resolveType(c.type, types);
@@ -359,7 +383,8 @@ export async function applyItemChanges(
     if (early.length) must(await checkPictureGrants(api, projectId, early, granted));
     for (const c of changes) {
       if (c.op === 'add') {
-        const type = must(resolveType(c.type ?? 'task', types)).type;
+        const type = typeOfAdd(c);
+        if (typeof type === 'string') throw new Stop('type_unknown', type);
         writing = type;
         const template = c.template ? must(templateOf(type, c.template, types)).template : null;
         if (!c.title && !template)

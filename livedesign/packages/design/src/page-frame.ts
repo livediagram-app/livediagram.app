@@ -31,7 +31,7 @@ export function withinPageFrame(
 /** The pattern's ink on a page: faint white on a dark fill, faint slate on a light one (and on the
  *  plain paper, whose sheet sets it by class on screen). */
 export function pagePatternInk(background: PageBackground | undefined): string {
-  return pageIsDark({ background }) ? 'rgb(255 255 255 / 0.14)' : 'rgb(15 23 42 / 0.1)';
+  return pageIsDark({ background }) ? 'rgba(255, 255, 255, 0.14)' : 'rgba(15, 23, 42, 0.1)';
 }
 
 /**

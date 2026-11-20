@@ -3,7 +3,7 @@
 // have no theme fields; a colour stored by name (a marker colour) is a binding. A theme id no catalogue
 // entry names: the check is skipped and logged (N15).
 
-import { endpointPosition, themeColourFields, type Element } from '@livediagram/document';
+import { C4_LOOK, endpointPosition, themeColourFields, type Element } from '@livediagram/document';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import { themeColourSet, type ColourField } from '../theme-colours';
@@ -41,13 +41,31 @@ function mindMapColoured(el: Element, mindNodes: ReadonlySet<string>): boolean {
   return [el.from, el.to].every((end) => end.kind === 'pinned' && mindNodes.has(end.elementId));
 }
 
+// A C4 element wears its kind's colours on purpose (docs/specs/015-api/mcp-server.md §4.7, style "c4"): a card and its key swatch hold a
+// kind's fill, locked against the theme, with that kind's edge, and a boundary is drawn in the system's hue. The
+// server's own style "c4" graph was answered with a finding and a "fix" for every one of them. Any other stroke on a
+// locked fill is still reported.
+const C4_PAIRS = new Set(Object.values(C4_LOOK).map((hue) => `${hue.fill} ${hue.edge}`));
+
+function c4Coloured(el: Element): boolean {
+  if (Reflect.get(el, 'boundaryStyle') === 'c4') return true;
+  if (Reflect.get(el, 'themeLockFill') !== true) return false;
+  const fill: unknown = Reflect.get(el, 'fillColor');
+  const stroke: unknown = Reflect.get(el, 'strokeColor');
+  return (
+    typeof fill === 'string' &&
+    typeof stroke === 'string' &&
+    C4_PAIRS.has(`${fill.toLowerCase()} ${stroke.toLowerCase()}`)
+  );
+}
+
 export const colourOnThemed: Check = (ctx) => {
   const findings = [];
   const mindNodes = new Set(
     ctx.visible.filter((el) => el.type === 'shape' && el.shape === 'mind-node').map((el) => el.id),
   );
   for (const el of ctx.visible) {
-    if (mindMapColoured(el, mindNodes)) continue;
+    if (mindMapColoured(el, mindNodes) || c4Coloured(el)) continue;
     // A write is judged on the colours it set, not on those a template or a person set before it.
     if (ctx.coloured && !ctx.coloured.has(el.id)) continue;
     // A template's scaffold (its board, axes and headings) is coloured by its design, not by the agent.

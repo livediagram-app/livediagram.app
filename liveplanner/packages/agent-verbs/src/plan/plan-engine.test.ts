@@ -1817,3 +1817,69 @@ describe('assigning by name', () => {
     expect(body.set['f-who']).toEqual([ADA, expect.objectContaining({ id: 'n-sam', name: 'Sam' })]);
   });
 });
+
+// docs/specs/026-plan/plan-agents.md "A new card's type": an add that names no type.
+describe('a new card that names no type', () => {
+  const WORK = { ...ITEM_TYPES[1], id: 'work', label: 'Work Item' };
+  const typed = async (
+    types: unknown[],
+    boardTypes: string[] | null,
+    change: { title: string; status?: string },
+  ) => {
+    const { api: a, seen } = api({}, { boards: [BOARD(boardTypes)], statuses: STATUSES, types });
+    const result = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'add', ...change }],
+      await readPlanState(a, D),
+    );
+    const posted = seen.find((s) => s.method === 'POST')?.body as { type?: string } | undefined;
+    return { refusal: result.refusal, type: posted?.type };
+  };
+
+  it('is a Task where the plan has it', async () => {
+    expect((await typed([...ITEM_TYPES, BUG], ['bug'], { title: 'x', status: 'To Do' })).type).toBe(
+      'task',
+    );
+  });
+
+  it('is the first type the board holding its column takes', async () => {
+    expect((await typed([WORK, BUG], ['bug'], { title: 'x', status: 'To Do' })).type).toBe('bug');
+  });
+
+  it('passes over a board that is not a board of columns, or lacks the column', async () => {
+    const boards = [
+      { ...BOARD(['work']), kind: 'all-cards' as const },
+      { ...BOARD(['work']), columns: [{ status: 'other', name: 'Other' }] },
+      BOARD(['bug']),
+    ];
+    const { api: a, seen } = api({}, { boards, statuses: STATUSES, types: [WORK, BUG] });
+    await applyItemChanges(
+      a,
+      D,
+      [{ op: 'add', title: 'x', status: 'To Do' }],
+      await readPlanState(a, D),
+    );
+    expect(seen.find((s) => s.method === 'POST')?.body).toMatchObject({ type: 'bug' });
+  });
+
+  it('is the plan’s only type, with no column to go by', async () => {
+    expect((await typed([BUG], null, { title: 'x' })).type).toBe('bug');
+  });
+
+  it('is asked for, with the types there are, when nothing tells them apart', async () => {
+    for (const change of [
+      { title: 'x' },
+      { title: 'x', status: 'To Do' },
+      { title: 'x', status: 'Nowhere' },
+    ]) {
+      const { refusal, type } = await typed([WORK, BUG], null, change);
+      expect(type).toBeUndefined();
+      expect(refusal).toEqual({
+        code: 'type_unknown',
+        message:
+          'Say which card type the new card is ("type"). Card types: Work Item (work), Bug (bug).',
+      });
+    }
+  });
+});

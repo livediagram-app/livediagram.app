@@ -294,8 +294,11 @@ export const itemAdd = defineVerb({
     title: z.string().min(1).optional().describe('The title (optional with --template)'),
     type: z
       .string()
-      .default('task')
-      .describe('project, task, note, idea, action, or a type the plan adds'),
+      .optional()
+      .describe(
+        'project, task, note, idea, action, or a type the plan adds; left out, task where the plan has it, else ' +
+          'the type the board holding its column takes',
+      ),
     status: z.string().optional().describe('The column it starts in'),
     fields: z.array(z.string()).default([]).describe('More fields, as key=value'),
     template: z
@@ -308,7 +311,7 @@ export const itemAdd = defineVerb({
     const { item, types } = await changeOne(ctx, input.project, {
       op: 'add',
       ...(input.title ? { title: input.title } : {}),
-      type: input.type,
+      ...(input.type ? { type: input.type } : {}),
       ...(input.status ? { status: input.status } : {}),
       fields: fieldsFromPairs(input.fields),
       ...(input.template ? { template: input.template } : {}),

@@ -81,6 +81,10 @@ export function attributesOf(el: Element, context: AttributeContext): ViewAttrib
   return [
     ...(iconId === null ? [] : [{ key: 'icon', value: iconId, text: `icon=${attrValue(iconId)}` }]),
     ...linkAttribute(el, context.tabRefOf),
+    // A picture frame with no picture in it, said: a layout's frames start empty, and unmarked they read as done.
+    ...(el.type === 'image' && textField(el, 'imageId') === null && textField(el, 'src') === null
+      ? [flagAttribute('no-picture')]
+      : []),
     ...(el.type === 'image' ? cutAttribute('alt', textField(el, 'alt'), ALT_CUT_CHARS) : []),
     ...(flagField(el, 'locked') ? [flagAttribute('locked')] : []),
     ...actionAttributes(el),

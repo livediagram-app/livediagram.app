@@ -149,6 +149,22 @@ const HOST = String.raw`
   }
   function notify(method, params) { post({ jsonrpc: '2.0', method: method, params: params }); }
   function say(text) { note.textContent = text; note.hidden = !text; }
+  // Why a call through the host failed, for the note: the host's own refusal (its code and words), the tool's error
+  // text, or an answer with no drawing in it. A view that only said "could not be shown" left nobody able to tell a
+  // host that refuses the view's calls from a tool that failed.
+  function drawn(res, ok) {
+    if (res && res.isError) {
+      var c = res.content && res.content[0];
+      throw new Error(c && c.text ? c.text : 'the tool answered an error');
+    }
+    if (!res || !res.structuredContent || !ok(res.structuredContent)) throw new Error('the answer held no drawing');
+    return res.structuredContent;
+  }
+  function why(err) {
+    var text = err && err.message ? String(err.message) : '';
+    if (err && typeof err.code === 'number') text = 'host ' + err.code + (text ? ': ' + text : '');
+    return text ? ' (' + text.slice(0, 160) + ')' : '';
+  }
   function theme(ctx) {
     if (ctx && (ctx.theme === 'dark' || ctx.theme === 'light')) document.documentElement.dataset.theme = ctx.theme;
   }
@@ -240,12 +256,10 @@ const CANVAS = String.raw`
     if (!quiet) { subject = { documentId: documentId, tabId: tabId }; say('Loading…'); }
     var args = viewArgs(documentId, { tabId: tabId, pageId: pageId || (quiet && tab ? tab.pageId : null) });
     request('tools/call', { name: 'view_tab', arguments: args }).then(function (res) {
-      var s = res && res.structuredContent;
-      if (!s || res.isError || typeof s.svg !== 'string') throw new Error('no view');
-      show(s, quiet, documentId);
-    }).catch(function () {
+      show(drawn(res, function (s) { return typeof s.svg === 'string'; }), quiet, documentId);
+    }).catch(function (err) {
       if (quiet) return;
-      tab = null; say('This tab could not be shown. The picture in the chat still holds it.');
+      tab = null; say('This tab could not be shown. The picture in the chat still holds it.' + why(err));
     });
   }
 

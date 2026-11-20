@@ -1,7 +1,7 @@
 'use client';
 
 // Filling in a form (docs/specs/030-forms/forms.md "Filling in a form"): the answers, one section at a time, each
-// field checked when it loses focus and again on Next or Submit, answers kept in session storage while filling in.
+// field checked when it loses focus and again on Next or Submit, answers kept in this browser while filling in.
 // Next and Back step over a section the answers so far do not show ("Showing a section only sometimes"), and the
 // progress counts only the sections that show.
 // Shared by the form link's page and the builder's Preview, which differ only in what Submit does.
@@ -25,13 +25,37 @@ export type SubmitOutcome =
 
 const EMPTY: FillState = { answers: {}, other: {} };
 
-function readDraft(key: string | null): FillState {
+// How long unsent answers are kept in the browser (forms.md "Answers are kept while filling in"): long enough to come
+// back to a form closed by mistake or left for the evening, short enough that they do not sit on a shared computer
+// for good. Safe range 1 hour..7 days.
+export const DRAFT_KEEP_MS = 24 * 60 * 60 * 1000;
+
+type StoredDraft = FillState & { at?: number };
+
+// Whether any question holds an answer (an emptied box and an unticked list hold none).
+export function hasAnswers(state: FillState): boolean {
+  const filled = (v: unknown) =>
+    v !== undefined &&
+    v !== null &&
+    v !== '' &&
+    v !== false &&
+    !(Array.isArray(v) && v.length === 0);
+  return Object.values(state.answers).some(filled) || Object.values(state.other).some(filled);
+}
+
+function readDraft(key: string | null, now: number): FillState {
   if (!key) return EMPTY;
   try {
-    const raw = sessionStorage.getItem(key);
+    const raw = localStorage.getItem(key);
     if (!raw) return EMPTY;
-    const parsed = JSON.parse(raw) as FillState;
-    return parsed && typeof parsed === 'object' && parsed.answers ? parsed : EMPTY;
+    const parsed = JSON.parse(raw) as StoredDraft | null;
+    if (!parsed || typeof parsed !== 'object' || !parsed.answers) return EMPTY;
+    // Kept too long ago (or with no time at all): gone, as if never typed.
+    if (typeof parsed.at !== 'number' || now - parsed.at > DRAFT_KEEP_MS || parsed.at > now) {
+      localStorage.removeItem(key);
+      return EMPTY;
+    }
+    return { answers: parsed.answers, other: parsed.other ?? {} };
   } catch {
     return EMPTY;
   }
@@ -40,8 +64,10 @@ function readDraft(key: string | null): FillState {
 function writeDraft(key: string | null, state: FillState | null) {
   if (!key) return;
   try {
-    if (state) sessionStorage.setItem(key, JSON.stringify(state));
-    else sessionStorage.removeItem(key);
+    // Nothing answered keeps nothing: an opened form leaves no trace.
+    if (state && hasAnswers(state))
+      localStorage.setItem(key, JSON.stringify({ ...state, at: Date.now() } satisfies StoredDraft));
+    else localStorage.removeItem(key);
   } catch {
     // Private windows and blocked storage: the answers just are not kept across a reload.
   }
@@ -67,7 +93,10 @@ export function useFormFill(
   // Pre-filled answers, read once from the form link's address and already checked (readPrefill).
   initial?: Readonly<Record<string, unknown>>,
 ) {
-  const [state, setStateRaw] = useState<FillState>(() => startState(readDraft(draftKey), initial));
+  const [kept] = useState(() => readDraft(draftKey, Date.now()));
+  const [state, setStateRaw] = useState<FillState>(() => startState(kept, initial));
+  // Answers from an earlier visit are back in the form: said once, until they are cleared or the form is sent.
+  const [restored, setRestored] = useState(() => hasAnswers(kept));
   // The answers as last set, read by the handlers below (events arrive one at a time).
   const stateRef = useRef(state);
   const setState = useCallback((next: FillState) => {
@@ -223,7 +252,19 @@ export function useFormFill(
     setFailure(outcome.message);
   };
 
+  // Clear Form: every answer gone, here and in the browser, back at the first section.
+  const clear = () => {
+    setState(EMPTY);
+    writeDraft(draftKey, null);
+    setRestored(false);
+    setErrors({});
+    setSummary([]);
+    setSection(0);
+    setFailure(null);
+  };
+
   const again = () => {
+    setRestored(false);
     setState(EMPTY);
     setErrors({});
     setSummary([]);
@@ -249,6 +290,11 @@ export function useFormFill(
     failure,
     setAnswer,
     setOther,
+    // Whether the form opened with answers kept from an earlier visit.
+    restored,
+    // Whether anything is answered.
+    answered: hasAnswers(state),
+    clear,
     blur,
     next,
     back,

@@ -240,7 +240,24 @@ describe('adding', () => {
       { op: 'add', kind: 'logo', layout: 'title' },
     ]);
     expect(r.code).toBe('layout_unknown');
+    expect(r.message).toContain('No logo layout "title".');
     expect(r.message).toContain('A logo page takes the layouts');
+  });
+
+  // docs/specs/024-agents/pages-for-agents.md "A layout by its plain name".
+  it('reads a layout by its plain name, and names the closest on a near miss', () => {
+    const out = run(tabOf({ pages: [page('p1')] }), [
+      { op: 'add', kind: 'logo', layout: 'wordmark' },
+    ]);
+    expect(out.lines[0]).toContain('from layout Wordmark');
+    expect(
+      refusal(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'logo', layout: 'wordmrk' }])
+        .message,
+    ).toContain('No logo layout "wordmrk". Closest: logo-wordmark.');
+    expect(
+      refusal(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'logo', layout: 'zzzzqqqq' }])
+        .message,
+    ).toContain('No logo layout "zzzzqqqq". A logo page takes the layouts');
   });
 
   it('refuses a layout on a blank page, which takes none', () => {

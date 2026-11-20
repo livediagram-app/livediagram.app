@@ -33,6 +33,7 @@ let calls: { url: string; init?: RequestInit }[];
 beforeEach(() => {
   window.history.replaceState(null, '', `/form/${CODE}`);
   sessionStorage.clear();
+  localStorage.clear();
   replies = [];
   calls = [];
   vi.stubGlobal(
@@ -211,9 +212,9 @@ describe('pre-filled answers', () => {
     render(<FormRespondPage />);
     expect((await screen.findByLabelText<HTMLInputElement>(/^Thoughts/)).value).toBe('');
     cleanup();
-    sessionStorage.setItem(
+    localStorage.setItem(
       `liveplanner:form:${CODE}`,
-      JSON.stringify({ answers: { q: 'Typed here' }, other: {} }),
+      JSON.stringify({ answers: { q: 'Typed here' }, other: {}, at: Date.now() }),
     );
     window.history.replaceState(null, '', `/form/${CODE}?q.q=From%20the%20link`);
     replies.push({ status: 200, body: OPEN });
