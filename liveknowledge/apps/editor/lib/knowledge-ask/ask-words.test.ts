@@ -75,7 +75,7 @@ describe('a passage with the matched parts marked', () => {
     for (let i = 0; i < 200; i++) markedParts(passage, 'release process hotfix deploy rollback');
     const spent = process.cpuUsage(before);
     if (process.env.MEASURE) console.log(`MEASURE marks ${(spent.user + spent.system) / 1000} ms`);
-    // Measured at about 15 ms for the 200 runs; 400 ms is the guard.
+    // Measured at about 11 ms for the 200 runs; 400 ms is the guard.
     expect((spent.user + spent.system) / 1000).toBeLessThan(400);
   });
 });

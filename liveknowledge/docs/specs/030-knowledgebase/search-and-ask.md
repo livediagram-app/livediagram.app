@@ -35,7 +35,7 @@ Ask answers a question in plain words from the wiki's own pages, and says where 
   **Found but Not Used** for a passage set aside because it is stale and disagrees with a newer verified one.
 - **It does not guess.** The model is told to say so when the passages do not answer the question or part of it. That
   part is recorded as an unanswered question ([AI Knowledge](ai-knowledge.md)) and shown as a **Knowledge Gap** card
-  with **Draft a Page From What We Know** and **Ask <owner> to Write It**.
+  with **Draft a Page From What We Know** and, once the knowledgebase's emails are built, **Ask <owner> to Write It**.
 - **Scope:** an answer reads only pages the asker can open. A follow-up keeps the conversation (up to 10 turns).
   Recent questions are kept per person, per wiki, in the browser.
 - **Bounds:** 20 questions a person an hour and 200 a wiki a day (`ASK_*` limits, checked in the room); a question is at
@@ -52,6 +52,46 @@ Ask answers a question in plain words from the wiki's own pages, and says where 
 | Draft a page from a gap                 | yes    | no          | no     |
 
 Ask through an anonymous share link is off: it would spend the team's key for strangers.
+
+## The Ask view
+
+- **Three columns** on a window at least 1,024px wide: the person's questions (**New Question**, then recent
+  questions under Today, This Week and Earlier), the conversation with the question field at its foot, and
+  **Sources**. Narrower, they stack in that order with the recent questions folded under a **Recent** button.
+- **The conversation.** A question is a dark bubble at the right. An answer is a white bordered card that streams
+  in, then shows numbered citation chips (each goes to its source card and lights it), the trust line, an amber note
+  for each part the pages do not cover ("One thing the knowledgebase does not cover."), and a footer: helpful, not
+  helpful, **Copy Answer** and **Save as Page**. Each uncovered part also gets a **Knowledge Gap** card.
+- **Answers and passages are text.** They are drawn as characters with the page's own marks (a citation chip, a
+  matched word), never as HTML or Markdown.
+- **Sources** shows the passages of the newest answer, or of the answer a citation was pressed in: a number, the
+  page's title, the headings above the passage, the passage with the question's words softly marked, and
+  "<path> · Verified 8 Nov by <name>" (or "Review Due, Last Verified 8 Nov", or "Never Verified"). Pressing a card
+  shows Pages at that page and passage. **Found but Not Used** follows, each card amber with a "Stale" pill and the
+  reason.
+- **The field** takes 1,000 characters and counts from 900. Enter sends; Shift and Enter make a new line. While an
+  answer streams the field waits and the button is **Stop**, which ends the request and keeps what had arrived.
+  After ten turns the field gives way to a line saying to start a new question.
+- **Save as Page** makes a subpage of a page the person chooses, titled from the question, holding the answer
+  without its markers and a Sources list linking each cited page.
+- **Draft a Page From What We Know** makes a top-level page titled from the question whose first line is "Draft,
+  Not Verified", then the question as a heading, then a draft from one more Ask call. If that call fails the page
+  holds the mark and the heading alone. The draft's Ask call counts against the limits like any question.
+- **The conversation lasts as long as the browser tab**: leaving Ask to read a cited page and coming back finds it,
+  still streaming if it was. A reload starts a new one. Recent questions hold the question and when it was asked,
+  never an answer, 50 at most.
+- **When Ask is off:** no key (an Editor gets **Open AI Settings**; anyone else is told to ask an Editor), not
+  signed in (a share link's visitor included: **Sign In**), or a knowledgebase kept Offline. Each says why, and
+  each offers **Search the Pages**.
+- **A failure** is said in the answer's place in words with its next step: the key not accepted or the model not
+  allowed (Open AI Settings for an Editor), no credit, the account's rate limit, Claude busy, a lost connection (Ask
+  Again), a refusal, 20 questions in the hour, 200 in the day. Never a status, a code or the upstream's words.
+- Helpful and not helpful are kept on the answer for the conversation and counted in telemetry, with no words.
+
+| Action                                   | Editor | Participant | Viewer |
+| ---------------------------------------- | ------ | ----------- | ------ |
+| Copy an answer, mark it helpful or not   | yes    | yes         | yes    |
+| Save an answer as a page                 | yes    | no          | no     |
 
 ## AI Settings
 

@@ -108,3 +108,113 @@ settings)` takes a write's answer. It has no field a key could be put in.
 `components/ask/AiSettingsDialog.test.tsx`: the state line, the field's attributes, the field cleared while the
 request is out and after a refusal, the key absent from the DOM, the store, both browser stores, telemetry and the
 console after a save, Remove with its question, the model, and the controls per role.
+
+## Ask
+
+| Piece                                             | File                                                                                      |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| one conversation, outside React                   | `lib/knowledge-ask/ask-conversation.ts`                                                   |
+| the conversations and recent questions of the tab | `lib/knowledge-ask/ask-session-store.ts`                                                  |
+| recent questions in `localStorage`                | `lib/knowledge-ask/recent-questions.ts`                                                   |
+| an answer as parts, a passage's marks, Markdown   | `lib/knowledge-ask/answer-parts.ts`                                                       |
+| the trust line                                    | `lib/knowledge-ask/ask-trust.ts`                                                          |
+| a failure in words                                | `lib/knowledge-ask/ask-failure-words.ts`                                                  |
+| a source card's last line                         | `lib/knowledge-ask/source-meta.ts`                                                        |
+| a page from an answer or for a gap                | `lib/knowledge-ask/make-page.ts`                                                          |
+| the view and its gates                            | `components/ask/AskView.tsx`, `AskStates.tsx`                                             |
+| the conversation and Sources                      | `AskConversationPane.tsx`, `AskAnswerCard.tsx`, `AskSourcesRail.tsx`                      |
+| the stream                                        | `StreamingAnswer.tsx`                                                                     |
+| the field                                         | `AskComposer.tsx`                                                                         |
+| chips, gaps, recents, the page picker             | `CitationChip.tsx`, `KnowledgeGapCard.tsx`, `RecentQuestions.tsx`, `PagePickerDialog.tsx` |
+| Draft a Page, opening a page                      | `useDraftPage.ts`, `open-passage.ts`                                                      |
+
+### The conversation
+
+- **`createAskConversation({ send, frame, newId, onAsked, onEnded })`**. `AskTurnView` is a question with `status`
+  (`streaming`, `done`, `stopped`, `failed`), `text`, `sources`, `notUsed`, `gaps`, `model`, `failure` and
+  `feedback`. The turn list is replaced when a question is asked, when its answer ends, and on feedback; never while
+  an answer streams.
+- **`ask(question)`** trims; refuses an empty question, one over `ASK_MAX_QUESTION_CHARS`, a second while one
+  streams, and an eleventh turn (`ASK_MAX_TURNS`). It sends `{ question, turns }` where `turns` are the earlier turns
+  that ended `done` or `stopped` with text. **`askAgain(id)`** re-runs a failed turn in place. **`stop()`** aborts the
+  request and keeps what arrived. **`reset()`** aborts and empties the list.
+- **The stream.** A `delta` is appended to the live turn's string and one animation frame is asked for if none is
+  pending. The frame hands every watcher (`watchStream`) the text since the last frame. `StreamingAnswer` is the
+  watcher: one text node, `appendData` once a frame, then `onGrow` (the conversation keeps its foot in view while
+  the person has not scrolled away from it, by an `IntersectionObserver` on a 1px foot). Before the first words it
+  says "Reading the pages…". The stream is `aria-hidden`; a visually hidden status says "Answering." and "The answer
+  is ready."
+- **When it ends**, the card draws `answerParts(text, cited)`: a marker (`[2]`, `[1, 3]`) whose numbers are all
+  among the sources becomes `CitationChip` buttons (named "Source 2: <page>"); any other marker stays text. The
+  paragraph is `whitespace-pre-wrap`; no element is ever made from the answer's own characters.
+- **`askConversationFor(who, documentId)`** keeps one conversation per person and knowledgebase in a module map (four
+  at most; the oldest is reset and dropped), so the view can unmount and mount again around it. `onAsked` sends
+  `UI·Used·AskQuestion` and remembers the question; `onEnded` re-reads the AI settings after `ask_unavailable`.
+
+### Sources
+
+`shown` is `{ turnId, lit }`: a pressed chip sets both; the lit card scrolls into view, takes the focus and wears a
+brand ring for `BLOCK_HIT_MS` (1,600 ms). `markedParts(text, question)` marks words of the passage that begin with
+one of the question's content words (three or more letters, not common, twelve at most; one regular expression of
+escaped words, linear in the passage). The last line is `pagePathText` (the page's ancestors from the tab list) and
+`trustText` (the verifier's name from the page's own `knowledge.verifiedBy` through `useKnowledgePeople`; a person
+the editor cannot name is left out). `openPassage` shows Pages as a history entry and calls `goToBlock`; a page that
+has gone raises "That page is no longer in this knowledgebase."
+
+### Pages made here
+
+`makePage` builds the tab with the import's `importedPageTab` (Markdown read by `articleFromMarkdown`: text, with
+http, https and mailto links only), marks it loaded and its layout this editor's to settle, and adds it with
+`withPageAdded` through `commitTabs`, so the autosave stores it. A refusal of the tree (500 pages, depth) is its own
+words. `saveAnswerAsPage` writes the answer without markers and `## Sources` with a page link for each cited page
+still in the tab list. `draftPageForQuestion` writes `*Draft, Not Verified*`, `## <question>` (escaped) and the
+draft. Telemetry: `Tab·Created·FromAnswer` and `FromGap`.
+
+### States, in the conversation's place
+
+| State             | When                                       | Shows                                                                                                                              |
+| ----------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| loading           | the settings are being read                | the room held, a `status` named "Loading Ask"                                                                                      |
+| could not be read | `GET ai` failed                            | an error callout, **Try Again**                                                                                                    |
+| Offline           | `askOff === 'offline'`; no request is made | "No Ask in an Offline Knowledgebase", **Search the Pages**                                                                         |
+| signed out        | `askOff === 'signed-out'`                  | "Sign In to Ask", **Sign In**, **Search the Pages**                                                                                |
+| no key            | `hasKey` false                             | "Ask Needs Your Team's Claude Key"; **Open AI Settings** for an Editor, "Ask an Editor to add one" otherwise; **Search the Pages** |
+| ready, no turns   |                                            | "No Questions Yet"                                                                                                                 |
+
+`askFailureWords(kind, { manageAi })` maps `bad-key`, `no-credit`, `rate-limited`, `overloaded`,
+`model-unavailable`, `refused`, `person-limit`, `knowledgebase-limit`, `question-too-long`, `no-question`,
+`ask_unavailable`, `sign_in_required`, `network` and anything else to a title, a line and a step (`ai-settings`,
+`ask-again`, `none`). The server's own `message` is never shown.
+
+### Share roles
+
+| Action                                                    | Editor | Participant | Viewer |
+| --------------------------------------------------------- | ------ | ----------- | ------ |
+| Ask, Stop, Copy Answer, helpful and not helpful (account) | yes    | yes         | yes    |
+| Save as Page, Draft a Page From What We Know              | yes    | no          | no     |
+| Open AI Settings from a failure or the no-key state       | yes    | no          | no     |
+
+Tests, a role at a time: `components/ask/AskView.test.tsx` ("when this session cannot ask", "the parts the pages do
+not cover", "the answer footer", "a failure, in words with the next step").
+
+### Measured
+
+- **React renders while an answer streams: 0.** `AskView.test.tsx` "what a streaming answer costs": 2,000 pieces
+  over 20 frames give 20 `appendData` calls and no commit of the view (React `Profiler`), in jsdom.
+- **The conversation's own work:** 20,000 pieces over 1,000 frames take about 6.4 ms of processor time (three runs:
+  6.3, 6.4, 6.6); the test's guard is 250 ms.
+- **Marking a passage:** 200 runs over a 1,265 character passage and a five word question take about 11.4 ms
+  (11.2, 11.3, 11.8); the guard is 400 ms.
+- Not measured: a real browser's layout and paint of a long answer as it grows (`whitespace-pre-wrap` on one text
+  node, laid out again each frame; an answer is bounded by the model's `max_tokens`, 16,000).
+
+### Not built, or not known
+
+- **Ask <owner> to Write It** is not drawn: no email route exists.
+- **Markdown in an answer** (a list, bold) shows as the characters the model wrote.
+- **The draft's Ask call** spends one of the person's 20 questions and, when the pages still do not cover the
+  question, counts it again as asked under AI Knowledge.
+- **A conversation is not kept across a reload**, and feedback goes nowhere but telemetry's count.
+- **Stop** ends the request from the browser; whether the Worker's model call ends with it depends on the request's
+  signal reaching the room, which no test here holds.
+- **Focus order below 1,024px** follows the page: questions, conversation, Sources.
