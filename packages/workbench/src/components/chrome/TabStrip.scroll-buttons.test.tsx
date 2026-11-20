@@ -130,6 +130,32 @@ describe('TabStrip scroll buttons', () => {
     expect(scrollTo).not.toHaveBeenCalled();
   });
 
+  it('re-renders only when an edge turns, however often the strip scrolls', () => {
+    const renderTab = vi.fn((tab: T) => (
+      <button key={tab.id} type="button" data-tab="">
+        {tab.name}
+      </button>
+    ));
+    render(
+      <TabStrip
+        runs={RUNS}
+        activeId="t0"
+        readOnly={false}
+        renderTab={renderTab}
+        onReorder={vi.fn()}
+        onRenameFolder={vi.fn()}
+        renderRenameField={() => null}
+      />,
+    );
+    const scroller = screen.getByRole('toolbar', { name: 'Tabs' }).parentElement as HTMLElement;
+    // Both buttons on, and that render settled.
+    overflow(scroller, 100);
+    overflow(scroller, 105);
+    const after = renderTab.mock.calls.length;
+    for (let s = 110; s < 600; s += 10) overflow(scroller, s);
+    expect(renderTab.mock.calls.length).toBe(after);
+  });
+
   it('stops listening when the strip goes', () => {
     const scroller = strip();
     const off = vi.spyOn(scroller, 'removeEventListener');
