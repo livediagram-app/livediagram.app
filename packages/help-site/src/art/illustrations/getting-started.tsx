@@ -18,7 +18,7 @@ export function GuestVsAccount() {
         height={200}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={110} y={40} anchor="middle" size={12} weight={700} tone="strong">
         Guest
@@ -34,7 +34,7 @@ export function GuestVsAccount() {
         height={92}
         rx={9}
         className="fill-white stroke-slate-300"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <rect x={56} y={78} width={108} height={18} rx={9} className="fill-slate-100" />
       <circle cx={68} cy={87} r={2.5} className="fill-slate-300" />
@@ -76,7 +76,7 @@ export function GuestVsAccount() {
         height={40}
         rx={5}
         className="fill-white stroke-slate-300"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <rect x={230} y={172} width={76} height={6} rx={3} className="fill-slate-200" />
       <Shape x={246} y={142} w={20} h={13} kind="rect" />
@@ -89,7 +89,7 @@ export function GuestVsAccount() {
         height={48}
         rx={6}
         className="fill-white stroke-slate-300"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Shape x={334} y={140} w={20} h={12} kind="rect" />
       <Shape x={334} y={158} w={20} h={12} kind="rect" accent />

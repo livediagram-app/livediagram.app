@@ -34,7 +34,7 @@ export function CommentThread() {
         height={214}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={184} y={44} size={12} weight={700} tone="strong">
         Comments (2)
@@ -43,7 +43,7 @@ export function CommentThread() {
         Resolve
       </Label>
       <path d="M380 39 l9 9 M389 39 l-9 9" className="stroke-slate-400" strokeWidth={1.5} />
-      <line x1={170} y1={58} x2={404} y2={58} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={170} y1={58} x2={404} y2={58} className="stroke-slate-200" strokeWidth={0.75} />
       {/* First message */}
       <Avatar cx={190} cy={78} r={10} initial="A" colour="brand" />
       <Label x={206} y={74} size={10} weight={700} tone="strong">
@@ -74,7 +74,7 @@ export function CommentThread() {
         height={38}
         rx={7}
         className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={192} y={175} size={10} tone="muted">
         Add a comment…
@@ -114,7 +114,7 @@ export function LiveCursors() {
       <Cursor x={170} y={158} name="Mara" colour="emerald" />
       {/* The tab bar: each tab carries the initials of who is on it. */}
       <rect x={0} y={198} width={420} height={40} className="fill-slate-50" />
-      <line x1={0} y1={198} x2={420} y2={198} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={0} y1={198} x2={420} y2={198} className="stroke-slate-200" strokeWidth={0.75} />
       {pill(16, 118, 'Overview', true, [
         { initial: 'A', colour: 'brand' },
         { initial: 'J', colour: 'violet' },
@@ -186,7 +186,7 @@ export function EmbeddedWork({ product }: { product: string }) {
         height={216}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <TextBar x={30} y={26} w={120} h={8} />
       <TextBar x={30} y={42} w={360} tone="faint" />
@@ -198,7 +198,7 @@ export function EmbeddedWork({ product }: { product: string }) {
         height={124}
         rx={8}
         className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Shape x={48} y={74} w={64} h={36} kind="rect" label="Web" />
       <Shape x={176} y={74} w={72} h={36} kind="cylinder" label="DB" />

@@ -11,6 +11,7 @@
 
 import { Scene, Label, Cursor } from '@liveworkspace/help-site/art/primitives';
 import { IsoCard, iso } from './palette-modes-parts';
+import { Card, Icon } from './editor-chrome';
 
 // The picker lives in selection-modes-picker.tsx and the tool panels in selection-modes-panels.tsx.
 export { PickerTrigger, ToolPicker } from './selection-modes-picker';
@@ -43,58 +44,40 @@ export function IsometricOrbit() {
         <IsoCard cx={-70} cy={-30} label="Web" />
         <IsoCard cx={70} cy={30} accent label="API" />
       </g>
-      {/* The zoom dock: zoom out, the percentage, zoom in, then Orbit */}
-      <rect
-        x={196}
-        y={196}
-        width={206}
-        height={40}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={218} y={217} size={14} weight={600} anchor="middle" tone="body">
-        −
-      </Label>
-      <Label x={256} y={217} size={11} weight={600} anchor="middle" tone="body">
-        100%
-      </Label>
-      <Label x={294} y={217} size={14} weight={600} anchor="middle" tone="body">
-        +
-      </Label>
-      <line x1={314} y1={204} x2={314} y2={228} className="stroke-slate-200" strokeWidth={1.2} />
-      <rect x={322} y={201} width={30} height={30} rx={7} className="fill-brand-100" />
-      <g
-        transform="translate(337 216)"
-        className="stroke-brand-600"
-        strokeWidth={1.6}
-        fill="none"
-        strokeLinecap="round"
-      >
-        <ellipse rx={9} ry={4} />
-        <circle r={2} className="fill-brand-600" />
-        <path d="M6 -6 l3 2.5 l-3.5 1.5" />
-      </g>
-      <Cursor x={344} y={222} />
+      {/* The zoom card: zoom out, the level, zoom in, then Orbit on its pale tile. */}
+      <Card x={298} y={218} w={114} h={24}>
+        <Icon prims={[{ t: 'path', d: 'M5 12h14' }]} x={310} y={230} size={8} />
+        <Label x={338} y={230.5} size={9} weight={500} tone="strong" anchor="middle">
+          100%
+        </Label>
+        <Icon prims={[{ t: 'path', d: 'M5 12h14M12 5v14' }]} x={366} y={230} size={8} />
+        <line x1={378} y1={218} x2={378} y2={242} className="stroke-slate-100" strokeWidth={0.75} />
+        <rect x={382} y={221} width={26} height={18} rx={4} className="fill-brand-100" />
+        <g
+          transform="translate(395 230) scale(0.75)"
+          className="stroke-brand-700"
+          strokeWidth={1.4}
+          fill="none"
+          strokeLinecap="round"
+        >
+          <ellipse rx={9} ry={4} />
+          <circle r={1.6} className="fill-brand-700" />
+          <path d="M6 -6 l3 2.5 l-3.5 1.5" />
+        </g>
+      </Card>
+      <Cursor x={400} y={234} />
       {/* Its hover card */}
-      <rect
-        x={236}
-        y={124}
-        width={166}
-        height={60}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={248} y={140} size={11} weight={700} tone="strong">
-        Orbit
-      </Label>
-      <Label x={248} y={156} size={10} tone="muted">
-        Drag to orbit, click to
-      </Label>
-      <Label x={248} y={170} size={10} tone="muted">
-        reset the angle.
-      </Label>
+      <Card x={262} y={160} w={146} h={48}>
+        <Label x={272} y={174} size={10} weight={650} tone="strong">
+          Orbit
+        </Label>
+        <Label x={272} y={188} size={9} tone="muted">
+          Drag to orbit, click to reset
+        </Label>
+        <Label x={272} y={199} size={9} tone="muted">
+          the angle.
+        </Label>
+      </Card>
     </Scene>
   );
 }

@@ -21,7 +21,9 @@ describe('livehuddle’s help scenes', () => {
       },
     );
     const { scanned, findings } = scanScenes(modules);
-    expect(scanned).toBeGreaterThan(10);
+    // Few scenes draw shapes now: a Space is furniture, rooms and notes (space-furniture.tsx), not boxes. The floor
+    // keeps the guard from passing on a glob that matched nothing.
+    expect(scanned).toBeGreaterThan(0);
     expect(findings).toEqual([]);
   });
 });

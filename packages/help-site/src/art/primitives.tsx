@@ -14,15 +14,17 @@
 // figure scales down on mobile.
 
 import { useId, type ReactNode } from 'react';
+import { artApp } from './art-app';
 
 export * from './primitives-text';
 export * from './primitives-canvas';
 export * from './primitives-chrome';
+export { artApp, type ArtApp } from './art-app';
 
 // --- Scene shell -------------------------------------------------------------
 
-/** The SVG canvas a scene draws into. `bg="canvas"` lays down the editor's
- *  faint dot grid; `bg="plain"` a soft brand wash; `bg="none"` nothing. */
+/** The SVG canvas a scene draws into. `bg="canvas"` lays down the app's own canvas: the editor's warm paper with its
+ *  fine dot grid, or livehuddle's tiled floor; `bg="plain"` a soft brand wash; `bg="none"` nothing. */
 export function Scene({
   w = 400,
   h = 240,
@@ -46,9 +48,18 @@ export function Scene({
       focusable="false"
     >
       <defs>
-        <pattern id={`grid-${gid}`} width="16" height="16" patternUnits="userSpaceOnUse">
-          <circle cx="1" cy="1" r="1" className="fill-slate-200" />
-        </pattern>
+        {artApp() === 'livehuddle' ? (
+          // livehuddle's floor: square tiles with a hairline grout and a faint plank grain.
+          <pattern id={`grid-${gid}`} width="32" height="32" patternUnits="userSpaceOnUse">
+            <rect width="32" height="32" className="fill-slate-100" />
+            <path d="M0 10.5 H32 M0 21.5 H32" className="stroke-slate-200/60" strokeWidth={0.5} />
+            <path d="M0 0.25 H32 M0.25 0 V32" className="stroke-slate-200" strokeWidth={0.5} />
+          </pattern>
+        ) : (
+          <pattern id={`grid-${gid}`} width="14" height="14" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="0.75" className="fill-slate-300" />
+          </pattern>
+        )}
       </defs>
       {bg === 'canvas' && <rect x={0} y={0} width={w} height={h} fill={`url(#grid-${gid})`} />}
       {bg === 'plain' && <rect x={0} y={0} width={w} height={h} className="fill-brand-50/40" />}

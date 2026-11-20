@@ -206,10 +206,10 @@ export function CommunityShareSection() {
         strokeWidth={1.5}
       />
       <Label x={x + 30} y={64} size={12} weight={600} tone="strong">
-        Checkout flow, end to end
+        Cosy Virtual Office
       </Label>
       <Label x={x + 30} y={84} size={10} tone="muted">
-        Flows &amp; Processes · ♥ 12 · Copied 3 times
+        Office · ♥ 12 · Copied 3 times
       </Label>
       <Button x={x + 30} y={108} w={78} h={26} label="View Post" />
       <Button x={x + 116} y={108} w={88} h={26} label="Edit Listing" />
@@ -266,7 +266,7 @@ export function CommunitySearchBox() {
       <circle cx={28} cy={45} r={5} className="fill-none stroke-slate-400" strokeWidth={1.5} />
       <path d="M32 49 l4 4" className="stroke-slate-400" strokeWidth={1.5} />
       <Label x={44} y={47} size={11} tone="strong">
-        #aws sort:loved
+        #office sort:loved
       </Label>
       {/* The clear cross sits just after the text. */}
       <path

@@ -88,7 +88,7 @@ export function FillToolScene() {
         height={32}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <circle cx={52} cy={168} r={6} className="fill-brand-500" />
       <Label x={52} y={171.5} anchor="middle" size={9} weight={700} tone="onAccent">

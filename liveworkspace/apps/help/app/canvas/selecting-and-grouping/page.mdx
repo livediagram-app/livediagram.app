@@ -2,6 +2,9 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvas from '@/editions/livediagram/components/illustrations/canvas';
+import { MultiSelect as DesignMultiSelect, FormatPainter as DesignFormatPainter } from '@/editions/livedesign/components/illustrations/canvas';
+import { MultiSelect as DocumentsMultiSelect, FormatPainter as DocumentsFormatPainter } from '@/editions/livedocuments/components/illustrations/canvas';
+import { MultiSelect as HuddleMultiSelect, FormatPainter as HuddleFormatPainter } from '@/editions/livehuddle/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'Selecting Many Elements',
@@ -37,11 +40,22 @@ The quickest way to grab several elements is the marquee: drag across an empty p
   The selection can be locked in one go too.
 </AppNote>
 
-<Figure
-  app="livediagram,livedesign,livedocuments,livehuddle"
+<Figure app="livediagram"
   caption="Drag a marquee across empty canvas to gather every fully enclosed element into one selection."
 >
   <DiagramCanvas.MultiSelect />
+</Figure>
+
+<Figure app="livedesign" caption="Drag a marquee across a page to gather every fully enclosed element into one selection.">
+  <DesignMultiSelect />
+</Figure>
+
+<Figure app="livedocuments" caption="Drag a box across a slide to select everything inside it.">
+  <DocumentsMultiSelect />
+</Figure>
+
+<Figure app="livehuddle" caption="Drag a box round several desks, or Shift-click them, to select them together and move them as one.">
+  <HuddleMultiSelect />
 </Figure>
 
 <AppNote app="livediagram">
@@ -64,11 +78,22 @@ The quickest way to grab several elements is the marquee: drag across an empty p
 
 Once you have styled one element just right, the [format painter](/help/selection-modes/format-painter/) copies that look onto others in a couple of clicks, so a whole <Noun /> can share one consistent style without re-setting each colour and border by hand.
 
-<Figure
-  app="livediagram,livedesign,livedocuments,livehuddle"
+<Figure app="livediagram"
   caption="The format painter picks up one element's look and brushes it onto another."
 >
   <DiagramCanvas.FormatPainter />
+</Figure>
+
+<Figure app="livedesign" caption="The format painter picks up one button's look and brushes it onto another.">
+  <DesignFormatPainter />
+</Figure>
+
+<Figure app="livedocuments" caption="The format painter copies one element's look onto another.">
+  <DocumentsFormatPainter />
+</Figure>
+
+<Figure app="livehuddle" caption="The Format Painter copies one note's look onto another with a single click.">
+  <HuddleFormatPainter />
 </Figure>
 
 <Tip>

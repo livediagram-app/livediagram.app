@@ -72,6 +72,7 @@ const HELD_AT_100 = [
   'src/lib/tab-export-name.ts',
   'src/hooks/ui/useEditorUiScales.ts',
   'src/hooks/ui/useSignInNudge.ts',
+  'src/hooks/ui/useSignInToast.ts',
   'src/hooks/ui/useBackOutOnRestore.ts',
   'src/hooks/persistence/useResolveSelf.ts',
   'src/hooks/canvas/useCanvasSurfaceGestures.ts',

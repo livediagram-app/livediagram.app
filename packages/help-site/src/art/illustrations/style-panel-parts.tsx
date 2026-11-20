@@ -101,7 +101,7 @@ export function MenuCard({
         height={h}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={x + 14} y={y + 17} size={11} weight={700} tone="strong">
         {title}
@@ -121,7 +121,7 @@ export function MenuCard({
         x2={x + w}
         y2={y + 30}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {children}
     </g>

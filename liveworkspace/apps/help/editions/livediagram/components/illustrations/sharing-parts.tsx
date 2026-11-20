@@ -328,7 +328,7 @@ export function LifetimeControl({
         height={26}
         rx={7}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       {opts.map((opt, i) => {
         const sx = x + 2 + i * segW;
@@ -393,7 +393,7 @@ export function ShareCard({
         height={h}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={x + 16} y={y + 20} size={13} weight={700} tone="strong">
         Share This Canvas

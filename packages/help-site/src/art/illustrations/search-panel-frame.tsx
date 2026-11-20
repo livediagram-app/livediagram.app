@@ -87,7 +87,7 @@ export function SearchOverlay({
         height={overlayH}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
 
       {/* query row: magnifier, typed text + caret, Esc chip, divider */}
@@ -111,7 +111,7 @@ export function SearchOverlay({
         height={18}
         rx={4}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <Label x={px + pw - 26} y={top + 20} size={10} tone="muted" anchor="middle" weight={500}>
         Esc
@@ -122,7 +122,7 @@ export function SearchOverlay({
         x2={px + pw}
         y2={top + fieldH}
         className="stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
 
       {/* groups */}

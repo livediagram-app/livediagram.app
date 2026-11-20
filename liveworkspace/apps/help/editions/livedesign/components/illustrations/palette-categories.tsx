@@ -5,9 +5,10 @@
 
 import type { ReactNode } from 'react';
 import { Label, Panel, Scene } from '@liveworkspace/help-site/art/primitives';
+import { Strip } from './editor-chrome';
 
-/** The palette body as a panel: its title bar, then the header band (selection mode on the
- *  left, the category picker on the right) the body hangs under. */
+/** The palette strip across the top with `category` pressed, and its flyout hanging under it: the category's
+ *  name in the flyout's title row, then the body. The scene's right edge crops the strip. */
 function PaletteFrame({
   category,
   h,
@@ -18,50 +19,12 @@ function PaletteFrame({
   children: ReactNode;
 }) {
   return (
-    <Panel x={60} y={10} w={300} h={h} title="PALETTE">
-      {/* Selection mode picker */}
-      <rect
-        x={72}
-        y={42}
-        width={40}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-100"
-        strokeWidth={1}
-      />
-      <path
-        d="M80 48 L80 60 L83.5 57 L85.5 61 L87.5 60 L85.5 56 L89.5 55.5 Z"
-        className="fill-brand-600"
-      />
-      <path
-        d="M100 52 l3 3 l3 -3"
-        className="stroke-brand-600"
-        strokeWidth={1.4}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Category picker */}
-      <rect
-        x={244}
-        y={42}
-        width={104}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-100"
-        strokeWidth={1}
-      />
-      <Label x={254} y={55} size={10} weight={700} className="fill-brand-700">
-        {category}
-      </Label>
-      <path
-        d="M334 52 l3 3 l3 -3"
-        className="stroke-brand-600"
-        strokeWidth={1.4}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {children}
-    </Panel>
+    <g>
+      <Strip x={8} y={8} open={category} />
+      <Panel x={60} y={40} w={300} h={h - 30} title={category}>
+        {children}
+      </Panel>
+    </g>
   );
 }
 
@@ -76,7 +39,7 @@ function SearchField({ y, text, w = 276 }: { y: number; text: string; w?: number
         height={24}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <circle
         cx={86}
@@ -111,7 +74,7 @@ function SideSwitch({ y, side }: { y: number; side: 'Icons' | 'Stickers' }) {
         height={24}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {(['Icons', 'Stickers'] as const).map((name, i) => (
         <g key={name}>
@@ -150,7 +113,7 @@ export function StickersSheet() {
     { text: 'BLOCKED', fill: 'fill-rose-500' },
   ];
   return (
-    <Scene w={420} h={262} bg="plain">
+    <Scene w={420} h={262}>
       <PaletteFrame category="Icons" h={244}>
         <SearchField y={76} w={172} text="Search icons and stickers" />
         <SideSwitch y={76} side="Stickers" />
@@ -175,7 +138,7 @@ export function StickersSheet() {
                   height={36}
                   rx={14}
                   className="fill-white stroke-slate-200"
-                  strokeWidth={1.5}
+                  strokeWidth={0.75}
                 />
                 <rect x={tx + 7} y={118} width={114} height={24} rx={10} className={b.fill} />
                 <Label x={tx + 64} y={131} anchor="middle" size={11} weight={700} tone="onAccent">
@@ -206,7 +169,7 @@ export function StickersSheet() {
                   height={36}
                   rx={11}
                   className="fill-white stroke-slate-200"
-                  strokeWidth={1.5}
+                  strokeWidth={0.75}
                 />
                 <text
                   x={tx + 18}

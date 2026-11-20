@@ -487,18 +487,6 @@ export const NEW_VERSION_OFFERED = opened(
   (t) => t === 'NewVersionPrompt',
 );
 
-export const EXPLORER_REASONS_OPENED = opened(
-  'Explorer Banner: Learn More',
-  'The Explorer\u2019s sign-in banner: Learn More opened the reasons to sign in.',
-  (t) => t === 'SignInReasonsExplorer',
-);
-
-export const EDITOR_REASONS_OPENED = opened(
-  'Editor Banner: Learn More',
-  'The editor\u2019s sign-in banner (shown after about five minutes of drawing as a guest): Learn More opened the reasons.',
-  (t) => t === 'SignInReasonsEditor',
-);
-
 // The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents kept Offline
 // after signing in"); charted with Offline Mode on the Dashboard.
 export const LOCAL_MOVE_OFFERED = opened(

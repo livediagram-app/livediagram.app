@@ -58,7 +58,7 @@ and take the callout's look, on an opaque surface with a shadow so they read ove
 
 ## Out of scope
 
-- **Sign-in prompts** (the sign-in banner, the sidebar card, the Settings sign-in card, the site's sign-in page
+- **Sign-in prompts** (the sidebar card, the Settings sign-in card, the site's sign-in page
   notices): they ask for a decision and are their own family.
 - **Inline field errors** (a line of rose text under a field) and **Saved / Copied** flashes: not boxes.
 - **Status that is not a notice**: a shape's live status badge, livedesign's component edit bar and photo busy pill,

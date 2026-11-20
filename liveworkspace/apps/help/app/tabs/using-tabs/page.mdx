@@ -9,6 +9,10 @@ import { TabMenu as LiveplannerTabMenu } from '@/editions/liveplanner/components
 import { TabMenu as LivedocumentsTabMenu } from '@/editions/livedocuments/components/illustrations/tabs';
 import { TabMenu as LivedesignTabMenu } from '@/editions/livedesign/components/illustrations/tabs';
 import { TabMenu as LivehuddleTabMenu } from '@/editions/livehuddle/components/illustrations/tabs';
+import { TabBar } from '@/editions/livedesign/components/illustrations/user-interface';
+import { TabBar as DocumentsTabBar } from '@/editions/livedocuments/components/illustrations/user-interface';
+import { TabBarOverview as PlannerTabBarOverview } from '@/editions/liveplanner/components/illustrations/tab-bar-scenes';
+import { TabBarOverview as HuddleTabBarOverview } from '@/editions/livehuddle/components/illustrations/tab-bar';
 
 export const metadata = helpMetadata({
   title: 'Using Tabs',
@@ -61,8 +65,24 @@ Each tab is a self-contained <Noun /> inside the <Noun />. A tab carries its own
   name shows it.
 </AppNote>
 
-<Figure caption="The tab bar runs along the bottom of the editor: the active tab is raised with its ⋯ menu button, and the plus button adds another tab.">
+<Figure app="livediagram,all" caption="The tab bar runs along the bottom of the editor: the active tab is raised with its ⋯ menu button, and the plus button adds another tab.">
   <TabBarOverview />
+</Figure>
+
+<Figure app="livedesign" caption="The tab bar runs along the bottom of the editor: the open tab raised with its ⋯ menu button, then the other tabs and +.">
+  <TabBar />
+</Figure>
+
+<Figure app="livedocuments" caption="The tab bar runs along the bottom of the editor: the open tab raised with its ⋯ menu, then the others and +.">
+  <DocumentsTabBar />
+</Figure>
+
+<Figure app="liveplanner" caption="The tab bar runs along the bottom of the editor: each tab shows its kind's icon, the open one is raised with its ⋯ menu button, and + adds another tab.">
+  <PlannerTabBarOverview />
+</Figure>
+
+<Figure app="livehuddle" caption="The tab bar along the bottom: one tab per floor, then + to add another.">
+  <HuddleTabBarOverview />
 </Figure>
 
 ## Adding a tab

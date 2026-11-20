@@ -82,7 +82,7 @@ export function WriteTextStyles() {
         height={208}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={200} y={31} size={11} weight={600} tone="strong">
         Write
@@ -139,7 +139,7 @@ export function TextStyleMenu() {
         height={196}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={246} y={35} size={11} weight={600} tone="strong">
         Text Style

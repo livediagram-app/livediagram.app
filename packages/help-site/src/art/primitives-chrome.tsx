@@ -5,6 +5,17 @@ import { Label } from './primitives-text';
 
 // --- UI chrome ---------------------------------------------------------------
 
+/** The soft lift the editor's floating surfaces have (a 1px hairline plus a diffuse shadow), drawn as two offset
+ *  translucent rects rather than an SVG filter so a page of figures stays cheap to paint. */
+export function Lift({ x, y, w, h, r }: { x: number; y: number; w: number; h: number; r: number }) {
+  return (
+    <>
+      <rect x={x} y={y + 6} width={w} height={h} rx={r} className="fill-slate-900/[0.04]" />
+      <rect x={x} y={y + 2} width={w} height={h} rx={r} className="fill-slate-900/[0.05]" />
+    </>
+  );
+}
+
 /** A floating editor panel with a title bar. Children draw inside the body. */
 export function Panel({
   x,
@@ -26,6 +37,7 @@ export function Panel({
   const barH = title ? 22 : 0;
   return (
     <g>
+      <Lift x={x} y={y} w={w} h={h} r={10} />
       <rect
         x={x}
         y={y}
@@ -33,24 +45,38 @@ export function Panel({
         height={h}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {title && (
         <>
-          <path
-            d={`M${x} ${y + 10} a10 10 0 0 1 10 -10 H${x + w - 10} a10 10 0 0 1 10 10 V${y + barH} H${x} Z`}
-            className={accentBar ? 'fill-brand-500' : 'fill-slate-50'}
-          />
-          <Label
+          {accentBar ? (
+            <path
+              d={`M${x} ${y + 10} a10 10 0 0 1 10 -10 H${x + w - 10} a10 10 0 0 1 10 10 V${y + barH} H${x} Z`}
+              className="fill-brand-500"
+            />
+          ) : (
+            <line
+              x1={x + 1}
+              y1={y + barH}
+              x2={x + w - 1}
+              y2={y + barH}
+              className="stroke-slate-100"
+              strokeWidth={0.75}
+            />
+          )}
+          {/* The editor titles a panel's sections in small spaced capitals (STROKE, BACKGROUND). */}
+          <text
             x={x + 12}
             y={y + barH / 2 + 1}
-            size={10}
-            weight={700}
-            tone={accentBar ? 'onAccent' : 'muted'}
-            className={accentBar ? undefined : 'fill-slate-400'}
+            fontSize={8.5}
+            fontWeight={600}
+            letterSpacing={0.7}
+            dominantBaseline="middle"
+            className={accentBar ? 'fill-white help-art-as-drawn' : 'fill-slate-500'}
+            style={{ fontFamily: 'system-ui, sans-serif', textTransform: 'uppercase' }}
           >
             {title}
-          </Label>
+          </text>
         </>
       )}
       {children}
@@ -85,6 +111,7 @@ export function Dialog({
   return (
     <g>
       {scrim && <rect x={0} y={0} width={sceneW} height={sceneH} className="fill-slate-900/10" />}
+      <Lift x={x} y={y} w={w} h={h} r={12} />
       <rect
         x={x}
         y={y}
@@ -92,7 +119,7 @@ export function Dialog({
         height={h}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {title && (
         <>
@@ -104,8 +131,8 @@ export function Dialog({
             y1={y + 36}
             x2={x + w}
             y2={y + 36}
-            className="stroke-slate-200"
-            strokeWidth={1.5}
+            className="stroke-slate-100"
+            strokeWidth={0.75}
           />
         </>
       )}
@@ -133,13 +160,13 @@ export function Button({
   icon?: ReactNode;
 }) {
   const cls = {
-    default: 'fill-white stroke-slate-300',
-    primary: 'fill-brand-500 stroke-brand-600',
+    default: 'fill-white stroke-slate-200',
+    primary: 'fill-brand-600 stroke-brand-600',
     ghost: 'fill-slate-100 stroke-transparent',
   }[variant];
   return (
     <g>
-      <rect x={x} y={y} width={w} height={h} rx={7} className={cls} strokeWidth={1.5} />
+      <rect x={x} y={y} width={w} height={h} rx={8} className={cls} strokeWidth={0.75} />
       {label && (
         <Label
           x={x + w / 2 + (icon ? 6 : 0)}
@@ -189,7 +216,9 @@ export function BarTab({
   const card = `M${x} ${bottom} V${y + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom}`;
   return (
     <g>
-      {active && <path d={`${card} Z`} className="fill-white stroke-slate-300" strokeWidth={1} />}
+      {active && (
+        <path d={`${card} Z`} className="fill-white stroke-slate-300" strokeWidth={0.75} />
+      )}
       {beside && !active && (
         <path
           d={card}
@@ -237,9 +266,9 @@ export function Tabs({
         y={y}
         width={tabW * items.length}
         height={h}
-        rx={7}
-        className="fill-slate-100 stroke-slate-200"
-        strokeWidth={1.5}
+        rx={8}
+        className="fill-slate-100 stroke-slate-100"
+        strokeWidth={0.75}
       />
       {items.map((it, i) => {
         const tx = x + i * tabW;
@@ -252,9 +281,9 @@ export function Tabs({
                 y={y + 2}
                 width={tabW - 4}
                 height={h - 4}
-                rx={5}
+                rx={6}
                 className="fill-white stroke-slate-200"
-                strokeWidth={1}
+                strokeWidth={0.75}
               />
             )}
             <Label
@@ -293,14 +322,15 @@ export function Menu({
   const h = items.length * rowH + 8;
   return (
     <g>
+      <Lift x={x} y={y} w={w} h={h} r={10} />
       <rect
         x={x}
         y={y}
         width={w}
         height={h}
-        rx={8}
+        rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {items.map((it, i) => {
         const ry = y + 4 + i * rowH;
@@ -349,9 +379,9 @@ export function Tile({
         y={y}
         width={size}
         height={size}
-        rx={6}
-        className={active ? 'fill-brand-500 stroke-brand-600' : 'fill-slate-50 stroke-slate-200'}
-        strokeWidth={1.5}
+        rx={7}
+        className={active ? 'fill-brand-500 stroke-brand-600' : 'fill-white stroke-slate-200'}
+        strokeWidth={0.75}
       />
       {children && <g transform={`translate(${x + size / 2} ${y + size / 2})`}>{children}</g>}
       {label && (

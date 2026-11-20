@@ -3,6 +3,10 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { StickyNotes } from '@liveworkspace/help-site/art/illustrations/palette-tools';
 import { PaletteRows } from '@liveworkspace/help-site/art/illustrations/palette-rows';
+import { StickyNotes as DiagramStickyNotes } from '@/editions/livediagram/components/illustrations/palette-tools';
+import { StickyNotes as HuddleStickyNotes } from '@/editions/livehuddle/components/illustrations/palette-tools';
+import { WriteRows } from '@/editions/livediagram/components/illustrations/palette-categories';
+import { WriteRows as HuddleWriteRows } from '@/editions/livehuddle/components/illustrations/palette-categories';
 
 export const metadata = helpMetadata({
   title: 'Sticky Notes',
@@ -23,8 +27,16 @@ export const metadata = helpMetadata({
 
 A sticky note is a small coloured card for a short piece of text: an idea, a question, a label, a brainstorm item. It is the digital version of the paper sticky, and it behaves like any other canvas element once placed.
 
-<Figure caption="A scatter of coloured sticky notes, the way a brainstorm wall looks on the canvas.">
+<Figure app="livedesign,livedocuments,liveplanner,all" caption="A scatter of coloured sticky notes, the way a brainstorm wall looks on the canvas.">
   <StickyNotes />
+</Figure>
+
+<Figure app="livediagram" caption="Sticky notes as livediagram places them: square, borderless and softly lifted, in any of the note colours, the words at the top left.">
+  <DiagramStickyNotes />
+</Figure>
+
+<Figure app="livehuddle" caption="Sticky notes in their colours, scattered across a Space.">
+  <HuddleStickyNotes />
 </Figure>
 
 ## Adding one
@@ -40,8 +52,16 @@ A sticky note is a small coloured card for a short piece of text: an idea, a que
 
 <AppNote app="livediagram,livehuddle">
 
-<Figure caption="The Write category with Note armed: the sticky note's row, with its N key on the right.">
+<Figure app="livedesign,livedocuments,liveplanner,all" caption="The Write category with Note armed: the sticky note's row, with its N key on the right.">
   <PaletteRows category="Write" active="Note" />
+</Figure>
+
+<Figure app="livediagram" caption="The Write category open under the strip: Note is the coloured note card, with its N key on the right.">
+  <WriteRows />
+</Figure>
+
+<Figure app="livehuddle" caption="Write's flyout: Text and Note, each with its key.">
+  <HuddleWriteRows />
 </Figure>
 
 </AppNote>

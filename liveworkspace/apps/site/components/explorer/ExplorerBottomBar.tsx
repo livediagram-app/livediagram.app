@@ -4,7 +4,7 @@
 // page, as the apps' own Explorers had it, its controls on the right: Search, Settings (a guest's too, on an app's
 // address), Notifications (the bell, an icon alone) and Appearance, each with its name beside its icon on a wide screen, icons alone on a narrow one. Its
 // hints are portalled and open upward.
-// The toasts and a guest's sign-in banner stand on it (`--explorer-floor`, EXPLORER_FLOOR).
+// The toasts and the Drive reconnect notice stand on it (`--explorer-floor`, EXPLORER_FLOOR).
 
 import { SearchIcon, SettingsIcon } from '@livediagram/ui';
 import { SiteAppearanceToggle } from '@/lib/appearance/appearance-hooks';
@@ -104,8 +104,11 @@ export function ExplorerBottomBar({
       ) : null}
       {/* The notification list (liveworkspace/docs/specs/016-notifications/toasts.md): an icon alone, right of
           Settings; the Explorer's toasts collapse into it as they leave. */}
-      <ToastBell className={BTN} />
-      <SiteAppearanceToggle look="rail" labelFrom="md" />
+      {/* The bell and the light / dark switch sit as a pair, closer than the bar's gap (the owner, 2026-11-20). */}
+      <span className="inline-flex shrink-0 items-center">
+        <ToastBell className={BTN} />
+        <SiteAppearanceToggle look="rail" labelFrom="md" />
+      </span>
     </div>
   );
 }

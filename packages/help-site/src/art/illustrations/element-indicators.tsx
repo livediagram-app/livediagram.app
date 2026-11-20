@@ -209,7 +209,7 @@ export function IndicatorPlacementScene() {
         height={20}
         rx={10}
         className="fill-white stroke-slate-300"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <Glyph kind="note" cx={pipX - 11} cy={pipY} scale={0.8} />
       <Glyph kind="comment" cx={pipX + 3} cy={pipY} scale={0.8} />

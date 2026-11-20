@@ -3,6 +3,7 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { ElementLink, LinkCard } from '@/editions/livediagram/components/illustrations/canvas';
 import { LinkElementDialogScene } from '@liveworkspace/help-site/art/illustrations/canvas-links-notes';
+import { ElementLink as DesignElementLink } from '@/editions/livedesign/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'Links',
@@ -57,8 +58,12 @@ To change a link, open the same dialog again and pick a new target; the Remove l
   <LinkElementDialogScene noun="design" />
 </Figure>
 
-<Figure caption="A linked element gains a follow-link badge; clicking it jumps to the target, here another tab.">
+<Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="A linked element gains a follow-link badge; clicking it jumps to the target, here another tab.">
   <ElementLink />
+</Figure>
+
+<Figure app="livedesign" caption="A linked button wears a link badge; following it jumps to the page it links to, here Checkout.">
+  <DesignElementLink />
 </Figure>
 
 <Note>

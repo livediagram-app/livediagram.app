@@ -73,7 +73,7 @@ function Callout({
         x2={x}
         y2={labelY - 9}
         className="stroke-slate-300"
-        strokeWidth={1}
+        strokeWidth={0.75}
         strokeDasharray="2 2"
       />
       <circle cx={x} cy={TOP + H + 4} r={1.8} className="fill-slate-400" />

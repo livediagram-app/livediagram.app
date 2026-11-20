@@ -1,7 +1,9 @@
 // Tools-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): light/dark mode, and Layout Cleanup's Auto-Align.
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
+import { Scene, Arrow, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
+import { BAR_H, BottomBar } from './editor-chrome';
+import { Desk, Room } from './space-furniture';
 
 // --- Light / dark mode ------------------------------------------------------
 
@@ -99,32 +101,16 @@ function ChromeButton({
  *  and Settings, and the Light → Dark → System cycle each click steps through. */
 export function LightDarkToggle() {
   return (
-    <Scene w={420} h={210} bg="canvas">
-      {/* The tab bar along the bottom of the editor. */}
-      <rect
-        x={0}
-        y={150}
-        width={420}
-        height={44}
-        className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+    <Scene w={420} h={190} bg="canvas">
+      {/* The bottom bar, its appearance switch last at the right. */}
+      <BottomBar y={190 - BAR_H} w={420} />
+      <circle
+        cx={407}
+        cy={190 - BAR_H + 15}
+        r={9}
+        className="fill-none stroke-brand-500"
+        strokeWidth={1.25}
       />
-      <rect
-        x={14}
-        y={159}
-        width={70}
-        height={26}
-        rx={7}
-        className="fill-brand-500 stroke-brand-600"
-        strokeWidth={1.5}
-      />
-      <Label x={49} y={173} size={11} weight={600} anchor="middle" tone="onAccent">
-        Tab 1
-      </Label>
-      <ChromeButton x={236} y={159} w={66} label="Tools" />
-      <ChromeButton x={308} y={159} w={70} label="Settings" />
-      {/* The Appearance button itself is icon-only. */}
-      <ChromeButton x={384} y={159} w={30} label="" glyph="sun" />
       {/* The cycle each click walks through. */}
       <ChromeButton x={58} y={44} w={74} label="Light" glyph="sun" on />
       <Arrow from={[138, 57]} to={[168, 57]} tone="muted" />
@@ -191,39 +177,40 @@ export function CleanupBeforeAfter() {
   );
 }
 
-/** Auto-Align: shapes a few pixels off the grid snapping onto it (the whole tab, no selection). */
+/** Auto-Align: desks a few pixels off the grid snapping onto it (the whole tab, no selection). */
 export function AutoAlignGrid() {
   return (
-    <Scene w={420} h={220}>
-      {/* Faint reference grid lines */}
-      {[80, 160, 240, 320].map((gx) => (
+    <Scene w={420} h={200}>
+      <Room x={30} y={20} w={360} h={164} name="Desks" />
+      {[96, 176, 256, 336].map((gx) => (
         <line
           key={`v${gx}`}
           x1={gx}
-          y1={28}
+          y1={34}
           x2={gx}
-          y2={192}
-          className="stroke-slate-200"
-          strokeWidth={1}
+          y2={178}
+          className="stroke-sky-400/50"
+          strokeWidth={0.75}
         />
       ))}
-      {[64, 128, 192].map((gy) => (
+      {[64, 124].map((gy) => (
         <line
           key={`h${gy}`}
-          x1={48}
+          x1={40}
           y1={gy}
-          x2={372}
+          x2={380}
           y2={gy}
-          className="stroke-slate-200"
-          strokeWidth={1}
+          className="stroke-sky-400/50"
+          strokeWidth={0.75}
         />
       ))}
-      {/* Where each shape sat, a few pixels off: the snap moves it only that far. */}
-      <Shape x={85} y={69} w={80} h={42} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Shape x={236} y={124} w={80} h={42} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      {/* Snapped: corners on the grid, sides on grid lines. */}
-      <Shape x={80} y={64} w={80} h={42} accent label="A" />
-      <Shape x={240} y={128} w={80} h={42} accent label="B" />
+      {/* Where each desk sat, a few pixels off: the snap moves it only that far. */}
+      <g opacity={0.3}>
+        <Desk x={101} y={69} chair={false} />
+        <Desk x={252} y={128} chair={false} />
+      </g>
+      <Desk x={96} y={64} />
+      <Desk x={256} y={124} />
     </Scene>
   );
 }

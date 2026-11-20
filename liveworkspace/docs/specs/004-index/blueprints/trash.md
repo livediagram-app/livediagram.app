@@ -13,6 +13,7 @@ Scope, by file:
 | `liveworkspace/apps/index/src/account-purge.ts`                                                          | `POST /internal/purge-person`, `purgePerson`, `continuePurges`                                              |
 | `liveworkspace/apps/index/src/person-notices.ts`                                                         | `recordPersonNotices`, `drainPersonNotices`                                                                 |
 | `liveworkspace/apps/index/src/assistant-notices.ts`                                                      | `POST /internal/assistant-revoked`, `recordAssistantNotices`, `drainAssistantNotices` (Work Tracker 1294)   |
+| `liveworkspace/apps/index/src/notice-queue.ts`                                                           | `giveUpStale`, `dueRows`, `settle`: the retry rule the three notice queues share (Work Tracker 1319)        |
 | `packages/index-app/src/purge.ts`, `anonymise.ts`                                                        | Each app's side: drop an item's room, anonymise a closed account in its items                               |
 
 ## Domain and naming
@@ -126,7 +127,30 @@ the teams' live items by `scope` and `app` (`items_live_app`), `shared_with`, `o
 drains too (`step('assistant notices')`). A drain gives up rows older than 7 days (logged), then takes up to 20 due
 (person, client, app) groups (never tried, or not for an hour); each
 `POST <app>/api/internal/people/:id/assistant-revoked { client, items }` with up to 100 items; confirmed rows go; an
-app not configured counts as confirmed; a failure gets `attempts + 1` and `last_attempt_at`.
+app not configured counts as confirmed; a failure gets `attempts + 1` and `last_attempt_at`. A run makes at most
+`ASSISTANT_CALLS_PER_RUN` (50) calls across its groups; a group goes on in calls of 100 until its due rows run out or
+a call fails, and only that call's rows are marked.
+
+### The shared retry (`notice-queue.ts`)
+
+The three queues that tell the apps about a change (`person_app_notices`, `person_app_merges` in
+[guest-merge.md](guest-merge.md), `assistant_notices`) keep their own tables, payloads, grouping and per-run budgets,
+and share one retry rule (Work Tracker 1319), so a fix to it is made once:
+
+- `giveUpStale(db, queue, now, ...after)`: one batch deleting the rows created more than `NOTICE_GIVE_UP_MS` (7 days)
+  ago, then any statements the queue adds (person notices: their orphaned guests); logs the queue's `givenUp` line.
+- `dueRows(db, queue, columns, limit, now)`: up to `limit` distinct `columns` of rows never tried or last tried more
+  than `NOTICE_RETRY_AFTER_MS` (1 hour) ago (`DUE_SQL`, `dueBefore`).
+- `settle(db, queue, outcome, { confirm, fail }, now)`: a confirmed call (`ok`, or `app_not_configured`, an app this
+  deployment does not run) deletes the `confirm` scope; any other outcome sets `attempts + 1` and `last_attempt_at` on
+  the `fail` scope and logs the queue's `notTaken` line. A scope is a key (column to value) and optionally the
+  `item_id`s it covers. Person notices confirm the items sent (and the `''` row) and mark the whole (person, app)
+  group; merges confirm the row only while its `user_id` is the one sent and mark the (guest, app) row; AI tool
+  notices confirm and mark only the call's items.
+
+Each queue keeps its own per-run limit (20 groups, 50 merges, 20 groups and 50 calls), so a large account closure
+cannot crowd out merges. Merging the three tables was set aside: a two-deploy D1 migration, in-flight purge notices
+at risk, and one shared limit letting one queue starve the others.
 
 ## Data and persistence
 
@@ -159,6 +183,7 @@ app not configured counts as confirmed; a failure gets `attempts + 1` and `last_
 | `liveworkspace/apps/index/src/app.test.ts` (15)             | the daily purge; the empty clean-up                                                             |
 | `liveworkspace/apps/index/src/account-purge.test.ts` (9)    | `POST /internal/purge-person`; telling the apps about a closed account, its merged guests named |
 | `packages/index-app/src/purge.test.ts`, `anonymise.test.ts` | each app dropping rooms and anonymising                                                         |
+| `liveworkspace/apps/index/src/notice-queue.test.ts`         | the shared retry: give-up, due rows, confirm and mark scopes, `app_not_configured` confirmed    |
 | `liveworkspace/apps/index/src/standing.test.ts`             | the app told on trash and restore, once, a failed call retried once                             |
 | `packages/index-app/src/standing-door.test.ts`              | the app's `standing` door: the body, no handler, a handler that throws                          |
 
@@ -170,7 +195,7 @@ app not configured counts as confirmed; a failure gets `attempts + 1` and `last_
 `items/shared.ts`); `ANONYMISED_PERSON` `'deleted'` (`@liveworkspace/index-client`), `CHUNK` 500, `TEAMS_MAX` 200, `LINGER_MS` 2 h, `FREQUENT_CRON`
 `*/15 * * * *`, `TOMBSTONES_PER_FREQUENT_RUN` 300, `TOMBSTONE_RETRY_AFTER_MS` 1 h, `PURGES_PER_RUN` 20,
 `CALL_BUDGET` 5 s / 300, `CRON_BUDGET` 30 s / 300 (`account-purge.ts`); `PERSON_ITEMS_PER_CALL` 100, `RECORD_MAX`
-5,000, `GROUPS_PER_RUN` 20, `NOTICE_RETRY_AFTER_MS` 1 h, `NOTICE_GIVE_UP_MS` 7 d (`person-notices.ts`);
+5,000, `GROUPS_PER_RUN` 20 (`person-notices.ts`); `NOTICE_RETRY_AFTER_MS` 1 h, `NOTICE_GIVE_UP_MS` 7 d (`notice-queue.ts`);
 `ROOM_PURGE_TIMEOUT_MS` 3 s, `ROOM_PURGE_CONCURRENCY` 10, `BULK_PURGE_MAX` 100 (`packages/index-app/src/purge.ts`).
 
 ## Defaults ledger

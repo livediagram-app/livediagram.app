@@ -52,7 +52,7 @@ export function TabMenu() {
         height={152}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* Toolbar: Rename, Duplicate, Paste, Side by Side | Lock Tab, Delete */}
       {[0, 1, 2, 3].map((i) => (
@@ -164,7 +164,7 @@ export function TabMenu() {
         x2={mx + mw}
         y2={my + 40}
         className="stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <MenuRowList x={mx} y={my + 46} w={mw} rows={rows} />
       <Label x={14} y={30} size={10} tone="muted">
@@ -197,7 +197,7 @@ export function AddToDesignMenu() {
           height={24}
           rx={6}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         <Label x={dx + 26} y={dy + 61} size={11} tone="muted">
           Filter designs…

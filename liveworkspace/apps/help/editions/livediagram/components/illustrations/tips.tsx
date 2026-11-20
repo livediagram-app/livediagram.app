@@ -4,7 +4,7 @@
 // canvas.tsx, not redrawn. Composed only from the shared primitives.
 
 import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { MenuCard, Strip } from './toolbar-layout';
+import { TopRow } from './editor-chrome';
 
 /** A single key cap, sized to its glyph, drawn like a physical keyboard key. */
 function KeyCap({ x, y, w = 24, label }: { x: number; y: number; w?: number; label: string }) {
@@ -60,16 +60,15 @@ export function KeyboardShortcuts() {
   );
 }
 
-/** The palette strip across the top of the canvas, Diagram's category bar, with the menu button and
- *  the tab's name in their card to its left. */
+/** The editor's top row over a small flow: the palette strip across the top with its categories as icon buttons,
+ *  Library and Search at its end, the logo and the menu with the mode switch to its left. */
 export function CommandPalette() {
   return (
-    <Scene w={420} h={190}>
-      <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} />
-      <Shape x={60} y={104} w={84} h={46} kind="rect" label="Start" />
-      <Shape x={268} y={104} w={84} h={46} kind="rect" accent label="Ship" />
-      <Arrow from={[144, 127]} to={[268, 127]} />
+    <Scene w={540} h={170}>
+      <TopRow w={540} />
+      <Shape x={150} y={92} w={84} h={46} kind="rect" label="Start" />
+      <Shape x={318} y={92} w={84} h={46} kind="rect" accent label="Ship" />
+      <Arrow from={[234, 115]} to={[318, 115]} />
     </Scene>
   );
 }

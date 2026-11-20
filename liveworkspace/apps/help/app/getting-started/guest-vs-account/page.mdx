@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { GuestVsAccount } from '@liveworkspace/help-site/art/illustrations/getting-started';
+import { GuestVsAccount as DocumentsGuestVsAccount } from '@/editions/livedocuments/components/illustrations/about';
+import { GuestVsAccount as PlannerGuestVsAccount } from '@/editions/liveplanner/components/illustrations/account-scenes';
+import { GuestVsAccount as HuddleGuestVsAccount } from '@/editions/livehuddle/components/illustrations/getting-started';
 
 export const metadata = helpMetadata({
   title: 'Guest vs Account',
@@ -18,8 +21,20 @@ A core principle of <AppName /> is that **it always works without signing in**. 
   guest.
 </AppNote>
 
-<Figure caption="As a guest your library lives in one browser; an account syncs the same work across every device.">
+<Figure app="livediagram,livedesign,all" caption="As a guest your library lives in one browser; an account syncs the same work across every device.">
   <GuestVsAccount />
+</Figure>
+
+<Figure app="livedocuments" caption="As a guest your documents live in one browser; an account syncs them across every device.">
+  <DocumentsGuestVsAccount />
+</Figure>
+
+<Figure app="liveplanner" caption="As a guest your plans live in one browser; an account syncs the same plans across every device.">
+  <PlannerGuestVsAccount />
+</Figure>
+
+<Figure app="livehuddle" caption="As a guest your Spaces live in this browser; with an account they follow you to every device.">
+  <HuddleGuestVsAccount />
 </Figure>
 
 ## What You Get as a Guest
@@ -102,29 +117,18 @@ Accounts are free like everything else in <AppName />, there is no paid tier.
 
 ## The Sign-In Reminder
 
-While you work as a guest, a card at the bottom of the screen reminds you that an account is there: **Sign In to Use Teams**, with a line saying what that brings: sharing with your team and your <Noun plural /> synced across devices. It has two buttons and a close:
+While you work as a guest in the editor, a notification at the bottom of the screen reminds you that an account is there, in one line: **Sign in to get Teams, AI & even more powerful features.** It has one button and a close:
 
 - **Sign In** takes you to the sign-in page, and brings you back where you were afterwards.
-- **Learn More** opens **Why sign in?**, a short list of what an account adds: keeping your <Noun plural /> safe from a cache clear, opening them on any device, working as a team, showing your real name to collaborators, and managing all your share links in one place. It has its own **Sign In** button, and **Maybe later** to close it.
-- **×** dismisses the card.
+- **×** dismisses it.
 
-<AppNote app="livediagram,livedesign,livedocuments,liveplanner">
-  The card's line also mentions building with AI, and **Why sign in?** also lists connecting AI
-  tools with API tokens.
-</AppNote>
-
-<AppNote app="livehuddle">
-  The card's line also mentions API tokens for your own scripts, and **Why sign in?** lists using
-  the API from your own scripts.
-</AppNote>
-
-**When it appears.** In the [Explorer](/help/explorer/explorer-page/) it shows straight away. In the editor it waits until you have been in a <Noun /> for about five minutes, so it never greets you the moment you open one, and it stays out of embedded <Noun plural />.
+**When it appears.** It waits until you have been in a <Noun /> for about five minutes, so it never greets you the moment you open one, and it stays out of embedded <Noun plural />. The [Explorer](/help/explorer/explorer-page/) never shows it; there, the **Sign In to Use Teams** card under Spaces is the way in.
 
 <AppNote app="livediagram,livedesign,livedocuments,liveplanner">
   It also stays out of [Zen mode](/help/tools/zen-mode/).
 </AppNote>
 
-**Dismissing it** hides it everywhere in this browser, in the Explorer and the editor alike, and it doesn't come back. It is only a reminder: nothing stops working if you ignore it.
+**Dismissing it** hides it in this browser, and it doesn't come back. It is only a reminder: nothing stops working if you ignore it.
 
 It never appears once you are signed in.
 

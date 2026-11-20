@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { WorkStorage, AccessControl } from '@liveworkspace/help-site/art/illustrations/privacy';
+import { AccessControl as PlannerAccessControl } from '@/editions/liveplanner/components/illustrations/account-scenes';
 
 export const metadata = helpMetadata({
   title: 'Data Privacy',
@@ -185,11 +186,8 @@ A <Noun /> is owned by an identity. That identity is either a signed-in account 
   <AccessControl noun="space" />
 </Figure>
 
-<Figure
-  app="liveplanner"
-  caption="A plan is tied to its owner, so a request from anyone without access comes back as a plain not found."
->
-  <AccessControl noun="plan" />
+<Figure app="liveplanner" caption="A plan is tied to its owner, so a request from anyone without access comes back as a plain not found.">
+  <PlannerAccessControl noun="plan" />
 </Figure>
 
 <AppNote app="livehuddle">

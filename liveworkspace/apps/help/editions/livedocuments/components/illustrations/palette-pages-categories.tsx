@@ -10,8 +10,9 @@
 
 import type { ReactNode } from 'react';
 
-import { Scene, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { STRIP_W, Strip } from './toolbar-layout';
+import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
+import { STRIP_W, Strip, type StripItem } from './editor-chrome';
+import { CategoryPanel } from './palette-flyout';
 
 const PX = 60;
 const PW = 300;
@@ -38,10 +39,17 @@ function PaletteFrame({
 }) {
   return (
     <Scene w={420} h={sceneH + DROP} bg="plain">
-      <Strip x={(420 - STRIP_W) / 2} y={8} open={category} />
-      <Panel x={PX} y={48} w={PW} h={h - DROP} title={title.toUpperCase()}>
+      <Strip x={(420 - STRIP_W) / 2} y={8} open={category.toLowerCase() as StripItem} />
+      <CategoryPanel
+        x={PX}
+        y={48}
+        w={PW}
+        h={h - DROP}
+        item={category.toLowerCase() as StripItem}
+        title={title}
+      >
         <g transform={`translate(0 ${DROP})`}>{children}</g>
-      </Panel>
+      </CategoryPanel>
     </Scene>
   );
 }
@@ -74,7 +82,7 @@ function Row({
           height={30}
           rx={7}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
       )}
       <rect
@@ -84,7 +92,7 @@ function Row({
         height={24}
         rx={6}
         className="fill-brand-50 stroke-brand-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <g transform={`translate(${x + 12} ${y + 12})`}>{glyph}</g>
       <Label x={x + 32} y={y + 6} size={11} weight={600} tone="strong">
@@ -321,14 +329,14 @@ export function IconsCategory() {
         height={24}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <circle
         cx={left + 13}
         cy={70}
         r={4}
         className="fill-none stroke-slate-400"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <path d={`M${left + 16} ${73} l4 4`} className="stroke-slate-400" strokeWidth={1.5} />
       <Label x={left + 26} y={71} size={10} tone="muted">
@@ -347,7 +355,7 @@ export function IconsCategory() {
               height={44}
               rx={9}
               className="fill-white stroke-slate-200"
-              strokeWidth={1.5}
+              strokeWidth={0.75}
             />
             <g transform={`translate(${tx + 66} ${ty + 15})`}>{glyphs[i]}</g>
             <Label x={tx + 66} y={ty + 34} anchor="middle" size={10} weight={500} tone="body">

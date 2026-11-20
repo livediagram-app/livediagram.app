@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { PagesScene } from '@/editions/livedocuments/components/illustrations/pages';
 import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { DocumentPresence } from '@/editions/livedocuments/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'What is livedocuments?',
@@ -42,8 +43,12 @@ When more than one person is in the same document, everyone sees live cursors, w
 
 To make that frictionless, the editor **always works without signing in**. You can open a new document, build something real, and hand the link to a colleague who edits it straight away, no account required. See [Sharing your document](/help/getting-started/sharing-your-document/).
 
-<Figure caption="Everyone in a document sees each other's live cursors and presence at once.">
+<Figure app="livediagram,livedesign,liveplanner,livehuddle,all" caption="Everyone in a document sees each other's live cursors and presence at once.">
   <LiveCursors />
+</Figure>
+
+<Figure app="livedocuments" caption="Everyone in a document sees each other's live cursors, selections and who is on each tab.">
+  <DocumentPresence />
 </Figure>
 
 ## Free and open source

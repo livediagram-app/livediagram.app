@@ -21,7 +21,7 @@ export function PollPromptSheet() {
         height={140}
         rx={14}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <rect x={194} y={99} width={32} height={4} rx={2} className="fill-slate-300" />
       <Label x={58} y={120} size={10} weight={700} tone="accent">

@@ -106,7 +106,8 @@ DEFAULT 0`). `person_aliases` (0021): `person_id`, `merged_at`. The merge also w
 
 ## Constants and configuration
 
-`PERSON_ALIASES_MAX` 32 (`person-aliases.ts`); `MERGES_PER_RUN` 50, `NOTICE_RETRY_AFTER_MS` 1 h, `NOTICE_GIVE_UP_MS` 7 d (`person-merges.ts`, `person-notices.ts`);
+`PERSON_ALIASES_MAX` 32 (`person-aliases.ts`); `MERGES_PER_RUN` 50 (`person-merges.ts`); `NOTICE_RETRY_AFTER_MS` 1 h, `NOTICE_GIVE_UP_MS` 7 d and the shared retry
+(`notice-queue.ts`, [trash.md](trash.md#the-shared-retry-notice-queuets));
 `HANDOFF_MAX_BYTES` 32 MiB, `HANDOFF_APP_TIMEOUT_MS` 30 s (`migration-handoff.ts`, `config.ts`). `MIGRATION_LIMITER`:
 namespace `1106` (staging `2106`), 60 per 60 s; absent, nothing is limited.
 

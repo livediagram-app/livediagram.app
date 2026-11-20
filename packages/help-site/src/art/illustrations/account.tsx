@@ -17,7 +17,7 @@ export function GuestIdentity({ product }: { product: string }) {
         height={174}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <path
         d="M48 40 a12 12 0 0 1 12 -12 H360 a12 12 0 0 1 12 12 V52 H48 Z"
@@ -33,7 +33,7 @@ export function GuestIdentity({ product }: { product: string }) {
         height={14}
         rx={7}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={118} y={41} size={10} tone="muted">
         {`${product}.app/new`}
@@ -70,7 +70,7 @@ export function GuestIdentity({ product }: { product: string }) {
         height={40}
         rx={8}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={308} y={154} anchor="middle" size={10} weight={600} tone="muted">
         No sign-in
@@ -95,7 +95,7 @@ export function MigrateOnSignUp() {
         height={108}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={44} y={80} size={10} weight={700} tone="muted">
         GUEST ID

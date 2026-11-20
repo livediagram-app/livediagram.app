@@ -51,7 +51,7 @@ export function TabBar() {
     <Scene w={500} h={140}>
       <Shape x={195} y={22} w={110} h={46} label="Checkout" />
       <rect x={0} y={y} width={500} height={36} className="fill-slate-100" />
-      <line x1={0} y1={y} x2={500} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={0} y1={y} x2={500} y2={y} className="stroke-slate-200" strokeWidth={0.75} />
       {/* The open tab, a card on the bar's bottom edge, with a presence avatar and its ⋯. */}
       <TabCard x={40} top={y + 5} bottom={y + 36} w={92} />
       <Label x={48} y={y + 19} size={9.5} weight={650} tone="accent">
@@ -129,7 +129,7 @@ export function ZoomControls() {
           x2={px + 84}
           y2={py + 143}
           className="stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <Label x={px + 46} y={py + 157} size={10} weight={500} tone="body" anchor="middle">
           Fit to screen

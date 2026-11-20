@@ -5,6 +5,8 @@ import {
   SideBySideOpen,
 } from '@liveworkspace/help-site/art/illustrations/tabs-side-by-side';
 import { helpMetadata } from '@/lib/seo';
+import { SideBySideDrag as DesignSideBySideDrag, SideBySideOpen as DesignSideBySideOpen } from '@/editions/livedesign/components/illustrations/tabs-scenes';
+import { SideBySideDrag as PlannerSideBySideDrag, SideBySideOpen as PlannerSideBySideOpen } from '@/editions/liveplanner/components/illustrations/tab-bar-scenes';
 
 export const metadata = helpMetadata({
   title: 'Side by Side Tabs',
@@ -21,8 +23,16 @@ Tabs keep related work together: the draft and the reference, the overview and t
 
 Drag a tab from the tab bar toward the **right edge** of the screen. A glowing rail wakes along the edge as you head for it, and once you're close, a preview of the pane slides in showing that tab's content. Let go there, and the tab opens on the right.
 
-<Figure caption="Drag a tab to the right edge; the preview shows what will open there.">
+<Figure app="livediagram,livedocuments,livehuddle,all" caption="Drag a tab to the right edge; the preview shows what will open there.">
   <SideBySideDrag firstTab="Goals" />
+</Figure>
+
+<Figure app="livedesign" caption="Drag a tab to the right edge; the preview shows what will open there.">
+  <DesignSideBySideDrag />
+</Figure>
+
+<Figure app="liveplanner" caption="Drag a tab to the window's right edge; the preview says which tab will open there.">
+  <PlannerSideBySideDrag />
 </Figure>
 
 - Drag a **different** tab and it opens on the right, while you keep working where you are on the left.
@@ -35,8 +45,16 @@ You can also open the tab's menu (the **⋯** button on the active tab, or right
 
 Each tab keeps its side. The site header runs across the top of both, and the tab bar across the bottom, just as with one tab. Your toolbars and panels (the palette, the Explorer, the map and zoom) sit in the pane you're working in.
 
-<Figure caption="One header and one tab bar across both panes; the toolbars sit with the tab you're editing.">
+<Figure app="livediagram,livedocuments,livehuddle,all" caption="One header and one tab bar across both panes; the toolbars sit with the tab you're editing.">
   <SideBySideOpen firstTab="Goals" />
+</Figure>
+
+<Figure app="livedesign" caption="Two tabs side by side over one tab bar; the right pane's tab is outlined in the bar.">
+  <DesignSideBySideOpen />
+</Figure>
+
+<Figure app="liveplanner" caption="Two tabs side by side, a board and the Budget sheet, with one tab bar under both.">
+  <PlannerSideBySideOpen />
 </Figure>
 
 To work on the other tab, **click** in its pane, or simply **rest the pointer** there for a moment. The toolbars glide across to it. Neither content moves: each tab stays exactly where it was on screen, at the same zoom.

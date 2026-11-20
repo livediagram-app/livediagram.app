@@ -2,8 +2,9 @@
 // pressed on the category bar. The sticker badges come from packages/icons/src/sticker-catalog.ts.
 
 import type { ReactNode } from 'react';
-import { Label, Panel, Scene } from '@liveworkspace/help-site/art/primitives';
-import { STRIP_W, Strip } from './toolbar-layout';
+import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
+import { STRIP_W, Strip, type StripItem } from './editor-chrome';
+import { CategoryPanel } from './palette-flyout';
 
 /** The palette strip with `category` pressed on its bar, and that category's flyout under it, `h` tall from the
  *  strip's top: the category's name, then its body. */
@@ -18,10 +19,10 @@ function PaletteFrame({
 }) {
   return (
     <g>
-      <Strip x={(420 - STRIP_W) / 2} y={8} open={category} />
-      <Panel x={60} y={48} w={300} h={h - 38} title={category.toUpperCase()}>
+      <Strip x={(420 - STRIP_W) / 2} y={8} open={category.toLowerCase() as StripItem} />
+      <CategoryPanel x={60} y={48} w={300} h={h - 38} item={category.toLowerCase() as StripItem}>
         {children}
-      </Panel>
+      </CategoryPanel>
     </g>
   );
 }
@@ -37,19 +38,19 @@ function SearchField({ y, text, w = 276 }: { y: number; text: string; w?: number
         height={24}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <circle
         cx={86}
         cy={y + 11}
         r={4.5}
         className="fill-none stroke-slate-400"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <path
         d={`M89.5 ${y + 14.5} L93 ${y + 18}`}
         className="stroke-slate-400"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
         strokeLinecap="round"
       />
       <Label x={100} y={y + 12} size={10} tone="muted">
@@ -72,7 +73,7 @@ function SideSwitch({ y, side }: { y: number; side: 'Icons' | 'Stickers' }) {
         height={24}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {(['Icons', 'Stickers'] as const).map((name, i) => (
         <g key={name}>
@@ -136,7 +137,7 @@ export function StickersSheet() {
                   height={36}
                   rx={14}
                   className="fill-white stroke-slate-200"
-                  strokeWidth={1.5}
+                  strokeWidth={0.75}
                 />
                 <rect x={tx + 7} y={118} width={114} height={24} rx={10} className={b.fill} />
                 <Label x={tx + 64} y={131} anchor="middle" size={11} weight={700} tone="onAccent">
@@ -167,7 +168,7 @@ export function StickersSheet() {
                   height={36}
                   rx={11}
                   className="fill-white stroke-slate-200"
-                  strokeWidth={1.5}
+                  strokeWidth={0.75}
                 />
                 <text
                   x={tx + 18}

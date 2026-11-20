@@ -8,6 +8,9 @@ import {
   DesktopEditor as DocumentsDesktopEditor,
   DesktopShortcuts as DocumentsDesktopShortcuts,
 } from '@/editions/livedocuments/components/illustrations/devices';
+import { DesktopEditor as DiagramDesktopEditor } from '@/editions/livediagram/components/illustrations/devices';
+import { DesktopEditor as DesignDesktopEditor } from '@/editions/livedesign/components/illustrations/devices';
+import { DesktopEditor as HuddleDesktopEditor } from '@/editions/livehuddle/components/illustrations/devices';
 
 export const metadata = helpMetadata({
   title: 'Desktop',
@@ -77,11 +80,16 @@ Columns show side by side, cards show at the size the board is set to, and a das
 
 </AppNote>
 
-<Figure
-  app="livediagram,livedesign,livehuddle"
-  caption="On a computer the full editor is on screen at once: the menu button and palette strip, your canvas, the corner buttons with the zoom, and the tab bar along the bottom."
->
-  <DesktopEditor />
+<Figure app="livediagram" caption="On a computer the whole editor is on screen at once: the logo, menu and mode switch, the palette strip, Share, your canvas, the corner cluster with the zoom, and the tab bar along the bottom.">
+  <DiagramDesktopEditor />
+</Figure>
+
+<Figure app="livedesign" caption="On a computer the whole editor is on screen at once: the Pages rail, the palette strip, your pages, the corner controls and the bottom bar.">
+  <DesignDesktopEditor />
+</Figure>
+
+<Figure app="livehuddle" caption="On a computer: the full editor, every card and bar in its place.">
+  <HuddleDesktopEditor />
 </Figure>
 
 <Figure

@@ -89,7 +89,7 @@ export function PaletteCategoryPanel({
         height={24}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.4}
+        strokeWidth={0.75}
       />
       <Label x={x + 20} y={y + 22} size={11} weight={700} tone="strong">
         {category}
@@ -141,7 +141,7 @@ export function PaletteCategoryPanel({
                   height={14}
                   rx={3}
                   className="fill-white stroke-slate-300"
-                  strokeWidth={1}
+                  strokeWidth={0.75}
                 />
                 <Label x={x + w - 19} y={ry + 14} anchor="middle" size={10} weight={600}>
                   {row.key}

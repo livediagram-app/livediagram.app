@@ -20,7 +20,7 @@ export function PlanCardHiddenTabScene() {
         height={230}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {/* Header: the card's new type and number. */}
       <rect x={22} y={20} width={4} height={12} rx={1.5} className={STRIPE.task} />
@@ -37,7 +37,7 @@ export function PlanCardHiddenTabScene() {
         Map fields on a type change
       </Label>
       {/* The tab bar: Hidden last, picked, with its count. */}
-      <line x1={22} y1={74} x2={398} y2={74} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={22} y1={74} x2={398} y2={74} className="stroke-slate-200" strokeWidth={0.75} />
       <Label x={24} y={67} size={10} weight={500} tone="muted">
         Overview
       </Label>
@@ -71,7 +71,7 @@ export function PlanCardHiddenTabScene() {
             height={50}
             rx={8}
             className="fill-white stroke-slate-200"
-            strokeWidth={1}
+            strokeWidth={0.75}
           />
           <Label x={32} y={v.y + 14} size={10} weight={700} tone="strong">
             {v.name}
@@ -84,7 +84,7 @@ export function PlanCardHiddenTabScene() {
             height={16}
             rx={4}
             className="fill-white stroke-slate-300"
-            strokeWidth={1}
+            strokeWidth={0.75}
           />
           <Label x={329} y={v.y + 14} size={9} weight={600} anchor="middle" tone="body">
             Copy To Field
@@ -105,7 +105,7 @@ export function PlanCardHiddenTabScene() {
             height={16}
             rx={4}
             className="fill-slate-50 stroke-slate-200"
-            strokeWidth={1}
+            strokeWidth={0.75}
           />
           <Label x={38} y={v.y + 34} size={10} tone="muted">
             {v.value}

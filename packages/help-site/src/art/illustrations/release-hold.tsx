@@ -36,7 +36,7 @@ export function ReleaseHold() {
           height={84}
           rx={8}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         <Label x={menuX + 12} y={menuY + 14} size={8} weight={700} tone="muted">
           IN USE

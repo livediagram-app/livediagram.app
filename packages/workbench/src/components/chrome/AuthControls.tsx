@@ -213,8 +213,7 @@ function AccountMenu({
 }
 
 // Door-with-arrow glyph, the same 13px / 1.6 stroke as the other header icons, so the Sign in action reads as a peer
-// of them. Exported for the sign-in banner, the sign-in reasons dialog and the Explorer's "Sign In to Use Teams" link
-// (docs/specs/013-workspace/teams.md), so every sign-in affordance reads as one action.
+// of them. Exported so every sign-in affordance can wear it and read as one action.
 export function SignInIcon({ size = 13 }: { size?: number } = {}) {
   return (
     <Glyph size={size} units={16}>

@@ -4,18 +4,21 @@
 // About figures reuse canvas / collaboration scenes (CanvasOverview,
 // LiveCursors) rather than redrawing them.
 
-import { Scene, Shape, Arrow, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
+import { Scene, Arrow, Label } from '@liveworkspace/help-site/art/primitives';
+import { AvatarPad, Desk, Plant, Room, Sofa, Sticky } from './space-furniture';
+import { PixelCharacter } from './pixel-character';
 
-/** The open canvas with no sign-in wall: a blank diagram already in use, and a
+/** The open canvas with no sign-in wall: a Space already in use, and a
  *  dismissed "Sign in" gate crossed out to the side. */
 export function OpenCanvas() {
   return (
     <Scene w={420} h={220}>
-      <Shape x={48} y={70} w={88} h={48} kind="rect" label="Start" />
-      <Shape x={180} y={70} w={88} h={48} kind="diamond" />
-      <Shape x={180} y={150} w={88} h={44} kind="rect" accent label="Done" />
-      <Arrow connector from={[136, 94]} to={[180, 94]} />
-      <Arrow connector from={[224, 118]} to={[224, 150]} />
+      <Room x={24} y={30} w={250} h={170} name="Team Room" />
+      <Desk x={50} y={70} />
+      <Desk x={104} y={70} />
+      <Sticky x={180} y={60} w={58} h={50} label="Hello!" lines={2} />
+      <AvatarPad cx={150} cy={160} />
+      <PixelCharacter fx={150} fy={160} px={1.8} />
 
       {/* The blocked-out sign-in gate */}
       <g transform="translate(300 58)">
@@ -24,7 +27,7 @@ export function OpenCanvas() {
           height={92}
           rx={10}
           className="fill-white stroke-slate-200"
-          strokeWidth={2}
+          strokeWidth={0.75}
         />
         <Label x={52} y={22} anchor="middle" size={10} weight={700} tone="muted">
           Sign in
@@ -100,16 +103,15 @@ export function OpenSource() {
         height={98}
         rx={10}
         className="fill-white stroke-brand-300"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <rect x={276} y={56} width={120} height={20} rx={10} className="fill-brand-100" />
       <Label x={336} y={67} anchor="middle" size={10} weight={700} tone="accent">
         The app
       </Label>
-      <Shape x={288} y={90} w={36} h={24} kind="rect" label="A" />
-      <Shape x={352} y={90} w={36} h={24} kind="circle" accent />
-      <Arrow connector from={[324, 102]} to={[352, 102]} tone="muted" />
-      <TextBar x={292} y={130} w={92} tone="accent" />
+      <Room x={286} y={84} w={100} h={60} name="Lounge" door="none" />
+      <Sofa x={300} y={104} />
+      <Plant cx={366} cy={126} s={0.8} />
 
       {/* MIT licence tag */}
       <g transform="translate(32 178)">

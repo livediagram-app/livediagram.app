@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { ElementContextMenu } from '@/editions/livediagram/components/illustrations/user-interface';
 import { ElementContextMenu as LivehuddleElementContextMenu } from '@/editions/livehuddle/components/illustrations/user-interface';
+import { ElementContextMenu as DocumentsElementContextMenu } from '@/editions/livedocuments/components/illustrations/user-interface';
 
 export const metadata = helpMetadata({
   title: 'Context Menus',
@@ -20,11 +21,14 @@ export const metadata = helpMetadata({
 
 A **context menu** is the menu you get by right-clicking, or by pressing and holding for half a second on touch. Each one is scoped to whatever you clicked, so it only ever offers what makes sense there. On a phone the menus open as a sheet from the bottom of the screen.
 
-<Figure
-  app="livedesign,livediagram,livedocuments"
+<Figure app="livedesign,livediagram"
   caption="Right-clicking a shape opens its menu: collapsible sections for layer, size, shape, rotation, appearance, animation, text and more."
 >
   <ElementContextMenu />
+</Figure>
+
+<Figure app="livedocuments" caption="Right-click an element for its menu: layer, size, shape and rotation, then Appearance, Text, Animation and Link.">
+  <DocumentsElementContextMenu />
 </Figure>
 <Figure
   app="livehuddle"

@@ -2,6 +2,7 @@
 // You Recently. Drawn from the real labels in the shared Explorer's HomePane. Composed from the shared
 // primitives, so the house style holds. A product names its own recent items.
 
+import { appSamples } from '../app-samples';
 import { Label, Scene } from '../primitives';
 
 // --- Local parts -------------------------------------------------------------
@@ -16,7 +17,7 @@ function Pane({ x = 16, y = 12, w = 388, h }: { x?: number; y?: number; w?: numb
       height={h}
       rx={10}
       className="fill-white stroke-slate-200"
-      strokeWidth={1.5}
+      strokeWidth={0.75}
     />
   );
 }
@@ -33,7 +34,14 @@ function SectionHeading({ y, title, link }: { y: number; title: string; link?: s
           {link}
         </Label>
       ) : null}
-      <line x1={32} y1={y + 10} x2={388} y2={y + 10} className="stroke-slate-200" strokeWidth={1} />
+      <line
+        x1={32}
+        y1={y + 10}
+        x2={388}
+        y2={y + 10}
+        className="stroke-slate-200"
+        strokeWidth={0.75}
+      />
     </g>
   );
 }
@@ -64,7 +72,7 @@ function Snapshot({
           height={h}
           rx={4}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <rect
           x={x + w / 2 - 7}
@@ -86,7 +94,7 @@ function Snapshot({
         height={h}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {motif % 3 === 0 && (
         <g>
@@ -136,12 +144,10 @@ function Snapshot({
   );
 }
 
-const MOST_USED = ['Roadmap', 'Payments', 'Onboarding', 'Data model'];
-const RECENT = ['Retro', 'Auth flow', 'Sprint 12', 'Brainstorm'];
-
 /** Home: Most Used, then Recent with See More, each a section of its own, then Shared With You Recently. */
-export function HomeOverview({ recent = RECENT }: { recent?: readonly string[] }) {
-  const tiles = [MOST_USED, recent];
+export function HomeOverview({ recent }: { recent?: readonly string[] }) {
+  const { work } = appSamples();
+  const tiles = [work.slice(0, 4), recent ?? work.slice(4, 8)];
   return (
     <Scene w={420} h={298} bg="plain">
       <Pane h={274} />

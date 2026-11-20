@@ -97,8 +97,12 @@ export function ChromeControls({
       ) : null}
       {/* The notification list (liveworkspace/docs/specs/016-notifications/toasts.md): an icon alone, right of
           Settings; toasts collapse into it as they leave. */}
-      <ToastBell className={CHROME_BTN} />
-      <AppearanceToggle />
+      {/* The bell and the light / dark switch sit as a pair, 4px apart rather than the bar's 12px (the owner,
+          2026-11-20). */}
+      <span className="inline-flex shrink-0 items-center">
+        <ToastBell className={CHROME_BTN} />
+        <AppearanceToggle />
+      </span>
     </>
   );
 }

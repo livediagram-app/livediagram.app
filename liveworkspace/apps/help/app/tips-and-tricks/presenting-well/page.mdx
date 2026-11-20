@@ -2,6 +2,13 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { ZenMode, LaserPointer } from '@liveworkspace/help-site/art/illustrations/tips';
 import { SpotlightTool } from '@/editions/livediagram/components/illustrations/selection-modes';
+import { ZenAfter } from '@/editions/livediagram/components/illustrations/tools-zen';
+import { ZenAfter as DesignZenAfter } from '@/editions/livedesign/components/illustrations/tools';
+import { ZenAfter as DocumentsZenAfter } from '@/editions/livedocuments/components/illustrations/tools';
+import { LaserMode } from '@/editions/livedesign/components/illustrations/palette-modes';
+import { LaserMode as DocumentsLaserMode } from '@/editions/livedocuments/components/illustrations/palette-modes';
+import { SpotlightTool as DesignSpotlightTool } from '@/editions/livedesign/components/illustrations/selection-modes';
+import { SpotlightTool as DocumentsSpotlightTool } from '@/editions/livedocuments/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Walking People Through Your Work',
@@ -40,24 +47,52 @@ When you want the full canvas with nothing else competing for attention, [Zen mo
   zen mode** button on the zoom controls.
 </AppNote>
 
-<Figure caption="Zen mode clears every panel, leaving just the canvas, the zoom controls and the button that exits it.">
+<Figure app="liveplanner,livehuddle,all" caption="Zen mode clears every panel, leaving just the canvas, the zoom controls and the button that exits it.">
   <ZenMode />
+</Figure>
+
+<Figure app="livediagram" caption="Zen mode clears every bar and panel, leaving just the canvas and the zoom card, with the button that exits it at its end.">
+  <ZenAfter />
+</Figure>
+
+<Figure app="livedesign" caption="Zen mode clears every panel, leaving just your pages and the zoom card with its Exit button.">
+  <DesignZenAfter />
+</Figure>
+
+<Figure app="livedocuments" caption="Zen mode clears every panel, leaving just your pages and the zoom card with the button that leaves zen.">
+  <DocumentsZenAfter />
 </Figure>
 
 ## The laser pointer
 
 For pointing things out live, switch to the **Laser** tool (`K`). Moving the pointer leaves a trail, in your participant colour by default, that fades after about a second, and on a shared session other people see your laser in real time, so you can sweep across the canvas and direct the room's attention. Its panel sets the pen: width, colour, how long the trail lasts (Quick, Normal or Long) and its effect. See [Laser](/help/selection-modes/laser/).
 
-<Figure caption="The laser leaves a bright trail in your colour that fades behind the pointer as you sweep.">
+<Figure app="livediagram,liveplanner,livehuddle,all" caption="The laser leaves a bright trail in your colour that fades behind the pointer as you sweep.">
   <LaserPointer />
+</Figure>
+
+<Figure app="livedesign" caption="The laser leaves a bright trail in your colour that fades behind the pointer as you sweep.">
+  <LaserMode />
+</Figure>
+
+<Figure app="livedocuments" caption="The laser leaves a bright trail that fades behind the pointer as you sweep.">
+  <DocumentsLaserMode />
 </Figure>
 
 ## The spotlight
 
 To focus on one part of the canvas at a time, switch to the [Spotlight](/help/selection-modes/spotlight/) tool (desktop only). It dims the rest of the canvas and casts a pool of light around your cursor, so the room's eye lands exactly where yours does. Unlike the laser, it is **only on your screen**: everyone else in the <Noun /> still sees the whole canvas. It shines when you are sharing your screen or presenting in the room; move the cursor from shape to shape to walk through the canvas one piece at a time. Click to grow the light and right-click to shrink it. Its panel sets the light's size, how far the rest dims, its edge and its shape.
 
-<Figure caption="Spotlight dims the canvas and keeps a bright circle around your cursor.">
+<Figure app="livediagram,liveplanner,livehuddle,all" caption="Spotlight dims the canvas and keeps a bright circle around your cursor.">
   <SpotlightTool />
+</Figure>
+
+<Figure app="livedesign" caption="Spotlight dims the canvas and keeps a bright circle around your pointer.">
+  <DesignSpotlightTool />
+</Figure>
+
+<Figure app="livedocuments" caption="The spotlight dims the slide around your pointer, so the room looks where you point.">
+  <DocumentsSpotlightTool />
 </Figure>
 
 <AppNote app="livedesign">

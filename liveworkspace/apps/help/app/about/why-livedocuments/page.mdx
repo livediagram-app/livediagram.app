@@ -2,6 +2,8 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { OpenCanvas } from '@liveworkspace/help-site/art/illustrations/about';
 import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { OpenCanvas as DocumentsOpenCanvas } from '@/editions/livedocuments/components/illustrations/about';
+import { DocumentPresence } from '@/editions/livedocuments/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'Why Use livedocuments?',
@@ -30,16 +32,24 @@ The whole codebase is **MIT-licensed** and publicly viewable. That has real cons
 
 The [editor always works without signing in](/help/getting-started/guest-vs-account/). A first-time visitor can open a [new document](/new), build something real, and only later be asked to create an account, never blocked by a modal before they have even started. An [account](/help/getting-started/guest-vs-account/) adds cross-device sync and [teams](/help/collaboration/teams/), but it is never a gate in front of the editor.
 
-<Figure caption="You start building straight away, with no sign-in gate in front of the canvas.">
+<Figure app="livediagram,livedesign,liveplanner,livehuddle,all" caption="You start building straight away, with no sign-in gate in front of the canvas.">
   <OpenCanvas />
+</Figure>
+
+<Figure app="livedocuments" caption="You start making pages straight away, with no sign-in gate in front of the canvas.">
+  <DocumentsOpenCanvas />
 </Figure>
 
 ## Multiplayer from the first shape
 
 Collaboration is not a bolt-on. Hand someone a [share link](/help/collaboration/sharing/) and they join the same document, where everyone sees live cursors, live selections, and every edit as it happens. To keep edits from colliding, everything another person currently has selected, one element or many, is gently locked for everyone else, and stays locked for a moment after they let go, until their change is saved.
 
-<Figure caption="Multiplayer from the start: live cursors and presence the moment someone joins.">
+<Figure app="livediagram,livedesign,liveplanner,livehuddle,all" caption="Multiplayer from the start: live cursors and presence the moment someone joins.">
   <LiveCursors />
+</Figure>
+
+<Figure app="livedocuments" caption="Teammates' cursors and selections show live on the same slides you are editing.">
+  <DocumentPresence />
 </Figure>
 
 <FeatureGrid>

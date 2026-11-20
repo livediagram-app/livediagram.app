@@ -5,6 +5,7 @@
 // Strength, Pattern and Radius grids (BorderControls.tsx, palette-style-previews.tsx). Composed from
 // the shared primitives so the house style holds.
 
+import { appSamples } from '../app-samples';
 import type { ReactNode } from 'react';
 import { Scene, Shape, SelectionBox, Label, stickyOnly } from '../primitives';
 
@@ -35,7 +36,7 @@ function CategoryCard({
         height={h}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={x + 14} y={y + 17} size={11} weight={700} tone="strong">
         {title}
@@ -54,7 +55,7 @@ function CategoryCard({
         x2={x + w}
         y2={y + 30}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {children}
     </g>
@@ -279,7 +280,7 @@ export function ColoursSection() {
           height={26}
           rx={6}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <Label x={mx + mw / 2} y={my + 135.5} anchor="middle" size={11} weight={600} tone="body">
           Reset to Theme
@@ -293,7 +294,7 @@ export function ColoursSection() {
         height={146}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={sx} y={py + 16} size={9.5} weight={600} tone="muted">
         Theme Palette
@@ -317,7 +318,7 @@ export function ColoursSection() {
           height={14}
           rx={3.5}
           className="fill-white stroke-slate-300"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <line
           x1={sx + 2.5}
@@ -345,7 +346,7 @@ export function ColoursSection() {
           rx={3.5}
           fill="none"
           className="stroke-slate-300"
-          strokeWidth={1}
+          strokeWidth={0.75}
           strokeDasharray="2 2"
         />
         <circle cx={sx + 2 * step + 4.5} cy={py + 122.5} r={2.2} className="fill-rose-500" />
@@ -359,7 +360,7 @@ export function ColoursSection() {
         y={192}
         w={96}
         h={34}
-        label="API"
+        label={appSamples().element}
         fill="fill-brand-50"
         stroke="stroke-blue-600"
       />

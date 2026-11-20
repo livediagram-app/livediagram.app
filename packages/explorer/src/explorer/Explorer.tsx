@@ -40,7 +40,6 @@ import { useHeroPresence } from './useHeroPresence';
 import { ArrivedItemContext, useArrivedItem } from './arrived-item';
 import { HostExtrasProvider } from './host';
 import { ThisBrowserPane, useThisBrowserItems } from './ThisBrowser';
-import { SignInBanner } from './SignInBanner';
 import { WelcomeProvider } from '../welcome/context';
 import { WorkKinds, type TemplateHref } from '../hero/WorkKinds';
 import { ExtrasProvider } from './extras';
@@ -134,7 +133,6 @@ function ExplorerInner({
   signedIn,
   signInHref,
   signUpHref,
-  signInBanner,
   prefetchThumbnail,
   onViewToggled,
 }: Omit<ExplorerProps, keyof LibraryHostProps | 'teamsHost'>) {
@@ -262,9 +260,6 @@ function ExplorerInner({
                   </ArrivedItemContext.Provider>
                 </section>
               </main>
-              {signInBanner && signedIn === false && signInHref ? (
-                <SignInBanner href={signInHref} host={signInBanner} />
-              ) : null}
               {drive && driveMarks.needsReconnect ? (
                 <DriveReconnectBanner workspaceOrigin={drive.workspaceOrigin} />
               ) : null}

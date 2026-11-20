@@ -3,6 +3,11 @@ import { helpMetadata } from '@/lib/seo';
 import { SaveFailedToast } from '@liveworkspace/help-site/art/illustrations/troubleshooting';
 import { UndoStep } from '@liveworkspace/help-site/art/illustrations/undo-redo';
 import { PlanNewerFieldScene } from '@/editions/liveplanner/components/illustrations/plan';
+import { SaveFailedToast as DocumentsSaveFailedToast, UndoStep as DocumentsUndoStep } from '@/editions/livedocuments/components/illustrations/history';
+import { SaveFailedToast as PlannerSaveFailedToast, UndoStep as PlannerUndoStep } from '@/editions/liveplanner/components/illustrations/board-edits';
+import { UndoStep as DiagramUndoStep } from '@/editions/livediagram/components/illustrations/undo-redo';
+import { UndoStep as DesignUndoStep } from '@/editions/livedesign/components/illustrations/undo-redo';
+import { UndoStep as HuddleUndoStep } from '@/editions/livehuddle/components/illustrations/floor-edits';
 
 export const metadata = helpMetadata({
   title: 'My Changes Are Missing',
@@ -86,8 +91,16 @@ There is no "saved" indicator to watch, because saving is the normal state. What
   to go ahead.
 </AppNote>
 
-<Figure caption="A save that did not reach the server shows a message at the bottom of the screen; autosave keeps retrying.">
+<Figure app="livediagram,livedesign,livehuddle,all" caption="A save that did not reach the server shows a message at the bottom of the screen; autosave keeps retrying.">
   <SaveFailedToast />
+</Figure>
+
+<Figure app="livedocuments" caption="A save that did not reach the server shows a message at the bottom of the screen.">
+  <DocumentsSaveFailedToast />
+</Figure>
+
+<Figure app="liveplanner" caption="A save that did not reach the server shows a message at the bottom of the screen; autosave keeps retrying.">
+  <PlannerSaveFailedToast />
 </Figure>
 
 **"A new version of <AppName /> is ready".** When <AppName /> is updated while you have a <Noun /> open, and the update changes how <Noun plural /> are stored, a small notice at the bottom of the screen asks you to reload. Nothing happens until you choose: **Reload** first waits until your latest changes are saved, then reloads, and if they cannot be saved yet it tells you so and stays put. If the update is still on its way to you, it says so too: try again in a minute. The notice appears like any other notice and stays until you close it or press **Reload**. Closing it (×) hides it until a newer update arrives; reload whenever suits you.
@@ -114,8 +127,28 @@ If you have just undone, moved or deleted something by mistake, Redo and Undo ar
   See [Redo](/help/user-interface/redo/) and [Undo](/help/user-interface/undo/).
 </AppNote>
 
-<Figure caption="Undo steps back your most recent change; redo puts it back.">
+<Figure app="all" caption="Undo steps back your most recent change; redo puts it back.">
   <UndoStep />
+</Figure>
+
+<Figure app="livediagram" caption="Undo (Cmd or Ctrl plus Z, or the corner cluster's Undo) steps back your most recent change; Redo puts it back.">
+  <DiagramUndoStep />
+</Figure>
+
+<Figure app="livedesign" caption="Undo steps back your most recent change; Redo puts it back.">
+  <DesignUndoStep />
+</Figure>
+
+<Figure app="livedocuments" caption="Undo steps back your most recent change; redo puts it back.">
+  <DocumentsUndoStep />
+</Figure>
+
+<Figure app="liveplanner" caption="Undo (or ⌘Z) steps back your most recent change, here a card moved to Done; Redo puts it back.">
+  <PlannerUndoStep />
+</Figure>
+
+<Figure app="livehuddle" caption="Undo steps back your last change, here the desk just added. Press Cmd or Ctrl and Z, or Undo in the bottom-right corner.">
+  <HuddleUndoStep />
 </Figure>
 
 1. **Press Undo** (**Cmd/Ctrl+Z**, or the undo button at the bottom-right) to step back your most recent changes, one at a time.

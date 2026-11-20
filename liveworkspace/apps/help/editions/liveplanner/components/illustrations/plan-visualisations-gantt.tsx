@@ -194,7 +194,7 @@ export function PlanGanttSwimlanesScene() {
         height={246}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {/* The header: name, Today, the steps, the scale, Maximise View and the cog. */}
       <Label x={22} y={26} size={11} weight={700} tone="strong">
@@ -207,7 +207,7 @@ export function PlanGanttSwimlanesScene() {
         height={18}
         rx={5}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <Label x={160} y={27} size={8.5} weight={600} anchor="middle">
         Today
@@ -236,7 +236,14 @@ export function PlanGanttSwimlanesScene() {
           strokeLinecap="round"
         />
       </HeaderButton>
-      <line x1={10} y1={axisY} x2={410} y2={axisY} className="stroke-slate-200" strokeWidth={1} />
+      <line
+        x1={10}
+        y1={axisY}
+        x2={410}
+        y2={axisY}
+        className="stroke-slate-200"
+        strokeWidth={0.75}
+      />
       {/* The axis: a week per tick, gridlines down the timeline. */}
       {['Oct 5', 'Oct 12', 'Oct 19', 'Oct 26', 'Nov 2'].map((t, i) => {
         const x = names + 14 + i * 46;
@@ -262,7 +269,7 @@ export function PlanGanttSwimlanesScene() {
         x2={names + 10}
         y2={rowsEnd}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {drawn}
       {/* Today. */}
@@ -291,7 +298,7 @@ export function PlanGanttSwimlanesScene() {
           height={200}
           rx={9}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         {[
           { title: 'Card Types', y: 48, open: false },

@@ -199,7 +199,7 @@ export function ShareOpensRow() {
         strokeWidth={1.5}
       />
       <Label x={x + 76} y={56} size={11} weight={500} tone="strong">
-        Roadmap
+        Lounge
       </Label>
       <path
         d={`M${x + 344} ${53} l4 4 l4 -4`}
@@ -222,7 +222,7 @@ export function ShareOpensRow() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {['All tabs', 'Roadmap', 'Pricing', 'Risks'].map((t, i) => (
+      {['All tabs', 'Lounge', 'Meeting Room', 'Garden'].map((t, i) => (
         <g key={t}>
           {i === 1 ? (
             <rect

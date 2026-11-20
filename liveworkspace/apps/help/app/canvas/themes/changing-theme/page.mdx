@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvasBasics from '@/editions/livediagram/components/illustrations/canvas-basics';
+import { LookAndFeelTheme as HuddleLookAndFeelTheme } from '@/editions/livehuddle/components/illustrations/look-and-feel';
 
 export const metadata = helpMetadata({
   title: 'Changing the Theme',
@@ -21,11 +22,14 @@ export const metadata = helpMetadata({
 
 Changing a tab's look is a matter of picking a new theme and watching the canvas update. <AppName /> brings the theme picker front and centre in a dedicated dialog, so there is plenty of room to compare looks.
 
-<Figure
-  app="livediagram,livedesign,livedocuments,livehuddle"
+<Figure app="livediagram,livedesign,livedocuments"
   caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first."
 >
   <DiagramCanvasBasics.LookAndFeelTheme />
+</Figure>
+
+<Figure app="livehuddle" caption="The Colours panel of Tab Style: every theme, each shown on a room's floor and notes.">
+  <HuddleLookAndFeelTheme />
 </Figure>
 
 ## Opening the Dialog

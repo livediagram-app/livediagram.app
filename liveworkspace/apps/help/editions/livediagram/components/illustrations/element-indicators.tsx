@@ -291,7 +291,7 @@ export function MindRootCommandsScene() {
         height={48}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={root.x + 30} y={40} size={11} weight={700} tone="strong">
         Edit Outline

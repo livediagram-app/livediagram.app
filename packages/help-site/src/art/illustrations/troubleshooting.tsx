@@ -72,7 +72,7 @@ export function BrowserTiles() {
               height={84}
               rx={12}
               className="fill-white stroke-slate-200"
-              strokeWidth={2}
+              strokeWidth={0.75}
             />
             <circle cx={tx + 42} cy={70} r={18} className={`fill-none ${ring}`} strokeWidth={4} />
             <circle cx={tx + 42} cy={70} r={6} className="fill-slate-200" />

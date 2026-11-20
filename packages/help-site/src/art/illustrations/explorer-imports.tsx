@@ -89,7 +89,7 @@ function ImportChecklistScene({
           height={rows.length * 30}
           rx={7}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         {rows.map((r, i) => {
           const ry = dy + 82 + i * 30;
@@ -102,7 +102,7 @@ function ImportChecklistScene({
                   x2={dx + dw - 14}
                   y2={ry}
                   className="stroke-slate-100"
-                  strokeWidth={1}
+                  strokeWidth={0.75}
                 />
               )}
               <Check x={dx + 24} y={ry + 6} on={r.on !== false} />
@@ -192,7 +192,7 @@ export function ShapeLibraryCards() {
               height={78}
               rx={10}
               className="fill-white stroke-slate-200"
-              strokeWidth={1.5}
+              strokeWidth={0.75}
             />
             <Label x={34} y={cy + 16} size={11} weight={700} tone="strong">
               {lib.name}
@@ -275,7 +275,7 @@ export function GalleryCards({ noun }: { noun: string }) {
         height={40}
         rx={8}
         className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
         strokeDasharray="5 4"
       />
       <Label x={210} y={35} anchor="middle" size={11} tone="muted">
@@ -294,7 +294,7 @@ export function GalleryCards({ noun }: { noun: string }) {
               height={152}
               rx={8}
               className="fill-white stroke-slate-200"
-              strokeWidth={1.5}
+              strokeWidth={0.75}
             />
             <Picture x={cx + 8} y={74} w={cw - 16} h={70} hue={c.hue} />
             <Label x={cx + 8} y={156} size={10} weight={600} tone="strong">

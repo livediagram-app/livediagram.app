@@ -20,6 +20,7 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
 | `packages/explorer/src/ui/Toasts.tsx`                                   | The Explorer's `useToast` (`show`, `error`) over the shared one; `historyScope` `explorer`              |
 | `packages/workbench/src/components/chrome/NewVersionPrompt.tsx`         | The new-version standing toast (`new-version` key)                                                      |
 | `packages/workbench/src/components/chrome/AccountUnreachableNotice.tsx` | The account-unreachable standing warning (`account-unreachable` key)                                    |
+| `packages/workbench/src/hooks/ui/useSignInToast.ts`                     | The guest sign-in standing toast (`sign-in` key, `highlight`), raised when `useSignInNudge` says so     |
 
 The bell is drawn by each editor's `components/chrome/ChromeControls.tsx` (after Settings) and by the site's
 `apps/site/components/explorer/ExplorerBottomBar.tsx` (after Settings), with the host's own button classes.
@@ -170,7 +171,7 @@ dark:ring-slate-900`.
 | `TOAST_EDGE_PX`            | 16    | The page gutter                              | 8 to 24       |
 
 `TOAST_FLOOR_SELECTOR`: `[data-toast-floor], [data-start-footer], [data-editor-tabbar], [data-zoom-cluster],
-[data-whiteboard-dock]`. The Explorer bottom bar and the sign-in banner's card carry `data-toast-floor`; a template
+[data-whiteboard-dock]`. The Explorer bottom bar carries `data-toast-floor`; a template
 start's foot row carries `data-start-footer`, and `setStartPanelOpen` announces the floor change. A workbench
 `MovablePanel` popover opened up from a bottom button (`popoverAnchor.bottom` set) carries
 `data-toast-floor="popover"` (`TOAST_FLOOR_POPOVER`) while open and announces the floor change as it opens and closes;
@@ -215,6 +216,7 @@ skips both.
 | The editors' gate (In-Editor Notifications), roles, Escape, exit                            | `packages/workbench/src/hooks/ui/useToast.test.tsx`                          |
 | New version: a standing toast, Reload phases, closed until newer                            | `packages/workbench/src/components/chrome/NewVersionPrompt.test.tsx`         |
 | Account unreachable: standing warning, Try Again, leaves when answered                      | `packages/workbench/src/components/chrome/AccountUnreachableNotice.test.tsx` |
+| Sign in: after the delay for a guest only, Sign In, close remembered, taken down by its key | `packages/workbench/src/hooks/ui/useSignInToast.test.tsx`                    |
 
 ## Observability
 

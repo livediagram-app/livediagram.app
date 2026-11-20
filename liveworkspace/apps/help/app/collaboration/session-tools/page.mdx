@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { SessionTools } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { SessionTools as PlannerSessionTools } from '@/editions/liveplanner/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'Session Tools',
@@ -25,8 +26,12 @@ Session tools make a shared <Noun /> interactive for live sessions. They sync to
 <AppNote app="liveplanner">
   There are two tools: a **timer** for time-boxing an activity, and **dot-voting** for prioritising cards as a group. Anyone who can edit the plan can run them, which suits a session such as a retrospective.
 
-  <Figure caption="A dot vote in progress, with the timer's clock and the lit Vote button in the bottom bar.">
+  <Figure app="livediagram,livedesign,livedocuments,livehuddle,all" caption="A dot vote in progress, with the timer's clock and the lit Vote button in the bottom bar.">
     <SessionTools poll={false} />
+  </Figure>
+
+  <Figure app="liveplanner" caption="A dot vote in progress on a board: each card's stepper, and the Timer's clock beside the lit Vote button in the corner cluster.">
+    <PlannerSessionTools />
   </Figure>
 </AppNote>
 

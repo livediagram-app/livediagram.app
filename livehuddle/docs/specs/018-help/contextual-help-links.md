@@ -122,7 +122,6 @@ Grouped by priority; each links the keyed article.
 - Empty-canvas card -> `your-first-space`
 - Template starts -> `templates` (Start a Space)
 - Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
-- Sign-in reasons modal -> `guest-vs-account`
 
 The set can grow; new placements reuse `HelpArticleLink` + a `HELP_ARTICLES`
 key and never introduce a second linking pattern.

@@ -78,7 +78,7 @@ export function SearchPanelArt({ query, groups }: { query: string; groups: Searc
           className="fill-brand-500"
         />
         <Kbd x={300} y={26} w={30} h={18} label="⌘K" />
-        <line x1={58} y1={54} x2={342} y2={54} className="stroke-slate-200" strokeWidth={1} />
+        <line x1={58} y1={54} x2={342} y2={54} className="stroke-slate-200" strokeWidth={0.75} />
         {groups.map((g, gi) => {
           const top = tops[gi]!;
           return (

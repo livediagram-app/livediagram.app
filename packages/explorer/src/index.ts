@@ -75,8 +75,6 @@ export type {
   ShareHost,
   ShareHostTelemetry,
   ShareUrl,
-  SignInBannerHost,
-  SignInBannerTelemetry,
   TeamRef,
   HomeTelemetry,
   OrganiseEvent,

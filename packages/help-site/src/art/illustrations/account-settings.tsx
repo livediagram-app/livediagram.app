@@ -23,7 +23,7 @@ export function TrashView({ noun }: { noun: string }) {
         <Label x={392} y={36} anchor="end" size={10} weight={600} tone="muted">
           Empty Trash
         </Label>
-        <line x1={14} y1={52} x2={406} y2={52} className="stroke-slate-200" strokeWidth={1.5} />
+        <line x1={14} y1={52} x2={406} y2={52} className="stroke-slate-200" strokeWidth={0.75} />
         {rows.map(([name, meta], i) => {
           const y = 58 + i * 42;
           return (
@@ -90,7 +90,7 @@ export function ConsentCard({
           height={48}
           rx={8}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         <Label x={72} y={110} size={11} weight={600} tone="strong">
           Read-only access

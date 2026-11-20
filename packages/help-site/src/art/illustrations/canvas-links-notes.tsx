@@ -29,7 +29,7 @@ export function FollowingScene() {
     <Scene w={420} h={210}>
       {/* The tab bar, with the presence stack beside the tab name */}
       <rect x={0} y={0} width={420} height={34} className="fill-slate-50" />
-      <line x1={0} y1={34} x2={420} y2={34} className="stroke-slate-200" strokeWidth={1.2} />
+      <line x1={0} y1={34} x2={420} y2={34} className="stroke-slate-200" strokeWidth={0.75} />
       <BarTab x={14} y={2} w={130} h={32} label="Checkout" active anchor="start" size={11} />
       <circle cx={110} cy={18} r={9.5} fill="none" className="stroke-brand-500" strokeWidth={2} />
       <Avatar cx={110} cy={18} r={7.5} initial="S" colour="emerald" />
@@ -85,7 +85,7 @@ export function NotePopoverScene() {
         height={196}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={px + 12} y={py - 4} size={9} weight={700} tone="muted">
         NOTE
@@ -98,7 +98,7 @@ export function NotePopoverScene() {
         height={28}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <line
         x1={px + 60}
@@ -106,7 +106,7 @@ export function NotePopoverScene() {
         x2={px + 60}
         y2={py + 27}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <line
         x1={px + 162}
@@ -114,7 +114,7 @@ export function NotePopoverScene() {
         x2={px + 162}
         y2={py + 27}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {/* Toolbar */}
       <Label x={px + 14} y={py + 18} size={12} weight={800} tone="strong">

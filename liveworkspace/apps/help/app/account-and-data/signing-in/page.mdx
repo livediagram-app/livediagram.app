@@ -1,6 +1,8 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { MigrateOnSignUp } from '@liveworkspace/help-site/art/illustrations/account';
+import { MigrateOnSignUp as DocumentsMigrateOnSignUp } from '@/editions/livedocuments/components/illustrations/about';
+import { MigrateOnSignUp as PlannerMigrateOnSignUp } from '@/editions/liveplanner/components/illustrations/account-scenes';
 
 export const metadata = helpMetadata({
   title: 'Signing In',
@@ -64,8 +66,16 @@ Anything you already put on the server as a guest (a <Noun /> you shared, synced
   holds the sign-in up.
 </AppNote>
 
-<Figure caption="On sign-up, your guest work moves from the per-browser id over to your new account.">
+<Figure app="livediagram,livedesign,livehuddle,all" caption="On sign-up, your guest work moves from the per-browser id over to your new account.">
   <MigrateOnSignUp />
+</Figure>
+
+<Figure app="livedocuments" caption="On sign-up, the documents you made as a guest move from this browser over to your new account.">
+  <DocumentsMigrateOnSignUp />
+</Figure>
+
+<Figure app="liveplanner" caption="On sign-up, the plans you made as a guest move from the per-browser id over to your new account.">
+  <PlannerMigrateOnSignUp />
 </Figure>
 
 The process runs the first time you are signed in in a browser that holds guest work, and is safe to repeat: a second attempt simply moves nothing. Once you are signed in, the Explorer's sign-in nudge disappears.

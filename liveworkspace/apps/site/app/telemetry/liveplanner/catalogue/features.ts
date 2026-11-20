@@ -550,18 +550,6 @@ export const NEW_VERSION_OFFERED = opened(
   (t) => t === 'NewVersionPrompt',
 );
 
-export const EXPLORER_REASONS_OPENED = opened(
-  'Explorer Banner: Learn More',
-  'The Explorer\u2019s sign-in banner: Learn More opened the reasons to sign in.',
-  (t) => t === 'SignInReasonsExplorer',
-);
-
-export const EDITOR_REASONS_OPENED = opened(
-  'Editor Banner: Learn More',
-  'The editor\u2019s sign-in banner (shown after about five minutes of drawing as a guest): Learn More opened the reasons.',
-  (t) => t === 'SignInReasonsEditor',
-);
-
 // The Session strip's buttons in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md
 // "The Session strip"), each opening its tool: the set-up while idle, the live tool while running.
 export const SESSION_TIMER_OPENED = opened(

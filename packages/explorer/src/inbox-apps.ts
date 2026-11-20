@@ -6,7 +6,7 @@
 
 import type { App } from '@liveworkspace/index-client';
 
-// The apps with no Inbox, as APPS_WITHOUT_MCP (explorer/sign-in-reasons.ts) names the apps with no MCP server.
+// The apps with no Inbox.
 const APPS_WITHOUT_INBOX: ReadonlySet<App> = new Set<App>(['livehuddle']);
 
 /** Whether the app's Explorer shows the Inbox. */

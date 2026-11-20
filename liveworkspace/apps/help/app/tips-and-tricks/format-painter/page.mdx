@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { FormatPainter } from '@/editions/livediagram/components/illustrations/canvas';
+import { FormatPainter as DesignFormatPainter } from '@/editions/livedesign/components/illustrations/canvas';
+import { FormatPainter as DocumentsFormatPainter } from '@/editions/livedocuments/components/illustrations/canvas';
+import { FormatPainter as HuddleFormatPainter } from '@/editions/livehuddle/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'The Format Painter',
@@ -77,8 +80,20 @@ The format painter copies the styling of one element and applies it to others, s
   Click **Done** in the message, press `Escape`, or click empty canvas to put the brush down.
 </AppNote>
 
-<Figure caption="The format painter lifts a styled element's look and paints it onto the next element you click.">
+<Figure app="livediagram,liveplanner,all" caption="The format painter lifts a styled element's look and paints it onto the next element you click.">
   <FormatPainter />
+</Figure>
+
+<Figure app="livedesign" caption="The format painter lifts one button's look and paints it onto the next element you click.">
+  <DesignFormatPainter />
+</Figure>
+
+<Figure app="livedocuments" caption="Pick up one element's look and paint it onto another.">
+  <DocumentsFormatPainter />
+</Figure>
+
+<Figure app="livehuddle" caption="Load the brush from one note, then click another to give it the same look.">
+  <HuddleFormatPainter />
 </Figure>
 
 ## Choosing what it copies

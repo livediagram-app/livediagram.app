@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
 import { SharePassesDialog } from '@/editions/livedesign/components/illustrations/sharing';
+import { LiveCursors as DesignLiveCursors } from '@/editions/livedesign/components/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Sharing Your Design',
@@ -48,8 +49,12 @@ saved to **Offline** has to be synced to your account before it can be shared.
 
 Someone opening your link for the first time enters the password if you set one, picks the name others will see (a signed-in visitor keeps their account name), and then lands in the design:
 
-<Figure caption="Everyone in a shared design sees the others' live cursors and a presence stack of who is here.">
+<Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="Everyone in a shared design sees the others' live cursors and a presence stack of who is here.">
   <LiveCursors />
+</Figure>
+
+<Figure app="livedesign" caption="Everyone in a shared design sees the others' live cursors on its pages and who is on each tab.">
+  <DesignLiveCursors />
 </Figure>
 
 - **Live cursors and selections.** Everyone sees where everyone else is and what they have selected.

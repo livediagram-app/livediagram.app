@@ -215,7 +215,7 @@ export function ApprovalShareTab({ noun }: { noun: string }) {
           height={22}
           rx={6}
           className="fill-white stroke-slate-300"
-          strokeWidth={1.4}
+          strokeWidth={0.75}
         />
         <Label x={46} y={210} size={10} tone="body">{`What to look at in this ${noun}`}</Label>
         <Label x={282} y={192} size={10} weight={700} tone="muted">
@@ -228,7 +228,7 @@ export function ApprovalShareTab({ noun }: { noun: string }) {
           height={22}
           rx={6}
           className="fill-white stroke-slate-300"
-          strokeWidth={1.4}
+          strokeWidth={0.75}
         />
         <Label x={292} y={210} size={10} tone="body">
           14 Dec 2026

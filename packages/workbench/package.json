@@ -463,6 +463,7 @@
     "./hooks/ui/useShiftHeld": "./src/hooks/ui/useShiftHeld.ts",
     "./hooks/ui/useShowMoreList": "./src/hooks/ui/useShowMoreList.ts",
     "./hooks/ui/useSignInNudge": "./src/hooks/ui/useSignInNudge.ts",
+    "./hooks/ui/useSignInToast": "./src/hooks/ui/useSignInToast.ts",
     "./hooks/ui/useStableCallbacks": "./src/hooks/ui/useStableCallbacks.ts",
     "./hooks/ui/useStableEventProps": "./src/hooks/ui/useStableEventProps.ts",
     "./hooks/ui/useStableHandlers": "./src/hooks/ui/useStableHandlers.ts",

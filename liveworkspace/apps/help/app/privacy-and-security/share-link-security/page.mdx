@@ -4,6 +4,10 @@ import {
   SharePasswordSwitch,
   ShareLifetimes,
 } from '@/editions/livediagram/components/illustrations/sharing';
+import { SharePasswordSwitch as DesignSharePasswordSwitch, ShareLifetimes as DesignShareLifetimes } from '@/editions/livedesign/components/illustrations/sharing-pass-options';
+import { SharePasswordSwitch as DocumentsSharePasswordSwitch, ShareLifetimes as DocumentsShareLifetimes } from '@/editions/livedocuments/components/illustrations/sharing-pass-options';
+import { SharePasswordSwitch as PlannerSharePasswordSwitch, ShareLifetimes as PlannerShareLifetimes } from '@/editions/liveplanner/components/illustrations/sharing-passes';
+import { SharePasswordSwitch as HuddleSharePasswordSwitch, ShareLifetimes as HuddleShareLifetimes } from '@/editions/livehuddle/components/illustrations/sharing-pass-options';
 
 export const metadata = helpMetadata({
   title: 'Share Link Security',
@@ -52,8 +56,24 @@ The password is 6 to 256 characters (spaces at either end don't count). A <Noun 
   for liveplanner.
 </AppNote>
 
-<Figure caption="With a password saved, Password Protection shows Password Set with Replace and Remove.">
+<Figure app="livediagram,all" caption="With a password saved, Password Protection shows Password Set with Replace and Remove.">
   <SharePasswordSwitch />
+</Figure>
+
+<Figure app="livedesign" caption="With a password saved, Password Protection shows Password Set with Replace and Remove.">
+  <DesignSharePasswordSwitch />
+</Figure>
+
+<Figure app="livedocuments" caption="With a password saved, Password Protection shows Password Set with Replace and Remove.">
+  <DocumentsSharePasswordSwitch />
+</Figure>
+
+<Figure app="liveplanner" caption="With a password saved, Password Protection shows Password Set with Replace and Remove, and every pass wears the Password tag.">
+  <PlannerSharePasswordSwitch />
+</Figure>
+
+<Figure app="livehuddle" caption="Password Protection on a pass: everyone opening it must enter the password first.">
+  <HuddleSharePasswordSwitch />
 </Figure>
 
 The goal is to stop people guessing or stumbling onto a share URL, not to provide cryptographic protection. See [Share Passwords](/help/collaboration/sharing/share-passwords/) for the full walkthrough.
@@ -71,8 +91,24 @@ When you create a pass, the **Valid** control sets its lifetime, so access ends 
 
 When a link expires it stops granting access everywhere at once: the share URL, its embed and live image, and the real-time room all behave as if the link were revoked. The expired link does not vanish, though. It moves to the **Expired** section of the Share dialog, where you can delete it or **Extend** it for the same lifetime again, counted from now. A link's lifetime can't be changed after it is created. See [Share Link Expiry](/help/collaboration/sharing/share-link-expiry/).
 
-<Figure caption="Valid sets a new pass's lifetime; an expired pass waits under Expired until you extend or delete it.">
+<Figure app="livediagram,all" caption="Valid sets a new pass's lifetime; an expired pass waits under Expired until you extend or delete it.">
   <ShareLifetimes />
+</Figure>
+
+<Figure app="livedesign" caption="Valid sets a new pass's lifetime; an expired pass waits under Expired until you extend or delete it.">
+  <DesignShareLifetimes />
+</Figure>
+
+<Figure app="livedocuments" caption="Valid sets a new pass's lifetime; an expired pass waits under Expired until you extend or remove it.">
+  <DocumentsShareLifetimes />
+</Figure>
+
+<Figure app="liveplanner" caption="Valid sets a new pass's lifetime; an expired pass waits under Expired until you extend or delete it.">
+  <PlannerShareLifetimes />
+</Figure>
+
+<Figure app="livehuddle" caption="Each pass can last Forever, 1 week, 1 month or 6 months, and an expired one can be extended.">
+  <HuddleShareLifetimes />
 </Figure>
 
 <AppNote app="livehuddle">

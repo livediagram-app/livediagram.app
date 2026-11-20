@@ -196,7 +196,8 @@ memory (5,000 keys) and in SQL (once a minute). Measured numbers are in
 
 ## Observability
 
-Every log line the service writes, by its fingerprint (the first literal of the call; `…` marks an interpolation):
+Every log line the service writes, by its fingerprint (the first literal of the call; `…` marks an interpolation;
+a notice queue's two lines are literals in its own file, written by `notice-queue.ts`):
 
 | Level   | Fingerprint                                           | Where                  |
 | ------- | ----------------------------------------------------- | ---------------------- |
@@ -204,6 +205,8 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `error` | `[grant] index unreachable`                           | `service.ts`           |
 | `warn`  | `[grant] refused`                                     | `service.ts`           |
 | `log`   | `[index] GRANT_SIGNING_KEY is unset: signing grant`   | `grants.ts`            |
+| `warn`  | `[index] assistant notice not taken`                  | `assistant-notices.ts` |
+| `warn`  | `[index] assistant notices given up`                  | `assistant-notices.ts` |
 | `warn`  | `[index] copy failed`                                 | `items/item-routes.ts` |
 | `error` | `[index] create failed`                               | `request.ts`           |
 | `log`   | `[index] created`                                     | `items/create.ts`      |
@@ -297,6 +300,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/index/src/migration-handoff.ts` | The migration's handoff (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The migration's handoff", docs/migration.md step 6): livediagram's api splits a browser's Local onl…                            |
 | `liveworkspace/apps/index/src/notices.ts`           | What the index tells an item's app for its notification emails, and the one count it answers for them (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Notices"): someone ma…                            |
 | `liveworkspace/apps/index/src/password-hash.ts`     | Share-password storage, as liveplanner keeps it (liveplanner/apps/api/src/auth/share-password-hash.ts): `pbkdf2-sha256$<iterations>$<salt>$<hash>`                                                                     |
+| `liveworkspace/apps/index/src/notice-queue.ts`      | The retry rule the index's notice queues share (Work Tracker 1319): the give-up sweep, the due rows, confirming or marking a try.                                                                                      |
 | `liveworkspace/apps/index/src/person-merges.ts`     | Telling the apps a guest became an account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Becoming an account"): the merge moves the index's own rows, but each app may ke…                            |
 | `liveworkspace/apps/index/src/person-notices.ts`    | Telling the apps about a closed account (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an account"): the index anonymises its own rows, but the person's name is a…                            |
 | `liveworkspace/apps/index/src/personal.ts`          | A person's own things about items (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Folders and defaults"): what they hid from Recent, and the folder Ne…                                                 |
@@ -504,8 +508,8 @@ Migrations, in order:
 | `SHARE_GUESS_RETRY_AFTER_S`     | `60`                                                                                   | `config.ts`                           |
 | `SHARE_PASSWORD_ITERATIONS`     | `100_000`                                                                              | `password-hash.ts`                    |
 | `PERSON_ITEMS_PER_CALL`         | `100`                                                                                  | `person-notices.ts`                   |
-| `NOTICE_RETRY_AFTER_MS`         | `60 * 60 * 1000`                                                                       | `person-notices.ts`                   |
-| `NOTICE_GIVE_UP_MS`             | `7 * 24 * 60 * 60 * 1000`                                                              | `person-notices.ts`                   |
+| `NOTICE_RETRY_AFTER_MS`         | `60 * 60 * 1000`                                                                       | `notice-queue.ts`                     |
+| `NOTICE_GIVE_UP_MS`             | `7 * 24 * 60 * 60 * 1000`                                                              | `notice-queue.ts`                     |
 | `ITEM_COLUMNS`                  | `'i.id, i.app, i.kind, i.owner_id, i.team_id, i.scope, i.fold…`                        | `rows.ts`                             |
 | `LIVE_LINK`                     | `(alias: string) =>`                                                                   | `rows.ts`                             |
 | `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                                        | `events.ts`                           |

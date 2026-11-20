@@ -29,7 +29,7 @@ export function ImportMenu() {
         height={110}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <MenuRowList
         x={mx}

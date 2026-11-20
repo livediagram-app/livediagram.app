@@ -46,12 +46,12 @@ function MiniBottomBar({ x, y, w }: { x: number; y: number; w: number }) {
   return (
     <g>
       <rect x={x} y={y} width={w} height={16} className="fill-slate-100" />
-      <line x1={x} y1={y} x2={x + w} y2={y} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={x} y1={y} x2={x + w} y2={y} className="stroke-slate-200" strokeWidth={0.75} />
       {/* The open tab, a card standing on the bar's bottom edge, then a quiet tab's name. */}
       <path
         d={`M${x + 6} ${y + 16} V${y + 5} a3 3 0 0 1 3 -3 H${x + 43} a3 3 0 0 1 3 3 V${y + 16} Z`}
         className="fill-white stroke-slate-300"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <rect x={x + 12} y={y + 8} width={22} height={2.5} rx={1.25} className="fill-brand-400" />
       <rect x={x + 54} y={y + 8} width={20} height={2.5} rx={1.25} className="fill-slate-300" />
@@ -75,7 +75,7 @@ function MiniCornerCluster({ x, y }: { x: number; y: number }) {
           height={14}
           rx={3}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
       ))}
       <rect
@@ -85,7 +85,7 @@ function MiniCornerCluster({ x, y }: { x: number; y: number }) {
         height={14}
         rx={3}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <Label x={x + 85} y={y + 8} anchor="middle" size={10} weight={600} tone="body">
         100%
@@ -115,7 +115,7 @@ function MiniTopRow({ x, y, w }: { x: number; y: number; w: number }) {
         height={18}
         rx={4}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <path
         d={`M${x + 6} ${y + 5.5}h8M${x + 6} ${y + 9}h8M${x + 6} ${y + 12.5}h8`}
@@ -130,7 +130,7 @@ function MiniTopRow({ x, y, w }: { x: number; y: number; w: number }) {
         height={18}
         rx={5}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <rect x={sx + 4} y={y + 4} width={14} height={10} rx={2.5} className="fill-brand-100" />
       <rect x={sx + 22} y={y + 4} width={26} height={10} rx={2.5} className="fill-brand-100" />
@@ -219,7 +219,7 @@ export function DesktopShortcuts() {
                 height={34}
                 rx={7}
                 className="fill-slate-50 stroke-slate-300"
-                strokeWidth={1.5}
+                strokeWidth={0.75}
               />
               <Label x={kx + 31} y={84} anchor="middle" size={11} weight={700} tone="accent">
                 {k.label}
@@ -299,7 +299,7 @@ export function MobileEditor() {
         height={18}
         rx={4}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <path
         d="M166 45.5h6M166 49h6M166 52.5h6"
@@ -314,7 +314,7 @@ export function MobileEditor() {
         height={18}
         rx={5}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <rect x={182} y={44} width={9} height={10} rx={2.5} className="fill-brand-100" />
       <rect x={193} y={44} width={9} height={10} rx={2.5} className="fill-brand-100" />
@@ -350,7 +350,7 @@ export function MobileEditor() {
         height={13}
         rx={3}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <path
         d="M236 176v-2h3M252 176v-2h-3M236 181v2h3M252 181v2h-3"
@@ -359,7 +359,7 @@ export function MobileEditor() {
         fill="none"
       />
       <rect x={158} y={190} width={104} height={16} className="fill-white" />
-      <line x1={158} y1={190} x2={262} y2={190} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={158} y1={190} x2={262} y2={190} className="stroke-slate-200" strokeWidth={0.75} />
       <rect
         x={163}
         y={193}
@@ -455,7 +455,7 @@ export function TouchGestures() {
               height={82}
               rx={12}
               className="fill-white stroke-slate-200"
-              strokeWidth={2}
+              strokeWidth={0.75}
             />
             <g transform={`translate(${tx + 41} 58)`}>{t.glyph}</g>
             <Label x={tx + 41} y={92} anchor="middle" size={10} weight={600} tone="body">

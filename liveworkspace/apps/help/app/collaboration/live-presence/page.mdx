@@ -6,6 +6,10 @@ import {
   PresenceSelection,
 } from '@liveworkspace/help-site/art/illustrations/collaboration';
 import { ReleaseHold } from '@liveworkspace/help-site/art/illustrations/release-hold';
+import { LiveCursors as DesignLiveCursors, PresenceSelection as DesignPresenceSelection } from '@/editions/livedesign/components/illustrations/collaboration';
+import { DocumentPresence, PresenceSelection as DocumentsPresenceSelection, ReleaseHold as DocumentsReleaseHold } from '@/editions/livedocuments/components/illustrations/presence';
+import { LiveCursors as PlannerLiveCursors } from '@/editions/liveplanner/components/illustrations/presence';
+import { SpacePresence, ReleaseHold as HuddleReleaseHold, PresenceSelection as HuddlePresenceSelection } from '@/editions/livehuddle/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'Live Presence',
@@ -51,8 +55,24 @@ If a cursor or its name is in the way of what you want to see, move your pointer
   the card rings and cell outlines described below do that job there.
 </AppNote>
 
-<Figure caption="Live cursors carry each person's name and colour, and each tab shows the initials of who is on it.">
+<Figure app="livediagram,all" caption="Live cursors carry each person's name and colour, and each tab shows the initials of who is on it.">
   <LiveCursors />
+</Figure>
+
+<Figure app="livedesign" caption="Everyone in a design sees each other's live cursors on its pages, and each tab shows the initials of who is on it.">
+  <DesignLiveCursors />
+</Figure>
+
+<Figure app="livedocuments" caption="Live cursors, selections and the presence stack on the tab show who is in the document.">
+  <DocumentPresence />
+</Figure>
+
+<Figure app="liveplanner" caption="Live cursors carry each person's name and colour over the board, a card someone has selected wears their colour, and the open tab shows who is on it.">
+  <PlannerLiveCursors />
+</Figure>
+
+<Figure app="livehuddle" caption="Everyone in a Space at once: Aria and Jae's cursors as they build, Mara walking in, and their faces on the Virtual Office tab.">
+  <SpacePresence />
 </Figure>
 
 ## Moving Things Together
@@ -154,16 +174,28 @@ When someone selects something, you can tell, and it is gently locked for everyo
 <AppNote app="livediagram,livedocuments,livedesign">
   A small disc with their initials appears on the element's top-left corner, so you always know what a teammate is working on. While an Editor or Participant has it selected, that element is locked for everyone else. A Viewer's selection only shows the disc. If they select several elements, every one of them is locked, not just the one they clicked. Letting go does not free an element quite at once: while the change they just made is still being saved (a moment, and never more than about 10 seconds if the save keeps failing) it stays locked, so nobody's edit is lost. Otherwise it frees up again as soon as they click away. When you zoom far out, the discs hide until you zoom back in.
 
-  <Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
+  <Figure app="livediagram,liveplanner,livehuddle,all" caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
     <PresenceSelection />
+  </Figure>
+
+  <Figure app="livedesign" caption="A teammate's selection is outlined in their colour and badged with their initials while they edit it.">
+    <DesignPresenceSelection />
+  </Figure>
+
+  <Figure app="livedocuments" caption="A teammate's selection is outlined in their colour and badged with their initial.">
+    <DocumentsPresenceSelection />
   </Figure>
 </AppNote>
 
 <AppNote app="livehuddle">
   A small disc with their initials appears on the element's top-left corner, so you always know what a teammate is working on. While an Editor has it selected, that element is locked for everyone else. If they select several elements, every one of them is locked, not just the one they clicked. Letting go does not free an element quite at once: while the change they just made is still being saved (a moment, and never more than about 10 seconds if the save keeps failing) it stays locked, so nobody's edit is lost. Otherwise it frees up again as soon as they click away. When you zoom far out, the discs hide until you zoom back in.
 
-  <Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
+  <Figure app="livediagram,livedesign,livedocuments,liveplanner,all" caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
     <PresenceSelection />
+  </Figure>
+
+  <Figure app="livehuddle" caption="Jae has the meeting table: its outline in Jae's colour with Jae's initial, held for Jae while they work on it.">
+    <HuddlePresenceSelection />
   </Figure>
 </AppNote>
 
@@ -204,8 +236,16 @@ The lock clears by itself when the person clicks away, switches tab or leaves. W
 </Step>
 <Step n={3}>Choose that row. The element frees up for everyone straight away.</Step>
 
-<Figure caption="Right-clicking an element a teammate is holding opens the In use menu, naming whose hold you would release.">
+<Figure app="livediagram,livedesign,liveplanner,all" caption="Right-clicking an element a teammate is holding opens the In use menu, naming whose hold you would release.">
   <ReleaseHold />
+</Figure>
+
+<Figure app="livedocuments" caption="Right-click an element someone is holding to release their hold.">
+  <DocumentsReleaseHold />
+</Figure>
+
+<Figure app="livehuddle" caption="Right-click a held piece and choose Release Jae's Hold to free it.">
+  <HuddleReleaseHold />
 </Figure>
 
 **What the holder sees.** As the menu says: "They keep their work; it just stops being theirs to edit." Their selection is dropped, and if they were typing into the element, that editing ends too, but the element itself is not changed. A short notification tells them their hold was freed, so it doesn't look like a glitch. Nobody else in the room is told anything; the element simply stops looking locked.

@@ -3,7 +3,9 @@
 // apps/live's *-config.ts catalogues, and the Format banner from TopCenterChrome.tsx.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
+import { Scene, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
+import { DesignPage } from './editor-frame';
+import { BrowserScreen, ModeScreen, PhoneScreen } from './design-content';
 import { PainterGlyph } from '@liveworkspace/help-site/art/illustrations/palette-modes-parts';
 import { Chevron, PickerTrigger } from './selection-modes-picker';
 
@@ -79,7 +81,18 @@ function ToolPanel({
 export function EraserPanelScene() {
   return (
     <Scene w={420} h={230}>
-      <Shape x={34} y={70} w={110} h={56} label="Checkout" />
+      <DesignPage x={24} y={40} w={180} h={150} size="A4 · Landscape" bare>
+        <rect
+          x={40}
+          y={60}
+          width={110}
+          height={56}
+          rx={4}
+          className="fill-brand-100 stroke-brand-500"
+          strokeWidth={1}
+        />
+        <rect x={52} y={80} width={60} height={6} rx={3} className="fill-brand-300" />
+      </DesignPage>
       {/* A pencil scribble over the shape */}
       <path
         d="M30 150 q24 -40 52 -8 t52 -10 t44 6"
@@ -151,25 +164,33 @@ export function FormatPanelScene() {
         Done
       </Label>
       {/* Source and target */}
-      <Shape
-        x={26}
-        y={88}
-        w={92}
-        h={48}
-        label="Step one"
-        fill="fill-brand-50"
-        stroke="stroke-brand-500"
-      />
-      <Arrow from={[122, 112]} to={[150, 160]} kind="curved" tone="muted" dashed />
-      <Shape
-        x={110}
-        y={160}
-        w={92}
-        h={48}
-        label="Step two"
-        fill="fill-amber-100"
-        stroke="stroke-brand-500"
-      />
+      <DesignPage x={20} y={74} w={176} h={150} size="" bare>
+        <rect
+          x={34}
+          y={90}
+          width={84}
+          height={22}
+          rx={11}
+          className="fill-brand-50 stroke-brand-500"
+          strokeWidth={1.5}
+        />
+        <Label x={76} y={101.5} size={9.5} weight={600} anchor="middle" tone="accent">
+          Sign Up
+        </Label>
+        <rect
+          x={98}
+          y={176}
+          width={84}
+          height={22}
+          rx={11}
+          className="fill-amber-100 stroke-brand-500"
+          strokeWidth={1.5}
+        />
+        <Label x={140} y={187.5} size={9.5} weight={600} anchor="middle" tone="accent">
+          Learn More
+        </Label>
+      </DesignPage>
+      <Arrow from={[120, 104]} to={[136, 170]} kind="curved" tone="muted" dashed width={1} />
       <ToolPanel
         x={204}
         y={56}
@@ -210,8 +231,17 @@ export function FormatPanelScene() {
 export function LaserPanelScene() {
   return (
     <Scene w={420} h={240}>
-      <Shape x={30} y={60} w={96} h={46} label="Gateway" />
-      <Shape x={60} y={160} w={96} h={46} accent label="Service" />
+      <DesignPage x={40} y={30} w={110} h={196} size="" bare>
+        <PhoneScreen
+          x={46}
+          y={36}
+          w={98}
+          h={184}
+          variant="product"
+          cta="Add to Cart"
+          frame={false}
+        />
+      </DesignPage>
       <path
         d="M40 130 q50 -30 110 -6 q30 14 50 0"
         className="stroke-rose-300/50"
@@ -268,16 +298,12 @@ export function SpotlightPanelScene() {
       <defs>
         <mask id="mtt-spot-wide">
           <rect x={0} y={0} width={214} height={240} fill="white" />
-          <ellipse cx={108} cy={124} rx={92} ry={30} fill="black" />
+          <ellipse cx={108} cy={84} rx={92} ry={26} fill="black" />
         </mask>
       </defs>
-      {[60, 106, 152].map((ry, i) => (
-        <g key={ry}>
-          <Shape x={20} y={ry} w={56} h={34} label={['To do', 'Doing', 'Done'][i]} />
-          <Shape x={84} y={ry} w={56} h={34} accent={i === 1} />
-          <Shape x={148} y={ry} w={56} h={34} />
-        </g>
-      ))}
+      <DesignPage x={14} y={30} w={190} h={190} size="" bare>
+        <BrowserScreen x={22} y={40} w={174} h={170} />
+      </DesignPage>
       <rect
         x={0}
         y={0}
@@ -320,25 +346,24 @@ export function SpotlightTool() {
         </radialGradient>
         <mask id="mtt-spot-hole">
           <rect x={0} y={0} width={420} height={230} fill="white" />
-          <circle cx={234} cy={158} r={62} fill="url(#mtt-spot-soft)" />
+          <circle cx={282} cy={196} r={56} fill="url(#mtt-spot-soft)" />
         </mask>
       </defs>
-      <PickerTrigger tool="spotlight" />
-      <Shape x={80} y={120} w={72} h={42} label="A" />
-      <Shape x={196} y={128} w={72} h={42} accent label="B" />
-      <Shape x={312} y={160} w={72} h={42} kind="circle" label="C" />
+      <ModeScreen x={90} y={64} variant="home" cta="Shop Now" />
+      <ModeScreen x={234} y={64} variant="product" cta="Add to Cart" />
       <rect
         x={0}
-        y={86}
+        y={0}
         width={420}
-        height={144}
+        height={230}
         className="fill-slate-900/55"
         mask="url(#mtt-spot-hole)"
       />
+      <PickerTrigger tool="spotlight" />
       {/* The cursor's stand-in, as the app draws it: a sky dot with a white rim and a glow,
           below B's label so the lit shape still reads. No ring: the light's edge is the shroud. */}
-      <circle cx={234} cy={166} r={8} className="fill-sky-400/30" />
-      <circle cx={234} cy={166} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
+      <circle cx={282} cy={200} r={8} className="fill-sky-400/30" />
+      <circle cx={282} cy={200} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
     </Scene>
   );
 }

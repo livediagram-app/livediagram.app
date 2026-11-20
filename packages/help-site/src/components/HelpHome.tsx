@@ -4,7 +4,6 @@ import { articleHref, categoryHref, type Category } from '@liveworkspace/help-re
 import { buttonClassName, ButtonContent, GlyphDisc } from '@liveworkspace/ui';
 import type { HelpHomeLayout } from '../lib/home';
 import type { HelpSite } from '../site';
-import { Breadcrumb } from './Breadcrumb';
 import { CategoryArt, CategoryCard, guideCount } from './CategoryCard';
 import { ArrowRightIcon, ExternalLinkIcon, MessageIcon } from './chrome-icons';
 import { HelpHero } from './HelpHero';
@@ -92,7 +91,7 @@ export function HelpHome({
   const troubleshooting = category(site, home.stillStuck.category);
   return (
     <div>
-      <Breadcrumb items={[]} helpUrl={site.facts.helpUrl} />
+      {/* No breadcrumb bar: the home is the trail's root (liveworkspace/docs/specs/017-help/help-centre.md). */}
       <HelpHero home title={title} lede={lede}>
         <div className="mx-auto mt-5 flex flex-wrap justify-center gap-2">
           <span className="inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-xs font-medium text-(--hero-chip-text)">

@@ -2,6 +2,10 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { RedoStep } from '@liveworkspace/help-site/art/illustrations/undo-redo';
+import { RedoStep as DiagramRedoStep } from '@/editions/livediagram/components/illustrations/undo-redo';
+import { RedoStep as DesignRedoStep } from '@/editions/livedesign/components/illustrations/undo-redo';
+import { RedoStep as DocumentsRedoStep } from '@/editions/livedocuments/components/illustrations/history';
+import { RedoStep as HuddleRedoStep } from '@/editions/livehuddle/components/illustrations/floor-edits';
 
 export const metadata = helpMetadata({
   title: 'Redo',
@@ -28,8 +32,24 @@ Redo re-applies something you just undid. You can:
 - Click the **Redo** button in the controls at the bottom-right of the canvas, beside Undo. It is greyed out when there is nothing to redo.
 - Open the search palette (**Cmd+K** or **Cmd+.**, **Ctrl** on Windows and Linux) and type **redo**. It is listed only when there is something to redo.
 
-<Figure caption="Redo re-applies the change you just undid.">
+<Figure app="liveplanner,all" caption="Redo re-applies the change you just undid.">
   <RedoStep />
+</Figure>
+
+<Figure app="livediagram" caption="Cmd or Ctrl plus Shift plus Z re-applies the change you just undid; Redo sits beside Undo in the corner cluster.">
+  <DiagramRedoStep />
+</Figure>
+
+<Figure app="livedesign" caption="Redo (Cmd or Ctrl plus Shift plus Z) puts back the change you just undid.">
+  <DesignRedoStep />
+</Figure>
+
+<Figure app="livedocuments" caption="Redo puts back the change you just undid.">
+  <DocumentsRedoStep />
+</Figure>
+
+<Figure app="livehuddle" caption="Redo brings back the desk you just undid. Press Cmd or Ctrl, Shift and Z, or Redo in the bottom-right corner.">
+  <HuddleRedoStep />
 </Figure>
 
 ## Stepping Back and Forth

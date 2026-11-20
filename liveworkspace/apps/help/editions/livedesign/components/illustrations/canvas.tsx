@@ -1,292 +1,336 @@
-// Canvas-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the infinite canvas, placing and
-// selecting elements, grouping, themes, templates, links, and annotations.
-// Composed only from the shared primitives so the house style holds.
+// Canvas scenes for livedesign (liveworkspace/docs/specs/017-help/help-centre.md): the editor at a glance, placing
+// an element from a category, panning and zooming, a marquee selection, the format painter, snapping guides and a
+// linked element, all on livedesign's own pages (phone screens and web pages) rather than a flowchart.
 
 import {
-  Scene,
-  Shape,
   Arrow,
-  SelectionBox,
   Cursor,
-  Panel,
-  Tabs,
   Label,
+  Panel,
+  Scene,
+  SelectionBox,
   Tile,
 } from '@liveworkspace/help-site/art/primitives';
-import { MenuCard, Strip, stripCategory } from './toolbar-layout';
+import { CornerControls, Strip, stripCategory } from './editor-chrome';
+import { DesignPage, EditorFrame } from './editor-frame';
+import { PhoneScreen } from './design-content';
+import { APP_PAGES, AppScreens } from './user-interface';
 
-/** The canvas with the menu button and the palette strip across the top and a small flow on
- *  it: the editor at a glance. */
+/** The editor at a glance, with your cursor on the first screen. */
 export function CanvasOverview() {
   return (
-    <Scene w={420} h={240}>
-      <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} />
-      <Shape x={40} y={92} w={84} h={48} kind="rect" label="Start" />
-      <Shape x={172} y={92} w={84} h={48} kind="diamond" />
-      <Shape x={172} y={172} w={84} h={44} kind="rect" accent label="Done" />
-      <Arrow from={[124, 116]} to={[172, 116]} />
-      <Arrow from={[214, 140]} to={[214, 172]} />
-      {/* Left of Done, so the name tag sits clear of its edge. */}
-      <Cursor x={112} y={168} name="You" />
+    <Scene w={640} h={400}>
+      <EditorFrame w={640} h={400} pages={APP_PAGES} level="60%" tabs={['App Screens', 'Brand']}>
+        <AppScreens x={168} y={84} />
+        <Cursor x={250} y={220} name="You" />
+      </EditorFrame>
     </Scene>
   );
 }
 
-/** Dropping a shape from a category's flyout onto the canvas (a curved drag trail from the Square tile in Shapes'
- *  flyout to a freshly placed, still-selected shape). */
-export function AddingElements() {
-  const shapes = stripCategory(58, 'Shapes');
-  const px = Math.round(shapes.left + shapes.w / 2 - 60);
+/** A grabbing hand, centred near (x, y). */
+export function GrabHand({ x, y }: { x: number; y: number }) {
   return (
-    <Scene w={420} h={200}>
-      <Strip x={58} y={16} open="Shapes" />
-      <Panel x={px} y={56} w={120} h={58}>
-        <Tile x={px + 8} y={64} size={30}>
-          <rect
-            x={-6}
-            y={-6}
-            width={12}
-            height={12}
-            rx={1.5}
-            className="stroke-brand-500"
-            strokeWidth={1.8}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={px + 45} y={64} size={30}>
-          <circle r={6.5} className="stroke-slate-500" strokeWidth={1.6} fill="none" />
-        </Tile>
-        <Tile x={px + 82} y={64} size={30}>
-          <path
-            d="M0 -7 L7 0 L0 7 L-7 0 Z"
-            className="stroke-slate-500"
-            strokeWidth={1.6}
-            fill="none"
-          />
-        </Tile>
+    <path
+      transform={`translate(${x} ${y})`}
+      d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
+      className="fill-white stroke-slate-600"
+      strokeWidth={1.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  );
+}
+
+/** Dropping an element from a category's flyout: Shapes open, a drag trail from its Square tile, and the square
+ *  landing on the page selected. */
+export function AddingElements() {
+  const sx = 8;
+  const shapes = stripCategory(sx, 'Shapes');
+  const px = shapes.left - 4;
+  return (
+    <Scene w={420} h={230}>
+      <DesignPage x={236} y={66} w={150} h={150} size="A4 · Portrait" bare>
+        <rect x={250} y={80} width={70} height={6} rx={3} className="fill-slate-300" />
+        <rect x={250} y={92} width={110} height={4} rx={2} className="fill-slate-200" />
+      </DesignPage>
+      <Strip x={sx} y={8} open="Shapes" />
+      <Panel x={px} y={40} w={120} h={52}>
+        {(['square', 'circle', 'diamond'] as const).map((k, i) => (
+          <Tile key={k} x={px + 10 + i * 35} y={50} size={30}>
+            {k === 'square' && (
+              <rect
+                x={-6}
+                y={-6}
+                width={12}
+                height={12}
+                rx={1.5}
+                className="stroke-brand-600"
+                strokeWidth={1.2}
+                fill="none"
+              />
+            )}
+            {k === 'circle' && (
+              <circle r={6.5} className="stroke-slate-600" strokeWidth={1} fill="none" />
+            )}
+            {k === 'diamond' && (
+              <path
+                d="M0 -7 L7 0 L0 7 L-7 0 Z"
+                className="stroke-slate-600"
+                strokeWidth={1}
+                fill="none"
+              />
+            )}
+          </Tile>
+        ))}
       </Panel>
-      <Arrow from={[px + 23, 98]} to={[250, 120]} kind="curved" tone="muted" dashed />
-      <Shape x={250} y={120} w={96} h={56} kind="rect" />
-      <SelectionBox x={250} y={120} w={96} h={56} />
-      <Cursor x={300} y={148} colour="brand" />
+      <Arrow from={[px + 25, 84]} to={[262, 128]} kind="curved" tone="muted" dashed />
+      <rect
+        x={266}
+        y={116}
+        width={90}
+        height={64}
+        rx={4}
+        className="fill-brand-50 stroke-brand-500"
+        strokeWidth={1.5}
+      />
+      <SelectionBox x={266} y={116} w={90} h={64} />
+      <Cursor x={312} y={150} />
     </Scene>
   );
 }
 
-/** Panning and zooming: shapes on the canvas with the zoom controls and a
- *  grabbing hand cursor. */
+/** Panning and zooming: the grabbing hand dragging the canvas, and the zoom card in the corner. */
 export function PanAndZoom() {
   return (
-    <Scene w={420} h={220}>
-      <Shape x={70} y={54} w={76} h={44} label="A" />
-      <Shape x={232} y={108} w={76} h={44} accent label="B" />
-      <Arrow from={[146, 76]} to={[232, 130]} kind="elbow" />
-      {/* Zoom controls, bottom-right */}
-      <Panel x={300} y={168} w={104} h={34}>
-        <g transform="translate(0 0)">
-          <Label x={316} y={185} size={14} weight={700} tone="muted">
-            −
-          </Label>
-          <Label x={352} y={185} size={11} weight={600} tone="body" anchor="middle">
-            100%
-          </Label>
-          <Label x={388} y={185} size={14} weight={700} tone="muted">
-            +
-          </Label>
-        </g>
-      </Panel>
-      {/* Grabbing-hand cursor */}
-      <g transform="translate(150 120)">
-        <path
-          d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
-          className="fill-white stroke-slate-500"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
+    <Scene w={420} h={230}>
+      <DesignPage x={60} y={40} w={84} h={160} size="iPhone · Wireframe" bare>
+        <PhoneScreen x={66} y={46} w={72} h={148} variant="home" cta="Shop" frame={false} />
+      </DesignPage>
+      <DesignPage x={170} y={40} w={84} h={160} size="" bare>
+        <PhoneScreen x={176} y={46} w={72} h={148} variant="product" cta="Add" frame={false} />
+      </DesignPage>
+      <path d="M236 132 h44" className="stroke-slate-300" strokeWidth={1} strokeDasharray="3 3" />
+      <GrabHand x={290} y={122} />
+      <CornerControls right={412} y={198} level="75%" />
     </Scene>
   );
 }
 
-/** A marquee drag selecting several elements at once. */
+/** A marquee drag on a page gathering the heading, the picture and the button into one selection. */
 export function MultiSelect() {
   return (
-    <Scene w={420} h={220}>
-      <Shape x={56} y={50} w={66} h={40} />
-      <Shape x={150} y={96} w={66} h={40} />
-      <Shape x={250} y={56} w={66} h={40} kind="circle" />
-      <Shape x={120} y={150} w={66} h={32} />
+    <Scene w={420} h={230}>
+      <DesignPage x={110} y={30} w={200} h={186} size="A4 · Portrait" bare>
+        <rect x={130} y={50} width={90} height={8} rx={4} className="fill-slate-300" />
+        <rect x={130} y={68} width={160} height={60} rx={4} className="fill-brand-100" />
+        <rect x={130} y={140} width={70} height={16} rx={4} className="fill-brand-500" />
+        <rect x={130} y={172} width={160} height={4} rx={2} className="fill-slate-200" />
+        <rect x={130} y={182} width={120} height={4} rx={2} className="fill-slate-200" />
+      </DesignPage>
       <rect
-        x={40}
-        y={38}
-        width={200}
-        height={156}
-        rx={4}
+        x={122}
+        y={42}
+        width={182}
+        height={120}
         className="fill-brand-500/10 stroke-brand-500"
-        strokeWidth={1.5}
-        strokeDasharray="5 4"
+        strokeWidth={1}
+        strokeDasharray="4 3"
       />
-      <Cursor x={232} y={186} colour="brand" />
+      <Cursor x={302} y={160} />
     </Scene>
   );
 }
 
-/** The format painter: copying one element's style onto another. */
+/** A wireframe button on a page: solid or outlined. */
+function WireButton({
+  x,
+  y,
+  w,
+  label,
+  solid,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  label: string;
+  solid: boolean;
+}) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={22}
+        rx={11}
+        className={solid ? 'fill-brand-500 stroke-brand-600' : 'fill-white stroke-slate-400'}
+        strokeWidth={solid ? 1 : 1}
+      />
+      <Label
+        x={x + w / 2}
+        y={y + 11.5}
+        size={9.5}
+        weight={600}
+        anchor="middle"
+        className={solid ? 'fill-white help-art-as-drawn' : 'fill-slate-600'}
+      >
+        {label}
+      </Label>
+    </g>
+  );
+}
+
+/** The format painter's brush, drawn at (x, y). */
+function Painter({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect x={-6} y={-8} width={12} height={6} rx={1} className="fill-brand-500" />
+      <path
+        d="M0 -2 v4 M-1.5 2 h3 v6 h-3 Z"
+        className="fill-slate-500 stroke-slate-600"
+        strokeWidth={1}
+      />
+    </g>
+  );
+}
+
+/** The format painter: the styled button's look lifted and brushed onto the plain one. */
 export function FormatPainter() {
   return (
     <Scene w={420} h={200}>
-      <Shape x={48} y={66} w={88} h={52} accent label="Styled" />
-      <Arrow from={[140, 92]} to={[252, 92]} kind="curved" tone="muted" dashed />
-      <Shape x={262} y={66} w={88} h={52} accent label="Painted" />
-      {/* Paint-roller / brush cursor */}
-      <g transform="translate(196 112)">
-        <rect x={-9} y={-9} width={18} height={11} rx={2} className="fill-brand-500" />
-        <path d="M0 2 v8" className="stroke-slate-500" strokeWidth={2} />
-        <path
-          d="M-4 10 h8 v6 h-8 Z"
-          className="fill-brand-300 stroke-slate-500"
-          strokeWidth={1.5}
-        />
-      </g>
+      <DesignPage x={60} y={40} w={300} h={130} size="Desktop · Wireframe" bare>
+        <rect x={80} y={60} width={140} height={8} rx={4} className="fill-slate-300" />
+        <rect x={80} y={76} width={200} height={4} rx={2} className="fill-slate-200" />
+        <WireButton x={80} y={104} w={84} label="Get Started" solid />
+        <WireButton x={240} y={104} w={84} label="Learn More" solid />
+        <WireButton x={240} y={104} w={84} label="Learn More" solid={false} />
+      </DesignPage>
+      <Arrow from={[166, 112]} to={[236, 112]} kind="curved" tone="muted" dashed />
+      <Painter x={282} y={140} />
     </Scene>
   );
 }
 
-/** Multi-colour theme: each branch of a hierarchy tinted its own hue. */
-export function MulticolourTheme() {
-  return (
-    <Scene w={420} h={220}>
-      <Shape
-        x={172}
-        y={92}
-        w={76}
-        h={40}
-        fill="fill-slate-100"
-        stroke="stroke-slate-400"
-        label="Root"
-        labelTone="strong"
-      />
-      <Shape
-        x={40}
-        y={28}
-        w={70}
-        h={36}
-        fill="fill-emerald-100"
-        stroke="stroke-emerald-600"
-        label="A"
-        labelTone="strong"
-      />
-      <Shape
-        x={40}
-        y={156}
-        w={70}
-        h={36}
-        fill="fill-violet-100"
-        stroke="stroke-violet-600"
-        label="B"
-        labelTone="strong"
-      />
-      <Shape
-        x={310}
-        y={28}
-        w={70}
-        h={36}
-        fill="fill-amber-100"
-        stroke="stroke-amber-600"
-        label="C"
-        labelTone="strong"
-      />
-      <Shape
-        x={310}
-        y={156}
-        w={70}
-        h={36}
-        fill="fill-rose-100"
-        stroke="stroke-rose-600"
-        label="D"
-        labelTone="strong"
-      />
-      <Arrow
-        from={[172, 104]}
-        to={[110, 50]}
-        colour={{ stroke: 'stroke-emerald-600', fill: 'fill-emerald-600' }}
-      />
-      <Arrow
-        from={[172, 120]}
-        to={[110, 170]}
-        colour={{ stroke: 'stroke-violet-600', fill: 'fill-violet-600' }}
-      />
-      <Arrow
-        from={[248, 104]}
-        to={[310, 50]}
-        colour={{ stroke: 'stroke-amber-600', fill: 'fill-amber-600' }}
-      />
-      <Arrow
-        from={[248, 120]}
-        to={[310, 170]}
-        colour={{ stroke: 'stroke-rose-600', fill: 'fill-rose-600' }}
-      />
-    </Scene>
-  );
-}
-
-/** An element linked to another tab: a follow-link badge and a jump to a tab. */
-export function ElementLink() {
-  return (
-    <Scene w={420} h={210}>
-      <Tabs x={28} y={24} items={['Overview', 'Detail']} active={0} tabW={72} h={24} />
-      <Shape x={48} y={92} w={120} h={56} kind="rect" label="See detail" labelTone="strong" />
-      {/* Follow-link badge on the shape */}
-      <g transform="translate(160 92)">
-        <circle r={11} className="fill-brand-500 stroke-white" strokeWidth={2.5} />
-        <path
-          d="M-3 1 a4 4 0 0 1 0 -5 l2 -2 a4 4 0 0 1 6 6 l-1 1 M3 -1 a4 4 0 0 1 0 5 l-2 2 a4 4 0 0 1 -6 -6 l1 -1"
-          className="stroke-white"
-          strokeWidth={1.6}
-          fill="none"
-        />
-      </g>
-      <Arrow from={[176, 100]} to={[300, 120]} kind="curved" tone="accent" />
-      {/* Target tab card */}
-      <rect
-        x={300}
-        y={104}
-        width={96}
-        height={64}
-        rx={8}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
-      />
-      <Tabs x={310} y={114} items={['Detail']} active={0} tabW={56} h={18} />
-      <Shape x={314} y={140} w={32} h={20} kind="rect" />
-      <Shape x={356} y={140} w={32} h={20} kind="circle" accent />
-    </Scene>
-  );
-}
-
-/** Dragging an element snaps it into line with a neighbour; the dashed guide
- * shows the matched edge. Holding Cmd / Ctrl skips snapping for a free drop. */
+/** Snapping: dragging the card next to the picture lines their top edges up, with the guide drawn between them. */
 export function SnappingGuides() {
   return (
-    <Scene w={400} h={200}>
-      {/* The faint dashed guide, in the theme's element stroke as the app draws it, marks the
-          shared top edge A and B aligned to. */}
-      <line
-        x1={64}
-        y1={66}
-        x2={320}
-        y2={66}
-        className="stroke-slate-600"
+    <Scene w={420} h={200}>
+      <DesignPage x={50} y={36} w={320} h={140} size="Desktop · Wireframe" bare>
+        <rect x={74} y={66} width={110} height={80} rx={4} className="fill-brand-100" />
+        <rect
+          x={228}
+          y={66}
+          width={110}
+          height={60}
+          rx={4}
+          className="fill-slate-50 stroke-brand-500"
+          strokeWidth={1.5}
+        />
+        <rect x={238} y={76} width={60} height={6} rx={3} className="fill-slate-300" />
+        <rect x={238} y={88} width={84} height={4} rx={2} className="fill-slate-200" />
+      </DesignPage>
+      <path d="M60 66 H360" className="stroke-rose-500" strokeWidth={1} strokeDasharray="3 2" />
+      <Cursor x={300} y={110} />
+    </Scene>
+  );
+}
+
+/** A linked element: the button wears a link badge, and following it jumps to the Checkout page. */
+export function ElementLink() {
+  return (
+    <Scene w={420} h={220}>
+      <DesignPage x={60} y={34} w={96} h={170} size="iPhone · Wireframe" bare>
+        <PhoneScreen
+          x={66}
+          y={40}
+          w={84}
+          h={158}
+          variant="product"
+          cta="Add to Cart"
+          frame={false}
+        />
+      </DesignPage>
+      <circle cx={146} cy={176} r={7} className="fill-brand-500" />
+      <path
+        d="M143 179 l6 -6 M144.5 173 h4.5 v4.5"
+        className="stroke-white help-art-as-drawn"
         strokeWidth={1.2}
-        strokeOpacity={0.55}
-        strokeDasharray="4 3"
+        fill="none"
+        strokeLinecap="round"
       />
-      <Shape x={64} y={66} w={84} h={60} label="A" />
-      {/* The dragged element, snapped flush to A's top edge. */}
-      <Shape x={236} y={66} w={84} h={44} accent label="B" />
-      <Cursor x={288} y={84} />
+      <Arrow from={[156, 170]} to={[262, 120]} kind="curved" />
+      <DesignPage x={268} y={34} w={96} h={170} size="Checkout" bare>
+        <PhoneScreen x={274} y={40} w={84} h={158} variant="checkout" cta="Pay" frame={false} />
+      </DesignPage>
+      <rect
+        x={268}
+        y={34}
+        width={96}
+        height={170}
+        fill="none"
+        className="stroke-brand-400"
+        strokeWidth={1.5}
+      />
+    </Scene>
+  );
+}
+
+/** Shift-drag to duplicate: the screen stays put while a ghost of its copy follows the pointer. */
+export function ShiftDragDuplicate() {
+  return (
+    <Scene w={420} h={230}>
+      <DesignPage x={70} y={40} w={96} h={166} size="iPhone · Wireframe" bare>
+        <PhoneScreen
+          x={76}
+          y={46}
+          w={84}
+          h={154}
+          variant="product"
+          cta="Add to Cart"
+          frame={false}
+        />
+      </DesignPage>
+      <g opacity={0.55}>
+        <DesignPage x={240} y={40} w={96} h={166} size="" bare>
+          <PhoneScreen
+            x={246}
+            y={46}
+            w={84}
+            h={154}
+            variant="product"
+            cta="Add to Cart"
+            frame={false}
+          />
+        </DesignPage>
+      </g>
+      <SelectionBox x={240} y={40} w={96} h={166} />
+      <path d="M166 120 H236" className="stroke-slate-300" strokeWidth={1} strokeDasharray="3 3" />
+      <Cursor x={292} y={128} />
+      <rect
+        x={350}
+        y={18}
+        width={44}
+        height={20}
+        rx={5}
+        className="fill-white stroke-slate-300"
+        strokeWidth={0.75}
+      />
+      <Label x={372} y={28.5} size={9.5} weight={600} anchor="middle" tone="strong">
+        Shift
+      </Label>
+    </Scene>
+  );
+}
+
+/** Arrows wiring screens into a user flow: home to product, product to checkout, and a dashed way back. */
+export function ScreenFlow() {
+  return (
+    <Scene w={420} h={220}>
+      <AppScreens x={52} y={36} h={160} gap={46} />
+      <Arrow from={[131, 116]} to={[173, 116]} width={1.5} />
+      <Arrow from={[254, 116]} to={[296, 116]} width={1.5} />
+      <Arrow from={[336, 206]} to={[92, 206]} width={1.25} dashed tone="muted" />
     </Scene>
   );
 }

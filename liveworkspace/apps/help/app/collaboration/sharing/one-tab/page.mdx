@@ -6,6 +6,10 @@ import { ShareOpensRow as DiagramShareOpensRow } from '@/editions/livediagram/co
 import { ShareOpensRow as DesignShareOpensRow } from '@/editions/livedesign/components/illustrations/sharing';
 import { ShareOpensRow as DocumentsShareOpensRow } from '@/editions/livedocuments/components/illustrations/sharing';
 import { ShareOpensRow as HuddleShareOpensRow } from '@/editions/livehuddle/components/illustrations/sharing';
+import { OneTabShare as DesignOneTabShare } from '@/editions/livedesign/components/illustrations/collaboration';
+import { OneTabShare as DocumentsOneTabShare } from '@/editions/livedocuments/components/illustrations/presence';
+import { OneTabShare as PlannerOneTabShare } from '@/editions/liveplanner/components/illustrations/presence';
+import { OneTabShare as HuddleOneTabShare } from '@/editions/livehuddle/components/illustrations/shared-views';
 
 export const metadata = helpMetadata({
   title: 'Sharing One Tab',
@@ -98,8 +102,24 @@ Someone opening a one-tab link lands straight on that tab. The other tabs stay i
   points at another tab only shows the message "That tab isn't shared with you".
 </AppNote>
 
-<Figure caption="A visitor on a one-tab link: the shared Roadmap tab, with the rest shown as Not shared tabs.">
+<Figure app="livediagram,all" caption="A visitor on a one-tab link: the shared Roadmap tab, with the rest shown as Not shared tabs.">
   <OneTabShare />
+</Figure>
+
+<Figure app="livedesign" caption="A visitor on a one-tab link sees the shared tab's pages, with the other tabs shown as Not shared.">
+  <DesignOneTabShare />
+</Figure>
+
+<Figure app="livedocuments" caption="A one-tab link opens only the shared tab; the other tabs show as Not Shared.">
+  <DocumentsOneTabShare />
+</Figure>
+
+<Figure app="liveplanner" caption="A visitor on a one-tab link: the shared Roadmap board, with every other tab shown as Not shared.">
+  <PlannerOneTabShare />
+</Figure>
+
+<Figure app="livehuddle" caption="A one-tab link opens only the shared tab; the rest show as Not shared.">
+  <HuddleOneTabShare />
 </Figure>
 
 The other tabs are private, not just hidden. Their content never reaches the visitor's browser: not their names, not their live edits. With an **Editor** pass the visitor can change their tab, but not rename, add, reorder or delete tabs, or rename the <Noun />.

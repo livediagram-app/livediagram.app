@@ -66,12 +66,12 @@ function SettingsFrame({ active, children }: { active: SettingsCategory; childre
         height={248}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={28} y={30} size={13} weight={700} tone="strong">
         Settings
       </Label>
-      <line x1={12} y1={46} x2={408} y2={46} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={12} y1={46} x2={408} y2={46} className="stroke-slate-200" strokeWidth={0.75} />
       <rect
         x={22}
         y={54}
@@ -79,7 +79,7 @@ function SettingsFrame({ active, children }: { active: SettingsCategory; childre
         height={20}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={30} y={65} size={10} tone="muted">
         Search settings
@@ -96,7 +96,7 @@ function SettingsFrame({ active, children }: { active: SettingsCategory; childre
           </g>
         );
       })}
-      <line x1={144} y1={46} x2={144} y2={258} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={144} y1={46} x2={144} y2={258} className="stroke-slate-200" strokeWidth={0.75} />
       <Label x={158} y={64} size={12} weight={700} tone="strong">
         {active}
       </Label>
@@ -172,7 +172,7 @@ function IndicatorChoice({ y }: { y: number }) {
         height={16}
         rx={5}
         className="fill-slate-100 stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <rect
         x={294}
@@ -219,7 +219,7 @@ function EditorRows({ highlight }: { highlight?: EditorRowKey }) {
               height={cardH}
               rx={7}
               className="fill-white stroke-slate-200"
-              strokeWidth={1.2}
+              strokeWidth={0.75}
             />
             {section.rows.map((r, i) => {
               const y = cardY + i * ROW_H + ROW_H / 2;
@@ -233,7 +233,7 @@ function EditorRows({ highlight }: { highlight?: EditorRowKey }) {
                       y1={cardY + i * ROW_H}
                       y2={cardY + i * ROW_H}
                       className="stroke-slate-100"
-                      strokeWidth={1}
+                      strokeWidth={0.75}
                     />
                   )}
                   {hot && (
@@ -289,7 +289,7 @@ export function SettingsPanelsPane({ highlight }: { noun: string; highlight?: 'p
         height={28}
         rx={7}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       {highlight === 'panel-opacity' && <RowHighlight y={76} h={24} />}
       <RowLabel y={88} hot={highlight === 'panel-opacity'}>

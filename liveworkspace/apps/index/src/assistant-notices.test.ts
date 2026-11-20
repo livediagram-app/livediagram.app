@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   ASSISTANT_CALLS_PER_RUN,
-  ASSISTANT_GIVE_UP_MS,
   ASSISTANT_ITEMS_PER_CALL,
-  ASSISTANT_RETRY_AFTER_MS,
   drainAssistantNotices,
 } from './assistant-notices';
+import {
+  NOTICE_GIVE_UP_MS as ASSISTANT_GIVE_UP_MS,
+  NOTICE_RETRY_AFTER_MS as ASSISTANT_RETRY_AFTER_MS,
+} from './notice-queue';
 import { body, call, h, settle, useHarness } from './test-support';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 

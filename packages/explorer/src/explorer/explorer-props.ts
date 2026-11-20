@@ -14,7 +14,6 @@ import type {
   RenderThumbnail,
   InboxHost,
   ShareHost,
-  SignInBannerHost,
   ShareUrl,
   TeamRef,
   HomeTelemetry,
@@ -147,13 +146,10 @@ export type ExplorerProps = {
   accounts?: ExplorerAccounts | null;
   /** Whether the person is signed in; a guest is nudged to sign in for Teams. Signed in when omitted. */
   signedIn?: boolean;
-  /** Where a guest signs in (the Teams nudge, and the banner). */
+  /** Where a guest signs in (the Teams nudge). */
   signInHref?: string;
   /** Where a guest makes an account, back to the same page (Invites, signed out, offers it beside Sign In). */
   signUpHref?: string;
-  /** A guest's sign-in banner at the foot of the page (Sign In, the reasons, a close this browser remembers), shown
-   *  while `signedIn` is false and there is a `signInHref`. Without it there is no banner. */
-  signInBanner?: SignInBannerHost;
   /** Loads an item's preview ahead, as its Details row comes near the screen (the hover preview then paints at
    *  once). */
   prefetchThumbnail?: (item: Item) => void;

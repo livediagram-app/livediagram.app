@@ -3,6 +3,7 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvas from '@/editions/livediagram/components/illustrations/canvas';
 import * as HuddleCanvas from '@/editions/livehuddle/components/illustrations/canvas';
+import { MulticolourTheme as DocumentsMulticolourTheme } from '@/editions/livedocuments/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'Multicolour Themes',
@@ -68,11 +69,14 @@ Elements that no arrow touches each pick up the next colour in turn, so even a f
   you set by hand is kept.
 </AppNote>
 
-<Figure
-  app="livediagram,livedesign,livedocuments"
+<Figure app="livediagram,livedesign"
   caption="A multicolour theme gives the neutral root a trunk colour and tints each branch its own hue."
 >
   <DiagramCanvas.MulticolourTheme />
+</Figure>
+
+<Figure app="livedocuments" caption="A multicolour theme gives each card on the page its own hue from the set.">
+  <DocumentsMulticolourTheme />
 </Figure>
 
 <Figure

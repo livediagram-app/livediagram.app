@@ -86,7 +86,7 @@ export function TabMenu() {
         height={134}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* Toolbar: Rename, Duplicate, Paste, Side by Side | Lock Tab, Delete */}
       {[0, 1, 2, 3].map((i) => (
@@ -98,7 +98,7 @@ export function TabMenu() {
           height={24}
           rx={5}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
       ))}
       {/* Rename (pencil) */}
@@ -172,7 +172,7 @@ export function TabMenu() {
         height={24}
         rx={5}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <g transform={`translate(${mx + mw - 50} ${my + 21})`}>
         <Padlock tone="muted" />
@@ -184,7 +184,7 @@ export function TabMenu() {
         height={24}
         rx={5}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <path
         d={`M${mx + mw - 26} ${my + 15} h12 M${mx + mw - 23} ${my + 15} v11 h6 v-11 M${mx + mw - 22} ${my + 15} v-2 h4 v2`}
@@ -198,7 +198,7 @@ export function TabMenu() {
         x2={mx + mw}
         y2={my + 40}
         className="stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <MenuRowList x={mx} y={my + 46} w={mw} rows={rows} />
       <Label x={14} y={48} size={10} tone="muted">

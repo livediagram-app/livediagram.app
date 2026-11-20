@@ -47,7 +47,7 @@ export function AgentChangeToast() {
           height={76}
           rx={8}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         <InfoGlyph x={60} y={140} />
         <Label x={76} y={140} size={10} tone="strong">

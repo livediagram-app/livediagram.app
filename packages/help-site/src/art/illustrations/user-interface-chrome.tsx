@@ -109,7 +109,7 @@ export function TabCard({
     <path
       d={`M${x} ${bottom} V${top + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom} Z`}
       className="fill-white stroke-slate-300"
-      strokeWidth={1}
+      strokeWidth={0.75}
     />
   );
 }
@@ -198,7 +198,7 @@ export function BottomBar({
   return (
     <g>
       <rect x={0} y={y} width={w} height={30} className="fill-slate-100" />
-      <line x1={0} y1={y} x2={w} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={0} y1={y} x2={w} y2={y} className="stroke-slate-200" strokeWidth={0.75} />
       <TabPill x={46} y={y + 5} w={74} label="Overview" active />
       <TabPill x={124} y={y + 5} w={44} label="Flow" />
       <Label x={180} y={y + 16} size={14} weight={600} tone="muted" anchor="middle">

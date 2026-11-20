@@ -2,6 +2,8 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { SearchTabsAndElements } from '@/editions/livediagram/components/illustrations/search-panel';
+import { SearchTabsAndElements as DocumentsSearchTabsAndElements } from '@/editions/livedocuments/components/illustrations/search-panel';
+import { SearchTabsAndElements as HuddleSearchTabsAndElements } from '@/editions/livehuddle/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
   title: 'Finding Tabs and Elements',
@@ -71,11 +73,18 @@ Search covers **every tab**, not only the ones you have visited. Tabs load lazil
   inside a table without remembering which table, or which tab, it is on.
 </AppNote>
 
-<Figure
-  app="livedesign,livediagram,livedocuments,livehuddle"
+<Figure app="livedesign,livediagram"
   caption="Scope inside a work item: tabs and elements, each element tagged with the tab it is on."
 >
   <SearchTabsAndElements />
+</Figure>
+
+<Figure app="livedocuments" caption="Inside a document, search finds tabs and elements, each element tagged with its tab.">
+  <DocumentsSearchTabsAndElements />
+</Figure>
+
+<Figure app="livehuddle" caption="Search finds tabs and elements by name: &quot;meeting&quot; finds the Meeting Rooms tab and the pieces in it.">
+  <HuddleSearchTabsAndElements />
 </Figure>
 
 ## What it does not search

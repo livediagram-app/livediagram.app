@@ -2,6 +2,9 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { StickersSheet } from '@/editions/livediagram/components/illustrations/palette-categories';
+import { StickersSheet as DesignStickersSheet } from '@/editions/livedesign/components/illustrations/palette-categories';
+import { StickersSheet as DocumentsStickersSheet } from '@/editions/livedocuments/components/illustrations/palette-categories';
+import { StickersSheet as HuddleStickersSheet } from '@/editions/livehuddle/components/illustrations/palette-categories';
 
 export const metadata = helpMetadata({
   title: 'Stickers',
@@ -76,8 +79,20 @@ Stickers are filed in eleven groups; Search looks across all of them at once.
 - **People**: a person, a group, someone raising a hand, a worker, a detective.
 - **Fun**: robot, alien, unicorn, cat, pizza, dice, a game controller.
 
-<Figure caption="Every sticker is drawn as the sticker it is: a die-cut plate with a shadow, or a coloured word badge. What you click is what lands.">
+<Figure app="livediagram,liveplanner,all" caption="Every sticker is drawn as the sticker it is: a die-cut plate with a shadow, or a coloured word badge. What you click is what lands.">
   <StickersSheet />
+</Figure>
+
+<Figure app="livedesign" caption="Icons turned to its Stickers side: word badges and emoji, each drawn as the sticker it is.">
+  <DesignStickersSheet />
+</Figure>
+
+<Figure app="livedocuments" caption="Stickers sit under Icons, beside the icon categories.">
+  <DocumentsStickersSheet />
+</Figure>
+
+<Figure app="livehuddle" caption="The Stickers flyout: search them, then click one or drag it onto the floor.">
+  <HuddleStickersSheet />
 </Figure>
 
 ## Finding one
