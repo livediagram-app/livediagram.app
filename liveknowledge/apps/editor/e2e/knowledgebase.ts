@@ -173,7 +173,7 @@ export async function expectKeptOffline(page: Page, name: string, text = ''): Pr
             const db = await new Promise<IDBDatabase>((resolve, reject) => {
               const open = indexedDB.open('liveknowledge-offline');
               open.onsuccess = () => resolve(open.result);
-              open.onerror = () => reject(open.error);
+              open.onerror = () => reject(open.error ?? new Error('the Offline store did not open'));
             });
             try {
               const rows = await new Promise<{ tabs?: { name: string }[] }[]>((resolve) => {
@@ -183,7 +183,7 @@ export async function expectKeptOffline(page: Page, name: string, text = ''): Pr
               });
               return rows.some((row) =>
                 (row.tabs ?? []).some(
-                  (tab) => tab.name === wantedName && JSON.stringify(tab).includes(wantedText!),
+                  (tab) => tab.name === wantedName && JSON.stringify(tab).includes(wantedText),
                 ),
               );
             } finally {

@@ -128,17 +128,6 @@ export function expectNoPageErrors(pageErrors: string[]): void {
   expect(pageErrors, `unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
 }
 
-/**
- * Opens a focused control's context menu from the keyboard. Chromium turns Shift+F10 into a `contextmenu` event on
- * Windows and Linux only: macOS has no such key (VoiceOver's VO+Shift+M sends the event itself), so there the test
- * sends the event the platform would.
- */
-export async function openContextMenuFromKeyboard(target: Locator): Promise<void> {
-  await target.focus();
-  if (process.platform === 'darwin') await target.dispatchEvent('contextmenu');
-  else await target.page().keyboard.press('Shift+F10');
-}
-
 // The app is a static export: its buttons are in the HTML before React attaches their handlers, and a click in that
 // gap does nothing, more often the busier the machine. React tags every element it has hydrated with a
 // `__reactProps$` key; wait for it on the element about to be used.
@@ -148,17 +137,6 @@ export async function untilHydrated(locator: Locator): Promise<void> {
       locator.evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps$'))),
     )
     .toBe(true);
-}
-
-// `/new` makes a document as it mounts and opens it on its start, Start Making Pages
-// (docs/specs/007-editor/new-document-route.md). Resolves to the new document's id once the editor is up; `url`
-// carries a `/new?folder=` / `?team=` / `?blank=1` context. A guest's plain `/new` makes it Offline;
-// `serverNewUrl` makes it on liveknowledge.
-export async function createDocument(page: Page, url = '/new'): Promise<string> {
-  await page.goto(url);
-  await page.waitForURL(/\/document\//, { timeout: 30_000 });
-  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  return new URL(page.url()).pathname.split('/').pop()!;
 }
 
 // Tours never start or offer themselves (docs/specs/007-editor/pages-tour.md "Where it appears": the footer's
@@ -172,23 +150,6 @@ export async function dismissQuickTour(_page: Page): Promise<void> {}
 export async function openStartBlank(page: Page, url = '/new?blank=1'): Promise<void> {
   await page.goto(url);
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-}
-
-// A blank document on liveknowledge whose page is chosen as an Infographic, so the page's choice is put away and the
-// page takes elements: for a spec that places elements by hand (onPage). On the server, because the choice's own
-// autosave is what it waits for, and a spec's seedTab writes after it.
-export async function openBlankPage(page: Page): Promise<void> {
-  await openStartBlank(page, await serverNewUrl(page, '/new?blank=1'));
-  const choice = page.locator('[data-first-page-choice]');
-  const infographic = choice.getByRole('button', { name: /^Infographic/ });
-  await untilHydrated(infographic);
-  // The choice is an edit: wait for its autosave, or a spec's own write (seedTab) races it and loses.
-  const saved = page.waitForResponse(
-    (r) => r.request().method() === 'PUT' && /\/api\/documents\/[^/]+\/tabs\//.test(r.url()),
-  );
-  await infographic.click();
-  await choice.waitFor({ state: 'detached' });
-  await saved;
 }
 
 // A point on the first page as a fraction of its width and height (0..1), relative to the canvas: what a canvas
@@ -295,10 +256,6 @@ export async function mintGuest(
   const { token, guestId } = (await res.json()) as { token: string; guestId: string };
   guestTokens.set(guestId, token);
   return guestId;
-}
-
-export function guestTokenFor(owner: string): string | null {
-  return guestTokens.get(owner) ?? null;
 }
 
 // The page (or every page of a context) opens as this guest: its token is where the app keeps it.
@@ -432,14 +389,3 @@ export async function settledBox(
   return box!;
 }
 
-/** A palette tile, from its category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The
- *  category bar"): opens the category (a press, so it stays open whatever the pointer does next) unless its flyout is
- *  already showing, and returns the tile. */
-export async function paletteTile(page: Page, name: string, category = 'Shapes'): Promise<Locator> {
-  const flyout = page.locator('[data-category-flyout]');
-  const button = page.locator(`[data-category-bar-button][aria-label="${category}"]`);
-  if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
-  const tile = flyout.getByRole('button', { name, exact: true }).first();
-  await tile.waitFor();
-  return tile;
-}

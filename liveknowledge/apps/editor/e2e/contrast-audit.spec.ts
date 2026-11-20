@@ -1,8 +1,9 @@
 import { auditContrast, type ContrastReport } from '@liveworkspace/e2e-kit/contrast';
-import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
-import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
+import { freshDarkPage, seedDocument, shareLink } from './audit-screens';
+import { expect, test, mintGuest } from './fixtures';
 
-// Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
+// Contrast audit, dark mode, of the Join dialog a share link opens: the knowledgebase's own screens (Pages, Ask,
+// AI Knowledge, Home), in light and dark, are signed-in/knowledge-audit.spec.ts's. (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
 // screen must meet WCAG AA against the background painted under it. There is no allow-list: a failure
 // is fixed at its colour. Light mode is out of scope here: its brand ramp (solid fills and brand ink) is held by
@@ -23,41 +24,6 @@ function expectAA(report: ContrastReport, screen: string): void {
 }
 
 test.describe('Contrast audit, dark mode', () => {
-  test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
-    const owner = await mintGuest(page.request);
-    const origin = new URL(baseURL!).origin;
-    const id = await seedDocument(page, owner, origin);
-    await darkVisitor(page, owner);
-    await page.goto(`/document/${id}`);
-    await page.locator(CANVAS).waitFor();
-    await dismissQuickTour(page);
-    await expect(page.getByRole('img', { name: /Spinner/ }).first()).toBeVisible();
-    expectAA(await auditContrast(page), 'editor with its default panels');
-
-    await page
-      .getByRole('img', { name: /Spinner/ })
-      .first()
-      .click();
-    expectAA(await auditContrast(page), 'editor, a shape selected');
-    await page.keyboard.press('Escape');
-
-    await page.getByRole('button', { name: 'Application settings' }).click();
-    await page.getByRole('dialog').first().waitFor();
-    expectAA(await auditContrast(page), 'Settings dialog');
-    await page.keyboard.press('Escape');
-
-    // The shared Share dialog (`@liveworkspace/explorer`, ShareDialog.test.tsx) is named "Share <the document>" and
-    // headed "Share This Document".
-    await page.getByRole('button', { name: /^Share, / }).click();
-    await page
-      .getByRole('dialog', { name: /^Share / })
-      .getByRole('heading', { name: 'Share This Document' })
-      .waitFor();
-    expectAA(await auditContrast(page), 'Share dialog');
-    await page.keyboard.press('Escape');
-    expectNoPageErrors(pageErrors);
-  });
-
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
     const owner = await mintGuest(page.request);
     const origin = new URL(baseURL!).origin;

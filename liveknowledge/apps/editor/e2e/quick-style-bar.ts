@@ -36,6 +36,3 @@ export async function quickRow(page: Page, title: QuickRowTitle): Promise<Locato
   );
 }
 
-export async function quickChoose(page: Page, title: QuickRowTitle, option: string) {
-  await (await quickRow(page, title)).getByLabel(option, { exact: true }).click();
-}

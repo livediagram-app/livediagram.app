@@ -61,21 +61,6 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
   return { id, tabId, token, session };
 }
 
-export async function agentSubmits(page: Page, s: Setup, body: unknown) {
-  return page.request.post(`/api/documents/${s.id}/tabs/${s.tabId}/changesets`, {
-    headers: { Authorization: `Bearer ${s.token}`, 'X-Liveknowledge-Client': 'cli' },
-    data: body,
-  });
-}
-
-export async function storedIds(page: Page, s: Setup): Promise<string[]> {
-  const res = await page.request.get(`/api/documents/${s.id}/tabs/${s.tabId}`, {
-    headers: { Authorization: `Bearer ${s.token}` },
-  });
-  const { tab } = (await res.json()) as { tab: { elements: { id: string }[] } };
-  return tab.elements.map((e) => e.id);
-}
-
 // Opens the document and waits for its room to greet the editor: from then on a changeset is relayed
 // live (one that lands before is caught up by the join check, without a toast).
 export async function open(page: Page, s: Setup) {

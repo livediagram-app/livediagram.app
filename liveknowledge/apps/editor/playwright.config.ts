@@ -103,9 +103,9 @@ export default defineConfig({
           },
         ]
       : []),
-    // Opt-in (E2E_PERF=1, pnpm perf:canvas): the canvas performance probe
-    // (docs/specs/008-canvas/canvas-performance.md "Measuring"). Reports against the budget and never
-    // fails on a miss; it runs by hand, never in CI.
+    // Opt-in (E2E_PERF=1, pnpm perf:knowledgebase): the typing and page tree probes
+    // (docs/specs/030-knowledgebase/blueprints/continuous-page.md "Performance and limits"). They report and never
+    // fail on a number; they run by hand, never in CI.
     ...(process.env.E2E_PERF === '1'
       ? [
           {

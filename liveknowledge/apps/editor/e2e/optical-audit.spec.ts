@@ -1,6 +1,6 @@
-import type { Locator, Page } from '@playwright/test';
-import { CANVAS, darkVisitor, freshDarkPage, seedDocument, shareLink } from './audit-screens';
-import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
+import type { Page } from '@playwright/test';
+import { freshDarkPage, seedDocument, shareLink } from './audit-screens';
+import { expect, test, mintGuest } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from '@liveworkspace/e2e-kit/optical';
 
 // Optical alignment audit (docs/specs/004-interface-design/optical-alignment.md): on each screen, every glyph
@@ -27,55 +27,8 @@ async function expectCentred(page: Page, screen: string): Promise<void> {
     .toEqual([]);
 }
 
-// A seeded document open in the editor, its quick tour dismissed; returns the seeded Spinner shape.
-async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
-  const owner = await mintGuest(page.request);
-  const id = await seedDocument(page, owner, new URL(baseURL).origin);
-  await darkVisitor(page, owner);
-  await page.goto(`/document/${id}`);
-  await page.locator(CANVAS).waitFor();
-  await dismissQuickTour(page);
-  const spinner = page.getByRole('img', { name: /Spinner/ }).first();
-  await expect(spinner).toBeVisible();
-  return spinner;
-}
-
 test.describe('Optical alignment audit', () => {
-  // One editor screen per test: each 4x audit is CPU-bound, so four of them in one test left it at the
-  // mercy of whatever else the runner was doing within one 30-second budget.
-  test('the editor with its default panels', async ({ page, pageErrors, baseURL }) => {
-    await openSeededEditor(page, baseURL!);
-    await expectCentred(page, 'editor with its default panels');
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('the editor with a shape selected', async ({ page, pageErrors, baseURL }) => {
-    const spinner = await openSeededEditor(page, baseURL!);
-    await spinner.click();
-    await expectCentred(page, 'editor, a shape selected');
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('the Settings dialog', async ({ page, pageErrors, baseURL }) => {
-    await openSeededEditor(page, baseURL!);
-    await page.getByRole('button', { name: 'Application settings' }).click();
-    await page.getByRole('dialog').first().waitFor();
-    await expectCentred(page, 'Settings dialog');
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('the Share dialog', async ({ page, pageErrors, baseURL }) => {
-    await openSeededEditor(page, baseURL!);
-    // The shared Share dialog (`@liveworkspace/explorer`, ShareDialog.test.tsx): named "Share <the document>",
-    // headed "Share This Document", its composer ending in Create Pass.
-    await page.getByRole('button', { name: /^Share, / }).click();
-    const dialog = page.getByRole('dialog', { name: /^Share / });
-    await dialog.getByRole('heading', { name: 'Share This Document' }).waitFor();
-    await dialog.getByRole('button', { name: 'Create Pass' }).waitFor();
-    await expectCentred(page, 'Share dialog');
-    expectNoPageErrors(pageErrors);
-  });
-
+  // The knowledgebase's own screens are signed-in/knowledge-audit.spec.ts's.
   test('the Join dialog a share link opens', async ({ page, browser, baseURL }) => {
     const owner = await mintGuest(page.request);
     const origin = new URL(baseURL!).origin;
