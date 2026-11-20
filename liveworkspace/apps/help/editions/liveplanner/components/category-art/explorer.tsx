@@ -241,7 +241,7 @@ export function ExplorerArt() {
     <Stage>
       <Window x={16} y={12} w={368} h={198} title="Explorer">
         <rect x={16} y={34} width={106} height={176} className="fill-slate-50" />
-        <line x1={122} y1={34} x2={122} y2={210} className="stroke-slate-200" strokeWidth={1} />
+        <line x1={122} y1={34} x2={122} y2={210} className="stroke-slate-200" strokeWidth={0.75} />
         {ROWS.map((r, i) => {
           const y = 44 + i * 25;
           const on = i === 3;
@@ -311,7 +311,7 @@ export function ExplorerArt() {
                 height={62}
                 rx={8}
                 className="fill-white stroke-slate-200"
-                strokeWidth={1.2}
+                strokeWidth={0.75}
               />
               <path
                 d={`M${x} ${y + 8} a8 8 0 0 1 8 -8 H${x + 66} a8 8 0 0 1 8 8 V${y + 40} H${x} Z`}

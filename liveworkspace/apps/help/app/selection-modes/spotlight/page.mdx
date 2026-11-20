@@ -5,6 +5,8 @@ import {
   SpotlightPanelScene,
   SpotlightTool,
 } from '@/editions/livediagram/components/illustrations/selection-modes';
+import { SpotlightTool as DesignSpotlightTool, SpotlightPanelScene as DesignSpotlightPanelScene } from '@/editions/livedesign/components/illustrations/selection-modes';
+import { SpotlightTool as DocumentsSpotlightTool, SpotlightPanelScene as DocumentsSpotlightPanelScene } from '@/editions/livedocuments/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Spotlight',
@@ -30,8 +32,16 @@ As you move the cursor, the circle of light moves with it while everything outsi
 
 The canvas cannot be edited while the light is on: clicks size the light rather than selecting anything, and picking Spotlight clears whatever you had selected. You can still pan by dragging with the middle mouse button, holding `Space` and dragging, scrolling with two fingers on a trackpad, or with the [zoom controls](/help/user-interface/zoom-controls/). Pick **Select** (or press `V`) to go back to editing.
 
-<Figure caption="The palette's tool picker set to Spotlight, dimming the canvas except a bright circle around the cursor.">
+<Figure app="livediagram,liveplanner,livehuddle,all" caption="The palette's tool picker set to Spotlight, dimming the canvas except a bright circle around the cursor.">
   <SpotlightTool />
+</Figure>
+
+<Figure app="livedesign" caption="Spotlight dims the canvas and keeps a bright circle around your pointer on the page.">
+  <DesignSpotlightTool />
+</Figure>
+
+<Figure app="livedocuments" caption="The spotlight dims everything but the circle round your pointer.">
+  <DocumentsSpotlightTool />
 </Figure>
 
 ## Setting up the light
@@ -45,8 +55,16 @@ While the mode is active a **Spotlight** panel sits at the bottom right, above t
 
 <AppNote app="livediagram">Wide suits lighting a swimlane or a table row.</AppNote>
 
-<Figure caption="The Spotlight panel with a Wide shape on Blackout, lighting one row.">
+<Figure app="livediagram,liveplanner,livehuddle,all" caption="The Spotlight panel with a Wide shape on Blackout, lighting one row.">
   <SpotlightPanelScene />
+</Figure>
+
+<Figure app="livedesign" caption="The Spotlight panel with a Wide shape on Blackout, lighting one band of a web page.">
+  <DesignSpotlightPanelScene />
+</Figure>
+
+<Figure app="livedocuments" caption="The Spotlight panel sets the circle's size, the dim, its edge and shape.">
+  <DocumentsSpotlightPanelScene />
 </Figure>
 
 Dim, Edge and Shape are remembered on this device; the light always opens at Medium size. The shroud is yours alone: everyone else keeps seeing the whole canvas, so on a call, share your screen for others to see the light.

@@ -6,6 +6,9 @@ import { ToolPicker } from '@/editions/livediagram/components/illustrations/sele
 import { ToolPicker as LivedocumentsToolPicker } from '@/editions/livedocuments/components/illustrations/selection-modes';
 import { EditMode } from '@/editions/livehuddle/components/illustrations/palette-modes';
 import { EditWalkToggleScene } from '@/editions/livehuddle/components/illustrations/selection-modes';
+import { ToolPicker as DesignToolPicker } from '@/editions/livedesign/components/illustrations/selection-modes';
+import { SelectMode as DesignSelectMode } from '@/editions/livedesign/components/illustrations/palette-modes';
+import { SelectMode as DocumentsSelectMode } from '@/editions/livedocuments/components/illustrations/palette-modes';
 
 export const metadata = helpMetadata({
   title: 'Select',
@@ -79,11 +82,14 @@ The current tool is tinted, and a tool with a keyboard shortcut shows its letter
   The **Edit** band holds **Select**, **Hand** and **Format**: there is no Eraser.
 </AppNote>
 
-<Figure
-  app="livedesign,livediagram"
+<Figure app="livediagram"
   caption="The tool picker opened from the palette: three bands of tiles, with Select as the current tool."
 >
   <ToolPicker />
+</Figure>
+
+<Figure app="livedesign" caption="The tool picker opened from the palette strip's select-mode pill: three bands of tiles, with Select as the current tool.">
+  <DesignToolPicker />
 </Figure>
 <Figure
   app="livedocuments"
@@ -109,11 +115,18 @@ In Select mode the pointer interacts directly with your elements:
 - **Drag its handles** to resize.
 - **Double-click** an element to edit its label. With one element selected you can also just start typing: the first key opens the label and replaces what was there.
 
-<Figure
-  app="livedesign,livediagram,livedocuments"
+<Figure app="livediagram"
   caption="The palette's tool picker set to Select, with a shape selected and its resize handles showing."
 >
   <SelectMode />
+</Figure>
+
+<Figure app="livedesign" caption="The select-mode pill set to Select, with a screen's button selected and its resize handles showing.">
+  <DesignSelectMode />
+</Figure>
+
+<Figure app="livedocuments" caption="Select mode: click an element on a page to select it.">
+  <DocumentsSelectMode />
 </Figure>
 <Figure
   app="livehuddle"

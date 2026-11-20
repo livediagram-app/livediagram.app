@@ -167,9 +167,9 @@ export function TurnASofa() {
         y={26}
         width={196}
         height={36}
-        rx={10}
-        className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={0.75}
       />
       <ToolButton x={36} y={31}>
         <circle cx={-5} cy={0} r={1} />
@@ -179,7 +179,7 @@ export function TurnASofa() {
       <ToolButton x={64} y={31}>
         <path d="M-5 -5h10M0 -5v10" />
       </ToolButton>
-      <path d="M96 34v20" className="stroke-slate-200" strokeWidth={1.5} />
+      <path d="M96 34v20" className="stroke-slate-200" strokeWidth={0.75} />
       <ToolButton x={102} y={31} on>
         <path d="M-5 0a5 5 0 1 0 1.5-3.6" />
         <path d="M-5 -5v3.5h3.5" />
@@ -188,7 +188,7 @@ export function TurnASofa() {
         <path d="M5 0a5 5 0 1 1-1.5-3.6" />
         <path d="M5 -5v3.5h-3.5" />
       </ToolButton>
-      <path d="M162 34v20" className="stroke-slate-200" strokeWidth={1.5} />
+      <path d="M162 34v20" className="stroke-slate-200" strokeWidth={0.75} />
       <ToolButton x={168} y={31}>
         <rect x={-5} y={-5} width={7} height={7} rx={1.5} />
         <rect x={-2} y={-2} width={7} height={7} rx={1.5} />

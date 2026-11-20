@@ -3,6 +3,8 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvas from '@/editions/livediagram/components/illustrations/canvas';
 import * as HuddleCanvas from '@/editions/livehuddle/components/illustrations/canvas';
+import { PanAndZoom as DesignPanAndZoom } from '@/editions/livedesign/components/illustrations/canvas';
+import { PanAndZoom as DocumentsPanAndZoom } from '@/editions/livedocuments/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'Panning and Zooming',
@@ -42,11 +44,18 @@ Panning slides the canvas under your view without moving any elements.
 
 When you pan, background patterns track the pan offset and tile seamlessly, so the texture stays continuous however far you travel.
 
-<Figure
-  app="livediagram,livedesign,livedocuments"
+<Figure app="livediagram"
   caption="Drag the canvas with the grabbing hand to pan, and use the zoom controls in the bottom-right corner to scale the view."
 >
   <DiagramCanvas.PanAndZoom />
+</Figure>
+
+<Figure app="livedesign" caption="Drag the canvas with the grabbing hand to pan, and use the zoom card in the bottom-right corner to scale the view.">
+  <DesignPanAndZoom />
+</Figure>
+
+<Figure app="livedocuments" caption="Drag to pan across your pages; the zoom card in the corner scales the view.">
+  <DocumentsPanAndZoom />
 </Figure>
 
 <Figure

@@ -3,6 +3,7 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { AutoAttachArrows } from '@/editions/livediagram/components/illustrations/palette-modes';
 import { SettingsEditorPane } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
+import { AutoAttachArrows as DocumentsAutoAttachArrows } from '@/editions/livedocuments/components/illustrations/palette-modes';
 
 export const metadata = helpMetadata({
   title: 'Auto-Attach Arrows',
@@ -67,8 +68,12 @@ As you move shapes, an arrow end stays exactly where you put it, with one except
 
 When two arrows leave the same side of a shape and cross each other, they swap their spots, so the lines untangle without changing sides.
 
-<Figure caption="The target moves to the other side of the source. Left where they were, the ends would run the arrow through the source, so both move to the sides that face each other.">
+<Figure app="livediagram,livedesign,liveplanner,livehuddle,all" caption="The target moves to the other side of the source. Left where they were, the ends would run the arrow through the source, so both move to the sides that face each other.">
   <AutoAttachArrows />
+</Figure>
+
+<Figure app="livedocuments" caption="Move a step and both ends of its arrow move to the sides that now face each other.">
+  <DocumentsAutoAttachArrows />
 </Figure>
 
 ## Many arrows, one point

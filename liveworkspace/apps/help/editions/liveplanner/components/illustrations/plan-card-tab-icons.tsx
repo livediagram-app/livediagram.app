@@ -66,7 +66,7 @@ export function PlanCardTabIconsScene() {
         height={44}
         rx={10}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <rect x={20} y={24} width={20} height={20} rx={5} className="fill-brand-100" />
       <Glyph id="code" x={24} y={28} className="stroke-brand-700" />
@@ -92,7 +92,7 @@ export function PlanCardTabIconsScene() {
         height={156}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <rect
         x={20}
@@ -101,7 +101,7 @@ export function PlanCardTabIconsScene() {
         height={22}
         rx={6}
         className="fill-white stroke-slate-300"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <Label x={30} y={88} size={10} tone="muted">
         Search glyphs
@@ -133,7 +133,7 @@ export function PlanCardTabIconsScene() {
           </g>
         );
       })}
-      <line x1={20} y1={164} x2={196} y2={164} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={20} y1={164} x2={196} y2={164} className="stroke-slate-200" strokeWidth={0.75} />
       {/* Reset To Default, while the icon isn't the default. */}
       <path
         d="M85 186a6 6 0 1 0 2-5M85 178v4h4"
@@ -155,12 +155,12 @@ export function PlanCardTabIconsScene() {
         height={208}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={234} y={40} size={13} weight={700} tone="strong">
         Redesign checkout
       </Label>
-      <line x1={232} y1={70} x2={400} y2={70} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={232} y1={70} x2={400} y2={70} className="stroke-slate-200" strokeWidth={0.75} />
       {tabs.map((t) => (
         <g key={t.label}>
           <Glyph

@@ -54,7 +54,7 @@ export function Pass({
         height={h}
         rx={10}
         className={expired ? 'fill-slate-50 stroke-slate-200' : 'fill-white stroke-slate-200'}
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <path
         d={`M${x} ${y + PASS_BAND} V${y + 10} a10 10 0 0 1 10 -10 H${x + w - 10} a10 10 0 0 1 10 10 V${y + PASS_BAND} Z`}
@@ -198,7 +198,7 @@ export function LinkField({
           height={22}
           rx={6}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
       )}
       <Label x={x + 8} y={y + 12} size={10} tone="muted">
@@ -328,7 +328,7 @@ export function LifetimeControl({
         height={26}
         rx={7}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       {opts.map((opt, i) => {
         const sx = x + 2 + i * segW;
@@ -393,7 +393,7 @@ export function ShareCard({
         height={h}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={x + 16} y={y + 20} size={13} weight={700} tone="strong">
         Share This Design

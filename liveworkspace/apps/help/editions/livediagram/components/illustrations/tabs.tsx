@@ -59,7 +59,7 @@ export function TabMenu() {
         height={152}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* Toolbar: Rename, Duplicate, Paste, Side by Side | Lock Tab, Delete */}
       {[0, 1, 2, 3].map((i) => (
@@ -204,7 +204,7 @@ export function AddToDocumentMenu() {
           height={24}
           rx={6}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         <Label x={dx + 26} y={dy + 61} size={11} tone="muted">
           Filter canvases…

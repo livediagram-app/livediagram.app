@@ -47,7 +47,7 @@ function ToolsFlyout({
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <line x1={144} y1={56} x2={400} y2={56} className="stroke-slate-200" strokeWidth={1.2} />
+        <line x1={144} y1={56} x2={400} y2={56} className="stroke-slate-200" strokeWidth={0.75} />
         {children}
       </Panel>
     </Scene>
@@ -65,7 +65,7 @@ function Field({ x, y, w, value }: { x: number; y: number; w: number; value: str
         height={20}
         rx={5}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={x + 7} y={y + 11} size={10} tone="body">
         {value}
@@ -96,7 +96,7 @@ function Check({ x, y, on }: { x: number; y: number; on: boolean }) {
       height={14}
       rx={4}
       className="fill-white stroke-slate-300"
-      strokeWidth={1.6}
+      strokeWidth={0.75}
     />
   );
 }
@@ -272,7 +272,7 @@ export function CodeDialog() {
           height={22}
           rx={6}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.4}
+          strokeWidth={0.75}
         />
         <Label x={120} y={187} size={11} tone="body">
           ts
@@ -329,7 +329,7 @@ export function LineDataDialog() {
           height={20}
           rx={5}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <Label x={338} y={103} anchor="middle" size={11} tone="body">
           +
@@ -401,7 +401,7 @@ export function TableEditControls() {
         width={W}
         height={H}
         className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <rect x={x} y={y} width={W} height={ch} className="fill-brand-100" />
       {Array.from({ length: cols - 1 }, (_, i) => (
@@ -412,7 +412,7 @@ export function TableEditControls() {
           x2={x + (i + 1) * cw}
           y2={y + H}
           className="stroke-slate-300"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
       ))}
       {Array.from({ length: rows - 1 }, (_, i) => (
@@ -423,7 +423,7 @@ export function TableEditControls() {
           x2={x + W}
           y2={y + (i + 1) * ch}
           className="stroke-slate-300"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
       ))}
       {[0, 1, 2].map((c) => (

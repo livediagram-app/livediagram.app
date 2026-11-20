@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { AvatarMode } from '@/editions/livehuddle/components/illustrations/palette-modes';
 import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { SpacePresence } from '@/editions/livehuddle/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'What is livehuddle?',
@@ -52,8 +53,12 @@ livehuddle is for people who would rather be in the room together: remote and hy
 
 To make that frictionless, a Space **always works without signing in**. You can open a Space, set it up, and hand the link to a colleague who walks straight in, no account required. See [Sharing Your Space](/help/getting-started/sharing-your-document/).
 
-<Figure caption="Everyone in a Space sees each other's live cursors and presence at once.">
+<Figure app="livediagram,livedesign,livedocuments,liveplanner,all" caption="Everyone in a Space sees each other's live cursors and presence at once.">
   <LiveCursors />
+</Figure>
+
+<Figure app="livehuddle" caption="Everyone in a Space at once: Aria and Jae's cursors as they build, Mara walking in, and their faces on the Virtual Office tab.">
+  <SpacePresence />
 </Figure>
 
 ## Free and open source

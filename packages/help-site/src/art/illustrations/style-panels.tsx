@@ -60,7 +60,7 @@ export function QuickStylePanelScene() {
         height={270}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <SectionTitle x={rowX} y={py + 44}>
         STROKE
@@ -139,7 +139,7 @@ export function QuickStylePanelScene() {
         x2={px + 188}
         y2={py + 244}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <SectionTitle x={rowX} y={py + 254}>
         ACTIONS
@@ -260,7 +260,7 @@ export function QuickStyleBarScene() {
         height={222}
         rx={4}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={22} y={top + 17} size={10} weight={700} tone="strong">
         Problem
@@ -284,7 +284,7 @@ export function QuickStyleBarScene() {
         x2={455}
         y2={by + 16}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <circle
         cx={474}
@@ -303,7 +303,7 @@ export function QuickStyleBarScene() {
         height={56}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <SectionTitle x={182} y={top + 51}>
         FILL

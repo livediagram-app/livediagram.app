@@ -42,7 +42,7 @@ export function PenEditPointsScene() {
         height={38}
         rx={9}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Chip x={58} w={54} label="Corner" />
       <Chip x={116} w={62} label="Mirrored" on />

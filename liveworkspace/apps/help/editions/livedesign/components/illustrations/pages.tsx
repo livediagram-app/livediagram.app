@@ -42,7 +42,7 @@ function Sheet({
         height={h}
         rx={2}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       {children}
     </g>
@@ -82,7 +82,7 @@ function SolidSegments({
         height={24}
         rx={7}
         className="fill-slate-100 stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       {items.map((it, i) => (
         <g key={it}>
@@ -204,9 +204,9 @@ export function PagesScene() {
           height={28}
           rx={6}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
-        <line x1={316} y1={214} x2={316} y2={242} className="stroke-slate-100" strokeWidth={1.2} />
+        <line x1={316} y1={214} x2={316} y2={242} className="stroke-slate-100" strokeWidth={0.75} />
         <path
           d="M297 228 a6 6 0 1 1 3 5 M297 223 v5 h5"
           fill="none"
@@ -228,7 +228,7 @@ export function PagesScene() {
           height={28}
           rx={6}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <path
           d="M368 223 l-5 5 l5 5"
@@ -279,7 +279,7 @@ export function PagePanelScene() {
         height={142}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <rect
         x={ix}
@@ -288,7 +288,7 @@ export function PagePanelScene() {
         height={22}
         rx={6}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={ix + 8} y={31.5} size={11} tone="muted">
         Untitled page
@@ -305,7 +305,14 @@ export function PagePanelScene() {
         h={22}
       />
       {/* Page actions: duplicate, move left, move right, delete */}
-      <line x1={px} y1={110} x2={px + pw} y2={110} className="stroke-slate-100" strokeWidth={1.2} />
+      <line
+        x1={px}
+        y1={110}
+        x2={px + pw}
+        y2={110}
+        className="stroke-slate-100"
+        strokeWidth={0.75}
+      />
       <g className="stroke-slate-500" fill="none" strokeWidth={1.5} strokeLinecap="round">
         <rect x={ix + 6} y={118} width={9} height={9} rx={2} />
         <rect x={ix + 9} y={121} width={9} height={9} rx={2} />
@@ -338,7 +345,7 @@ export function ExportPagePickerScene() {
         height={224}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={32} y={32} size={13} weight={700} tone="strong">
         Export Tab

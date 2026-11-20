@@ -3,6 +3,7 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvasBasics from '@/editions/livediagram/components/illustrations/canvas-basics';
 import * as DesignCanvasBasics from '@/editions/livedesign/components/illustrations/canvas-basics';
+import { ElementFontMenu as HuddleElementFontMenu } from '@/editions/livehuddle/components/illustrations/look-and-feel';
 
 export const metadata = helpMetadata({
   title: 'Text and Fonts',
@@ -92,11 +93,14 @@ Sans. Together they span crisp, friendly, formal, and hand-drawn looks. See [Cho
 Fonts](/help/canvas/text-and-fonts/choosing-fonts/) for where to set them and how the levels
 interact.
 
-<Figure
-  app="livediagram,livedocuments,livehuddle"
+<Figure app="livediagram,livedocuments"
   caption="Right-click a labelled element, open Appearance, then Text, and pick a typeface from the Font tiles."
 >
   <DiagramCanvasBasics.ElementFontMenu />
+</Figure>
+
+<Figure app="livehuddle" caption="A selected note's menu, with the Text flyout open on its Font tiles.">
+  <HuddleElementFontMenu />
 </Figure>
 
 <Figure

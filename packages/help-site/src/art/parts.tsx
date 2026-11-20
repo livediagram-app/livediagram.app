@@ -101,7 +101,7 @@ export function Window({
         height={h}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <path
         d={`M${x} ${y + 12} a12 12 0 0 1 12 -12 H${x + w - 12} a12 12 0 0 1 12 12 V${y + 22} H${x} Z`}
@@ -113,7 +113,7 @@ export function Window({
         x2={x + w}
         y2={y + 22}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <circle cx={x + 12} cy={y + 11} r={3} className="fill-rose-300" />
       <circle cx={x + 22} cy={y + 11} r={3} className="fill-amber-300" />
@@ -154,7 +154,7 @@ export function Card({
         height={h}
         rx={r}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {children}
     </g>

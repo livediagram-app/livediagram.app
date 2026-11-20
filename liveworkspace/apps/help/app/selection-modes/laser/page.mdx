@@ -3,6 +3,10 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { LaserMode } from '@/editions/livediagram/components/illustrations/palette-modes';
 import { LaserPanelScene } from '@/editions/livediagram/components/illustrations/selection-modes';
+import { LaserMode as DesignLaserMode } from '@/editions/livedesign/components/illustrations/palette-modes';
+import { LaserMode as DocumentsLaserMode } from '@/editions/livedocuments/components/illustrations/palette-modes';
+import { LaserPanelScene as DesignLaserPanelScene } from '@/editions/livedesign/components/illustrations/selection-modes';
+import { LaserPanelScene as DocumentsLaserPanelScene } from '@/editions/livedocuments/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Laser Pointer',
@@ -31,8 +35,16 @@ On a shared <Noun /> everyone else sees your trail live, in your colour, and you
 - **With a mouse or trackpad**, just move: the trail follows the pointer. A click-drag pans the canvas, like the Hand tool, and the trail keeps drawing while you pan.
 - **On a touchscreen**, drag a finger to draw the trail. To move around, switch to [Hand](/help/selection-modes/hand/) for a moment.
 
-<Figure caption="The palette's tool picker set to Laser, leaving a glowing trail that fades behind the cursor.">
+<Figure app="livediagram,liveplanner,livehuddle,all" caption="The palette's tool picker set to Laser, leaving a glowing trail that fades behind the cursor.">
   <LaserMode />
+</Figure>
+
+<Figure app="livedesign" caption="The select-mode pill set to Laser, leaving a glowing trail that fades behind the pointer.">
+  <DesignLaserMode />
+</Figure>
+
+<Figure app="livedocuments" caption="Laser mode: a bright trail follows the pointer and fades as you sweep.">
+  <DocumentsLaserMode />
 </Figure>
 
 ## Setting up the laser
@@ -44,8 +56,16 @@ While the mode is active a **Laser** panel sits at the bottom right, above the z
 - **Trail**: how long the line lingers: **Quick**, **Normal** or **Long**. Long lets the end of the line linger for longer after you stop moving.
 - **Effect**: **Beam** (a clean line), **Glow** (a soft halo that survives a projector), **Comet** (tapers away behind the tip), or **Spark** (a dotted trail).
 
-<Figure caption="The Laser panel set to a Glow effect, with the same beam on the canvas beside it.">
+<Figure app="livediagram,liveplanner,livehuddle,all" caption="The Laser panel set to a Glow effect, with the same beam on the canvas beside it.">
   <LaserPanelScene />
+</Figure>
+
+<Figure app="livedesign" caption="The Laser panel set to a Glow effect, with the same beam across a phone screen beside it.">
+  <DesignLaserPanelScene />
+</Figure>
+
+<Figure app="livedocuments" caption="The Laser panel sets the trail's width, colour, length and effect.">
+  <DocumentsLaserPanelScene />
 </Figure>
 
 Everyone in the room sees your laser as you set it, not their own default, and the settings are remembered on this device for next time.

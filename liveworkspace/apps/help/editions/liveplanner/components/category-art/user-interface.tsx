@@ -50,7 +50,7 @@ export function UserInterfaceArt() {
           height={15}
           rx={7.5}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <Label x={158} y={47} anchor="middle" size={7.5} weight={600} tone="body">
           Editing
@@ -69,7 +69,7 @@ export function UserInterfaceArt() {
           height={18}
           rx={5}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <path
           d="M29 73.5 h10 M29 77 h10 M29 80.5 h10"
@@ -90,7 +90,7 @@ export function UserInterfaceArt() {
           height={16}
           rx={5}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <Label x={177} y={77.5} anchor="middle" size={7.5} weight={600} tone="body">
           Filter cards
@@ -118,7 +118,7 @@ export function UserInterfaceArt() {
                   height={23}
                   rx={4}
                   className="fill-white stroke-slate-200"
-                  strokeWidth={1}
+                  strokeWidth={0.75}
                 />
                 <rect
                   x={col.x + 11}
@@ -149,7 +149,7 @@ export function UserInterfaceArt() {
           height={22}
           rx={7}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         {CLUSTER.map((b) => (
           <Label

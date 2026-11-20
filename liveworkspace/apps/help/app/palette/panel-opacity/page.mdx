@@ -3,6 +3,9 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { PanelOpacity } from '@/editions/livediagram/components/illustrations/palette-modes';
 import { SettingsPanelsPane } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
+import { PanelOpacity as DesignPanelOpacity } from '@/editions/livedesign/components/illustrations/palette-modes';
+import { PanelOpacity as DocumentsPanelOpacity } from '@/editions/livedocuments/components/illustrations/palette-modes';
+import { PanelOpacity as HuddlePanelOpacity } from '@/editions/livehuddle/components/illustrations/palette-modes';
 
 export const metadata = helpMetadata({
   title: 'Panel Opacity',
@@ -58,8 +61,20 @@ Panel Opacity lets you see the <Noun /> through the editor’s panels. It is a s
 
 Drag the slider down and every panel becomes translucent, so the canvas behind them stays visible while you work near an edge. The percentage next to the slider shows the current setting, from 100% (fully solid, the default) down to 30%, in steps of 5%. The panels change when you let go of the slider.
 
-<Figure caption="At a lower opacity the panels turn translucent, so the canvas behind them stays visible.">
+<Figure app="livediagram,liveplanner,all" caption="At a lower opacity the panels turn translucent, so the canvas behind them stays visible.">
   <PanelOpacity />
+</Figure>
+
+<Figure app="livedesign" caption="At a lower opacity the Pages rail turns translucent, so the page behind it stays visible.">
+  <DesignPanelOpacity />
+</Figure>
+
+<Figure app="livedocuments" caption="A translucent panel lets the page behind it show through.">
+  <DocumentsPanelOpacity />
+</Figure>
+
+<Figure app="livehuddle" caption="Panel Opacity lets the floor show through the Map panel.">
+  <HuddlePanelOpacity />
 </Figure>
 
 So a translucent panel never gets in your way, each panel snaps back to fully opaque the moment you hover over it or focus something inside it, then fades back once you move away. You always get a clear, readable panel exactly when you are using it. On a phone or tablet, where there is no hover, panels stay fully opaque.

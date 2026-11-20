@@ -46,26 +46,26 @@ function DocumentIcon() {
 export function SearchOverview() {
   return (
     <SearchOverlay
-      query="check"
+      query="kitchen"
       groups={[
         {
           title: 'Spaces',
-          rows: [{ icon: <DocumentIcon />, label: 'Checkout flow', active: true }],
+          rows: [{ icon: <DocumentIcon />, label: 'Kitchen social', active: true }],
         },
         {
           title: 'Tabs',
-          rows: [{ icon: <TabIcon />, label: 'Checkout', meta: 'current' }],
+          rows: [{ icon: <TabIcon />, label: 'Kitchen', meta: 'current' }],
         },
         {
           title: 'Elements',
           rows: [
-            { icon: <ElementIcon />, label: 'Check stock', meta: 'on Checkout' },
-            { icon: <ElementIcon />, label: 'Payment check', meta: 'on Payments' },
+            { icon: <ElementIcon />, label: 'Kitchen sign', meta: 'on Kitchen' },
+            { icon: <ElementIcon />, label: 'Kitchen rota', meta: 'on Ground Floor' },
           ],
         },
         {
           title: 'Help',
-          rows: [{ icon: <HelpIcon />, label: 'Checklists' }],
+          rows: [{ icon: <HelpIcon />, label: 'Kitchen and Perks' }],
         },
       ]}
     />
@@ -81,8 +81,8 @@ export function SearchDocuments() {
         {
           title: 'Spaces',
           rows: [
-            { icon: <DocumentIcon />, label: 'Onboarding flow', active: true },
-            { icon: <DocumentIcon />, label: 'Onboarding v2' },
+            { icon: <DocumentIcon />, label: 'Onboarding office', active: true },
+            { icon: <DocumentIcon />, label: 'Onboarding lounge' },
           ],
         },
         {
@@ -102,7 +102,7 @@ export function SearchTeams() {
       groups={[
         {
           title: 'Items',
-          rows: [{ icon: <DocumentIcon />, label: 'Platform overview', active: true }],
+          rows: [{ icon: <DocumentIcon />, label: 'Platform office', active: true }],
         },
         {
           title: 'Folders',
@@ -121,17 +121,17 @@ export function SearchTeams() {
 export function SearchTabsAndElements() {
   return (
     <SearchOverlay
-      query="revenue"
+      query="meeting"
       groups={[
         {
           title: 'Tabs',
-          rows: [{ icon: <TabIcon />, label: 'Revenue model', active: true }],
+          rows: [{ icon: <TabIcon />, label: 'Meeting Rooms', active: true }],
         },
         {
           title: 'Elements',
           rows: [
-            { icon: <ElementIcon />, label: 'Revenue growth', meta: 'on Revenue model' },
-            { icon: <ElementIcon />, label: 'Revenue 2026: 1.2m', meta: 'on Forecast' },
+            { icon: <ElementIcon />, label: 'Meeting Room sign', meta: 'on Meeting Rooms' },
+            { icon: <ElementIcon />, label: 'Meeting table', meta: 'on Ground Floor' },
           ],
         },
       ]}

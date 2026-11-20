@@ -2,21 +2,22 @@
 // selection, cursors and avatars the editor's canvas draws.
 import { useId, type ReactNode } from 'react';
 import { Label, DiscText } from './primitives-text';
+import { artApp } from './art-app';
 
 // --- Canvas elements ---------------------------------------------------------
 
 type ShapeKind =
   'rect' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'stadium' | 'parallelogram' | 'triangle';
 
-/** True in a help app that has no diagram shapes (livehuddle sets `HELP_STICKY_ONLY=1` in its Next config): every
- *  `Shape` then draws a sticky note, and the Border figure leaves out its Radius grid. Read at call time so a test can
- *  switch it. */
+/** True in a help app that has no diagram shapes (livehuddle, whose help is built with `HELP_ART_APP=livehuddle`;
+ *  `HELP_STICKY_ONLY=1` forces it): every `Shape` then draws a sticky note, connectors are left out, and the Border
+ *  figure leaves out its Radius grid. Read at call time so a test can switch it. */
 export function stickyOnly(): boolean {
-  return process.env.HELP_STICKY_ONLY === '1';
+  return process.env.HELP_STICKY_ONLY === '1' || artApp() === 'livehuddle';
 }
 
-/** A canvas node. `accent` fills it brand; otherwise white with a brand
- *  border, matching how a placed shape looks on the real canvas. */
+/** A canvas node, drawn as the editor draws a freshly placed shape: a pale brand fill inside a crisp brand outline
+ *  with gently rounded corners. `accent` fills it solid brand. */
 export function Shape({
   x,
   y,
@@ -44,25 +45,30 @@ export function Shape({
 }) {
   const cx = x + w / 2;
   const cy = y + h / 2;
-  const fillCls = fill ?? (accent ? 'fill-brand-500' : 'fill-white');
-  const strokeCls = stroke ?? (accent ? 'stroke-brand-600' : 'stroke-brand-300');
+  const fillCls = fill ?? (accent ? 'fill-brand-500' : 'fill-brand-50');
+  const strokeCls = stroke ?? (accent ? 'stroke-brand-600' : 'stroke-brand-500');
   const common = {
     className: `${fillCls} ${strokeCls}`,
-    strokeWidth: 2,
+    strokeWidth: 1.5,
+    strokeLinejoin: 'round' as const,
     strokeDasharray: dashed ? '5 4' : undefined,
   };
   let body: ReactNode;
   const sticky = stickyOnly();
   if (sticky) {
-    // A sticky note: square corners, a pastel fill and no border, as the canvas draws one by default.
+    // A sticky note: square corners, a pastel fill, no border and the paper's soft drop shadow, as the canvas draws
+    // one by default.
     body = (
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        className={fill ?? (accent ? 'fill-brand-200' : 'fill-amber-100')}
-      />
+      <>
+        <rect x={x + 1} y={y + 3} width={w} height={h} className="fill-slate-900/[0.07]" />
+        <rect
+          x={x}
+          y={y}
+          width={w}
+          height={h}
+          className={fill ?? (accent ? 'fill-brand-200' : 'fill-amber-100')}
+        />
+      </>
     );
   } else
     switch (kind) {
@@ -102,7 +108,7 @@ export function Shape({
         body = <path d={`M${cx} ${y} L${x + w} ${y + h} H${x} Z`} {...common} />;
         break;
       default:
-        body = <rect x={x} y={y} width={w} height={h} rx={7} {...common} />;
+        body = <rect x={x} y={y} width={w} height={h} rx={4} {...common} />;
     }
   return (
     <g>
@@ -114,7 +120,7 @@ export function Shape({
           anchor="middle"
           tone={labelTone ?? (accent && !sticky ? 'onAccent' : 'strong')}
           size={12}
-          weight={500}
+          weight={400}
         >
           {label}
         </Label>
@@ -133,7 +139,7 @@ export function Arrow({
   tone = 'accent',
   dashed = false,
   head = true,
-  width = 2.5,
+  width = 1.75,
   colour,
   connector = false,
 }: {
@@ -152,8 +158,8 @@ export function Arrow({
   if (connector && stickyOnly()) return null;
   const [x1, y1] = from;
   const [x2, y2] = to;
-  const strokeCls = colour?.stroke ?? (tone === 'accent' ? 'stroke-brand-400' : 'stroke-slate-300');
-  const fillCls = colour?.fill ?? (tone === 'accent' ? 'fill-brand-400' : 'fill-slate-300');
+  const strokeCls = colour?.stroke ?? (tone === 'accent' ? 'stroke-brand-500' : 'stroke-slate-300');
+  const fillCls = colour?.fill ?? (tone === 'accent' ? 'fill-brand-500' : 'fill-slate-300');
   let d: string;
   if (kind === 'curved') {
     const mx = (x1 + x2) / 2;
@@ -168,8 +174,17 @@ export function Arrow({
   return (
     <>
       <defs>
-        <marker id={`ah-${id}`} markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto">
-          <path d="M0 0 L6 3 L0 6 Z" className={fillCls} />
+        {/* A slim, slightly swept head in user units, so it stays the editor's size whatever the line's width. */}
+        <marker
+          id={`ah-${id}`}
+          markerUnits="userSpaceOnUse"
+          markerWidth="10"
+          markerHeight="10"
+          refX="7.5"
+          refY="4"
+          orient="auto"
+        >
+          <path d="M0 0.5 L8 4 L0 7.5 L1.6 4 Z" className={fillCls} />
         </marker>
       </defs>
       <path
@@ -179,25 +194,23 @@ export function Arrow({
         strokeWidth={width}
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeDasharray={dashed ? '6 5' : undefined}
+        strokeDasharray={dashed ? '5 4' : undefined}
         markerEnd={head ? `url(#ah-${id})` : undefined}
       />
     </>
   );
 }
 
-/** Eight square selection handles around a box, with a dashed marquee. */
+/** The editor's selection: a crisp brand outline with round handles at the corners and slim pills at the middle of
+ *  each edge. */
 export function SelectionBox({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
-  const pts: [number, number][] = [
+  const corners: [number, number][] = [
     [x, y],
-    [x + w / 2, y],
     [x + w, y],
-    [x + w, y + h / 2],
     [x + w, y + h],
-    [x + w / 2, y + h],
     [x, y + h],
-    [x, y + h / 2],
   ];
+  const pill = 'fill-white stroke-brand-500';
   return (
     <g>
       <rect
@@ -205,21 +218,48 @@ export function SelectionBox({ x, y, w, h }: { x: number; y: number; w: number; 
         y={y}
         width={w}
         height={h}
-        rx={3}
+        rx={2}
         className="fill-none stroke-brand-500"
         strokeWidth={1.5}
-        strokeDasharray="4 3"
       />
-      {pts.map(([px, py], i) => (
-        <rect
-          key={i}
-          x={px - 3.5}
-          y={py - 3.5}
-          width={7}
-          height={7}
-          className="fill-white stroke-brand-500"
-          strokeWidth={1.5}
-        />
+      <rect
+        x={x + w / 2 - 6}
+        y={y - 2.5}
+        width={12}
+        height={5}
+        rx={2.5}
+        className={pill}
+        strokeWidth={1}
+      />
+      <rect
+        x={x + w / 2 - 6}
+        y={y + h - 2.5}
+        width={12}
+        height={5}
+        rx={2.5}
+        className={pill}
+        strokeWidth={1}
+      />
+      <rect
+        x={x - 2.5}
+        y={y + h / 2 - 6}
+        width={5}
+        height={12}
+        rx={2.5}
+        className={pill}
+        strokeWidth={1}
+      />
+      <rect
+        x={x + w - 2.5}
+        y={y + h / 2 - 6}
+        width={5}
+        height={12}
+        rx={2.5}
+        className={pill}
+        strokeWidth={1}
+      />
+      {corners.map(([px, py], i) => (
+        <circle key={i} cx={px} cy={py} r={3.2} className={pill} strokeWidth={1.2} />
       ))}
     </g>
   );
@@ -246,11 +286,17 @@ export function Cursor({
   }[colour];
   return (
     <g transform={`translate(${x} ${y})`}>
-      <path d="M0 0 L0 17 L4.8 12.8 L7.5 19 L10.6 17.5 L8 11.2 L13.8 10.6 Z" className={fill} />
+      {/* The system pointer's shape with its white keyline, tinted for the collaborator, as the canvas draws one. */}
+      <path
+        d="M0 0 L0 15.5 L4.2 11.8 L6.8 17.6 L9.4 16.4 L6.9 10.7 L12.4 10.3 Z"
+        className={`${fill} stroke-white`}
+        strokeWidth={1.2}
+        strokeLinejoin="round"
+      />
       {name && (
-        <g transform="translate(12 8)">
-          <rect width={name.length * 6.5 + 12} height={17} rx={5} className={fill} />
-          <Label x={6} y={9} tone="onAccent" size={10} weight={600}>
+        <g transform="translate(11 14)">
+          <rect width={name.length * 5.6 + 12} height={15} rx={7.5} className={fill} />
+          <Label x={6} y={8} tone="onAccent" size={9} weight={600}>
             {name}
           </Label>
         </g>

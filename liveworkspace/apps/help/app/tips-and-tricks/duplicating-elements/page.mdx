@@ -1,6 +1,8 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { ShiftDragDuplicate } from '@liveworkspace/help-site/art/illustrations/tips-gestures';
+import { ShiftDragDuplicate as DesignShiftDragDuplicate } from '@/editions/livedesign/components/illustrations/canvas';
+import { ShiftDragDuplicate as HuddleShiftDragDuplicate } from '@/editions/livehuddle/components/illustrations/floor-edits';
 
 export const metadata = helpMetadata({
   title: 'Duplicating Elements',
@@ -73,17 +75,17 @@ The quickest way to duplicate is to hold **Shift** and drag a selected element:
   right away.
 </Step>
 
-<Figure
-  app="livedesign,livediagram,livedocuments"
+<Figure app="livediagram,livedocuments"
   caption="Hold Shift and drag: the original stays put while a ghost of the copy, connecting arrow included, follows the pointer."
 >
   <ShiftDragDuplicate />
 </Figure>
-<Figure
-  app="livehuddle"
-  caption="Hold Shift and drag: the original stays put while a ghost of the copy follows the pointer."
->
-  <ShiftDragDuplicate />
+
+<Figure app="livedesign" caption="Hold Shift and drag: the screen stays put while a ghost of its copy follows the pointer.">
+  <DesignShiftDragDuplicate />
+</Figure>
+<Figure app="livehuddle" caption="Hold Shift and drag a chair to leave it where it was and place a copy.">
+  <HuddleShiftDragDuplicate />
 </Figure>
 
 A few details worth knowing:

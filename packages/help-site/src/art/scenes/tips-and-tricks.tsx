@@ -31,7 +31,7 @@ export function TipsAndTricksArt({
         <Label x={138} y={31.5} size={10.5} weight={500} tone="muted">
           Run a command…
         </Label>
-        <line x1={110} y1={44} x2={380} y2={44} className="stroke-slate-200" strokeWidth={1} />
+        <line x1={110} y1={44} x2={380} y2={44} className="stroke-slate-200" strokeWidth={0.75} />
         {commands.map((c, i) => {
           const y = 50 + i * 24;
           const active = i === 0;

@@ -6,6 +6,9 @@ import { ShareEmbedMenu as DiagramShareEmbedMenu } from '@/editions/livediagram/
 import { ShareEmbedMenu as DesignShareEmbedMenu } from '@/editions/livedesign/components/illustrations/sharing';
 import { ShareEmbedMenu as DocumentsShareEmbedMenu } from '@/editions/livedocuments/components/illustrations/sharing';
 import { ShareEmbedMenu as HuddleShareEmbedMenu } from '@/editions/livehuddle/components/illustrations/sharing';
+import { EmbeddedWork as DesignEmbeddedWork } from '@/editions/livedesign/components/illustrations/collaboration';
+import { EmbeddedDocument } from '@/editions/livedocuments/components/illustrations/presence';
+import { EmbeddedSpace } from '@/editions/livehuddle/components/illustrations/shared-views';
 
 export const metadata = helpMetadata({
   title: 'Embeds',
@@ -27,20 +30,32 @@ An embed places a live copy of a <Noun /> inside another page, like a wiki, a do
 </AppNote>
 
 <AppNote app="livedesign">
-  <Figure caption="A design sits inside a host page, with the copy-paste iframe snippet that embeds it.">
+  <Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="A design sits inside a host page, with the copy-paste iframe snippet that embeds it.">
     <EmbeddedWork product="livedesign" />
+  </Figure>
+
+  <Figure app="livedesign" caption="A design's pages sit inside a host page, with the copy-paste iframe snippet that embeds them.">
+    <DesignEmbeddedWork />
   </Figure>
 </AppNote>
 
 <AppNote app="livedocuments">
-  <Figure caption="A document sits inside a host page, with the copy-paste iframe snippet that embeds it.">
+  <Figure app="livediagram,livedesign,liveplanner,livehuddle,all" caption="A document sits inside a host page, with the copy-paste iframe snippet that embeds it.">
     <EmbeddedWork product="livedocuments" />
+  </Figure>
+
+  <Figure app="livedocuments" caption="An embedded document sits in another page, with Open in livedocuments under it.">
+    <EmbeddedDocument />
   </Figure>
 </AppNote>
 
 <AppNote app="livehuddle">
-  <Figure caption="A space sits inside a host page, with the copy-paste iframe snippet that embeds it.">
+  <Figure app="livediagram,livedesign,livedocuments,liveplanner,all" caption="A space sits inside a host page, with the copy-paste iframe snippet that embeds it.">
     <EmbeddedWork product="livehuddle" />
+  </Figure>
+
+  <Figure app="livehuddle" caption="A Space embedded in another page, beside the iframe snippet that places it.">
+    <EmbeddedSpace />
   </Figure>
 </AppNote>
 

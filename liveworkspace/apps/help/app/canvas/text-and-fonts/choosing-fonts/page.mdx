@@ -3,6 +3,7 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvasBasics from '@/editions/livediagram/components/illustrations/canvas-basics';
 import * as DocumentsCanvasBasics from '@/editions/livedocuments/components/illustrations/canvas-basics';
+import { ElementFontMenu as HuddleElementFontMenu, LookAndFeelFont as HuddleLookAndFeelFont } from '@/editions/livehuddle/components/illustrations/look-and-feel';
 
 export const metadata = helpMetadata({
   title: 'Choosing Fonts',
@@ -61,11 +62,14 @@ Right-click the element, open **Appearance**, then **Text**, and expand **Font**
 
 <AppNote app="livedocuments">On a touch screen, use a long press.</AppNote>
 
-<Figure
-  app="livediagram,livedesign,livehuddle"
+<Figure app="livediagram,livedesign"
   caption="The element menu's Text section, with the Font tiles open and one typeface chosen for this element alone."
 >
   <DiagramCanvasBasics.ElementFontMenu />
+</Figure>
+
+<Figure app="livehuddle" caption="A selected note's menu, with the Text flyout open on its Font tiles.">
+  <HuddleElementFontMenu />
 </Figure>
 
 <Figure
@@ -104,11 +108,14 @@ To set the typeface for everything on a tab at once, open the **Tab Style** dial
 
 <AppNote app="livedocuments">Open it with the **Style** button on a page's title bar.</AppNote>
 
-<Figure
-  app="livediagram,livedesign,livedocuments,livehuddle"
+<Figure app="livediagram,livedesign,livedocuments"
   caption="The Text panel of the Tab Style dialog: a preview, the typeface cards, and the four sizes of new text."
 >
   <DiagramCanvasBasics.LookAndFeelFont />
+</Figure>
+
+<Figure app="livehuddle" caption="The Text panel of Tab Style: the room preview in the tab's font, the typefaces and the size of new text.">
+  <HuddleLookAndFeelFont />
 </Figure>
 
 - **Preview** at the top shows a small sample in the tab's font, size and finish.

@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { PagesScene } from '@/editions/livedesign/components/illustrations/pages';
 import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { LiveCursors as DesignLiveCursors } from '@/editions/livedesign/components/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'What is livedesign?',
@@ -40,8 +41,12 @@ When more than one person is in the same design, everyone sees live cursors, who
 
 To make that frictionless, the editor **always works without signing in**. You can open a new design, build something real, and hand the link to a colleague who edits it straight away, no account required. See [Sharing your design](/help/getting-started/sharing-your-design/).
 
-<Figure caption="Everyone in a design sees each other's live cursors and presence at once.">
+<Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="Everyone in a design sees each other's live cursors and presence at once.">
   <LiveCursors />
+</Figure>
+
+<Figure app="livedesign" caption="Everyone in a design sees each other's live cursors on its pages, and each tab shows the initials of who is on it.">
+  <DesignLiveCursors />
 </Figure>
 
 ## Free and open source

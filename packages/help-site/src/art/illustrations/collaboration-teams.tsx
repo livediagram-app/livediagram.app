@@ -1,5 +1,6 @@
 // Collaboration illustrations: Teams (members, their roles, and the shared tree). Re-exported
 // from ./collaboration, where the help pages import them.
+import { appSamples } from '../app-samples';
 import { Scene, Avatar, Panel, Button, Label } from '../primitives';
 import { plural } from '../noun';
 
@@ -142,7 +143,7 @@ export function TeamMembers() {
                   x2={336}
                   y2={ry + 21}
                   className="stroke-slate-100"
-                  strokeWidth={1.5}
+                  strokeWidth={0.75}
                 />
               )}
             </g>
@@ -156,17 +157,18 @@ export function TeamMembers() {
 /** A team's shared library: the Team designs breadcrumb (the product's `noun`) with the view toggle and
  *  Create, above the folders and work of the level you are in. */
 export function TeamSharedTree({ noun }: { noun: string }) {
+  const { folders, work } = appSamples();
   const rows: { label: string; folder: boolean; meta: string }[] = [
-    { label: 'Architecture', folder: true, meta: `4 ${plural(noun)}` },
-    { label: 'Onboarding', folder: true, meta: `2 ${plural(noun)}` },
-    { label: 'System overview', folder: false, meta: 'Edited 2h ago' },
-    { label: 'Retro notes', folder: false, meta: 'Edited yesterday' },
+    { label: folders[0], folder: true, meta: `4 ${plural(noun)}` },
+    { label: folders[1], folder: true, meta: `2 ${plural(noun)}` },
+    { label: work[0], folder: false, meta: 'Edited 2h ago' },
+    { label: work[4], folder: false, meta: 'Edited yesterday' },
   ];
   return (
     <Scene w={420} h={230} bg="plain">
       <Panel x={50} y={16} w={320} h={198}>
         <rect x={51} y={17} width={318} height={32} rx={9} className="fill-slate-50" />
-        <line x1={51} y1={49} x2={369} y2={49} className="stroke-slate-200" strokeWidth={1} />
+        <line x1={51} y1={49} x2={369} y2={49} className="stroke-slate-200" strokeWidth={0.75} />
         <Label x={66} y={34} size={9.5} weight={700} tone="muted">
           {`TEAM ${plural(noun).toUpperCase()}`}
         </Label>
@@ -178,7 +180,7 @@ export function TeamSharedTree({ noun }: { noun: string }) {
           height={18}
           rx={5}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <rect x={258} y={26} width={18} height={14} rx={3} className="fill-brand-100" />
         <path
@@ -210,7 +212,7 @@ export function TeamSharedTree({ noun }: { noun: string }) {
                   height={16}
                   rx={2}
                   className="fill-white stroke-slate-300"
-                  strokeWidth={1.5}
+                  strokeWidth={0.75}
                 />
               )}
               <Label x={94} y={ry + 1} size={11} weight={500} tone="strong">
@@ -226,7 +228,7 @@ export function TeamSharedTree({ noun }: { noun: string }) {
                   x2={356}
                   y2={ry + 18}
                   className="stroke-slate-100"
-                  strokeWidth={1.2}
+                  strokeWidth={0.75}
                 />
               )}
             </g>

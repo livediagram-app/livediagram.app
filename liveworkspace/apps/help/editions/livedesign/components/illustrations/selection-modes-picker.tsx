@@ -4,6 +4,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
+import { Card, Strip } from './editor-chrome';
 import {
   EraserGlyph,
   HandGlyph,
@@ -44,51 +45,55 @@ export function Chevron({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** The start of the palette strip across the top of the canvas: the canvas-tool picker on the
- *  left (showing the chosen tool) and the category picker beside it. Sits at the top of every
- *  mode scene. */
-export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number; tool: ToolKey }) {
+/** The palette strip across the top of the canvas, its select-mode pill showing the chosen tool, with the tooltip
+ *  naming it under the pill. Sits at the top of every mode scene; the scene's edge crops the strip's far end. */
+export function PickerTrigger({
+  x = 8,
+  y = 8,
+  tool,
+  tip = true,
+}: {
+  x?: number;
+  y?: number;
+  tool: ToolKey;
+  tip?: boolean;
+}) {
   const t = TOOLS.find((o) => o.key === tool) ?? TOOLS[0];
-  const w = 236;
+  const label = t.shortcut ? `${t.label}  ${t.shortcut}` : t.label;
+  const tw = label.length * 5 + 14;
   return (
     <g>
-      <rect
+      <Strip
         x={x}
-        y={y + 22}
-        width={w}
-        height={36}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        y={y}
+        tool={
+          <g transform="scale(0.72)">
+            <t.Glyph />
+          </g>
+        }
       />
-      <rect
-        x={x + 8}
-        y={y + 28}
-        width={122}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-200"
-        strokeWidth={1.2}
-      />
-      <g transform={`translate(${x + 21} ${y + 40})`}>
-        <t.Glyph />
-      </g>
-      <Label x={x + 34} y={y + 41} size={11} weight={600} tone="strong">
-        {t.label}
-      </Label>
-      <Chevron x={x + 120} y={y + 40} />
-      <line
-        x1={x + 140}
-        y1={y + 30}
-        x2={x + 140}
-        y2={y + 50}
-        className="stroke-slate-200"
-        strokeWidth={1.2}
-      />
-      <Label x={x + 150} y={y + 41} size={11} weight={500} tone="body">
-        Popular
-      </Label>
-      <Chevron x={x + w - 16} y={y + 40} />
+      {tip && (
+        <g>
+          <rect
+            x={x + 15 - tw / 2 + 6}
+            y={y + 30}
+            width={tw}
+            height={16}
+            rx={4}
+            className="fill-slate-800"
+          />
+          <Label
+            x={x + 21}
+            y={y + 38.5}
+            size={9}
+            weight={500}
+            anchor="middle"
+            className="fill-white help-art-as-drawn"
+          >
+            {label}
+          </Label>
+        </g>
+      )}
     </g>
   );
 }
@@ -97,7 +102,7 @@ export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number
  *  it in its three named bands, with the current tool in its selected tone and
  *  the shortcut letters in the tiles' corners. */
 export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
-  const mx = 84;
+  const mx = 8;
   const tileW = 80;
   const tileH = 42;
   const gap = 4;
@@ -108,7 +113,7 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
     for (let i = 0; i < inBand.length; i += 3)
       rows.push({ band: b, tools: inBand.slice(i, i + 3) });
   }
-  let cy = 84;
+  let cy = 52;
   const body: ReactNode[] = [];
   let lastBand = -1;
   rows.forEach((row, r) => {
@@ -122,7 +127,7 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
             x2={mx + menuW - 8}
             y2={cy + 2}
             className="stroke-slate-200"
-            strokeWidth={1}
+            strokeWidth={0.75}
           />,
         );
         cy += 6;
@@ -171,19 +176,11 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
     });
     cy += tileH + gap;
   });
-  const menuH = cy - 80 + 6;
+  const menuH = cy - 48 + 6;
   return (
-    <Scene w={420} h={menuH + 92}>
-      <PickerTrigger x={mx} y={10} tool={active} />
-      <rect
-        x={mx}
-        y={76}
-        width={menuW}
-        height={menuH}
-        rx={10}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
+    <Scene w={420} h={menuH + 60}>
+      <PickerTrigger x={mx} y={8} tool={active} tip={false} />
+      <Card x={mx} y={44} w={menuW} h={menuH} r={8} />
       {body}
     </Scene>
   );

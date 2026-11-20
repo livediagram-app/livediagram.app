@@ -128,7 +128,7 @@ function PagerArrows({ right, y }: { right: number; y: number }) {
               height={14}
               rx={4}
               className="fill-white stroke-slate-200"
-              strokeWidth={1.2}
+              strokeWidth={0.75}
             />
             <path
               d={d}

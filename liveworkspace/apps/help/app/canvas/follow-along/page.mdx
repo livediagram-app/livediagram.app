@@ -2,6 +2,9 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { FollowingScene } from '@liveworkspace/help-site/art/illustrations/canvas-links-notes';
+import { FollowingScene as DesignFollowingScene } from '@/editions/livedesign/components/illustrations/collaboration';
+import { FollowAlong } from '@/editions/livedocuments/components/illustrations/presence';
+import { FollowAlong as HuddleFollowAlong } from '@/editions/livehuddle/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'Following Someone',
@@ -35,8 +38,20 @@ A pill appears at the top of the canvas reading **Following** followed by their 
 
 <AppNote app="livediagram,livedesign,livedocuments">The pill shows in Zen mode too.</AppNote>
 
-<Figure caption="Following Sam: the pill at the top of the canvas with its Stop, and Sam's avatar ringed in the presence stack.">
+<Figure app="livediagram,liveplanner,all" caption="Following Sam: the pill at the top of the canvas with its Stop, and Sam's avatar ringed in the presence stack.">
   <FollowingScene />
+</Figure>
+
+<Figure app="livedesign" caption="Following Sam: the pill at the top of the canvas with its Stop, and Sam's initials ringed on the tab.">
+  <DesignFollowingScene />
+</Figure>
+
+<Figure app="livedocuments" caption="Following Sam: your view tracks theirs, their avatar ringed on the tab, with Stop at the top.">
+  <FollowAlong />
+</Figure>
+
+<Figure app="livehuddle" caption="Following Sam: your view moves with theirs around the Space until you press Stop.">
+  <HuddleFollowAlong />
 </Figure>
 
 ## Stopping

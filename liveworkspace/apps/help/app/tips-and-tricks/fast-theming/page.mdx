@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { LookAndFeelTheme } from '@/editions/livediagram/components/illustrations/canvas-basics';
+import { LookAndFeelTheme as HuddleLookAndFeelTheme } from '@/editions/livehuddle/components/illustrations/look-and-feel';
 
 export const metadata = helpMetadata({
   title: 'Restyle Your Work Fast',
@@ -68,8 +69,12 @@ A theme sets the look of the whole tab at once. Open the **Tab Style** dialog, a
   hand-coloured shape back in line, use **Reset to Default** in its presets (below).
 </AppNote>
 
-<Figure caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first.">
+<Figure app="livediagram,livedesign,livedocuments,liveplanner,all" caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first.">
   <LookAndFeelTheme />
+</Figure>
+
+<Figure app="livehuddle" caption="Pick a theme in Tab Style's Colours panel and the whole tab takes it on at once.">
+  <HuddleLookAndFeelTheme />
 </Figure>
 
 ## Add emphasis with presets

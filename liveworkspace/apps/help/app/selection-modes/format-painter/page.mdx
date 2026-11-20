@@ -5,6 +5,10 @@ import { FormatPainterMode } from '@/editions/livediagram/components/illustratio
 import { FormatPanelScene } from '@/editions/livediagram/components/illustrations/selection-modes';
 import { FormatPainterMode as LivehuddleFormatPainterMode } from '@/editions/livehuddle/components/illustrations/palette-modes';
 import { FormatPanelScene as LivehuddleFormatPanelScene } from '@/editions/livehuddle/components/illustrations/selection-modes';
+import { FormatPainterMode as DesignFormatPainterMode } from '@/editions/livedesign/components/illustrations/palette-modes';
+import { FormatPainterMode as DocumentsFormatPainterMode } from '@/editions/livedocuments/components/illustrations/palette-modes';
+import { FormatPanelScene as DesignFormatPanelScene } from '@/editions/livedesign/components/illustrations/selection-modes';
+import { FormatPanelScene as DocumentsFormatPanelScene } from '@/editions/livedocuments/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Format Painter',
@@ -80,11 +84,18 @@ Every element you press takes on the copied look. Because it copies the styling 
   is the source simply does nothing.
 </AppNote>
 
-<Figure
-  app="livedesign,livediagram,livedocuments"
+<Figure app="livediagram"
   caption="The palette's tool picker set to Format, copying the source shape's style onto another."
 >
   <FormatPainterMode />
+</Figure>
+
+<Figure app="livedesign" caption="The select-mode pill set to Format, copying one screen's button style onto the next screen's.">
+  <DesignFormatPainterMode />
+</Figure>
+
+<Figure app="livedocuments" caption="Format mode: the brush carries one element's look onto another.">
+  <DocumentsFormatPainterMode />
 </Figure>
 <Figure
   app="livehuddle"
@@ -100,11 +111,18 @@ While the Format Painter is on, a **Format** panel sits at the bottom right, abo
 - **Copies**: five toggles, **Fill**, **Border**, **Text**, **Effects** (shadow, finish, opacity, animations) and **Size** (width, height, aspect lock, padding, icon size). All are on to start, which copies everything. Turn Fill off to give a row of boxes the same typography while they keep their own colours; turn everything off but Border to spread one dashed outline around.
 - **After painting**: **Keep the brush** to paint one element after another, or **Paint once** to have the brush empty itself after a single apply, ready for you to pick a new source.
 
-<Figure
-  app="livedesign,livediagram,livedocuments"
+<Figure app="livediagram"
   caption="Painting with Fill switched off: the Format panel copies only Border and Text, so the target keeps its own colour."
 >
   <FormatPanelScene />
+</Figure>
+
+<Figure app="livedesign" caption="Painting with Fill switched off: the Format panel copies only Border and Text, so the target button keeps its own colour.">
+  <DesignFormatPanelScene />
+</Figure>
+
+<Figure app="livedocuments" caption="The Format panel shows what the brush copies and what happens after painting.">
+  <DocumentsFormatPanelScene />
 </Figure>
 <Figure
   app="livehuddle"

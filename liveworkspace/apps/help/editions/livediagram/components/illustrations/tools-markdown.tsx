@@ -105,7 +105,7 @@ export function MarkdownImportPanel() {
         height={224}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={36} y={28} size={13} weight={700} tone="strong">
         Import to Tab

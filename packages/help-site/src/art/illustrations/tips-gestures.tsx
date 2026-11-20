@@ -27,7 +27,7 @@ export function ShiftDragDuplicate() {
         height={22}
         rx={5}
         className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={314} y={40} anchor="middle" size={10} weight={700} tone="strong">
         Shift

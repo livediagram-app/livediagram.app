@@ -15,7 +15,7 @@ import { Scene, Label } from '../primitives';
 function LinkBadge({ x, y }: { x: number; y: number }) {
   return (
     <g>
-      <circle cx={x} cy={y} r={9} className="fill-white stroke-slate-300" strokeWidth={1.2} />
+      <circle cx={x} cy={y} r={9} className="fill-white stroke-slate-300" strokeWidth={0.75} />
       <path
         d={`M${x - 3.5} ${y + 1} l2.4 -2.4a2 2 0 0 1 2.8 2.8l-1.2 1.2M${x + 3.5} ${y - 1}l-2.4 2.4a2 2 0 0 1 -2.8 -2.8l1.2 -1.2`}
         className="fill-none stroke-slate-500"
@@ -234,7 +234,7 @@ export function WebsiteEmbedCards() {
           height={106}
           rx={8}
           className="fill-white stroke-slate-300"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <rect x={228} y={58} width={110} height={8} rx={4} className="fill-slate-300" />
         <rect x={228} y={74} width={160} height={6} rx={3} className="fill-slate-200" />

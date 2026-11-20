@@ -116,7 +116,7 @@ export function SlideMenu() {
         height={140}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* The quick actions are icon-only buttons (MenuTiles.tsx), named in hover cards:
           Rename, Add notes, Duplicate, then Delete held apart at the right edge. */}
@@ -133,7 +133,7 @@ export function SlideMenu() {
               height={32}
               rx={7}
               className="fill-slate-50 stroke-slate-200"
-              strokeWidth={1.2}
+              strokeWidth={0.75}
             />
             <g
               className="stroke-slate-500"
@@ -174,7 +174,7 @@ export function SlideMenu() {
         height={34}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={162} y={167} size={10} weight={700} tone="strong">
         Visibility
@@ -206,7 +206,7 @@ export function SlideTransition() {
         height={166}
         rx={10}
         className="fill-slate-100 stroke-slate-300 dark:fill-slate-800"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* The incoming slide, a third of the way in, clipped by the screen's edge */}
       <g clipPath={`url(#${clip})`}>

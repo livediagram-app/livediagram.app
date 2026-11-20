@@ -160,7 +160,7 @@ function PatternTile({
         height={13}
         rx={3}
         className="fill-white stroke-slate-100"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <PatternArt kind={kind} x={x + 6} y={y + 4} />
     </OptionBox>

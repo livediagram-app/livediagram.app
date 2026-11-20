@@ -2,6 +2,9 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { AutoAlignGrid } from '@/editions/livediagram/components/illustrations/tools';
+import { AutoAlignGrid as DesignAutoAlignGrid } from '@/editions/livedesign/components/illustrations/tools';
+import { AutoAlignGrid as DocumentsAutoAlignGrid } from '@/editions/livedocuments/components/illustrations/tools';
+import { AutoAlignGrid as HuddleAutoAlignGrid } from '@/editions/livehuddle/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Auto-Align',
@@ -19,8 +22,20 @@ Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px
   than a tab with no layout.
 </AppNote>
 
-<Figure caption="Elements that sit a few pixels off the grid snap onto the nearest grid lines.">
+<Figure app="livediagram,liveplanner,all" caption="Elements that sit a few pixels off the grid snap onto the nearest grid lines.">
   <AutoAlignGrid />
+</Figure>
+
+<Figure app="livedesign" caption="Blocks that sit a few pixels off the grid snap onto the nearest grid lines.">
+  <DesignAutoAlignGrid />
+</Figure>
+
+<Figure app="livedocuments" caption="Auto-Align snaps cards that sit a few pixels off the grid onto it.">
+  <DocumentsAutoAlignGrid />
+</Figure>
+
+<Figure app="livehuddle" caption="Auto-align snaps the desks onto the grid in one go.">
+  <HuddleAutoAlignGrid />
 </Figure>
 
 ## What It Does

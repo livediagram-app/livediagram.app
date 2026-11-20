@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { DotVoting } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { DotVoting as PlannerDotVoting } from '@/editions/liveplanner/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'Casting Dots',
@@ -42,8 +43,12 @@ Press **+** to add one of your dots and **−** to take one back. Stacking sever
 <AppNote app="liveplanner">
   The **Vote** button sits in the bottom-right cluster.
 
-  <Figure caption="Each card carries a tally counter, and the Vote button counts the dots you have left.">
+  <Figure app="livediagram,livedesign,livedocuments,livehuddle,all" caption="Each card carries a tally counter, and the Vote button counts the dots you have left.">
     <DotVoting poll={false} />
+  </Figure>
+
+  <Figure app="liveplanner" caption="Each card carries its vote stepper, and the Vote button in the corner cluster counts the dots you have left.">
+    <PlannerDotVoting />
   </Figure>
 </AppNote>
 

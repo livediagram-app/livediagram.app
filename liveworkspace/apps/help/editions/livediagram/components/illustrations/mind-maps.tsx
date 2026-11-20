@@ -315,7 +315,7 @@ export function MindMapFlows() {
         height={y - 6}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={X} y={28} size={11} weight={700} tone="strong">
         Mind Map
@@ -332,7 +332,7 @@ export function MindMapFlows() {
             height={g.rows.length * ROW}
             rx={7}
             className="fill-white stroke-slate-200"
-            strokeWidth={1.2}
+            strokeWidth={0.75}
           />
           {g.rows.map((r, i) => {
             const ry = g.top + i * ROW;
@@ -401,7 +401,7 @@ export function EditOutlineDialog() {
         height={246}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={36} y={28} size={13} weight={700} tone="strong">
         Edit Outline

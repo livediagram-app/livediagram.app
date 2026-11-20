@@ -1,243 +1,251 @@
-// Canvas-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the infinite canvas, placing and
-// selecting elements, grouping, themes, templates, links, and annotations.
-// Composed only from the shared primitives so the house style holds.
+// Canvas-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the floor a Space is built on,
+// placing and selecting pieces, panning and zooming, painting a style, a multi-colour theme and snapping. Drawn with
+// livehuddle's own chrome (./editor-chrome) and furniture (./space-furniture), so every figure shows a Space.
 
-import {
-  Scene,
-  Shape,
-  Arrow,
-  SelectionBox,
-  Cursor,
-  Panel,
-  Label,
-  Tile,
-} from '@liveworkspace/help-site/art/primitives';
-import { MenuCard, Strip, stripCategory } from './toolbar-layout';
+import { Cursor, Label, Scene, SelectionBox } from '@liveworkspace/help-site/art/primitives';
+import { BottomBar, Card, CornerCluster, Icon, Strip, TopRow, stripSlot } from './editor-chrome';
+import { Desk, OfficeFloor, Plant, Room, Sticky, type StickyTone } from './space-furniture';
 
-/** The canvas with the menu button and the palette strip across the top and a small flow on
- *  it: the editor at a glance. */
+/** The hand the canvas shows while you pan, its palm at (x, y). */
+export function HandCursor({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(0.8)`}>
+      <path
+        d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
+        className="fill-white stroke-slate-700"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </g>
+  );
+}
+
+/** The zoom card alone, top-left at (x, y), reading `level`. */
+export function ZoomCard({ x, y, level = '100%' }: { x: number; y: number; level?: string }) {
+  return (
+    <Card x={x} y={y} w={80} h={24}>
+      <Icon prims={[{ t: 'path', d: 'M5 12h14' }]} x={x + 12} y={y + 12} size={8} />
+      <Label x={x + 40} y={y + 12.5} size={9} weight={500} tone="strong" anchor="middle">
+        {level}
+      </Label>
+      <Icon prims={[{ t: 'path', d: 'M5 12h14M12 5v14' }]} x={x + 68} y={y + 12} size={8} />
+    </Card>
+  );
+}
+
+/** The whole editor over a small office: the top row, the floor with its rooms, your pointer, the corner cluster
+ *  and the bottom bar. */
 export function CanvasOverview() {
   return (
-    <Scene w={420} h={240}>
-      <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} />
-      <Shape x={40} y={92} w={84} h={48} kind="rect" label="Start" />
-      <Shape x={172} y={92} w={84} h={48} kind="diamond" />
-      <Shape x={172} y={172} w={84} h={44} kind="rect" accent label="Done" />
-      <Arrow connector from={[124, 116]} to={[172, 116]} />
-      <Arrow connector from={[214, 140]} to={[214, 172]} />
-      {/* Left of Done, so the name tag sits clear of its edge. */}
-      <Cursor x={112} y={168} name="You" />
+    <Scene w={520} h={300}>
+      <OfficeFloor x={110} y={56} />
+      <Cursor x={300} y={196} name="You" />
+      <TopRow w={520} />
+      <CornerCluster x={350} y={240} />
+      <BottomBar y={274} w={520} />
     </Scene>
   );
 }
 
-/** Dropping a sticky note from a category's flyout onto the canvas (a curved drag trail from the Sticky note tile in
- *  Write's flyout to a freshly placed, still-selected note). */
-export function AddingElements() {
-  const write = stripCategory(58, 'Write');
-  const px = Math.round(write.left + write.w / 2 - 41);
+// Write's flyout rows, as the palette lists them.
+const WRITE_ROWS: readonly [string, string, string][] = [
+  ['Text', 'A free-standing text label', 'M4 7V4h16v3M9 20h6M12 4v16'],
+  [
+    'Note',
+    'A coloured note card',
+    'M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8ZM15 3v4a2 2 0 0 0 2 2h4',
+  ],
+  ['Image', 'Place an uploaded picture', 'M3 5h18v14H3zM3 16l5-5 5 5M14 14l2-2 5 5'],
+];
+
+/** Write's flyout, top-left at (x, y), 170 by 110: Text, Note and Image, `armed` tinted. */
+export function WriteFlyout({ x, y, armed = 'Note' }: { x: number; y: number; armed?: string }) {
   return (
-    <Scene w={420} h={200}>
-      <Strip x={58} y={16} open="Write" />
-      <Panel x={px} y={56} w={82} h={58}>
-        <Tile x={px + 8} y={64} size={30}>
-          <path
-            d="M-5 -6 H5 M0 -6 V7"
-            className="stroke-slate-500"
-            strokeWidth={1.6}
-            fill="none"
-            strokeLinecap="round"
-          />
-        </Tile>
-        <Tile x={px + 45} y={64} size={30}>
-          <rect
-            x={-7}
-            y={-7}
-            width={14}
-            height={14}
-            rx={1.5}
-            className="fill-amber-100 stroke-amber-400"
-            strokeWidth={1.6}
-          />
-        </Tile>
-      </Panel>
-      <Arrow from={[px + 60, 98]} to={[250, 120]} kind="curved" tone="muted" dashed />
-      <Shape
-        x={250}
-        y={110}
-        w={76}
-        h={76}
-        fill="fill-amber-100"
-        stroke="stroke-amber-400"
-        label="Ideas"
-        labelTone="body"
+    <Card x={x} y={y} w={170} h={110} r={7}>
+      <Label x={x + 10} y={y + 14} size={10} weight={650} tone="strong">
+        Write
+      </Label>
+      {WRITE_ROWS.map(([name, line, d], i) => {
+        const ry = y + 26 + i * 27;
+        const on = name === armed;
+        return (
+          <g key={name}>
+            {on && (
+              <rect x={x + 4} y={ry - 3} width={162} height={26} rx={5} className="fill-brand-50" />
+            )}
+            <rect
+              x={x + 9}
+              y={ry}
+              width={20}
+              height={20}
+              rx={5}
+              className="fill-white stroke-slate-200"
+              strokeWidth={0.75}
+            />
+            <Icon prims={[{ t: 'path', d }]} x={x + 19} y={ry + 10} size={10} />
+            <Label x={x + 36} y={ry + 6} size={9.5} weight={600} tone={on ? 'accent' : 'strong'}>
+              {name}
+            </Label>
+            <Label x={x + 36} y={ry + 16} size={9} tone="muted">
+              {line}
+            </Label>
+          </g>
+        );
+      })}
+    </Card>
+  );
+}
+
+/** Dropping a sticky note from Write's flyout onto the floor: Write pressed on the strip, its rows hanging under it
+ *  with Note armed, and the note just placed and still selected. */
+export function AddingElements() {
+  const sx = 12;
+  const fx = stripSlot(sx, 'write') - 30;
+  return (
+    <Scene w={440} h={220}>
+      <Room x={232} y={70} w={196} h={140} name="Team Room" />
+      <Strip x={sx} y={8} open="write" />
+      <WriteFlyout x={fx} y={40} />
+      <path
+        d={`M${fx + 150} 112 C 250 110, 270 120, 300 128`}
+        className="fill-none stroke-slate-400"
+        strokeWidth={1}
+        strokeDasharray="3 3"
       />
-      <SelectionBox x={250} y={110} w={76} h={76} />
-      <Cursor x={300} y={160} colour="brand" />
+      <Sticky x={300} y={112} w={64} h={58} label="Ideas" lines={2} />
+      <SelectionBox x={300} y={112} w={64} h={58} />
+      <Cursor x={346} y={152} />
     </Scene>
   );
 }
 
-/** Panning and zooming: shapes on the canvas with the zoom controls and a
- *  grabbing hand cursor. */
+/** Panning and zooming: the floor dragged by the hand, the zoom card reading 75%. */
 export function PanAndZoom() {
   return (
     <Scene w={420} h={220}>
-      <Shape x={70} y={54} w={76} h={44} label="A" />
-      <Shape x={232} y={108} w={76} h={44} accent label="B" />
-      <Arrow connector from={[146, 76]} to={[232, 130]} kind="elbow" />
-      {/* Zoom controls, bottom-right */}
-      <Panel x={300} y={168} w={104} h={34}>
-        <g transform="translate(0 0)">
-          <Label x={316} y={185} size={14} weight={700} tone="muted">
-            −
-          </Label>
-          <Label x={352} y={185} size={11} weight={600} tone="body" anchor="middle">
-            100%
-          </Label>
-          <Label x={388} y={185} size={14} weight={700} tone="muted">
-            +
-          </Label>
-        </g>
-      </Panel>
-      {/* Grabbing-hand cursor */}
-      <g transform="translate(150 120)">
-        <path
-          d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
-          className="fill-white stroke-slate-500"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+      <g transform="translate(40 18) scale(0.85)">
+        <OfficeFloor x={0} y={0} />
       </g>
+      <HandCursor x={226} y={120} />
+      <path
+        d="M246 132 h40 m-6 -5 l6 5 l-6 5"
+        className="fill-none stroke-slate-400"
+        strokeWidth={1}
+      />
+      <ZoomCard x={326} y={186} level="75%" />
     </Scene>
   );
 }
 
-/** A marquee drag selecting several elements at once. */
+/** A marquee drag: the dashed box sweeping across a room, picking up the two desks it fully encloses and leaving the
+ *  plant it only clips. */
 export function MultiSelect() {
   return (
-    <Scene w={420} h={220}>
-      <Shape x={56} y={50} w={66} h={40} />
-      <Shape x={150} y={96} w={66} h={40} />
-      <Shape x={250} y={56} w={66} h={40} kind="circle" />
-      <Shape x={120} y={150} w={66} h={32} />
+    <Scene w={420} h={210}>
+      <Room x={30} y={24} w={360} h={164} name="Desks" />
+      <Desk x={70} y={70} />
+      <Desk x={130} y={70} />
+      <Desk x={260} y={70} />
+      <Plant cx={226} cy={150} />
+      <SelectionBox x={66} y={62} w={102} h={40} />
       <rect
-        x={40}
-        y={38}
-        width={200}
-        height={156}
-        rx={4}
+        x={56}
+        y={52}
+        width={172}
+        height={92}
         className="fill-brand-500/10 stroke-brand-500"
-        strokeWidth={1.5}
-        strokeDasharray="5 4"
+        strokeWidth={1}
+        strokeDasharray="4 3"
       />
-      <Cursor x={232} y={186} colour="brand" />
+      <Cursor x={228} y={144} />
     </Scene>
   );
 }
 
-/** The format painter: copying one element's style onto another. */
+/** The brush the Format Painter arms, centred on (x, y). */
+export function Brush({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect x={-8} y={-9} width={16} height={9} rx={2} className="fill-brand-600" />
+      <path d="M0 0 v7" className="stroke-slate-600" strokeWidth={1.6} />
+      <rect x={-2.5} y={7} width={5} height={7} rx={1} className="fill-slate-600" />
+    </g>
+  );
+}
+
+/** The format painter: the styled note's look (its green paper) brushed onto the next note clicked. */
 export function FormatPainter() {
   return (
-    <Scene w={420} h={200}>
-      <Shape x={48} y={66} w={88} h={52} accent label="Styled" />
-      <Arrow from={[140, 92]} to={[252, 92]} kind="curved" tone="muted" dashed />
-      <Shape x={262} y={66} w={88} h={52} accent label="Painted" />
-      {/* Paint-roller / brush cursor */}
-      <g transform="translate(196 112)">
-        <rect x={-9} y={-9} width={18} height={11} rx={2} className="fill-brand-500" />
-        <path d="M0 2 v8" className="stroke-slate-500" strokeWidth={2} />
-        <path
-          d="M-4 10 h8 v6 h-8 Z"
-          className="fill-brand-300 stroke-slate-500"
-          strokeWidth={1.5}
-        />
-      </g>
+    <Scene w={420} h={170}>
+      <Sticky x={52} y={40} w={92} h={74} tone="emerald" label="Stand-up" lines={3} />
+      <SelectionBox x={52} y={40} w={92} h={74} />
+      <path
+        d="M150 64 C 200 34, 240 34, 270 58"
+        className="fill-none stroke-slate-400"
+        strokeWidth={1}
+        strokeDasharray="3 3"
+      />
+      <Sticky x={276} y={40} w={92} h={74} tone="emerald" label="Retro" lines={3} />
+      <Brush x={330} y={102} />
+      <Label x={98} y={136} size={9} anchor="middle" tone="muted">
+        Picked up
+      </Label>
+      <Label x={322} y={136} size={9} anchor="middle" tone="muted">
+        Painted
+      </Label>
     </Scene>
   );
 }
 
-/** Multi-colour theme: each element takes the next hue of the palette in turn. */
+// A retro wall: a multi-colour theme gives each new note the palette's next hue.
+const WALL: readonly [StickyTone, string][] = [
+  ['emerald', 'Wins'],
+  ['sky', 'Ideas'],
+  ['violet', 'Kudos'],
+  ['amber', 'Actions'],
+  ['rose', 'Blockers'],
+];
+
+/** Multi-colour theme: each note on the wall takes the next hue in turn. */
 export function MulticolourTheme() {
   return (
-    <Scene w={420} h={220}>
-      <Shape
-        x={172}
-        y={92}
-        w={76}
-        h={40}
-        fill="fill-sky-100"
-        stroke="stroke-sky-600"
-        label="E"
-        labelTone="strong"
-      />
-      <Shape
-        x={40}
-        y={28}
-        w={70}
-        h={36}
-        fill="fill-emerald-100"
-        stroke="stroke-emerald-600"
-        label="A"
-        labelTone="strong"
-      />
-      <Shape
-        x={40}
-        y={156}
-        w={70}
-        h={36}
-        fill="fill-violet-100"
-        stroke="stroke-violet-600"
-        label="B"
-        labelTone="strong"
-      />
-      <Shape
-        x={310}
-        y={28}
-        w={70}
-        h={36}
-        fill="fill-amber-100"
-        stroke="stroke-amber-600"
-        label="C"
-        labelTone="strong"
-      />
-      <Shape
-        x={310}
-        y={156}
-        w={70}
-        h={36}
-        fill="fill-rose-100"
-        stroke="stroke-rose-600"
-        label="D"
-        labelTone="strong"
-      />
+    <Scene w={420} h={150}>
+      {WALL.map(([tone, label], i) => (
+        <Sticky
+          key={label}
+          x={22 + i * 78}
+          y={34 + (i % 2) * 14}
+          w={66}
+          h={62}
+          tone={tone}
+          label={label}
+          lines={2}
+        />
+      ))}
     </Scene>
   );
 }
 
-/** Dragging an element snaps it into line with a neighbour; the dashed guide
- * shows the matched edge. Holding Cmd / Ctrl skips snapping for a free drop. */
+/** Dragging a desk next to another snaps their top edges into line; the dashed guide shows the match. */
 export function SnappingGuides() {
   return (
-    <Scene w={400} h={200}>
-      {/* The faint dashed guide, in the theme's element stroke as the app draws it, marks the
-          shared top edge A and B aligned to. */}
+    <Scene w={400} h={170}>
+      <Room x={24} y={20} w={352} h={136} name="Desks" />
       <line
-        x1={64}
-        y1={66}
-        x2={320}
-        y2={66}
+        x1={60}
+        y1={68}
+        x2={330}
+        y2={68}
         className="stroke-slate-600"
-        strokeWidth={1.2}
+        strokeWidth={0.9}
         strokeOpacity={0.55}
         strokeDasharray="4 3"
       />
-      <Shape x={64} y={66} w={84} h={60} label="A" />
-      {/* The dragged element, snapped flush to A's top edge. */}
-      <Shape x={236} y={66} w={84} h={44} accent label="B" />
-      <Cursor x={288} y={84} />
+      <Desk x={70} y={68} />
+      <Desk x={250} y={68} />
+      <SelectionBox x={246} y={62} w={42} h={36} />
+      <Cursor x={274} y={88} />
     </Scene>
   );
 }

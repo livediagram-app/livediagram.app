@@ -3,6 +3,8 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvas from '@/editions/livediagram/components/illustrations/canvas';
 import * as HuddleCanvas from '@/editions/livehuddle/components/illustrations/canvas';
+import { AddingElements as DesignAddingElements } from '@/editions/livedesign/components/illustrations/canvas';
+import { AddingElements as DocumentsAddingElements } from '@/editions/livedocuments/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'Adding Elements',
@@ -122,11 +124,18 @@ If a boxed element is already selected when you tap a tile, the new one inherits
 
 You can also **drag a tile straight from the palette onto the canvas** instead of tapping. As you drag, a translucent preview of the element follows your cursor at its real size, so you can see exactly where, and how big, it will land before you let go.
 
-<Figure
-  app="livediagram,livedesign,livedocuments"
+<Figure app="livediagram"
   caption="Click a shape tile, then drop it on the canvas; it lands selected, ready to move or resize."
 >
   <DiagramCanvas.AddingElements />
+</Figure>
+
+<Figure app="livedesign" caption="Open Shapes on the palette strip, then drop a tile on the page; it lands selected, ready to move or resize.">
+  <DesignAddingElements />
+</Figure>
+
+<Figure app="livedocuments" caption="Drag a shape from its category onto a page, or click to add it.">
+  <DocumentsAddingElements />
 </Figure>
 
 <Figure

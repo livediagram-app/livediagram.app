@@ -5,6 +5,8 @@ import {
   MobileEditor as DocumentsMobileEditor,
   TouchGestures as DocumentsTouchGestures,
 } from '@/editions/livedocuments/components/illustrations/devices';
+import { MobileEditor as DesignMobileEditor } from '@/editions/livedesign/components/illustrations/devices';
+import { MobileEditor as HuddleMobileEditor } from '@/editions/livehuddle/components/illustrations/devices';
 
 export const metadata = helpMetadata({
   title: 'Mobile',
@@ -103,11 +105,18 @@ Turn your phone sideways and the screen gets short, so the header along the top 
   The [Explorer](/help/explorer/explorer-panel/) needs the phone upright.
 </AppNote>
 
-<Figure
-  app="livediagram,livedesign,livehuddle"
+<Figure app="livediagram"
   caption="On a phone the palette becomes one strip across the top, beside the menu button, with the tabs along the bottom."
 >
   <MobileEditor />
+</Figure>
+
+<Figure app="livedesign" caption="On a phone the palette becomes a strip of icons across the top beside the menu button, with the tabs along the bottom.">
+  <DesignMobileEditor />
+</Figure>
+
+<Figure app="livehuddle" caption="On a phone: the menu and one strip across the top, the floor zoomed out to fit, and the bottom bar.">
+  <HuddleMobileEditor />
 </Figure>
 
 <Figure

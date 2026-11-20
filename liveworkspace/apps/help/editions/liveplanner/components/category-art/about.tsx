@@ -28,7 +28,7 @@ export function AboutArt() {
                   height={18}
                   rx={4}
                   className="fill-white stroke-slate-200"
-                  strokeWidth={1.2}
+                  strokeWidth={0.75}
                 />
               ))}
             </g>
@@ -55,7 +55,7 @@ export function AboutArt() {
                 height={12}
                 rx={3}
                 className="fill-white stroke-slate-200"
-                strokeWidth={1.2}
+                strokeWidth={0.75}
               />
             </g>
           ))}
@@ -94,7 +94,7 @@ export function AboutArt() {
                 x2={278}
                 y2={y + 20}
                 className="stroke-slate-200"
-                strokeWidth={1}
+                strokeWidth={0.75}
               />
               <rect
                 x={130}
@@ -118,8 +118,8 @@ export function AboutArt() {
             </g>
           );
         })}
-        <line x1={174} y1={72} x2={174} y2={168} className="stroke-slate-200" strokeWidth={1} />
-        <line x1={226} y1={72} x2={226} y2={168} className="stroke-slate-200" strokeWidth={1} />
+        <line x1={174} y1={72} x2={174} y2={168} className="stroke-slate-200" strokeWidth={0.75} />
+        <line x1={226} y1={72} x2={226} y2={168} className="stroke-slate-200" strokeWidth={0.75} />
       </Window>
 
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />

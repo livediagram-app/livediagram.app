@@ -3,8 +3,9 @@
 // @liveworkspace/help-site/art/illustrations/tips; format-painter and theme scenes are reused from
 // canvas.tsx, not redrawn. Composed only from the shared primitives.
 
-import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { MenuCard, Strip } from './toolbar-layout';
+import { Scene, Panel, Label } from '@liveworkspace/help-site/art/primitives';
+import { TopRow } from './editor-chrome';
+import { OfficeFloor } from './space-furniture';
 
 /** A single key cap, sized to its glyph, drawn like a physical keyboard key. */
 function KeyCap({ x, y, w = 24, label }: { x: number; y: number; w?: number; label: string }) {
@@ -58,16 +59,15 @@ export function KeyboardShortcuts() {
   );
 }
 
-/** The palette strip across the top of the canvas, Workshop's category bar, with the menu button and
- *  the tab's name in their card to its left. */
+/** The palette strip across the top of the canvas, beside the logo and menu cards: every category one press
+ *  away, Search at its end. */
 export function CommandPalette() {
   return (
-    <Scene w={420} h={190}>
-      <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} />
-      <Shape x={60} y={104} w={84} h={46} kind="rect" label="Start" />
-      <Shape x={268} y={104} w={84} h={46} kind="rect" accent label="Ship" />
-      <Arrow connector from={[144, 127]} to={[268, 127]} />
+    <Scene w={460} h={200}>
+      <g transform="translate(90 50) scale(0.9)">
+        <OfficeFloor x={0} y={0} />
+      </g>
+      <TopRow w={460} noCorner />
     </Scene>
   );
 }

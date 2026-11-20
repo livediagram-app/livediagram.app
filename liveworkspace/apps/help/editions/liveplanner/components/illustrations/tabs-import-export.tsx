@@ -30,7 +30,7 @@ export function ImportMenu() {
         height={92}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <MenuRowList
         x={mx}
@@ -154,7 +154,7 @@ export function ImportChooser() {
           height={ROW}
           rx={7}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         {row(
           dy + 60,
@@ -179,7 +179,7 @@ export function ImportChooser() {
           height={ROW * tools.length}
           rx={7}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         {tools.map(([tile, mark, label, hint, file], i) =>
           row(toolsY + i * ROW, tile, mark, label, hint, file, i === tools.length - 1),
@@ -197,7 +197,7 @@ export function ImportChooser() {
           height={ROW}
           rx={7}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         {row(
           toolsY + ROW * tools.length + 46,
@@ -302,7 +302,7 @@ export function ImportWarning() {
           height={74}
           rx={7}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <Label x={dx + 28} y={dy + 118} size={10} className="fill-slate-400">
           {'{ "kind": "liveplanner.tab", … }'}
@@ -338,7 +338,7 @@ export function TrackerImportPreview() {
           height={20}
           rx={6}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <path
           d={`M${dx + 30} ${dy + 47} l-3.5 4 l3.5 4`}
@@ -380,7 +380,7 @@ export function TrackerImportPreview() {
                 height={18}
                 rx={4}
                 className="fill-slate-50 stroke-slate-200"
-                strokeWidth={1}
+                strokeWidth={0.75}
               />
               <Label x={x + 7} y={dy + 116} size={9} tone="body">
                 {name}
@@ -402,7 +402,7 @@ export function TrackerImportPreview() {
           height={44}
           rx={6}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <rect x={dx + 17} y={dy + 149} width={346} height={21} rx={5} className="fill-brand-50" />
         <Label x={dx + 28} y={dy + 159.5} size={9.5} weight={600} tone="accent">

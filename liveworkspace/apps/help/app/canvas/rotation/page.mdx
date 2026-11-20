@@ -3,6 +3,7 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { Rotation } from '@liveworkspace/help-site/art/illustrations/element-properties';
 import { RotationCategory } from '@liveworkspace/help-site/art/illustrations/style-panels';
+import { RotatedSofa } from '@/editions/livehuddle/components/illustrations/floor-edits';
 
 export const metadata = helpMetadata({
   title: 'Rotating Elements',
@@ -21,8 +22,12 @@ Most elements sit upright, but sometimes a shape, label, or image reads better a
 
 <AppNote app="livehuddle">Another is a sign hung at a jaunty angle.</AppNote>
 
-<Figure caption="An element rotated 45° over its upright outline.">
+<Figure app="livediagram,livedesign,livedocuments,liveplanner,all" caption="An element rotated 45° over its upright outline.">
   <Rotation />
+</Figure>
+
+<Figure app="livehuddle" caption="A sofa turned 45 degrees over its upright outline.">
+  <RotatedSofa />
 </Figure>
 
 ## Snap to a Preset Angle

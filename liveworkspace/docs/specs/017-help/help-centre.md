@@ -243,6 +243,16 @@ and Supported Devices are drawn once for livediagram and livehuddle. What the sc
   the reader's own highlighted). Segmented controls inside dialogs (the Link and image pickers) keep the `Tabs`
   primitive.
 - No figure's text may run outside its scene; the shared palette strip is spaced to fit beside the menu card.
+- **Every app shows its own art.** A figure an app's help shows draws that app: its logo, its strip, its corner
+  controls and its kind of work (a Space's rooms and furniture, a plan's boards and cards, a design's pages, a
+  document's slides and articles, a diagram's shapes). A figure drawn from one app may be shared with another only
+  where the surface is truly the same in both (the Settings dialog, the account and privacy screens); otherwise each
+  app gets its own variant through `<Figure app="…">`. The shared kit draws the current app's canvas (livehuddle's
+  tiled floor and sticky notes, the dot grid elsewhere) and its sample names on its own.
+- **Realistic, not cartoon.** A figure looks like the editor at desktop width, scaled down: white cards with a hairline
+  border and a soft lift, the real glyphs in the real order, elements as the canvas draws them (a pale fill in a crisp
+  outline, the round corner handles and edge pills of a selection, slim connectors, the system pointer for a cursor).
+  No thick outlines, oversized glyphs or invented chrome.
 - The frame is rounded with a soft shadow, matching the cards. Figures, like scenes, are checked in light and dark.
 
 **Card icons and accents.** Every card carries a small outline glyph in a tinted tile. Feature cards take their

@@ -1,189 +1,192 @@
 // User-Interface-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): where the editor's
-// panels and fixed controls sit (the top corner cards, the bottom bar with its tabs and quick
-// controls, the bottom-right corner cluster), the selection toolbars, the
-// element menu and the Map. Labels are the editor's own (apps/editor:
-// TabBar, ChromeControls, CanvasChrome, ZoomMenu, SelectionPopover,
-// MultiSelectionToolbar, EditorContextMenu). Composed from the shared
-// primitives so the house style holds.
+// panels and fixed controls sit (the top corner cards, the bottom bar with its tabs and quick controls, the
+// bottom-right corner cluster), the selection toolbars, the element menu and the Map. Labels are the editor's own
+// (apps/editor: TabBar, ChromeControls, CanvasChrome, ZoomMenu, SelectionPopover, MultiSelectionToolbar,
+// EditorContextMenu); the chrome is ./editor-chrome and the floor ./space-furniture.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, SelectionBox, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { MenuCard, Strip } from './toolbar-layout';
+import { Label, Panel, Scene, SelectionBox } from '@liveworkspace/help-site/art/primitives';
 import { PainterGlyph } from './palette-modes-parts';
+import { GLYPH, DotsGlyph, IconButton } from './user-interface-chrome';
 import {
-  GLYPH,
-  DotsGlyph,
-  IconButton,
-  TabCard,
-  TabPill,
-  QuickControlsRow,
+  BAR_H,
   BottomBar,
+  Card,
   CornerCluster,
-  LogoCard,
-  CornerActionsCard,
-} from './user-interface-chrome';
+  CORNER_W,
+  STRIP_W,
+  TopRow,
+  topRowStripX,
+} from './editor-chrome';
+import { Desk, OfficeFloor, Plant, Room, Rug, Sofa } from './space-furniture';
+import { PixelCharacter } from './pixel-character';
 
 // --- Scenes ------------------------------------------------------------------
 
-/** The whole frame at a glance, with no title bar: the logo card and the menu button card
- *  top-left, the palette strip across the top, the Share and account card top-right
- *  (EditorCornerActions), the Map bottom-left, a tool panel (Format, while the Format Painter is
- *  on) docked bottom-right above the corner cluster, and the bottom bar. */
+/** The Map panel, top-left at (x, y), 120 by 84: its title with help and minimise, a miniature of the floor and
+ *  the green box of what you see. */
+export function MapPanel({ x, y }: { x: number; y: number }) {
+  const room = (rx: number, ry: number, w: number, h: number) => (
+    <rect
+      x={x + rx}
+      y={y + ry}
+      width={w}
+      height={h}
+      className="fill-amber-50 stroke-stone-300 help-art-as-drawn"
+      strokeWidth={0.75}
+    />
+  );
+  return (
+    <g>
+      <Panel x={x} y={y} w={120} h={84} title="MAP" />
+      <Label x={x + 96} y={y + 11.5} size={8.5} tone="muted" anchor="middle">
+        ?
+      </Label>
+      <path d={`M${x + 106} ${y + 11} h6`} className="stroke-slate-400" strokeWidth={1} />
+      <rect x={x + 6} y={y + 27} width={108} height={51} rx={3} className="fill-slate-100" />
+      {room(14, 32, 26, 16)}
+      {room(44, 32, 30, 16)}
+      {room(78, 32, 26, 16)}
+      {room(14, 56, 26, 16)}
+      {room(44, 56, 30, 16)}
+      {room(78, 56, 26, 16)}
+      <rect
+        x={x + 36}
+        y={y + 44}
+        width={44}
+        height={22}
+        rx={2}
+        className="fill-brand-500/15 stroke-brand-500"
+        strokeWidth={1.2}
+      />
+    </g>
+  );
+}
+
+/** The whole frame at a glance: the logo and menu cards top-left, the strip across the top, Share and Sign In
+ *  top-right, the Map bottom-left, the corner cluster bottom-right and the bottom bar under it all. */
 export function PanelLayout() {
   return (
-    <Scene w={480} h={250}>
-      <LogoCard x={12} y={12} />
-      <MenuCard x={44} y={12} menuOnly />
-      <Strip x={84} y={12} />
-      <CornerActionsCard x={404} y={12} />
-      <Panel x={378} y={110} w={90} h={62} title="FORMAT">
-        {[0, 1].map((i) => (
-          <rect
-            key={i}
-            x={388}
-            y={140 + i * 14}
-            width={i === 0 ? 62 : 44}
-            height={6}
-            rx={3}
-            className={i === 0 ? 'fill-brand-200' : 'fill-slate-200'}
-          />
-        ))}
-      </Panel>
-      <Shape x={170} y={72} w={84} h={42} label="Lobby" />
-      <Shape x={270} y={110} w={74} h={40} accent label="Team Pod" />
-      <Panel x={12} y={150} w={92} h={58} title="MAP">
-        <rect x={36} y={182} width={14} height={8} rx={2} className="fill-slate-300" />
-        <rect x={36} y={194} width={14} height={8} rx={2} className="fill-slate-300" />
-        <rect
-          x={28}
-          y={178}
-          width={46}
-          height={26}
-          rx={3}
-          fill="none"
-          className="stroke-brand-500"
-          strokeWidth={1.4}
-        />
-      </Panel>
-      <CornerCluster x={286} y={182} />
-      <BottomBar y={220} w={480} />
+    <Scene w={520} h={300}>
+      <OfficeFloor x={150} y={52} />
+      <PixelCharacter fx={330} fy={180} px={1.6} shirt="violet" />
+      <TopRow w={520} />
+      <MapPanel x={8} y={184} />
+      <CornerCluster x={350} y={244} />
+      <BottomBar y={300 - BAR_H} w={520} tabs={['Virtual Office']} />
     </Scene>
   );
 }
 
-/** The quick controls, close up: Tools and Settings named beside their icons, then the
- *  appearance switch's icon, at the right-hand end of the bottom bar. */
+/** The quick controls, close up: Tools and Settings named beside their icons, then notifications and the
+ *  appearance switch, at the right-hand end of the bottom bar. */
 export function QuickControls() {
   return (
-    <Scene w={420} h={130}>
-      <Shape x={60} y={20} w={80} h={40} label="Idea" />
-      <BottomBar y={86} w={420} labelled />
+    <Scene w={420} h={110}>
+      <Room x={40} y={-30} w={240} h={84} name="" door="none" />
+      <Desk x={70} y={14} chair={false} />
+      <Plant cx={250} cy={30} />
+      <BottomBar y={70} w={420} tabs={['Tab 1']} />
       <rect
-        x={264}
-        y={90}
-        width={152}
-        height={22}
+        x={420 - 144}
+        y={73}
+        width={140}
+        height={20}
         rx={6}
         fill="none"
-        className="stroke-brand-400"
-        strokeWidth={1.5}
-        strokeDasharray="4 3"
+        className="stroke-brand-500"
+        strokeWidth={1}
+        strokeDasharray="3 2"
       />
     </Scene>
   );
 }
 
-/** The bottom bar's tabs: the active tab with its menu
- *  button and a presence avatar, another tab, a collapsible folder, the +
- *  button, and the quick controls at the far end. */
+/** The bottom bar's tabs: the open tab with who is in it and its ⋯, another tab, a shut tab folder, the + button
+ *  and the quick controls at the far end. */
 export function TabBar() {
-  const y = 96;
+  const y = 84;
   return (
-    <Scene w={500} h={140}>
-      <Shape x={195} y={22} w={110} h={46} label="Checkout" />
-      <rect x={0} y={y} width={500} height={36} className="fill-slate-100" />
-      <line x1={0} y1={y} x2={500} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
-      {/* The open tab, a card on the bar's bottom edge, with a presence avatar and its ⋯. */}
-      <TabCard x={40} top={y + 5} bottom={y + 36} w={92} />
-      <Label x={48} y={y + 19} size={9.5} weight={650} tone="accent">
-        Overview
-      </Label>
-      <circle cx={108} cy={y + 18} r={5} className="fill-emerald-400" />
-      <DotsGlyph x={122} y={y + 18} />
-      <TabPill x={140} y={y + 8} w={40} label="Flow" />
-      {/* A shut tab folder, as TabFolderGroup draws it: a shelf tinted in the folder's colour, shaped like a tab,
-          holding its header (a folder glyph, its name and a count badge) in the folder's ink. */}
+    <Scene w={500} h={110}>
+      <Room x={150} y={-20} w={200} h={88} name="" door="none" />
+      <Rug cx={250} cy={40} />
+      <Sofa x={230} y={26} />
+      <BottomBar y={y} w={500} tabs={['Lounge', 'Desks']} firstTabW={82} plusGap={50} />
+      {/* Who is on the open tab, beside its name. */}
+      <circle
+        cx={55}
+        cy={y + 15}
+        r={4}
+        className="fill-violet-500 dark:fill-violet-700 stroke-white"
+        strokeWidth={1}
+      />
+      <circle
+        cx={61}
+        cy={y + 15}
+        r={4}
+        className="fill-emerald-500 dark:fill-emerald-700 stroke-white"
+        strokeWidth={1}
+      />
+      {/* A shut tab folder: a shelf tinted in the folder's colour holding its name and a count. */}
       <path
-        d={`M186 ${y + 36} V${y + 12} a7 7 0 0 1 7 -7 H247 a7 7 0 0 1 7 7 V${y + 36} Z`}
+        d={`M135 ${y + BAR_H} V${y + 9} a5 5 0 0 1 5 -5 H182 a5 5 0 0 1 5 5 V${y + BAR_H} Z`}
         className="fill-violet-50"
       />
-      <path
-        d="M-8 -5 h5 l2 2 h8 a1 1 0 0 1 1 1 v7 a1 1 0 0 1 -1 1 h-14 a1 1 0 0 1 -1 -1 v-9 a1 1 0 0 1 1 -1 Z"
-        transform={`translate(196 ${y + 18.5}) scale(0.6)`}
-        fill="none"
-        className="stroke-violet-700 dark:stroke-violet-300"
-        strokeWidth={2.2}
-        strokeLinejoin="round"
-      />
       <Label
-        x={205}
-        y={y + 19}
+        x={142}
+        y={y + 15.5}
         size={9}
         weight={650}
         className="fill-violet-700 dark:fill-violet-300"
       >
-        Ideas
+        Rooms
       </Label>
       <rect
-        x={233}
-        y={y + 12}
-        width={13}
-        height={13}
-        rx={4}
+        x={171}
+        y={y + 9.5}
+        width={11}
+        height={11}
+        rx={3.5}
         className="fill-violet-600 dark:fill-violet-300"
       />
       <Label
-        x={239.5}
-        y={y + 19}
+        x={176.5}
+        y={y + 15.5}
         anchor="middle"
-        size={8}
+        size={7.5}
         weight={700}
         className="fill-white dark:fill-slate-950"
       >
-        2
+        3
       </Label>
-      <Label x={262} y={y + 19} size={15} weight={600} tone="muted" anchor="middle">
-        +
-      </Label>
-      {/* On a computer the quick controls carry their words, beside the TABS label. */}
-      <QuickControlsRow x={310} y={y + 18} />
     </Scene>
   );
 }
 
-/** The bottom-right cluster with the zoom presets open above the level:
- *  25% to 150% and Fit to screen. */
+/** The corner cluster with the zoom presets open above the level: 25% to 150% and Fit to screen. */
 export function ZoomControls() {
   const presets = ['25%', '50%', '75%', '100%', '125%', '150%'];
-  const px = 231;
+  const px = 318;
   const py = 14;
   return (
-    <Scene w={420} h={240}>
-      <Shape x={40} y={60} w={110} h={52} label="Detail" />
-      <Panel x={px} y={py} w={92} h={170}>
+    <Scene w={420} h={230}>
+      <Room x={20} y={30} w={200} h={130} name="Meeting Room" />
+      <Desk x={60} y={70} />
+      <Plant cx={190} cy={140} />
+      <Card x={px} y={py} w={80} h={164} r={6}>
         {presets.map((p, i) => {
-          const ry = py + 8 + i * 22;
+          const ry = py + 6 + i * 21;
           const on = p === '100%';
           return (
             <g key={p}>
               {on && (
-                <rect x={px + 5} y={ry} width={82} height={20} rx={5} className="fill-brand-50" />
+                <rect x={px + 4} y={ry} width={72} height={19} rx={4} className="fill-brand-50" />
               )}
               <Label
-                x={px + 46}
-                y={ry + 11}
-                size={10}
-                weight={on ? 700 : 500}
+                x={px + 40}
+                y={ry + 10}
+                size={9.5}
+                weight={on ? 650 : 500}
                 tone={on ? 'accent' : 'body'}
                 anchor="middle"
               >
@@ -193,18 +196,18 @@ export function ZoomControls() {
           );
         })}
         <line
-          x1={px + 8}
-          y1={py + 143}
-          x2={px + 84}
-          y2={py + 143}
-          className="stroke-slate-200"
-          strokeWidth={1.2}
+          x1={px + 6}
+          y1={py + 136}
+          x2={px + 74}
+          y2={py + 136}
+          className="stroke-slate-100"
+          strokeWidth={0.75}
         />
-        <Label x={px + 46} y={py + 157} size={10} weight={500} tone="body" anchor="middle">
+        <Label x={px + 40} y={py + 150} size={9.5} tone="body" anchor="middle">
           Fit to screen
         </Label>
-      </Panel>
-      <CornerCluster x={142} y={198} />
+      </Card>
+      <CornerCluster x={420 - 8 - 162} y={196} highlight="zoom" />
     </Scene>
   );
 }
@@ -259,28 +262,30 @@ function selectionToolbarWidth(): number {
   return 8 + 7 * 30;
 }
 
-/** One selected shape with its toolbar above: the "Selected Square" caption, then the selection toolbar, Format
+/** One selected sofa with its toolbar above: the "Selected Sofa" caption, then the selection toolbar, Format
  *  Painter among its buttons. */
 export function ContextualToolbar() {
-  const tx = 82;
-  const ty = 40;
+  const tx = 92;
+  const ty = 30;
   return (
-    <Scene w={420} h={210}>
+    <Scene w={420} h={190}>
+      <Room x={40} y={86} w={340} h={96} name="Lounge" door="none" />
+      <Rug cx={208} cy={142} rx={44} ry={20} />
+      <Sofa x={170} y={122} />
+      <SelectionBox x={166} y={118} w={48} h={26} />
       <Label x={tx + 2} y={ty - 10} size={10} weight={600} tone="muted">
-        Selected Square
+        Selected Sofa
       </Label>
       <SelectionToolbar x={tx} y={ty} />
-      <Shape x={150} y={108} w={120} h={60} label="Checkout" />
-      <SelectionBox x={150} y={108} w={120} h={60} />
     </Scene>
   );
 }
 
-/** A mixed marquee selection (two boxes and a circle) with the multi-select
- *  toolbar: More, Filter Selection, Duplicate, Export and Delete. */
+/** A marquee selection of two desks and a plant, with the multi-select toolbar: More, Filter Selection,
+ *  Duplicate, Export and Delete. */
 export function MultiSelectToolbar() {
-  const tx = 116;
-  const ty = 34;
+  const tx = 132;
+  const ty = 30;
   const buttons: ReactNode[] = [
     <DotsGlyph key="more" x={0} y={0} />,
     <path key="filter" d="M-6 -5 h12 l-5 5 v5 l-2 -1 v-4 Z" {...GLYPH} />,
@@ -292,7 +297,12 @@ export function MultiSelectToolbar() {
     <path key="delete" d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} />,
   ];
   return (
-    <Scene w={420} h={220}>
+    <Scene w={420} h={200}>
+      <Room x={40} y={82} w={340} h={110} name="Desks" door="none" />
+      <Desk x={110} y={120} />
+      <Desk x={190} y={120} />
+      <Plant cx={262} cy={140} />
+      <SelectionBox x={104} y={112} w={170} h={44} />
       <Label x={tx + 2} y={ty - 10} size={10} weight={600} tone="muted">
         Selected Elements (3)
       </Label>
@@ -303,20 +313,15 @@ export function MultiSelectToolbar() {
           </IconButton>
         ))}
       </Panel>
-      <Shape x={94} y={112} w={90} h={46} label="Cart" />
-      <Shape x={250} y={112} w={90} h={46} accent label="Pay" />
-      <Shape x={196} y={118} w={42} h={34} kind="circle" />
-      <SelectionBox x={86} y={102} w={262} h={66} />
     </Scene>
   );
 }
 
-/** The element menu for a shape, as EditorContextMenu draws it: the quick bar across the top with
- *  Clear Styles' eraser at its right (ElementMenuQuickBar), then the collapsible sections, Arrange
- *  first, then Size, Rotation and the Appearance flyout (presets, colours, border, shadow and the
- *  Text flyout). */
+/** The element menu for a sofa, as EditorContextMenu draws it: the quick bar across the top with Clear Styles'
+ *  eraser at its right, then the collapsible sections, Arrange first, then Size, Rotation and the Appearance
+ *  flyout. */
 export function ElementContextMenu() {
-  const sections: { label: string; flyout?: boolean; action?: boolean }[] = [
+  const sections: { label: string; flyout?: boolean }[] = [
     { label: 'Arrange' },
     { label: 'Size' },
     { label: 'Rotation' },
@@ -324,14 +329,14 @@ export function ElementContextMenu() {
   ];
   const mx = 214;
   const my = 16;
-  // The quick bar's height above the first section.
   const bar = 28;
   return (
-    <Scene w={420} h={196}>
-      <Shape x={56} y={60} w={112} h={56} accent label="Order" />
-      <SelectionBox x={56} y={60} w={112} h={56} />
+    <Scene w={420} h={170}>
+      <Room x={20} y={30} w={180} h={120} name="Lounge" door="none" />
+      <Rug cx={100} cy={96} rx={44} ry={20} />
+      <Sofa x={80} y={76} />
+      <SelectionBox x={76} y={72} w={48} h={26} />
       <Panel x={mx} y={my} w={160} h={bar + 8 + sections.length * 25}>
-        {/* The quick bar: Clear Styles' eraser at its right, a hairline under it. */}
         <IconButton x={mx + 130} y={my + 4} size={22}>
           <path d="M1.5 -5.5 L5.5 -1.5 L-1 5 H-4.5 L-6 3.5 Z M-2 -2 l4 4" {...GLYPH} />
         </IconButton>
@@ -340,8 +345,8 @@ export function ElementContextMenu() {
           y1={my + bar + 1}
           x2={mx + 159}
           y2={my + bar + 1}
-          className="stroke-slate-200"
-          strokeWidth={1}
+          className="stroke-slate-100"
+          strokeWidth={0.75}
         />
         {sections.map((sec, i) => {
           const ry = my + bar + 5 + i * 25;
@@ -354,26 +359,23 @@ export function ElementContextMenu() {
               <Label
                 x={mx + 14}
                 y={ry + 12}
-                size={11}
+                size={10.5}
                 weight={on ? 600 : 500}
                 tone={on ? 'accent' : 'body'}
               >
                 {sec.label}
               </Label>
-              {/* An action row runs on a press: no chevron. */}
-              {sec.action ? null : (
-                <path
-                  d={
-                    sec.flyout
-                      ? `M${mx + 142} ${ry + 8} l4 4 l-4 4`
-                      : `M${mx + 140} ${ry + 10} l4 4 l4 -4`
-                  }
-                  className="stroke-slate-400"
-                  strokeWidth={1.4}
-                  fill="none"
-                  strokeLinecap="round"
-                />
-              )}
+              <path
+                d={
+                  sec.flyout
+                    ? `M${mx + 142} ${ry + 8} l4 4 l-4 4`
+                    : `M${mx + 140} ${ry + 10} l4 4 l4 -4`
+                }
+                className="stroke-slate-400"
+                strokeWidth={1.2}
+                fill="none"
+                strokeLinecap="round"
+              />
             </g>
           );
         })}
@@ -382,42 +384,53 @@ export function ElementContextMenu() {
   );
 }
 
-/** The bottom-left Map panel: a zoomed-out wireframe of the canvas, the area
- *  outside your view dimmed, and a brand rectangle marking what you see. */
+/** The bottom-left Map: the floor in miniature with the green box of what you see, beside the floor itself. */
 export function Minimap() {
   return (
-    <Scene w={420} h={210}>
-      {/* The canvas the map mirrors. */}
-      <Shape x={196} y={26} w={68} h={38} label="A" />
-      <Shape x={176} y={116} w={62} h={36} accent label="B" />
-      <Shape x={300} y={116} w={62} h={36} kind="circle" label="C" />
-      {/* The Map panel, bottom-left, with the current-view box. */}
-      <Panel x={20} y={110} w={136} h={88} title="MAP">
-        <rect x={26} y={136} width={124} height={56} rx={4} className="fill-slate-100" />
-        <rect x={52} y={146} width={70} height={40} rx={3} className="fill-white" />
-        {/* The miniature in the shapes' own colours, labels left out. */}
-        <rect
-          x={80}
-          y={150}
-          width={20}
-          height={10}
-          rx={2}
-          className="fill-white stroke-brand-300"
-          strokeWidth={1}
-        />
-        <rect x={68} y={172} width={17} height={9} rx={2} className="fill-brand-500" />
-        <circle cx={112} cy={176} r={5} className="fill-white stroke-brand-300" strokeWidth={1} />
-        <rect
-          x={52}
-          y={146}
-          width={70}
-          height={40}
-          rx={3}
-          fill="none"
-          className="stroke-brand-500"
-          strokeWidth={1.6}
-        />
-      </Panel>
+    <Scene w={420} h={200}>
+      <g transform="translate(150 20) scale(0.85)">
+        <OfficeFloor x={0} y={0} />
+      </g>
+      <MapPanel x={12} y={104} />
+    </Scene>
+  );
+}
+
+/** A callout under the top corners: a dotted leader from the cards' foot down to its words. */
+function Callout({ x, y, text }: { x: number; y: number; text: string }) {
+  return (
+    <g>
+      <line
+        x1={x}
+        y1={39}
+        x2={x}
+        y2={y - 9}
+        className="stroke-slate-300"
+        strokeWidth={0.75}
+        strokeDasharray="2 2"
+      />
+      <circle cx={x} cy={39} r={1.5} className="fill-slate-400" />
+      <Label x={x} y={y} size={9.5} weight={600} anchor="middle" tone="body">
+        {text}
+      </Label>
+    </g>
+  );
+}
+
+/** The top of a shared Space as its owner sees it: the logo card and the menu card at the left, the palette strip
+ *  between, and the corner card with Share and the account's initial. */
+export function TopCorners() {
+  const w = 520;
+  const sx = topRowStripX(w);
+  const cx = w - 8 - CORNER_W;
+  return (
+    <Scene w={w} h={96}>
+      <TopRow w={w} initial="S" />
+      <Callout x={48} y={66} text="Logo" />
+      <Callout x={110} y={86} text="Menu" />
+      <Callout x={sx + STRIP_W / 2} y={66} text="Palette" />
+      <Callout x={cx + 14} y={86} text="Share" />
+      <Callout x={cx + 40} y={66} text="Account" />
     </Scene>
   );
 }

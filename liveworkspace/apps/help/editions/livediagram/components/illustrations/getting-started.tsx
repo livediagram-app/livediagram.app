@@ -3,102 +3,33 @@
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Label, Avatar } from '@liveworkspace/help-site/art/primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Label,
+  Avatar,
+  SelectionBox,
+} from '@liveworkspace/help-site/art/primitives';
+import { PlusButton, PlusHandles, QuickAddCard } from './editor-canvas';
 
-/** Quick-connect: a selected shape shows + buttons on its sides; clicking one opens a card of
- *  icon buttons (Duplicate, Arrow, Pencil, Text), and dragging Arrow onto a second shape pins
- *  an arrow to both. */
+/** Quick-connect: a selected shape shows + buttons on its four sides; clicking one opens a card of icon buttons
+ *  (Duplicate, Arrow, Pencil, Text), and dragging Arrow onto a second shape pins an arrow to both. */
 export function QuickConnect() {
-  const plus: [number, number][] = [
-    [90, 54],
-    [90, 150],
-    [26, 102],
-  ];
+  const [x, y, w, h] = [52, 78, 96, 54];
+  const cy = y + h / 2;
+  const rx = x + w + 13;
   return (
     <Scene w={420} h={210}>
-      <Shape x={38} y={74} w={104} h={56} kind="rect" label="Order" />
-      <rect
-        x={34}
-        y={70}
-        width={112}
-        height={64}
-        rx={6}
-        className="stroke-brand-500"
-        strokeWidth={1.5}
-        strokeDasharray="4 3"
-        fill="none"
-      />
-      {plus.map(([cx, cy], i) => (
-        <g key={i}>
-          <circle cx={cx} cy={cy} r={8} className="fill-white stroke-brand-400" strokeWidth={1.5} />
-          <path
-            d={`M${cx - 4} ${cy} h8 M${cx} ${cy - 4} v8`}
-            className="stroke-brand-500"
-            strokeWidth={2}
-            strokeLinecap="round"
-          />
-        </g>
-      ))}
-      {/* The clicked + on the right opens one card of icon buttons beside it (QuickConnectRing):
-          Duplicate, Arrow, Pencil and Text, their names in hover cards. */}
-      <circle cx={158} cy={102} r={8} className="fill-brand-500" />
-      <path
-        d="M154 102 h8 M158 98 v8"
-        className="stroke-white help-art-as-drawn"
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      <rect
-        x={172}
-        y={50}
-        width={32}
-        height={106}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      {[0, 1, 2].map((i) => (
-        <line
-          key={i}
-          x1={176}
-          y1={76 + i * 26}
-          x2={200}
-          y2={76 + i * 26}
-          className="stroke-slate-100"
-          strokeWidth={1}
-        />
-      ))}
-      {/* Duplicate */}
-      <g className="fill-none stroke-slate-500" strokeWidth={1.4}>
-        <rect x={181} y={57} width={10} height={10} rx={2} />
-        <path d="M185 57 v-2 a2 2 0 0 1 2 -2 h6 a2 2 0 0 1 2 2 v6 a2 2 0 0 1 -2 2 h-2" />
-      </g>
-      {/* Arrow, the one being dragged */}
-      <rect x={176} y={80} width={24} height={22} rx={5} className="fill-brand-500" />
-      <path
-        d="M182 91 h11 M189 87 l4 4 l-4 4"
-        className="fill-none stroke-white help-art-as-drawn"
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Pencil */}
-      <path
-        d="M182 124 l9 -9 l3 3 l-9 9 h-3 Z"
-        className="fill-none stroke-slate-500"
-        strokeWidth={1.4}
-        strokeLinejoin="round"
-      />
-      {/* Text */}
-      <path
-        d="M182 137 h12 M188 137 v11"
-        className="fill-none stroke-slate-500"
-        strokeWidth={1.6}
-        strokeLinecap="round"
-      />
+      <Shape x={x} y={y} w={w} h={h} kind="rect" label="Order" />
+      <SelectionBox x={x} y={y} w={w} h={h} />
+      <PlusHandles x={x} y={y} w={w} h={h} />
+      {/* The clicked + on the right, and the card of icon buttons it opens. */}
+      <PlusButton x={rx} y={cy} hot />
+      <QuickAddCard x={rx + 12} y={cy - 44} active="arrow" />
       {/* Drag the Arrow option onto the second shape. */}
-      <Arrow from={[204, 91]} to={[294, 118]} kind="curved" tone="accent" />
-      <Shape x={296} y={100} w={96} h={52} kind="rect" accent label="Pay" />
+      <Arrow from={[rx + 38, cy - 13]} to={[298, 120]} kind="curved" tone="accent" />
+      <Shape x={300} y={100} w={92} h={50} kind="rect" accent label="Pay" />
     </Scene>
   );
 }
@@ -116,7 +47,7 @@ export function GuestVsAccount() {
         height={200}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={110} y={40} anchor="middle" size={12} weight={700} tone="strong">
         Guest

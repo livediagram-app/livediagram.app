@@ -3,6 +3,7 @@
 // Composed only from the shared primitives so the house style holds. Several
 // About figures reuse collaboration scenes (LiveCursors) rather than redrawing them.
 
+import { artApp } from '../art-app';
 import { Scene, Shape, Arrow, Label, TextBar } from '../primitives';
 
 /** The open canvas with no sign-in wall: a blank diagram already in use, and a
@@ -23,7 +24,7 @@ export function OpenCanvas() {
           height={92}
           rx={10}
           className="fill-white stroke-slate-200"
-          strokeWidth={2}
+          strokeWidth={0.75}
         />
         <Label x={52} y={22} anchor="middle" size={10} weight={700} tone="muted">
           Sign in
@@ -49,7 +50,7 @@ export function OpenCanvas() {
 }
 
 /** Open source motif: a code window whose contents flow out to the running
- *  app at livedocuments.app, with an MIT-licence tag. */
+ *  app at the help's own app's address, with an MIT-licence tag. */
 export function OpenSource() {
   return (
     <Scene w={420} h={210} bg="plain">
@@ -99,11 +100,11 @@ export function OpenSource() {
         height={98}
         rx={10}
         className="fill-white stroke-brand-300"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <rect x={276} y={56} width={120} height={20} rx={10} className="fill-brand-100" />
       <Label x={336} y={67} anchor="middle" size={10} weight={700} tone="accent">
-        livedocuments.app
+        {`${artApp() ?? 'livediagram'}.app`}
       </Label>
       <Shape x={288} y={90} w={36} h={24} kind="rect" label="A" />
       <Shape x={352} y={90} w={36} h={24} kind="circle" accent />

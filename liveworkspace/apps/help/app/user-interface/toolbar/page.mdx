@@ -8,6 +8,7 @@ import {
   ContextualToolbar as LivehuddleContextualToolbar,
   MultiSelectToolbar as LivehuddleMultiSelectToolbar,
 } from '@/editions/livehuddle/components/illustrations/user-interface';
+import { MultiSelectionBar } from '@/editions/livedocuments/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'The Toolbar',
@@ -152,11 +153,14 @@ The toolbar is an Editor's. On a Participant or Viewer link, selecting an elemen
   The caption reads "Selected Elements" with a count.
 </AppNote>
 
-<Figure
-  app="livedesign,livediagram,livedocuments"
+<Figure app="livedesign,livediagram"
   caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export, Lock and Delete."
 >
   <MultiSelectToolbar />
+</Figure>
+
+<Figure app="livedocuments" caption="With several elements selected, a bar above them acts on all of them at once.">
+  <MultiSelectionBar />
 </Figure>
 <Figure
   app="livehuddle"

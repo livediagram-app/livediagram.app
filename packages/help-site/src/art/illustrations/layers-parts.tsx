@@ -162,7 +162,7 @@ export function LayersPanel({ x, y, rows }: { x: number; y: number; rows: Row[] 
         x2={x + w}
         y2={y + h - 26}
         className="stroke-slate-100"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <g
         className="stroke-slate-500"
@@ -223,7 +223,7 @@ export const thumbBackground = (tx: number, cy: number) => (
     height={20}
     rx={2}
     className="fill-slate-100 stroke-slate-300"
-    strokeWidth={1}
+    strokeWidth={0.75}
   />
 );
 export const thumbEmpty = () => null;
@@ -239,7 +239,7 @@ export function LayeredCanvas({ showNotes = true }: { showNotes?: boolean }) {
         height={150}
         rx={8}
         className="fill-slate-50 stroke-slate-300"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
         strokeDasharray="5 4"
       />
       <Shape x={34} y={84} w={62} h={40} kind="rect" label="Cart" />

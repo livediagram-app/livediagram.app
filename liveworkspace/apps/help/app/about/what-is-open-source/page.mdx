@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { OpenSource } from '@liveworkspace/help-site/art/illustrations/about';
+import { OpenSource as DesignOpenSource } from '@/editions/livedesign/components/illustrations/about';
+import { OpenSource as DocumentsOpenSource } from '@/editions/livedocuments/components/illustrations/about';
+import { OpenSource as HuddleOpenSource } from '@/editions/livehuddle/components/illustrations/about';
 
 export const metadata = helpMetadata({
   title: 'What is Open Source?',
@@ -53,8 +56,20 @@ A public codebase means you do not have to take any privacy or security claim on
 
 Nothing in the code phones home to check a licence, there is no subscription, and your <Noun plural /> export to portable formats, so you are never trapped.
 
-<Figure caption="Because the code is public and MIT-licensed, anyone can read how the app they use is built, or fork it and build on it.">
+<Figure app="livediagram,liveplanner,all" caption="Because the code is public and MIT-licensed, anyone can read how the app they use is built, or fork it and build on it.">
   <OpenSource />
+</Figure>
+
+<Figure app="livedesign" caption="Because the code is public and MIT-licensed, anyone can read how livedesign is built, or fork it and build on it.">
+  <DesignOpenSource />
+</Figure>
+
+<Figure app="livedocuments" caption="The code is public and MIT-licensed, so anyone can read how livedocuments is built.">
+  <DocumentsOpenSource />
+</Figure>
+
+<Figure app="livehuddle" caption="livehuddle's code is public under the MIT licence: the same code that runs the app you walk around in.">
+  <HuddleOpenSource />
 </Figure>
 
 ## Open Source, Ready to Use

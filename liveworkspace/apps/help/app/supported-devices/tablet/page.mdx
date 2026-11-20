@@ -1,7 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TabletLandscape } from '@liveworkspace/help-site/art/illustrations/devices';
 import { TabletLandscape as DocumentsTabletLandscape } from '@/editions/livedocuments/components/illustrations/devices';
+import { TabletEditor } from '@/editions/livediagram/components/illustrations/devices';
+import { TabletLandscape as DesignTabletLandscape } from '@/editions/livedesign/components/illustrations/devices';
+import { TabletLandscape as HuddleTabletLandscape } from '@/editions/livehuddle/components/illustrations/devices';
 
 export const metadata = helpMetadata({
   title: 'Tablet',
@@ -64,11 +66,16 @@ So rotating a tablet usually keeps the same layout; sideways just gives you more
   dashboard stacks its slots.
 </AppNote>
 
-<Figure
-  app="livediagram,livedesign,livehuddle"
-  caption="A tablet has room for the full layout, the same palette strip and panels as a computer."
->
-  <TabletLandscape />
+<Figure app="livediagram" caption="A tablet held landscape has room for the full layout: the same palette strip, corner cluster and tab bar as a computer.">
+  <TabletEditor />
+</Figure>
+
+<Figure app="livedesign" caption="A tablet has room for the full layout: the same Pages rail, palette strip and controls as a computer.">
+  <DesignTabletLandscape />
+</Figure>
+
+<Figure app="livehuddle" caption="A tablet held landscape gets the same layout as a computer.">
+  <HuddleTabletLandscape />
 </Figure>
 
 <Figure

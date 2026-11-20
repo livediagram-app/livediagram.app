@@ -54,7 +54,7 @@ export function TabPill({
         <path
           d={`M${x} ${bottom} V${top + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom} Z`}
           className="fill-white stroke-slate-300"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
       )}
       {locked && (
@@ -250,7 +250,7 @@ export function TabBar({ y, w }: { y: number; w: number }) {
   return (
     <g>
       <rect x={0} y={y} width={w} height={42} className="fill-slate-100" />
-      <path d={`M0 ${y} H${w}`} className="stroke-slate-200" strokeWidth={1.5} />
+      <path d={`M0 ${y} H${w}`} className="stroke-slate-200" strokeWidth={0.75} />
     </g>
   );
 }
@@ -332,7 +332,7 @@ export function FormatCard({
         height={34}
         rx={7}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <rect
         x={x + 6}
@@ -380,7 +380,7 @@ export function MenuRowList({
           x2={x + w}
           y2={cy + 4}
           className="stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />,
       );
       cy += 8;
