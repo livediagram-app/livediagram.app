@@ -48,7 +48,7 @@ Removed 8 November 2026. In Pages, the one editor mode, the panel and its cluste
 - The four Settings rows. livedocuments stops reading `layersPanelEnabled`, `layersShowPreview`, `layersShowCount` and `layerHoverPreview` ([User preferences](../007-editor/user-preferences.md) "Keys this editor does not read"); they stay common settings, as livediagram still has them.
 - **Move to layer** in the single-element and multi-selection menus.
 - The image export's **Hidden layers** option: hidden layers stay out of every export, as they stay off the canvas.
-- The help articles about the panel ([help](../../../apps/help/app/canvas/layers/page.mdx)'s Layers article now says what layers still do).
+- The help articles about the panel ([help](../../../../liveworkspace/apps/help/app/canvas/layers/page.mdx)'s Layers article now says what layers still do).
 
 The data stays: a stored tab's layers render, export and lock exactly as before.
 

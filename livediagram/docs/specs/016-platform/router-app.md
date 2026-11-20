@@ -49,7 +49,7 @@ Automatically Open Explorer setting, mirrored into the cookie by the editor and 
 | `/api`, `/api/*`                                                                                                                                                                        | api worker (`apps/api`)                                                                                                                                                                                                             |
 | `/telemetry`, `/telemetry/*`                                                                                                                                                            | 301 to liveworkspace's dashboard, `?app=livediagram.app` ([Telemetry](../017-telemetry/telemetry.md))                                                                                                                               |
 | `/form`, `/form/*` (old form links)                                                                                                                                                     | 308 to the same path on liveplanner ("Old form links go to liveplanner" below)                                                                                                                                                      |
-| `/help`, `/help/*`                                                                                                                                                                      | help app (`apps/help`), stripped                                                                                                                                                                                                    |
+| `/help`, `/help/*`                                                                                                                                                                      | liveworkspace's help centre (`liveworkspace-help`, with `x-help-app: livediagram`), stripped                                                                                                                                        |
 | `/community`, `/community/*`                                                                                                                                                            | liveworkspace.app's Community page, address bar unchanged: `routeCommunity` first (the head and sitemap, "The Community" below), then `routeToWorkspace`                                                                            |
 | `/live/*` (the editor app's `_next` assets only)                                                                                                                                        | editor app (`apps/editor`), stripped                                                                                                                                                                                                |
 | `/explorer/*`                                                                                                                                                                           | liveworkspace's Explorer, address bar unchanged ("The Explorer on livediagram.app" below)                                                                                                                                           |
@@ -115,7 +115,7 @@ Explorer; livediagram has no Explorer of its own.
 
 ## Implementation
 
-In production the Worker has four **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (the editor's `/live` assets + help) when forwarding to a binding:
+In production the Worker has four **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP). `HELP` is liveworkspace's `liveworkspace-help` Worker (staging `liveworkspace-help-staging`), and the router adds `x-help-app: livediagram` so it serves livediagram's scope; locally `HELP_ORIGIN` is `http://127.0.0.1:3020`. A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (the editor's `/live` assets + help) when forwarding to a binding:
 
 ```ts
 // sketch, real source: apps/router/src/index.ts
@@ -167,7 +167,7 @@ runs and forks keep the origins (liveworkspace/docs/specs/002-architecture/archi
 
 Every `/diagram/<id>` address (share links, embeds, bookmarks, `/diagram/shared?s=…`) answers a permanent `308` to the same path under `/document` ([Document](../006-document/document.md)), query string included, before any worker sees it (`apps/router/src/legacy-editor-route.ts`). A redirect is routing, not business logic, the same as the prefix-less help paths.
 
-The help articles renamed with it ([Help app, Renamed articles](../018-help/help-app.md#renamed-articles)) redirect the same way, from their old `/help/…` address. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does.
+The help articles renamed with it ([One help centre, old paths](../../../../liveworkspace/docs/specs/017-help/help-centre.md#addresses-canonicals-and-the-old-paths)) redirect the same way, from their old `/help/…` address. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does.
 <!-- /legacy-names -->
 
 ## The Community
@@ -186,13 +186,13 @@ production's by default ([Community](../025-community/community.md) "Search engi
 
 The router **also runs locally**, so `corepack pnpm dev:diagram` (from the monorepo root) gives you the production URL shape on one port: `http://localhost:3100` serves marketing at `/`, the editor at `/new` etc., `/help`, `/community`, and `/api` (`/telemetry` redirects to the local liveworkspace telemetry service), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
-| App       | Local URL                                                         |
-| --------- | ----------------------------------------------------------------- |
-| router    | `http://localhost:3100/`: everything, stitched like production    |
-| marketing | `http://localhost:3101/`                                          |
-| live      | `http://localhost:3102/new`, `/document/<id>`, ... (clean routes) |
-| help      | `http://localhost:3104/help` (basePath baked in)                  |
-| api       | `http://localhost:8687/api/...` (wrangler dev)                    |
+| App       | Local URL                                                                                           |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| router    | `http://localhost:3100/`: everything, stitched like production                                      |
+| marketing | `http://localhost:3101/`                                                                            |
+| live      | `http://localhost:3102/new`, `/document/<id>`, ... (clean routes)                                   |
+| help      | `http://127.0.0.1:3020/help` (liveworkspace/apps/help, `HELP_SCOPE=livediagram`; basePath baked in) |
+| api       | `http://localhost:8687/api/...` (wrangler dev)                                                      |
 
 **How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livediagram/router dev` runs `wrangler dev --env local --port 3100`, and the root `pnpm dev` includes it. An origin that isn't running (a local stack started without that server) answers `502` (`no-store`), naming the origin, through `@liveworkspace/sites/workspace-proxy` `forwardOr502`, rather than a bare `500` "Network connection lost"; the index, Drive, liveworkspace and previews forwards answer the same way.
 

@@ -104,7 +104,7 @@ Inside `/new`, the location travels as `NewDesignSettings.saveLocation: SaveLoca
 `Document` / `Created` carries a `type` naming the store,
 `Cloud` for livedesign and `Offline` for the Offline location. The location id itself never leaves as content.
 
-## Help centre ([Help app](../018-help/help-app.md))
+## Help centre ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md))
 
 The Offline Mode article says a guest's new designs start in this browser and a signed-in person's on livedesign,
 and how to move one either way. Locations have no article of their own.
@@ -123,4 +123,4 @@ and how to move one either way. Locations have no article of their own.
 See [New design route](../007-editor/new-design-route.md) (`/new`),
 [Offline Mode](offline-mode.md) (the browser-only store),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
-[Help app](../018-help/help-app.md) (help).
+[One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md) (help).

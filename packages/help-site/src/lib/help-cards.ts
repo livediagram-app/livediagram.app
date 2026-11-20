@@ -1,7 +1,7 @@
 import { articleHref, categoryHref, topCategorySlug } from '@liveworkspace/help-registry';
 import type { HelpCatalogue } from '../types';
 
-// The help centre's own social cards (docs/specs/018-help/help-app.md "SEO" in each product): one per article
+// The help centre's own social cards (liveworkspace/docs/specs/017-help/help-centre.md "SEO" in each product): one per article
 // and per category landing, on the product's branded card (renderSocialCard in its ui package), pre-rendered to a
 // PNG at build time by the app's app/og/[...card]/route.tsx. A link to an article then previews with its own
 // title instead of the generic brand card. Pages outside the registry (the home, the features index) keep the

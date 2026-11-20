@@ -1,0 +1,68 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'BPMN',
+  description:
+    'Draw business processes in BPMN 2.0: events, typed tasks, gateways, data, pools, message flows and associations, and import a .bpmn file.',
+  path: '/help/palette/bpmn/',
+});
+
+<ArticleLayout
+  path="palette/bpmn"
+  title="BPMN"
+  description="Events, tasks, gateways, data and pools in BPMN 2.0, with message flows and a .bpmn import."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("bpmn")}
+>
+
+**BPMN** (Business Process Model and Notation) is the notation process teams, workflow engines such as Camunda, and auditors read. livediagram draws its common symbols as ordinary elements, so they resize, colour, connect and export like everything else on the canvas.
+
+## Finding them
+
+In Diagram mode, open the palette's **Shapes** category: the **BPMN** section sits at the end, after More Shapes. It starts closed, to keep the palette short, so press the **BPMN** row to open it. It stays open, even after you reload the page, until you press the row again to close it. Your browser remembers this, so another browser or device starts with it closed.
+
+You don't need to open it to find a symbol: search the palette or the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) for "bpmn", "gateway", "event", "pool" or a marker's name, and the matches show either way.
+
+The section holds:
+
+- **Start**, **Intermediate** and **End** events: a thin circle, a double circle and a heavy circle.
+- **Task**, **User Task** and **Sub-Process**: rounded boxes, the user task with its person marker in the corner and the sub-process with its **+** box on the bottom edge.
+- **Exclusive**, **Parallel** and **Inclusive** gateways: diamonds with an X, a + and a circle.
+- **Data Object** (a page with a folded corner) and **Data Store** (a cylinder).
+- **Pool**: a [lane](/help/palette/lanes/) with its title upright down the left side. Stack pools for each participant, and lanes inside them for roles.
+- **Message Flow** and **Association**: tap one, then drag between two shapes.
+
+Each tile places its symbol unnamed. Type to name a task inside it. BPMN writes an event's, a gateway's and a data element's name **under** the symbol, so add a [text](/help/palette/write/) box beneath it, as the BPMN Process template does.
+
+## Changing a symbol's type
+
+Right-click a BPMN element and open its **BPMN** section. A tile per symbol of its family lights up the current one:
+
+- **Events**: start, start message, start timer, intermediate, intermediate message, timer and error, end, end message, end error and terminate.
+- **Tasks**: task, user, service, script, manual, send, receive, business rule and sub-process.
+- **Gateways**: plain, exclusive, parallel, inclusive, event-based and complex.
+- **Data**: data object and data store.
+
+Hover a tile to preview it on the canvas; press it to change the mark. The size, colours and name stay, and one undo takes it back. The section is on a single element's menu, so change a symbol one element at a time.
+
+## The lines
+
+- A **sequence flow** is the ordinary [arrow](/help/palette/arrows/): solid with a filled head.
+- A **message flow** is dashed, with an open circle at its start and an open arrowhead at its end. Use it between pools.
+- An **association** is dotted, with no head. Use it to tie a data object, a data store or a note to a step.
+
+They stay ordinary arrows afterwards, so you can restyle, reroute or relabel them like any other.
+
+## Start from the template
+
+The **BPMN Process** template, under **Processes** in the template picker, is a worked example: an online order between the customer's pool and the shop's pool of Sales and Warehouse lanes, with every symbol above, message flows between the pools and data on associations. Search the templates for "bpmn" to find it.
+
+## Bringing a process in
+
+- **A .bpmn file**: open the tab menu, choose **Import**, then **BPMN**, and paste the XML or pick the file. Every shape and flow lands where the modeler drew it. See [Importing a BPMN file](/help/tabs/import-tabs/#import-formats).
+- **A draw.io diagram**: draw.io's BPMN shapes come in as these elements, markers included, through the **draw.io** import.
+
+</ArticleLayout>

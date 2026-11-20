@@ -939,7 +939,7 @@ queued }`, never a secret, a signature, a hash or the body.
   pausing after 10 failures; the budget; a 50-rule plan's save path timed (`automations.perf.test.ts`, CPU budget).
 - editor: each component's states (empty, list, paused, needs attention, builder steps, panels, test result, run log
   rows), the footer button's role gating, the card menu.
-- help: an Automations article in apps/help, its figures, the repo-paths and ui-labels tests.
+- help: an Automations article in liveworkspace/apps/help, its figures, the repo-paths and ui-labels tests.
 
 ## Add an Action picker and screen motion
 

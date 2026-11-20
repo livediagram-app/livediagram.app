@@ -1,0 +1,170 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { FormatPainter } from '@/editions/livediagram/components/illustrations/canvas';
+
+export const metadata = helpMetadata({
+  title: 'The Format Painter',
+  description: "Copy one element's styling onto others in a single click with the format painter.",
+  path: '/help/tips-and-tricks/format-painter/',
+});
+
+<ArticleLayout path="tips-and-tricks/format-painter" title="The Format Painter" description="Style one element the way you want it, then paint that look onto as many others as you like." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
+
+The format painter copies the styling of one element and applies it to others, so a <Noun /> stays visually consistent without re-dialling every colour, border, and text setting by hand. Style one element exactly how you want it, then spread that look across your work.
+
+## Painting a style
+
+<AppNote app="livedesign,livedocuments">
+  The format painter is the **Format** tool in the Palette's selection-mode dropdown (in its
+  **Edit** group, beside Select and Hand). Picking it opens the **Format** panel and walks you
+  through two phases with an on-screen banner:
+</AppNote>
+
+<AppNote app="livediagram">
+  The format painter is the **Format** tool in the Palette's selection-mode dropdown (in its
+  **Edit** group, beside Select, Hand and Eraser). Picking it opens the **Format** panel and walks
+  you through two phases with an on-screen banner:
+</AppNote>
+
+<AppNote app="livehuddle">
+  The format painter is the **Format Painter** button on the selection toolbar, the small toolbar
+  above an element you have selected. Pressing it opens the **Format** panel, and a message under
+  the palette strip guides you:
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  <Step n={1}>
+    First the banner reads "Select a base element or page to copy its style". Click the element
+    whose look you want to reuse. The panel's preview, which read "Nothing loaded", now shows it.
+  </Step>
+</AppNote>
+
+<AppNote app="livediagram">
+  <Step n={1}>
+    First the banner reads "Select a base element to copy its style". Click the element whose look
+    you want to reuse. The panel's preview, which read "Nothing loaded", now shows it.
+  </Step>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Step n={1}>
+    Select the element whose look you want to reuse, and press **Format Painter** on its toolbar.
+    The brush takes that element's style, and the panel's preview shows it.
+  </Step>
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  <Step n={2}>
+    The banner then reads "Tap elements to paint this style onto them". Every element you click now
+    takes on the base element's formatting, and the base stays loaded so you can keep going.
+  </Step>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Step n={2}>
+    The message under the strip then asks you to tap elements to paint the style onto them. Every
+    element you click now takes on the base element's formatting, and the base stays loaded so you
+    can keep going.
+  </Step>
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  Click **Done** in the banner, or click empty canvas, to put the brush down and return to the tool
+  you had before. `Escape` puts it down too and returns you to Select.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Click **Done** in the message, press `Escape`, or click empty canvas to put the brush down.
+</AppNote>
+
+<Figure caption="The format painter lifts a styled element's look and paints it onto the next element you click.">
+  <FormatPainter />
+</Figure>
+
+## Choosing what it copies
+
+The **Format** panel decides what the brush carries. Under **Copies**, five switches, all on by default:
+
+- **Fill**: the fill colour, a header's fill, and its theme preset.
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  - **Border**: stroke colour, width, pattern and corners, and an arrow's line.
+</AppNote>
+
+<AppNote app="livehuddle">- **Border**: stroke colour, width, pattern and corners.</AppNote>
+
+- **Text**: colour, size, weight, italic, underline, strikethrough, font and alignment.
+
+- **Effects**: shadow, finish, opacity, and animations.
+
+<AppNote app="livedesign,livediagram,livedocuments">Effects includes an arrow's flow.</AppNote>
+
+- **Size**: width, height, aspect-ratio lock, padding, and an icon's size and weight.
+
+Switch every one off and the panel warns you that the brush has nothing to paint.
+
+Under **After painting**, **Keep the brush** (the default) paints one element after another, and **Paint once** empties the brush after a single apply, for a quick one-off.
+
+## How painting works
+
+The target ends up looking like the source in everything the brush carries that the source has, defaults included. If the source uses the theme's colour and the target is red, painting turns the target back to the theme colour rather than leaving the red in place. The same goes for shadows, borders, and text styling. Painting between different kinds of element carries what they share: an image source, say, has no border or text to give, so the target keeps its own. Text formatting you applied to part of the target's label (a bold word, a coloured phrase) gives way to the painted style too; links in the label stay.
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  Arrows join in too: load an arrow as the source to copy its line colour, thickness, pattern, path
+  style (straight, curved or elbow), arrowheads (including their colour), whether it routes behind
+  shapes, flow animation, and label styling onto other arrows. Because the path style comes along,
+  painting can re-route the target's line. Styles paint between like kinds only: any boxed element
+  to another (a shape onto a sticky note works), and arrow to arrow. Clicking a shape while an arrow
+  is loaded paints nothing, since the two share almost no formatting (with **Paint once**, it still
+  empties the brush).
+</AppNote>
+
+<AppNote app="livedesign">
+  **Painting a page's background.** The brush carries a page's background too. Click a page's paper
+  (anywhere on the page but on an element) and the banner reads "Tap pages to paint this background
+  onto them": each page you click then takes that page's fill and pattern, while its size, content
+  and name stay its own. **Keep the brush** and **Paint once** work as they do for elements; the
+  **Copies** switches are an element's and don't narrow a page's paint. A page's background paints
+  across kinds, except a picture background onto a logo page, and a locked page says so and keeps
+  its own. To give every page of a kind one background at once, use **Apply to All** (**Apply to All
+  Logo Pages**, for example) at the foot of a page's **Background** instead.
+</AppNote>
+
+<AppNote app="livedocuments">
+  **Painting a page's background.** The brush also carries a page's background from one page to another. With the Format tool on, click a page's paper (anywhere on the page but on an element) to load its background: its fill (a colour, a gradient, an animated background or a picture) and its pattern. The banner then reads "Tap pages to paint this background onto them", and each page you click takes it on. The page's size, orientation, content and name stay its own, and painting crosses kinds, so a slide's background can go onto an infographic page. **Keep the brush** and **Paint once** work as for elements; the **Copies** switches are for elements and don't narrow a page's paint. A locked page says so and keeps its own background.
+
+To give every page of one kind the same background in one go, use **Apply to All Slides** (or **Apply to All Infographic Pages**, and so on) at the foot of a page's **Background** instead.
+
+</AppNote>
+
+One thing stays put by design: the painter never touches position, so where your elements sit on the canvas is never disturbed. Each paint is an ordinary edit, so `⌘Z` undoes it.
+
+<AppNote app="livedesign">
+  Because it only changes elements and pages, the format painter is available to Editors only:
+  Participants and view-only visitors don't get it. It is greyed out on an empty canvas.
+</AppNote>
+
+<AppNote app="livediagram">
+  Because it only changes elements, the format painter is available to Editors only: Participants
+  and view-only visitors don't get it. It is greyed out on an empty canvas and isn't offered in Draw
+  mode.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Because it changes elements and pages, the format painter is available to Editors only:
+  Participants and view-only visitors don't get it. It is greyed out on an empty canvas.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Because it only changes elements, the format painter is available to Editors only: Participants
+  and view-only visitors don't get it. It sits on the selection toolbar, so there is nothing to
+  press until you have selected something.
+</AppNote>
+
+<Tip>
+  Build one "reference" element with the exact colours, border, and text you want, then use the
+  Format tool to bring every related element into line in a few quick clicks. Switch **Size** off
+  first if the targets should keep their own dimensions.
+</Tip>
+
+</ArticleLayout>

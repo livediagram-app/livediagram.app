@@ -1129,7 +1129,7 @@ mcp-server.md "Interactive view (MCP Apps)"); liveplanner's view shows a **board
    `AGENTS.md`):
    - A help article (e.g. `account-and-data/connect-ai-mcp`): what the MCP is,
      connecting it to Claude/an AI tool, the signed-in-only limitation, that it
-     mints a revocable API token, **registered in `apps/help/lib/articles.ts`**.
+     mints a revocable API token, **registered in `liveworkspace/apps/help/lib/articles.ts`**.
    - `docs/development/architecture.md`: the new `apps/mcp` worker in the layout + deploy
      order; [Deployment](../016-platform/deployment.md): MCP needs sign-in (like tokens/teams) and is
      optional to deploy; `README.md` repo-layout tree gets the new app.

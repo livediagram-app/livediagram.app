@@ -6,3 +6,7 @@ packages/icons/src/lucide/
 */apps/api/src/openapi/schemas.generated.ts
 # The MCP Registry's server.json schema (2025-12-11), vendored byte for byte from static.modelcontextprotocol.io.
 packages/mcp-kit/src/server.schema.json
+
+# Help articles: Prettier's MDX parser re-indents lists inside <AppNote> and strands the closing tag inside the
+# last list item, which breaks the build. CI never formats MDX.
+liveworkspace/apps/help/app/**/*.mdx

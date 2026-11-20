@@ -135,7 +135,7 @@ export function offlineHref(app: App): string | null {
 // A view with no article (Invites) shows no Help button.
 const VIEW_HELP: Partial<Record<ExplorerView['kind'], string>> = {
   home: 'explorer/home',
-  all: 'explorer/my-work',
+  all: 'explorer/personal-space',
   folder: 'explorer/folders',
   team: 'explorer/team-spaces',
   recent: 'explorer/recent',

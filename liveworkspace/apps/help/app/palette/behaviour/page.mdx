@@ -1,0 +1,122 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { CollaborateCategories as DiagramCollaborateCategories } from '@/editions/livediagram/components/illustrations/palette-behaviour';
+import { MeetingCategories as HuddleMeetingCategories } from '@/editions/livehuddle/components/illustrations/palette-behaviour';
+
+export const metadata = helpMetadata({
+  title: 'Interactive Elements',
+  description:
+    "Elements that do something when the room uses them: livediagram's Collaborate categories, and livehuddle's furniture, portals, pads and Avatar button.",
+  path: '/help/palette/behaviour/',
+});
+
+<ArticleLayout
+  path="palette/behaviour"
+  title="Interactive Elements"
+  description="Elements that come alive with the room, so a canvas or Space can run itself instead of waiting on whoever built it."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("behaviour")}
+>
+
+These are the elements that do something when somebody presses them or the room uses them. The part below for your app says which and where they live.
+
+<AppNote app="livediagram,livehuddle">
+**Changing one**
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+This page is the map. Each element has its own short article, so you can link somebody straight to the one they need.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+**Working with them**
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+**Where to find them**
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+**What the categories contain**
+</AppNote>
+
+<AppNote app="livediagram">
+The **Collaborate** elements are every element whose content arrives at _runtime_. Everywhere else in the palette you are placing a picture; here you are placing something that does a job when somebody presses it, or collects an answer from everybody in the room.
+
+The Collaborate elements are in [Workshop mode](/help/canvas/workshop-mode/)'s palette, after Layout on the palette strip: **Ask** on its own, and **Session**, which lists **Tools**, **Record**, **React**, **Selection Mode** and **Navigate** down its side with a search across all of them. Session reopens on the group you last had open.
+
+<Figure caption="In Workshop mode, Ask sits on the strip on its own, and Session lists the other groups down its side.">
+  <DiagramCollaborateCategories />
+</Figure>
+
+Diagram mode keeps only the **Comment panel** and the **Action panel**, in its **Write** category. **Draw** offers none of them. From any mode, the [element search](/help/palette/toolbar-layout/) still finds and places every one.
+
+In each category, every element is a row with its name and a one-line description of what it does, because a glyph cannot say what a Picker picks or where a Portal goes.
+
+The six groups, room-first:
+
+- **Ask**: the [quiz](/help/palette/collaborate/quizzes/), [estimate cards](/help/palette/collaborate/estimate-cards/), the [temperature check](/help/palette/collaborate/temperature-checks/), the [idea box](/help/palette/collaborate/idea-boxes/), the [Q&A board](/help/palette/collaborate/qa-boards/), and the **Dot Vote** and **Poll** [session buttons](/help/palette/behaviour/session-buttons/).
+- **Tools**: the **Timer** and **Stopwatch** [session buttons](/help/palette/behaviour/session-buttons/), the [Reveal zone](/help/palette/behaviour/reveal-zones/), the [Done check](/help/palette/behaviour/done-checks/) and the [Picker](/help/palette/behaviour/pickers/).
+- **Record**: [comment panels](/help/palette/collaborate/comment-panels/), [action panels](/help/palette/collaborate/action-panels/), the [agenda](/help/palette/collaborate/agendas/), the [decision record](/help/palette/collaborate/decision-records/) and the [roll call](/help/palette/collaborate/roll-calls/).
+- **React**: the five [Reaction pads](/help/palette/behaviour/reaction-pads/).
+- **Selection Mode**: [Selection Mode buttons](/help/palette/behaviour/mode-buttons/), one per mode, that hand whoever presses them a different tool.
+- **Navigate**: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/) and the [Link card](/help/canvas/links/link-cards/).
+
+The chairs, fences, Avatar Pad and virtual office pieces now live in livehuddle, with Avatar mode. A board saved with them keeps each one where it was, shown as a card that says **Moved to livehuddle**; you can still move or delete it.
+
+They are grouped by what the element does with the room rather than by what it looks like. That is why the Portal sits beside Bring Focus and the Link card (each takes somebody somewhere: another tab, one spot on the canvas, or the page the card points at), and why the poll and dot vote sit with the estimate card rather than in a group of their own: putting a question to everybody is one job however it is asked.
+
+**On the strip**, **Ask** has a place of its own, since putting a question to the room is the session's main act, and the other five are groups inside **Session**, listed down its side with one search across them all.
+
+Most elements here carry a **…** in their top corner, which opens that element's own menu beside it. It is the same menu a right-click gives you, in the place you are already looking. Bring Focus, the Reveal zone and the Comment and Action panels have no **…**: their faces already say what they do, so right-click them for their settings instead.
+
+A few draw a richer **…** of their own, with the settings you change mid-session right in it: a Timer's length, a dot vote's dots, a poll's question, a Done check's reset. Those end with **All Settings…**, which takes you to the full menu.
+
+Each behaves like any other element once placed: select, restyle, and move it freely. A click presses it and a drag moves it, so you can arrange a row of them without setting one off. They keep working while you are in a selection mode that makes the rest of the canvas read-only (Spotlight or Isometric), which is the point of a control bar made of them.
+
+On a Participant or Viewer link, the elements that run the session (Session buttons, Bring Focus, Pickers and the presses that run a round) are inactive. Selection Mode buttons still switch your own tool. A Participant can also fire Reaction pads, answer the cards, and answer a poll somebody with edit access has started; a Viewer only watches.
+
+<Tip>
+  Put a row of these along the top of a canvas and it carries its own running order: a Timer for the
+  writing block, a Reveal zone over the answers, and a Picker for who goes next.
+</Tip>
+</AppNote>
+
+<AppNote app="livehuddle">
+The **meeting elements** are the ones that do something when somebody presses them or walks onto them. Everywhere else in the palette you are placing words or a picture; here you are placing a seat, a doorway, a room, or a button that sends people somewhere.
+
+The meeting elements fill the palette strip after **Write**: **Rooms**, **Seats**, **Perks**, **Play**, **Garden** and **Meet**, then **Travel**, set apart by a thin line.
+
+<Figure caption="The meeting categories on the strip, with Travel open.">
+  <HuddleMeetingCategories />
+</Figure>
+
+The strip's [element search](/help/palette/toolbar-layout/) finds and places every one too.
+
+In each category, every element is a row with its name and a one-line description of what it does, because a glyph cannot say where a Portal goes or what a pad does when you step on it.
+
+- **Rooms**: what a floor is laid out with: rooms, the Room Builder, corridors, doors and windows, then the [Fence](/help/palette/fences/), a [Stage](/help/palette/virtual-office/stage/), pods, rugs and pillars.
+- **Seats**: what people sit at: the [Chair, Desk and Sofa](/help/palette/chairs/), and the [Virtual Office](/help/palette/virtual-office/)'s tables, bean bags and desks.
+- **Perks**: what makes a Space feel like a place: plants, shelves and office kit, a kitchen, and a restroom.
+- **Play**: somewhere to unwind: a bar, games, a gym corner and a lounge.
+- **Garden**: the outdoors: plants, paths, benches, water and parking.
+- **Meet**: what a meeting room and a team need: a [Screen](/help/palette/screen/) that shows the room's screen share, a [Room Sign](/help/palette/room-sign/) by its door that says whether it's free and lets you knock, the boards and clocks for its walls, and a [Timer and Stopwatch](/help/collaboration/session-tools/timer/) the whole room runs together.
+- **Travel**: what takes somebody somewhere: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/), the [Avatar Pad](/help/palette/avatar-pads/), the [Directory](/help/palette/directory/), the Signpost, the [Elevator](/help/palette/elevator/), the [Stairs](/help/palette/stairs/) and the [Avatar Button](/help/palette/behaviour/mode-buttons/).
+
+They are grouped by the question you are answering as you build a Space: how the floor is laid out, where people sit, what makes it feel like a place, and how people get somewhere. That is why the Portal sits beside Bring Focus, the Avatar Pad and the Avatar Button: each takes somebody somewhere (another tab, one spot on the canvas, the way in, or into Avatar mode). The Spaces templates arrive on an Avatar Pad; a **Walk In** button on a Space made before the pads is an Avatar Button.
+
+A few elements here, the Portal, the Avatar Button, the Timer and the Stopwatch, carry a **…** in their top corner, which opens that element's own menu beside it. It is the same menu a right-click gives you, in the place you are already looking. Everything else, Bring Focus and the furniture included, has no **…**: right-click it for its settings instead.
+
+Each behaves like any other element once placed: select, restyle, and move it freely. A click presses it and a drag moves it, so you can arrange a row of them without setting one off. They keep working while you walk, when the rest of the canvas is read-only, so you can walk onto or press them mid-walk.
+
+On a Participant or Viewer link, Bring Focus is inactive: clicking it does nothing, and hovering its target says who can press it. Participants and Viewers are always walking, so an Avatar Button does nothing for them either.
+
+<Tip>
+  Put an Avatar Pad at a Space's entrance and the Space carries its own welcome: people arrive there
+  and walk in to sit down without opening a menu.
+</Tip>
+</AppNote>
+
+</ArticleLayout>

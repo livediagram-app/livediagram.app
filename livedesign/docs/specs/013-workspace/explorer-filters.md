@@ -229,5 +229,5 @@ the reader's own change does.
 
 ## Help
 
-The help centre's [Search and filter designs](../../../apps/help/app/explorer/filters/page.mdx) article describes the
+The help centre's [Search and filter designs](../../../../liveworkspace/apps/help/app/explorer/filters/page.mdx) article describes the
 field, the chips and the typed filters; Search results opens it from its Help button.

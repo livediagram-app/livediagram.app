@@ -1,6 +1,7 @@
-// The lookups over one product's help catalogue: what its help app browses and searches, and what the editor's
-// search panel ranks. A product builds them once from its own articles and categories (createHelpRegistry) in
-// @<product>/help-registry and exports the result, so its catalogue stays its own data and the lookups stay one copy.
+// The lookups over a help catalogue: what the help centre browses and searches for a scope, and what an editor's
+// search panel ranks over its app's slice. Each view (the whole catalogue for a scope, catalogue/index.ts; one app's
+// slice, slice/<app>.ts) builds them once from its articles and categories (createHelpRegistry), so the data stays
+// in the catalogue and the lookups stay one copy.
 
 import type { Article, Category } from './types';
 
@@ -46,35 +47,7 @@ export function createHelpRegistry(
   const getSubArticles = (parentSlug: string): Article[] =>
     articles.filter((a) => a.parentSlug === parentSlug);
 
-  /**
-   * The articles matching `query` (case-insensitive, on title, description and keywords), best first: a title that
-   * starts with the query, then a title with a word starting with it, then a title containing it, then a match in
-   * the description, then one in the keywords alone, then (for a query of several words) an article holding every
-   * word somewhere across the three, those with more of the words in the title first: "export png" finds Exporting
-   * Diagrams. Catalogue order breaks ties.
-   */
-  const searchArticles = (query: string): Article[] => {
-    const lower = query.toLowerCase().trim();
-    const words = lower.split(/\s+/).filter(Boolean);
-    // Ranks 5 and up: every word found across the three fields, fewer of them outside the title ranking higher.
-    const rank = (a: Article): number => {
-      const title = a.title.toLowerCase();
-      if (title.startsWith(lower)) return 0;
-      if (title.includes(` ${lower}`)) return 1;
-      if (title.includes(lower)) return 2;
-      if (a.description.toLowerCase().includes(lower)) return 3;
-      if (a.keywords.toLowerCase().includes(lower)) return 4;
-      if (words.length < 2) return -1;
-      const hay = `${title} ${a.description} ${a.keywords}`.toLowerCase();
-      if (!words.every((w) => hay.includes(w))) return -1;
-      return 5 + words.filter((w) => !title.includes(w)).length;
-    };
-    return articles
-      .map((a) => ({ a, r: rank(a) }))
-      .filter(({ r }) => r >= 0)
-      .sort((x, y) => x.r - y.r)
-      .map(({ a }) => a);
-  };
+  const searchArticles = (query: string): Article[] => rankArticles(articles, query);
 
   return {
     featureCategories: categories.filter((c) => c.kind === 'feature'),
@@ -83,4 +56,41 @@ export function createHelpRegistry(
     getSubArticles,
     searchArticles,
   };
+}
+
+/** What a search ranks and a result row shows: an article's search fields (the search box's index, scope.ts
+ *  searchIndex). A whole Article is one. */
+export type SearchEntry = Pick<
+  Article,
+  'slug' | 'title' | 'description' | 'keywords' | 'category' | 'categorySlug' | 'apps'
+>;
+
+/**
+ * The articles matching `query` (case-insensitive, on title, description and keywords), best first: a title that
+ * starts with the query, then a title with a word starting with it, then a title containing it, then a match in
+ * the description, then one in the keywords alone, then (for a query of several words) an article holding every
+ * word somewhere across the three, those with more of the words in the title first: "export png" finds Exporting
+ * Diagrams. Catalogue order breaks ties.
+ */
+export function rankArticles<T extends SearchEntry>(articles: readonly T[], query: string): T[] {
+  const lower = query.toLowerCase().trim();
+  const words = lower.split(/\s+/).filter(Boolean);
+  // Ranks 5 and up: every word found across the three fields, fewer of them outside the title ranking higher.
+  const rank = (a: T): number => {
+    const title = a.title.toLowerCase();
+    if (title.startsWith(lower)) return 0;
+    if (title.includes(` ${lower}`)) return 1;
+    if (title.includes(lower)) return 2;
+    if (a.description.toLowerCase().includes(lower)) return 3;
+    if (a.keywords.toLowerCase().includes(lower)) return 4;
+    if (words.length < 2) return -1;
+    const hay = `${title} ${a.description} ${a.keywords}`.toLowerCase();
+    if (!words.every((w) => hay.includes(w))) return -1;
+    return 5 + words.filter((w) => !title.includes(w)).length;
+  };
+  return articles
+    .map((a) => ({ a, r: rank(a) }))
+    .filter(({ r }) => r >= 0)
+    .sort((x, y) => x.r - y.r)
+    .map(({ a }) => a);
 }

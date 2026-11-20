@@ -45,13 +45,17 @@ const EVERY = [
   ...PRODUCTS.flatMap((p) => [
     worker(`@${p}/api`, `${p}/apps/api`, 0, { hosted: p }),
     worker(`@${p}/editor`, `${p}/apps/editor`, 1, { build: true }),
-    worker(`@${p}/help`, `${p}/apps/help`, 1, { build: true, history: true }),
     worker(`@${p}/marketing`, `${p}/apps/marketing`, 1, { build: true }),
     worker(`@${p}/mcp`, `${p}/apps/mcp`, 1),
     worker(`@${p}/router`, `${p}/apps/router`, 2),
   ]),
   worker('@liveworkspace/accounts', 'liveworkspace/apps/accounts', 1, { d1: 'DB' }),
   worker('@liveworkspace/site', 'liveworkspace/apps/site', 1, { build: true }),
+  worker('@liveworkspace/help', 'liveworkspace/apps/help', 1, {
+    build: true,
+    history: true,
+    builds: 6,
+  }),
   worker('@liveworkspace/redirect', 'liveworkspace/apps/redirect', 2),
   ...['community', 'drive', 'export', 'index', 'media', 'status', 'telemetry'].map((s) =>
     worker(`@liveworkspace/${s}-service`, `liveworkspace/apps/${s}`, 0, {
@@ -83,14 +87,11 @@ test('sites group by product; services and apis, and routers, are one job each',
   assert.deepEqual(
     sites.map((g) => [g.label, g.count, g.history, g.timeout]),
     [
-      ...PRODUCTS.map((p) => [`Sites (${p})`, 4, true, 10 + 3 * 6 + 2 + 4 * 4]),
-      ['Sites (liveworkspace)', 2, false, 10 + 6 + 2 + 2 * 4],
+      ...PRODUCTS.map((p) => [`Sites (${p})`, 3, false, 10 + 2 * 6 + 2 + 3 * 4]),
+      ['Sites (liveworkspace)', 3, true, 10 + 6 + 2 + 6 * 6 + 3 * 4],
     ],
   );
-  assert.equal(
-    sites[1].workers,
-    '@livediagram/editor, @livediagram/help, @livediagram/marketing, @livediagram/mcp',
-  );
+  assert.equal(sites[1].workers, '@livediagram/editor, @livediagram/marketing, @livediagram/mcp');
 
   const routers = deployGroups(EVERY, 2);
   assert.deepEqual(
@@ -360,12 +361,12 @@ test('main deploys the group it is given, writes the summary, and fails when a W
   try {
     const good = fakeExec();
     assert.equal(main(base, good.exec), 0);
-    // Only the group's own Workers: the platform's site and accounts.
+    // Only the group's own Workers: the platform's site, accounts and help centre.
     assert.deepEqual(
       [...new Set(good.calls.map((c) => c.cwd))],
-      ['liveworkspace/apps/accounts', '.', 'liveworkspace/apps/site'],
+      ['liveworkspace/apps/accounts', '.', 'liveworkspace/apps/site', 'liveworkspace/apps/help'],
     );
-    assert.match(readFileSync(summary, 'utf8'), /All 2 Workers deployed\./);
+    assert.match(readFileSync(summary, 'utf8'), /All 3 Workers deployed\./);
 
     const bad = fakeExec({ failing: ['--filter=@liveworkspace/site'] });
     assert.equal(main(base, bad.exec), 1);

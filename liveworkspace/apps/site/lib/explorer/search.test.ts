@@ -14,12 +14,11 @@ describe('searchEntries', () => {
   it("lists liveworkspace.app's own Explorer articles in no app, never one app's", () => {
     const help = searchEntries(null, false);
     expect(help.map((e) => e.href)).toEqual([
-      '/help/explorer',
-      '/help/explorer/folders',
-      '/help/explorer/teams',
-      '/help/explorer/moving',
-      '/help/explorer/sharing',
-      '/help/explorer/signing-in',
+      '/help/explorer/',
+      '/help/explorer/folders/',
+      '/help/collaboration/teams/',
+      '/help/collaboration/sharing/',
+      '/help/account-and-data/signing-in/',
     ]);
     expect(help.every((e) => e.group === 'help' && e.hint === 'liveworkspace Help')).toBe(true);
     expect(new Set(help.map((e) => e.id)).size).toBe(help.length);

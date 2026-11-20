@@ -1,12 +1,12 @@
 // Help-centre search telemetry (docs/specs/017-telemetry/telemetry.md in each product).
 //
 // The help centre reported article VIEWS and the helpful / not-really vote,
-// but nothing about the search that leads to them — so the most actionable
+// but nothing about the search that leads to them, so the most actionable
 // number the help app can produce was missing: a query that found NOTHING.
 // A view tells you an article exists; a zero-result search tells you which
 // article to write next.
 //
-// What goes on the wire is the OUTCOME only — 'Results' or 'NoResults' —
+// What goes on the wire is the OUTCOME only, 'Results' or 'NoResults',
 // never the query. The query is user-generated content and the one thing
 // docs/specs/017-telemetry/telemetry.md forbids; the outcome is a two-value preset. Which words came up
 // dry is deliberately not recoverable from this, and that is the trade: the
@@ -21,7 +21,7 @@ export const SEARCH_SETTLE_MS = 900;
 
 // Queries already reported on this page. Dedupes the back-and-forth of
 // editing one query (delete a character, retype it) into a single event.
-// Lower-cased locally and never sent — see the header.
+// Lower-cased locally and never sent, see the header.
 const seen = new Set<string>();
 
 /** Report a settled search's outcome through the product's `track`. */

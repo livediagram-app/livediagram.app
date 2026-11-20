@@ -1,5 +1,5 @@
 // Colour and border illustrations for the Canvas article on Colours, Borders and Opacity
-// (docs/specs/018-help/help-app.md). Each draws the real surface with its real labels: the element
+// (liveworkspace/docs/specs/017-help/help-centre.md). Each draws the real surface with its real labels: the element
 // menu's Colours category with the one colour picker open beside its Border row
 // (ElementColourBorderSections.tsx, components/colour/ColourPicker.tsx), and the Border category's
 // Strength, Pattern and Radius grids (BorderControls.tsx, palette-style-previews.tsx). Composed from

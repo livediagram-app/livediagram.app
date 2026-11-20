@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Arrow, BarTab, Scene, Shape, stickyOnly } from './primitives';
 import { BorderSection } from './illustrations/colours-borders';
 
-// docs/specs/018-help/help-app.md "In-article illustrations": a figure is named by its caption, so its picture is
+// liveworkspace/docs/specs/017-help/help-centre.md "In-article illustrations": a figure is named by its caption, so its picture is
 // hidden from screen readers rather than an image with no alternative.
 describe('Scene', () => {
   it('draws an SVG hidden from assistive technology, never an unnamed image', () => {

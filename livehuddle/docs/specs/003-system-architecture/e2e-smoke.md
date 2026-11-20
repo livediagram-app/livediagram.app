@@ -186,7 +186,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
      stands in for ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address)):
      the page would otherwise read its app from the port's block (livehuddle's is 3500 onward), so the suites run on
      any ports, an agent's own block or a CI runner's, and the Explorer is still livehuddle's;
-   - serve `apps/help/out` under `/help/*` and `apps/community/out` under `/community/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
+   - serve `liveworkspace/apps/help/out` under `/help/*` and `apps/community/out` under `/community/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own

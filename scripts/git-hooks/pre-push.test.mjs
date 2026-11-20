@@ -49,7 +49,7 @@ test('lint and typecheck run through turbo with the group filters', () => {
 });
 
 const editor = { dir: 'liveplanner/apps/editor', name: '@liveplanner/editor', vitest: true };
-const help = { dir: 'liveplanner/apps/help', name: '@liveplanner/help', vitest: true };
+const help = { dir: 'liveworkspace/apps/help', name: '@liveworkspace/help', vitest: true };
 const docs = { dir: 'docs', name: 'docs', vitest: false };
 const site = { dir: 'liveworkspace/apps/site', name: '@liveworkspace/site', vitest: true };
 const ctx = {
@@ -65,7 +65,15 @@ const ctx = {
   /** @param {string} dir */
   guardTests: (dir) =>
     dir === editor.dir ? ['app/dark-palette.test.ts', 'lib/small-text-contrast.test.ts'] : [],
-  helpApps: () => [help],
+  helpApps: () => [
+    {
+      ws: help,
+      tests: [
+        'editions/livediagram/tests/repo-paths-in-docs.test.ts',
+        'editions/liveplanner/tests/repo-paths-in-docs.test.ts',
+      ],
+    },
+  ],
   /** @param {string} product */
   emitterTest: (product) =>
     product === 'liveplanner'
@@ -146,12 +154,20 @@ test('a workspace without vitest, or a file outside any workspace, runs nothing'
   );
 });
 
-test('a deletion or rename runs every help app repo-paths test', () => {
+test("a deletion or rename runs every edition's repo-paths test in the help centre", () => {
   for (const status of ['D', 'R100']) {
     const steps = testSteps([{ status, path: 'docs/old.md' }], ctx);
     assert.deepEqual(
-      steps.map((s) => [s.label, s.args.slice(-1)]),
-      [['@liveplanner/help: repo paths in help articles', ['lib/repo-paths-in-docs.test.ts']]],
+      steps.map((s) => [s.label, s.args.slice(-2)]),
+      [
+        [
+          '@liveworkspace/help: repo paths in help articles',
+          [
+            'editions/livediagram/tests/repo-paths-in-docs.test.ts',
+            'editions/liveplanner/tests/repo-paths-in-docs.test.ts',
+          ],
+        ],
+      ],
     );
   }
 });

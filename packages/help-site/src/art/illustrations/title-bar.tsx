@@ -1,4 +1,4 @@
-// The editor's top corners for the User Interface › The Top Corners article (docs/specs/018-help/help-app.md; the
+// The editor's top corners for the User Interface › The Top Corners article (liveworkspace/docs/specs/017-help/help-centre.md; the
 // article keeps its `title-bar` slug). There is no bar across the top: two cards float over the canvas. Drawn from the
 // live chrome: the menu card at the top left (the editor's components/chrome/ToolbarExplorerButton.tsx: the logo, the
 // Explorer menu button and, in livediagram, the mode switch), the palette strip between them, and the actions card at

@@ -59,7 +59,9 @@ export function deployGroups(deploys, tier) {
     };
     entry.workers.push(worker.name);
     entry.history ||= Boolean(worker.history);
-    entry.timeout += (worker.build ? MINUTES.build : MINUTES.other) + MINUTES.retry;
+    // A Worker whose build is several static exports (the one help centre's six scopes) gets room for each.
+    entry.timeout +=
+      (worker.build ? MINUTES.build * (worker.builds ?? 1) : MINUTES.other) + MINUTES.retry;
     groups.set(group, entry);
   }
   return [...groups.values()].map(({ workers, ...rest }) => ({
@@ -100,6 +102,7 @@ export function workerSteps(worker, { environment, ref, exists = existsSync }) {
       cmd: 'pnpm',
       args: ['turbo', 'run', 'build', `--filter=${worker.name}`],
       env: extraEnv,
+      ...(worker.builds > 1 && { seconds: MINUTES.command * 60 * worker.builds }),
       ...(hasHosted && {
         envFrom: {
           cwd: `${worker.product}/apps/api`,
@@ -259,6 +262,7 @@ export function runStep(step, { exec, baseEnv, log, sleep = sleepSync }) {
       env,
       capture: false,
       tee: Boolean(step.retry),
+      ...(step.seconds && { seconds: step.seconds }),
     });
     if (run.status === 0) return { ok: true, retries: attempt - 1 };
     // A command that ran out of time is a plain failure, whatever it printed before.

@@ -180,7 +180,7 @@ Treat them as part of the change, not an afterthought:
 
 ## Help centre articles must stay registered
 
-Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug.
+Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug. liveplanner's help is the one help centre's liveplanner scope (`liveworkspace/apps/help`, [Help centre](../liveworkspace/docs/specs/017-help/help-centre.md)).
 
 ## Domain language
 
@@ -198,7 +198,6 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the planner app: the project editor, hosting the shared Explorer (@liveworkspace/explorer) (Next.js, clean routes)
-  help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.liveplanner.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
@@ -208,7 +207,7 @@ packages/
   project/       # project data model (Tab, Element types + element helpers) over @liveworkspace/model-core
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
-  help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
+  help-registry/  # liveplanner's slice of the one help catalogue (@liveworkspace/help-registry), for the editor's search, CLI and MCP
   forms/          # Form tabs: form model, answer checks, answer-to-card mapping, starters (pure)
   plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
   items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)

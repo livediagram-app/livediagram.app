@@ -4,7 +4,8 @@
 //   - marketing/media/logo/: the full mark and the lockup, light and dark
 //   - marketing/media/icons/: transparent PNGs at Google Drive's sizes, and
 //     white-tile PNGs (also copied to apps/marketing/public/ for the manifest)
-//   - apps/help/app/icon.png: the 256px tile, its favicon's PNG fallback
+//   - ../liveworkspace/apps/help/editions/livediagram/icon.svg and icon.png: the help centre's
+//     favicon for this app and its 256px PNG fallback (build-scopes.mjs copies them in)
 //   - apps/marketing/public/email/livediagram-mark-64.png: the transparent 64px mark
 //     the api's emails show beside the wordmark (2x their 28px slot)
 // Run via `pnpm icons:brand` from the repo root. apps/marketing/lib/brand-icon.test.ts
@@ -40,9 +41,11 @@ const write = (path, text) => {
 };
 
 const favicon = brandMarkSvg({ variant: 'compact', scheme: 'auto' });
-for (const app of ['marketing', 'editor', 'help']) {
+for (const app of ['marketing', 'editor']) {
   write(`apps/${app}/app/icon.svg`, `${favicon}\n`);
 }
+// The one help centre's edition of this app, whose build serves it under the /help basePath.
+write('../liveworkspace/apps/help/editions/livediagram/icon.svg', `${favicon}\n`);
 for (const scheme of ['light', 'dark']) {
   write(
     `marketing/media/logo/livediagram-mark-${scheme}.svg`,
@@ -81,14 +84,12 @@ for (const size of [256, 512, 1024]) {
 for (const size of [256, 512]) {
   await shoot(size, '#ffffff', `apps/marketing/public/livediagram-icon-${size}.png`);
 }
-// The app that serves its own icon under a basePath pairs app/icon.svg with this PNG (Next emits both links).
-for (const app of ['help']) {
-  copyFileSync(
-    `${root}apps/marketing/public/livediagram-icon-256.png`,
-    `${root}apps/${app}/app/icon.png`,
-  );
-  console.log(`brand-icons: apps/${app}/app/icon.png`);
-}
+// The help centre's edition pairs its icon.svg with this PNG (Next emits both links under /help).
+copyFileSync(
+  `${root}apps/marketing/public/livediagram-icon-256.png`,
+  `${root}../liveworkspace/apps/help/editions/livediagram/icon.png`,
+);
+console.log('brand-icons: ../liveworkspace/apps/help/editions/livediagram/icon.png');
 // Emails load the mark from the public site (Gmail and Outlook drop SVG), so a
 // transparent copy is served at a path no other asset will ever claim.
 mkdirSync(`${root}apps/marketing/public/email`, { recursive: true });

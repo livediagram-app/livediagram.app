@@ -5,7 +5,7 @@ import { TRUSTED_TYPES_CSP } from './trusted-types';
 // The shared sink checks (@liveworkspace/trusted-types/sinks-suite) over liveplanner's apps and packages.
 describeTrustedTypesSinks({
   root: fileURLToPath(new URL('../../../', import.meta.url)),
-  apps: ['editor', 'marketing', 'help'],
+  apps: ['editor', 'marketing'],
   editorApp: 'editor',
   csp: TRUSTED_TYPES_CSP,
   // Markup fed in unsanitised through the escape hatch (trustedConstant, builtMarkup): our own boot scripts and

@@ -186,7 +186,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
    - serve liveworkspace's Explorer at `/explorer/*` and its assets at `/_liveworkspace/*` from
      `liveworkspace/apps/site/out` when that site is built, as the router's `routeToWorkspace` does; without
      the build they answer a logged 404, so only the specs that open the Explorer page need it;
-   - serve `apps/help/out` under `/help/*` and `apps/community/out` under `/community/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
+   - serve `liveworkspace/apps/help/out` under `/help/*` and `apps/community/out` under `/community/*`, their basePaths, as the router mounts them; a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own

@@ -2,7 +2,7 @@ import { topCategorySlug } from '@liveworkspace/help-registry';
 import type { CSSProperties, ReactNode } from 'react';
 import type { HelpArt } from '../types';
 
-// A feature's hue and glyph (docs/specs/018-help/help-app.md): the home and features grids, the category
+// A feature's hue and glyph (liveworkspace/docs/specs/017-help/help-centre.md): the home and features grids, the category
 // indexes and the MDX <Feature> cards tint each feature with a distinct hue, so the index reads as a colourful
 // catalogue. The hues and glyphs are the product's (its lib/featureColours.ts and lib/featureIcons.tsx); the
 // lookup and the tile's paint are the same for every product.

@@ -1,0 +1,311 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { EmbeddedWork } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { SharePassesDialog as DiagramSharePassesDialog } from '@/editions/livediagram/components/illustrations/sharing';
+import { SharePassesDialog as DesignSharePassesDialog } from '@/editions/livedesign/components/illustrations/sharing';
+import { SharePassesDialog as DocumentsSharePassesDialog } from '@/editions/livedocuments/components/illustrations/sharing';
+import { SharePassesDialog as HuddleSharePassesDialog } from '@/editions/livehuddle/components/illustrations/sharing';
+
+export const metadata = helpMetadata({
+  title: 'Sharing and Embeds',
+  description:
+    'Share by link at the access level you choose, protect it with a password, set an expiry, or embed it in another page.',
+  path: '/help/collaboration/sharing/',
+});
+
+<ArticleLayout path="collaboration/sharing" title="Sharing and Embeds" description="Share links for live collaboration, optional passwords and expiry, and embeds." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("sharing")}>
+
+Sharing turns a <Noun /> into something other people can open. A share link lets anyone with the URL join your <Noun /> in real time, with everyone's presence and edits flowing between them. You can protect a link with a password, give it an expiry date, or embed the <Noun /> in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account, and you can create links as a guest too.
+
+<AppNote app="livehuddle">
+  Everyone who joins is walking, talking and seeing each other live.
+</AppNote>
+
+## Opening the Share Dialog
+
+Press **Share** at the top right of the editor. You can also reach it from the [command palette](/help/tips-and-tricks/command-palette/) or from a <Noun />'s menu in the Explorer.
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+  New to passes? **Show Me**, at the dialog's top right beside **Help**, walks you through issuing one: choosing what it lets people do, how long it lasts, creating it, managing your passes and adding a password. Every control stays live while it runs, so you can make a real pass as you go.
+</AppNote>
+
+<AppNote app="livediagram">
+  **Share** turns solid blue once the canvas has a live link, so you can tell at a glance that it is
+  shared. In the command palette, search "Share Canvas".
+</AppNote>
+
+<AppNote app="livedesign">
+  **Share** turns solid blue once the design has a live link, so you can tell at a glance that it is
+  shared. In the command palette, search "Share Design".
+</AppNote>
+
+<AppNote app="livedocuments">
+  **Share** turns solid blue once the document has a live link, so you can tell at a glance that it
+  is shared. In the command palette, search "Share Document".
+</AppNote>
+
+<AppNote app="livehuddle">
+  **Share** turns solid once the space has a live link (its hover card then reads **Shared**), so
+  you can tell at a glance that it is shared. In the command palette, search "Share Space".
+</AppNote>
+
+<AppNote app="livediagram">
+The canvas's owner, and every member of the [team](/help/collaboration/teams/) whose library holds it, manage its links. Someone who opened your canvas through a link doesn't see **Share**; they get a **Copy** button instead, which makes their own copy (see [The Top Corners](/help/user-interface/title-bar/#share-or-copy)).
+</AppNote>
+
+<AppNote app="livedesign">
+Only the design's owner manages its links. Someone who opened your design through a link doesn't see **Share**; they get a **Copy** button instead, which makes their own copy (see [Share, Copy and Your Account](/help/user-interface/title-bar/#share-or-copy)).
+</AppNote>
+
+<AppNote app="livedocuments">
+The document's owner, and every member of the [team](/help/collaboration/teams/) whose library holds it, manage its links. Someone who opened your document through a link doesn't see **Share**; they get a **Copy** button instead, which makes their own copy (see [The Top Corners](/help/user-interface/title-bar/#share-or-copy)).
+</AppNote>
+
+<AppNote app="livehuddle">
+The space's owner, and every member of the [team](/help/collaboration/teams/) whose library holds it, manage its links. Someone who opened your space through a link doesn't see **Share**; they get a **Copy** button instead, which makes their own copy (see [Share, Copy and Your Account](/help/user-interface/title-bar/#share-or-copy)).
+</AppNote>
+
+<AppNote app="liveplanner">
+  The plan's owner, and every member of the [team](/help/collaboration/teams/) whose library holds
+  it, can manage its links. Someone who opened your plan through a link can't.
+</AppNote>
+
+## Share Links
+
+The dialog draws every link as a **pass**, a ticket that lets whoever holds it in. Each pass carries a role, which sets what its holder can do:
+
+- An **Editor** pass lets the visitor change the <Noun /> with you, live.
+- A **Participant** pass lets them take part without reshaping the <Noun />.
+- A **Viewer** pass lets them watch along.
+
+<AppNote app="livediagram,livedocuments,livedesign">
+Under **Issue a pass**, press the role card and pick what the pass lets people do from the three roles it unfolds, then press **Create Pass**. The link is created and copied in one go, ready to paste. The role is printed on the coloured band across the pass's top.
+</AppNote>
+
+<AppNote app="livedocuments,livedesign">
+A **Viewer** pass lets them watch, pan and zoom, follow along and point with the laser, and nothing else: no [comments](/help/collaboration/comments/) or changes. Hand out a Participant pass to anyone who should chime in.
+</AppNote>
+
+<AppNote app="livedocuments,livehuddle">
+  The line under the dialog's title always tells you who can get in right now: **Private** while only you can open it, **Team** while it sits in a team's library, **Shared** once any pass is live, and **Public** while it is listed in the [Community](/help/collaboration/sharing/community/).
+</AppNote>
+
+<AppNote app="livediagram">
+  The line under the dialog's title always tells you who can get in right now: **Private** while only you can open it, **Shared** once a pass is live on a canvas outside a team, **Team** while it sits in a team's library (with a count of any live passes), and **Public** while it is listed in the [Community](/help/collaboration/sharing/community/).
+
+A **Participant** pass lets them take part without reshaping the board. They add stickies, text and images, grow mind maps with **Tab**, **Enter** or **Add Child** and **Add Sibling**, add steps and connectors to an existing flowchart, undo and redo their own changes, write on anything (a table's cells included) except a behaviour element such as a poll, move and resize stickies and images, recolour stickies, swap an image's picture, cast dots, answer [session tools](/help/collaboration/session-tools/), [comment](/help/collaboration/comments/) and send reactions. They can delete what they added and any mind-map node, nothing else of other people's, and they cannot change the tab's mode, add or remove tabs, move or restyle other people's shapes and frames (mind-map nodes aside), spin a picker, press Bring Focus or hold the [facilitator](/help/collaboration/facilitator/) baton. Their palette has one category, **Participate**, holding just what they can add, and the selection modes they need: Select, Hand, Laser, Spotlight, Isometric and Zen, plus Avatar while they walk (entered from an Avatar button on the board). It is the pass to hand a team for a retrospective or a workshop.
+
+A **Viewer** pass lets them watch, pan and zoom, follow along and point with the laser, and nothing else: no [comments](/help/collaboration/comments/), votes, [polls](/help/collaboration/session-tools/polls/) or changes. Hand out a Participant pass to anyone who should chime in.
+
+<Figure caption="The Share dialog: choose Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+  <DiagramSharePassesDialog />
+</Figure>
+
+A canvas can have several links at once, so you can hand out an edit link to a co-facilitator, a Participant link to your team and a view link to everyone else. Newest passes sit at the top. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen, and the canvas lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
+</AppNote>
+
+<AppNote app="livedesign">
+  The line under the dialog's title always tells you who can get in right now: **Private** while only you can open it, **Shared** once any pass is live, **Team** for a design in a team's library (with its live passes counted), and **Public** while it is listed in the [Community](/help/collaboration/sharing/community/).
+
+A **Participant** pass lets them take part without reshaping the design. They add stickies, text and images, undo and redo their own changes, write on anything (a table's cells included), move and resize stickies and images, recolour stickies, swap an image's picture, [comment](/help/collaboration/comments/) and send reactions. They can delete what they added, nothing else of other people's, and they cannot add or remove tabs, or move or restyle other people's shapes. Their palette has one category, **Participate**, holding just what they can add, and the selection modes they need: Select, Hand, Laser, Spotlight and Zen. It is the pass to hand a team for a review or a retrospective.
+
+<Figure caption="The Share dialog: choose Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+  <DesignSharePassesDialog />
+</Figure>
+
+A design can have several links at once, so you can hand out an edit link to a co-author, a Participant link to your team and a view link to everyone else. Newest passes sit at the top. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen, and the design lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
+</AppNote>
+
+<AppNote app="livedocuments">
+A **Participant** pass lets them edit text and nothing else. They change the words already on the pages (labels, text boxes, sticky notes, a table's cells, an image's description), write in an [article](/help/pages/articles/), undo and redo their own changes, [comment](/help/collaboration/comments/) and send reactions. They cannot add, move, resize, restyle, lock or delete anything, and they cannot change tabs, pages or themes, so they get no palette. It is the pass to hand someone who should correct or fill in the words, such as a reviewer or a co-writer.
+
+<Figure caption="The Share dialog: choose Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+  <DocumentsSharePassesDialog />
+</Figure>
+
+A document can have several links at once, so you can hand out an edit link to a co-author, a Participant link to your team and a view link to everyone else. Newest passes sit at the top. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen, and the document lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
+</AppNote>
+
+<AppNote app="livehuddle">
+Under **Issue a pass**, the role card starts on **Participant**, the pass most meetings want. Press it to pick the other role it unfolds, then press **Create Pass**. The link is created and copied in one go, ready to paste. The role is printed on the coloured band across the pass's top.
+
+A **Participant** pass lets them take part without changing the space. They are always walking as their avatar, on every tab, and have no palette: they talk, turn on a camera, send reactions, knock, open and close doors, play the Jukebox and pin their own notes on a Notice Board. They add, write on, move and delete nothing, the stickies they added before included, and they cannot add or remove tabs, press Bring Focus or hold the [facilitator](/help/collaboration/facilitator/) baton. Panning and zooming work as they always do. It is the pass to hand a team for a stand-up or an all-hands.
+
+livehuddle has no new **Viewer** pass: a space is shared to bring people into a meeting, where everyone should be able to speak and take part. A Viewer pass made before still works, letting its visitors watch, pan and zoom, follow along and listen in, always walking as an avatar, and nothing else. Its band reads **Viewer (Legacy)**; to let its people take part, revoke it and issue a Participant pass.
+
+<Figure caption="The Share dialog: choose Participant or Editor, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+  <HuddleSharePassesDialog />
+</Figure>
+
+A space can have several links at once, so you can hand out an edit link to a co-facilitator and a Participant link to your team and everyone else. Newest passes sit at the top. Whoever opens a link joins the same realtime room, so people and changes appear as they happen, and the space lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
+</AppNote>
+
+<AppNote app="liveplanner">
+  The dialog, **Share This Plan**, opens on **Issue a pass**, a new one. Choose what it lets people do from the three levels (a new pass starts as an Editor's):
+
+- **Viewer**: watches along. Can't comment or change a thing. They can open cards to read them.
+- **Participant**: comments, votes and works on items, but can't reshape the plan. They add cards and edit their fields, move cards between columns, write in Sheet cells, [comment](/help/collaboration/comments/) and cast dots in a [vote](/help/collaboration/session-tools/voting/). They cannot change a board's columns, card types or settings, format a Sheet, or add, rename, reorder or delete tabs. It is the level to hand a team for a retrospective or a planning session.
+- **Editor**: works with you in real time, changing anything you can.
+
+Below the levels, **Opens** chooses whether the link opens **All tabs** or only one ([Sharing One Tab](/help/collaboration/sharing/one-tab/)); it shows when the plan has more than one tab. **Valid** chooses how long the link works: **Forever**, **1 week**, **1 month** or **6 months** ([Share Link Expiry](/help/collaboration/sharing/share-link-expiry/)). Press **Create Pass**. The link is made and copied in one go, ready to paste. A pass's level is set when you create it. To hand someone a different level, create another pass.
+
+A plan can have several links at once, so you can hand an Editor link to a co-facilitator, a Participant link to your team and a Viewer link to everyone else. Whoever opens a link joins the same realtime room, and the plan lands in their [Shared With Me](/help/explorer/shared-with-you/) list for next time.
+
+**Your Links.** Under **Passes**, each pass shows its level, its address, which tabs it opens and how long it has left. On each one you can:
+
+- change which tabs it opens with its tab menu; the address stays the same, and anyone using it reloads into the new choice at once;
+- press **Copy link** to copy its address again;
+- copy it as an embed or a live image from its **Embed** and **Live image** menus;
+- press the bin (**Revoke link**), then **Revoke**, to stop it working.
+
+A pass with a lifetime moves to **Expired** when it runs out. There, **Extend** opens it again for another round of the lifetime it was issued with, and the bin deletes it.
+</AppNote>
+
+Each pass shows its link with a copy button inside it. A link opens every tab unless you [scope it to one tab](/help/collaboration/sharing/one-tab/). The person you send a one-tab link to sees that tab, and the rest of the <Noun /> never reaches their browser.
+
+<AppNote app="livediagram">
+  Beneath the link, one row shows which tabs it **Opens** (on a canvas with more than one tab) and
+  how long it is **Valid**, with its **Embed** and **Live image** menus and the bin to revoke it at
+  the right. On a phone the menus drop to a line of their own.
+</AppNote>
+
+<AppNote app="livedesign">
+  Beneath the link, one row shows which tabs it **Opens** (on a design with more than one tab) and
+  how long it is **Valid**, with its **Embed** and **Live image** menus and the bin to revoke it at
+  the right. On a phone the menus drop to a line of their own.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Beneath the link, one row shows which tabs it **Opens** (on a document with more than one tab) and
+  how long it is **Valid**, with its **Embed** and **Live image** menus and the bin to revoke it at
+  the right. On a phone the menus drop to a line of their own.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Beneath the link, one row shows which tabs it **Opens** (on a space with more than one tab) and
+  how long it is **Valid**, with its **Embed** and **Live image** menus and the bin to revoke it at
+  the right. On a phone the menus drop to a line of their own.
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  **Your Name When Sharing.** As a guest, the **Sharing as** field at the bottom of the dialog is
+  the name other people see on your cursor and your comments. Type a new one, or press the shuffle
+  button for another random name. It is saved when you create a pass or close the dialog. Signed in,
+  your account name is used and the field is hidden. See [Guest
+  Identity](/help/account-and-data/guest-identity/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  **Your Name When Sharing.** As a guest, the **Sharing as** field at the bottom of the dialog is
+  the name other people see on your cursor and your character. Type a new one, or press the shuffle
+  button for another random name. It is saved when you create a pass or close the dialog. Signed in,
+  your account name is used and the field is hidden. See [Guest
+  Identity](/help/account-and-data/guest-identity/).
+</AppNote>
+
+## Controlling Access
+
+Two self-serve controls let you bound who gets in and for how long:
+
+- A [share password](/help/collaboration/sharing/share-passwords/) makes every link prompt for a password before it opens.
+- A [share link expiry](/help/collaboration/sharing/share-link-expiry/) gives a link a lifetime (a week, a month, or six months). When it runs out the link stops working, but stays in your dialog so you can extend or delete it.
+
+<AppNote app="livediagram">
+  The canvas's owner, and the members of its team, never need the password.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The document's owner, and the members of its team, never need the password.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The space's owner, and the members of its team, never need the password.
+</AppNote>
+
+<AppNote app="livedesign">The design's owner always bypasses the password.</AppNote>
+
+<AppNote app="liveplanner">
+  At the foot of the dialog, **Password Protection** puts one password on every link to the plan.
+</AppNote>
+
+These are independent: you can use either, both, or neither. They are layered on top of the link role, not a replacement for it. [Share Link Security](/help/privacy-and-security/share-link-security/) explains what a link does and does not protect.
+
+## Embedding
+
+An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a <Noun /> inside another page, like a wiki, a doc, or Notion. Where an `<iframe>` isn't allowed, like a GitHub README, use a [live image](/help/collaboration/sharing/live-image/) from the pass's **Live image** menu instead. Both are copied from a pass's **Embed** and **Live image** menus.
+
+<AppNote app="livediagram">
+  The embed honours the link's role: an Editor pass embeds an editable canvas, while a Participant or Viewer pass embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the canvas is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
+
+  <Figure caption="A canvas embedded in another page, alongside the iframe snippet that places it.">
+    <EmbeddedWork product="livediagram" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  The embed honours the link's role: an Editor pass embeds an editable canvas, while a Participant or Viewer pass embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the design is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
+
+  <Figure caption="A design embedded in another page, alongside the iframe snippet that places it.">
+    <EmbeddedWork product="livedesign" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  The embed honours the link's role: an Editor pass embeds an editable canvas, while a Participant or Viewer pass embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the document is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
+
+  <Figure caption="A document embedded in another page, alongside the iframe snippet that places it.">
+    <EmbeddedWork product="livedocuments" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  The embed honours the link's role: an Editor pass embeds an editable space, while a Participant pass (or a legacy Viewer pass) embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the space is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
+
+  <Figure caption="A space embedded in another page, alongside the iframe snippet that places it.">
+    <EmbeddedWork product="livehuddle" />
+  </Figure>
+</AppNote>
+
+## Sharing with Everyone
+
+Proud of a <Noun />? [Share it to the Community](/help/collaboration/sharing/community/), the public gallery where anyone can find it, view it read-only and make their own copy. Looking for a starting point instead? [Find <Noun plural /> in the Community](/help/collaboration/sharing/finding-community-documents/) by searching their words and tags. The Share dialog's **Community** tab, beside **Passes**, publishes it, edits its listing and takes it down again. It is there for your own <Noun />, not a team <Noun />; a guest sees a note and **Sign In to Share** there instead.
+
+<AppNote app="liveplanner">
+  While a plan is listed, the editor's header and the Explorer show it as **Public**.
+</AppNote>
+
+<AppNote app="livedocuments">
+  **Asking for Sign-Off.** The Share dialog's **Approval** tab asks named people to approve the
+  document, and a badge in the header shows where their answers stand. See [Request
+  Approval](/help/collaboration/sharing/request-approval/).
+</AppNote>
+
+## Stopping Sharing
+
+To stop a link working, press the bin (**Revoke link**) on its pass and confirm with **Revoke**. Anyone viewing through it is sent out of the <Noun /> straight away, and the URL stops resolving. A revoked link can't be brought back: create a new pass if you change your mind, which gives a new URL.
+
+<Note>
+  A [<Noun /> kept Offline](/help/privacy-and-security/offline-mode/) lives only in your browser, so
+  there is nothing on the server to share yet. Opening **Share** on one shows a gate instead of the
+  link controls, with a button that uploads it to your account first.
+</Note>
+
+<AppNote app="livediagram">The button reads **Sync Canvas**.</AppNote>
+
+<AppNote app="livedesign">The button reads **Sync Design**.</AppNote>
+
+<AppNote app="livedocuments">The button reads **Sync Document**.</AppNote>
+
+<AppNote app="livehuddle">The button reads **Sync Space**.</AppNote>
+
+<FeatureGrid>
+  <Feature slug="embeds" title="Embeds">
+    Drop a live <Noun /> into another page, read-only or editable depending on the link.
+  </Feature>
+  <Feature slug="teams" title="Teams">
+    Share a whole library with teammates instead of one link at a time.
+  </Feature>
+</FeatureGrid>
+
+</ArticleLayout>

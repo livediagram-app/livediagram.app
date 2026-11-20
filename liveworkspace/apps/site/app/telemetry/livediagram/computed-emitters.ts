@@ -304,6 +304,16 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
 
   // The help centre.
   'packages/help-site/src/components/ArticleShell.tsx Help·View': { values: SLUGS, open: SLUG_WHY },
+  'packages/help-site/src/components/AppSwitch.tsx Help·Changed': {
+    values: [
+      'Scope.livediagram',
+      'Scope.liveplanner',
+      'Scope.livedocuments',
+      'Scope.livedesign',
+      'Scope.livehuddle',
+      'Scope.all',
+    ],
+  },
   'packages/help-site/src/lib/use-article-vote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
   'packages/help-site/src/lib/use-article-vote.ts Help·Unhelpful': {
     values: SLUGS,

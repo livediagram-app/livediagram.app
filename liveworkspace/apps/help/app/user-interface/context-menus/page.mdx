@@ -1,0 +1,280 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ElementContextMenu } from '@/editions/livediagram/components/illustrations/user-interface';
+import { ElementContextMenu as LivehuddleElementContextMenu } from '@/editions/livehuddle/components/illustrations/user-interface';
+
+export const metadata = helpMetadata({
+  title: 'Context Menus',
+  description:
+    'Right-click (or long-press) an element, empty canvas or a tab for a menu scoped to it: element styling, the tab menu, and paste.',
+  path: '/help/user-interface/context-menus/',
+});
+
+<ArticleLayout
+  path="user-interface/context-menus"
+  title="Context Menus"
+  description="Right-click menus across the editor, each scoped to what you clicked."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+A **context menu** is the menu you get by right-clicking, or by pressing and holding for half a second on touch. Each one is scoped to whatever you clicked, so it only ever offers what makes sense there. On a phone the menus open as a sheet from the bottom of the screen.
+
+<Figure
+  app="livedesign,livediagram,livedocuments"
+  caption="Right-clicking a shape opens its menu: collapsible sections for layer, size, shape, rotation, appearance, animation, text and more."
+>
+  <ElementContextMenu />
+</Figure>
+<Figure
+  app="livehuddle"
+  caption="Right-clicking a shape opens its menu: Clear Styles in the slim bar at the top, then collapsible sections for arrange, size and rotation, and the Appearance flyout."
+>
+  <LivehuddleElementContextMenu />
+</Figure>
+
+## On an element
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  The element menu is where an element is **styled and described**. It is built from collapsible
+  sections, and which ones appear depends on what you clicked.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The element menu is where an element is **styled and set up**. It is built from collapsible
+  sections, with **Appearance** and **Tools** opening to the side, and which ones appear depends on
+  what you clicked.
+</AppNote>
+
+<AppNote app="livedesign">
+  Appearance and Animation (when it has text) open to the side. Along its top, a slim bar holds
+  **Clear Styles** at the right, while the element has a style to clear. Below it, for a shape:
+</AppNote>
+
+<AppNote app="livediagram">
+  Appearance, Animation (when it has text), Text and Resources open to the side. Along its top, a
+  row of buttons holds the element kind's own verbs, such as **Add Child** and **Add Sibling** on a
+  [mind map](/help/palette/mind-maps/) node or **Add Step** and **Add Branch** on a
+  [flowchart](/help/palette/flowcharts/) step, with **Save to Library** and **Clear Styles** at the
+  right. Below it, for a shape:
+</AppNote>
+
+<AppNote app="livedocuments">
+  **Appearance** opens to the side. Along its top, one row of buttons: **Save to Library** at the
+  left (keep the element to place again in any <Noun />; not on a locked element), and **Delete** at
+  the right. Below them, for a shape:
+</AppNote>
+
+<AppNote app="livehuddle">
+  For a shape:
+
+- **Clear Styles**, the eraser in a slim bar across the top of the menu, while the element has a style to clear: one press puts it back to the tab's theme.
+- **Arrange**: **Bring to Front**, **Send to Back** and its opacity.
+- **Size** and **Rotation**.
+- **Appearance**: the shape's **Presets**, **Colours** (text, background and border, with **Reset to Theme**), **Border**, **Shadow** and **Finish**, and, once it has text, a **Text** flyout of its own with font, size, padding, alignment and markers.
+
+Images and links add a section of their own (**Image**, **Link**), and the Space's pieces gather their own settings under **Tools**: which kind a piece is, a chair's facing, a room's walls and floor, a portal's destination, the Stage, a Screen's address and more.
+
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  - **Layer**: **Bring to Front**, **Send to Back**, moving it to another
+  [layer](/help/canvas/layers/), and its opacity. - **Size**, **Shape** (change the kind of shape)
+  and **Rotation**.
+</AppNote>
+
+<AppNote app="livedesign">
+  - **Appearance**: one-click [presets](/help/palette/shapes/style-presets/), **Colours** (text,
+  background and border, with **Reset to Theme**), **Border** and, once it has text, **Text** (font,
+  size, padding, alignment and markers).
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Appearance**: one-click [presets](/help/palette/shapes/style-presets/), **Colours** (text,
+  background and border, with **Reset to Theme**), **Border** and **Shadow**.
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **Appearance**: one-click [presets](/help/palette/shapes/style-presets/), **Colours** (text,
+  background and border, with **Reset to Theme**) and **Border**, and once the shape has text,
+  **Text**: font, size, padding, alignment and markers.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  - **Animation**: a looping effect for the shape and, separately, for its text, with speed and
+  repeat (see [Animations](/help/canvas/animations/)).
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Text** (once it has text): font, size, padding, alignment and markers.
+</AppNote>
+
+<AppNote app="livedesign,livediagram">
+  - **Resources**, last: what attaches to the element, **Assign Action**, **Add Comment**, **Add
+  Link** and **Add Note** (each reads **View** or **Edit** once the element has one).
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **Resources**, last: **Assign Action** and **Add Comment** (**View Action** and **View
+  Comments** once the element has one).
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  An arrow's menu has **Line** (straight, curved or angled, pattern and thickness) and **Pointer**
+  (its arrowheads) instead of the shape sections, and images, tables, icons and data elements each
+  add a section of their own.
+</AppNote>
+
+<AppNote app="livedesign,livediagram">
+  The everyday verbs live elsewhere: **Duplicate**, layer order, **Lock** and **Delete** are on the
+  [selection toolbar](/help/user-interface/toolbar/), and cut, copy and paste are on the keyboard
+  (see [Copy and Paste](/help/tips-and-tricks/copy-and-paste/)). Right-click a multi-selection and
+  you get the same kind of menu for the whole group.
+</AppNote>
+
+<AppNote app="livedocuments">
+  <AppName /> has no toolbar floating over a selected element, so this menu is where its controls
+  live. Double-click an element to edit its text, press **Cmd/Ctrl+D** to duplicate it and
+  **Cmd/Ctrl+Shift+L** to lock it, and use **Layer** for **Bring to Front** and **Send to Back**.
+  Cut, copy and paste are on the keyboard (see [Copy and
+  Paste](/help/tips-and-tricks/copy-and-paste/)). Right-click a multi-selection and you get the same
+  kind of menu for the whole group.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The everyday verbs live elsewhere: **Duplicate**, stacking order and **Delete** are on the
+  [selection toolbar](/help/user-interface/toolbar/), and cut, copy and paste are on the keyboard
+  (see [Copy and Paste](/help/tips-and-tricks/copy-and-paste/)). Right-click a multi-selection and
+  you get the same kind of menu for the whole group.
+</AppNote>
+
+On a desktop pointer, the style controls **preview on hover**: rest the pointer on a colour, border, preset, rotation, marker, alignment, or size tile and the selection shows the change live; it only sticks when you click, and moving away reverts it. Comparing looks costs nothing.
+
+<AppNote app="livedesign,livediagram,livedocuments">The same goes for a shape tile.</AppNote>
+
+## On empty canvas
+
+Right-click empty canvas and you get the **tab menu** (below) with a labelled **Paste** row straight under the quick actions, since a right-click on empty space is usually "paste what I copied". Pasted elements land just offset from where they were copied, selected and ready to drag into place.
+
+## On a tab
+
+Right-click a tab in the [tab bar](/help/user-interface/tab-bar/), or use its **⋯** button, for the tab menu:
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  - A row of quick actions: **Rename**, **Duplicate**, **Paste**, **Side by Side** (**Close Side by
+  Side** while a split is open; not on a phone or with only one tab), **Lock Tab** (or **Unlock
+  Tab**), and **Delete**, which asks you to confirm and is unavailable while the tab is locked or
+  when it is the <Noun />
+  's only tab.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - A row of quick actions: **Rename**, **Duplicate**, **Paste**, **Side by Side** (**Close Side by
+  Side** while a split is open; not on a phone or with only one tab) and **Delete**. Delete asks
+  nothing, since **Undo** brings the tab back, and is unavailable when it is the space's only tab.
+</AppNote>
+
+<AppNote app="livedocuments,livedesign">
+  - Then full-width rows, in groups split by a line: **Organise in Tab Folder** (a [tab
+  folder](/help/tabs/tab-folders/)) and **Add to <Noun capital />
+  ** (link it into another of your <Noun plural />, so it stays one live tab and edits show in both
+  places); **Import**, **Export** and **Clear**.
+</AppNote>
+
+<AppNote app="livediagram">
+  - Then full-width rows, in groups split by a line: **Organise in Tab Folder** (a [tab
+  folder](/help/tabs/tab-folders/)) and **Add to Another Canvas** (link it into another of your
+  canvases, so it stays one live tab and edits show in both places); **Import**, **Export** and
+  **Clear**. A tab's [editor mode](/help/canvas/editor-modes/) is not in this menu: it is the switch
+  beside the menu button at the top left.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - Then full-width rows, in groups split by a line: **Organise in Tab Folder** (a [tab
+  folder](/help/tabs/tab-folders/)) and **Add to Another Space** (link it into another of your
+  spaces, so it stays one live tab and edits show in both places); **Attendance**, who was in the
+  tab and when (see [Attendance](/help/collaboration/live-presence/tab-attendance/)); **Import**,
+  **Export** and **Clear**.
+</AppNote>
+
+<AppNote app="livedesign">
+  A connected tab, one that stands for another item (in <AppName /> or another app) and opens it,
+  has a shorter menu: **Organise in Tab Folder** and **Remove Tab** (the other item is left as it
+  is), plus **Connect Again** when it can no longer open that item.
+</AppNote>
+
+<AppNote app="livediagram">
+  A [connected file](/help/tabs/connected-files/)'s tab gets a shorter menu: **Remove Tab**,
+  **Organise in Tab Folder** and, when the connection is broken, **Connect Again**.
+</AppNote>
+
+<AppNote app="livehuddle">
+  A tab connected from another app has a shorter menu: **Organise in Tab Folder**, **Attendance**
+  and **Remove Tab**, plus **Connect Again** when the file it shows can no longer be opened.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  The layout tidiers, Auto Layout and Auto-align, are in the [command
+  palette](/help/search-panel/the-search-panel/command-palette/) rather than this menu. See [Layout
+  Cleanup](/help/tools/layout-cleanup/).
+</AppNote>
+
+<AppNote app="livediagram">
+  The layout tidiers, Auto Layout and Auto-align, are behind the **Tidy** button in the bottom-right
+  cluster, just left of **Layers** (in Diagram mode), and in the [command
+  palette](/help/search-panel/the-search-panel/command-palette/), rather than in this menu. See
+  [Layout Cleanup](/help/tools/layout-cleanup/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  Auto-align, the layout tidier, is in the [command
+  palette](/help/search-panel/the-search-panel/command-palette/) rather than in this menu. See
+  [Layout Cleanup](/help/tools/layout-cleanup/).
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livehuddle">
+  A tab's theme and canvas background are not in this menu: they are behind the **Theme & canvas**
+  button in the bottom-right corner. See [Themes](/help/canvas/themes/).
+</AppNote>
+
+<AppNote app="livedocuments">
+  A tab's theme and canvas background are not in this menu: they are behind the **Style** button on
+  each page's title bar. See [Themes](/help/canvas/themes/).
+</AppNote>
+
+<AppNote app="livediagram">
+  Nor are the timer, vote and poll: they have their own buttons in the bottom-right corner, in
+  Workshop mode. See [Session Tools](/help/collaboration/session-tools/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  A Timer or Stopwatch is run from the buttons under it, not from this menu. See [Timer and
+  Stopwatch](/help/collaboration/session-tools/timer/).
+</AppNote>
+
+## On a Participant or view-only link
+
+<AppNote app="livedesign,livediagram">
+  Right-click an element (a long press on a touch screen) and you get a short menu with only what
+  your link lets you do: **Add Comment** (or **View Comments**) and **Edit Text** on a Participant
+  link, **Show Comments** on a view-only link where the element already has comments, and **Open
+  Link**, **View Note** and **Copy Text** wherever the element has them. There is no tab menu on
+  these links.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Right-click an element (a long press on a touch screen) and you get a short menu with only what your link lets you do: **Add Comment** (or **View Comments**) and **Edit Text** on a Participant link, **Show Comments** on a view-only link where the element already has comments, **Open Link** on a link card or a video, and **Copy Text** wherever the element has words. There is no tab menu on these links.
+
+With the keyboard, select an element (press `Tab` on the canvas) and press **Shift+F10**, or the menu key, to open its menu.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+  Right-click an element (a long press on a touch screen) and you get a short menu with only what
+  your link lets you do: **Copy Text** wherever the element has text. Empty canvas has no menu on
+  these links. A Participant's tab menu holds **Attendance** alone; a Viewer has no tab menu.
+</AppNote>
+
+Context menus close as soon as you pick an action or click elsewhere, and `Escape` closes them too.
+
+</ArticleLayout>

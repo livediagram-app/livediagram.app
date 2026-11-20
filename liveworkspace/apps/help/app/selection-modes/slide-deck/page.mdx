@@ -1,0 +1,160 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SlideDeckPanel } from '@liveworkspace/help-site/art/illustrations/presentation';
+import { ContentsSlidesMenu } from '@/editions/livedocuments/components/illustrations/contents-slides';
+
+export const metadata = helpMetadata({
+  title: 'Slide Deck',
+  description:
+    'Turn your work into a talk: build slides, write presenter notes, then present them full screen one at a time.',
+  path: '/help/selection-modes/slide-deck/',
+});
+
+<ArticleLayout
+  path="selection-modes/slide-deck"
+  title="Slide Deck"
+  description="Turn your work into a deck of slides, presented full screen one at a time."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  subArticles={getSubArticles('slide-deck')}
+>
+
+A finished <Noun /> shows everything at once, which is exactly what you want for reference and exactly what you don't want when you are narrating it. A **slide deck** turns it into a talk: a set of slides, presented full screen one at a time.
+
+<AppNote app="livediagram">
+  You build the slides yourself, each showing the elements you chose. Open **Slide Deck** from **Tools** in the bottom bar: it is in the **Collaborate** section. You can also type "slide deck" into the [command palette](/help/search-panel/the-search-panel/command-palette/), which opens Tools there. Slide Deck is **desktop only**: a phone screen has no room for the deck list and the canvas side by side, so it isn't offered there. A deck you built on a desktop browser is kept, ready for the next time you open the canvas on one.
+
+Opening it does **not** start presenting. It opens the **Slide Deck** page inside Tools, where you build and check the deck; starting is a deliberate second act. Unlike other tools, Tools stays open while you select elements on the canvas for a slide; close it with its close button or `Esc`.
+
+</AppNote>
+
+<Figure
+  app="livediagram"
+  caption="The Slide Deck lists the deck in order, each row naming its tab and element count."
+>
+  <SlideDeckPanel />
+</Figure>
+
+<AppNote app="livediagram">
+  The deck's presenter settings (**Transition**, **Speed**, **Auto-Advance**, **Slide Size**,
+  **Click to Advance**, **Loop the Deck**, **Show Position**, **Keep Controls Visible**, **Hide the
+  Pointer** and the two pacing clocks) are only in **Settings**, under **Presenting**, so you can
+  set them before you start rather than in front of the room. The cog you get while presenting keeps
+  only the transition, its speed and the two pacing clocks. See [The Presenter's
+  Controls](/help/selection-modes/slide-deck/presenter-controls/#presenter-settings).
+</AppNote>
+
+<AppNote app="livedocuments">
+  Each slide is a page. There is nothing to open to build one: the deck lives in **Contents**, the
+  list of pages down the left of the canvas. The slides run in the order Contents lists them, and
+  each page's **⋯** menu says what part it plays in the show.
+</AppNote>
+
+<Figure
+  app="livedocuments"
+  caption="Contents is the deck: slides in the order they run, a hidden one set aside, and a page's menu with Present From Here and Hide in Slides."
+>
+  <ContentsSlidesMenu />
+</Figure>
+
+## What a slide is
+
+<AppNote app="livediagram">
+  **A slide is a set of elements you chose, from one tab.** It is not a region of the canvas, not a saved camera position, and not a layer.
+
+- **The deck spans tabs, a slide doesn't.** Slide 1 can come from one tab, slide 2 from another, and slide 3 from the first one again, but each slide draws from a single tab, which is what gives it a backdrop and a coordinate space to be framed in.
+- **An element can be on as many slides as you like.** Membership is a list, not a split, so a title that belongs on every slide simply goes on every slide.
+- **Slide order is the deck's own.** It has nothing to do with tab order or with which element sits in front of which, and reordering the deck never restacks anything on the canvas.
+- **Slides point at elements, they never copy them.** Restyle a shape and every slide it appears on shows the new one. Delete it and the slides quietly skip it; undo the delete and it is back on all of them.
+</AppNote>
+
+<AppNote app="livedocuments">
+  **A slide is a page.** It shows whatever is on that page now, framed to exactly the page, so it follows your edits without you touching the deck.
+
+- **Every [slide page](/help/pages/slide-pages/) is already in the deck**, from the moment you make it, in page order. Move a page in Contents and its slide moves with it.
+- **Any other page joins with Add to Slides**: open its **⋯** menu in Contents (or right-click its row) and press **Add to Slides**.
+- **Each tab is its own show.** **Present** runs the slides of the tab you are on, in its page order. Slides on another tab are that tab's show: open it and press **Present** there.
+
+See [Building a Deck](/help/selection-modes/slide-deck/building-a-deck/) for hiding a slide from the run, speaker notes and the order, and [Exporting and Presenting Pages](/help/pages/exporting-pages/#exporting) for how a page slide behaves.
+
+</AppNote>
+
+## Building a deck, in short
+
+<AppNote app="livediagram">
+  <Step n={1}>
+    Open **Tools** in the bottom bar and pick **Slide Deck**. A new deck starts empty, because a
+    guessed deck is one you have to read and prune before you can trust it.
+  </Step>
+  <Step n={2}>On the canvas, select what you want on the first slide.</Step>
+  <Step n={3}>
+    Press **New slide** at the bottom of the Slide Deck. It counts your selection back to you, "New
+    slide from 3 elements", and the slide takes the tab you are on.
+  </Step>
+  <Step n={4}>
+    Move to the next thing you want to talk about, select it, and press the button again.
+  </Step>
+
+**Arrows come along on their own.** An arrow with both ends on the slide is included automatically, so you can build a slide by dragging a box round four shapes without hand-picking the connectors between them.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  Slide pages are in the deck already; any other page joins with **Add to Slides** on its **⋯** menu
+  in Contents.
+</AppNote>
+
+Everything else about building, the slide menu, editing what is on a slide, hiding one from the run, reordering, notes and time budgets, is in [Building a Deck](/help/selection-modes/slide-deck/building-a-deck/).
+
+## Presenting it
+
+<AppNote app="livediagram">
+  Press **Present** at the bottom of the Slide Deck (or the **Present** button in the top bar) and
+  the deck opens full screen at slide 1 with every part of the editor hidden. Its badge counts the
+  slides that will run, and it stays greyed out until the deck has at least one slide that isn't
+  hidden. See [Presenting](/help/selection-modes/slide-deck/presenting/) for how a slide is framed,
+  how you move through the deck, and what you can and cannot touch while it runs, and [The
+  Presenter's Controls](/help/selection-modes/slide-deck/presenter-controls/) for the strip in the
+  corner, the pacing clock and the settings behind the cog.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Press **Present**, in the buttons at the top right of the canvas, and the deck opens full screen
+  at the first slide with every part of the editor hidden. To start somewhere else, open a page's
+  **⋯** menu in Contents and press **Present From Here**. See
+  [Presenting](/help/selection-modes/slide-deck/presenting/) for how a slide is framed, how you move
+  through the deck, and what you can and cannot touch while it runs, and [The Presenter's
+  Controls](/help/selection-modes/slide-deck/presenter-controls/) for the strip in the corner, the
+  pacing clock and the settings behind the cog. Transitions, auto-advance and the rest are also in
+  **Settings**, under **Presenting**, so you can set them before you start rather than in front of
+  the room.
+</AppNote>
+
+**Starting a presentation broadcasts nothing.** Nobody else is pulled into your deck and nobody's view moves. The way you show a deck to people is the way you already show them everything else in the meeting: **share your screen**.
+
+<AppNote app="livediagram">
+  **The deck itself is ordinary canvas data**, though: a teammate who opens the canvas sees your slides in their own Slide Deck panel, and can edit them. It saves and travels exactly like the canvas's name does.
+
+Building a deck needs edit access. People on a view-only or participant [share link](/help/collaboration/sharing/) can open the Slide Deck from Tools to see the slides, open each one and present the deck, but they get no **New slide** button and no slide menus, and the command palette does not offer them Slide Deck.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  **The deck itself is ordinary document data**, though: a teammate who opens the document sees the same slides in Contents, hidden ones set aside, and can change them. It saves and travels exactly like the document's name does.
+
+Changing the deck needs edit access: people on a view-only or participant [share link](/help/collaboration/sharing/) see no page menus in Contents. Anyone on the document, Viewers included, can present it with the **Present** button at the top right of the canvas ([Presenting](/help/selection-modes/slide-deck/presenting/)).
+
+</AppNote>
+
+<Tip>
+  Build the deck as you would an agenda: one slide per point you intend to make, in the order you
+  intend to make them.
+</Tip>
+
+<AppNote app="livediagram">
+  Put the same title element on every slide and the room always knows which diagram they are looking
+  at.
+</AppNote>
+
+</ArticleLayout>

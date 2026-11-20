@@ -108,7 +108,7 @@ export function parseEditorMode(v: unknown): EditorMode | undefined; // 'worksho
 - `FlipchartIcon`: hand-authored SVG path in `drawing-kinds.tsx` (MIT, this repo), D7.
 - `blank-session` preview: hand-authored SVG in `packages/template-previews/src/template-preview-17.tsx`
   (Group 17, chained last in `template-preview.tsx`), with its hover story (the timer runs down, dots land).
-- The help card glyph `workshop-mode` in `apps/help/lib/featureIcons.tsx` (three people round a
+- The help card glyph `workshop-mode` in `liveworkspace/apps/help/editions/livehuddle/lib/featureIcons.tsx` (three people round a
   speech bubble), hue `#c2410c` in `featureColours.ts`.
 - The funnel slot `HeaderSession` on every surface (`packages/api-schema/src/cta-sources.ts`), retired
   with the public sites' Start Blank menu.

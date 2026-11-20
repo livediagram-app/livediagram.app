@@ -8,14 +8,14 @@ covers what they do for livedocuments. [Staging environment](staging-environment
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker         | Type                                                                          |
-| ---------------- | ------------------------- | ----------------------------------------------------------------------------- |
-| `apps/marketing` | `livedocuments-marketing` | Static assets only (Next.js `output: 'export'`).                              |
-| `apps/editor`    | `livedocuments-editor`    | Static assets + a tiny path-rewrite worker.                                   |
-| `apps/help`      | `livedocuments-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
-| `apps/api`       | `livedocuments-api`       | Worker (Durable Objects; no database, no bucket).                             |
-| `apps/mcp`       | `livedocuments-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
-| `apps/router`    | `livedocuments-router`    | Worker (service bindings to marketing, editor, help and api).                 |
+| App                       | Cloudflare Worker                      | Type                                                                                                                                                                 |
+| ------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/marketing`          | `livedocuments-marketing`              | Static assets only (Next.js `output: 'export'`).                                                                                                                     |
+| `apps/editor`             | `livedocuments-editor`                 | Static assets + a tiny path-rewrite worker.                                                                                                                          |
+| `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `livedocuments` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). |
+| `apps/api`                | `livedocuments-api`                    | Worker (Durable Objects; no database, no bucket).                                                                                                                    |
+| `apps/mcp`                | `livedocuments-mcp`                    | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                                                        |
+| `apps/router`             | `livedocuments-router`                 | Worker (service bindings to marketing, editor, help and api).                                                                                                        |
 
 `apps/cli` is published to npm, not deployed ([CLI](../015-api/cli.md)). Publishing is a manual step outside CI, and the
 MCP Registry listing is manual too (by hand, or the root `mcp-registry.yml` workflow started by hand,
@@ -25,7 +25,7 @@ it (`npm pack --dry-run`, [CI](../../../../docs/ci.md)).
 The marketing worker serves files from `apps/marketing/out/`. The editor worker serves files from `apps/editor/out/`
 plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single
 statically-built `/document/placeholder/` page ([New document route](../007-editor/new-document-route.md)). The help
-worker is static-assets-only too, served under `/help` ([Help app](../018-help/help-app.md)). The api worker holds the
+worker is static-assets-only too, served under `/help` ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). The api worker holds the
 REST + WebSocket layer ([API app](../015-api/api.md)). The mcp worker exposes the AI tools on its own host
 `mcp.livedocuments.app` and binds the api worker, not the router ([MCP server](../015-api/mcp-server.md)). The router
 holds **no application logic**: four service bindings, `MARKETING`, `EDITOR`, `HELP` and `API`, and the forwards to
@@ -82,7 +82,7 @@ as `*.test.ts`.
   `PLAN_MODE=deploy`) and deploys the ones with a `wrangler.toml`. A livedocuments Worker none of whose files or
   dependencies changed is left as it is.
 - **Order.** Three tiers, each waiting for the one before: the apis (`livedocuments-api`), then the sites and MCP
-  (`marketing`, `editor`, `help`, `mcp`), then the routers. So the editor never calls an api that lacks its routes, the
+  (`marketing`, `editor`, `mcp`), then the routers. So the editor never calls an api that lacks its routes, the
   mcp's binding to the api exists, and the router's four bindings exist when it deploys.
 - **One Worker** (`deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the other
   services and apis, livedocuments' sites and MCP in a job of their own, and the router with the other routers, each

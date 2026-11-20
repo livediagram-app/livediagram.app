@@ -1,0 +1,130 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SearchDocuments as LivediagramSearchDocuments } from '@/editions/livediagram/components/illustrations/search-panel';
+import { SearchDocuments as LivedocumentsSearchDocuments } from '@/editions/livedocuments/components/illustrations/search-panel';
+import { SearchDocuments as LivehuddleSearchDocuments } from '@/editions/livehuddle/components/illustrations/search-panel';
+
+export const metadata = helpMetadata({
+  title: 'Finding Your Work and Folders',
+  description:
+    'Search across all your work and folders, and what is shared with you, from one box in the editor or the Explorer.',
+  path: '/help/search-panel/the-search-panel/search-documents/',
+});
+
+<ArticleLayout
+  path="search-panel/the-search-panel/search-documents"
+  title="Finding Your Work and Folders"
+  description="Get back into your work from the search panel: your own, what is shared with you, and your teams'."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel"
+  parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
+  subArticles={getSubArticles('the-search-panel').filter((a) => a.slug !== 'search-documents')}
+>
+
+Wherever you open the [search panel](/help/search-panel/the-search-panel/), it covers your own library, so you never have to remember which folder a <Noun /> is in. Matching is on the name only, and any part of it will do.
+
+<AppNote app="livediagram,livehuddle">`board` finds "Sprint board" and "Onboarding".</AppNote>
+
+<AppNote app="livedocuments">`brief` finds "Project brief" and "Debriefing".</AppNote>
+
+<Figure
+  app="livediagram"
+  caption="Your own canvases first, then shared canvases and work in other apps under Every App."
+>
+  <LivediagramSearchDocuments />
+</Figure>
+<Figure
+  app="livedocuments"
+  caption="On the Explorer page: matching items, your own and shared with you, then matching folders."
+>
+  <LivedocumentsSearchDocuments />
+</Figure>
+<Figure
+  app="livehuddle"
+  caption="In the editor: your spaces first, then what Every App finds once you type."
+>
+  <LivehuddleSearchDocuments />
+</Figure>
+
+## In the editor
+
+<AppNote app="livediagram">
+  The **Canvases** group matches your own canvases by name (a canvas you never named is listed as "Untitled canvas"). Pick one and it opens, the quickest way back into a canvas without going to the [Explorer](/help/explorer/explorer-page/).
+
+A canvas saved only in this browser (see [Offline Mode](/help/privacy-and-security/offline-mode/)) carries an **Offline** label in the results, so you can tell it apart from one saved to your account.
+
+**Shared and team canvases: Every App.** Canvases someone shared with you, and canvases in your teams' libraries, are not in the Canvases group. Once you type, they appear in the **Every App** group, marked with livediagram's logo and name, alongside what you can open in the other liveworkspace apps. It lists only what you can open, and nothing in the Trash. Picking a shared canvas opens it on its share link, with whatever access the owner granted; picking a team canvas opens it like your own.
+
+**Folders.** The editor's search does not list folders. To find a folder, use **Search** on the [Explorer](/help/explorer/explorer-page/) page (or `Cmd` / `Ctrl` + `K` there): its **Folders** group matches your folders and your teams' folders by name, and picking one opens it.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  The **Documents** group matches your livedocuments documents by name (a document you never named is listed as "Untitled document"), the ones in your teams' libraries included. Pick one and it opens, the quickest way back into a document without scrolling the [Explorer](/help/explorer/explorer-page/). It searches your most recent 100 documents, read in the background once the open document has loaded.
+
+Once you type, an **Every App** group lists the rest of what you can open that matches: a document [shared with you](/help/explorer/shared-with-you/) through a link, an older document, or work in another liveworkspace app, each marked with its app. Picking one opens it, a shared document on its share link with whatever access the owner granted.
+
+Folders are not searched from the editor: open search on the Explorer page to find a folder.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+  The **Spaces** group matches your spaces by name (a space you never named is listed as "Untitled Space"): your own, and those in the libraries of the [teams](/help/collaboration/teams/) you have joined. Pick one and it opens, the quickest way back into a space without going through the [Explorer](/help/explorer/explorer-page/). The editor reads up to 100 of your spaces once the space you are in has loaded, and search filters those. With an empty box the group lists your spaces straight away, so you can open search and arrow down to one.
+
+**Shared with you, and other apps.** A space someone shared with you is not in the Spaces group. Once you type, the **Every App** group below it lists what you can open anywhere in liveworkspace that the groups above missed: a space shared with you, and your work in the other apps, each marked with its app's logo and name. Picking one opens it on its own link, in its own app.
+
+</AppNote>
+
+## On the Explorer page
+
+<AppNote app="livediagram,livehuddle">
+  On the [Explorer page](/help/explorer/explorer-page/), search has two groups for your library, and nothing is listed there until you type:
+
+- **Items** matches what you can open by name: in every app, or only this app's while the Explorer is showing just this app. Each row carries its app's logo. An archived one is marked **Archived**, and picking it opens the Archived view on it.
+- **Folders** matches your [folders](/help/explorer/folders/) by name, and your teams' folders too, each marked "in" its team. Picking one opens it in the Explorer.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The Explorer's search asks liveworkspace's index, so it reaches everything you can open:
+
+- **Items**: your documents and everything shared with you or in your teams, in every app (or just this app's, when the Explorer is showing only livedocuments). A match on the folder's name finds the documents in it too. An archived document says **Archived**, and picking it opens the Archived view on it.
+- **Folders**: the folders in your [folder tree](/help/explorer/folders/) and your teams', a team's marked "in" its name. Picking one opens it.
+</AppNote>
+
+## Limits
+
+Each group lists up to 8 matches. If what you want is not among them, type a little more of its name.
+
+<AppNote app="livediagram">
+  With an empty box the panel lists your canvases (with your teams and, in a canvas, its tabs and elements), so you can open it and arrow straight down to one.
+
+  <Tip>
+    Search only looks at names: it does not look inside other canvases, so to find a word on a canvas,
+    open that canvas and search there. A guest finds the canvases their own browser owns; signing in
+    brings your account's canvases into scope.
+  </Tip>
+</AppNote>
+
+<AppNote app="livedocuments">
+  With an empty box the editor lists your documents (and, in a document, its tabs and elements), so you can open it and arrow straight down to one; the Explorer page lists nothing until you type.
+
+  <Tip>
+    Search is owner-scoped: a guest finds what their own browser owns, and what it has opened through
+    share links; signing in brings your account's documents into scope. Documents kept in [Offline](/help/privacy-and-security/offline-mode/) are not searched. Search only looks at names:
+    it does not look inside other documents, so to find a word on a canvas, open that document and
+    search there.
+  </Tip>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Tip>
+    Search is owner-scoped: a guest finds the spaces their own browser owns; signing in brings your
+    account's spaces into scope. A space saved only in
+    [Offline](/help/privacy-and-security/offline-mode/) is not on the server, so search does not
+    find it: open it from the Explorer's Offline list. Search only looks at names, never inside
+    other spaces, so to find a word on a space, open that space and search there.
+  </Tip>
+</AppNote>
+
+</ArticleLayout>

@@ -1,0 +1,75 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Audit Log',
+  description:
+    'What a team admin can look back on: who joined, left or changed role, who shared, moved or deleted the team’s work, and its webhooks.',
+  path: '/help/collaboration/teams/audit-log/',
+});
+
+<ArticleLayout path="collaboration/teams/audit-log" title="Audit Log" description="Who did what in your team, for its admins: members, shares, moves, deletes and webhooks, kept for a year." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "audit-log")}>
+
+A team's **Audit Log** answers the questions an admin gets asked: who shared this, who joined, who removed that member, who added that webhook. It is the same log in every liveworkspace app, <AppName /> included, and only the team's Admins can see it.
+
+## Where to Find It
+
+Open your team in the Explorer: it's a space under **Spaces** in the sidebar. Below the team's card, its library is a section headed **Audit Log**, marked "Admins only · kept a year". It starts closed; open it to read the log. Members don't see the section at all, and if you stop being an Admin it tells you the log is for Admins only.
+
+The **Audit Log** is for Admins and holds only team-level events, never what happens inside a <Noun />: no edits or content, just names and ids.
+
+<AppNote app="livediagram,liveplanner,livedocuments,livedesign">That includes comments: it holds no comments.</AppNote>
+
+## What It Records
+
+- **People:** an invitation sent, someone joining (by email or the invite link), an invitation declined, a role changed between Admin and Member, someone removed or leaving, and the team renamed.
+- **Work:** a share link made (and its level, or a public link for a Community post) or removed, a <Noun /> moved into or out of the team, sent to the Trash, restored, or deleted for good (including an owner's Take Offline).
+- **Webhooks:** a webhook added to or removed from one of the team's <Noun plural />, with the address it sends to and its kind (Slack, Microsoft Teams or signed JSON).
+
+<AppNote app="livediagram">
+  Work events include its [approvals](/help/collaboration/sharing/request-approval/): an approval
+  requested, approved, sent back with changes requested, or cancelled.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Work events include each step of a [request for
+  approval](/help/collaboration/sharing/request-approval/): requested, approved, changes requested
+  or cancelled.
+</AppNote>
+
+Each row says who did it and what, the <Noun /> or person it was about, which app it came from and when. Rows are grouped by day, newest first; hover a time to see it in UTC. Someone whose account has closed shows as **Deleted account**. API tokens and connected apps belong to a person, not a team, so they never show here.
+
+## Filtering
+
+Above the list are four filters, and you can combine them:
+
+- **Person:** who did it. The team's members are listed by name, and anyone else the log names (someone who has since left) is marked "not in the team".
+- **Event:** one kind of event, grouped into People, Work and Webhooks.
+- **From** and **To:** whole days, both included.
+
+**Clear Filters** puts everything back. The list shows 50 events at a time; **Show More** reads the next 50.
+
+## Exporting as CSV
+
+**Export CSV** saves every event your filters match as one CSV file named after the team and the day, ready for a spreadsheet. Each row has the time in UTC, the event, the app, who did it, whom it was about, the <Noun /> and the detail, each with its id. A very large export (more than 200,000 events) saves the newest 200,000 and asks you to narrow the dates for the rest. The button is off when nothing matches. In a browser that can save straight to a file (Chrome and Edge), it asks where to save first and writes the file as it reads, so even the largest export stays light on memory.
+
+## How Long It Is Kept
+
+Each event is kept for a year from when it happened, then deleted. When someone closes their liveworkspace account, their name is taken out of the log and their rows show as Deleted account.
+
+See [Roles and Invites](/help/collaboration/teams/roles-and-invites/) for what Admins can do, and the team library article for where the team's work lives.
+
+<AppNote app="livediagram,livedocuments,livehuddle">
+  See [Team Shared Library](/help/collaboration/teams/team-shared-documents/) for the team library.
+</AppNote>
+
+<AppNote app="livedesign">
+  See [Team Shared Designs](/help/collaboration/teams/team-shared-designs/) for the team library.
+</AppNote>
+
+<AppNote app="liveplanner">
+  See [Team Shared Projects](/help/collaboration/teams/team-shared-projects/) for the team library.
+</AppNote>
+
+</ArticleLayout>

@@ -591,7 +591,7 @@ Preset-enum events only, never content, under a `Draw` category (named `Whiteboa
 A pen reports its place, never its colour. Strokes, stickies and text report
 through the ordinary `Element` / `Added` events.
 
-## Help centre ([Help app](../018-help/help-app.md))
+## Help centre ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md))
 
 No article of its own: Draw mode's article went with the mode. The Eraser key is in
 [Keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/); pens, the path tool, the fill tool and the two erasers have no

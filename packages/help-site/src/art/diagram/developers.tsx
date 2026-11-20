@@ -4,7 +4,7 @@
 import { Arrow, Shape } from '../primitives';
 import { CODE_TONES, DevelopersArt as Scene } from '../scenes/developers';
 
-// Developers: the shared scene (docs/specs/018-help/help-pages.md "Category art"). `POST /api/documents` and the
+// Developers: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"). `POST /api/documents` and the
 // Service map diagram it creates.
 export function DevelopersArt() {
   return (

@@ -2,6 +2,11 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./help-app.md - when working on Help app: Standalone `/help` help centre (MDX articles + client search), in livediagram's light brand; article registry + search keywords shared via `@livediagram/help-registry` (also feeds editor search)
+livediagram's help is the `livediagram` scope of liveworkspace's one help centre, which every app shares:
+[One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md) and its
+[blueprint](../../../../liveworkspace/docs/specs/017-help/blueprints/help-centre.md). Its articles are in
+`liveworkspace/apps/help/app`, its edition (header, footer, card art, illustrations, home layout and tests) in
+`liveworkspace/apps/help/editions/livediagram`, and its catalogue entries in `packages/help-registry/src/catalogue` (its own
+in `livediagram.ts`, the shared ones in `shared/`). How to add one: [Register a help article](../../instructions/register-a-help-article.md).
+
 - ./contextual-help-links.md - when working on Contextual help links: Reusable `HelpArticleLink` deep-linking editor surfaces to their help article; `HELP_ARTICLES` slug source
-- ./help-pages.md - when working on Help pages: the home page's sections, category art, grouped category pages, article previous/next, search keys

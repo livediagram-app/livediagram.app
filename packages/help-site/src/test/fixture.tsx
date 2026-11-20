@@ -31,6 +31,7 @@ const article = (
   description: `${a.title}, explained in a sentence long enough to read as a description.`,
   keywords: 'words',
   category: a.categorySlug,
+  apps: ['livediagram'],
   ...a,
 });
 
