@@ -105,6 +105,10 @@ export const createDesignOutput = {
       'The Explorer folder it appears in: "My Work" for the root, or the name of the user\'s ' +
         'default folder it was filed in.',
     ),
+  rev: z
+    .number()
+    .optional()
+    .describe('The first tab’s revision now, to pass as rev on the next update_design.'),
   url,
   lint: z
     .array(z.string())

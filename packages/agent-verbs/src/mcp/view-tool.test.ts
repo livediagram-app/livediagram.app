@@ -32,7 +32,7 @@ describe('the view tools', () => {
       'read',
       'view_live',
     ]);
-    expect(Object.keys(viewTab.mcpShapes.input)).toEqual(['documentId', 'tabId']);
+    expect(Object.keys(viewTab.mcpShapes.input)).toEqual(['documentId', 'tabId', 'rev', 'held']);
     expect(Object.keys(viewTab.mcpShapes.output)).not.toContain('pages');
     expect(viewTab.mcp.title).toBe('Draw a tab for the interactive view');
     expect(viewTab.description).toContain('use read_document');
@@ -80,7 +80,13 @@ describe('the view tools', () => {
 
   it('draws one page at a time for a product of pages, by its own id key', () => {
     const viewTab = createPageViewTool(design, 'designId');
-    expect(Object.keys(viewTab.mcpShapes.input)).toEqual(['designId', 'tabId', 'pageId']);
+    expect(Object.keys(viewTab.mcpShapes.input)).toEqual([
+      'designId',
+      'tabId',
+      'pageId',
+      'rev',
+      'held',
+    ]);
     expect(viewTab.mcp.title).toBe('Draw a page for the interactive view');
     const out = viewTab.output.parse({
       designId: 'd',

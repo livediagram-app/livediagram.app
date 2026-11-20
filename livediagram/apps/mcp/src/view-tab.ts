@@ -17,6 +17,12 @@ import {
   viewLiveResult,
   viewTicketPath,
 } from '@liveworkspace/mcp-kit/app-view-live';
+import {
+  earlierStepResult,
+  laterStepPath,
+  laterStepSince,
+  type StepChangeset,
+} from '@liveworkspace/mcp-kit/app-view-step';
 import type {
   ChangesetResponse,
   LiveDoc,
@@ -91,11 +97,31 @@ export function clickableElements(tab: Tab) {
 export async function viewTab(
   env: Env,
   token: string,
-  args: { documentId: string; tabId?: string },
+  args: { documentId: string; tabId?: string; rev?: number; held?: boolean },
 ): Promise<ToolResult> {
   const loaded = await loadTab(env, token, args.documentId, args.tabId);
   if (!loaded) return errorResult('That document has no tabs.');
-  return drawTab(env, token, args.documentId, loaded);
+  // One live view: a view that names its own step hears whether an agent changed the tab after it, and one holding
+  // that step's picture gets no drawing.
+  const { tab } = loaded;
+  const superseded = await laterStepSince(
+    () =>
+      apiJson<{ changesets?: StepChangeset[] }>(
+        env,
+        token,
+        laterStepPath('documents', args.documentId, tab.id),
+      ),
+    args.rev,
+  );
+  if (superseded && args.held)
+    return earlierStepResult({
+      documentId: args.documentId,
+      tabId: tab.id,
+      name: tab.name,
+      url: deepLink(env, args.documentId),
+      rev: tab.rev,
+    });
+  return drawTab(env, token, args.documentId, loaded, superseded);
 }
 
 // view_tab's answer for a tab already read: the SVG, its boxes and the document's tabs.
@@ -104,6 +130,7 @@ async function drawTab(
   token: string,
   documentId: string,
   { document, tab }: { document: LiveDoc; tab: TabRecord },
+  superseded = false,
 ) {
   const { svg } = await tabSvg(tab, { env, token });
   // The text block is one line, not the SVG (the spec's "view_tab").
@@ -116,6 +143,8 @@ async function drawTab(
     viewBox: viewBoxOf(svg),
     elements: clickableElements(tab),
     url: deepLink(env, documentId),
+    rev: tab.rev,
+    ...(superseded ? { superseded } : {}),
   });
 }
 

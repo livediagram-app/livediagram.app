@@ -6,9 +6,11 @@
 // too) follows its file live once drawn ("Live updates"): a view-only ticket from tools/call view_live opens the room's
 // socket, which it only listens on, and a change to what it shows draws it again. Where the page edits (livediagram,
 // "Edits in the view") and view_live says the token may, an Edit toggle lets
-// the person rename and move elements, each finished gesture one tools/call view_edit. Its pure parts sit on `LDV`
-// (subjectOf, fitOf, zoomAt, hitTest, elementLink, pagerOf, changeOf, retryAfter, stopWords, nudgeOf, moveOf, stepOf,
-// hintOf) for the tests, which evaluate this text with no window; the wiring runs only in a page.
+// the person rename and move elements, each finished gesture one tools/call view_edit. A view follows until an agent's
+// later change lands on its tab ("One live view"): it then keeps its own step, the picture its result came with when
+// it is opened again. Its pure parts sit on `LDV`
+// (subjectOf, pictureOf, fitOf, zoomAt, hitTest, elementLink, pagerOf, changeOf, retryAfter, stopWords, nudgeOf,
+// moveOf, stepOf, hintOf) for the tests, which evaluate this text with no window; the wiring runs only in a page.
 //
 // The script is four parts: the pure `LDV`, the host wiring every view shares (`HOST`), live updates (`LIVE`), and the
 // view's own (the canvas here, with its edit parts when asked, the board in app-viewer-board-script.ts), joined by
@@ -30,15 +32,24 @@ var LDV = (function () {
   var TRASHED = { 'document-trashed': 1, 'design-trashed': 1, 'project-trashed': 1 };
   function num(v) { return typeof v === 'number' && isFinite(v); }
   function str(v) { return typeof v === 'string' && v.length > 0 ? v : null; }
+  // The picture a tool's result came with (its PNG block), as an image address; null when it came with none.
+  function pictureOf(result) {
+    var c = result && Array.isArray(result.content) ? result.content : [];
+    for (var i = 0; i < c.length; i++)
+      if (c[i] && c[i].type === 'image' && str(c[i].data) && str(c[i].mimeType)) return 'data:' + c[i].mimeType + ';base64,' + c[i].data;
+    return null;
+  }
   // The file and tab a tool's result names, whatever the product calls the file: create (documentId, tabIds),
-  // add_tab and update (documentId, tabId), a read (id, tab.id); designId and projectId alike.
+  // add_tab and update (documentId, tabId), a read (id, tab.id); designId and projectId alike. With them, the step
+  // the view was opened by ("One live view"): the tab's revision as the result left it, and the result's picture.
   function subjectOf(result) {
     var s = result && typeof result === 'object' ? result.structuredContent : null;
     if (!s || typeof s !== 'object') return null;
     var doc = str(s.documentId) || str(s.designId) || str(s.projectId) || str(s.id);
     if (!doc) return null;
     var tab = str(s.tabId) || (s.tab && str(s.tab.id)) || (Array.isArray(s.tabIds) ? str(s.tabIds[0]) : null);
-    return { documentId: doc, tabId: tab };
+    var rev = num(s.rev) ? s.rev : s.tab && num(s.tab.rev) ? s.tab.rev : null;
+    return { documentId: doc, tabId: tab, rev: rev, picture: pictureOf(result) };
   }
   // The scale and offset that fit a w x h picture into a box, with a margin, never past 1:1 * 2.
   function fitOf(w, h, boxW, boxH) {
@@ -84,15 +95,17 @@ var LDV = (function () {
       next: at < pages.length - 1 ? pages[at + 1].id : null
     };
   }
-  // What a room frame means for the shown tab: draw it again, the document went to the Trash, or nothing. A changeset
-  // in own (the view's own edits, already drawn from view_edit's answer) draws nothing.
+  // What a room frame means for the shown tab: draw it again, the document went to the Trash, an agent's later
+  // change landed on it (later: the view keeps its own step), or nothing. A changeset in own (the view's own edits,
+  // already drawn from view_edit's answer) draws nothing.
   function changeOf(frame, tabId, own) {
     var op = frame && frame.kind === 'op' ? frame.op : null;
     if (!op || typeof op.kind !== 'string') return null;
     if (TRASHED[op.kind] === 1) return 'trashed';
     if (META[op.kind] === 1) return 'redraw';
     if (op.kind === 'changeset' && own && own.indexOf(op.id) >= 0) return null;
-    return CONTENT[op.kind] === 1 && (!op.tabId || op.tabId === tabId) ? 'redraw' : null;
+    if (CONTENT[op.kind] !== 1 || (op.tabId && op.tabId !== tabId)) return null;
+    return op.kind === 'changeset' && str(op.agentKey) ? 'later' : 'redraw';
   }
   // The wait before reconnect try number tries (from 0), or -1 once they have run out.
   function retryAfter(tries) {
@@ -104,9 +117,10 @@ var LDV = (function () {
     if (why === 'trashed') return 'This ' + w + ' moved to the Trash.';
     if (why === 'archived') return 'This ' + w + ' was archived.';
     if (why === 'lost') return 'Live updates stopped: the connection kept dropping.';
+    if (why === 'later') return 'A later step changed this ' + w + '.';
     return 'Live updates are off for this ' + w + '.';
   }
-  return { subjectOf: subjectOf, fitOf: fitOf, zoomAt: zoomAt, hitTest: hitTest, elementLink: elementLink, num: num,
+  return { subjectOf: subjectOf, pictureOf: pictureOf, fitOf: fitOf, zoomAt: zoomAt, hitTest: hitTest, elementLink: elementLink, num: num,
     pagerOf: pagerOf, changeOf: changeOf, retryAfter: retryAfter, stopWords: stopWords, LIVE: LIVE };
 })();
 `;
@@ -173,7 +187,7 @@ const HOST = String.raw`
   function viewArgs(documentId, extra) {
     var args = {};
     args[ID_KEY] = documentId;
-    for (var k in extra) if (extra[k]) args[k] = extra[k];
+    for (var k in extra) if (extra[k] || extra[k] === 0) args[k] = extra[k];
     return args;
   }
   function start(onResult) {
@@ -206,6 +220,8 @@ const HOST = String.raw`
 const CANVAS = String.raw`
   var stage = $('stage'), img = $('art'), ring = $('ring'), tabsEl = $('tabs'), pagerEl = $('pager');
   var view = { scale: 1, x: 0, y: 0 }, tab = null, subject = null;
+  // The step this view was opened by ("One live view"): its tab, the tab's revision then and the result's picture.
+  var born = null;
   var dragging = null, pointers = {}, pinch = null, moved = false;
   // The edit parts, when the page has them (EDIT below): null on a read-only page.
   var ED = null;
@@ -251,10 +267,14 @@ const CANVAS = String.raw`
   }
   function flip(pageId) { if (pageId && tab) load(subject.documentId, tab.tabId, false, pageId); }
 
-  // Draws a tab; quiet (a live redraw) keeps the pan and zoom, says nothing, and drops a stale answer.
-  function load(documentId, tabId, quiet, pageId) {
+  // Draws a tab; quiet (a live redraw) keeps the pan and zoom, says nothing, and drops a stale answer. A first draw
+  // and a catch-up (check) of the step's own tab ask whether an agent's later change landed on it since (rev), and
+  // say whether the view holds the step's picture (held), so the server need not draw one it would not show.
+  function load(documentId, tabId, quiet, pageId, check) {
     if (!quiet) { subject = { documentId: documentId, tabId: tabId }; say('Loading…'); }
-    var args = viewArgs(documentId, { tabId: tabId, pageId: pageId || (quiet && tab ? tab.pageId : null) });
+    var asks = born && LDV.num(born.rev) && born.tabId === tabId && (!quiet || check);
+    var args = viewArgs(documentId, { tabId: tabId, pageId: pageId || (quiet && tab ? tab.pageId : null),
+      rev: asks ? born.rev : null, held: asks && !quiet && !!born.picture });
     request('tools/call', { name: 'view_tab', arguments: args }).then(function (res) {
       show(drawn(res, function (s) { return typeof s.svg === 'string'; }), quiet, documentId);
     }).catch(function (err) {
@@ -263,58 +283,73 @@ const CANVAS = String.raw`
     });
   }
 
-  // Draws an answer of view_tab (or view_edit, the same shape); a quiet one drops a stale answer.
+  // Draws an answer of view_tab (or view_edit, the same shape); a quiet one drops a stale answer. After a later step
+  // ("One live view") a view already drawn keeps its picture, and one opened again shows the picture its own result
+  // came with (own: the answer holds no drawing, so no boxes to click, no other tab or page), or with none to show,
+  // the tab as it is now, as a snapshot.
   function show(s, quiet, documentId) {
     if (quiet && (subject.documentId !== documentId || subject.tabId !== s.tabId)) return;
+    if (s.superseded && quiet) return stop('later');
+    var own = !!s.superseded && !s.svg;
+    // The view's own edit is its step now.
+    if (s.changesetId && born && born.tabId === s.tabId && LDV.num(s.rev)) born.rev = s.rev;
     tab = s;
     subject.tabId = s.tabId;
     lastDraw = Date.now();
-    img.onload = function () { if (!quiet) fit(); say(''); };
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s.svg);
+    img.onload = function () {
+      if (own) { s.viewBox.width = img.naturalWidth; s.viewBox.height = img.naturalHeight; }
+      if (!quiet) fit();
+      say('');
+    };
+    img.src = own ? born.picture : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s.svg);
     img.alt = s.name;
     $('title').textContent = s.name;
     drawTabs();
     drawPager();
     if (ED) ED.drawn();
-    if (LIVE_ON) follow(documentId);
+    if (s.superseded) stop('later', own); else if (LIVE_ON) follow(documentId);
   }
-  // A live redraw: the shown tab (or page) drawn again, quietly.
-  function quietLoad() { if (subject && tab) load(subject.documentId, subject.tabId, true); }
+  // A live redraw: the shown tab (or page) drawn again, quietly; check asks whether a later step landed meanwhile.
+  function quietLoad(check) { if (subject && tab) load(subject.documentId, subject.tabId, true, null, check); }
 `;
 
 // Live updates, shared by every view (the canvas and the board): the room tells the view a change landed, and the view
 // draws again through its own `quietLoad`. The socket never sends a frame. The view sets `subject`, `lastDraw` and `ED`
 // (null where it has no edit parts) and calls `follow` once drawn.
 const LIVE = String.raw`
-  var lastDraw = 0, liveEl = $('live'), live = { doc: null, off: true };
+  var lastDraw = 0, liveEl = $('live'), live = { doc: null, off: true }, later = false;
   function mark(state, title) {
     liveEl.hidden = false;
     liveEl.dataset.state = state;
-    liveEl.textContent = state === 'live' ? 'Live' : state === 'wait' ? 'Reconnecting' : 'Snapshot';
+    liveEl.textContent = state === 'live' ? 'Live' : state === 'wait' ? 'Reconnecting' : state === 'step' ? 'Earlier step' : 'Snapshot';
     liveEl.title = title;
   }
   function drop() {
     clearTimeout(live.timer); clearTimeout(live.renew); clearTimeout(live.redraw); live.redraw = 0;
     if (live.ws) { live.ws.onclose = null; try { live.ws.close(1000); } catch (e) { /* already closed */ } live.ws = null; }
   }
-  function stop(why) {
+  // kept: true when the view shows the picture its own step left, false when it shows the tab as it is now (a
+  // snapshot, not a step); unsaid, it keeps the last picture it drew.
+  function stop(why, kept) {
     drop();
     live.off = true;
+    if (why === 'later') later = true;
     // Edits stay while the socket only dropped; a refusal or the Trash ends them, as the server would.
     if (ED && why !== 'lost') ED.allow(false);
     var at = new Date(lastDraw || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    mark('off', LDV.stopWords(why, WORD) + ' Showing the ' + SHOWS + ' as drawn at ' + at + '.');
+    mark(why === 'later' && kept !== false ? 'step' : 'off', LDV.stopWords(why, WORD) + ' Showing the ' + SHOWS + (kept ? ' as this step left it.' : ' as drawn at ' + at + '.'));
   }
   function follow(documentId) {
-    if (live.doc === documentId) return;
+    if (later || live.doc === documentId) return;
     drop();
     live = { doc: documentId, off: false, ws: null, tries: 0, again: false, pending: false };
     connect();
   }
-  function redraw() {
+  // check: a catch-up after time away from the room, which asks whether a later step landed meanwhile.
+  function redraw(check) {
     // A drag, a rename or a save in progress keeps its picture until it ends.
-    if (ED && ED.busy()) { live.redraw = setTimeout(function () { live.redraw = 0; redraw(); }, 300); return; }
-    quietLoad();
+    if (ED && ED.busy()) { live.redraw = setTimeout(function () { live.redraw = 0; redraw(check); }, 300); return; }
+    quietLoad(check);
   }
   function schedule() {
     if (live.redraw) return;
@@ -344,7 +379,7 @@ const LIVE = String.raw`
       ws.onopen = function () {
         live.tries = 0;
         mark('live', 'Live: this view follows the ' + WORD + ' as people change it.');
-        if (live.again) redraw();
+        if (live.again) redraw(true);
         live.again = false;
         live.renew = setTimeout(function () { live.again = true; drop(); connect(); },
           Math.max(0, (s.expiresAt || 0) - Date.now() - LDV.LIVE.RENEW_BEFORE_MS));
@@ -353,7 +388,7 @@ const LIVE = String.raw`
         var frame;
         try { frame = JSON.parse(e.data); } catch (x) { return; }
         var step = LDV.changeOf(frame, subject && subject.tabId, ED && ED.own);
-        if (step === 'trashed') stop('trashed'); else if (step === 'redraw') schedule();
+        if (step === 'trashed') stop('trashed'); else if (step === 'later' && SHOWS === 'tab') stop('later'); else if (step) schedule();
       };
       ws.onclose = function (e) {
         live.ws = null;
@@ -696,7 +731,7 @@ const EDIT = String.raw`
 `;
 
 const CANVAS_START = String.raw`
-  start(function (found) { load(found.documentId, found.tabId); });
+  start(function (found) { born = found; load(found.documentId, found.tabId); });
 `;
 
 /** How a product's view is put together: the id key its tools take, and whether it follows the room live. */
