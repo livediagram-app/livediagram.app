@@ -13,6 +13,7 @@ Scope, by file:
 | `liveworkspace/apps/index/src/inbox.ts`                         | `inboxQueries`, `handleInbox`                                                                                                                                   |
 | `liveworkspace/apps/index/src/calendar-feeds.ts`                | `handleCalendarFeed`, `calendarFeedByToken`, `calendarCardsQuery`: a person's calendar feed and its cards                                                       |
 | `packages/explorer/src/inbox-apps.ts`                           | `APPS_WITHOUT_INBOX` (livehuddle), `appHasInbox`: the per-app switch that hides the Inbox and skips its fetch                                                   |
+| `packages/explorer/src/data/inbox-settled.ts`                   | `createSettledStore`, `settledStoreFor`: the rows done from the pane, held for the reader across a reload until the index catches up                            |
 | `liveworkspace/apps/index/scripts/livehuddle-inbox-cleanup.sql` | The one-off cleanup of livehuddle's Inbox rows from before it stopped pushing (Work Tracker 736)                                                                |
 | `packages/index-app/src/outbox.ts`                              | The item's outbox in its Durable Object: what it owes the index, drained on idle                                                                                |
 | `packages/index-app/src/cards.ts`, `forms.ts`                   | Cards and their threads under `~cards`; a form's code lookup, cached                                                                                            |
@@ -107,9 +108,14 @@ row before the filter's slot (`panel/Pane.tsx`) and in the page's `PaneHeader` a
 A Plan card's row (an action or thread with `card`) draws `CardStatusChip` (`packages/explorer/src/explorer/badges.tsx`)
 from `card.column` beside its title: no read of its own, the column rides in the row's `card` JSON. `inboxCount`
 (`sections.ts`) is `forMe` plus the threads whose `threadReason` is `mention` or `yours`, and the sidebar and the
-rail draw no badge at 0. `useInbox` holds the rows done from the pane (`settle(key, at)`, each with the row's time as
-it was): `data` leaves them out while a read lists them at that time, so the badge, the rail, Home's pill and the
-list drop together, and a row that changes after (a new reply, reopened) comes back. A thread's row names who mentioned
+rail draw no badge at 0; with `app` (`inboxCount(data, viewerId, app)`, `inboxBadge`) it counts that app's rows only,
+as the panel's rail (`panel/Rail.tsx`) and the editor's button do. `useInbox` holds the rows done from the pane
+(`settle(key, at)`, each with the row's time as it was): `data` leaves them out while a read lists them at that time,
+so the badge, the rail, Home's pill and the list drop together, and a row that changes after (a new reply, reopened)
+comes back. For a signed-in reader the hold is `settledStoreFor(viewerId)` (`data/inbox-settled.ts`):
+`localStorage` key `liveworkspace:inbox-settled:<viewerId>`, `{ [key]: [at, doneAt] }`, the newest 200, each let go
+an hour after it was done, heard across tabs through `storage`; so a reload before the app's next push does not list
+the row again. Signed out, the page holds it alone. A thread's row names who mentioned
 the reader from `mentionedBy`, falling back to the latest author unless that is the reader (**A teammate**).
 `threadReason` reads a
 thread reached for no other reason (an agent with the reader's token wrote in it, nobody mentioned them, the item is
@@ -191,6 +197,8 @@ on production with `--remote`.
 | `packages/index-app/src/outbox.test.ts`                         | the outbox's keys, drain, caps and retries                                          |
 | `packages/index-app/src/cards.test.ts`, `forms.test.ts`         | cards under `~cards`; a form's code lookup                                          |
 | `packages/explorer/src/inbox-apps.test.tsx`                     | no Inbox for livehuddle; the other four keep it                                     |
+| `packages/explorer/src/data/inbox-settled.test.ts`              | the hold across a reload, its cap and hour, broken storage, other tabs              |
+| `packages/explorer/src/data/useInbox.test.tsx`                  | a row done from the pane stays out after a reload, back once it changes             |
 | `liveworkspace/apps/index/src/livehuddle-inbox-cleanup.test.ts` | the cleanup deletes livehuddle's thread, people and action rows only, twice safely  |
 
 ## Constants and configuration

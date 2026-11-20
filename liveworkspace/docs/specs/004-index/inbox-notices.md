@@ -103,9 +103,17 @@ questions").
 
 ## The count
 
-The editor's Explorer button carries the Inbox's count (the sidebar's: what waits on the reader,
-[one-explorer-contracts.md "Inbox"](one-explorer-contracts.md#inbox)) as a small brand badge at its corner, `9+`
-past nine, nothing at 0; the button's name says it ("Explorer, 3 in Inbox"). It moves with each read.
+The editor's Explorer button carries this app's Inbox count (the sidebar's rule, what waits on the reader,
+[one-explorer-contracts.md "Inbox"](one-explorer-contracts.md#inbox), over the rows of the editor's own app only) as
+a small brand badge at its corner, `9+` past nine, nothing at 0; the button's name says it ("Explorer, 3 in Inbox").
+It moves with each read. The owner, 2026-11-19: "It should only show the inbox items I have in that app, not all
+apps". Every row names its app as the index's `?app=` reads it (an access request its item's, a card thread the
+plan's that lists it), so each row counts in its own app's editor and none is lost; a livehuddle request, an app
+with no Inbox, counts in liveworkspace.app's Explorer, which lists every app's. The editor's panel draws the same
+number on its rail's Inbox, whichever filter its list shows, so the two never disagree; the Explorer page's sidebar
+keeps the count of the list it shows (All's, every app's). A row done from the Inbox's pane (resolved) leaves the
+count at once and after a reload, while the index still lists it ([one-explorer-contracts.md "What the reading pane
+can do"](one-explorer-contracts.md#inbox)).
 
 ## Telemetry
 

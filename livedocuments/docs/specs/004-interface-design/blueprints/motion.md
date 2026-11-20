@@ -152,7 +152,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
     for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.
 - **`packages/ui`**: `SiteSwitcher` takes `micro` for the chevron and the sites card. `Brand` takes
   `micro` for the colour and the hover rotate.
-- **`apps/help`**: `.card-glow` (0.3s) takes `micro`, as do `CategoryCard`, `FeatureArticleCard`,
+- **`liveworkspace/apps/help`**: `.card-glow` (0.3s) takes `micro`, as do `CategoryCard`, `FeatureArticleCard`,
   `ArticleCard`, the contact cards, `SearchInput`, `BackToTop`, the `ArticlePager` cards and the `ArticleShell` feedback
   buttons.
 - **`apps/marketing`**: the `Section` card hover takes `micro`. The page entrance is content

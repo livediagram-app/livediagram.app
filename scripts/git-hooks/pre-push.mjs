@@ -141,10 +141,11 @@ const CODE = /\.[cm]?[jt]sx?$/;
 /**
  * @typedef {{ status: string, path: string }} Change  one line of `git diff --name-status`
  * @typedef {{ dir: string, name: string, vitest: boolean }} Workspace
+ * @typedef {{ ws: Workspace, tests: string[] }} HelpRepoPaths  the help centre and its repo-paths tests
  * @typedef {{
  *   workspaceOf: (file: string) => Workspace | null,
  *   guardTests: (dir: string) => string[],
- *   helpApps: () => Workspace[],
+ *   helpApps: () => HelpRepoPaths[],
  *   emitterTest: (product: string) => { ws: Workspace, file: string } | null,
  *   maxWorkers?: number,
  * }} TestContext
@@ -159,8 +160,8 @@ const CODE = /\.[cm]?[jt]sx?$/;
  *   which catch stale generated schemas);
  * - when the push changes a product's code, the site's metric-emitters test for that product, which
  *   fails when a telemetry event has no chart;
- * - when the push deletes or renames a file, every help app's repo-paths test, which checks each repo
- *   path a help article cites.
+ * - when the push deletes or renames a file, the help centre's repo-paths tests (one per app's edition),
+ *   which check each repo path a help article cites.
  * Paths are relative to the workspace, as vitest takes them from there. `maxWorkers` caps each run on a
  * busy machine.
  * @param {Change[]} changes
@@ -225,17 +226,9 @@ export function testSteps(changes, { workspaceOf, guardTests, helpApps, emitterT
   if (changes.some((c) => c.status.startsWith('D') || c.status.startsWith('R')))
     for (const help of helpApps())
       steps.push({
-        label: `${help.name}: repo paths in help articles`,
+        label: `${help.ws.name}: repo paths in help articles`,
         cmd: 'pnpm',
-        args: [
-          '--filter',
-          help.name,
-          'exec',
-          'vitest',
-          'run',
-          'lib/repo-paths-in-docs.test.ts',
-          ...workers,
-        ],
+        args: ['--filter', help.ws.name, 'exec', 'vitest', 'run', ...help.tests, ...workers],
       });
   return steps;
 }
@@ -336,13 +329,19 @@ function guardTests(dir) {
   return found.sort();
 }
 
-/** Every product's help app that checks the repo paths its articles cite. */
+const HELP = 'liveworkspace/apps/help';
+
+/** The one help centre (liveworkspace/apps/help) and each app edition's test of the repo paths its articles cite
+ *  (editions/<app>/tests/repo-paths-in-docs.test.ts), or none when it has no such test. */
 function helpApps() {
-  return readdirSync(ROOT)
-    .map((product) => `${product}/apps/help`)
-    .filter((dir) => existsSync(path.join(ROOT, dir, 'lib/repo-paths-in-docs.test.ts')))
-    .map((dir) => /** @type {Workspace} */ (workspaceOf(`${dir}/package.json`)))
-    .filter(Boolean);
+  const ws = /** @type {Workspace | null} */ (workspaceOf(`${HELP}/package.json`));
+  const editions = path.join(ROOT, HELP, 'editions');
+  if (!ws || !existsSync(editions)) return [];
+  const tests = readdirSync(editions)
+    .map((edition) => `editions/${edition}/tests/repo-paths-in-docs.test.ts`)
+    .filter((file) => existsSync(path.join(ROOT, HELP, file)))
+    .sort();
+  return tests.length > 0 ? [{ ws, tests }] : [];
 }
 
 const SITE = 'liveworkspace/apps/site';

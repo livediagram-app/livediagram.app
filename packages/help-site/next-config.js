@@ -6,7 +6,7 @@ import createMDX from '@next/mdx';
 //   export default withHelpSite({ ...liveworkspaceNextConfig(), transpilePackages: ['@livediagram/ui', …] });
 //
 // Static export fronted by Cloudflare Static Assets, served under `/help` by the router worker (which strips the
-// prefix before forwarding, exactly like `/telemetry`). See docs/specs/018-help/help-app.md and
+// prefix before forwarding, exactly like `/telemetry`). See liveworkspace/docs/specs/017-help/help-centre.md and
 // docs/specs/016-platform/router-app.md in each product. MDX powers the article bodies; the index and
 // navigation pages are plain TS/TSX.
 

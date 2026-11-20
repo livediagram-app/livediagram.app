@@ -2,14 +2,17 @@ import type { MDXComponents } from 'mdx/types';
 import type { ComponentProps, ReactNode } from 'react';
 import Link from 'next/link';
 import { articleHref, categoryHref } from '@liveworkspace/help-registry';
+import { APP_NOTE_MARK, AppNote, type AppNoteProps } from './components/AppNote';
 import { NoteIcon, TipIcon } from './components/chrome-icons';
-import { Figure } from './components/Figure';
+import { AppName, Noun } from './components/ScopeWords';
+import { Figure, figureShowsIn } from './components/Figure';
 import { FEATURE_FALLBACK_HEX, FEATURE_TILE_CLASS, featureTileStyle } from './lib/feature-tile';
 import { headingId } from './lib/heading-id';
 import type { HelpSite } from './site';
 
-// What an article's MDX renders with (docs/specs/018-help/help-app.md "MDX"): the house styles for markdown's own
-// elements, and the article components (Step, Tip, Note, Feature, FeatureGrid, Figure) the articles use without an
+// What an article's MDX renders with (liveworkspace/docs/specs/017-help/help-centre.md "MDX"): the house styles for markdown's own
+// elements, and the article components (Step, Tip, Note, Feature, FeatureGrid, Figure, AppNote, Noun, AppName) the
+// articles use without an
 // import. Each app's mdx-components.tsx, the file @next/mdx looks for, is one line:
 // `export const useMDXComponents = createUseMdxComponents(site)`.
 
@@ -190,6 +193,17 @@ export function createUseMdxComponents(
   const BoundFeature = (props: Omit<ComponentProps<typeof Feature>, 'site'>) => (
     <Feature site={site} {...props} />
   );
+  // The one help centre's words and notes (liveworkspace/docs/specs/017-help/help-centre.md), bound to the site's
+  // scope. A help centre with no scope reads its own app's words: livediagram's until it is folded in.
+  const scope = site.scope ?? 'livediagram';
+  const BoundAppNote = (props: AppNoteProps) => <AppNote scope={site.scope} {...props} />;
+  (BoundAppNote as unknown as Record<string, boolean>)[APP_NOTE_MARK] = true;
+  const BoundNoun = (props: { plural?: boolean; capital?: boolean }) => (
+    <Noun scope={scope} {...props} />
+  );
+  const BoundAppName = () => <AppName scope={scope} />;
+  const BoundFigure = ({ app, ...props }: ComponentProps<typeof Figure> & { app?: string }) =>
+    figureShowsIn(app, site.scope) ? <Figure {...props} /> : null;
   return (components) => ({
     h1: ({ children }) => (
       <h1 className="mb-4 mt-8 text-3xl font-bold text-slate-900 md:text-4xl dark:text-slate-100">
@@ -261,7 +275,10 @@ export function createUseMdxComponents(
     Note,
     Feature: BoundFeature,
     FeatureGrid,
-    Figure,
+    Figure: BoundFigure,
+    AppNote: BoundAppNote,
+    Noun: BoundNoun,
+    AppName: BoundAppName,
     ...components,
   });
 }

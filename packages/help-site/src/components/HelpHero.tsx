@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-// The header band every help page opens on (docs/specs/018-help/help-pages.md "Shared look"): the marketing
+// The header band every help page opens on (liveworkspace/docs/specs/017-help/help-centre.md "Shared look"): the marketing
 // hero's band (`hero-band` in the product's ui package), the canvas's dot grid fading out towards its foot, a display
 // title in the band's ink, and optionally a category scene on the right from `lg` up. The home page passes
 // `home` for the centred, display-size version.
@@ -9,6 +9,7 @@ export function HelpHero({
   title,
   lede,
   art,
+  aside,
   home = false,
   children,
 }: {
@@ -18,6 +19,9 @@ export function HelpHero({
   lede?: ReactNode;
   /** A category scene, shown framed beside the copy on a wide screen. */
   art?: ReactNode;
+  /** What sits at the band's top right beside the copy (an article's Applies To row, help-centre.md "The
+   *  logos"); under the copy on a phone. */
+  aside?: ReactNode;
   home?: boolean;
   children?: ReactNode;
 }) {
@@ -27,7 +31,11 @@ export function HelpHero({
       <div
         className={`relative mx-auto max-w-7xl px-4 md:px-8 ${
           home ? 'py-14 text-center md:py-20' : 'py-10 md:py-14'
-        } ${art ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center lg:gap-14' : ''}`}
+        } ${art ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center lg:gap-14' : ''} ${
+          aside && !art
+            ? 'flex flex-col-reverse gap-6 md:flex-row md:items-start md:justify-between md:gap-10'
+            : ''
+        }`}
       >
         <div className={home ? 'mx-auto max-w-3xl' : 'max-w-3xl'}>
           {eyebrow && (
@@ -55,6 +63,7 @@ export function HelpHero({
           )}
           {children}
         </div>
+        {aside && !art && <div className="shrink-0">{aside}</div>}
         {art && (
           <div
             aria-hidden

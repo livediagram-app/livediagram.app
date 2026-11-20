@@ -28,7 +28,7 @@ Derived from [Shape libraries](../shape-libraries.md). Modelled like folders: on
 | `apps/editor/lib/explorer-library-host.tsx`                     | `explorerLibraryHosts`: the shared Explorer's Image Gallery and Shape Libraries over this site's API (`appLibraryHosts`)                                            |
 | `apps/editor/components/primitives/LibraryItemThumbnail.tsx`    | `LibraryItemThumbnail`: one item drawn small, drawn in My shapes                                                                                                    |
 | `apps/editor/lib/shape-library-dnd.ts`                          | `LIBRARY_SHAPE_DND_MIME`, `readLibraryShapeRef`: the drag payload                                                                                                   |
-| `apps/help/app/explorer/shape-libraries/page.mdx`               | The help article, key `shapeLibraries`                                                                                                                              |
+| `liveworkspace/apps/help/app/explorer/shape-libraries/page.mdx` | The help article, key `shapeLibraries`                                                                                                                              |
 
 ## Domain and naming
 

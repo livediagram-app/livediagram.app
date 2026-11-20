@@ -1,0 +1,199 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Automations',
+  description:
+    'How to make automation rules: triggers, conditions, actions, Slack and webhook posts, AI actions, rules drafted from your words, the Audit Trail and the CLI.',
+  path: '/help/plan/automations/',
+});
+
+<ArticleLayout
+  path="plan/automations"
+  title="Automations"
+  description="A rule watches your plan and does the routine steps for you, every time, and says that it did."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+An **automation rule** does the small step that always follows the same event: a card reaches Done and its finish date is stamped; a bug comes in and it is labelled and handed to whoever is on triage; every weekday at 9:00 the overdue cards are flagged; a card ships and the team's Slack channel hears about it. Each rule has a **trigger** (what starts it), **conditions** (what the card must be) and **actions** (what it does).
+
+## Open Automations
+
+Press **Tools** in the footer, then **Automations…** under **Automate**. It is there for an Editor of the whole plan. A badge at the row's end counts the rules that are on, and turns amber when a rule has paused itself (below); the **Tools** button then shows an amber dot too, so you see it with the menu shut.
+
+The screen has three tabs:
+
+- **Rules**: every rule in the plan, each with its switch, its name, what it does in a sentence ("When Card Moved to Done then Set Completed On"), when it **Last Run** and how many runs it made **This Week**. A rule on a time also says when it runs next ("Next: Mon 9:00"). Find one by name, or narrow the list by trigger or by **On and Off**. A row's **⋯** menu holds **Edit**, **Duplicate**, **Audit Trail** and **Delete**.
+- **Audit Trail**: what each rule did, newest first, kept for 30 days or the last 2,000 runs (and, apart from them, the last 500 No Match runs, when a rule's conditions didn't hold). Open a run to see its steps: who did what, each condition and what it found, and each action, with **Open Card**. A For Related Cards step says how many cards it ran on, each card's own steps beneath it, headed by its number.
+- **Templates**: ready-made rules (below).
+
+At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs a day have been used. A No Match costs nothing, and **Last Run** and **This Week** leave No Matches out too.
+
+## Start From a Template
+
+The **Templates** tab, and the empty Rules list, show ready-made rules: **Stamp the Finish Date**, **Assign on Start**, **Overdue Nudge**, **Share Out Form Responses**, **Post Shipped Work to Slack**, **Triage New Bugs**, **Unblock the Next Card**, **Due Soon Reminder**, **Clean Up Done**, **Escalate Urgent Work**, **Reopen on New Comment**, **Route Reviews**, **Give It a Due Date**, **Flag Blocked Cards**, **Verify the Fix**, **Back to the Backlog**, **Close the Parent**, **Tell Them It’s Unblocked**, **Nudge Stuck Cards**, **Done When Feedback Is Resolved**, **Flag Cards Due Soon**, **Done When the Checklist Is Complete**, two that use AI: **Sort Incoming Cards** and **Summarise Form Requests**, and six for GitHub pull requests ([Connect GitHub](/help/plan/connect-github/)). The chips above them (**Status**, **Assigning**, **Due Dates**, **Forms**, **Telling People**, **AI**, and **GitHub** where it is set up) narrow the list. Hover a template to watch it at work on a small board.
+
+Pick one and it opens in the builder, filled in from your plan: its done columns, its In Progress and Review columns, a date field named like Completed On, a Bug card type. Whatever your plan doesn't have, or the rule leaves to you (a label, the people in turn, a Slack channel), is marked on its step ("Pick a label", "Pick a webhook") until you pick it. Nothing is saved, and the rule stays off, until you press **Save Rule**. **New Rule** offers **Start From a Template** too.
+
+## Describe a Rule
+
+Press **New Rule**, then **Describe a Rule** (or **Describe a Rule** under an empty Rules list), and say in your own words when the rule should run and what it should do: "When a card moves to Done, set Completed On to today and remove the blocked label". The examples under the box fill it in for you. Press **Draft Rule**, or Ctrl or ⌘ Enter.
+
+A few seconds later the rule opens in the builder, filled in from your plan, with **Drafted by AI** above its steps. It is not saved and it is off: check each step, try it with **Test on a Card**, then press **Save Rule**. Anything your plan doesn't have (a person it can't find, say) is marked on its step, and a Slack, Teams or webhook post waits for you to pick the webhook. If the request isn't a rule for this plan, or no rule could be made from it, the dialog says so and keeps your words to change.
+
+Describing a rule uses AI: each ask counts toward the plan's 100 AI steps a day (a draft that needs a second try asks twice), and a plan drafts up to 20 rules a day. Only your words and the names of your plan's columns, card types, fields and labels are sent, never a person, a card's text or a webhook. Whatever it answers, nothing is saved or turned on until you save the rule.
+
+## Make a Rule
+
+Press **New Rule**, then **Blank Rule**. The rule reads from top to bottom:
+
+- **When**: the trigger. Pick one of **Card Created** (an undo that puts back a deleted card is not a new card, so it doesn't count), **Form Response** (a card made by one of the plan's forms), **Email Received** (a card made by an email to a board's address, below), **Card Moved** (from and to the columns you choose; pick **Card Types** first to hear only those cards, and From and To then list only the columns those types use; a column you picked that they no longer use stays, with a note, so you can unpick it), **Field Changed** (any of the fields you choose; Time Spent, votes, Comments fields and worked-out fields are left out, as no edit changes them), **Card Archived**, **Card Restored**, **Checklist Completed** (the last item is ticked), **Column Over Limit** (a column holds more cards than the limit you set; several cards dropped in at once start it once, on the card that went past the limit), **Comment Added**, **All Threads Resolved** (the card's last open thread is resolved), **Someone Mentioned** (anyone, or the people you pick), **Card Unblocked** (the last card blocking it is done or archived), **Related Cards Done** (all its children, or all the cards its Card fields point at, are done), or **Run from a Card** (you start it from a card's **⋯** menu). Or pick a time, or a pull request on GitHub (both below). **Change** opens **Pick a Trigger**, a gallery of every trigger in groups, each with a picture of what it hears.
+- **If all of these**: the conditions, all of which must hold. Check the **Card Type**, the **Column**, a **Field** (is, is not, is empty, contains, before or after a day, and more), **Who Did It** (a person, an Editor, a Participant, an agent), or whether it **Matches a Saved Filter** of one of your boards.
+- **Then**: the actions, in order. **Move to Column**, **Set Field**, **Clear Field**, **Assign**, **Add Label** or **Remove Label**, **Add Comment**, **Flag** or **Unflag**, **Archive** or **Restore From Archive**, **Change Card Type** (its fields carry over by name, and its **Map Fields** sends others into a field you pick: [Change a Card's Type](/help/plan/card-types/#change-a-card-s-type)), **Set Colour**, **Create Card** or **Copy Card**, **Add a Checklist**, **Link Cards**, **Send Email**, **Mention Someone**, **Resolve Threads** and **Wait**, and **Send to Webhook**, **Post to Slack** and **Post to Microsoft Teams** (below). **+ Add Action** opens a picker of them by group; on a step's panel, **Change** opens it again to swap the action.
+
+- **Wait** holds the rest of the rule for 1 hour to 30 days. When the time is up the rule checks its conditions again, and if they still hold, the steps after the Wait run. The run shows as **Waiting** in the Audit Trail until then, with when it goes on. Turning the rule off (or its pausing itself), editing or deleting it, or deleting the card, stops the runs waiting on it, and turning it back on doesn't bring them back. A run whose time comes once the plan has used its runs for the day is skipped.
+- **Set Field** sets a value you type, a value from the card, or a day (Today, or so many days before or after). A field of fixed values picks one of them: a Priority or Choice field one of its values, the Assignee or a Person field one of the plan's people, a Checkbox **Yes** or **No**. Time Spent, votes, Comments fields and worked-out fields are never set or cleared by a rule, so they aren't offered; Flagged and the Checklist have their own actions (**Flag**, **Unflag**, **Add a Checklist**). In a plan with several card types, a card whose type doesn't have the field is left as it is: the Audit Trail says "Skipped: a Note card has no Finish Date" and the rest of the rule runs.
+- **Send Email** and **Mention Someone** email only the people your own notifications reach: the plan's owner and the people of its team. Someone who has left the team, or who came in through a share link, gets no email from a rule, though the step still counts as done (and a mention's thread is still written).
+- **Send Email** can also go to **Email Addresses** you type in, up to 10, for people outside the plan. Press Enter or a comma after each, or paste a list; one that isn't an address shows in red until you remove it. Each email says which plan and rule sent it and carries a link to unsubscribe: an address that unsubscribes gets no more email from this plan's rules, and the Audit Trail says so. A plan sends at most 50 of these emails a day; past that the run is Skipped and says how many went. Only an Editor signed in can add addresses.
+
+Press **+ Add Action**, **+ Add Condition**, **+ If / Else** or **+ For Related Cards** to add a step. An **If / Else** runs one list of actions when its conditions hold and another when they don't. Click any step to change it in the panel on the right; its **⋯** menu moves it up or down, duplicates it or deletes it. Name the rule at the top, then press **Save Rule**.
+
+### Rules on a Time
+
+Four triggers start a rule at a time instead of when something happens to a card:
+
+- **Scheduled**: every **Day**, **Weekday**, **Week** (on the days you pick) or **Month** (on a day from the 1st to the 31st; past the month's end, its last day), **At** a time on the quarter hour.
+- **Due In**: 1 to 30 days before a card is due, at a time. A card is reminded once for each due date it has.
+- **Overdue**: on the day after a card was due, at a time. A card is reminded once for each due date it has, and a Done card is never overdue.
+- **Card Stuck**: once a day at a time, cards that have not changed for 1 to 90 days, outside Done columns (only in the columns you pick, if you pick any). Any change to a card starts its count again.
+
+At its time, the rule runs once for each card its conditions match: "Every Weekday at 9:00 **for cards** Overdue, not Done". A rule on a time with no conditions runs on every card in the plan, and the builder warns you. Times are in your time zone when you save the rule, which the trigger's panel names ("Times are Europe/London"). A rule on a time has nobody behind it, so it can't check **Who Did It** or assign or email whoever triggered it.
+
+### Assign in Turn
+
+**Assign** gives the card to a person, to whoever triggered the rule, to nobody, or to **People in Turn**: 2 to 10 people, in the order you pick them. Each run assigns the next one, then starts again from the first. Two runs at the same moment take the next two people, never the same one twice. Someone who has left the plan is passed over; a teammate taken off the team who is still named on a card (as its assignee, say) keeps their turn until no card names them, so take them out of the list to pass them over now.
+
+### For Related Cards
+
+A **For Related Cards** step runs its own steps on each of the card's related cards: its **Linked Cards** (through one Card field, or any), the cards it is **Blocked By**, the **Cards It Blocks**, its **Child Cards**, or the **Cards Matching a Saved Filter** of one of your boards. It shows as a card, "For each Blocked By Card", with its own conditions and up to 10 actions beneath it, each added with its own **+ Add Condition** and **+ Add Action**. It runs on up to 100 related cards. Inside it, the card values are the related card's, and **Trigger Title**, **Trigger Number** and **Trigger Link** are the card that started the rule.
+
+### Post to Slack, Teams or a Webhook
+
+**Post to Slack**, **Post to Microsoft Teams** and **Send to Webhook** send a message through one of the plan's [webhooks](/help/explorer/explorer-page/). Pick the webhook by name, or press **Add a Webhook…** to make one; then write the message, with values and a **Preview**. Picking a webhook needs you signed in, since webhooks belong to an account. A rule holds up to 5 of these steps. **Test on a Card** sends nothing and shows the message it would post.
+
+### AI Actions
+
+Under **AI** in **+ Add Action** are three steps that read the card and decide for you:
+
+- **Summarise Card** writes a short summary (at most 600 characters, plain text) of the card's title, description, checklist, latest comments and its own text and choice fields, as a comment or into one of your Text fields.
+- **Suggest Card Type** picks the card type that fits best, from this plan's types only, and either sets it or comments the suggestion.
+- **Triage** sets the priority (Urgent, High, Medium or Low) and adds up to 3 labels, chosen only from the labels your plan's cards already use.
+
+What they write is by **Automation** and marked **Generated by AI**, with a sparkle in the Audit Trail and the card's Activity. The card's text is only ever read as data, so words in a card can't make the step do anything else, and an answer that doesn't fit (a type the plan lacks, an unreadable reply) fails the step. A rule holds up to 3 AI actions, at its top level (not inside If / Else or For Related Cards). A plan makes up to 100 AI steps a day; past that only the step is skipped, with "This plan has used its 100 AI steps today", and the rest of the rule runs, a **Wait** and the steps after it too. The steps after an AI step read the card as it left it: a **Move to Column** after **Suggest Card Type** goes by the type it set, and an **If / Else** after **Triage** reads the priority it chose. An AI step that fails stops the run there: no later AI step is asked, no later card change is made and no later message is posted, though the changes before it stay made. **Test on a Card** asks nothing and says what each would do; it can't know the answer, so a step that changes the card says the steps after it read the card as the AI leaves it.
+
+### Insert a Value
+
+Text a rule writes (a comment, a card's title, an email) can hold values that are filled in when it runs. Pick one from **Insert a Value**: **Card Title**, **Card Link**, **Assignee**, **Column**, **Due Date**, **Who Did It**, **Today** and more, or one of your card type's fields from **Card Fields**. An Email Received rule adds **From Email**, the sender's address. A Form Response rule adds **Form Answers**: each question of its form, filled in with that response's answer (`{{answer.Company}}`), so a **Create Card** step can name a follow-up card after an answer, or set a field from one the form keeps nowhere else. An Email Received or Incoming Webhook rule has nobody of the plan behind it, so **Who Did It** isn't offered there. They show as violet chips in the text, and the panel's **Preview** shows the result on a real card.
+
+### Test on a Card
+
+**Test on a Card** runs the rule as it stands, saved or not, on a card you pick, and changes nothing: you see each step and what it would do.
+
+### On a Phone
+
+On a phone a rule opens as a sheet over the Automations screen, and a step's fields open in a second sheet on top of it. Swipe a sheet down, tap outside it, or press your phone's Back to close it: Back closes the sheet, never the plan. With unsaved changes, closing the rule asks **Discard Changes?** first.
+
+## Start a Rule from Another Tool
+
+A rule whose trigger is **Incoming Webhook** (under **Other Tools** in **Pick a Trigger**) is started by another tool: your CI when a build finishes, a form service, a script. Save the rule, then in its **When** panel:
+
+1. Copy the rule's **Address**.
+2. Press **Make Secret**. The secret is shown once, with **Copy** and "You won't see it again": keep it where the other tool keeps its passwords. Afterwards the panel shows only its last 4 characters, when it was made and when it was last used.
+3. Have the tool send a `POST` with JSON to the address, proving the secret one of two ways.
+
+With the secret in a header:
+
+```bash
+curl -X POST 'https://www.liveplanner.app/api/hooks/automations/<plan>/<rule>' \
+  -H "Authorization: Bearer $SECRET" \
+  -H 'Content-Type: application/json' \
+  -d '{"cards": [12, 14], "build": {"status": "green"}}'
+```
+
+With a signature, an HMAC-SHA256 of the exact body keyed with the secret, so the secret itself never travels:
+
+```bash
+BODY='{"cards": [12, 14], "build": {"status": "green"}}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/^.* //')
+curl -X POST 'https://www.liveplanner.app/api/hooks/automations/<plan>/<rule>' \
+  -H "X-Liveplanner-Signature: sha256=$SIG" \
+  -H 'Content-Type: application/json' \
+  -d "$BODY"
+```
+
+The rule runs on each card the body names by number in `cards` (up to 10). With no cards named, it runs once with no card, which suits a rule that only makes a card or posts a message; a rule whose steps change a card is skipped instead. Anything else in the body is yours to use: in Insert a Value, **Webhook Field…** takes a path such as `build.status` and fills it in as plain text, up to 5 names deep and 500 characters. The runs are by **Automation**, and Who Did It reads "Incoming webhook".
+
+The tool hears back `202` with how many runs were queued. A wrong or old secret, or a rule that is off or deleted, all answer `401`; a call not sent as JSON (`Content-Type: application/json`) `415`; a body that isn't a JSON object, or a `cards` that isn't a list of card numbers, `400`; one over 16 KB `413`; more than 60 calls a minute, or a plan past its runs for the day, `429` with when to try again. **Regenerate** makes a new secret and stops the old one at once; turning the rule off or deleting it stops calls too. Only an Editor of the whole plan, signed in, makes or regenerates the secret.
+
+## Start a Rule from an Email
+
+A board with an [Email to Board](/help/plan/email-to-board/) address turns each email into a card. **Email Received** (under **Cards** in **Pick a Trigger**) runs a rule on those cards alone, so you can sort what comes in by mail without touching cards people add by hand. In its **When** panel:
+
+- **Board**: **Any Board**, or one of the plan's boards. A board with no email address yet reads "No Address" in the list; pick it and the panel offers **Turn On Email to Board** to give it one there and then.
+- **From**: leave it empty for anyone, or type one address (`ana@example.com`) or a whole domain (`@example.com` or `example.com`). Case doesn't matter. A domain matches that domain only, not `mail.example.com`.
+
+In the rule's text, **From Email** under **Insert a Value** (`{{from}}`) is the sender's address, for a comment like "Thanks, we have your request" or a field. It is never a Send Email recipient: a rule only emails the addresses you type in. An email card still counts as **Card Created** too, so a rule on Card Created runs on it as well; each rule runs once. The sender is nobody in the plan, so an Email Received rule can't check **Who Did It** or assign or email whoever triggered it.
+
+## Start a Rule from GitHub
+
+Once the plan is [connected to GitHub](/help/plan/connect-github/), the **GitHub** group of **Pick a Trigger** starts a rule from a linked pull request: **Pull Request Opened** (ready for review, reopened, or out of draft), **Pull Request Merged**, **Pull Request Closed** (without merging) and **Checks Finished** (turned **Failing**, or **Passing**). The rule runs once on each card the pull request links: by a Pull Request field, a Link field, or its title or body naming the card, like "Work Tracker #12". Two rules cover the usual flow:
+
+- **Pull Request Opened**, then **Move to Column** In Review.
+- **Pull Request Merged**, then **Move to Column** Done.
+
+Their changes are by **GitHub** on the card, with the rule's name beside it, and a GitHub event never runs a rule twice or moves a card backwards. Press **GitHub** in the screen's header to connect, pick the repositories the plan hears, or disconnect; a GitHub trigger's panel connects in place and brings you back to the rule. On a liveplanner without GitHub set up, neither shows.
+
+## What You See on a Card
+
+A rule's changes are by **Automation**, with the rule's name beside it:
+
+- The card's [Activity](/help/plan/card-activity/) lists them with a lightning bolt: "**Automation** set Completed On to 11 Nov 2026 · Done Means Wrapped Up".
+- A field a rule set last shows a small **Set by Automation** chip in Details.
+- A comment a rule added shows the bolt and the rule's name, which opens the rule for an Editor (a rule deleted since says **This Rule Was Deleted**); one an AI action wrote also says **Generated by AI**.
+- If you're a Participant or a Viewer, the rule's name in a card's **Activity** and on its comments opens a read-only view of the rule: its name and whether it's on, what starts it, its conditions, its steps in order, and who made it and when. Nothing there changes or runs the rule. Some details stay with Editors and show only as a label: typed-in email addresses ("Email 2 Addresses"), where a message posts ("Post to Slack"), and what an AI step is asked ("An AI Step").
+- A rule a GitHub trigger started is by **GitHub** instead, with GitHub's mark: "**GitHub** · Done When It Merges".
+
+## Run Rule
+
+A rule whose trigger is **Run from a Card** is started by hand: open the card, press **⋯**, then **Run Rule** and pick it. A message says it ran, or why it couldn't.
+
+## Rules and Other Rules
+
+A rule's changes don't set off other rules, so two rules can never keep changing a card back and forth. To let them, open **Rule Details** in the rule and tick **Let this rule's changes trigger other rules**. Even then, a chain stops after 5 rules, and a rule never answers its own changes.
+
+## Limits and Pausing
+
+- A plan holds up to 50 rules, each with up to 10 conditions and 20 actions (a For Related Cards step's count too), of which up to 5 post messages.
+- A plan makes up to 1,000 runs a day (UTC), counted as each run starts, so runs that start together never pass it; past that, what would start a rule is let go and rules run again the next day. A No Match doesn't count. A rule with a **Wait** is two runs, one up to the Wait and one after it, as the Audit Trail shows them.
+- One move runs **Card Unblocked** or **Related Cards Done** on up to 100 cards, the first by their number; past that the Audit Trail says "Ran on 100 of 340 cards: at most 100 a move" and the rest are left out. A time trigger runs on up to 100 cards a time. Past that, **Overdue** and **Card Stuck** reach the rest at their next times; **Scheduled** and **Due In** leave the rest out, and the Audit Trail says so.
+- A rule holds up to 3 AI actions, and a plan makes up to 100 AI steps a day, rules and Describe a Rule together, even when they ask at once; past that, AI steps are skipped until the next day.
+- A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a webhook stopped it, **Fix Webhook** opens the plan's webhooks.
+- A rule that names something the plan no longer has (a column, a card type, a field, a person, a saved filter, a Form tab, or the card a **Link Cards** step points at, deleted or in the Trash) says **Needs Attention** and what is missing, in words: "Needs Attention: A column is gone · Someone is gone". Its steps say the same ("Move to a column no longer here", "Assign Someone No Longer Here"). A condition naming one doesn't hold, and an action that reaches one fails its run, saying what is gone. Open the step and pick again.
+- A rule with a GitHub trigger on a plan that isn't connected to GitHub (or no longer is) hears nothing, so it says **Needs Attention: GitHub isn't connected**, with **Connect GitHub** after it. Connect the plan and the line goes. A rule whose repositories have all left the plan's connection says so ("acme/old-site isn't heard any more"), with **Manage Repositories** after it, which opens the plan's GitHub repositories.
+- A plan that is [archived](/help/explorer/explorer-page/#archived) or in the [Trash](/help/account-and-data/trash/) runs no rules: no rule on a time reaches its time, no **Wait** goes on, its repeating cards make no copies, and calls from another tool or GitHub start nothing. Its rules and their Audit Trail are kept. When it comes back, a rule on a time whose time passed meanwhile runs once, for the latest time it missed, and only when that was at most a day ago; a run held by a Wait whose time came meanwhile goes on at once if that was at most a day ago, and is skipped otherwise.
+
+## Agents and the CLI
+
+An AI tool connected through the [MCP server](/help/account-and-data/connect-ai-mcp/), or a script with the [command line](/help/developers/cli/), can read and work your rules as you would:
+
+- **List rules** (`list_rules`, or `liveplanner rule ls`) reads each rule's sentence, whether it is on, paused or needs attention, its last run, its runs this week and its next run. Ask for one rule by its name to get it whole (`liveplanner rule get`), or for the Audit Trail (`liveplanner rule log`) to see what recent runs did.
+- **Change rules** (`change_rules`) adds, changes, turns on and off, copies and deletes rules, tests one on a card and runs a Run from a Card rule. On the command line those are `rule add`, `rule set`, `rule on`, `rule off`, `rule duplicate`, `rule rm`, `rule test` and `rule run`, a rule written as JSON in a file.
+- The AI names columns, card types, fields and people the way your board shows them ("Done", "Bug", "Ana Costa"). A rule it saves says **Edited by** you, marked **(Agent)**.
+- It reaches your rules only when you are an Editor of the whole plan, as you would. A read-only connection can list rules and the Audit Trail but never change, test or run them.
+
+## Who Can
+
+Only an Editor of the whole plan makes, changes, turns on or off, tests and runs rules, in the editor or through an AI tool or the command line acting for them. Everyone's changes, a Participant's included, can start them. Rules run on our servers, even when nobody has the plan open, so a plan kept [Offline](/help/privacy-and-security/offline-mode/) has none: its **Automations…** row in Tools carries a **Sync Plan** badge, and pressing it offers **Sync Plan**, as **Share** does; once it is synced, Automations opens. Rules are also an account's work: if you aren't signed in, the row carries a **Sign In** badge and asks you to sign in first, then opens on your rules. Rules are copied when you duplicate a plan, each on or off as it was; a plan's exported file carries them too, and they come back off when it is imported.
+
+</ArticleLayout>

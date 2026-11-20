@@ -405,6 +405,6 @@ Trash), never a name or id
 
 ## Help
 
-The help centre's [Explorer page](../../../apps/help/app/explorer/explorer-page/page.mdx) article describes the groups;
-[My Work and Folders](../../../apps/help/app/explorer/personal-space/page.mdx) and
-[Team Spaces](../../../apps/help/app/explorer/team-spaces/page.mdx) describe the two kinds of space.
+The help centre's [Explorer page](../../../../liveworkspace/apps/help/app/explorer/explorer-page/page.mdx) article describes the groups;
+[My Work and Folders](../../../../liveworkspace/apps/help/app/explorer/personal-space/page.mdx) and
+[Team Spaces](../../../../liveworkspace/apps/help/app/explorer/team-spaces/page.mdx) describe the two kinds of space.

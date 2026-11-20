@@ -75,7 +75,7 @@ so turning one off here turns it off in every app; `notifyDocumentJoin` is
 livedocuments' own. Every opt-out email's footer links to
 `/explorer?settings=notifications` (also emitted as a `List-Unsubscribe` header; the old `/explorer/profile` URL in already-sent mail redirects there, see [Account settings & email notifications](profile-and-email-notifications.md)) so the
 recipient can turn it off in one click. The opt-out toggles are
-documented for users in the [Email Notifications](../../../apps/help/app/account-and-data/email-notifications/page.mdx)
+documented for users in the [Email Notifications](../../../../liveworkspace/apps/help/app/account-and-data/email-notifications/page.mdx)
 help article.
 
 ## 2. Gating: the binding is the switch

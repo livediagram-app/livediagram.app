@@ -1,0 +1,122 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Snapshots',
+  description:
+    'Take a snapshot of the whole work before a big change, keep the latest five, and revert to one to put everything back as it was.',
+  path: '/help/collaboration/snapshots/',
+});
+
+<ArticleLayout
+  path="collaboration/snapshots"
+  title="Snapshots"
+  description="Save points for the whole work: take one before a big change, revert to it if the change goes wrong."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles('snapshots')}
+>
+
+A snapshot keeps the whole <Noun /> as it is right now, so you can try a big change (a reorganisation, an import, a clean-up with a teammate or an AI assistant) knowing you can put everything back in one step.
+
+## Taking a Snapshot
+
+Snapshots live in **History**: open **Tools** in the footer and press **History**. Press **Take Snapshot** at its foot. Give the snapshot a name if you like, such as "Before the workshop", and press **Take Snapshot** again. Without a name it is called by the time it was taken.
+
+Each snapshot sits on History's timeline at the time it was taken, marked **Snapshot**, with its name, who took it, how long ago and its size. The latest **five** are kept: when five are there, the form says which one taking another will remove, and the oldest goes.
+
+<AppNote app="livediagram">
+  Signed in on your own or your team's canvas, History shows the canvas's timeline with each
+  snapshot pinned on it, and a **Take Snapshot** button at its foot. Signed out, or through an edit
+  link, History shows the snapshots on their own. Without a name, a snapshot is called like
+  "Snapshot of 15 Nov, 14:32".
+</AppNote>
+
+<AppNote app="livedesign">
+  The [History](/help/collaboration/history/) panel is where snapshots live. A name can be up to 80
+  characters. Without a name, a snapshot is called like "Snapshot of 15 Nov, 14:32". If you opened
+  the design through an Editor link, History shows the design's snapshots on their own, without the
+  timeline.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Find **Tools** in the bar along the bottom of the editor, just before Settings. A **Take a
+  Snapshot** card opens beside History, where you can name the snapshot (up to 80 characters). Each
+  snapshot is marked with a camera among the document's other changes. Someone who can take
+  snapshots but has no timeline to read, such as an Editor on a share link, sees the snapshots on
+  their own.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Find **Tools** in the bar along the bottom of the editor. The box for taking a snapshot says which
+  one will be removed when five are there.
+</AppNote>
+
+<AppNote app="liveplanner">
+  The camera at History's foot is **Take Snapshot**, and its **Take a Snapshot** card says which one
+  taking another will remove. Snapshots sit among the plan's other changes on the timeline. If you
+  came in through an Editor share link, History has no timeline for you, so it shows the snapshots
+  on their own.
+</AppNote>
+
+## Reverting to a Snapshot
+
+Press **Revert** on a snapshot and confirm. The <Noun /> goes back to exactly how it was: every tab and its folders. A tab made since is removed, and one removed since comes back. The <Noun />'s name and who it is shared with stay as they are.
+
+Reverting replaces everyone's work since that snapshot, so first it takes a snapshot of the <Noun /> as it is now, marked **Before revert**. If you change your mind, revert to that one.
+
+Everyone who has the <Noun /> open sees it reload onto the reverted version straight away, so nobody keeps working on what was replaced.
+
+<AppNote app="livediagram">
+  It also restores the canvas's comment threads and the slide deck.
+</AppNote>
+
+<AppNote app="livedesign">
+  It also restores the component library, and the comment threads on the design's elements come back
+  as they were.
+</AppNote>
+
+<AppNote app="livedocuments">
+  It also restores the slide deck, and the comment threads on the document's elements come back as
+  they were.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Calls, attendance and the characters walking around are not part of a snapshot.
+</AppNote>
+
+<AppNote app="liveplanner">
+  It also restores card types, every card (each with its number) and every Sheet. Comment threads
+  and Automations rules stay as they are. A card that was deleted since comes back with its old
+  number; a card made since goes.
+</AppNote>
+
+## Deleting a Snapshot
+
+Press the bin on a snapshot. It is deleted at once, with no question, and can't be brought back.
+
+<AppNote app="livedesign,livehuddle">The bin is labelled **Delete snapshot**.</AppNote>
+
+## Who Can Use Snapshots
+
+Editors of the whole <Noun /> take, revert and delete snapshots. Participants, Viewers and people with a link to one tab don't see them. Snapshots are there on <Noun plural /> stored on the server: a <Noun /> kept **Offline** has none, and AI assistants and scripts using an API token can't use them.
+
+<AppNote app="livediagram">
+  An embed has none either, and neither does a canvas open in a workbench.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Signed in, an Editor sees them on History's timeline; an Editor who came in through a share link,
+  with no History to read, sees the snapshots on their own.
+</AppNote>
+
+<AppNote app="livedocuments">
+  **Snapshots and Version History.** [Version History](/help/tabs/version-history/) keeps earlier
+  versions of **one tab** for you as you work. A snapshot is one you take yourself, of the **whole
+  document** at once: every tab together. Reverting to a snapshot keeps each tab's Version History,
+  so a tab's earlier versions are still there afterwards. **Open Version History** in History takes
+  you to it.
+</AppNote>
+
+</ArticleLayout>

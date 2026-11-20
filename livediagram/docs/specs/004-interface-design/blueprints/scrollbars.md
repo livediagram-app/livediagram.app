@@ -8,7 +8,7 @@ in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `../packages/tailwind-config/theme.css`                                                                                         | The default rule and the `.scrollbar-slim` variant           |
 | `../packages/tailwind-config/src/scrollbars.test.ts`                                                                            | Guards the rule, its colours and their contrast              |
 | `packages/workbench/src/components/primitives/MovablePanel.tsx` (bound in `apps/editor/components/primitives/MovablePanel.tsx`) | Loses its inline scrollbar dialect for `.scrollbar-slim`     |
-| `apps/help/app/globals.css`, `../packages/help-site/src/components/SearchInput.tsx`                                             | Lose `.scrollbar-thin` for `.scrollbar-slim`                 |
+| `liveworkspace/apps/help/app/globals.css`, `../packages/help-site/src/components/SearchInput.tsx`                               | Lose `.scrollbar-thin` for `.scrollbar-slim`                 |
 | `apps/editor/e2e/scrollbars.spec.ts`                                                                                            | No scrolling surface in the editor is left on the OS default |
 
 ## Domain and naming

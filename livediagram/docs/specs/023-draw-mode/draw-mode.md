@@ -934,7 +934,7 @@ Preset-enum events only, never content, under a `Draw` category (named `Whiteboa
 A pen reports its place, never its colour. Strokes, stickies and text report
 through the ordinary `Element` / `Added` events.
 
-## Help centre ([Help app](../018-help/help-app.md))
+## Help centre ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md))
 
 One article, **Draw mode** (`/help/canvas/draw-mode/`; the old `/help/canvas/whiteboards/`
 redirects to it): choosing the mode from the switch beside the menu button, an empty tab's start or Shift+D, starting a

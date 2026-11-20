@@ -133,7 +133,7 @@ emitters list both ids).
 - `apps/editor/app/document/[id]/editor-page-helpers.test.ts`: a community link opens as a view with no owner.
 - `../packages/workbench/src/hooks/canvas/useAutoCopyParam.test.tsx`: copies once, only on a Community link.
 - `apps/router/src/index.test.ts`: `/community*` forwarded and stripped.
-- `apps/help/lib/community-help.test.ts`: `COMMUNITY_HELP` names registered articles; the ui-labels check reads
+- `liveworkspace/apps/help/editions/livedocuments/tests/community-help.test.ts`: `COMMUNITY_HELP` names registered articles; the ui-labels check reads
   `@liveworkspace/community-ui`.
 - liveworkspace.app: `liveworkspace/apps/site/lib/explorer/share.test.ts` and `community-apps.test.tsx`.
 

@@ -1,0 +1,116 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Plan Tour',
+  description:
+    'Learn by doing: three board tracks (Using a Board, Card Types, Board Setup), Five Small Wins on a practice sheet, and Layout View on a dashboard.',
+  path: '/help/plan/plan-tour/',
+});
+
+<ArticleLayout
+  path="plan/plan-tour"
+  title="The Plan Tour"
+  description="Learn by doing: a few small missions on your own board, a practice sheet, or your dashboard, started from the bottom bar."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+The Plan tour teaches by doing rather than by reading. Instead of a row of cards to click through, it gives you one small mission at a time, and ticks it off the moment you do it, by whichever route you like: a drag, a menu or a key. Each tour takes a couple of minutes, and you can leave at any point.
+
+## Starting the Tour
+
+The tour needs something to work on, so it's there when you're on a tab you can edit **with a board, a sheet or a dashboard open**. On a new tab, pick a board or a spreadsheet from **Start Planning** first.
+
+Press **Get Started** in the bottom bar, just left of **Tools**. On a phone the button shows only its play icon. When more than one tour is on offer (a board's tour and a form's, say), Get Started first lists each one with its length, and picking one starts it. The Plan tour opens a short panel that says what the tour will do, and nothing starts until you choose: on a board, pick one of three tracks; on a sheet, **Open the Practice Sheet**; on a dashboard, **Show the Grid**. **Not Now** closes it and leaves the tour on the button. The tour never starts on its own, and once you've taken it, it leaves the button (which offers another tour you haven't taken, or isn't shown) until you switch it back on in **Settings**. The button isn't there on a locked tab, in an embed, or for a Participant or a Viewer.
+
+When your tab has both a board and a sheet, the button offers the one you haven't taken yet (boards first), and runs on the board you can see. Boards stays on the button until you've taken all three of its tracks.
+
+## The Mission Strip
+
+Each mission shows in a small panel above the bottom bar (on a phone, a sheet along the bottom of the screen): what to do, and a line on why it matters. A row of short bars counts the missions.
+
+- Stuck? Press **Hint** for a tip, then **More Help** to ring the exact place on screen.
+- Done? A green tick and one line on what you just learned. Press **Next** when you've read it.
+- While a window is open over the page (a card's panel, the card type editor), the strip moves to the bottom-left corner, out of the way, still in full. If the mission is one you do on the page, it says **Close this window first, then:** above it.
+- The button a mission names is ringed, so you can see where to press.
+- **End** leaves the tour at any point.
+
+## Boards: Using a Board
+
+Three dashed **practice cards** (Draft the plan, Book a room and Send the invite) drop into your board's first column. They work like any card, but only you can see them: nothing about them is saved or sent, and they never go into your undo history.
+
+1. **Add a Card**: press **Add card** at the foot of the first column and pick a type. While the tour runs, a card you add on this board is a practice card too.
+2. **Move One On**: drag a practice card into the next column. On a phone, hold it until it lifts. **Shift** and an arrow key, or the card's **Move To**, work too.
+3. **Open One**: click or tap a practice card to open its panel. See [Cards](/help/plan/cards/).
+4. **Give It a Date**: set a due date in the panel (when your cards have a Due field).
+5. **Ship It**: drag a practice card all the way into your done column. It gets a **Shipped** stamp.
+
+If a column has a WIP limit and the practice cards push it over, the strip says so: the count turns amber, but nothing is ever blocked. At the end, choose **Clear Them** to take the practice cards away, or **Keep as Real Cards** to make them ordinary cards where they are (one step of undo takes them back).
+
+## Boards: Card Types
+
+Learn the kinds of card a plan holds, using the plan's own **Types** panel (bottom right) and its editor. See [Card Types](/help/plan/card-types/).
+
+1. **Make a Card Type**: press **Types**, then **Add Card Type**, name it (a Risk, a Bug) and **Save**.
+2. **Give It a Field**: open your new type again, press **Add Field**, pick one such as **Due Date**, and save.
+3. **Add One to the Board**: press **Add card** and pick your new type. That card is a practice card.
+
+The type is real, so at the end choose **Keep the Type**, or **Put It Back** to delete it. The practice card goes either way.
+
+## Boards: Board Setup
+
+Set the board up your way, with its own controls. See [Boards](/help/plan/boards/).
+
+1. **Rename a Column**: hover a column's head for its cog, open its settings and change **Column Name**.
+2. **Set a WIP Limit**: in a column's settings, raise its **WIP Limit**.
+3. **Add a Widget**: press **+** (or **Add Widgets**, on a board with none) in the board's header and pick a widget, such as **Only Mine**.
+
+At the end, **Keep Changes**, or **Put It Back** to return the board to how it was (one step of undo).
+
+## Sheets: Five Small Wins
+
+A **practice sheet** opens in a window of its own: a small monthly budget, in a real sheet with the full toolbar and formula bar. Your own sheets aren't touched. The cells for each challenge glow, and turn green when you've got it right.
+
+1. **Type a Number**: type 122 into **C4**.
+2. **Add It Up**: total what you spent in **C7** with `=SUM(C2:C6)`. See [Sheet Functions](/help/plan/sheet-functions/).
+3. **Fill It Down**: fill the formula in **D2** down to **D6**, by dragging the small square at its corner, or with **Ctrl+D**. On a phone, use **Fill Down** from the cells menu.
+4. **Make It Money**: show **B2** to **D7** as currency, from **Numbers** › **Number Format**.
+5. **Chart It**: select **A1** to **C6**, then **Data** › **Insert Chart**. Your chart appears in the strip.
+
+**⌘Z** or **Ctrl+Z** undoes inside the practice sheet. At the end, **Done** lets it go, and **Keep This Sheet** adds it to your plan as a new tab, **Practice Budget**. Closing the window, or **End**, leaves without keeping it. **Escape** stays with the sheet (it cancels a cell's edit), so it never closes the window by accident.
+
+## Dashboards: Layout View
+
+On a [dashboard](/help/plan/dashboards/) you can edit, Layout View shows how the page is built, as a design tool's layout grid does: each row's twelve columns, each slot's span (such as **8 / 12**) and each row's height. The bars between slots and the rows' bottom edges stay visible while it runs.
+
+1. **Resize Two Slots**: drag the bar between two slots, and watch the spans snap to twelfths. On a dashboard with no row of two, **Add a Slot Beside** from a slot's cog instead.
+2. **Change a Row's Height**: drag a row's bottom edge.
+3. **Fill a Slot**: pick what an empty slot shows, from **Add to Slot** (when one is empty).
+
+Every change is a real one, and each is one step of undo. On a phone, where a dashboard's rows stack, Layout View asks only for **Fill a Slot**. Dashboard Settings › **Show Me** runs Layout View any time.
+
+## Your Work Is Left Alone
+
+- The Boards tour's practice cards and the Sheets tour's practice sheet are yours alone and are never saved, unless you choose to keep them.
+- Card Types and Board Setup make real changes, so their finish offers **Put It Back**. Leaving one early keeps what you changed, and **Undo** takes each change back.
+- Layout View works on your real dashboard, so its changes stay, and **Undo** takes each one back.
+- If you switch tab, or the board is deleted mid-tour, it ends, and the practice cards go with it.
+
+## Replaying the Tour
+
+A taken tour comes back from Settings (on a dashboard, **Show Me** in Dashboard Settings runs its tour any time):
+
+<Step n={1}>Open **Settings** from the editor and go to **Getting Started**.</Step>
+
+<Step n={2}>
+  Switch **Boards Tour**, **Card Types Tour**, **Board Setup Tour**, **Sheets Tour** or **Dashboards
+  Tour** back on, or **Plan Tours** for all of them.
+</Step>
+
+<Step n={3}>
+  Close Settings. If you have a board or sheet open, its tour's panel opens straight away; otherwise
+  nothing happens, and the button is in the bottom bar once you do.
+</Step>
+
+</ArticleLayout>

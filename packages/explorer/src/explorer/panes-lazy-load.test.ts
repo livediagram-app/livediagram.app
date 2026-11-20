@@ -30,6 +30,14 @@ describe('the Explorer’s sections', () => {
     expect(staticImports(src)).not.toContain('../library/HistoryDialog');
     expect(src).toContain("import('../library/HistoryDialog')");
   });
+
+  // The team card loads with the team view (liveworkspace/docs/specs/010-site/blueprints/site.md "Performance and
+  // limits"): no module the Explorer loads up front imports it statically.
+  it('the team card is not a static import of the team view or the Home tiles', () => {
+    for (const file of ['TeamPane.tsx', 'HomeSpaces.tsx', 'InvitesPane.tsx'])
+      expect(staticImports(read(file)), file).not.toContain('../teams/TeamCard');
+    expect(read('TeamPane.tsx')).toContain("import('../teams/TeamCard')");
+  });
 });
 
 describe('preloadExplorerPanesWhenIdle', () => {

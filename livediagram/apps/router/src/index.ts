@@ -169,6 +169,16 @@ export function withPrefixedRedirect(res: Response, prefix: string): Response {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
+// The one help centre (liveworkspace/docs/specs/017-help/help-centre.md "Where it is shown") serves every app's help
+// from one Worker, liveworkspace-help, and picks the scope from this header: livediagram's help, on livediagram's
+// address.
+const HELP_APP_HEADER = 'x-help-app';
+function helpRequest(request: Request): Request {
+  const named = new Request(request);
+  named.headers.set(HELP_APP_HEADER, 'livediagram');
+  return named;
+}
+
 // Forward to a downstream app.
 //
 // Production (service binding): basePath/assetPrefix apps get `stripPrefix`
@@ -344,9 +354,9 @@ async function route(request: Request, env: Env): Promise<Response> {
   const legacyHelp = legacyHelpRedirect(url);
   if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
-    // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
+    // The help centre (liveworkspace/docs/specs/017-help/help-centre.md), a basePath:'/help' static app — same
     // prefix-strip as the editor app's assets.
-    return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
+    return forward(helpRequest(request), url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
   const legacyEditor = legacyEditorRedirect(url);
   if (legacyEditor) return legacyEditor;

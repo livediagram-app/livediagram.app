@@ -168,6 +168,9 @@ const HELD_AT_100 = [
   // Mixed-direction text painted a line at a time in the shared label editor
   // (liveworkspace/docs/specs/011-workbench/label-editor.md, Work Tracker 1188).
   'src/components/label-editor/rich-text-lines.ts',
+  // The label toolbar kept inside the screen at every edge (label-editor.md "The toolbar", Work Tracker 1313).
+  'src/components/label-editor/useLabelToolbarPlacement.ts',
+  'src/lib/clamp-to-viewport.ts',
 ];
 
 export default defineProject({

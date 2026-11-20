@@ -179,7 +179,7 @@ Treat them as part of the change, not an afterthought:
 
 ## Help centre articles must stay registered
 
-Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug.
+Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug. livediagram's help is the one help centre's livediagram scope (`liveworkspace/apps/help`, [Help centre](../liveworkspace/docs/specs/017-help/help-centre.md)).
 
 ## Domain language
 
@@ -196,7 +196,6 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the diagram editor app (Next.js, clean routes)
-  help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects; images in liveworkspace's media service, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
@@ -206,7 +205,7 @@ packages/
   document/       # document data model (Tab, Element types + element helpers) over @liveworkspace/model-core
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
-  help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
+  help-registry/  # livediagram's slice of the one help catalogue (@liveworkspace/help-registry), for the editor's search, CLI and MCP
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   api-schema/     # this product's wire-format DTOs the api worker emits + the live editor consumes, over @liveworkspace/api-schema
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides

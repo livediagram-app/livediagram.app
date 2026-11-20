@@ -1,0 +1,113 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { PagesScene } from '@/editions/livedocuments/components/illustrations/pages';
+
+export const metadata = helpMetadata({
+  title: 'Your First Document',
+  description:
+    'Make your first livedocuments document in a couple of minutes: open a new document, choose its first page, add text, shapes and a picture, then share it.',
+  path: '/help/getting-started/your-first-document/',
+});
+
+<ArticleLayout path="getting-started/your-first-document" title="Your First Document" description="From a new document to a first page you can share, in a couple of minutes, with no account required." categoryTitle="Getting Started" categorySlug="getting-started">
+
+The quickest way to learn livedocuments is to make something. This walkthrough takes you from a new document to a first page with text, shapes and a picture on it, ready to share. You do not need to sign in, the [editor always works as a guest](/help/getting-started/guest-vs-account/).
+
+## Create a new document
+
+<Step n={1}>
+  Open [a new document](/new). livedocuments makes it straight away and opens it in the editor, with
+  nothing to fill in first.
+</Step>
+
+<Step n={2}>
+  It is saved where new documents go: to your account once you have signed in, or in this browser
+  while you try things out as a guest (you can [move it to your
+  account](/help/privacy-and-security/offline-mode/) any time). [Default
+  Folders](/help/explorer/folders/default-folders/) decide which folder it lands in.
+</Step>
+
+<Step n={3}>
+  Its first tab opens on **Start Making Pages**: **Blank Pages** first, then every
+  [template](/help/canvas/templates/) grouped by what it is for (**Reports**, **Plans**, **Teams**
+  and more), with a search. Click one to start from its ready-made pages, or press the **×** to
+  follow along from a blank page.
+</Step>
+
+Until you name it, a new document takes its name from what you write first: the words on the first element of its first tab, or an article's Title. To rename the document, open the [Explorer](/help/explorer/explorer-panel/) from the menu button in the top-left corner: the open document sits at the top of the panel, so click its name and type. Renaming is instant and saved for you.
+
+## Choose what the first page is for
+
+Closing Start Making Pages leaves one empty page, which asks **What Is This Page For?** Choose now: a page keeps its kind once you start.
+
+- **Infographic**: a sheet to lay out freely. Choose this to follow along.
+- **Article**: a page to write on, like a document. The caret lands in its title, ready to type. See [Writing Articles](/help/pages/articles/).
+- **Slide**: one slide of a deck. See [Slide Pages](/help/pages/slide-pages/).
+
+For a short tour of your kind of page, on your own page, press **Get Started** (the play button) in the bar at the bottom of the editor, left of **Tools**. It never starts on its own, and once you've taken it, it leaves the button until you switch it back on in **Settings**, under **Getting Started**. See [The Pages Tour](/help/pages/pages-tour/).
+
+<Figure caption="Pages in a row on a tab, each labelled above its corner, with the buttons to add another after the last.">
+  <PagesScene />
+</Figure>
+
+## Add text and shapes
+
+<Step n={1}>
+  Find the **Palette**, the strip across the top of the editor. Its categories (**Shapes**,
+  **Write**, **Concepts**, **Components**, **Media**, **Data** and more) sit along it by name: rest
+  on one, or click it, and its elements open in a panel underneath.
+</Step>
+
+<Step n={2}>
+  Rest on **Write** and pick **Heading**, then **click the page** where you want it, and type your
+  heading over the word Heading. Click away to finish.
+</Step>
+
+<Step n={3}>
+  Rest on **Shapes** and pick a shape tile, then click the page to drop it at its default size, or
+  drag on the page to draw it at the size you want. **Double-click the shape** to give it a label.
+</Step>
+
+Anything you place on a page belongs to it: whatever hangs off its edge is cut off there, on screen and in exports. Move or resize an element and it snaps to the page's edges, centre lines and margins.
+
+## Add a picture
+
+<Step n={1}>
+  Pick **Add Image** from **Media** (or press `9`), then click the page. The image lands as an empty
+  placeholder reading "No image yet".
+</Step>
+
+<Step n={2}>
+  Press its **Select Image** button (or double-click it), and on the **Upload** tab drop a file in,
+  click to browse, or paste from your clipboard. You can also paste a picture straight onto the
+  page. See [Images](/help/palette/tools/images/).
+</Step>
+
+Want a picture behind everything instead? Press **Background** in the page's title bar and choose **Image**. See [Working with Pages](/help/pages/working-with-pages/#backgrounds-and-patterns).
+
+## Share it
+
+<Step n={1}>
+  Click **Share** at the top right of the editor, choose a role (**Editor**, **Participant** or
+  **Viewer**), and press **Create Pass**. The link is copied for you.
+</Step>
+
+<Step n={2}>
+  Send it to whoever you like. They join the same document and see your cursor and every change
+  live, even without an account. See [Sharing Your
+  Document](/help/getting-started/sharing-your-document/).
+</Step>
+
+## Keep going
+
+- **Add another page** with the **+** after the last page, and choose its kind.
+- **Recolour everything** with a [theme](/help/canvas/themes/).
+- **Present or export** your pages. See [Exporting and Presenting Pages](/help/pages/exporting-pages/).
+
+<Tip>
+  Made a mistake? [Undo](/help/canvas/undo/) and [Redo](/help/canvas/redo/) sit in the controls in
+  the bottom-right corner (or press `Cmd/Ctrl+Z`), and the common keyboard shortcuts are in
+  [Keyboard Essentials](/help/getting-started/keyboard-essentials/).
+</Tip>
+
+</ArticleLayout>

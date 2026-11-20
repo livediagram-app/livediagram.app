@@ -24,7 +24,7 @@ export const explorerDrive = (): ExplorerDriveHost => ({
   workspaceOrigin: workspaceOrigin(),
 });
 
-/** Settings' Cloud Sync, for a signed-in person, with the platform's help article (/help/google-drive). */
+/** Settings' Cloud Sync, for a signed-in person, with the help's Google Drive article (DRIVE_HELP_PATH). */
 export const cloudSyncHost = (): CloudSyncHost => ({
   client: driveClient,
   workspaceOrigin: workspaceOrigin(),

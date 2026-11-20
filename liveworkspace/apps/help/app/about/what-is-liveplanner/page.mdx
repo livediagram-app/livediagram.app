@@ -1,0 +1,60 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { PlanBoardScene } from '@/editions/liveplanner/components/illustrations/plan';
+
+export const metadata = helpMetadata({
+  title: 'What is liveplanner?',
+  description:
+    'liveplanner is a free planner with no trackers: boards, sheets, forms and dashboards, worked on together in real time in your browser. No sign-up to start.',
+  path: '/help/about/what-is-liveplanner/',
+});
+
+<ArticleLayout path="about/what-is-liveplanner" title="What is liveplanner?" description="A free planner with no trackers: boards of cards, spreadsheets, forms and dashboards in one plan, worked on together in real time, right in the browser." categoryTitle="About liveplanner" categorySlug="about">
+
+liveplanner is a web app for **planning work together, live**. You make a **plan**, and fill its tabs with boards of cards, spreadsheets, forms and dashboards. Share one link and everyone on it sees the same plan change as it happens: a card moved to Done, a cell filled in, a new answer to a form.
+
+## One plan, four kinds of tab
+
+A plan holds **tabs**, and each tab is one of four things:
+
+- **[Boards](/help/plan/boards/)**: columns of cards you drag from status to status, for a Kanban board, a sprint, a bug triage, a retro or a roadmap.
+- **[Sheets](/help/plan/sheets/)**: spreadsheets with formulas, formatting and charts, for budgets, timesheets, contact lists and anything else that suits a grid.
+- **[Forms](/help/plan/forms/)**: questions you send out, whose answers arrive as cards on a board or rows on a sheet, ready to sort.
+- **[Dashboards](/help/plan/dashboards/)**: metrics, charts, Gantt charts and calendars drawn from the plan's cards, side by side with its boards and sheets.
+
+<Figure caption="A Kanban board: columns of cards, dragged from status to status by everyone on the plan.">
+  <PlanBoardScene />
+</Figure>
+
+Every card is an **item** stored with the plan, so the same card can sit on a sprint board and a roadmap, and every dashboard counts it wherever it is. [Card types](/help/plan/card-types/) decide what a card holds (a task, a bug, a candidate), with fields of your own. Each new tab opens on **Start Planning**, a picker of ready-made boards, sheets, forms and dashboards, plus whole ways of working set up across several tabs, so you rarely start from a blank page. See [Planning Basics](/help/plan/planning-basics/).
+
+## Let the plan do the routine work
+
+- **[Automations](/help/plan/automations/):** rules that watch the plan and do the routine steps for you, such as moving a card or assigning it when something changes, and say that they did.
+- **[Describe a Plan](/help/plan/describe-a-plan/):** say how your work runs and get a board and card types drafted for it, yours to check before anything is made.
+- **Work that arrives by itself:** [email a board](/help/plan/email-to-board/) to turn a message into a card, [link GitHub pull requests](/help/plan/connect-github/) to cards, or [import](/help/tabs/import-tabs/) a board from Trello, Asana, Jira or Linear.
+- **Work that goes out:** a [calendar feed](/help/plan/calendar-feed/) of your deadlines, and a [public roadmap](/help/plan/public-roadmap/) that shows customers what's planned and lets them say what they want most.
+- **Your AI tool:** [connect Claude or another MCP client](/help/account-and-data/connect-ai-mcp/) to build and update plans from a conversation.
+
+## Built for working together
+
+- **Real time:** everyone on a plan sees changes as they happen, and a card someone is dragging or has open shows their name. See [Live Presence](/help/collaboration/live-presence/).
+- **Share with a link:** an Editor, Participant or Viewer link, with a password or an expiry date if you want one. The person you share with needs no account. See [Sharing Your Plan](/help/getting-started/sharing-your-project/).
+- **Comments** on cards and on sheet cells, so the conversation stays beside the work. See [Comments](/help/collaboration/comments/).
+- **Teams** for a shared space with the people you work with. See [Teams](/help/collaboration/teams/).
+
+## No sign-up to start
+
+liveplanner **always works without signing in**. Open a new plan, plan something real, and hand the link to a colleague who joins straight away. An account is there when you want your plans on every device; see [Guest vs Account](/help/getting-started/guest-vs-account/).
+
+## Free, with no trackers
+
+liveplanner is **free for everyone**. There is no paid tier, no trial and no plan to introduce one: every feature is available to every user. There are no ads and no third-party trackers; the only analytics are anonymous, first-party counts that never include your content, and you can turn them off. See [What We Collect](/help/privacy-and-security/what-we-collect/) and [Why Use liveplanner?](/help/about/why-liveplanner/).
+
+<Tip>
+  The quickest way to understand liveplanner is to use it. Open a [new plan](/new), pick **Kanban**
+  and add a card, no sign-up needed. [Your First Plan](/help/getting-started/your-first-project/)
+  walks you through it.
+</Tip>
+
+</ArticleLayout>

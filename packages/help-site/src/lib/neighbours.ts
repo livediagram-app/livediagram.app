@@ -6,7 +6,7 @@ import {
 } from '@liveworkspace/help-registry';
 import type { ArticleLink, HelpCatalogue } from '../types';
 
-// An article page's place in its reading order (docs/specs/018-help/help-pages.md "Article pages"). Server-side
+// An article page's place in its reading order (liveworkspace/docs/specs/017-help/help-centre.md "Article pages"). Server-side
 // only: it reads the whole registry, and hands the article page just the few links it shows.
 
 export interface ArticleNeighbours {

@@ -200,7 +200,7 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
   `CalendarFeedLink.tsx` (the link shown once), `CalendarFeedHeroArt.tsx`, `CalendarFeedMenuRow.tsx` (the tab menu's row).
 - `apps/editor/app/project/[id]/editor-view-hooks.ts`: `useEditorCalendarFeed(ctx, isOffline)`; `EditorView.tsx`
   wraps the editor in `CalendarFeedHost` inside `AutomationsHost`.
-- `apps/help/app/plan/calendar-feed/page.mdx` and its figures in `apps/help/components/illustrations/calendar-feed.tsx`.
+- `liveworkspace/apps/help/app/plan/calendar-feed/page.mdx` and its figures in `liveworkspace/apps/help/editions/liveplanner/components/illustrations/calendar-feed.tsx`.
 
 ### Interfaces and contracts
 

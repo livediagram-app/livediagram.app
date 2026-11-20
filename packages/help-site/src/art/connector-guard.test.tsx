@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { scanScenes, unmarkedConnectors, type DrawnShape } from './connector-guard';
 
-// livehuddle's docs/specs/018-help/help-app.md "A figure cannot forget the mark" (Work Tracker 790): an Arrow joining
+// livehuddle's liveworkspace/docs/specs/017-help/help-centre.md "A figure cannot forget the mark" (Work Tracker 790): an Arrow joining
 // two Shapes must be marked `connector`, or livehuddle's sticky-only figures would still draw it.
 
 vi.mock('./primitives-canvas', async (importOriginal) => {

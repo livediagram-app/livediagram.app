@@ -117,9 +117,9 @@ element by `furnishRooms` (`template-office-parts.ts`), which now sorts every `i
 with the floors, as `officePlan` does. The hall's preview (`packages/template-previews/src/template-preview-23.tsx`)
 draws the stage's top and front face, and `packages/templates/welcome.json` is regenerated from it.
 
-**Help**: `apps/help/app/palette/virtual-office/stage/page.mdx` (registered in `packages/help-registry`, slug
+**Help**: `liveworkspace/apps/help/app/palette/virtual-office/stage/page.mdx` (registered in `packages/help-registry`, slug
 `stage`, `categorySlug: 'palette/virtual-office'`, `parentSlug: 'virtual-office'`, with a feature colour and icon),
-its figures in `apps/help/components/illustrations/stage.tsx` (`StageHall`, `StageSettings`); the Virtual Office
+its figures in `liveworkspace/apps/help/editions/livehuddle/components/illustrations/stage.tsx` (`StageHall`, `StageSettings`); the Virtual Office
 article gains a Stage section linking to it.
 
 ## Behaviour and state (part 3)

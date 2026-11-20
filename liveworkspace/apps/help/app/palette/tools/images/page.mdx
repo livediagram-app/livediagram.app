@@ -1,0 +1,197 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ImageElement } from '@liveworkspace/help-site/art/illustrations/palette-tools';
+import { ImagePicker as DiagramImagePicker } from '@/editions/livediagram/components/illustrations/palette-tools';
+
+export const metadata = helpMetadata({
+  title: 'Images',
+  description:
+    'Drop an image onto the canvas, upload the file once or search for an openly licensed one, and reuse anything from your personal gallery.',
+  path: '/help/palette/tools/images/',
+});
+
+<ArticleLayout path="palette/tools/images" title="Images" description="Add screenshots, photos, and mockups to a page. Upload a file once, then reuse it across your work from your personal gallery." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Tools", slug: "tools" }} subArticles={getSubArticles("images")}>
+
+Images bring screenshots, photos, logos, and mockups onto the canvas alongside your shapes and arrows. You drop an image element, attach a file, and it renders right there on the <Noun />. Anything you upload is kept in a personal gallery, so the second time you need the same picture you pick it instead of uploading it again.
+
+## Adding an image
+
+The Image tool drops an image element you then attach a file to.
+
+<Step n={1}>
+  Pick **Image** on the palette strip (in the **Layout** category, at its end, in livediagram; in
+  the **Media** category in livedesign and livedocuments), or press `9`. Tap the canvas to drop a
+  default-size image, or drag to size it as you place it.
+</Step>
+
+<Step n={2}>
+  The image lands as an empty placeholder reading "No image yet", selected so you can move and
+  resize it first. When you are ready, press its **Select Image** button (or double-click the
+  placeholder) to open the **Image** picker.
+</Step>
+
+<Step n={3}>
+  On the **Upload** tab, drop a file in, click to browse, or paste from your clipboard. The image
+  attaches and the placeholder becomes the picture.
+</Step>
+
+You can also paste an image straight onto the canvas with `⌘V` or `Ctrl+V`, and it lands as a new image element. [Participants](/help/collaboration/sharing/) can place images too: Image is one of the few tiles in their palette.
+
+To swap the picture later, double-click the image to reopen the picker and choose another, or right-click it and use **Change Image** in its **Image** section. **Remove from element** at the bottom of the picker (or **Remove Image** in the menu) detaches the picture from the element and leaves the gallery copy in place. The same section's **Caption Card** switch lays a title and a line of text over the picture.
+
+An image is a boxed element, so it moves, locks and links like everything else. Resizing keeps the original aspect ratio by default so the picture is not squashed. To stretch it freely, turn off **Lock Aspect Ratio** (see [Size](/help/canvas/size/)); holding Shift never unlocks it, because Shift keeps the proportions of anything you resize.
+
+<Figure caption="A placed image element behaves like any boxed element, with selection handles to resize it.">
+  <ImageElement />
+</Figure>
+
+<AppNote app="livedesign">
+
+**Cropping, masks and greyscale.**
+
+The **Image** section of a picture's right-click menu also shapes what it shows, without changing the picture in your gallery:
+
+- **Crop Image**, there once the image holds a picture, frames part of it right on the canvas. Drag the picture to slide it under the frame, or drag a handle to move an edge or corner. The bar at the foot of the screen sets the **Aspect** (**Free**, **Original**, **Square**, **4:3** or **16:9**) and a **Zoom** from 100% to 400%, with **Reset**, **Cancel** and **Done**. Enter applies and Escape cancels. The box takes the frame's size and the whole crop is one undo step.
+- **Mask** cuts the picture to a shape: **Circle**, **Rounded**, **Arch**, **Hexagon**, **Diamond**, **Triangle**, **Star** or **Blob**, or **No Mask**. Hover a tile to preview it. A masked picture always fills its shape, and its shadow follows the shape.
+- **Greyscale** draws the picture without colour, on screen and in every export.
+
+A locked image can't be cropped, since cropping moves and resizes the box. Only Editors can crop, mask or turn Greyscale on or off.
+
+</AppNote>
+
+## Searching for an image
+
+Don't have the picture you need? The image picker's **Search** tab finds openly licensed photos and illustrations from [Openverse](https://openverse.org), a free search engine over Creative Commons and public-domain works.
+
+<Step n={1}>Open the **Image** picker and choose the **Search** tab.</Step>
+
+<Step n={2}>
+  Type what you're looking for, such as "server rack" or "team meeting", and press Enter. Hover a
+  result to see who made it and its licence, and use **Load more** for further results.
+</Step>
+
+<Step n={3}>
+  Click a picture. It is added to your gallery and attached to the image, just like an upload.
+</Step>
+
+- **Safe to reuse.** Search only shows pictures whose licence allows both commercial use and changes (CC0, public domain, CC BY and CC BY-SA), so you can use them in a <Noun /> for work and crop or resize them freely.
+- **The credit comes with it.** Many of these licences ask you to credit the creator. The **Image** section of the picture's right-click menu shows the credit, with links to the picture's source and its licence, so you can copy it into your <Noun /> wherever you share it.
+- **Privacy.** Your search goes straight from your browser to Openverse, so Openverse sees the words you search for and your IP address. <AppName />'s servers never see the search.
+
+<AppNote app="livedocuments">
+
+**Alt text.**
+
+Alt text describes a picture for someone who cannot see it. A screen reader says it when it reaches the image, and it travels with the picture into SVG, PowerPoint and Word exports.
+
+<Step n={1}>
+  Right-click the image (or long-press it on a phone) and open the **Image** section.
+</Step>
+
+<Step n={2}>
+  Type a short description in **Alt Text**, such as "Bar chart of sales rising each quarter". Press
+  Enter or click away to save it; Escape puts back what was there.
+</Step>
+
+- **It starts as the file name.** A newly attached picture takes its file name as alt text, so replace it with words that say what the picture shows.
+- **Keep it short.** Alt text is one line of up to 250 characters. Line breaks become spaces, and spaces at either end are trimmed.
+- **Leave it empty** and a screen reader calls the picture "Image".
+- **Who can change it.** Editors and participants can change an image's alt text; viewers can read it in the image's right-click menu.
+
+</AppNote>
+
+## Accepted formats
+
+The picker accepts the formats that display reliably in every browser:
+
+- **PNG**, **JPEG**, **WebP**, and **GIF** (animated GIFs play automatically).
+- The per-file limit is **10 MB**, comfortably above a typical phone photo or 4K screenshot.
+
+Other formats are turned away with a message listing the accepted ones. SVG is refused for safety; for an iPhone HEIC photo, save or export it as JPEG first. For privacy, identifying metadata such as GPS location and camera details is stripped from JPEG uploads before the file is stored, so it never reaches anyone you share the <Noun /> with.
+
+## Avatars
+
+The **Avatar** tile, places a circular photo of a person: an image element that starts square, keeps its proportions as you resize it, and is cropped to a circle. Tap or drag to place it, then double-click it to pick or upload the photo through the same picker. It suits org charts, team pages and personas.
+
+<AppNote app="livediagram">
+  The Avatar tile sits beside Image at the end of the **Layout** category.
+</AppNote>
+
+<AppNote app="livedesign">The Avatar tile is in the **Media** category's **People** group.</AppNote>
+
+<AppNote app="livedocuments">
+  The Avatar tile is in the **Media** category after the embeds.
+
+**Cropping an image.**
+
+To keep only part of a picture, right-click it and choose **Crop Image** under **Image** (beside **Change Image** and **Remove Image**). The whole picture shows, dimmed outside a white frame:
+
+<Step n={1}>
+  Drag a corner or an edge of the frame to choose what stays. Hold **Shift** on a corner to keep the
+  frame's shape.
+</Step>
+<Step n={2}>
+  Drag the picture itself to slide it under the frame, or nudge it with the arrow keys (**Shift**
+  for bigger steps).
+</Step>
+<Step n={3}>
+  In the bar at the foot of the screen, pick an **Aspect** (**Free**, **Original**, **Square**,
+  **4:3** or **16:9**) and use **Zoom** to enlarge the picture up to 400%.
+</Step>
+<Step n={4}>
+  Press **Done** or **Enter** to crop, or click anywhere else. **Cancel** or **Escape** leaves the
+  picture as it was, and **Reset** goes back to the whole picture.
+</Step>
+
+The image's box becomes the frame, so the crop is one step to undo. Nothing is cut from the picture you uploaded: crop again any time to bring back what you hid. A locked image cannot be cropped, and only editors see Crop Image.
+
+**Masks and greyscale.**
+
+Under **Image** in the right-click menu, **Mask** clips a picture to a shape: **Circle**, **Rounded**, **Arch**, **Hexagon**, **Diamond**, **Triangle**, **Star** or **Blob**. Rest on a shape to preview it, and press **No Mask** to go back to the rectangle. A shadow follows the mask's outline. **Greyscale** draws the picture in shades of grey, which keeps a row of logos or a busy photo quiet. Both are kept in every export.
+
+**Caption Card**, at the foot of the same section, lays a card with a title and a line of text over the picture, the way the Hero carries one. Switch it off to show the picture alone.
+
+**Logo strips.**
+
+The **Logo Strip** tile, in **Media** beside Avatar, places five logo slots in a row, evenly spaced and the same height. Tap to drop it, or drag to size it, then double-click each slot to pick a logo. The logos are drawn in grey; turn **Greyscale Pictures** off in the strip's **Stack** section of the right-click menu to show their colours. As a [stack](/help/palette/stacks/), the strip keeps its spacing when you add, remove or reorder logos. Slide decks also have a **Logo Strip** layout under **Content**.
+
+</AppNote>
+
+## Your image gallery
+
+Every image you upload is indexed in a personal gallery, shared across all your <Noun plural />.
+
+<Figure caption="The image picker's Gallery tab shows everything you have uploaded, ready to reuse.">
+  <DiagramImagePicker />
+</Figure>
+
+- **Reuse, no re-upload.** The **Gallery** tab in the image picker shows everything you have uploaded. Pick a tile to reuse it. If you upload the same file twice, <AppName /> recognises it and reuses the existing copy rather than storing it again.
+- **A gallery has a limit.** Each person's gallery holds up to 500 images and 1 GB in total. Once either is reached, a new upload is turned away with "Your image gallery is full", and deleting images you no longer use makes room.
+- **Manage it from the Explorer.** The Explorer's [Image gallery](/help/explorer/image-gallery/) lists every image with its size and dimensions, a "Used in N <Noun plural />" badge, and a delete action, so you can spot unused files and clean them up.
+- Deleting an image from the gallery removes the stored file. Any element still pointing at it shows a broken-image fallback, so delete only what you are sure is unused.
+- **Unused uploads are cleared automatically.** Once a day, <AppName /> removes images that are both more than 30 days old and used in no <Noun />, so abandoned uploads do not pile up. An image any <Noun /> still uses is kept no matter its age, and recent uploads are left alone until the 30-day window passes.
+
+<AppNote app="livedesign">
+  <Note>
+    Image uploads rely on storage on the server. When uploads are not available, the Image and
+    Avatar tiles are hidden, and an upload attempt explains that uploads are not available on that
+    server.
+  </Note>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Note>
+    When image uploads are not available, the Image, Avatar and Hero tiles are hidden, and an upload
+    attempt explains that uploads are not available on that server.
+  </Note>
+</AppNote>
+
+<AppNote app="livediagram,livedesign">Images also layer like everything else.</AppNote>
+
+<Tip>
+  Before deleting from the gallery, open the "Used in N <Noun plural />" badge to see exactly where
+  an image is referenced. It saves you from breaking a picture you forgot was in use.
+</Tip>
+
+</ArticleLayout>

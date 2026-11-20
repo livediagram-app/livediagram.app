@@ -20,8 +20,8 @@ Everything under `packages/workbench/src/components/label-editor/`:
 - **The editor.** The `contentEditable`, its keys (Escape keeps what was typed and leaves; Cmd or Ctrl with B, I and U
   toggle a run; Enter inserts a newline as text; a paste goes in as plain text), the label's character cap, the
   type-to-edit end caret, the focus guards for the toolbar and the context menu riding alongside, and the floating
-  toolbar's frame (counter-scaled against the zoom, flipped below the element near the top of the screen, captioned
-  "Selected Text").
+  toolbar's frame (counter-scaled against the zoom, flipped below the element near the top of the screen, kept on
+  screen at every edge, captioned "Selected Text"; see [The toolbar](#the-toolbar)).
 - **The session.** The runs it opened with, the auto-fit of a multi-line label on Scale, the live text out to a text
   box that grows with it, and the commit: on blur, on unmount when the text changed, and before the page goes.
 - **The runs machine** the label editor and the note editor both stand on: paint, read-back, the selection's
@@ -63,8 +63,22 @@ or a first right-to-left letter lays the text out again with the caret where it 
 only that line. While the lines are apart the editor reads in the direction of the line holding the caret, so the
 caret at the end of a right-to-left line sits at its left, where the next letter goes.
 
+## The toolbar
+
+The floating toolbar sits centred above the label, or below it when the label is near the top of the screen. Centred
+on a label near the left or right edge of a phone, it ran off the screen, and so did its first or last buttons (Work
+Tracker 1313). Now it slides back in, sideways or up and down, until it and its "Selected Text" caption sit at least
+8 px inside the screen at every edge. The caption moves with the bar, centred on it. The bar stops pointing at the
+middle of the label once it slides, but it has no arrow to point with, and it still sits right above or below the
+label. A bar wider than the screen keeps its start in view, where it is read from. The slide goes again as soon as the
+label moves away from the edge, so a pan or a zoom never leaves it stranded. It is the same clamp every popover and menu
+in the editors uses (`clampToViewport`).
+
 ## Performance
 
 - A keystroke does work for the change, not the length of the text, in every case, the mixed-direction one now
   included: measured in [the blueprint](blueprints/label-editor.md#measured).
+- Keeping the toolbar on screen reads the toolbar's and its caption's rectangles when the editor already reads its
+  own for the flip (after a render, a scroll or a resize), so the layout is already worked out and nothing runs per
+  frame.
 - The shared code is the code each editor already shipped, so no editor's first-load JS grows.

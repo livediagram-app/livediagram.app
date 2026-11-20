@@ -108,7 +108,7 @@ becomes `anonymised`, its name "Deleted account" and its picture goes. Running i
     rows show the new name and colour at once, as the roster does, without reading the visits again. Only those rows
     change; the rest of a long list is left as it is. A closed visit keeps the name and colour it ended with, as the
     room keeps them.
-- The help article [Attendance](../../../apps/help/app/collaboration/live-presence/tab-attendance/page.mdx).
+- The help article [Attendance](../../../../liveworkspace/apps/help/app/collaboration/live-presence/tab-attendance/page.mdx).
 
 ## The wire
 

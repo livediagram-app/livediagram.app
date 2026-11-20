@@ -1,18 +1,55 @@
 # Register a help article
 
-The help centre (`apps/help`, [Help app](../specs/018-help/help-app.md)) has a hand-curated registry in the [`@liveplanner/help-registry`](../../packages/help-registry/src/index.ts) package (re-exported by `apps/help/lib/articles.ts` so the help app keeps its `@/lib/articles` import path). It is the **single source for the help search** (`SearchInput` → `searchArticles`), **the category/browse listings**, **and the live editor's search-panel Help group** (`apps/editor/lib/help-search.ts` derives its catalogue from it). The article's MDX page renders from the filesystem, but it is **invisible to search and browse unless it's in that registry**: there is no filesystem auto-discovery.
+liveplanner's help is the `liveplanner` scope of liveworkspace's one help centre (`liveworkspace/apps/help`,
+[One help centre](../../../liveworkspace/docs/specs/017-help/help-centre.md) and its
+[blueprint](../../../liveworkspace/docs/specs/017-help/blueprints/help-centre.md)). Its catalogue,
+`packages/help-registry/src/catalogue/` at the monorepo root, is the **single source for the help search, the
+category and browse listings, and the editor's search panel Help group** (`apps/editor/lib/help-search.ts` reads
+liveplanner's slice through [`@liveplanner/help-registry`](../../packages/help-registry/src/index.ts)). An article's MDX page
+renders from the filesystem, but it is **invisible to search and browse unless the catalogue has it**, and it shows
+in an app's help only when its entry names that app.
 
-A new article that isn't registered is a bug, the same way an out-of-date spec is. Follow these steps whenever you add, remove or rename a help article, all **in the same change**.
+An article that isn't registered is a bug, the same way an out-of-date spec is. Follow these steps whenever you
+add, remove or rename a help article, all **in the same change**.
 
 ## Steps
 
-1. Write (or move, or delete) the article's `apps/help/app/.../page.mdx`.
-2. Add (or update, or remove) its entry in the `articles` array in `packages/help-registry/src/index.ts`: `slug`, `title`, `description`, `keywords`, `category`, `categorySlug` (the full nested path, e.g. `canvas/the-canvas`), and `parentSlug` for a sub-article.
+1. Write (or move, or delete) `liveworkspace/apps/help/app/<categorySlug>/<slug>/page.mdx`. One file per path for
+   every app: if the path already exists for another app, extend that article rather than adding a second one.
+2. Add (or update, or remove) its entry: `slug`, `title`, `description`, `keywords`, `category`, `categorySlug`
+   (the full nested path, e.g. `canvas/the-canvas`), `parentSlug` for a sub-article, and `apps`, the app ids it
+   applies to in registry order (see `APP_ORDER` in `packages/help-registry/src/apps.ts`). An
+   article for liveplanner alone goes in `packages/help-registry/src/catalogue/liveplanner.ts` with `apps: ['liveplanner']`; one that
+   several apps share goes in a batch under `packages/help-registry/src/catalogue/shared/`.
 3. Check `categorySlug`/`slug` match the `page.mdx` path, so the search result link resolves.
-4. Write the registry `description` as the **short search-card summary**. It is intentionally separate from the MDX `helpMetadata` description (the longer SEO/OG meta): write a concise one, don't just copy the meta.
-5. Write `keywords` (**required**): space-separated, lowercase search synonyms, the words a user would type when they don't know the title ("transparency" for opacity, "hotkey" for keyboard shortcuts), plus adjacent spellings ("color" beside "colour"). Both the help search and the editor's search panel match on them; a test fails if they're missing.
-6. If the category lists `groups` (Explorer does), set the article's `group` to one of them; left out, the browse page shows the article under an empty heading (`lib/help-site.test.ts` fails).
-7. Bump the matching `categories[].articleCount`, and add a `categories` entry if it's a brand-new top-level category.
-8. **Draw the card.** For an article in one of the ten **feature** categories, add an entry to BOTH `FEATURE_ICONS` (`apps/help/lib/featureIcons.tsx`) and `FEATURE_ENTITY_HEX` (`apps/help/lib/featureColours.ts`); for a **support** category, add one to `SUPPORT_ARTICLE_ICONS` (`apps/help/lib/articleIcons.tsx`), which needs no hue. Getting Started is the exception: its cards lead with a numbered step badge instead of an icon.
-9. Draw what the card is _about_ (house style in [Help app](../specs/018-help/help-app.md)), and check the result doesn't land on a glyph either set already uses. A card with no entry silently falls back to a shared glyph and looks like every other undrawn card, which nothing at runtime can notice.
-10. Run the help tests (`pnpm --filter @liveplanner/help test`): `feature-icons.test.ts` / `help-site.test.ts` keep every card drawn, and the registry tests keep keywords and paths honest.
+4. Write the `description` as the **short search-card summary**. It is intentionally separate from the MDX
+   `helpMetadata` description (the longer SEO/OG meta): write a concise one, don't just copy the meta.
+5. Write `keywords` (**required**): space-separated, lowercase search synonyms, the words a user would type when
+   they don't know the title ("transparency" for opacity, "hotkey" for keyboard shortcuts), plus adjacent spellings
+   ("color" beside "colour"). The help search and the editor's search panel match on them; a test fails if they're
+   missing.
+6. **Write shared copy once.** In an article several apps share, name the work with `<Noun />` (`<Noun plural />`,
+   `<Noun capital />`; "plan" in liveplanner's help) and the product with `<AppName />`, and put what is true for
+   one app only inside `<AppNote app="liveplanner">...</AppNote>` (several apps: `app="liveplanner,livediagram"`). A note for an app
+   the article does not apply to fails the build. A figure for some apps only takes `<Figure app="liveplanner" ... />`.
+7. **Per-app wording.** Where the shared title or description reads wrong in liveplanner's help, give the entry
+   `byApp: { liveplanner: { title, description } }` (an entry may also set `group` and `category`; a category takes
+   `byApp` titles and descriptions too). liveplanner's help, its search and its editor's search panel then show that
+   wording; All Apps and the other apps keep the shared one.
+8. **Reading order.** Add the path to liveplanner's order, `packages/help-registry/src/catalogue/order/liveplanner.ts`, where it
+   should sit among its siblings: the previous and next links and the category pages follow it.
+9. If the category lists `groups`, set the article's `group` to one of them; left out, the browse page shows the
+   article under an empty heading and a test fails. A category's `articleCount` is worked out from the catalogue.
+10. **Moved, merged or retired?** Add the old path to `HELP_REDIRECTS` in
+    `packages/help-registry/src/catalogue/redirects.ts` (with `apps` when it holds on some apps' addresses only),
+    so links already shared keep landing.
+11. **Draw the card.** For an article in a **feature** category, add an entry to BOTH `FEATURE_ICONS`
+    (`liveworkspace/apps/help/editions/liveplanner/lib/featureIcons.tsx`) and `FEATURE_ENTITY_HEX`
+    (`liveworkspace/apps/help/editions/liveplanner/lib/featureColours.ts`); for a **support** category, add one to
+    `SUPPORT_ARTICLE_ICONS` (`liveworkspace/apps/help/editions/liveplanner/lib/articleIcons.tsx`), which needs no hue.
+    Draw what the card is _about_, and check it doesn't land on a glyph either set already uses: a card with no
+    entry silently falls back to a shared glyph.
+12. Run the help tests (`corepack pnpm --filter @liveworkspace/help test`): the framework's suites and each
+    edition's (`liveworkspace/apps/help/editions/liveplanner/tests/`, run as liveplanner's scope) keep every card drawn and
+    every link, note and path honest; `corepack pnpm --filter @liveworkspace/help-registry test` checks the
+    catalogue (every article names an app, each path once, redirects land).

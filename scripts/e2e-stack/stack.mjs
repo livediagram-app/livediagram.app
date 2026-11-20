@@ -81,9 +81,13 @@ export function runE2EStack(settings) {
   );
 
   // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
-  // optical-alignment.md, "Ink audit"). Help sits under its basePath on the live origin, as the router mounts it;
-  // marketing owns "/" in production, so it gets its own port.
-  const SITES = [{ prefix: '/help', dir: path.join(root, 'apps', 'help', 'out') }];
+  // optical-alignment.md, "Ink audit"). Help sits under its basePath on the live origin, as the router mounts it:
+  // the one help centre's export built as this product's scope (`HELP_SCOPE=<product> pnpm --filter
+  // @liveworkspace/help build:scope`, liveworkspace/apps/help/scripts/build-scopes.mjs); marketing owns "/" in
+  // production, so it gets its own port.
+  const SITES = [
+    { prefix: '/help', dir: path.resolve(root, '..', 'liveworkspace', 'apps', 'help', 'out') },
+  ];
   const MARKETING_DIR = path.join(root, 'apps', 'marketing', 'out');
 
   //   E2E_WORKBENCH=1  the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,

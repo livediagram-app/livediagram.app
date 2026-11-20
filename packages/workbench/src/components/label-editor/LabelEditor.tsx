@@ -27,6 +27,7 @@
 import type { KeyboardEvent } from 'react';
 import type { BoxedElement } from '@liveworkspace/element-model/element';
 import { useCanvasZoom } from '../canvas/CanvasZoomContext';
+import { FloatingTitle } from '../chrome/FloatingTitle';
 import { fitInsertion } from '../../lib/text-cap';
 import { listStyleOfText } from './block-type';
 import type { LabelEditorBinding, LabelEditorProps } from './LabelEditor.types';
@@ -39,6 +40,7 @@ import {
 } from './label-style';
 import { insertTextAtCaret } from './rich-text-dom';
 import { formatShortcut } from './rich-text-format';
+import { labelToolbarTransform, useLabelToolbarPlacement } from './useLabelToolbarPlacement';
 import { useRichTextSession } from './useRichTextSession';
 
 // A binding without keys of its own handles none.
@@ -106,7 +108,6 @@ function LabelEditorView<E extends BoxedElement>({
     pointerInToolbarRef,
     needsEndCaretRef,
     active,
-    placeBelow,
     basePx,
     placeCaretAtEnd,
     syncFromDom,
@@ -135,6 +136,8 @@ function LabelEditorView<E extends BoxedElement>({
     trackFormat,
     runStyle,
   });
+  // Above the element, below it near the top of the screen, slid back inside the screen at any edge.
+  const { placeBelow, shift } = useLabelToolbarPlacement(editorRef, toolbarWrapRef);
   // The part of an insertion the label's cap leaves room for (a badge's 24, a step's 3: badge.md "The element"),
   // counting what the selection it replaces frees.
   const fitting = (text: string): string => fitInsertion(editorRef.current, text, maxLength);
@@ -306,7 +309,8 @@ function LabelEditorView<E extends BoxedElement>({
         )} ${textClassName}`}
       />
       {/* Counter-scale by 1/zoom so the toolbar stays constant on-screen
-          size despite the canvas world transform; flip below near the top. */}
+          size despite the canvas world transform; flip below near the top,
+          slide back inside the screen at an edge (useLabelToolbarPlacement). */}
       <div
         ref={toolbarWrapRef}
         // The edit-mode element menu opens clear of this (useEditModeContextMenu).
@@ -325,20 +329,14 @@ function LabelEditorView<E extends BoxedElement>({
           placeBelow ? 'top-full mt-2.5' : 'bottom-full mb-2.5'
         }`}
         style={{
-          transform: `translateX(-50%) scale(${1 / zoom})`,
+          transform: labelToolbarTransform(shift, zoom),
           transformOrigin: placeBelow ? 'top center' : 'bottom center',
         }}
       >
         {/* Title line on the far side from the element (above the bar when the
             bar sits above the element, below it when below), matching every
             other floating toolbar's caption. */}
-        <span
-          className={`inline-flex items-center pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 shadow-sm ring-1 ring-slate-200 dark:bg-slate-700 dark:text-white dark:ring-0 ${
-            placeBelow ? 'top-full mt-1' : 'bottom-full mb-1'
-          }`}
-        >
-          <span className="text-optical-line text-optical-caps">Selected Text</span>
-        </span>
+        <FloatingTitle title="Selected Text" placeAbove={!placeBelow} />
         <Toolbar
           active={active}
           alignX={alignX}
