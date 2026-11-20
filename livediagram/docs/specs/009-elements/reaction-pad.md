@@ -39,7 +39,7 @@ celebration.
 - **Press it.** A real `<button>`, so the click travels rather than only
   selecting, with `pointer-events: auto` so it works inside the pointer-inert
   Avatar / Spotlight / Isometric layers, and pointer-down left alone so
-  dragging still moves the element. Same rules as the mode button and portal.
+  dragging still moves the element. Same rules as the mode button.
   Fires on **arrival**, so standing on a pad throws one burst rather than one
   per frame; stepping off and back on is a deliberate second press.
 

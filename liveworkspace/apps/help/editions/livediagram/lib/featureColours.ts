@@ -145,7 +145,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'sticky-notes': '#eab308',
   'code-blocks': '#475569',
   checklists: '#22c55e',
-  portals: '#8b5cf6',
   // Palette → Arrow guides
   'arrow-styles': '#3b82f6',
   'curve-and-elbow-handles': '#8b5cf6',

@@ -97,8 +97,8 @@ card is kept **only where it says something the face cannot**:
 
 - an **icon-only control** (the Q&A board's per-row Discuss / Done / Remove);
 - **a person** (an avatar's name card);
-- something the face deliberately **does not draw** (where a Portal leads, since
-  the ring carries no caption);
+- something the face deliberately **does not draw** (a retired piece's "Moved to
+  livehuddle" note, which its card keeps short);
 - a control whose press is **not what it looks like** (a dot-vote tally, where a
   click takes your dot back).
 

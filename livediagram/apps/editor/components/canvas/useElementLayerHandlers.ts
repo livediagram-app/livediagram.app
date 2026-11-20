@@ -70,7 +70,6 @@ export function useElementLayerHandlers(props: CanvasElementsLayerProps) {
     onLinkCell,
     onSetSessionConfig,
     onOpenElementSettings,
-    onEnterPortal,
     onFireReaction,
     onReactionBurstDone,
     onPauseTimer,
@@ -151,7 +150,6 @@ export function useElementLayerHandlers(props: CanvasElementsLayerProps) {
     // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
     onSetSessionConfig,
     onOpenElementSettings,
-    onEnterPortal,
     onFireReaction,
     onReactionBurstDone,
     onPauseTimer,
@@ -305,7 +303,6 @@ export function useBoxedShared({
       // vocabulary: Slide Deck (docs/specs/012-collaboration/presentation-mode.md) has no Mode Button, so it is not a
       // SelectionMode. Narrow rather than widen: a "Switch to Slide Deck" button is exactly what that spec rules out.
       activeMode: isSelectionMode(canvasTool) ? canvasTool : undefined,
-      onEnterPortal: h.onEnterPortal,
       onFireReaction: h.onFireReaction,
       onReactionBurstDone: h.onReactionBurstDone,
       onOpenComments: h.onOpenComments,

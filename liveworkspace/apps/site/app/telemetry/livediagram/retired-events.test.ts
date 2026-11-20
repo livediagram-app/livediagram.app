@@ -140,10 +140,12 @@ describe('isRetiredEvent', () => {
     for (const id of ['avatar-mode', 'walking-together', 'chairs', 'turning-furniture'])
       expect(isRetiredEvent('Help', 'View', id), id).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'virtual-office')).toBe(true);
-    // Kept: portal travel, the Reaction Pad, Mode buttons, Bring Focus, follow-me, the other tours, the Avatar web
-    // component (a person's picture), the other selection modes and templates, and the Portals help article.
-    expect(isRetiredEvent('Element', 'Changed', 'Portal')).toBe(false);
-    expect(isRetiredEvent('Element', 'Added', 'Portal')).toBe(false);
+    // The Portal followed on 2026-11-19 (Work Tracker 1318): added, linked, and its help article.
+    expect(isRetiredEvent('Element', 'Changed', 'Portal')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'Portal')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'portals')).toBe(true);
+    // Kept: the Reaction Pad, Mode buttons, Bring Focus, follow-me, the other tours, the Avatar web component (a
+    // person's picture), the other selection modes and templates.
     expect(isRetiredEvent('Element', 'Used', 'ReactionPad')).toBe(false);
     expect(isRetiredEvent('Element', 'Changed', 'ModeButton')).toBe(false);
     expect(isRetiredEvent('Element', 'Added', 'Focus-button')).toBe(false);
@@ -153,7 +155,6 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Started', 'SankeyTour')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'DrawTourSeenOn')).toBe(false);
     expect(isRetiredEvent('Template', 'Used', 'Flowchart')).toBe(false);
-    expect(isRetiredEvent('Help', 'View', 'portals')).toBe(false);
   });
 
   it('keeps everything that still exists', () => {

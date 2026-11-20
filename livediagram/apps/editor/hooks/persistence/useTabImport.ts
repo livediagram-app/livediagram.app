@@ -44,7 +44,7 @@ export function remintElements(elements: Element[]): {
     return { ...el, id };
   });
   // Arrow endpoints, mind-map parents (docs/specs/009-elements/mind-node.md) and portal partners
-  // (docs/specs/009-elements/portal-element.md) follow the new ids. Missed, a duplicated tab's mind-map
+  // (a retired Portal's, docs/specs/009-elements/retired-elements.md) follow the new ids. Missed, a duplicated tab's mind-map
   // nodes named parents on the SOURCE tab and paired portals lost their
   // partner. Element links are left alone: a link names its tab too, and
   // that is still the source tab, where the original element still is.

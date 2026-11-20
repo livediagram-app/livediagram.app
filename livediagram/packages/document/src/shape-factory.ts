@@ -65,31 +65,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textBold: true,
     };
   }
-  // Portal (docs/specs/009-elements/portal-element.md): ships unlinked (there is nothing to link to until a
-  // second portal exists) with a label the author replaces. It paints its own
-  // ring, so the box behind it is transparent, and `strokeColor` is the colour
-  // of the energy rather than of a border — electric blue by default, the
-  // colour everyone already reads as "portal", and recolourable like any other
-  // element (an orange pair is the obvious second half).
-  if (kind === 'portal') {
-    return {
-      ...base,
-      // Deliberately UNLABELLED: an unnamed portal is named positionally
-      // ("Portal 1", "Portal 2") wherever it's shown, so a canvas full of them
-      // is navigable without anyone typing a name. A label the author types
-      // wins over the number. See portalName in apps/editor/lib/portals.ts.
-      fillColor: 'transparent',
-      strokeColor: '#38bdf8',
-      textColor: '#ffffff',
-      textSize: 'sm',
-      textBold: true,
-      // A portal has a natural shape: stretched wide it stops reading as one at
-      // all (the panel and knob distort with the box). Locking the aspect keeps
-      // drag-to-draw and every later resize portal-shaped; the user can still
-      // unlock it from the menu like any other element.
-      aspectLocked: true,
-    };
-  }
   // Session button (docs/specs/012-collaboration/session-button.md): same skin and rules as the Selection Mode
   // button — it IS one, pointed at a session tool instead of a mode — with a
   // default five-minute timer so a fresh one already does something.

@@ -145,29 +145,6 @@ export const BEHAVIOUR_TILES: PaletteTileDef[] = [
     icon: <IsometricIcon size={TILE_GLYPH_PX} />,
   },
   {
-    // Portal (docs/specs/009-elements/portal-element.md): step in here, come out of the portal it is linked to.
-    // The tile id keeps its original 'door' word: ids are stable, since palette layouts and
-    // search address tiles by them.
-    id: 'tools:door',
-    tileGroup: 'move',
-    blurb: 'Step through to its linked portal',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Portal',
-    caption: 'Portal',
-    description:
-      'Click it and you come out of the portal it is linked to. Link a pair from the element menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'portal' },
-    icon: (
-      <Glyph size={18} units={18}>
-        {/* The standing oval ring, with the far side showing through it. */}
-        <ellipse cx="9" cy="9" rx="4.6" ry="7" />
-        <ellipse cx="9" cy="9" rx="2.1" ry="3.6" strokeWidth="1.1" opacity="0.6" />
-      </Glyph>
-    ),
-  },
-  {
     // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the ro  {
     // Session tools (docs/specs/012-collaboration/session-button.md): one tile per tool, grouped, rather than one
     // button you place and then reconfigure. The tools have nothing in common
@@ -355,8 +332,8 @@ export const BEHAVIOUR_TILES: PaletteTileDef[] = [
     icon: <PickerIcon size={TILE_GLYPH_PX} />,
   },
   {
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside Portal and Chair, because all
-    // three take somebody somewhere. This is the one that takes everybody.
+    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside the Link card, because both
+    // take somebody somewhere. This is the one that takes everybody.
     id: 'tools:focus-button',
     tileGroup: 'move',
     blurb: 'Ask everyone to look here',

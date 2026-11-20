@@ -287,7 +287,7 @@ export function useEditorRoom({
     receiveReaction: reactions.receive,
     // Filled by the hook below, which cannot be declared up here because
     // taking an invitation navigates through the viewport (declared later
-    // still). Same knot, and the same ref, as the portal's travel callback.
+    // still).
     receiveFocusHere: (from, tabId, at) => receiveFocusRef.current?.(from, tabId, at),
     receiveFacilitator: facilitator.receiveFacilitator,
     receiveSelectionReleased,

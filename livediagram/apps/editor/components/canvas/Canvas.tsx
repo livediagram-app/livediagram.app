@@ -39,7 +39,6 @@ import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/Can
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
-import { usePortalTravel } from '@/components/canvas/portal-travel';
 
 import { useCanvasPointer } from '@liveworkspace/workbench/hooks/canvas/useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
@@ -202,17 +201,6 @@ function CanvasView(props: CanvasProps) {
 
   const { spotlightLook, spotlight, eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } =
     useCanvasPointer({ canvasTool, mainRef, onCanvasPointerMove, wrapperRef, viewportZoom });
-
-  // Portals (docs/specs/009-elements/portal-element.md): the camera centres on the paired portal, on this tab or
-  // another; Canvas owns the viewport, so travel is resolved here.
-  const { resolvePortal } = usePortalTravel({
-    elements,
-    tabs: props.portalTabs,
-    activeTabId: props.activeTabId,
-    onFollowLink: props.onFollowLink,
-    mainRef,
-    setViewportOffset,
-  });
 
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see
@@ -408,7 +396,6 @@ function CanvasView(props: CanvasProps) {
             handlePolygonDoubleClick={handlePolygonDoubleClick}
             pathTool={pathTool}
             penStroke={penStroke}
-            resolvePortal={resolvePortal}
             cursorClass={cursorClass}
             penCursorValue={penCursorValue}
             viewportZoom={viewportZoom}

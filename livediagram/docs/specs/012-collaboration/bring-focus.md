@@ -7,9 +7,9 @@ Status: shipped
 A **Bring Focus** element: press it and everyone else in the room is offered a
 jump to it, on your tab, at their own zoom.
 
-It lives in the palette's **Behaviours → Navigate** group, beside Portal, Chair
-and Link card. All four take somebody somewhere; this is the one that takes
-everybody.
+It lives in the palette's **Behaviours → Navigate** group, beside the Link card.
+Both take somebody somewhere; this is the one that takes everybody. (The Portal
+and Chair that sat here moved to livehuddle, [Not in livediagram](../002-project-scope/not-in-livediagram.md).)
 
 ## Why
 

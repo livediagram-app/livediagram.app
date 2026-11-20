@@ -94,7 +94,6 @@ function BoxedElementViewImpl(props: BoxedElementViewProps) {
     onToggleReveal,
     onRollPicker,
     collab,
-    onEnterPortal,
     onFireReaction,
     activeMode,
     onOpenNote,
@@ -452,7 +451,6 @@ function BoxedElementViewImpl(props: BoxedElementViewProps) {
             sessionRunBy={sessionRunBy}
             revealedForMe={revealedForMe}
             onCommitTable={onCommitTable}
-            onEnterPortal={onEnterPortal}
             onFireReaction={onFireReaction}
             onFollowLink={onFollowLink}
             onLinkCell={onLinkCell}

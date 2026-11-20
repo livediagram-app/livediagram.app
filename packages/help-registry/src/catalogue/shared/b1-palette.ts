@@ -494,18 +494,6 @@ export const articles: Article[] = [
     apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
-    slug: 'portals',
-    title: 'Portals',
-    description:
-      'Link two portals and jump between them in one click, across a big canvas or to another tab.',
-    keywords:
-      'portal door teleport jump travel warp link pair navigate shortcut across tabs walk through',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-    apps: ['livediagram', 'livehuddle'],
-  },
-  {
     slug: 'sticky-notes',
     title: 'Sticky Notes',
     description: 'A coloured note card for short annotations and brainstorm items.',

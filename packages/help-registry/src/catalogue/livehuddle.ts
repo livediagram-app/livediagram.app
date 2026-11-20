@@ -299,6 +299,20 @@ export const articles: Article[] = [
     group: 'Meeting Kits',
     apps: ['livehuddle'],
   },
+  // The Portal left livediagram (Work Tracker 1318), so its article is livehuddle's alone; livediagram's help answers
+  // the path with a 308 to this one.
+  {
+    slug: 'portals',
+    title: 'Portals',
+    description:
+      'Link two portals and jump between them in one click, across a big canvas or to another tab.',
+    keywords:
+      'portal door teleport jump travel warp link pair navigate shortcut across tabs walk through',
+    category: 'Palette',
+    categorySlug: 'palette/tools',
+    parentSlug: 'tools',
+    apps: ['livehuddle'],
+  },
   {
     slug: 'elevator',
     title: 'Elevator',

@@ -138,8 +138,6 @@ export function ElementAppearanceSections({
   // A retired Avatar button (docs/specs/009-elements/retired-elements.md) has no Button section to set.
   const isModeButton =
     target.type === 'shape' && target.shape === 'mode-button' && !isRetiredElement(target);
-  // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
-  const isPortal = target.type === 'shape' && target.shape === 'portal';
   // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, /106, /107).
   // Both are the facilitator's while somebody holds the baton (docs/specs/012-collaboration/facilitator.md): no handler, no section.
   const isSessionButton =
@@ -423,7 +421,6 @@ export function ElementAppearanceSections({
         isChecklist={isChecklist}
         isEntity={isEntity}
         isModeButton={isModeButton}
-        isPortal={isPortal}
         isSessionButton={isSessionButton}
         isReveal={isReveal}
         isPicker={isPicker}

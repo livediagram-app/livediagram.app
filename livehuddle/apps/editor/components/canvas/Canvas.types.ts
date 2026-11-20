@@ -98,8 +98,10 @@ export type CanvasProps = {
   // Chair (docs/specs/009-elements/chair.md): who presence says is seated on a given chair.
   chairSitters?: import('@/components/canvas/chair-sitters-source').SittersSource;
   // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
-  // it has one, the action that travels there.
-  onEnterPortal?: (element: import('@livehuddle/document').ShapeElement) => {
+  // it has one, the action that travels there. Not named `on…`: a face calls it while rendering, and the stable-event
+  // boundaries (withStableEventProps) wrap every `on…` function in a forwarder that reads the PREVIOUS render's value
+  // there, so a new link showed "not linked" until something else redrew the portal (Work Tracker 1318).
+  portalResolver?: (element: import('@livehuddle/document').ShapeElement) => {
     targetName: string | null;
     travel?: () => void;
     // The Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md) read the canvas's

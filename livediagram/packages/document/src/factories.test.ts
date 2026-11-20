@@ -487,18 +487,6 @@ describe('createShape (mode button, docs/specs/009-elements/mode-button.md)', ()
       }),
     ).toBe(false);
   });
-
-  it('makes a portal portal-shaped and unpaired (docs/specs/009-elements/portal-element.md)', () => {
-    const portal = createShape('portal', 0, 0);
-    expect(portal.shape).toBe('portal');
-    expect(portal.height).toBeGreaterThan(portal.width);
-    // Nothing to pair with until a second portal exists.
-    expect(portal.portalTarget).toBeUndefined();
-    // Unlabelled on purpose: the name is positional until someone types one.
-    expect(portal.label).toBeUndefined();
-    // Stretched wide it stops reading as a portal, so the aspect is locked.
-    expect(portal.aspectLocked).toBe(true);
-  });
 });
 
 // A copied workshop note (docs/specs/021-event-storming/event-storming.md) is a new piece of paper: fresh id AND a

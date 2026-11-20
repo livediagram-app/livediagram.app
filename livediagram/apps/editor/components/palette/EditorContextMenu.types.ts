@@ -245,12 +245,6 @@ export type EditorContextMenuProps = {
   onSetHeroCaption: (on: boolean) => void;
   // Mode button (docs/specs/009-elements/mode-button.md): which selection mode pressing it hands out.
   onSetButtonMode: (mode: import('@livediagram/document').SelectionMode) => void;
-  // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
-  onSetPortalTarget: (targetId: string | null) => void;
-  // Portal (docs/specs/009-elements/portal-element.md): its name (menu-only — the canvas ring stays clean), and
-  // "create the far end for me" for the common case where it doesn't exist yet.
-  onSetPortalName: (name: string) => void;
-  onCreateLinkedPortal: () => void;
   // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
   // their settings, applied to the element the menu is acting on. The session button's and the cover's are
   // absent while somebody else holds the baton (docs/specs/012-collaboration/facilitator.md), so neither section shows.
@@ -271,10 +265,6 @@ export type EditorContextMenuProps = {
   onSetDecisionStatus: (status: DecisionStatus) => void;
   onSetDecisionDate: (date: string | undefined) => void;
   onSetDecisionDrivers: (drivers: string[]) => void;
-  // Every tab, because a portal link can cross tabs, plus which one is active
-  // so the picker can mark the off-tab candidates.
-  tabs: import('@livediagram/document').Tab[];
-  activeTabId: string;
   // Style presets (docs/specs/010-palette/style-presets.md): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).

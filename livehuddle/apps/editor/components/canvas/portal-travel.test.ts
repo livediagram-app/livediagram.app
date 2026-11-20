@@ -3,7 +3,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement, type Tab } from '@livehuddle/document';
-import { usePortalTravel, type PortalTravelDeps } from './portal-travel';
+import { usePortalBoard, usePortalTravel, type PortalTravelDeps } from './portal-travel';
 
 // Going through a portal (docs/specs/009-elements/portal-element.md) does three things that have to happen
 // together: switch tab when the far portal is on another one, centre the camera
@@ -159,5 +159,70 @@ describe('usePortalTravel resolver identity', () => {
     result.current.resolvePortal(here).travel!();
     expect(second).toHaveBeenCalledTimes(1);
     expect(first).not.toHaveBeenCalled();
+  });
+});
+
+// The board the faces resolve against (docs/specs/008-canvas/blueprints/canvas-performance.md): the resolver goes to
+// every element view as a plain prop, so its identity must hold through a drag and move the moment a link is made.
+describe('usePortalBoard', () => {
+  const a = portal('a');
+  const b = portal('b');
+  const box = { ...portal('box'), shape: 'chair' } as ShapeElement;
+
+  it('keeps the same board while only positions or other elements change', () => {
+    const { result, rerender } = renderHook(
+      ({ els }) => usePortalBoard(els, [tabOf('t1', [a, b])]),
+      {
+        initialProps: { els: [a, b, box] as ShapeElement[] },
+      },
+    );
+    const first = result.current;
+    rerender({ els: [{ ...a, x: 300 }, b, { ...box, x: 40, label: 'Moved' }] });
+    expect(result.current).toBe(first);
+    expect(first.elements.map((e) => e.id)).toEqual(['a', 'b']);
+    expect(first.tabs?.[0]?.elements.map((e) => e.id)).toEqual(['a', 'b']);
+  });
+
+  it('mints a new board, in the same render, when a link, a name or a tab changes', () => {
+    const { result, rerender } = renderHook(
+      ({ els, tabs }: { els: ShapeElement[]; tabs?: Tab[] }) => usePortalBoard(els, tabs),
+      { initialProps: { els: [a, b], tabs: [tabOf('t1', [a, b])] as Tab[] | undefined } },
+    );
+    const first = result.current;
+    const linked = [
+      { ...a, portalTarget: 'b' },
+      { ...b, portalTarget: 'a' },
+    ];
+    rerender({ els: linked, tabs: [tabOf('t1', linked)] });
+    expect(result.current).not.toBe(first);
+    expect((result.current.elements[0] as ShapeElement).portalTarget).toBe('b');
+    const second = result.current;
+    rerender({ els: linked, tabs: [{ ...tabOf('t1', linked), name: 'Lobby' }] });
+    expect(result.current).not.toBe(second);
+    rerender({ els: linked, tabs: undefined });
+    expect(result.current.tabs).toBeUndefined();
+  });
+
+  it('resolves a new link at once: the face of the portal it was made from reads it in the same render', () => {
+    const setup2 = (elements: ShapeElement[]) =>
+      renderHook(
+        ({ els }) =>
+          usePortalTravel({
+            elements: els,
+            tabs: [tabOf('t1', els)],
+            activeTabId: 't1',
+            onFollowLink: vi.fn(),
+            setViewportOffset: vi.fn(),
+            teleportTo: vi.fn(),
+          }),
+        { initialProps: { els: elements } },
+      );
+    const { result, rerender } = setup2([a]);
+    expect(result.current.resolvePortal(a).travel).toBeUndefined();
+    const created = portal('c', { portalTarget: 'a' });
+    const source = { ...a, portalTarget: 'c' };
+    rerender({ els: [source, created] });
+    expect(result.current.resolvePortal(source).targetName).toBe('Portal 2');
+    expect(result.current.resolvePortal(source).travel).toBeTypeOf('function');
   });
 });

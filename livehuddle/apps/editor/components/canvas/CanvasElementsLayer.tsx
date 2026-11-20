@@ -74,7 +74,7 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
     canMove,
     canResize,
     canvasTool,
-    onEnterPortal,
+    portalResolver,
     onPressAvatarPad,
     peers,
     remoteSelectionsByElement,
@@ -109,7 +109,6 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
     onEditLink,
     // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
     onOpenElementSettings,
-    onEnterPortal,
     onPressAvatarPad,
   });
   // Auto-fit measures the face it paints, and webfonts land after first
@@ -147,13 +146,24 @@ function CanvasElementsLayerView(props: CanvasElementsLayerProps) {
       // Mode Buttons light up for the mode they hand out; the canvas-tool union is wider than the mode vocabulary
       // so narrow rather than widen.
       activeMode: isSelectionMode(canvasTool) ? canvasTool : undefined,
-      onEnterPortal: h.onEnterPortal,
+      // Not through the stable bag: a face calls it while rendering, and a wrapper would read the previous
+      // render's resolver there. usePortalTravel keeps its identity steady instead (usePortalBoard).
+      onEnterPortal: portalResolver,
       onPressAvatarPad: h.onPressAvatarPad,
       onEditLink: h.onEditLink,
       imageContext,
       onContextSelect: h.handleElementContextSelect,
     }),
-    [h, isPaintMode, tabSummaries, readOnly, chairSitters, canvasTool, imageContext],
+    [
+      h,
+      isPaintMode,
+      tabSummaries,
+      readOnly,
+      chairSitters,
+      canvasTool,
+      imageContext,
+      portalResolver,
+    ],
   );
   // The elements actually drawn.
   const drawnElements = useMemo(() => ordered.map((o) => o.element), [ordered]);

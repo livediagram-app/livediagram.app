@@ -97,13 +97,11 @@ export function describeVariant(
       // code block (docs/specs/009-elements/code-block.md) + checklist (docs/specs/009-elements/checklist.md) paint their own content,
       // so the wrapper carries no box border / background — just the
       // selection ring.
-      // A portal (docs/specs/009-elements/portal-element.md) is in the same family: its ring IS the element, so
-      // a wrapper box behind it would frame the energy in a rectangle.
       // SELF_PAINTING_SHAPES (@livediagram/document) is the single list of
       // kinds that draw their own body. The menu reads the same set to decide
       // whether to offer Border at all — they used to keep separate lists and
-      // drifted, leaving dead Border controls on a code block, a checklist, a
-      // portal and a reveal. `actor` / `icon` are in the set too but reach
+      // drifted, leaving dead Border controls on a code block, a checklist and
+      // a reveal. `actor` / `icon` are in the set too but reach
       // this branch already handled above, so including them changes nothing.
       // A retired piece (an Avatar button included) draws its own placeholder card the same way.
       if (SELF_PAINTING_SHAPES.has(element.shape) || isRetiredElement(element)) {

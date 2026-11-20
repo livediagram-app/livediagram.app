@@ -1,7 +1,7 @@
 'use client';
 
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
-import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
+import { useBehaviourSetters } from '@/hooks/canvas/useBehaviourSetters';
 import { useElementStyle } from '@/hooks/canvas/useElementStyle';
 import { useStylePreview } from '@/hooks/canvas/useStylePreview';
 import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
@@ -20,7 +20,7 @@ import type { EditorLayersSlice } from './useEditorLayers';
 import type { EditorTabsSlice } from './useEditorTabs';
 import type { EditorCreationSlice } from './useEditorCreation';
 
-// Styling the selection: the style setters, flowchart setters, Quick Style, portal setters, and the hover
+// Styling the selection: the style setters, flowchart setters, Quick Style, Behaviour setters, and the hover
 // previews. A slice of useEditorState (../useEditorState.ts): it takes the slices composed before it and returns
 // its own, with `view`, its part of the editor's view-model.
 export function useEditorStyle({
@@ -54,7 +54,7 @@ export function useEditorStyle({
 }) {
   const { previewingRef, toast } = fromDocument;
   const { commitTabs, tabs, tickTabs } = fromHistory;
-  const { activeId, readSelection, setSelectedId } = fromSelection;
+  const { activeId, readSelection } = fromSelection;
   const { contextMenu } = fromDialogs;
   const { participant } = fromCollaboration;
   const { tabsRef } = fromPersistence;
@@ -223,25 +223,19 @@ export function useEditorStyle({
     toolIntent: pendingDraw,
   };
 
-  // Portal links (docs/specs/009-elements/portal-element.md) live off the style hook: a link can point at a
-  // portal on ANOTHER tab, so these setters need the whole tab list and a
-  // tabs-wide commit rather than the active tab's element mapper.
+  // The Behaviour elements' menu settings (useBehaviourSetters).
   const {
-    setPortalTargetSelected,
-    setPortalNameSelected,
-    createLinkedPortal,
     setSessionConfigSelected,
     setRevealedSelected,
     setPickerSourceSelected,
     setReactionSelected,
     setPickerOptionsSelected,
-  } = usePortalSetters({
+  } = useBehaviourSetters({
     currentSelectionIds,
     contextTargetId: contextMenu?.mode === 'element' ? contextMenu.elementId : null,
     commitTabs,
     tabs,
     activeId,
-    setSelectedId,
     sessionToolsBlocked: facilitator.sessionToolsBlocked,
   });
 
@@ -456,9 +450,6 @@ export function useEditorStyle({
       setDecisionDateSelected,
       setDecisionDriversSelected,
       setButtonModeSelected,
-      setPortalTargetSelected,
-      setPortalNameSelected,
-      createLinkedPortal,
       setSessionConfigSelected,
       setRevealedSelected,
       setPickerSourceSelected,

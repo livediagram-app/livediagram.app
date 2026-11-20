@@ -93,7 +93,6 @@ type ElementDataSectionsProps = {
   isMindNode: boolean;
   isEntity: boolean;
   isModeButton: boolean;
-  isPortal: boolean;
   isSessionButton: boolean;
   isReveal: boolean;
   isPicker: boolean;
@@ -129,7 +128,6 @@ export function ElementDataSections({
   isMindNode,
   isEntity,
   isModeButton,
-  isPortal,
   isSessionButton,
   isReveal,
   isPicker,
@@ -170,7 +168,6 @@ export function ElementDataSections({
     isMindNode ||
     isEntity ||
     isModeButton ||
-    isPortal ||
     isSessionButton ||
     isReveal ||
     isPicker ||
@@ -405,7 +402,6 @@ export function ElementDataSections({
             props,
             shapeTarget,
             isModeButton,
-            isPortal,
             isSessionButton,
             isReveal,
             isPicker,

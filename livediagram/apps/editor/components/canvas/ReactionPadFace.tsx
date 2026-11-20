@@ -19,8 +19,8 @@ import { tint } from '@/lib/element-tint';
 // under the pointer, and on a press squashes and throws a ring out from the
 // spot. Motion lives in qa-board.css and stops under reduced motion.
 //
-// Interaction rules match the Selection Mode button (docs/specs/009-elements/mode-button.md) and the Portal
-// (docs/specs/009-elements/portal-element.md): a real <button> so a click travels rather than only selecting,
+// Interaction rules match the Selection Mode button (docs/specs/009-elements/mode-button.md): a real <button>
+// so a click fires rather than only selecting,
 // `pointer-events: auto` so it works inside the pointer-inert
 // Spotlight / Isometric layers, and pointer-down left alone so dragging still
 // moves the element.

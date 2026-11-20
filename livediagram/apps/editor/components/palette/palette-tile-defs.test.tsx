@@ -147,7 +147,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-record': 5,
   'collab-react': 5,
   'collab-mode': 7,
-  'collab-navigate': 3,
+  'collab-navigate': 2,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
   // Diagram's Build as two, listed by the Diagram layout (docs/specs/010-palette/build-category.md); Diagrams owns

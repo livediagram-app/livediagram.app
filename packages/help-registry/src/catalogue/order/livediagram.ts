@@ -209,7 +209,6 @@ export const ORDER: readonly string[] = [
   'palette/tools/sticky-notes',
   'palette/tools/code-blocks',
   'palette/tools/checklists',
-  'palette/tools/portals',
   'palette/tools/data-elements',
   'palette/tools/drawing/shape-recognition',
   'palette/behaviour/bring-focus',

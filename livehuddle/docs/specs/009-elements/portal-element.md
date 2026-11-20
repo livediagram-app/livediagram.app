@@ -2,6 +2,11 @@
 
 A **Portal**: a standing ring of energy on the canvas, linked to another one. Click it, or walk an [Avatar-mode](../008-canvas/avatar-mode.md) character into it, and you come out of the portal it is linked to, on this tab or another.
 
+livehuddle is the Portal's only home: livediagram offered it too until the owner moved it on 2026-11-19 ("Remove Portal
+from livediagram and add it to livehuddle instead", Work Tracker 1318). A livediagram board saved with portals keeps
+them as stored (`portalTarget` included) and shows each as a "Moved to livehuddle" card, so the stored pair is never
+lost.
+
 ## Why
 
 A big canvas is a place, and places have shortcuts. Two portals turn "scroll across the canvas hunting for the other half of this flow" into one click, and they make an Avatar-mode walkthrough feel like moving between rooms rather than panning a plane. It is the cheapest possible in-canvas navigation: no minimap coordinates, no bookmarks UI, just a thing you step into.

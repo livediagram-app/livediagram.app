@@ -92,7 +92,6 @@ export type ElementFaceRouterProps = Pick<
   | 'sessionRunBy'
   | 'revealedForMe'
   | 'onCommitTable'
-  | 'onEnterPortal'
   | 'onFireReaction'
   | 'onFollowLink'
   | 'onLinkCell'

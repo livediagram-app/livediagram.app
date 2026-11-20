@@ -193,7 +193,6 @@ describe('elementRole', () => {
       'action-card',
       'page',
       'focus-button',
-      'portal',
       'roll-call',
     ])
       expect(elementRole(shape(kind))).toBe('group');

@@ -176,7 +176,7 @@ export function useBehaviourElements({
 
   // Per-element session settings, edited from the element's own `…` menu
   // (docs/specs/012-collaboration/session-button.md) rather than three levels into the right-click menu. Patches the
-  // one element; the selection-wide setter in usePortalSetters stays for the
+  // one element; the selection-wide setter in useBehaviourSetters stays for the
   // context menu, which acts on whatever is selected.
   const setSessionConfigFor = (element: ShapeElement, config: SessionButtonConfig) => {
     // Its configuration IS the timer's length and the poll's question, so

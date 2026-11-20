@@ -75,9 +75,6 @@ export type ShapeKind =
   // element's `mode` field; a stored `avatar` (or none) is a retired Avatar button
   // (docs/specs/009-elements/retired-elements.md).
   | 'mode-button'
-  // Portal (docs/specs/009-elements/portal-element.md): a portal. Clicking one takes you to the portal it is
-  // paired with, in `portalTarget`.
-  | 'portal'
   // Session button (docs/specs/012-collaboration/session-button.md): pressing it starts a session tool for the room
   // — a timer, a dot vote, or a live poll. Which one lives in `session`.
   | 'session-button'
@@ -118,6 +115,8 @@ export type ShapeKind =
   | 'bookshelf'
   | 'water-cooler'
   | 'coffee-machine'
+  // The Portal moved to livehuddle after them (Work Tracker 1318); a stored one keeps its `portalTarget`.
+  | 'portal'
   | 'rug'
   // The collaboration family — elements that record what the ROOM thinks
   // rather than what one author drew.

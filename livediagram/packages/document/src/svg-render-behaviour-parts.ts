@@ -1,5 +1,5 @@
 // The marks each Behaviour face is drawn from in the headless render (docs/specs/009-elements/mode-button.md to /137):
-// the timer's dial, the portal's art, the reaction pad, a key's edge, the reveal cover, the picker, a session button's
+// the timer's dial, the reaction pad, a key's edge, the reveal cover, the picker, a session button's
 // glyph and words, an emoji, and the retired pieces' placeholder card. svgBehaviourFace (svg-render-faces.ts) composes
 // them, in DESIGN units scaled to the box as there.
 
@@ -40,34 +40,6 @@ export function timerFace(el: Face, cx: number, cy: number, color: string): stri
     `<g clip-path="url(#dial-${xmlEscape(el.id)})">${ticks}</g>` +
     text(x0, cy + 3.5, 'Timer', { size: 10, weight: 500, color, opacity: 0.7, uppercase: true }) +
     text(x0 + kickerW + 8, cy + 5, clock, { size: 14, weight: 600, color })
-  );
-}
-
-// PortalFace's art on its own 24x36 grid, kept in proportion as the canvas
-// keeps it: the bloom, the mouth, the rim lit white at the crown, a hairline
-// inside it and the motes. A portal with no target is the dim, dead ring.
-export function portalArt(el: Face, stroke: string): string {
-  const open = !!el.portalTarget;
-  const id = xmlEscape(el.id);
-  const s = xmlEscape(stroke);
-  const o = (lit: number, dead: number) => (open ? lit : dead);
-  return (
-    `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="0 0 24 36" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
-    `<defs>` +
-    `<radialGradient id="portal-bloom-${id}"><stop offset="55%" stop-color="${s}" stop-opacity="0"/><stop offset="84%" stop-color="${s}" stop-opacity="${o(0.45, 0.1)}"/><stop offset="100%" stop-color="${s}" stop-opacity="0"/></radialGradient>` +
-    `<linearGradient id="portal-rim-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff" stop-opacity="${o(0.95, 0.35)}"/><stop offset="35%" stop-color="${s}"/><stop offset="100%" stop-color="${s}" stop-opacity="${o(0.85, 0.5)}"/></linearGradient>` +
-    `<radialGradient id="portal-mouth-${id}"><stop offset="0%" stop-color="#0b1020" stop-opacity="${o(0.92, 0.5)}"/><stop offset="70%" stop-color="#0b1020" stop-opacity="${o(0.72, 0.38)}"/><stop offset="100%" stop-color="${s}" stop-opacity="${o(0.75, 0.25)}"/></radialGradient>` +
-    `</defs>` +
-    `<ellipse cx="12" cy="18" rx="11.9" ry="17.9" fill="url(#portal-bloom-${id})"/>` +
-    `<ellipse cx="12" cy="18" rx="7.4" ry="14.9" fill="url(#portal-mouth-${id})"/>` +
-    `<ellipse cx="12" cy="18" rx="8.3" ry="15.8" fill="none" stroke="url(#portal-rim-${id})" stroke-width="2.4"/>` +
-    `<ellipse cx="12" cy="18" rx="6.8" ry="14.1" fill="none" stroke="#ffffff" stroke-opacity="${o(0.32, 0.1)}" stroke-width="0.7"/>` +
-    `<g opacity="${o(1, 0.35)}">` +
-    `<path d="M6.7 12.6 A7.4 14.2 0 0 1 10.8 3.4" fill="none" stroke="#ffffff" stroke-opacity="0.5" stroke-width="0.9" stroke-linecap="round"/>` +
-    `<circle cx="8.6" cy="11.5" r="0.7" fill="#ffffff" opacity="0.75"/>` +
-    `<circle cx="15.4" cy="24.5" r="0.55" fill="#ffffff" opacity="0.55"/>` +
-    `<circle cx="14.9" cy="14" r="0.4" fill="#ffffff" opacity="0.45"/>` +
-    `</g></svg>`
   );
 }
 

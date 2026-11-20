@@ -25,7 +25,7 @@ Scope, by file:
 | `apps/editor/components/canvas/boxed-element-chrome.tsx`          | Mounts `ReactionBurst` beside the label stack                     |
 | `apps/editor/components/palette/tile-defs/behaviour-tiles.tsx`    | `tools:reaction-<reaction>`, `tileGroup: 'reaction'`              |
 | `apps/editor/components/palette/BehaviourMenuSections.tsx`        | `ReactionMenuSection`                                             |
-| `apps/editor/hooks/canvas/usePortalSetters.ts`                    | `setReactionSelected`                                             |
+| `apps/editor/hooks/canvas/useBehaviourSetters.ts`                 | `setReactionSelected`                                             |
 
 ## Domain and naming
 

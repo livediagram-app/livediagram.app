@@ -114,7 +114,7 @@ stop to draw):
   - **Record**: Comment panel, Action card, Agenda, Decision record, Roll call.
   - **React**: the five reaction pads.
   - **Selection Mode**: one button per selection mode.
-  - **Navigate**: Portal, Bring focus.
+  - **Navigate**: Bring focus, Link card.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows the
   layout as **Shapes, Write, Draw · Layout · Ask, Session · Icons, Media · Data** (Icons holding the stickers on its Stickers side): no Popular; and Tools, Record, React, Selection Mode
   and Navigate gathered into **Session**, browsed in two panes (the groups down the side, a search across all of

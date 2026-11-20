@@ -1,6 +1,6 @@
 // Behaviour faces in the headless render (docs/specs/009-elements/mode-button.md to /137): the buttons,
 // the reveal cover, the picker, the reaction pad, the comment and action
-// panels, the portal, the chair. The Collaborate panels have their own module
+// panels, the retired pieces. The Collaborate panels have their own module
 // (svg-render-collab-faces.ts); both draw with svg-render-face-kit.ts.
 //
 // These kinds all once exported as the SAME thing: a rounded box with the
@@ -25,7 +25,6 @@ import { MODE_GLYPHS } from './mode-glyphs';
 import {
   keycapEdge,
   picker,
-  portalArt,
   reactionPad,
   retiredFace,
   revealCover,
@@ -65,7 +64,6 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'reaction-pad',
   'comment-pin',
   'action-card',
-  'portal',
   // The retired Spaces pieces (docs/specs/009-elements/retired-elements.md): their placeholder card.
   ...RETIRED_SHAPE_KINDS,
   'focus-button',
@@ -166,8 +164,6 @@ export function svgBehaviourFace(
     case 'action-card':
       // docs/specs/012-collaboration/action-panel.md "The card": a row per action, the Add Action bar.
       return svgActionPanel(el, title, color, collabAccent(stroke, fill ?? '#ffffff', color));
-    case 'portal':
-      return portalArt(el, stroke);
     default:
       return null;
   }

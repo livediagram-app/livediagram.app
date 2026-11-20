@@ -509,7 +509,7 @@ function CanvasView(props: CanvasProps) {
                       {...props}
                       // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
                       // so the prop from the host is overridden with the local resolver.
-                      onEnterPortal={resolvePortal}
+                      portalResolver={resolvePortal}
                       // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
                       // lives, rather than threaded from the page.
                       chairSitters={sittersOf}

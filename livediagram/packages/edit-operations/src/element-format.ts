@@ -167,7 +167,7 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   sticker: ['stickerId'],
   estimate: ['estimateScale'],
   // Retired furniture (docs/specs/009-elements/retired-elements.md) still reads with its stored facing, and a
-  // retired room with its doorway.
+  // retired room with its doorway, and a retired Portal with its partner.
   ...Object.fromEntries(RETIRED_FACING_KINDS.map((kind) => [kind, ['chairFacing']])),
   room: ['roomDoor'],
   portal: ['portalTarget'],

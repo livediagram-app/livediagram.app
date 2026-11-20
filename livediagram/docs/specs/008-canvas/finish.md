@@ -92,7 +92,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
   layers: charts, legends, progress, rating, checklists, code blocks, concept graphics, Sankey,
   badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components,
-  collaboration panels, buttons, pickers, reveals, portals, quizzes,
+  collaboration panels, buttons, pickers, reveals, quizzes,
   link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
   rows, a page's fold, a browser's chrome and an inline icon beside a label.
   - Its **ink** (fills, outlines, bars, discs, rules, glyphs) is drawn through the same wobble as icons.

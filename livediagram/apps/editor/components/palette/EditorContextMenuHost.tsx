@@ -166,15 +166,11 @@ export function EditorContextMenuHost() {
     setDecisionDateSelected,
     setDecisionDriversSelected,
     setButtonModeSelected,
-    setPortalTargetSelected,
-    setPortalNameSelected,
-    createLinkedPortal,
     setSessionConfigSelected,
     setRevealedSelected,
     setPickerSourceSelected,
     setReactionSelected,
     setPickerOptionsSelected,
-    tabs,
     commitShapeColorPreset,
     previewShapeColorPreset,
     resetShapeStyleSelected,
@@ -482,16 +478,11 @@ export function EditorContextMenuHost() {
       onSetDecisionDate={setDecisionDateSelected}
       onSetDecisionDrivers={setDecisionDriversSelected}
       onSetButtonMode={setButtonModeSelected}
-      onSetPortalTarget={setPortalTargetSelected}
-      onSetPortalName={setPortalNameSelected}
-      onCreateLinkedPortal={createLinkedPortal}
       onSetSession={facilitator.sessionToolsBlocked ? undefined : setSessionConfigSelected}
       onSetRevealed={facilitator.sessionToolsBlocked ? undefined : setRevealedSelected}
       onSetPickerSource={setPickerSourceSelected}
       onSetReaction={setReactionSelected}
       onSetPickerOptions={setPickerOptionsSelected}
-      tabs={tabs}
-      activeTabId={activeTab.id}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
       onApplyShapeColorPreset={commitShapeColorPreset}
       onPreviewShapeColorPreset={previewShapeColorPreset}

@@ -454,7 +454,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Picker':
     'Someone rolled a Picker element, landing on a participant or option from its list, shared with everyone in the room.',
   'Element|Changed|Portal':
-    'Someone linked a Portal element to another portal, on this tab or another, so stepping into one jumps to the other.',
+    'Someone linked a Portal element to another portal, on this tab or another, so stepping into one jumps to the other. No longer recorded: the Portal moved to livehuddle in November 2026.',
   'Element|Changed|ProcessSteps':
     "Someone edited a Process web component's steps, such as adding, removing, or retitling one.",
   'Element|Changed|Progress': "Someone changed a progress-bar element's percentage.",
@@ -1506,9 +1506,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DiagramKeyTourSkipped':
     'Someone left the Diagram Key tour before its end, or the diagram key it was on went away.',
   'UI|Ended|PortalTourCompleted':
-    'Someone reached the end of the Portal tour, offered beside a selected portal. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'Someone reached the end of the Portal tour, offered beside a selected portal. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|Ended|PortalTourSkipped':
-    'Someone left the Portal tour before its end, or the portal it was on went away. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'Someone left the Portal tour before its end, or the portal it was on went away. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|Ended|SankeyTourCompleted':
     'Someone reached the end of the Sankey tour, offered beside a selected Sankey diagram.',
   'UI|Ended|SankeyTourSkipped':
@@ -1678,7 +1678,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|DiagramKeyTourOffer':
     'The Diagram Key tour was offered, as a small Tour toolbar beside a selected diagram key (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|PortalTourOffer':
-    'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'The Portal tour was offered, as a small Tour toolbar beside a selected portal (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|Opened|SankeyTourOffer':
     'The Sankey tour was offered, as a small Tour toolbar beside a selected Sankey diagram (counted once per visit). Since 25 October 2026 this counts the Start Tour button in the footer showing it, once per page load: tours no longer offer themselves.',
   'UI|Opened|DrawTourOffer':
@@ -1798,7 +1798,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|DiagramKeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected diagram key, starting its tour.',
   'UI|Started|PortalTour':
-    'Someone pressed Play on the Tour toolbar beside a selected portal, starting its tour. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'Someone pressed Play on the Tour toolbar beside a selected portal, starting its tour. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|Started|SankeyTour':
     'Someone pressed Play on the Tour toolbar beside a selected Sankey diagram, starting its tour.',
   'UI|Started|SankeyFlowsTour':
@@ -2075,9 +2075,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|DiagramKeyTourSeenOn':
     'Someone switched off Tours › Element Tours › "Diagram Key Tour" in Settings, so it is not offered.',
   'UI|Toggled|PortalTourSeenOff':
-    'Someone switched on Tours › Element Tours › "Portal Tour" in Settings, so it is offered again. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'Someone switched on Tours › Element Tours › "Portal Tour" in Settings, so it is offered again. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|Toggled|PortalTourSeenOn':
-    'Someone switched off Tours › Element Tours › "Portal Tour" in Settings, so it is not offered. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'Someone switched off Tours › Element Tours › "Portal Tour" in Settings, so it is not offered. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|Toggled|SankeyTourSeenOff':
     'Someone switched on Tours › Element Tours › "Sankey Diagram Tour" in Settings, so it is offered again.',
   'UI|Toggled|SankeyTourSeenOn':
@@ -2432,17 +2432,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|DiagramKeyTourStepTitle': 'The Diagram Key tour reached its step on its title.',
   'UI|View|DiagramKeyTourStepOutro': 'The Diagram Key tour reached its closing card.',
   'UI|View|PortalTourStepPortal':
-    'The Portal tour reached its first step, a way through. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'The Portal tour reached its first step, a way through. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|View|PortalTourStepTravel':
-    'The Portal tour reached its step on stepping through it. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'The Portal tour reached its step on stepping through it. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|View|PortalTourStepUnlinked':
-    'The Portal tour reached its step on an unlinked portal. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'The Portal tour reached its step on an unlinked portal. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|View|PortalTourStepMenu':
-    'The Portal tour reached its step on linking it from its menu. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'The Portal tour reached its step on linking it from its menu. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|View|PortalTourStepWalk':
-    'The Portal tour reached its step on walking an Avatar-mode character in. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'The Portal tour reached its step on walking an Avatar-mode character in. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|View|PortalTourStepOutro':
-    'The Portal tour reached its closing card. No longer recorded: the Portal tour left livediagram in November 2026; portals themselves carry on.',
+    'The Portal tour reached its closing card. No longer recorded: the Portal tour left livediagram in November 2026, and portals followed it to livehuddle later that month.',
   'UI|View|SankeyTourStepBands':
     'The Sankey tour reached its "Bands Carry Amounts" step, lifting the widest band of the diagram.',
   'UI|View|SankeyTourStepLeftover':

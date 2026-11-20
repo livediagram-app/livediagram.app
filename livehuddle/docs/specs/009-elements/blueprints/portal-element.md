@@ -72,8 +72,11 @@ Banned synonyms: "door" (it survives only as the persisted palette tile id `tool
   2. `standingOnId === null`: clear `arrivedPortalRef` (D115).
   3. Same as last frame, or equal to `arrivedPortalRef`: ignore.
   4. A `portal` under the feet: call `onWalkIntoPortal`, which is `enterPortalRef.current`.
-- Both triggers run the same `enterPortal`. `usePortalTravel` owns no state and builds both actions
-  from the render's values; `Canvas` holds the latest `enterPortal` in `enterPortalRef`
+- Both triggers run the same `enterPortal`. `usePortalTravel` builds both actions from the render's values;
+  `resolvePortal` (what the face reads while rendering) resolves against `usePortalBoard`, the portals of the active
+  tab and of every tab, whose identity changes only when a portal's id, `portalTarget` or label (or a tab's id or
+  name) does, and `Canvas` hands it to the element layer as `portalResolver` (not `on…`, so no stable-event forwarder wraps it), which gives it to the views unwrapped (see
+  `008-canvas/blueprints/canvas-performance.md`), so both ends of a new link redraw at once; `Canvas` holds the latest `enterPortal` in `enterPortalRef`
   (`useLatest`), because the walk hook needs travel and travel needs the walk hook's
   `teleportTo`.
 

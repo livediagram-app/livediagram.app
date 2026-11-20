@@ -403,7 +403,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Entity',
     'Checklist',
     'ModeButton',
-    'Portal',
     'SessionButton',
     'Reveal',
     'Picker',

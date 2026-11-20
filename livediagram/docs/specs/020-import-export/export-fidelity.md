@@ -143,8 +143,8 @@ Roll call chip's name is cut to its chip; and a Decision record's drivers wrap
 in a "+N more" line rather than dropped. The Behaviour faces draw what the canvas
 draws: a timer Session button is the idle dial (ticks, "TIMER", its length); a
 Mode button is a keycap with its glyph chip over the label, or "Switch to" and
-the mode's name (`SELECTION_MODE_LABEL`) when it has none; a Portal is its
-bloom, mouth and lit rim (dim when unpaired); a Reaction pad is its soft wash,
+the mode's name (`SELECTION_MODE_LABEL`) when it has none; a retired piece
+(a Portal among them) is its placeholder card; a Reaction pad is its soft wash,
 the emoji on its glowing spot and the label chip; a Reveal cover carries the
 lock disc and the gesture chip; a Picker shows its reel window; a chair prints
 its label under the seat. A Page draws its masthead inside the border, starts
