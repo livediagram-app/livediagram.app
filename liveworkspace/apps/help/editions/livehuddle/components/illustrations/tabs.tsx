@@ -17,8 +17,8 @@ import {
   MenuRowList,
 } from '@liveworkspace/help-site/art/illustrations/tabs-parts';
 
+export { TabBarOverview } from './tab-bar';
 export {
-  TabBarOverview,
   RenamingTab,
   TabFolderStates,
   AddToFolderMenu,

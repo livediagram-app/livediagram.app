@@ -8,7 +8,7 @@
 // the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
+import { Scene, Panel, Label, Cursor } from '@liveworkspace/help-site/art/primitives';
 import {
   Caption,
   CarouselHeading,
@@ -16,81 +16,24 @@ import {
   Slider,
   TabStylePanel,
 } from '@liveworkspace/help-site/art/illustrations/tab-style-parts';
-import { MenuCard, Strip } from './toolbar-layout';
+import { CornerCluster, TopRow } from './editor-chrome';
+import { Desk, OfficeFloor, Plant, Room, Sofa } from './space-furniture';
 
-// The Font tiles and the Text and Colours panels are drawn once for every product, in
-// packages/help-site (art/illustrations/look-and-feel.tsx); this product's Canvas panel, with its
-// floors, stays below.
-export {
-  ElementFontMenu,
-  LookAndFeelFont,
-  LookAndFeelTheme,
-} from '@liveworkspace/help-site/art/illustrations/look-and-feel';
+// The Font tiles and the Text and Colours panels, with a Space's own previews, are in ./look-and-feel; this
+// product's Canvas panel, with its floors, stays below.
+export { ElementFontMenu, LookAndFeelFont, LookAndFeelTheme } from './look-and-feel';
 
 // --- The canvas and its palette ----------------------------------------------------------------
 
-/** The canvas with the menu button and tab name top-left, the palette strip across the top
- *  (the canvas-tool and category dropdowns, the tiles, More and Search) and the bottom-right
- *  cluster (Undo and Redo, the Theme & Canvas paintbrush, then the zoom controls). */
+/** The editor over an office: the logo and menu cards, the strip across the top (Edit | Walk, the categories,
+ *  Search), the corner card, and the bottom-right cluster (Undo | Redo, Theme & Canvas, zoom). */
 export function CanvasPaletteOverview() {
-  const ink = { className: 'stroke-slate-500', strokeWidth: 1.4, fill: 'none' } as const;
   return (
-    <Scene w={420} h={240}>
-      <MenuCard x={8} y={14} />
-      <Strip x={78} y={14} />
-      <Shape x={60} y={72} w={76} h={42} label="Start" />
-      <Shape x={176} y={66} w={60} h={54} kind="diamond" />
-      <Shape x={168} y={146} w={76} h={36} accent label="Done" />
-      <Arrow connector from={[136, 93]} to={[176, 93]} />
-      <Arrow connector from={[206, 120]} to={[206, 146]} />
-      {/* Bottom-right cluster: Undo and Redo, the paintbrush, then the zoom controls. */}
-      <g transform="translate(32 0)">
-        <rect
-          x={150}
-          y={198}
-          width={60}
-          height={30}
-          rx={7}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <line x1={180} y1={204} x2={180} y2={222} className="stroke-slate-200" strokeWidth={1.2} />
-        <path d="M170 209 h-8 l3 -3 M162 209 l3 3 M162 209 h5 a4.5 4.5 0 0 1 0 9 h-2" {...ink} />
-        <path d="M190 209 h8 l-3 -3 M198 209 l-3 3 M198 209 h-5 a4.5 4.5 0 0 0 0 9 h2" {...ink} />
-        <rect
-          x={218}
-          y={198}
-          width={34}
-          height={30}
-          rx={7}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <path
-          d="M227 220 c3 0 4 -2 4 -4 l7 -9 a2 2 0 0 1 3 2 l-8 8 c0 2 -2 3 -6 3 Z"
-          className="fill-brand-400 stroke-slate-500"
-          strokeWidth={1.2}
-          strokeLinejoin="round"
-        />
-      </g>
-      <rect
-        x={292}
-        y={198}
-        width={114}
-        height={30}
-        rx={7}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={310} y={214} anchor="middle" size={14} weight={700} tone="muted">
-        −
-      </Label>
-      <Label x={349} y={214} anchor="middle" size={11} weight={600} tone="body">
-        100%
-      </Label>
-      <Label x={388} y={214} anchor="middle" size={14} weight={700} tone="muted">
-        +
-      </Label>
+    <Scene w={520} h={260}>
+      <OfficeFloor x={110} y={52} />
+      <Cursor x={250} y={150} />
+      <TopRow w={520} />
+      <CornerCluster x={350} y={228} />
     </Scene>
   );
 }
@@ -140,24 +83,25 @@ export function MultiSelectionBar() {
   ];
   return (
     <Scene w={420} h={220}>
-      <Shape x={72} y={120} w={70} h={42} />
-      <Shape x={176} y={116} w={70} h={50} kind="circle" />
-      <Shape x={282} y={120} w={70} h={42} kind="diamond" />
-      <Arrow connector from={[142, 141]} to={[176, 141]} />
+      <Room x={40} y={96} w={340} h={112} name="Desks" />
+      <Desk x={84} y={130} />
+      <Desk x={190} y={130} />
+      <Sofa x={292} y={140} />
+      <Plant cx={360} cy={190} />
       {[
-        [72, 120, 70, 42],
-        [176, 116, 70, 50],
-        [282, 120, 70, 42],
+        [80, 122, 42, 40],
+        [186, 122, 42, 40],
+        [288, 136, 48, 26],
       ].map(([x, y, w, h], i) => (
         <rect
           key={i}
-          x={x! - 3}
-          y={y! - 3}
-          width={w! + 6}
-          height={h! + 6}
-          rx={8}
+          x={x}
+          y={y}
+          width={w}
+          height={h}
+          rx={2}
           className="fill-none stroke-brand-500"
-          strokeWidth={1.8}
+          strokeWidth={1.25}
         />
       ))}
       <Panel x={bx} y={by} w={181} h={36}>
@@ -172,7 +116,7 @@ export function MultiSelectionBar() {
           x2={bx + 72}
           y2={by + 28}
           className="stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
       </Panel>
     </Scene>
