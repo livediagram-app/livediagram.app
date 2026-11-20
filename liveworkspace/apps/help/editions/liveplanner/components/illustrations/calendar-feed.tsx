@@ -142,7 +142,7 @@ export function CalendarFeedWeek() {
         height={H - 18}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {days.map((d, i) => (
         <g key={d}>

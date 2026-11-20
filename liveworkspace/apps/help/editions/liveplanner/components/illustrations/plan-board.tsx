@@ -3,80 +3,134 @@
 // style holds.
 
 import { Scene, Label, Cursor } from '@liveworkspace/help-site/art/primitives';
-import { Card, Widget, Cog, Column, Arrow2 } from './plan-parts';
+import { Card, Cog, Column, Arrow2, AddCard } from './plan-parts';
+import {
+  AccountCard,
+  BoardHeader,
+  ChromeCard,
+  CompletionWidget,
+  HEADER_H,
+  headerWidgetsX,
+  type HeaderType,
+} from './planner-chrome';
+import { BottomBar, CornerControls } from './planner-bars';
 import { StartBandLanes, StartTitleMarkLanes } from './start-band';
 
-/** A Kanban board in Plan mode: header widgets, a column over its WIP limit (the preset's 3) with its
- *  cog, Task and Action cards (the types Kanban takes) with their type stripes, a card being dragged into the gap it opens, and + Add Card. */
+/** A Kanban board in Plan mode, as the editor shows it: the board fills the window under its header row (the
+ *  logo, the menu, the board's name, its Task and Action types, the Completion widget, Share and the account),
+ *  a column over its WIP limit (the preset's 3) with its settings button lit, a card being dragged into the gap it
+ *  opens, + Add Card, the corner cluster and the bottom bar with the plan's tabs. */
 export function PlanBoardScene() {
-  const colW = 124;
-  const xs = [18, 148, 278];
-  const cw = 110;
+  const bx = 6;
+  const bw = 468;
+  const colW = 148;
+  const xs = [bx + 6, bx + 6 + colW + 6, bx + 6 + 2 * (colW + 6)];
+  const cw = colW - 12;
+  const types: HeaderType[] = [
+    { name: 'Task', icon: 'task', hue: 'teal' },
+    { name: 'Action', icon: 'action', hue: 'rose' },
+  ];
+  const wx = headerWidgetsX(bx, 'Kanban', types);
+  const top = 6 + HEADER_H + 8;
+  const at = (i: number) => top + 27 + i * 39;
   return (
-    <Scene w={420} h={250}>
-      <rect
-        x={8}
-        y={8}
-        width={404}
-        height={234}
-        rx={12}
-        className="fill-white stroke-slate-200"
-        strokeWidth={2}
+    <Scene w={480} h={300}>
+      <ChromeCard x={bx} y={6} w={bw} h={258} r={8} />
+      <BoardHeader x={bx} y={6} w={bw} title="Kanban" types={types} account={false}>
+        <CompletionWidget x={wx} y={6 + 5.5} pct={40} of="2/5" />
+      </BoardHeader>
+      <AccountCard
+        right={bx + bw - 4}
+        y={6}
+        card={false}
+        signedIn={{ initial: 'S', colour: 'emerald' }}
       />
-      {/* Header: title, widgets, then the + that opens the palette's Widgets. */}
-      <Label x={20} y={25} size={13} weight={700} tone="strong">
-        Kanban
-      </Label>
-      {/* The Kanban preset's widgets, in its order. */}
-      <Widget x={80} y={16} w={74} label="Completion" />
-      <Widget x={160} y={16} w={74} label="WIP Alerts" />
-      <Widget x={240} y={16} w={66} label="Filter" />
-      <rect
-        x={312}
-        y={16}
-        width={18}
-        height={18}
-        rx={5}
-        fill="none"
-        className="stroke-slate-300"
-        strokeDasharray="3 2"
-      />
-      <Label x={321} y={26} size={12} anchor="middle" tone="muted">
-        +
-      </Label>
 
-      <Column x={xs[0]!} y={44} w={colW} h={190} name="To Do" count="2" />
-      <Column x={xs[1]!} y={44} w={colW} h={190} name="In Progress" count="4 / 3" warn cog />
-      <Column x={xs[2]!} y={44} w={colW} h={190} name="Review" count="1" />
+      <Column x={xs[0]!} y={top} w={colW} h={214} name="To Do" count="2" />
+      <Column x={xs[1]!} y={top} w={colW} h={214} name="In Progress" count="4 / 3" warn cog />
+      <Column x={xs[2]!} y={top} w={colW} h={214} name="Review" count="1" />
 
       {/* To Do: one card left, its neighbour is on its way to Review. */}
-      <Card x={xs[0]! + 7} y={66} w={cw} type="action" num={15} title="Pick a date" />
-      <Label x={xs[0]! + 11} y={110} size={10} tone="muted">
-        + Add Card
-      </Label>
+      <Card
+        x={xs[0]! + 6}
+        y={at(0)}
+        w={cw}
+        face="full"
+        type="action"
+        num={15}
+        title="Pick a date"
+        due="Nov 28"
+        who={{ initial: 'M', colour: 'violet' }}
+      />
+      <AddCard x={xs[0]! + 8} y={at(0) + 62} />
 
-      <Card x={xs[1]! + 7} y={66} w={cw} type="task" num={9} title="Fix login" />
-      <Card x={xs[1]! + 7} y={102} w={cw} type="task" num={11} title="New icons" />
-      <Card x={xs[1]! + 7} y={138} w={cw} type="task" num={2} title="Launch" />
-      <Card x={xs[1]! + 7} y={174} w={cw} type="action" num={12} title="Book venue" />
+      <Card
+        x={xs[1]! + 6}
+        y={at(0)}
+        w={cw}
+        face="full"
+        type="task"
+        num={9}
+        title="Fix login"
+        priority="High"
+      />
+      <Card
+        x={xs[1]! + 6}
+        y={at(1)}
+        w={cw}
+        face="full"
+        type="task"
+        num={11}
+        title="New icons"
+        priority="Medium"
+      />
+      <Card
+        x={xs[1]! + 6}
+        y={at(2)}
+        w={cw}
+        face="full"
+        type="task"
+        num={2}
+        title="Launch"
+        priority="Low"
+      />
+      <Card x={xs[1]! + 6} y={at(3)} w={cw} face="full" type="action" num={12} title="Book venue" />
 
-      <Card x={xs[2]! + 7} y={66} w={cw} type="action" num={8} title="Copy check" />
+      <Card x={xs[2]! + 6} y={at(0)} w={cw} face="full" type="action" num={8} title="Copy check" />
       {/* The gap the dragged card opens where it will land. */}
       <rect
-        x={xs[2]! + 7}
-        y={102}
+        x={xs[2]! + 6}
+        y={at(1)}
         width={cw}
-        height={30}
-        rx={5}
-        fill="none"
-        className="stroke-brand-400"
-        strokeWidth={1.5}
-        strokeDasharray="4 3"
+        height={34}
+        rx={4}
+        className="fill-brand-50 stroke-brand-400"
+        strokeWidth={1}
+        strokeDasharray="3 2"
       />
-
       {/* The card on the move, lifted under the pointer. */}
-      <Card x={xs[2]! + 9} y={150} w={cw} type="task" num={14} title="Write docs" lifted />
-      <Cursor x={xs[2]! + 98} y={170} />
+      <Card
+        x={xs[2]! + 9}
+        y={at(2) + 6}
+        w={cw}
+        face="full"
+        type="task"
+        num={14}
+        title="Write docs"
+        lifted
+      />
+      <Cursor x={xs[2]! + 104} y={at(2) + 24} />
+
+      <CornerControls right={bx + bw - 6} y={264 - 28} />
+      <BottomBar
+        y={276}
+        w={480}
+        tabs={[
+          { name: 'Kanban', kind: 'board' },
+          { name: 'Backlog', kind: 'board' },
+          { name: 'Overview', kind: 'dashboard' },
+        ]}
+      />
     </Scene>
   );
 }
@@ -104,7 +158,7 @@ export function PlanBoardPickerScene() {
         height={270}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {/* The header band: the board lanes, then the title mark and the title. */}
       <StartBandLanes x={23} y={15} w={374} h={35} />
@@ -117,9 +171,9 @@ export function PlanBoardPickerScene() {
       <Label x={256} y={36} size={8} tone="muted">
         Find a board, sheet or layout
       </Label>
-      <line x1={20} y1={52} x2={400} y2={52} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={20} y1={52} x2={400} y2={52} className="stroke-slate-200" strokeWidth={0.75} />
       {/* The rail: Boards chosen. */}
-      <line x1={112} y1={52} x2={112} y2={282} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={112} y1={52} x2={112} y2={282} className="stroke-slate-200" strokeWidth={0.75} />
       {['Recommended', 'Boards', 'Spreadsheets', 'Visualisations', 'Dashboards', 'Inspiration'].map(
         (name, i) => (
           <g key={name}>
@@ -141,7 +195,7 @@ export function PlanBoardPickerScene() {
                 x2={102}
                 y2={60 + i * 22 - 3}
                 className="stroke-slate-200"
-                strokeWidth={1}
+                strokeWidth={0.75}
               />
             ) : null}
             <Label
@@ -222,7 +276,7 @@ export function PlanBoardPickerScene() {
                 x2={pic.x + pic.w - 2}
                 y2={pic.y + 20}
                 className="stroke-slate-300"
-                strokeWidth={1}
+                strokeWidth={0.75}
               />
             )}
             <Label x={x + 7} y={y + 52} size={9} weight={600} tone="strong">
@@ -282,12 +336,12 @@ export function PlanColumnSettingsScene() {
         height={238}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* The toolbar: Move Left and Move Right at the start, Remove at the end. */}
       <path d="M163 42 h238" className="stroke-slate-100" strokeWidth={1} />
       <rect x={172} y={20} width={44} height={16} rx={4} className="fill-white stroke-slate-200" />
-      <path d="M194 20 v16" className="stroke-slate-200" strokeWidth={1} />
+      <path d="M194 20 v16" className="stroke-slate-200" strokeWidth={0.75} />
       <path
         d="M185 24.5 l-3.5 3.5 l3.5 3.5 M203 24.5 l3.5 3.5 l-3.5 3.5"
         fill="none"
@@ -327,13 +381,20 @@ export function PlanColumnSettingsScene() {
           height={22}
           rx={5}
           className="fill-white stroke-slate-300"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <Label x={182} y={36} size={11} tone="strong">
           In Progress
         </Label>
-        <circle cx={182} cy={60} r={6} fill="none" className="stroke-slate-300" strokeWidth={1.2} />
-        <path d="M178 64 l8 -8" className="stroke-slate-300" strokeWidth={1.2} />
+        <circle
+          cx={182}
+          cy={60}
+          r={6}
+          fill="none"
+          className="stroke-slate-300"
+          strokeWidth={0.75}
+        />
+        <path d="M178 64 l8 -8" className="stroke-slate-300" strokeWidth={0.75} />
         {swatches.map((cls, i) => (
           <circle key={cls} cx={196 + i * 16} cy={60} r={6} className={cls} />
         ))}

@@ -64,7 +64,7 @@ export function GettingStartedArt() {
                   height={18}
                   rx={3}
                   className="fill-white stroke-slate-200"
-                  strokeWidth={1}
+                  strokeWidth={0.75}
                 />
                 <rect
                   x={col.x + 6}
@@ -107,7 +107,7 @@ export function GettingStartedArt() {
           height={84}
           rx={5}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <path d="M156 73 a5 5 0 0 1 5 -5 h78 a5 5 0 0 1 5 5 v9 h-88 Z" className="fill-brand-100" />
         {[0, 1, 2].map((i) => (
@@ -125,7 +125,14 @@ export function GettingStartedArt() {
           const y = 82 + i * 17.5;
           return (
             <g key={i}>
-              <line x1={156} y1={y} x2={244} y2={y} className="stroke-slate-200" strokeWidth={1} />
+              <line
+                x1={156}
+                y1={y}
+                x2={244}
+                y2={y}
+                className="stroke-slate-200"
+                strokeWidth={0.75}
+              />
               <rect
                 x={162}
                 y={y + 7}
@@ -144,15 +151,15 @@ export function GettingStartedArt() {
                   height={9}
                   rx={2}
                   className="fill-white stroke-slate-300"
-                  strokeWidth={1}
+                  strokeWidth={0.75}
                 />
               )}
               <rect x={216} y={y + 5.5} width={22} height={6.5} rx={3.2} className={row.pill} />
             </g>
           );
         })}
-        <line x1={188} y1={68} x2={188} y2={152} className="stroke-slate-200" strokeWidth={1} />
-        <line x1={212} y1={68} x2={212} y2={152} className="stroke-slate-200" strokeWidth={1} />
+        <line x1={188} y1={68} x2={188} y2={152} className="stroke-slate-200" strokeWidth={0.75} />
+        <line x1={212} y1={68} x2={212} y2={152} className="stroke-slate-200" strokeWidth={0.75} />
         {/* The selected cell. */}
         <rect
           x={156}
@@ -178,7 +185,7 @@ export function GettingStartedArt() {
           height={22}
           rx={6}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <path
           d="M291 87 a3 3 0 0 1 3 -3 h3 M301 87 a3 3 0 0 1 -3 3 h-3 M293 87 h6"
