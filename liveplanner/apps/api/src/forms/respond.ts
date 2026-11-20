@@ -28,7 +28,7 @@ import { appendItemHistory } from '../db/item-history';
 import { relay } from '../routes/item-route-kit';
 import type { PlanRouteContext } from '../routes/context';
 import { reportServerEvent } from '../server-telemetry';
-import { boardsOnTab, readFormTab } from './form-tab';
+import { destinationBoards, readFormTab } from './form-tab';
 import { sheetThere, writeResponseRow } from './sheet-response';
 
 // How many responses one form takes an hour from everyone (docs/specs/030-forms/forms.md "Abuse and limits").
@@ -189,7 +189,7 @@ export async function respond(
   }
 
   const types = typesOf(doc.itemTypes);
-  const boards = form.destination ? await boardsOnTab(ctx.env, doc.id, form.destination.tabId) : [];
+  const boards = await destinationBoards(ctx.env, doc.id, form, types);
   const problem = destinationProblem(form.destination, boards, types);
   // The card type and column, by the form's card type rules over the checked answers (forms.md "Choosing the card
   // type by an answer"): never by anything the respondent sends. A broken rule is skipped, so the default type takes it.

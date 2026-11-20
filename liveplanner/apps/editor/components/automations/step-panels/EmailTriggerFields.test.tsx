@@ -60,6 +60,7 @@ const intakes = (
   intakes: addressed.map((boardId) => ({
     boardId,
     address: `board+${boardId}@mail.example.com`,
+    target: null,
     senders: 'members',
     createdAt: 0,
     made: 0,
@@ -74,7 +75,9 @@ const intakes = (
     tabId: 't1',
     tabName: 'Support',
     column: 'To Do',
+    target: null,
   })),
+  types: [],
   ...over,
 });
 

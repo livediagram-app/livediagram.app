@@ -3,6 +3,7 @@ import type { ItemTypeDef, PlanBoardSetup } from '@liveplanner/items';
 import {
   DESTINATION_PROBLEM_TEXT,
   columnForType,
+  destinationHome,
   destinationProblem,
   destinationType,
   destinationWarning,
@@ -51,6 +52,33 @@ describe('destinationProblem', () => {
     expect(destinationProblem(dest, [board({ addTypes: ['task'] })], types)).toBe(
       'type_not_on_board',
     );
+  });
+
+  // A response makes a card of a type in a column: any board of the plan that shows it holds the destination.
+  it('holds while any board shows its cards, whichever tab it was last seen on', () => {
+    const tasks = board({ addTypes: ['task'] });
+    const bugs = board({ addTypes: ['bug'] });
+    expect(destinationProblem(dest, [tasks, bugs], types)).toBeNull();
+    // The board that showed them deleted: the other still does, so nothing broke.
+    expect(destinationProblem(dest, [bugs], types)).toBeNull();
+    expect(destinationProblem({ typeId: 'bug', status: 'new' }, [bugs], types)).toBeNull();
+    // A board with the column that leaves the type out, and one taking the type without the column: nobody sees it.
+    const elsewhere = board({
+      addTypes: ['bug'],
+      columns: [{ id: 'c9', status: 'later', name: 'Later' }],
+    });
+    expect(destinationProblem(dest, [tasks, elsewhere], types)).toBe('type_not_on_board');
+  });
+
+  it('reads a destination back on the tab it was last seen on, else the first board showing it', () => {
+    const a = { ...board({ addTypes: ['bug'] }), tabId: 'a' };
+    const t = { ...board({ addTypes: ['bug'] }), tabId: 't' };
+    const off = { ...board({ addTypes: ['task'] }), tabId: 'off' };
+    expect(destinationHome(dest, [off, a, t], types)).toBe(t);
+    expect(destinationHome({ ...dest, tabId: 'gone' }, [off, a, t], types)).toBe(a);
+    expect(destinationHome({ typeId: 'bug', status: 'new' }, [off, a], types)).toBe(a);
+    expect(destinationHome(dest, [off], types)).toBeUndefined();
+    expect(destinationHome(undefined, [a], types)).toBeUndefined();
   });
 
   it('has words for every problem', () => {
@@ -121,7 +149,7 @@ describe('columns a card type uses', () => {
       'Its column isn’t one of Work Item’s states, so its cards miss Work Item’s boards. Choose another column.',
     );
     expect(destinationWarningText('no_type_column', 'Work Item', 'Bugs')).toBe(
-      'None of Bugs’s columns is a Work Item state. Add one to the board, or choose another board.',
+      'None of Bugs’s columns is a Work Item state. Add one to the board, or choose another card type.',
     );
   });
 });

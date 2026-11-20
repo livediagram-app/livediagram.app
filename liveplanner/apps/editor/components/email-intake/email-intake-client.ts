@@ -35,14 +35,19 @@ export async function readEmailIntakes(scope: EmailIntakeScope): Promise<EmailIn
   return expectOk<EmailIntakesResponse>(await call(scope, 'GET'), 'read email intakes');
 }
 
-/** Turn the board's address on, or change Who Can Send (the address kept). */
+/** Turn the board's address on, or change Who Can Send or what it makes (the address kept). `makes`: the card type
+ *  and column each email becomes; left out, it stays as it is (the board's first of each for a new address). */
 export async function saveEmailIntake(
   scope: EmailIntakeScope,
   boardId: string,
   senders: EmailIntakeSenders,
+  makes?: { typeId: string; status: string } | null,
 ): Promise<EmailIntakeResponse> {
   return expectOk<EmailIntakeResponse>(
-    await call(scope, 'PUT', board(boardId), { senders }),
+    await call(scope, 'PUT', board(boardId), {
+      senders,
+      ...(makes ? { typeId: makes.typeId, status: makes.status } : {}),
+    }),
     'save email intake',
   );
 }

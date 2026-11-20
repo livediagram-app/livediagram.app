@@ -68,15 +68,40 @@ describe('an Editor of the whole plan', () => {
       const first = await w.as(who, 'GET', '/email-intake');
       expect(first.status).toBe(200);
       expect(first.headers.get('Cache-Control')).toBe('no-store');
-      expect(await first.json<EmailIntakesResponse>()).toEqual({
+      const start = await first.json<EmailIntakesResponse>();
+      // The board's own card: its first card type in its first column, and the boards that show it.
+      const own = start.boards[0]!.target!;
+      expect(start).toEqual({
         available: true,
         domain: DOMAIN,
         intakes: [],
-        boards: [{ id: 'b1', title: 'Kanban', tabId: 't1', tabName: 'Board', column: 'Backlog' }],
+        boards: [
+          {
+            id: 'b1',
+            title: 'Kanban',
+            tabId: 't1',
+            tabName: 'Board',
+            column: 'Backlog',
+            target: { ...own, column: 'Backlog', showsOn: ['Board'] },
+          },
+        ],
+        types: start.types,
+      });
+      // Every card type the board shows is offered, each with the columns it can be seen in.
+      expect(start.types.length).toBeGreaterThan(0);
+      expect(start.types.find((t) => t.id === own.typeId)!.columns[0]).toEqual({
+        status: own.status,
+        name: 'Backlog',
       });
 
       const intake = await turnOn(who);
       expect(intake).toMatchObject({ boardId: 'b1', senders: 'members', made: 0, lastAt: null });
+      // Turned on with no card named, it keeps the board's own.
+      expect(intake.target).toEqual(own);
+      expect((await intakesOf(planEnv(), 'A'))[0]!.target).toEqual({
+        typeId: own.typeId,
+        status: own.status,
+      });
       expect(intake.address).toMatch(ADDRESS);
       expect(await findIntake(w.env, codeOf(intake.address))).toEqual({
         planId: 'A',
@@ -88,6 +113,41 @@ describe('an Editor of the whole plan', () => {
       expect((await changed.json<EmailIntakeResponse>()).intake).toMatchObject({
         address: intake.address,
         senders: 'anyone',
+      });
+
+      // What each email becomes: another column of the type, kept with the address and Who Can Send.
+      const other = start.types.find((t) => t.id === own.typeId)!.columns[1]!;
+      const moved = await w.as(who, 'PUT', '/email-intake/b1', {
+        senders: 'anyone',
+        typeId: own.typeId,
+        status: other.status,
+      });
+      expect(moved.status).toBe(200);
+      expect((await moved.json<EmailIntakeResponse>()).intake).toMatchObject({
+        address: intake.address,
+        senders: 'anyone',
+        target: {
+          typeId: own.typeId,
+          status: other.status,
+          column: other.name,
+          showsOn: ['Board'],
+        },
+      });
+      // A card no board shows is refused, the address left as it was: nobody would see what its mail made.
+      for (const bad of [
+        { typeId: own.typeId, status: 'nowhere' },
+        { typeId: 'no-such-type', status: other.status },
+        { typeId: own.typeId },
+      ]) {
+        const refused = await w.as(who, 'PUT', '/email-intake/b1', { senders: 'anyone', ...bad });
+        expect(refused.status).toBe(400);
+        expect(await refused.json()).toEqual({ error: 'email_intake_invalid' });
+      }
+      // Who Can Send alone leaves what it makes alone.
+      await w.as(who, 'PUT', '/email-intake/b1', { senders: 'anyone' });
+      expect((await intakesOf(planEnv(), 'A'))[0]!.target).toEqual({
+        typeId: own.typeId,
+        status: other.status,
       });
 
       const rotated = await w.as(who, 'POST', '/email-intake/b1/new-address');
@@ -143,6 +203,7 @@ describe('refusals', () => {
       domain: null,
       intakes: [],
       boards: [],
+      types: [],
     });
     const put = await w.as('owner', 'PUT', '/email-intake/b1', { senders: 'members' });
     expect(put.status).toBe(503);

@@ -288,10 +288,16 @@ describe('readForm', () => {
       limit: 0,
       starter: 'survey',
     })!;
+    // The tab a destination was last seen on is a hint: one that does not read is dropped, the destination kept.
     expect(read).toEqual({
       v: 1,
       heading: UNTITLED_FORM,
       sections: [{ id: 's-1', title: '', questions: [] }],
+      destination: { typeId: 'bug', status: 'x' },
+    });
+    expect(readForm({ destination: { typeId: 'bug', status: 'x' } })!.destination).toEqual({
+      typeId: 'bug',
+      status: 'x',
     });
     expect(readForm({ cover: 'x', destination: 'x', limit: 2.5 })!.limit).toBeUndefined();
     expect(

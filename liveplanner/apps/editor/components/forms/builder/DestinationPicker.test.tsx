@@ -41,6 +41,16 @@ const WORK: ItemTypeDef = {
   ],
 };
 
+// A second card type, which no board in these tests takes unless it says so.
+const NOTE: ItemTypeDef = {
+  id: 'note',
+  label: 'Note',
+  newTitle: 'New note',
+  glyph: 'task',
+  color: '#64748b',
+  fields: ['title', 'status'],
+};
+
 const setup = (columns: [string, string][]): PlanBoardSetup => ({
   title: 'Intake',
   columns: columns.map(([status, name]) => ({ id: status, status, name })),
@@ -79,7 +89,8 @@ const formWith = (extra: Partial<FormDefinition> = {}): FormDefinition => ({
 let latest: FormDefinition;
 const addTypeQuestions = vi.fn();
 const addQuestionFields = vi.fn();
-const setDestinationBoard = vi.fn();
+const setDestinationType = vi.fn(() => true);
+const newResponsesBoard = vi.fn();
 
 function Harness({ start, tabs }: { start: FormDefinition; tabs: Tab[] }) {
   const [form, setForm] = useState(start);
@@ -92,10 +103,9 @@ function Harness({ start, tabs }: { start: FormDefinition; tabs: Tab[] }) {
     addQuestionFields,
     setResponsesTo: vi.fn(),
     newResponsesSheet: vi.fn(),
-    newResponsesBoard: vi.fn(),
+    newResponsesBoard,
     newCardType: vi.fn(),
-    setDestinationType: vi.fn(),
-    setDestinationBoard,
+    setDestinationType,
   } as unknown as FormActions;
   const value: FormBuilderValue = {
     form,
@@ -105,8 +115,8 @@ function Harness({ start, tabs }: { start: FormDefinition; tabs: Tab[] }) {
     select: vi.fn(),
     focusId: null,
     clearFocus: vi.fn(),
-    type: form.destination?.typeId === WORK.id ? WORK : undefined,
-    types: [WORK],
+    type: [WORK, NOTE].find((t) => t.id === form.destination?.typeId),
+    types: [WORK, NOTE],
     openSettings: vi.fn(),
   };
   return (
@@ -154,12 +164,98 @@ describe('columns follow the card type', () => {
     render(<Harness start={start} tabs={[board([['new', 'New']])]} />);
     expect(screen.getByText('None of these columns is a Work Item state.')).toBeTruthy();
   });
+});
 
-  it('hands a board choice to setDestinationBoard', () => {
-    const other: Tab = { ...board(MIXED), id: 'b2', name: 'Other' };
-    render(<Harness start={formWith()} tabs={[board(MIXED), other]} />);
-    fireEvent.change(screen.getByRole('combobox', { name: 'Board' }), { target: { value: 'b2' } });
-    expect(setDestinationBoard).toHaveBeenCalledWith('b2');
+// A response makes a card of a type in a column, never a board (forms.md "Responses Go To"): no board is chosen, the
+// boards that show the card are read back, and a card no board shows is offered a board of its own.
+describe('a card, and the boards that show it', () => {
+  const taking = (id: string, name: string, addTypes?: string[]): Tab => ({
+    id,
+    name,
+    kind: 'board',
+    elements: [
+      {
+        ...createShape('plan-board', 0, 0),
+        planBoard: { ...setup(MIXED), ...(addTypes ? { addTypes } : {}) },
+      },
+    ],
+  });
+
+  it('offers no board to choose, only the card type and its column', () => {
+    render(<Harness start={formWith()} tabs={[board(MIXED)]} />);
+    expect(screen.queryByRole('combobox', { name: 'Board' })).toBeNull();
+    const type = screen.getByRole<HTMLSelectElement>('combobox', { name: 'Card Type' });
+    expect(type.value).toBe('work-item');
+    expect([...type.options].map((o) => o.textContent)).toEqual([
+      'Choose a card type…',
+      'Work Item',
+      'Note',
+      '+ New Card Type',
+    ]);
+  });
+
+  it('reads back every board that shows the card, the one it was last seen on first', () => {
+    const tabs = [taking('other', 'Triage'), board(MIXED), taking('notes', 'Notes', ['note'])];
+    render(<Harness start={formWith()} tabs={tabs} />);
+    expect(document.querySelector('[data-shows-on]')!.textContent).toBe(
+      'Shows on Intake and Triage',
+    );
+    expect(screen.getByText(/Each response becomes a/).textContent).toBe(
+      'Each response becomes a Work Item card in Under Review. It shows on Intake and Triage.',
+    );
+  });
+
+  it('keeps holding when the board it was last seen on is gone and another shows the card', () => {
+    render(<Harness start={formWith()} tabs={[taking('other', 'Triage')]} />);
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(document.querySelector('[data-shows-on]')!.textContent).toBe('Shows on Triage');
+  });
+
+  it('offers the columns of every board that takes the type, each once', () => {
+    const more: Tab = {
+      ...board([
+        ['selected', 'Selected'],
+        ['review', 'Under Review'],
+      ]),
+      id: 'more',
+      name: 'More',
+    };
+    render(<Harness start={formWith()} tabs={[board([['review', 'Under Review']]), more]} />);
+    expect(chips()).toEqual(['Under Review', 'Selected']);
+  });
+
+  it('offers a board for a card no board shows, so its cards are never made unseen', () => {
+    setDestinationType.mockClear();
+    newResponsesBoard.mockClear();
+    const start = formWith({ destination: { tabId: 'b', typeId: 'note', status: 'review' } });
+    render(<Harness start={start} tabs={[taking('b', 'Intake', ['work-item'])]} />);
+    expect(screen.getByRole('status').textContent).toContain(
+      'No board shows Note cards, so nobody would see them.',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Add a Board for Note' }));
+    expect(newResponsesBoard).toHaveBeenCalledWith('note');
+  });
+
+  it('says no board shows the card when the only board taking its type is gone, once', () => {
+    render(<Harness start={formWith()} tabs={[taking('notes', 'Notes', ['note'])]} />);
+    expect(screen.getByRole('status').textContent).toContain(
+      'No board shows Work Item cards, so nobody would see them.',
+    );
+    expect(screen.getAllByText(/No board shows Work Item cards/)).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Add a Board for Work Item' })).toBeTruthy();
+  });
+
+  it('hands a card type choice on, and adds a board at once for a type with no column anywhere', () => {
+    setDestinationType.mockClear();
+    newResponsesBoard.mockClear();
+    render(<Harness start={formWith()} tabs={[board(MIXED)]} />);
+    const type = screen.getByRole('combobox', { name: 'Card Type' });
+    fireEvent.change(type, { target: { value: 'note' } });
+    expect(setDestinationType).toHaveBeenCalledWith('note');
+    expect(newResponsesBoard).not.toHaveBeenCalled();
+    setDestinationType.mockReturnValueOnce(false);
+    fireEvent.change(type, { target: { value: 'note' } });
+    expect(newResponsesBoard).toHaveBeenCalledWith('note');
   });
 });
 

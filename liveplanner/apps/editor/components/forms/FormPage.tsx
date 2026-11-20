@@ -10,7 +10,6 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { formLook, type Tab } from '@liveplanner/project';
-import { boardsOf } from '@liveplanner/templates';
 import { ITEMS_MAX } from '@liveplanner/items';
 import {
   FORM_WIDTH_PX,
@@ -44,7 +43,7 @@ import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
 import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
-import { formDestinationOf } from './form-destination';
+import { formDestinationOf, planBoardsOf } from './form-destination';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // How often an open form with a Close On reads the clock, to turn Closed when it passes.
@@ -113,7 +112,7 @@ export function FormPage({
   const [shareOpen, setShareOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // The board tabs' content, so Responses Go To can read their columns.
+  // The board tabs' content, so Responses Go To can read every board's columns and the types it takes.
   const boardTabIds = tabs
     .filter((t) => t.kind === 'board')
     .map((t) => t.id)
@@ -143,12 +142,12 @@ export function FormPage({
   const warnings = useMemo(() => (warning ? [warning] : []), [warning]);
   const type = destinationType(form.destination, types);
   // What else stops publishing (docs/specs/030-forms/forms.md "Publishing and the form link").
-  // The destination tab's boards, for the card type rules (forms.md "Choosing the card type by an answer").
+  // Every board of the plan, for the card type rules (forms.md "Choosing the card type by an answer").
   // A form without rules reads no board for them.
   const ruled = !form.sheet && !!form.destination?.typeRules;
   const place = useMemo(
-    () => ({ types, boards: destTab && ruled ? boardsOf(destTab).map((x) => x.setup) : [] }),
-    [types, destTab, ruled],
+    () => ({ types, boards: ruled ? planBoardsOf(tabs).map((x) => x.setup) : [] }),
+    [types, tabs, ruled],
   );
   const notReady = useMemo(
     () => publishProblems(form, form.sheet ? undefined : type, place),

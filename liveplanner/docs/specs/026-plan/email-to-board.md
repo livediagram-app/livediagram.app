@@ -1,7 +1,9 @@
 # Email to Board
 
 **Email to Board** gives a Plan board its own secret email address: forward a request, a bug report or a to-do to it
-and it lands as a card in the board's first column, the subject as the title and the message as the description.
+and it becomes a card, the subject as the title and the message as the description. The address is the board's to
+manage; what it **makes** is a card of a type in a column ([Card targets](items.md#card-targets)), the board's first
+of each unless chosen, which shows on every board that takes it.
 People moving from Trello (an address per board), Asana (an address per project) or Linear (intake addresses) expect
 it; until now the only ways in were retyping a message or sharing a Form link (Work Tracker 874).
 
@@ -78,13 +80,32 @@ server." and offers nothing else.
 
 Counts only, never a plan, a board, an address or a sender: the dialog opened (UI·Opened·EmailIntake), an address
 turned on (Plan·Created·EmailIntake), a new address (Plan·Changed·EmailIntakeAddress), Who Can Send changed
-(Plan·Changed·EmailIntakeSenders), the address copied (Plan·Copied·EmailIntake), turned off (Plan·Ended·EmailIntake),
+(Plan·Changed·EmailIntakeSenders), what each email becomes changed (Plan·Changed·EmailIntakeTarget), the address copied (Plan·Copied·EmailIntake), turned off (Plan·Ended·EmailIntake),
 and, from the api, a card made from an email (Plan·Created·EmailCard).
 
 ## What a message makes
 
-One **card on the board, in its first column**, of the first card type the board adds (as the board's own + would),
-made by no person:
+One **card**, of the address's **card type** in its **column**, made by no person. An address names a card, never a
+board ([Card targets](items.md#card-targets); owner, 2026-11-20): the card shows on every board that takes its type
+and has its column.
+
+- **Each Email Becomes**, in the dialog above Who Can Send, Off and On alike: **Card Type** (the card types some
+  board shows) and **Column** (the columns that type can be seen in, across the boards that take it, less those the
+  type does not use), then "Shows on **Support** and **Triage**", the boards that show such a card, worked out from
+  every board of the plan and never chosen. Picking a type keeps the column while the type has it, else takes the
+  type's first. Off, a choice waits for Turn On; On, it saves at once (the address kept) and goes back with
+  "Couldn't save. Try again." when the save fails. The lines above read it back: "Forward an email to this board's
+  own address and it becomes a Bug card in New." and "Mail to this address becomes a Bug card in New."
+- **Left alone**, a new address makes the board's first card type in its first column (as the board's own + would),
+  and **keeps** that: reordering the board's columns later never moves where its mail lands.
+- **An address from before** this (no card of its own) follows its board's first card type and first column as it
+  always did, until a card is chosen for it.
+- **Never made unseen**: a card type and column no board shows any more (the type deleted or off every board, the
+  column gone) is refused as an address turned off is, never turned into a card nobody sees. The dialog says "No
+  board shows its cards now, so its mail is refused. Choose what each email becomes." and the pickers are there to
+  fix it. A card no board shows is never accepted as a choice (`400 email_intake_invalid`).
+
+The card itself:
 
 - **Title**: the subject, whitespace collapsed, cut to the title's limit; with no subject, "Email from <address>".
 - **Description**: the message's text (its plain text part, or its HTML as text), with the **quoted reply removed**
@@ -147,14 +168,18 @@ sends nothing back, so a forged sender is never mailed.
 
 `/api/projects/:id/email-intake`, answered inside the plan's room, for an Editor of the whole plan in person:
 
-- `GET`: whether the server takes mail (and its domain), every board's address with its settings and counts, and the
-  boards that may have one, each with its first column's name.
-- `PUT /:boardId` with `{ senders }`: turn the board's address on (201, a new code) or change Who Can Send, keeping
-  the address (200).
+- `GET`: whether the server takes mail (and its domain), every board's address with its settings, counts and what it
+  makes (`target`: the card type and column by id and name, and the boards that show it; null when none does), the
+  boards that may have one, each with its first column's name and the card it would make, and the card types some
+  board shows with their columns (`types`).
+- `PUT /:boardId` with `{ senders }`, and optionally `{ typeId, status }` (both or neither): turn the board's address
+  on (201, a new code) or change Who Can Send or what it makes, keeping the address (200). Left out, what it makes
+  stays as it is.
 - `POST /:boardId/new-address`: a new code (200); 404 when the board has none.
 - `DELETE /:boardId`: Turn Off; 204 whether or not it was on.
 
-A body names Who Can Send as `members` or `anyone`; the board must be one that may have an address. Anything else is
+A body names Who Can Send as `members` or `anyone`; the board must be one that may have an address; a card named
+must be one some board shows. Anything else is
 `400 email_intake_invalid`; a server with no intake domain answers `503 email_intake_unavailable` to every write.
 Every answer is `no-store`.
 
@@ -168,5 +193,6 @@ its title and description, never its sender.
 ## Not yet
 
 - Replies by email, comments by email, and sending a card back out.
-- Choosing the column or the card type per address (the first column and the board's first type for now).
+- An address of the plan's own, kept apart from any board: an address is still turned on from a board and goes with
+  it (the board is where it is managed), though what it makes is a card and shows on every board that takes it.
 - An address for a whole plan rather than a board.

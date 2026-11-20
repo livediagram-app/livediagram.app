@@ -364,6 +364,34 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   with nothing written, and the editor sends the write again (up to three times, the pause growing) before it
   tells the person the change was not saved. A burst of new cards keeps every card.
 
+## Card targets
+
+Anything that **makes cards** for a plan from outside a board (a [form](../030-forms/forms.md)'s responses, an
+[Email to Board](email-to-board.md) address, an automation's Create Card, a card's Repeat) names **a card**: a
+**card type** and a **status** (its column), with any fields it sets. It never names a board (owner, 2026-11-20:
+"it's not really a board we want it to go to, we want it to create a card, which happens to show up on one or more
+boards"). A board is a view: it shows every card whose status is one of its columns and whose type it takes
+([Card types a board shows](plan-board.md#the-board-set-up)), so one card may show on several boards, and which
+boards those are follows from the plan as it stands.
+
+- **Shows on**: wherever a card target is chosen, the boards that show such a card are read back, worked out from
+  every board of the plan and never chosen ("Shows on Bugs and Triage"): each live board (not an Archive) with a
+  column of the status that takes the type.
+- **Never made unseen**: a target no board shows would make cards nobody ever finds, so it does not hold. Whatever
+  holds it says so and offers a board for the type (a form's **Add a Board for {Type}**), or adds one in the same
+  change when it is made without a person choosing (a form starter, an agent); and mail or responses are refused
+  rather than turned into a card nobody sees.
+- **Boards come and go freely**: deleting, rebuilding or duplicating a board breaks nothing that makes cards while
+  some board still shows them.
+- A feature whose point **is** a board keeps naming one: a [public roadmap](public-roadmap.md) publishes a board, a
+  Dashboard slot shows one, a tracker import makes one, and a board's widgets and card types are its own. A
+  [calendar feed](calendar-feed.md) already reads card types, not boards (owner, 2026-11-17). The
+  [Actions board](linked-boards.md) is unchanged: it is made for the Action type when none collects actions, which is
+  the same promise kept another way.
+
+Kept in one place, `@liveplanner/items`' `card-target.ts` (`boardsShowing`, `targetColumns`, `cardTargetProblem`),
+which a form's destination and an address both read.
+
 ## Archive
 
 - **Archiving** an item keeps it but takes it off every board: it sets `archived: true` (a flag: set, or the

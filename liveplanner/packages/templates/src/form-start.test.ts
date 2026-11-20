@@ -285,7 +285,8 @@ describe('a responses board for a type with its own statuses', () => {
       ['ready~b', 'Ready'],
       ['review~a', 'Under Review'],
       ['shipped~c', 'Shipped'],
-      ['unnamed~d', 'unnamed~d'],
+      // No board names it: named from its id, never shown as the raw id.
+      ['unnamed~d', 'Unnamed'],
     ]);
     expect(setup.columns[1]!.color).toBe('#ff0000');
     expect(setup.columns[2]!.done).toBe(true);
@@ -295,6 +296,15 @@ describe('a responses board for a type with its own statuses', () => {
 
   it('gives a type without its own statuses New, In Progress and Done', () => {
     expect(typeResponsesBoardSetup({ typeId: 'x' }, 'T', [], random)).toBeNull();
+    // A status no board names any more (its board was deleted) is named from its id, never shown as the raw id.
+    expect(
+      typeResponsesBoardSetup(
+        { typeId: 'x', statuses: ['new~ab12', 'wont-fix~cd34', 'known'] },
+        'T',
+        [['known', 'Known']],
+        random,
+      )!.columns.map((c) => c.name),
+    ).toEqual(['New', 'Wont Fix', 'Known']);
     const tab = responsesBoardTab('Intake', { theme: undefined }, [], undefined, random, {
       typeId: 'x',
       statuses: [],

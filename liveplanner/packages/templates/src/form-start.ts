@@ -32,6 +32,7 @@ import {
   type ItemTypeDef,
   type PlanBoardSetup,
   type PlanColumn,
+  statusLabel,
 } from '@liveplanner/items';
 
 type FormStartPlan = {
@@ -120,6 +121,9 @@ export type ResponsesBoardType = {
 
 // A responses board for a type with its own statuses: a column per status, in the type's order, named as the project
 // names it (and coloured as its first column of that status), taking that type alone. Null for a type without them.
+// A status no board names any more (the board that showed the type's cards was deleted, which is when Add a Board for
+// {Type} is offered) is named from its id, as a card's status is (statusLabel: "wont-fix~ab12" is "Wont Fix"), never
+// shown as the raw id.
 export function typeResponsesBoardSetup(
   forType: ResponsesBoardType,
   title: string,
@@ -131,7 +135,7 @@ export function typeResponsesBoardSetup(
   const kanban = freshBoardSetup('kanban', random, names);
   const columns = forType.statuses.map((status) => {
     const known = forType.columns?.find((c) => c.status === status);
-    return statusColumn(status, names.get(status) ?? status, {
+    return statusColumn(status, statusLabel(status, names), {
       ...(known?.color ? { color: known.color } : {}),
       ...(known?.done !== undefined ? { done: known.done } : {}),
     });

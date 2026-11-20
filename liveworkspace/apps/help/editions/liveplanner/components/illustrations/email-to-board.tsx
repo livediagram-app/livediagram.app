@@ -1,5 +1,6 @@
 // The Email to Board article's scenes (docs/specs/026-plan/email-to-board.md): the dialog once an address is on (the
-// address with Copy Address, its counts line, Who Can Send and the amber warning), and the panel footer of a card an
+// address with Copy Address, its counts line, Each Email Becomes with the boards that show the card, Who Can Send
+// and the amber warning), and the panel footer of a card an
 // email made (From email beside Created by). Composed from the shared primitives so the house style holds.
 
 import { Scene, Label, Dialog, Button } from '@liveworkspace/help-site/art/primitives';
@@ -48,11 +49,50 @@ function Choice({
   );
 }
 
-/** Email to Board once on: the board's address with Copy Address, what it has done, Who Can Send and the warning,
- *  then New Address, Turn Off and Done. */
+// A closed select: its label over the box, the value and a chevron.
+function Picker({
+  x,
+  y,
+  w,
+  label,
+  value,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  label: string;
+  value: string;
+}) {
+  return (
+    <g>
+      <Label x={x} y={y} size={8.5} weight={600} tone="body">
+        {label}
+      </Label>
+      <rect x={x} y={y + 7} width={w} height={22} rx={5} className="fill-white stroke-slate-200" />
+      <Label x={x + 8} y={y + 21} size={9} tone="strong">
+        {value}
+      </Label>
+      <path
+        d={`M${x + w - 15} ${y + 16} l3.5 3.5 l3.5 -3.5`}
+        fill="none"
+        strokeWidth={1.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="stroke-slate-400"
+      />
+    </g>
+  );
+}
+
+// How far Each Email Becomes pushes what follows it down.
+const MAKES = 78;
+
+/** Email to Board once on: the board's address with Copy Address, what it has done, Each Email Becomes (the card
+ *  type and column, and the boards that show the card), Who Can Send and the warning, then New Address, Turn Off and
+ *  Done. */
 export function EmailDialog() {
   const W = 420;
-  const H = 304;
+  const H = 304 + MAKES;
   const dx = 30;
   const dy = 8;
   const dw = 360;
@@ -72,7 +112,7 @@ export function EmailDialog() {
         scrim={false}
       >
         <Label x={x} y={dy + 52} size={10} weight={600} className="fill-emerald-700">
-          Mail to this address becomes a card in Backlog.
+          Mail to this address becomes a Task card in Backlog.
         </Label>
         <rect
           x={x}
@@ -90,11 +130,22 @@ export function EmailDialog() {
           3 cards made · 1 refused · Last card 2 hours ago
         </Label>
         <Label x={x} y={dy + 126} size={9} weight={700} tone="muted">
+          EACH EMAIL BECOMES
+        </Label>
+        <Picker x={x} y={dy + 142} w={half} label="Card Type" value="Task" />
+        <Picker x={x + half + 8} y={dy + 142} w={half} label="Column" value="Backlog" />
+        <Label x={x} y={dy + 186} size={8.5} tone="muted">
+          Shows on{' '}
+          <tspan className="fill-slate-700" fontWeight={600}>
+            Support and All Work
+          </tspan>
+        </Label>
+        <Label x={x} y={dy + 126 + MAKES} size={9} weight={700} tone="muted">
           WHO CAN SEND
         </Label>
         <Choice
           x={x}
-          y={dy + 134}
+          y={dy + 134 + MAKES}
           w={half}
           label="Plan Members"
           hint="The plan's owner and team"
@@ -102,7 +153,7 @@ export function EmailDialog() {
         />
         <Choice
           x={x + half + 8}
-          y={dy + 134}
+          y={dy + 134 + MAKES}
           w={half}
           label="Anyone with the Address"
           hint="Keep it private"
@@ -110,21 +161,21 @@ export function EmailDialog() {
         />
         <rect
           x={x}
-          y={dy + 188}
+          y={dy + 188 + MAKES}
           width={w}
           height={40}
           rx={7}
           className="fill-amber-50 stroke-amber-200"
         />
-        <Label x={x + 12} y={dy + 203} size={9} className="fill-amber-900">
+        <Label x={x + 12} y={dy + 203 + MAKES} size={9} className="fill-amber-900">
           Anyone who can send from an allowed address can add
         </Label>
-        <Label x={x + 12} y={dy + 218} size={9} className="fill-amber-900">
+        <Label x={x + 12} y={dy + 218 + MAKES} size={9} className="fill-amber-900">
           cards to this board. If the address leaks, press New Address.
         </Label>
-        <Button x={x + w - 230} y={dy + 254} w={86} label="New Address" />
-        <Button x={x + w - 138} y={dy + 254} w={70} label="Turn Off" />
-        <Button x={x + w - 60} y={dy + 254} w={60} label="Done" variant="primary" />
+        <Button x={x + w - 230} y={dy + 254 + MAKES} w={86} label="New Address" />
+        <Button x={x + w - 138} y={dy + 254 + MAKES} w={70} label="Turn Off" />
+        <Button x={x + w - 60} y={dy + 254 + MAKES} w={60} label="Done" variant="primary" />
       </Dialog>
     </Scene>
   );

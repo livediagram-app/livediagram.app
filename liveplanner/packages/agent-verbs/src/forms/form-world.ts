@@ -46,20 +46,23 @@ export interface FormWorld {
 
 export type FormTabBody = Tab & { rev: number };
 
-// What a form's card type rules are judged against (docs/specs/030-forms/forms.md "Choosing the card type by an
-// answer"): the card types and the boards on `tabId` (Responses Go To lists live boards alone).
-export function rulePlaceOf(
-  world: { boards: readonly BoardRef[]; types: readonly ItemTypeDef[] },
-  tabId: string | undefined,
-): {
+// What a form's destination and its card type rules are judged against (docs/specs/030-forms/forms.md "Responses Go
+// To", "Choosing the card type by an answer"): the card types and every live board of the plan, as a card shows on
+// whichever board takes its type.
+export function rulePlaceOf(world: {
+  boards: readonly BoardRef[];
   types: readonly ItemTypeDef[];
-  boards: { columns: BoardRef['columns']; addTypes?: string[] }[];
+}): {
+  types: readonly ItemTypeDef[];
+  boards: { tabId: string; columns: BoardRef['columns']; addTypes?: string[] }[];
 } {
   return {
     types: world.types,
-    boards: world.boards
-      .filter((b) => b.tabId === tabId)
-      .map((b) => (b.types ? { columns: b.columns, addTypes: b.types } : { columns: b.columns })),
+    boards: world.boards.map((b) =>
+      b.types
+        ? { tabId: b.tabId, columns: b.columns, addTypes: b.types }
+        : { tabId: b.tabId, columns: b.columns },
+    ),
   };
 }
 

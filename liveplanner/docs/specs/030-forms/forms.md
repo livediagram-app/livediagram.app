@@ -24,7 +24,7 @@ project.
 | **question**        | One thing a form asks: a prompt, a question type, whether it is required, and its answer slot | field (that is a card's)      |
 | **question type**   | What a question takes (Short Answer, Multiple Choice...)                                      | field kind (that is a card's) |
 | **mapping**         | Where a question's answer is kept on the card: Title, Description or one custom field         | binding, link                 |
-| **destination**     | The Board tab, card type and status every response is made in                                 | target, inbox                 |
+| **destination**     | What every response makes: a card type and a status, shown on every board that takes them     | target, inbox, a board        |
 | **form link**       | The public address of a published form (`/form/<code>`); it grants nothing on the project     | share link (that is a doc's)  |
 | **respondent**      | Anyone filling in a form through its form link; always anonymous                              | user, visitor, submitter      |
 | **response**        | One submitted set of answers; it is made into one card                                        | submission, entry, reply      |
@@ -315,18 +315,34 @@ What a Response Makes, Set Automatically) stays closed until opened.
   card under the form's title card, drawn as the form's cards are (the accent bar at its left): "Where Should
   Responses Go?", "Choose before you publish: the form can’t take responses until it has somewhere to put them.",
   then two choices side by side (stacked on a phone), each an icon, a name and a line: **Cards on a Board** ("A card
-  for each response, to work through. Makes a new board.", Responses Go To's New Board) and **Rows in a Sheet** ("A
+  for each response, to work through. Makes a new board.", Add a Board) and **Rows in a Sheet** ("A
   row for each response, to count and compare. Makes a new sheet.", its New Sheet); and, when the project already
-  has a Board or Sheet tab, **Or use a board or sheet you already have**, which opens the cog on Responses Go To. It
-  goes as soon as the form names a board or a sheet that holds, and comes back when that board or sheet is removed
-  (its tab deleted, its column or card type gone), its line then the reason ("Its sheet was removed. Choose where
+  has a Board or Sheet tab, **Or use a card type or sheet you already have**, which opens the cog on Responses Go To. It
+  goes as soon as the form has a destination that holds, and comes back when it no longer does
+  (no board shows its cards, its column or card type gone, its sheet removed), its line then the reason ("Its sheet was removed. Choose where
   responses go."). A Participant or Viewer never sees it.
-- **Responses Go To** (the destination): **Board** (the project's Board tabs, its last choice **+ New Board**: a
-  Board tab after this one, "<Form> Responses", New, In Progress, Done), **Card Type** (the types that board takes,
-  its last choice **+ New Card Type**: a type named after the form, which a board confining its types also takes,
+- **Responses Go To** (the destination): what every response **makes**, a card of a type in a column, and never a
+  board ([Card targets](../026-plan/items.md#card-targets); owner, 2026-11-20: "it's not really a board we want it to
+  go to, we want it to create a card, which happens to show up on one or more boards"). So there is no Board to
+  choose: **Card Type** (every card type of the plan,
+  its last choice **+ New Card Type**: a type named after the form, which the board its cards show on also takes when it confines its types,
   made with [a field for each question](#fields-from-the-forms-questions)),
-  **Column** (the board's columns, as chips); a pencil beside Card Type opens that type's editor (its fields), to shape it before mapping answers. A sentence under it reads the result back: "Each response becomes a
-  **Bug** card in **New** on **Bugs**." A destination that no longer holds says why instead.
+  **Column** (the columns that type can be seen in, as chips); a pencil beside Card Type opens that type's editor (its fields), to shape it before mapping answers. A sentence under it reads the result back: "Each response becomes a
+  **Bug** card in **New**.", and under that the boards the card shows on, worked out from every board of the plan
+  and never chosen: "Shows on **Bugs** and **Triage**" (each Board tab holding a live board with that column that
+  takes that type; the one the form was last seen on first). A destination that no longer holds says why instead.
+  - **A card no board shows is never made.** A card type and column that no board shows (the type is on no board,
+    or no board taking it has the column) would make cards nobody ever sees, so it does not hold: the box says "No
+    board shows {Type} cards, so nobody would see them." with **Add a Board for {Type}**, which makes a Board tab
+    after the Form tab, "<Form> Responses", taking that type alone, and sends the responses to its first column, one
+    undo step. Picking a type no board has a column for at all adds that board at once, as there is no column to
+    choose. The form takes no responses meanwhile (Publish Form is held back, a live form pauses), and a starter or
+    an agent making a form for such a type makes the board in the same change (owner, 2026-11-20).
+  - **Deleting a board breaks nothing while another shows the card**: the destination holds, the sentence names
+    the boards left, and the form keeps taking responses.
+  - The form remembers the Board tab it was last seen on (`destination.tabId`): only where its buttons open, the
+    board whose look What a Response Makes draws, and what a build from before card targets reads. Nothing is judged
+    by it, it may name a tab that is gone, and a destination without one holds the same.
 - **What a Response Makes**: under that sentence (and under a Sheet's), a disclosure, closed by default, previews what
   one response makes, live as the form is built: the card drawn exactly as its board draws it (the board's card face,
   colours, card fields and size, the card type's display), filled with a sample answer to each question (a Rating 4 of
@@ -338,14 +354,15 @@ What a Response Makes, Set Automatically) stays closed until opened.
   marks the question that fills it, and hovering a question marks its line. Nothing shows while responses go nowhere
   or the destination does not hold. An Editor's, as the panel is.
 - **Columns follow the card type** ([the statuses a type uses](../026-plan/item-types.md#the-statuses-a-type-uses)):
-  **Column** offers only the board's columns whose status the chosen card type uses, so a response never lands in a
+  **Column** offers the columns a card of the chosen type can be seen in: every column of every board that takes
+  the type, each status once, less those the type does not use, so a response never lands in a
   status its type leaves out and misses the type's own boards. A legacy type (one stored before its list) uses every
-  status but those it left out, so it keeps offering every column. Choosing a board, or a card type, keeps the
-  column while the type uses it and otherwise takes the board's first column the type uses. When none of the board's
+  status but those it left out, so it keeps offering every column. Choosing a card type keeps the
+  column while the type uses it and otherwise takes the first column the type uses. When none of those
   columns is one the type uses, Column offers no chips and the box under it says so, once ("None of {Board}'s columns
-  is a {Type} state. Add one to the board, or choose another board."; no second line beside the empty chips), and
+  is a {Type} state. Add one to the board, or choose another card type."; no second line beside the empty chips), and
   **Problems with this Form** lists it.
-  - **+ New Board** for a type with its own statuses makes the responses board from them: one column per status, in
+  - **Add a Board for {Type}** (and the connect box's Cards on a Board) for a type with its own statuses makes the responses board from them: one column per status, in
     the type's order, each named (and coloured) as the project's boards name it, the board taking that type alone. A
     type without its own list (a legacy one) gets New, In Progress and Done, as before, and takes that type alone too.
     A form starter's new board (its own columns) takes the form's type alone as well. A responses board never names the
@@ -359,10 +376,8 @@ What a Response Makes, Set Automatically) stays closed until opened.
     checks it.
 - **Questions from the card type's fields**: picking a card type under **Card Type** while the form has no questions
   adds one question per field a respondent can fill, in the type's field order, each already mapped to its field, as
-  one undo step of its own (Undo takes the questions away and leaves the type chosen). Choosing a board under
-  **Board** while the form has no questions does the same for the card type it picks (the one kept, or the board's
-  first), so a board picked first gets questions as a type picked does; Undo takes the questions away and leaves the
-  board chosen. A form with questions never gains any from a board or type pick. The fields and the questions they
+  one undo step of its own (Undo takes the questions away and leaves the type chosen). A form with questions never
+  gains any from a type pick. The fields and the questions they
   become:
 
   | Field               | Question                                             |
@@ -448,7 +463,7 @@ A board destination makes every response one card type by default. A request for
 
 - **When it is offered** (progressive disclosure): under the sentence reading the destination back, **Card Type by
   Answer** (closed until opened, as Set Automatically is; open at first while a rule is broken; its count the rules)
-  shows only while the destination holds, its board takes more than one card type, and the form has a Single Choice
+  shows only while the destination holds, the plan's boards show more than one card type, and the form has a Single Choice
   (a dropdown included), Multiple Choice or Checkbox question with answers (or it already has rules, so a broken one
   stays in view). Otherwise the destination reads exactly as before, one type, one column. A form with no rules is
   stored as it always was. **+ Add Rule** makes one on the first such question, its first answer, and the first type
@@ -457,10 +472,11 @@ A board destination makes every response one card type by default. A request for
   It has the [section rule's](#showing-a-section-only-sometimes) shape (a question and the answers, any of, a
   Multiple Choice matching when any pick is one of them, a Checkbox's Ticked or Not Ticked) and the same picker: a
   select of the questions that fit (any section) and the answers as toggle chips (at least one). The card type is
-  one of the types the board takes other than the default and other than another rule's (one rule per type: a rule
-  takes several answers, so a type never needs two). Its column offers only the board's columns that type uses
+  one of the types some board of the plan shows, other than the default and other than another rule's (one rule
+  per type: a rule takes several answers, so a type never needs two). Its column offers only the columns of the
+  boards taking that type that the type uses
   ([Columns follow the card type](#responses-go-to-and-settings)), and choosing the type keeps the column while the
-  type uses it, else takes the board's first column it does. Up to 10 rules; **Remove Rule** (the row's cross) on
+  type uses it, else takes the first column it does. Up to 10 rules; **Remove Rule** (the row's cross) on
   each. Unpicking a rule's last answer leaves it as it was (a rule keeps one answer). Choosing another board under
   **Board** clears the rules (their types and columns were the old board's); Undo brings them back. Choosing another
   default Card Type keeps them, but a rule on the new default type goes (its answers now make that type anyway).
@@ -480,8 +496,8 @@ A board destination makes every response one card type by default. A request for
   type has the field with that id and the value resolves (the built-ins Priority, Labels, Start and Due among them);
   others are left off quietly.
 - **Broken rules fail visibly, never drop a response**: a rule whose question was deleted or no longer fits, none of
-  whose answers is still offered, whose card type was deleted or the board no longer takes, or whose column the board
-  no longer has, is skipped (the default type takes the response), its row in the editor turns amber saying why, and
+  whose answers is still offered, whose card type was deleted or no board takes any more, or whose column no board
+  taking that type has any more,
   **Problems with this Form** lists it ("A card type rule's question was removed: responses use the default card
   type.", and the like), on its question's card too while the question is there. A rule's mapping to a field later
   removed from its type goes to Description and is listed as a broken mapping, and a required field of a rule's type
@@ -549,7 +565,7 @@ column, with every answer mapped, except that
   **New** dot, the Editor in Created By, one undo step).
 
 The confirmation adds "This was a preview: its card, marked Preview, is on <board>." A destination that cannot take
-a card refuses with "Preview can't add its card until Responses Go To names a board and column."
+a card refuses with "Preview can't add its card until Responses Go To names a card type and column."
 A form whose responses go to a sheet, in a plan kept only in this browser, refuses with "Preview can't add its row
 while this plan is only in this browser. Sync it to liveplanner to try it.": the api writes a sheet's rows, and it has
 no copy of the plan. A board's card is made in the editor there, as for a form with no link yet.
@@ -798,12 +814,16 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
 - **Live**: the form link always shows the form as its Form tab holds it now. A question added, reworded or removed
   takes effect for the next person to open the link; a respondent already filling it in submits against what they
   saw, and an answer to a question since removed is dropped, never refused.
-- A Board or Sheet tab a form sends its responses to warns before it is deleted: Delete's confirmation ("Delete this
-  tab?") carries an amber line, "“<Form>” sends its responses here: it stops taking them, keeping its link, until it has somewhere to send them." ("<n> forms
+- A Board or Sheet tab whose deletion would leave a form with nowhere to send its responses warns first: a Sheet tab
+  holding a form's sheet, and a Board tab holding the **only** board that shows a form's cards. Delete's confirmation
+  ("Delete this tab?") carries an amber line, "“<Form>” sends its responses here: it stops taking them, keeping its link, until it has somewhere to send them." ("<n> forms
   send their responses here: they stop taking them, keeping their links, until they have somewhere to send them." for several), under "Delete this
   tab?": the one tab delete that asks first, as an undo cannot reopen the forms. Deleting it **pauses** each such form in the same request
   (its link stops taking responses on the api, whoever deletes the tab, and keeps its code and count); the form's
   connect box then asks again, and once it has somewhere to send them Accepting Responses opens the same link again.
+  A board deleted while another board still shows the form's cards warns of nothing and pauses nothing: the cards
+  keep arriving and show on the boards that are left (a board whose content this session has not loaded proves
+  nothing, so the warning stands; the api decides).
   An undo brings the tab back; the form stays paused until an Editor reopens it.
 - **A live form is locked**: while a form takes responses, its content cannot change, so nobody fills in a form that
   shifts under them and every answer keeps its meaning. Its questions, sections, heading, cover and Responses Go To
@@ -818,11 +838,12 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
   `form_not_ready`). Closing always works.
 - A Form tab deleted deletes its form link in the same request. Its Delete asks first, as an undo brings the form back but not its link: "If this form has a link, the link is deleted with it: undo brings the form back, not its link." (`FORM_TAB_DELETE_WARNING`). A project copied, a tab duplicated or a project
   restored from a file copies the form **unpublished**: a copy never answers the original's link.
-- A copy keeps its destination: a duplicated tab's still names the project's board; a copied project's names a tab
-  the copy may not hold, and then reads as needing a choice (below) until one is made.
-- Publishing needs a destination whose Board tab (a live board on it), card type (taken by that board) and column
-  still exist; **Publish Form** is held back with the reason otherwise. A published form whose destination breaks
-  later shows its link as closed and refuses responses, and the Form tab's status bar says "Responses are paused."
+- A copy keeps its destination: a duplicated tab's still makes the same card type in the same column; a copied
+  project's holds while a board of the copy shows that card, and otherwise reads as needing a choice (below).
+- Publishing needs a destination that holds: its card type still in the plan, and **a board that shows that card**,
+  one of the plan's live boards with a column of its status that takes its type (any board: none is named, see
+  [Responses Go To](#responses-go-to-and-settings)). **Publish Form** is held back with the reason otherwise, so a
+  form never takes responses whose cards nobody would see. A published form whose destination breaks
   with the reason and **Choose Where Responses Go**, which opens the Responses Go To tab.
 
 ## Filling in a form
@@ -1094,7 +1115,7 @@ board settings, for switching back.
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
 card: only an Editor's Preview makes one), with a
 line over it: "This is a form. Its responses become cards on **Bugs**." ("rows in" for a sheet). A tab-scoped share link to a Form tab shows the
-same. The form link's code is never sent to a Participant or a Viewer; they see the status and the count. An Editor on a link to one Form tab builds its form but points its responses only at a board or sheet on that tab; a destination set elsewhere by someone with wider access stays as it is ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md#structure)). A link to another tab reaches no Form tab's link, count or Preview: the api answers it 404, as for any tab it cannot see. A locked
+same. The form link's code is never sent to a Participant or a Viewer; they see the status and the count. An Editor on a link to one Form tab builds its form but never changes what its responses make: a card type and column send cards to every board that takes them, which is beyond one tab, so a destination set by someone with wider access stays as it is (a sheet on the tab itself may still be chosen) ([Tab-scoped share links](../013-workspace/tab-scoped-share-links.md#structure)). A link to another tab reaches no Form tab's link, count or Preview: the api answers it 404, as for any tab it cannot see. A locked
 Form tab reads as a Viewer's does. Each is gated on the session's `can.level === 'edit'`, never on `isReadOnly` alone: a Participant's
 session can add content elsewhere, never to a form.
 
@@ -1146,10 +1167,12 @@ with the ones there are. Question types go by their ids (`short`, `paragraph`, `
   **questions** (or **sections** of them), named by `name` (the form's heading and the tab's), in the project's
   theme unless given one. With no `projectId` it makes a new project named after the form first, its one tab the
   Form tab (and a responses tab after it). **Responses go** (`respondsTo`):
-  - `{ to: "board" }`: to a new Board tab "<Form> Responses" (New, In Progress, Done) taking the form's card type
-    alone, so it shows only responses; with
-    `board`, an existing one, its first column unless `column` names one, its card type `cardType` (by name) or the
-    board's first;
+  - `{ to: "board" }`: each response a card. A response makes a card of a type in a column, never a board's
+    ([Card targets](../026-plan/items.md#card-targets)), so `board` only says where to read the type and column
+    from: with `board`, an existing one, its first column unless `column` names one, its card type `cardType` (by
+    name) or the board's first; with `cardType` and no `board`, the first board that already shows that type (no
+    new board); with neither, or when no board shows the type, a new Board tab "<Form> Responses" (New, In
+    Progress, Done) taking the form's card type alone, so its cards are never made where nobody sees them;
   - `{ to: "sheet" }`: to a new Sheet tab "<Form> Responses", as + New Sheet does, its sheet named after the tab and
     given its header row at once (`#`, `Submitted`, each question; bold, frozen), as the first response would write
     it, so it reads as the form's before anyone answers; with `sheet`, an existing one;

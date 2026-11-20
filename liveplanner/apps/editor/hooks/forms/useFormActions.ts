@@ -23,6 +23,7 @@ import { isDefaultTabName, newPlanSheetId, type Tab } from '@liveplanner/project
 import { placeNewSheet } from '@/lib/sheet-seeds';
 import { newCustomFieldId, newItemTypeId, type ItemTypeDef } from '@liveplanner/items';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
+import { boardsShowingOf, planBoardsOf } from '@/components/forms/form-destination';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import {
@@ -87,9 +88,11 @@ export type FormActions = FormDestinationActions & {
   addFieldFor: (question: FormQuestion, type: ItemTypeDef, label?: string) => string | null;
   // A choice question's options changed: the field it maps to follows (one catalogue change).
   syncFieldOptions: (type: ItemTypeDef, fieldId: string, options: readonly string[]) => void;
-  // Responses Go To's New Board: a Board tab after this one, "<Form> Responses", its New column the destination.
-  newResponsesBoard: () => void;
-  // Responses Go To's New Card Type: a type named after the form, taken by the destination's board, now the type,
+  // A board for the form's cards (the connect box's Cards on a Board, Responses Go To's Add a Board for {Type}): a
+  // Board tab after this one, "<Form> Responses", taking the card type alone, its first column the destination's.
+  // `typeId`: the card type it is for, when not the destination's own.
+  newResponsesBoard: (typeId?: string) => void;
+  // Responses Go To's New Card Type: a type named after the form, taken by the board its cards show on, now the type,
   // made with a field for each question whose answer would otherwise go to Description, each mapped to it.
   newCardType: () => void;
   // Responses Go To's Board or Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet"): to a Sheet, the given one
@@ -370,7 +373,15 @@ export function useFormActions({
       if (!formTab) return;
       const form = readForm(formTab.form) ?? blankForm(formTab.name);
       // Where responses go, renamed with the form while on its automatic name (withAutoBoardName).
-      const destId = form.sheet?.tabId ?? form.destination?.tabId;
+      const destId =
+        form.sheet?.tabId ??
+        boardsShowingOf(
+          form.destination,
+          planBoardsOf(live.current.tabs),
+          live.current.itemTypes.types,
+        )[0]?.tab.id ??
+        // A board tab whose content is not here yet: the tab it was last seen on.
+        form.destination?.tabId;
       const dest = live.current.tabs.find((t) => t.id === destId);
       const followed = dest
         ? withAutoBoardName(dest, { heading: form.heading, to: trimmed })
@@ -435,48 +446,55 @@ export function useFormActions({
     [live],
   );
 
-  const newResponsesBoard = useCallback<FormActions['newResponsesBoard']>(() => {
-    const { tabs: now, itemTypes: slice, statusNames: names } = live.current;
-    const formTab = now.find((t) => t.id === activeId);
-    if (!formTab || formTab.locked) return;
-    // A sheet it named (one since removed, the connect box asking again) goes: the new board is where responses go.
-    const { sheet: _gone, ...form } = readForm(formTab.form) ?? blankForm(formTab.name);
-    // The form's type when it has one; else the project's first; else a new Response type.
-    const typeId =
-      form.destination?.typeId ?? slice.types[0]?.id ?? newItemTypeId('Response', slice.types);
-    const type = slice.types.find((t) => t.id === typeId);
-    if (!type) slice.saveType(starterBaseType(formStarter('blank'), slice.types, typeId));
-    // A type with its own statuses gets them as the board's columns, the board taking it alone
-    // (docs/specs/030-forms/forms.md "Columns follow the card type").
-    const tab = responsesBoardTab(form.heading, formTab, [...names], undefined, undefined, {
-      typeId,
-      statuses: type?.statuses,
-      columns: now.flatMap((t) => boardsOf(t).flatMap((b) => b.setup.columns)),
-    });
-    const setup = boardsOf(tab)[0]!.setup;
-    const fixed = form.destination?.fixed;
-    commitTabs((ts) => {
-      const next = ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              form: {
-                ...form,
-                destination: {
-                  tabId: tab.id,
-                  typeId,
-                  status: setup.columns[0]!.status,
-                  ...(fixed ? { fixed } : {}),
+  const newResponsesBoard = useCallback<FormActions['newResponsesBoard']>(
+    (forType) => {
+      const { tabs: now, itemTypes: slice, statusNames: names } = live.current;
+      const formTab = now.find((t) => t.id === activeId);
+      if (!formTab || formTab.locked) return;
+      // A sheet it named (one since removed, the connect box asking again) goes: the new board is where responses go.
+      const { sheet: _gone, ...form } = readForm(formTab.form) ?? blankForm(formTab.name);
+      // The type asked for; else the form's when it has one; else the project's first; else a new Response type.
+      const typeId =
+        forType ??
+        form.destination?.typeId ??
+        slice.types[0]?.id ??
+        newItemTypeId('Response', slice.types);
+      const type = slice.types.find((t) => t.id === typeId);
+      if (!type) slice.saveType(starterBaseType(formStarter('blank'), slice.types, typeId));
+      // A type with its own statuses gets them as the board's columns, the board taking it alone
+      // (docs/specs/030-forms/forms.md "Columns follow the card type").
+      const tab = responsesBoardTab(form.heading, formTab, [...names], undefined, undefined, {
+        typeId,
+        statuses: type?.statuses,
+        columns: now.flatMap((t) => boardsOf(t).flatMap((b) => b.setup.columns)),
+      });
+      const setup = boardsOf(tab)[0]!.setup;
+      // Set values name the type's fields, so they stay only while the type does.
+      const fixed = form.destination?.typeId === typeId ? form.destination.fixed : undefined;
+      commitTabs((ts) => {
+        const next = ts.map((t) =>
+          t.id === activeId
+            ? {
+                ...t,
+                form: {
+                  ...form,
+                  destination: {
+                    tabId: tab.id,
+                    typeId,
+                    status: setup.columns[0]!.status,
+                    ...(fixed ? { fixed } : {}),
+                  },
                 },
-              },
-            }
-          : t,
-      );
-      next.splice(next.findIndex((t) => t.id === activeId) + 1, 0, tab);
-      return next;
-    });
-    live.current.markTabLoaded?.(tab.id);
-  }, [activeId, commitTabs, live]);
+              }
+            : t,
+        );
+        next.splice(next.findIndex((t) => t.id === activeId) + 1, 0, tab);
+        return next;
+      });
+      live.current.markTabLoaded?.(tab.id);
+    },
+    [activeId, commitTabs, live],
+  );
 
   const newCardType = useCallback<FormActions['newCardType']>(() => {
     const { tabs: now, itemTypes: slice } = live.current;
@@ -497,14 +515,24 @@ export function useFormActions({
     const mapped = withFields?.form ?? form;
     slice.saveType(type);
     const from = slice.types.find((t) => t.id === dest?.typeId)?.label;
+    // The board its cards show on (the tab it was last seen on, while that still shows them).
+    const home = dest
+      ? (boardsShowingOf(dest, planBoardsOf(now), slice.types)[0]?.tab.id ?? dest.tabId)
+      : undefined;
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id === activeId)
           return dest
-            ? { ...t, form: { ...mapped, destination: { ...dest, typeId: type.id } } }
+            ? {
+                ...t,
+                form: {
+                  ...mapped,
+                  destination: { ...dest, ...(home ? { tabId: home } : {}), typeId: type.id },
+                },
+              }
             : t;
         // The board a type list confines takes the new type too, and follows its name while on an automatic one.
-        if (dest && t.id === dest.tabId)
+        if (dest && t.id === home)
           return withAutoBoardName(withBoardTaking(t, type.id), {
             heading: form.heading,
             from,
@@ -560,13 +588,12 @@ export function useFormActions({
   }, [activeId, commitTabs, live]);
 
   // Responses Go To's board and card type, and the questions they bring (useFormDestinationActions).
-  const { setDestinationType, setDestinationBoard, addTypeQuestions, addQuestionFields } =
-    useFormDestinationActions({
-      activeId,
-      commitTabs,
-      live,
-      blankForm,
-    });
+  const { setDestinationType, addTypeQuestions, addQuestionFields } = useFormDestinationActions({
+    activeId,
+    commitTabs,
+    live,
+    blankForm,
+  });
 
   return useMemo(
     () => ({
@@ -582,7 +609,6 @@ export function useFormActions({
       newResponsesBoard,
       newCardType,
       setDestinationType,
-      setDestinationBoard,
       addTypeQuestions,
       addQuestionFields,
       setResponsesTo,
@@ -601,7 +627,6 @@ export function useFormActions({
       newResponsesBoard,
       newCardType,
       setDestinationType,
-      setDestinationBoard,
       addTypeQuestions,
       addQuestionFields,
       setResponsesTo,

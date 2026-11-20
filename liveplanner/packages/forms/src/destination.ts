@@ -1,7 +1,13 @@
-// Whether a form's destination still holds (docs/specs/030-forms/forms.md "Publishing and the form link"): its
-// Board tab, a board there with a column of its status, and its card type, which that board takes. One rule for the
-// builder (Publish Form, the paused notice) and the api (every response).
-import { boardTakesType, type ItemTypeDef, type PlanBoardSetup } from '@liveplanner/items';
+// Whether a form's destination still holds (docs/specs/030-forms/forms.md "Publishing and the form link"): its card
+// type, and a board of the plan that shows that type in its status (a card target, @liveplanner/items). No one board
+// is named: deleting a board breaks nothing while another shows the card. One rule for the builder (Publish Form, the
+// paused notice) and the api (every response).
+import {
+  boardsShowing,
+  cardTargetProblem,
+  type ItemTypeDef,
+  type TargetBoard,
+} from '@liveplanner/items';
 import type { FormDestination, FormSheetDestination } from './model';
 
 export type DestinationProblem =
@@ -15,10 +21,11 @@ export type DestinationProblem =
 // What the builder says for each problem.
 export const DESTINATION_PROBLEM_TEXT: Readonly<Record<DestinationProblem, string>> = {
   no_destination: 'Choose where responses go.',
-  board_missing: 'Its board was removed. Choose where responses go.',
+  board_missing: 'No board is left to show its cards. Add a board, or choose where responses go.',
   status_missing: 'Its column was removed. Choose where responses go.',
   type_missing: 'Its card type was removed. Choose where responses go.',
-  type_not_on_board: 'Its board no longer takes that card type. Choose where responses go.',
+  type_not_on_board:
+    'No board shows its cards, so nobody would see them. Add a board, or choose where responses go.',
   sheet_missing: 'Its sheet was removed. Choose where responses go.',
 };
 
@@ -33,23 +40,27 @@ export function sheetDestinationProblem(
     : 'sheet_missing';
 }
 
-// `boards`: the board set-ups on the destination's tab (none when the tab is gone or is no Board tab); only their
-// columns, the types they take and whether they are an Archive are read, so an agent's board outline serves too.
+// `boards`: every board of the plan (only their columns, the types they take and whether they are an Archive are
+// read, so an agent's board outline serves too).
 export function destinationProblem(
   destination: FormDestination | undefined,
-  boards: readonly (Pick<PlanBoardSetup, 'addTypes' | 'archive'> & {
-    columns: readonly { status: string }[];
-  })[],
+  boards: readonly TargetBoard[],
   types: readonly ItemTypeDef[],
 ): DestinationProblem | null {
   if (!destination) return 'no_destination';
-  const live = boards.filter((b) => !b.archive);
-  if (live.length === 0) return 'board_missing';
-  const board = live.find((b) => b.columns.some((c) => c.status === destination.status));
-  if (!board) return 'status_missing';
-  if (!types.some((t) => t.id === destination.typeId)) return 'type_missing';
-  if (!boardTakesType(board, types, destination.typeId)) return 'type_not_on_board';
-  return null;
+  return cardTargetProblem(destination, boards, types);
+}
+
+// The board a destination is read back on, opened to and drawn as: the first that shows its cards, one on the tab it
+// was last seen on (`tabId`) before any other. Undefined when no board shows them.
+export function destinationHome<B extends TargetBoard & { tabId?: string | undefined }>(
+  destination: Pick<FormDestination, 'typeId' | 'status' | 'tabId'> | undefined,
+  boards: readonly B[],
+  types: readonly ItemTypeDef[],
+): B | undefined {
+  if (!destination) return undefined;
+  const showing = boardsShowing(boards, types, destination);
+  return showing.find((b) => b.tabId !== undefined && b.tabId === destination.tabId) ?? showing[0];
 }
 
 // The destination's card type, as the catalogue holds it.
@@ -95,15 +106,17 @@ export type DestinationWarning = 'status_not_in_type' | 'no_type_column';
 
 export function destinationWarning(
   destination: FormDestination | undefined,
-  boards: readonly (Pick<PlanBoardSetup, 'archive'> & { columns: readonly { status: string }[] })[],
+  boards: readonly TargetBoard[],
   type: ItemTypeDef | undefined,
 ): DestinationWarning | null {
   if (!destination || !type || typeUsesStatus(type, destination.status)) return null;
-  const board = boards.find(
+  const holding = boards.filter(
     (b) => !b.archive && b.columns.some((c) => c.status === destination.status),
   );
-  if (!board) return null;
-  return typeColumns(board.columns, type).length ? 'status_not_in_type' : 'no_type_column';
+  if (holding.length === 0) return null;
+  return holding.some((b) => typeColumns(b.columns, type).length)
+    ? 'status_not_in_type'
+    : 'no_type_column';
 }
 
 // The warning's words, naming the type and its board.
@@ -113,6 +126,6 @@ export function destinationWarningText(
   boardName: string,
 ): string {
   return warning === 'no_type_column'
-    ? `None of ${boardName}’s columns is a ${typeLabel} state. Add one to the board, or choose another board.`
+    ? `None of ${boardName}’s columns is a ${typeLabel} state. Add one to the board, or choose another card type.`
     : `Its column isn’t one of ${typeLabel}’s states, so its cards miss ${typeLabel}’s boards. Choose another column.`;
 }

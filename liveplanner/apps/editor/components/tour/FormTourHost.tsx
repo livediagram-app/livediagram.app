@@ -17,6 +17,8 @@ import {
 } from '@liveplanner/forms';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSelectTab } from '@/app/project/[id]/useSelectTab';
+import { formDestinationOf } from '@/components/forms/form-destination';
+import { usePlan } from '@/components/plan/PlanContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { FORM_TOUR_RELAUNCH_EVENT } from '@/lib/form-tour';
@@ -48,7 +50,13 @@ export function FormTourHost() {
   const tab = ctx.activeTab;
   const onForm = tab.kind === 'form';
   const form = onForm ? readForm(tab.form) : null;
-  const destTabId = form?.sheet?.tabId ?? form?.destination?.tabId ?? null;
+  const plan = usePlan();
+  // Where its responses show: its sheet's tab, or the first board that shows its cards (formDestinationOf).
+  const destTabId = !form
+    ? null
+    : (form.sheet?.tabId ??
+      formDestinationOf(form, ctx.tabs, plan?.types ?? [], ctx.sessionTabScope).destTab?.id ??
+      null);
   const destKind: 'board' | 'sheet' | null = !destTabId ? null : form?.sheet ? 'sheet' : 'board';
 
   // The Form tab the tour began on: the destination step leaves it and comes back.

@@ -27,7 +27,13 @@ const read = (form = bugForm(), l: FormLinkResponse | null = null) => {
 describe('readFormOf', () => {
   it('reads each answer’s place by name and where responses go', () => {
     const r = read();
-    expect(r.respondsTo).toEqual({ to: 'board', board: 'Bugs', cardType: 'Bug', column: 'New' });
+    expect(r.respondsTo).toEqual({
+      to: 'board',
+      board: 'Bugs',
+      cardType: 'Bug',
+      column: 'New',
+      showsOn: 'Bugs',
+    });
     expect(r.sections[0]!.questions.map((q) => q.goesTo)).toEqual([
       'Title',
       'Severity',
@@ -182,6 +188,17 @@ describe('readFormOf, every part', () => {
       link: null,
     });
     expect(nameless.respondsTo).toMatchObject({ board: '(removed)' });
+    // Never seen on a tab (no hint), and no board shows its cards.
+    const bare = readFormOf({
+      tabId: 'form',
+      form: { ...bugForm(), destination: { typeId: 'nope', status: 'x' } },
+      boards: world.boards,
+      sheets: [],
+      types: world.types,
+      link: null,
+    });
+    expect(bare.respondsTo).toMatchObject({ board: '(removed)' });
+    expect(bare.respondsTo).not.toHaveProperty('showsOn');
   });
 
   it('reads a later section’s title, description and rule, and a rule whose question went', () => {
@@ -327,7 +344,7 @@ describe('card type rules (docs/specs/030-forms/forms.md "Choosing the card type
 
   it('says why a rule is broken, among the problems too', () => {
     const r = readIn(['bug']);
-    expect(r.cardTypeRules![0]!.broken).toMatch(/no longer on the board/);
+    expect(r.cardTypeRules![0]!.broken).toMatch(/No board shows/);
     expect(r.problems).toEqual([`${r.cardTypeRules![0]!.broken!} ("Severity", q-sev)`]);
   });
 });

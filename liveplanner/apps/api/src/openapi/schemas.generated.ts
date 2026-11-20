@@ -7343,7 +7343,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
-      "tabId",
       "typeId",
       "status"
     ],

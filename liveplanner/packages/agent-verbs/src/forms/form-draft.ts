@@ -127,9 +127,9 @@ function typeNamed(d: FormDraft, name: string): ItemTypeDef {
 const takes = (b: BoardRef, types: readonly ItemTypeDef[], id: string) =>
   boardTakesType({ addTypes: b.types ?? undefined }, types, id);
 
-// Responses to a board or a sheet, named or new (Responses Go To). A board form's type is the one named, else
+// Responses to cards or a sheet, named or new (Responses Go To). A board form's type is the one named, else
 // `prefer` (a starter's), else the form's own (its destination's), else the board's first, else a new one named after
-// the form.
+// the form. Its board is the one named, else the first that already shows a named type, else a new one.
 export function setRespondsTo(
   d: FormDraft,
   r: RespondsToInput,
@@ -175,10 +175,17 @@ export function setRespondsTo(
   let type = r.cardType ? typeNamed(d, r.cardType) : undefined;
   let board: BoardRef;
   let status: string;
+  // The board the cards are read back on: the one named, else, for a card type named alone, the first board that
+  // already shows that type (a response makes a card of a type, and every board taking the type shows it:
+  // docs/specs/030-forms/forms.md "Responses Go To"). Neither: a new board, so the cards are never made unseen.
+  let named: BoardRef | undefined;
   if (r.board) {
     const found = resolveBoard(d.boards, r.board);
     if (!found.ok) return found;
-    board = found.board;
+    named = found.board;
+  } else if (type) named = d.boards.find((b) => takes(b, d.types, type!.id));
+  if (named) {
+    board = named;
     type ??= own && takes(board, d.types, own.id) ? own : undefined;
     type ??= boardAddTypes({ addTypes: board.types ?? undefined }, d.types)[0] ?? newFormType(d);
     if (r.column) {
@@ -228,9 +235,9 @@ export function setRespondsTo(
   // Fields set automatically stay while the card type does (they name its fields).
   const was = d.form.destination;
   const fixed = was?.typeId === type.id ? was.fixed : undefined;
-  // Card type rules stay on the same board (their types and columns are its); readForm drops one on the new default
-  // type (forms.md "Choosing the card type by an answer").
-  const typeRules = was?.tabId === board.tabId ? was.typeRules : undefined;
+  // Card type rules stay (each names its own type and column, judged against every board); readForm drops one on
+  // the new default type (forms.md "Choosing the card type by an answer").
+  const typeRules = was?.typeRules;
   d.form = {
     ...rest,
     destination: {

@@ -11,6 +11,7 @@ import {
   answerErrorMessage,
   checkResponse,
   chooseCardType,
+  destinationHome,
   destinationType,
   promptOf,
   questionsOf,
@@ -98,14 +99,19 @@ function bodyOf(
 // A card's title, which every card's fields hold as text.
 const titleOf = (fields: Readonly<Record<string, unknown>>): string => fields['title'] as string;
 
-// The board and column a board form's cards land in, in words.
+// The board and column a board form's cards show in, in words: the first board that shows them, the one on the tab
+// the destination was last seen on before any other.
 function boardWhere(
   world: FormWorld,
   form: FormDefinition,
 ): { board: BoardRef; where: string } | null {
-  const status = form.destination?.status;
-  const board = world.boards.find((b) => b.columns.some((c) => c.status === status));
-  const column = board?.columns.find((c) => c.status === status);
+  const dest = form.destination;
+  if (!dest) return null;
+  // rulePlaceOf keeps the world's boards in order, so the home board's place there is its place here.
+  const place = rulePlaceOf(world);
+  const home = destinationHome(dest, place.boards, world.types);
+  const board = home ? world.boards[place.boards.indexOf(home)] : undefined;
+  const column = board?.columns.find((c) => c.status === dest.status);
   return board && column
     ? { board, where: `the "${board.tabName}" board, column ${column.name}` }
     : null;
@@ -135,9 +141,7 @@ export async function tryForm(
     const sheet = form.sheet ? world.sheets.find((s) => s.sheetId === form.sheet!.sheetId) : null;
     const target = form.sheet ? null : boardWhere(world, form);
     // The type and column the form's card type rules pick for these answers, as the api picks them.
-    const chosen = form.sheet
-      ? null
-      : chooseCardType(form, checked.answers, rulePlaceOf(world, form.destination?.tabId));
+    const chosen = form.sheet ? null : chooseCardType(form, checked.answers, rulePlaceOf(world));
     const type = chosen?.type ?? destinationType(form.destination, world.types);
     const ruled = chosen?.rule ? { rule: chosen.rule, status: chosen.status } : undefined;
     const nowhere = refuse(

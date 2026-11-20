@@ -40,7 +40,7 @@ import {
 import { GITHUB_PULLS_SCHEMA, GITHUB_SCHEMA } from './github/github-schema';
 import { addCalendarFeedTypes, CALENDAR_FEEDS_SCHEMA } from '../calendar/feed-store';
 import { ROADMAPS_SCHEMA } from '../roadmap/roadmap-store';
-import { EMAIL_INTAKES_SCHEMA } from '../email-intake/intake-store';
+import { addIntakeTarget, EMAIL_INTAKES_SCHEMA } from '../email-intake/intake-store';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -589,6 +589,10 @@ const V38 = FORM_IMAGE_REFS_SCHEMA;
 // can be handed to").
 const V39 = KNOWN_ASSISTANTS_SCHEMA;
 
+// What an Email to Board address makes (../email-intake/intake-store.ts; docs/specs/026-plan/email-to-board.md "What a
+// message makes"): a card type and a status of its own.
+const V40 = addIntakeTarget;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -629,6 +633,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V37,
   V38,
   V39,
+  V40,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

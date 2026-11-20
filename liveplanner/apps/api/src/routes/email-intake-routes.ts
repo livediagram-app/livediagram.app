@@ -6,7 +6,7 @@
 // changes.
 //
 //   GET                         every address, the boards that may have one, and whether mail is taken at all
-//   PUT    /:boardId            turn the board's address on (201) or change Who Can Send (200)
+//   PUT    /:boardId            turn the board's address on (201) or change Who Can Send or what it makes (200)
 //   POST   /:boardId/new-address a new code; the old address stops at once
 //   DELETE /:boardId            Turn Off (204 either way)
 import {
@@ -18,7 +18,13 @@ import {
   type EmailIntakesResponse,
 } from '@liveplanner/api-schema';
 import { getProject } from '../db';
-import { intakeBoardsOf, wireBoard } from '../email-intake/intake-boards';
+import {
+  intakeBoardsOf,
+  intakeTargetOf,
+  intakeTypesOf,
+  wireBoard,
+  type IntakeBoard,
+} from '../email-intake/intake-boards';
 import { newIntakeCode } from '../email-intake/intake-code';
 import { fileIntake, unfileIntake } from '../email-intake/intake-directory';
 import {
@@ -30,6 +36,7 @@ import {
   turnOnIntake,
   type IntakeRow,
 } from '../email-intake/intake-store';
+import type { ItemTypeDef } from '@liveplanner/items';
 import { json, methodNotAllowed, noContent } from '../responses';
 import { planTypesOf } from '../roadmap/roadmap-boards';
 import { grantOn, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
@@ -62,9 +69,26 @@ export async function intakeEditor(
   return null;
 }
 
-const wire = (row: IntakeRow, domain: string): EmailIntake => ({
+// The plan's boards and card types, read once a request: what every address's target is judged against.
+type World = { boards: IntakeBoard[]; types: readonly ItemTypeDef[] };
+
+async function worldOf(ctx: PlanRouteContext, projectId: string): Promise<World> {
+  const types = await planTypesOf(ctx.env, projectId);
+  return { boards: await intakeBoardsOf(ctx.env, projectId, types), types };
+}
+
+// What an address makes: its own card type and column, or (one from before) its board's first of each.
+const targetOf = (row: Pick<IntakeRow, 'boardId' | 'target'>, world: World) =>
+  intakeTargetOf(
+    row.target ?? world.boards.find((b) => b.id === row.boardId)?.place ?? null,
+    world.boards,
+    world.types,
+  );
+
+const wire = (row: IntakeRow, domain: string, world: World): EmailIntake => ({
   boardId: row.boardId,
   address: emailIntakeAddress(row.code, domain),
+  target: targetOf(row, world),
   senders: row.senders,
   createdAt: row.createdAt,
   made: row.made,
@@ -73,28 +97,44 @@ const wire = (row: IntakeRow, domain: string): EmailIntake => ({
   lastAt: row.lastAt,
 });
 
-async function boardsOf(ctx: PlanRouteContext, projectId: string) {
-  return intakeBoardsOf(ctx.env, projectId, await planTypesOf(ctx.env, projectId));
-}
-
 async function list(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const domain = ctx.env.EMAIL_INTAKE_DOMAIN || null;
   if (!domain) {
-    const off: EmailIntakesResponse = { available: false, domain: null, intakes: [], boards: [] };
+    const off: EmailIntakesResponse = {
+      available: false,
+      domain: null,
+      intakes: [],
+      boards: [],
+      types: [],
+    };
     return answer(off);
   }
-  const [rows, boards] = await Promise.all([
-    intakesOf(ctx.env, projectId),
-    boardsOf(ctx, projectId),
-  ]);
+  const [rows, world] = await Promise.all([intakesOf(ctx.env, projectId), worldOf(ctx, projectId)]);
+  const { boards, types } = world;
   // An address whose board has gone is not listed: it takes nothing until its board is turned on again.
   const body: EmailIntakesResponse = {
     available: true,
     domain,
-    intakes: rows.filter((r) => boards.some((b) => b.id === r.boardId)).map((r) => wire(r, domain)),
-    boards: boards.map(wireBoard),
+    intakes: rows
+      .filter((r) => boards.some((b) => b.id === r.boardId))
+      .map((r) => wire(r, domain, world)),
+    boards: boards.map((b) => wireBoard(b, boards, types)),
+    types: intakeTypesOf(boards, types),
   };
   return answer(body);
+}
+
+const ID_MAX = 200;
+
+// The card a PUT names: both a type and a status, or neither (undefined: left as it is). False when it reads wrong.
+function readTarget(
+  raw: Record<string, unknown>,
+): { typeId: string; status: string } | undefined | false {
+  const { typeId, status } = raw;
+  if (typeId === undefined && status === undefined) return undefined;
+  if (typeof typeId !== 'string' || typeof status !== 'string') return false;
+  if (!typeId || !status || typeId.length > ID_MAX || status.length > ID_MAX) return false;
+  return { typeId, status };
 }
 
 async function put(
@@ -107,24 +147,37 @@ async function put(
   if (raw instanceof Response) return raw;
   const senders = raw['senders'];
   if (!isEmailIntakeSenders(senders)) return refuse(400, 'email_intake_invalid', 'invalid');
-  const board = (await boardsOf(ctx, projectId)).find((b) => b.id === boardId);
+  const named = readTarget(raw);
+  if (named === false) return refuse(400, 'email_intake_invalid', 'invalid_target');
+  const world = await worldOf(ctx, projectId);
+  const board = world.boards.find((b) => b.id === boardId);
   if (!board?.place) return refuse(400, 'email_intake_invalid', 'no_column');
-  const at = { boardId, tabId: board.tabId };
+  // A card no board shows is never taken as a target: nobody would see what the mail made.
+  if (named && !intakeTargetOf(named, world.boards, world.types))
+    return refuse(400, 'email_intake_invalid', 'target_unseen');
   const existing = await intakeOfBoard(ctx.env, projectId, boardId);
   if (existing) {
+    const at = { boardId, tabId: board.tabId, target: named ?? existing.target };
     await setIntakeSenders(ctx.env, projectId, at, senders);
-    console.info('[email-intake] manage', { action: 'senders' });
+    console.info('[email-intake] manage', { action: named ? 'target' : 'senders' });
     const body: EmailIntakeResponse = {
-      intake: wire({ ...existing, ...at, senders }, domain),
+      intake: wire({ ...existing, ...at, senders }, domain, world),
     };
     return answer(body);
   }
   const code = newIntakeCode();
   // Filed first: a row with no directory entry would show an address that takes nothing.
   await fileIntake(ctx.env, code, { planId: projectId, boardId });
-  const row = await turnOnIntake(ctx.env, projectId, { ...at, code, senders }, Date.now());
+  // Turned on, it keeps what it makes (the card named, else the board's first type and column as they are now), so
+  // reordering the board's columns later never moves where its mail lands.
+  const row = await turnOnIntake(
+    ctx.env,
+    projectId,
+    { boardId, tabId: board.tabId, code, target: named ?? board.place, senders },
+    Date.now(),
+  );
   console.info('[email-intake] manage', { action: 'on' });
-  const body: EmailIntakeResponse = { intake: wire(row, domain) };
+  const body: EmailIntakeResponse = { intake: wire(row, domain, world) };
   return answer(body, 201);
 }
 
@@ -141,7 +194,8 @@ async function newAddress(
   await replaceIntakeCode(ctx.env, projectId, boardId, existing.code, code);
   await unfileIntake(ctx.env, existing.code);
   console.info('[email-intake] manage', { action: 'new_address' });
-  const body: EmailIntakeResponse = { intake: wire({ ...existing, code }, domain) };
+  const world = await worldOf(ctx, projectId);
+  const body: EmailIntakeResponse = { intake: wire({ ...existing, code }, domain, world) };
   return answer(body);
 }
 

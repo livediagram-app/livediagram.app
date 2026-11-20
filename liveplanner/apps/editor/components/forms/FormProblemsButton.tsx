@@ -55,7 +55,7 @@ export function FormProblemsButton() {
             key: 'destination',
             text:
               host.problem === 'no_destination'
-                ? 'Responses have nowhere to go yet: choose a board or a sheet.'
+                ? 'Responses have nowhere to go yet: choose a card type or a sheet.'
                 : DESTINATION_PROBLEM_TEXT[host.problem],
             blocks: true,
             fix: destinationFix,

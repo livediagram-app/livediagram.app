@@ -59,6 +59,8 @@ const editor = (over: Record<string, unknown> = {}) => {
     can: { level: 'edit' },
     embedMode: false,
     activeTab: formTab(),
+    tabs: [],
+    sessionTabScope: null,
     userPreferences: { tourSeen: true },
     setUserPreferences,
     writeUserPreferences,
