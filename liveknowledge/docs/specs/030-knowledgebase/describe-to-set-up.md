@@ -90,12 +90,14 @@ headings (up to 6), parent }`. The api asks the model for JSON in a fixed shape 
 ## Telemetry
 
 One event when a structure is suggested (`UI·Used·SetupSuggested`) and one when pages are created
-(`Tab·Created·FromSetup`): never the description, the titles or the key. **The counts are not sent**: an event is
-three fixed words with no number, and adding one is a change to the platform's telemetry.
+(`Tab·Created·FromSetup`), and one each time the dialog is opened (`UI·Opened·DescribeToSetUp`,
+`UI·Opened·DescribeToAddPages`). Each event is three fixed words and nothing else: never the description, the
+titles or the key, and **no count** (how many pages were suggested, ticked or created is not sent). An event has
+no number field, and adding one is a change to the platform's telemetry, which this feature does not make.
 
 ## Not built
 
 - **Describe to Add Pages** in the knowledgebase menu (the menu itself is not built); it is in the command palette.
 - The button in a phone's Pages sheet.
-- Counts in telemetry.
+- Counts in telemetry (how many pages were suggested or created): left out on purpose, see "Telemetry".
 - The removal of the fork's template start from the code.

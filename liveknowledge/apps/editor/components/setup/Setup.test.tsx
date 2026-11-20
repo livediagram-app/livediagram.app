@@ -335,7 +335,7 @@ describe('step 1, Describe', () => {
     await act(async () => answer({ ok: true, suggestion: SUGGESTION }));
     expect(step()).toBe('review');
     expect(track).toHaveBeenCalledWith('UI', 'Used', 'SetupSuggested');
-    // Counts only: no description and no title reaches telemetry.
+    // The event's three fixed words only: no description, no title and no count reaches telemetry.
     const sent = JSON.stringify(vi.mocked(track).mock.calls);
     expect(sent).not.toContain('logistics');
     expect(sent).not.toContain('Getting Started');

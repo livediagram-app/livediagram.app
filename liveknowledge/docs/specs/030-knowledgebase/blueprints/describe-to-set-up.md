@@ -7,31 +7,31 @@ model was called**, and the dialog's look has not been reviewed by a person.
 
 ## Domain and naming
 
-| Term (spec)           | Identifier                                                                 |
-| --------------------- | -------------------------------------------------------------------------- |
-| Describe to Set Up    | `SetupMode` `'set-up'`; the sidebar's `DescribeToSetUpButton`              |
-| Describe to Add Pages | `SetupMode` `'add'`; `useDescribeToAddPages()`, the palette's command      |
-| empty                 | `knowledgebaseIsEmpty(tabs, loaded)`                                       |
-| the untouched page    | `untouchedOnlyPage(tabs, loaded)`                                          |
-| a page under review   | `ReviewPage`: a `KnowledgeSetupPage` with `ticked`                         |
-| the three steps       | `SetupStep`: `describe`, `suggesting`, `review`, `creating`, `done`        |
+| Term (spec)           | Identifier                                                            |
+| --------------------- | --------------------------------------------------------------------- |
+| Describe to Set Up    | `SetupMode` `'set-up'`; the sidebar's `DescribeToSetUpButton`         |
+| Describe to Add Pages | `SetupMode` `'add'`; `useDescribeToAddPages()`, the palette's command |
+| empty                 | `knowledgebaseIsEmpty(tabs, loaded)`                                  |
+| the untouched page    | `untouchedOnlyPage(tabs, loaded)`                                     |
+| a page under review   | `ReviewPage`: a `KnowledgeSetupPage` with `ticked`                    |
+| the three steps       | `SetupStep`: `describe`, `suggesting`, `review`, `creating`, `done`   |
 
 ## Modules
 
-| Piece                                   | File                                         |
-| --------------------------------------- | -------------------------------------------- |
-| whether it is open, and what is offered | `lib/knowledge-setup/setup-open.ts`          |
-| the empty check                         | `lib/knowledge-setup/setup-empty.ts`         |
-| the Review step's state, the limits     | `lib/knowledge-setup/setup-tree.ts`          |
-| the plan the write path is handed       | `lib/knowledge-setup/setup-plan.ts`          |
-| the run                                 | `lib/knowledge-setup/run-setup.ts`           |
-| the route's client                      | `lib/knowledge-setup/setup-api.ts`           |
-| every word                              | `lib/knowledge-setup/setup-words.ts`         |
-| who is offered it                       | `components/setup/useSetupOffered.ts`        |
-| the sidebar's button                    | `components/setup/DescribeToSetUpButton.tsx` |
-| the host, the menu item                 | `components/setup/SetupHost.tsx`             |
+| Piece                                   | File                                                                       |
+| --------------------------------------- | -------------------------------------------------------------------------- |
+| whether it is open, and what is offered | `lib/knowledge-setup/setup-open.ts`                                        |
+| the empty check                         | `lib/knowledge-setup/setup-empty.ts`                                       |
+| the Review step's state, the limits     | `lib/knowledge-setup/setup-tree.ts`                                        |
+| the plan the write path is handed       | `lib/knowledge-setup/setup-plan.ts`                                        |
+| the run                                 | `lib/knowledge-setup/run-setup.ts`                                         |
+| the route's client                      | `lib/knowledge-setup/setup-api.ts`                                         |
+| every word                              | `lib/knowledge-setup/setup-words.ts`                                       |
+| who is offered it                       | `components/setup/useSetupOffered.ts`                                      |
+| the sidebar's button                    | `components/setup/DescribeToSetUpButton.tsx`                               |
+| the host, the menu item                 | `components/setup/SetupHost.tsx`                                           |
 | the dialog, its steps and states        | `SetupDialog.tsx`, `DescribeStep.tsx`, `ReviewStep.tsx`, `SetupStates.tsx` |
-| the flow's state                        | `components/setup/useSetupFlow.ts`           |
+| the flow's state                        | `components/setup/useSetupFlow.ts`                                         |
 
 Hook-ins, each one line or a few: `PageTreeSidebar.tsx` (the button above New Page), `EditorTabDialogs.tsx` (the
 host, beside the dialogs it does not depend on), `lib/editor-commands.ts` and `hooks/canvas/useEditorCommands.ts`
@@ -68,12 +68,12 @@ is then not called empty and the session is offered `'add'`: no page is loaded a
 Where the spec says "at most three pages, none with any writing beyond a title", this is that rule for the pages
 the editor holds.
 
-| Role or state                             | Sidebar button | Describe to Add Pages |
-| ----------------------------------------- | -------------- | --------------------- |
-| Editor, signed in, empty                  | yes            | no                    |
-| Editor, signed in, not empty              | no             | yes                   |
-| Participant, Viewer, a page-scoped link   | no             | no                    |
-| Not signed in; kept Offline; an embed     | no             | no                    |
+| Role or state                           | Sidebar button | Describe to Add Pages |
+| --------------------------------------- | -------------- | --------------------- |
+| Editor, signed in, empty                | yes            | no                    |
+| Editor, signed in, not empty            | no             | yes                   |
+| Participant, Viewer, a page-scoped link | no             | no                    |
+| Not signed in; kept Offline; an embed   | no             | no                    |
 
 ## The control
 
@@ -98,16 +98,16 @@ opened from the dialog (over Ask or AI Knowledge the views' host draws it).
 `Dialog` `size="lg"`, a sheet on a phone, centred. The body is one height whatever shows
 (`h-[29rem] max-h-[calc(100dvh-13rem)]`), with the three step names above it (`aria-current="step"`).
 
-| State             | When                               | Shows                                                                                              | Footer                                    |
-| ----------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| loading           | the AI settings are being read     | the room held                                                                                      | Cancel                                    |
-| could not be read | `GET ai` failed                    | an error callout, **Try Again**                                                                    | Cancel                                    |
-| no key            | `hasKey` false                     | "Describe to Set Up Needs Your Team's AI Key", **Open AI Settings**                                | Cancel                                    |
-| Describe          | step 1                             | the field, the example, three chips, the counter from 900; a failure's callout above it            | Cancel, **Suggest a Structure**           |
-| suggesting        | the request is out                 | one line and a skeleton in the tree's place (`SkeletonRows`)                                       | Cancel (aborts, back to Describe)         |
-| Review            | step 2                             | the name (while untitled), the tree, the note or the limit's callout                               | Cancel, **Try Again**, **Create N Pages** |
-| creating          | step 3                             | "Making Pages: 20 of 30" and a bar                                                                 | Stop (between batches)                    |
-| done              | the run did not make every page    | how many were made, each page that was not with why                                                | Done                                      |
+| State             | When                            | Shows                                                                                   | Footer                                    |
+| ----------------- | ------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
+| loading           | the AI settings are being read  | the room held                                                                           | Cancel                                    |
+| could not be read | `GET ai` failed                 | an error callout, **Try Again**                                                         | Cancel                                    |
+| no key            | `hasKey` false                  | "Describe to Set Up Needs Your Team's AI Key", **Open AI Settings**                     | Cancel                                    |
+| Describe          | step 1                          | the field, the example, three chips, the counter from 900; a failure's callout above it | Cancel, **Suggest a Structure**           |
+| suggesting        | the request is out              | one line and a skeleton in the tree's place (`SkeletonRows`)                            | Cancel (aborts, back to Describe)         |
+| Review            | step 2                          | the name (while untitled), the tree, the note or the limit's callout                    | Cancel, **Try Again**, **Create N Pages** |
+| creating          | step 3                          | "Making Pages: 20 of 30" and a bar                                                      | Stop (between batches)                    |
+| done              | the run did not make every page | how many were made, each page that was not with why                                     | Done                                      |
 
 - **No key.** Adding a key in AI Settings writes the settings store, which the dialog reads: step 1 is there when
   AI Settings closes. Nothing is asked of the api before a key exists.
@@ -186,25 +186,26 @@ checked in a browser: contrast in dark mode, and the dialog at phone width.
 ## Telemetry
 
 `UI·Opened·DescribeToSetUp`, `UI·Opened·DescribeToAddPages`, `UI·Used·SetupSuggested`, `Tab·Created·FromSetup`.
-Each is a fixed token: an event has no number in it, so the counts the spec asks for are **not sent** (they would
-need a field the telemetry vocabulary does not have). The description, the titles and the key are never sent.
+Each is a fixed token: an event has no number in it, so **no count is sent** (how many pages were suggested,
+ticked or created would need a field the telemetry vocabulary does not have; the spec says so too). The
+description, the titles and the key are never sent.
 
 ## Testing
 
-| Rule                                                             | Test                                              |
-| ---------------------------------------------------------------- | ------------------------------------------------- |
-| Empty: three pages, nothing beyond a title, only what is loaded  | `lib/knowledge-setup/setup-lib.test.ts`           |
-| The check's cost on a keystroke                                  | the same, "costs next to nothing"                 |
-| Ticks, renames, the limits                                       | the same, "the Review step"                       |
-| The words, each failure with its next step                       | the same, "the words"                             |
-| Batches of 20 in tree order; the untouched page taken over       | `lib/knowledge-setup/run-setup.test.ts`           |
-| Title, italic line, headings with room to write                  | the same                                          |
-| Markup from a model is text                                      | the same; `components/setup/Setup.test.tsx`       |
-| `replaceId` in the save layer                                    | `lib/knowledge-import/save-layers.test.ts`        |
-| Who is offered it, per role and state                            | `components/setup/Setup.test.tsx`                 |
-| Every state of the dialog; Cancel aborts; no key and back        | the same                                          |
-| The palette's command                                            | `lib/editor-commands.test.ts`                     |
-| In a browser: no start screen, describe to tree, the no-key path | `e2e/signed-in/knowledge-setup.spec.ts`           |
+| Rule                                                             | Test                                        |
+| ---------------------------------------------------------------- | ------------------------------------------- |
+| Empty: three pages, nothing beyond a title, only what is loaded  | `lib/knowledge-setup/setup-lib.test.ts`     |
+| The check's cost on a keystroke                                  | the same, "costs next to nothing"           |
+| Ticks, renames, the limits                                       | the same, "the Review step"                 |
+| The words, each failure with its next step                       | the same, "the words"                       |
+| Batches of 20 in tree order; the untouched page taken over       | `lib/knowledge-setup/run-setup.test.ts`     |
+| Title, italic line, headings with room to write                  | the same                                    |
+| Markup from a model is text                                      | the same; `components/setup/Setup.test.tsx` |
+| `replaceId` in the save layer                                    | `lib/knowledge-import/save-layers.test.ts`  |
+| Who is offered it, per role and state                            | `components/setup/Setup.test.tsx`           |
+| Every state of the dialog; Cancel aborts; no key and back        | the same                                    |
+| The palette's command                                            | `lib/editor-commands.test.ts`               |
+| In a browser: no start screen, describe to tree, the no-key path | `e2e/signed-in/knowledge-setup.spec.ts`     |
 
 ## Not built, or not known
 
