@@ -10,7 +10,8 @@
 // (FormProblemsButton).
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { Tooltip } from '@liveplanner/ui';
+import { Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucideChartColumn } from '@liveworkspace/icons/lucide';
 import { DESTINATION_PROBLEM_TEXT, type DestinationProblem } from '@liveplanner/forms';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
@@ -23,6 +24,8 @@ import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { formNotTakingReason, type FormNotTakingFix } from './form-not-taking';
 import { FormNotTakingWarning } from './FormNotTakingWarning';
 
+const SummaryIcon = lucideGlyph(lucideChartColumn, 15);
+
 export function FormStatusBar({
   link,
   problem,
@@ -34,6 +37,7 @@ export function FormStatusBar({
   onOpenResponses,
   destinationName,
   onNotTaking,
+  summary = null,
   top = null,
 }: {
   link: FormLinkState;
@@ -51,6 +55,8 @@ export function FormStatusBar({
   destinationName?: string | null;
   // Opens where Not Taking Responses is fixed (Share Form, Responses Go To, Settings or the responses' tab).
   onNotTaking?: (fix: FormNotTakingFix) => void;
+  // The Summary (forms.md "The Summary"): whether it is showing, and its switch. Null where there is none to show.
+  summary?: { on: boolean; toggle: () => void } | null;
   // The canvas to draw the palette on, centred in its top row (a desktop); null heads the column with it (a phone).
   top?: HTMLElement | null;
 }) {
@@ -158,6 +164,24 @@ export function FormStatusBar({
             <span>{count}</span>
           </span>
         )}
+        {summary ? (
+          // Its word shows where the top row has the room; narrower, the glyph alone, named by its tooltip.
+          <Tooltip label="Summary">
+            <button
+              type="button"
+              aria-pressed={summary.on}
+              onClick={summary.toggle}
+              className={`flex h-9 min-w-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 touch-target-y text-[13px] font-medium transition ${
+                summary.on
+                  ? 'bg-brand-50 text-brand-800 dark:bg-brand-500/20 dark:text-brand-100'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+              }`}
+            >
+              <SummaryIcon aria-hidden className="shrink-0" />
+              <span className="text-optical-centre max-[1439px]:sr-only">Summary</span>
+            </button>
+          </Tooltip>
+        ) : null}
         {controls ? (
           <>
             <span aria-hidden className={`${TOOLBAR_DIVIDER} ml-auto`} />

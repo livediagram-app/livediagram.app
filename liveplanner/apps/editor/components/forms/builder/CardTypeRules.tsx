@@ -50,8 +50,9 @@ export function CardTypeRules({
   const place = { types: b.types, boards };
   const board = destinationBoard(dest, boards) as (RuleBoard & PlanBoardSetup) | undefined;
   const broken = rules.some((r) => typeRuleProblem(r, b.form, place));
-  const set = (next: readonly CardTypeRule[]) =>
-    b.actions.changeForm((f) => withTypeRules(f, next));
+  // Made on the rules as they stand when the change lands, never on the list this draw read.
+  const set = (next: (now: readonly CardTypeRule[]) => readonly CardTypeRule[]) =>
+    b.actions.changeForm((f) => withTypeRules(f, next(f.destination?.typeRules ?? [])));
   const patch = (id: string, p: Partial<Omit<CardTypeRule, 'id'>>) =>
     b.actions.changeForm((f) => updateTypeRule(f, id, p));
   const room =
@@ -72,7 +73,7 @@ export function CardTypeRules({
               board={board}
               takes={takes}
               onPatch={(p) => patch(rule.id, p)}
-              onRemove={() => set(rules.filter((r) => r.id !== rule.id))}
+              onRemove={() => set((now) => now.filter((r) => r.id !== rule.id))}
               problem={typeRuleProblem(rule, b.form, place)}
             />
           ))}
@@ -84,7 +85,7 @@ export function CardTypeRules({
           className={ADD}
           onClick={() => {
             const made = newTypeRule(b.form, takes, board, newFormPartId('r'));
-            if (made) set([...rules, made]);
+            if (made) set((now) => [...now, made]);
           }}
         >
           <PlusIcon size={13} />

@@ -47,7 +47,7 @@ const FORM: PublicForm = {
 };
 
 afterEach(cleanup);
-beforeEach(() => sessionStorage.clear());
+beforeEach(() => localStorage.clear());
 
 function fill(
   submit = vi.fn(async (): Promise<SubmitOutcome> => ({ kind: 'sent' })),
@@ -122,7 +122,7 @@ describe('a form of two sections', () => {
       website: '',
     });
     expect(screen.getByRole('status').textContent).toContain('See you there!');
-    expect(sessionStorage.getItem('k')).toBeNull();
+    expect(localStorage.getItem('k')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Submit Another Response' }));
     expect(screen.getByLabelText<HTMLInputElement>(/^Name/).value).toBe('');
   });
@@ -412,5 +412,98 @@ describe('answers that can be taken back, and text near its limit', () => {
     fireEvent.change(note, { target: { value: 'a'.repeat(200) } });
     expect(screen.getByText('200 of 200 characters: nothing more is kept')).toBeTruthy();
     expect(screen.getByRole('status').textContent).toContain('Character limit reached');
+  });
+});
+
+// Answers kept in the browser, Clear Form and Enter (forms.md "Filling in a form").
+describe('answers kept in this browser', () => {
+  const stored = () =>
+    JSON.parse(localStorage.getItem('k') ?? 'null') as { answers: object } | null;
+  const keep = (answers: object, at: number) =>
+    localStorage.setItem('k', JSON.stringify({ answers, other: {}, at }));
+
+  it('keeps nothing for a form only opened, and what is typed once something is', () => {
+    fill();
+    expect(localStorage.getItem('k')).toBeNull();
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Ada' } });
+    expect(stored()!.answers).toEqual({ 'q-name': 'Ada' });
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: '' } });
+    expect(localStorage.getItem('k')).toBeNull();
+  });
+
+  it('brings back answers from an earlier visit and says so, until Start Again', () => {
+    keep({ 'q-name': 'Ada' }, Date.now() - 60 * 60 * 1000);
+    fill();
+    expect(screen.getByLabelText<HTMLInputElement>(/^Name/).value).toBe('Ada');
+    expect(screen.getByText(/Your answers from earlier are still here/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Start Again' }));
+    expect(screen.getByLabelText<HTMLInputElement>(/^Name/).value).toBe('');
+    expect(screen.queryByText(/Your answers from earlier/)).toBeNull();
+    expect(localStorage.getItem('k')).toBeNull();
+  });
+
+  it('drops answers kept more than a day ago, with no time, or from the future', () => {
+    for (const at of [Date.now() - 25 * 60 * 60 * 1000, undefined, Date.now() + 60_000]) {
+      localStorage.setItem('k', JSON.stringify({ answers: { 'q-name': 'Old' }, other: {}, at }));
+      fill();
+      expect(screen.getByLabelText<HTMLInputElement>(/^Name/).value).toBe('');
+      expect(screen.queryByText(/Your answers from earlier/)).toBeNull();
+      expect(localStorage.getItem('k')).toBeNull();
+      cleanup();
+    }
+    localStorage.setItem('k', '{broken');
+    fill();
+    expect(screen.getByLabelText<HTMLInputElement>(/^Name/).value).toBe('');
+  });
+
+  it('offers Clear Form once something is answered, and asks before it empties the form', () => {
+    fill();
+    expect(screen.queryByRole('button', { name: 'Clear Form' })).toBeNull();
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Ada' } });
+    next();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Form' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Keep' }));
+    expect(screen.getByRole('heading', { name: 'Food' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Form' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    // Back at the first section, empty, with nothing kept.
+    expect(screen.getByLabelText<HTMLInputElement>(/^Name/).value).toBe('');
+    expect(localStorage.getItem('k')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear Form' })).toBeNull();
+  });
+
+  it('does not say answers were kept after Submit Another Response', async () => {
+    keep({ 'q-name': 'Ada', 'q-rate': 4 }, Date.now());
+    fill();
+    next();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Submit' })));
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Another Response' }));
+    expect(screen.queryByText(/Your answers from earlier/)).toBeNull();
+  });
+});
+
+describe('Enter in a one-line answer', () => {
+  it('moves to the next answer, then to Next, and never sends the form', () => {
+    const submit = fill();
+    const name = screen.getByLabelText(/^Name/);
+    name.focus();
+    expect(fireEvent.keyDown(name, { key: 'Enter' })).toBe(false);
+    expect(document.activeElement).toBe(screen.getByLabelText(/^Email/));
+    fireEvent.keyDown(screen.getByLabelText(/^Email/), { key: 'Enter' });
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Next' }));
+    expect(submit).not.toHaveBeenCalled();
+  });
+
+  it('leaves Enter alone with a modifier, while composing, and outside a one-line box', () => {
+    fill();
+    const name = screen.getByLabelText(/^Name/);
+    name.focus();
+    expect(fireEvent.keyDown(name, { key: 'Enter', shiftKey: true })).toBe(true);
+    expect(fireEvent.keyDown(name, { key: 'Enter', isComposing: true })).toBe(true);
+    expect(fireEvent.keyDown(name, { key: 'a' })).toBe(true);
+    expect(fireEvent.keyDown(screen.getByRole('button', { name: 'Next' }), { key: 'Enter' })).toBe(
+      true,
+    );
+    expect(document.activeElement).toBe(name);
   });
 });
