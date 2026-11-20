@@ -31,6 +31,8 @@ function throughLatest(latest: RefObject<Latest>): UnusedImagePromptDeps {
       error: (message, options) => latest.current.toast.error(message, options),
     },
     settle: () => (latest.current.settle ?? nextTask)(),
+    choice: () => latest.current.choice?.() ?? 'ask',
+    remember: (choice) => latest.current.remember?.(choice),
   };
 }
 

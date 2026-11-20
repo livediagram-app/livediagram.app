@@ -11,6 +11,7 @@ import {
   unusedImageWords,
   type UnusedImagePromptDeps,
 } from './unused-image-prompt';
+import { readUnusedImageChoice, withUnusedImageChoice } from './unused-image-choice';
 
 // Each product's docs/specs/009-elements/images.md "Deleting an unused picture".
 function harness(over: Partial<UnusedImagePromptDeps> = {}) {
@@ -292,5 +293,121 @@ describe('reading the item', () => {
       ),
     ).toBe(true);
     expect(everyTabLoaded([{ id: 't3', elements: [] }], loaded)).toBe(false);
+  });
+});
+
+// images.md "Remember My Choice" and "The setting".
+describe('the person’s choice', () => {
+  it('asks by default, with no switch when nothing can save the answer', async () => {
+    const h = harness();
+    await h.offer(['a']);
+    expect(h.last().toggle).toBeUndefined();
+    expect(h.last().actions.map((a) => a.label)).toEqual(['Keep', 'Delete from Storage']);
+  });
+
+  it('Always Keep asks nothing and sends nothing', async () => {
+    const h = harness({ choice: () => 'keep' });
+    await h.offer(['a']);
+    expect(h.check).not.toHaveBeenCalled();
+    expect(h.shown).toHaveLength(0);
+    expect(h.remove).not.toHaveBeenCalled();
+  });
+
+  it('Always Delete deletes after the same checks, with a notice shown whatever the toasts', async () => {
+    const h = harness({ choice: () => 'delete' });
+    await h.offer(['a', 'b']);
+    expect(h.check).toHaveBeenCalledWith(['a', 'b']);
+    expect(h.remove.mock.calls.map((c) => c[0])).toEqual(['a', 'b']);
+    expect(h.last().message).toBe(
+      '2 images weren’t used anywhere else, so they were deleted from storage.',
+    );
+    expect(h.last().important).toBe(true);
+    expect(h.last().actions).toEqual([]);
+
+    const one = harness({ choice: () => 'delete' });
+    await one.offer(['a']);
+    expect(one.last().message).toBe(
+      'The image wasn’t used anywhere else, so it was deleted from storage.',
+    );
+  });
+
+  it('Always Delete still keeps what is used or unsure', async () => {
+    const used = harness({ choice: () => 'delete', check: vi.fn(async () => []) });
+    await used.offer(['a']);
+    expect(used.remove).not.toHaveBeenCalled();
+    expect(used.shown).toHaveLength(0);
+
+    const tabs = harness({
+      choice: () => 'delete',
+      allTabsLoaded: () => false,
+      loadAllTabs: vi.fn(async () => false),
+    });
+    await tabs.offer(['a']);
+    expect(tabs.remove).not.toHaveBeenCalled();
+
+    const failing = harness({
+      choice: () => 'delete',
+      remove: vi.fn(async () => Promise.reject(new Error('x'))),
+    });
+    await failing.offer(['a']);
+    expect(failing.errors).toEqual(['Couldn’t delete the image from storage. Try again.']);
+  });
+
+  it('reads the choice again before the end: a change made meanwhile wins', async () => {
+    let choice: 'ask' | 'keep' | 'delete' = 'ask';
+    const check = vi.fn(async (ids: string[]) => {
+      choice = 'keep';
+      return ids;
+    });
+    const h = harness({ choice: () => choice, check });
+    await h.offer(['a']);
+    expect(h.shown).toHaveLength(0);
+  });
+
+  it('Remember My Choice saves the answer pressed, and only then', async () => {
+    const remember = vi.fn();
+    const h = harness({ remember });
+    await h.offer(['a']);
+    const toggle = h.last().toggle!;
+    expect(toggle.label).toBe('Remember My Choice');
+    expect(toggle.checked).toBeUndefined();
+    toggle.onChange(true);
+    expect(remember).not.toHaveBeenCalled();
+    h.press('Delete from Storage');
+    expect(remember).toHaveBeenCalledWith('delete');
+    await flush();
+    expect(h.remove).toHaveBeenCalledWith('a');
+
+    const k = harness({ remember });
+    await k.offer(['b']);
+    k.last().toggle!.onChange(true);
+    k.press('Keep');
+    expect(remember).toHaveBeenLastCalledWith('keep');
+    expect(k.remove).not.toHaveBeenCalled();
+  });
+
+  it('saves nothing with the switch off, or turned back off', async () => {
+    const remember = vi.fn();
+    const h = harness({ remember });
+    await h.offer(['a']);
+    h.press('Keep');
+    await h.offer(['b']);
+    h.last().toggle!.onChange(true);
+    h.last().toggle!.onChange(false);
+    h.press('Delete from Storage');
+    expect(remember).not.toHaveBeenCalled();
+  });
+});
+
+describe('the stored choice', () => {
+  it('reads Ask unless Delete or Keep is stored, and writes the choice', () => {
+    expect(readUnusedImageChoice({})).toBe('ask');
+    expect(readUnusedImageChoice({ unusedImageChoice: 'nonsense' })).toBe('ask');
+    expect(readUnusedImageChoice({ unusedImageChoice: 'delete' })).toBe('delete');
+    expect(readUnusedImageChoice({ unusedImageChoice: 'keep' })).toBe('keep');
+    expect(withUnusedImageChoice({ other: 1 }, 'keep')).toEqual({
+      other: 1,
+      unusedImageChoice: 'keep',
+    });
   });
 });

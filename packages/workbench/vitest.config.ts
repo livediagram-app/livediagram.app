@@ -21,6 +21,7 @@ const HELD_AT_100 = [
   'src/components/sheet-links/LinkSheetDialog.tsx',
   'src/lib/relative-now.ts',
   // Deleting an unused picture (each canvas product's 009-elements images.md).
+  'src/lib/unused-image-choice.ts',
   'src/lib/unused-image-prompt.ts',
   'src/hooks/editor/useUnusedImagePrompt.ts',
   // Which side a menu flyout opens on (each product's 008-canvas canvas-and-palette.md, Work Tracker 961).

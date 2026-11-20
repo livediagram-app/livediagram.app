@@ -52,6 +52,31 @@ describe('useUnusedImagePrompt', () => {
     expect(screen.getByText('Deleted from storage')).toBeTruthy();
   });
 
+  // images.md "Remember My Choice" and "The setting".
+  it('saves the answer with Remember My Choice on, and Always Keep asks nothing', async () => {
+    const remember = vi.fn();
+    const check = vi.fn(async (ids: string[]) => ids);
+    const { rerender } = render(
+      <ToastProvider>
+        <Editor {...deps({ remember, check })} />
+      </ToastProvider>,
+    );
+    act(() => offer(['img-1']));
+    await settle();
+    fireEvent.click(screen.getByRole('switch', { name: 'Remember My Choice' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Keep: leave the image in storage' }));
+    expect(remember).toHaveBeenCalledWith('keep');
+    rerender(
+      <ToastProvider>
+        <Editor {...deps({ remember, check, choice: () => 'keep' })} />
+      </ToastProvider>,
+    );
+    check.mockClear();
+    act(() => offer(['img-2']));
+    await settle();
+    expect(check).not.toHaveBeenCalled();
+  });
+
   it('asks nothing while it is off (a Participant, a Viewer, a guest, an Offline item)', async () => {
     const check = vi.fn(async (ids: string[]) => ids);
     const { rerender } = render(
