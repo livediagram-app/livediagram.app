@@ -44,7 +44,7 @@ describe('listItemPlaces', () => {
       item('c', 3, 'c', { title: 'C', status: 'done' }),
       // No status, and a status that is no text: both read as none.
       item('d', 4, 'd', { title: 'D' }),
-      item('e', 5, 'e', { title: 'E', status: 7 as never }),
+      item('e', 5, 'e', { title: 'E', status: 7 }),
     ]);
     const places = byId(await listItemPlaces(db.env, 'd1'));
     const whole = byId(await listItems(db.env, 'd1'));
