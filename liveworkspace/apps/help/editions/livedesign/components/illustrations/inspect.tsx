@@ -312,7 +312,7 @@ export function InspectSpacingScene() {
         height={152}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={124} y={32} size={10} weight={700} tone="muted">
         Spacing

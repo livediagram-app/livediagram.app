@@ -11,12 +11,14 @@
 import type { ReactNode } from 'react';
 
 import { Scene, Panel, Label } from '@liveworkspace/help-site/art/primitives';
+import { Strip } from './editor-chrome';
 
 const PX = 60;
 const PW = 300;
 
-/** The palette frame: the header band with the canvas-tool picker on the left
- *  and the category dropdown on the right, naming the open category. */
+/** The palette strip across the top with the open category pressed, and its flyout hanging under it: the
+ *  category's name (after its parent's, for a row's side panel) in the title row, then the body. The scene's right
+ *  edge crops the strip. */
 function PaletteFrame({
   category,
   parent,
@@ -31,61 +33,11 @@ function PaletteFrame({
   sceneH: number;
   children: ReactNode;
 }) {
-  const py = 12;
   return (
-    <Scene w={420} h={sceneH} bg="plain">
-      <Panel x={PX} y={py} w={PW} h={h}>
-        {/* Canvas-tool picker */}
-        <rect
-          x={PX + 10}
-          y={py + 9}
-          width={40}
-          height={22}
-          rx={6}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
-        />
-        <path
-          d={`M${PX + 19} ${py + 14} l7 6 -3.4 0.6 1.8 3.4 -1.5 0.7 -1.8 -3.4 -2.6 2.2 z`}
-          className="fill-slate-500"
-        />
-        <path
-          d={`M${PX + 38} ${py + 18} l3 3 3 -3`}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.4}
-        />
-        {parent ? (
-          <Label x={PX + PW - 138} y={py + 21} size={10} tone="muted" anchor="end">
-            {`${parent} ›`}
-          </Label>
-        ) : null}
-        {/* Category dropdown */}
-        <rect
-          x={PX + PW - 130}
-          y={py + 9}
-          width={120}
-          height={22}
-          rx={6}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
-        />
-        <Label x={PX + PW - 120} y={py + 21} size={11} weight={600} tone="strong">
-          {category}
-        </Label>
-        <path
-          d={`M${PX + PW - 26} ${py + 18} l3 3 3 -3`}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.4}
-        />
-        <line
-          x1={PX}
-          y1={py + 40}
-          x2={PX + PW}
-          y2={py + 40}
-          className="stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        {children}
+    <Scene w={420} h={sceneH + 10}>
+      <Strip x={8} y={8} open={parent ?? category} />
+      <Panel x={PX} y={40} w={PW} h={h - 2} title={parent ? `${parent} › ${category}` : category}>
+        <g transform="translate(0 10)">{children}</g>
       </Panel>
     </Scene>
   );
@@ -119,7 +71,7 @@ function Row({
           height={30}
           rx={7}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
       )}
       <rect
@@ -356,7 +308,7 @@ export function IconsCategory() {
         height={24}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <circle
         cx={left + 13}
@@ -408,7 +360,7 @@ export function IconsCategory() {
               height={cell}
               rx={7}
               className="fill-white stroke-slate-200"
-              strokeWidth={1.2}
+              strokeWidth={0.75}
             />
             <g transform={`translate(${cx + cell / 2} ${cy + cell / 2})`}>
               {glyphs[i % glyphs.length]}

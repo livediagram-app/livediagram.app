@@ -70,7 +70,7 @@ function Tool({ cx, on = false, d }: { cx: number; on?: boolean; d: string }) {
 
 /** A strip divider at `x`. */
 function StripDivider({ x }: { x: number }) {
-  return <line x1={x} y1={16} x2={x} y2={30} className="stroke-slate-200" strokeWidth={1.2} />;
+  return <line x1={x} y1={16} x2={x} y2={30} className="stroke-slate-200" strokeWidth={0.75} />;
 }
 
 // The strip's glyphs, about the tile's centre: Move, Marquee, Lasso, Quick Select (Select); Crop, Eyedropper
@@ -177,7 +177,7 @@ export function PhotoPagesScene() {
         height={15}
         rx={4}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={sx + 269} y={59} size={9} weight={500} anchor="middle">
         Brush Presets
@@ -249,7 +249,7 @@ export function PhotoPagesScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.4}
       />
-      <line x1={470} y1={300} x2={470} y2={324} className="stroke-slate-200" strokeWidth={1.2} />
+      <line x1={470} y1={300} x2={470} y2={324} className="stroke-slate-200" strokeWidth={0.75} />
       <Label x={435} y={312.5} size={9} weight={500} anchor="middle">
         Contents
       </Label>

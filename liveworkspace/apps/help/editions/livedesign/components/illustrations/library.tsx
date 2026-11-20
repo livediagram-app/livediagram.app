@@ -126,7 +126,7 @@ function SavedTile({ x, y, title, kind }: { x: number; y: number; title: string;
         height={70}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {kind === 0 && (
         <g>
@@ -170,7 +170,7 @@ export function LibraryPanelScene() {
         height={226}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <rect
         x={24}
@@ -179,7 +179,7 @@ export function LibraryPanelScene() {
         height={24}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={34} y={37} size={10} tone="muted">
         Search the library
