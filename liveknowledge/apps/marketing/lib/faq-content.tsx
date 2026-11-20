@@ -80,7 +80,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How does verification work?',
-        a: 'Each page has an owner. An Editor presses Verify, and the page shows a green tick with who verified it and when. Every page has a review interval (30, 90, 180 or 365 days, or never), and once it has passed the page reads Review Due until someone verifies it again. Nothing is verified automatically, and a large change made after verifying is marked Changed Since Verified.',
+        a: 'Each page has an owner. An Editor presses Verify, and the page shows a green tick with who verified it and when. The knowledgebase has one Review Period (30, 90, 180 or 365 days, or never), and once it has passed a page reads Review Due until someone verifies it again. Nothing is verified automatically, and a large change made after verifying is marked Changed Since Verified.',
       },
       {
         q: 'Who can verify a page?',

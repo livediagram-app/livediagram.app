@@ -87,7 +87,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Pages that say whether they are still right',
         paragraphs: [
-          'A page in liveknowledge has an owner and shows who verified it and when. Each page has a review interval, and once it passes the page reads Review Due until someone checks it again. The Knowledgebase Home lists the pages you own that are due, oldest first.',
+          'A page in liveknowledge has an owner and shows who verified it and when. The knowledgebase has one Review Period, and once it passes a page reads Review Due until someone checks it again. The Knowledgebase Home lists the pages you own that are due, oldest first.',
           'Notion’s wikis can verify pages too, so this is shared ground. The difference is where it leads: in liveknowledge the same state travels with every passage an answer cites and every passage an agent reads.',
         ],
       },
@@ -158,7 +158,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Knowledge that ages in the open',
         paragraphs: [
-          'Most team knowledge goes stale quietly. In liveknowledge a page’s review comes due after its interval, and the page says so, in the page tree, on the page and on every link to it. Its owner presses Still Right, or fixes it.',
+          'Most team knowledge goes stale quietly. In liveknowledge a page’s review comes due after the knowledgebase’s Review Period, and the page says so, in the page tree, on the page and on every link to it. Its owner presses Still Right, or fixes it.',
           'Knowledge Health shows a whole knowledgebase as one bar: verified, review due and never verified. It is bookkeeping the product already has, so it needs no model and no key.',
         ],
       },
@@ -244,7 +244,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does liveknowledge verify documents like Slite?',
-        a: 'Yes. Each page has an owner, a verified tick with who and when, and a review interval of 30, 90, 180 or 365 days. When it passes, the page reads Review Due.',
+        a: 'Yes. Each page has an owner and a verified tick with who and when, and the knowledgebase has one Review Period of 30, 90, 180 or 365 days. When it passes, a page reads Review Due.',
       },
       {
         q: 'Do I need a Claude or OpenAI key to use it?',
@@ -294,7 +294,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Verification, as a habit',
         paragraphs: [
-          'Guru’s insight is that knowledge needs someone to vouch for it, on a schedule. liveknowledge works the same way: an owner for each page, Verify in one press, and an interval after which the page reads Review Due.',
+          'Guru’s insight is that knowledge needs someone to vouch for it, on a schedule. liveknowledge works the same way: an owner for each page, Verify in one press, and a Review Period after which a page reads Review Due.',
           'A large edit after verifying marks the page Changed Since Verified until someone looks again, so a tick never outlives the words it was given to.',
         ],
       },
@@ -318,7 +318,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'How does verification differ from Guru’s?',
-        a: 'It is the same idea: an owner, a verified state and an interval. In liveknowledge that state is also handed to agents with every passage and shown beside every source an answer cites.',
+        a: 'It is the same idea: an owner, a verified state and a review period. In liveknowledge that state is also handed to agents with every passage and shown beside every source an answer cites.',
       },
       FREE_FAQ,
     ],
@@ -439,7 +439,7 @@ const LIST: Alternative[] = [
         heading: 'Two open tools, two emphases',
         paragraphs: [
           'Outline’s strength is the writing itself: a quick Markdown editor, collections, a clean reading view, and the choice to run it where you like. If that is the whole of what you need, it is a sound choice.',
-          'liveknowledge starts from the same kind of page and asks what happens a year later. Each page has an owner and a review interval, the page tree shows what is due, and Knowledge Health shows the whole picture as one bar.',
+          'liveknowledge starts from the same kind of page and asks what happens a year later. Each page has an owner, the knowledgebase has a Review Period, the page tree shows what is due, and Knowledge Health shows the whole picture as one bar.',
         ],
       },
       AGENTS_SECTION,
