@@ -300,6 +300,13 @@ planView={…}` or a changeset, and the api refuses a range outside 14, 30, 90 a
   lanes off ("+2 more"): always on a Board tab, and on any other tab wherever the grown board covers nothing that
   starts below it (`board-growth.ts`). The stored board keeps its height.
 
+## A listed card says its title and status once
+
+`list_items` (and `item ls --json`) lists each card's `title`, `status` and `column` on the card itself, so its
+`fields` no longer repeat `title` and `status`: every other field is there as before (`statusSince` too). On a
+61-card board that took the answer from 24.8 KB to 20.5 KB. `change_items` is unchanged: it takes a title as
+`title` and a column as `status`, as it did.
+
 ## What a change says
 
 - Each change's line names the card, its column by name, and for a `set` the fields it set and cleared.
@@ -307,6 +314,32 @@ planView={…}` or a changeset, and the api refuses a range outside 14, 30, 90 a
   on no board ("in To Do, but no board with that column takes Bug cards, so none shows it: add Bug to "Kanban" with
   change_board"), so a write never reads as done when no board shows the card.
 - An assignee named for the first time on the project is said to be a new name, not linked to anyone's account.
+
+## Adding many cards
+
+A plan built by an assistant is mostly new cards: a backlog of fifty was fifty requests to the api, fifty ops in
+the room and fifty of the token's 300 writes a minute, 1.5 s measured locally where one card took 48 ms.
+
+- **A run is one write.** The `add` changes that follow one another in a `change_items` call are read and checked
+  as before, then written together: one `POST /api/projects/:id/items/bulk` for the run (`ITEM_BULK_MAX`, 200, at a
+  time), which lands them in one batch and tells the room once. Measured locally, fifty cards took 85 ms and ten
+  took 50 ms. One new card alone goes by the card route, as ever. The cards keep the call's order and their
+  numbers follow it, and the answer still has a line for each.
+- **The order of the call holds.** A change that is not an `add` writes the cards waiting before it runs, so
+  `add, add, set, add` is a run of two, the set, then one card.
+- **A card that names one added before it** in the same call (a Parent, a blocker) cannot be read until that card
+  exists: the cards waiting are written first, and it is read again. If it still cannot be read it is refused, and
+  the answer says which cards landed.
+- **A card naming no column** takes its type's Default State, as the card route gives it (`withDefaultStatuses`,
+  applied to the run before it is sent, since the bulk route places a card only where it is told).
+- **When the bulk route says no.** It is an Editor's, on the whole plan, and answers a refusal without saying which
+  card it is about. So on any refusal from it (a Participant's token, a link scoped to a tab, a field the api
+  refuses, a plan with room for only some of the cards) the run is written a card at a time, exactly as before: a
+  Participant still adds its cards, and a refusal still names its card after the ones before it landed. Nothing was
+  written by the refused request, so nothing is made twice. A fault (5xx) is thrown as ever, and an answer that
+  holds fewer cards than were added is a fault too, never a reason to write again.
+- **Not for the other changes.** A `set`, a `move` and a `delete` each read the card as the changes before them left
+  it, so they stay one write each.
 
 ## Changing card types
 
@@ -551,7 +584,8 @@ Editor of the whole plan: the whole contract is in [Automations](automations.md#
 
 - `list_items` and `change_items` each make at most two api reads (items and plan, in parallel) however many
   changes a call carries; `list_items` works out the fields of only the cards a page lists (and one more), so a
-  page of a large plan costs about what a small plan's whole answer did, then one write per change. `change_card_types` makes those two reads and one catalogue
+  page of a large plan costs about what a small plan's whole answer did, then one write per change, but for new
+  cards, which land a run at a time ("Adding many cards"). `change_card_types` makes those two reads and one catalogue
   write, then one write per card of a deleted type. `add_board` makes three reads (project, plan with items, tab)
   and one changeset.
 - The plan route reads only the tabs that hold a board, in batches (as the project overview does), and returns
