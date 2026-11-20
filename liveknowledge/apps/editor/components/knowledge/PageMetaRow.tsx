@@ -48,7 +48,7 @@ export function PageMetaRowView({
   return (
     <div
       data-page-meta=""
-      className="flex min-h-7 flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-500 dark:text-slate-400"
+      className="flex min-h-7 flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-600 dark:text-slate-400"
     >
       {mark ? (
         <TrustBadge mark={mark} {...(verifiedBy ? { label: `Verified by ${verifiedBy}` } : {})} />
