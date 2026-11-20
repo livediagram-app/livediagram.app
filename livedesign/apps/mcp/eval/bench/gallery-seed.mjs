@@ -40,6 +40,8 @@ export async function seedGalleries(apiDir, wanted) {
     /\/+$/,
     '',
   );
+  // A round with no gallery to seed needs no media service at all.
+  if (wanted.length === 0) return new Map();
   const key = devVar(apiDir, 'MEDIA_KEY');
   if (!key)
     throw new Error("Seeding a gallery needs MEDIA_KEY (the api's .dev.vars, or the environment)");

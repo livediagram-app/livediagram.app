@@ -161,7 +161,13 @@ export function normaliseElement(el: unknown): unknown {
   const [current] = migrateStoredElementsUnsettled([
     el,
   ] as unknown as DocElement[]) as unknown as Raw[];
-  return normaliseContent(withFactoryDefaults(withTextLabel(current!)));
+  return normaliseContent(withFactoryDefaults(withTextLabel(withPicturePlace(current!))));
+}
+
+// An image with no picture named is a placeholder the person fills in the editor, as the element format says: stored
+// with `imageId: null`. An agent that left the field out had its whole page refused ("imageId: a string or null").
+function withPicturePlace(el: Raw): Raw {
+  return el.type === 'image' && el.imageId === undefined ? { ...el, imageId: null } : el;
 }
 
 // A label is text. An agent's number or yes/no (a step labelled 5) is written as its text; anything else is left for
