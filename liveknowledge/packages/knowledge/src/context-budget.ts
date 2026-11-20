@@ -8,7 +8,12 @@ const TOKEN_STEP = 10;
 /** A text's size in tokens as the list shows it: characters / 4, rounded up to 10. No tokenizer and no model
  *  call: an estimate a person can check. */
 export function estimateTokens(text: string): number {
-  return Math.ceil(text.length / CHARS_PER_TOKEN / TOKEN_STEP) * TOKEN_STEP;
+  return tokensOfChars(text.length);
+}
+
+/** The same estimate from a character count, for a caller that keeps the count and not the text. */
+export function tokensOfChars(chars: number): number {
+  return Math.ceil(Math.max(0, chars) / CHARS_PER_TOKEN / TOKEN_STEP) * TOKEN_STEP;
 }
 
 /** Whether a page of `pageTokens` can be added when `usedTokens` of the budget are taken. */

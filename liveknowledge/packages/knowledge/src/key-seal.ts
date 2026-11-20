@@ -82,7 +82,7 @@ export async function openApiKey(secret: string, envelope: string, boundTo = '')
       key,
       fromBase64Url(sealedText),
     );
-    return new TextDecoder('utf-8', { fatal: true }).decode(opened);
+    return new TextDecoder('utf-8', { fatal: true, ignoreBOM: false }).decode(opened);
   } catch {
     // Whatever WebCrypto or the decoding said, the caller learns only that it did not open.
     throw failed();

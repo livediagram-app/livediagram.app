@@ -5,15 +5,17 @@
 export type ClaudeModel = {
   id: string;
   name: string;
-  /** Whether the model takes the server-side `fallbacks` parameter, which answers on another model when a safety
-   *  classifier declines the request (claude-request.ts). Claude Haiku 5.5 rejects it. */
+  /** Whether a request to the model carries the server-side `fallbacks` parameter, which answers on another model
+   *  when a safety classifier declines the request (claude-request.ts). Off for every model: a fallback bills the
+   *  team's own key at another model's rate, and a team must be able to predict what a question costs. A declined
+   *  request is the failure kind `refused` instead. (Claude Haiku 5.5 rejects the parameter in any case.) */
   fallbacks: boolean;
 };
 
 export const CLAUDE_MODELS: readonly ClaudeModel[] = [
-  { id: 'claude-fable-5-2', name: 'Claude Fable 5.2', fallbacks: true },
-  { id: 'claude-opus-5-5', name: 'Claude Opus 5.5', fallbacks: true },
-  { id: 'claude-sonnet-5-5', name: 'Claude Sonnet 5.5', fallbacks: true },
+  { id: 'claude-fable-5-2', name: 'Claude Fable 5.2', fallbacks: false },
+  { id: 'claude-opus-5-5', name: 'Claude Opus 5.5', fallbacks: false },
+  { id: 'claude-sonnet-5-5', name: 'Claude Sonnet 5.5', fallbacks: false },
   { id: 'claude-haiku-5-5', name: 'Claude Haiku 5.5', fallbacks: false },
 ];
 

@@ -56,18 +56,19 @@ describe('a request', () => {
       system: 'Be brief.',
       messages: [{ role: 'user', content: 'Hi' }],
       output_config: { effort: 'low' },
-      fallbacks: 'default',
     });
   });
 
-  it('asks for a fallback only of the models that take one, with its beta header', () => {
-    expect(request('claude-haiku-5-5')).not.toHaveProperty('fallbacks');
-    expect(claudeHeaders(KEY, request('claude-haiku-5-5'))).toEqual({
-      'content-type': 'application/json',
-      'x-api-key': KEY,
-      'anthropic-version': '2026-10-21',
-    });
-    expect(claudeHeaders(KEY, request())['anthropic-beta']).toBe('server-side-fallback-2026-07-01');
+  it('asks no model for a fallback: a declined request is refused, never billed at another model', () => {
+    for (const model of CLAUDE_MODELS) {
+      expect(model.fallbacks, model.id).toBe(false);
+      expect(request(model.id), model.id).not.toHaveProperty('fallbacks');
+      expect(claudeHeaders(KEY, request(model.id)), model.id).toEqual({
+        'content-type': 'application/json',
+        'x-api-key': KEY,
+        'anthropic-version': '2026-10-21',
+      });
+    }
   });
 
   it('fences untrusted text', () => {

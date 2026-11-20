@@ -1,6 +1,16 @@
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
-import { CHANGED_SINCE_MAX_CHARS, changedFraction, changedSinceVerified } from './changed-since';
+import {
+  CHANGED_SINCE_MAX_CHARS,
+  WRITING_PRINT_MAX_SENTENCES,
+  changedFraction,
+  changedFractionSince,
+  changedSincePrint,
+  changedSinceVerified,
+  openWritingPrint,
+  sealWritingPrint,
+  writingPrint,
+} from './changed-since';
 
 const line = (n: number) => `Step ${n} of the process is described in this sentence.`;
 const page = (from: number, count: number) =>
@@ -63,5 +73,60 @@ describe('changed since verified', () => {
       changedFraction(before, after);
     });
     expect(spent).toBeLessThan(cpuBudgetMs(150));
+  });
+});
+
+describe('the print the room keeps at Verify', () => {
+  const before =
+    'Deploys go out on Tuesdays. Ask in the channel first.\nRoll back with one command.';
+
+  it('answers what the two versions would, without the words', () => {
+    const print = openWritingPrint(sealWritingPrint(writingPrint(before)))!;
+    for (const after of [before, `${before} A new line.`, 'Everything is different now.', ''])
+      expect(changedFractionSince(print, after)).toBe(changedFraction(before, after));
+    expect(changedSincePrint(print, before)).toBe(false);
+    expect(changedSincePrint(print, 'Everything is different now.')).toBe(true);
+    expect(sealWritingPrint(writingPrint(before))).not.toContain('Tuesdays');
+  });
+
+  it('counts a sentence written twice twice', () => {
+    const print = writingPrint('Same. Same. Other.');
+    expect(changedFractionSince(print, 'Same. Same. Other.')).toBe(0);
+    expect(changedFractionSince(print, 'Same. Same. Same. Other.')).toBeGreaterThan(0);
+  });
+
+  it('reads anything that is not a print as none', () => {
+    for (const bad of [
+      undefined,
+      7,
+      '',
+      'zz',
+      '-1;',
+      '0;short',
+      '0;abcdefgh',
+      '0;abcdefgh-',
+      '!;x',
+    ])
+      expect(openWritingPrint(bad), String(bad)).toBeUndefined();
+    expect(openWritingPrint('0;')).toEqual({ kept: new Map(), chars: 0, tail: 0 });
+    expect(openWritingPrint('a;abcdefgh5,,')).toEqual({
+      kept: new Map([['abcdefgh', 5]]),
+      chars: 5,
+      tail: 10,
+    });
+  });
+
+  it('holds at most 8,000 sentences, and compares what is past them by its length', () => {
+    const many = 'ab\n'.repeat(WRITING_PRINT_MAX_SENTENCES + 500);
+    const print = writingPrint(many);
+    expect(print.kept.size).toBe(1);
+    expect(print.chars).toBe(WRITING_PRINT_MAX_SENTENCES * 2);
+    // The line break after the last sentence measured, then 500 more lines.
+    expect(print.tail).toBe(500 * 3 + 1);
+    expect(changedFractionSince(print, many)).toBe(0);
+    expect(changedFractionSince(print, many + 'ab\n'.repeat(4_000))).toBeGreaterThan(0.2);
+    // The stored form stays small whatever the page holds: about 13 bytes a distinct sentence.
+    const distinct = Array.from({ length: 20_000 }, (_, i) => `s${i}`).join('\n');
+    expect(sealWritingPrint(writingPrint(distinct)).length).toBeLessThan(120_000);
   });
 });

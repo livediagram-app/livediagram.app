@@ -8,6 +8,7 @@
 import {
   MAX_ARTICLE_BLOCK_TEXT,
   nextArticleBlockId,
+  pageOfRun,
   type ArticleBlock,
   type ArticleFlow,
   type ArticleRun,
@@ -25,6 +26,7 @@ import {
   withFootnoteRefs,
 } from './article-markdown';
 import { articleRunsText } from './article-footnotes';
+import { pageLinkMarkdown } from './article-page-links';
 import { articleTableText, type ArticleTableBlock } from './article-table';
 
 // The most Markdown one write takes: 5,000 blocks of ~80 characters, far inside a tab's row.
@@ -203,6 +205,9 @@ const encodeWhiteSpace = (href: string) =>
 const escapeHref = (href: string) => encodeWhiteSpace(href.replace(/[\\()]/g, '\\$&'));
 
 function runMarkdown(run: ArticleRun): string {
+  // A page link is written `[[Title]]`, the form articleFromMarkdown's caller resolves back to the page
+  // (article-page-links.ts): its own marks are not written, since the brackets hold a title, never Markdown.
+  if (pageOfRun(run)) return pageLinkMarkdown(run.text);
   // Inline code keeps its other marks around it (a linked or bold `npm i`): they were dropped with the code's text
   // alone written. A line break inside a heading or code reads back as a space (a body paragraph's, a quote's or a
   // list item's is held as LINE_BREAK and written as a hard break, brokenMarkdown).
@@ -225,7 +230,8 @@ function runsMarkdown(runs: readonly ArticleRun[], notes: string[]): string {
       const fn = run.fn;
       if (fn !== undefined) return Array.from(run.text, () => `[^${notes.push(fn)}]`).join('');
       // Code keeps its edge spaces inside its span (codeSpan pads it so they read back).
-      if (run.code || (!run.b && !run.i && !run.s && !run.href)) return runMarkdown(run);
+      if (pageOfRun(run) || run.code || (!run.b && !run.i && !run.s && !run.href))
+        return runMarkdown(run);
       // trimStart/trimEnd, not `/\s*$/`: that regex retries from every offset, quadratic in spaces.
       const lead = run.text.slice(0, run.text.length - run.text.trimStart().length);
       const tail = run.text.slice(run.text.trimEnd().length);

@@ -4,6 +4,7 @@ import {
   assembleContext,
   estimateTokens,
   fitsContextBudget,
+  tokensOfChars,
 } from './context-budget';
 
 const page = (id: string, chars: number) => ({
@@ -44,5 +45,13 @@ describe('the context budget', () => {
     expect(context.leftOut).toEqual([{ id: 'c', title: 'Page c', tokens: 3000 }]);
     expect(assembleContext([])).toEqual({ pages: [], tokens: 0, leftOut: [] });
     expect(assembleContext([page('a', 400)], 50).leftOut).toHaveLength(1);
+  });
+});
+
+describe('the estimate from a character count', () => {
+  it('is the text estimate, and nothing for a count below zero', () => {
+    expect(tokensOfChars(41)).toBe(estimateTokens('x'.repeat(41)));
+    expect(tokensOfChars(0)).toBe(0);
+    expect(tokensOfChars(-5)).toBe(0);
   });
 });

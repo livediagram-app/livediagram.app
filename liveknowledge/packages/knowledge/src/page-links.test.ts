@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { code, flowOf, para, runsBullet, runsPara, table } from './__fixtures__/writing';
 import {
   MAX_PAGE_LINKS,
+  MAX_PAGE_LINK_ID,
   PAGE_LINK_KEY,
   backlinks,
   isPageLinkRun,
@@ -52,5 +53,19 @@ describe('backlinks', () => {
       backlinks('tab-1', ['tab-4', 'tab-1', 'tab-2', 'gone'], ['tab-1', 'tab-2', 'tab-3', 'tab-4']),
     ).toEqual(['tab-2', 'tab-4']);
     expect(backlinks('tab-1', [], ['tab-1', 'tab-2'])).toEqual([]);
+  });
+});
+
+// The article model keeps the run's field itself (it cannot import this package, which reads its types): the two
+// names for the key and for the id's length are one.
+describe('the page link key', () => {
+  it('is the one the article model stores', async () => {
+    const model = await import('@liveknowledge/document');
+    expect(PAGE_LINK_KEY).toBe(model.ARTICLE_PAGE_LINK_KEY);
+    expect(MAX_PAGE_LINK_ID).toBe(model.MAX_PAGE_LINK_ID);
+    const flow = model.parseArticleFlow({
+      blocks: [{ id: 'b1', type: 'paragraph', runs: [{ text: 'Deploys', page: 'deploys' }] }],
+    });
+    expect(pageLinkTargets(flow)).toEqual(['deploys']);
   });
 });

@@ -195,8 +195,8 @@ describe('the request Ask sends', () => {
       stream: true,
       system: ASK_SYSTEM,
       output_config: { effort: 'medium' },
-      fallbacks: 'default',
     });
+    expect(request).not.toHaveProperty('fallbacks');
     expect(request.messages).toEqual([
       { role: 'user', content: askMessage('When do we deploy?', passages) },
     ]);

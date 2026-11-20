@@ -10,6 +10,16 @@ import type { TabId, TextSize } from '@liveworkspace/model-core/basics';
 import type { BackgroundPattern } from './retired-patterns';
 import type { Element } from './element-union';
 
+/** A page's knowledge fields as stored. Every one is optional: absent is no owner, never verified, a review every
+ *  90 days, not in context. */
+export type TabKnowledge = {
+  owner?: string;
+  verifiedAt?: number;
+  verifiedBy?: string;
+  reviewEvery?: 30 | 90 | 180 | 365 | 'never';
+  context?: true;
+};
+
 export type Tab = {
   id: TabId;
   name: string;
@@ -18,6 +28,11 @@ export type Tab = {
   // or one that would close a cycle (read via `pageParents`, page-tree.ts). Stored in the tab's body and synced in
   // a `tab-meta` patch, as its name is.
   parent?: TabId;
+  // The page's knowledge fields (docs/specs/030-knowledgebase/verification.md "The fields", ai-knowledge.md "Always
+  // in Context"): who vouches for it, when they last did, how often it is reviewed, and whether every agent is
+  // handed it. Written only by the api's knowledge routes (Verify, the Page Health card), read through
+  // `parseKnowledgeFields` (@liveknowledge/knowledge), and synced in a `tab-meta` patch, as the name is.
+  knowledge?: TabKnowledge;
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).

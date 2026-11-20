@@ -26,6 +26,7 @@ import {
   type ArticleStyle,
   type ArticleZoneBlock,
   type Tab,
+  withPageLinksResolved,
 } from '@liveknowledge/document';
 import { enterPages, type PagesIds } from './enter';
 import { kindNotOffered } from './page-changes';
@@ -43,6 +44,9 @@ export function applyArticleWrite(
   tab: Tab,
   write: ArticleWrite,
   ids: PagesIds = {},
+  // The knowledgebase's pages by title (`pageByTitleIn`, @liveknowledge/document): given, each `[[Title]]` in the
+  // Markdown becomes a link to that page (docs/specs/030-knowledgebase/links-and-embeds.md "Page links").
+  links?: { pageByTitle: (title: string) => string | undefined },
 ): ArticleWriteOutcome {
   const locked = enterPages(tab);
   if (locked) return locked;
@@ -103,7 +107,11 @@ export function applyArticleWrite(
     );
 
   // The writing.
-  const read = articleFromMarkdown(write.markdown, doc);
+  const parsed = articleFromMarkdown(write.markdown, doc);
+  const read =
+    links && 'blocks' in parsed
+      ? { ...parsed, blocks: withPageLinksResolved(parsed.blocks, links.pageByTitle) }
+      : parsed;
   if ('tooLong' in read)
     return refuse(
       'article_too_large',

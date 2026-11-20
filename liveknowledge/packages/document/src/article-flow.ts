@@ -69,6 +69,16 @@ export type ArticleRun = {
   fn?: string;
 };
 
+/** A run that links to another page of the same knowledgebase (docs/specs/030-knowledgebase/links-and-embeds.md
+ *  "Page links"): `page` is that page's tab id (ARTICLE_PAGE_LINK_KEY, article-page-links.ts). A run links to a page
+ *  or to an address, never both: the page wins. Kept apart from `ArticleRun`'s own fields, so code that lists a
+ *  run's marks by its keys is not handed one that is no mark; read it with `pageOfRun`. */
+export type ArticlePageLinkRun = ArticleRun & { page: string };
+
+/** The page a run links to, or undefined for a run that is no page link. */
+export const pageOfRun = (run: ArticleRun): string | undefined =>
+  (run as Partial<ArticlePageLinkRun>).page;
+
 /** A run's formatting. */
 export type ArticleRunFormat = Pick<
   ArticleRun,
@@ -216,6 +226,10 @@ const legacySuggestionKind = (v: unknown): 'ins' | 'del' | 'fmt' | null => {
   return k === 'ins' || k === 'del' || k === 'fmt' ? k : null;
 };
 
+/** A tab id a page link may hold: an article id (what a tab's id is), at most MAX_PAGE_LINK_ID characters. */
+export const MAX_PAGE_LINK_ID = 64;
+export const isPageLinkId = (v: unknown): v is string => isId(v) && v.length <= MAX_PAGE_LINK_ID;
+
 function parseRun(v: unknown): ArticleRun | undefined {
   const r = v as Record<string, unknown> | null;
   if (!r || typeof r !== 'object' || typeof r.text !== 'string' || r.text.length === 0)
@@ -224,7 +238,8 @@ function parseRun(v: unknown): ArticleRun | undefined {
   for (const flag of RUN_FLAGS) if (r[flag] === true) run[flag] = true;
   // Superscript and subscript are one or the other.
   if (run.sup && run.sub) delete run.sub;
-  if (isSafeArticleHref(r.href)) run.href = r.href.trim();
+  if (isPageLinkId(r.page)) (run as ArticlePageLinkRun).page = r.page;
+  else if (isSafeArticleHref(r.href)) run.href = r.href.trim();
   if (isArticleHex(r.color)) run.color = r.color;
   if (isArticleHex(r.hl)) run.hl = r.hl;
   if (isId(r.note)) {
@@ -236,6 +251,8 @@ function parseRun(v: unknown): ArticleRun | undefined {
   if (legacy === 'ins') return undefined;
   if (legacy === 'fmt') {
     const kept: ArticleRun = { text: run.text };
+    const page = pageOfRun(run);
+    if (page) (kept as ArticlePageLinkRun).page = page;
     if (run.note) kept.note = run.note;
     if (run.nk) kept.nk = run.nk;
     if (run.fn !== undefined) kept.fn = run.fn;
@@ -247,6 +264,7 @@ function parseRun(v: unknown): ArticleRun | undefined {
 const sameFormat = (a: ArticleRun, b: ArticleRun): boolean =>
   RUN_FLAGS.every((f) => a[f] === b[f]) &&
   a.href === b.href &&
+  pageOfRun(a) === pageOfRun(b) &&
   a.color === b.color &&
   a.hl === b.hl &&
   a.note === b.note &&
