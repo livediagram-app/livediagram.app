@@ -319,3 +319,98 @@ describe('what Submit can be told', () => {
     );
   });
 });
+
+// Clear Answer and the limit on a text answer (forms.md "Filling in a form").
+describe('answers that can be taken back, and text near its limit', () => {
+  const PICKS: PublicForm = {
+    heading: 'Feedback',
+    confirmation: 'Thanks',
+    sections: [
+      {
+        id: 's-1',
+        title: '',
+        questions: [
+          { id: 'q-size', type: 'single', prompt: 'Size', options: ['S', 'M'] },
+          {
+            id: 'q-must',
+            type: 'single',
+            prompt: 'Colourway',
+            options: ['Crimson', 'Navy'],
+            required: true,
+          },
+          {
+            id: 'q-drop',
+            type: 'single',
+            prompt: 'Country',
+            options: ['UK', 'FR'],
+            dropdown: true,
+          },
+          { id: 'q-stars', type: 'rating', prompt: 'Stars', scale: 5, style: 'stars' },
+          { id: 'q-hue', type: 'colour', prompt: 'Hue' },
+          { id: 'q-note', type: 'short', prompt: 'Note' },
+          { id: 'q-tick', type: 'checkbox', prompt: 'Agree' },
+        ],
+      },
+    ],
+  };
+  // What Submit sent, once it has.
+  const sentAnswers: { now: Record<string, unknown> | null } = { now: null };
+  const open = () => {
+    sentAnswers.now = null;
+    render(
+      <FormFill
+        form={PICKS}
+        submit={async (state): Promise<SubmitOutcome> => {
+          sentAnswers.now = state.answers;
+          return { kind: 'sent' };
+        }}
+        draftKey={null}
+      />,
+    );
+  };
+  const clear = (prompt: string) =>
+    screen.queryByRole('button', { name: `Clear Answer: ${prompt}` });
+
+  it('offers Clear Answer only once an optional pick is made, and takes the pick back', async () => {
+    open();
+    expect(screen.queryByRole('button', { name: /^Clear Answer/ })).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: 'M' }));
+    fireEvent.click(screen.getByRole('radio', { name: '4 stars of 5' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Teal' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Crimson' }));
+    fireEvent.change(screen.getByLabelText(/^Country/), { target: { value: 'UK' } });
+    fireEvent.change(screen.getByLabelText(/^Note/), { target: { value: 'Hi' } });
+    fireEvent.click(screen.getByRole('checkbox'));
+    // A required pick, a dropdown (it has Choose…), text and a tick box have no Clear Answer.
+    expect(screen.getAllByRole('button', { name: /^Clear Answer/ })).toHaveLength(3);
+    fireEvent.click(clear('Size')!);
+    expect(screen.getByRole<HTMLInputElement>('radio', { name: 'M' }).checked).toBe(false);
+    expect(clear('Size')).toBeNull();
+    // Focus goes back to the question's first choice, not to the page.
+    expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'S' }));
+    fireEvent.click(clear('Stars')!);
+    expect(document.activeElement).toBe(screen.getByRole('radio', { name: '1 star of 5' }));
+    fireEvent.click(clear('Hue')!);
+    expect(screen.queryByRole('button', { name: /^Clear Answer/ })).toBeNull();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    });
+    const sent = sentAnswers.now!;
+    expect(sent['q-size']).toBe('');
+    expect(sent['q-stars']).toBeUndefined();
+    expect(sent['q-hue']).toBeUndefined();
+    expect(sent['q-must']).toBe('Crimson');
+  });
+
+  it('counts a text answer as it nears its limit, and says so at the limit', () => {
+    open();
+    const note = screen.getByLabelText(/^Note/);
+    fireEvent.change(note, { target: { value: 'a'.repeat(100) } });
+    expect(screen.queryByText(/of 200 characters/)).toBeNull();
+    fireEvent.change(note, { target: { value: 'a'.repeat(170) } });
+    expect(screen.getByText('170 of 200 characters')).toBeTruthy();
+    fireEvent.change(note, { target: { value: 'a'.repeat(200) } });
+    expect(screen.getByText('200 of 200 characters: nothing more is kept')).toBeTruthy();
+    expect(screen.getByRole('status').textContent).toContain('Character limit reached');
+  });
+});
