@@ -58,6 +58,14 @@ describe('toastFloor', () => {
     expect(toastFloor({ viewportWidth: 1280, viewportHeight: 800, obstacles })).toBe(TOAST_EDGE_PX);
   });
 
+  it('stands above a popover risen from the bottom chrome, however high it reaches', () => {
+    // A phone's Timer popover off the Session strip: its top above the middle, its foot on the cluster.
+    const popover = { ...rect(94, 137, 288, 386), rises: true };
+    expect(toastFloor({ viewportWidth: 390, viewportHeight: 664, obstacles: [popover] })).toBe(
+      664 - 137 + TOAST_FLOOR_GAP_PX,
+    );
+  });
+
   it('names the editor and Explorer bottom chrome', () => {
     for (const hook of [
       'data-toast-floor',

@@ -59,8 +59,7 @@ take `md`; the rest `sm`. A retry link or button beside the box becomes its `act
 
 ## Tests
 
-| What                                                | Where                                                                    |
-| --------------------------------------------------- | ------------------------------------------------------------------------ |
-| Tones, sizes, title, action, close, roles, floating | `packages/ui/src/callout/Callout.test.tsx`                               |
-| Nothing in view: one line, Show All fits            | `packages/workbench/src/components/canvas/OffscreenContentHint.test.tsx` |
-| Every callout is the component (no hand-tinted box) | `packages/ui/src/callout/callout-guard.test.ts`                          |
+| What                                                | Where                                           |
+| --------------------------------------------------- | ----------------------------------------------- |
+| Tones, sizes, title, action, close, roles, floating | `packages/ui/src/callout/Callout.test.tsx`      |
+| Every callout is the component (no hand-tinted box) | `packages/ui/src/callout/callout-guard.test.ts` |

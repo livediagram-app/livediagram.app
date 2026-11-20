@@ -80,7 +80,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const hidden = useSyncExternalStore(subscribeVisibility, pageHidden, onServer);
-  const leaving = toast.leaving === true;
+  const leaving = !!toast.leaving;
   const card = useRef<HTMLDivElement>(null);
   // Collapsing into the footer's bell (toast-collapse.ts): its own animation decides when the toast is removed, and
   // the card's `toast-out` ending first is ignored.
@@ -89,7 +89,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
     on.expire(toast.id),
   );
   useLayoutEffect(() => {
-    if (!leaving || !card.current) return;
+    if (!toast.leaving || toast.leaving === 'closed' || !card.current) return;
     const motion = collapseIntoBell(card.current);
     if (!motion) return;
     collapsing.current = true;
@@ -98,7 +98,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
       () => {},
     );
     return () => motion.cancel();
-  }, [leaving, on, toast.id]);
+  }, [toast.leaving, on, toast.id]);
   // The fallback for an exit whose end never comes (a hidden tab, a test environment).
   useEffect(() => {
     if (!leaving) return;

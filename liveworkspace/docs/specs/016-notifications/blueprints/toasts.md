@@ -34,7 +34,7 @@ The bell is drawn by each editor's `components/chrome/ChromeControls.tsx` (after
   **State**: `live` (on screen), `missed` (left unseen), `seen`. **Scope**: the list a record is in.
 - **Bell**: the footer button, found by `[data-toast-bell]`.
 - **Floor**: the stack's CSS `bottom`, in px. **Obstacle**: an element matched by `TOAST_FLOOR_SELECTOR`.
-- **Leaving**: an entry dismissed but still playing its exit (`leaving: true`).
+- **Leaving**: an entry dismissed but still playing its exit (`leaving` set: how it left, `ToastLeft`, or `true`).
 
 ## Behaviour and state
 
@@ -52,7 +52,9 @@ which entry it became (new, or the keyed one upserted in place) and records that
   `missed` and goes no further.
 - A plain toast's `options.action` becomes its one action, wrapped to retire the toast (seen) after it runs. An action
   toast's actions are wrapped to settle its record `seen` before they run; the toast stays (its feature dismisses it).
-- Close (button, Escape): `onDismiss?.()` once, then the offer's decline when it is an offer; settled `seen`.
+- Close (button, Escape): `onDismiss?.()` once, then the offer's decline when it is an offer; its record is
+  removed (`settleToast(id, 'closed')`) and the entry left `leaving: 'closed'`, so it fades in place instead of
+  collapsing into the bell.
 - Expire: settled `missed`. Retired by the limit: `missed`. `dismissAction(key)`: `seen` (NT4).
 
 Nesting: `ToastProvider` reads its own context; when an outer provider is there it renders its children alone, so
@@ -79,7 +81,7 @@ bell reads it with `useSyncExternalStore` wherever it is drawn, inside the provi
   one. A `missed` toast under a key updates that key's last record when it is `missed` and under
   `TOAST_HISTORY_MERGE_MS` old (NT1). Keeps the last `TOAST_HISTORY_LIMIT`.
 - Record ids: `<page start in base 36>-<toast id>`, unique across reloads.
-- `settleToast(id, state)` changes a `live` record only. `markToastHistorySeen()` turns every `missed` into `seen`
+- `settleToast(id, state)` changes a `live` record only; `closed` removes it (a closed toast). `markToastHistorySeen()` turns every `missed` into `seen`
   (opening the list). `clearToastHistory()` empties the scope. `hasMissedToast(records)` is the dot.
 - Read back: `parseToastRecords` keeps well-formed records only; a `live` record from an earlier page is `missed`
   (NT2).
@@ -169,7 +171,11 @@ dark:ring-slate-900`.
 
 `TOAST_FLOOR_SELECTOR`: `[data-toast-floor], [data-start-footer], [data-editor-tabbar], [data-zoom-cluster],
 [data-whiteboard-dock]`. The Explorer bottom bar and the sign-in banner's card carry `data-toast-floor`; a template
-start's foot row carries `data-start-footer`, and `setStartPanelOpen` announces the floor change.
+start's foot row carries `data-start-footer`, and `setStartPanelOpen` announces the floor change. A workbench
+`MovablePanel` popover opened up from a bottom button (`popoverAnchor.bottom` set) carries
+`data-toast-floor="popover"` (`TOAST_FLOOR_POPOVER`) while open and announces the floor change as it opens and closes;
+`useToastFloor` marks it (`rises`, by `TOAST_RISEN_SELECTOR`) and `toastFloor` keeps such a floor even when its top
+reaches above the middle of the screen.
 
 `toastPlacement()` gives the stack its `bottom` and, from 640px, a `right`: the bottom-right cluster
 (`TOAST_SIDE_SELECTOR`, `[data-zoom-cluster]`) that intrudes on the centred column (576px) is taken as a side, not a

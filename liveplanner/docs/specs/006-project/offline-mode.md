@@ -228,8 +228,8 @@ not worked on, and then the tab as loaded.
   waiting content's reveal holds back the next. A returning open has that code in its HTTP cache. The sign-in bridge
   mounts as its code lands (the shared `AuthProvider`), so nothing the paint shows holds back auth, and a warm open
   is editable no later than a cold one.
-- **The board holds its place.** The paint draws, inert, the strips the reader's kept role will show once the
-  catch-up gives it back: an Editor's example cards notice and an Editor's or Participant's card type chips. The
+- **The board holds its place.** The paint draws, inert, the card type chips the reader's kept role will show once
+  the catch-up gives it back (an Editor's or a Participant's). The example cards toast floats, so it takes no room. The
   catch-up then makes them work without moving the columns under the reader. A Viewer's copy draws neither, so no
   gap is left; a role lowered since the copy was kept takes them away at the catch-up, the one case the board moves.
 - **The ordinary load catches up** behind it, unchanged: auth, the participant, the plan, the first tab and then

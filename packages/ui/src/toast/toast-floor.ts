@@ -12,7 +12,7 @@ export const BOTTOM_CHROME_SELECTOR =
   '[data-editor-tabbar], [data-zoom-cluster], [data-whiteboard-dock]';
 
 /** Bottom chrome the stack clears: the editor's, a template start's foot row (the Save switch, on a phone sheet), plus
- *  anything that opts in with `data-toast-floor`. */
+ *  anything that opts in with `data-toast-floor` (the sign-in banner, a popover opened up from the bottom chrome). */
 export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], [data-start-footer], ${BOTTOM_CHROME_SELECTOR}`;
 
 /** The stack's distance from the bottom edge with nothing beneath it, and from the screen's sides on a phone. */
@@ -34,7 +34,23 @@ export function announceToastFloorChange(): void {
   if (typeof window !== 'undefined') window.dispatchEvent(new Event(TOAST_FLOOR_CHANGED_EVENT));
 }
 
-export type FloorRect = { top: number; left: number; right: number; width: number; height: number };
+/**
+ * Marks a popover risen from the bottom chrome (`data-toast-floor="popover"`): a floor while it is open, however high it
+ * reaches, since its foot stands on that chrome.
+ */
+export const TOAST_FLOOR_POPOVER = 'popover';
+/** A popover risen from the bottom chrome, among the measured floors. */
+export const TOAST_RISEN_SELECTOR = `[data-toast-floor=${TOAST_FLOOR_POPOVER}]`;
+
+export type FloorRect = {
+  top: number;
+  left: number;
+  right: number;
+  width: number;
+  height: number;
+  // Risen from the bottom chrome (TOAST_FLOOR_POPOVER): a floor even with its top above the middle of the screen.
+  rises?: boolean;
+};
 
 /**
  * The CSS `bottom`, in px, of a centred column (the toast stack, or the sign-in banner with its own `columnWidth`)
@@ -57,7 +73,8 @@ export function toastFloor(input: {
   let floor = TOAST_EDGE_PX;
   for (const r of input.obstacles) {
     if (r.width <= 0 || r.height <= 0) continue; // hidden, or mounted with nothing in it
-    if (r.top >= h || r.top < h / 2) continue; // off screen, or not bottom chrome (a dock moved to the top)
+    if (r.top >= h) continue; // off screen
+    if (r.top < h / 2 && !r.rises) continue; // not bottom chrome (a dock moved to the top)
     if (r.right <= left || r.left >= right) continue; // beside the column, not beneath it
     floor = Math.max(floor, h - r.top + TOAST_FLOOR_GAP_PX);
   }

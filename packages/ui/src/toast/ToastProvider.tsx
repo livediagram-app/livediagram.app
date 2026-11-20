@@ -18,6 +18,7 @@ import {
   type ToastAction,
   type ToastActionSpec,
   type ToastEntry,
+  type ToastLeft,
   type ToastOffer,
   type ToastTone,
 } from './toast-queue';
@@ -131,9 +132,9 @@ function ToastRoot({ children, quiet = neverQuiet, historyScope }: ToastProvider
 
   // Mark leaving, and settle what left in the list: `seen` when the person closed or answered it, else `missed`.
   const retire = useCallback(
-    (match: (t: ToastEntry) => boolean, state: 'missed' | 'seen') => {
+    (match: (t: ToastEntry) => boolean, state: ToastLeft) => {
       const before = list.current;
-      const next = retireToasts(before, match);
+      const next = retireToasts(before, match, state);
       settleRetired(before, next, state, scope());
       commit(next);
     },
@@ -246,20 +247,20 @@ function ToastRoot({ children, quiet = neverQuiet, historyScope }: ToastProvider
   );
 
   const on = useMemo<ToastAnswers>(() => {
-    // An offer is answered once: the toast leaves first, then its callback runs.
-    const answer = (entry: ToastEntry, confirm: boolean) => {
+    // An offer is answered once: the toast leaves first, then its callback runs. A closed toast fades where it is
+    // and leaves the notification list.
+    const answer = (entry: ToastEntry, confirm: boolean, left?: 'closed') => {
       if (entry.leaving) return;
-      retire((t) => t.id === entry.id, 'seen');
+      if (left) entry.onDismiss?.();
+      retire((t) => t.id === entry.id, left ?? 'seen');
       if (!entry.offer) return;
       if (confirm) entry.offer.onConfirm();
       else entry.offer.onDecline();
     };
     return {
       answer,
-      close: (entry) => {
-        if (!entry.leaving) entry.onDismiss?.();
-        answer(entry, false);
-      },
+      // Closing is dismissing: answered as dismissed, through the same path as an offer.
+      close: (entry) => answer(entry, false, 'closed'),
       expire: (id) => retire((t) => t.id === id, 'missed'),
       remove: (id) => commit(list.current.filter((t) => t.id !== id)),
     };
@@ -277,7 +278,7 @@ function ToastRoot({ children, quiet = neverQuiet, historyScope }: ToastProvider
 function settleRetired(
   before: ToastEntry[],
   next: ToastEntry[],
-  state: 'missed' | 'seen',
+  state: ToastLeft,
   scope: string,
 ): void {
   if (next === before) return;

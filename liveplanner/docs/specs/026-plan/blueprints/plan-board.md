@@ -323,7 +323,7 @@ phone-swipe.ts           pure: a phone board's sideways swipe (plan-board.md "A 
                          keeps Add Card Type off; the projection and usePlanBoardDrop run over
                          `slotSetup(setup)` (slot-board.ts: one row, so a lane-free move) with no quick filter (`applied`
                          is NO_QUICK); SlotBoardHeader replaces PlanBoardHeader and SlotColumnHeader replaces
-                         PlanColumnHeader; ExampleCardsNotice and each cell's Add card row are not drawn. Maximised
+                         PlanColumnHeader; ExampleCardsToast raises nothing and each cell's Add card row is not drawn. Maximised
                          from the slot all of it returns, the cog SlotBoardCog (PlanBoardSectionsPanel + slot
                          sections) for an Editor. Cards, drag, the card menu, SetupBoardHost and counts keep
                          `canEdit`/`canEditCards` as on a Board tab
@@ -1145,8 +1145,8 @@ slot)`; the Trash calls `onTrash` for each id as one `trashItems`; outside the b
   card changes row) and an Archive board's restore (`clear: ['archived']`). A drop onto an Archive board patches
   `archived: true` on them all (one `patches`). One `plan.moveItems(moves)` write; `track('Plan', 'Moved',
 'Cards')`; announced "3 cards moved to Done".
-- **Bar** (`components/plan/BoardSelectionBar.tsx`, drawn by `PlanBoardView` straight under the header, before
-  `ExampleCardsNotice`, `data-selection-bar`; its pickers in `SelectionBarMenus.tsx`): count
+- **Bar** (`components/plan/BoardSelectionBar.tsx`, drawn by `PlanBoardView` straight under the header,
+  `data-selection-bar`; its pickers in `SelectionBarMenus.tsx`): count
   ("3 cards selected", `aria-live="polite"`), then the actions, each an icon button with a tooltip, labelled beside
   the icon from a header `SELECTION_BAR_LABELS_PX` (560 px) wide (`@container`), opening `AnchoredPopover` menus of
   option rows where they pick. The patches each action writes come from pure builders in

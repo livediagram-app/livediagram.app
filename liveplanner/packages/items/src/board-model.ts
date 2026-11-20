@@ -178,7 +178,7 @@ export function isFlagged(item: Item): boolean {
 }
 
 // An example card (docs/specs/026-plan/items.md "Example cards"): one a Plan template made to show how its boards run,
-// until Clear Example Cards trashes it or Keep Them takes the flag off.
+// until Clear on the example cards toast trashes it.
 export const EXAMPLE_FIELD = 'example';
 export function isExampleItem(item: Item): boolean {
   return item.fields[EXAMPLE_FIELD] === true;
