@@ -26,6 +26,7 @@ vi.mock(
 let w: GithubWorld;
 let logged: string[];
 beforeEach(async () => {
+  jar = [];
   logged = [];
   for (const level of ['info', 'warn', 'log', 'error', 'debug'] as const)
     vi.spyOn(console, level).mockImplementation((...args: unknown[]) => {
@@ -38,9 +39,16 @@ afterEach(() => {
   endRepeatWorld();
 });
 
+// The starter's browser: the cookies a connect's start set, sent back with the callback as a browser would.
+let jar: string[];
 async function start(): Promise<string> {
   const res = await w.as('owner', 'POST', '/github/connect');
   expect(res.status).toBe(201);
+  const set = res.headers.get('Set-Cookie')!;
+  expect(set).toMatch(
+    /^lp_github_connect_[0-9a-f]{16}=[\w-]{43}; HttpOnly; Secure; SameSite=Lax; Path=\/api\/github\/callback; Max-Age=600$/,
+  );
+  jar.push(set.split(';')[0]!);
   const { url } = await res.json<GithubConnectStartResponse>();
   const u = new URL(url);
   expect(`${u.origin}${u.pathname}`).toBe(
@@ -49,9 +57,11 @@ async function start(): Promise<string> {
   return u.searchParams.get('state')!;
 }
 
-const callback = (query: Record<string, string>) =>
+const callback = (query: Record<string, string>, cookies: readonly string[] = jar) =>
   w.raw(
-    new Request(`https://api.test/api/github/callback?${new URLSearchParams(query).toString()}`),
+    new Request(`https://api.test/api/github/callback?${new URLSearchParams(query).toString()}`, {
+      headers: cookies.length ? { Cookie: cookies.join('; ') } : {},
+    }),
   );
 
 const back = async (state: string, extra: Record<string, string> = {}) => {
@@ -109,6 +119,43 @@ describe('the round trip', () => {
       expect(text).not.toContain(secret);
     expect(logged.join('\n')).not.toContain('gho_person_token');
     expect(logged.join('\n')).not.toContain('code123');
+  });
+
+  // The link to GitHub can be sent to anyone, and whoever finishes it brings their own installation: only the
+  // browser that started the connect may finish it (github-pull-requests.md "How").
+  it('connects nothing when the callback comes from another browser than the one that started', async () => {
+    const state = await start();
+    const query = { state, code: 'code123', installation_id: '7', setup_action: 'install' };
+    const failed = 'https://www.liveplanner.app/project/A#github=failed';
+    const [name, value] = jar[0]!.split('=') as [string, string];
+    const others = [
+      [],
+      ['other=1'],
+      [`${name}=${'x'.repeat(43)}`],
+      [`${name}=${value.slice(0, 42)}`],
+      [`lp_github_connect_0000000000000000=${value}`],
+    ];
+    for (const cookies of others) {
+      expect((await callback(query, cookies)).headers.get('Location')).toBe(failed);
+    }
+    expect(await view()).toBeNull();
+    // A browser with no cookie never spends the state: the starter still finishes.
+    expect(w.ghCalls).toEqual([]);
+    const done = await callback(query);
+    expect(done.headers.get('Location')).toBe(
+      'https://www.liveplanner.app/project/A#github=connected',
+    );
+    expect(done.headers.get('Set-Cookie')).toBe(
+      `${name}=; HttpOnly; Path=/api/github/callback; Max-Age=0`,
+    );
+  });
+
+  it('keeps two connects started at once apart', async () => {
+    const first = await start();
+    const second = await start();
+    expect(new Set(jar.map((c) => c.split('=')[0])).size).toBe(2);
+    expect(await back(second)).toBe('https://www.liveplanner.app/project/A#github=connected');
+    expect(await back(first)).toBe('https://www.liveplanner.app/project/A#github=connected');
   });
 
   it('spends the state once: the same callback again fails and changes nothing', async () => {
