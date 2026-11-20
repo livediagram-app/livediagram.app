@@ -101,14 +101,14 @@ describe('StartFromTemplates, switching category', () => {
     mount();
     const scroller = document.querySelector('[data-start-card]')!.closest('.overflow-y-auto')!;
     scroller.scrollTop = 300;
-    fireEvent.click(document.querySelector('[data-rail="team"]')!);
+    fireEvent.click(document.querySelector('[data-rail="handbooks"]')!);
     expect(scroller.scrollTop).toBe(0);
   });
 });
 
 // docs/specs/007-editor/start-diagramming.md "From the Community".
 describe('StartFromTemplates, from the Community', () => {
-  const tile = (id: string, title: string, category = 'reports'): CommunityStartPost => ({
+  const tile = (id: string, title: string, category = 'product'): CommunityStartPost => ({
     id,
     app: 'liveknowledge.app',
     title,
@@ -122,11 +122,11 @@ describe('StartFromTemplates, from the Community', () => {
   });
 
   it("opens the person's own copy of a chosen tile, counted as a copy", async () => {
-    startTiles = { reports: [tile('r1', 'Annual Report')] };
+    startTiles = { product: [tile('r1', 'Annual Report')] };
     const onTemplate = vi.fn();
     const leave = vi.fn();
     mount(onTemplate, 't1', leave);
-    fireEvent.click(document.querySelector('[data-rail="reports"]')!);
+    fireEvent.click(document.querySelector('[data-rail="product"]')!);
     fireEvent.click(
       await screen.findByRole('button', { name: /^Annual Report from the Community/ }),
     );
@@ -136,7 +136,7 @@ describe('StartFromTemplates, from the Community', () => {
   });
 
   it('finds a tile by its title in a search, after the templates of its group', async () => {
-    startTiles = { reports: [tile('r1', 'Annual Report')] };
+    startTiles = { product: [tile('r1', 'Annual Report')] };
     mount();
     const search = screen.getByRole('textbox', { name: 'Find a template' });
     fireEvent.change(search, { target: { value: 'annual report' } });
@@ -148,7 +148,7 @@ describe('StartFromTemplates, from the Community', () => {
   });
 
   it('shows only templates when the Community is off', async () => {
-    startTiles = { reports: [tile('r1', 'Annual Report')] };
+    startTiles = { product: [tile('r1', 'Annual Report')] };
     vi.stubGlobal(
       'fetch',
       vi.fn(async (url: string) =>
@@ -158,7 +158,7 @@ describe('StartFromTemplates, from the Community', () => {
       ),
     );
     mount();
-    fireEvent.click(document.querySelector('[data-rail="reports"]')!);
+    fireEvent.click(document.querySelector('[data-rail="product"]')!);
     await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(screen.queryByRole('button', { name: /from the Community/ })).toBeNull();

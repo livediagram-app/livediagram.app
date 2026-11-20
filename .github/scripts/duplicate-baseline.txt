@@ -133,7 +133,6 @@ livedocuments/apps/editor/components/canvas/useCanvasHostExplorer.ts	liveknowled
 livedocuments/apps/editor/components/canvas/useCanvasHostMenus.ts	liveknowledge/apps/editor/components/canvas/useCanvasHostMenus.ts
 livedocuments/apps/editor/components/canvas/useCanvasPointer.tsx	liveknowledge/apps/editor/components/canvas/useCanvasPointer.tsx
 livedocuments/apps/editor/components/canvas/useCanvasToolPanels.tsx	liveknowledge/apps/editor/components/canvas/useCanvasToolPanels.tsx
-livedocuments/apps/editor/components/canvas/useContentsChrome.tsx	liveknowledge/apps/editor/components/canvas/useContentsChrome.tsx
 livedocuments/apps/editor/components/chrome/LoadErrorCard.tsx	liveknowledge/apps/editor/components/chrome/LoadErrorCard.tsx
 livedocuments/apps/editor/components/chrome/NotFound.tsx	liveknowledge/apps/editor/components/chrome/NotFound.tsx
 livedocuments/apps/editor/components/colour/useThemeColours.ts	liveknowledge/apps/editor/components/colour/useThemeColours.ts
@@ -296,7 +295,6 @@ livedocuments/packages/document/src/article-draw-ops.ts	liveknowledge/packages/d
 livedocuments/packages/document/src/article-flow-ops.ts	liveknowledge/packages/document/src/article-flow-ops.ts
 livedocuments/packages/document/src/article-footnotes.ts	liveknowledge/packages/document/src/article-footnotes.ts
 livedocuments/packages/document/src/article-intake.ts	liveknowledge/packages/document/src/article-intake.ts
-livedocuments/packages/document/src/article-layout-estimate.ts	liveknowledge/packages/document/src/article-layout-estimate.ts
 livedocuments/packages/document/src/article-layout-set.ts	liveknowledge/packages/document/src/article-layout-set.ts
 livedocuments/packages/document/src/article-markdown-export.ts	liveknowledge/packages/document/src/article-markdown-export.ts
 livedocuments/packages/document/src/article-markdown-io.ts	liveknowledge/packages/document/src/article-markdown-io.ts
@@ -337,7 +335,6 @@ livedocuments/packages/document/src/page-default-background.ts	liveknowledge/pac
 livedocuments/packages/document/src/page-frame.ts	liveknowledge/packages/document/src/page-frame.ts
 livedocuments/packages/document/src/page-image.ts	liveknowledge/packages/document/src/page-image.ts
 livedocuments/packages/document/src/page-ink.ts	liveknowledge/packages/document/src/page-ink.ts
-livedocuments/packages/document/src/page-layout.ts	liveknowledge/packages/document/src/page-layout.ts
 livedocuments/packages/document/src/page-theme-fills.ts	liveknowledge/packages/document/src/page-theme-fills.ts
 livedocuments/packages/document/src/pages-background-copy.ts	liveknowledge/packages/document/src/pages-background-copy.ts
 livedocuments/packages/document/src/paginate.ts	liveknowledge/packages/document/src/paginate.ts
@@ -370,7 +367,6 @@ livedocuments/packages/document/src/tab-stats.ts	liveknowledge/packages/document
 livedocuments/packages/document/src/tab-window.ts	liveknowledge/packages/document/src/tab-window.ts
 livedocuments/packages/document/src/table.ts	liveknowledge/packages/document/src/table.ts
 livedocuments/packages/document/src/validate-shape.ts	liveknowledge/packages/document/src/validate-shape.ts
-livedocuments/packages/document/src/validate.ts	liveknowledge/packages/document/src/validate.ts
 livedocuments/packages/document/src/version-changes.ts	liveknowledge/packages/document/src/version-changes.ts
 livedocuments/packages/edit-operations/src/pages/index.ts	liveknowledge/packages/edit-operations/src/pages/index.ts
 livedocuments/packages/edit-operations/src/parse-line.ts	liveknowledge/packages/edit-operations/src/parse-line.ts
@@ -385,9 +381,7 @@ livedocuments/packages/templates/src/page-layouts-set-explainers.ts	liveknowledg
 livedocuments/packages/templates/src/page-layouts-set-people.ts	liveknowledge/packages/templates/src/page-layouts-set-people.ts
 livedocuments/packages/templates/src/page-layouts-set-posters.ts	liveknowledge/packages/templates/src/page-layouts-set-posters.ts
 livedocuments/packages/templates/src/page-layouts-set-social.ts	liveknowledge/packages/templates/src/page-layouts-set-social.ts
-livedocuments/packages/templates/src/popular.ts	liveknowledge/packages/templates/src/popular.ts
 livedocuments/packages/templates/src/template-board-update.ts	liveknowledge/packages/templates/src/template-board-update.ts
 livedocuments/packages/templates/src/template-resume-data.ts	liveknowledge/packages/templates/src/template-resume-data.ts
 livedocuments/packages/templates/src/template-year-review-data.ts	liveknowledge/packages/templates/src/template-year-review-data.ts
-livedocuments/packages/templates/src/untitled.ts	liveknowledge/packages/templates/src/untitled.ts
 livedocuments/packages/ui/src/SiteFooter.tsx	liveknowledge/packages/ui/src/SiteFooter.tsx

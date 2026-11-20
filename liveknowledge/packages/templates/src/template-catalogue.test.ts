@@ -12,7 +12,7 @@ describe('templateCatalogue', () => {
     expect(categories.at(-1)!.id).toBe('blanks');
     expect(templates.find((t) => t.kind === 'blank')!.category).toBe('blanks');
     expect(templates.find((t) => t.kind === 'blank-article')!.category).toBe('blanks');
-    expect(templates.find((t) => t.kind === 'design-doc')!.category).toBe('plans');
+    expect(templates.find((t) => t.kind === 'design-doc')!.category).toBe('engineering');
     // No slide or infographic template is offered to an agent.
     expect(templates.find((t) => t.kind === 'slide-deck')).toBeUndefined();
     expect(templates.find((t) => t.kind === 'event-poster')).toBeUndefined();

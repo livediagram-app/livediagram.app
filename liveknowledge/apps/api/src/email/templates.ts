@@ -26,15 +26,15 @@ export { MENTION_QUOTE_CHARS, mentionQuote } from '@liveworkspace/email/layout';
 // The shared look (@liveworkspace/email/layout), in liveknowledge's brand.
 const layout = createEmailLayout({
   // brand-700: it carries the button's white text and the links' text, and white on
-  // amber-500 is 2.2:1 where brand-700 clears AA at 5.9:1.
-  brand: '#a34a0c',
-  wordmarkAccent: '#a34a0c',
-  bandGradient: 'linear-gradient(90deg,#fbbf24 0%,#f59e0b 45%,#c2410c 100%)',
-  canvas: '#fffbeb',
+  // lime-500 is 2:1 where brand-700 clears AA at 7.4:1.
+  brand: '#3f6212',
+  wordmarkAccent: '#3f6212',
+  bandGradient: 'linear-gradient(90deg,#a3e635 0%,#84cc16 45%,#4d7c0f 100%)',
+  canvas: '#f7fee7',
   // `pnpm icons:brand` writes it into the marketing app's public/email/. 64px, 2x the slot.
   logoPath: '/email/liveknowledge-mark-64.png',
-  wordmarkTail: 'documents',
-  tagline: 'Write, present and design on pages together, live. Free and open source.',
+  wordmarkTail: 'knowledge',
+  tagline: 'A team knowledgebase, for people and for AI. Free and open source.',
   accountFooter:
     'You’re receiving this because you have a liveknowledge account. The editor is free and open source.',
 });

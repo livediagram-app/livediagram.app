@@ -213,9 +213,10 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
     expect(audiences).toContainEqual([
       'https://livediagram.app/api',
       'https://liveplanner.app/api',
-      'https://liveknowledge.app/api',
+      'https://livedocuments.app/api',
       'https://livedesign.app/api',
       'https://livehuddle.app/api',
+      'https://liveknowledge.app/api',
     ]);
   });
 

@@ -140,7 +140,7 @@ export function StartFromTemplates({
       helpArticle={copy.help}
       palette={palette}
       categories={categories}
-      initialCategory={categories[0]?.id ?? 'plans'}
+      initialCategory={categories[0]?.id ?? 'product'}
       cardsIn={(id) => [
         ...(start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard),
         ...(withCommunity ? communityStartCardsIn(community, id, tiles) : []),

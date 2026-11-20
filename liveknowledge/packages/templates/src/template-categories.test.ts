@@ -18,19 +18,19 @@ describe('template categories', () => {
 
   it('are the use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
-      'Careers',
-      'Learning',
-      'Marketing',
-      'Plans',
-      'Reports',
-      'Teams',
+      'Engineering',
+      'Handbooks',
+      'Onboarding',
+      'Product',
+      'Support',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
     expect(new Set(ids).size).toBe(ids.length);
     for (const c of TEMPLATE_CATEGORIES) {
       expect(c.description.length, c.id).toBeGreaterThanOrEqual(40);
-      expect(c.description.length, c.id).toBeLessThanOrEqual(50);
+      // The Community's own blurbs (community-categories.test.ts), the longest 52 characters.
+      expect(c.description.length, c.id).toBeLessThanOrEqual(52);
       expect(c.description, c.id).not.toMatch(/\u2014/);
     }
   });
@@ -51,12 +51,11 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      careers: 1,
-      learning: 1,
-      marketing: 2,
-      plans: 5,
-      reports: 2,
-      team: 2,
+      engineering: 2,
+      handbooks: 2,
+      onboarding: 3,
+      product: 5,
+      support: 1,
     });
   });
 
@@ -69,10 +68,10 @@ describe('template categories', () => {
       expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
       expect(new Set(also).size, kind).toBe(also.length);
     }
-    expect(isInTemplateCategory('design-doc', 'plans')).toBe(true);
-    // Cross-listed: a team's newsletter goes round the team.
-    expect(templateCategories('newsletter')).toEqual(['marketing', 'team']);
-    expect(isInTemplateCategory('blank', 'plans')).toBe(false);
+    expect(isInTemplateCategory('design-doc', 'engineering')).toBe(true);
+    // Cross-listed: the onboarding handbook is a handbook too.
+    expect(templateCategories('onboarding-handbook')).toEqual(['onboarding', 'handbooks']);
+    expect(isInTemplateCategory('blank', 'product')).toBe(false);
   });
 
   it('leaves no category empty', () => {
@@ -101,14 +100,15 @@ describe('template search words', () => {
     expect(find('instagram')).toEqual([]);
     expect(find('prfaq')).toEqual(['working-backwards']);
     // A category label finds what is in it; every word must match.
-    expect(find('marketing newsletter')).toContain('newsletter');
-    expect(find('marketing newsletter')).not.toContain('cover-letter');
-    expect(find('careers')).toEqual(['cover-letter']);
+    expect(find('handbooks newsletter')).toContain('newsletter');
+    expect(find('handbooks newsletter')).not.toContain('cover-letter');
+    expect(find('support')).toEqual(['case-study']);
     // A category's search words find what is in it.
     expect(find('school')).toEqual(['lesson-plan']);
     expect(find('minutes')).toEqual(['meeting-notes']);
     expect(find('rfc')).toEqual(['design-doc']);
-    expect(find('handbook')).toEqual(['onboarding-handbook']);
+    // The Handbooks label finds its templates, the cross-listed handbook among them.
+    expect(find('handbook')).toEqual(['meeting-notes', 'newsletter', 'onboarding-handbook']);
     expect(find('footnotes')).toEqual(['research-report']);
     expect(find('case study')).toEqual(['case-study']);
     expect(find('newsletter')).toEqual(['newsletter']);

@@ -40,7 +40,7 @@ describe('filterGallery', () => {
 
   it('matches the description and the category name', () => {
     expect(filterGallery(all, 'onboarding').map((t) => t.kind)).toContain('onboarding-handbook');
-    expect(filterGallery(all, 'careers').map((t) => t.kind)).toContain('cover-letter');
+    expect(filterGallery(all, 'support').map((t) => t.kind)).toContain('case-study');
     expect(filterGallery(all, 'minutes').map((t) => t.kind)).toEqual(['meeting-notes']);
   });
 
@@ -54,9 +54,9 @@ describe('filterGallery', () => {
 
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
-    const groups = groupGallery(filterGallery(galleryTemplates(), 'handbook'));
-    expect(groups.map((g) => g.label)).toEqual(['Teams']);
-    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['onboarding-handbook']);
+    const groups = groupGallery(filterGallery(galleryTemplates(), 'minutes'));
+    expect(groups.map((g) => g.label)).toEqual(['Handbooks']);
+    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['meeting-notes']);
   });
 
   it('runs the categories alphabetically by name, Blank Slate first', () => {
@@ -70,10 +70,10 @@ describe('groupGallery', () => {
     const browse = groupGallery(galleryTemplates());
     const holding = (kind: string) =>
       browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('design-doc')).toEqual(['plans']);
-    expect(holding('lesson-plan')).toEqual(['learning']);
+    expect(holding('design-doc')).toEqual(['engineering']);
+    expect(holding('lesson-plan')).toEqual(['onboarding']);
     // A cross-listed template shows on each of its categories.
-    expect(holding('newsletter')).toEqual(['marketing', 'team']);
+    expect(holding('onboarding-handbook')).toEqual(['handbooks', 'onboarding']);
   });
 
   it('finds a template by its search words, as the editor does', () => {
@@ -121,9 +121,10 @@ describe('the shelf order', () => {
     });
     // (A shelf of one template has no order to mix: liveknowledge's catalogue has several.)
     expect(shuffled.length).toBeGreaterThan(0);
-    // Every shelf of three or more comes out mixed (a seeded mix of two may land as it was).
+    // Every shelf of four or more comes out mixed (a seeded mix of two or three may land as it was: Onboarding's
+    // three do, one chance in six).
     const unmixed = first
-      .filter((g) => g.templates.length > 2 && !shuffled.includes(g))
+      .filter((g) => g.templates.length > 3 && !shuffled.includes(g))
       .map((g) => g.id);
     expect(unmixed).toEqual([]);
   });

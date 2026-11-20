@@ -667,25 +667,18 @@ what is `BESIDE_TEMPLATE_OFFERS` (`packages/templates/src/beside-offers.ts`), re
 
 ### Template categories
 
-liveknowledge' categories are its own: they need not match the other products'. They are grouped by **what the document is for** (the use case), never by page kind, so a deck and an article for the same job sit together. Every template but the blanks has one primary category and may be cross-listed where people would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it has a home). Every picker shows them alphabetically by label.
+liveknowledge's categories are the five the Community files a knowledgebase under (`packages/community` `categories.ts`, `liveknowledge.app`): the same ids, labels and descriptions, so Start With shows the Community's best beside its own templates (`community-categories.test.ts` pins the two together). They are grouped by **what the page is for** (the use case). Every template but the blanks has one primary category and may be cross-listed where people would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it has a home). Every picker shows them alphabetically by label.
 
-| Category  | Holds                                                                                      | Also lists                         |
-| --------- | ------------------------------------------------------------------------------------------ | ---------------------------------- |
-| Careers   | Résumé, Cover Letter                                                                       |                                    |
-| Events    | Event Poster, Group Card                                                                   | Wedding Toast                      |
-| Home      | Recipe Card, Floor Plan                                                                    |                                    |
-| Learning  | Lesson Plan, Class Lesson, School Presentation                                             | How It Works                       |
-| Marketing | Social Carousel, Versus, How It Works, Storyboard (an ad), Newsletter, Case Study          | Event Poster                       |
-| Pitches   | Slide Deck (a pitch), Launch Keynote, Product Pitch                                        | Product One-Pager, Board Update    |
-| Plans     | Project Brief, Working Backwards, Business Proposal, Design Doc, Product One-Pager         | Case Study                         |
-| Reports   | Year in Review, Quarterly Review, Data Story, Status Report, Research Report, Board Update |                                    |
-| Talks     | Conference Talk, Wedding Toast                                                             | Product Pitch, School Presentation |
-| Teams     | Meeting Notes, Workshop Kickoff, Team Welcome, Onboarding Handbook                         | Newsletter                         |
+| Category    | Holds                                                                                   | Also lists          |
+| ----------- | --------------------------------------------------------------------------------------- | ------------------- |
+| Engineering | Design Doc, Status Report                                                               |                     |
+| Handbooks   | Meeting Notes, Newsletter                                                               | Onboarding Handbook |
+| Onboarding  | Onboarding Handbook, Lesson Plan, Cover Letter                                          |                     |
+| Product     | Project Brief, Working Backwards, Business Proposal, Product One-Pager, Research Report | Case Study          |
+| Support     | Case Study                                                                              |                     |
 
-Each label is **one word**, so it sits on one line in every picker's rail. The longer names they had until 2026-11-04
-(Events and Celebrations, Home and Hobbies, Lessons and Learning, Marketing and Social, Pitches and Launches, Plans and
-Proposals, Speeches and Talks, Team and Meetings) are kept as the categories' search words, so a search for the dropped
-half (celebrations, hobbies, lessons, launches, proposals, speeches, meetings) still finds their templates.
+Each label is **one word**, so it sits on one line in every picker's rail. The slide and infographic templates
+liveknowledge does not list keep a category in the file (its Record is over every kind) and show in no picker.
 
 The blanks (Blank Tab, Blank Illustration and the blanks of a page kind) are in no category: they lead Popular, the landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the job it does; a category is added when a job has no home, rather than stretching one that reads wrong.
 

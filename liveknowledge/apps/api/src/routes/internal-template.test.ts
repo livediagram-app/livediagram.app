@@ -1,7 +1,8 @@
 // The template door into liveknowledge (liveworkspace/docs/specs/004-index/kits.md "The apps' door"; docs/specs/015-api/api.md
 // "Internal"): a new document from one of its templates, a project kit's part, made through the import door's path with
 // source `template`. Every kit part of liveknowledge names a template this file builds, so a renamed or retired template
-// fails here, never in a person's run.
+// fails here, never in a person's run. No project kit holds a knowledgebase yet (packages/index-client `kits.ts`), so
+// the door is also driven with a template of its own: the first part a kit gains is held by the same checks.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { kitPartsOf } from '@liveworkspace/index-client';
 import { parseDocumentEnvelope } from '@liveknowledge/document';
@@ -34,7 +35,11 @@ import { templateDocumentFile } from './internal-template';
 
 const KEY = 'index-key';
 const OWNER = 'user_ada';
-const PARTS = kitPartsOf('liveknowledge');
+const PARTS = [
+  ...kitPartsOf('liveknowledge'),
+  { template: 'design-doc', name: 'Design Doc' },
+  { template: 'onboarding-handbook', name: 'Handbook' },
+];
 
 beforeEach(() => {
   made.length = 0;
@@ -63,7 +68,6 @@ const tabsOf = (text: string) => {
 
 describe('the template file', () => {
   it('builds every kit part’s template, which the import’s reader takes', () => {
-    expect(PARTS.length).toBeGreaterThan(0);
     for (const part of PARTS) {
       const file = templateDocumentFile(part.template, `Apollo ${part.name}`);
       expect(file, part.template).not.toBeNull();
