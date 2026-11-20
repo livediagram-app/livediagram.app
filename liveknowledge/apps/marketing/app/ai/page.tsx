@@ -1,20 +1,20 @@
-import { pageMetadata } from '@liveknowledge/ui';
 import { BuildWithAi } from '@liveworkspace/marketing-site/components/ai/BuildWithAi';
 
 import { AiCapabilities } from '@/components/ai/AiCapabilities';
-import { AiChatArt } from '@/components/ai/AiChatArt';
+import { AgentTranscript } from '@/components/ai/AgentTranscript';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { AI_CLIENTS, AI_PRODUCT, STARTER_PROMPTS } from '@/lib/ai-clients';
+import { pageMetadata } from '@/lib/seo';
 
-// Build with AI (docs/specs/019-marketing/build-with-ai.md): from "I use an AI tool" to "it just made a document in
-// liveknowledge" in the fewest steps. The page is @liveworkspace/marketing-site's BuildWithAi; this route hands it this product's clients, prompts, art and words.
+// Build with AI (docs/specs/019-marketing/build-with-ai.md): from "I use an AI tool" to "my agent just answered from
+// our knowledgebase" in the fewest steps. The page is @liveworkspace/marketing-site's BuildWithAi; this route hands it this product's clients, prompts, art and words.
 
 export const metadata = pageMetadata({
   title: 'Build with AI · liveknowledge',
   description:
-    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to liveknowledge in a minute, then ask your AI for articles, decks and infographics.',
+    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to your liveknowledge knowledgebase: cited passages with who verified them and when.',
   path: '/ai',
 });
 
@@ -29,18 +29,18 @@ export default function BuildWithAiPage() {
         prompts={STARTER_PROMPTS}
         heroLede={
           <>
-            Connect the AI tool you already use, then ask it for an article, a slide deck or an
-            infographic. It lands in your account, ready to edit together. Set up takes about a
-            minute.
+            Connect the AI tool you already use, then ask it what your knowledgebase says. It reads
+            your pages in passages, each with who verified it and when, and suggests edits for a
+            person to accept. Set up takes about a minute.
           </>
         }
-        ask="an article, a slide deck or an infographic"
-        art={<AiChatArt />}
+        ask="a question your knowledgebase answers, or a page to write"
+        art={<AgentTranscript />}
         capabilities={<AiCapabilities />}
         controlLead={
           <>
-            Connecting needs a free liveknowledge account, so your AI&apos;s work is saved to you.
-            The canvas itself never needs one.
+            Connecting needs a free liveknowledge account, so your agent reads only what you can
+            open. Writing a page yourself never needs one.
           </>
         }
       />

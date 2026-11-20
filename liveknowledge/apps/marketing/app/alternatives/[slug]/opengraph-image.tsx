@@ -1,7 +1,8 @@
 import { ImageResponse } from 'next/og';
 
 import { comparisonCard, comparisonSlugs, getComparison } from '@liveworkspace/comparisons';
-import { cardSubtitle, renderSocialCard } from '@liveknowledge/ui';
+import { cardSubtitle } from '@liveknowledge/ui';
+import { renderSocialCard } from '@/lib/social-card';
 import { COMPARISONS } from '@/lib/alternatives';
 
 // Each comparison's own social card: the homepage card's branded shell (renderSocialCard) with

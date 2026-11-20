@@ -19,37 +19,37 @@ export const AI_PRODUCT: AiProduct = {
 
 export const AI_CLIENTS = aiClients(AI_PRODUCT);
 
-// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): write_article, change_pages with slide
-// layouts, an infographic page from a layout, create_document from a template, find + read_document, share_document.
+// Each maps to a shipped MCP tool (docs/specs/024-agents/knowledgebase-for-agents.md "MCP tools"): get_context,
+// search_pages and read_page, suggest_edit, report_gap, create_page, and list_pages with its trust fields.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
-    title: 'Write it up',
+    title: 'Answer From the Pages',
     prompt:
-      'Write up the decisions from this conversation as a liveknowledge article, with a short summary first and a section per decision.',
+      'Using our liveknowledge knowledgebase, answer this: how do we roll back a release? Quote the passage, name its page, and tell me whether that page is verified.',
   },
   {
-    title: 'Build a deck',
+    title: 'Start With Context',
     prompt:
-      'Build a five-slide liveknowledge deck that explains our product to a new hire: the problem, who it is for, how it works, what is next, and how to get help.',
+      'Read the Always in Context pages of our liveknowledge knowledgebase before you start, then tell me in five lines what you now know about how this team works.',
   },
   {
-    title: 'Make a one-pager',
+    title: 'Suggest a Fix',
     prompt:
-      'Turn these numbers into a liveknowledge infographic: a headline, three big figures and a short line under each, on one page.',
+      'The Release Runbook in liveknowledge still says deploys go out any weekday. Suggest an edit that says Monday to Thursday, with the reason, and leave it for me to accept.',
   },
   {
-    title: 'Design a poster',
+    title: 'Report What Is Missing',
     prompt:
-      'Lay out a liveknowledge event poster for a bakery called Bloom opening its doors on Saturday: a big headline, the time and place, and warm colours.',
+      'Search our liveknowledge knowledgebase for how to rotate the API key. If no page covers it, report the gap so someone can write the page, and do not guess.',
   },
   {
-    title: 'Start from a template',
+    title: 'Write It Down',
     prompt:
-      'Make me a liveknowledge resume from the resume template, filled in from the profile I paste below, and share a link I can send.',
+      'Write up the decisions from this conversation as a new liveknowledge page under Engineering, with a short summary first and a heading per decision.',
   },
   {
-    title: 'Find and improve',
+    title: 'Find What Is Stale',
     prompt:
-      'Find my liveknowledge document about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
+      'List the pages of our liveknowledge knowledgebase whose review is due, oldest first, with each page’s owner.',
   },
 ];

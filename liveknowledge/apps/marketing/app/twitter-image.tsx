@@ -1,4 +1,6 @@
-import { SITE_NAME, SITE_PITCH, renderSocialCard } from '@liveknowledge/ui';
+import { SITE_NAME } from '@liveknowledge/ui';
+import { renderSocialCard } from '@/lib/social-card';
+import { SITE_PITCH } from '@/lib/site-words';
 import { ImageResponse } from 'next/og';
 
 // Twitter Card image. Mirrors opengraph-image.tsx; the shared

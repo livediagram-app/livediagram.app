@@ -3,19 +3,10 @@
 @import '@liveknowledge/template-previews/preview-art-tile.css';
 @import '@liveknowledge/template-previews/preview-motion.css';
 @import '@liveknowledge/ui/hero-band.css';
-@import '@liveworkspace/marketing-site/css/hero-fan.css';
 @import '@liveworkspace/marketing-site/css/hero-tall.css';
 @import './hero-animations.css';
-@import './hero-scenes/pages.css';
-@import './hero-scenes/article.css';
 @import '@liveworkspace/marketing-site/css/promises.css';
 @import './feature-art/core.css';
-@import './feature-art/content.css';
-@import './feature-art/canvas.css';
-@import './feature-art/pages.css';
-@import './feature-art/versatility.css';
-@import './feature-art/modes.css';
-@import './feature-art/features.css';
 @import '@liveworkspace/marketing-site/css/page-motion.css';
 @import './privacy-art.css';
 @import '@liveworkspace/marketing-site/css/licences.css';
@@ -46,14 +37,6 @@
 @source '../../../../packages/community-ui/src/help-link';
 
 @media (prefers-reduced-motion: reduce) {
-  /* the window veils stay hidden */
-  .hero-fade,
-  .hero-fade-out,
-  .hero-fade-end {
-    animation: none;
-    opacity: 0;
-  }
-
   .fa-pop,
   .fa-draw,
   .fa-pulse,
@@ -69,12 +52,4 @@
     transform: none !important;
     stroke-dashoffset: 0 !important;
   }
-}
-
-/* The scene's chrome draws the editor's glyphs at a fraction of their size (11px in a 24px chip), where a glyph
-   whose ink sits off its box's middle (a flipchart's legs, a timer's crown) reads past the 0.5px optical tolerance
-   (docs/specs/004-interface-design/optical-alignment.md). Each glyph in a scene moves by half the difference of its
-   own ink insets (--glyph-ink-t / --glyph-ink-b, set by Glyph), so its ink, not its box, is centred. */
-.hero-glyph-ink .lvd-glyph {
-  translate: 0 calc((var(--glyph-ink-b, 0px) - var(--glyph-ink-t, 0px)) / 2);
 }

@@ -1,47 +1,65 @@
 import { describe, expect, it } from 'vitest';
 
 import { comparisonProblems } from '@liveworkspace/comparisons';
-import { THEMES } from '@liveknowledge/document';
-import { SLIDE_LAYOUTS, TEMPLATES } from '@liveknowledge/templates';
 
 import { COMPARISONS } from './alternatives';
 
-// liveknowledge' comparisons (packages/comparisons/README.md): the list drives the routes, their
+// liveknowledge's comparisons (packages/comparisons/README.md "liveknowledge"): the list drives the routes, their
 // metadata, the hub and the sitemap, so its shape is checked by the shared comparisonProblems.
-// product-claims.test.ts keeps out claims found false.
+// product-claims.test.ts keeps out what the product does not do.
 describe('the comparisons', () => {
   it('hold everything every page needs', () => {
     expect(comparisonProblems(COMPARISONS)).toEqual([]);
   });
-});
 
-// The comparisons write the catalogue's sizes out ("seventeen slide layouts"); every mention must
-// match it, so a template or layout added fails here until the comparisons follow.
-describe('counts on the comparisons', () => {
-  const copy = JSON.stringify(COMPARISONS.alternatives);
-  const counted = (pattern: RegExp, words: Record<string, number> = {}) =>
-    [...copy.matchAll(pattern)].map((m) =>
-      /^\d+$/.test(m[1]!) ? Number(m[1]) : words[m[1]!.toLowerCase()],
-    );
+  it('are the six team knowledge tools, Notion under its own slug here', () => {
+    expect(COMPARISONS.alternatives.map((a) => a.slug)).toEqual([
+      'notion-wiki',
+      'confluence',
+      'slite',
+      'guru',
+      'gitbook',
+      'outline',
+    ]);
+    // `notion` is liveplanner's page; a slug is unique across every app.
+    expect(COMPARISONS.alternatives.some((a) => a.slug === 'notion')).toBe(false);
+  });
 
-  it('match the templates', () => {
-    for (const n of counted(/(\d+) (?:ready-made |starter )?templates/g)) {
-      expect(n).toBe(TEMPLATES.length);
+  // The fairness rule: each page gives real reasons to pick the other tool, and says where we are behind.
+  it.each(COMPARISONS.alternatives.map((a) => [a.slug, a] as const))(
+    '%s says where the other tool is the better pick',
+    (_slug, alt) => {
+      expect(alt.themBest.length).toBeGreaterThanOrEqual(3);
+      expect(alt.usBest.length).toBeGreaterThanOrEqual(3);
+      expect(alt.faqs.length).toBeGreaterThanOrEqual(3);
+    },
+  );
+
+  it('admit, between them, each place liveknowledge is behind', () => {
+    const theirs = COMPARISONS.alternatives.flatMap((a) => a.themBest).join(' ');
+    for (const gap of [
+      /databases/,
+      /permissions down to a single page|page restrictions/,
+      /integrations/,
+      /mobile/,
+      /search that understands meaning/,
+      /public site/,
+    ]) {
+      expect(theirs).toMatch(gap);
     }
   });
 
-  it('match the themes a picker offers (the seasonal ones are their looks’ own)', () => {
-    const offered = THEMES.filter((t) => !('seasonal' in t && t.seasonal)).length;
-    const counts = counted(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi, {
-      'twenty-four': 24,
-      'twenty-five': 25,
-    });
-    for (const n of counts) expect(n).toBe(offered);
+  // No price, limit or plan content is written for a competitor: positioning only.
+  it('state no competitor price or number', () => {
+    for (const alt of COMPARISONS.alternatives) {
+      for (const text of [...alt.rows.map((r) => r.them), ...alt.themBest]) {
+        expect(text, alt.slug).not.toMatch(/[$€£]|\d/);
+      }
+    }
   });
 
-  it('match the slide layouts', () => {
-    const counts = counted(/\b(\d+|[a-z]+teen) (?:ready-made )?layouts\b/gi, { seventeen: 17 });
-    expect(counts.length).toBeGreaterThan(0);
-    for (const n of counts) expect(n).toBe(SLIDE_LAYOUTS.length);
+  it('never call a competitor the best or the worst of anything', () => {
+    const copy = JSON.stringify(COMPARISONS.alternatives);
+    expect(copy).not.toMatch(/\b(?:best|worst|fastest|leading|unbeatable|only tool)\b/i);
   });
 });

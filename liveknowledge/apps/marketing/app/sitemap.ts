@@ -3,7 +3,6 @@ import type { MetadataRoute } from 'next';
 import { comparisonSitemap } from '@liveworkspace/comparisons';
 
 import { COMPARISONS } from '@/lib/alternatives';
-import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 import { SITE_URL } from '@liveknowledge/ui';
 import { COMMUNITY_HOME_PATH } from '@liveknowledge/api-schema';
 
@@ -57,17 +56,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-    // One page per feature category (docs/specs/019-marketing/marketing-site.md "Feature category pages").
-    // Derived from LANDING_SECTION_IDS so adding a section to LANDING_SECTIONS
-    // sitemaps its page automatically. Build-time `now`: the feature copy
-    // moves with product releases, like the landing page. (There is no
-    // /features hub index page; the landing page is the feature overview.)
-    ...LANDING_SECTION_IDS.map((id) => ({
-      url: `${base}/features/${id}`,
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
-    })),
+    // No /features pages (docs/specs/019-marketing/marketing-site.md "Feature sections"): each feature
+    // section is whole on the landing page, at its own anchor.
     // The Community's gallery (docs/specs/025-community/community.md "Where Community is linked from"): liveworkspace.app's
     // page on this address, whose router lists each post's page in /community/sitemap.xml.
     {

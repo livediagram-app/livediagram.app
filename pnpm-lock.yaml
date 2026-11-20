@@ -4662,6 +4662,9 @@ importers:
       '@liveknowledge/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/brand':
+        specifier: workspace:*
+        version: link:../../../packages/brand
       '@liveworkspace/community-ui':
         specifier: workspace:*
         version: link:../../../packages/community-ui
@@ -4680,6 +4683,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       next:
         specifier: ^16.4.6
         version: 16.4.6(@playwright/test@1.65.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

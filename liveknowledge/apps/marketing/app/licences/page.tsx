@@ -2,7 +2,8 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { loadLicencesManifestForPage } from '@liveworkspace/marketing-site/lib/licences-manifest';
 import { LicencesView } from '@liveworkspace/marketing-site/components/licences/LicencesView';
-import { pageMetadata, SiteHeader } from '@liveknowledge/ui';
+import { SiteHeader } from '@liveknowledge/ui';
+import { pageMetadata } from '@/lib/seo';
 
 export const metadata = pageMetadata({
   title: 'Open-source licences · liveknowledge',

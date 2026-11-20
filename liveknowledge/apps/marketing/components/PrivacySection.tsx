@@ -16,43 +16,43 @@ import {
 
 const PROMISES: PrivacyPromise[] = [
   {
-    title: 'No third-party analytics',
+    title: 'No Third-Party Analytics',
     description:
       'No Google Analytics. No Segment. No marketing pixels. The only product telemetry is anonymous, first-party events sent to our own liveworkspace telemetry service, with every event we measure listed publicly on /telemetry.',
     art: <NoTrackersArt />,
   },
   {
-    title: 'Your data is yours',
+    title: 'Your Pages Are Yours',
     description:
-      "Every document lives in your own row, scoped to your owner id. Export any page to PNG, SVG or PDF, or any tab as portable JSON, whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
-    art: <DataIsYoursArt noun="document" />,
+      "Export any page to Markdown, PDF or Word whenever you like, or a whole knowledgebase as a folder of Markdown from the command line, and delete your account from settings to remove everything in one go. We don't make money by holding your pages hostage.",
+    art: <DataIsYoursArt noun="page" />,
   },
   {
-    title: 'Never sold, never traded',
+    title: 'Never Sold, Never Traded',
     description:
-      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. There is no paid tier and no plan to add one, so we have no commercial pressure to monetise what you make.",
+      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. liveknowledge runs no model of its own: Ask sends passages to Claude only under your team's own key. There is no paid tier and no plan to add one.",
     art: <NoSaleArt />,
   },
   {
-    title: 'Encrypted at rest and in transit',
+    title: 'Encrypted at Rest and in Transit',
     description:
-      'All persistence runs on Cloudflare D1 + R2, which encrypt every row and blob at rest with AES-256. Every request is TLS, end to end. The same protections protect telemetry, share links, and uploaded images.',
+      'Everything is stored on Cloudflare, which encrypts it at rest, and every request travels over TLS. A team’s Claude API key is encrypted again before it is stored, and is never sent back to a browser.',
     art: <EncryptedArt />,
   },
   {
-    title: 'Private by default',
+    title: 'Private by Default',
     description:
-      'A new document is visible only to you until you generate a share link. Share links are unguessable codes you choose to hand out: protect them with a password, set them to expire automatically after a week, a month, or six months, or revoke them at any time, instantly disconnecting anyone currently using one.',
+      'A new knowledgebase is visible only to you until you share it. Share links are unguessable codes you choose to hand out, at the role you pick, and you can revoke one at any time. An agent sees only what the person or token it acts for can open.',
     art: <PrivateByDefaultArt />,
   },
   {
-    title: 'Open source, auditable',
+    title: 'Open Source, Auditable',
     description:
-      'The whole stack (editor, API, this site) is on GitHub under the MIT license. Anything we claim here, you can read in the source.',
+      'The whole stack (editor, API, MCP server, this site) is on GitHub under the MIT licence. Anything we claim here, you can read in the source.',
     art: <OpenSourceArt />,
   },
 ];
 
 export function PrivacySection() {
-  return <Section promises={PROMISES} maker="an editor" />;
+  return <Section promises={PROMISES} maker="a knowledgebase" />;
 }

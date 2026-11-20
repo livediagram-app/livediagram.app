@@ -1,22 +1,19 @@
-import { CheckIcon, ChevronRightIcon, GlyphDisc, RAIL_CLEAR_PADDING } from '@liveknowledge/ui';
-import { CATEGORY_ICONS } from '@/components/category-icons';
-import { CtaLink } from '@liveworkspace/marketing-site/components/CtaLink';
-import { FeatureScene } from '@/components/FeatureScene';
-import { featureHref } from '@liveworkspace/marketing-site/lib/feature-anchor';
-import { sectionHighlights, type LandingSection } from '@/lib/landing-content';
+import { CheckIcon, GlyphDisc, RAIL_CLEAR_PADDING } from '@liveknowledge/ui';
 import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 
-// One beat of the landing page's story (docs/specs/019-marketing/marketing-site.md "Story beats"):
-// one core feature of the app. Its glyph in a disc and its plain name above the headline, its pitch, a few
-// highlights (each a link to its card on the category page), a link into the category page, and
-// that feature's hero scene playing beside it. Alternates the scene's side and the tinted
-// background by index so the run reads as a composed page.
+import { CATEGORY_ICONS } from '@/components/category-icons';
+import type { LandingSection } from '@/lib/landing-content';
 
-// The text column has a fixed width and the scene takes the rest, so the scene is drawn about the
-// size the hero draws it (its small text was soft at the narrower width) and starts on a whole
-// pixel, where a fraction of the row (5fr / 7fr) landed it between pixels.
-const TEXT_FIRST = 'lg:grid-cols-[22rem_minmax(0,1fr)] xl:grid-cols-[26rem_minmax(0,1fr)]';
-const SCENE_FIRST = 'lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1fr)_26rem]';
+// One beat of the landing page's story (docs/specs/019-marketing/marketing-site.md "Feature sections"): one
+// thing liveknowledge does. Its glyph in a disc and its plain name above the headline, two or three sentences,
+// three ticked points, and its art beside it. The art's side and the tinted ground alternate by index so the run
+// reads as a composed page. Below lg the beat is one column, the art under the words: it is the section's
+// picture at every width, never hidden on a phone.
+
+// The text column has a fixed width from lg and the art takes the rest, so every drawing is the same size down
+// the page. Below lg the one column is minmax(0, 1fr), so nothing in a beat can widen the page.
+const TEXT_FIRST = 'lg:grid-cols-[24rem_minmax(0,1fr)] xl:grid-cols-[27rem_minmax(0,1fr)]';
+const ART_FIRST = 'lg:grid-cols-[minmax(0,1fr)_24rem] xl:grid-cols-[minmax(0,1fr)_27rem]';
 
 export function StoryBeat({ section, index }: { section: LandingSection; index: number }) {
   const tinted = index % 2 === 1;
@@ -30,13 +27,11 @@ export function StoryBeat({ section, index }: { section: LandingSection; index: 
       className={`scroll-mt-20 border-t border-slate-200/70 dark:border-slate-800/70 ${tinted ? 'bg-brand-50/60 dark:bg-brand-500/10' : 'bg-white dark:bg-slate-900'}`}
     >
       <div
-        className={`mx-auto grid max-w-7xl items-center gap-10 ${RAIL_CLEAR_PADDING} py-20 sm:py-24 lg:gap-14 ${artFirst ? SCENE_FIRST : TEXT_FIRST}`}
+        className={`mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)] items-center gap-10 ${RAIL_CLEAR_PADDING} py-16 sm:py-24 lg:gap-16 ${artFirst ? ART_FIRST : TEXT_FIRST}`}
       >
-        {/* Centred while the beat is one column (a phone or tablet, the scene hidden), left-aligned
-            beside the scene from lg. */}
-        <div className={`enter-on-scroll text-center lg:text-left ${artFirst ? 'lg:order-2' : ''}`}>
-          {/* The feature's glyph in a disc beside its plain name, above the headline. */}
-          <p className={`flex items-center justify-center gap-3 lg:justify-start ${EYEBROW}`}>
+        <div className={`enter-on-scroll ${artFirst ? 'lg:order-2' : ''}`}>
+          {/* The section's glyph in a disc beside its plain name, above the headline. */}
+          <p className={`flex items-center gap-3 ${EYEBROW}`}>
             {Icon ? (
               <GlyphDisc aria-hidden className="h-8 w-8 bg-brand-700 text-white">
                 <Icon size={16} aria-hidden />
@@ -53,44 +48,24 @@ export function StoryBeat({ section, index }: { section: LandingSection; index: 
           <p className="mt-4 text-lg leading-relaxed text-pretty text-slate-600 dark:text-slate-300">
             {section.description}
           </p>
-
-          {/* A few of the features waiting on its page, each straight to its card. Centred as a block
-              while the beat is centred, its ticks still lined up on the left. On a touch screen the
-              rows abut at 44px tall, so each tap lands on a link. */}
-          <ul
-            className="mx-auto mt-6 grid w-fit gap-x-6 gap-y-2.5 text-left pointer-coarse:mt-4 pointer-coarse:gap-y-0 sm:grid-cols-2 lg:mx-0 lg:grid-cols-1"
-            aria-label={`${section.label} highlights`}
-          >
-            {sectionHighlights(section).map((item) => (
-              <li key={item.title}>
-                <a
-                  href={featureHref(section.id, item.title)}
-                  className="group flex items-start gap-2 rounded-sm text-[15px] text-slate-700 transition pointer-coarse:py-3 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-200 dark:hover:text-brand-200"
-                >
-                  <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
-                    <CheckIcon size={11} aria-hidden />
-                  </span>
-                  {item.title}
-                </a>
+          <ul className="mt-6 grid gap-2.5" aria-label={`${section.label} in short`}>
+            {section.points.map((point) => (
+              <li
+                key={point}
+                className="flex items-start gap-2.5 text-[15px] text-slate-700 dark:text-slate-200"
+              >
+                <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+                  <CheckIcon size={11} aria-hidden />
+                </span>
+                {point}
               </li>
             ))}
           </ul>
-
-          <CtaLink href={`/features/${section.id}`} className="group mt-8">
-            {section.cta}
-            <ChevronRightIcon
-              size={16}
-              className="transition-transform group-hover:translate-x-0.5"
-            />
-          </CtaLink>
         </div>
 
-        {/* Hidden below the two-column breakpoint: stacked on mobile it eats
-            the screen and restates the pitch above it. */}
-        {/* No scroll-in slide here: the scene plays its own build as it arrives, and a transform
-            mid-entry kept the window on its own layer, painted off the pixel grid and blurred. */}
-        <div className={`hidden lg:block ${artFirst ? 'lg:order-1' : ''}`}>
-          <FeatureScene scene={section.scene} />
+        {/* The art is capped below lg so it stays a picture beside a short column of words, not a wall. */}
+        <div className={`mx-auto w-full max-w-xl lg:max-w-none ${artFirst ? 'lg:order-1' : ''}`}>
+          {section.art}
         </div>
       </div>
     </section>

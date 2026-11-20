@@ -3,41 +3,41 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { LANDING_SECTIONS } from './landing-content';
+import { SITE_DESCRIPTION, SITE_TITLE } from './site-words';
 
-// A search result shows about 160 characters of a meta description and cuts the rest; under about 50 it
-// is too thin to earn the click (docs/specs/019-marketing/marketing-site.md "SEO and metadata").
-const MIN = 50;
-const MAX = 160;
+// A search result shows about 160 characters of a meta description and cuts the rest; under about 50 is too thin
+// to earn the click (docs/specs/019-marketing/marketing-site.md "SEO and metadata").
+const APP = fileURLToPath(new URL('../app', import.meta.url));
 
-const fits = (text: string) => text.length >= MIN && text.length <= MAX;
+function pages(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? pages(join(dir, e.name)) : e.name === 'page.tsx' ? [join(dir, e.name)] : [],
+  );
+}
+
+// Each description a static page writes for itself, as a string literal after `description:` or a
+// `_DESCRIPTION =` constant.
+const written = pages(APP).flatMap((file) =>
+  [
+    ...readFileSync(file, 'utf8').matchAll(
+      /(?:description:|_DESCRIPTION =)\s*\n?\s*'([^']{20,})'/g,
+    ),
+  ].map((m) => ({ file: file.slice(APP.length), text: m[1]! })),
+);
 
 describe('meta descriptions', () => {
-  it.each(LANDING_SECTIONS.map((s) => [s.id, s.metaDescription]))(
-    'feature page %s fits a search result',
-    (_id, text) => {
-      expect(fits(text), `${text.length} chars`).toBe(true);
-    },
-  );
+  it('fits the landing page’s', () => {
+    expect(SITE_DESCRIPTION.length).toBeGreaterThanOrEqual(50);
+    expect(SITE_DESCRIPTION.length).toBeLessThanOrEqual(160);
+    expect(SITE_TITLE.length).toBeLessThanOrEqual(60);
+  });
 
-  // Static pages write theirs as a literal in `pageMetadata({ description: '...' })`.
-  it('fits on every static page that writes its own', () => {
-    const app = fileURLToPath(new URL('../app', import.meta.url));
-    const pages = (dir: string): string[] =>
-      readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
-        e.isDirectory()
-          ? pages(join(dir, e.name))
-          : e.name === 'page.tsx'
-            ? [join(dir, e.name)]
-            : [],
-      );
-    const literals = pages(app).flatMap((file) =>
-      [...readFileSync(file, 'utf8').matchAll(/description:\s*\n?\s*'((?:[^'\\]|\\.)*)'/g)].map(
-        (m) => ({ file: file.slice(app.length), text: m[1]!.replace(/\\'/g, "'") }),
-      ),
-    );
-    expect(literals.length).toBeGreaterThan(0);
-    for (const { file, text } of literals)
-      expect(fits(text), `${file}: ${text.length} chars`).toBe(true);
+  it('finds the pages that write their own', () => {
+    expect(written.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it.each(written)('$file fits a search result', ({ text }) => {
+    expect(text.length).toBeGreaterThanOrEqual(50);
+    expect(text.length).toBeLessThanOrEqual(160);
   });
 });

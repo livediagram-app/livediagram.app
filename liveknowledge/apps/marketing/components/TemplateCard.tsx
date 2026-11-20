@@ -5,11 +5,10 @@ import type { GalleryTemplate } from '@/lib/template-gallery';
 import { BAND_CARD, BAND_CONTROL_HOVER } from '@liveworkspace/marketing-site/lib/band-classes';
 import { createLabelPrefix } from '@/lib/create-label';
 
-// One template as a card that creates that document straight away and opens it in the editor
+// One template as a card that creates that page straight away and opens it in the editor
 // (/new?template=<kind>, docs/specs/007-editor/new-document-route.md): the editor picker's own preview
 // (@liveknowledge/template-previews), so a template looks the same here as it does in the app, then its
-// title, then its description. Shared by the landing gallery and each category
-// page's "Start from a template" band; `source` is the CTA slot the click is counted under.
+// title, then its description. `source` is the CTA slot the click is counted under.
 export function TemplateCard({
   template,
   source,
@@ -28,7 +27,7 @@ export function TemplateCard({
         <TemplatePreview kind={template.kind} />
       </span>
       <span className="mt-3 block text-sm font-semibold text-slate-900 dark:text-slate-100">
-        {/* The link's name is its own text, "Create a Blank Article" and the description, so its
+        {/* The link's name is its own text, "Create a Blank Page" and the description, so its
             visible title is part of it (WCAG 2.5.3). */}
         <span className="sr-only">{createLabelPrefix(template.title)}</span>
         {template.title}

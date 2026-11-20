@@ -1,45 +1,46 @@
 import {
+  lucideBookOpen,
+  lucideFilePlus,
   lucideFileText,
-  lucideLayoutGrid,
-  lucidePresentation,
+  lucideFlag,
+  lucidePencilLine,
   lucideSearch,
-  lucideShare2,
-  lucideUndo2,
 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveknowledge/ui';
 
 // What it can do (docs/specs/019-marketing/build-with-ai.md "The page" 5): the MCP's tools in plain words. Every
-// card maps to a shipped tool (docs/specs/015-api/mcp-server.md §4); a new tool earns a card here only once it ships.
+// card maps to a shipped tool (docs/specs/024-agents/knowledgebase-for-agents.md "MCP tools"); a new tool earns a
+// card here only once it ships.
 const CAPABILITIES = [
   {
-    icon: lucideGlyph(lucideFileText, 20),
-    title: 'Articles',
-    body: 'Written up in Markdown and flowed onto pages, then read back and revised whenever you ask.',
-  },
-  {
-    icon: lucideGlyph(lucidePresentation, 20),
-    title: 'Slides and posters',
-    body: 'Decks from ready-made slide layouts and infographics from page layouts, all on pages you can polish by hand.',
-  },
-  {
-    icon: lucideGlyph(lucideLayoutGrid, 20),
-    title: 'Templates',
-    body: 'Starts a document from any template in the library, from a resume to a launch keynote, then fills it in.',
+    icon: lucideGlyph(lucideBookOpen, 20),
+    title: 'Context First',
+    body: 'Hands over the pages your team marked Always in Context before the agent starts, within a fixed budget.',
   },
   {
     icon: lucideGlyph(lucideSearch, 20),
-    title: 'Find and read',
-    body: 'Searches your documents and your teams’, and reads any tab back as an outline and a picture.',
+    title: 'Search in Passages',
+    body: 'Finds the passages that match a question, each with its page, its heading and whether it is verified.',
   },
   {
-    icon: lucideGlyph(lucideShare2, 20),
-    title: 'Share links',
-    body: 'Turns a document into a link for your team, at the level of access you ask for.',
+    icon: lucideGlyph(lucideFileText, 20),
+    title: 'Read With Trust',
+    body: 'Reads a page as Markdown with who verified it and when, whether its review is due, and what links to it.',
   },
   {
-    icon: lucideGlyph(lucideUndo2, 20),
-    title: 'Live, and undoable',
-    body: 'Changes land on an open document as they happen, outlined so you can see them, with Undo one click away.',
+    icon: lucideGlyph(lucidePencilLine, 20),
+    title: 'Suggest, Not Overwrite',
+    body: 'An edit arrives as a suggestion with its reason. Nothing on the page changes until a person accepts it.',
+  },
+  {
+    icon: lucideGlyph(lucideFlag, 20),
+    title: 'Report a Gap',
+    body: 'Records a question no page answered, so it shows in AI Knowledge and someone can write the page.',
+  },
+  {
+    icon: lucideGlyph(lucideFilePlus, 20),
+    title: 'New Pages',
+    body: 'Writes a new page from Markdown under the parent you name. It starts unverified, like any new page.',
   },
 ];
 

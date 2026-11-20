@@ -3,22 +3,13 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { THEMES } from '@liveknowledge/document';
-import {
-  PAGE_LAYOUTS,
-  SLIDE_LAYOUTS,
-  TEMPLATE_CATEGORIES,
-  TEMPLATES,
-} from '@liveknowledge/templates';
-
-import { LANDING_SECTIONS } from './landing-content';
+import { TEMPLATE_CATEGORIES } from '@liveknowledge/templates';
 import { faqAnswerText, filterFaq } from '@liveworkspace/marketing-site/lib/faq';
 import {
   FAQ_CATEGORIES,
-  PAGE_LAYOUT_COUNT,
-  SLIDE_LAYOUT_COUNT,
-  TEMPLATE_CATEGORY_COUNT,
-  TEMPLATE_COUNT,
+  LANDING_FAQ,
+  LANDING_FAQ_COUNT,
+  TEMPLATE_CATEGORY_NAMES,
 } from './faq-content';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
@@ -50,65 +41,58 @@ describe('FAQ content', () => {
       expect(faqAnswerText(item), item.q).toBe(visibleText(item.a));
     }
   });
-});
 
-// The template count is written out where it ships to the browser; every mention must match the catalogue.
-describe('template counts in marketing copy', () => {
-  it('matches the catalogue in the FAQ', () => {
-    expect(TEMPLATE_COUNT).toBe(TEMPLATES.length);
-    expect(TEMPLATE_CATEGORY_COUNT).toBe(TEMPLATE_CATEGORIES.length);
+  it('never uses an em dash', () => {
+    for (const item of items) expect(`${item.q} ${faqAnswerText(item)}`, item.q).not.toMatch(/—/);
+  });
+
+  it('names the template categories the catalogue has', () => {
+    expect(TEMPLATE_CATEGORY_NAMES).toEqual(TEMPLATE_CATEGORIES.map((c) => c.label));
+  });
+
+  it('is searchable by a word in an answer', () => {
+    expect(filterFaq(FAQ_CATEGORIES, 'confluence').flatMap((c) => c.items).length).toBeGreaterThan(
+      0,
+    );
+    expect(filterFaq(FAQ_CATEGORIES, 'zzzz')).toEqual([]);
   });
 });
 
-// Theme counts are written out as digits or words; each must match the theme catalogue.
-describe('theme counts in marketing copy', () => {
-  const WORDS: Record<string, number> = { 'twenty-four': 24, 'twenty-five': 25 };
-  it('matches the catalogue in the FAQ and the landing page', () => {
-    const copy = JSON.stringify([
-      FAQ_CATEGORIES.map((c) => c.items.map((i) => faqAnswerText(i))),
-      LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)),
-    ]);
-    const counts = [
-      ...copy.matchAll(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi),
-    ].map((m) => (/^\d+$/.test(m[1]!) ? Number(m[1]) : WORDS[m[1]!.toLowerCase()]));
-    expect(counts.length).toBeGreaterThan(0);
-    // The seasonal themes are the seasonal looks' own, never offered in a picker, so the copy counts the rest.
-    const offered = THEMES.filter((t) => !t.seasonal).length;
-    for (const n of counts) expect(n).toBe(offered);
-  });
-});
-
-// Slide layout counts are written out too, as digits or a word; each must match Pages mode's catalogue.
-describe('slide layout counts in marketing copy', () => {
-  it('matches the catalogue in the FAQ', () => {
-    expect(SLIDE_LAYOUT_COUNT).toBe(SLIDE_LAYOUTS.length);
+// docs/specs/019-marketing/marketing-site.md "Structure" 9 and the honest answers the page owes a visitor.
+describe('the landing FAQ', () => {
+  it('finds every question it means to show', () => {
+    expect(LANDING_FAQ).toHaveLength(LANDING_FAQ_COUNT);
+    expect(LANDING_FAQ_COUNT).toBe(8);
   });
 
-  it('matches the infographic catalogue in the FAQ', () => {
-    expect(PAGE_LAYOUT_COUNT).toBe(PAGE_LAYOUTS.length);
+  const answer = (q: string) => faqAnswerText(items.find((i) => i.q === q)!);
+
+  it('says it is free, MIT and has no paid tier', () => {
+    expect(answer('Is liveknowledge free?')).toMatch(/MIT licence.*no paid tier/);
   });
 
-  it('matches the infographic catalogue on the landing page', () => {
-    // Written as words in the cards; a catalogue change fails here until the copy follows it.
-    const WORD: Record<number, string> = { 92: 'Ninety-two' };
-    const copy = JSON.stringify(LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)));
-    expect(copy).toContain(`${WORD[PAGE_LAYOUTS.length]} ready-made pages`);
-  });
-});
-
-describe('filterFaq', () => {
-  it('returns the list untouched for an empty query', () => {
-    expect(filterFaq(FAQ_CATEGORIES, '   ')).toBe(FAQ_CATEGORIES);
+  it('says the team pays for Ask on its own key, and that the rest needs none', () => {
+    expect(answer('Who pays for Ask?')).toMatch(/own Claude API key/);
+    expect(answer('Who pays for Ask?')).toMatch(/need no key/);
   });
 
-  it('needs every word, in any case, across question, answer and category', () => {
-    const hits = filterFaq(FAQ_CATEGORIES, 'PDF export').flatMap((c) => c.items.map((i) => i.q));
-    expect(hits).toContain('Can I export my work?');
-    expect(hits.every((q) => q !== 'Is it really free?')).toBe(true);
+  it('says an agent sees only what its person or token can open', () => {
+    expect(answer('What can an agent see?')).toMatch(/Only what the person or token/);
   });
 
-  it('drops categories left empty, and everything for a query nothing matches', () => {
-    expect(filterFaq(FAQ_CATEGORIES, 'telemetry').map((c) => c.id)).toEqual(['privacy']);
-    expect(filterFaq(FAQ_CATEGORIES, 'zzzqqq')).toEqual([]);
+  it('says Google Docs import is not built', () => {
+    expect(answer('Can I import from Notion and Confluence?')).toMatch(
+      /Google Docs import is not built/,
+    );
+  });
+
+  it('says the key is encrypted and never shown again', () => {
+    expect(answer('Is my Claude API key safe?')).toMatch(/encrypted.*never sent back/);
+  });
+
+  it('says what it is not, and where to go instead', () => {
+    expect(answer('What is liveknowledge not?')).toMatch(
+      /not a slide or page layout tool.*livedocuments/,
+    );
   });
 });

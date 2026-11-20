@@ -6,14 +6,10 @@ import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards
 // The marketing site's chrome (navigation, cards, buttons) keeps the motion budget
 // (docs/specs/004-interface-design/motion.md). Its illustrations and its page
 // entrance are paced as content, and their motion lives only in the stylesheets
-// listed here. The shared ones (the hero fan, the promises, the page entrance) are
+// listed here (the hero illustration's and the feature art's). The shared ones (the promises, the page entrance) are
 // @liveworkspace/marketing-site's, which keeps its own budget.
 const CONTENT_STYLESHEETS = [
   'app/hero-animations.css',
-  // Each hero scene's own keyframes, one stylesheet per scene.
-  ...readdirSync(fileURLToPath(new URL('app/hero-scenes/', import.meta.url)))
-    .filter((f) => f.endsWith('.css'))
-    .map((f) => `app/hero-scenes/${f}`),
   // The card illustrations' loops, one stylesheet per art group.
   ...readdirSync(fileURLToPath(new URL('app/feature-art/', import.meta.url)))
     .filter((f) => f.endsWith('.css'))

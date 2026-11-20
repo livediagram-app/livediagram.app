@@ -1,5 +1,6 @@
 import { ComparisonHub, HUB_PATH, hubItemListJsonLd } from '@liveworkspace/comparisons';
-import { BrandMark, JsonLd, pageMetadata } from '@liveknowledge/ui';
+import { BrandMark, JsonLd } from '@liveknowledge/ui';
+import { pageMetadata } from '@/lib/seo';
 
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
@@ -36,8 +37,8 @@ export default function AlternativesIndexPage() {
           mark={mark}
           tryIt={
             <TryItCard
-              title="Or just try it"
-              body="No sign-up, nothing to install, free forever. The fastest comparison is your own."
+              title="Or Just Try It"
+              body="No sign-up and nothing to install. The fastest comparison is your own."
               source="Compare.Card"
               art
             />

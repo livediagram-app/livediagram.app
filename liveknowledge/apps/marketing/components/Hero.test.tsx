@@ -1,329 +1,65 @@
-// @vitest-environment jsdom
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { seededRandom } from '@liveknowledge/document';
-import {
-  HERO_FAN_FULL_MIN_PX,
-  HERO_FAN_OPENING,
-  HERO_FAN_SLOTS,
-  heroTemplate,
-  shuffleFan,
-} from '@/lib/hero-starts';
+import { describe, expect, it } from 'vitest';
+
+import { HERO_HEADLINE, PITCH_LINE } from '@/lib/site-words';
 import { Hero } from './Hero';
-import { HERO_FAN_SWAP_MS } from './HeroFan';
-import { HERO_VERB_HOLD_MS, HERO_VERBS } from './HeroVerb';
+import { HeroIllustration } from './HeroIllustration';
 
-// docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with Start Blank in its bar, and the dealing fan.
-
-let reduceMotion = false;
-// Whether the window is wide enough for the whole fan (HERO_FAN_FULL_MIN_PX).
-let fullWidth = true;
-let observed: ((entries: { isIntersecting: boolean }[]) => void) | null = null;
-
-beforeEach(() => {
-  reduceMotion = false;
-  fullWidth = true;
-  vi.stubGlobal(
-    'matchMedia',
-    (query: string) =>
-      ({
-        matches: query.includes('reduce')
-          ? reduceMotion
-          : query.includes(`${HERO_FAN_FULL_MIN_PX}px`)
-            ? fullWidth
-            : true,
-        media: query,
-        addEventListener() {},
-        removeEventListener() {},
-        addListener() {},
-        removeListener() {},
-      }) as unknown as MediaQueryList,
-  );
-  vi.stubGlobal(
-    'IntersectionObserver',
-    class {
-      constructor(cb: (entries: { isIntersecting: boolean }[]) => void) {
-        observed = cb;
-      }
-      observe() {}
-      disconnect() {}
-    },
-  );
-  localStorage.clear();
-});
-
-afterEach(() => {
-  vi.useRealTimers();
-  vi.restoreAllMocks();
-  vi.unstubAllGlobals();
-});
-
-const fanTitles = () =>
-  screen
-    .getAllByRole('link')
-    .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'))
-    .map((a) => a.textContent?.replace(/^Create an? /, ''));
-
+// docs/specs/019-marketing/marketing-site.md "Hero".
 describe('the hero', () => {
-  it('asks the question under its two promise badges', () => {
-    render(<Hero />);
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'What are you writing today?' }),
-    ).toBeTruthy();
-    const promises = within(screen.getByRole('list', { name: 'Our promises' })).getAllByRole(
-      'listitem',
-    );
-    expect(promises.map((p) => p.textContent)).toEqual([
-      'Free and open source',
-      'No sign-up to start',
-    ]);
+  const html = renderToStaticMarkup(<Hero />);
+
+  it('says what liveknowledge is, in one h1 and the pitch line', () => {
+    expect(html.match(/<h1/g)).toHaveLength(1);
+    expect(html).toContain(HERO_HEADLINE);
+    expect(html).toContain(PITCH_LINE);
   });
 
-  it('lists the best matches as links that create them, once something is typed', () => {
-    render(<Hero />);
-    const box = screen.getByLabelText('Search templates');
-    fireEvent.focus(box);
-    expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
-    fireEvent.change(box, { target: { value: 'handbook' } });
-    const list = screen.getByRole('list', { name: 'Matching templates' });
-    const links = within(list).getAllByRole('link');
-    expect(links.length).toBeGreaterThan(0);
-    expect(links[0]!.getAttribute('href')).toBe(
-      '/new?template=onboarding-handbook&via=Home.HeroSearch',
-    );
-    expect(screen.getByRole('link', { name: /Browse every template/ }).getAttribute('href')).toBe(
-      '#templates',
-    );
+  it('offers the two ways in: start (the funnel’s Home.Hero slot) and import', () => {
+    expect(html).toContain('href="/new?via=Home.Hero"');
+    expect(html).toContain('Start a Knowledgebase');
+    expect(html).toMatch(/href="#import"[^>]*>.*Import From Notion or Confluence/s);
   });
 
-  it('opens the top match on Enter, walks the list with the arrows, and clears on Escape', () => {
-    const assign = vi.fn();
-    vi.stubGlobal('location', { ...window.location, assign });
-    render(<Hero />);
-    const box = screen.getByLabelText<HTMLInputElement>('Search templates');
-    box.focus();
-    fireEvent.change(box, { target: { value: 'handbook' } });
-    fireEvent.keyDown(box, { key: 'ArrowDown' });
-    const first = within(screen.getByRole('list', { name: 'Matching templates' })).getAllByRole(
-      'link',
-    )[0]!;
-    expect(document.activeElement).toBe(first);
-    fireEvent.keyDown(first, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(box);
-    fireEvent.submit(box.form!);
-    expect(assign).toHaveBeenCalledWith('/new?template=onboarding-handbook&via=Home.HeroSearch');
-    fireEvent.keyDown(box, { key: 'Escape' });
-    expect(box.value).toBe('');
+  it('fills the first screen as every product’s hero does (hero-tall.css)', () => {
+    expect(html).toMatch(/<section class="[^"]*\bhero-tall\b/);
+    expect(html).toMatch(/class="[^"]*\bhero-tall-copy\b/);
   });
 
-  it('closes the matches when focus moves to Start Blank in the bar', () => {
-    render(<Hero />);
-    const box = screen.getByLabelText('Search templates');
-    fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'handbook' } });
-    expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
-    const blank = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
-    fireEvent.focus(blank);
-    expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
-    fireEvent.focus(box);
-    expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
+  it('keeps both buttons 48px tall, a whole touch target on a phone', () => {
+    const buttons = [...html.matchAll(/<a [^>]*class="([^"]*)"/g)].map((m) => m[1]!.split(' '));
+    expect(buttons).toHaveLength(2);
+    for (const classes of buttons) expect(classes).toContain('h-12');
   });
 
-  it('scrolls the search up when its matches would open below what a phone shows', () => {
-    const scrollIntoView = vi.fn();
-    Element.prototype.scrollIntoView = scrollIntoView;
-    const rect = vi
-      .spyOn(Element.prototype, 'getBoundingClientRect')
-      .mockReturnValue({ bottom: window.innerHeight + 100 } as DOMRect);
-    render(<Hero />);
-    const box = screen.getByLabelText('Search templates');
-    fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'handbook' } });
-    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
-    rect.mockReturnValue({ bottom: 10 } as DOMRect);
-    scrollIntoView.mockClear();
-    fireEvent.change(box, { target: { value: '' } });
-    fireEvent.change(box, { target: { value: 'handbook' } });
-    expect(scrollIntoView).not.toHaveBeenCalled();
-    rect.mockRestore();
-  });
-
-  it('says so when nothing matches', () => {
-    render(<Hero />);
-    const box = screen.getByLabelText('Search templates');
-    fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'zzqqxx' } });
-    expect(screen.getByText(/Nothing matches/)).toBeTruthy();
-  });
-
-  it('sends Start Blank to the wizard with no start screen after it, as the hero’s own funnel slot', () => {
-    render(<Hero />);
-    const link = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
-    expect(link.getAttribute('href')).toBe('/new?start=blank&via=Home.HeroBlank');
-    expect(within(screen.getByRole('search')).queryAllByRole('menuitem', { hidden: true })).toEqual(
-      [],
-    );
-  });
-
-  it('deals the template fan for everyone, a returning visitor with recent work included', () => {
-    const note = (n: number) =>
-      JSON.stringify({
-        v: 1,
-        diagrams: Array.from({ length: n }, (_, i) => ({
-          id: `d${i + 1}`,
-          name: `Document ${i + 1}`,
-          savedAt: Date.now() - (i + 1) * 3600e3,
-          mode: 'pages',
-        })),
-      });
-    // The note older editors left (docs/specs/019-marketing/marketing-site.md "Hero").
-    localStorage.setItem('liveknowledge:recent-diagrams:v1', note(6));
-    render(<Hero />);
-    expect(fanTitles()).toHaveLength(HERO_FAN_SLOTS);
-    expect(screen.queryByRole('link', { name: /Explorer Home/ })).toBeNull();
+  it('is illustrated: the drawing is in the static HTML, once, with one label', () => {
+    expect(html.match(/<svg[^>]*role="img"/g)).toHaveLength(1);
+    expect(html).toMatch(/aria-label="Five small cubes[^"]*knowledge[^"]*"/);
+    // Its box holds its shape before paint and rests while off screen.
+    expect(html).toMatch(/class="[^"]*aspect-\[6\/5\][^"]*\[content-visibility:auto\]/);
   });
 });
 
-describe('the headline, written live', () => {
-  const typed = () => document.querySelector('[data-hero-verb]')!.textContent;
+describe('the hero illustration', () => {
+  const svg = renderToStaticMarkup(<HeroIllustration />);
 
-  it('serves the first verb in the static HTML, so the first frame is whole', () => {
-    const html = renderToStaticMarkup(<Hero />);
-    expect(html).toContain('data-hero-verb');
-    expect(html).toMatch(/>writing<\/span>/);
+  it('draws the five other apps’ cubes and the knowledgebase’s lime cube', () => {
+    for (const hue of ['sky', 'violet', 'amber', 'rose', 'emerald']) {
+      expect(svg, hue).toContain(`fill-${hue}-500`);
+    }
+    expect(svg).toContain('fill-brand-300');
+    // Five connectors, each with running dashes.
+    expect(svg.match(/class="kh-flow /g)).toHaveLength(5);
   });
 
-  it('types the next verb after a rest, while screen readers keep one stable heading', () => {
-    vi.useFakeTimers();
-    render(<Hero />);
-    expect(typed()).toContain('writing');
-    act(() => {
-      vi.advanceTimersByTime(HERO_VERB_HOLD_MS + 2000);
-    });
-    expect(typed()).toContain(HERO_VERBS[1]);
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'What are you writing today?' }),
-    ).toBeTruthy();
+  it('puts words on its two cards: a question, and a cited, verified answer', () => {
+    expect(svg).toContain('How do we roll back');
+    expect(svg).toContain('[1]');
+    expect(svg).toContain('Release Runbook');
+    expect(svg).toContain('Verified by Priya');
   });
 
-  it('keeps every verb in the slot, so the line never reflows as it types', () => {
-    render(<Hero />);
-    const h1 = screen.getByRole('heading', { level: 1 });
-    for (const v of HERO_VERBS) expect(h1.textContent).toContain(v);
-  });
-
-  it('stays on the first verb under reduced motion, and while the tab is hidden', () => {
-    reduceMotion = true;
-    vi.useFakeTimers();
-    const { unmount } = render(<Hero />);
-    act(() => {
-      vi.advanceTimersByTime(HERO_VERB_HOLD_MS * 4);
-    });
-    expect(typed()).toContain('writing');
-    unmount();
-
-    reduceMotion = false;
-    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
-    render(<Hero />);
-    act(() => {
-      vi.advanceTimersByTime(HERO_VERB_HOLD_MS * 4);
-    });
-    expect(typed()).toContain('writing');
-  });
-});
-
-describe('the fan', () => {
-  // A fixed random source, so this visit's shuffle is known.
-  const deck = () => shuffleFan(seededRandom(7));
-  const titles = (kinds: readonly string[]) => kinds.map((k) => heroTemplate(k as never).title);
-  beforeEach(() => {
-    const random = seededRandom(7);
-    vi.spyOn(Math, 'random').mockImplementation(random);
-  });
-
-  it("serves a fixed opening hand, then deals this visit's shuffled one over it", () => {
-    const html = renderToStaticMarkup(<Hero />);
-    for (const t of titles(HERO_FAN_OPENING)) expect(html).toContain(t);
-    render(<Hero />);
-    expect(fanTitles()).toEqual(titles(deck().slice(0, HERO_FAN_SLOTS)));
-  });
-
-  it('deals the next of the shuffled pool into one slot every few seconds', () => {
-    vi.useFakeTimers();
-    render(<Hero />);
-    const first = fanTitles();
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS + 500);
-    });
-    const after = fanTitles();
-    expect(after.filter((t, i) => t !== first[i])).toEqual(titles([deck()[HERO_FAN_SLOTS]!]));
-  });
-
-  it('holds while the pointer is on it, and off screen', () => {
-    vi.useFakeTimers();
-    const { unmount } = render(<Hero />);
-    const first = fanTitles();
-    const card = screen.getAllByRole('link').find((a) => a.textContent?.includes(first[2]!))!;
-    fireEvent.pointerEnter(card.closest('div')!.parentElement!);
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
-    });
-    expect(fanTitles()).toEqual(first);
-    unmount();
-
-    render(<Hero />);
-    const again = fanTitles();
-    act(() => observed?.([{ isIntersecting: false }]));
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
-    });
-    expect(fanTitles()).toEqual(again);
-  });
-
-  it('shows all seven only on a very wide screen, and never swaps a card out of sight', () => {
-    fullWidth = false;
-    vi.useFakeTimers();
-    render(<Hero />);
-    const cards = () =>
-      screen
-        .getAllByRole('link')
-        .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'));
-    // The outer pair hides below the full width, the next pair on a phone.
-    const full = `max-[${HERO_FAN_FULL_MIN_PX}px]:hidden`;
-    const hides = cards().map((a) => {
-      const words = a.parentElement!.className.split(' ');
-      return words.includes(full) ? 'full' : words.includes('max-sm:hidden') ? 'phone' : 'always';
-    });
-    expect(hides).toEqual(['full', 'phone', 'always', 'always', 'always', 'phone', 'full']);
-    const first = fanTitles();
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 12);
-    });
-    const after = fanTitles();
-    expect([after[0], after[6]]).toEqual([first[0], first[6]]);
-    expect(after.slice(1, 6)).not.toEqual(first.slice(1, 6));
-  });
-
-  it('stands every card upright, never tilted', () => {
-    render(<Hero />);
-    const slots = screen
-      .getAllByRole('link')
-      .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'))
-      .map((a) => a.parentElement!.className);
-    expect(slots).toHaveLength(HERO_FAN_SLOTS);
-    for (const c of slots) expect(c).not.toMatch(/rotate\(-?[1-9]/);
-  });
-
-  it('never swaps under reduced motion', () => {
-    reduceMotion = true;
-    vi.useFakeTimers();
-    render(<Hero />);
-    const first = fanTitles();
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
-    });
-    expect(fanTitles()).toEqual(first);
+  it('hides its parts from assistive technology behind the one label', () => {
+    expect(svg).toMatch(/<svg[^>]*role="img"[^>]*>\s*<g aria-hidden="true"/);
   });
 });

@@ -10,7 +10,8 @@ import {
   HUB_PATH,
   VsBadge,
 } from '@liveworkspace/comparisons';
-import { BrandMark, JsonLd, pageMetadata } from '@liveknowledge/ui';
+import { BrandMark, JsonLd } from '@liveknowledge/ui';
+import { pageMetadata } from '@/lib/seo';
 
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';

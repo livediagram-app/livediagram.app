@@ -1,4 +1,4 @@
-import { SITE_DESCRIPTION } from '@liveknowledge/ui';
+import { SITE_DESCRIPTION } from '@/lib/site-words';
 import { appIcons, installManifest } from '@liveworkspace/marketing-site/lib/install';
 import type { MetadataRoute } from 'next';
 

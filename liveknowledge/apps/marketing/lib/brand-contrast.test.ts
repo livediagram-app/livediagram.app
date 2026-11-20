@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 // The brand colours marketing writes small text in, and puts white text on, must meet WCAG 2.2 AA (4.5:1)
-// in light and in dark (docs/specs/019-marketing/marketing-site.md "Tone & brand"). amber-500 and amber-600
-// read at 2.2:1 and 3.2:1 against white, so the CTA panels and small brand text use brand-700.
+// in light and in dark (docs/specs/019-marketing/marketing-site.md "Tone and brand"). The ramp's 500 and 600
+// are too pale against white, so the CTA panels and small brand text use brand-700.
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), 'utf8');
 // The shared theme (the monorepo's packages/tailwind-config), then this product's palette over it, which wins.
 const THEMES = [
@@ -72,15 +72,15 @@ describe('brand text contrast', () => {
   });
 
   // The promises' and the closing band's deep indigo, the same in either appearance, and every colour
-  // set on it: the copy, the eyebrows, the launcher's lines and the five promise hues.
+  // set on it: the copy, the eyebrows and the promise hues.
   const INDIGO = '#0b1026';
   const ON_INDIGO = [
     ['white', '#ffffff'],
     ['slate-300 (copy)', '#cbd5e1'],
     ['slate-400 (launcher lines)', '#94a3b8'],
-    ['amber-300 (eyebrows)', '#fcd34d'],
+    ['lime-300 (eyebrows)', '#bef264'],
     ['emerald (Free)', '#34d399'],
-    ['amber (No Account)', '#fbbf24'],
+    ['lime (No Account)', '#a3e635'],
     ['sky (Open Source)', '#38bdf8'],
     ['rose (Private)', '#fb7185'],
     ['violet (Live)', '#a78bfa'],

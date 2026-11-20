@@ -1,5 +1,5 @@
 import { lucideBookOpen, lucideMail } from '@liveworkspace/icons/lucide';
-import { JsonLd, lucideGlyph, pageMetadata } from '@liveknowledge/ui';
+import { JsonLd, lucideGlyph } from '@liveknowledge/ui';
 
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { FaqBrowser } from '@/components/faq/FaqBrowser';
@@ -8,10 +8,11 @@ import { Header } from '@/components/Header';
 import { TryItCard } from '@/components/TryItCard';
 import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
 import { FAQ_CATEGORIES } from '@/lib/faq-content';
+import { pageMetadata } from '@/lib/seo';
 
 const FAQ_TITLE = 'FAQ · liveknowledge';
 const FAQ_DESCRIPTION =
-  'Answers to common questions about liveknowledge: getting started, collaboration, sharing, AI and MCP, import and export, privacy, and support.';
+  'Answers about liveknowledge: what it costs, verification, Ask and your Claude key, agents and MCP, importing from Notion and Confluence, and sharing.';
 
 export const metadata = pageMetadata({
   title: FAQ_TITLE,
@@ -45,8 +46,8 @@ export default function FaqPage() {
       <main className="pb-20 sm:pb-24">
         <FaqBrowser
           eyebrow="FAQ"
-          title="Questions, answered"
-          lede="Everything you might want to know about liveknowledge, from your first document to the API."
+          title="Questions, Answered"
+          lede="What liveknowledge does, what it costs, and what it does not do yet."
         />
 
         <section aria-labelledby="faq-more-title" className="mx-auto mt-20 max-w-6xl px-6">
@@ -54,7 +55,7 @@ export default function FaqPage() {
             id="faq-more-title"
             className="text-center text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100"
           >
-            Still have a question?
+            Still Have a Question?
           </h2>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             <a
@@ -68,7 +69,7 @@ export default function FaqPage() {
                 Browse the Help Centre
               </p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                Step-by-step guides for every tool, mode and setting.
+                Step-by-step guides for writing, sharing and settings.
               </p>
             </a>
             <a
@@ -78,14 +79,14 @@ export default function FaqPage() {
               <span className="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
                 <MailIcon />
               </span>
-              <p className="mt-4 font-semibold text-slate-900 dark:text-slate-100">Get in touch</p>
+              <p className="mt-4 font-semibold text-slate-900 dark:text-slate-100">Get in Touch</p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 Ask us anything, report a bug or share an idea.
               </p>
             </a>
             <TryItCard
-              title="The quickest answer is to try it"
-              body="No sign-up, nothing to install, free forever."
+              title="The Quickest Answer Is to Try It"
+              body="No sign-up and nothing to install. Free and open source."
               source="Faq.Card"
             />
           </div>

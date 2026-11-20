@@ -18,8 +18,7 @@ import {
 } from 'react';
 import { PROMISES, type Promise, type PromiseId } from '@/lib/promises';
 
-// The promises (docs/specs/019-marketing/marketing-site.md "Promises"), straight after the template
-// gallery: "Built with your values in mind", told through the brand mark. The mark is a prism (drawn
+// The promises (docs/specs/019-marketing/marketing-site.md "Structure" 3), straight after the hero: "Built With Your Values in Mind", told through the brand mark. The mark is a prism (drawn
 // large, without its inner diagram, and opening and turning on hover as the header's does), so a
 // beam of white light runs into it and leaves as four coloured beams, each landing on one promise
 // (Completely Free, No Account Needed, Open Source, Private by Design, Real-Time Collaboration). On a
@@ -36,7 +35,7 @@ type Look = { Icon: ComponentType<IconProps>; hue: string };
 
 // Each promise's light: bright enough to read as a value on the indigo band (4.5:1 and up).
 const LOOK: Record<PromiseId, Look> = {
-  'no-account': { Icon: lucideGlyph(lucideUserX, 18), hue: '#fbbf24' },
+  'no-account': { Icon: lucideGlyph(lucideUserX, 18), hue: '#a3e635' },
   'open-source': { Icon: lucideGlyph(lucideGitFork, 18), hue: '#38bdf8' },
   private: { Icon: lucideGlyph(lucideEyeOff, 18), hue: '#fb7185' },
   live: { Icon: lucideGlyph(lucideUsers, 18), hue: '#a78bfa' },
@@ -131,12 +130,14 @@ export function PromisePrism() {
     >
       <div className="mx-auto grid max-w-6xl items-center gap-14 px-6 py-24 sm:py-28 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="text-center lg:text-left">
-          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-300">No catch</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-300">
+            No Catch
+          </p>
           <h2
             id="promises-heading"
             className="mt-4 text-balance text-4xl font-semibold tracking-tight sm:text-5xl"
           >
-            Built with your values in mind
+            Built With Your Values in Mind
           </h2>
           <p className="mt-5 text-pretty text-lg leading-relaxed text-slate-300">
             liveknowledge is free, open and private for everyone, and it stays that way. One light,
@@ -147,16 +148,16 @@ export function PromisePrism() {
               href={REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold text-[#0b1026] transition-colors hover:bg-sky-100"
+              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold text-[#0b1026] transition-colors hover:bg-brand-100"
             >
-              <span className="text-optical-centre">Read the source</span>
+              <span className="text-optical-centre">Read the Source</span>
               <ChevronRightIcon size={14} aria-hidden />
             </a>
             <a
               href="/telemetry/"
               className="inline-flex h-11 items-center gap-1.5 rounded-full border border-white/20 px-5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
             >
-              <span className="text-optical-centre">See what we measure</span>
+              <span className="text-optical-centre">See What We Measure</span>
               <ChevronRightIcon size={14} aria-hidden />
             </a>
           </div>
