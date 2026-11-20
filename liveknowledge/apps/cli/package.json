@@ -1,0 +1,39 @@
+{
+  "name": "@liveknowledge/cli",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "liveknowledge": "./src/bin.ts"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage dist"
+  },
+  "dependencies": {
+    "@liveknowledge/agent-verbs": "workspace:*",
+    "@liveknowledge/api-schema": "workspace:*",
+    "@liveknowledge/document": "workspace:*",
+    "@liveknowledge/document-views": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/cli-kit": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@resvg/resvg-wasm": "^2.6.2",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "esbuild": "^0.28.2",
+    "oxlint": "^1.93.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

@@ -1,0 +1,269 @@
+// The Pages tools' input and output shapes (docs/specs/024-agents/pages-for-agents.md,
+// docs/specs/015-api/mcp-server.md §4.9d): change_pages and write_article. Pages are named by id, place
+// or name; articles by flow id or title. The layout ids each kind offers come from the catalogue the
+// editor's page panel shows, so the two never disagree.
+import { z } from 'zod';
+import { PAGE_CHANGES_MAX } from '@liveknowledge/api-schema';
+import {
+  ARTICLE_LOOK_IDS,
+  ARTICLE_MARKDOWN_MAX,
+  PAGE_NAME_MAX,
+  PAGE_SIZE_IDS,
+  type ArticleLookId,
+  type PageKind,
+  type PageSizeId,
+} from '@liveknowledge/document';
+import { layoutCatalogueFor } from '@liveknowledge/templates';
+
+const layoutIds = (kind: Exclude<PageKind, 'article'>) =>
+  layoutCatalogueFor(kind)
+    .layouts.map((l) => l.id)
+    .join(', ');
+
+const url = z.string().describe('Link that opens the document in the liveknowledge editor.');
+const documentId = z.string().describe('The document (from find_documents).');
+const tabId = z.string().optional().describe('The tab. Absent: the first tab.');
+const pageRef = z
+  .union([z.string(), z.number().int().min(1)])
+  .describe('A page: its id, its place (1 is the first, as a number or text) or its name.');
+const size = z
+  .enum(PAGE_SIZE_IDS as [PageSizeId, ...PageSizeId[]])
+  .describe(
+    'Page size: a4, letter, a3, square, social (4:5), wide (9:16, or 16:9 turned) for infographic and article ' +
+      'pages; slide (16:9) or slide-classic (4:3) for slides; card for flashcards. fit is never chosen.',
+  );
+const orientation = z
+  .enum(['portrait', 'landscape'])
+  .describe('Portrait or landscape. Slides have none.');
+// A box on the canvas, in canvas px: a page's.
+const canvasRect = z.object({
+  x: z.number().describe('Left edge, canvas px.'),
+  y: z.number().describe('Top edge, canvas px.'),
+  width: z.number().describe('Width, canvas px.'),
+  height: z.number().describe('Height, canvas px.'),
+});
+
+const hex = z.string().describe('A hex colour such as #0f172a.');
+const background = z
+  .object({
+    color: hex.optional().describe('A solid fill, a hex colour.'),
+    gradient: z
+      .tuple([hex, hex])
+      .optional()
+      .describe('A two-stop gradient: the colours it runs from and to.'),
+    angle: z.number().optional().describe('The gradient’s angle in degrees (default 160).'),
+    pattern: z
+      .enum(['dots', 'grid', 'lines', 'none'])
+      .optional()
+      .describe('A pattern over the fill: dots, grid, lines, or none.'),
+    paper: z.literal(true).optional().describe('Back to the plain paper.'),
+  })
+  .describe('The page’s background: one of color, gradient or paper, and optionally a pattern.');
+const layout = z
+  .string()
+  .describe(
+    `A ready-made arrangement put onto the page in place of what is on it. Infographic: ${layoutIds('infographic')}. ` +
+      `Slide: ${layoutIds('slide')}. Article pages take none.`,
+  );
+const name = z
+  .string()
+  .max(PAGE_NAME_MAX)
+  .describe(`The page’s name, up to ${PAGE_NAME_MAX} characters.`);
+
+const pageChange = z
+  .discriminatedUnion('op', [
+    z
+      .object({
+        op: z.literal('add').describe('Add a page.'),
+        kind: z
+          .enum(['infographic', 'slide', 'flashcard'])
+          .describe(
+            "What the page is for: the tab's own kind (its first page's), as every page of a tab is one kind. Article pages are made by write_article. A flashcard is a card of text, added empty and written with write_article (name the card as the article).",
+          ),
+        size: size.optional(),
+        orientation: orientation.optional(),
+        name: name.optional(),
+        background: background.optional(),
+        layout: layout.optional(),
+        at: z.number().int().min(1).optional().describe('The place it goes to (default: the end).'),
+      })
+      .describe(
+        'A new page; on a fresh tab its empty first page (or a blank deck’s one empty slide) becomes it.',
+      ),
+    z
+      .object({
+        op: z.literal('set').describe('Change a page.'),
+        page: pageRef,
+        name: name.optional(),
+        size: size.optional(),
+        orientation: orientation.optional(),
+        background: background.optional(),
+        locked: z.boolean().optional().describe('Lock or unlock the page (unlocking comes first).'),
+      })
+      .describe(
+        'A page’s name, size, orientation, background or lock; on an article, all its pages.',
+      ),
+    z
+      .object({ op: z.literal('layout').describe('Lay a page out.'), page: pageRef, layout })
+      .describe('Replace what is on a page with a layout.'),
+    z
+      .object({
+        op: z.literal('move').describe('Move a page.'),
+        page: pageRef,
+        to: z.number().int().min(1).describe('The place to move it to.'),
+      })
+      .describe('Move a page (an article page: its whole article), with its content.'),
+    z
+      .object({ op: z.literal('duplicate').describe('Copy a page.'), page: pageRef })
+      .describe('A copy after it, content and all (an article: the whole article).'),
+    z
+      .object({
+        op: z
+          .literal('apply_background_to_all')
+          .describe("Give every other page of this page's kind its background."),
+        page: pageRef,
+      })
+      .describe(
+        'Every other page of the same kind (every slide, say) takes this page’s background and pattern, as the Background tab’s Apply to All; a locked page keeps its own.',
+      ),
+    z
+      .object({ op: z.literal('delete').describe('Delete a page.'), page: pageRef })
+      .describe(
+        'Delete a page and what is on it (an article page: the whole article). Never the last.',
+      ),
+  ])
+  .describe('One page change.');
+
+export const changePagesShape = {
+  documentId,
+  tabId,
+  changes: z
+    .array(pageChange)
+    .min(1)
+    .max(PAGE_CHANGES_MAX)
+    .describe(
+      `Up to ${PAGE_CHANGES_MAX} page changes, applied in order as one edit; places count the pages as earlier changes left them.`,
+    ),
+};
+
+const pageOut = z
+  .object({
+    place: z.number().describe('Its place in the row, 1 first.'),
+    id: z.string().describe('The page id.'),
+    name: z.string().nullable().describe('Its name, or null.'),
+    kind: z.string().describe('infographic, article, slide or flashcard.'),
+    size: z.string().describe('Its size id.'),
+    orientation: z.string().nullable().describe('portrait, landscape, or null for none.'),
+    rect: canvasRect.describe(
+      'Where the page sits on the canvas: put elements inside it with update_document.',
+    ),
+    background: z.string().nullable().describe('Its background in words, or null for the paper.'),
+    locked: z.boolean().describe('Whether it is locked.'),
+    flow: z.string().nullable().describe('The article it is a page of, or null.'),
+    elements: z.number().describe('How many elements are on it.'),
+  })
+  .describe('A page as it is now.');
+
+const articleOut = z
+  .object({
+    flow: z.string().describe('The article id.'),
+    title: z.string().describe('Its title.'),
+    pages: z.array(z.number()).describe('The places of its pages.'),
+    blocks: z.number().describe('How many blocks its writing has.'),
+    words: z.number().describe('How many words.'),
+    estimatedPages: z
+      .number()
+      .optional()
+      .describe(
+        'About how many pages its writing reaches once laid out (an estimate): the editor grows the article to them, so more than its pages means it runs on.',
+      ),
+    readability: z
+      .object({
+        readingMinutes: z
+          .number()
+          .describe('Minutes to read it (238 words a minute), 0 for no words.'),
+        sentences: z.number().describe('How many sentences its prose has.'),
+        wordsPerSentence: z.number().describe('Words a sentence on average.'),
+        longSentences: z
+          .number()
+          .describe('Sentences over 30 words: split these to make it plainer.'),
+        ease: z
+          .number()
+          .nullable()
+          .describe('Flesch Reading Ease (higher reads more easily), or null when not English.'),
+        level: z
+          .string()
+          .nullable()
+          .describe(
+            'How easily it reads, as the editor says it: Easy to read, Fairly easy to read, Plain English, Fairly hard to read, Hard to read; null when not English.',
+          ),
+      })
+      .optional()
+      .describe(
+        "How easily it reads, the editor's Word Count figures: check them after making an article plainer.",
+      ),
+    look: z.string().nullable().describe('Its look, or null for the default.'),
+  })
+  .describe('An article.');
+
+const answerOut = {
+  documentId: z.string().describe('The document id.'),
+  tabId: z.string().describe('The tab changed.'),
+  lines: z.array(z.string()).describe('What was done, one line each.'),
+  pages: z.array(pageOut).describe('Every page of the tab as it now is.'),
+  articles: z.array(articleOut).describe('Every article of the tab.'),
+  rev: z.number().describe('The tab revision written.'),
+  url,
+};
+
+export const changePagesOutput = answerOut;
+
+export const writeArticleShape = {
+  documentId,
+  tabId,
+  // No max here: the request reader refuses an over-long write as article_too_large, pointing at mode "append"
+  // (docs/specs/024-agents/pages-for-agents.md), which a schema check before it would only answer generically.
+  markdown: z
+    .string()
+    .describe(
+      `At most ${ARTICLE_MARKDOWN_MAX.toLocaleString('en')} characters a write (mode "append" adds more). ` +
+        'The text, in Markdown: # ## ### headings, paragraphs, - and 1. lists (indent two spaces a level), ' +
+        '- [ ] to-dos, > quotes, ``` code, --- dividers, **bold**, *italic*, ~~strike~~, `code`, [links](https://…). ' +
+        'Front matter sets the title and subtitle: a first line ---, then title: …, subtitle: …, then ---. ' +
+        'A line \\pagebreak starts a new page; a line [zone <id>] keeps an existing zone there. ' +
+        'A pipe table (| a | b |, then |---|---|, then rows) is a table, its first line the header row (an empty first ' +
+        'line: no header row); <br> is a line break in a cell. A line [TOC] is a table of contents ([TOC 1] or [TOC 2] ' +
+        'for fewer heading levels). On a card a table is written as a list.',
+    ),
+  article: z
+    .string()
+    .optional()
+    .describe(
+      'Which article, by id or title; on a tab of flashcards, which card. Absent: the tab’s only one, or a new one if it has none.',
+    ),
+  new: z
+    .boolean()
+    .optional()
+    .describe('Always start a new article (on a tab of flashcards, a new card after the last).'),
+  mode: z
+    .enum(['replace', 'append'])
+    .optional()
+    .describe('replace (default) writes the text anew; append adds it after the last block.'),
+  size: size
+    .optional()
+    .describe('A new article’s paper: a4 (default), letter, a3, square, social or wide.'),
+  orientation: orientation.optional(),
+  look: z
+    .enum(ARTICLE_LOOK_IDS as [ArticleLookId, ...ArticleLookId[]])
+    .optional()
+    .describe('The article’s look: clean, classic, report, notebook or bold.'),
+  accent: hex.optional().describe('The accent colour, a hex.'),
+  pageNumbers: z.boolean().optional().describe('Page numbers in the bottom margin on or off.'),
+};
+
+export const writeArticleOutput = {
+  ...answerOut,
+  article: articleOut
+    .extend({ created: z.boolean().describe('Whether the article is new.') })
+    .describe('The article written.'),
+};

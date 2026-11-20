@@ -1,0 +1,318 @@
+import { describe, expect, it } from 'vitest';
+import type { Participant } from './identity';
+import {
+  buildLaserTrailRows,
+  buildParticipantsByTab,
+  buildRemoteCursorRows,
+  buildRemoteSelectionsByElement,
+  remoteSelectionOf,
+  shownRemoteSelections,
+} from './presence-rows';
+
+const p = (id: string, over: Partial<Participant> = {}): Participant => ({
+  id,
+  name: id.toUpperCase(),
+  color: '#123456',
+  status: 'online',
+  ...over,
+});
+
+const byId = (...ps: Participant[]) => new Map(ps.map((x) => [x.id, x] as const));
+
+describe('buildParticipantsByTab', () => {
+  const self = p('me');
+  const common = {
+    activeId: 't1',
+    selfParticipant: self,
+    tabs: [{ id: 't1' }, { id: 't2' }],
+    documentTeamId: null,
+    now: 1000,
+  };
+
+  // docs/specs/007-editor/split-view.md "Presence"
+  it('shows someone working side by side on both of their tabs', () => {
+    const peer = p('peer');
+    const m = buildParticipantsByTab({
+      ...common,
+      tabs: [{ id: 't1' }, { id: 't2' }, { id: 't3' }],
+      documentShareable: true,
+      remoteTabFocus: new Map([['peer', 't2']]),
+      remoteBesideTabs: new Map([['peer', 't1']]),
+      selfBesideTabId: 't3',
+      livePresence: [self, peer],
+      livePresenceById: byId(self, peer),
+      lastSeen: new Map([['peer', 1000]]),
+    });
+    // The peer edits t2 and has t1 beside it: on both, online on ours (we are on t1).
+    expect(m.get('t2')?.map((x) => x.id)).toEqual(['peer']);
+    expect(m.get('t1')?.find((x) => x.id === 'peer')?.status).toBe('online');
+    // We show on our own other pane's tab too.
+    expect(m.get('t3')?.map((x) => x.id)).toEqual(['me']);
+  });
+
+  it('returns an empty map for a private (unshared) document', () => {
+    const m = buildParticipantsByTab({
+      ...common,
+      documentShareable: false,
+      remoteTabFocus: new Map(),
+      livePresence: [self],
+      livePresenceById: byId(self),
+      lastSeen: new Map(),
+    });
+    expect(m.size).toBe(0);
+  });
+
+  it('shows presence for a team document even when not shared (docs/specs/013-workspace/team-shared-documents.md)', () => {
+    const m = buildParticipantsByTab({
+      ...common,
+      documentShareable: false,
+      documentTeamId: 'team-1',
+      remoteTabFocus: new Map(),
+      livePresence: [self],
+      livePresenceById: byId(self),
+      lastSeen: new Map(),
+    });
+    expect(m.size).toBeGreaterThan(0);
+  });
+
+  it('always puts self online on the active tab when shared', () => {
+    const m = buildParticipantsByTab({
+      ...common,
+      documentShareable: true,
+      remoteTabFocus: new Map(),
+      livePresence: [self],
+      livePresenceById: byId(self),
+      lastSeen: new Map(),
+    });
+    expect(m.get('t1')).toEqual([{ ...self, status: 'online', lastActiveAt: 1000 }]);
+  });
+
+  it('marks a recent peer on my tab online, on another tab away', () => {
+    const a = p('a');
+    const b = p('b');
+    const m = buildParticipantsByTab({
+      ...common,
+      documentShareable: true,
+      remoteTabFocus: new Map([
+        ['a', 't1'],
+        ['b', 't2'],
+      ]),
+      livePresence: [self, a, b],
+      livePresenceById: byId(self, a, b),
+      lastSeen: new Map([
+        ['a', 1000],
+        ['b', 1000],
+      ]),
+    });
+    expect(m.get('t1')!.find((x) => x.id === 'a')!.status).toBe('online');
+    expect(m.get('t2')!.find((x) => x.id === 'b')!.status).toBe('away');
+  });
+
+  it('lets idle override tab-focus (long-idle peer is offline)', () => {
+    const a = p('a');
+    const m = buildParticipantsByTab({
+      ...common,
+      documentShareable: true,
+      remoteTabFocus: new Map([['a', 't1']]), // on my tab...
+      livePresence: [self, a],
+      livePresenceById: byId(self, a),
+      lastSeen: new Map([['a', 1000 - 60 * 60 * 1000]]), // ...but idle an hour
+    });
+    expect(m.get('t1')!.find((x) => x.id === 'a')!.status).toBe('offline');
+  });
+
+  it('defaults a joiner with no tab-focus op to the first tab', () => {
+    const a = p('a');
+    const m = buildParticipantsByTab({
+      ...common,
+      documentShareable: true,
+      remoteTabFocus: new Map(), // no focus op yet
+      livePresence: [self, a],
+      livePresenceById: byId(self, a),
+      lastSeen: new Map([['a', 1000]]),
+    });
+    // tabs[0] is t1 (the active tab) -> online
+    expect(m.get('t1')!.some((x) => x.id === 'a')).toBe(true);
+  });
+
+  it('drops our own other browser tabs, which share our collab key (docs/specs/012-collaboration/collaborator-enhancements.md)', () => {
+    const me = p('me', { key: 'k-me' });
+    const myOtherTab = p('sock-2', { key: 'k-me' });
+    const m = buildParticipantsByTab({
+      ...common,
+      selfParticipant: me,
+      documentShareable: true,
+      remoteTabFocus: new Map([['sock-2', 't2']]),
+      livePresence: [me, myOtherTab],
+      livePresenceById: byId(me, myOtherTab),
+      lastSeen: new Map([['sock-2', 1000]]),
+    });
+    expect([...m.values()].flat().map((x) => x.id)).toEqual(['me']);
+  });
+
+  it("collapses a peer's several connections to their most recently active one", () => {
+    const stale = p('sock-a1', { key: 'k-a' });
+    const fresh = p('sock-a2', { key: 'k-a' });
+    const m = buildParticipantsByTab({
+      ...common,
+      documentShareable: true,
+      remoteTabFocus: new Map([
+        ['sock-a1', 't1'],
+        ['sock-a2', 't2'],
+      ]),
+      livePresence: [self, stale, fresh],
+      livePresenceById: byId(self, stale, fresh),
+      lastSeen: new Map([
+        ['sock-a1', 500],
+        ['sock-a2', 900],
+      ]),
+    });
+    expect(m.get('t1')!.map((x) => x.id)).toEqual(['me']);
+    expect(m.get('t2')!.map((x) => x.id)).toEqual(['sock-a2']);
+  });
+
+  it('keeps peers with no collab key apart (older clients fall back to their id)', () => {
+    const a = p('a');
+    const b = p('b');
+    const m = buildParticipantsByTab({
+      ...common,
+      documentShareable: true,
+      remoteTabFocus: new Map([
+        ['a', 't1'],
+        ['b', 't1'],
+      ]),
+      livePresence: [self, a, b],
+      livePresenceById: byId(self, a, b),
+      lastSeen: new Map(),
+    });
+    expect(m.get('t1')!.map((x) => x.id)).toEqual(['me', 'a', 'b']);
+  });
+});
+
+describe('buildRemoteCursorRows', () => {
+  const self = p('me');
+  const a = p('a');
+  it('keeps active-tab peer cursors, drops self / off-canvas / other-tab', () => {
+    const cursors = new Map<string, { tabId: string; x: number; y: number } | null>([
+      ['me', { tabId: 't1', x: 1, y: 1 }], // self -> dropped
+      ['a', { tabId: 't1', x: 5, y: 6 }], // kept
+      ['b', null], // off-canvas -> dropped
+      ['c', { tabId: 't2', x: 9, y: 9 }], // other tab -> dropped
+    ]);
+    const rows = buildRemoteCursorRows(cursors, byId(self, a, p('c')), 'me', 't1');
+    expect(rows).toEqual([{ id: 'a', name: 'A', color: '#123456', x: 5, y: 6 }]);
+  });
+});
+
+describe('buildLaserTrailRows', () => {
+  it('puts the local trail first, then active-tab present peers', () => {
+    const self = p('me', { color: '#fff' });
+    const a = p('a', { color: '#aaa' });
+    const rows = buildLaserTrailRows({
+      localLaserTrail: [{ x: 0, y: 0, t: 1 }],
+      remoteLaserTrails: new Map([
+        ['a', { tabId: 't1', points: [{ x: 1, y: 1, t: 2 }] }],
+        ['b', { tabId: 't2', points: [{ x: 2, y: 2, t: 3 }] }], // other tab -> dropped
+      ]),
+      livePresenceById: byId(self, a),
+      selfId: 'me',
+      selfColor: '#fff',
+      activeId: 't1',
+    });
+    expect(rows.map((r) => r.participantId)).toEqual(['me', 'a']);
+    expect(rows[0]!.color).toBe('#fff');
+  });
+});
+
+describe('buildRemoteSelectionsByElement', () => {
+  // docs/specs/007-editor/editor-app.md "The whole selection holds" (Work Tracker 862): a marquee holds every element, and an
+  // element let go of until its change lands holds with no primary element.
+  it("holds every element of a peer's whole selection, with or without a primary element", () => {
+    const out = buildRemoteSelectionsByElement(
+      new Map([
+        ['a', remoteSelectionOf({ elementId: null, tabId: 't1', elementIds: ['x', 'y', 7] })],
+        ['b', remoteSelectionOf({ elementId: 'y', tabId: 't1' })],
+      ]),
+      byId(p('a'), p('b')),
+      'me',
+      't1',
+    );
+    expect(out.get('x')!.map((s) => s.id)).toEqual(['a']);
+    expect(out.get('y')!.map((s) => s.id)).toEqual(['a', 'b']);
+  });
+
+  it('groups remote selectors per element, dropping self + deselected', () => {
+    const a = p('a');
+    const b = p('b');
+    const out = buildRemoteSelectionsByElement(
+      new Map([
+        ['a', { elementId: 'el1', tabId: 't1' }],
+        ['b', { elementId: 'el1', tabId: 't1' }],
+        ['me', { elementId: 'el2', tabId: 't1' }], // self -> dropped
+        ['c', { elementId: null, tabId: 't1' }], // deselected -> dropped
+      ]),
+      byId(a, b),
+      'me',
+      't1',
+    );
+    expect(out.get('el1')!.map((x) => x.id)).toEqual(['a', 'b']);
+    expect(out.has('el2')).toBe(false);
+  });
+
+  it('drops selections scoped to a different tab, keeps tab-unknown legacy frames', () => {
+    const a = p('a');
+    const b = p('b');
+    const out = buildRemoteSelectionsByElement(
+      new Map([
+        // Same element id living on ANOTHER tab (a duplicated tab's
+        // verbatim copy): must not badge or lock our copy.
+        ['a', { elementId: 'el1', tabId: 'other-tab' }],
+        // Older peer, no tabId: shown everywhere (the old behaviour).
+        ['b', { elementId: 'el1' }],
+      ]),
+      byId(a, b),
+      'me',
+      't1',
+    );
+    expect(out.get('el1')!.map((x) => x.id)).toEqual(['b']);
+  });
+});
+
+// docs/specs/013-workspace/share-roles.md: a Viewer only looks, so its selection holds nothing.
+describe('buildRemoteSelectionsByElement holds', () => {
+  it("marks a Viewer's selection as not holding, a Participant's and an Editor's as holding", () => {
+    const peer = (id: string, role?: 'view' | 'participate' | 'edit') =>
+      [id, { id, name: id, color: '#000', status: 'online', lastActiveAt: 0, role }] as const;
+    const presence = new Map([
+      peer('v', 'view'),
+      peer('p', 'participate'),
+      peer('e', 'edit'),
+      peer('old'),
+    ]);
+    const selections = new Map([
+      ['v', { elementId: 'a' }],
+      ['p', { elementId: 'b' }],
+      ['e', { elementId: 'c' }],
+      ['old', { elementId: 'd' }],
+    ]);
+    const out = buildRemoteSelectionsByElement(selections, presence, 'self', 't');
+    expect(out.get('a')?.[0]?.holds).toBe(false);
+    expect(out.get('b')?.[0]?.holds).toBe(true);
+    expect(out.get('c')?.[0]?.holds).toBe(true);
+    expect(out.get('d')?.[0]?.holds).toBe(true);
+  });
+});
+
+describe('shownRemoteSelections', () => {
+  const byElement = new Map([['e1', [{ id: 'b', name: 'B', color: '#f00', holds: true }]]]);
+
+  it('draws every remote selection while editing', () => {
+    expect(shownRemoteSelections(byElement, false)).toBe(byElement);
+  });
+
+  it('draws none on a presented slide, the same empty map each time', () => {
+    const shown = shownRemoteSelections(byElement, true);
+    expect(shown.size).toBe(0);
+    expect(shownRemoteSelections(byElement, true)).toBe(shown);
+  });
+});

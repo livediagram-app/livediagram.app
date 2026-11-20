@@ -1,0 +1,497 @@
+'use client';
+
+// The page toolbar (docs/specs/007-editor/article-pages.md "The page toolbar"): formatting for the
+// article being worked on (or the article page under the pointer), a card fixed at the top of its
+// page, inside it, centred in the top margin, at one screen size, dressed as the Toolbar layout's
+// strip (toolbar-surface.ts). It never leaves the page: it narrows to the page's width on screen,
+// and goes from view with the page's top. Its buttons never take focus: the caret stays in the writing.
+// Kept short: the formats used all the time are buttons; lists, alignment, colours, inserts and
+// the less used formats are menus (page-toolbar-panels.tsx). Where it sits is
+// page-toolbar-placement.ts; which article it is for, page-toolbar-presence.ts. While the palette's
+// kind is Article it docks in the Toolbar strip instead (lib/article/article-dock.ts).
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import {
+  lucideBaseline,
+  lucideBold,
+  lucideCircleCheck,
+  lucideEllipsis,
+  lucideItalic,
+  lucideLink,
+  lucideList,
+  lucideMessageSquare,
+  lucidePlus,
+  lucideTable,
+  lucideType,
+  lucideUnderline,
+} from '@liveworkspace/icons/lucide';
+import { ChevronDownIcon, lucideGlyph, Portal } from '@liveknowledge/ui';
+import { TOOLBAR_TRIGGER_TONE } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
+import {
+  TOOLBAR_CARD,
+  TOOLBAR_CONTROL_PRESSED,
+} from '@liveworkspace/workbench/components/chrome/toolbar-surface';
+import { useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import {
+  requestStylePanel,
+  useArticleLinkRequest,
+  useArticleCommentRequest,
+} from '@/lib/article/article-editor-store';
+import {
+  clearFormatting,
+  setAlign,
+  setBlockStyle,
+  setHighlight,
+  setLink,
+  setTextColor,
+  shiftLevel,
+  toggleBold,
+  toggleCode,
+  toggleItalic,
+  toggleList,
+  toggleStrike,
+  toggleSub,
+  toggleSup,
+  toggleUnderline,
+} from '@/lib/article/article-commands';
+import { articleSchema } from '@/lib/article/article-schema';
+import { articleCountsOf } from '@/lib/article/article-word-count';
+import { selectNextLongSentence } from '@/lib/article/article-long-sentences';
+import { track } from '@/lib/telemetry';
+import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
+import { insertFootnote } from '@/lib/article/article-footnotes';
+import {
+  insertTable,
+  tableCommand,
+  tableCommandBlock,
+  type TableCommandName,
+} from '@/lib/article/article-table-commands';
+import { Button, Divider, LinkField, ToolbarPopover } from './page-toolbar-menus';
+import { TablePanel } from './page-toolbar-table';
+import { usePageToolbarPlacement } from './page-toolbar-placement';
+import { useShownArticle } from './page-toolbar-presence';
+import {
+  AlignGlyph,
+  AlignPanel,
+  ColourPanel,
+  InsertPanel,
+  LIST_OPTIONS,
+  ListGlyph,
+  ListPanel,
+  MorePanel,
+  STYLE_OPTIONS,
+  StylePanel,
+  type BlockInsert,
+  type MoreAction,
+  type ObjectInsert,
+} from './page-toolbar-panels';
+
+const I = (glyph: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(glyph, 16);
+const Bold = I(lucideBold);
+const Italic = I(lucideItalic);
+const Underline = I(lucideUnderline);
+const LinkIcon = I(lucideLink);
+const Colour = I(lucideBaseline);
+const ListIcon = I(lucideList);
+const Plus = I(lucidePlus);
+const More = I(lucideEllipsis);
+const CommentIcon = I(lucideMessageSquare);
+const ActionIcon = I(lucideCircleCheck);
+const TableIcon = I(lucideTable);
+const TypeIcon = lucideGlyph(lucideType, 14);
+
+// The page toolbar's telemetry (docs/specs/007-editor/article-pages.md "Telemetry").
+const FORMAT_EVENT = {
+  format: 'ArticleFormat',
+  block: 'ArticleBlockStyle',
+  link: 'ArticleLink',
+} as const;
+
+type Open = 'style' | 'list' | 'align' | 'colour' | 'link' | 'insert' | 'table' | 'more' | null;
+
+export function PageToolbar({
+  accent,
+  topRoomOf,
+  articlePages,
+  onInsert,
+  onNote,
+}: {
+  // A comment or an action on the selected text (a margin note): handled by the host.
+  onNote?: (flow: string, kind: 'comment' | 'action') => void;
+  // The article pages on the tab that may be written on, each with its article: what a hover or a
+  // press is measured on. An article with a locked page is left out (it is read-only), so the
+  // toolbar never shows for it, hovered or worked on.
+  // `card`: a flashcard's, which holds text only (docs/specs/007-editor/flashcards.md "Text only").
+  articlePages: readonly { id: string; flow: string; card?: boolean }[];
+  // The screen px of a page's top margin at the current zoom: the room the band sits in.
+  topRoomOf: (pageId: string) => number;
+  // The article's accent (the theme's when it has none of its own).
+  accent: string;
+  // An insert the writing alone cannot make (an object or a drawing): handled by the host.
+  onInsert?: (flow: string, what: ObjectInsert) => void;
+}) {
+  // Which article it is for, worked on, hovered or kept docked (page-toolbar-presence.ts).
+  const { active, dock, shown } = useShownArticle(articlePages);
+  const [open, setOpen] = useState<Open>(null);
+  const linkRequest = useArticleLinkRequest();
+  // ⌘K in the writing opens the link field.
+  const [seenLink, setSeenLink] = useState(linkRequest);
+  if (linkRequest !== seenLink) {
+    setSeenLink(linkRequest);
+    if (active) setOpen('link');
+  }
+  // ⌘⌥M in the writing puts a comment on the selected text.
+  const commentRequest = useArticleCommentRequest();
+  const seenComment = useRef(commentRequest);
+  const noteNow = useRef({ active, onNote, articlePages });
+  useLayoutEffect(() => {
+    noteNow.current = { active, onNote, articlePages };
+  });
+  useEffect(() => {
+    if (commentRequest === seenComment.current) return;
+    seenComment.current = commentRequest;
+    const { active: a, onNote: note, articlePages: pages } = noteNow.current;
+    // A card takes no margin notes.
+    const onCard = pages.some((p) => p.flow === a?.handle.flow && p.card === true);
+    // Nor does text in a table's cell (a note marks a block's own runs).
+    if (a?.selection.hasText && !a.selection.inTable && !onCard) note?.(a.handle.flow, 'comment');
+  }, [commentRequest]);
+  // A menu hangs where it opened: the view panning or zooming away from it closes it.
+  const gesture = useCanvasGesture();
+  // Docked, the menus hang from the strip, which a pan or a zoom does not move.
+  if (!dock && (gesture === 'pan' || gesture === 'zoom') && open) setOpen(null);
+  // A menu goes with the article.
+  if (!shown && open) setOpen(null);
+  // The Table menu goes with the caret leaving the table.
+  if (open === 'table' && !shown?.selection.inTable) setOpen(null);
+
+  const phone = useIsMobileViewport();
+  const bar = usePageToolbarPlacement({
+    pageId: dock ? null : (shown?.pageId ?? null),
+    phone,
+    topRoomOf,
+  });
+
+  if (!shown) return null;
+  const { handle, selection } = shown;
+  // A card: no Insert, no margin notes (a note is an element in its margin).
+  const card = articlePages.some((p) => p.flow === handle.flow && p.card === true);
+  const run = (command: Parameters<typeof handle.run>[0], event?: keyof typeof FORMAT_EVENT) => {
+    handle.run(command);
+    if (event) track('Element', 'Changed', FORMAT_EVENT[event]);
+  };
+  const toggleOpen = (id: Open) => setOpen((o) => (o === id ? null : id));
+  const close = () => {
+    setOpen(null);
+    handle.focus();
+  };
+  const choose = (fn: () => void) => {
+    fn();
+    setOpen(null);
+  };
+  const styleOption =
+    selection.style === 'list'
+      ? LIST_OPTIONS.find((l) => l.id === selection.list)
+      : STYLE_OPTIONS.find((s) => s.id === selection.style);
+  const styleLabel = styleOption?.label ?? (selection.style === 'list' ? 'List' : 'Text');
+  // On a phone the button shows the short name (H1, Bullets) and is only as wide as it, so no room
+  // is spent on the longest style's width; its accessible name stays the full one.
+  const styleShown = phone ? (styleOption?.short ?? styleLabel) : styleLabel;
+  const S = articleSchema;
+  const insertBlock = (what: BlockInsert) => {
+    if (what === 'table') {
+      if (!handle.run(insertTable)) return;
+    } else if (what === 'footnote') {
+      if (!handle.run(insertFootnote)) return;
+    } else
+      handle.insert(
+        what === 'toc'
+          ? [S.nodes.toc.create(), S.nodes.paragraph.create()]
+          : what === 'divider'
+            ? [S.nodes.divider.create()]
+            : what === 'pageBreak'
+              ? [S.nodes.page_break.create(), S.nodes.paragraph.create()]
+              : what === 'quote'
+                ? [S.nodes.paragraph.create({ style: 'quote' })]
+                : [S.nodes.code_block.create()],
+      );
+    track('Element', 'Added', ARTICLE_BLOCK_INSERT_EVENT[what]);
+  };
+  const reshapeTable = (name: TableCommandName) => {
+    if (handle.run(tableCommand(name))) track('Element', 'Changed', 'ArticleTableShape');
+  };
+  const more = (action: MoreAction) => {
+    if (action === 'style') {
+      handle.flush();
+      if (shown.pageId) requestStylePanel(shown.pageId);
+      return;
+    }
+    run(
+      action === 'strike'
+        ? toggleStrike
+        : action === 'code'
+          ? toggleCode
+          : action === 'sup'
+            ? toggleSup
+            : action === 'sub'
+              ? toggleSub
+              : clearFormatting,
+      action === 'clear' ? undefined : 'format',
+    );
+  };
+
+  const controls = (
+    <div
+      ref={dock ? undefined : bar}
+      role="toolbar"
+      aria-label="Article Formatting"
+      data-page-toolbar=""
+      data-article-keep-active=""
+      onMouseDown={(e) => e.preventDefault()}
+      onPointerDown={(e) => e.stopPropagation()}
+      className={
+        dock
+          ? 'flex min-w-0 items-center gap-0.5'
+          : `fixed left-0 top-0 z-[var(--z-toolbar)] overflow-x-auto [scrollbar-width:none] ${TOOLBAR_CARD}`
+      }
+      style={dock ? undefined : { visibility: 'hidden' }}
+    >
+      <button
+        data-anchor="style"
+        type="button"
+        aria-label={`Style: ${styleLabel}`}
+        aria-haspopup="menu"
+        aria-expanded={open === 'style'}
+        onClick={() => toggleOpen('style')}
+        // As wide as its style's name needs ("Text" stays short): no fixed width leaving space after a short name.
+        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
+          open === 'style' ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_TRIGGER_TONE
+        }`}
+      >
+        <TypeIcon />
+        <span className="flex-1 truncate text-left">{styleShown}</span>
+        <ChevronDownIcon className="shrink-0" />
+      </button>
+      <Divider />
+      <Button
+        label="Bold"
+        keys="Mod-b"
+        pressed={selection.marks.has('bold')}
+        onPress={() => run(toggleBold, 'format')}
+      >
+        <Bold />
+      </Button>
+      <Button
+        label="Italic"
+        keys="Mod-i"
+        pressed={selection.marks.has('italic')}
+        onPress={() => run(toggleItalic, 'format')}
+      >
+        <Italic />
+      </Button>
+      <Button
+        label="Underline"
+        keys="Mod-u"
+        pressed={selection.marks.has('underline')}
+        onPress={() => run(toggleUnderline, 'format')}
+      >
+        <Underline />
+      </Button>
+      <Button
+        label="Colour"
+        anchor="colour"
+        menu
+        popup="dialog"
+        expanded={open === 'colour'}
+        onPress={() => toggleOpen('colour')}
+      >
+        <span className="relative flex flex-col items-center">
+          <Colour />
+          <span
+            className="absolute -bottom-1 h-[3px] w-4 rounded-full"
+            style={{ background: selection.highlight ?? selection.color ?? 'currentColor' }}
+          />
+        </span>
+      </Button>
+      <Button
+        label="Link"
+        keys="Mod-k"
+        anchor="link"
+        pressed={open === 'link' || selection.marks.has('link')}
+        onPress={() => toggleOpen('link')}
+      >
+        <LinkIcon />
+      </Button>
+      <Divider />
+      <Button
+        label="Lists"
+        anchor="list"
+        menu
+        expanded={open === 'list'}
+        pressed={selection.list !== null}
+        onPress={() => toggleOpen('list')}
+      >
+        {selection.list ? <ListGlyph list={selection.list} /> : <ListIcon />}
+      </Button>
+      <Button
+        label="Alignment"
+        anchor="align"
+        menu
+        expanded={open === 'align'}
+        onPress={() => toggleOpen('align')}
+      >
+        <AlignGlyph align={selection.align ?? 'left'} />
+      </Button>
+      <Button
+        label="More Formatting"
+        anchor="more"
+        menu
+        expanded={open === 'more'}
+        onPress={() => toggleOpen('more')}
+      >
+        <More />
+      </Button>
+      {card ? null : (
+        <>
+          <Divider />
+          <Button
+            label="Insert"
+            anchor="insert"
+            menu
+            expanded={open === 'insert'}
+            onPress={() => toggleOpen('insert')}
+          >
+            <Plus />
+          </Button>
+          {selection.inTable ? (
+            <Button
+              label="Table"
+              anchor="table"
+              menu
+              expanded={open === 'table'}
+              onPress={() => toggleOpen('table')}
+            >
+              <TableIcon />
+            </Button>
+          ) : null}
+          <Divider />
+          <Button
+            label="Comment"
+            keys="Mod-Alt-m"
+            disabled={!selection.hasText || selection.inTable || !onNote}
+            why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
+            onPress={() => onNote?.(handle.flow, 'comment')}
+          >
+            <CommentIcon />
+          </Button>
+          <Button
+            label="Assign Action"
+            disabled={!selection.hasText || selection.inTable || !onNote}
+            why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
+            onPress={() => onNote?.(handle.flow, 'action')}
+          >
+            <ActionIcon />
+          </Button>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      {dock ? createPortal(controls, dock) : <Portal>{controls}</Portal>}
+      {open === 'style' ? (
+        <ToolbarPopover anchor="style" menu onClose={close} label="Text Style" width={210}>
+          <StylePanel
+            selection={selection}
+            onStyle={(style) => choose(() => run(setBlockStyle(style), 'block'))}
+          />
+        </ToolbarPopover>
+      ) : null}
+      {open === 'list' ? (
+        <ToolbarPopover anchor="list" menu onClose={close} label="Lists" width={230}>
+          <ListPanel
+            selection={selection}
+            onList={(list) => choose(() => run(toggleList(list), 'block'))}
+            onIndent={(by) => choose(() => run(shiftLevel(by)))}
+          />
+        </ToolbarPopover>
+      ) : null}
+      {open === 'align' ? (
+        <ToolbarPopover anchor="align" menu onClose={close} label="Alignment" width={210}>
+          <AlignPanel
+            selection={selection}
+            onAlign={(align) => choose(() => run(setAlign(align)))}
+          />
+        </ToolbarPopover>
+      ) : null}
+      {open === 'colour' ? (
+        <ToolbarPopover anchor="colour" onClose={close} label="Colour">
+          <ColourPanel
+            selection={selection}
+            accent={accent}
+            onColor={(c) => choose(() => run(setTextColor(c), 'format'))}
+            onHighlight={(c) => choose(() => run(setHighlight(c), 'format'))}
+          />
+        </ToolbarPopover>
+      ) : null}
+      {open === 'link' ? (
+        <ToolbarPopover anchor="link" onClose={close} label="Link">
+          <LinkField
+            initial={selection.link ?? ''}
+            onApply={(href) => {
+              run(setLink(href), 'link');
+              close();
+            }}
+            onRemove={
+              selection.link
+                ? () => {
+                    run(setLink(null));
+                    close();
+                  }
+                : null
+            }
+            onCancel={close}
+          />
+        </ToolbarPopover>
+      ) : null}
+      {open === 'insert' ? (
+        <ToolbarPopover anchor="insert" menu onClose={close} label="Insert" width={264}>
+          <InsertPanel
+            onObject={(what) => choose(() => onInsert?.(handle.flow, what))}
+            onBlock={(what) => choose(() => insertBlock(what))}
+          />
+        </ToolbarPopover>
+      ) : null}
+      {open === 'table' ? (
+        <ToolbarPopover anchor="table" menu onClose={close} label="Table" width={236}>
+          <TablePanel
+            header={selection.tableHeader}
+            blockedOf={(name) => tableCommandBlock(handle.state(), name)}
+            onCommand={(name) => choose(() => reshapeTable(name))}
+          />
+        </ToolbarPopover>
+      ) : null}
+      {open === 'more' ? (
+        <ToolbarPopover anchor="more" menu onClose={close} label="More Formatting" width={272}>
+          <MorePanel
+            selection={selection}
+            card={card}
+            // Read only while the menu is open, from the writing as typed: never on the typing path.
+            counts={articleCountsOf(handle.state())}
+            onAction={(a) => choose(() => more(a))}
+            // The next long sentence selected, the menu shut and the writing in focus, so it can be split.
+            onNextLong={() => {
+              if (handle.run(selectNextLongSentence)) track('UI', 'Used', 'LongSentenceSelected');
+              close();
+            }}
+          />
+        </ToolbarPopover>
+      ) : null}
+    </>
+  );
+}
+
+// A margin note sits beside a line of the writing, never in a table's cell.
+const NO_NOTE_IN_TABLE = 'Not available in a table';

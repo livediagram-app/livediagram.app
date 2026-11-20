@@ -1,0 +1,368 @@
+// The document's own schema (docs/specs/015-api/api.md "Storage"), in its Durable Object's SQLite: everything the
+// document holds as content, and what it knows of itself. Where the document is and who may reach it is
+// liveworkspace's index (liveworkspace/docs/specs/004-index/one-explorer.md), which this document pushes its summary, its tabs'
+// comments and actions, and who edited it to (document-outbox.ts); the images it places it tells the media service
+// itself (liveworkspace/docs/specs/006-media/media.md "References").
+//
+// One database per document, so `document_id` names the same document on every row. It stays a column (and in
+// the keys) because the content modules were written for a store holding many documents, and keeping their SQL
+// keyed by document is what lets them run unchanged; it costs a few bytes a row.
+//
+// Made on first use, never on construction (document-db.ts `ensureSchema`): a Durable Object a stray id wakes
+// stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
+
+import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
+import {
+  TAB_CONNECTION_SCHEMA,
+  migrationSchema,
+  outboxParkingStep,
+  outboxRetrySchema,
+  tabSharesSchema,
+} from '@liveworkspace/index-app';
+import { NAMED_STORE_STEP } from '../versions/named-store-schema';
+import { VERSION_SCHEMA } from '../versions/version-schema';
+
+// Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
+// Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
+// follow-up for tabs over 2 MB; until then the cap refuses them.
+const V1 = `
+CREATE TABLE IF NOT EXISTS document (
+  id                  TEXT    PRIMARY KEY,
+  -- The slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised JSON, or NULL for none.
+  presentation        TEXT    NULL,
+  saved_at            INTEGER NOT NULL,
+  -- 0 until the document is started: made by a create, or on its first open with a grant (document-content.ts
+  -- initDocument).
+  created_at          INTEGER NOT NULL,
+  -- What the document knows of itself for its own reads (a document read, emails, an agent's listing). The index
+  -- holds the truth for the title, owner and team (liveworkspace/docs/specs/004-index/one-explorer.md); these are kept from the
+  -- grants and renames that reach the document, and the editor puts a stale name right.
+  name                TEXT    NOT NULL DEFAULT '',
+  owner_id            TEXT    NOT NULL DEFAULT '',
+  team_id             TEXT    NULL,
+  -- What made it ('mcp', 'cli', ...).
+  source              TEXT    NULL,
+  -- The comment email's throttle (email/notifications.ts).
+  comment_notified_at INTEGER NULL
+);
+
+CREATE TABLE IF NOT EXISTS tabs (
+  id            TEXT    PRIMARY KEY,
+  name          TEXT    NOT NULL,
+  data          TEXT    NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  element_count INTEGER NOT NULL,
+  rev           INTEGER NOT NULL DEFAULT 0
+);
+CREATE TRIGGER IF NOT EXISTS tabs_rev_advances BEFORE UPDATE OF data ON tabs
+  WHEN NEW.rev IS NOT OLD.rev + 1
+  BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
+
+CREATE TABLE IF NOT EXISTS document_tabs (
+  document_id TEXT    NOT NULL,
+  tab_id      TEXT    NOT NULL,
+  order_index INTEGER NOT NULL,
+  added_at    INTEGER NOT NULL,
+  folder      TEXT,
+  PRIMARY KEY (document_id, tab_id),
+  FOREIGN KEY (document_id) REFERENCES document (id) ON DELETE CASCADE,
+  FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS document_tabs_by_document ON document_tabs (document_id, order_index);
+CREATE INDEX IF NOT EXISTS document_tabs_by_tab ON document_tabs (tab_id);
+
+CREATE TABLE IF NOT EXISTS tab_stats (
+  tab_id        TEXT    PRIMARY KEY REFERENCES tabs (id) ON DELETE CASCADE,
+  element_count INTEGER NOT NULL,
+  comment_count INTEGER NOT NULL,
+  data_bytes    INTEGER NOT NULL,
+  written_at    INTEGER NOT NULL
+);
+
+-- Which images each tab places (docs/specs/009-elements/images.md "Reference index"), kept from the tab bodies in
+-- the same transaction as each write, so the share check and the push to the media service never read a body.
+CREATE TABLE IF NOT EXISTS image_refs (
+  tab_id   TEXT NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
+  image_id TEXT NOT NULL,
+  PRIMARY KEY (tab_id, image_id)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS image_refs_image_idx ON image_refs (image_id);
+
+-- Who owns each image the document places, as the media service answered (docs/specs/009-elements/images.md
+-- "Placement grants"): the share check reads it instead of asking the service on every image request. An owner of
+-- '' is an id the service doesn't know, so a document placing it doesn't ask again on every read.
+CREATE TABLE IF NOT EXISTS image_owners (
+  image_id TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL
+) WITHOUT ROWID;
+
+-- The images this document may serve beyond its owner's own ("Placement grants"): one the owner's collaborator
+-- placed, or one a copy brought from its source.
+CREATE TABLE IF NOT EXISTS image_grants (
+  image_id   TEXT    PRIMARY KEY,
+  created_at INTEGER NOT NULL
+) WITHOUT ROWID;
+
+-- The once-only state of the document's notification emails (@liveworkspace/index-app notify-claims.ts): one row
+-- per email claimed, keyed by what makes two the same (a hash, never text or an address), with its sender. The
+-- hourly cap is the sender's own store's. Rows past the longest window are dropped as new ones are claimed.
+CREATE TABLE IF NOT EXISTS notify_claims (
+  key    TEXT    PRIMARY KEY,
+  sender TEXT    NOT NULL,
+  at     INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS notify_claims_sender ON notify_claims (sender, at);
+CREATE INDEX IF NOT EXISTS notify_claims_at ON notify_claims (at);
+
+CREATE TABLE IF NOT EXISTS agent_changesets (
+  id           TEXT    PRIMARY KEY,
+  document_id  TEXT    NOT NULL REFERENCES document (id) ON DELETE CASCADE,
+  tab_id       TEXT    NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
+  rev          INTEGER NOT NULL,
+  base_rev     INTEGER,
+  author_id    TEXT    NOT NULL,
+  author_name  TEXT    NOT NULL,
+  author_color TEXT    NOT NULL,
+  token_id     TEXT,
+  summary      TEXT,
+  fingerprints TEXT    NOT NULL,
+  added        INTEGER NOT NULL,
+  changed      INTEGER NOT NULL,
+  removed      INTEGER NOT NULL,
+  created_tab  INTEGER NOT NULL DEFAULT 0,
+  revert_of    TEXT,
+  created_at   INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS agent_changesets_tab_rev ON agent_changesets (tab_id, rev);
+CREATE INDEX IF NOT EXISTS agent_changesets_document_created ON agent_changesets (document_id, created_at);
+CREATE INDEX IF NOT EXISTS agent_changesets_created ON agent_changesets (created_at);
+CREATE INDEX IF NOT EXISTS agent_changesets_author_idx ON agent_changesets (author_id);
+
+CREATE TABLE IF NOT EXISTS agent_changeset_parts (
+  changeset_id TEXT NOT NULL REFERENCES agent_changesets (id) ON DELETE CASCADE,
+  part         TEXT NOT NULL CHECK (part IN ('ops', 'inverse', 'results')),
+  data         TEXT NOT NULL,
+  PRIMARY KEY (changeset_id, part)
+);
+
+
+-- What the document owes the index and the media service (document-outbox.ts): a key per thing whose derived rows
+-- changed, filled by the triggers below so no write path can forget it, drained by the room's alarm.
+--   tab:     a tab's comment threads and actions (the Inbox)
+--   summary: the document's listing summary and its last change, for the Explorer
+--   edit:    who edited it and when (<person>@<time>, one per person), for History and Most Used
+--   images:  the images the document places (the media service's references)
+-- A key written again while a flush is in flight is deleted and inserted again under a new id, so the flush's
+-- delete (by the ids it read) keeps it for the next one. Not INSERT OR REPLACE: inside a trigger, the conflict
+-- policy of the statement that fired it wins, and an upsert's is ABORT. A Durable Object holds one document, so
+-- document_id is always the same there; it keeps the keys apart where one SQLite holds several documents (the
+-- tests).
+--
+-- A tab's own triggers find its document through its link and write nothing for a tab no document links: the
+-- link's triggers (a create links after the insert, a delete unlinks before the delete) cover those moments.
+CREATE TABLE IF NOT EXISTS outbox (
+  id          INTEGER PRIMARY KEY,
+  document_id TEXT    NOT NULL,
+  kind        TEXT    NOT NULL,
+  key         TEXT    NOT NULL,
+  UNIQUE (document_id, kind, key)
+);
+
+CREATE TRIGGER IF NOT EXISTS outbox_tab_update AFTER UPDATE OF data, name, element_count ON tabs
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT document_id, 'tab', NEW.id FROM document_tabs WHERE tab_id = NEW.id UNION ALL SELECT document_id, 'summary', '' FROM document_tabs WHERE tab_id = NEW.id);
+  INSERT INTO outbox (document_id, kind, key) SELECT document_id, 'tab', NEW.id FROM document_tabs WHERE tab_id = NEW.id UNION ALL SELECT document_id, 'summary', '' FROM document_tabs WHERE tab_id = NEW.id;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_link_insert AFTER INSERT ON document_tabs
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT NEW.document_id, 'tab', NEW.tab_id UNION ALL SELECT NEW.document_id, 'summary', '' UNION ALL SELECT NEW.document_id, 'images', '');
+  INSERT INTO outbox (document_id, kind, key) SELECT NEW.document_id, 'tab', NEW.tab_id UNION ALL SELECT NEW.document_id, 'summary', '' UNION ALL SELECT NEW.document_id, 'images', '';
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_link_delete AFTER DELETE ON document_tabs
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT OLD.document_id, 'tab', OLD.tab_id UNION ALL SELECT OLD.document_id, 'summary', '' UNION ALL SELECT OLD.document_id, 'images', '');
+  INSERT INTO outbox (document_id, kind, key) SELECT OLD.document_id, 'tab', OLD.tab_id UNION ALL SELECT OLD.document_id, 'summary', '' UNION ALL SELECT OLD.document_id, 'images', '';
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_link_order AFTER UPDATE OF order_index ON document_tabs
+  WHEN NEW.order_index IS NOT OLD.order_index
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT NEW.document_id, 'summary', '');
+  INSERT INTO outbox (document_id, kind, key) SELECT NEW.document_id, 'summary', '';
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_stats AFTER INSERT ON tab_stats
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT document_id, 'summary', '' FROM document_tabs WHERE tab_id = NEW.tab_id);
+  INSERT INTO outbox (document_id, kind, key) SELECT document_id, 'summary', '' FROM document_tabs WHERE tab_id = NEW.tab_id;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_stats_update AFTER UPDATE ON tab_stats
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT document_id, 'summary', '' FROM document_tabs WHERE tab_id = NEW.tab_id);
+  INSERT INTO outbox (document_id, kind, key) SELECT document_id, 'summary', '' FROM document_tabs WHERE tab_id = NEW.tab_id;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_image_insert AFTER INSERT ON image_refs
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT document_id, 'images', '' FROM document_tabs WHERE tab_id = NEW.tab_id);
+  INSERT INTO outbox (document_id, kind, key) SELECT document_id, 'images', '' FROM document_tabs WHERE tab_id = NEW.tab_id;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_image_delete AFTER DELETE ON image_refs
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT document_id, 'images', '' FROM document_tabs WHERE tab_id = OLD.tab_id);
+  INSERT INTO outbox (document_id, kind, key) SELECT document_id, 'images', '' FROM document_tabs WHERE tab_id = OLD.tab_id;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_document_insert AFTER INSERT ON document
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT NEW.id, 'summary', '');
+  INSERT INTO outbox (document_id, kind, key) SELECT NEW.id, 'summary', '';
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_document_saved AFTER UPDATE OF saved_at ON document
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT NEW.id, 'summary', '');
+  INSERT INTO outbox (document_id, kind, key) SELECT NEW.id, 'summary', '';
+END;
+`;
+
+// A tab shared with other items (@liveworkspace/index-app tab-shares.ts): tab_shares lists the others holding
+// each, share_outbox what this one owes them. Its own step: it was first written into V1, which rooms made before
+// then had already run, so they had neither table and their writes failed ("no such table: share_outbox"). Every
+// statement is IF NOT EXISTS, so a room made in between, which has them, runs it harmlessly.
+const V2 = tabSharesSchema();
+
+// What the migration door wrote (@liveworkspace/index-app migration-room.ts; docs/migration.md "The apps' migration
+// door"): the revision it last wrote each tab and row at, so a re-run replaces only what nobody has saved since. Its
+// own step, appended: every statement is IF NOT EXISTS.
+const V3 = migrationSchema();
+
+// The document's Community post (docs/specs/025-community/community.md), at most one: its link's share code (an
+// index share link; a grant through it is a content-only pass, routes/context.ts), its post at the liveworkspace
+// Community service, what the link's doors show of it, and the listing state last sent (community-post.ts; the
+// table is every app's, @liveworkspace/community/app). A post listed, hidden, moved or taken down changes whether
+// the document is public, which its summary says. Its own step, appended: every statement is IF NOT EXISTS.
+const V4 = `
+${COMMUNITY_POST_TABLE}
+CREATE TRIGGER IF NOT EXISTS outbox_community_insert AFTER INSERT ON community_post
+BEGIN
+  INSERT OR IGNORE INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_update AFTER UPDATE OF hidden_at, sent_state ON community_post
+  WHEN NEW.hidden_at IS NOT OLD.hidden_at OR NEW.sent_state IS NOT OLD.sent_state
+BEGIN
+  INSERT OR IGNORE INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_delete AFTER DELETE ON community_post
+BEGIN
+  INSERT OR IGNORE INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;
+`;
+
+// Each outbox key's failed pushes and next try, on `outbox` and `share_outbox` (@liveworkspace/index-app outbox.ts
+// outboxRetrySchema; liveworkspace/docs/specs/004-index/one-explorer-contracts.md "When a push fails"). Plain ALTERs,
+// run once by the version row; every key already there reads as never tried.
+const V5 = outboxRetrySchema();
+
+// A connected tab's connection (liveworkspace/docs/specs/004-index/connected-tabs.md), `tabs.connection`: JSON of
+// `{ id, app, itemId }` beside the tab's name, never in its body. A plain ALTER, run once by the version row; every
+// tab already there reads as not connected.
+const V6 = TAB_CONNECTION_SCHEMA;
+
+type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
+
+// The outbox's parked keys bounded and let back in (@liveworkspace/index-app outbox-parked.ts;
+// liveworkspace/docs/specs/004-index/one-explorer-contracts.md "When a push fails"): `parked_at` (and the retry
+// columns where a room lacks them), the `(attempts, retry_at)` index the next-due read takes, and the Community
+// triggers rewritten as delete-then-insert, as every other key is, so a parked summary key never swallows a
+// Community change. Asks before each ALTER, so it is safe on a room made before the retry columns.
+const COMMUNITY_SUMMARY_KEY = `
+BEGIN
+  DELETE FROM outbox WHERE (document_id, kind, key) IN (SELECT id, 'summary', '' FROM document);
+  INSERT INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;`;
+const V7 = (exec: Exec) => {
+  outboxParkingStep(exec);
+  exec('DROP TRIGGER IF EXISTS outbox_community_insert');
+  exec('DROP TRIGGER IF EXISTS outbox_community_update');
+  exec('DROP TRIGGER IF EXISTS outbox_community_delete');
+  exec(
+    `CREATE TRIGGER outbox_community_insert AFTER INSERT ON community_post${COMMUNITY_SUMMARY_KEY}`,
+  );
+  exec(`CREATE TRIGGER outbox_community_update AFTER UPDATE OF hidden_at, sent_state ON community_post
+  WHEN NEW.hidden_at IS NOT OLD.hidden_at OR NEW.sent_state IS NOT OLD.sent_state${COMMUNITY_SUMMARY_KEY}`);
+  exec(
+    `CREATE TRIGGER outbox_community_delete AFTER DELETE ON community_post${COMMUNITY_SUMMARY_KEY}`,
+  );
+};
+
+// Each tab's versions (docs/specs/006-document/version-history.md): the table, the idle trigger that keeps a tab as it
+// stood before the first write after a pause, and the trigger that prunes them as each is kept
+// (versions/version-schema.ts). Its own step, appended: every statement is IF NOT EXISTS.
+const V8 = VERSION_SCHEMA;
+
+// The document's review settings, for suggestions since retired (owner, 2026-11-17), kept as written: a migration is
+// history. Asks before the ALTER, so it is safe however far a room got.
+const V9 = (exec: Exec) => {
+  const have = new Set(
+    exec('PRAGMA table_info(document)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('review')) exec('ALTER TABLE document ADD COLUMN review TEXT NULL');
+};
+
+// The canvas_suggestions table this step made, frozen here so the migration no longer needs the retired package.
+const CANVAS_SUGGESTIONS_SCHEMA = `
+CREATE TABLE IF NOT EXISTS canvas_suggestions (
+  id         TEXT PRIMARY KEY,
+  tab_id     TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  body       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS canvas_suggestions_tab ON canvas_suggestions (tab_id, created_at);
+`;
+
+// Canvas suggestions on slides and infographics, since retired, kept as written: their table, beside the tabs.
+const V10 = CANVAS_SUGGESTIONS_SCHEMA;
+
+// Named versions in the snapshots' store (docs/specs/006-document/version-history.md "Where versions are kept"; Work
+// Tracker 1097): the platform's snapshot tables and the revision rows beside them (versions/named-store-schema.ts).
+// Additive, every statement IF NOT EXISTS: `tab_versions` is untouched.
+const V11 = NAMED_STORE_STEP;
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  V8,
+  V9,
+  V10,
+  V11,
+];
+
+export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
+
+// Bring the document's SQLite up to DOCUMENT_SCHEMA_VERSION. Idempotent: every statement is IF NOT EXISTS, and the
+// version row skips what already ran. Runs inside the caller's transaction when it has one.
+export function migrateDocumentSchema(exec: Exec): void {
+  exec('CREATE TABLE IF NOT EXISTS _document_schema (version INTEGER NOT NULL)');
+  const row = exec('SELECT version FROM _document_schema LIMIT 1').toArray()[0];
+  const at = typeof row?.version === 'number' ? row.version : 0;
+  if (at >= STEPS.length) return;
+  for (let step = at; step < STEPS.length; step++) {
+    const run = STEPS[step]!;
+    if (typeof run === 'string') exec(run);
+    else run(exec);
+  }
+  exec('DELETE FROM _document_schema');
+  exec(`INSERT INTO _document_schema (version) VALUES (${STEPS.length})`);
+}
+
+// Whether the document's SQLite holds a schema at all: a read that writes nothing, for a Durable Object woken
+// by an id with no document behind it.
+export function hasDocumentSchema(exec: Exec): boolean {
+  return (
+    exec("SELECT 1 AS present FROM sqlite_master WHERE name = '_document_schema'").toArray()
+      .length > 0
+  );
+}

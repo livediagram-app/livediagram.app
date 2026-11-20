@@ -1,0 +1,277 @@
+// A Word package's styles, numbering and run properties, read into the few answers the article needs
+// (docs/specs/020-import-export/blueprints/office-import.md "readDocx"): what kind of paragraph a style makes, whether
+// a list is bulleted or numbered, and which marks a run carries.
+
+import type { ArticleListKind, ArticleParagraphStyle, ArticleRun } from '@liveknowledge/document';
+import { child, intAttr, kids, type XmlElement } from './xml';
+
+/** What a paragraph style makes in the article. */
+export type ParagraphRole = { style?: ArticleParagraphStyle; code?: true };
+
+type StyleEntry = {
+  name: string;
+  basedOn?: string;
+  outline?: number;
+  numPr?: XmlElement;
+  rPr?: XmlElement;
+};
+
+export type DocxStyles = {
+  /** The role of a paragraph style (by id), following its `basedOn` chain. */
+  roleOf(styleId: string | undefined, outline?: number): ParagraphRole;
+  /** The numbering a paragraph style carries, when the paragraph has none of its own. */
+  numPrOf(styleId: string | undefined): XmlElement | undefined;
+  /** The run properties of a character style (its own, then what it is based on). */
+  runStyle(styleId: string | undefined): XmlElement[];
+  /** Whether a paragraph style is a table of contents' title ("TOC Heading"). */
+  isTocHeading(styleId: string | undefined): boolean;
+};
+
+// Fonts that make a run code (D64): any named "mono", or one of these.
+const MONO_FONTS = new Set([
+  'courier',
+  'courier new',
+  'consolas',
+  'monaco',
+  'menlo',
+  'lucida console',
+  'inconsolata',
+  'source code pro',
+  'fira code',
+  'andale mono',
+  'cascadia code',
+]);
+
+export function isMonoFont(font: string | undefined): boolean {
+  if (!font) return false;
+  const f = font.trim().toLowerCase();
+  return f.includes('mono') || MONO_FONTS.has(f);
+}
+
+const CODE_STYLE_NAMES = new Set([
+  'code',
+  'html preformatted',
+  'source code',
+  'macro text',
+  'code block',
+]);
+
+/** The role a style's name gives, or undefined. */
+function roleOfName(name: string): ParagraphRole | undefined {
+  const n = name.trim().toLowerCase();
+  if (n === 'title') return { style: 'title' };
+  if (n === 'subtitle') return { style: 'subtitle' };
+  if (n === 'quote' || n === 'intense quote') return { style: 'quote' };
+  if (CODE_STYLE_NAMES.has(n)) return { code: true };
+  const heading = /^heading\s?([1-9])$/.exec(n);
+  if (heading) return headingRole(Number(heading[1]) - 1);
+  return undefined;
+}
+
+function headingRole(outline: number): ParagraphRole {
+  return { style: outline <= 0 ? 'h1' : outline === 1 ? 'h2' : 'h3' };
+}
+
+const FONT_KEYS = ['w:ascii', 'w:hAnsi', 'w:cs'];
+function fontOf(rPr: XmlElement | undefined): string | undefined {
+  const fonts = child(rPr, 'w:rFonts');
+  if (!fonts) return undefined;
+  for (const k of FONT_KEYS) if (fonts.attrs[k]) return fonts.attrs[k];
+  return undefined;
+}
+
+export function readStyles(root: XmlElement | undefined): DocxStyles {
+  const byId = new Map<string, StyleEntry>();
+  for (const s of kids(root)) {
+    if (s.name !== 'w:style') continue;
+    const id = s.attrs['w:styleId'];
+    if (!id) continue;
+    const pPr = child(s, 'w:pPr');
+    byId.set(id, {
+      name: child(s, 'w:name')?.attrs['w:val'] ?? id,
+      basedOn: child(s, 'w:basedOn')?.attrs['w:val'],
+      outline: intAttr(child(pPr, 'w:outlineLvl'), 'w:val'),
+      numPr: child(pPr, 'w:numPr'),
+      rPr: child(s, 'w:rPr'),
+    });
+  }
+  // A style's chain: itself, then what it is based on, at most 10 deep (a loop stops there too).
+  const chain = (id: string | undefined): StyleEntry[] => {
+    const out: StyleEntry[] = [];
+    let at = id;
+    while (at && out.length < 10) {
+      const s = byId.get(at);
+      if (!s) break;
+      out.push(s);
+      at = s.basedOn;
+    }
+    return out;
+  };
+  return {
+    roleOf(styleId, outline) {
+      const styles = chain(styleId);
+      for (const s of styles) {
+        const role = roleOfName(s.name);
+        if (role) return role;
+      }
+      if (outline !== undefined && outline >= 0 && outline < 9) return headingRole(outline);
+      for (const s of styles) {
+        if (s.outline !== undefined && s.outline >= 0 && s.outline < 9)
+          return headingRole(s.outline);
+        if (isMonoFont(fontOf(s.rPr))) return { code: true };
+      }
+      // No styles part (or no such style): the id read as a name ("Heading1", "Title").
+      if (styles.length === 0 && styleId) return roleOfName(styleId) ?? {};
+      return {};
+    },
+    numPrOf(styleId) {
+      for (const s of chain(styleId)) if (s.numPr) return s.numPr;
+      return undefined;
+    },
+    isTocHeading(styleId) {
+      const name = styleId === undefined ? undefined : (byId.get(styleId)?.name ?? styleId);
+      return name !== undefined && /^toc\s?heading$/i.test(name.trim());
+    },
+    runStyle(styleId) {
+      return chain(styleId)
+        .map((s) => s.rPr)
+        .filter((r): r is XmlElement => !!r);
+    },
+  };
+}
+
+export type DocxNumbering = {
+  /** The list kind of a numbering at a level, or null for "no list" (`numFmt` none, or numId 0). */
+  kindOf(numId: string, level: number): ArticleListKind | null;
+};
+
+/** Each level's `w:numFmt` among a `w:abstractNum`'s or a `w:lvlOverride`'s `w:lvl`s. */
+function levelFormats(el: XmlElement | undefined, into: Map<number, string>): Map<number, string> {
+  for (const lvl of kids(el)) {
+    if (lvl.name !== 'w:lvl') continue;
+    const at = intAttr(lvl, 'w:ilvl') ?? 0;
+    into.set(at, child(lvl, 'w:numFmt')?.attrs['w:val'] ?? 'bullet');
+  }
+  return into;
+}
+
+/** A numbering part read for list kinds. A list whose abstract numbering only links to a numbering style
+ *  (`w:numStyleLink`, as Word's built-in multilevel lists do) takes that style's numbering's levels; a `w:num`'s
+ *  `w:lvlOverride` with a `w:lvl` of its own replaces that level. */
+export function readNumbering(
+  root: XmlElement | undefined,
+  styles?: Pick<DocxStyles, 'numPrOf'>,
+): DocxNumbering {
+  const abstract = new Map<string, { levels: Map<number, string>; styleLink?: string }>();
+  const nums = new Map<string, { ref: string; overrides: Map<number, string> }>();
+  for (const el of kids(root)) {
+    if (el.name === 'w:abstractNum') {
+      const link = child(el, 'w:numStyleLink')?.attrs['w:val'];
+      abstract.set(el.attrs['w:abstractNumId'] ?? '', {
+        levels: levelFormats(el, new Map()),
+        ...(link ? { styleLink: link } : {}),
+      });
+    } else if (el.name === 'w:num') {
+      const ref = child(el, 'w:abstractNumId')?.attrs['w:val'];
+      if (!el.attrs['w:numId'] || ref === undefined) continue;
+      const overrides = new Map<number, string>();
+      for (const o of kids(el)) {
+        if (o.name !== 'w:lvlOverride') continue;
+        const at = intAttr(o, 'w:ilvl') ?? 0;
+        const fmt = levelFormats(o, new Map()).get(at);
+        if (fmt !== undefined) overrides.set(at, fmt);
+      }
+      nums.set(el.attrs['w:numId'], { ref, overrides });
+    }
+  }
+  // The levels a numbering gives: its overrides, then its abstract's, through numbering-style links (bounded, so a
+  // loop of links ends).
+  const formatOf = (numId: string, level: number, hops: number): string | undefined => {
+    const num = nums.get(numId);
+    if (!num) return undefined;
+    const own = num.overrides.get(level);
+    if (own !== undefined) return own;
+    const def = abstract.get(num.ref);
+    if (!def) return undefined;
+    if (def.levels.size === 0 && def.styleLink && hops < 4) {
+      const linked = child(styles?.numPrOf(def.styleLink), 'w:numId')?.attrs['w:val'];
+      if (linked !== undefined && linked !== numId) return formatOf(linked, level, hops + 1);
+    }
+    return def.levels.get(level);
+  };
+  return {
+    kindOf(numId, level) {
+      if (numId === '0') return null;
+      const fmt = formatOf(numId, level, 0);
+      if (fmt === 'none') return null;
+      // A level the numbering part does not define is bulleted (D63).
+      if (fmt === undefined || fmt === 'bullet') return 'bullet';
+      return 'numbered';
+    },
+  };
+}
+
+// A toggle property is on unless its value says off.
+function on(el: XmlElement | undefined): boolean {
+  if (!el) return false;
+  const v = el.attrs['w:val'];
+  return v === undefined || !['0', 'false', 'off', 'none'].includes(v.toLowerCase());
+}
+
+type RunMarks = Omit<ArticleRun, 'text' | 'href' | 'color' | 'hl' | 'note' | 'nk' | 'fn' | 'sg'>;
+
+/** Whether a run is hidden text (`w:vanish`, its own or its character style's; the run's own wins), which Word
+ *  neither shows nor prints. */
+export function runHidden(rPr: XmlElement | undefined, styles: DocxStyles): boolean {
+  const own = child(rPr, 'w:vanish');
+  if (own) return on(own);
+  const rStyle = child(rPr, 'w:rStyle')?.attrs['w:val'];
+  for (const layer of styles.runStyle(rStyle)) {
+    const vanish = child(layer, 'w:vanish');
+    if (vanish) return on(vanish);
+  }
+  return false;
+}
+
+/** The marks run properties carry, their character style's first (the run's own win). */
+export function runMarks(rPr: XmlElement | undefined, styles: DocxStyles): RunMarks {
+  const rStyle = child(rPr, 'w:rStyle')?.attrs['w:val'];
+  const layers = [...styles.runStyle(rStyle).reverse(), ...(rPr ? [rPr] : [])];
+  const marks: RunMarks = {};
+  const set = (flag: keyof RunMarks, value: boolean) => {
+    if (value) marks[flag] = true;
+    else delete marks[flag];
+  };
+  const named = rStyle?.toLowerCase();
+  if (named === 'strong') marks.b = true;
+  if (named === 'emphasis') marks.i = true;
+  for (const layer of layers) {
+    for (const p of kids(layer)) {
+      switch (p.name) {
+        case 'w:b':
+          set('b', on(p));
+          break;
+        case 'w:i':
+          set('i', on(p));
+          break;
+        case 'w:u':
+          set('u', on(p));
+          break;
+        case 'w:strike':
+        case 'w:dstrike':
+          set('s', on(p));
+          break;
+        case 'w:vertAlign': {
+          const v = p.attrs['w:val'];
+          set('sup', v === 'superscript');
+          set('sub', v === 'subscript');
+          break;
+        }
+        case 'w:rFonts':
+          set('code', isMonoFont(fontOf(layer)));
+          break;
+      }
+    }
+  }
+  return marks;
+}

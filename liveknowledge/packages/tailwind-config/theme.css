@@ -1,0 +1,85 @@
+/* liveknowledge' palette (docs/specs/004-interface-design/color-scheme.md): the shared theme, then its brand
+ * ramps in amber in place of the platform's sky, in every block the shared theme paints one in. Everything
+ * else (motion tokens, utilities, the focus ring, scrollbars, forced colours, the slate surfaces) is the shared
+ * theme's; @liveworkspace/tailwind-config's theme-budget.test.ts keeps these blocks complete and equal where
+ * they must be. */
+@import '@liveworkspace/tailwind-config/theme.css';
+
+/* Light: the brand ramp every light surface paints with. */
+@theme {
+  /* liveknowledge amber (docs/specs/004-interface-design/color-scheme.md). Tailwind's amber, but for two stops
+   * hand-tuned a little deeper, as amber runs much lighter than sky at the same step: brand-600, the focus ring,
+   * holds 3:1 on white, slate-100 and brand-100 (amber-600 is 2.9:1 on the tints), and brand-700, the fill under
+   * white text and all light brand ink, holds white at 5.9:1 as sky-700 did (amber-700 is 5.0:1). */
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #c76508;
+  --color-brand-700: #a34a0c;
+  --color-brand-800: #92400e;
+  --color-brand-900: #78350f;
+  --color-brand-950: #451a03;
+}
+
+/* Dark, Steel: the accent muted to Steel's saturation and lightness. */
+.dark {
+  --color-brand-50: #faf5ee;
+  --color-brand-100: #f4e9db;
+  --color-brand-200: #ead5bc;
+  --color-brand-300: #debf9b;
+  --color-brand-400: #e0bb8f;
+  --color-brand-500: #bf935b;
+  --color-brand-600: #996d3a;
+  --color-brand-700: #845e2f;
+  --color-brand-800: #6b4c26;
+  --color-brand-900: #533a1d;
+  --color-brand-950: #382714;
+}
+
+/* The app's chrome keeps the light ramp whatever a tab's style (equal to @theme). */
+[data-app-chrome] {
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #c76508;
+  --color-brand-700: #a34a0c;
+  --color-brand-800: #92400e;
+  --color-brand-900: #78350f;
+  --color-brand-950: #451a03;
+}
+
+/* And the dark one (equal to .dark). */
+.dark [data-app-chrome] {
+  --color-brand-50: #faf5ee;
+  --color-brand-100: #f4e9db;
+  --color-brand-200: #ead5bc;
+  --color-brand-300: #debf9b;
+  --color-brand-400: #e0bb8f;
+  --color-brand-500: #bf935b;
+  --color-brand-600: #996d3a;
+  --color-brand-700: #845e2f;
+  --color-brand-800: #6b4c26;
+  --color-brand-900: #533a1d;
+  --color-brand-950: #382714;
+}
+
+/* Explorer: Midnight, the marketing site's night section in this accent. */
+.dark[data-palette='midnight'] {
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #a34a0c;
+  --color-brand-700: #92400e;
+  --color-brand-800: #78350f;
+  --color-brand-900: #5f2809;
+  --color-brand-950: #451a03;
+}

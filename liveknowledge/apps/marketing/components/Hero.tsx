@@ -1,0 +1,54 @@
+import { HeroConnectors } from './HeroConnectors';
+import { HeroFan } from './HeroFan';
+import { HeroSearch } from './HeroSearch';
+import { HeroVerb } from './HeroVerb';
+
+// The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), intent-led: it asks
+// what the visitor is writing and takes them straight to a starting point, so it grows with the product
+// instead of naming one kind of page. A band in the brand mark's colours (@liveknowledge/ui hero-band.css, shared
+// with the help centre) under ruled paper: the promise badges, the question with its verb written live, the
+// template search, then upright cards along its foot, dealt every few seconds, for every visitor.
+const BADGE =
+  'inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3.5 py-1.5 text-sm font-medium text-(--hero-chip-text)';
+
+export function Hero() {
+  return (
+    // From `sm` it fills the first screen under the header, up to a cap (hero-tall.css in
+    // @liveworkspace/marketing-site), the extra shared above and below the copy; on a phone it fills the
+    // screen under the header, the fan along its foot.
+    <section className="hero-band hero-tall relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col">
+      <div aria-hidden className="hero-band-ruled pointer-events-none absolute inset-0" />
+      <div className="hero-tall-copy relative mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-36 lg:pt-44">
+        {/* An arrow drawn on load from the end of the question down onto the search. */}
+        <HeroConnectors />
+        {/* Two promises, each its own badge and each true today (free, MIT, no account needed). A
+            phone keeps the first only, so the row stays one line. */}
+        <ul aria-label="Our promises" className="flex justify-center gap-2.5">
+          <li className={BADGE}>
+            <span aria-hidden className="h-2 w-2 rounded-full bg-emerald-500" />
+            Free and open source
+          </li>
+          <li className={`${BADGE} max-sm:hidden`}>
+            <span aria-hidden className="h-2 w-2 rounded-full bg-amber-500" />
+            No sign-up to start
+          </li>
+        </ul>
+        <h1
+          data-hero-anchor="title"
+          className="mx-auto mt-7 max-w-4xl text-balance sm:mt-8 text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02] tracking-tight"
+        >
+          <HeroVerb before="What are you" after="today?" />
+        </h1>
+        <p
+          data-hero-anchor="lead"
+          className="mx-auto mt-6 sm:mt-7 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
+        >
+          Pick a starting point and make it on pages. Write an article, build a deck, lay out an
+          infographic, then share one link and finish it together.
+        </p>
+        <HeroSearch />
+      </div>
+      <HeroFan />
+    </section>
+  );
+}

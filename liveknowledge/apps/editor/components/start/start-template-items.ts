@@ -1,0 +1,98 @@
+// What an empty tab's template start offers (docs/specs/007-editor/start-diagramming.md): Start Making Pages on a
+// Pages tab. Every listed template, a rail over them (Blank Pages, then groups) and the search across them. The start
+// groups them as the catalogue does, by what each document is for, after Blank Pages (OWN_GROUPS). Drawn from the
+// template catalogue, so a new template joins its group with no change here. Pure: the panel draws what these return.
+import {
+  BLANK_TEMPLATE,
+  EXTRA_BLANK_TEMPLATES,
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  templateCategory,
+  templateMatchesQuery,
+  templatePageKind,
+  type TemplateDescriptor,
+  type TemplateKind,
+} from '@liveknowledge/templates';
+import type { PageKind } from '@liveknowledge/document';
+
+// What the start shows (start-diagramming.md "Page type"): every template, or only those opening on one kind of page.
+export type StartPageType = 'all' | PageKind;
+
+type TemplateStartGroup = {
+  id: string;
+  name: string;
+  line: string;
+  // The templates it shows, in catalogue order.
+  kinds: readonly TemplateKind[];
+};
+
+type TemplateStart = {
+  // Blank Pages, then every group holding a template.
+  groups: readonly TemplateStartGroup[];
+  // Every match, each once, under its group, in rail order.
+  search: (query: string) => { group: string; kinds: TemplateKind[] }[];
+};
+
+type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
+
+// Blank Pages leads with one empty page of each kind, then one group per catalogue category, in the order and with
+// the names every other picker uses (docs/specs/008-canvas/canvas-and-palette.md "Template categories"), each
+// template under its primary category. A template in none of the groups is placed in the last.
+const OWN_GROUPS: readonly OwnGroup[] = [
+  {
+    id: 'blank-pages',
+    name: 'Blank Pages',
+    line: 'One empty page of the kind you mean: a slide, an article, an infographic or a card.',
+    kinds: EXTRA_BLANK_TEMPLATES,
+  },
+  ...TEMPLATE_CATEGORIES.map((c) => ({
+    id: c.id,
+    name: c.label,
+    line: c.description,
+    kinds: TEMPLATES.filter((t) => templateCategory(t.kind) === c.id).map((t) => t.kind),
+  })),
+];
+
+const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
+
+/** A template's descriptor. */
+export const templateOf = (kind: TemplateKind): TemplateDescriptor => byKind.get(kind)!;
+
+function build(type: StartPageType): TemplateStart {
+  // A page type keeps only the templates opening on that kind of page (templatePageKind).
+  const ofType = (k: TemplateKind) => type === 'all' || templatePageKind(k) === type;
+  // Blank Illustration leaves the same empty tab the × does, so it is offered nowhere. Blank Tab is made by name only (an agent's add_tab, a `/new?blank` link), in no category, so on no start either.
+  const listed = TEMPLATES.filter(
+    (t) => !t.hidden && t.kind !== BLANK_TEMPLATE && t.kind !== 'blank' && ofType(t.kind),
+  ).map((t) => t.kind);
+  const rest: TemplateStartGroup[] = OWN_GROUPS.map((g, i, all) => ({
+    ...g,
+    kinds: [
+      ...g.kinds.filter((k) => listed.includes(k)),
+      ...(i === all.length - 1 ? listed.filter((k) => !all.some((x) => x.kinds.includes(k))) : []),
+    ],
+  }));
+  const groups = rest.filter((g) => g.kinds.length > 0);
+  // Where a match is listed: its first group.
+  const home = (k: TemplateKind) => rest.find((g) => g.kinds.includes(k))?.id ?? null;
+  const search = (query: string) => {
+    if (query.trim() === '') return [];
+    const found = listed.filter((k) => templateMatchesQuery(templateOf(k), query));
+    return rest
+      .map((g) => ({ group: g.id, kinds: found.filter((k) => home(k) === g.id) }))
+      .filter((g) => g.kinds.length > 0);
+  };
+  return { groups, search };
+}
+
+export const TEMPLATE_START: TemplateStart = build('all');
+
+// Each page type's start, built the first time it is chosen and kept: a handful at most.
+const BY_TYPE = new Map<StartPageType, TemplateStart>([['all', TEMPLATE_START]]);
+
+/** The start showing only `type`'s templates (every template for 'all'). */
+export function templateStartFor(type: StartPageType): TemplateStart {
+  let start = BY_TYPE.get(type);
+  if (!start) BY_TYPE.set(type, (start = build(type)));
+  return start;
+}

@@ -1,0 +1,122 @@
+import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Button, htmlProps, Switch, BackBar } from '@liveknowledge/ui';
+import { track } from '@/lib/telemetry';
+import { Callout } from '@liveworkspace/ui/callout';
+
+// The options-and-download second screen for an image export format
+// (PNG / SVG / PDF). The background-pattern toggle used to sit
+// permanently on the main export grid; it only affects image formats, so
+// it now lives here, behind the format card (docs/specs/010-palette/style-presets.md), above a live preview
+// of exactly what will be exported. Owns the toggle states and hands them
+// to the parent's renderer on Download.
+export function ImageExportPanel({
+  label,
+  busy,
+  error,
+  renderPreview,
+  previewReady,
+  onExport,
+  onBack,
+  pageExport = false,
+  pagePicker,
+}: {
+  // The picked format's display name, e.g. 'PNG'.
+  label: string;
+  busy: boolean;
+  error: string | null;
+  // Build the preview SVG markup for the given options (same content the
+  // export produces). Called on each toggle change.
+  renderPreview: (opts: { pattern: boolean; hiddenLayers: boolean }) => string;
+  // False until the icon catalogues + image bitmaps have loaded, so the
+  // preview doesn't flash placeholder glyphs first.
+  previewReady: boolean;
+  // Render + download the image with the chosen options. The parent owns the
+  // rasteriser + telemetry; this panel just collects the options.
+  onExport: (opts: { pattern: boolean; hiddenLayers: boolean }) => void;
+  onBack: () => void;
+  // A page export (docs/specs/007-editor/pages-mode.md "Export"): the page is
+  // its own background, so the pattern toggle does not show.
+  pageExport?: boolean;
+  // The page choice (ExportPagePicker), under the back bar and above the preview.
+  pagePicker?: ReactNode;
+}) {
+  // Backdrop pattern (docs/specs/010-palette/style-presets.md): paint the tab's grid / dots / … pattern. On by
+  // default so the export matches the canvas; switch off for a clean backdrop.
+  const [pattern, setPattern] = useState(true);
+
+  // Rebuild the preview only when an option or the loaded assets change.
+  const previewSvg = useMemo(
+    // Hidden layers stay out (docs/specs/006-document/layers.md "Exports and snapshots"): what you see is what you
+    // export. The option to include them retired with the Layers panel.
+    () => (previewReady ? renderPreview({ pattern, hiddenLayers: false }) : ''),
+    [previewReady, renderPreview, pattern],
+  );
+
+  return (
+    <div>
+      {/* The shared two-level "back to the overview" bar (docs/specs/018-help/contextual-help-links.md house
+          style), the same control the New Document wizard's location step
+          uses — not a small text link buried in the footer beside the
+          commit button, where the way back sat next to the way forward. */}
+      <BackBar label="All Formats" current={label} onClick={onBack} disabled={busy} />
+      {pagePicker ? <div className="mt-3">{pagePicker}</div> : null}
+      {/* Live preview — exactly what Download produces under the current
+          options. The injected SVG is our own export output (no external
+          content); CSS fits it inside the frame. */}
+      <div className="mb-4 flex h-48 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900">
+        {previewSvg ? (
+          <div
+            data-testid="export-preview"
+            // One picture with a name, as the GIF's preview is: left bare, the SVG's every word was its name.
+            role="img"
+            aria-label="The page as it will download"
+            className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
+            {...htmlProps(sanitizedHtml(previewSvg))}
+          />
+        ) : (
+          <span className="text-xs text-slate-500 dark:text-slate-400">Preparing preview…</span>
+        )}
+      </div>
+      {pageExport ? null : (
+        <>
+          {/* Background-pattern toggle. */}
+          <button
+            type="button"
+            onClick={() => {
+              track('UI', 'Toggled', 'PatternExport');
+              setPattern((v) => !v);
+            }}
+            aria-pressed={pattern}
+            className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
+          >
+            <span className="flex flex-col">
+              <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                Background Pattern
+              </span>
+              <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+                Paint the tab's grid / dots / texture behind what's on the canvas.
+              </span>
+            </span>
+            <Switch presentational size="sm" checked={pattern} />
+          </button>
+        </>
+      )}
+      {error ? (
+        <Callout tone="error" role="alert" className="mt-4">
+          {error}
+        </Callout>
+      ) : null}
+      <div className="mt-4 flex items-center justify-end gap-3">
+        <Button
+          variant="primary"
+          size="md"
+          onClick={() => onExport({ pattern, hiddenLayers: false })}
+          busy={busy}
+        >
+          {busy ? 'Exporting…' : `Download ${label}`}
+        </Button>
+      </div>
+    </div>
+  );
+}

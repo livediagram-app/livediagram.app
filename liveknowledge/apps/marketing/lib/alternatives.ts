@@ -1,0 +1,145 @@
+import type { Alternative, Comparisons } from '@liveworkspace/comparisons';
+import { SITE_URL } from '@liveknowledge/ui';
+
+// liveknowledge' comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
+// "liveknowledge"). The hub, every page, their metadata and the sitemap read this list, so adding a
+// competitor is a one-place change. Bump the date with any change to them.
+const UPDATED = new Date('2026-11-18');
+
+const LIST: Alternative[] = [
+  {
+    slug: 'google-slides',
+    name: 'Google Slides',
+    highlights: ['Slide layouts', 'Present any page', 'No account'],
+    title: 'Google Slides alternative · liveknowledge',
+    description:
+      'A free, open-source Google Slides alternative: slide pages from 64 ready-made layouts, presenter notes and timing, and the write-up in the same document.',
+    h1: 'A free, open-source Google Slides alternative',
+    lede: 'Google Slides is the presentation tool most people already have open. liveknowledge makes decks a little differently: start each slide from a ready-made layout, keep the article, the one-pager and the deck as tabs of one document, and present any page of them, with your team editing alongside you.',
+    rows: [
+      { label: 'Price', us: 'Free, every feature', them: 'Free with a Google account' },
+      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
+      {
+        label: 'Start without an account',
+        us: 'Yes, create and edit as a guest',
+        them: 'A Google account to create decks',
+      },
+      { label: 'Real-time multiplayer', us: 'Yes, live cursors and comments', them: 'Yes' },
+      {
+        label: 'Designed slides',
+        us: '16:9 or 4:3 slide pages from 64 layouts, painted from your theme',
+        them: 'Themes, layouts and a large template gallery',
+      },
+      {
+        label: 'Presenting',
+        us: 'Click-by-click builds, presenter notes, per-slide time budgets, transitions, auto-advance and loop, laser and spotlight',
+        them: 'Speaker notes, presenter view, audience Q&A, animations and transitions',
+      },
+      {
+        label: 'Rehearsing',
+        us: 'Flashcards to speak from, each with how long it takes to say',
+        them: 'Speaker notes and a timer in presenter view',
+      },
+      {
+        label: 'Review and history',
+        us: 'Version history per tab, whole-document snapshots and Request Approval, free',
+        them: 'Version history with named versions; Drive approvals on some Workspace plans',
+      },
+      {
+        label: 'Export',
+        us: 'An editable PowerPoint file, PDF, PNG, SVG and an animated GIF of the deck',
+        them: 'PowerPoint, PDF and images',
+      },
+      {
+        label: 'Beyond the deck',
+        us: 'Articles and infographics in the same document',
+        them: 'One of several Google Workspace apps',
+      },
+    ],
+    themBest: [
+      'Everyone in your organisation already lives in Google Workspace, with Drive, Meet and Docs around the deck.',
+      'A full presentation suite: a wider range of object animations, a presenter view, audience Q&A and a large template gallery.',
+      'Charts, tables and animations that stay native when a deck goes to PowerPoint and back.',
+      'Gemini in Slides drafts a whole, editable deck from a prompt, styled from your files, on eligible Workspace and Google AI plans.',
+    ],
+    usBest: [
+      'Slide pages for a designed deck: 16:9 or 4:3, started from 64 layouts (title, agenda, big numbers, roadmap and more).',
+      'One document for the whole story: the write-up as an article, the one-pager as an infographic, and the deck that presents them, side by side as tabs.',
+      'Any page can be a slide, from any tab, ordered in one deck that is saved with the document.',
+      'Present with presenter notes, a time budget per slide, transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
+      'Builds bring a slide’s points in one click at a time, with Appear, Fade or Rise, in the order you set.',
+      'Rehearse from Flashcards: each card shows how long it takes to say, and Contents adds up the whole talk.',
+      'Review a deck before it goes out: ask named people to approve it, keep named versions of each tab, and snapshot the whole document to revert in one step.',
+      'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
+      'Export the deck as an editable PowerPoint file, speaker notes included, or as an animated GIF for a chat, an email or a README.',
+      'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
+      'An AI assistant connected over MCP can build the deck for you from slide layouts.',
+      '41 templates to start from, from a launch keynote and a class lesson to a board update.',
+      'Free and MIT-licensed, with no paid tier.',
+    ],
+    sections: [
+      {
+        heading: 'Slides from ready-made layouts',
+        paragraphs: [
+          'In Google Slides a deck is its own file, built slide by slide. In liveknowledge a slide is a page: add a 16:9 or 4:3 slide page and start it from one of 64 layouts (a title, an agenda, two columns, image and text, a timeline and more), painted from your theme. Change the theme and every slide follows.',
+          'A slide sits in a deck you order in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week. Any other page can join the deck too, so a poster or a page of an article can be presented as it is.',
+        ],
+      },
+      {
+        heading: 'Presenting, built for the room',
+        paragraphs: [
+          'Presenting runs full screen on your screen alone: nobody is dragged into your slide, and collaborators with the document open carry on working. Each slide carries its own presenter notes behind a button, and an optional time budget you can watch as you talk. Builds bring a slide’s points in one click at a time, and a laser pointer and a spotlight guide the room.',
+          'Nothing on a slide can be changed by a stray click, so a projector is safe, and a deck can advance on its own and loop for a screen in a lobby. To rehearse, write the talk on Flashcards: each card shows how long it takes to say, and Contents shows how long the whole talk runs.',
+        ],
+      },
+      {
+        heading: 'The deck and everything behind it',
+        paragraphs: [
+          'A deck is usually the last step of something: a brief, a report, a launch. In Workspace those live in Docs and Slides as separate files. In liveknowledge they are tabs of one document: write the brief as an article, lay out the one-pager, and present from all of it. Everyone edits live, with comments and assigned actions on the pages themselves.',
+        ],
+      },
+      {
+        heading: 'Free, open and no account needed',
+        paragraphs: [
+          'Slides is free with a Google account. liveknowledge needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier. When a deck has to travel, export it as an editable PowerPoint file that opens in Slides, PowerPoint and Keynote, any page as a PNG, SVG or a print-ready PDF, or the whole deck as an animated GIF.',
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: 'Can liveknowledge replace Google Slides?',
+        a: 'For many decks, yes: slide pages from ready-made layouts, click-by-click builds, presenter notes, time budgets, transitions, a laser pointer and a spotlight, all edited live with your team. If you need a wider range of animations, audience Q&A or offline editing, Google Slides is still the deeper presentation suite.',
+      },
+      {
+        q: 'Can I import or export PowerPoint files?',
+        a: 'Yes, both ways. Import a .pptx from PowerPoint or Google Slides and each slide becomes a slide page, with its speaker notes. Export a deck as a .pptx and its text stays editable text boxes, its basic shapes stay shapes, and its charts, icons and pictures come as pictures; its speaker notes come along, and Google Slides and Keynote open it too.',
+      },
+      {
+        q: 'Do my audience or co-editors need an account?',
+        a: 'No account of any kind. Share a link and anyone who opens it can view or edit in real time. Signing in (email code or Google) is optional and mainly adds cross-device sync and teams.',
+      },
+      {
+        q: 'Can I present a page that is not a slide?',
+        a: 'Yes. Any page can join the deck, from any tab: an infographic, a poster or a page of an article presents full screen just as a slide page does.',
+      },
+      {
+        q: 'Is liveknowledge free?',
+        a: 'Yes. It is MIT-licensed open source with a free hosted version, every feature included, and no paid tier. You can even use it without creating an account at all.',
+      },
+    ],
+  },
+];
+
+export const COMPARISONS: Comparisons = {
+  app: 'liveknowledge',
+  siteUrl: SITE_URL,
+  updated: UPDATED,
+  hub: {
+    title: 'How liveknowledge compares · alternatives',
+    description:
+      'An honest, side-by-side comparison of liveknowledge with Google Slides, including where each is the better pick.',
+    heading: 'How liveknowledge compares',
+    lede: 'Thinking about another tool? Here is an honest, side-by-side look at how liveknowledge compares, including where each one is the better pick.',
+  },
+  alternatives: LIST,
+};

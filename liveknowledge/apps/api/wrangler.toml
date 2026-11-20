@@ -1,0 +1,338 @@
+name = "liveknowledge-api"
+# The liveworkspace Cloudflare account, which also hosts liveknowledge.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# No public *.workers.dev address or preview URLs: a copy there would skip the zone's WAF and
+# rate-limit rules. The Worker is reached only at its custom domain or over a service binding
+# (docs/specs/016-platform/deployment.md "Custom domain").
+workers_dev = false
+preview_urls = false
+
+# Local dev port, off wrangler's 8787 default so a liveknowledge stack runs beside
+# livediagram's and liveplanner's (the router's API_ORIGIN and the docs name the same port).
+[dev]
+port = 9287
+
+# Plain (non-secret) vars. Everything here is every fork's default too, so
+# what only liveknowledge.app runs with is NOT here: TELEMETRY_ENABLED and the
+# image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
+# with `wrangler deploy --var` on liveknowledge.app's own repository only, and
+# then verifies on the editor worker (docs/specs/016-platform/deployment.md
+# "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
+# opts in, by declaring the var here. TELEMETRY_ENABLED gates this worker's
+# anonymous, first-party product events, sent to liveworkspace's central
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md):
+# "true" turns it on; anything else, or absent, keeps it fully off. The
+# service's URL is TELEMETRY_URL, also from the hosted profile (per
+# environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
+# unset means production's (https://www.liveworkspace.app/api/telemetry). Locally,
+# `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
+[vars]
+
+# The central index (liveworkspace/docs/specs/004-index/one-explorer.md): where every document is filed and who may open it. The
+# grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their summaries
+# there with INDEX_KEY (a secret, below). Local dev: `INDEX_ORIGIN=http://127.0.0.1:8793` in `.dev.vars`.
+INDEX_ORIGIN = "https://www.liveworkspace.app"
+
+# The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
+# api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
+# from an older CLI.
+OAUTH_ISSUER = "https://mcp.liveknowledge.app"
+
+# The From identity for transactional email (docs/specs/014-identity/transactional-email.md). Its domain is
+# onboarded to Cloudflare Email Service on this account (liveworkspace/docs/specs/003-accounts/email.md).
+EMAIL_FROM = "liveknowledge <hello@liveknowledge.app>"
+
+# No R2 bucket: uploaded images live in liveworkspace's media service (MEDIA_KEY below), and a document's previews
+# (its Explorer picture, live image and share card) are liveworkspace's too, drawn on request through the export
+# door (liveworkspace/docs/specs/006-media/previews.md).
+
+# Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
+# Caps writes at 300 / 60s per owner: a generous ceiling for normal
+# editing (autosave + comment posts + log appends) but well below
+# what a malicious bot would push through. The api worker calls
+# `env.WRITE_RATE_LIMITER.limit({ key })` at the top of every write
+# endpoint; over-limit requests get a 429. Namespace ids are
+# arbitrary local identifiers (Cloudflare scopes by binding name +
+# script). When this binding is absent the rate-limit
+# helper falls through to "allow" so deployments without the
+# feature still work.
+[[unsafe.bindings]]
+name = "WRITE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 300, period = 60 }
+
+# Per-IP limiter for the CLI's telemetry relay (POST /api/events,
+# docs/specs/017-telemetry/telemetry.md "The relay"). Separate namespace from the write limiter so abuse of
+# the public relay can never eat into a user's document-write budget. Keyed on
+# CF-Connecting-IP in src/routes/events.ts. Absent binding → the helper allows.
+[[unsafe.bindings]]
+name = "EVENTS_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 120, period = 60 }
+
+# The document's Durable Object (docs/specs/015-api/api.md "Storage"): one SQLite-backed instance per document
+# id, holding the document's content (tabs, the slide deck, changesets, image references) in its own SQLite and
+# running its realtime room (presence + ordered ops over hibernating WebSockets).
+[[durable_objects.bindings]]
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
+
+# liveknowledge has never been deployed, so the classes start SQLite-backed with no rename history.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DocumentRoom", "WorkbenchStore"]
+
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/specs/011-workbench/workbench.md),
+# so this Worker's per-person WorkbenchStore goes, with whatever it held.
+[[migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
+
+# Per-IP limiter for share-code resolution (GET /api/share/<code>). That
+# read carries the optional share password and is otherwise unauthed +
+# exempt from the write limiter, so without this an attacker holding a
+# code could brute-force the password unbounded. 30 resolves / 60s per IP
+# is ample for legit visitors. Separate namespace. Absent binding → the
+# index.ts check is skipped, so local dev still works.
+[[unsafe.bindings]]
+name = "SHARE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1004"
+simple = { limit = 30, period = 60 }
+
+# Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md): an unauthenticated outbound
+# page fetch for link-card previews. 60/60s is plenty for a user dropping
+# bookmark cards. Separate namespace. Absent binding → check skipped.
+[[unsafe.bindings]]
+name = "UNFURL_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1005"
+simple = { limit = 60, period = 60 }
+
+# Per-token read throttle for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5): an external
+# integration's reads, keyed on the token id, so one runaway script can't hammer
+# reads independently of the owner's app use. Token WRITES ride
+# WRITE_RATE_LIMITER (also keyed on the token id). Absent binding → allow.
+[[unsafe.bindings]]
+name = "API_TOKEN_READ_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1006"
+simple = { limit = 120, period = 60 }
+
+# The image gallery's caps (500 images and 1 GB per person, across every app) are the media service's
+# (liveworkspace/docs/specs/006-media/media.md "Uploads"), not this worker's.
+
+# Transactional email (docs/specs/014-identity/transactional-email.md) goes out through Cloudflare Email
+# Service's `send_email` binding (liveworkspace/docs/specs/003-accounts/email.md); the onboarding series is liveworkspace's. No
+# API key: the binding is the credential, and `wrangler dev` simulates it, printing each email instead of
+# sending it. Without this block the whole email feature is inert — no sends, so a deployment with email
+# off does zero extra work. EMAIL_FROM (in [vars]) is the sender; APP_BASE_URL, the public origin for links
+# in emails, defaults to "https://www.liveknowledge.app".
+[[send_email]]
+name = "EMAIL"
+
+# Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
+# liveworkspace accounts Worker. Four values, provisioned out-of-band so none
+# lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
+#
+#   ACCOUNTS_URL            the accounts Worker's origin
+#                           (https://www.liveworkspace.app)
+#   API_RESOURCE            this API's registered resource, the access
+#                           token's audience (https://liveknowledge.app/api)
+#   ACCOUNTS_CLIENT_ID      this app's OAuth client id
+#   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
+#
+#   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
+#     AUTH_ORIGIN=http://localhost:3600 so the callback comes back
+#     through the router. Wrangler reads it on the next `wrangler dev`.
+#   - Production: Cloudflare Worker secrets, set once with `wrangler secret put <NAME>` (docs/ci.md). No
+#     workflow sets them: the deploy only carries CLOUDFLARE_API_TOKEN, so a value rotates by putting it again.
+#     Secrets persist across deploys independently of this file.
+#
+# ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET and API_RESOURCE name liveknowledge's client at the
+# liveworkspace accounts Worker (liveworkspace/docs/specs/002-architecture/integrating-an-app.md): every caller, a guest included, is a
+# token it minted (docs/specs/014-identity/auth-and-guest-access.md). Unset, nobody is signed in or a guest, and
+# only share links open documents.
+#
+# INDEX_KEY is liveknowledge's key at the central index (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Reaching the index"):
+# what the document rooms push their summaries with, what the api asks for an API token's grants with, and what the
+# index calls this api's internal doors with. Secret material: `INDEX_KEY=dev-liveknowledge-index-key` in
+# `.dev.vars` locally, `wrangler secret put INDEX_KEY` in production, the same value as the index's key for
+# liveknowledge. Unset, no document opens.
+
+# TELEMETRY_KEY is liveknowledge' Worker key for liveworkspace's central
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md), sent as
+# X-Telemetry-Key: a Worker sends no Origin, so the key is what lets its posts
+# speak for liveknowledge.app. Secret material, provisioned out-of-band like the
+# two above; never in [vars]:
+#
+#   - Local dev: `TELEMETRY_KEY=dev-liveknowledge-key` in `apps/api/.dev.vars`
+#     (gitignored), matching the service's .dev.vars.
+#   - Production: `wrangler secret put TELEMETRY_KEY` here and on the mcp
+#     worker, the SAME value as the service's TELEMETRY_KEY_LIVEKNOWLEDGE.
+#     Generate with `openssl rand -hex 32`.
+#
+# Unset = this worker sends no telemetry, so local dev can ignore it.
+
+# MEDIA_KEY is liveknowledge' secret on liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md,
+# src/media.ts), which keeps every app's uploaded images. The service holds the same value as
+# MEDIA_KEY_LIVEKNOWLEDGE. Never in [vars]:
+#
+#   - Local dev: `MEDIA_KEY=dev-liveknowledge-media-key` and
+#     `MEDIA_URL=http://localhost:8792/api/media` in `apps/api/.dev.vars`.
+#   - Production and staging: `wrangler secret put MEDIA_KEY` (and `--env staging`). MEDIA_URL comes from hosted-vars.json.
+#
+# Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
+
+# COMMUNITY_KEY is liveknowledge' secret on the liveworkspace Community service
+# (liveworkspace/docs/specs/007-community/community.md), sent as a bearer token on its app routes, where it proves a
+# publish, a check or a copy is liveknowledge'. The service holds the same value as COMMUNITY_KEY_LIVEKNOWLEDGE.
+# Never in [vars]:
+#
+#   - Local dev: `COMMUNITY_KEY=dev-liveknowledge-community-key` and
+#     `COMMUNITY_URL=http://localhost:8791/api/community` in `apps/api/.dev.vars`.
+#   - Production and staging: set once on each Worker with `wrangler secret put COMMUNITY_KEY` (and `--env
+#     staging`); a deploy keeps it. COMMUNITY_URL comes from hosted-vars.json.
+#
+# Unset = no Community: the capabilities report it off, publishing answers 404, and the checks do nothing.
+# COMMUNITY_ENABLED=false (a secret or dashboard variable) is the off switch that keeps the key.
+
+# DRIVE_KEY is liveknowledge' secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md
+# "Contracts > The apps"); the service holds the same value as DRIVE_KEY_LIVEKNOWLEDGE. It opens the
+# internal export door's `file` format and the import door, nothing else. Never in [vars]:
+#
+#   - Local dev: `DRIVE_KEY=dev-liveknowledge-drive-key` in `apps/api/.dev.vars`.
+#   - Production and staging: `wrangler secret put DRIVE_KEY` (and `--env staging`).
+#
+# Unset = the mirror cannot export or import documents (the two doors take only the index's key).
+
+# DATA_EXPORT_KEY is liveknowledge's secret on liveworkspace's data export (liveworkspace/docs/specs/003-accounts/data-export.md
+# "The apps' doors"); the service holds the same value as DATA_EXPORT_KEY_LIVEKNOWLEDGE. It opens the internal export
+# door alone, in every format (its `comments` format is the data export's own), nothing else. Never in [vars]:
+#
+#   - Local dev: `DATA_EXPORT_KEY=dev-liveknowledge-data-export-key` in `apps/api/.dev.vars`.
+#   - Production and staging: `wrangler secret put DATA_EXPORT_KEY` (and `--env staging`).
+#
+# Unset = the data export cannot read documents (the export door's `comments` format takes only the index's key).
+
+# Accounts and the index, which this Worker fetches its keys through: accounts' for access and guest tokens
+# (src/auth/accounts.ts), the index's for grants (@liveworkspace/index-app service.ts), in the Worker and its
+# rooms' Durable Objects. A Worker's fetch to another Worker's public route can stall (2026-11-13). Without them,
+# or when they throw (a local run without accounts or the index), the public routes are used.
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
+
+# ---------------------------------------------------------------------------
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `liveknowledge-api-staging` via
+# `wrangler deploy --env staging`.
+#
+# Everything below is restated ON PURPOSE. Wrangler does NOT inherit
+# bindings into a named environment: `vars`, `r2_buckets`,
+# `durable_objects`, `migrations` and `unsafe` are all non-inheritable, so a
+# block omitted here is a binding MISSING from the deployed staging worker,
+# with no warning. Only `main`, `compatibility_date` and `rules`
+# carry over from the production config above.
+#
+# The values that genuinely differ from production are the
+# origins the api names (the index, the media service, the email vars). Everything
+# else agreeing with production is the point: staging is a rehearsal.
+# ---------------------------------------------------------------------------
+
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "liveknowledge-api-staging"
+workers_dev = false
+preview_urls = false
+
+# TELEMETRY_ENABLED and the image caps come from `hosted-vars.json`, exactly as
+# for production (see the top of this file), and so does TELEMETRY_URL: staging's
+# events go to staging's telemetry service, never into production's published numbers.
+[env.staging.vars]
+# APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
+# back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
+EMAIL_FROM = "liveknowledge <hello@liveknowledge.app>"
+
+# Staging's own index (see the top-level [vars]).
+INDEX_ORIGIN = "https://staging.liveworkspace.app"
+
+# The staging MCP worker's OAuth server, for the CLI against staging.
+OAUTH_ISSUER = "https://mcp-staging.liveknowledge.app"
+
+# Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
+# scopes a namespace per script, and `liveknowledge-api-staging` is a different
+# script, so these are already separate counters. Renumbering them would
+# imply the number carries meaning across workers, which it doesn't.
+[[env.staging.unsafe.bindings]]
+name = "WRITE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 300, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "EVENTS_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 120, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "SHARE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1004"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "UNFURL_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1005"
+simple = { limit = 60, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "API_TOKEN_READ_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1006"
+simple = { limit = 120, period = 60 }
+
+# Email, restated because bindings don't inherit (liveworkspace/docs/specs/003-accounts/email.md). Staging sends real email from
+# the same domain as production (docs/specs/016-platform/staging-environment.md "Integrations").
+[[env.staging.send_email]]
+name = "EMAIL"
+
+# A different script is a different Durable Object namespace, so staging's
+# DOCUMENT_ROOM instances are separate from production's for free. The class
+# still needs its own migration tag in this environment.
+[[env.staging.durable_objects.bindings]]
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_sqlite_classes = ["DocumentRoom", "WorkbenchStore"]
+
+[[env.staging.migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
+
+# The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY,
+# TELEMETRY_KEY and MEDIA_KEY are set once on the staging Worker with
+# `wrangler secret put <NAME> --env staging` (docs/ci.md), not by CI. Worker secrets are per-environment, so staging's never collide with
+# production's.
+
+# Accounts and the index for the keys, restated because bindings don't inherit (see the top-level [[services]]).
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"

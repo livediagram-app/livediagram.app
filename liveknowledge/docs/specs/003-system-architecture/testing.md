@@ -1,0 +1,367 @@
+# Testing
+
+How liveknowledge is tested below the browser: unit tests, and hook and component tests in jsdom. The goal is a fast, consistent, zero-config-per-file test setup that runs the same locally and in CI.
+
+The whole editor in a real browser, against the production build and the api worker, is the separate Playwright suite in [End-to-end tests](e2e-smoke.md); it is a per-PR merge gate of its own.
+
+## Runner
+
+**Vitest** is the single test runner across the monorepo. It is already the
+ecosystem default for Vite/TS projects, runs TypeScript with no extra build
+step, and has a Jest-compatible API so tests read conventionally.
+
+There is **no per-app runner divergence**: every workspace that has tests uses
+Vitest with the same shared config.
+
+## Shared config: `@liveworkspace/vitest-config`
+
+Per the repo's reuse-over-duplication rule, test configuration lives in one
+place: the monorepo's `packages/vitest-config`. It sits alongside the other shared configs
+(`oxlint-config`, `prettier-config`; `tailwind-config` is still this product's own).
+
+It exports:
+
+- `baseConfig`: the shared Vitest defaults (node environment, coverage via
+  `v8`, file-name conventions, `clearMocks`).
+- `defineProject(overrides)`: merges the base with per-workspace overrides.
+
+A workspace's `vitest.config.ts` is therefore one line in the common case:
+
+```ts
+import { defineProject } from '@liveworkspace/vitest-config';
+export default defineProject();
+```
+
+…or, when a workspace needs something different (e.g. a DOM environment for
+React component tests):
+
+```ts
+import { defineProject } from '@liveworkspace/vitest-config';
+export default defineProject({ test: { environment: 'jsdom' } });
+```
+
+## Conventions
+
+- **Test files live next to the code they test**, named `*.test.ts` /
+  `*.test.tsx`. Co-location keeps the unit and its test in sync and makes
+  coverage gaps obvious.
+- **Import the source under test by relative path** (`./geometry`), not via the
+  package's public entry, so a unit test exercises exactly one module.
+- **No magic globals.** `describe` / `it` / `expect` are imported from
+  `vitest`. This keeps test files lint-clean and explicit (`globals: false`).
+- **Prefer pure-function tests.** The highest-value, lowest-cost units are the
+  pure helpers: the document data model, the wire-format serializers, and the
+  canvas geometry. Those are tested first.
+- **Speed budgets are CPU time, not wall-clock.** A test asserting that work
+  is fast (a linear scan, a converter) measures it with
+  `cpuMsOf` (or `cpuMsOfAsync`) from `@liveworkspace/vitest-config/cpu-time`, never
+  `performance.now()`. Turbo runs every package's suite at once, and a
+  wall-clock budget also counts the time a test waits for a core, which made
+  those tests flake on a busy machine. CPU time still catches the regression
+  the budget is for. The one exception is a test that asserts nothing WAITS
+  (no sleep, no retry delay): only wall-clock time can see a wait.
+- **An inline script is tested as the browser runs it.** A boot script ships as a string the page
+  inlines before hydration (appearance, reduce motion, the stale-HTML guard), so its test runs that
+  very string with `runInlineScript(source, globals)` from
+  `@liveworkspace/vitest-config/inline-script`: a classic script in its own realm whose globals are
+  the stubs it is handed (`document`, `localStorage`, a clock, `URL`) and nothing of the test's,
+  never through `new Function`.
+- **A stubbed fetch reads what it was sent** through `@liveworkspace/vitest-config/sent-request`:
+  `sentJson(init)` and `sentText(init)` read a string body, `sentForm(init)` a form, and
+  `sentUrl(input)` the URL of a string, a URL or a Request. A body of any other kind fails the
+  test rather than read as `[object Blob]`.
+- **A tight budget is written for a developer's machine, widened on CI, and checked without coverage.**
+  CI's shared runners run the same work about 4x slower than an M-series Mac (the Tidy Up hover: 24 ms
+  locally, 101 to 104 ms on CI), so a budget set for a person's device sits at the line there and fails
+  at random. Such a test asserts `cpuBudgetMs(ms)`: `ms` in a plain run, and `ms x CI_CPU_HEADROOM` (3)
+  when `CI` is `true` or `1` (`CI=false` or `CI=0` is a developer's machine). Three is enough beside a
+  4x slower runner because each budget keeps its own room over the local timing (Tidy Up: 100 ms
+  against 24). A loose regression guard (a budget many times what the work measures) needs neither.
+- **Coverage never judges a budget.** Coverage instruments every line, so the same work runs several
+  times slower and a budget read under it failed at random: 15 of 25 failed CI runs in November 2026
+  were budgets missed by 1% to 50% under coverage. In a coverage run (the shared Vitest config passes
+  `LIVEWORKSPACE_COVERAGE` to its workers) `cpuBudgetMs` is unbounded, so the test still runs and
+  counts its lines but cannot fail on time. `vitest-budgets` (from `@liveworkspace/vitest-config`)
+  then runs every test file that imports `@liveworkspace/vitest-config/cpu-time` once more, without
+  coverage, where the budget holds: each workspace's `test:coverage` runs it after its coverage run,
+  and CI's editor shards run it beside theirs. A budget used as a test timeout is not a CPU budget and
+  never goes through `cpuBudgetMs`.
+- **A growth check's ceiling is unbounded under coverage too.** A test that holds work linear compares the
+  CPU time of two input sizes a fixed multiple apart against a ceiling, through `cpuRatioCeiling(ratio)` (or
+  `cpuGrowthLimitMs(ms, ratio, slackMs)` for a limit on the smaller time) from
+  `@liveworkspace/vitest-config/cpu-time`: the ratio as written in a plain run and on CI, unbounded under
+  coverage, where instrumentation slows a large input's allocation and collection more than a small one's
+  (livehuddle's stored-arrow bounds read 8.68 against 8 on CI, 3 to 6.4 locally). `vitest-budgets` checks it
+  again without coverage. No growth check writes its ceiling as a bare number.
+- **A growth check keeps its larger input small enough to keep garbage collection out.** Four times the
+  input is held under 8 times the CPU, where a quadratic scan reads 16. Past about a million characters, or
+  a few thousand elements, V8's memory handling alone grows faster than the input
+  (the same linear label scan took 3.2 times the CPU for twice the text), so the label-cap ReDoS checks,
+  whose larger input was 1.28 million characters, read a median 6.9 for four times the text and failed
+  CI at 8.4 (livedesign, 2026-11-09). They compare two and eight times their sweep's length now: 4.1,
+  worst 4.7 of 20 runs.
+- **A growth check times its two sizes in turns.** One warm-up run of each, then samples of each in turn,
+  the best kept, several runs to a sample when the smaller takes about a millisecond: timed one after the
+  other, the smaller pays the first compile and the larger any collection. `cpuGrowthRatio` from
+  `@liveworkspace/vitest-config/cpu-time` does this, and samples another round while a round reads over
+  the ceiling, up to three: noise settles, a quadratic step does not (docs/ci.md "Speed budgets").
+- **A test never pays a cold module load.** When the code under test imports
+  a module lazily (`await import(...)`), the test file also imports it
+  statically, so its transform happens at collection, outside every test's
+  timeout; a cold load inside the first test timed out on a busy CI runner
+  and broke the rest of the file with it.
+- **A test never waits out a real delay.** A retry pause, backoff or flush
+  timer runs under `vi.useFakeTimers()`, settled with `vi.runAllTimersAsync()`.
+- **A guard that scans source files filters by text before parsing.** It
+  skips a file that lacks a token every violation needs, and parses each file
+  once per test file, never once per test.
+- **Tampering is done on bytes, not on encoded text.** A test that tampers
+  with a base64 value decodes it, flips a bit, and re-encodes: the last
+  base64 character carries padding bits, so editing the text can decode to the
+  very same bytes.
+- **The api's storage in tests.** The api has no D1 database. `src/test-sqlite-d1.ts` is a real in-memory SQLite
+  (`node:sqlite`) holding the documents' schema (`document-room/document-schema.ts`), behind `env.DOCUMENT_DB` (the
+  D1 surface a document's own Durable Object runs its handlers on), with foreign keys on. Use it wherever the
+  behaviour lives in the schema: cascades, primary-key collisions, `INSERT OR IGNORE` outcomes. It answers the
+  `DOCUMENT_ROOM` RPCs from the same tables and pushes each document's outbox on `flush`.
+- **A document's own Durable Object in tests.** `nodeItemSql` and `nodeTransaction` (`@liveworkspace/index-app/testing`) put
+  `ctx.storage.sql` (`exec`) and `transactionSync` over `node:sqlite`, and
+  `vitest.config.ts` aliases `cloudflare:workers` to a stub base class, so
+  `document-room/document-room-store.test.ts` runs the real worker against one real
+  `DocumentRoom` per document, each on its own database.
+
+## Scripts
+
+Every testable workspace exposes:
+
+| Script          | What it does                            |
+| --------------- | --------------------------------------- |
+| `test`          | `vitest run`: single pass, CI mode      |
+| `test:coverage` | `vitest run --coverage`, with v8 report |
+
+Run from the repo root:
+
+- `pnpm test` → `turbo run test` across all workspaces.
+- `pnpm test:coverage` → `turbo run test:coverage`.
+
+A single workspace: `pnpm --filter @liveknowledge/<name> test`.
+Watch mode while developing: `pnpm --filter @liveknowledge/<name> exec vitest`.
+
+## Coverage
+
+Coverage uses the built-in **v8** provider. Reports are written to a
+gitignored `coverage/` directory per workspace (`text` summary in the
+terminal, plus `html` + `lcov` for tooling). The `lcov` report names each file
+from the repository root (`apps/editor/lib/...`), so reports from different
+workspaces never collide. Only first-party TypeScript source under `src/` and
+`lib/` is counted; the editor (`apps/editor`) also counts `app/`, `components/`
+and `hooks/`, where most of its source lives. Fixtures beside the code
+(goldens, model weights) are never parsed as source. Test files and type-only `.d.ts` are
+excluded. `index.ts` is intentionally **not** excluded: in this repo a
+package's `index.ts` is its implementation (e.g. `@liveknowledge/document`), not
+a barrel of re-exports.
+
+There is no per-file percentage gate: the bar for most code is "logic has
+tests," not a number. The editor (`apps/editor`) as a whole has a floor that only rises ([Editor coverage floor](#editor-coverage-floor)).
+
+One set of files is the exception, held at **100% statements, branches,
+functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
+
+| Files                                                                     | Why                                                                                                                                            |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                             | Decides WHO a request is: access-token checks, guest-id signatures, api tokens, the read/edit gates                                            |
+| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                            | Mint, resolve and revoke the credentials that act as an account                                                                                |
+| `src/routes/document-grant.ts` (room tickets: `@liveworkspace/index-app`) | The index's grant as the room ticket, and settling a request's grant before it reaches the document                                            |
+| `src/routes/share.ts`                                                     | The only unauthenticated read path into a document                                                                                             |
+| `src/db/image-refs.ts`, `src/db/image-grants.ts`, `src/media.ts`          | Which images a document places and may serve, and so what the media service hears before its daily sweep ([Images](../009-elements/images.md)) |
+
+The rest of the worker fails visibly. These fail by serving the right response
+to the **wrong person**, or by deleting a picture someone placed: an outcome no amount of production monitoring
+notices, because nothing errors. The thresholds are per-glob rather than
+per-directory-average, so a new module added under `src/auth/` is held to the
+bar on the commit that introduces it instead of being averaged away by its
+neighbours.
+
+This is the first ratchet, not the last: extend the list when a module joins
+the "decides who may see this" or "decides what may be deleted" set.
+
+## CI
+
+The monorepo's root `ci.yml` runs liveknowledge's group when a change reaches it
+([Deployment](../016-platform/deployment.md#ci), the liveworkspace root's `docs/ci.md`): **Checks** runs lint,
+type check and format check; **Tests** runs each affected workspace's suite exactly once (a workspace with
+`test:coverage` runs only that, so its thresholds are enforced), for every workspace but the editor; **Editor unit
+tests i/3** run the editor's suite (`apps/editor`, most of the product's tests) under coverage, a third of its files
+each (`vitest run --coverage --shard=i/3`); **Build** runs the builds and the staging config check. No CI change is
+needed to start running tests; adding a `test` script to a workspace is enough for Turborepo to pick it up.
+
+The one required check on `main` is **CI**, which fails when any of those jobs failed, with **E2E**, the end-to-end
+workflow's result ([End-to-end tests](e2e-smoke.md#when-it-runs)). Only runs started by the pull request count: a
+`workflow_dispatch` run on the same commit is not attached to it.
+
+Coverage is a separate step because it enforces the thresholds above, and
+because running it at all keeps the coverage tooling exercised: a coverage provider out of step with the test
+runner would otherwise sit there with every check green, since nothing invoked the broken path.
+
+### Sizing the shards
+
+A pull request waits for its slowest job, so splitting a suite further than the slowest job that cannot
+be split (Checks, about 4 minutes) buys no time, while each extra job takes one of the account's 20
+concurrent runner slots that every other run waits on. The editor's suite is split into the fewest
+shards that finish inside Checks: three, at about 3 minutes each, of which about 30 seconds is
+setup. The E2E suite sizes its shards the same way ([End-to-end tests](e2e-smoke.md#when-it-runs)).
+
+### Editor coverage floor
+
+The editor's merged coverage, all three shards together, may never fall. After the shards, CI's **Editor
+coverage floors** job merges their lcov reports and fails when the editor's line or branch coverage is below its
+floor in `.github/scripts/coverage-floors.json` (the liveworkspace root's `docs/ci.md` "Editor coverage floors").
+Each floor sits 0.3 points below the coverage it was set from, rounded down to one decimal, so moving code between
+files never turns it red at random.
+A per-shard threshold in `vitest.config.ts` would be wrong: each shard runs a third of the files and covers a
+slice. When the editor beats its floor by 0.8 points or more (the slack plus half a point), the job says so; raise
+the floor in the same pull request with `node .github/scripts/coverage-floors.mjs --update`, which keeps the same
+slack and never lowers one. The pre-push hook runs
+the editor without coverage and never checks the floor.
+
+### Coverage report
+
+Tests and each Editor unit tests job upload their `lcov` reports to Codecov with GitHub's OIDC token
+(no Codecov secret). It informs; it never gates: its statuses are informational, the enforced bar
+stays the thresholds above, and a failed upload leaves the job green.
+
+The pull request's coverage report is the monorepo's own, written into the description from CI's
+lcov files, not from Codecov (the liveworkspace root's `docs/ci.md` "Coverage report"): patch
+coverage, and a row per product the run reached against `main`.
+
+## Before a push
+
+The monorepo's pre-push hook runs what CI's Checks and Tests would fail on, for what a push
+changes, this product's workspaces included (the liveworkspace root's `docs/ci.md` "Before a push").
+
+The help centre's `test` and `test:coverage` tasks (`liveworkspace/apps/help`, whose `editions/liveknowledge/tests/` hold this
+product's guards) declare the repository's tracked text as turbo inputs (`turbo.json`), so a docs-only change
+never replays a cached pass of those guards.
+
+## What's tested
+
+- **Tested.** Every bullet maps to `*.test.ts` / `*.test.tsx` files in the
+  named workspace. This section records the SHAPE of coverage, not counts or
+  filenames: `pnpm test` reports the counts, which change with every feature.
+  A workspace that gains its first test file joins this list in the same change.
+  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, pages and articles, rich text, tables, comments + mentions, element ops and deltas, slide decks, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
+  - `apps/editor`: the lib layer's helpers (api client + Offline Mode store,
+    auto-align, canvas geometry + backgrounds, export/import,
+    search, templates + theme catalogues, user preferences, telemetry policy,
+    placement, help deep links), the pure helpers behind hooks, and a large jsdom
+    layer of hook and component tests (below). Cross-app guards: every
+    `HELP_ARTICLES` deep link resolves to a real help page.
+    Source guards read the class strings where a rule cannot fail a build:
+    `dark-mode-coverage.test.ts` and `dark-palette.test.ts` (the dark palette's
+    tokens, solid brand fills, brand text, identity colours;
+    [Colour scheme](../004-interface-design/color-scheme.md)), every workspace's
+    `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
+    [Optical alignment](../004-interface-design/optical-alignment.md)), and every
+    UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
+  - `apps/api`: auth guards (account access tokens, guest signatures, document access, tokens),
+    every defensive row mapper, the document's storage modules against real SQLite
+    (cascades, the schema), the `DocumentRoom` Durable Object's rules, ledger
+    and multiplayer paths, every route family (documents, tabs, share, images,
+    thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
+    events, AI), the event log's writers and its catalogue
+    against its spec, the image reference index, email lifecycle, the OpenAPI
+    manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
+  - `packages/api-schema`: the wire contracts both sides share: the SHA-256
+    contract (FIPS 180-4 vectors), the telemetry-event validator's closed
+    vocabulary + type-pattern gate, request auth, image limits, trash
+    shapes, error telemetry and page views.
+    enforced by its config: the token grammar and every rejection, canonical
+    form and chip writes, matching per dimension, suggestions and their marks,
+    view-model copy, `?q=` and carry-over, the telemetry facets.
+  - `packages/ui`: the shared primitives (Button, Tooltip, HoverCard, hints),
+    appearance boot + store, SEO helpers, icons and glyph ink, optical centring,
+    rendered in jsdom where they hold state.
+  - `../packages/icons`: the icon resolver, catalogues, markup builders, stroke
+    weight, cap-band and ink centring, and the vendored Lucide set.
+  - `packages/template-previews`: preview SVGs, their bounds and motion. The
+    template builders themselves (`packages/templates`, which has no suite of
+    its own) are covered from their callers: `apps/editor`'s template and
+    builder tests, `apps/marketing`'s gallery, and `liveworkspace/apps/help`'s article guard.
+  - `../packages/tailwind-config`: the theme's budgets, motion and optical
+    utilities, scrollbars.
+  - `packages/oxlint-config`: the shared lint config, linting scratch files
+    with the real config (every rule family, the custom raw SVG and native
+    `title` rules, directives).
+  - `../packages/source-ast`: parsing a batch of `.ts` and `.tsx` files with
+    TypeScript 7 (order, parents, positions, JSX) and naming a file it could not read.
+  - `packages/telemetry-client`: the shared buffer / flush / beacon engine
+    both apps emit through: batching, caps, opt-in gates, page-hide beacon,
+    error-tracking caps.
+  - `apps/mcp`: tool argument schemas (and the name cap through the real MCP
+    SDK), tool registration + telemetry, element normalising, tab
+    builders, the find-documents search, OAuth state handling, the request scope,
+    and the api service-binding client.
+  - `apps/router`: the dispatch table (prefix strips, clean live
+    routes, origin fallback, 503) plus the drift guard that every top-level
+    `apps/editor/app` segment routes to the editor worker rather than falling
+    through to marketing's 404.
+  - `apps/marketing`: the content registries (alternatives, landing beats,
+    template gallery, feature anchors), brand and category icons, dark art.
+  - `liveworkspace/apps/site/app/telemetry/liveknowledge`: the dashboard's event-vocab layer and maths:
+    category grouping/ordering, row labels, colours, metric series and
+    emitters, ranking rules, the CTA funnel, and the hover-card explanations'
+    never-blank guarantee.
+  - `liveworkspace/apps/help`: the article registry's consistency with the
+    filesystem (slugs ↔ `page.mdx`, per-category counts), the internal-link,
+    UI-label, template and shortcut guards over article text, search and
+    article telemetry, the schema.org JSON-LD builders, and the docs guards: every repo path quoted in
+    `docs/` exists, and every blueprint DEFAULTS.md ledger id, COMPLETENESS.md section and README.md
+    index entry is unique, so a merge that keeps both sides of one fails a test; and the
+    one-TypeScript guard (every workspace on the root's TypeScript 7, no alias to another).
+
+- **Hooks and components** in `apps/editor` and `packages/ui` render in tests, and the
+  environment is opted into **per file** rather than per workspace. A test
+  that needs a document opens with a docblock:
+
+  ```ts
+  // @vitest-environment jsdom
+  ```
+
+  and renders through `@testing-library/react` (`renderHook` for a hook,
+  `render` for a component, with `act` and `waitFor`). The majority of tests
+  are pure logic and stay on `node`, which is both faster and honest about
+  what they exercise; flipping the whole workspace to `jsdom` to serve the
+  files that render would tax every other suite for nothing.
+
+  State that lives in hooks rather than pure helpers is only testable this way: the
+  editor's autosave (`useAutosave.test.tsx`), its changeset feed (`useChangesetFeed.test.tsx`) and the
+  workbench page's renewal (`useWorkbenchRenewal.test.ts`) each render their hook.
+
+  Both workspaces load the same setup file, `react-cleanup` out of
+  `@liveworkspace/vitest-config`, one copy for the repo rather than one per
+  workspace, which calls Testing Library's `cleanup` in an `afterEach`,
+  guarded on `typeof document` so the DOM-less majority is untouched. Testing Library registers that itself only under
+  `globals: true`, which this repo does not use, so a file that rendered
+  without unmounting left a live React root behind; the scheduler then woke
+  on a later macrotask, after Vitest had already torn the jsdom environment
+  down, and raised `ReferenceError: window is not defined` as an unhandled
+  error: a run that fails with every test passing, only on a machine slow
+  enough to lose the race. `vitest.setup.test.tsx` in each workspace is the
+  deterministic guard on that wiring. Files that must unmount **before**
+  their own teardown (a hook whose window listeners would otherwise answer
+  the next test) still call `cleanup()` themselves: after-hooks run in
+  reverse registration order, so the setup's copy runs last.
+
+  One resolver note, in `apps/editor/vitest.config.ts`: `resolve.dedupe` lists
+  `react` and `react-dom`. `packages/ui` peers React but carries its own copy
+  for its own tests, so a hook test that renders a `@liveknowledge/ui` hook
+  otherwise loads TWO Reacts and every `useState` throws "Cannot read
+  properties of null". Next's bundler dedupes for real builds; the test
+  resolver has to be told.
+
+- **Not covered:** the Workers runtime itself. `apps/api`'s suites run under plain vitest in the `node`
+  environment with fakes for `WebSocket` / Durable Object state, and a document's SQLite as in-memory SQLite (see
+  Conventions), not in `workerd`.
+
+Browser end-to-end tests are not part of this gate; they are specified in
+[End-to-end tests](e2e-smoke.md).

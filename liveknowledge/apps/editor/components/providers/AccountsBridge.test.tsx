@@ -1,0 +1,302 @@
+// @vitest-environment jsdom
+
+// The signed-in session as the page sees it (docs/specs/014-identity/auth-and-guest-access.md
+// "Signing in"): no request at all without the signed-in hint, else one POST /api/auth/token on
+// load, the access token held in memory and reused until
+// a minute before it expires, concurrent asks sharing one refresh (each refresh rotates the
+// refresh token), and signing out dropping the cookie before the full load.
+
+import { cleanup, render, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { takeSignedOutHere } from '@liveworkspace/auth-client/signed-out-here';
+
+// The silent sign-in's second look (liveworkspace/docs/specs/003-accounts/accounts.md "A hint that outlived its session").
+const retrySilentSignIn = vi.hoisted(() => vi.fn());
+vi.mock('@liveworkspace/auth-client/silent', () => ({ retrySilentSignIn }));
+import type { DeferredAuthState } from '@liveworkspace/workbench/components/providers/deferred-auth';
+
+const forgetRecent = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock('@/lib/recent-diagrams-snapshot', () => ({ forgetRecentDiagrams: forgetRecent }));
+// The last seen copies a cloud document warm-opens from are the account's (offline-mode.md "Warm open of a cloud document").
+const forgetAll = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock('@/lib/last-seen', () => ({ lastSeenCopies: { forgetAll } }));
+
+const { AccountsBridge, namesOf, resetAccountsSessionForTests } = await import('./AccountsBridge');
+
+const USER = { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace' };
+const fetchMock = vi.fn<typeof fetch>();
+
+function signedIn(token: string, expiresInMs = 3_600_000) {
+  return new Response(
+    JSON.stringify({
+      signedIn: true,
+      accessToken: token,
+      expiresAt: Date.now() + expiresInMs,
+      user: USER,
+    }),
+    { status: 200 },
+  );
+}
+
+beforeEach(() => {
+  forgetAll.mockClear();
+  resetAccountsSessionForTests();
+  fetchMock.mockReset();
+  vi.stubGlobal('fetch', fetchMock);
+  // The api's hint that this browser has a session (lib/signed-in-hint.ts).
+  document.cookie = 'ldoc_signed_in=1';
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  document.cookie = 'ldoc_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+});
+
+async function mount(): Promise<DeferredAuthState> {
+  const onState = vi.fn<(s: DeferredAuthState) => void>();
+  render(<AccountsBridge onState={onState} />);
+  await waitFor(() => expect(onState).toHaveBeenCalled());
+  return onState.mock.lastCall![0];
+}
+
+describe('AccountsBridge', () => {
+  it('settles a browser without the hint as a guest, asking the api nothing', async () => {
+    document.cookie = 'ldoc_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    expect(await mount()).toMatchObject({ authLoaded: true, isSignedIn: false, userId: null });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('settles as a guest when the api says signed out', async () => {
+    fetchMock.mockResolvedValue(new Response('{"signedIn":false}', { status: 401 }));
+    const state = await mount();
+    expect(state).toMatchObject({ authLoaded: true, isSignedIn: false, userId: null, user: null });
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/auth/token',
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  // Work Tracker 955: a sign-out in another app can't reach this browser's storage, so the first answer that finds the
+  // hinted session gone forgets what was kept for the account, before the page asks again or settles.
+  it("forgets the account's last seen copies and recent items when the hinted session is gone", async () => {
+    forgetAll.mockClear();
+    forgetRecent.mockClear();
+    retrySilentSignIn.mockClear();
+    fetchMock.mockResolvedValue(new Response('{"signedIn":false}', { status: 401 }));
+    expect(await mount()).toMatchObject({ authLoaded: true, isSignedIn: false });
+    expect(forgetAll).toHaveBeenCalledOnce();
+    expect(forgetRecent).toHaveBeenCalledOnce();
+    expect(forgetAll.mock.invocationCallOrder[0]).toBeLessThan(
+      retrySilentSignIn.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it('forgets nothing for a browser without the hint, or with its session still there', async () => {
+    forgetAll.mockClear();
+    forgetRecent.mockClear();
+    document.cookie = 'ldoc_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    await mount();
+    cleanup();
+    resetAccountsSessionForTests();
+    document.cookie = 'ldoc_signed_in=1';
+    fetchMock.mockResolvedValue(signedIn('access-1'));
+    expect(await mount()).toMatchObject({ isSignedIn: true });
+    expect(forgetAll).not.toHaveBeenCalled();
+    expect(forgetRecent).not.toHaveBeenCalled();
+  });
+
+  it('lets the silent sign-in look again when the first answer finds the hinted session gone, and only then', async () => {
+    retrySilentSignIn.mockClear();
+    fetchMock.mockResolvedValue(new Response('{"signedIn":false}', { status: 401 }));
+    await mount();
+    expect(retrySilentSignIn).toHaveBeenCalledTimes(1);
+    cleanup();
+    resetAccountsSessionForTests();
+    retrySilentSignIn.mockClear();
+    fetchMock.mockResolvedValue(signedIn('access-1'));
+    expect(await mount()).toMatchObject({ isSignedIn: true });
+    expect(retrySilentSignIn).not.toHaveBeenCalled();
+  });
+
+  // Work Tracker 1007: settling as a guest while the bounce was out started the guest hand-off, whose navigation
+  // replaced the bounce's, and someone signed in to liveworkspace stayed a guest here.
+  it('settles nothing once the silent sign-in has gone on its bounce', async () => {
+    retrySilentSignIn.mockReturnValueOnce(true);
+    fetchMock.mockResolvedValue(new Response('{"signedIn":false}', { status: 401 }));
+    const onState = vi.fn<(s: DeferredAuthState) => void>();
+    render(<AccountsBridge onState={onState} />);
+    await waitFor(() => expect(retrySilentSignIn).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(onState).not.toHaveBeenCalled();
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "An answer that never came": a token request that fails says
+  // nothing about the session, and settling as a guest on it opened the person's own items as not found.
+  it('keeps asking while the api cannot be reached, and never settles as a guest on it', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fetchMock
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(signedIn('access-1'));
+    const onState = vi.fn<(s: DeferredAuthState) => void>();
+    render(<AccountsBridge onState={onState} />);
+    await waitFor(
+      () =>
+        expect(onState.mock.lastCall?.[0]).toMatchObject({ authLoaded: true, isSignedIn: true }),
+      { timeout: 3_000 },
+    );
+    // Meanwhile it said it couldn't reach the account, and settled nothing (Work Tracker 1082).
+    expect(onState.mock.calls[0]![0]).toMatchObject({
+      authLoaded: false,
+      accountUnreachable: true,
+    });
+    expect(onState.mock.calls.every(([s]) => s.isSignedIn || !s.authLoaded)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('[auth] token answer unknown (TypeError)'),
+    );
+    warn.mockRestore();
+  });
+
+  it("carries the profile's presence colour onto the session, for the header avatar (Work Tracker 1031)", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          signedIn: true,
+          accessToken: 'access-1',
+          expiresAt: Date.now() + 3_600_000,
+          user: { ...USER, color: '#8b5cf6' },
+        }),
+        { status: 200 },
+      ),
+    );
+    expect((await mount()).user?.colour).toBe('#8b5cf6');
+  });
+
+  it('publishes the signed-in account', async () => {
+    fetchMock.mockResolvedValue(signedIn('access-1'));
+    const state = await mount();
+    expect(state).toMatchObject({
+      authLoaded: true,
+      isSignedIn: true,
+      userId: 'user_abc',
+      user: {
+        id: 'user_abc',
+        email: 'ada@example.com',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        fullName: 'Ada Lovelace',
+        // No colour on the token answer: Automatic.
+        colour: null,
+      },
+    });
+  });
+
+  it('reuses the held token, and refreshes once for concurrent asks near expiry', async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    expect(await state.getToken()).toBe('access-1');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    fetchMock.mockResolvedValueOnce(signedIn('access-2', 30_000)); // inside the margin
+    expect(await state.getToken({ skipCache: true })).toBe('access-2');
+    fetchMock.mockResolvedValueOnce(signedIn('access-3'));
+    const [a, b] = await Promise.all([state.getToken(), state.getToken()]);
+    expect([a, b]).toEqual(['access-3', 'access-3']);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('signs out by dropping the cookie, then a full load', async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false}'));
+    await state.signOut({ redirectUrl: '/explorer' });
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/auth/sign-out?return=%2Fexplorer',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(assign).toHaveBeenCalledWith('/explorer');
+    expect(forgetAll).toHaveBeenCalledTimes(1);
+    // The held token went with the session.
+    fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false}', { status: 401 }));
+    expect(await state.getToken()).toBeNull();
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Signing out".
+  it("takes the accounts site's hop when the api answers one, so every app is signed out", async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    const hop = 'https://www.liveworkspace.app/api/auth/end-session?ticket=t';
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ signedIn: false, next: hop })));
+    await state.signOut();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/auth/sign-out?return=%2F',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(assign).toHaveBeenCalledWith(hop);
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Signed out of this app only".
+  it('notes a sign-out of this app alone for the landing page, never one after Delete Account', async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    vi.stubGlobal('location', { ...window.location, assign: vi.fn() });
+    sessionStorage.clear();
+    const alone = () => new Response('{"signedIn":false,"next":null}');
+    fetchMock.mockResolvedValueOnce(alone());
+    await state.deleteAccount?.();
+    fetchMock.mockResolvedValueOnce(alone());
+    await state.signOut({ redirectUrl: '/', accountClosed: true });
+    expect(takeSignedOutHere()).toBe(false);
+    fetchMock.mockResolvedValueOnce(alone());
+    await state.signOut({ redirectUrl: '/' });
+    expect(takeSignedOutHere()).toBe(true);
+  });
+
+  it('ends the session after the account is deleted, without leaving the page', async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false,"next":null}'));
+    await state.deleteAccount?.();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/auth/sign-out?return=%2F',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(assign).not.toHaveBeenCalled();
+    expect(forgetAll).toHaveBeenCalled();
+  });
+});
+
+describe('namesOf', () => {
+  const base = { id: 'u', email: 'grace.hopper@example.com' };
+  it("splits the account's name at its first space", () => {
+    expect(namesOf({ ...base, name: 'Grace Brewster Hopper' })).toEqual({
+      firstName: 'Grace',
+      lastName: 'Brewster Hopper',
+      fullName: 'Grace Brewster Hopper',
+    });
+    expect(namesOf({ ...base, name: ' Grace ' })).toEqual({
+      firstName: 'Grace',
+      lastName: null,
+      fullName: 'Grace',
+    });
+  });
+
+  it("falls back to the email's local part for an account with no name", () => {
+    expect(namesOf({ ...base, name: null })).toEqual({
+      firstName: 'grace.hopper',
+      lastName: null,
+      fullName: 'grace.hopper',
+    });
+    expect(namesOf({ ...base, email: null, name: '' })).toEqual({
+      firstName: null,
+      lastName: null,
+      fullName: null,
+    });
+  });
+});

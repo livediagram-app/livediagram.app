@@ -1,0 +1,78 @@
+/* The versatility cards (components/feature-art/versatility-more.tsx). Prefixed fa-c- so they
+   never collide with another card set. Six-second loops unless a card sets its own duration.
+   Reduced motion settles each to its finished frame: the clean shape, the tidy layout, the first
+   option of a cycle, the text typed. */
+
+/* The before and after of one change (messy to tidy): before holds, then hands over to after. */
+@keyframes fa-c-before {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  48%,
+  94% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fa-c-after {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  48%,
+  94% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fa-c-before {
+  animation: fa-c-before 6s ease-in-out infinite;
+}
+.fa-c-after {
+  opacity: 0;
+  animation: fa-c-after 6s ease-in-out infinite;
+}
+
+@keyframes fa-c-quarter {
+  0%,
+  22% {
+    opacity: 1;
+  }
+  26%,
+  97% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.fa-c-quarter {
+  opacity: 0;
+  animation: fa-c-quarter 8s ease-in-out infinite;
+}
+
+/* A prompt typed into a field: the text is revealed left to right, then holds. */
+
+@media (prefers-reduced-motion: reduce) {
+  .fa-c-before {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .fa-c-after {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .fa-c-quarter {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .fa-c-quarter.fa-c-first {
+    opacity: 1 !important;
+  }
+}

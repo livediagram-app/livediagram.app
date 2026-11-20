@@ -1,0 +1,109 @@
+# Tab folders
+
+## Why
+
+A document's tabs are a flat, ordered list along the tab bar. Once a document grows past a handful of tabs that list gets unwieldy. Users want to group related tabs into a named **folder**, e.g. put three tabs under "Organisation" and two under "Plans", that takes one chip of space on the bar when they're not using it.
+
+This is the editor's tab bar only. It is unrelated to [Folders](../013-workspace/folders.md), which nests **documents** in the Explorer.
+
+## Scope
+
+- **One level.** A folder contains tabs; folders never contain folders.
+- **Per-document.** Tab order already lives on the `document_tabs` link, not on the shared `tabs` row, because a tab can be shared into several documents ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Folder membership lives in the same place, for the same reason: a tab shared into two documents can sit in a folder in one and be loose in the other. Folder membership is **never** part of the tab body (`tabs.data`).
+- **Identified by name.** There is no folder entity or table. A folder _is_ a name string. It exists as long as at least one tab in the document carries that name; it disappears when the last member leaves. Renaming a folder = rewriting the name on every member.
+
+## Data model
+
+The baseline migration gives the link table from [Tab ↔ document many-to-many](tab-document-many-to-many.md) one nullable column:
+
+```sql
+  folder TEXT,  -- NULL = loose (no folder)
+```
+
+No index: folders are derived by a client-side scan over the already-ordered read. The column is **not** on `tabs`: folder membership is a document-link concept.
+
+## Ordering: one flat list, folders are contiguous runs
+
+There is **one** per-document order (the existing `document_tabs.order_index`). A folder is a **maximal run of adjacent tabs that share a folder name**, drawn under one chip. There is no second ordering dimension and no per-folder order.
+
+To keep that invariant true after any reorder or membership change, the client **normalizes** the order before persisting:
+
+> Stable-sort the tabs by the key `(folderAnchorIndex, originalIndex)`, where `folderAnchorIndex` is the minimum original index among all tabs sharing that (non-empty) folder name. Loose tabs anchor on their own index.
+
+This groups every folder's tabs at the position of the folder's first member, preserves each tab's order within its folder, and interleaves loose tabs by position. Normalization is idempotent and preserves tab object identity for tabs whose content did not change (so the autosave content diff doesn't spuriously re-save bodies). The single implementation lives in `../packages/element-model/src/tab-folders.ts` (`normalizeFolderOrder`, `groupTabsIntoRuns`, `folderNamesInDocument`) and is consumed by the tab-bar renderer, the client save path, and the server route (defensive).
+
+A drag both reorders AND sets membership: the dropped tab **adopts the drop target's folder** (see "Membership UX" below), then normalization re-groups the runs. So dragging never "snaps back": it moves the tab to wherever it was dropped, in or out of a folder.
+
+## Membership UX
+
+Folder membership changes two ways:
+
+**1. Drag and drop.** Dropping a tab onto a folder's tabs (or onto the folder chip, which targets the run's first member, so it works while the members are tucked away too) **joins** that folder; dropping it among loose tabs makes it **loose**; dropping it among a different folder's tabs **moves** it there. The tab simply adopts the drop target's folder. `reorderTabs` performs the membership change in the same commit as the reorder.
+
+**Drop position is deterministic + shown.** While dragging, the tab bar reads the pointer's position within the hovered tab: the left half means "land **before** this tab", the right half means "land **after**", and a vertical **insertion caret** renders in that exact gap so the user can see where the tab will go before releasing. `reorderTabs` takes a `placeBefore` flag (set from that side) and recomputes the target index _after_ removing the source, so the result matches the caret regardless of drag direction. (Dropping onto a folder chip omits the flag and joins at the run's head, as above.)
+
+**2. The tab's right-click / ellipsis menu**: an **Organise in Tab Folder** row that opens a centred **modal** (`AddTabToFolderDialog`, the same tile-grid language as the shared placement browser, [Folders](../013-workspace/folders.md)). The row and the dialog title both read **Organise in Tab Folder**, which says which folders it means and covers moving a tab between folders and out of one. Picking commits immediately and closes:
+
+- **A tile per existing folder** in this document → move the active tab into it (the current folder's tile reads "Current" and is a no-op).
+- **A "No Folder" tile** → makes the tab loose on the bar; selected when the tab already is.
+- **A "New Folder" tile** → create-in-place naming (the placement browser's dashed tile); typing an existing name just moves the tab into it (same name = same folder).
+
+## Tab bar rendering
+
+`TabBar` maps over `groupTabsIntoRuns(tabs)` and hands the runs to the shared strip (`packages/workbench/src/components/chrome/TabStrip.tsx`, with `TabFrame` and `TabFolderGroup` beside it), so all four editors draw tabs and folders alike:
+
+- **Loose** entries render a tab, as [How a tab looks](../007-editor/editor-app.md#how-a-tab-looks) describes.
+- **A folder opens in place, in the strip.** Its **chip**, the folder's header, comes first: a folder glyph and the folder's name, both in the folder's ink, the tabs' own height and padding, with no box of its own (the shelf is its container) and the tabs' inset wash, in the folder's tint, on hover. There is no count badge: the **glyph stacks to say how many tabs the folder holds**, one folder for one tab, two stacked for two and three for three or more, each folder behind stepping up and to the right, fainter, and cut away (with a hairline gap) where the ones in front sit, so it reads on any shelf tint in either appearance. A folder that gains a layer slides it out from behind the front one over 220 ms (at once under reduced motion). The exact count is in the chip's accessible name ("Plans, 5 tabs"). The stack stays whether the folder is open or shut, and there is no chevron: the tabs laid out after the chip are what show it open. **The folder chip has no tooltip**, neither a hover card nor a native `title`, in any state (the owner's call, an exception to the rule that controls carry tooltips): its name is on it, and what a click (and, for an Editor, a double-click) does is in its `aria-description`; `aria-expanded` tells assistive technology. Clicking the chip, or Enter or Space on it, **expands the folder's tabs inline, right after the chip**; clicking again collapses them, unless the folder holds the open tab (below). Their width eases open or shut over 180 ms and the neighbours slide along (at once under reduced motion); once it has shut, the strip brings the open tab back into view if the folder's shrinking left it past the edge. There is no popover and no list: the folder never leaves the strip.
+- **The folder's tabs read as one group.** The chip and its tabs stand on a **shelf**, a faint tint of the folder's colour rounded on top like a tab and standing on the bottom edge like them. The shelf is always there, open or shut, so a folder reads as one container; the chip is its first cell. A **4px margin** on each side of the shelf, on top of the strip's 2px gap between tabs, keeps it clear of the tab or folder beside it (6px; two folders in a row, 8px between their shelves) and of Add tab; tabs next to tabs keep the 2px gap. The open tab's card stands on the shelf, and slides over it like any other tab's ([How a tab looks](../007-editor/editor-app.md#how-a-tab-looks)).
+- **The folder's colour comes from its name**, a stable pick from eight hues (blue, violet, emerald, amber, rose, cyan, orange, pink), so a folder keeps its colour from visit to visit and every collaborator sees the same one. Nothing is stored for it; renaming a folder may give it another hue.
+- **The folder holding the open tab stays open.** Opening a tab inside a collapsed folder (from the Tabs list, a link, search or the keyboard) opens the folder, so every tab it holds sits beside the one you are on. While the open tab is in it, the folder can't be shut: a click, Enter or Space on its chip doesn't shut it but brings the open tab back into view (reaching the chip on a phone scrolls the strip back), the chip is `aria-disabled` and keeps the default cursor, and its `aria-description` says "It holds the tab you're on, so it stays open" (still no tooltip). It stays a drop target and, for an Editor, a double-click still renames it. Open is worked out as the strip draws, this visit's open folders plus the one holding the open tab, and is never written, so nothing is stored or broadcast and nobody else's folders change. Open a tab outside the folder and it goes back to how this visit left it: shut again if it was shut, and free to shut if it was open.
+- **Open or closed belongs to this visit.** Folders start collapsed, except on a small bar on desktop (below); nothing about expanding one is stored or broadcast, and switching tabs never closes one this visit opened. Renaming a folder keeps it open or closed as it was.
+- **A small bar starts with its folders open, on desktop.** When the editor loads, every folder starts open if the bar holds at most 3 folders, no folder holds more than 3 tabs, and the bar holds at most 9 tabs in all, loose tabs included; otherwise every folder starts shut. The owner's reason: a small file shows every tab at once, while a busy one starts tidy with its folders shut. A phone or narrow window (the editor's phone layout, `PHONE_MEDIA_QUERY`) always starts with them shut. It is decided once, on load (the first time the bar has tabs), from the bar as it loads: a folder opened or shut later in the visit keeps that choice, folders added later start shut, and the folder holding the open tab stays open as above. Like any open folder it is this visit's alone, never stored or broadcast.
+- **Expanding brings the group into view.** When the expanded tabs run past the strip's edge, the strip scrolls the least distance that shows the whole folder (or as much of it as fits, from the chip), clear of the edge fade, so on a phone the folder's tabs come on screen.
+- **Presence.** A collapsed folder's chip carries the presence stack of the people on its tucked-away members (a collapsed folder never holds the open tab).
+- **Dragging.** Holding a dragged tab over a collapsed chip for half a second springs the folder open, so the tab can land between its members; dropping it on the chip joins the folder at its head, open or not. The dragged tab dims while it moves and a 2 px caret marks where it will land.
+- **Keyboard and screen readers.** The strip is a horizontal `toolbar` named "Tabs", not a `tablist`: a tab holds its avatars and menu button beside its name, and a tablist may own nothing but tabs. Each tab's name is a plain button, `aria-current="page"` on the open one (not `aria-pressed`, which would read as a toggle a second press turns off); each chip is a button too, with `aria-expanded` and the name "Planning, 3 tabs", that toggles rather than opens, and is `aria-disabled` while its folder holds the open tab. The strip is one Tab stop, the open tab's name, and Tab goes on to Add tab. Left and Right move through every control in the strip in order (each tab's name, its avatars, the open tab's menu button, each chip), skipping tucked-away members, which are `inert`; Home and End go to the first and last. Enter or Space opens a tab, toggles a folder (except the one holding the open tab) or presses the button; Shift+F10 or the context-menu key on a tab opens its menu, as a right-click does. Nothing keys on the ARIA: the strip finds its tabs by `data-tab`, `data-tab-key` and `data-active`.
+- Double-clicking the chip renames the folder (rewrites every member).
+
+## Persistence & realtime
+
+Folder rides the **same wire path as `orderIndex`**, never the per-tab content `PUT`:
+
+- `PUT /api/documents/:id` body widens from `{ name?, tabIds? }` to also accept `{ tabs?: { id, folder? }[] }`. New clients send `tabs` (order = array position, plus folder); the server falls back to `tabIds` (folder null) for older clients. Empty/whitespace folder names are trimmed to NULL server-side. An entry that is neither a tab id nor `{ id, folder? }` with a text or null folder refuses the whole request (400 `invalid tabs`) before anything is written, the rename included.
+- The `document-meta` room op's `tabs` entries widen to `{ id, name, orderIndex, folder? }` so a peer's folder change applies live. `folder` is optional throughout, so an older peer/client omitting it is treated as loose, with no parse break.
+- `reorderTabs` writes `document_tabs.folder` alongside `order_index`. The per-tab content upsert (`upsertTab`) leaves `document_tabs.folder` untouched, so a content save can never clobber membership.
+- The persisted tab body strips `folder` (centralised with `templateChosen` in `stripUiTabFields`), so folder never leaks into the shared `tabs.data`.
+
+## Telemetry
+
+Reuses the closed vocabulary ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) with **the subject deciding the category**, and every event carries a `type` so none of it collides with tab lifecycle:
+
+| What Happened                   | Event                |
+| ------------------------------- | -------------------- |
+| A tab was filed into a folder   | `Tab·Moved·Folder`   |
+| A tab was taken out of a folder | `Tab·Removed·Folder` |
+| A folder came into existence    | `Folder·Created·Tab` |
+| A folder was renamed            | `Folder·Renamed·Tab` |
+
+The folder **name is user content** and is never sent as the `type` argument; the `Tab` type on the `Folder` events distinguishes a tab folder from an explorer folder of documents, nothing more.
+
+The `type` is not decoration. A dashboard metric card selects rows by an exact `type` match and `null` is a value, so the original untyped spelling of this table (`Tab·Created` for a new folder, `Tab·Renamed` for a folder rename) landed folder operations in the headline "Tabs Created" and "Tabs Renamed" cards, inflating a count of tabs with a count of folders.
+
+Two further rules, both learned from the untyped version:
+
+- **A new folder emits two events**, `Folder·Created·Tab` then `Tab·Moved·Folder`, because typing a name the document hasn't used is genuinely two facts (the folder exists; this tab is in it). Emitting only the creation made "tabs filed into folders" undercount by exactly the number of folders anyone created. Listed with the other deliberate double-emits in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
+- **The menu and the drag report identically.** Membership can change either from the ellipsis menu or from a drag that adopts the drop target's folder, and the two had drifted: leaving a folder by menu counted as `Tab·Removed`, leaving it by drag counted as `Tab·Reordered`. Which control someone reached for is not the fact being measured, so both paths go through one module (`../packages/workbench/src/hooks/persistence/tab-folder-reporting.ts`). A drag that crosses a folder boundary reports the membership change and **not** the reorder it came with; `Tab·Reordered` now means a reorder that changed nothing else.
+
+## Edge cases
+
+- **Active tab in a folder** → the folder stays open while the tab is open, and its chip won't shut it; opening a tab outside the folder returns it to this visit's open or shut state.
+- **One-tab folder** → valid; renders as a chip with its one tab tucked away until expanded.
+- **Empty/whitespace name** → treated as loose everywhere (client normalize, create handler rejects, server trims to NULL).
+- **Name uniqueness within a document** → same name is the same folder (members merge into one run on normalize).
+- **Shared tab, foldered in A, loose in B** → naturally correct: folder is on the link, never in the body.
+
+## Cross-references
+
+- [Per-tab storage](per-tab-storage.md): per-tab storage; folder is link metadata, not body content.
+- [Tab ↔ document many-to-many](tab-document-many-to-many.md): the `document_tabs` link table folder now extends.
+- [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): telemetry enums reused here.

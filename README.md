@@ -13,6 +13,7 @@ liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
 livehuddle/      livehuddle.app: meetings and workshops, forked from livediagram in-tree
+liveknowledge/   liveknowledge.app: a team wiki that is also a knowledge base for AI, forked from livedocuments in-tree
 docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
 scripts/         the root's git hooks, ts-source-hooks.mjs (Node type stripping for repo scripts), and the parts every product's e2e stack shares (scripts/e2e-stack)
 ```
@@ -35,6 +36,7 @@ corepack pnpm dev:planner        # liveplanner's apps
 corepack pnpm dev:documents      # livedocuments' apps, on the 33xx ports
 corepack pnpm dev:design         # livedesign's apps, on the 34xx ports
 corepack pnpm dev:huddle         # livehuddle's apps, on the 35xx ports
+corepack pnpm dev:knowledge      # liveknowledge's apps, on the 36xx ports
 corepack pnpm dev:workspace      # liveworkspace.app on :3000, with the help centre and its seven services behind it
 corepack pnpm dev:site           # liveworkspace.app's pages alone on :3000
 corepack pnpm dev:help           # the one help centre on :3020 (HELP_SCOPE=liveplanner for that app's help)

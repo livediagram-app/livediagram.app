@@ -1,0 +1,150 @@
+# Contextual help links
+
+## Problem
+
+The help centre ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md), this app's scope of it) holds 130+ articles for liveknowledge, but the editor only exposes
+**one** entry point to it: the global Help icon in the editor header
+(`EditorHeader.tsx`, to the right of the Share button). A user looking at a specific dialog (Share expiry, password
+gate, export formats) or a specific toggle (auto-attach arrows, alignment guides)
+has no in-context path to the article that explains it; they have to open the
+help centre and search for it by hand.
+
+Several surfaces carry descriptive helper text but no link to the deeper
+article. The descriptive text answers "what is this control"; the article
+answers "how do I use this well, and what are the edge cases".
+
+## Decision
+
+Add small, contextual "learn more" affordances that deep-link from a UI
+surface to its matching help article. These supplement (never replace) the
+global Help icon and the inline helper text.
+
+### One reusable affordance
+
+A single component, `HelpArticleLink` (`apps/editor/components/primitives/HelpArticleLink.tsx`),
+is the only way the editor links to a help article. It:
+
+- takes an `article` key (see the registry below), not a raw URL;
+- renders either a `?` icon button (`variant="icon"`, default) for placing
+  next to a control label or in a panel's header chrome, or a `"Learn More"`
+  text link (`variant="text"`) for dialog headers / empty states;
+- draws that `?` as **one look everywhere**: a bare glyph that picks up a soft
+  rounded hover background, the same affordance the floating panels' own
+  chrome (reset / minimise) uses. It is never a ring or a bordered circle
+  around the mark: an outlined `?` in a dialog header beside a bare `?` on a
+  panel reads as two different controls for the same thing, and the drift is
+  self-propagating: the since-removed `ShortcutsDialog` had already grown a row of `!important`
+  overrides to cancel the ring locally. Only the hit box varies, via
+  `size` (`sm`, the default, for panel chrome and inline control labels;
+  `md` for a dialog header, matching `DialogCloseButton`'s `h-7`);
+- opens `/help/<slug>/` in a new tab (`target="_blank"`,
+  `rel="noreferrer noopener"`), matching the existing header Help link;
+- wraps the `?` and Help triggers in the shared `HoverCard` (a **Learn More** text link has none: its own
+  words say where it goes; never a native `title`; see
+  [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)). The hover card's copy comes
+  from `HELP_LINK_COPY` in `apps/editor/lib/help-articles.ts`, one entry per
+  article key: a **"Learn about …"** title naming the thing the reader is
+  looking at ("Learn about the Explorer") and one line saying what the
+  article does for them ("Tips and tricks to help you get the most out of
+  the Explorer."). A surface passes its own `title` / `description` only
+  when it needs a different framing; none does today. Before this table
+  every floating panel's `?` said a bare "Learn More" with no description,
+  which told the reader nothing about where it went;
+- fires `track('UI', 'Opened', <article id>)` on click, reusing the existing
+  `UI`/`Opened` telemetry pair. The `type` is the article's **telemetry id**
+  (`helpArticleTelemetryId`, from `@liveknowledge/help-registry/telemetry`):
+  its slug (e.g. `share-link-expiry`), or an explicit token where two
+  articles share a slug ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) Help). It fits `TELEMETRY_TYPE_PATTERN`
+  (`[A-Za-z0-9 ._-]{1,40}`, no slashes) - the full nested slug would not -
+  and it is the same id the help centre reports for that page. It used to
+  be the bare last path segment, which two pairs of articles share.
+
+This follows the reuse-over-duplication and no-god-files principles: every
+surface links the same way, and no surface hand-rolls an `<a href="/help/...">`.
+
+### One source for slugs
+
+`apps/editor/lib/help-articles.ts` exports a frozen `HELP_ARTICLES` map of
+named keys -> nested article slug (the path under `/help`, e.g.
+`collaboration/sharing/share-link-expiry`). This map is the editor app's single
+source for help slugs on surfaces that deep-link ONE article, and keys are
+referenced symbolically so a slug change is a one-line edit. (Search is
+different: the SearchPanel's Help group derives from the full
+`@liveknowledge/help-registry` catalogue, liveknowledge's slice of the one catalogue, see [One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md) "Search".) Slugs here must match a
+real page under `liveworkspace/apps/help/app/.../page.mdx` whose registry entry applies to liveknowledge (its `apps` names it) - a key
+pointing at a missing article is a bug, the same way an unregistered article
+is.
+
+## Placements
+
+Grouped by priority; each links the keyed article.
+
+> **Floating-panel headers carry no help icon.** The Explorer, Palette and Comments panels have no bare-glyph
+> `HelpArticleLink` in their header: the editor header has a prominent global Help icon, and a `?` on every panel
+> would make the canvas chrome noisy. Contextual links live only in dialogs, in-panel
+> settings (the Settings dialog's rows), and **empty-state messages** (the
+> empty-canvas card keeps its link). The articles themselves
+> (`explorerPanel`, `palette`, `comments`)
+> stay in the registry, reachable from the help centre and the header.
+
+**High priority**
+
+- Share dialog - expiry dropdown -> `share-link-expiry`
+- Share dialog - password section -> `share-passwords`
+- Share dialog - Approval tab (a "Learn More" link under the form or status) -> `request-approval`
+- Share dialog - header (roles / real-time) -> `sharing`
+- Palette settings - auto-attach arrows -> `auto-attach-arrows`
+- Palette settings - alignment guides -> `alignment-guides`
+- Export dialog header -> `exporting-documents`
+- Import dialog header -> `import-tabs`. The Markdown note (`markdown-import`)
+  rides on the **Markdown format's own paste step**, not the format picker:
+  under the grid it asked "Importing a Markdown outline?" of a reader who had
+  not picked a format yet. A format carries its own footnote (`note` on the
+  `FORMATS` entry), so any other format can grow one the same way.
+- Team form / invite -> `team-roles-and-invites`
+- Find bar - the `?` before Close Find (desktop and tablet; a phone's row has no room) -> `findAndReplace`
+  ([Find and replace](../007-editor/find-and-replace.md) "The bar")
+
+**Medium priority**
+
+- Canvas/Theme dialog -> `changing-the-background` / `changing-theme`
+- Link picker -> `links` (tab links -> `linking-tabs`)
+- Image gallery pane -> `image-gallery`
+- Line/chart data editor -> `data-elements`
+- Settings - telemetry -> `what-we-collect`
+
+**Onboarding / empty states**
+
+- Empty-canvas card -> `your-first-document`
+- Template starts -> `templates` (Start Making Pages)
+- Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
+
+The set can grow; new placements reuse `HelpArticleLink` + a `HELP_ARTICLES`
+key and never introduce a second linking pattern.
+
+## Non-goals
+
+- No in-app article rendering: links open the standalone help centre.
+- No change to the help app, its registry, or its sitemap.
+- No new telemetry category/action: reuse `UI` / `Opened`.
+
+## Panel headers carry their article
+
+Every panel that a help article explains renders a `?` in its header
+chrome, beside reset / minimise, from a `helpArticle` prop on `MovablePanel`
+(forwarded by `ModePanel`, so a tool panel opts in with one word).
+
+Declared on the shared component rather than left to each panel's own
+`headerActions`, so the affordance sits in the SAME place on every panel, because a
+help button that moves around teaches people not to look for it. It renders in
+both the panel header and the popover band, and stops the pointer so
+pressing it opens the article rather than starting a panel drag.
+
+Wired: Palette, Explorer, Activity, Layers (until the panel retired), Map, and the tool panels
+(Laser, Spotlight, Format; the Slide Deck's until it was retired). This closed the gap the feature was written for and had never
+reached: 21 surfaces linked an article, and every one of them was a dialog, so
+a panel you were looking at could not tell you there was a page about it.
+
+`help-articles.test.ts` already refuses a key that resolves to no page, or one
+no surface references, so a panel pointing at a dead article fails the build
+rather than shipping a 404.

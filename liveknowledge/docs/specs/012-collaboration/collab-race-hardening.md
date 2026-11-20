@@ -1,0 +1,219 @@
+# Collaboration race hardening
+
+A room of people pressing the same elements at once must not lose, duplicate or retract anybody's action. The
+elements several people write at once (checklist ticks, comment threads) and the transport under them are built so
+that every press survives, on screen, in the store, and across a reload.
+
+## What the design guards against
+
+Six shared risks, each closed by a rule below.
+
+1. **A press ships the whole element, late.** An element change leaves the browser through the autosave (600 ms
+   debounce, then the PUT, then the broadcast), as an `el` `update` op that replaces the whole element on every
+   receiver ([Realtime conflict resolution](realtime-conflict-resolution.md)). Two presses on one element inside that
+   window would overwrite each other.
+2. **Undo must not withdraw other people's presses.** A press several people make is not undoable.
+3. **The save baseline must include remote ops**, or the next local save re-broadcasts a peer's elements in an older
+   form.
+4. **A remote op must not cancel a local save.**
+5. **The store is last writer wins.** Every client PUTs whole tabs, and the api used to replace the stored tab, so a
+   reload or late joiner saw whichever save landed last: two Editors adding a page in the same second kept one page,
+   and two writing in different paragraphs of one article kept one person's words (Work Tracker #669, #670). Closed by
+   the ledger for ticks and comments, the changeset merge for agents' elements, and the merge of a save's pages and
+   writing by id ([A save is merged with the stored tab](#a-save-is-merged-with-the-stored-tab)).
+6. **Whole-tab ops replace every element on receivers**, wiping their unsaved presses.
+
+## The client keeps its own and its peers' work
+
+- **Collaborative presses do not push undo** (risk 2). Ticking a checklist row and changing a comment thread go
+  through the non-history `tickTabs`.
+- **Undo re-grafts every live collaborative field** (risk 2). `commentThread`, `action` and the checklist ticks are in
+  `LIVE_ELEMENT_FIELDS`, so restoring a snapshot keeps their present values.
+- **The save baseline follows remote ops** (risks 3 and 4). Every applied remote op is also folded into
+  `lastSavedTabsRef` through the same pure function the receiver uses (`applyRoomOpToTabs`). A save that was in flight
+  re-folds the ops that arrived during it when it lands, so its success does not roll the baseline back. The save diff
+  compares tab content when identity differs (a remote op makes a new tab object), so a remote-only change is not a
+  local change. Nothing cancels a local save.
+
+## Per-participant fields travel as their own ops
+
+For every field many people write at once, a room op, `{ kind: 'el-delta', tabId, elementId, delta }` (a mutation:
+sequenced, logged for catch-up, refused from a view-role sender), carries one change, applied by the sender and every
+receiver through the same pure `applyElementDelta` (`packages/document/src/element-deltas.ts`):
+
+- `check`: one checklist row ticked or unticked. Rows have no ids, so the row is named by index and text; a peer who
+  moved or retitled rows gets the row with that text, or nothing. A tick is not undoable.
+- `comment-add` / `comment-remove` / `comment-rekey` / `comment-resolve`: one change to a thread, by comment id, so a
+  replay is a no-op.
+
+Every delta is idempotent or order-free, so concurrent presses commute, and a malformed frame is dropped rather than
+applied.
+
+Two rules keep the whole-element path from undoing it:
+
+- **Receivers keep their own copy of these fields.** An `el` add/update or an element inside a whole `tab` op is
+  merged over the local element (`mergeIncomingElement`): everything else is taken, but checklist ticks and the
+  comment thread stay ours, because every change to them reached us as a delta. The sender's copy is a snapshot from
+  their last save and can be missing somebody.
+- **Senders don't restate them.** The autosave drops an `el` update whose only change is in those fields
+  (`elementChangeIsDeltaOnly`).
+
+## The store keeps multi-writer fields
+
+**The room keeps a ledger** (risk 5). For every `el-delta` op it sequences, the Durable Object records the change in a
+small per-element ledger in its own storage (`packages/document/src/collab-ledger.ts`, pure; the DO only stores it):
+
+- checklist ticks: each row's latest state, by index and text;
+- comments: adds, removes and each thread's latest resolve.
+
+One storage key per element, and a ledger that would outgrow the storage value limit stops recording rather than
+failing.
+
+**A save is merged with it.** When a tab PUT arrives carrying the room cursor its snapshot was taken at
+(`X-Room-Cursor: <epoch>:<seq>`), the api reads the room's ledger for that tab (`GET /ledger` on the DO stub, internal
+only) and merges into the incoming tab only the entries sequenced after that cursor (`fetchRoomLedger` +
+`applyRoomLedger` in `room-client.ts`, `mergeLedgerIntoTab` in `collab-ledger.ts`) before writing. A save with no
+cursor (the unload beacon, an API token, the MCP server), or a cursor from another epoch, isn't merged. Each ledger
+entry is re-applied through `applyElementDelta`, so the merge is exactly what a peer receiving those deltas would do:
+ticks are re-set and comments the snapshot is missing are added.
+
+If the room can't be reached, the save goes through unmerged. Every server-stored document has a room, since an agent
+is a second writer even on a personal one
+([Agent changesets](../024-agents/agent-changesets.md#rooms-for-personal-documents)); an agent's changesets merge into
+a save by their own rule, not through this ledger.
+
+**What a save reads, and how long the ledger keeps** (the shared store,
+[liveworkspace's architecture](../../../../liveworkspace/docs/specs/002-architecture/architecture.md#a-rooms-collaboration-ledger)).
+The room stamps each entry with the seq and time of the op that last changed it. A save is handed only the entries
+changed after its cursor, plus every entry changed in the last day: one the saver had seen a day or more ago can
+change nothing in its merge. Before, every autosave read and shipped every entry the tab ever had, months of comment
+text on a long-lived shared tab. Once a day the room's upkeep deletes each entry nobody has touched for 30
+days. Residual: a save whose cursor is older than the oldest entry cut (a socket back after more than 30 days
+away, saving before its catch-up) no longer has those entries re-applied; the room logs `[ledger] stale cursor`.
+
+Residual: the merge and the store's write are two steps, so two saves whose merge and write interleave can still land
+the older merge last. The window is the length of one store write, not the 600 ms debounce, and the next save from
+anybody repairs it.
+
+### A save is merged with the stored tab
+
+A tab's pages and its articles' writing are many people's at once too, and their ops reach the room after the save
+that made them, so the ledger never sees them. So a save says what it changed, by id, and the api applies only that
+over the tab it has stored (risk 5):
+
+- **The save sends its changes.** Beside the whole tab, the PUT carries `X-Save-Changes`
+  (`@liveworkspace/api-schema/tab-save-changes`): URI-encoded JSON of the save's page steps and, for each article it
+  changed, its block steps, `whole` (a new article, taken as saved) or `removed`. A step names a page or block by id,
+  where it goes (after one id, else before another) when it is new or moved, and carries no payload: the saved tab
+  holds it. The steps are those from the save baseline (`lastSavedTabsRef`, which already holds every peer's change
+  this editor has seen) to the saved tab (`tabSaveChanges`, `packages/document/src/tab-save-changes.ts`), plus a
+  removal of anything this editor's previous save of the tab held and this one lacks, since that save may still be in
+  flight: a page added and deleted across two quick saves does not come back.
+- **The api applies them over the stored tab** (`mergeSaveOverStored`), on every attempt of the save's
+  compare-and-swap, against the tab that attempt read, so a peer's save that lands first is merged and never
+  overwritten. A page or block the save did not change keeps the stored copy; a peer's one the save never saw stays;
+  what the save removed goes; what it changed or added is taken from the saved tab, new or moved ones placed after
+  their neighbour as in the saved tab. Block steps apply through `applyArticleOps`, the function a receiver of the
+  `article` ops runs, and a table's changed cell takes its text from the saved table, so different cells of one table
+  merge too. An article the stored tab no longer has (a peer deleted it) comes back only when the save made it, or a
+  page of the merged tab still shows it. Elements are not part of it: they keep the changeset merge and the ledger.
+- **Too big, less detail.** A header is kept under `TAB_SAVE_CHANGES_MAX_CHARS` (8,000). A save whose block steps
+  would pass it sends each changed article `whole` instead (the last writer wins for that article alone); past that
+  too, it sends no header.
+- **No header, stored as sent.** A save without one (an editor from before the header, open through a deploy; a
+  tab's first save; changes past the cap) or with an unreadable one (logged `[tab-save] changes-invalid`) stores the
+  tab as sent, as every save did before. An api from before the header ignores it, so a deploy in either order loses
+  nothing a save did not already lose. The unload beacon sends the header too.
+- **A write again changes nothing of it.** A save that writes again over a peer's change sends no steps, so it keeps
+  the stored pages and writing as they are.
+
+### Pages
+
+The page list rides a `tab-meta` patch (or a whole `tab` op) as the whole list, which older receivers take as it is.
+Beside it the op carries `pageSteps`, the same page steps a save sends (`pageStepsOf`), and a receiver applies those
+over its own pages by id (`withPeerPageSteps`, through `applyIdListSteps` in
+`@liveworkspace/model-core/id-list-steps`), to the tabs on screen and to the save baseline alike. A page added here
+and not yet seen by the sender stays. Two pages added at the same place converge: a placed page goes past the pages
+its sender did not know whose id sorts before its own, so every screen and the store end with them in id order. A
+page a peer changed that was removed here comes back: a change wins over a concurrent removal. An agent's page
+change (`pagesRoomOps`, [Pages for agents](../024-agents/pages-for-agents.md)) sends its steps too.
+
+Residual: two people changing the same page at once (its background, its name) still keep the later change. Two
+article writers whose writing each adds an overflow page at once keep both pages until the next lay-out drops the one
+left empty.
+
+### At the page cap
+
+A tab holds at most 100 pages (`MAX_PAGES`). Each editor checks the cap before it adds a page, but two Editors one page
+short of it can each add one at once. The merge holds the cap (`withinPageCaps`,
+`@liveworkspace/model-core/tab-page-steps`): while it is passed, the last page the tab did not hold before the merge
+is left out. So the store keeps the page whose save landed first, and the later save's other changes (its edits,
+moves, removals and its writing) all stand; only its added page that no longer fits is dropped. A receiver applies a
+peer's steps the same way, so no screen holds more than 100 pages: it keeps its own page and leaves out the peer's.
+Residual: the Editor whose page did not fit keeps it on screen until they reload, and their later saves of it are
+left out the same way (Work Tracker #717).
+
+## The rest of the transport
+
+- **A cleared tab field travels by name** (risk 6). A `tab-meta` op carries a `clear` list of the fields the sender
+  removed, and receivers delete them. Whole-tab ops are only for a new tab and a bulk change.
+- **A view-role comment reaches the room.** The comment endpoints (the only write a view-role visitor has) hand the
+  room the same `comment-add` / `comment-remove` delta an editor's comment sends, through an internal `POST /mutation`
+  on the Durable Object, which sequences, logs and records it like a peer's op. Editors see it at once and their next
+  save keeps it. The relayed comment carries no `authorId` (the author's owner id, which a tab GET redacts for everyone
+  else); the author's own browser keeps it when it swaps its local comment id for the server's.
+- **Comment author ids stay off the wire.** A comment's `authorId` is its author's owner id, a guest's credential. The
+  store keeps it (delete-own needs it) and a tab GET redacts it for everyone but the author. One definition,
+  `opForTheWire`, strips it from any op, at the two choke points: the editor's socket `send` (room.ts) and the room's
+  relay of every mutation, so neither a new send path nor an old client can leak one. The author's own local copy
+  keeps it, which is what drives their delete button.
+- **Comments are credited as posted.** The room stamps each comment an editor posts with the sending session's
+  presence name and colour (`stampCommentAuthor`). The api stamps a comment new to the store with the saver's
+  identity, so `rewriteCommentAuthors` credits a comment the ledger knows with the name the room saw it posted under,
+  leaves its author id empty, and lets the author's own save (the only copy carrying their id) claim it. A claim
+  takes the author id only: the words and the time stay as the room credited them, since the id on a saved copy is
+  the saver's to write and a claim proves nothing more. A comment that already has an author id is never re-claimed. Comment names are the sender's own choice.
+- **Ops sent while the socket is down are held, not dropped.** The room client keeps an outbox of document ops
+  (bounded at 500) and flushes it, in order, right after the reconnect's hello and sync. Cursors, selections and other
+  presence ops are not held.
+- **Sent before the room client exists, held too.** A shared document can be on screen a moment before its room
+  client is made (the document is still being confirmed as saved on the server), and an element edit (a checklist tick, a comment change) sent then once reached
+  nobody. Such a send is held for the document it was made on (`@liveworkspace/workbench/lib/pre-room-outbox`, at most 100) and handed to the client the moment it is made, whose outbox carries it over the hello. The hold is emptied as
+  it is handed over, so each send reaches the room once whatever reopens it; leaving the document drops what it holds,
+  and so does age: a send more than 30 seconds old when the room is made is dropped, since the save has carried the
+  change to the server by then. It holds only what the outbox would: cursors, lasers, viewports, reactions and other
+  presence ops from that moment are dropped.
+
+## Saves
+
+A save sends every op the ledger records first and waits, up to `ROOM_SEQUENCE_ACK_TIMEOUT_MS`, until the room
+confirms it sequenced each one (the `cursor` frame the room sends the sender of each ordered op, carrying back the op's
+`ref`), and only then PUTs, so a peer's save always finds the change in the ledger. A room that does not confirm in
+time does not hold the save back; it is logged, and the save goes through.
+
+A tab's writes are queued per tab (`tab-save-queue.ts`): each save or delete of a tab starts only once that tab's
+previous one has settled, landed or failed, so a newer save never overtakes an older one waiting on the room.
+Different tabs never wait on each other.
+
+### A save that wrote over a peer's change writes again
+
+The document's store (its Durable Object's SQLite) keeps each tab as the last PUT wrote it, and a PUT carries the
+saver's whole tab. When two people edit one tab at once, a save snapshotted before a peer's change reached the saver
+can land after the peer's own save, and the store then holds the saver's older copy of the peer's elements: every
+screen shows the peer's change, but a reload would lose it.
+
+So a save's window stays open `SAVE_RESAVE_GRACE_MS` (1.5 s) after it lands, and if a peer's element change (`el`,
+`tab` or `tab-meta`) to a tab it wrote arrived from its snapshot to the end of that window
+(`tabsChangedByPeersSince`), the tab is written again with what is on screen. The peer's change is already in the
+save baseline, so the second save sends no ops; it is the PUT alone, and its empty changes leave the stored pages and
+writing as they are ([A save is merged with the stored tab](#a-save-is-merged-with-the-stored-tab)). The grace covers a peer whose op left only after
+their own write landed, a round trip behind ours. A failed write again stays queued for the retry. It stops by itself:
+a write again sends nothing, so it starts no further one, and only a peer still editing keeps it going.
+
+## Tab lists
+
+A peer's `document-meta` op carries the tab list as of their last save. On screen it keeps what this editor has not
+saved yet (`keepUnsavedTabChanges`, judged against the save baseline as it was before the op): a tab added here and
+not yet saved stays, after the tab it followed, and a tab deleted here and not yet saved stays deleted, so a new tab
+is never dropped before its first save and a deleted one never comes back as an empty placeholder. The baseline takes
+the list as it is.

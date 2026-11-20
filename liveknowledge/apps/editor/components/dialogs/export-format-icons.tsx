@@ -1,0 +1,237 @@
+// The export dialog's per-format preview glyphs (little themed file /
+// image chips), split out of ExportTabDialog the same way the other
+// per-surface icon files are. The type-only import back into the
+// dialog file is the usual host pattern.
+
+import type { Format } from './ExportTabDialog';
+
+export function FormatIcon({ kind }: { kind: Format }) {
+  switch (kind) {
+    case 'markdown':
+      return (
+        <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="18"
+            rx="2"
+            fill="none"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="16"
+            y="14"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="600"
+            fill="rgb(71 85 105)"
+          >
+            md
+          </text>
+        </svg>
+      );
+    case 'pdf':
+      return (
+        <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden>
+          <path
+            d="M3 1h11l5 5v20a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"
+            fill="rgb(254 226 226)"
+            stroke="rgb(248 113 113)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="11"
+            y="20"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="7"
+            fontWeight="700"
+            fill="rgb(190 18 60)"
+          >
+            PDF
+          </text>
+        </svg>
+      );
+    case 'png':
+      return (
+        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="20"
+            rx="2"
+            fill="rgb(219 234 254)"
+            stroke="rgb(147 197 253)"
+            strokeWidth="1.25"
+          />
+          <circle cx="9" cy="9" r="2.5" fill="rgb(251 191 36)" />
+          <path d="M2 18l8-8 6 6 4-4 10 8" stroke="rgb(59 130 246)" strokeWidth="1.5" fill="none" />
+        </svg>
+      );
+    case 'print':
+      // A printer with a sheet coming out.
+      return (
+        <svg width="30" height="28" viewBox="0 0 30 28" aria-hidden>
+          <path
+            d="M8 2h14v7H8z"
+            fill="rgb(241 245 249)"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.25"
+          />
+          <rect
+            x="2"
+            y="9"
+            width="26"
+            height="11"
+            rx="2"
+            fill="rgb(226 232 240)"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1.25"
+          />
+          <circle cx="23" cy="13" r="1.1" fill="rgb(71 85 105)" />
+          <path
+            d="M8 16h14v10H8z"
+            fill="rgb(255 255 255)"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1.25"
+          />
+          <path d="M11 20h8M11 23h6" stroke="rgb(148 163 184)" strokeWidth="1.1" />
+        </svg>
+      );
+    case 'gif':
+      // A picture with frames behind it: an image that moves.
+      return (
+        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
+          <rect
+            x="5"
+            y="1"
+            width="26"
+            height="16"
+            rx="2"
+            fill="rgb(237 233 254)"
+            stroke="rgb(196 181 253)"
+            strokeWidth="1"
+          />
+          <rect
+            x="1"
+            y="5"
+            width="26"
+            height="16"
+            rx="2"
+            fill="rgb(219 234 254)"
+            stroke="rgb(147 197 253)"
+            strokeWidth="1.25"
+          />
+          <path d="M11 9.5v7l6-3.5z" fill="rgb(59 130 246)" />
+        </svg>
+      );
+    case 'pptx':
+      // A slide: a title bar over a body, in PowerPoint's orange.
+      return (
+        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="20"
+            rx="2"
+            fill="rgb(255 237 213)"
+            stroke="rgb(251 146 60)"
+            strokeWidth="1.25"
+          />
+          <rect x="5" y="5" width="14" height="2.5" rx="1" fill="rgb(234 88 12)" />
+          <text
+            x="16"
+            y="17"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="7"
+            fontWeight="700"
+            fill="rgb(194 65 12)"
+          >
+            PPTX
+          </text>
+        </svg>
+      );
+    case 'docx':
+      // A page of writing, in Word's blue.
+      return (
+        <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden>
+          <path
+            d="M3 1h11l5 5v20a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"
+            fill="rgb(219 234 254)"
+            stroke="rgb(96 165 250)"
+            strokeWidth="1.25"
+          />
+          <path d="M5 8h8M5 11h11" stroke="rgb(59 130 246)" strokeWidth="1.25" />
+          <text
+            x="11"
+            y="22"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="6"
+            fontWeight="700"
+            fill="rgb(29 78 216)"
+          >
+            DOCX
+          </text>
+        </svg>
+      );
+    case 'svg':
+      return (
+        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="20"
+            rx="2"
+            fill="rgb(220 252 231)"
+            stroke="rgb(134 239 172)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="16"
+            y="15"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="600"
+            fill="rgb(21 128 61)"
+          >
+            SVG
+          </text>
+        </svg>
+      );
+    case 'file':
+      return (
+        <svg width="34" height="20" viewBox="0 0 34 20" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="32"
+            height="18"
+            rx="2"
+            fill="none"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="17"
+            y="14"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="600"
+            fill="rgb(71 85 105)"
+          >
+            json
+          </text>
+        </svg>
+      );
+  }
+}

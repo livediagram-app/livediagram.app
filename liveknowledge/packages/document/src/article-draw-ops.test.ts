@@ -1,0 +1,107 @@
+import { describe, expect, it } from 'vitest';
+import { articleOpsToSvg } from './article-draw-ops';
+
+// docs/specs/007-editor/article-pages.md "Everywhere a page goes": the writing's operations as SVG.
+describe('the writing as SVG', () => {
+  it('marks an empty cell for a PDF’s tags, drawing nothing', () => {
+    expect(
+      articleOpsToSvg([{ k: 'empty', x: 10.004, y: 20, tag: 'Table#t0/TR#r1/TD', block: 4 }]),
+    ).toBe(
+      '<g data-article-writing=""><g data-pdf-empty="" data-pdf-tag="Table#t0/TR#r1/TD" data-pdf-block="4" transform="translate(10 20)"/></g>',
+    );
+  });
+
+  it('draws backgrounds, rules, boxes and words, escaped', () => {
+    const svg = articleOpsToSvg([
+      { k: 'rect', x: 0, y: 0, w: 10, h: 10, fill: '#eee', r: 4 },
+      { k: 'rect', x: 0, y: 0, w: 10, h: 10, fill: '#ddd' },
+      { k: 'line', x1: 0, y1: 1, x2: 9, y2: 1, stroke: '#000', width: 1 },
+      { k: 'check', x: 0, y: 0, size: 16, stroke: '#00f', done: true },
+      { k: 'check', x: 0, y: 0, size: 16, stroke: '#00f', done: false },
+      {
+        k: 'text',
+        x: 1,
+        y: 2,
+        text: 'A & B',
+        family: 'Inter',
+        size: 16,
+        weight: '700',
+        style: 'italic',
+        color: '#111',
+        underline: true,
+        strike: true,
+        anchor: 'middle',
+      },
+      {
+        k: 'text',
+        x: 1,
+        y: 2,
+        text: 'plain',
+        family: 'Inter',
+        size: 16,
+        weight: '400',
+        style: 'normal',
+        color: '#111',
+      },
+    ]);
+    expect(svg).toContain('rx="4"');
+    expect(svg).toContain('<line');
+    expect(svg).toContain('stroke-linecap="round"');
+    expect(svg).toContain('A &amp; B');
+    expect(svg).toContain('font-style="italic"');
+    expect(svg).toContain('text-decoration="underline line-through"');
+    expect(svg).toContain('text-anchor="middle"');
+    expect(svg.match(/<path/g)).toHaveLength(1);
+  });
+
+  it('draws a line of several styles as one text of tspans', () => {
+    const svg = articleOpsToSvg([
+      {
+        k: 'text',
+        x: 0,
+        y: 10,
+        text: 'Lead: rest',
+        family: 'Inter',
+        size: 16,
+        weight: '400',
+        style: 'normal',
+        color: '#111',
+        runs: [
+          { text: 'Lead: ', weight: '700', style: 'normal' },
+          { text: 'rest', weight: '400', style: 'italic' },
+        ],
+      },
+    ]);
+    expect(svg).toContain(
+      '<tspan font-weight="700">Lead: </tspan><tspan font-weight="400" font-style="italic">rest</tspan>',
+    );
+  });
+
+  // liveworkspace/docs/specs/013-export/vector-pdf.md "Tags": a word carries its block's tag and place for the PDF.
+  it('marks a word with its block’s tag and number, only when it has both', () => {
+    const word = {
+      k: 'text' as const,
+      x: 0,
+      y: 10,
+      family: 'Inter',
+      size: 16,
+      weight: '400',
+      style: 'normal',
+      color: '#111',
+    };
+    const svg = articleOpsToSvg([
+      { ...word, text: 'Heading', tag: 'H2', block: 0 },
+      { ...word, text: 'untagged' },
+      { ...word, text: 'half', tag: 'P' },
+    ]);
+    expect(svg).toContain('data-pdf-tag="H2" data-pdf-block="0" xml:space="preserve">Heading');
+    expect(svg.match(/data-pdf-tag/g)).toHaveLength(1);
+  });
+
+  it('dots a line marked as a dash, its gaps twice its width', () => {
+    const svg = articleOpsToSvg([
+      { k: 'line', x1: 0, y1: 1, x2: 9, y2: 1, stroke: '#000', width: 1.5, dash: true },
+    ]);
+    expect(svg).toContain('stroke-dasharray="1.5 3"');
+  });
+});

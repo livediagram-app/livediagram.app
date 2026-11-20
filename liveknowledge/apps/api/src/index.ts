@@ -1,0 +1,378 @@
+import { getPersonIdentity } from './auth/accounts';
+import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
+import { handleAuth } from './routes/auth';
+import { reportServerEvent, telemetryEnabled } from './server-telemetry';
+import { resolveApiToken } from './db';
+import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@liveknowledge/api-schema';
+import {
+  hasApiTokenPrefix,
+  isApiTokenFormat,
+  isWorkbenchSessionFormat,
+  WORKBENCH_SESSION_PREFIX,
+} from '@liveknowledge/api-schema';
+import { handleTokens } from './routes/tokens';
+import { handleOauthExchange } from './routes/oauth';
+import { DocumentRoom } from './document-room/document-room';
+import { handleInternalItems } from './routes/internal-items';
+import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
+import {
+  createTokenBearer,
+  createWorkbenchBearer,
+} from '@liveworkspace/api-kit/bearer-credentials';
+import { callerRateKey, clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { isViewOnlyRoomTicketMint } from '@liveworkspace/index-app';
+import {
+  guardRequest,
+  UNAVAILABLE_RETRY_AFTER_SECONDS,
+} from '@liveworkspace/api-kit/request-failure';
+import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
+import { withCappedBody } from '@liveworkspace/api-kit/request-body';
+import { handleAccount } from './routes/account';
+import { handleCatalogues } from './routes/catalogues';
+import { handleCapabilities } from './routes/capabilities';
+import { handleOpenapi } from './routes/openapi';
+import { handleUnfurl } from './routes/unfurl';
+import type { RouteContext, WorkbenchContext } from './routes/context';
+import { handleDocuments } from './routes/documents';
+import { handleEvents } from './routes/events';
+import { handleFolders } from './routes/folders';
+import { handleImages } from './routes/images';
+import { handleWalkthroughs } from './routes/walkthroughs';
+import { handleParticipants } from './routes/participants';
+import { handlePreferences } from './routes/preferences';
+import { handleShare } from './routes/share';
+import { handleCommunity } from './routes/community';
+import { handleTeams } from './routes/teams';
+import { handleLibrary } from './routes/library';
+import { handleTrash } from './routes/trash';
+import { resolveWorkbenchSession } from './auth/workbench-session';
+import { workbenchRefusal } from './auth/workbench-confinement';
+import { withServerRelease } from './server-release-header';
+import { routeToWorkspace, WORKBENCH_ROUTE } from '@liveworkspace/sites/workspace-proxy';
+import { accountsFetch } from '@liveworkspace/auth-client';
+import type { Env } from './types';
+
+export { DocumentRoom };
+
+// Per-owner write rate limit (security audit item). Returns true
+// when the caller is over the configured cap (wrangler.toml's
+// WRITE_RATE_LIMITER binding) so the endpoint can short-circuit
+// with a 429. Falls through to "allowed" when the binding is
+// absent so deployments without the feature still serve.
+async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
+  if (!env.WRITE_RATE_LIMITER) return false;
+  const result = await env.WRITE_RATE_LIMITER.limit({ key: ownerId });
+  return !result.success;
+}
+
+// Every request the worker answers; `fetch` below stamps the document format number on it.
+async function routeApiRequest(
+  request: Request,
+  env: Env,
+  executionCtx?: ExecutionContext,
+): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { headers: CORS_HEADERS });
+  }
+  const url = new URL(request.url);
+  const segments = url.pathname.replace(/^\//, '').split('/');
+  if (segments[0] !== 'api') return notFound();
+
+  // Signing in (routes/auth.ts) carries no Bearer, so it is answered before identity and the
+  // per-owner write limit, which would otherwise put every sign-in on one 'anonymous' bucket.
+  if (segments[1] === 'auth') {
+    return handleAuth(request, env, segments, (p) => executionCtx?.waitUntil(p));
+  }
+
+  // The One Explorer index's server-to-server doors into a document's content (routes/internal-items.ts): their own
+  // key, never a person's identity, so answered before identity and the per-owner limits.
+  if (segments[1] === 'internal')
+    return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
+
+  // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the router sends
+  // /api/workbench/* there itself; a caller that reaches this api directly (the CLI against `wrangler dev`) is
+  // forwarded the same way, as liveknowledge, before identity, since accounts checks the credential.
+  if (segments[1] === 'workbench') {
+    const forwarded = env.ACCOUNTS_URL
+      ? routeToWorkspace(request, {
+          app: 'liveknowledge',
+          origin: env.ACCOUNTS_URL,
+          routes: [WORKBENCH_ROUTE],
+          // Over the API's own ACCOUNTS binding, the whole request (Work Tracker 1070); the public route without one.
+          fetch: accountsFetch(env.ACCOUNTS),
+        })
+      : null;
+    const unavailable = () => json({ error: 'accounts_unavailable' }, { status: 503 });
+    // Accounts unreachable is a 503 like any other, not a crash.
+    return forwarded ? forwarded.catch(unavailable) : unavailable();
+  }
+
+  // Who is calling (docs/specs/014-identity/auth-and-guest-access.md): a liveworkspace access token or guest token,
+  // verified once here against the accounts Worker's keys. Null when sign-in isn't configured, no Bearer was sent
+  // (a link visitor with no identity yet), or the token failed verification.
+  const person = await getPersonIdentity(env, request);
+  const account = person?.kind === 'account' ? person : null;
+  const accountUserId = account?.userId ?? null;
+  // Email used for the notification emails. ONLY the verified `email` claim from the checked access token is
+  // trusted, never a client-supplied header.
+  const accountEmail = account?.email ?? null;
+  // An API token (docs/specs/015-api/public-api-and-tokens.md), consulted only when no account access token
+  // verified: its owner is the token's account id, so a token request flows through the same ownership and gate
+  // checks as a signed-in one. Then, when neither resolved, a workbench session
+  // (docs/specs/013-workspace/workbench-embeds.md). @liveworkspace/api-kit/bearer-credentials.ts reads each, and a bearer
+  // shaped like one that does not resolve is refused there, never read as a guest.
+  let tokenAuth: ResolvedApiToken | null = null;
+  if (!person) {
+    const read = await readTokenBearer(
+      env,
+      bearerTokenOf(request.headers.get('Authorization')),
+      url.pathname,
+    );
+    if (!read.ok) return read.response;
+    tokenAuth = read.value;
+  }
+  let workbench: WorkbenchContext | null = null;
+  if (!person && !tokenAuth) {
+    const bearer = bearerTokenOf(request.headers.get('Authorization'));
+    const read = await readWorkbenchBearer(env, bearer, segments, request);
+    if (!read.ok) return read.response;
+    workbench = read.value;
+  }
+  const guestId = person?.kind === 'guest' ? person.guestId : null;
+  // The caller's id: an account (signed in, or behind an API token or a workbench session), else a guest.
+  const resolveOwner = (): string | null =>
+    accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? guestId;
+  // Server-verified account id from either credential (session JWT or API token): the account-only surfaces
+  // read it. A guest is never one.
+  const verifiedUserId = accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? null;
+  // The teams the caller has joined, from its token: what GET /api/teams lists, and what the index is told
+  // when this api asks it on an API token's behalf. A workbench session carries its token's.
+  const teams = account?.teams ?? tokenAuth?.teams ?? workbench?.teams ?? null;
+
+  // Per-owner write rate limit. Gates POST / PUT / DELETE at a
+  // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
+  // pacing under Cloudflare's DDoS threshold still can't spam
+  // document / image creation through to quota
+  // exhaustion. Reads pass through untouched. When no token
+  // resolves the caller (a link visitor with no identity), fall back to
+  // a per-network 'anonymous' key so one unauthenticated client still
+  // can't burn the global quota. The telemetry relay (/api/events)
+  // is deliberately exempt: it's anonymous, high-frequency, and
+  // must never compete with a user's real document writes for the
+  // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
+  // its volume low instead.
+  const isWrite =
+    request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE';
+  // Read-only token enforcement (docs/specs/015-api/mcp-server.md §4.11): a token minted read-only may
+  // only GET/HEAD. Reject every write it presents at this single choke point
+  // — so no write route can be reached, present or future, with no per-route
+  // changes. signed-in sessions and full tokens are unaffected (tokenAuth is null
+  // or readOnly false). A guest's requests carry no tokenAuth either.
+  // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
+  const isSelfRevoke =
+    request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
+  // Nor does a view-only room ticket (docs/specs/015-api/api.md, the MCP view's live updates): it writes nothing
+  // and admits only a watcher, at view.
+  const isViewOnlyTicket = isViewOnlyRoomTicketMint(request.method, segments, url, 'documents');
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isViewOnlyTicket) {
+    return forbidden('read_only_token');
+  }
+  // Reject oversized bodies up front so a hostile payload never reaches a route's
+  // req.json(): a declared Content-Length over the cap is refused before a byte is
+  // read, and any other body is read through the counter below. The per-field /
+  // per-tab caps in the routes catch the rest; this is the blunt outer bound.
+  if (isWrite) {
+    const len = Number(request.headers.get('content-length'));
+    // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
+    // the route re-checks it and answers with file_too_large + limitBytes.
+    const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
+    if (Number.isFinite(len) && len > cap) {
+      return payloadTooLarge();
+    }
+    // A body that declares no length (a chunked upload, where Number(null) is 0) passes the check above, and
+    // the routes read a body whole, so the body itself is read here through a byte counter that stops at the
+    // same cap and answers the same 413, whatever the headers say (docs/specs/015-api/api.md "Rate limiting").
+    const capped = await withCappedBody(request, cap);
+    if (!capped) return payloadTooLarge();
+    request = capped;
+  }
+  // Room-ticket mints (docs/specs/015-api/api.md) are exempt like /api/events: the mint
+  // is the auth handshake for opening the realtime room, and a 429 —
+  // easily reached because it shares the per-owner budget with the
+  // ~600ms autosave PUTs — would silently cost a team member their
+  // whole session's realtime (the connector has no reconnect loop).
+  // Mint volume is one per room join and the route does no
+  // unbounded work, so it isn't a quota-exhaustion vector.
+  const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
+  // ...but not unthrottled: each mint may ask the index for a grant. Its own bucket per
+  // caller network, or per API token for a token's mint (an MCP server's arrives over the service binding with no
+  // address: api.md "Rate limiting"), so a flood is bounded without touching anyone's autosave budget.
+  if (isRoomTicketMint && isWrite && env.WRITE_RATE_LIMITER) {
+    if (await isWriteRateLimited(env, `room-ticket:${callerRateKey(request, tokenAuth?.tokenId)}`))
+      return rateLimited();
+  }
+  if (isWrite && url.pathname !== '/api/events' && !isRoomTicketMint) {
+    // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
+    // runaway integration is throttled independently of the owner's
+    // interactive app use; everything else keys on the resolved owner.
+    // A caller with no identity (a link visitor) is keyed on its
+    // network, not one global 'anonymous' bucket every new visitor shares.
+    // A workbench session's writes key on the session (WB10), apart from its owner's own app use.
+    const key = tokenAuth
+      ? `token:${tokenAuth.tokenId}`
+      : workbench
+        ? `workbench:${workbench.sessionId}`
+        : (resolveOwner() ?? `anonymous:${clientRateKey(request)}`);
+    if (await isWriteRateLimited(env, key)) return rateLimited();
+  }
+  // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
+  // the write limiter, so an external integration's reads get their own
+  // per-token throttle. Optional binding → allow when absent.
+  if (tokenAuth && request.method === 'GET' && env.API_TOKEN_READ_RATE_LIMITER) {
+    const ok = await env.API_TOKEN_READ_RATE_LIMITER.limit({ key: `token:${tokenAuth.tokenId}` });
+    if (!ok.success) return rateLimited();
+  }
+
+  // Throttle blind share-code / password guessing on the share-resolve
+  // read (GET /api/share/<code>), which carries the optional share
+  // password and is otherwise an unauthenticated read exempt from the
+  // write limiter above. Per-IP. Absent binding → allow (a deployment without it).
+  // A link's previews are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md), so only the resolve itself counts here.
+  if (request.method === 'GET' && segments[1] === 'share' && env.SHARE_RATE_LIMITER) {
+    const key = clientRateKey(request);
+    if (!(await env.SHARE_RATE_LIMITER.limit({ key })).success) return rateLimited();
+  }
+
+  // Dispatch on the resource segment to its route module. Each
+  // handler owns every request for its segment and returns
+  // notFound() for sub-paths / methods it doesn't recognise, so an
+  // unmatched resource OR an unmatched sub-route both fall through
+  // to the final notFound() (preserving the original behaviour).
+  const ctx: RouteContext = {
+    request,
+    env,
+    url,
+    segments,
+    accountUserId,
+    verifiedUserId,
+    accountEmail,
+    resolveOwner,
+    token: tokenAuth
+      ? {
+          id: tokenAuth.tokenId,
+          readOnly: tokenAuth.readOnly,
+          name: tokenAuth.name,
+          expiresAt: tokenAuth.expiresAt,
+        }
+      : null,
+    workbench,
+    teams,
+    // The browser's own token, which the index takes as it is; an API token's or a workbench session's account
+    // is vouched for with this app's key instead (index-service.ts).
+    bearer: person ? bearerTokenOf(request.headers.get('Authorization')) : null,
+    waitUntil: (promise) => executionCtx?.waitUntil(promise),
+  };
+  switch (segments[1]) {
+    case 'capabilities':
+      return handleCapabilities(ctx);
+    case 'templates':
+    case 'icons':
+    case 'schema':
+      return handleCatalogues(ctx);
+    case 'openapi.json':
+      return handleOpenapi(ctx);
+    case 'unfurl':
+      return await handleUnfurl(ctx);
+    case 'events':
+      return await handleEvents(ctx);
+    case 'share':
+      return await handleShare(ctx);
+    case 'community':
+      return await handleCommunity(ctx);
+    case 'images':
+      return await handleImages(ctx);
+    case 'walkthroughs':
+      return await handleWalkthroughs(ctx);
+    case 'documents':
+      return await handleDocuments(ctx);
+    case 'library':
+      return await handleLibrary(ctx);
+    case 'folders':
+      return await handleFolders(ctx);
+    case 'teams':
+      return await handleTeams(ctx);
+    case 'tokens':
+      return await handleTokens(ctx);
+    case 'oauth':
+      return await handleOauthExchange(ctx);
+    case 'account':
+      return await handleAccount(ctx);
+    case 'trash':
+      return await handleTrash(ctx);
+    case 'preferences':
+      return await handlePreferences(ctx);
+    case 'participants':
+      return await handleParticipants(ctx);
+  }
+
+  return notFound();
+}
+
+// liveworkspace can't say whether a credential is good: neither good nor bad, so a client retries rather than drops it.
+const accountsUnavailable = (): Response =>
+  json(
+    { error: 'accounts_unavailable' },
+    { status: 503, headers: { 'Retry-After': String(UNAVAILABLE_RETRY_AFTER_SECONDS) } },
+  );
+
+// The API token and workbench session readers (@liveworkspace/api-kit/bearer-credentials.ts), bound once to this
+// api's lookups and responses.
+const bearerResponses = {
+  json,
+  unavailable: accountsUnavailable,
+  isUnavailable: (err: unknown) => err instanceof AccountsUnavailable,
+};
+const readTokenBearer = createTokenBearer({
+  ...bearerResponses,
+  hasTokenPrefix: hasApiTokenPrefix,
+  isTokenFormat: isApiTokenFormat,
+  resolve: resolveApiToken,
+});
+const readWorkbenchBearer = createWorkbenchBearer({
+  ...bearerResponses,
+  sessionPrefix: WORKBENCH_SESSION_PREFIX,
+  isSessionFormat: isWorkbenchSessionFormat,
+  resolve: resolveWorkbenchSession,
+  refusal: workbenchRefusal,
+});
+
+const worker = {
+  // Every response carries the server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
+  async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
+    // One guard for the whole request, identity resolution included (docs/specs/015-api/api.md "When a request
+    // fails"): nothing that throws is left to the runtime's bare error page.
+    const response = await guardRequest(
+      () => routeApiRequest(request, env, executionCtx),
+      () => {
+        // The route by its words only (`Put.Documents.Tabs`), never an id.
+        const route = apiRouteLabel(request.method, request.url);
+        return {
+          route,
+          json,
+          // Self-report the crash (docs/specs/017-telemetry/telemetry.md 'Error' category), so a server-side
+          // exception counts even when no client survives to report it. Off the response's critical path
+          // (waitUntil); the send swallows its own failure, so the 500 still goes out.
+          reportCrash: () => {
+            if (telemetryEnabled(env))
+              executionCtx?.waitUntil?.(
+                reportServerEvent(env, 'Error', 'Api', errorTypeToken('Internal', route)),
+              );
+          },
+        };
+      },
+    );
+    return withServerRelease(response, env.BUILD_ID);
+  },
+} satisfies ExportedHandler<Env>;
+
+export default worker;

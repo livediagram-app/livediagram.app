@@ -1,0 +1,536 @@
+// Pages mode's pages (docs/specs/007-editor/pages-mode.md): the active tab's pages
+// laid out in their row, the edits to them (page-edits) and framing one in the view. It
+// also centres the view on the page you were last on (the first, the first time) whenever the
+// tab changes.
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useInsertionEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react';
+import {
+  articleMarginPx,
+  articlesOf,
+  pageFitBox,
+  pagesOf,
+  layOutPages,
+  pageKindOf,
+  tabArrangesPages,
+  withContentOnAPage,
+  type Element,
+  type LaidOutPage,
+  type NoteCard,
+  type Tab,
+} from '@liveknowledge/document';
+import { besideSideInsets, computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
+import { computeReadingFrame } from '@/lib/reading-frame';
+import { sideChromeInsets } from '@/lib/side-chrome-insets';
+import { pageInView } from '@/lib/page-contents';
+import { topStripInset } from '@/lib/top-strip-inset';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { track } from '@/lib/telemetry';
+import { getTheme } from '@/lib/themes';
+import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';
+import type { ArticlesView } from './useArticles';
+import { pageEdits, type PageEdits } from './page-edits';
+import type { PageLayoutId } from '@liveknowledge/templates';
+import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
+import type { View } from '@liveworkspace/workbench/lib/viewport-store';
+import { lastPageKey } from '@/lib/last-page';
+import { currentPageIdNow, setCurrentPageKind } from '@/lib/current-page-kind';
+import { useLastPage } from './useLastPage';
+import { textHasCaretIn, usePageSnap } from './usePageSnap';
+import { getActiveArticle } from '@/lib/article/article-editor-store';
+import {
+  cardInFrontOf,
+  cardStageOf,
+  stacksPages,
+  type CardStack,
+  type CardStage,
+} from '@/lib/flashcard-stack';
+import { flipCard, pictureCard, type CardPicture } from '@/lib/flashcard-flip';
+
+export type { PageEdits };
+
+export type PagesModeView = {
+  pages: LaidOutPage[];
+  // The whole row, when `pages` shows only some of it (a page slide presenting): a document's
+  // writing is laid out across all of its pages whichever of them are shown.
+  rowPages?: LaidOutPage[];
+  // Frames one page in the view (its label's press).
+  focusPage: (pageId: string) => void;
+  // Fit (the zoom cluster's, Shift+1) in Pages: frames the page nearest the middle of what shows
+  // beside the Contents sidebar, not the whole tab (docs/specs/007-editor/pages-mode.md
+  // "Contents" "Framing beside it").
+  fitPageInView: () => void;
+  // An article page framed for writing on a phone: its text column across the screen.
+  readPage: (pageId: string) => void;
+  // A finger's pan over an article page begun from the view now: moves it by a screen-px drag.
+  // Absent where nothing pans the view from a page (presenting).
+  panFrom?: () => (dx: number, dy: number) => void;
+  // Whether the view is on its way to a page just added, duplicated or gone back to (the go-to waiting for its page, or
+  // its glide under way): the caret's reveal holds off then, as the frame brings the page's writing into view and a
+  // reveal begun from where the view was would pull it back short (pages-mode.md "A new page comes into view").
+  framing?: () => boolean;
+  // Backgrounds drawn from the tab's theme, offered first in the page panel.
+  themeBackgrounds: ThemeBackgroundPreset[];
+  // The tab theme's accent: a document's accent unless it picked one of its own.
+  themeAccent: string;
+  // The articles' writing on the pages (useArticles), composed in by the editor.
+  articles?: ArticlesView | null;
+  // The tab's default face, for what the pages draw themselves (a layout preview).
+  tabFont?: string;
+  // The tab's elements, for the content a previewed layout carries over from its page.
+  elements?: Element[];
+  // A layout previewed on a page while its tile is hovered: the page's own content is hidden
+  // under it (the clip leaves the page out) so the preview never mixes with it.
+  layoutPreview: { pageId: string; layout: PageLayoutId } | null;
+  setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
+  // Absent where the viewer may not change the pages (a view role, a locked tab).
+  edit?: PageEdits;
+  // A page's place in the slide deck (Contents' page-row-slides, PageNotesButton), composed in by the editor; absent
+  // where the deck cannot be changed.
+  deck?: PageDeckControls;
+  // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.
+  letterbox?: boolean;
+  // A stack (a tab of flashcards or infographic pages): the page in front, for the world layers to draw alone
+  // (flashcardStage, docs/specs/007-editor/flashcards.md "The stack", pages-mode.md "Stacked infographics").
+  cardStage?: CardStage;
+  // Set by flashcardStage on the view the world layers draw: the card in front's place in the stack.
+  cardStack?: CardStack;
+  // How the tab's pages stand, where they may stand either way (pages-mode.md "Stacked or side by side": every kind
+  // but an article): `stacked` as shown; `toggle` (an Editor's, on a tab not locked) switches it for the tab.
+  arrangement?: { stacked: boolean; toggle?: () => void };
+};
+
+export type PageDeckControls = {
+  // The deck's slide of this page (on this tab), if it has one.
+  slideOf: (
+    pageId: string,
+  ) => { id: string; hidden: boolean; noteCards: readonly NoteCard[] } | undefined;
+  add: (pageId: string) => void;
+  toggleHidden: (slideId: string) => void;
+  // The slide's speaker notes as note cards, as the title bar's Notes writes them (none removes them).
+  setNoteCards: (slideId: string, cards: readonly NoteCard[]) => void;
+  // Saves the cards' waiting deck now, as the writing leaves the screen (speaker-note-cards.md "Saving").
+  flushNotes: () => void;
+  // Presents from this slide (Present From Here, docs/specs/007-editor/pages-mode.md "Slides").
+  present: (slideId: string) => void;
+};
+
+export function usePagesMode(deps: {
+  activeTab: Tab;
+  canEdit: boolean;
+  tabLoaded: boolean;
+  commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
+  canvasMainRef: RefObject<HTMLElement | null>;
+  setViewportZoom: (zoom: number) => void;
+  setViewportOffset: (offset: { x: number; y: number }) => void;
+  // The view now, for a page framed with a glide from wherever the view is.
+  getViewport: () => ViewPose;
+  clearSelection: () => void;
+  toastInfo: (message: string) => void;
+  // Given the landing framing, so the fit on landing
+  // on a tab (useTabEntryEffects) frames the page you were last on (else the first), not the
+  // whole row of pages.
+  frameFirstPageRef?: RefObject<(() => void) | null>;
+  // The document's id and the view's store, so the page you were last on is remembered per tab
+  // in this browser (useLastPage); without either, landing frames the first page.
+  documentId?: string;
+  viewport?: { get: () => View; subscribe: (listener: () => void) => () => void };
+  // A new document by its flow id, so its writing can take the caret.
+  onArticleCreated?: (flow: string) => void;
+  // The view is not this person's to snap onto a page: following someone, or presenting.
+  snapSuspended?: () => boolean;
+}): PagesModeView {
+  const { activeTab, canEdit, tabLoaded, commitTabs } = deps;
+  const tabId = activeTab.id;
+
+  // Frames a page (the first by default) below a top strip, seen whole, whatever its kind: the page
+  // itself, so turning or resizing one frames it again (page-edits). `read` frames an article page
+  // to be written on a phone instead: its text column across the screen.
+  // A page framed on request (its navigator, its label, a page just added, an article page taking
+  // the caret on a phone) glides there; the frame on entering the mode lands at once. A glide under
+  // way gives way to the next, or to a finger's pan.
+  const glide = useRef<(() => void) | null>(null);
+  // Whether the view is at rest on the tab (docs/specs/007-editor/pages-mode.md "Getting around the pages"): landed,
+  // with no glide under way and no rest's snap waiting. Marked on the canvas as `data-view-at-rest`, so a check of
+  // where the view is (an end-to-end test) reads it once it has come to rest, never mid-glide or before a snap.
+  const motion = useRef({ landed: false, gliding: false, snapping: false });
+  const markRest = () => {
+    const m = motion.current;
+    deps.canvasMainRef.current?.toggleAttribute(
+      'data-view-at-rest',
+      m.landed && !m.gliding && !m.snapping,
+    );
+  };
+  const stopGlide = () => {
+    glide.current?.();
+    glide.current = null;
+    if (!motion.current.gliding) return;
+    motion.current.gliding = false;
+    markRest();
+  };
+  useEffect(() => () => glide.current?.(), []);
+  // What shows of the canvas: below the Toolbar strip, beside the Contents panel wherever it sits
+  // (docs/specs/007-editor/pages-mode.md "Contents"), so a page centres in what shows beside it.
+  // `settling`: the snap's measure as the view rests, which keeps the tray's room a page was framed with (the tray
+  // going never moves the page); an explicit frame measures afresh.
+  const measure = (settling = false) => {
+    const canvas = deps.canvasMainRef.current;
+    if (!canvas) return null;
+    const inset = topStripInset(canvas, settling);
+    const sides = sideChromeInsets(canvas);
+    return { width: canvas.offsetWidth, height: canvas.offsetHeight, inset, sides };
+  };
+  const frameFor = (
+    m: NonNullable<ReturnType<typeof measure>>,
+    page?: LaidOutPage,
+    read = false,
+  ) => {
+    const { inset, sides } = m;
+    const size = { width: m.width - sides.left - sides.right, height: m.height };
+    const doc = page?.flow ? articlesOf(activeTab)[page.flow] : undefined;
+    return besideSideInsets(
+      read && page && doc
+        ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
+        : computeFitBelow(size, pageFitBox(page), inset),
+      sides,
+    );
+  };
+  const glideTo = (to: ViewPose) => {
+    stopGlide();
+    motion.current.gliding = true;
+    markRest();
+    glide.current = glideViewport(deps.getViewport(), to, {
+      zoom: deps.setViewportZoom,
+      offset: deps.setViewportOffset,
+      landed: () => {
+        glide.current = null;
+        motion.current.gliding = false;
+        markRest();
+      },
+    });
+  };
+  // `lands`: the frame on landing on the tab, which never flips a card.
+  const frame = (page?: LaidOutPage, read = false, glides = false, lands = false) => {
+    const m = measure();
+    if (!m) return;
+    // In a stack (flashcards, infographic pages) the page in front changes, by a flip, rather than the view gliding
+    // along the row.
+    const flips = !!page && stacksPages(pages, activeTab.pageArrangement);
+    if (flips) toCard(page, !lands);
+    const { zoom, offset } = frameFor(m, page, read);
+    stopGlide();
+    if (glides && !flips) {
+      glideTo({ zoom, offset });
+    } else {
+      deps.setViewportZoom(zoom);
+      deps.setViewportOffset(offset);
+    }
+    debugLog('[page] framed', {
+      tabId,
+      page: page?.id ?? 'first',
+      inset: m.inset,
+      sides: m.sides,
+      zoom,
+      glides,
+    });
+  };
+  // The pages laid out once per change to the stored pages, so everything drawn from them (the
+  // Map's picture, the export preview) keeps its memo while the view pans and zooms.
+  const storedPages = activeTab.pages;
+  const legacyOrientation = activeTab.pageOrientation;
+  const current = useMemo(
+    () => pagesOf({ pages: storedPages, pageOrientation: legacyOrientation }),
+    [storedPages, legacyOrientation],
+  );
+  const pages = useMemo(() => layOutPages(current), [current]);
+  // A tab of flashcards shows one card at a time, the card in front (docs/specs/007-editor/
+  // flashcards.md "The stack"): the one gone to on this tab, else the first.
+  const [wantedCard, setWantedCard] = useState<{ tabId: string; id: string } | null>(null);
+  // Where the card in front last stood, so a card taken away under it (an undo, a peer) hands the
+  // front to the card before it.
+  const frontAt = useRef(0);
+  const wanted = wantedCard?.tabId === tabId ? wantedCard.id : null;
+  const cardId = cardInFrontOf(pages, wanted, frontAt.current, activeTab.pageArrangement);
+  // The card standing in for one gone becomes the one asked for (set while rendering, as React derives
+  // state from a change in its inputs), so the next render keeps it rather than stepping back again.
+  if (wanted && cardId && cardId !== wanted) setWantedCard({ tabId, id: cardId });
+  useEffect(() => {
+    const at = pages.findIndex((p) => p.id === cardId);
+    if (at >= 0) frontAt.current = at;
+  }, [pages, cardId]);
+  const cardStage = useMemo(() => cardStageOf(pages, cardId), [pages, cardId]);
+  // A tab that comes to stand as a stack however it does (Stack Pages, its undo or redo, a peer's switch) brings the page
+  // in view to the front, so the view, still on that page's place in the row, never rests on an empty canvas; one that
+  // goes back to the row is on the page that was in front (pages-mode.md "Stacked or side by side").
+  const stackedNow = !!cardStage;
+  const stackedBefore = useRef({ tabId, stacked: stackedNow });
+  useLayoutEffect(() => {
+    const before = stackedBefore.current;
+    stackedBefore.current = { tabId, stacked: stackedNow };
+    if (before.tabId !== tabId || before.stacked === stackedNow) return;
+    if (!stackedNow) {
+      // Back in the row, the page that was in front is the page someone is on (the arrow keys go on from it).
+      const front = pages[frontAt.current];
+      if (front) setCurrentPageKind(pageKindOf(front), front.id);
+      return;
+    }
+    const here = pageIdInView();
+    if (here && here !== cardId && pages.some((p) => p.id === here))
+      setWantedCard({ tabId, id: here });
+    // oxlint-disable-next-line react/exhaustive-deps -- once per change of how the tab stands
+  }, [stackedNow, tabId]);
+  // The card that was in front, pictured as it went, flipped away once its successor is drawn.
+  const flipFrom = useRef<{ picture: CardPicture | null; forward: boolean } | null>(null);
+  const toCard = (page: LaidOutPage, flips: boolean) => {
+    if (page.id === cardId) return;
+    const from = pages.findIndex((p) => p.id === cardId);
+    flipFrom.current =
+      flips && from >= 0
+        ? {
+            picture: pictureCard(pages[from]!),
+            forward: pages.findIndex((p) => p.id === page.id) > from,
+          }
+        : null;
+    setWantedCard({ tabId, id: page.id });
+  };
+  const flipTo = cardStage?.pages[0];
+  useLayoutEffect(() => {
+    const pending = flipFrom.current;
+    flipFrom.current = null;
+    if (pending && flipTo) flipCard(pending.picture, flipTo, pending.forward);
+    // oxlint-disable-next-line react/exhaustive-deps -- once per change of the card in front, drawn
+  }, [flipTo?.id]);
+  // The view rests on a page once a pan or a zoom lets go (docs/specs/007-editor/pages-mode.md
+  // "Getting around the pages").
+  usePageSnap({
+    on: true,
+    pages,
+    viewport: deps.viewport,
+    measure: () => {
+      const m = measure(true);
+      if (!m) return null;
+      return {
+        screen: { width: m.width, height: m.height },
+        band: {
+          left: m.sides.left,
+          right: m.width - m.sides.right,
+          top: m.inset,
+          bottom: m.height,
+        },
+      };
+    },
+    fitOf: (page) => {
+      const m = measure(true);
+      return m ? frameFor(m, page) : deps.getViewport();
+    },
+    glideTo: (to, pageId) => {
+      // Let go toward another card of a stack: a flip to it, not a glide.
+      const card = cardStage ? pages.find((p) => p.id === pageId) : undefined;
+      if (card && card.id !== cardId) frame(card);
+      else glideTo(to);
+    },
+    cancelGlide: () => {
+      stopGlide();
+    },
+    suspended: deps.snapSuspended ?? (() => false),
+    onRestPending: (pending) => {
+      motion.current.snapping = pending;
+      markRest();
+    },
+    // The caret is in text on the canvas: an article's writing, or a label, cell or line being written on, which a
+    // phone's keyboard pans into sight (useKeyboardAvoidance).
+    writing: () =>
+      getActiveArticle()?.focused === true ||
+      textHasCaretIn(deps.canvasMainRef.current, document.activeElement),
+  });
+  // The page you were last on, remembered as the view rests (docs/specs/007-editor/
+  // pages-mode.md "Back to the page you were on").
+  const last = useLastPage({
+    on: true,
+    storeKey: deps.documentId ? lastPageKey(deps.documentId, tabId) : undefined,
+    pages,
+    canvasMainRef: deps.canvasMainRef,
+    viewport: deps.viewport,
+  });
+  // The landing frame: the page you were last on, else the first.
+  const frameLanding = () => {
+    const row = layOutPages(pagesOf(activeTab));
+    frame(last.remembered(row) ?? row[0], false, false, true);
+    last.arm();
+    motion.current.landed = true;
+    markRest();
+  };
+  // Centred on the page after the tab's own first fit (a frame later), so the page wins.
+  const centre = useEffectEvent(frameLanding);
+  // Entering the mode with a board that does not fit its first page puts it onto a page made
+  // around it, where it is (withContentOnAPage, docs/specs/007-editor/pages-mode.md "Into
+  // pages"): no element moves, resizes or scales. One edit, so one undo takes the page away, said
+  // in a toast. Then the view frames the first page.
+  const putOnAPage = useEffectEvent(() => {
+    if (!canEdit || activeTab.locked === true) return;
+    const placed = withContentOnAPage(activeTab);
+    if (!placed) return;
+    commitTabs((ts) => ts.map((t) => (t.id === tabId ? (withContentOnAPage(t) ?? t) : t)));
+    deps.toastInfo('Put onto a page that fits it. Undo takes the page away.');
+    track('Tab', 'Changed', 'PageFitToContent');
+    debugLog('[page] content put onto a page', {
+      tabId,
+      size: placed.pages[0]?.size ?? 'a4',
+    });
+  });
+  // The tab's own fit on landing (and a fit asked for with new content) frames that page too,
+  // so whichever lands last, the view ends on the page rather than the whole row.
+  const { frameFirstPageRef } = deps;
+  useInsertionEffect(() => {
+    if (frameFirstPageRef) frameFirstPageRef.current = frameLanding;
+  });
+  useEffect(() => {
+    if (!tabLoaded) return;
+    const raf = requestAnimationFrame(() => centre());
+    return () => cancelAnimationFrame(raf);
+  }, [tabLoaded, tabId]);
+  // Its own effect so an editor role that resolves after the tab has loaded still gets the page.
+  useEffect(() => {
+    if (tabLoaded && canEdit) putOnAPage();
+  }, [tabLoaded, tabId, canEdit]);
+
+  // Edit rights now, for a commit made as the panel closes (layout phase: current before any
+  // passive cleanup of that render runs).
+  const canEditNow = useRef(canEdit && activeTab.locked !== true);
+  useLayoutEffect(() => {
+    canEditNow.current = canEdit && activeTab.locked !== true;
+  });
+  const mayEdit = useCallback(() => canEditNow.current, []);
+  const [layoutPreview, setLayoutPreview] = useState<PagesModeView['layoutPreview']>(null);
+  // A page just added or duplicated, or the one before a deleted page: framed once it is in the
+  // row (a frame later, as its sheet mounts or the row closes up).
+  const [goTo, setGoTo] = useState<string | null>(null);
+  // The go-to now, read by `framing` between renders.
+  const goingTo = useRef<string | null>(null);
+  const goToPage = (id: string) => {
+    goingTo.current = id;
+    setGoTo(id);
+  };
+  const goToLanded = useEffectEvent(() => {
+    const page = layOutPages(pagesOf(activeTab)).find((p) => p.id === goTo);
+    if (!page) return;
+    goingTo.current = null;
+    setGoTo(null);
+    frame(page, false, true);
+  });
+  const landed = goTo !== null && pagesOf(activeTab).some((p) => p.id === goTo);
+  useEffect(() => {
+    if (!landed) return;
+    const raf = requestAnimationFrame(() => goToLanded());
+    return () => cancelAnimationFrame(raf);
+  }, [landed]);
+
+  const focusPage = (pageId: string) => {
+    const page = pages.find((p) => p.id === pageId);
+    // Gone to: the page someone is on now (Select All's reach, the palette's page).
+    if (page) setCurrentPageKind(pageKindOf(page), page.id);
+    frame(page, false, true);
+  };
+  const readPage = (pageId: string) =>
+    frame(
+      pages.find((p) => p.id === pageId),
+      true,
+      true,
+    );
+  const panFrom = () => {
+    stopGlide();
+    const from = deps.getViewport();
+    return (dx: number, dy: number) =>
+      deps.setViewportOffset({
+        x: from.offset.x + dx / from.zoom,
+        y: from.offset.y + dy / from.zoom,
+      });
+  };
+  const theme = getTheme(activeTab.theme);
+  // Worked out once per theme, so the pages' sheets (CanvasPageSheet) keep their props while it holds.
+  const themeBackgrounds = useMemo(() => themeBackgroundPresets(theme), [theme]);
+  const tabFont = activeTab.font;
+  // The page whose place holds the middle of the view (beside the docked Contents), read from the view itself.
+  const pageIdInView = () => {
+    const canvas = deps.canvasMainRef.current;
+    if (!canvas) return undefined;
+    return pageInView(
+      pages,
+      deps.getViewport(),
+      { width: canvas.offsetWidth, height: canvas.offsetHeight },
+      sideChromeInsets(canvas),
+    );
+  };
+  const fitPageInView = () => {
+    if (!deps.canvasMainRef.current) return;
+    const id = pageIdInView();
+    frame(
+      pages.find((p) => p.id === id),
+      false,
+      true,
+    );
+  };
+  // Stacked or side by side, for the whole tab (pages-mode.md "Stacked or side by side"): one edit, so one undo puts it
+  // back, and it syncs as any tab setting does. The page in view stays the page in view: the page in front stays where
+  // the row has it, and a stack that appears brings the page in view to the front (the layout effect above).
+  const toggleArrangement = () => {
+    const stack = !cardStage;
+    commitTabs((ts) =>
+      ts.map((t) => (t.id === tabId ? { ...t, pageArrangement: stack ? 'stack' : 'row' } : t)),
+    );
+    track('Tab', 'Changed', stack ? 'PagesStacked' : 'PagesSideBySide');
+    debugLog('[page] arrangement', { tabId, stack });
+  };
+  const shared = {
+    pages,
+    focusPage,
+    fitPageInView,
+    readPage,
+    panFrom,
+    framing: () => goingTo.current !== null || motion.current.gliding,
+    themeBackgrounds,
+    themeAccent: themeAccent(theme),
+    tabFont,
+    elements: activeTab.elements,
+    layoutPreview,
+    setLayoutPreview,
+    ...(cardStage ? { cardStage } : {}),
+    ...(tabArrangesPages(pages)
+      ? {
+          arrangement: {
+            stacked: !!cardStage,
+            ...(canEdit && activeTab.locked !== true ? { toggle: toggleArrangement } : {}),
+          },
+        }
+      : {}),
+  };
+  if (!canEdit || activeTab.locked === true) return shared;
+  return {
+    ...shared,
+    // mayEdit reads a ref, but only when an edit commits (in a handler), never during render.
+    edit: pageEdits({
+      tabId,
+      tab: activeTab,
+      current,
+      elements: activeTab.elements,
+      layers: activeTab.layers,
+      commitTabs,
+      onGoTo: goToPage,
+      onArticleCreated: deps.onArticleCreated,
+      onLayoutPlaced: deps.clearSelection,
+      mayEdit,
+      toastInfo: deps.toastInfo,
+      theme,
+      // A new page goes right after the page someone is on (pages-mode.md "Adding a page").
+      currentPage: () => cardId ?? currentPageIdNow(),
+    }),
+  };
+}

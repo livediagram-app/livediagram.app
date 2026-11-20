@@ -1,0 +1,79 @@
+'use client';
+
+// The selection chrome inside the grips layer (docs/specs/008-canvas/blueprints/selection-store.md): the
+// quick-connect pluses and the union resize box. It reads the selection from
+// the store, so a selection change re-renders this and not the element layer around it.
+
+import type { ComponentProps } from 'react';
+import type { Element } from '@liveknowledge/document';
+import { UnionResizeHandles } from '@/components/canvas/element-parts';
+import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';
+import {
+  useCanvasSelectionView,
+  type CanvasSelectionInput,
+} from '@/hooks/canvas/useCanvasSelectionView';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
+
+const singleId = (s: Selection) => s.selectedId;
+
+type PlusesProps = ComponentProps<typeof QuickConnectPluses>;
+
+export function LayerSelectionChrome({
+  selectionInput,
+  tabId,
+  elements,
+  pluses,
+  onBeginDrag,
+}: {
+  selectionInput: CanvasSelectionInput;
+  // The tab the selection is on, whose drag preview the selection follows.
+  tabId: string;
+  elements: Element[];
+  pluses: Omit<PlusesProps, 'selectedElement' | 'bounds' | 'zoom'>;
+  onBeginDrag: ComponentProps<typeof UnionResizeHandles>['onBeginDrag'];
+}) {
+  const { selectionBounds, showPlus, showUnionResize, unionResizeBounds, unionResizePrimaryId } =
+    useCanvasSelectionView(selectionInput, tabId);
+  const selectedId = useSelectionOf(singleId);
+  // Counter-scaled chrome: the zoom from the canvas's zoom context, so the layer passes none.
+  const zoom = useCanvasZoom();
+  return (
+    <>
+      {showPlus && selectionBounds ? (
+        <QuickConnectPluses
+          {...pluses}
+          selectedElement={selectedId ? elements.find((e) => e.id === selectedId) : undefined}
+          bounds={selectionBounds}
+          zoom={zoom}
+        />
+      ) : null}
+
+      {/* Dotted border around the whole multi-selection / group, so it reads
+          as one unit. Outset a touch from the union bounds. */}
+      {showUnionResize && unionResizeBounds ? (
+        <div
+          aria-hidden
+          // Placed by transform but not promoted (docs/specs/008-canvas/canvas-performance.md "A sweep moves one
+          // layer"): it spans the selection, so a layer of its own split every element over it into layers.
+          className="pointer-events-none absolute left-0 top-0 rounded-md border border-dashed border-brand-400/80 dark:border-brand-300/70"
+          style={{
+            transform: `translate(${unionResizeBounds.x - 6}px, ${unionResizeBounds.y - 6}px)`,
+            width: unionResizeBounds.width + 12,
+            height: unionResizeBounds.height + 12,
+          }}
+        />
+      ) : null}
+
+      {showUnionResize && unionResizeBounds && unionResizePrimaryId ? (
+        <UnionResizeHandles
+          bounds={unionResizeBounds}
+          primaryId={unionResizePrimaryId}
+          zoom={zoom}
+          onBeginDrag={onBeginDrag}
+        />
+      ) : null}
+    </>
+  );
+}

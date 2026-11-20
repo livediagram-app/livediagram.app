@@ -1,0 +1,453 @@
+// The handle a mounted article's writing is driven by (lib/article/article-editor-store): the page
+// toolbar's commands, the zone and note edits that write the writing and its objects in one step,
+// and the reads that turn the writing's boxes on screen into canvas points (snapshots, the drop
+// caret, the Map's bars). Built once per writing by ArticleEditor, over its refs.
+import type { MutableRefObject } from 'react';
+import { NodeSelection, Selection, TextSelection, type Command } from 'prosemirror-state';
+import type { EditorView } from 'prosemirror-view';
+import type { Node as PMNode } from 'prosemirror-model';
+import {
+  nextArticleBlockId,
+  type ArticleBlock,
+  type ArticleFlow,
+  type LaidOutPage,
+} from '@liveknowledge/document';
+import { docToBlocks } from '@/lib/article/article-convert';
+import { insertBlocksAfterCaret, selectionStateOf } from '@/lib/article/article-commands';
+import type { ArticleEditorHandle, ArticleLinkArea } from '@/lib/article/article-editor-store';
+import { headingPages } from '@/lib/article/article-toc-view';
+import { isSafeArticleHref } from '@liveknowledge/document';
+import { articleSchema } from '@/lib/article/article-schema';
+import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
+import { blockTagger } from '@/lib/article/article-pdf-tags';
+import { snapshotBars, snapshotWriting, type ArticleDrawOp } from '@/lib/article/article-snapshot';
+
+// What the writing is laid out over, as ArticleEditor's props hold it.
+type WritingLayout = {
+  flow: string;
+  pages: LaidOutPage[];
+  margin: number;
+  // The least top margin (a header's band above the toolbar's room); absent, ARTICLE_TOP_MIN_PX.
+  topMin?: number;
+  zoom: number;
+};
+
+// Each heading's page (0 the first) as laid out now.
+function headingIndexes(view: EditorView, p: WritingLayout): ReadonlyMap<string, number> {
+  const { frame, root, z } = writingScale(view, p);
+  return headingPages(view, (x) =>
+    Math.max(0, Math.min(p.pages.length - 1, columnAt(frame, (x - root.left) / z))),
+  );
+}
+
+/** The writing's link areas as laid out now (contents entries and links in the text), canvas rects. */
+export function linkAreas(view: EditorView, p: WritingLayout): ArticleLinkArea[] {
+  const { frame, root, z } = writingScale(view, p);
+  const pages = headingIndexes(view, p);
+  const out: ArticleLinkArea[] = [];
+  const push = (el: Element, to: { page: number } | { href: string }) => {
+    for (const r of Array.from(el.getClientRects())) {
+      if (r.width === 0 || r.height === 0) continue;
+      out.push({
+        x: frame.x + (r.left - root.left) / z,
+        y: frame.y + (r.top - root.top) / z,
+        w: r.width / z,
+        h: r.height / z,
+        ...to,
+      });
+    }
+  };
+  view.dom.querySelectorAll<HTMLElement>('.article-toc-entry[data-toc-target]').forEach((el) => {
+    const page = pages.get(el.dataset.tocTarget ?? '');
+    if (page !== undefined) push(el, { page });
+  });
+  view.dom.querySelectorAll<HTMLAnchorElement>('a.article-link[href]').forEach((el) => {
+    const href = el.getAttribute('href');
+    if (href && isSafeArticleHref(href)) push(el, { href });
+  });
+  return out;
+}
+
+/**
+ * The writing's frame on the canvas, its box on screen, and screen px per canvas px (read off the
+ * box, so it holds mid-zoom; the zoom only when the writing is not laid out).
+ */
+// A top-level block of the writing and its boxes on screen (one per column or page it runs across).
+export type DropBox = {
+  pos: number;
+  size: number;
+  rects: readonly Pick<DOMRect, 'left' | 'right' | 'top' | 'bottom' | 'height'>[];
+};
+
+/** The block boundary a drop at a screen point lands on (docs/specs/007-editor/article-pages.md "Zones"):
+ *  the box nearest the point (within `reach` of its column), before its block when the point is in that
+ *  box's upper half. A block split across columns is still one block, so the drop goes before or after all
+ *  of it and its caret `edge` is the block's first box (its top) or last box (its foot), not the box the
+ *  point was over. */
+export function nearestDrop(boxes: readonly DropBox[], left: number, top: number, reach: number) {
+  let best: { box: DropBox; before: boolean; d: number } | null = null;
+  for (const box of boxes)
+    for (const r of box.rects) {
+      if (left < r.left - reach || left > r.right + reach) continue;
+      const d = top < r.top ? r.top - top : top > r.bottom ? top - r.bottom : 0;
+      if (!best || d < best.d) best = { box, before: top < r.top + r.height / 2, d };
+    }
+  if (!best) return null;
+  const { box, before } = best;
+  const edge = before ? box.rects[0]! : box.rects[box.rects.length - 1]!;
+  return { pos: before ? box.pos : box.pos + box.size, before, edge };
+}
+
+export function writingScale(view: EditorView, p: WritingLayout) {
+  const frame = flowFrame(p.pages, p.margin, p.topMin);
+  const root = view.dom.getBoundingClientRect();
+  const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
+  return { frame, root, z };
+}
+
+// The caret, as a canvas rect (a sliver its line's height), or null when it has no place yet.
+export function caretCanvasRect(
+  view: EditorView,
+  p: WritingLayout,
+): { x: number; y: number; w: number; h: number } | null {
+  try {
+    const at = view.coordsAtPos(view.state.selection.head);
+    const { frame, root, z } = writingScale(view, p);
+    return {
+      x: frame.x + (at.left - root.left) / z,
+      y: frame.y + (at.top - root.top) / z,
+      w: 1,
+      h: Math.max(1, (at.bottom - at.top) / z),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function createArticleHandle({
+  view,
+  latest,
+  committed,
+  idle,
+  lastLocal,
+  barsCache,
+  flush,
+  undoRedo,
+  noteRoots,
+}: {
+  view: EditorView;
+  latest: MutableRefObject<WritingLayout>;
+  committed: MutableRefObject<ArticleFlow>;
+  idle: MutableRefObject<number | null>;
+  lastLocal: MutableRefObject<number>;
+  barsCache: MutableRefObject<{ ink: string; ops: ArticleDrawOp[] } | null>;
+  flush: () => void;
+  // An undo or redo asked for from the writing.
+  undoRedo: (which: 'undo' | 'redo') => void;
+  // The boxes of notes at the pages' feet (footnotes), drawn with the writing.
+  noteRoots?: () => readonly HTMLElement[];
+}): ArticleEditorHandle {
+  const scale = () => writingScale(view, latest.current);
+  // A screen point, as a canvas point, by one read of the writing's scale.
+  const toCanvas = ({ frame, root, z }: ReturnType<typeof scale>) => {
+    return (x: number, y: number) => ({
+      x: frame.x + (x - root.left) / z,
+      y: frame.y + (y - root.top) / z,
+    });
+  };
+  // The writing taken as written now: the host writes these blocks itself (with what goes with
+  // them, in one edit), so no idle commit follows.
+  const takeBlocks = (): ArticleBlock[] => {
+    const blocks = docToBlocks(view.state.doc, committed.current.blocks);
+    committed.current = { ...committed.current, blocks };
+    if (idle.current !== null) {
+      window.clearTimeout(idle.current);
+      idle.current = null;
+    }
+    return blocks;
+  };
+  // The block boundary nearest a canvas point, by the blocks' own boxes (an element dragged over
+  // the writing covers the point, so a hit test there finds the element): the block whose box (in
+  // the point's column) is nearest, before it when the point is in its upper half. With the drop
+  // caret for it: a line across the column at the boundary, in canvas px. A block named `skipId`
+  // (the zone being moved) is never a neighbour. A block split across columns (or pages) is still
+  // one block: the drop goes before or after all of it, so the caret is drawn where that is, at
+  // the top of its first box or the foot of its last, whichever box the point was nearest.
+  const boundaryNear = (near: { x: number; y: number }, skipId: string | null) => {
+    const { frame, root, z } = scale();
+    const left = root.left + (near.x - frame.x) * z;
+    const top = root.top + (near.y - frame.y) * z;
+    const boxes: DropBox[] = [];
+    let pos = 0;
+    view.state.doc.forEach((node) => {
+      const dom = view.nodeDOM(pos) as HTMLElement | null;
+      if (node.attrs.id !== skipId && dom)
+        boxes.push({ pos, size: node.nodeSize, rects: Array.from(dom.getClientRects()) });
+      pos += node.nodeSize;
+    });
+    const found = nearestDrop(boxes, left, top, 24 * z);
+    if (!found) return null;
+    const { edge } = found;
+    // The caret spans the column that edge sits in.
+    const index = columnAt(frame, (edge.left - root.left) / z);
+    return {
+      pos: found.pos,
+      caret: {
+        x: frame.x + index * frame.stride,
+        y: frame.y + ((found.before ? edge.top : edge.bottom) - root.top) / z,
+        width: frame.columnWidth,
+      },
+    };
+  };
+  // Where a zone now in the writing landed, the writing taken as written: the host writes these
+  // blocks, the zone placed, in one edit.
+  const landedOf = (id: string) => {
+    const { frame, root, z } = scale();
+    const el = view.dom.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    const place = pagePlaceOf(frame, { x: (r.left - root.left) / z, y: (r.top - root.top) / z });
+    const blocks = takeBlocks();
+    lastLocal.current = Date.now();
+    return {
+      id,
+      blocks,
+      index: place.index,
+      x: Math.round(place.x * 2) / 2,
+      y: Math.round(place.y * 2) / 2,
+    };
+  };
+
+  return {
+    flow: latest.current.flow,
+    run: (command: Command) => {
+      const ok = command(view.state, view.dispatch, view);
+      view.focus();
+      return ok;
+    },
+    can: (command: Command) => command(view.state, undefined, view),
+    insert: (nodes: PMNode[]) => {
+      insertBlocksAfterCaret(nodes)(view.state, view.dispatch, view);
+      view.focus();
+    },
+    flush,
+    takeBlocks,
+    undo: () => {
+      undoRedo('undo');
+      view.focus();
+    },
+    redo: () => {
+      undoRedo('redo');
+      view.focus();
+    },
+    focus: () => view.focus(),
+    selection: () => selectionStateOf(view.state),
+    claimLayout: () => {
+      lastLocal.current = Date.now();
+    },
+    caretRect: () => {
+      try {
+        const c = view.coordsAtPos(view.state.selection.head);
+        return new DOMRect(c.left, c.top, 1, c.bottom - c.top);
+      } catch {
+        return null;
+      }
+    },
+    rangeRect: (blockId, from, to) => {
+      let offset = -1;
+      let size = 0;
+      view.state.doc.forEach((node, at) => {
+        if (offset < 0 && node.attrs.id === blockId) {
+          offset = at;
+          size = node.content.size;
+        }
+      });
+      if (offset < 0 || to > size || from > to) return null;
+      try {
+        const a = view.coordsAtPos(offset + 1 + from, 1);
+        const b = view.coordsAtPos(offset + 1 + to, -1);
+        const toPoint = toCanvas(scale());
+        const start = toPoint(a.left, a.top);
+        const end = toPoint(b.left, b.bottom);
+        // A stretch that wraps onto the next line (or column) is shown by its first line.
+        const oneLine = Math.abs(b.top - a.top) < 1;
+        const startBottom = toPoint(a.left, a.bottom);
+        return {
+          x: start.x,
+          y: start.y,
+          w: oneLine ? Math.max(1, end.x - start.x) : 1,
+          h: Math.max(1, (oneLine ? end.y : startBottom.y) - start.y),
+        };
+      } catch {
+        return null;
+      }
+    },
+    blocksByPage: () => {
+      const { frame, root, z } = scale();
+      const out: string[][] = latest.current.pages.map(() => []);
+      let pos = 0;
+      view.state.doc.forEach((node) => {
+        const r = (view.nodeDOM(pos) as HTMLElement | null)?.getClientRects()[0];
+        const index = r
+          ? Math.min(out.length - 1, columnAt(frame, (r.left - root.left) / z))
+          : out.length - 1;
+        out[Math.max(0, index)]?.push(node.attrs.id as string);
+        pos += node.nodeSize;
+      });
+      return out;
+    },
+    markNote: (id, kind) => {
+      const { from, to, empty } = view.state.selection;
+      if (empty) return null;
+      const mark = articleSchema.marks.note.create({ id, kind });
+      view.dispatch(view.state.tr.addMark(from, to, mark));
+      const { frame, root, z } = scale();
+      const el = view.dom.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(id)}"]`);
+      const r = el?.getClientRects()[0];
+      if (!r) return null;
+      const place = pagePlaceOf(frame, {
+        x: (r.left - root.left) / z,
+        y: (r.top - root.top) / z,
+      });
+      // Taken as written: the host writes these blocks and the marker in one edit.
+      const blocks = takeBlocks();
+      lastLocal.current = Date.now();
+      return { blocks, place: { id, index: place.index, y: place.y, height: r.height / z } };
+    },
+    boundaryNear: (near, skipId) => {
+      const found = boundaryNear(near, skipId);
+      return found ? { pos: found.pos, caret: found.caret } : null;
+    },
+    moveZone: (id, near) => {
+      const doc = view.state.doc;
+      let from = -1;
+      doc.forEach((n, pos) => {
+        if (n.attrs.id === id && n.type === articleSchema.nodes.zone) from = pos;
+      });
+      const node = from >= 0 ? doc.nodeAt(from) : null;
+      const found =
+        'by' in near ? { pos: zoneStepTarget(doc, from, near.by) } : boundaryNear(near, id);
+      if (!node || !found || found.pos === null) return null;
+      // Dropped where it already is: nothing moves.
+      if (found.pos === from || found.pos === from + node.nodeSize) return null;
+      const tr = view.state.tr.delete(from, from + node.nodeSize);
+      const at = tr.mapping.map(found.pos);
+      tr.insert(at, node);
+      tr.setSelection(NodeSelection.create(tr.doc, at));
+      view.dispatch(tr);
+      return landedOf(id);
+    },
+    insertZone: (spec, near) => {
+      const doc = view.state.doc;
+      const ids = new Set<string>();
+      doc.forEach((n) => ids.add(n.attrs.id as string));
+      const id = nextArticleBlockId(ids);
+      const node = articleSchema.nodes.zone.create({ id, ...spec });
+      // The block boundary nearest the point; with no point, after the caret's block.
+      let at = doc.content.size;
+      const blockAt = (at: number) => {
+        const $p = doc.resolve(Math.min(at, doc.content.size));
+        return $p.depth >= 1 ? { start: $p.before(1), end: $p.after(1) } : null;
+      };
+      if (near) {
+        const found = boundaryNear(near, null);
+        if (found) at = found.pos;
+      } else {
+        const block = blockAt(view.state.selection.from);
+        if (block) at = block.end;
+      }
+      // An empty paragraph beside the boundary, with the caret in it, gives its place up.
+      const caretBlock = blockAt(view.state.selection.from);
+      const emptyAt = (start: number) => {
+        const n = doc.nodeAt(start);
+        return n?.type === articleSchema.nodes.paragraph && n.content.size === 0 ? n : null;
+      };
+      let replaceTo = at;
+      if (caretBlock && view.state.selection.empty) {
+        const n = emptyAt(caretBlock.start);
+        if (n && (caretBlock.end === at || caretBlock.start === at)) {
+          at = caretBlock.start;
+          replaceTo = caretBlock.end;
+        }
+      }
+      const tr = view.state.tr.replaceWith(at, replaceTo, node);
+      // Always somewhere to write after it; the caret goes there, so writing carries on below.
+      if (at + node.nodeSize >= tr.doc.content.size)
+        tr.insert(tr.doc.content.size, articleSchema.nodes.paragraph.create());
+      tr.setSelection(TextSelection.near(tr.doc.resolve(at + node.nodeSize + 1)));
+      view.dispatch(tr);
+      return landedOf(id);
+    },
+    snapshot: () => {
+      const s = scale();
+      // One numbering of blocks for a PDF's tags: the notes' blocks after the writing's, never sharing a number.
+      const tags = blockTagger();
+      const ops = snapshotWriting(view.dom, toCanvas(s), s.z, tags);
+      // Each page's notes as drawn, a note cut short at the box's foot cut there too.
+      for (const box of noteRoots?.() ?? []) {
+        const foot = toCanvas(s)(0, box.getBoundingClientRect().bottom).y;
+        for (const op of snapshotWriting(box, toCanvas(s), s.z, tags))
+          if (op.k !== 'text' || op.y <= foot) ops.push(op);
+      }
+      return ops;
+    },
+    bars: (ink: string) => {
+      // One walk of the writing per layout, whoever asks (the Map, every slide thumbnail).
+      if (barsCache.current?.ink === ink) return barsCache.current.ops;
+      const s = scale();
+      const ops = snapshotBars(view.dom, toCanvas(s), s.z, ink);
+      barsCache.current = { ink, ops };
+      return ops;
+    },
+    focusAt: (clientX: number, clientY: number) => {
+      const { frame, root, z } = scale();
+      // Into the text column of the page pressed, then to the nearest place in the writing.
+      const col = columnAt(frame, (clientX - root.left) / z);
+      const colLeft = root.left + col * frame.stride * z;
+      const x = Math.max(colLeft + 1, Math.min(clientX, colLeft + frame.columnWidth * z - 1));
+      const y = Math.max(root.top + 1, Math.min(clientY, root.bottom - 1));
+      const hit = view.posAtCoords({ left: x, top: y });
+      // Below the writing (nothing laid out there): the end of the writing.
+      const pos = hit?.pos ?? view.state.doc.content.size;
+      view.dispatch(view.state.tr.setSelection(Selection.near(view.state.doc.resolve(pos))));
+      view.focus();
+    },
+    state: () => view.state,
+    headingPages: () => {
+      const out = new Map<string, number>();
+      for (const [id, index] of headingIndexes(view, latest.current)) out.set(id, index + 1);
+      return out;
+    },
+    links: () => linkAreas(view, latest.current),
+    caretCanvasPoint: () => {
+      try {
+        const c = view.coordsAtPos(view.state.selection.head);
+        return toCanvas(scale())(c.left, c.top);
+      } catch {
+        return null;
+      }
+    },
+  };
+}
+
+/**
+ * Where a zone at `from` lands when stepped one block up (`by` -1, before the block above it) or
+ * down (1, after the block below it): a position in the writing, or null at either end. The
+ * keyboard's way to move a zone (the zone bar's grip, arrow keys), as a drag moves it by a point.
+ */
+export function zoneStepTarget(doc: PMNode, from: number, by: -1 | 1): number | null {
+  if (from < 0) return null;
+  let index = -1;
+  let pos = 0;
+  const starts: number[] = [];
+  doc.forEach((n, p, i) => {
+    starts.push(p);
+    if (p === from) index = i;
+    pos = p + n.nodeSize;
+  });
+  starts.push(pos);
+  if (index < 0) return null;
+  const target = by < 0 ? index - 1 : index + 2;
+  if (target < 0 || target >= starts.length) return null;
+  return starts[target]!;
+}

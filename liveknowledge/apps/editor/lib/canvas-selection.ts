@@ -1,0 +1,226 @@
+// Pure selection-display derivation for the canvas: given the element
+// list, the current selection (single id + marquee multi-set), and the
+// editing/mode flags, work out the primary selected element, the
+// selection bounds, and every "should this chrome show?" predicate the
+// Canvas render reads. Lifted out of Canvas.tsx so this decision logic
+// is unit-testable in isolation (the component itself has no tests).
+import { isFixedSizeElement, isChipShape, type Rect } from '@liveknowledge/document';
+import { takesQuickConnect } from './quick-connect-kinds';
+import {
+  elementBounds,
+  isBoxed,
+  unionBoxedBounds,
+  unionRects,
+  type Element,
+  type ElementId,
+} from '@liveknowledge/document';
+
+type CanvasSelection = {
+  // First element (in z-order) of an active marquee multi-selection,
+  // promoted so the selection chrome can read shared properties from it.
+  multiPrimaryId: string | null;
+  // The primary selected element: the single selection, else the multi
+  // primary. Null when nothing is selected.
+  selected: Element | null;
+  selectionScope: 'single' | 'multi';
+  selectedIsBoxed: boolean;
+  selectionBounds: Rect | null;
+  selectedLocked: boolean;
+  // Single-selection popover + plus-button visibility.
+  showPopover: boolean;
+  showPlus: boolean;
+  // Per-element resize-handle / arrow-anchor visibility (same predicate
+  // for both today). Call with an element id.
+  showHandlesFor: (id: string) => boolean;
+  showAnchorsFor: (id: string) => boolean;
+  // Union (multi-selection) resize-handle state.
+  unionResizeIds: ReadonlySet<string> | null;
+  unionResizeBounds: Rect | null;
+  unionResizePrimaryId: string | null;
+  showUnionResize: boolean;
+  // Floating multi-selection toolbar anchor + visibility. Spans arrows too,
+  // so it shows for arrow-only / mixed marquees (the resize box above does not).
+  multiToolbarBounds: Rect | null;
+  showMultiToolbar: boolean;
+};
+
+// The modes that decide whether a selected element shows its grips.
+type GripContext = {
+  editingId: string | null;
+  isPaintMode: boolean;
+  tabLocked: boolean;
+  readOnly: boolean;
+  // A read-only session that may still resize this element (a Participant): handles, never edge anchors, since a
+  // connector is not its to draw.
+  resizable?: boolean;
+};
+
+// One element's resize handles and edge anchors (docs/specs/008-canvas/blueprints/selection-store.md):
+// shown on a lone boxed selection, not being edited, in no edit-blocking mode. Fixed-size elements
+// (mode / session buttons by kind, any element by its creation stamp) advertise no resize,
+// and a table no edge anchors. `single` is "this element is the one selected element".
+export function elementGrips(
+  el: Element,
+  single: boolean,
+  ctx: GripContext,
+): { handles: boolean; anchors: boolean } {
+  const handles =
+    single &&
+    isBoxed(el) &&
+    el.locked !== true &&
+    ctx.editingId !== el.id &&
+    !ctx.isPaintMode &&
+    !ctx.tabLocked &&
+    (!ctx.readOnly || ctx.resizable === true) &&
+    !isFixedSizeElement(el);
+  // A badge or step number takes no connectors (docs/specs/009-elements/badge.md "Connectors").
+  const chip = el.type === 'shape' && isChipShape(el.shape);
+  return { handles, anchors: handles && !ctx.readOnly && el.type !== 'table' && !chip };
+}
+
+export function deriveCanvasSelection(input: {
+  elements: Element[];
+  selectedId: string | null;
+  multiSelectedIds: ReadonlySet<string>;
+  editingId: string | null;
+  isPaintMode: boolean;
+  tabLocked: boolean;
+  readOnly: boolean;
+  // An element context menu is open. One question, one answer: a left click
+  // asks "what is this" (popover), a right click "what can I do with it"
+  // (menu). Both at once rings the element with two toolbars repeating each
+  // other's verbs, so the menu — the deliberate, more specific gesture —
+  // owns the moment and the popover (with its pluses) stands down.
+  elementMenuOpen?: boolean;
+  // An image is being cropped on the canvas (docs/specs/009-elements/picture-crop-and-mask.md "Cropping in the
+  // editor"): the crop's handles and bar own the moment, so the selection toolbar and the pluses stand down until
+  // it ends, however it ends.
+  cropping?: boolean;
+  // Where an arrow's label is drawn, if it has one. The label belongs to its
+  // line (docs/specs/008-canvas/arrow-labels.md), so the floating toolbars
+  // clear it as they clear the line.
+  labelRectOf?: (id: ElementId) => Rect | null;
+  // An element that never shows quick-connect pluses, beyond the rules below: an object in an
+  // article's writing connects to nothing (docs/specs/007-editor/article-pages.md "Zones").
+  plusBlocked?: (el: Element) => boolean;
+}): CanvasSelection {
+  const {
+    elements,
+    selectedId,
+    multiSelectedIds,
+    editingId,
+    isPaintMode,
+    tabLocked,
+    readOnly,
+    elementMenuOpen,
+    cropping = false,
+    labelRectOf,
+    plusBlocked,
+  } = input;
+
+  // An element's selection extent (docs/specs/008-canvas/arrow-labels.md): an arrow spans
+  // its label too.
+  const selectionExtent = (el: Element): Rect => {
+    const own = elementBounds(el, elements);
+    const label = el.type === 'arrow' ? labelRectOf?.(el.id) : null;
+    return label ? unionRects([own, label])! : own;
+  };
+
+  const multiPrimaryId =
+    multiSelectedIds.size > 0
+      ? (elements.find((el) => multiSelectedIds.has(el.id))?.id ?? null)
+      : null;
+  const selected =
+    (selectedId ? elements.find((el) => el.id === selectedId) : undefined) ??
+    (multiPrimaryId ? elements.find((el) => el.id === multiPrimaryId) : undefined) ??
+    null;
+  const selectionScope: 'single' | 'multi' = multiSelectedIds.size > 0 ? 'multi' : 'single';
+  const selectedIsBoxed = selected ? isBoxed(selected) : false;
+  const selectionBounds: Rect | null = selected ? selectionExtent(selected) : null;
+
+  const selectedLocked = selected ? selected.locked === true : false;
+  const showPopover = !!(
+    selected &&
+    !elementMenuOpen &&
+    !cropping &&
+    editingId !== selected.id &&
+    !isPaintMode &&
+    multiSelectedIds.size === 0 &&
+    !tabLocked
+  );
+  const showPlus = !!(
+    selected &&
+    !elementMenuOpen &&
+    !cropping &&
+    selectedIsBoxed &&
+    // Quick-connect works on a single element. A marquee multi-select stays
+    // suppressed: it's a transient selection, not a unit you chain from.
+    multiSelectedIds.size === 0 &&
+    // Only a shape or a concept graphic is chained from (takesQuickConnect): not a margin note, a badge, a
+    // table, text or any other kind placed rather than chained.
+    takesQuickConnect(selected) &&
+    editingId !== selected.id &&
+    !isPaintMode &&
+    !selectedLocked &&
+    !tabLocked &&
+    !readOnly &&
+    !plusBlocked?.(selected)
+  );
+  // Resize handles and edge anchors: the per-element rule each element view also applies.
+  const gripsOf = (id: string) => {
+    const el = elements.find((e) => e.id === id);
+    const single = id === selectedId && multiSelectedIds.size === 0;
+    return el && single
+      ? elementGrips(el, true, { editingId, isPaintMode, tabLocked, readOnly })
+      : { handles: false, anchors: false };
+  };
+  const resizeVisible = (id: string) => gripsOf(id).handles;
+  const anchorVisible = (id: string) => gripsOf(id).anchors;
+
+  const unionResizeIds: ReadonlySet<string> | null =
+    multiSelectedIds.size > 1 ? multiSelectedIds : null;
+  const unionResizeBounds =
+    unionResizeIds && selected ? unionBoxedBounds(elements, unionResizeIds) : null;
+  const unionResizePrimaryId = multiSelectedIds.size > 1 ? (multiPrimaryId ?? selectedId) : null;
+  const showUnionResize =
+    !!unionResizeBounds &&
+    !!unionResizePrimaryId &&
+    selectedIsBoxed &&
+    editingId !== unionResizePrimaryId &&
+    !isPaintMode &&
+    !selectedLocked &&
+    !tabLocked &&
+    !readOnly;
+
+  // The floating multi-selection toolbar (Duplicate / Lock / Export /
+  // Delete + the "More" entry into the type-aware formatting menu) is anchored
+  // separately from the resize box: it floats over the union of EVERY selected
+  // element including arrows, so an arrow-only or mixed marquee still gets the
+  // toolbar (and thus the Flow / animate controls). The resize handles above
+  // stay boxed-only because there's no box to drag-resize an arrow by.
+  const multiToolbarBounds =
+    multiSelectedIds.size > 1
+      ? unionRects(elements.filter((el) => multiSelectedIds.has(el.id)).map(selectionExtent))
+      : null;
+  const showMultiToolbar =
+    !!multiToolbarBounds && multiSelectedIds.size > 1 && !isPaintMode && !tabLocked && !readOnly;
+
+  return {
+    multiPrimaryId,
+    selected,
+    selectionScope,
+    selectedIsBoxed,
+    selectionBounds,
+    selectedLocked,
+    showPopover,
+    showPlus,
+    showHandlesFor: resizeVisible,
+    showAnchorsFor: anchorVisible,
+    unionResizeIds,
+    unionResizeBounds,
+    unionResizePrimaryId,
+    showUnionResize,
+    multiToolbarBounds,
+    showMultiToolbar,
+  };
+}

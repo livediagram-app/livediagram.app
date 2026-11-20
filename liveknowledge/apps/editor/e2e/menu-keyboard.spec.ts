@@ -1,0 +1,143 @@
+import { mkdirSync } from 'node:fs';
+import type { Page } from '@playwright/test';
+import {
+  untilHydrated,
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  seedTab,
+  startBlankDocument,
+  test,
+} from './fixtures';
+
+// Menus by keyboard alone (docs/specs/004-interface-design/menus.md): a command menu is a `menu` of
+// menu items with one tab stop, the arrows, typeahead, a submenu on Right / Left, and focus back
+// where it was on Escape; a control menu is a named non-modal dialog that takes focus when the
+// keyboard opened it. Dark mode, desktop. MENU_SHOTS=<dir> also writes the focus-state screenshots.
+
+const SHOTS = process.env.MENU_SHOTS;
+const shot = async (page: Page, name: string) => {
+  if (!SHOTS) return;
+  mkdirSync(SHOTS, { recursive: true });
+  // Let entrance fades settle, so the shot shows the resting colours.
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: `${SHOTS}/${name}.png` });
+};
+
+test.describe('menus by keyboard', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.setViewportSize({ width: 1280, height: 800 });
+  });
+
+  test('the element menu is a control menu that takes focus from the keyboard', async ({
+    page,
+    pageErrors,
+  }) => {
+    await startBlankDocument(page);
+    await seedTab(page, [
+      { id: 'sq', type: 'shape', shape: 'square', x: 400, y: 300, width: 120, height: 120 },
+    ]);
+    const square = page.getByRole('img', { name: 'Square', exact: true });
+    await expect(square).toHaveCount(1);
+    await square.click();
+    const elementMenu = page.getByRole('dialog', { name: 'Element menu' });
+
+    // From the keyboard (Shift+F10 on the canvas, with the square selected) focus moves in, and
+    // Escape brings it back (docs/specs/004-interface-design/canvas-accessibility.md).
+    const canvas = page.getByRole('main', { name: 'Canvas' });
+    await canvas.focus();
+    await page.keyboard.press('Shift+F10');
+    await expect(elementMenu).toBeVisible();
+    // Focus lands on the menu's first control: the quick bar's first button, above the categories
+    // (docs/specs/008-canvas/element-menu-quick-bar.md).
+    await expect(elementMenu.getByRole('button').first()).toBeFocused();
+    await shot(page, 'after-element-menu-focus');
+    // Arrows in the menu never nudge the element; Delete never deletes it. Measured once its entry
+    // animation has finished: mid-animation the box is still growing to its size.
+    await square.evaluate((el) =>
+      Promise.all(el.getAnimations({ subtree: true }).map((anim) => anim.finished)),
+    );
+    const before = await square.boundingBox();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Delete');
+    await expect(square).toHaveCount(1);
+    expect(await square.boundingBox()).toEqual(before);
+    await page.keyboard.press('Escape');
+    await expect(elementMenu).toHaveCount(0);
+    await expect(square).toHaveCount(1);
+    await expect(canvas).toBeFocused();
+
+    // By pointer it opens beside the canvas without taking focus.
+    const box = (await square.boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: 'right' });
+    await expect(elementMenu).toBeVisible();
+    await expect(elementMenu.getByRole('menuitem')).toHaveCount(0);
+    await expect(elementMenu.getByRole('button', { name: 'Layer' })).toBeVisible();
+    // Collapsed sections are inert: their sliders are not in the tree.
+    await expect(elementMenu.getByRole('slider')).toHaveCount(0);
+    expect(await elementMenu.evaluate((el) => el.contains(document.activeElement))).toBe(false);
+    await page.keyboard.press('Escape');
+    await expect(elementMenu).toHaveCount(0);
+    await expect(square).toHaveCount(1);
+    expectNoPageErrors(pageErrors);
+  });
+
+  test('the tab menu is a named dialog', async ({ page, pageErrors }) => {
+    await startBlankDocument(page);
+    await dismissQuickTour(page);
+
+    const tabMenu = page.getByRole('button', { name: 'Tab menu' });
+    await expect(tabMenu).toHaveAttribute('aria-haspopup', 'dialog');
+    await tabMenu.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: 'Tab menu' });
+    await expect(dialog).toBeVisible();
+    // The menu moves focus in over the next frames (useMenu), so this waits for it rather than checking once.
+    await expect
+      .poll(() => dialog.evaluate((el) => el.contains(document.activeElement)))
+      .toBe(true);
+    await shot(page, 'after-tab-menu-focus');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(tabMenu).toBeFocused();
+
+    const zoom = page.getByRole('button', { name: 'Fit to screen' }).first();
+    await zoom.focus();
+    // Focus alone no longer opens it; Down Arrow does, on the current level.
+    await expect(page.getByRole('menu', { name: 'Zoom level' })).toHaveCount(0);
+    await page.keyboard.press('ArrowDown');
+    const presets = page.getByRole('menu', { name: 'Zoom level' });
+    await expect(presets).toBeVisible();
+    // A blank page opens fitted, between the preset levels: focus lands inside the menu.
+    // The menu moves focus in over the next frames (useMenu), so this waits for it rather than checking once.
+    await expect
+      .poll(() => presets.evaluate((el) => el.contains(document.activeElement)))
+      .toBe(true);
+    await page.keyboard.press('End');
+    await expect(presets.getByRole('menuitem', { name: 'Fit to screen' })).toBeFocused();
+    await shot(page, 'after-zoom-menu-focus');
+    await page.keyboard.press('Escape');
+    await expect(presets).toHaveCount(0);
+    await expect(zoom).toBeFocused();
+    expectNoPageErrors(pageErrors);
+  });
+
+  // In an editor the logo is a plain link, with no site switcher: no chevron to reach, and hovering it opens no
+  // card (liveworkspace/docs/specs/010-site/site-switcher.md "Where it shows").
+  test('the editor logo opens no site switcher, on hover or from the keyboard', async ({
+    page,
+    pageErrors,
+  }) => {
+    await startBlankDocument(page);
+    // No header bar (experiment): the logo has a card of its own beside the menu card (MenuCardLogo).
+    const header = page.locator('[data-toolbar-menu]').locator('..');
+    const logo = header.getByRole('link', { name: 'liveknowledge' });
+    await untilHydrated(logo);
+    await logo.hover();
+    await logo.focus();
+    await expect(header.getByRole('button', { name: 'Switch site' })).toHaveCount(0);
+    await expect(page.getByRole('menu', { name: 'liveworkspace sites' })).toHaveCount(0);
+    expectNoPageErrors(pageErrors);
+  });
+});

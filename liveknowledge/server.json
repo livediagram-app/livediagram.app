@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.livediagram-app/liveknowledge",
+  "title": "liveknowledge",
+  "description": "Create, edit, share and render articles, slide decks and infographics on liveknowledge.app.",
+  "version": "0.1.0",
+  "websiteUrl": "https://www.liveknowledge.app",
+  "repository": {
+    "url": "https://github.com/livediagram-app/livediagram.app",
+    "source": "github",
+    "subfolder": "liveknowledge/apps/mcp"
+  },
+  "icons": [
+    {
+      "src": "https://www.liveknowledge.app/liveknowledge-icon-512.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.liveknowledge.app/mcp"
+    }
+  ]
+}
