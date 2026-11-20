@@ -13,6 +13,7 @@ import {
   type PublicQuestion,
 } from '@liveplanner/forms';
 import { fromLocalInput, localInputValue } from '@liveplanner/items';
+import { CharacterCount } from './CharacterCount';
 import { RatingInput } from './RatingInput';
 import { FIELD, FIELD_BAD, FIELD_OK } from './answer-field';
 import { Choices, ColourAnswer, Dropdown, RangeAnswer } from './question-answers';
@@ -89,26 +90,32 @@ export function QuestionControl({
   switch (q.type) {
     case 'short':
       return (
-        <input
-          {...common}
-          type="text"
-          className={field}
-          value={text}
-          maxLength={SHORT_ANSWER_MAX}
-          placeholder={q.placeholder ?? placeholderHint(q)}
-          onChange={(e) => onChange(e.target.value)}
-        />
+        <>
+          <input
+            {...common}
+            type="text"
+            className={field}
+            value={text}
+            maxLength={SHORT_ANSWER_MAX}
+            placeholder={q.placeholder ?? placeholderHint(q)}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          {disabled ? null : <CharacterCount length={text.length} max={SHORT_ANSWER_MAX} />}
+        </>
       );
     case 'paragraph':
       return (
-        <GrowingText
-          {...common}
-          className={`${field} resize-none leading-relaxed`}
-          value={text}
-          maxLength={PARAGRAPH_MAX}
-          placeholder={q.placeholder ?? placeholderHint(q)}
-          onChange={(e) => onChange(e.target.value)}
-        />
+        <>
+          <GrowingText
+            {...common}
+            className={`${field} resize-none leading-relaxed`}
+            value={text}
+            maxLength={PARAGRAPH_MAX}
+            placeholder={q.placeholder ?? placeholderHint(q)}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          {disabled ? null : <CharacterCount length={text.length} max={PARAGRAPH_MAX} />}
+        </>
       );
     case 'number':
       return (

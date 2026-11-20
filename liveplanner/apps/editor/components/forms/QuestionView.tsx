@@ -4,7 +4,7 @@
 // asterisk when required), help text, the answer control and, when its answer is wrong, the reason under it with a red
 // edge on the card. The builder draws an unselected question with this too, disabled.
 import type { ReactNode } from 'react';
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 import {
   DROPDOWN_AFTER,
   answerErrorMessage,
@@ -18,6 +18,18 @@ import { QuestionControl } from './QuestionControl';
 import { ContentBlockView } from './ContentBlockView';
 
 const AlertIcon = lucideGlyph(lucideCircleAlert, 16);
+
+// An optional pick can be taken back (forms.md "Filling in a form", Clear Answer): radio buttons, a rating and a
+// colour have no empty choice of their own, so a slip on one was otherwise an answer for good. A dropdown has
+// "Choose…", and a text, date or tick answer empties in its own box.
+export function clearsAnswer(question: PublicQuestion, value: unknown): boolean {
+  if (question.required) return false;
+  if (question.type === 'single')
+    return !labelsAsOne(question) && typeof value === 'string' && value !== '';
+  if (question.type === 'rating') return typeof value === 'number';
+  if (question.type === 'colour') return typeof value === 'string' && value !== '';
+  return false;
+}
 
 // A single control is labelled by its prompt as a <label>; a group (choices, a rating) names itself by the prompt.
 export function labelsAsOne(question: PublicQuestion): boolean {
@@ -54,6 +66,7 @@ export function QuestionView({
   aside?: ReactNode;
 }) {
   const base = useId();
+  const cardRef = useRef<HTMLDivElement>(null);
   // A content block asks nothing: it is drawn as what it shows.
   if (question.type === 'content')
     return <ContentBlockView block={question} aside={aside} {...(domId ? { domId } : {})} />;
@@ -67,6 +80,7 @@ export function QuestionView({
   const Prompt = single ? 'label' : 'p';
   return (
     <div
+      ref={cardRef}
       id={domId}
       tabIndex={-1}
       className={`form-box rounded-xl border bg-white p-5 outline-none transition-colors max-sm:p-4 dark:bg-slate-900 ${
@@ -116,6 +130,21 @@ export function QuestionView({
           controlId={controlId}
         />
       </div>
+      {!disabled && clearsAnswer(question, value) ? (
+        <button
+          type="button"
+          aria-label={`Clear Answer: ${promptOf(question)}`}
+          onClick={() => {
+            onChange(question.type === 'single' ? '' : undefined);
+            onBlur?.();
+            // The button goes with the answer: focus returns to the question's first choice.
+            cardRef.current?.querySelector<HTMLElement>('input, [role="radio"]')?.focus();
+          }}
+          className="-ml-2 mt-2 flex h-9 cursor-pointer items-center rounded-md px-2 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+        >
+          Clear Answer
+        </button>
+      ) : null}
       {error ? (
         <p
           id={errorId}

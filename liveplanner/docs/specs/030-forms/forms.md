@@ -580,7 +580,12 @@ no copy of the plan. A board's card is made in the editor there, as for a form w
 - A prompt is 1 to 200 characters ("Untitled Question" until typed); help text up to 500.
 - Options are 1 to 100 characters (a Choice field's limit, as a question's options may become its field's), unique
   ignoring case (a repeat is put back), edited as a list: Enter adds the next ("Option 3", selected), Backspace in an
-  empty one removes it, Alt+Up and Alt+Down move it, pasting several lines adds one option a line. **Add “Other”**
+  empty one removes it, pasting several lines adds one option a line. An option **moves by its grip** (six dots in the
+  gutter at its left, on hover or keyboard focus, always on a touch screen; none on a lone option): drag it (mouse,
+  pen or touch) and a line in the form colour marks the gap it will drop into, letting go places it there as one undo
+  step, and Escape cancels, leaving the question open. The grip's tooltip names the keys ("Drag to Reorder (Alt+↑
+  Alt+↓)"): Alt+Up and Alt+Down in an option's text move it, and so do Up and Down on its grip, focus staying on the
+  option moved. **Add “Other”**
   adds an Other option with its own text box to Single and Multiple Choice; typing in it picks it, and its text is
   kept as the answer. An Other text that repeats one of the options is that option: on Multiple Choice it merges
   with it first, and only then are the picks counted against the question's least and most, so ticking A and typing
@@ -858,6 +863,16 @@ no editor code loaded (its own small bundle).
   the question in red with an icon ("This question is required", "Enter an email address like name@example.com",
   "Enter a whole number from 1 to 10", "Pick at most 3"), the question's border turns red, and on Next or Submit a
   summary at the top lists every error as a link to its question, with focus moved to the summary.
+- **Clear Answer**: an optional question answered by a pick with no empty choice of its own (Single Choice as radio
+  buttons, Rating, Colour) shows **Clear Answer** under its control once it is answered, so a slip is never an answer
+  for good. It takes the pick back, and focus returns to the question's first choice. A required question has none
+  (its pick can only change), nor does a dropdown (it has "Choose…") or a text, date or tick answer (emptied in its
+  own box). Never drawn in the builder's picture of a question.
+- **The limit on a text answer**: a Short Answer (200 characters) and a Paragraph (2,000) stop taking keys at their
+  limit and cut a paste short, so the count shows before that happens: from 80% of the limit, "1,640 of 2,000
+  characters" under the box at its right; at the limit, in amber, "2,000 of 2,000 characters: nothing more is kept".
+  A screen reader hears it once, at the limit ("Character limit reached: 2,000 characters. Nothing more is kept."),
+  never at every key.
 - **Submitting**: the button reads "Sending…" with a spinner and is disabled; on success the page shows the
   **confirmation**: a check mark drawn in, the form's heading, its Confirmation Message, and **Submit Another
   Response**. A failure keeps every answer and says why: "We couldn’t send your response. Check your connection and
@@ -1253,4 +1268,3 @@ Every chart is on the public dashboard's **Forms** stack.
 - Pictures on a form's questions (a choice with pictures): content blocks and the cover hold them for now.
 - Respondents uploading pictures or files (an abuse door; see the field kinds left out under
   [Mapping](#mapping-where-an-answer-goes)).
-- Dragging a choice's options (Alt+Up and Alt+Down move them).
