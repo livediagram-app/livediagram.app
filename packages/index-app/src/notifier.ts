@@ -159,7 +159,15 @@ export type MentionedInput = {
   commentText: string;
 };
 
-export type Notifier<E> = {
+/** An app's own notice: one email per account, behind one of the app's own `notify…` switches. */
+export type AccountsNoticeInput<M extends NotifierEmail = NotifierEmail> = {
+  /** The switch the recipients may have turned off, by its settings key (the app's scope unless every app's). */
+  setting: string;
+  /** Each recipient's email, by account id. */
+  emails: ReadonlyMap<string, M>;
+};
+
+export type Notifier<E, M extends NotifierEmail = NotifierEmail> = {
   notifyMilestone(env: E, ownerId: string): Promise<void>;
   notifyFirstShare(env: E, actorId: string): Promise<void>;
   notifyJoin(env: E, item: NotifierItem & { ownerId: string }, joinerId: string): Promise<void>;
@@ -170,11 +178,13 @@ export type Notifier<E> = {
   notifyApprovalRequested(env: E, itemId: string, notice: ApprovalNotice): Promise<void>;
   notifyAccessRequested(env: E, itemId: string, notice: AccessRequestedNotice): Promise<void>;
   notifyAccessGranted(env: E, itemId: string, notice: AccessGrantedNotice): Promise<void>;
+  /** An app's own notice (accounts.md "An app's own notices"). Answers the ids of the accounts it emailed. */
+  notifyAccounts(env: E, input: AccountsNoticeInput<M>): Promise<string[]>;
 };
 
 export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
   deps: NotifierDeps<E, M>,
-): Notifier<E> {
+): Notifier<E, M> {
   const recipient = async (env: E, id: string, setting: string) =>
     (await deps.recipients(env, [id], setting)).get(id) ?? null;
 
@@ -458,6 +468,21 @@ export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
         level: notice.level,
       });
       await deps.send(env, { ...email, to });
+    },
+
+    // A notice only this app sends (liveknowledge's reviews), behind a switch of its own: every account named gets
+    // its email at its verified address unless it turned the switch off. One recipients read whatever the count. No
+    // claim is kept here: how often it goes is the app's rule, held where its item lives.
+    async notifyAccounts(env, input) {
+      if (!deps.enabled(env)) return [];
+      const ids = [...input.emails.keys()].filter((id) => deps.isAccount(id));
+      if (ids.length === 0) return [];
+      const addresses = await deps.recipients(env, ids, input.setting);
+      const sent = ids.filter((id) => addresses.has(id));
+      await Promise.all(
+        sent.map((id) => deps.send(env, { ...input.emails.get(id)!, to: addresses.get(id)! })),
+      );
+      return sent;
     },
   };
 }
