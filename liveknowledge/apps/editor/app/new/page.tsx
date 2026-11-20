@@ -48,7 +48,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
-import { wantTitleFocus } from '@/lib/page-title-focus';
+import { newKnowledgebaseTakesCaret, wantTitleFocus } from '@/lib/page-title-focus';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -210,7 +210,7 @@ export default function NewDocumentPage() {
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
-    // The one blank page of a knowledgebase made from no template; null for a template's pages.
+    // The one blank page of a knowledgebase made from no template or a blank one; null for a template's pages.
     let blankPageId: string | null = null;
     // Inside the try: an identity or template that fails to load shows the Retry card too, never a
     // screen stuck on "Creating your document".
@@ -234,7 +234,7 @@ export default function NewDocumentPage() {
         tabId,
         templateChosen: templateKind !== null || startsBlank,
       });
-      if (!tabs) blankPageId = tab.id;
+      if (newKnowledgebaseTakesCaret(templateKind)) blankPageId = tab.id;
       if (offline) {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
         // also registers its id so every later load / save routes local.
