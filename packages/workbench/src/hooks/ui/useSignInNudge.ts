@@ -8,26 +8,26 @@ import { useDismissibleBanner } from './useDismissibleBanner';
 // session.
 const SIGNIN_BANNER_DELAY_MS = 5 * 60_000;
 
-// Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): the same banner the Explorer shows,
-// but on the editor it waits ~5 minutes into the session before
-// appearing so it never interrupts someone the moment they open their work. Hidden in embed (read-only iframe,
-// no `appChrome`) and while `hidden` (zen mode). `hidden` is deliberately kept OUT of the timer's `enabled` so
-// toggling it doesn't restart the countdown; it only hides the card at render.
+// When the guest sign-in nudge is wanted (docs/specs/014-identity/sign-in-encouragement.md): about five minutes into
+// the session, so it never interrupts someone the moment they open their work; never for an account, in an embed
+// (read-only iframe, no `appChrome`), once dismissed in this browser or while `hidden` (zen mode). `hidden` is
+// deliberately kept OUT of the timer's `enabled` so toggling it doesn't restart the countdown; it only hides the
+// nudge. useSignInToast shows it.
 export function useSignInNudge({
   dismissKey,
   accountUserId,
   appChrome,
   hidden,
 }: {
-  // The editor's own localStorage key for the dismissed banner (its SIGNIN_BANNER_DISMISS_KEY).
+  // The editor's own localStorage key for the dismissed nudge (kept from the banner it replaced).
   dismissKey: string;
   accountUserId: string | null | undefined;
   appChrome: boolean;
   hidden: boolean;
-}): { showSignInBanner: boolean; dismissSignIn: () => void } {
+}): { showSignInNudge: boolean; dismissSignIn: () => void } {
   const { dismissed: signInDismissed, dismiss: dismissSignIn } = useDismissibleBanner(dismissKey);
   const signInTimerEnabled = !accountUserId && appChrome && !signInDismissed;
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
-  const showSignInBanner = signInTimerEnabled && !hidden && signInDelayElapsed;
-  return { showSignInBanner, dismissSignIn };
+  const showSignInNudge = signInTimerEnabled && !hidden && signInDelayElapsed;
+  return { showSignInNudge, dismissSignIn };
 }

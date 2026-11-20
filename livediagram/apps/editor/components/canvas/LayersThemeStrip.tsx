@@ -32,8 +32,7 @@ export function LayersThemeStrip({
   layers?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The Theme & canvas button. Absent, the strip has none.
   onOpenTheme?: (() => void) | undefined;
-  // The Tab Style dialog is open. The button says so (`aria-expanded`), as Tidy Up and Layers do for their popovers,
-  // which is also what the guest sign-in banner steps aside for (sign-in-encouragement.md).
+  // The Tab Style dialog is open. The button says so (`aria-expanded`), as Tidy Up and Layers do for their popovers.
   themeOpen?: boolean;
 }) {
   const named = useDockNames();

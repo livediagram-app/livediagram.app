@@ -1,7 +1,7 @@
 'use client';
 
 // EditorView's own hooks, each one concern read from the editor's context: the header's Community state, the
-// guest sign-in nudge, the canvas style the covers draw, and Automations' scope and gate.
+// guest sign-in toast, the canvas style the covers draw, and Automations' scope and gate.
 import {
   emailIntakeGateFor,
   emailIntakeScopeFor,
@@ -14,12 +14,11 @@ import {
   useAutoCopyParam,
   useCommunityState,
 } from '@liveworkspace/community-ui/editor';
-import { useSignInNudge as useSharedSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
+import { useSignInToast as useSharedSignInToast } from '@liveworkspace/workbench/hooks/ui/useSignInToast';
 import { useItemSnapshotsDoor } from '@liveworkspace/snapshots/ui';
 import { API_BASE } from '@/lib/api-client';
 import { apiFetch, apiHeaders } from '@/lib/api/core';
 import type { resolveViewBackdrop } from '@/lib/view-backdrop';
-import { SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { automationsScopeFor } from '@/components/automations/automations-gate';
 import { useAutomationsGate } from '@/components/automations/use-automations-gate';
 import { useToolGate } from '@/components/dialogs/tool-gate';
@@ -59,14 +58,12 @@ export function useHeaderCommunity(ctx: EditorContextValue): boolean {
   return headerCommunity;
 }
 
-// The guest sign-in nudge, delayed into the session (the shared useSignInNudge), hidden in zen mode.
-export function useSignInNudge(ctx: EditorContextValue): {
-  showSignInBanner: boolean;
-  dismissSignIn: () => void;
-} {
+// The guest sign-in toast, delayed into the session (the shared useSignInToast), hidden in zen mode. Its dismiss key
+// is the banner's it replaced, so whoever closed that stays rid of it.
+export function useSignInToast(ctx: EditorContextValue): void {
   const { accountUserId, appChrome, zenMode } = ctx;
-  return useSharedSignInNudge({
-    dismissKey: SIGNIN_BANNER_DISMISS_KEY,
+  useSharedSignInToast({
+    dismissKey: 'liveplanner:signin-banner-dismissed:v1',
     accountUserId,
     appChrome,
     hidden: zenMode,

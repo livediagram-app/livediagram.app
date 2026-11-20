@@ -108,7 +108,6 @@ in-panel settings (the Settings dialog's rows), **empty-state messages** and too
 - Empty-canvas card -> `your-first-diagram`
 - Template starts -> `templates` (Start a Workshop, Start Making Pages)
 - Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
-- Sign-in reasons modal -> `guest-vs-account`
 - A card's Activity tab, while it has nothing to list (**No activity yet**, **No activity Offline**) ->
   `card-activity` (`planCardActivity`), a **Learn More** text link as the empty state's action
 

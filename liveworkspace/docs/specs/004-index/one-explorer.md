@@ -126,7 +126,7 @@ files", "Keep your files safe"), and the hero asks "what are you working on toda
 app's kind. In no app, where New offers every app's kind, the Explorer's own sentences say **files** too (the
 Default Folders dialog, Use as Default, a folder's Delete words), never the kind of the app New would make by default;
 what one app makes or keeps keeps that app's word (an import's line, Offline's tile). Help follows the same rule:
-in no app the view Help button, the sign-in banner's article and the help in Search are liveworkspace.app's own
+in no app the view Help button and the help in Search are liveworkspace.app's own
 Explorer articles (site.md "Help": the overview, Folders, Teams, Moving Work, Sharing Across Apps and Guest or
 Account), never one app's, which would speak of its kind alone; the Share dialog's help is always the item's own
 app's. It goes to the app's new-item route, where the app creates the Durable Object and

@@ -5,8 +5,6 @@ import { pageViewApp, type PageViewApp } from '@livedesign/api-schema';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import {
   ACTION_SIGN_IN_NUDGE,
-  EDITOR_REASONS_OPENED,
-  EXPLORER_REASONS_OPENED,
   PAGES_TOUR_OFFERED,
   ELEMENT_TOURS_OFFERED,
   NEW_VERSION_OFFERED,
@@ -331,38 +329,23 @@ export const NEW_VERSION_PROMPT: MetricStack = {
   headline: NEW_VERSION_RELOADED,
 };
 
-// Sign-in prompts, by where each one happens (docs/specs/014-identity/sign-in-encouragement.md). The same bottom
-// banner runs in the Explorer and the editor, so every banner event names its
-// surface; the Assign Action dialog has its own nudge.
-export const EXPLORER_BANNER_SIGN_INS = chart(
+// Sign-in prompts, by where each one happens (docs/specs/014-identity/sign-in-encouragement.md): the editor's
+// sign-in toast (its events keep the banner's `SignInBannerEditor` type, so the series carries on) and the Assign
+// Action dialog's nudge. The Explorer's banner and the banners' Learn More went in November 2026
+// (retired-events.ts).
+export const SIGN_IN_TOAST_SIGN_INS = chart(
   'UI',
   'Selected',
-  'Explorer Banner: Sign In',
-  'The Explorer\u2019s sign-in banner, or the reasons it opened: Sign in clicked.',
-  { types: ['SignInBannerExplorer'] },
-);
-
-export const EXPLORER_BANNER_DISMISSED = chart(
-  'UI',
-  'Closed',
-  'Explorer Banner: Dismissed',
-  'The Explorer\u2019s sign-in banner closed. Dismissing it hides it in the editor too.',
-  { types: ['SignInBannerExplorer'], rising: 'neutral' },
-);
-
-export const EDITOR_BANNER_SIGN_INS = chart(
-  'UI',
-  'Selected',
-  'Editor Banner: Sign In',
-  'The editor\u2019s sign-in banner, or the reasons it opened: Sign in clicked.',
+  'Sign-In Toast: Sign In',
+  'The editor\u2019s sign-in toast: Sign In pressed.',
   { types: ['SignInBannerEditor'] },
 );
 
-export const EDITOR_BANNER_DISMISSED = chart(
+export const SIGN_IN_TOAST_DISMISSED = chart(
   'UI',
   'Closed',
-  'Editor Banner: Dismissed',
-  'The editor\u2019s sign-in banner closed. Dismissing it hides it in the Explorer too.',
+  'Sign-In Toast: Dismissed',
+  'The editor\u2019s sign-in toast closed, which keeps it away in this browser.',
   { types: ['SignInBannerEditor'], rising: 'neutral' },
 );
 
@@ -370,18 +353,10 @@ export const SIGN_IN_PROMPTS: MetricStack = {
   stack: true,
   title: 'Sign-In Prompts',
   blurb:
-    'The nudges to make an account, by where they appear: the Explorer banner, the editor banner, and the Assign Action dialog.',
-  members: [
-    EXPLORER_BANNER_SIGN_INS,
-    EXPLORER_REASONS_OPENED,
-    EXPLORER_BANNER_DISMISSED,
-    EDITOR_BANNER_SIGN_INS,
-    EDITOR_REASONS_OPENED,
-    EDITOR_BANNER_DISMISSED,
-    ACTION_SIGN_IN_NUDGE,
-  ],
-  // Sign-ins started from either banner: the prompts that worked.
-  headline: [EXPLORER_BANNER_SIGN_INS, EDITOR_BANNER_SIGN_INS],
+    'The nudges to make an account, by where they appear: the editor\u2019s sign-in toast and the Assign Action dialog.',
+  members: [SIGN_IN_TOAST_SIGN_INS, SIGN_IN_TOAST_DISMISSED, ACTION_SIGN_IN_NUDGE],
+  // Sign-ins started from the toast: the prompts that worked.
+  headline: SIGN_IN_TOAST_SIGN_INS,
 };
 
 // Visitors and page views, for the Dashboard.

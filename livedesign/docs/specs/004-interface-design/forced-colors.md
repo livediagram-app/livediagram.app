@@ -21,7 +21,7 @@ gradient or a shadow says nothing. Without this spec's rule, in a dark contrast 
 - Every colour swatch is an empty square, so a colour cannot be picked.
 - Every template preview (the editor's template step, the Explorer, the marketing gallery) is a flat blank box: the
   dark re-lighting veil (`preview-art-tile`) is repainted black and blends the art away.
-- The sign-in banner, painted only with a gradient, turns see-through over the canvas.
+- The sign-in banner, painted only with a gradient, turned see-through over the canvas (it is a toast now, which forced colours draw as any other).
 
 ## The rule
 
@@ -54,7 +54,6 @@ gradient or a shadow says nothing. Without this spec's rule, in a dark contrast 
 - `../packages/template-previews/src/preview-art-tile.css`: the tile and its veil keep their colours.
 - `apps/live/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`,
   `../packages/workbench/src/components/panels/ToolOptionRow.tsx`: `forced-color-adjust-none` on the colour itself.
-- `apps/live/components/chrome/SignInBanner.tsx`: a solid background under the gradient.
 
 ## Testing
 

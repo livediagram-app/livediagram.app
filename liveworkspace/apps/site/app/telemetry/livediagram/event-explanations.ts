@@ -1368,7 +1368,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
   'UI|Closed|SignInBanner':
     'Someone dismissed the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
-  'UI|Closed|SignInBannerEditor': 'Someone dismissed the guest sign-in banner shown in the editor.',
+  'UI|Closed|SignInBannerEditor':
+    'Someone closed the guest sign-in toast (the sign-in banner before November 2026) in the editor.',
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
   'UI|Closed|TourOffer':
@@ -1737,7 +1738,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Selected|SignInBanner':
     'Someone clicked "Sign in" on the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
   'UI|Selected|SignInBannerEditor':
-    'Someone clicked "Sign in" on the guest sign-in banner shown in the editor.',
+    'Someone pressed Sign In on the guest sign-in toast (the sign-in banner before November 2026) in the editor.',
   'UI|Selected|SignInBannerExplorer':
     'Someone clicked "Sign in" on the guest sign-in banner shown in the Explorer.',
   'UI|Started|Presentation': 'Someone started presenting: entering full-screen slideshow mode.',

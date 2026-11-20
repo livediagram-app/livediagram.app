@@ -35,7 +35,6 @@ import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 import { LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
 import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
-import { SignInBanner } from '@/components/chrome/SignInBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
@@ -85,7 +84,7 @@ import {
   useEditorRoadmap,
   useEditorEmailIntake,
   useHeaderCommunity,
-  useSignInNudge,
+  useSignInToast,
 } from './editor-view-hooks';
 import { useSelectTab } from './useSelectTab';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
@@ -187,8 +186,8 @@ export function EditorView() {
   // The viewer's own light / dark chrome (docs/specs/007-editor/editor-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
-  // The guest sign-in nudge, delayed into the session (editor-view-hooks).
-  const { showSignInBanner, dismissSignIn } = useSignInNudge(ctx);
+  // The guest sign-in toast, delayed into the session (editor-view-hooks).
+  useSignInToast(ctx);
   const backdrop = resolveViewBackdrop(activeTab, appearance);
   const cursorsDrawn = !planHidesCursors(activeTab);
   // One value while the style holds, so the covers reading it stay quiet as the editor re-renders.
@@ -481,17 +480,6 @@ export function EditorView() {
                                                   <EditorTours />
                                                 </AreaErrorBoundary>
 
-                                                {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
-          the bottom chrome (the tab bar, the Undo / session cluster, the dock) rather than over it, above the canvas
-          (z-[var(--z-overlay)]). */}
-                                                {showSignInBanner ? (
-                                                  <SignInBanner
-                                                    surface="Editor"
-                                                    onDismiss={dismissSignIn}
-                                                    placementClassName="z-[var(--z-overlay)]"
-                                                    standOnChrome
-                                                  />
-                                                ) : null}
                                                 <EditorStartPanels />
 
                                                 {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does

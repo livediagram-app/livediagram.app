@@ -235,9 +235,8 @@ features that are the same in every app (Google Drive sync, the Explorer in no a
 guest or account) are articles that apply to every app, read in each app's help and under All Apps. The old
 addresses (`/help/google-drive`, `/help/explorer/teams`, `/help/explorer/moving`, `/help/explorer/sharing`,
 `/help/explorer/signing-in`) redirect to them (`packages/help-registry/src/catalogue/redirects.ts`). In no app the
-Explorer's view Help button opens the article for its view, the sign-in banner's Learn More opens
-`/help/account-and-data/signing-in/`, and Search lists the Explorer articles under **liveworkspace Help**; their
-names and addresses are in `lib/help/platform-help.ts`. On an app's address all three keep that app's own help.
+Explorer's view Help button opens the article for its view, and Search lists the Explorer articles under **liveworkspace Help**; their
+names and addresses are in `lib/help/platform-help.ts`. On an app's address both keep that app's own help.
 Settings › Profile › Cloud Sync links to the Google Drive article.
 
 ### Licences (`/licences`)
@@ -438,8 +437,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   panel the bar does. On liveworkspace.app a guest
   sees no Settings: a guest's settings live in each app's own storage on the app's address, which this origin
   can't read, and the platform keeps no device settings of its own beyond Appearance, already on the bar. Its code,
-  and the app's catalogue, are fetched when the button is pointed at. The toasts and a guest's sign-in banner stand
-  above the bar.
+  and the app's catalogue, are fetched when the button is pointed at. The toasts stand above the bar.
 - **Search.** The bar's Search and Cmd/Ctrl+K or Cmd/Ctrl+. open the Search panel (`@liveworkspace/explorer/search-panel`, loaded
   only when first opened): one field over the person's items (the index's `search` view, the words in the title or
   folder name, every app's or only the app's as the filter is set), their folders and teams, the Explorer's help
@@ -474,11 +472,9 @@ built once here. It is shown here and, through each switched-on app's router, at
   app's `tabsPath` with the workspace token: the tabs alone, id, name and kind, where the app serves them, as
   liveplanner does), the embed code and the live image. Its help links go to the app's
   help on sharing.
-- **Guests.** A guest sees a sign-in banner at the foot of the page, with Sign In, Learn More (why an account
-  helps, loaded on first press) and a close this browser remembers, one for every app. Learn More's reasons are
-  the app's own where the apps differ (`signInReasons(app, words)`, `packages/explorer`): an app with an MCP server
-  offers "Connect AI tools" (API tokens and AI assistants over MCP); livehuddle, which has none, offers "Use the
-  API" (API tokens for your own scripts) instead.
+- **Guests.** The Explorer shows a guest no sign-in banner and no sign-in toast (the owner, 2026-11-20: the sign-in
+  toast is the editors' alone, each product's `docs/specs/014-identity/sign-in-encouragement.md`). Its sidebar's
+  Teams nudge still asks a guest to sign in.
 - **Opening on the Explorer.** With the person's Automatically Open Explorer switch on (`autoOpenExplorer`, common, in
   `all`), the homepage, here and on every app's address, opens the Explorer's Home instead
   ([one-explorer.md](../004-index/one-explorer.md#opening-on-the-explorer)). The Explorer's read of the settings keeps

@@ -116,7 +116,6 @@ Grouped by priority; each links the keyed article.
 - Empty-canvas card -> `your-first-design`
 - Template starts -> `templates` (Start Making Pages)
 - Settings - Keyboard category -> `keyboard-shortcuts`
-- Sign-in reasons modal -> `guest-vs-account`
 
 The set can grow; new placements reuse `HelpArticleLink` + a `HELP_ARTICLES`
 key and never introduce a second linking pattern.

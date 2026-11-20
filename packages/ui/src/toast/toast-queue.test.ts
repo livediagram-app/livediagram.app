@@ -91,6 +91,15 @@ describe('upsertActionToast', () => {
     ]);
   });
 
+  it('carries a highlighted toast through', () => {
+    const [entry] = upsertActionToast(
+      [],
+      { key: 'a', message: 'Sign in', actions: [undo], highlight: true },
+      1,
+    );
+    expect(entry!.highlight).toBe(true);
+  });
+
   it('ignores an empty message', () => {
     expect(upsertActionToast([], { key: 'a', message: '', actions: [] }, 1)).toEqual([]);
   });

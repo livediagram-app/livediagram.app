@@ -34,6 +34,8 @@ export type ToastActionSpec = {
   sticky?: boolean;
   // Closed by the person (the close button or Escape), not by its action or a timeout.
   onDismiss?: () => void;
+  // The highlight look (solid emerald, a sparkle): for the rare toast that must be noticed, the guest sign-in toast.
+  highlight?: boolean;
 };
 
 export type ToastEntry = {
@@ -50,6 +52,8 @@ export type ToastEntry = {
   leaving?: boolean | ToastLeft;
   // Arrived on a full stack and retired an older toast: it enters with a bolder pop, so the change is seen.
   full?: boolean;
+  // The highlight look (ToastActionSpec `highlight`).
+  highlight?: boolean;
 };
 
 /** How long a toast that times out stays up, by tone (the spec's "Tones" table). */
@@ -138,6 +142,7 @@ export function upsertActionToast(
     actions: spec.actions,
     sticky: spec.sticky,
     onDismiss: spec.onDismiss,
+    highlight: spec.highlight,
   };
   const at = list.findIndex((t) => !t.leaving && t.key === spec.key);
   if (at === -1) return appendToast(list, { id, ...entry });

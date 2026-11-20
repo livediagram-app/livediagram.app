@@ -62,10 +62,10 @@ export const EXPLORER_TELEMETRY_EVENTS = {
   // The List / Card / Details toggle, and Home's banner closed.
   'UI·Toggled': ['ExplorerViewList', 'ExplorerViewCard', 'ExplorerViewDetails', 'HomeBannerOff'],
   // The Share dialog: a link, an embed or a live image copied, a live image's tab picked, Show Me, and a
-  // pass revoked (under the item's own noun: a Plan is liveplanner's Project, the others' a Document). Sign In
-  // followed from a guest's banner is a Selected too.
+  // pass revoked (under the item's own noun: a Plan is liveplanner's Project, the others' a Document). (A guest's
+  // sign-in banner, its Sign In, reasons and close, went in November 2026.)
   'UI·Copied': ['ShareLink', 'EmbedCode', 'LiveImage'],
-  'UI·Selected': ['LiveImageTab', 'SignInBannerExplorer'],
+  'UI·Selected': ['LiveImageTab'],
   'UI·Started': ['ShareTour'],
   'UI·Ended': ['ShareTourCompleted', 'ShareTourSkipped'],
   'Project·Removed': ['ShareLink'],
@@ -91,9 +91,6 @@ export const EXPLORER_TELEMETRY_EVENTS = {
   'Team·Added': TEAM_ITEM_TYPES,
   'Team·Moved': TEAM_ITEM_TYPES,
   'Team·Removed': TEAM_ITEM_TYPES,
-  // A guest's sign-in banner: its reasons opened, the banner closed.
-  'UI·Opened': ['SignInReasonsExplorer'],
-  'UI·Closed': ['SignInBannerExplorer'],
 } as const satisfies Record<string, readonly (string | null)[]>;
 
 const TYPES = EXPLORER_TELEMETRY_EVENTS as Record<string, readonly (string | null)[]>;

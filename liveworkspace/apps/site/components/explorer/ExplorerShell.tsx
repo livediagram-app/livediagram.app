@@ -53,8 +53,7 @@ import { BrandMark } from '@livediagram/ui';
 import { APP_NAMES, PLATFORM_SITE, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { signInHref, signUpHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
-import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
-import { SIGN_IN_ARTICLE_PATH } from '@/lib/help/platform-help';
+import { pageApp } from '@/lib/explorer/page-app';
 import { explorerDrive } from '@/lib/drive/client';
 import { appSignInHref, appSignUpHref } from '@/lib/explorer/app-session';
 import {
@@ -90,7 +89,6 @@ import {
   trackInbox,
   trackLens,
   trackOrganise,
-  trackSignInBanner,
   trackViewToggled,
   trackWelcome,
   trackWelcomeOpened,
@@ -120,7 +118,7 @@ const loadSearch = () => import('./ExplorerSearch');
 const ExplorerSearch = lazy(loadSearch);
 // The Settings panel: fetched when Settings is pointed at or pressed (or `?settings=` opens it).
 const SiteSettingsDialog = lazy(loadSettings);
-// The toasts and a guest's sign-in banner stand on the bottom bar.
+// The toasts and the Drive reconnect notice stand on the bottom bar.
 const FLOOR = { '--explorer-floor': EXPLORER_FLOOR } as CSSProperties;
 
 // The filter's logos: the app's prism in its accent, and liveworkspace's own (the Wordmark's) for All Apps.
@@ -321,16 +319,6 @@ export function ExplorerShell() {
       ),
     [host, viewerId],
   );
-  const signInBanner = useMemo(
-    () => ({
-      helpHref: arrived.app
-        ? `${siteOfApp(arrived.app).url}/help/getting-started/guest-vs-account/`
-        : workspaceHref(SIGN_IN_ARTICLE_PATH),
-      onTelemetry: trackSignInBanner,
-    }),
-    [arrived.app],
-  );
-
   // Offline: the app's own list on its address, else a link to the app's offline view (useExplorerThisBrowser).
   const { thisBrowser, itemMenu, sidebarLinks } = useExplorerThisBrowser(host, app, signedIn);
 
@@ -441,7 +429,6 @@ export function ExplorerShell() {
           signedIn={signedIn}
           signInHref={explorerSignInHref}
           signUpHref={explorerSignUpHref}
-          signInBanner={signInBanner}
           arrivalNotice={notice}
           inbox={inbox}
           gallery={library.gallery}

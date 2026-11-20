@@ -31,9 +31,34 @@ describe('ToastCard', () => {
     expect(body!.className).toContain('flex-wrap');
     const [message, actions] = Array.from(body!.children);
     expect(message!.textContent).toBe('File deleted');
-    expect(message!.className).toContain('flex-[1_1_auto]');
+    expect(message!.className).toContain('flex-[1_1_10rem]');
     expect(actions!.className).toContain('ml-auto');
     expect(actions!.textContent).toBe('Undo');
+  });
+
+  it('draws the highlight look: solid emerald, white text, a white primary and a light close', () => {
+    const { rerender } = render(
+      <ToastCard
+        tone="info"
+        message="Sign in"
+        onClose={() => {}}
+        actions={[
+          { label: 'Later', onSelect: () => {} },
+          { label: 'Sign In', onSelect: () => {}, primary: true },
+        ]}
+        highlight
+      />,
+    );
+    const card = screen.getByRole('status');
+    expect(card.hasAttribute('data-toast-highlight')).toBe(true);
+    expect(card.className).toContain('bg-emerald-700');
+    expect(card.className).not.toContain('bg-white ');
+    expect(screen.getByRole('button', { name: 'Sign In' }).className).toContain('text-emerald-800');
+    expect(screen.getByRole('button', { name: 'Later' }).className).toContain('text-white/90');
+    expect(screen.getByRole('button', { name: 'Dismiss' }).className).toContain('text-white/80');
+    rerender(<ToastCard tone="info" message="Sign in" onClose={() => {}} />);
+    expect(screen.getByRole('status').hasAttribute('data-toast-highlight')).toBe(false);
+    expect(screen.getByRole('button', { name: 'Dismiss' }).className).toContain('text-slate-400');
   });
 
   it('runs an action, and leaves a disabled one alone', () => {

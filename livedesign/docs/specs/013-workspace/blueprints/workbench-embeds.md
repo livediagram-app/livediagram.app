@@ -382,7 +382,7 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | TabBar, palette, toolbars, Quick style, panels, search                              | `EditorView.tsx`, `editor-view-bars.tsx` | Rendered as in the app                                    |
 | `EmbedChrome`                                                                       | `EditorView.tsx`                         | Not rendered; `WorkbenchChrome` instead                   |
 | Explorer (popover)                                                                  | `useCanvasChromePanels.tsx`              | Not rendered; status screens use `EmbedShell`             |
-| Sign-in banner, theme-mode banner                                                   | `EditorView.tsx`                         | Off                                                       |
+| Sign-in toast, theme-mode banner                                                    | `EditorView.tsx`                         | Off                                                       |
 | Settings categories `designs`, `account`, `tokens`; the Appearance choice           | `settings-catalogue.ts`                  | Hidden                                                    |
 | Share, delete, move, take offline, copy commands                                    | `editor-commands.ts`                     | Absent                                                    |
 | TabBar "copy to another design"                                                     | `editor-view-bars.tsx` `otherDesigns`    | `[]`                                                      |
@@ -625,7 +625,7 @@ Explorer view, the same control at the right end of the Explorer's bottom bar li
 | Bottom bar: Settings, Appearance                                        | `ExplorerShell.tsx`, `ChromeControls`                                 | Absent; Search stays; Open in livedesign at the right end   |
 | Settings dialog, `?settings=` links, `useOpenSettingsRequests`          | `useExplorerState.ts`, `ExplorerShell`, `useExplorerSettingsPanel.ts` | Never opens                                                 |
 | Search panel's settings rows                                            | `ExplorerShell.tsx`                                                   | `[]`                                                        |
-| Sign-in banner, `LocalMovePrompt`                                       | `ExplorerShell.tsx`                                                   | Not rendered                                                |
+| `LocalMovePrompt`                                                       | `ExplorerShell.tsx`                                                   | Not rendered                                                |
 | Teams administration: New team, the Invites row and view, team settings | `sidebar/*`, `TeamLibraryHeader`, views                               | Absent (WB62)                                               |
 | Every `window.location.assign`, `<a href>`, `router.push`/`replace`     | the Explorer                                                          | Through `assignAppLocation` / `useAppNavigation`: the frame |
 

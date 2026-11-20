@@ -90,8 +90,9 @@ The Export Tab dialog's frame, format grid and image-preview load (`components/d
 function returning the editor's tree, not a component, so the dialog's tree is as it was; liveplanner draws no bitmaps
 and keeps its own preview load. A tab export's file name (`lib/tab-export-name`) takes the editor's noun for its
 fallback (livediagram, livehuddle, livedesign; livedocuments and liveplanner keep their own name rules). Each
-`EditorView` reads its UI scales and guest sign-in nudge through `hooks/ui/useEditorUiScales` and
-`hooks/ui/useSignInNudge` (given the editor's dismiss key, and whether zen mode hides it), and each `app/new/page.tsx`
+`EditorView` reads its UI scales and raises its guest sign-in toast through `hooks/ui/useEditorUiScales` and
+`hooks/ui/useSignInToast` (given the editor's dismiss key and whether zen mode hides it; it waits on
+`hooks/ui/useSignInNudge`), and each `app/new/page.tsx`
 its commit identity through `hooks/persistence/useResolveSelf`; livedocuments, livedesign and liveplanner also back out
 of a restored `/new` through `hooks/ui/useBackOutOnRestore` (livediagram and livehuddle back out their own way).
 

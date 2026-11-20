@@ -24,7 +24,7 @@ describe('LayersThemeStrip', () => {
     expect(onOpenTheme).toHaveBeenCalled();
   });
 
-  it('reads as expanded while the Tab Style dialog is open, so the sign-in banner steps aside', () => {
+  it('reads as expanded while the Tab Style dialog is open', () => {
     const { rerender } = render(<LayersThemeStrip onOpenTheme={() => {}} />);
     const theme = screen.getByRole('button', { name: 'Theme and canvas' });
     expect(theme.getAttribute('aria-expanded')).toBe('false');

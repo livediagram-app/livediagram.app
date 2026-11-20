@@ -56,7 +56,7 @@ classes, add one line next to the host's Tailwind entry:
 ```
 
 A host with a bar stuck to the foot of the page sets `--explorer-floor` to its height on an ancestor of the
-Explorer; the toasts and the guest's sign-in banner stand on it.
+Explorer; its fixed notices (the Drive reconnect notice) stand on it.
 
 Dark mode follows the host's `.dark` variant. The empty-state art animates only if the host theme defines
 `animate-empty-ring` and `animate-empty-float`; liveplanner's theme does. Without them it stands still.
@@ -95,7 +95,6 @@ box of its own.
 | `templateHref?`            | `(app, template) => string \| null`    | Where Home's hero tiles start a kind of work: the app's New route with the template (`/new?template=`). Defaults to `/new?template=<t>` on this origin for the host app and on its own site for another; null draws a picture with no link. |
 | `heroWords?`               | `{ question, lead }`                   | The hero's words after the greeting. Defaults to the app kind's.                                                                                                                                                                            |
 | `heroHidden?`/`onHideHero` | `boolean` / `() => void`               | Controls the hero from the host's setting. Without them the close is remembered per app in this browser.                                                                                                                                    |
-| `signInBanner?`            | `SignInBannerHost`                     | A guest's sign-in banner (`signedIn === false`, a `signInHref`): `helpHref`, `onTelemetry`. Toasts stand above it.                                                                                                                          |
 | `helpHref?`                | `(view) => string \| undefined`        | A Help article for a view. Shows a Help button in that view's header and the hero's corner.                                                                                                                                                 |
 | `onHome?`                  | `(action, type) => void`               | Home's reports for telemetry: `Loaded` (`Retry`).                                                                                                                                                                                           |
 | `welcome?`                 | `WelcomeOptions`                       | Home's first run: the app's welcome manifest (loaded lazily on `onFirstRun`) in place of empty lists, and the hero's welcome. Each start shows its whole name and description, wrapped, never clamped.                                      |
