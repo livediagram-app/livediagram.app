@@ -182,7 +182,7 @@ export function PlanVisualisationsPickerScene() {
         height={280}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {/* The header band: the board lanes, then the title mark and the title. */}
       <StartBandLanes x={13} y={13} w={394} h={33} />
@@ -198,14 +198,14 @@ export function PlanVisualisationsPickerScene() {
         height={22}
         rx={7}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={272} y={31} size={7.5} tone="muted">
         Find a board, sheet or layout
       </Label>
-      <line x1={10} y1={48} x2={410} y2={48} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={10} y1={48} x2={410} y2={48} className="stroke-slate-200" strokeWidth={0.75} />
       {/* The rail, Visualisations chosen, then Inspiration under a hairline. */}
-      <line x1={106} y1={48} x2={106} y2={290} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={106} y1={48} x2={106} y2={290} className="stroke-slate-200" strokeWidth={0.75} />
       {rail.map((name, i) => (
         <g key={name}>
           {i === 3 ? (
@@ -222,7 +222,7 @@ export function PlanVisualisationsPickerScene() {
           </Label>
         </g>
       ))}
-      <line x1={20} y1={170} x2={96} y2={170} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={20} y1={170} x2={96} y2={170} className="stroke-slate-200" strokeWidth={0.75} />
       <Label x={24} y={184} size={8} weight={500} tone="strong">
         Inspiration
       </Label>

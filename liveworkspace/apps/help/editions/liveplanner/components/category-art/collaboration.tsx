@@ -20,7 +20,7 @@ function Note({ x, y, votes }: { x: number; y: number; votes: number }) {
         height={34}
         rx={5}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <rect x={x + 7} y={y + 8} width={44} height={4} rx={2} className="fill-slate-300" />
       <rect x={x + 7} y={y + 16} width={30} height={4} rx={2} className="fill-slate-200" />

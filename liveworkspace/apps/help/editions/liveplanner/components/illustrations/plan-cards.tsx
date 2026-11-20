@@ -25,7 +25,7 @@ export function PlanCardPanelScene() {
         height={240}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {/* The breadcrumb: the back bar to the card before, this card's number as its chip. */}
       <rect
@@ -35,7 +35,7 @@ export function PlanCardPanelScene() {
         height={20}
         rx={5}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <rect x={22} y={17} width={14} height={14} rx={3} className="fill-slate-100" />
       <Label x={29} y={25} size={10} anchor="middle" weight={700} tone="muted">
@@ -63,14 +63,14 @@ export function PlanCardPanelScene() {
       <Label x={394} y={45} size={12} anchor="middle" tone="muted">
         ✕
       </Label>
-      <line x1={10} y1={53} x2={410} y2={53} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={10} y1={53} x2={410} y2={53} className="stroke-slate-200" strokeWidth={0.75} />
 
       {/* Main column. */}
       <Label x={24} y={62} size={14} weight={700} tone="strong">
         New icons
       </Label>
       {/* The panel's tab bar as shipped: underline tabs, Linked Cards picked with its count pill. */}
-      <line x1={22} y1={96} x2={262} y2={96} className="stroke-slate-200" strokeWidth={1} />
+      <line x1={22} y1={96} x2={262} y2={96} className="stroke-slate-200" strokeWidth={0.75} />
       <Label x={24} y={88} size={10} weight={500} tone="muted">
         Overview
       </Label>
@@ -101,7 +101,7 @@ export function PlanCardPanelScene() {
             height={22}
             rx={5}
             className="fill-slate-50 stroke-slate-200"
-            strokeWidth={1}
+            strokeWidth={0.75}
           />
           <rect x={26} y={133 + i * 26} width={3} height={12} rx={1} className={STRIPE.task} />
           <Label x={34} y={139 + i * 26} size={10} tone="muted">
@@ -234,7 +234,7 @@ export function PlanCardTypesScene() {
                 height={26}
                 rx={6}
                 className="fill-white stroke-slate-200"
-                strokeWidth={1}
+                strokeWidth={0.75}
               />
               <rect x={130} y={y} width={3.5} height={26} rx={1.5} className={STRIPE[r.type]} />
               {/* The type's glyph tile, tinted in its colour. */}
@@ -304,7 +304,7 @@ export function PlanItemTwoBoardsScene() {
         height={150}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={x + 10} y={36} size={11} weight={700} tone="strong">
         {title}
@@ -397,7 +397,7 @@ export function PlanCardThreadsScene() {
         height={opts.open ? 104 : 42}
         rx={9}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <circle cx={36} cy={y + 15} r={7} className="fill-brand-50" />
       <rect x={32} y={y + 11} width={8} height={7} rx={2} className="fill-brand-500" />

@@ -36,7 +36,7 @@ export function SharePasswordGate() {
         height={206}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <circle cx={210} cy={42} r={18} className="fill-brand-100" />
       <Lock x={203} y={33} className="stroke-brand-600" />
@@ -53,7 +53,7 @@ export function SharePasswordGate() {
         height={30}
         rx={7}
         className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={106} y={130} size={12} tone="strong">
         ••••••••

@@ -2,18 +2,12 @@
 // session panel, the votable-layer picker, the two privacy switches, the Vote
 // panel's turnout view, and the results walkthrough.
 //
-// Split out from collaboration.tsx (already at size) per the no-god-files
-// rule. The casting scene itself stays there as `DotVoting`, since the tally
-// pill is shared with the session-tools overview.
+// The votes land on a plan's cards, each with its stepper (./presence VoteStepper); the casting scene itself, a
+// board mid-vote, is ./presence DotVoting.
 
-import {
-  Scene,
-  Label,
-  Shape,
-  Panel,
-  Button,
-  Avatar,
-} from '@liveworkspace/help-site/art/primitives';
+import { Scene, Label, Panel, Button, Avatar } from '@liveworkspace/help-site/art/primitives';
+import { Card } from './plan-parts';
+import { VoteStepper } from './presence';
 
 /** A settings toggle, on or off. */
 function Switch({ x, y, on = false }: { x: number; y: number; on?: boolean }) {
@@ -63,7 +57,7 @@ export function VoteSetup() {
         height={38}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={x + 26} y={cy + 15} size={10} weight={600} tone="strong">
         {title}
@@ -106,7 +100,7 @@ export function VoteSetup() {
           height={18}
           rx={5}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <Label x={x + 70} y={y + 104} anchor="middle" size={9.5} weight={600} tone="accent">
           Any number
@@ -125,55 +119,29 @@ export function VoteSetup() {
   );
 }
 
-/** A blind vote in progress: your own tally is all you can see. */
+/** A blind vote in progress: each card's stepper shows only your own dots. */
 export function VoteBlindTally() {
+  const cards: { num: number; title: string; mine: number }[] = [
+    { num: 3, title: 'Reduce WIP', mine: 2 },
+    { num: 5, title: 'Pair more', mine: 0 },
+    { num: 9, title: 'Auto tests', mine: 1 },
+  ];
   return (
-    <Scene w={420} h={190}>
+    <Scene w={420} h={170}>
       <Label x={210} y={26} anchor="middle" size={10} weight={700} tone="muted">
         HIDE RUNNING COUNTS · ON
       </Label>
-      {[
-        { label: 'Reduce WIP', mine: 2 },
-        { label: 'Pair more', mine: 0 },
-        { label: 'Auto tests', mine: 1 },
-      ].map((s, i) => {
-        const sx = 22 + i * 134;
+      {cards.map((c, i) => {
+        const cx = 18 + i * 132;
         return (
-          <g key={s.label}>
-            <Shape x={sx} y={50} w={116} h={78} kind="rect" label={s.label} />
-            <rect
-              x={sx + 56}
-              y={102}
-              width={54}
-              height={22}
-              rx={11}
-              className={
-                s.mine > 0 ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-300'
-              }
-              strokeWidth={1.5}
-            />
-            <Label
-              x={sx + 68}
-              y={113}
-              anchor="middle"
-              size={11}
-              weight={700}
-              tone="muted"
-              className={s.mine > 0 ? undefined : 'opacity-40'}
-            >
-              −
-            </Label>
-            <Label x={sx + 83} y={113} anchor="middle" size={11} weight={700} tone="accent">
-              {s.mine}
-            </Label>
-            <Label x={sx + 98} y={113} anchor="middle" size={11} weight={700} tone="muted">
-              +
-            </Label>
+          <g key={c.num}>
+            <Card x={cx} y={56} w={120} face="full" type="idea" num={c.num} title={c.title} />
+            <VoteStepper right={cx + 115} y={61} count={c.mine} mine={c.mine > 0} />
           </g>
         );
       })}
-      <Label x={210} y={158} anchor="middle" size={10} tone="muted">
-        Each pill shows only your own dots until the results are shown.
+      <Label x={210} y={128} anchor="middle" size={10} tone="muted">
+        Each stepper shows only your own dots until the results are shown.
       </Label>
     </Scene>
   );
@@ -216,20 +184,22 @@ export function VotePanelProgress() {
 export function VoteResultsWalkthrough() {
   return (
     <Scene w={420} h={220}>
-      {/* The pick the room is centred on */}
+      {/* The pick the room is centred on, ringed in amber, and the next card down. */}
       <rect
-        x={20}
-        y={64}
-        width={132}
-        height={62}
-        rx={12}
+        x={14}
+        y={70}
+        width={152}
+        height={42}
+        rx={7}
         className="fill-none stroke-amber-400"
-        strokeWidth={3}
+        strokeWidth={2}
       />
-      <Shape x={26} y={70} w={120} h={50} kind="rect" label="Reduce WIP" />
-      <Shape x={26} y={146} w={120} h={44} kind="rect" label="Pair more" />
-      <Avatar cx={168} cy={95} r={12} initial="R" colour="emerald" />
-      <Avatar cx={168} cy={124} r={12} initial="P" colour="violet" />
+      <Card x={18} y={74} w={144} face="full" type="idea" num={3} title="Reduce WIP" />
+      <VoteStepper right={157} y={79} count={5} />
+      <Card x={18} y={130} w={144} face="full" type="idea" num={5} title="Pair more" />
+      <VoteStepper right={157} y={135} count={2} />
+      <Avatar cx={178} cy={86} r={9} initial="R" colour="emerald" />
+      <Avatar cx={178} cy={108} r={9} initial="P" colour="violet" />
       <Panel x={196} y={8} w={212} h={204} title="VOTE">
         {/* The walkthrough, leading the panel */}
         <rect x={206} y={38} width={192} height={46} rx={7} className="fill-amber-50" />
@@ -244,7 +214,7 @@ export function VoteResultsWalkthrough() {
           height={18}
           rx={5}
           className="fill-white stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <Label x={256} y={69} anchor="middle" size={9} weight={600} tone="body">
           Previous

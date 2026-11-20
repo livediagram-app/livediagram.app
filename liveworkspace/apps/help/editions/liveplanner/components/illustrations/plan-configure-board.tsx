@@ -71,7 +71,7 @@ export function PlanConfigureBoardScene() {
         height={panelH}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={PANEL_X + 14} y={top + 20} size={12.5} weight={700} tone="strong">
         Configure Board
@@ -150,7 +150,7 @@ export function PlanConfigureBoardScene() {
               height={32}
               rx={7}
               className="fill-white stroke-slate-200"
-              strokeWidth={1.2}
+              strokeWidth={0.75}
             />
             <rect x={x + 7} y={y + 7} width={18} height={18} rx={4} className="fill-slate-100" />
             <Label x={x + 32} y={y + 12} size={9} weight={600} tone="strong">
@@ -171,7 +171,7 @@ export function PlanConfigureBoardScene() {
         height={28}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <rect x={W - 148} y={clusterY + 2} width={64} height={24} rx={6} className="fill-brand-100" />
       <Label x={W - 116} y={clusterY + 14} size={9.5} weight={600} tone="accent" anchor="middle">

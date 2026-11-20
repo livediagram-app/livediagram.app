@@ -143,7 +143,7 @@ export function ToolsMenuFigure({
         height={POP_H}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={POP_X + 14} y={POP_Y + 16} size={12} weight={700} tone="strong">
         Tools

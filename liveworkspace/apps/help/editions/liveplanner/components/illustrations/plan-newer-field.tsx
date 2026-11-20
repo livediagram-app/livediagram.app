@@ -15,7 +15,7 @@ export function PlanNewerFieldScene() {
         height={150}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={24} y={38} size={14} weight={700} tone="strong">
         Plan the launch event
@@ -31,7 +31,7 @@ export function PlanNewerFieldScene() {
         height={18}
         rx={4}
         className="fill-white stroke-slate-300"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <Label x={128} y={68} size={10} tone="body">
         Fri 28 Nov

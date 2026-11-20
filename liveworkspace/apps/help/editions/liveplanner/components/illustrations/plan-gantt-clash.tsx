@@ -36,7 +36,7 @@ export function PlanGanttClashScene() {
         height={ROWS.length * ROW_H + 34}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={24} y={23} size={10.5} weight={700} tone="strong">
         Gantt Chart
