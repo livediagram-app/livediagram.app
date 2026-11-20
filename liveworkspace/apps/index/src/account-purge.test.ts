@@ -7,7 +7,8 @@ import {
   purgePerson,
   TOMBSTONE_RETRY_AFTER_MS,
 } from './account-purge';
-import { drainPersonNotices, NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './person-notices';
+import { NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './notice-queue';
+import { drainPersonNotices, PERSON_ITEMS_PER_CALL } from './person-notices';
 import { body, call, h, settle, useHarness } from './test-support';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
@@ -612,6 +613,47 @@ describe('telling the apps about a closed account', () => {
     await drainPersonNotices(h.db.env, now + NOTICE_RETRY_AFTER_MS + 2);
     expect(count('SELECT COUNT(*) AS n FROM person_notice_guests')).toBe(0);
     expect(count('SELECT COUNT(*) AS n FROM person_aliases WHERE person_id = ?', BEA)).toBe(1);
+  });
+
+  it("sends the '' row with the first call, marks the whole group on a failure, and confirms only what was sent", async () => {
+    const now = Date.now();
+    const notice = (item: string) =>
+      run(
+        `INSERT INTO person_app_notices (person_id, app, item_id, created_at) VALUES (?, 'liveplanner', ?, ?)`,
+        BEA,
+        item,
+        now,
+      );
+    notice('');
+    for (let i = 0; i < PERSON_ITEMS_PER_CALL + 5; i++) notice(`i${String(i).padStart(3, '0')}`);
+    const told = () =>
+      h.appCalls
+        .filter((c) => c.url.includes('/api/internal/people/'))
+        .map((c) => (c.body as { items: string[] }).items);
+    h.appCalls = [];
+    h.appAnswer = () => new Response(null, { status: 503 });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(await drainPersonNotices(h.db.env, now)).toBe(0);
+    // The failure marks every row of the (person, app) group, the '' row and those not yet sent too.
+    expect(
+      count(
+        'SELECT COUNT(*) AS n FROM person_app_notices WHERE attempts = 1 AND last_attempt_at = ?',
+        now,
+      ),
+    ).toBe(PERSON_ITEMS_PER_CALL + 6);
+
+    h.appCalls = [];
+    h.appAnswer = () => new Response(null, { status: 200 });
+    expect(await drainPersonNotices(h.db.env, now + NOTICE_RETRY_AFTER_MS + 1)).toBe(1);
+    expect(told().map((items) => items.length)).toEqual([PERSON_ITEMS_PER_CALL]);
+    // The items sent and the '' row go; the rest wait for the next run.
+    expect(count("SELECT COUNT(*) AS n FROM person_app_notices WHERE item_id = ''")).toBe(0);
+    expect(count('SELECT COUNT(*) AS n FROM person_app_notices')).toBe(5);
+
+    h.appCalls = [];
+    expect(await drainPersonNotices(h.db.env, now + NOTICE_RETRY_AFTER_MS + 2)).toBe(1);
+    expect(told().map((items) => items.length)).toEqual([5]);
+    expect(count('SELECT COUNT(*) AS n FROM person_app_notices')).toBe(0);
   });
 
   it('names no guests for a person who never signed in from one', async () => {
