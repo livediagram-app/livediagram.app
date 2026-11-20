@@ -79,12 +79,25 @@ export type StoredLocalOpens =
 // Pure transforms (unit-tested, no IndexedDB involved)
 // ---------------------------------------------------------------------------
 
-export const tabToSummary: (
+const sharedTabToSummary: (
   tab: Tab,
   documentId: string,
   orderIndex: number,
   at: number,
 ) => TabSummary = tabToSummaryFor('documentId');
+
+// A page's summary carries its place in the tree, as the server's does (docs/specs/030-knowledgebase/blueprints/
+// page-tree.md "Storage"): the editor draws the tree from the summaries, and only the open page's body is loaded,
+// so without the parent here every other subpage of a knowledgebase kept Offline came back at the top level.
+export function tabToSummary(
+  tab: Tab,
+  documentId: string,
+  orderIndex: number,
+  at: number,
+): TabSummary {
+  const summary = sharedTabToSummary(tab, documentId, orderIndex, at);
+  return tab.parent === undefined ? summary : { ...summary, parent: tab.parent };
+}
 
 // Project a stored record into the full `LiveDoc` the editor hydrates from.
 // The server-only fields take their inert defaults (unshared, no team, no

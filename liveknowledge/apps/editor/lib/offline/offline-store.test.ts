@@ -43,6 +43,16 @@ describe('offline transforms', () => {
     ]);
   });
 
+  it("tabToSummary carries a subpage's parent, so the tree keeps its shape before the page's body loads", () => {
+    expect(tabToSummary(tab('t2', { parent: 't1' }), 'd1', 1, 5)).toMatchObject({
+      id: 't2',
+      parent: 't1',
+    });
+    expect(Object.hasOwn(tabToSummary(tab('t1'), 'd1', 0, 5), 'parent')).toBe(false);
+    const d = recordToDocument(rec({ tabs: [tab('t1'), tab('t2', { parent: 't1' })] }));
+    expect(d.tabs.map((t) => t.parent)).toEqual([undefined, 't1']);
+  });
+
   it('tabToSummary omits folder when absent', () => {
     expect(tabToSummary(tab('t1'), 'd1', 2, 5)).toEqual({
       id: 't1',
