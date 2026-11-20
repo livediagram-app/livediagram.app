@@ -70,6 +70,25 @@ describe('applyMoves', () => {
     expect(ids(columnItems(after, 'todo'))).toEqual([todo[1]!.id, todo[3]!.id]);
   });
 
+  it('ranks against neighbours that are places alone, and never moves one of them', () => {
+    const todo = column('todo', 2);
+    const done = column('done', 3);
+    const place = (i: Item) => ({ id: i.id, key: i.key, rank: i.rank, fields: { status: 'done' } });
+    const moves = groupMoves([todo[0]!.id], { status: 'done', before: done[1]!.id });
+    const whole = applyMoves([...todo, ...done], moves, ctx);
+    const lean = applyMoves([...todo, ...done.map(place)], moves, ctx);
+    if (!whole.ok || !lean.ok) throw new Error('missing');
+    expect(lean.moved.get(todo[0]!.id)).toEqual(whole.moved.get(todo[0]!.id));
+    // A card there only as its place cannot be moved: its fields were never read.
+    expect(
+      applyMoves(
+        [...todo, ...done.map(place)],
+        [{ id: done[0]!.id, move: { status: 'todo' } }],
+        ctx,
+      ),
+    ).toEqual({ ok: false, missing: done[0]!.id });
+  });
+
   it('answers the first missing id', () => {
     const todo = column('todo', 1);
     expect(applyMoves(todo, [{ id: 'gone', move: { status: 'todo' } }], ctx)).toEqual({

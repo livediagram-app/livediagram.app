@@ -3,7 +3,15 @@
 // earlier one (`after: <its id>`) ranks after it as moved: the group lands together, in its order.
 import type { Item, ItemMove, ItemPlace } from './item';
 import { itemStatus } from './item';
-import { applyMove, byRank, columnItems, inversePatch, placeOf, type WriteContext } from './apply';
+import {
+  applyMove,
+  byRank,
+  columnItems,
+  inversePatch,
+  placeOf,
+  type RankedItem,
+  type WriteContext,
+} from './apply';
 import { statusSinceUndo } from './status-since';
 
 export type ItemMoveOf = { id: string; move: ItemMove };
@@ -32,18 +40,19 @@ export function groupMoves(
 }
 
 // The moves applied in order against `items`: each moved item's last state (in the order first moved), or the id of
-// one that is missing.
+// one that is missing. A moved item must be there whole; the others are only ranked against, so they may be
+// placements alone (`RankedItem`), and one of those named by a move counts as missing.
 export function applyMoves(
-  items: Iterable<Item>,
+  items: Iterable<Item | RankedItem>,
   moves: readonly ItemMoveOf[],
   ctx: WriteContext,
 ): { ok: true; moved: Map<string, Item> } | { ok: false; missing: string } {
-  const pool = new Map<string, Item>();
+  const pool = new Map<string, Item | RankedItem>();
   for (const it of items) pool.set(it.id, it);
   const moved = new Map<string, Item>();
   for (const { id, move } of moves) {
     const item = pool.get(id);
-    if (!item) return { ok: false, missing: id };
+    if (!item || !('rev' in item)) return { ok: false, missing: id };
     const next = applyMove(item, move, pool.values(), ctx);
     pool.set(id, next);
     moved.set(id, next);

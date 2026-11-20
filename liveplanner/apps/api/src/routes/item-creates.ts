@@ -19,7 +19,13 @@ import {
   type ItemPerson,
   type ItemRejection,
 } from '@liveplanner/items';
-import { fieldsGrowth, getItemStoreHead, insertItems, listItems, passesPlanBudget } from '../db';
+import {
+  fieldsGrowth,
+  getItemStoreHead,
+  insertItems,
+  listItemPlaces,
+  passesPlanBudget,
+} from '../db';
 import { badRequest, conflict, json } from '../responses';
 import { cardBackOnThreads, readRestoredThreads } from './card-thread-cards';
 import {
@@ -101,7 +107,7 @@ export async function buildCreates(
 ): Promise<Item[] | Response> {
   const head = await getItemStoreHead(ctx.env, projectId);
   if (head.count + creates.length > ITEMS_MAX) return itemsFull();
-  const existing = await listItems(ctx.env, projectId);
+  const existing = await listItemPlaces(ctx.env, projectId);
   const ids = new Set(existing.map((i) => i.id));
   const placer = itemPlacer(existing);
   const keys = new Set(existing.map((i) => i.key));
