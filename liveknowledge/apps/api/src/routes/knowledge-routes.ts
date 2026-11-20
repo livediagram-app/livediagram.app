@@ -28,7 +28,9 @@ import {
   type DocumentRouteContext,
 } from './context';
 import { handleAgentPageRoute, handleAgentRoutes } from './knowledge-agent-routes';
-import { accountOf } from '../knowledge/knowledge-caller';
+import { accountOf, readerOf } from '../knowledge/knowledge-caller';
+import { doorOf, noteAgentSeen } from '../knowledge/agent-seen';
+import { frontDoorOf } from '../changesets/front-door';
 import { handleAiRoutes } from './knowledge-ai-routes';
 import { handleAsk } from './knowledge-ask-route';
 import { handleOverviewRoutes } from './knowledge-overview-routes';
@@ -165,6 +167,20 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   const grant = await gateGrant(ctx, id, document.ownerId, document.teamId);
   if (!grant) return forbidden();
   const route: KnowledgeRoute = { ctx, document, grant };
+  // A token that calls here is a connection AI Knowledge lists (knowledge/agent-seen.ts): one guarded upsert, a
+  // write an hour at most.
+  if (ctx.token && ctx.agent) {
+    const reader = readerOf(ctx);
+    await noteAgentSeen(ctx.env, {
+      tokenId: ctx.token.id,
+      name: reader.kind === 'agent' ? reader.name : 'API Token',
+      door: doorOf(frontDoorOf(request)),
+      readOnly: ctx.agent.readOnly,
+      personRole: grant.personRole,
+    }).catch((error) =>
+      console.warn('[knowledge] agent not noted', { documentId: id, error: String(error) }),
+    );
+  }
   if (segments[3] === 'pages' && segments.length > 4) return handlePageRoutes(route);
   if (segments[3] === 'search')
     return request.method === 'GET' ? handleKnowledgeSearch(route) : methodNotAllowed();

@@ -16,6 +16,10 @@ const MAX_TOKEN_ID = 128;
 
 export const isTokenId = (v: string): boolean => v.length > 0 && v.length <= MAX_TOKEN_ID;
 
+/** A stored grant read back: the names joined by a space. */
+export const scopesOfText = (scopes: string): AgentScope[] | null =>
+  parseAgentScopes(scopes.split(' ').filter(Boolean));
+
 /** The scopes an Editor granted a token here; null when nobody has decided (the default applies). */
 export async function storedScopes(
   env: DocumentEnv,
@@ -25,7 +29,7 @@ export async function storedScopes(
     .prepare('SELECT scopes FROM agent_grants WHERE token_id = ?')
     .bind(tokenId)
     .first<{ scopes: string }>();
-  return row ? parseAgentScopes(row.scopes.split(' ').filter(Boolean)) : null;
+  return row ? scopesOfText(row.scopes) : null;
 }
 
 export async function writeScopes(

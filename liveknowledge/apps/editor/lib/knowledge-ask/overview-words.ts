@@ -1,5 +1,6 @@
 // What AI Knowledge says of what the room counted (docs/specs/030-knowledgebase/ai-knowledge.md). Pure.
 import type {
+  AgentScope,
   KnowledgeAgent,
   KnowledgeHealthCounts,
   KnowledgeOverviewResponse,
@@ -27,23 +28,61 @@ export function askedByText(
 
 export type AgentDoor = 'mcp' | 'cli' | 'token' | 'named';
 
-/** How an agent connects, from the name the api counts it under: its client's own name, or "MCP", "CLI" or "API
- *  Token" when the client sent none (api.md "Knowledge"). */
-export function agentDoor(name: string): { door: AgentDoor; how: string } {
-  if (name === 'MCP') return { door: 'mcp', how: 'Through the MCP server' };
-  if (name === 'CLI') return { door: 'cli', how: 'Through the command line' };
-  if (name === 'API Token') return { door: 'token', how: 'With an API token' };
+const HOW: Record<Exclude<AgentDoor, 'named'>, string> = {
+  mcp: 'Through the MCP server',
+  cli: 'Through the command line',
+  token: 'With an API token',
+};
+
+/** How an agent connects: what the room saw of its token's requests (`door`), else, for an agent known only by its
+ *  reads, the name the api counted it under ("MCP", "CLI" or "API Token" when the client sent none). */
+export function agentDoor(agent: Pick<KnowledgeAgent, 'name' | 'door'>): {
+  door: AgentDoor;
+  how: string;
+} {
+  if (agent.door) return { door: agent.door, how: HOW[agent.door] };
+  if (agent.name === 'MCP') return { door: 'mcp', how: HOW.mcp };
+  if (agent.name === 'CLI') return { door: 'cli', how: HOW.cli };
+  if (agent.name === 'API Token') return { door: 'token', how: HOW.token };
   return { door: 'named', how: 'Through the MCP server, the command line or a token' };
 }
 
-/** What an agent has been seen to do: it reads, and it suggests edits when one of its suggestions is waiting. */
-export function agentScopes(
-  agent: Pick<KnowledgeAgent, 'name'>,
-  suggestions: readonly Pick<KnowledgeSuggestion, 'agent'>[],
-): string[] {
-  return suggestions.some((suggestion) => suggestion.agent === agent.name)
-    ? ['Reads', 'Suggests Edits']
-    : ['Reads'];
+const SCOPE_CHIP: Record<AgentScope, string> = {
+  read: 'Reads',
+  suggest: 'Suggests Edits',
+  write: 'Writes',
+};
+
+/** What a connection may do here, as chips, from the scopes the room answers. An agent known only by its reads
+ *  (no scopes in the read) is shown as what it was counted doing: it reads. */
+export function agentScopeChips(agent: Pick<KnowledgeAgent, 'scopes'>): string[] {
+  return (agent.scopes ?? ['read']).map((scope) => SCOPE_CHIP[scope]);
+}
+
+/** What an Editor may change about a connection's writing, and why not when nothing. `tokenId` is only in an
+ *  Editor's read. */
+export type AgentWriteChoice =
+  { kind: 'allow' | 'stop'; tokenId: string } | { kind: 'none'; why: string | null };
+
+export function agentWriteChoice(
+  agent: Pick<KnowledgeAgent, 'scopes' | 'tokenId' | 'canHoldWrite'>,
+): AgentWriteChoice {
+  if (!agent.tokenId || !agent.scopes) return { kind: 'none', why: null };
+  if (agent.scopes.includes('write')) return { kind: 'stop', tokenId: agent.tokenId };
+  if (agent.canHoldWrite) return { kind: 'allow', tokenId: agent.tokenId };
+  return {
+    kind: 'none',
+    why: agent.scopes.includes('suggest')
+      ? 'It acts for someone who is not an Editor here, so it cannot be allowed to write.'
+      : 'Its token is read-only, or its person only views this knowledgebase, so it cannot be allowed to write.',
+  };
+}
+
+/** "Last seen today", "Last seen 3 days ago": the room keeps it to the hour, so a day is as fine as it reads. */
+export function lastSeenText(lastSeenAt: number, now: number): string {
+  const days = Math.max(0, Math.floor((now - lastSeenAt) / 86_400_000));
+  if (days === 0) return 'Last seen today';
+  return days === 1 ? 'Last seen yesterday' : `Last seen ${count(days)} days ago`;
 }
 
 export const readsText = (reads: number): string =>

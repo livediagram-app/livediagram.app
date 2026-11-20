@@ -372,7 +372,7 @@ export const write = defineVerb({
   id: 'write',
   summary: 'Write a page directly',
   description:
-    'Replaces a page’s whole writing with a Markdown file (or - for stdin), or adds it after the last block with --append, at once and with no review. Needs the write scope, and is refused on a verified page: suggest the change there.',
+    'Replaces a page’s whole writing with a Markdown file (or - for stdin), or adds it after the last block with --append, at once and with no review. Needs the write scope, and is refused on a verified page and on one whose review is due: suggest the change there.',
   behaviour: 'destructive',
   input: z.object({
     doc: docArg,

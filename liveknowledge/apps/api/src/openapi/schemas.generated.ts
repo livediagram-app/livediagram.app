@@ -4281,13 +4281,40 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeAgent": {
     "additionalProperties": false,
+    "description": "One connection of AI Knowledge's Connected Agents (ai-knowledge.md \"Connected agents\"). What the room knows of the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its reads, before the room kept its token.",
     "properties": {
+      "canHoldWrite": {
+        "description": "Whether granting `write` would let it write: a full token acting for an Editor.",
+        "type": "boolean"
+      },
+      "door": {
+        "$ref": "#/components/schemas/KnowledgeAgentDoor"
+      },
+      "id": {
+        "description": "A stable id for the row: a hash, never the token or its id.",
+        "type": "string"
+      },
+      "lastSeenAt": {
+        "description": "When it last called a knowledge route here, to the hour.",
+        "type": "number"
+      },
       "name": {
         "type": "string"
       },
       "readsThisWeek": {
         "description": "Pages read in the last seven days.",
         "type": "number"
+      },
+      "scopes": {
+        "description": "What the connection holds in this knowledgebase now: its token's kind, what an Editor granted it here, and the role of the person it acts for.",
+        "items": {
+          "$ref": "#/components/schemas/AgentScope"
+        },
+        "type": "array"
+      },
+      "tokenId": {
+        "description": "The token's id, as `PUT agents/<tokenId>/scopes` takes it. Sent only to an Editor in person, who alone may call that route; it is an id, never the token.",
+        "type": "string"
       },
       "topPages": {
         "description": "The pages it read most this week, at most three.",
@@ -4311,6 +4338,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "id",
       "name",
       "readsThisWeek",
       "topPages"
@@ -4413,6 +4441,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pageCount"
     ],
     "type": "object"
+  },
+  "KnowledgeAgentDoor": {
+    "description": "How an agent connects: the MCP server, the command line, or an API token used directly.",
+    "enum": [
+      "mcp",
+      "cli",
+      "token"
+    ],
+    "type": "string"
   },
   "KnowledgeAiSettings": {
     "additionalProperties": false,

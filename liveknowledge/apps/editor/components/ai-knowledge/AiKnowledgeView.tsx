@@ -32,6 +32,9 @@ import { knowledgeFailureText } from '@/lib/knowledge/knowledge-words';
 import { useRelativeNow } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { AgentsSection } from './AgentsSection';
+import { AgentWriteDialog } from './AgentWriteDialog';
+import { ConnectAgentDialog } from './ConnectAgentDialog';
+import { useAgentWrite } from './useAgentWrite';
 import { ConflictsSection } from './ConflictsSection';
 import { AgentSampleCard, ContextSection, HealthSection } from './HealthAndContext';
 import { QuestionsSection } from './QuestionsSection';
@@ -55,11 +58,20 @@ function AiKnowledge({ session }: { session: AskSession }) {
   const overview = state.status === 'ready' ? state.overview : null;
   const { drafting, draft } = useDraftPage(session, overview?.hasKey ?? false);
   const [adding, setAdding] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const agentWrite = useAgentWrite({
+    who,
+    documentId,
+    allowed: rights.grantAgents,
+    agents: overview?.agents ?? null,
+    refresh,
+    onFailure: toast.error,
+  });
 
-  // The MCP server, the command line and tokens: Settings' own page for them.
+  // What a new connection may do, how writing is allowed, and the three ways in (ConnectAgentDialog).
   const connect = () => {
     track('UI', 'Opened', 'ConnectAgent');
-    chrome.get().openSettingsOn('tokens');
+    setConnecting(true);
   };
   // A page, at a passage's first block when one is named (a conflict's side): brought into view and lit, as a
   // search result's is (openPassage).
@@ -122,10 +134,13 @@ function AiKnowledge({ session }: { session: AskSession }) {
                 </Callout>
               ) : null}
               <AgentsSection
-                agents={overview.agents}
-                suggestions={overview.suggestions}
+                agents={agentWrite.shown}
+                canGrant={rights.grantAgents}
+                busy={agentWrite.busy}
+                now={now}
                 onConnect={connect}
                 onOpenPage={openPage}
+                onAskWrite={agentWrite.ask}
               />
               <ConflictsSection
                 conflicts={overview.conflicts}
@@ -205,6 +220,21 @@ function AiKnowledge({ session }: { session: AskSession }) {
           )}
         </div>
       </div>
+      {connecting ? (
+        <ConnectAgentDialog
+          canGrant={rights.grantAgents}
+          onClose={() => setConnecting(false)}
+          onOpenTokens={() => {
+            setConnecting(false);
+            chrome.get().openSettingsOn('tokens');
+          }}
+        />
+      ) : null}
+      <AgentWriteDialog
+        ask={agentWrite.asking}
+        onConfirm={() => void agentWrite.confirm()}
+        onCancel={agentWrite.cancel}
+      />
       {adding && rights.context ? (
         <PagePickerDialog
           title="Add a Page to Always in Context"

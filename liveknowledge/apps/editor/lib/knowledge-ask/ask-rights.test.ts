@@ -20,6 +20,7 @@ describe('who may do what in Ask and AI Knowledge', () => {
       makePages: true,
       resolve: true,
       context: true,
+      grantAgents: true,
     });
   });
 
@@ -30,6 +31,7 @@ describe('who may do what in Ask and AI Knowledge', () => {
       makePages: false,
       resolve: false,
       context: false,
+      grantAgents: false,
     });
   });
 
@@ -45,6 +47,7 @@ describe('who may do what in Ask and AI Knowledge', () => {
       makePages: false,
       resolve: false,
       context: false,
+      grantAgents: false,
     });
   });
 

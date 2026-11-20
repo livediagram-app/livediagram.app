@@ -25,6 +25,8 @@ Derived from [Knowledgebase for agents](../knowledgebase-for-agents.md), with
 | `packages/knowledge/src/page-markdown.ts`                                            | `markdownHeadings`, `markdownSection`, `cutMarkdown`, `replacePassage` (pure) |
 | `packages/edit-operations/src/pages/new-page.ts`                                     | `newPageFromMarkdown`: a page's tab from Markdown, for the api and the MCP    |
 | `apps/api/src/knowledge/agent-grants.ts`                                             | `agent_grants`, `withAgentGrant`, `scopeRefusalOf`                            |
+| `apps/api/src/knowledge/agent-seen.ts`, `connected-agents.ts`                        | `agent_seen`, `noteAgentSeen`, `seenAgents`; `connectedAgents` (pure)         |
+| `apps/editor/components/ai-knowledge/AgentCard.tsx`, `useAgentWrite.ts`              | The card's menu, Allow Writing and Stop Writing                               |
 | `apps/api/src/knowledge/suggestions.ts`                                              | The `suggestions` table's reads, the capped insert, the prune                 |
 | `apps/api/src/knowledge/page-read.ts`                                                | `pageMarkdownOf`, `pageNamed`, `pageTrustOf`, `openConflictPages`             |
 | `apps/api/src/routes/knowledge-suggestion-routes.ts`                                 | Suggest, list, accept, dismiss                                                |
@@ -56,6 +58,25 @@ Derived from [Knowledgebase for agents](../knowledgebase-for-agents.md), with
   person's role. Any other answer passes as it is.
 - **Granting**: `PUT /api/documents/<id>/agents/<token>/scopes { scopes }`: role `edit`, no token and no workbench
   session on the request (`403` otherwise); `400 invalid_scopes` for anything but a list of the three names.
+- **Connections seen**: `agent_seen (token_id PRIMARY KEY, name, door, read_only, person_role, last_seen)`, schema
+  step 13 (`agentSeenSchemaStep`), index on `last_seen`. `handleKnowledgeRoutes` notes a token after its gate
+  (`noteAgentSeen`): one upsert whose `WHERE` lets it write only when the row is new, an hour old
+  (`AGENT_SEEN_WRITE_GAP_MS`) or says something else, so a busy agent costs a statement a request and a write an
+  hour. `name` is the reader's (`readerOf`), `door` `mcp`, `cli` or `token` (`doorOf` over `frontDoorOf`). Written
+  through `knowledgeDb`: no edit. Pruned daily with the reads (90 days, `pruneAgentSeen`).
+- **Connected Agents in `GET knowledge`**: `seenAgents` reads the rows of the last 30 days (`AGENT_SEEN_DAYS`), the
+  latest first, 50 at most (`AGENTS_LISTED`), joined to `agent_grants`; each row's `scopes` is
+  `agentScopesFor({ readOnly, role: person_role, granted })` and `canHoldWrite` is a full token of an Editor.
+  `connectedAgents` joins the reads counted under the row's name and appends any agent known only by its reads
+  (no `door`, `scopes` or `tokenId`). `id` is `stableHash('agent', token id)`. `tokenId` is in the answer only for
+  `role === 'edit'` with no token and no workbench session on the request. Two tokens counted under one name show
+  the same reads: reads are kept by name alone.
+- **The editor's control** (`AgentCard`, `useAgentWrite`, `AgentWriteDialog`): for `askRights.grantAgents` (an
+  Editor of the whole knowledgebase, not Offline) a card whose row carries `tokenId` has a More menu with one row,
+  **Allow Writing** (`scopes` without `write`, `canHoldWrite`) or **Stop Writing** (`scopes` with `write`). The row
+  opens a centred confirm dialog; on confirm the card shows the new chips at once, `PUT agents/<token>/scopes`
+  goes out with `read, suggest, write` or `read, suggest`, and the overview is read again. A refusal puts the chips
+  back and is said in a toast. A connection that cannot hold `write` has no menu and one line saying why.
 - **Tests' harness**: `makeTestRouteContext` gives a token every scope unless a test passes `agent: 'stored'`,
   which has the room read the grant as a real request does.
 
@@ -99,7 +120,8 @@ confined to one page names it by id and reads any other as a plain `404`.
 - `depth` is 1 at the top level (`pageTreeRows`).
 - A new page's writing opens with its title as front matter (`withTitleFrontMatter`) unless the Markdown brings its
   own.
-- `page_verified`: an article write by a token on a page whose state is `verified`, `409`.
+- `page_verified`: an article write by a token on a page whose state is `verified`, `409`. `page_review_due`: the
+  same on a page whose state is `review-due`. `never-verified` alone is written.
 
 ## MCP tools
 
@@ -157,6 +179,7 @@ confined to one page names it by id and reads any other as a plain `404`.
 | What                            | Cost                                                                           |
 | ------------------------------- | ------------------------------------------------------------------------------ |
 | A token's request on a document | One keyed read of `agent_grants`; none for a read-only token or a person       |
+| A token's knowledge request     | One guarded upsert of `agent_seen`: a row written an hour at most              |
 | `GET pages`                     | The summaries (already read for the gate) and one read of at most 50 conflicts |
 | `GET context`                   | One tab a context page: bounded by the 8,000 token budget                      |
 | Accept                          | One page read, one article write                                               |
@@ -171,6 +194,8 @@ confined to one page names it by id and reads any other as a plain `404`.
 | `SUGGESTION_MAX_REASON_CHARS` | 500      |
 | `SUGGESTION_KEPT_DAYS`        | 90       |
 | `AGENT_NAME_MAX_CHARS`        | 60       |
+| `AGENT_SEEN_WRITE_GAP_MS`     | 1 hour   |
+| `AGENTS_LISTED`               | 50       |
 | `HANDSHAKE_MAX_BYTES`         | 8,192    |
 | `AGENT_NAME_TTL_SECONDS`      | 200 days |
 | `READ_PAGE_DEFAULT_CHARS`     | 6,000    |
@@ -179,7 +204,8 @@ confined to one page names it by id and reads any other as a plain `404`.
 ## Observability
 
 `[knowledge] suggested`, `suggestion accepted`, `suggestion stale`, `suggestion dismissed`, `page created`,
-`page moved`, `scopes granted`, `scope needed`; `[pages-agent] refused` with `page_verified`; `[mcp] client name
+`page moved`, `scopes granted`, `scope needed`, `agent not noted`; `[pages-agent] refused` with `page_verified` or
+`page_review_due`; `[mcp] client name
 not remembered`, `client name not read`. Ids and counts, never a page's words. Each tool reports `Mcp·Used` as
 every tool does.
 
@@ -190,6 +216,8 @@ every tool does.
 | Scopes by token kind, role and grant                                 | `packages/api-schema/src/agent-scopes.test.ts`                           |
 | Suggest, accept, dismiss by role; stale; the cap; the prune          | `apps/api/src/routes/knowledge-suggestion-routes.test.ts`                |
 | The agent routes by role and scope; a page by title; `page_verified` | `apps/api/src/routes/knowledge-agent-routes.test.ts`                     |
+| `page_review_due`; Connected Agents per role; the hourly write       | `apps/api/src/routes/knowledge-agent-routes.test.ts`                     |
+| Allow Writing and Stop Writing per role, the confirm, the rollback   | `apps/editor/components/ai-knowledge/AiKnowledgeView.test.tsx`           |
 | Sections, cuts and passages                                          | `packages/knowledge/src/page-markdown.test.ts`                           |
 | One request a tool, the name sent, trust fields, sizes, refusals     | `apps/mcp/src/knowledge-tools.test.ts`                                   |
 | The client's name                                                    | `apps/mcp/src/agent-name.test.ts`                                        |

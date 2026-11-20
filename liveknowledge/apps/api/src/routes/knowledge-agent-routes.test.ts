@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   CreatePageResponse,
   KnowledgeAgentContextResponse,
@@ -131,9 +131,10 @@ describe('GET pages/<tab>', () => {
     await read('deploys', '', 'agent-stored');
     await read('deploys', '', 'agent-read-only');
     const overview = await get<KnowledgeOverviewResponse>('editor', 'knowledge');
-    expect(overview.agents).toEqual([
+    expect(overview.agents).toMatchObject([
       { name: 'Coding Agent', readsThisWeek: 2, topPages: [{ tab: 'deploys', title: 'Deploys' }] },
     ]);
+    expect(overview.agents).toHaveLength(1);
   });
 
   it('keeps a link confined to one page on that page', async () => {
@@ -512,5 +513,119 @@ describe('scopes', () => {
     expect(answer.message).toContain('suggest_edit');
     expect((await read('holidays')).markdown).toContain('December');
     expect((await write('agent', 'rollbacks')).status).toBe(200);
+  });
+
+  it('refuses an agent’s write to a page whose review is due, and still takes its suggestion', async () => {
+    await verify('holidays');
+    // 90 days is the default interval: a day past it the review is due.
+    const later = Date.now() + 91 * 86_400_000;
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(later);
+    try {
+      expect((await read('holidays')).trust.state).toBe('review-due');
+      const res = await write('agent');
+      expect(res.status).toBe(409);
+      const answer = await res.json<{ error: string; message: string }>();
+      expect(answer.error).toBe('page_review_due');
+      expect(answer.message).toContain('suggest_edit');
+      expect((await read('holidays')).markdown).toContain('December');
+      const suggested = await kit.call(
+        'agent',
+        'POST',
+        '/api/documents/kb/pages/holidays/suggestions',
+        { reason: 'The dates moved.', after: 'The office also closes on 2 January.' },
+      );
+      expect(suggested.status).toBe(201);
+      // A person may write it: the review is theirs.
+      expect(
+        (await kit.call('editor', 'PUT', '/api/documents/kb/pages/holidays', { markdown: 'New.' }))
+          .status,
+      ).toBe(200);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+});
+
+describe('Connected Agents in GET knowledge', () => {
+  const agentsFor = async (who: Who) =>
+    (await get<KnowledgeOverviewResponse>(who, 'knowledge')).agents;
+
+  it('lists a connection with its door, its scopes as stored and when it was seen', async () => {
+    await get('agent-stored', 'pages');
+    const [agent, ...rest] = await agentsFor('editor');
+    expect(rest).toEqual([]);
+    expect(agent).toMatchObject({
+      name: 'Coding Agent',
+      door: 'mcp',
+      scopes: ['read', 'suggest'],
+      canHoldWrite: true,
+      tokenId: TOKEN_ID,
+      readsThisWeek: 0,
+      topPages: [],
+    });
+    expect(agent!.id).not.toContain(TOKEN_ID);
+    expect(agent!.lastSeenAt).toBeGreaterThan(0);
+    await grant(['suggest', 'write']);
+    expect((await agentsFor('editor'))[0]!.scopes).toEqual(['read', 'suggest', 'write']);
+    await grant(['read']);
+    expect((await agentsFor('editor'))[0]!.scopes).toEqual(['read']);
+  });
+
+  it.each<[Who]>([['participant'], ['viewer'], ['agent-stored']])(
+    'sends %s the scopes without the token’s id',
+    async (who) => {
+      await get('agent-stored', 'pages');
+      const [agent] = await agentsFor(who);
+      expect(agent!.scopes).toEqual(['read', 'suggest']);
+      expect(agent).not.toHaveProperty('tokenId');
+      expect(JSON.stringify(agent)).not.toContain(TOKEN_ID);
+    },
+  );
+
+  it('says a read-only token and a Participant’s agent cannot hold write', async () => {
+    await get('agent-read-only', 'pages');
+    expect((await agentsFor('editor'))[0]).toMatchObject({ scopes: ['read'], canHoldWrite: false });
+    await get('participant-agent', 'pages');
+    await grant(['suggest', 'write']);
+    expect((await agentsFor('editor'))[0]).toMatchObject({
+      scopes: ['read', 'suggest'],
+      canHoldWrite: false,
+    });
+  });
+
+  it('joins the reads counted under the connection’s name, and keeps an agent known only by its reads', async () => {
+    await read('deploys', '', 'agent-stored');
+    kit.db.sql.exec(
+      `INSERT INTO page_reads (day, tab, reader_kind, agent, reads)
+         VALUES ('${new Date().toISOString().slice(0, 10)}', 'holidays', 'agent', 'CLI', 2)`,
+    );
+    const agents = await agentsFor('editor');
+    expect(agents.map((a) => [a.name, a.readsThisWeek, a.scopes ?? null])).toEqual([
+      ['Coding Agent', 1, ['read', 'suggest']],
+      ['CLI', 2, null],
+    ]);
+    expect(agents[0]!.topPages).toEqual([{ tab: 'deploys', title: 'Deploys' }]);
+    expect(agents[1]).not.toHaveProperty('tokenId');
+  });
+
+  it('writes the row once an hour, and again when what it says changes', async () => {
+    const rows = () =>
+      kit.db.sql.prepare('SELECT last_seen AS at, read_only AS ro FROM agent_seen').all();
+    const start = Date.now();
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(start);
+    try {
+      await get('agent-stored', 'pages');
+      clock.mockReturnValue(start + 60_000);
+      await get('agent-stored', 'pages');
+      expect(rows()).toEqual([{ at: start, ro: 0 }]);
+      clock.mockReturnValue(start + 3_600_000);
+      await get('agent-stored', 'pages');
+      expect(rows()).toEqual([{ at: start + 3_600_000, ro: 0 }]);
+      clock.mockReturnValue(start + 3_600_001);
+      await get('agent-read-only', 'pages');
+      expect(rows()).toEqual([{ at: start + 3_600_001, ro: 1 }]);
+    } finally {
+      clock.mockRestore();
+    }
   });
 });

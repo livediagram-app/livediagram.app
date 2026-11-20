@@ -9,9 +9,14 @@ Most of it needs no model: it is bookkeeping the room already has.
 
 ## Connected agents
 
-One card per agent that has read or written this wiki in the last 30 days: its name (the MCP client's, the CLI, or an
-API token's label), how it connects, what it may do (**Reads**, **Suggests Edits**), pages read this week and the
+One card per agent that has read or written this knowledgebase in the last 30 days: its name (the MCP client's, the CLI, or an
+API token's label), how it connects, what it may do (**Reads**, **Suggests Edits**, **Writes**), pages read this week and the
 three it read most. **Connect an Agent** opens the instructions for the MCP server, the CLI and tokens.
+
+A new connection reads and suggests. An Editor allows one connection to write from its card's menu (**Allow
+Writing**), and stops it there (**Stop Writing**); each asks first, saying what writing allows (replace a page's
+writing and move pages, never on a page that is Verified or Review Due) and that it applies to this knowledgebase
+only ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md)).
 
 An agent acts for a person or a token and can open only what they can: share roles apply to agents exactly as to
 people.
@@ -63,11 +68,18 @@ Counts of Verified, Review Due and Never Verified pages as one stacked bar with 
 ## The view, as built
 
 - One read of `GET .../knowledge` each time the view opens and one after each action taken in it. Nothing is polled.
-- **Header:** "AI Knowledge", one line, **Connect an Agent** (Settings' Tokens page: the MCP server, the command line
-  and tokens) and **AI Settings**.
-- **Connected Agents:** a card each: an icon, the name, how it connects (from the name it is counted under), a
-  "Connected" dot, what it has been seen to do (**Reads**; **Suggests Edits** when one of its suggestions is
-  waiting), pages read this week and the three it read most, each opening its page.
+- **Header:** "AI Knowledge", one line, **Connect an Agent** and **AI Settings**.
+- **Connect an Agent** is a dialog: a new connection can read, search and suggest; how an Editor allows writing
+  (anyone else reads that an Editor can); then the MCP server's address and its first tools (`get_context`,
+  `search_pages`, `read_page`, `suggest_edit`), the command line (`liveknowledge auth login`, `context`, `search`)
+  and **Open API Tokens** (Settings' Tokens page).
+- **Connected Agents:** a card each: an icon, the name, how it connects and when it was last seen (what the room
+  noted of its token), a "Connected" dot, what it may do as chips from its scopes (**Reads**, **Suggests Edits**,
+  **Writes**), pages read this week and the three it read most, each opening its page. An agent known only by its
+  reads, counted before the room kept tokens, shows **Reads** and how its name says it connects. For an Editor a
+  card has a More menu with **Allow Writing** or **Stop Writing**, behind a confirm dialog; the chips change at
+  once and go back, with a toast saying why, when the change is refused. A connection that cannot write whatever
+  is granted (a read-only token, or one acting for someone who is not an Editor) has no menu and says why.
 - **Pages That Disagree:** the question, the two passages side by side (stacked on a phone) each with its page's
   trust, **<Page> Is Right, Fix the Other** for each side (it opens the other page) and **Not a Conflict**. Without
   a key the section says it needs one.
@@ -90,7 +102,6 @@ Counts of Verified, Review Due and Never Verified pages as one stacked bar with 
 
 - **Ask Both Owners** and **Remind the Owners**: no email route exists, so neither is drawn.
 - **Fix the Other** opens the other page, not the passage with a margin note quoting the right one.
-- **An agent's scopes** are not in the read: the chips are what the agent has been seen to do.
 - **Edits Suggested by Agents** is built against the wire type and its two routes and tested over a fake; it has not
   been exercised against a running api.
 - A dismissed question or conflict, and an accepted suggestion, leave the list on the read after the action, not
@@ -98,9 +109,10 @@ Counts of Verified, Review Due and Never Verified pages as one stacked bar with 
 
 ## Share roles
 
-| Action                                                      | Editor | Participant | Viewer |
-| ----------------------------------------------------------- | ------ | ----------- | ------ |
-| See AI Knowledge                                            | yes    | yes         | yes    |
-| Accept or dismiss a suggestion, resolve a conflict          | yes    | no          | no     |
-| Draft a page, dismiss a question, set Always in Context     | yes    | no          | no     |
-| Remind the owners                                           | yes    | no          | no     |
+| Action                                                  | Editor | Participant | Viewer |
+| ------------------------------------------------------- | ------ | ----------- | ------ |
+| See AI Knowledge                                        | yes    | yes         | yes    |
+| Accept or dismiss a suggestion, resolve a conflict      | yes    | no          | no     |
+| Draft a page, dismiss a question, set Always in Context | yes    | no          | no     |
+| Allow an agent to write, or stop it                     | yes    | no          | no     |
+| Remind the owners                                       | yes    | no          | no     |

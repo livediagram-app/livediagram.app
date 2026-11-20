@@ -26,6 +26,8 @@ vi.mock('@/lib/api/knowledge', async (actual) => ({
   ...(await actual<typeof import('@/lib/api/knowledge')>()),
   ...api,
 }));
+const agentsApi = vi.hoisted(() => ({ apiSetAgentScopes: vi.fn() }));
+vi.mock('@/lib/api/knowledge-agents', () => agentsApi);
 const suggestionsApi = vi.hoisted(() => ({
   apiAcceptKnowledgeSuggestion: vi.fn(),
   apiDismissKnowledgeSuggestion: vi.fn(),
@@ -59,14 +61,21 @@ const VERIFIED_AT = new Date(2026, 10, 8).getTime();
 const full = (over: Partial<KnowledgeOverviewResponse> = {}): KnowledgeOverviewResponse => ({
   agents: [
     {
+      id: 'a1',
       name: 'Coding Agent',
+      door: 'mcp',
+      scopes: ['read', 'suggest'],
+      canHoldWrite: true,
+      lastSeenAt: Date.now() - 2 * 86_400_000,
+      // Only an Editor's read carries it; the others' cards are tested with it to hold the interface's own gate.
+      tokenId: 'tok_1',
       readsThisWeek: 12,
       topPages: [
         { tab: 'p1', title: 'Release Process' },
         { tab: 'p2', title: 'Hotfixes' },
       ],
     },
-    { name: 'CLI', readsThisWeek: 1, topPages: [] },
+    { id: 'a2', name: 'CLI', readsThisWeek: 1, topPages: [] },
   ],
   questions: [
     {
@@ -217,7 +226,8 @@ describe('what it shows', () => {
     await open();
     const card = within(document.querySelector<HTMLElement>('[data-agent="Coding Agent"]')!);
     expect(card.getByText('Connected')).toBeTruthy();
-    expect(card.getByText('Through the MCP server, the command line or a token')).toBeTruthy();
+    expect(card.getByText('Through the MCP server')).toBeTruthy();
+    expect(card.getByText('Last seen 2 days ago')).toBeTruthy();
     expect(
       within(card.getByRole('list', { name: 'What it may do' }))
         .getAllByRole('listitem')
@@ -229,6 +239,23 @@ describe('what it shows', () => {
     const cli = within(document.querySelector<HTMLElement>('[data-agent="CLI"]')!);
     expect(cli.getByText('Through the command line')).toBeTruthy();
     expect(cli.getByText('1 page read this week')).toBeTruthy();
+    // Known only by its reads: it reads, and there is nothing to grant.
+    expect(cli.getByRole('list', { name: 'What it may do' }).textContent).toBe('Reads');
+    expect(cli.queryByRole('button', { name: 'More for CLI' })).toBeNull();
+  });
+
+  it('an agent that writes says so, from its scopes', async () => {
+    const agents = full().agents;
+    api.apiKnowledgeOverview.mockResolvedValue(
+      full({ agents: [{ ...agents[0]!, scopes: ['read', 'suggest', 'write'] }] }),
+    );
+    await open('view');
+    const card = within(document.querySelector<HTMLElement>('[data-agent="Coding Agent"]')!);
+    expect(
+      within(card.getByRole('list', { name: 'What it may do' }))
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['Reads', 'Suggests Edits', 'Writes']);
   });
 
   it('a conflict: the question and both passages as text, each with its page trust', async () => {
@@ -339,6 +366,12 @@ describe.each(ROLES)('as %s', (role) => {
     const context = section('Always in Context');
     expect(has(context, 'Add a Page')).toBe(editor);
     expect(has(context, /Remove .* from Always in Context/)).toBe(editor);
+    // The chips are everyone's; the menu that allows writing is an Editor's.
+    const agent = within(document.querySelector<HTMLElement>('[data-agent="Coding Agent"]')!);
+    expect(agent.getByRole('list', { name: 'What it may do' }).textContent).toBe(
+      'ReadsSuggests Edits',
+    );
+    expect(agent.queryByRole('button', { name: 'More for Coding Agent' }) !== null).toBe(editor);
     // Everyone may see how to connect an agent and how the key stands.
     expect(screen.getAllByRole('button', { name: 'Connect an Agent' }).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'AI Settings' })).toBeTruthy();
@@ -461,8 +494,112 @@ describe('an Editor’s actions', () => {
 
   it('opens the connection instructions from Connect an Agent', async () => {
     const openSettingsOn = vi.fn();
-    await open('view', { openSettingsOn });
+    await open('edit', { openSettingsOn });
     fireEvent.click(screen.getAllByRole('button', { name: 'Connect an Agent' })[0]!);
+    const dialog = within(screen.getByRole('dialog', { name: 'Connect an Agent' }));
+    expect(
+      dialog.getByText(/can read and search this knowledgebase and suggest edits/),
+    ).toBeTruthy();
+    expect(dialog.getByText(/choose Allow Writing/)).toBeTruthy();
+    // The tools and commands by their own names.
+    expect(
+      dialog.getByText(/get_context first, and search_pages,\s+read_page and suggest_edit/),
+    ).toBeTruthy();
+    expect(dialog.getByText(/liveknowledge auth login/)).toBeTruthy();
+    expect(dialog.getByText('https://mcp.liveknowledge.app/mcp')).toBeTruthy();
+    fireEvent.click(dialog.getByRole('button', { name: 'Open API Tokens' }));
     expect(openSettingsOn).toHaveBeenCalledWith('tokens');
+    expect(screen.queryByRole('dialog', { name: 'Connect an Agent' })).toBeNull();
+  });
+
+  it('tells anyone but an Editor who can allow writing', async () => {
+    await open('view');
+    fireEvent.click(screen.getAllByRole('button', { name: 'Connect an Agent' })[0]!);
+    const dialog = within(screen.getByRole('dialog', { name: 'Connect an Agent' }));
+    expect(
+      dialog.getByText(/Only an Editor of this knowledgebase can allow a connection to write/),
+    ).toBeTruthy();
+    expect(dialog.queryByText(/choose Allow Writing/)).toBeNull();
+  });
+});
+
+// knowledgebase-for-agents.md "Scopes": an Editor allows one connection to write here, and stops it.
+describe('allowing an agent to write', () => {
+  const card = () => within(document.querySelector<HTMLElement>('[data-agent="Coding Agent"]')!);
+  const chips = () => card().getByRole('list', { name: 'What it may do' }).textContent;
+  const choose = (row: string) => {
+    fireEvent.click(card().getByRole('button', { name: 'More for Coding Agent' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: row }));
+  };
+
+  it('asks first, in plain words, and does nothing on Cancel', async () => {
+    await open();
+    choose('Allow Writing');
+    const dialog = within(screen.getByRole('dialog', { name: 'Allow Coding Agent to Write?' }));
+    expect(dialog.getByText(/replace a page’s writing and move pages/)).toBeTruthy();
+    expect(
+      dialog.getByText(/never rewrite a page that is Verified or due for review/),
+    ).toBeTruthy();
+    expect(dialog.getByText(/This applies to this knowledgebase only\./)).toBeTruthy();
+    fireEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
+    expect(agentsApi.apiSetAgentScopes).not.toHaveBeenCalled();
+    expect(chips()).toBe('ReadsSuggests Edits');
+  });
+
+  it('shows Writes at once, sends the scopes, then reads again', async () => {
+    let land: (scopes: string[]) => void = () => {};
+    agentsApi.apiSetAgentScopes.mockReturnValue(new Promise((resolve) => (land = resolve)));
+    await open();
+    choose('Allow Writing');
+    fireEvent.click(screen.getByRole('button', { name: 'Allow Writing' }));
+    expect(chips()).toBe('ReadsSuggests EditsWrites');
+    expect(agentsApi.apiSetAgentScopes).toHaveBeenCalledWith(WHO, 'd1', 'tok_1', [
+      'read',
+      'suggest',
+      'write',
+    ]);
+    const agents = full().agents;
+    api.apiKnowledgeOverview.mockResolvedValue(
+      full({ agents: [{ ...agents[0]!, scopes: ['read', 'suggest', 'write'] }] }),
+    );
+    await act(async () => land(['read', 'suggest', 'write']));
+    await waitFor(() => expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(chips()).toBe('ReadsSuggests EditsWrites'));
+    // Now it can be stopped.
+    agentsApi.apiSetAgentScopes.mockResolvedValue(['read', 'suggest']);
+    choose('Stop Writing');
+    expect(screen.getByRole('dialog', { name: 'Stop Coding Agent Writing?' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Stop Writing' }));
+    expect(chips()).toBe('ReadsSuggests Edits');
+    expect(agentsApi.apiSetAgentScopes).toHaveBeenLastCalledWith(WHO, 'd1', 'tok_1', [
+      'read',
+      'suggest',
+    ]);
+  });
+
+  it('puts the card back and says why in a toast when it is refused', async () => {
+    agentsApi.apiSetAgentScopes.mockRejectedValue(
+      new ApiError('set agent scopes', 403, 'forbidden'),
+    );
+    await open();
+    choose('Allow Writing');
+    fireEvent.click(screen.getByRole('button', { name: 'Allow Writing' }));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        'Only an Editor of this knowledgebase can change what an agent may do.',
+      ),
+    );
+    expect(chips()).toBe('ReadsSuggests Edits');
+    expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(1);
+  });
+
+  it('says why a connection cannot be allowed to write, and draws no menu for it', async () => {
+    const agents = full().agents;
+    api.apiKnowledgeOverview.mockResolvedValue(
+      full({ agents: [{ ...agents[0]!, scopes: ['read'], canHoldWrite: false }] }),
+    );
+    await open();
+    expect(card().getByText(/Its token is read-only/)).toBeTruthy();
+    expect(card().queryByRole('button', { name: 'More for Coding Agent' })).toBeNull();
   });
 });

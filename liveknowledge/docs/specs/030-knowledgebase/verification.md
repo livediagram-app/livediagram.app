@@ -26,6 +26,9 @@ On the page (`Tab.wiki`): `owner` (a person with access to the wiki), `verifiedA
   card. The meta row also says "Review due <date>" and "Edited <when> by <name>".
 - **Verify** (meta row, tree row menu, the Page Health card) sets `verifiedAt` to now and `verifiedBy` to the person.
   A page with no owner takes the verifier as its owner. Verify is one press; it never asks for confirmation.
+- An agent never rewrites a page that is Verified or Review Due, whatever it was granted: it suggests the edit, and
+  a person accepts it ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md)). A due page is the
+  one most likely to need a person's eye.
 - Writing on a verified page does not clear the tick. A large change (more than a fifth of the writing's characters
   since `verifiedAt`) adds "Changed since verified" beside it, until someone verifies again.
 - **Page Health** (right rail): owner (changeable), last verified, review interval (changeable), reads by people and

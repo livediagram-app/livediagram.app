@@ -120,8 +120,26 @@ export type AskEvent =
     }
   | { type: 'error'; kind: string; message: string };
 
+/** How an agent connects: the MCP server, the command line, or an API token used directly. */
+export type KnowledgeAgentDoor = 'mcp' | 'cli' | 'token';
+/** One connection of AI Knowledge's Connected Agents (ai-knowledge.md "Connected agents"). What the room knows of
+ *  the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its
+ *  reads, before the room kept its token. */
 export type KnowledgeAgent = {
+  /** A stable id for the row: a hash, never the token or its id. */
+  id: string;
   name: string;
+  door?: KnowledgeAgentDoor;
+  /** What the connection holds in this knowledgebase now: its token's kind, what an Editor granted it here, and
+   *  the role of the person it acts for. */
+  scopes?: AgentScope[];
+  /** When it last called a knowledge route here, to the hour. */
+  lastSeenAt?: number;
+  /** Whether granting `write` would let it write: a full token acting for an Editor. */
+  canHoldWrite?: boolean;
+  /** The token's id, as `PUT agents/<tokenId>/scopes` takes it. Sent only to an Editor in person, who alone may
+   *  call that route; it is an id, never the token. */
+  tokenId?: string;
   /** Pages read in the last seven days. */
   readsThisWeek: number;
   /** The pages it read most this week, at most three. */

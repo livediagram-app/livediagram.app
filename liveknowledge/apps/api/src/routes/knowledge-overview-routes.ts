@@ -30,7 +30,9 @@ import type {
   KnowledgeOverviewResponse,
   KnowledgeTrustState,
 } from '@liveknowledge/api-schema';
+import { seenAgents } from '../knowledge/agent-seen';
 import { readAiSettings } from '../knowledge/ai-settings';
+import { connectedAgents } from '../knowledge/connected-agents';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll, sqlOf } from '../knowledge/knowledge-db';
 import { contextPages, knowledgeHealthCounts } from '../knowledge/knowledge-reads';
@@ -110,9 +112,10 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
   const { env } = ctx;
   const now = Date.now();
   const titles = new Map(document.tabs.map((t) => [t.id, t.name]));
-  const [reads, questions, questionAgents, conflicts, pages, health, ai, suggestions] =
+  const [reads, seen, questions, questionAgents, conflicts, pages, health, ai, suggestions] =
     await Promise.all([
       rowsOf<AgentReadsRow>(env, countAgentReads(now)),
+      seenAgents(env, now),
       rowsOf<QuestionRow>(env, listQuestions()),
       rowsOf<QuestionAgentRow>(env, listQuestionAgents()),
       openConflicts(env, now),
@@ -123,11 +126,13 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     ]);
   const lastAt = new Map(questions.map((q) => [q.key, q.lastAt]));
   const overview: KnowledgeOverviewResponse = {
-    agents: agentReads(reads).map((a) => ({
-      name: a.agent,
-      readsThisWeek: a.readsThisWeek,
-      topPages: a.topPages.map((tab) => ({ tab, title: titles.get(tab) ?? '' })),
-    })),
+    agents: connectedAgents({
+      seen,
+      reads: agentReads(reads),
+      titleOf: (tab) => titles.get(tab) ?? '',
+      // The scopes route is an Editor's, in person (knowledge-agent-routes.ts handleScopes).
+      canGrant: grant.role === 'edit' && !ctx.token && !ctx.workbench,
+    }),
     questions: questionGroups(questions, questionAgents).map((q) => ({
       key: q.key,
       question: q.question,

@@ -35,7 +35,8 @@ until then. --old is the passage as read prints it; without it the new text is a
   liveknowledge suggest Handbook Deploys --reason "Moved in March" --old "on Tuesdays" --new "on Mondays"
 
 Add a page (never verified), write one directly, or move one. write and move need the write scope
-(an Editor of the knowledgebase grants it), and write is refused on a verified page: suggest there.
+(an Editor of the knowledgebase grants it), and write is refused on a verified page and on one whose
+review is due: suggest there.
 
   liveknowledge new Handbook Hotfixes hotfixes.md --parent Deploys
   liveknowledge write Handbook Hotfixes hotfixes.md

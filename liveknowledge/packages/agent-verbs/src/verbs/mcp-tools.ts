@@ -136,8 +136,8 @@ export const mcpWritePage = mcpTool('write_page', {
   title: 'Write a page directly',
   description:
     'Replace a page’s whole writing with Markdown, or append to it, at once and without a person’s review. ' +
-    'Only for a connection with the write scope (get_context lists the scopes), and never on a verified page: ' +
-    'there, use suggest_edit. read_page first and send the whole page back, since "replace" drops what the ' +
+    'Only for a connection with the write scope (get_context lists the scopes), and never on a verified page or one ' +
+    'whose review is due: there, use suggest_edit. read_page first and send the whole page back, since "replace" drops what the ' +
     'Markdown leaves out.',
   inputSchema: writePageShape,
   outputSchema: writePageOutput,

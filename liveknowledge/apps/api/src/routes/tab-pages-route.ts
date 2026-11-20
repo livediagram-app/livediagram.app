@@ -32,17 +32,24 @@ export async function handleTabPages(
     });
     return json({ error: code, ...rest }, { status: 400 });
   }
-  // An agent never rewrites a verified page (docs/specs/024-agents/knowledgebase-for-agents.md `write_page`): what
-  // a person vouched for changes through a suggestion a person accepts.
+  // An agent never rewrites a page a person verified, current or due for review (docs/specs/024-agents/
+  // knowledgebase-for-agents.md `write_page`): what a person vouched for changes through a suggestion a person
+  // accepts.
   if (ctx.token && 'article' in parsed) {
     const fields = parseKnowledgeFields(document.tabs.find((t) => t.id === tabId)?.knowledge);
-    if (trustState(fields, Date.now()).state === 'verified') {
-      console.info('[pages-agent] refused', { documentId: id, tabId, code: 'page_verified' });
+    const state = trustState(fields, Date.now()).state;
+    // A page whose review is due is refused as a verified one is: it is the page most likely to need a person's
+    // eye, and a rewrite by an agent would bury what the review was for.
+    if (state !== 'never-verified') {
+      const code = state === 'verified' ? 'page_verified' : 'page_review_due';
+      console.info('[pages-agent] refused', { documentId: id, tabId, code });
       return json(
         {
-          error: 'page_verified',
+          error: code,
           message:
-            'This page is verified, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept.',
+            state === 'verified'
+              ? 'This page is verified, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept.'
+              : 'This page is due for review, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_edit, for a person to accept.',
         },
         { status: 409 },
       );

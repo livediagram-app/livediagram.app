@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   agentDoor,
   agentSample,
-  agentScopes,
+  agentScopeChips,
+  agentWriteChoice,
+  lastSeenText,
   askedByText,
   budgetText,
   healthParts,
@@ -33,12 +35,64 @@ describe('what AI Knowledge says', () => {
   });
 
   it('how an agent connects, and what it has been seen to do', () => {
-    expect(agentDoor('MCP').door).toBe('mcp');
-    expect(agentDoor('CLI').door).toBe('cli');
-    expect(agentDoor('API Token').door).toBe('token');
-    expect(agentDoor('Coding Agent').door).toBe('named');
-    expect(agentScopes({ name: 'A' }, [])).toEqual(['Reads']);
-    expect(agentScopes({ name: 'A' }, [{ agent: 'A' }])).toEqual(['Reads', 'Suggests Edits']);
+    expect(agentDoor({ name: 'MCP' }).door).toBe('mcp');
+    expect(agentDoor({ name: 'CLI' }).door).toBe('cli');
+    expect(agentDoor({ name: 'API Token' }).door).toBe('token');
+    expect(agentDoor({ name: 'Coding Agent' }).door).toBe('named');
+    // What the room saw of the token wins over the name.
+    expect(agentDoor({ name: 'Coding Agent', door: 'cli' })).toEqual({
+      door: 'cli',
+      how: 'Through the command line',
+    });
+  });
+
+  it('the chips are the scopes the room answers, never a guess', () => {
+    expect(agentScopeChips({ scopes: ['read'] })).toEqual(['Reads']);
+    expect(agentScopeChips({ scopes: ['read', 'suggest'] })).toEqual(['Reads', 'Suggests Edits']);
+    expect(agentScopeChips({ scopes: ['read', 'suggest', 'write'] })).toEqual([
+      'Reads',
+      'Suggests Edits',
+      'Writes',
+    ]);
+    // Known only by its reads: it reads.
+    expect(agentScopeChips({})).toEqual(['Reads']);
+  });
+
+  it('what an Editor may change about a connection’s writing', () => {
+    const base = { tokenId: 't1', canHoldWrite: true };
+    expect(agentWriteChoice({ ...base, scopes: ['read', 'suggest'] })).toEqual({
+      kind: 'allow',
+      tokenId: 't1',
+    });
+    expect(agentWriteChoice({ ...base, scopes: ['read', 'suggest', 'write'] })).toEqual({
+      kind: 'stop',
+      tokenId: 't1',
+    });
+    // No token id in the read (not an Editor), or an agent known only by its reads: nothing, and no reason.
+    expect(agentWriteChoice({ scopes: ['read', 'suggest'], canHoldWrite: true })).toEqual({
+      kind: 'none',
+      why: null,
+    });
+    expect(agentWriteChoice({ tokenId: 't1' })).toEqual({ kind: 'none', why: null });
+    const participant = agentWriteChoice({
+      ...base,
+      canHoldWrite: false,
+      scopes: ['read', 'suggest'],
+    });
+    expect(participant).toMatchObject({
+      kind: 'none',
+      why: expect.stringContaining('not an Editor'),
+    });
+    const readOnly = agentWriteChoice({ ...base, canHoldWrite: false, scopes: ['read'] });
+    expect(readOnly).toMatchObject({ kind: 'none', why: expect.stringContaining('read-only') });
+  });
+
+  it('when a connection was last seen, by the day', () => {
+    const now = 10 * 86_400_000;
+    expect(lastSeenText(now - 1000, now)).toBe('Last seen today');
+    expect(lastSeenText(now - 86_400_000, now)).toBe('Last seen yesterday');
+    expect(lastSeenText(now - 3 * 86_400_000, now)).toBe('Last seen 3 days ago');
+    expect(lastSeenText(now + 5000, now)).toBe('Last seen today');
   });
 
   it('counts with their nouns', () => {

@@ -2,7 +2,13 @@
 // step (knowledge-index.ts), the alarm's turns (the backfill of queued pages, the work it owes), and the daily
 // prune. One per room; the room's alarm asks `at` when it is next due and calls `turn`.
 import type { ItemDbHooks, ItemSql } from '@liveworkspace/index-app';
-import { pruneCounters, pruneQuestions, pruneReads } from '@liveknowledge/knowledge';
+import {
+  READS_KEPT_DAYS,
+  pruneCounters,
+  pruneQuestions,
+  pruneReads,
+} from '@liveknowledge/knowledge';
+import { pruneAgentSeen } from './agent-seen';
 import { pruneSuggestions } from './suggestions';
 import {
   hasQueuedPages,
@@ -80,13 +86,14 @@ export class RoomKnowledge {
 }
 
 /** The daily prune (the room's upkeep): reads past 90 days, counters past their window, questions past the cap,
- *  suggestions nobody decided about in 90 days or whose page is gone. */
+ *  suggestions nobody decided about in 90 days or whose page is gone, connections not seen in 90 days. */
 export function pruneKnowledge(sql: ItemSql, now: number): void {
   for (const statement of [
     pruneReads(now),
     pruneCounters(now),
     ...pruneQuestions(),
     ...pruneSuggestions(now),
+    pruneAgentSeen(now, READS_KEPT_DAYS),
   ])
     sql.exec(statement.sql, ...statement.params);
 }

@@ -11,6 +11,8 @@ and AI Settings. **Nothing here is verified in a browser.**
 | the view                                  | `components/ai-knowledge/AiKnowledgeView.tsx`                                                                         |
 | a section's card                          | `components/ai-knowledge/AiSection.tsx`                                                                               |
 | the sections                              | `AgentsSection.tsx`, `ConflictsSection.tsx`, `QuestionsSection.tsx`, `SuggestionsSection.tsx`, `HealthAndContext.tsx` |
+| an agent's card, its menu and its change  | `AgentCard.tsx`, `useAgentWrite.ts`, `AgentWriteDialog.tsx`; `lib/api/knowledge-agents.ts`                            |
+| Connect an Agent                          | `ConnectAgentDialog.tsx`                                                                                              |
 | the words                                 | `lib/knowledge-ask/overview-words.ts`                                                                                 |
 | accept and dismiss a suggestion, refusals | `lib/knowledge-ask/suggestions-api.ts`                                                                                |
 
@@ -33,7 +35,7 @@ the name), one line about it, an optional action at the right, then its rows or 
 
 | Section                       | Rows from             | Empty state                                                   | Editor's actions                                    |
 | ----------------------------- | --------------------- | ------------------------------------------------------------- | --------------------------------------------------- |
-| Connected Agents              | `agents`              | "No Agents Yet", Connect an Agent                             | none                                                |
+| Connected Agents              | `agents`              | "No Agents Yet", Connect an Agent                             | Allow Writing; Stop Writing                         |
 | Pages That Disagree           | `conflicts`, `hasKey` | "No Disagreements Yet"; with no key, a note that it needs one | each side's Is Right, Fix the Other; Not a Conflict |
 | Questions Nobody Could Answer | `questions`           | "No Unanswered Questions Yet"                                 | Draft a Page; Dismiss                               |
 | Edits Suggested by Agents     | `suggestions`         | "No Suggested Edits Yet"                                      | Accept; Dismiss (Open the Page is everyone's)       |
@@ -41,9 +43,17 @@ the name), one line about it, an optional action at the right, then its rows or 
 | Always in Context             | `context`             | "No Pages in Context Yet"                                     | Add a Page; remove                                  |
 | What an Agent Sees            | the read, or nothing  | a made-up page                                                | none                                                |
 
-- **Agents.** `agentDoor(name)`: "MCP", "CLI" and "API Token" are the names the api counts a client under when it
-  sends none; any other name is the client's own. `agentScopes`: `Reads`, and `Suggests Edits` when a waiting
-  suggestion is this agent's. A top page is a button that shows Pages at that page (`openPassage`).
+- **Agents.** `agentDoor(agent)`: the row's `door` when the room noted its token; else, from the name, "MCP", "CLI"
+  and "API Token" (what the api counts a client under when it sends none), any other name being the client's own.
+  `agentScopeChips`: a chip a scope of the row (`Reads`, `Suggests Edits`, `Writes`); a row without scopes shows
+  `Reads`. `lastSeenText`: "Last seen today", "yesterday", "N days ago". A top page is a button that shows Pages
+  at that page (`openPassage`). `agentWriteChoice`: `allow`, `stop`, or `none` with why; the menu, the dialog and
+  the optimistic change are the [agents blueprint](../../024-agents/blueprints/knowledgebase-for-agents.md)'s
+  "The editor's control". The More button is named "More for <name>" (its tooltip the same); the menu is
+  `useMenuButton` and `useMenu`, its one row a verb with its icon at the left.
+- **Connect an Agent.** A `Dialog` (size `md`, a sheet on a phone): the subtitle says what a new connection may
+  do; one paragraph on writing (by `canGrant`); three ways, each an icon tile, a heading, a line and the address,
+  the commands or **Open API Tokens** (closes the dialog, `openSettingsOn('tokens')`); **Done**.
 - **Conflicts.** Each side shows its title (a button to its page), `trustText` and the passage
   (`whitespace-pre-wrap`, six lines at most). `<A> Is Right, Fix the Other` opens B; `<B> Is Right, Fix the Other`
   opens A, each at the passage that disagrees: a side carries `firstBlock` (the passage's `first_block`, from the
@@ -85,14 +95,15 @@ Again**. Offline: one `EmptyState` for the view. Ready: the sections, in the ord
 | Draft a Page; dismiss a question                                   | yes    | no          | no     |
 | Accept or dismiss a suggestion                                     | yes    | no          | no     |
 | Add a page to Always in Context, or take one out                   | yes    | no          | no     |
+| Allow Writing; Stop Writing                                        | yes    | no          | no     |
 
-Gated on `askRights` (`resolve`, `makePages`, `context`, `manageAi`): without the flag the control is not drawn, and
+Gated on `askRights` (`resolve`, `makePages`, `context`, `manageAi`, `grantAgents`): without the flag the control is not drawn, and
 each handler checks it again. Tests, a role at a time: `components/ai-knowledge/AiKnowledgeView.test.tsx` "as edit",
 "as participate", "as view".
 
 ## Telemetry
 
-`UI·Opened·ConnectAgent`; `UI·Used·ConflictDismissed`, `QuestionDismissed`, `SuggestionAccepted`,
+`UI·Opened·ConnectAgent`; `UI·Used·AgentWriteAllowed`, `AgentWriteStopped`, `ConflictDismissed`, `QuestionDismissed`, `SuggestionAccepted`,
 `SuggestionDismissed`; `UI·Added·ContextPage`, `UI·Removed·ContextPage`. No words, names or ids.
 
 ## Tests

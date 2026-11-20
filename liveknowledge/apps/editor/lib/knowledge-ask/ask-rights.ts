@@ -18,6 +18,8 @@ export type AskRights = {
   resolve: boolean;
   /** Add a page to Always in Context, or take one out. */
   context: boolean;
+  /** Allow a connected agent to write here, or stop it. */
+  grantAgents: boolean;
 };
 
 export function askRights(input: {
@@ -33,5 +35,6 @@ export function askRights(input: {
     makePages: editor,
     resolve: editor,
     context: editor,
+    grantAgents: editor,
   };
 }

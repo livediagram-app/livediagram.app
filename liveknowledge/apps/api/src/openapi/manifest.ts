@@ -714,7 +714,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      'The AI Knowledge tab: the agents that read this knowledgebase in the last 30 days, the questions nobody could answer, the pages that disagree, the pages every agent is handed with their size against the budget, and the counts of Verified, Review Due and Never Verified pages.',
+      "The AI Knowledge tab: the agents connected to this knowledgebase in the last 30 days, each with how it connects, the scopes it holds here and when it was last seen (its token's id only for an Editor in person, who may change those scopes), the questions nobody could answer, the pages that disagree, the pages every agent is handed with their size against the budget, and the counts of Verified, Review Due and Never Verified pages.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeOverviewResponse',
@@ -808,7 +808,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Replace a page's writing with Markdown, or add Markdown after it (an agent's `write_page`), as `{ markdown, mode? }`. Editor only; an agent needs the `write` scope, and is refused 409 `page_verified` on a verified page, where it suggests the edit instead. Answers as the article write does. In every page route `{tabId}` takes the page's id, or its title when one page alone has it.",
+      "Replace a page's writing with Markdown, or add Markdown after it (an agent's `write_page`), as `{ markdown, mode? }`. Editor only; an agent needs the `write` scope, and is refused 409 `page_verified` on a verified page and 409 `page_review_due` on one whose review is due, where it suggests the edit instead. Answers as the article write does. In every page route `{tabId}` takes the page's id, or its title when one page alone has it.",
     auth: 'clerk',
     tokenUsable: true,
     requestSchema: 'WritePageRequest',

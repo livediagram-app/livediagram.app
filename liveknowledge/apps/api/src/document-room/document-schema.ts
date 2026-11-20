@@ -22,6 +22,7 @@ import {
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SCHEMA } from '../versions/version-schema';
 import { knowledgeSchemaStep } from '../knowledge/knowledge-schema';
+import { agentSeenSchemaStep } from '../knowledge/agent-seen';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -330,6 +331,10 @@ const V11 = NAMED_STORE_STEP;
 // The knowledge tables and the triggers that mark a written page for its index (knowledge/knowledge-schema.ts).
 const V12 = knowledgeSchemaStep;
 
+// The connections a knowledgebase has seen, by token id (knowledge/agent-seen.ts): what Connected Agents reads a
+// connection's scopes from. Additive, IF NOT EXISTS.
+const V13 = agentSeenSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -343,6 +348,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V10,
   V11,
   V12,
+  V13,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

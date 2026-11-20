@@ -351,7 +351,15 @@ describe('AI Knowledge', () => {
       expect(await res.json()).toEqual({
         agents: [
           {
+            id: expect.any(String),
             name: 'Coding Agent',
+            door: 'mcp',
+            // What the room holds for the token: the default, whatever this test's caller was handed.
+            scopes: ['read', 'suggest'],
+            canHoldWrite: true,
+            lastSeenAt: expect.any(Number),
+            // The token's id is an Editor's alone, in person.
+            ...(who === 'editor' ? { tokenId: 'tok_1' } : {}),
             readsThisWeek: 2,
             topPages: [{ tab: 'deploys', title: 'Deploys' }],
           },
