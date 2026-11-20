@@ -237,6 +237,8 @@ export function TableCellView({
         display: 'flex',
         justifyContent: cellJustify,
         alignItems,
+        // Wrapped lines follow the cell's alignment, as they do while it is edited (TableCellEditor).
+        textAlign: cellAlignX,
         color: cs?.textColor ?? (isHeader ? headerTextColor : undefined),
         // Selection outline in the table's own accent (its
         // stroke, which tracks the theme) rather than a fixed
