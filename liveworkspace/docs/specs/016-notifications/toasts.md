@@ -23,8 +23,12 @@ Each product keeps its own copy rules for naming what a toast acted on (its `doc
 
 A toast reads as one line: **icon, message, actions, close**, left to right. A short message with its action
 ("“Roadmap” moved to the Trash", Undo) is a single row, never a card with its button stacked underneath. It wraps only
-when the words genuinely do not fit: the message wraps first, and the actions then drop to a row of their own under
-it, aligned to the toast's end. The close button stays in the top row's corner, whatever wraps.
+when the words genuinely do not fit: the message wraps first, keeping its buttons beside it while it has at least 10rem
+to wrap in (a phone's toast is two lines of text with its button beside them, not a line with the button stranded
+under it), and only then do the actions drop to a row of their own under it, aligned to the toast's end. The close button stays in the top row's corner, whatever wraps.
+
+**Every toast keeps one width.** A message that has to sit on one line is written short enough for it, never given a
+wider card (the owner, 2026-11-20, of the guest sign-in toast).
 
 The copy is written to fit. A message is one short sentence, or two very short ones: what happened, then what to do
 ("Couldn't duplicate that canvas. Try again."). Aim for about 50 characters, so it sits on one line on a laptop with
@@ -67,13 +71,18 @@ The last button is the primary one (the brand-coloured answer: Undo, Reload); an
   (`TOAST_ANSWER_TIMEOUT_MS`), long enough to reach for Undo, and then leaves. What its button offered is still
   reachable elsewhere (a deleted canvas waits in the Trash, an agent's change in the history).
 - **A standing toast** (`sticky`) says something that stays true until it is dealt with: a new version of the editor
-  is ready, the account is not answering, nothing on the tab is in view, a board shows a template's example cards. It
+  is ready, the account is not answering, nothing on the tab is in view, a board shows a template's example cards, a
+  guest has been editing a while without an account. It
   does not time out: it leaves when it is closed, when its action is
   taken, or when what it says stops being true (the account answers).
 - **Nothing in view** (every editor): while everything on the tab has scrolled off screen, a standing info toast says
   **"Nothing in view"** with **Show All**, which fits the tab to the screen as Fit does (the owner, 2026-11-19: a
   toast, not a callout over the zoom cluster). It leaves when something is back in view; closed, it stays away until
   the tab next scrolls out of view.
+- **Sign in** (every editor, never the Explorer): about five minutes into a guest's session, a standing, highlighted toast
+  says, on one line, "Sign in to get Teams, AI & even more powerful features." with **Sign In**, which goes to the sign-in page and back (the owner, 2026-11-20: the sign-in banner
+  became this toast, without its Learn More). Closed, it stays away in that browser; it leaves when the guest signs
+  in or zen mode starts. Each product's `docs/specs/014-identity/sign-in-encouragement.md` has the rest.
 - **Hovering or focusing a toast pauses its timer**, and leaving it resumes with the time it had left, never a fresh
   start. A hidden page (another browser tab) pauses it too.
 - The same message in the same tone, while one is still up, is not shown twice.
@@ -148,14 +157,18 @@ A toast is easy to miss. Every one is also written to a list the person can open
   that is wider.
 - **Clear of the bottom chrome, and of banners.** The stack sits 16px above the bottom edge (clear of the home
   indicator), and above anything that occupies the bottom of the screen beneath it: the editor's tab bar, its
-  bottom-right cluster and the whiteboard dock, the Explorer's bottom bar, and the sign-in banner. It lifts 8px clear
+  bottom-right cluster and the whiteboard dock, and the Explorer's bottom bar. It lifts 8px clear
   of the highest of those that overlaps its column, measured as they move or resize. A popover opened up from that
   chrome (the Session strip's Timer and Vote, Layers) is a floor too while it is open, so a standing toast never covers
   the tool just opened (a phone's example cards toast sat over the Timer's Start).
-- **Beside the bottom-right cluster on desktop.** From 640px, where the canvas's bottom-right cluster (Undo, Redo,
-  Tidy, Layers, Style, Zoom) would sit beneath the centred stack, the stack stays on the cluster's line instead of
-  rising above it: its bottom level with the cluster's, its right edge 8px left of Undo, the toasts aligned to that
-  edge. Where the cluster leaves the centre clear, the stack stays centred. On a phone the cluster is a floor like the
+  A template start's foot row (its Save switch) is a floor on a phone only, where the start is a bottom sheet; from
+  640px the start is a centred dialog, and standing on its foot row lifted the toast onto the dialog, off the Undo
+  row (the owner, 2026-11-20).
+- **On the bottom-right cluster's line on desktop.** From 640px the stack's bottom is level with the canvas's
+  bottom-right cluster (Undo, Redo, Tidy, Layers, Style, Zoom), so a toast and Undo read as one row (the owner,
+  2026-11-20: a centred toast 8px lower looked out of line). Where the cluster would sit beneath the centred stack, the
+  stack's right edge stands 8px left of Undo, the toasts aligned to that edge; where it leaves the centre clear, the
+  stack stays centred. On a phone the cluster is a floor like the
   rest.
 - **Stacking order.** Toasts sit at the top of the stacking ladder (`--z-toast`), over dialogs, so a failure shows even
   while a dialog is open.
@@ -170,6 +183,12 @@ A toast is easy to miss. Every one is also written to a list the person can open
 - Action buttons are compact text buttons (32px tall, 44px to tap on a touch screen): the primary in the brand colour,
   a secondary in slate.
 - The close is a 32px icon button, 44px to tap on a touch screen.
+
+**Highlight** (`highlight`, an action toast's option): a solid emerald card (emerald-700, emerald-800 in dark
+mode) with white text, a sparkle in place of the tone's icon, a white primary button and a light close. It is for
+the rare toast that has to be noticed, today only the guest sign-in toast (the owner, 2026-11-20: "color it so
+people notice it, maybe green"). White reads at 5.5:1 on emerald-700 and 7.7:1 on emerald-800, and the primary's
+emerald-800 label at 7.7:1 on white. In forced colours the fill drops and the border stays.
 
 ## Motion
 

@@ -1,14 +1,15 @@
 'use client';
 
 // One toast (liveworkspace/docs/specs/016-notifications/toasts.md "One line by default" and "Look"): icon, message,
-// actions, close, on one row. The message's flex basis is its own width, so a short one shares the row
-// with its buttons; one too long for the row takes it whole, and the buttons drop to a row of their own at
-// its end. The close stays in the top row's corner. Presentational: the stack owns timing and leaving.
+// actions, close, on one row. The message keeps its buttons beside it, wrapping onto a second line itself, while it
+// has 10rem to wrap in; only then do the buttons drop to a row of their own at its end (a phone's sign-in toast had
+// Sign In stranded under a one-line message, the owner, 2026-11-20). The close stays in the top row's corner. Presentational: the stack owns timing and leaving.
 import type { HTMLAttributes, ReactNode, Ref } from 'react';
 import {
   lucideCircleAlert,
   lucideCircleCheck,
   lucideInfo,
+  lucideSparkles,
   lucideTriangleAlert,
 } from '@liveworkspace/icons/lucide';
 import { CloseIcon } from '../icons/actions';
@@ -41,10 +42,21 @@ export const TOAST_ICONS: Readonly<Record<ToastTone, ReturnType<typeof lucideGly
   error: lucideGlyph(lucideCircleAlert, 16),
 };
 
+// The highlight look (toasts.md "Highlight"): a solid emerald card for the one toast that asks to be noticed (the
+// guest sign-in toast), with a sparkle for its icon. White on emerald-700 reads at 5.5:1 and on emerald-800 at 7.7:1;
+// the white Sign In button's emerald-800 label at 7.7:1. In forced colours the fill drops and the border stays.
+const HIGHLIGHT_SURFACE =
+  'rounded-xl border border-emerald-800/30 bg-emerald-700 text-white shadow-lg shadow-emerald-900/25 dark:border-emerald-400/30 dark:bg-emerald-800 dark:shadow-black/40';
+const HIGHLIGHT_ICON = lucideGlyph(lucideSparkles, 16);
+
 const ACTION_BASE =
   'touch-target relative inline-flex h-8 shrink-0 items-center rounded-lg px-2.5 text-sm font-semibold whitespace-nowrap transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:cursor-not-allowed disabled:opacity-50';
 const ACTION_PRIMARY =
   'text-brand-700 enabled:hover:bg-brand-50 dark:text-brand-300 dark:enabled:hover:bg-brand-500/15';
+const ACTION_HIGHLIGHT_PRIMARY =
+  'bg-white px-3 text-emerald-800 shadow-sm enabled:hover:bg-emerald-50 focus-visible:outline-white';
+const ACTION_HIGHLIGHT_SECONDARY =
+  'text-white/90 enabled:hover:bg-white/15 enabled:hover:text-white';
 const ACTION_SECONDARY =
   'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-300 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
 
@@ -63,6 +75,7 @@ export function ToastCard({
   onClose,
   leaving = false,
   full = false,
+  highlight = false,
   className = '',
   ref,
   ...rest
@@ -75,21 +88,27 @@ export function ToastCard({
   leaving?: boolean;
   // Arrived on a full stack: the bolder entrance (toast-in-full), so a new toast on a busy stack is seen.
   full?: boolean;
+  // The highlight look: solid emerald, a sparkle icon, a white primary button.
+  highlight?: boolean;
 } & Omit<HTMLAttributes<HTMLDivElement>, 'role' | 'children'>) {
-  const Icon = TOAST_ICONS[tone];
+  const Icon = highlight ? HIGHLIGHT_ICON : TOAST_ICONS[tone];
   return (
     <div
       ref={ref}
       role={tone === 'error' ? 'alert' : 'status'}
       data-toast-tone={tone}
-      className={`flex w-full items-start gap-3 py-1.5 pl-3 pr-1.5 sm:w-auto sm:max-w-[36rem] ${TOAST_SURFACE} ${BORDER[tone]} ${leaving ? 'pointer-events-none animate-toast-out' : full ? 'pointer-events-auto animate-toast-in-full' : 'pointer-events-auto animate-toast-in'} ${className}`}
+      data-toast-highlight={highlight ? '' : undefined}
+      className={`flex w-full items-start gap-3 py-1.5 pl-3 pr-1.5 sm:w-auto sm:max-w-[36rem] ${highlight ? HIGHLIGHT_SURFACE : `${TOAST_SURFACE} ${BORDER[tone]}`} ${leaving ? 'pointer-events-none animate-toast-out' : full ? 'pointer-events-auto animate-toast-in-full' : 'pointer-events-auto animate-toast-in'} ${className}`}
       {...rest}
     >
-      <span className={`flex h-8 shrink-0 items-center ${TOAST_ICON_TINT[tone]}`} aria-hidden>
+      <span
+        className={`flex h-8 shrink-0 items-center ${highlight ? 'text-white' : TOAST_ICON_TINT[tone]}`}
+        aria-hidden
+      >
         <Icon />
       </span>
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-0.5">
-        <p className="min-w-0 flex-[1_1_auto] py-1.5 text-sm leading-5">{message}</p>
+        <p className="min-w-0 flex-[1_1_10rem] py-1.5 text-sm leading-5">{message}</p>
         {actions.length > 0 ? (
           <div className="ml-auto flex shrink-0 items-center gap-1">
             {actions.map((action) => (
@@ -99,7 +118,7 @@ export function ToastCard({
                 onClick={action.onSelect}
                 disabled={action.disabled}
                 aria-label={action.ariaLabel}
-                className={`${ACTION_BASE} ${action.primary ? ACTION_PRIMARY : ACTION_SECONDARY}`}
+                className={`${ACTION_BASE} ${highlight ? (action.primary ? ACTION_HIGHLIGHT_PRIMARY : ACTION_HIGHLIGHT_SECONDARY) : action.primary ? ACTION_PRIMARY : ACTION_SECONDARY}`}
               >
                 {action.label}
               </button>
@@ -111,7 +130,7 @@ export function ToastCard({
         type="button"
         onClick={onClose}
         aria-label="Dismiss"
-        className="touch-target relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+        className={`touch-target relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition focus-visible:outline-2 focus-visible:outline-offset-2 ${highlight ? 'text-white/80 hover:bg-white/15 hover:text-white focus-visible:outline-white' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-brand-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'}`}
       >
         <CloseIcon size={12} />
       </button>

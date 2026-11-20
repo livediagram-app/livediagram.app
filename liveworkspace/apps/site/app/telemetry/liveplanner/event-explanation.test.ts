@@ -106,7 +106,7 @@ describe('eventExplanation', () => {
     );
   });
 
-  it('names the sign-in banner the Explorer showed', () => {
+  it('names the sign-in banner the Explorer showed until November 2026', () => {
     expect(eventExplanation('UI', 'Selected', 'SignInBannerExplorer')).toBe(
       EXACT['UI|Selected|SignInBannerExplorer'],
     );

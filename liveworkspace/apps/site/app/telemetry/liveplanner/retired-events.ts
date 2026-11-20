@@ -5,6 +5,7 @@
 // Their explanation sentences stay in event-explanations.ts for Search.
 
 import { isRetiredExplorerEvent } from '../_shared/retired-explorer';
+import { isRetiredSignInBannerEvent } from '../_shared/retired-sign-in-banner';
 
 // The editor's Activity panel (removed 2026-10-03, docs/specs/012-collaboration/README.md "Removed: the
 // Activity panel"): its per-entry revert, the panel opening, its Settings
@@ -441,6 +442,7 @@ const PLAN_TOUR_STEP_CARDS = new Set([
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (isRetiredExplorerEvent(category, action, type)) return true;
+  if (isRetiredSignInBannerEvent(category, action, type)) return true;
   if (isRetiredDiagramTourEvent(category, action, type)) return true;
   if (FORMAT_AND_ISOMETRIC.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isFormatPanelSetting(category, action, type)) return true;

@@ -9,6 +9,7 @@ import {
   TOAST_EDGE_PX,
   TOAST_FLOOR_CHANGED_EVENT,
   TOAST_FLOOR_SELECTOR,
+  TOAST_PHONE_FLOOR_SELECTOR,
   TOAST_RISEN_SELECTOR,
   TOAST_SIDE_SELECTOR,
   toastFloor,
@@ -29,6 +30,7 @@ export function useToastFloor(active: boolean, count: number): ToastPlacement {
       // A fresh rect per call, so marking it is safe. Kept terse: this hook is in the Explorer's first load.
       const r: FloorRect = el.getBoundingClientRect();
       r.rises = el.matches(TOAST_RISEN_SELECTOR);
+      r.phoneOnly = el.matches(TOAST_PHONE_FLOOR_SELECTOR);
       (el.matches(TOAST_SIDE_SELECTOR) ? sides : floors).push(r);
     }
     const next = toastPlacement({
@@ -45,32 +47,20 @@ export function useToastFloor(active: boolean, count: number): ToastPlacement {
 }
 
 /**
- * Where a centred column stands over the bottom chrome `selector` names (toast-floor.ts): the toast stack's floor, and
- * the editor's sign-in banner's (docs/specs/014-identity/sign-in-encouragement.md). `key` re-measures when the column's
- * own content changes (the toast count).
+ * Where a centred column a toast wide stands over the bottom chrome `selector` names (toast-floor.ts), for a bottom
+ * notice other than the stack (a template start's sheet over the tab bar). `key` re-measures when the column's own
+ * content changes.
  */
-export function useChromeFloor(
-  active: boolean,
-  key: number,
-  selector: string,
-  columnWidth?: number,
-): number {
+export function useChromeFloor(active: boolean, key: number, selector: string): number {
   const [floor, setFloor] = useState(TOAST_EDGE_PX);
-  useMeasure(
-    active,
-    key,
-    selector,
-    (found) => {
-      const next = toastFloor({
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
-        obstacles: found.map((el) => el.getBoundingClientRect()),
-        ...(columnWidth !== undefined ? { columnWidth } : {}),
-      });
-      setFloor((prev) => (prev === next ? prev : next));
-    },
-    columnWidth,
-  );
+  useMeasure(active, key, selector, (found) => {
+    const next = toastFloor({
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      obstacles: found.map((el) => el.getBoundingClientRect()),
+    });
+    setFloor((prev) => (prev === next ? prev : next));
+  });
   return floor;
 }
 
@@ -81,7 +71,6 @@ function useMeasure(
   key: number,
   selector: string,
   onMeasure: (found: Element[]) => void,
-  extra?: number,
 ): void {
   const latest = useRef(onMeasure);
   useLayoutEffect(() => {
@@ -114,5 +103,5 @@ function useMeasure(
       window.removeEventListener(TOAST_FLOOR_CHANGED_EVENT, measure);
       document.removeEventListener('animationend', measure, true);
     };
-  }, [active, key, selector, extra]);
+  }, [active, key, selector]);
 }

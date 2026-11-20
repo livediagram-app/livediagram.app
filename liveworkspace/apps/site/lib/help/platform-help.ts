@@ -1,8 +1,7 @@
 // The Explorer's help articles on liveworkspace.app (liveworkspace/docs/specs/010-site/site.md "Help"): the articles of
 // All Apps' help (the one help centre, liveworkspace/docs/specs/017-help/help-centre.md) that speak of the Explorer in
 // no app, where it mixes every app's work and an app's articles would speak of its kind alone. Names and addresses
-// only, so the Explorer's bundle never carries the articles' text. The Help button, the sign-in banner and Search
-// read it.
+// only, so the Explorer's bundle never carries the articles' text. The Help button and Search read it.
 
 export type ExplorerArticle = {
   /** Its id in Search: the old platform page's slug under /help/explorer ('' for the overview). */
@@ -76,6 +75,3 @@ const VIEW_ARTICLE: Record<string, string> = {
 
 /** The path of the article a view's Help button opens, or undefined for a view with none. */
 export const explorerViewArticlePath = (kind: string): string | undefined => VIEW_ARTICLE[kind];
-
-/** The article the sign-in banner's Learn More opens. */
-export const SIGN_IN_ARTICLE_PATH = explorerArticlePath('signing-in');

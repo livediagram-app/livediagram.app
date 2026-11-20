@@ -23,15 +23,15 @@ describe('useSignInNudge', () => {
   it("shows a guest's nudge after five minutes, hides it while hidden without restarting, and dismisses it", () => {
     const { result, rerender } = render(guest);
     act(() => void vi.advanceTimersByTime(FIVE_MINUTES - 1));
-    expect(result.current.showSignInBanner).toBe(false);
+    expect(result.current.showSignInNudge).toBe(false);
     act(() => void vi.advanceTimersByTime(1));
-    expect(result.current.showSignInBanner).toBe(true);
+    expect(result.current.showSignInNudge).toBe(true);
     rerender({ ...guest, hidden: true });
-    expect(result.current.showSignInBanner).toBe(false);
+    expect(result.current.showSignInNudge).toBe(false);
     rerender(guest);
-    expect(result.current.showSignInBanner).toBe(true);
+    expect(result.current.showSignInNudge).toBe(true);
     act(() => result.current.dismissSignIn());
-    expect(result.current.showSignInBanner).toBe(false);
+    expect(result.current.showSignInNudge).toBe(false);
     expect(localStorage.getItem(KEY)).toBe('1');
   });
 
@@ -42,7 +42,7 @@ describe('useSignInNudge', () => {
     ]) {
       const { result } = render(props);
       act(() => void vi.advanceTimersByTime(FIVE_MINUTES));
-      expect(result.current.showSignInBanner).toBe(false);
+      expect(result.current.showSignInNudge).toBe(false);
     }
   });
 });

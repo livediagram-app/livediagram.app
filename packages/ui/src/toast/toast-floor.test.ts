@@ -5,6 +5,7 @@ import {
   TOAST_FLOOR_SELECTOR,
   toastFloor,
   toastPlacement,
+  TOAST_PHONE_FLOOR_SELECTOR,
   type FloorRect,
 } from './toast-floor';
 
@@ -76,15 +77,7 @@ describe('toastFloor', () => {
     ]) {
       expect(TOAST_FLOOR_SELECTOR).toContain(`[${hook}]`);
     }
-  });
-
-  // The sign-in banner stands on the editor's bottom chrome too (docs/specs/014-identity/sign-in-encouragement.md),
-  // with its own wider column: the Undo / Timer / Vote / Poll cluster beside a toast's column is under the banner's.
-  it('measures a wider column when asked, so the sign-in banner clears the session cluster', () => {
-    const cluster = { top: 790, left: 1060, right: 1424, width: 364, height: 46 };
-    const at = { viewportWidth: 1440, viewportHeight: 900, obstacles: [cluster] };
-    expect(toastFloor(at)).toBe(TOAST_EDGE_PX);
-    expect(toastFloor({ ...at, columnWidth: 768 })).toBe(900 - 790 + 8);
+    expect(TOAST_PHONE_FLOOR_SELECTOR).toBe('[data-start-footer]');
   });
 });
 
@@ -103,11 +96,26 @@ describe('toastPlacement', () => {
     ).toEqual({ bottom: 900 - 836, right: 1440 - 895 + TOAST_FLOOR_GAP_PX });
   });
 
-  it('stays centred on its floors where the cluster leaves the centre clear', () => {
+  it("ignores a template start's foot row from 640px (a centred dialog), and stands on it on a phone (a sheet)", () => {
+    expect(
+      toastPlacement({
+        viewportWidth: 1440,
+        viewportHeight: 900,
+        floors: [tabBar, { ...rect(300, 700, 840, 66), phoneOnly: true }],
+        sides: [cluster],
+      }),
+    ).toEqual({ bottom: 900 - 836, right: 1440 - 895 + TOAST_FLOOR_GAP_PX });
+    const sheetFoot = { ...rect(0, 600, 390, 64), phoneOnly: true };
+    expect(
+      toastPlacement({ viewportWidth: 390, viewportHeight: 664, floors: [sheetFoot], sides: [] }),
+    ).toEqual({ bottom: 664 - 600 + TOAST_FLOOR_GAP_PX, right: null });
+  });
+
+  it("stays centred where the cluster leaves the centre clear, still on the cluster's line", () => {
     const wide = rect(1500, 790, 380, 46);
     expect(
       toastPlacement({ viewportWidth: 1920, viewportHeight: 900, floors: [tabBar], sides: [wide] }),
-    ).toEqual({ bottom: 48 + TOAST_FLOOR_GAP_PX, right: null });
+    ).toEqual({ bottom: 900 - 836, right: null });
   });
 
   it('never stands lower than a floor taller than the cluster, and ignores a hidden one', () => {

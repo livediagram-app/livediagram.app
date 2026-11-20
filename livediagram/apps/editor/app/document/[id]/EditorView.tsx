@@ -44,7 +44,6 @@ import {
 import { LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
 import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
-import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
@@ -59,7 +58,7 @@ import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopove
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { EditorPhotoImport } from '@/components/chrome/EditorPhotoImport';
-import { useSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
+import { useSignInToast } from '@liveworkspace/workbench/hooks/ui/useSignInToast';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -219,9 +218,10 @@ export function EditorView() {
   // The viewer's own light / dark chrome (docs/specs/007-editor/editor-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
-  // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed into the session.
-  const { showSignInBanner, dismissSignIn } = useSignInNudge({
-    dismissKey: SIGNIN_BANNER_DISMISS_KEY,
+  // The guest sign-in toast (docs/specs/014-identity/sign-in-encouragement.md), delayed into the session. Its dismiss
+  // key is the banner's it replaced, so whoever closed that stays rid of it.
+  useSignInToast({
+    dismissKey: 'livediagram:signin-banner-dismissed:v1',
     accountUserId,
     appChrome,
     hidden: zenMode,
@@ -536,17 +536,6 @@ export function EditorView() {
                                 <EditorTours />
                               </AreaErrorBoundary>
 
-                              {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
-            the bottom chrome (the tab bar, the Undo / session cluster, the dock) rather than over it, above the canvas
-            (z-[var(--z-overlay)]). */}
-                              {showSignInBanner ? (
-                                <SignInBanner
-                                  surface="Editor"
-                                  onDismiss={dismissSignIn}
-                                  placementClassName="z-[var(--z-overlay)]"
-                                  standOnChrome
-                                />
-                              ) : null}
                               {/* What a pasted board brought across (docs/specs/020-import-export/board-scene.md). */}
                               <BoardSceneNotice
                                 notice={boardSceneInsert.notice}

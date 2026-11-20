@@ -21,7 +21,7 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
 - Every colour swatch was an empty square, so a colour could not be picked.
 - Every template preview (the editor's template step, the Explorer, the marketing gallery) was a flat blank box: the
   dark re-lighting veil (`preview-art-tile`) was repainted black and blended the art away.
-- The sign-in banner, painted only with a gradient, turned see-through over the canvas.
+- The sign-in banner, painted only with a gradient, turned see-through over the canvas (it is a toast now, which forced colours draw as any other).
 
 ## The rule
 
@@ -53,7 +53,6 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
 - `../packages/tailwind-config/theme.css`, `@utility forced-edge`: the fill-only button's edge.
 - `../packages/template-previews/src/preview-art-tile.css`: the tile and its veil keep their colours.
 - `apps/editor/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`: `forced-color-adjust-none` on the colour itself.
-- `apps/editor/components/chrome/SignInBanner.tsx`: a solid background under the gradient.
 
 ## Testing
 

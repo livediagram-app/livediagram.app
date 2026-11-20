@@ -1,150 +1,91 @@
 # Sign-in encouragement
 
-A dismissible bottom-of-screen banner that nudges unsigned (guest)
-visitors to sign in, plus a "Learn More" modal that lists the concrete
-benefits. It shows on the Explorer and, after a delay, inside the
-editor. Pure encouragement, never a wall: the canvas and the Explorer
-keep working without signing in (see
-[04-auth-and-guest-access.md](auth-and-guest-access.md)).
+A standing toast that nudges a guest to sign in, a while into a session in the editor, with **Sign In** as its one
+action. Pure encouragement, never a wall: the canvas keeps working without signing in
+([Auth + guest access](auth-and-guest-access.md)).
 
 ## Goals
 
-- Convert guests to accounts by surfacing what they gain, at the
-  moments they're invested in their work.
-- Be attractive and modern: a floating gradient card, not a thin grey
-  bar with a paragraph.
-- Stay out of the way: one click dismisses it, the dismissal sticks,
-  and on the canvas it never interrupts the first few minutes.
+- Convert guests to accounts by saying what they gain, at the moment they're invested in their work.
+- Stay out of the way: it never greets someone the instant they open their work, one press closes it, and the close
+  sticks.
+- One notification surface: it is a toast on the one shared toast ([Toasts](../../../../liveworkspace/docs/specs/016-notifications/toasts.md)), not a banner of its own (the
+  owner, 2026-11-20: "Make the sign-in banner a toast, losing the Learn More and keeping the Sign In as the CTA").
 
 ## Where it shows
 
-The same `SignInBanner` component mounts on two surfaces. Both share
-the visibility gate and the dismissal state, so dismissing it anywhere
-hides it everywhere.
+In the editor only (`app/project/[id]/EditorView.tsx` through `editor-view-hooks.ts`, through the shared `useSignInToast`,
+`packages/workbench/src/hooks/ui/useSignInToast.ts`). The Explorer shows no sign-in toast and no banner (the owner,
+2026-11-20); its sidebar's Sign In to Use Teams nudge still asks a guest to sign in.
 
-Common gate (all must hold):
+It shows when all of these hold:
 
-- The visitor is **not** signed in (no `accountUserId`; a guest owner id
-  doesn't count).
-- The visitor hasn't dismissed it (see Dismissal).
+- the visitor is **not** signed in (no `accountUserId`; a guest owner id doesn't count);
+- the visitor hasn't closed it in this browser (see Dismissal);
+- about **five minutes** have passed in this editor session (`SIGNIN_BANNER_DELAY_MS` in the shared
+  `packages/workbench/src/hooks/ui/useSignInNudge.ts`), so it never greets someone the instant they open a project.
 
-**Explorer**: the Explorer lives on liveworkspace.app, which has no
-banner; its sidebar asks a guest to sign in for Teams instead.
-
-**Toasts stand on it.** While the banner shows, in the Explorer or the editor, its card is part of the bottom chrome
-the toast stack clears ([Toasts](../004-interface-design/toasts.md) "Placement"): the stack sits 8px above the card's
-top instead of landing on its words, as a "Project deleted · Undo" once did.
-
-**Editor** (`app/project/[id]/EditorView.tsx`): shown only **after a
-~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS` in the shared
-`../packages/workbench/src/hooks/ui/useSignInNudge.ts`), so it
-never greets someone the instant they open a project. It **stands on the
-bottom chrome**, 8px above the tab bar, the bottom-right cluster (Undo / Redo, the
-Session strip's Timer, Vote and Poll, Layers, Zoom), measured as
-the toast stack measures its floor (`useChromeFloor`, `BOTTOM_CHROME_SELECTOR`), so it never
-covers a control. It once sat over that cluster, and a guest Editor running a session had to
-dismiss it to reach the timer or the vote. It is drawn over the canvas, and is additionally hidden:
+It is never shown:
 
 - in **embed** mode (the read-only `/embed` iframe, [Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and
-- in **zen** mode ([Zen mode](../007-editor/zen-mode.md)), but entering/leaving zen does **not**
-  restart the delay; the timer runs on the stable gate (sign-in enabled / signed
-  in / embed / dismissed) and zen only hides the card at render, and
-- while a **panel opened from the chrome** is open (Tidy Up, Layers, Style and the rest of the bottom-right cluster, the
-  Explorer panel): they reach up into the banner's band and it lay over their lower rows, so it steps aside until the
-  panel closes (a `[data-dock-button]` control with `aria-expanded="true"`).
+- in **zen** mode ([Zen mode](../007-editor/zen-mode.md)), but entering or leaving zen does **not** restart the
+  delay: the timer runs on the stable gate (signed in / embed / dismissed) and zen only takes the toast down until
+  zen ends.
 
-It never needs to step aside for a tour: tours draw no banner, and every card is the tour popover
-([Editor tours](../007-editor/editor-tour.md) "Where it appears").
+The delay is per editor session (per page load); it isn't persisted across reloads. Opening project after project in
+quick succession never triggers it; staying in one for five minutes or more does.
 
-The delay is per editor session (per page load); it isn't persisted
-across reloads. Opening project after project in quick succession
-never triggers it; staying in one for 5+ minutes does.
+## The toast
 
-## Banner
+A standing toast in the highlight look, solid green so it is noticed ([Toasts](../../../../liveworkspace/docs/specs/016-notifications/toasts.md) "Timing" and "Look"), raised by `toast.action` under the `sign-in` key:
 
-- Fixed to the bottom of the viewport, a centred floating card with a
-  max width, rounded corners, shadow, and a brand gradient, visually a
-  peer of the app's other branded surfaces, not chrome.
-- Its gradient is `brand-700` to `brand-800` in light and dark alike, in white: the words read on it
-  at 5.9:1 and 7.6:1, and the supporting line, at 90% white, at 5.1:1 (WCAG 2.2 AA,
-  [Colour scheme](../004-interface-design/color-scheme.md)). The lighter brand steps fail it. The
-  reasons modal's header wears the same gradient.
-- Contents: a small icon/illustration, a headline ("Sign in to access
-  Teams & AI"), one line of supporting copy saying what those give and
-  that projects sync ("Share with your team, build with AI, sync across
-  devices."), a primary **Sign In**
-  button (→ `/sign-in/`), a secondary **Learn More** button (opens the
-  reasons modal), and a dismiss (×) control.
-- Responsive: the copy and buttons stack / shrink gracefully on a
-  phone width. On a phone held sideways (the `landscape-phone` variant: a touch screen under 500px
-  tall) it is one slim row: the supporting line is left out and the padding tightens, so it covers
-  as little of the short screen as it can.
+- One line: **"Sign in to get Teams, AI & even more powerful features."**
+- One action, **Sign In** (Title Case, the primary button), which goes to the editor's sign-in page (`/sign-in/`) with
+  the current address as the return path, so the guest lands back on the same tab after signing in.
+- The toast's close button (or Escape with the focus inside it) closes it.
+- It does not time out, and it shows even with In-Editor Notifications off, as every standing toast does. Where it
+  sits, clear of the tab bar and the bottom-right cluster, is the toast stack's to decide
+  ("Placement"), so it never covers a control somebody is running a session with.
+- When it stops being wanted while it is up (the guest signs in, zen mode starts, the editor closes), it is taken down by
+  its key.
 
-## Learn-more modal
+The line is the owner's, the same in every editor (2026-11-20), kept short enough to sit on one line beside Sign In
+and the close at a toast's usual widest, so every toast keeps one width ([Toasts](../../../../liveworkspace/docs/specs/016-notifications/toasts.md) \"One line by default\").
+On a phone it may wrap.
 
-Reuses the app's portal-based modal pattern (Escape + backdrop close).
-Lists the benefits, each with an icon, headline, and a sentence:
-
-1. **Keep your projects safe.** Guest projects live under a
-   per-browser id; clearing your browser cache or cookies can lose
-   access to them. Signing in ties them to your account so they
-   survive a cache clear or browser restart.
-2. **Open them anywhere.** Your work syncs to your account, so the
-   same projects are there on your laptop, desktop, and phone.
-3. **Work as a team.** Create teams, invite teammates by email, and
-   share a team library everyone can manage ([Teams](../013-workspace/teams.md), [Team shared projects](../013-workspace/team-shared-projects.md)).
-4. **Use your real name.** Shared projects and live cursors show your
-   account name instead of a random guest identity, so collaborators
-   know who did what.
-5. **Your shares, organised.** Manage every share link and expiry from
-   one account instead of one browser.
-
-The modal's footer carries the same primary **Sign In** call to action.
-
-It is fine to refine the exact wording over time; the five benefit
-themes (durability, cross-device, teams, identity, share management)
-are the substance.
+There is no Learn More and no reasons dialog any more: the line says what an account gives, and the guest-vs-account
+help article says the rest.
 
 ## Dismissal
 
-- The × hides it and records the dismissal in `localStorage` under
-  `liveplanner:signin-banner-dismissed:v1` via the shared safe-storage
+- Closing the toast records the dismissal in `localStorage` under `liveplanner:signin-banner-dismissed:v1` (the key the
+  banner it replaced used, so whoever closed the banner is never shown the toast) via the shared safe-storage
   helpers, synced across tabs through the native `storage` event.
-  (Escape is reserved for the Learn-more modal, so it doesn't also
-  dismiss the banner underneath.)
-- Dismissal is per-device and permanent for that browser (there's no
-  re-nag timer in V1). Signing in makes it moot; signing out later
-  surfaces it again only if it was never dismissed on that device.
+- Dismissal is per-device and permanent for that browser (there's no re-nag timer). Signing in makes it moot;
+  signing out later surfaces it again only if it was never dismissed on that device.
+- Pressing Sign In does not dismiss it: a guest who comes back without signing in is reminded again in a later
+  session.
 
 ## Telemetry
 
-Anonymous events only ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), reusing the closed enums (no new
-category/action needed):
+Anonymous events only ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), reusing the closed
+enums. The toast keeps the banner's editor type, so its series carries on:
 
-Every banner event names the **surface** it happened on, Explorer or
-editor, since the same banner mounts on both and the two audiences differ
-(someone browsing their library vs someone five minutes into drawing). The
-host passes `surface` to `SignInBanner`; the type carries it as a suffix:
+- `UI` / `Selected` / `SignInBannerEditor`: Sign In pressed.
+- `UI` / `Closed` / `SignInBannerEditor`: the toast closed.
 
-- `UI` / `Opened` / `SignInReasonsExplorer` | `SignInReasonsEditor`: Learn
-  more opened the modal.
-- `UI` / `Selected` / `SignInBannerExplorer` | `SignInBannerEditor`: a Sign in
-  CTA (on the banner, or in the reasons modal it opened) was clicked.
-- `UI` / `Closed` / `SignInBannerExplorer` | `SignInBannerEditor`: the banner
-  was dismissed.
+Retired with the banner in November 2026 (the dashboard drops them,
+`liveworkspace/apps/site/app/telemetry/_shared/retired-sign-in-banner.ts`): Learn More (`UI` / `Opened` /
+`SignInReasonsEditor`, `SignInReasonsExplorer`, and the older `SignInReasons`) and the Explorer's banner (`UI` /
+`Selected` | `Closed` / `SignInBannerExplorer`). The Assign Action dialog's guest nudge is its own event, `UI` / `Opened` / `ActionSignInNudge`
+([Assigned actions](../012-collaboration/assigned-actions.md)). The dashboard's Sign-In Prompts stack charts the
+toast's Sign In and close and that nudge ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
-Before September 2026 these were sent without the surface (`SignInReasons`,
-`SignInBanner`); those rows age out with the 60-day retention. The Assign
-Action dialog's guest nudge is its own event, `UI` / `Opened` /
-`ActionSignInNudge` ([Assigned actions](../012-collaboration/assigned-actions.md)). The dashboard's Sign-In Prompts stack charts
-each of these by surface ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+No "shown" event: it would fire for nearly every invested guest session and drown the signal
+([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) noise rule).
 
-No "shown" event: it would fire on nearly every guest Explorer load and
-drown the signal ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) noise rule).
+## Non-goals
 
-## Non-goals (V1)
-
-- No re-engagement timer / "remind me later"; dismiss is final per
-  device.
+- No re-engagement timer or "remind me later"; closing is final per device.
 - No A/B copy variants or server-driven targeting.
-- No banner in the editor or on marketing pages. Explorer only.
+- No sign-in toast in the Explorer or on marketing pages.

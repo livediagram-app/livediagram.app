@@ -28,7 +28,6 @@ import type {
   LensTelemetryType,
   OrganiseTelemetry,
   ShareHostTelemetry,
-  SignInBannerTelemetry,
   ViewModeTelemetry,
   WelcomeTelemetryType,
 } from '@liveworkspace/explorer';
@@ -234,17 +233,6 @@ export const trackInbox: InboxTelemetry = (action, type) => {
 export const trackViewToggled = (type: ViewModeTelemetry) => track('UI', 'Toggled', type);
 
 export const trackHomeBannerOff = () => track('UI', 'Toggled', 'HomeBannerOff');
-
-export const trackSignInBanner: SignInBannerTelemetry = (action, type) => {
-  switch (action) {
-    case 'Selected':
-      return track('UI', 'Selected', type);
-    case 'Opened':
-      return track('UI', 'Opened', type);
-    case 'Closed':
-      return track('UI', 'Closed', type);
-  }
-};
 
 // The Share dialog's, for the app of the item it shares (whatever the page is filtered to). A revoked pass counts
 // under the item's own noun: liveplanner's Project, the others' Document.

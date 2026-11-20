@@ -6,6 +6,7 @@
 // livediagram and never had as its own (Work Tracker #586): nothing renders a retired event, so theirs went.
 
 import { isRetiredExplorerEvent } from '../_shared/retired-explorer';
+import { isRetiredSignInBannerEvent } from '../_shared/retired-sign-in-banner';
 
 // The editor's Activity panel (removed 2026-10-03, docs/specs/012-collaboration/README.md "Removed: the
 // Activity panel"): its per-entry revert, the panel opening, its Settings
@@ -573,6 +574,7 @@ export function isInheritedEvent(category: string, action: string, type: string 
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (isRetiredExplorerEvent(category, action, type)) return true;
+  if (isRetiredSignInBannerEvent(category, action, type)) return true;
   if (isUnsentEvent(category, action, type)) return true;
   if (isCollabEvent(category, action, type)) return true;
   if (AGENT_DOOR_CATEGORIES.has(category)) return true;
