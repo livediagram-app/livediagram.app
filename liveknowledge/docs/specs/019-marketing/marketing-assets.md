@@ -50,7 +50,7 @@ concrete, understated. Lead with the pitch line, "A team knowledgebase, for
 people and for AI.", and with what makes it different: trust is part of the
 page, agents are first-class readers, Ask does not guess. Say who pays for Ask
 (the team, on its own Claude API key) wherever Ask is sold. Say "free,
-MIT-licensed, no paid tier" where the format allows
+MIT-licensed, free to start" where the format allows
 ([Open source](../002-project-scope/open-source-and-business-model.md)). Product name
 **liveknowledge** (lowercase); **knowledgebase** is one word, and the product is
 never called a wiki. Brand colour lime: accent `#4d7c0f`, tints `#f7fee7`
