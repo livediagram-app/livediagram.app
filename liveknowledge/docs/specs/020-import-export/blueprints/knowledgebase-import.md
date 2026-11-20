@@ -1,8 +1,10 @@
 # Knowledgebase import blueprint
 
-Derived from [Knowledgebase import](../knowledgebase-import.md). This blueprint covers the **engine**,
-`@liveknowledge/knowledge-import` (`packages/knowledge-import`): an archive in, an import plan out. The Import dialog,
-the zip reader's wiring, the picture upload and the page writes are not built and not covered here.
+Derived from [Knowledgebase import](../knowledgebase-import.md). Two halves: the **engine**,
+`@liveknowledge/knowledge-import` (`packages/knowledge-import`), an archive in and an import plan out; and, from
+"Archive sources" on, the **editor's half** (`apps/editor/lib/knowledge-import/` and
+`apps/editor/components/dialogs/knowledge-import/`): what a person picks as an archive, the dialog's steps, and
+writing the plan through the save pipeline. Nothing of the editor's half is verified in a browser.
 
 ## Domain and naming
 
@@ -259,11 +261,197 @@ toggles), `confluence.test.ts` (under jsdom: the index tree, breadcrumbs, macros
 script and handlers must not run) and `plan.test.ts` (each bound, the depth limit, a failing page, a hostile path,
 the CPU budget).
 
-## Not built here
+## Archive sources
 
-- The zip reader's wiring. `zipEntries` takes the shape of the editor's reader
-  (`apps/editor/lib/office-import/zip.ts` `openZip`), so no dependency is added; that reader lower-cases entry names
-  and carries Office's own caps, so the dialog's step gives it a mode that keeps names as written and takes these
-  limits before using it for file-name titles.
-- The Import dialog, picture upload to Media, page writes in batches of 20, and turning the two schemes into
-  page-link runs and picture zones.
+`apps/editor/lib/knowledge-import/archive-sources.ts` answers a `PickedArchive`: `{ name, kind, bytes, open() }`.
+`open()` lists the archive afresh each time it is planned (a plan is made again when the destination changes), and
+`bytes` is the size known before anything is opened (`planImport`'s `archiveBytes`).
+
+| Picked                                  | Function                       | Listing                                                                                                   |
+| --------------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| A `.zip` (the picker, or one dropped)   | `zipArchive(file)`             | `openZipFile` (below), names as written, through the package's `zipEntries`; `bytes` is the file's size   |
+| A folder from `<input webkitdirectory>` | `inputFolderArchive(files)`    | Each `File` under its `webkitRelativePath`                                                                |
+| A folder, or loose files, dropped       | `droppedArchive(dataTransfer)` | `webkitGetAsEntry` walked breadth first with a queue, `readEntries` called until it answers an empty page |
+
+- **A folder is the archive's root.** `folderArchive` drops the folder's own name from every path when they all
+  start with it, so its `README.md` is the top page listed first, as the spec says; the name is kept as the
+  archive's name. A zip keeps its paths, and the engine's own wrapper rule reads them.
+- **Nothing is read to list.** A folder's entry holds its `File` (a handle) and reads `file.arrayBuffer()` only on
+  `read()`. The walk of a dropped folder stops one past `MAX_ARCHIVE_ENTRIES`, so the engine refuses a huge folder
+  without it being walked whole.
+- **What is no archive** (a file that is no zip, a drop that holds nothing) answers the pick step's error, "That
+  could not be read as an archive. Choose a .zip, or a folder of pages."
+
+### The zip reader
+
+`apps/editor/lib/office-import/zip.ts`, shared with Word import, takes `ZipOptions`:
+
+| Option             | Absent (an Office package)           | A Knowledgebase import                                          |
+| ------------------ | ------------------------------------ | --------------------------------------------------------------- |
+| `names`            | `folded`: lower-cased, compared so   | `as-written`: each name as spelled, slashes forward             |
+| `maxEntries`       | `OFFICE_MAX_ZIP_ENTRIES` (4,000)     | `MAX_ARCHIVE_ENTRIES + 1`, so the engine's listing refuses      |
+| `maxUnpackedBytes` | `OFFICE_MAX_UNPACKED_BYTES` (256 MB) | `2 * MAX_ARCHIVE_BYTES` (a file is a page once, a picture once) |
+
+- `openZip(bytes, options)` is Word import's door, unchanged with no options. `openZipFile(blob, options)` opens
+  the file itself and never reads it whole: the last 64 KB (the end record), the directory when it starts before
+  that (a second slice), and for each entry asked for its 30-byte local header and then its packed bytes. So a
+  200 MB archive costs its directory in memory, plus one entry at a time.
+- `ZipArchive.size(name)` answers the unpacked size the directory declares; the package's `zipEntries` hands it on
+  as the entry's `size` (`ZipReader.size`, optional), so an archive past 200 MB by its own account is blocked
+  before an entry is read. A declared size is never trusted where it matters: a read still counts what arrives.
+- Each read is capped at `max(MAX_PAGE_SOURCE_BYTES, MAX_PICTURE_BYTES)`; the engine then holds a page and a
+  picture each to its own bound.
+
+## The dialog
+
+`apps/editor/components/dialogs/knowledge-import/`, inside `ImportTabDialog` (the one Import dialog).
+
+| Piece                                      | File                                  |
+| ------------------------------------------ | ------------------------------------- |
+| the three sources: copy, file types, glyph | `sources.tsx`                         |
+| the steps and the plan, as state           | `useKnowledgeImport.ts`               |
+| the steps joined                           | `KnowledgeImportPanel.tsx`            |
+| pick: drop area, Choose a .zip, a Folder   | `ArchivePickStep.tsx`                 |
+| review                                     | `ImportReviewStep.tsx`                |
+| the indented tree of what was found        | `PlanTreePreview.tsx`                 |
+| what is left out or changed, grouped       | `ImportIssues.tsx`                    |
+| where it lands, the page picker            | `DestinationPicker.tsx`               |
+| the bar and Cancel                         | `ImportProgressStep.tsx`              |
+| the summary and Open <first page>          | `ImportDoneStep.tsx`                  |
+| the editor's side: who is offered it       | `useKnowledgeImportProps.ts`          |
+| the review's copy, pure                    | `lib/knowledge-import/import-copy.ts` |
+
+- **In the one dialog.** `ImportTabDialog` takes an optional `knowledgebase` prop. With it, the format grid has
+  two headed groups (**Into This Page**, holding the formats and the replace warning; **A Whole Knowledgebase**,
+  holding the three `FormatCard`s with their file-type chips), and choosing a source swaps the dialog's body for
+  `KnowledgeImportPanel`, loaded then (`next/dynamic`), so a single-file import never loads the engine. A page
+  that takes one single-file format still shows the grid when the sources are there.
+- **Share roles.** `useKnowledgeImportProps` (called by `EditorTabDialogs`) answers the prop only when
+  `can.editPages && !isStructureReadOnly`, the gate the page tree uses, and only once the reader is known. Anyone
+  else is handed nothing and the dialog renders none of the three. The room checks every page write again.
+- **States** (`KnowledgeImportState`): `pick` (with an error or none), `reading`, `review` (`replanning` while the
+  plan is made again for another destination; the last plan stays on screen and Import is busy), `importing`
+  (`progress`, `stopping`), `done`. A plan answered after a newer one was asked for is dropped.
+- **Steady height.** Every step is a column at least 28 rem tall with its buttons at its foot, so the dialog does
+  not jump between steps; long lists scroll inside (the page picker 10 rem, the done lists 10 rem).
+- **The plan's options** come from the destination: `existingPages` 0 and `parentDepth` 0 for a new knowledgebase;
+  the open knowledgebase's page count and `pageDepth` of the chosen page otherwise; `limits.pages` and
+  `limits.depth` are `MAX_KNOWLEDGEBASE_PAGES` and `MAX_PAGE_DEPTH`.
+- **The review's groups** (`issueGroups`, one pass over the plan): each warning kind and skip reason is a group
+  with its count, what happens, and the first `ISSUE_EXAMPLES` (5) by name; attachments named and files not used
+  are a line each. A picture past 10 MB is listed once, as its page's warning.
+- **The tree preview** (`planPreviewRows`): the first `PLAN_PREVIEW_ROWS` (12) pages, each a level further in than
+  its parent (16 px, at most six levels drawn), then "and <n> more". One pass, stopping at the cap.
+- **The page picker** is native radios over `pageTreeRows`, in a `radiogroup` named "Page to Import Under": the
+  arrow keys move through it, a page at `MAX_PAGE_DEPTH` is disabled and says "Deepest Level". Rows are 32 px, 44
+  px on a touch screen; the two destination options are 44 px on a touch screen.
+- **Accessibility.** The drop area is a named region, `aria-busy` while reading; the bar is `role="progressbar"`
+  with `aria-valuenow`, `aria-valuemax` and the line as `aria-valuetext`; the summary is `role="status"` and its
+  way forward takes focus; a blocked plan is `role="alert"`. Motion is the shared tokens only (`duration-short`),
+  and the spinner stops under reduced motion.
+- **Observability.** `debugLog('[knowledge-import] planned' | 'unreadable' | 'written', ...)` with counts, never
+  content. Telemetry: `Tab` `Imported` with `MarkdownFolder`, `Notion` or `Confluence`, once an import stored a
+  page; a new knowledgebase also sends `Document` `Created` (`Offline` or `Cloud`).
+
+## Writing the plan
+
+`writeImportPlan(plan, deps)` (`apps/editor/lib/knowledge-import/write-plan.ts`), pure over what it is handed: the
+save layer, `storePicture`, `newId`, the landing parent, `cancelled()` and `onProgress`.
+
+1. **Ids first.** Every page's tab id is made before any page is written, so a link to a page further down the
+   tree is written with the page that holds it. No page is written twice.
+2. **Batches** of `IMPORT_BATCH_PAGES` (20), in the plan's tree order, so a page's parent is in its batch before
+   it, in an earlier batch, or the landing parent. `cancelled()` is read before each batch.
+3. **Pictures of the batch** through `storePicture`, `IMPORT_PICTURE_CONCURRENCY` (3, the image pipeline's own) at
+   a time; a file many pages show is stored once (by its path). A picture that fails is a named line in the
+   summary (`failedPictures`) and its page keeps the alt text.
+4. **The batch's tabs** are made then (`importedPageTab`), and handed to the save layer, which answers the pages it
+   could not store, each with why, and `stalled` when saving stopped answering. The tabs are let go after.
+5. **A page that fails** (made or stored) joins `lost`: its key resolves to no id from then on, so later links to
+   it are written as their words, and a page under it takes the nearest page above that was written, or the
+   landing parent.
+
+### A page's tab
+
+`importedPageTab` (`page-content.ts`):
+
+- The Markdown is read by `articleFromMarkdown`, the reader Markdown import and `write_article` use.
+- **Page links.** The article reader keeps only http, https and mailto addresses, so `knowledgebase-page:<key>` is
+  swapped before reading for `https://page-<nonce>.invalid/<key>` (never resolvable, and a fresh nonce a page) and
+  each run carrying it becomes `{ text, page: <tab id> }` (`PAGE_LINK_KEY`, `@liveknowledge/knowledge`) with no
+  `href`, in paragraphs, list items and table cells. A key with no id leaves the run its words.
+- **Pictures.** Each stored picture becomes a `[zone <id>]` line, the form `articleFromMarkdown` keeps a zone by,
+  handed in as the article being written over: an `object` zone sized by `pictureZoneSize`, parked by
+  `parkedZoneAt` with its `ImageElement` exactly there (`pictureElement`), as Word import parks its pictures. The
+  editor's first layout of the page settles the zone and its picture (`markArticleSettle` on a page added to the
+  open knowledgebase; the absent-writer path when a page of a new knowledgebase is first opened by an Editor). A
+  picture alone on its line is the zone line; one inside other writing leaves the line and its zone follows the
+  block. A picture shown twice is two zones of one stored picture. A picture that was not stored is its alt text.
+- Fenced code is left as written; a line the source wrote that reads as a zone line is escaped.
+- The tab is a knowledgebase page (`knowledgebasePage()`, `KNOWLEDGEBASE_FLOW`): a Title block saying the page's
+  name (capped by `truncateName`, "Untitled Page" when blank), then the writing, with the open page's look
+  (`newTabSeed`) and no `knowledge` field.
+- **Refused, with a reason:** Markdown past `ARTICLE_MARKDOWN_MAX`, a paragraph past the block limit, more than
+  `MAX_ARTICLE_BLOCKS` blocks, or (not Offline) a tab past `MAX_TAB_BYTES`.
+
+### Save layers
+
+`save-layers.ts`. Both answer `{ failed, stalled? }`.
+
+- **Under a page of the open knowledgebase** (`openKnowledgebaseLayer`): the batch is judged against the page list
+  as it is (`withPageAdded`, the tree's own limits: `page_limit`, `depth_limit`, `unknown_page`, each refused page
+  failing with `pageTreeRefusalText`), then added in **one `commitTabs`**, the page list's own edit. Each page is
+  marked loaded and claimed for layout. The autosave stores it as it stores any new page; the layer waits for
+  every page's `whenTabSaved` (`IMPORT_SAVE_WAIT_MS`, 60 s) before answering, so the next batch never joins a save
+  still in flight. A page not stored in time answers `stalled`: the import stops, and the pages keep saving.
+- **Parents before subpages.** The autosave writes changed pages side by side. `page-save-order.ts`
+  (`app/document/[id]/`) holds a page's write until the first save of its parent, when that is part of the same
+  save, has settled: `expectFirstSave` as each new page's save is prepared, `savePageAfterParent` around the PUT
+  (the autosave's `prepareTabSave` and `apiSaveTab` deps). A parent whose save never runs releases its subpages
+  after `PARENT_SAVE_WAIT_MS` (15 s). This holds for every new page, not only an import's.
+- **A new knowledgebase** (`newKnowledgebaseLayer`): the first batch is `apiCreateDocument`'s tabs (or
+  `offlineCreateDocument`'s when the open knowledgebase is Offline); later batches are `apiSaveTab` in waves, a
+  page once the page above it in the batch is stored, `IMPORT_SAVE_CONCURRENCY` (4) at a time; then the whole list
+  so far goes to `apiSaveDocumentMeta` with each page's parent, which fixes the order. A page that cannot be saved
+  fails with its subpages in that batch. A batch that stores nothing, or whose order cannot be written, stalls.
+  The room judges each of these writes as it judges any (`tabParentRefusal`, `tabListRefusal`).
+- **The pictures** go through the import image pipeline (`createBrowserImportImageSession`: the Media upload, or
+  embedded for an Offline knowledgebase), made on the first picture. `picture.read()` refuses one past 10 MB.
+
+### Known limits
+
+- Pages added to the open knowledgebase stay in the editor's state as loaded pages, as pages a person opens do: an
+  import of 500 pages holds their writing until the knowledgebase is reloaded. Only one batch is parsed at a time.
+- Each batch is an undo step of the page list (`commitTabs`), so Undo takes back the last 20 pages.
+- A link written in an earlier batch to a page that then fails stays a page link to an id no page has (it reads
+  "Deleted Page" once [Links and embeds](../../030-knowledgebase/links-and-embeds.md) draws that).
+- An import into a new knowledgebase is written by this browser alone: closing the tab stops it at the pages
+  stored so far.
+- A zip of a folder whose own `README.md` sits in that folder keeps the engine's reading (the README is the page
+  the rest sit under); only a picked or dropped folder is read as the root.
+
+### Performance
+
+Measured 2026-11-20 (CPU, `write-plan.test.ts`): 500 pages of 50 links each, converted and handed to a save layer
+in 25 batches, 152 ms cold and 75 to 78 ms warm; 2,000 pages 320 ms, so linear. Held under `cpuBudgetMs(800)`.
+The review's own work on that plan (`planPreviewRows`, `issueGroups`) is 0.2 to 0.6 ms. The review renders 12 tree
+rows whatever the plan holds; the page picker renders a row a page of the open knowledgebase (at most 500), only
+while "Under a Page" is chosen. Choosing another destination plans the archive again (the engine's 84 ms for 500
+pages, plus reading the pages).
+
+### Testing
+
+`write-plan.test.ts` (batches of 20, parents before subpages, a forward link in one pass, three pictures at a
+time and one stored once, a cancel between batches, a failed page and its subpages, a refusing and a stalled save
+layer, the CPU budget), `page-content.test.ts`, `save-layers.test.ts`, `archive-sources.test.ts`,
+`import-copy.test.ts`, `zip.test.ts` (names as written, the caps, `openZipFile`, Word's reading unchanged),
+`page-save-order.test.ts`; the dialog: `KnowledgeImportPanel.test.tsx` (pick, review, the tree's cap, the page
+picker, a blocked plan, no pages, the bar and Cancel, the summary with what failed) and
+`ImportTabDialog.knowledgebase.test.tsx` (the sources in the one dialog, and a role at a time).
+
+## Not built
+
+- Nothing of the dialog or the write path has been seen in a browser: the drop of a real folder, a 200 MB zip read
+  from disk, real uploads, the autosave storing a batch against a live room, and the dialog's look.
+- The help article for Knowledgebase import, and its end-to-end spec.
+- The Dashboard's catalogue of telemetry (liveworkspace.app) does not describe the three new `Imported` types.

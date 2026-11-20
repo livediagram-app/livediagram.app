@@ -14,6 +14,7 @@ import { shareUrl } from '@/lib/explorer-host';
 import { documentHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
 import { randomName } from '@/lib/identity';
 import { useToast } from '@/hooks/ui/useToast';
+import { useKnowledgeImportProps } from '@/components/dialogs/knowledge-import/useKnowledgeImportProps';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -78,6 +79,8 @@ function OpenEditorTabDialogs() {
     slideDeck,
   } = useEditorContext();
   const toast = useToast();
+  // The three Knowledgebase import sources, for an Editor on the whole knowledgebase only.
+  const knowledgebase = useKnowledgeImportProps();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
   const exportingSelection = exportOpen && exportScope === 'selection';
@@ -133,6 +136,7 @@ function OpenEditorTabDialogs() {
           // Each format only on a tab of its kind, or an empty one (docs/specs/020-import-export/markdown-import.md
           // "Where it is offered").
           formats={importFormatsFor(activeTab)}
+          knowledgebase={knowledgebase}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

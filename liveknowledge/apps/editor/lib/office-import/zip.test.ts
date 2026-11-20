@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OfficeImportError } from './errors';
-import { inflateCapped, openZip, zipKey } from './zip';
+import { inflateCapped, openZip, openZipFile, zipKey } from './zip';
 import { makeZip } from './test-fixtures';
 
 const text = (b: Uint8Array | null) => new TextDecoder().decode(b ?? new Uint8Array());
@@ -86,5 +86,83 @@ describe('openZip', () => {
     expect(
       await failureOf(() => inflateCapped(new Uint8Array([0xff, 0xff, 0xff, 0xff]), 100)),
     ).toBe('not-a-package');
+  });
+});
+
+describe('openZip, names as written', () => {
+  it('keeps each name as the archive spells it, and tells apart names that differ only in case', async () => {
+    const zip = openZip(await makeZip({ 'Docs/Read Me.md': 'one', 'docs/read me.md': 'two' }), {
+      names: 'as-written',
+    });
+    expect(zip.names()).toEqual(['Docs/Read Me.md', 'docs/read me.md']);
+    expect(text(await zip.read('Docs/Read Me.md', 100))).toBe('one');
+    expect(text(await zip.read('docs/read me.md', 100))).toBe('two');
+    expect(zip.has('DOCS/READ ME.MD')).toBe(false);
+    expect(zip.size('Docs/Read Me.md')).toBe(3);
+    expect(zip.size('missing')).toBeNull();
+  });
+
+  it('holds the archive to the caps it is opened with', async () => {
+    const bytes = await makeZip({ 'a.txt': 'aaaa', 'b.txt': 'bbbb' }, { store: true });
+    expect(await failureOf(() => openZip(bytes, { maxEntries: 1 }))).toBe('unpacks-too-large');
+    const zip = openZip(bytes, { maxUnpackedBytes: 6 });
+    expect(text(await zip.read('a.txt', 100))).toBe('aaaa');
+    // Four of the six are spent: the second entry no longer fits.
+    expect(await failureOf(() => zip.read('b.txt', 100))).toBe('unpacks-too-large');
+  });
+
+  it('leaves an Office package as it was: names folded, its own caps', async () => {
+    const zip = openZip(await makeZip({ 'Word/Document.xml': '<a/>' }));
+    expect(zip.names()).toEqual(['word/document.xml']);
+    expect(zip.size('WORD/document.xml')).toBe(4);
+  });
+});
+
+describe('openZipFile', () => {
+  it('reads the same entries from the file as from its bytes, stored and deflated', async () => {
+    for (const store of [true, false]) {
+      const bytes = await makeZip({ 'A/One.md': 'first page', 'A/two.md': 'second' }, { store });
+      const zip = await openZipFile(new Blob([bytes as BlobPart]), { names: 'as-written' });
+      expect(zip.names()).toEqual(['A/One.md', 'A/two.md']);
+      expect(text(await zip.read('A/One.md', 100))).toBe('first page');
+      expect(text(await zip.read('A/two.md', 100))).toBe('second');
+      expect(await zip.read('a/one.md', 100)).toBeNull();
+    }
+  });
+
+  it('reads a directory longer than the tail of the file that is read first', async () => {
+    // 2,000 entries make a directory of about 150 KB: it starts before the last 64 KB, so it is read on its own.
+    const files: Record<string, string> = {};
+    for (let i = 0; i < 2000; i++) files[`knowledgebase/section/page-${i}.md`] = `Page ${i}`;
+    const bytes = await makeZip(files, { store: true });
+    const blob = new Blob([bytes as BlobPart]);
+    const reads: number[] = [];
+    const slice = blob.slice.bind(blob);
+    blob.slice = (start?: number, end?: number) => {
+      reads.push((end ?? blob.size) - (start ?? 0));
+      return slice(start, end);
+    };
+    const zip = await openZipFile(blob, { names: 'as-written' });
+    expect(zip.names()).toHaveLength(2000);
+    // The tail, then the directory: never the whole file.
+    expect(reads).toHaveLength(2);
+    expect(reads[0]! + reads[1]!).toBeLessThan(bytes.byteLength);
+    expect(text(await zip.read('knowledgebase/section/page-0.md', 100))).toBe('Page 0');
+    expect(text(await zip.read('knowledgebase/section/page-1999.md', 100))).toBe('Page 1999');
+  });
+
+  it('refuses what is no zip, and an entry whose bytes are cut off', async () => {
+    expect(await failureOf(() => openZipFile(new Blob([new Uint8Array(10)])))).toBe(
+      'not-a-package',
+    );
+    expect(await failureOf(() => openZipFile(new Blob([new Uint8Array(4000)])))).toBe(
+      'not-a-package',
+    );
+    const bytes = await makeZip({ 'a.txt': 'hello' }, { store: true });
+    const moved = bytes.slice();
+    // The local header's signature broken: the directory still lists the entry.
+    moved[0] = 0;
+    const zip = await openZipFile(new Blob([moved]));
+    expect(await failureOf(() => zip.read('a.txt', 100))).toBe('not-a-package');
   });
 });

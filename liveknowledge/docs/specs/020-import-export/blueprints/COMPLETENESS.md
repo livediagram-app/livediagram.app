@@ -51,7 +51,7 @@
 
 ## knowledgebase-import
 
-The engine only; the dialog's categories (Presentation and UX, Accessibility, Observability) come with it.
+The engine, the dialog and the write path.
 
 - [x] Domain and naming
 - [x] Behaviour and state
@@ -59,6 +59,10 @@ The engine only; the dialog's categories (Presentation and UX, Accessibility, Ob
 - [x] Errors and edge cases
 - [x] Security and trust
 - [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [ ] Web Experience
+- [x] Observability
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger

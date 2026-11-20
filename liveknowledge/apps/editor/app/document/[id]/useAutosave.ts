@@ -19,6 +19,7 @@ import { isDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombsto
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { prepareTabSave, relayParticipantChanges, saveTabAndRelay } from './tab-save-flow';
+import { expectFirstSave, savePageAfterParent } from './page-save-order';
 import type { OwnElementWrites } from './own-element-writes';
 import {
   SAVE_RESAVE_GRACE_MS,
@@ -65,7 +66,9 @@ const DEPS: AutosaveDeps<
   OwnElementWrites,
   SaveStatus
 > = {
-  apiSaveTab: (...args) => apiSaveTab(...args),
+  // A new page's save waits for its parent's first save (page-save-order.ts), so a subpage never reaches the api
+  // before the page it sits under.
+  apiSaveTab: (...args) => savePageAfterParent(args[2], () => apiSaveTab(...args)),
   apiDeleteTab: (...args) => apiDeleteTab(...args),
   apiSaveMeta: (...args) => apiSaveDocumentMeta(...args),
   metaKind: 'document-meta',
@@ -77,7 +80,11 @@ const DEPS: AutosaveDeps<
   isItemDeleted: (id) => isDocumentDeleted(id),
   isItemTrashedError: (err) => isDocumentTrashedError(err),
   computeTabSaveDiff: (...args) => computeTabSaveDiff(...args),
-  prepareTabSave: (...args) => prepareTabSave(...args),
+  prepareTabSave: (...args) => {
+    // No last saved copy: this save stores the page for the first time.
+    if (!args[0]) expectFirstSave(args[1].id);
+    return prepareTabSave(...args);
+  },
   relayParticipantChanges: (before, tab, room, writes) =>
     relayParticipantChanges(before, tab, room, writes),
   // Each landed save is announced with its digest, so a peer's next save can be a delta (delta-saves.md).

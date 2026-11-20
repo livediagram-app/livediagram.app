@@ -17,6 +17,9 @@ import { officeImportReport, type ReportLine } from './report';
 import { storePictures, type PictureOutcome } from './store-images';
 import type { OfficePicture } from './docx';
 import type { SkipTally } from './tally';
+import { tabBytes } from './tab-bytes';
+
+export { tabBytes } from './tab-bytes';
 
 export { officeErrorMessage, type FileImportFormat } from './errors';
 export type { ImportedSlideDetail } from './build-deck';
@@ -36,12 +39,6 @@ export type OfficeImportDeps = {
 export type OfficeImportResult =
   | { ok: true; tab: Tab; slides?: ImportedSlideDetail[]; failures: ReportLine[] }
   | { ok: false; failure: OfficeImportFailure; count?: number };
-
-/** A tab's saved size, as the api counts it near enough: its content as UTF-8 JSON. */
-export function tabBytes(tab: Pick<Tab, 'elements' | 'pages' | 'articles'>): number {
-  const json = JSON.stringify({ elements: tab.elements, pages: tab.pages, articles: tab.articles });
-  return new TextEncoder().encode(json).byteLength;
-}
 
 async function readAndBuild(
   pkg: OfficePackage,

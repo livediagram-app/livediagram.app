@@ -1,4 +1,6 @@
 import { useId, useState } from 'react';
+import dynamic from 'next/dynamic';
+import type { ImportSource } from '@liveknowledge/knowledge-import';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -15,6 +17,15 @@ import type {
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
 import { Callout } from '@liveworkspace/ui/callout';
+import type { KnowledgeImportProps } from './knowledge-import/KnowledgeImportPanel';
+import { KNOWLEDGE_SOURCES, knowledgeSourceOf } from './knowledge-import/sources';
+
+// A Knowledgebase import's steps and its engine, loaded when one of its sources is chosen: a single-file import
+// never pays for them.
+const KnowledgeImportPanel = dynamic(
+  () => import('./knowledge-import/KnowledgeImportPanel').then((m) => m.KnowledgeImportPanel),
+  { ssr: false },
+);
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -37,6 +48,10 @@ type ImportTabDialogProps = {
   // The formats offered, in catalogue order; absent offers every one (docs/specs/007-editor/pages-mode.md
   // "Import"); a single format opens straight at its panel.
   formats?: readonly Format[];
+  // A whole knowledgebase brought in from a Markdown folder, Notion or Confluence
+  // (docs/specs/020-import-export/knowledgebase-import.md): the three sources join the formats as choices. Present
+  // for an Editor only; a Participant or a Viewer is handed none and sees none.
+  knowledgebase?: KnowledgeImportProps;
   onClose: () => void;
 };
 
@@ -107,12 +122,15 @@ export function ImportTabDialog({
   onImportFileFormat,
   onClose,
   formats,
+  knowledgebase,
 }: ImportTabDialogProps) {
   const titleId = useId();
   const offered = formats ? FORMATS.filter((f) => formats.includes(f.key)) : FORMATS;
-  // One format offered: no list to pick from, so its panel is the dialog.
-  const only = offered.length === 1 ? offered[0]!.key : null;
+  // One format offered and no knowledgebase sources beside it: no list to pick from, so its panel is the dialog.
+  const only = offered.length === 1 && !knowledgebase ? offered[0]!.key : null;
   const [active, setActive] = useState<Format | null>(only);
+  // The knowledgebase source chosen, when one is.
+  const [source, setSource] = useState<ImportSource | null>(null);
   // Set once an import that left something out has landed: the dialog then shows how it came across instead of
   // closing.
   const [report, setReport] = useState<DoneOutcome | null>(null);
@@ -124,21 +142,36 @@ export function ImportTabDialog({
       <HeroDialogHeader
         art={importHeroArt}
         titleId={titleId}
-        title="Import to Page"
+        title={
+          source ? 'Import a Knowledgebase' : knowledgebase && !active ? 'Import' : 'Import to Page'
+        }
         subtitle={
-          report
-            ? "Here's how your import came across."
-            : activeFormat?.kind === 'file'
-              ? `Import a ${activeFormat.title} file.`
-              : activeFormat
-                ? `Paste your ${activeFormat.title}, or import a file.`
-                : 'Pick a format to import into the current tab.'
+          source
+            ? `Bring every page in from ${source === 'markdown-folder' ? 'a Markdown folder' : knowledgeSourceOf(source).title}.`
+            : report
+              ? "Here's how your import came across."
+              : activeFormat?.kind === 'file'
+                ? `Import a ${activeFormat.title} file.`
+                : activeFormat
+                  ? `Paste your ${activeFormat.title}, or import a file.`
+                  : knowledgebase
+                    ? 'Import into this page, or bring in a whole Knowledgebase.'
+                    : 'Pick a format to import into the current tab.'
         }
         actions={<HelpArticleLink article="importTabs" size="md" />}
         onClose={onClose}
       />
       <div className="flex-1 overflow-y-auto px-6 py-5">
-        {report ? (
+        {source && knowledgebase ? (
+          <KnowledgeImportPanel
+            // A fresh import per source, so nothing carries across.
+            key={source}
+            {...knowledgebase}
+            source={source}
+            onBack={() => setSource(null)}
+            onClose={onClose}
+          />
+        ) : report ? (
           <ImportReport failures={report.failures} onDone={onClose} />
         ) : (
           <ImportChooser
@@ -151,6 +184,7 @@ export function ImportTabDialog({
             onImportText={onImportText}
             onImportFileFormat={onImportFileFormat}
             onDone={(outcome) => (needsReport(outcome) ? setReport(outcome) : onClose())}
+            onPickSource={knowledgebase ? setSource : undefined}
           />
         )}
       </div>
@@ -169,7 +203,11 @@ function ImportChooser({
   onImportFileFormat,
   onDone,
   single,
+  onPickSource,
 }: {
+  // Present when a whole knowledgebase can be imported too: the grid then holds both kinds of import, each under
+  // its heading, and the warning sits with the formats it is about.
+  onPickSource?: (source: ImportSource) => void;
   tabName: string;
   activeFormat: FormatEntry | null;
   formats: FormatEntry[];
@@ -180,14 +218,53 @@ function ImportChooser({
   onImportFileFormat: ImportTabDialogProps['onImportFileFormat'];
   onDone: (outcome: Extract<ImportOutcome, { status: 'done' }>) => void;
 }) {
+  // Destructive-action warning: a single-file import overwrites the page.
+  const warning = (
+    <Callout tone="warning" className="mb-4">
+      This replaces everything on <strong className="font-semibold">{tabName || 'this tab'}</strong>{' '}
+      with the imported content. Undo brings it back.
+    </Callout>
+  );
+  if (!activeFormat && onPickSource) {
+    return (
+      <>
+        <section aria-labelledby="import-into-page">
+          <h3 id="import-into-page" className={GROUP_HEADING}>
+            Into This Page
+          </h3>
+          {warning}
+          <FormatGrid formats={formats} onPick={onPick} />
+        </section>
+        <section aria-labelledby="import-knowledgebase" className="mt-6">
+          <h3 id="import-knowledgebase" className={GROUP_HEADING}>
+            A Whole Knowledgebase
+          </h3>
+          <p className="mb-3 text-xs text-slate-600 dark:text-slate-300">
+            Every page with its place in the tree, its links and its pictures. You see what was
+            found before anything is imported.
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {KNOWLEDGE_SOURCES.map((s) => (
+              <FormatCard
+                key={s.key}
+                title={s.title}
+                description={s.description}
+                fileTypes={s.fileTypes}
+                onClick={() => onPickSource(s.key)}
+              >
+                <span className="text-slate-600">
+                  <s.Icon size={24} />
+                </span>
+              </FormatCard>
+            ))}
+          </div>
+        </section>
+      </>
+    );
+  }
   return (
     <>
-      {/* Destructive-action warning — this overwrites the tab. */}
-      <Callout tone="warning" className="mb-4">
-        This replaces everything on{' '}
-        <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-        content. Undo brings it back.
-      </Callout>
+      {warning}
       {activeFormat?.kind === 'file' ? (
         <FileImportPanel
           // A fresh panel per format, so a stale error never carries across.
@@ -229,20 +306,35 @@ function ImportChooser({
           onBack={single ? undefined : () => onPick(null)}
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {formats.map((f) => (
-            <FormatCard
-              key={f.key}
-              title={f.title}
-              description={f.description}
-              onClick={() => onPick(f.key)}
-            >
-              <FormatIcon kind={f.key} />
-            </FormatCard>
-          ))}
-        </div>
+        <FormatGrid formats={formats} onPick={onPick} />
       )}
     </>
+  );
+}
+
+const GROUP_HEADING = 'mb-2 text-xs font-semibold text-slate-900 dark:text-slate-100';
+
+// The single-file formats, a card each.
+function FormatGrid({
+  formats,
+  onPick,
+}: {
+  formats: FormatEntry[];
+  onPick: (format: Format | null) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {formats.map((f) => (
+        <FormatCard
+          key={f.key}
+          title={f.title}
+          description={f.description}
+          onClick={() => onPick(f.key)}
+        >
+          <FormatIcon kind={f.key} />
+        </FormatCard>
+      ))}
+    </div>
   );
 }
 

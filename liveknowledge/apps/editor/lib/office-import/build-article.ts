@@ -18,6 +18,7 @@ import {
   withArticleFlow,
   withPageKindChosen,
   type ArticleBlock,
+  type ArticleZoneAt,
   type Element,
   type ImageElement,
   type Tab,
@@ -32,6 +33,14 @@ const FALLBACK_H = 240;
 // Parking slots: clear of the page and of each other (a zone is at most ARTICLE_ZONE_MAX on a side).
 const PARK_X = -(ARTICLE_ZONE_MAX + 400);
 const PARK_PITCH = ARTICLE_ZONE_MAX + 200;
+
+/** Where the `slot`-th picture's zone is parked until the editor first lays the writing out. Shared with a
+ *  Knowledgebase import's pages (lib/knowledge-import/page-content.ts). */
+export const parkedZoneAt = (page: string, slot: number): ArticleZoneAt => ({
+  page,
+  x: PARK_X,
+  y: slot * PARK_PITCH,
+});
 
 const clampSide = (v: number) =>
   Math.round(Math.min(ARTICLE_ZONE_MAX, Math.max(ARTICLE_ZONE_MIN, v)));
@@ -117,7 +126,7 @@ export function buildArticleTab(
     }
     const outcome = outcomes.get(zipKey(b.picture.path));
     const size = pictureZoneSize(b.picture, outcome, textWidth, textHeight);
-    const at = { page: page.id, x: PARK_X, y: slot * PARK_PITCH };
+    const at = parkedZoneAt(page.id, slot);
     slot += 1;
     out.push({ id: b.id, type: 'zone', zone: 'object', ...size, at });
     elements.push(

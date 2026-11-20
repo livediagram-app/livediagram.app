@@ -4466,6 +4466,12 @@ importers:
       '@liveknowledge/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
+      '@liveknowledge/knowledge':
+        specifier: workspace:*
+        version: link:../../packages/knowledge
+      '@liveknowledge/knowledge-import':
+        specifier: workspace:*
+        version: link:../../packages/knowledge-import
       '@liveknowledge/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client

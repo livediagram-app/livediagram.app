@@ -96,8 +96,11 @@ subtree, below level 8), `own_subtree` (a page under itself or one of its own su
 parent that is no page of this knowledgebase, such as a tab of another document, or no id at all). Only a `tab`,
 `tab-meta` or `document-meta` op reads the stored tree, so a typing stream costs no read.
 
-A new page whose parent is also new can reach the api before its parent does (the two saves run side by side) and is
-then refused `unknown_page`; the autosave writes it again with the next save, by when its parent is stored.
+A new page whose parent is also new is saved after it: the autosave writes changed pages side by side, so
+`page-save-order.ts` (`apps/editor/app/document/[id]/`) holds a page's write until the first save of its parent,
+when that is part of the same save, has settled (`expectFirstSave` as the save is prepared, `savePageAfterParent`
+around the PUT; a parent whose save never runs releases its subpages after `PARENT_SAVE_WAIT_MS`, 15 s). Should the
+subpage still arrive first it is refused `unknown_page`, and the autosave writes it again with the next save.
 
 ## Share roles (built)
 

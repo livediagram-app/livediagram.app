@@ -488,6 +488,10 @@ export function editorView({
     shiftDupGhostIds: inputSlice.shiftDupGhostIds,
     snapGuideStore: inputSlice.snapGuideStore,
     tabs: documentSlice.tabs,
+    // What a Knowledgebase import adds its pages through (lib/knowledge-import/run-import.ts): the page list's own
+    // edit, and the mark that a page made here has no stored copy to load.
+    commitTabs: documentSlice.commitTabs,
+    markTabLoaded: sessionSlice.markTabLoaded,
     tabSummaries: documentSlice.tabSummaries,
     documentTeamId: sessionSlice.documentTeamId,
     setDocumentTeamId: sessionSlice.setDocumentTeamId,

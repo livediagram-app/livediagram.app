@@ -110,4 +110,16 @@ describe('zipEntries', () => {
       ['gone.md', 50],
     ]);
   });
+
+  it('carries the sizes a reader declares, and none for an entry it does not know', () => {
+    const entries = zipEntries(
+      {
+        names: () => ['a.md', 'b.md'],
+        read: async () => null,
+        size: (name) => (name === 'a.md' ? 12 : null),
+      },
+      50,
+    );
+    expect(entries.map((e) => e.size)).toEqual([12, undefined]);
+  });
 });

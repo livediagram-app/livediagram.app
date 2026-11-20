@@ -18,7 +18,7 @@ its own. Specs first at every step.
 | 9   | Ask, on the team's own key                                                                                                    |                 |
 | 10  | AI Knowledge ([AI Knowledge](../030-knowledgebase/ai-knowledge.md))                                                           |                 |
 | 11  | Knowledgebase Home ([Knowledgebase Home](../030-knowledgebase/knowledgebase-home.md))                                         |                 |
-| 12  | Knowledgebase import ([Knowledgebase import](../020-import-export/knowledgebase-import.md))                                   |                 |
+| 12  | Knowledgebase import ([Knowledgebase import](../020-import-export/knowledgebase-import.md))                                   | built           |
 | 13  | The MCP server and CLI in pages ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md))                       |                 |
 | 14  | Brand, the marketing site and help                                                                                            |                 |
 | 15  | Measure, bound and test: share-role tests, E2E smoke, typing and indexing budgets                                             |                 |

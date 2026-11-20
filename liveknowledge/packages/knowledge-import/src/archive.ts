@@ -75,12 +75,18 @@ export async function readText(file: ArchiveFile, maxBytes: number): Promise<str
 export type ZipReader = {
   names(): string[];
   read(name: string, max: number): Promise<Uint8Array | null>;
+  /** The unpacked size the zip declares for an entry, when the reader knows it. */
+  size?(name: string): number | null;
 };
 
 /** A zip reader's entries as an archive. Each read is capped at `maxEntryBytes`, by the reader. */
 export function zipEntries(zip: ZipReader, maxEntryBytes: number): ArchiveEntry[] {
-  return zip.names().map((name) => ({
-    path: name,
-    read: async () => (await zip.read(name, maxEntryBytes)) ?? new Uint8Array(),
-  }));
+  return zip.names().map((name) => {
+    const size = zip.size?.(name) ?? null;
+    return {
+      path: name,
+      ...(size === null ? {} : { size }),
+      read: async () => (await zip.read(name, maxEntryBytes)) ?? new Uint8Array(),
+    };
+  });
 }

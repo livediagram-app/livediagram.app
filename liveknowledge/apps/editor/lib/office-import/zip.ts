@@ -22,6 +22,7 @@ type ZipEntry = {
   method: number;
   flags: number;
   compressedSize: number;
+  declaredSize: number;
   localOffset: number;
 };
 
@@ -31,6 +32,21 @@ export type ZipArchive = {
   has(name: string): boolean;
   /** The entry's bytes, at most `max` of them; throws `unpacks-too-large` past it. Null when there is no such entry. */
   read(name: string, max: number): Promise<Uint8Array | null>;
+  /** The unpacked size the archive declares for the entry (never trusted: a read still counts what arrives). Null
+   *  when there is no such entry. */
+  size(name: string): number | null;
+};
+
+/** How an archive is opened. Absent, it is an Office package: names folded, Office's own caps. */
+export type ZipOptions = {
+  /** `folded` compares names without case and answers them lower-cased (OPC part names are case-insensitive);
+   *  `as-written` keeps each name as the archive spells it, slashes forward, for an import that titles pages by
+   *  their file names (docs/specs/020-import-export/blueprints/knowledgebase-import.md "The zip reader"). */
+  names?: 'folded' | 'as-written';
+  /** The most entries the archive may list. */
+  maxEntries?: number;
+  /** The most every read of this archive may unpack, added up. */
+  maxUnpackedBytes?: number;
 };
 
 const broken = () => new OfficeImportError('not-a-package');
@@ -52,62 +68,79 @@ function findEnd(view: DataView): number {
 const utf8 = new TextDecoder('utf-8');
 const latin1 = new TextDecoder('latin1');
 
-export function openZip(bytes: Uint8Array): ZipArchive {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (view.byteLength < EOCD_MIN) throw broken();
-  const end = findEnd(view);
-  const count = view.getUint16(end + 10, true);
-  const cdSize = view.getUint32(end + 12, true);
-  const cdOffset = view.getUint32(end + 16, true);
+/** A name as an archive spells it, slashes forward and none leading: what `as-written` compares and answers. */
+const writtenKey = (name: string): string => name.replace(/\\/g, '/').replace(/^\/+/, '');
+
+type Directory = { count: number; cdOffset: number; end: number };
+
+// The end record, found in `tail` (the file's last bytes, which start at `tailStart` in the file).
+function locateDirectory(tail: DataView, tailStart: number, maxEntries: number): Directory {
+  if (tail.byteLength < EOCD_MIN) throw broken();
+  const at = findEnd(tail);
+  const count = tail.getUint16(at + 10, true);
+  const cdSize = tail.getUint32(at + 12, true);
+  const cdOffset = tail.getUint32(at + 16, true);
   // ZIP64 (D62): a file under the 50 MB cap never needs it.
   if (count === 0xffff || cdOffset === 0xffffffff || cdSize === 0xffffffff) throw broken();
-  if (count > OFFICE_MAX_ZIP_ENTRIES) throw tooLarge();
+  if (count > maxEntries) throw tooLarge();
+  const end = tailStart + at;
   if (cdOffset + cdSize > end) throw broken();
+  return { count, cdOffset, end };
+}
 
+// The central directory's entries, read from `cd`: the file's bytes from the directory's start to the end record.
+function readDirectory(
+  cd: Uint8Array,
+  count: number,
+  keyOf: (name: string) => string,
+): Map<string, ZipEntry> {
+  const view = new DataView(cd.buffer, cd.byteOffset, cd.byteLength);
+  const end = cd.byteLength;
   const entries = new Map<string, ZipEntry>();
-  let at = cdOffset;
+  let at = 0;
   for (let i = 0; i < count; i++) {
     if (at + 46 > end || view.getUint32(at, true) !== CENTRAL_SIG) throw broken();
     const flags = view.getUint16(at + 8, true);
     const method = view.getUint16(at + 10, true);
     const compressedSize = view.getUint32(at + 20, true);
+    const declaredSize = view.getUint32(at + 24, true);
     const nameLen = view.getUint16(at + 28, true);
     const extraLen = view.getUint16(at + 30, true);
     const commentLen = view.getUint16(at + 32, true);
     const localOffset = view.getUint32(at + 42, true);
     const nameEnd = at + 46 + nameLen;
     if (nameEnd > end) throw broken();
-    const raw = bytes.subarray(at + 46, nameEnd);
+    const raw = cd.subarray(at + 46, nameEnd);
     // Bit 11: the name is UTF-8; otherwise the old code page, read byte for byte.
     const name = (flags & 0x800 ? utf8 : latin1).decode(raw);
-    const key = zipKey(name);
+    const key = keyOf(name);
     if (key && !key.endsWith('/') && !entries.has(key)) {
-      entries.set(key, { name, method, flags, compressedSize, localOffset });
+      entries.set(key, { name, method, flags, compressedSize, declaredSize, localOffset });
     }
     at = nameEnd + extraLen + commentLen;
   }
+  return entries;
+}
 
+// The archive over its entries. `dataOf` answers one entry's packed bytes, from memory or from the file.
+function archiveOf(
+  entries: Map<string, ZipEntry>,
+  keyOf: (name: string) => string,
+  maxUnpacked: number,
+  dataOf: (entry: ZipEntry) => Uint8Array | Promise<Uint8Array>,
+): ZipArchive {
   let unpacked = 0;
-
-  const dataOf = (entry: ZipEntry): Uint8Array => {
-    const off = entry.localOffset;
-    if (off + 30 > bytes.byteLength || view.getUint32(off, true) !== LOCAL_SIG) throw broken();
-    const start = off + 30 + view.getUint16(off + 26, true) + view.getUint16(off + 28, true);
-    const stop = start + entry.compressedSize;
-    if (stop > bytes.byteLength) throw broken();
-    return bytes.subarray(start, stop);
-  };
-
   return {
     names: () => [...entries.keys()],
-    has: (name) => entries.has(zipKey(name)),
+    has: (name) => entries.has(keyOf(name)),
+    size: (name) => entries.get(keyOf(name))?.declaredSize ?? null,
     async read(name, max) {
-      const entry = entries.get(zipKey(name));
+      const entry = entries.get(keyOf(name));
       if (!entry) return null;
       // An encrypted entry: nothing in an Office package is, and we would not open it if it were.
       if (entry.flags & 0x1) throw broken();
-      const data = dataOf(entry);
-      const budget = Math.min(max, OFFICE_MAX_UNPACKED_BYTES - unpacked);
+      const data = await dataOf(entry);
+      const budget = Math.min(max, maxUnpacked - unpacked);
       let out: Uint8Array;
       if (entry.method === 0) {
         if (data.byteLength > budget) throw tooLarge();
@@ -121,6 +154,85 @@ export function openZip(bytes: Uint8Array): ZipArchive {
       return out;
     },
   };
+}
+
+// Where an entry's packed bytes sit, from its local header (30 bytes at its offset), within a file `size` long.
+function dataRange(
+  header: DataView,
+  entry: ZipEntry,
+  size: number,
+): { start: number; stop: number } {
+  if (header.byteLength < 30 || header.getUint32(0, true) !== LOCAL_SIG) throw broken();
+  const start = entry.localOffset + 30 + header.getUint16(26, true) + header.getUint16(28, true);
+  const stop = start + entry.compressedSize;
+  if (stop > size) throw broken();
+  return { start, stop };
+}
+
+const keyFor = (options: ZipOptions) => (options.names === 'as-written' ? writtenKey : zipKey);
+
+export function openZip(bytes: Uint8Array, options: ZipOptions = {}): ZipArchive {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const { count, cdOffset, end } = locateDirectory(
+    view,
+    0,
+    options.maxEntries ?? OFFICE_MAX_ZIP_ENTRIES,
+  );
+  const keyOf = keyFor(options);
+  const entries = readDirectory(bytes.subarray(cdOffset, end), count, keyOf);
+  return archiveOf(
+    entries,
+    keyOf,
+    options.maxUnpackedBytes ?? OFFICE_MAX_UNPACKED_BYTES,
+    (entry) => {
+      const off = entry.localOffset;
+      if (off + 30 > bytes.byteLength) throw broken();
+      const { start, stop } = dataRange(
+        new DataView(bytes.buffer, bytes.byteOffset + off, 30),
+        entry,
+        bytes.byteLength,
+      );
+      return bytes.subarray(start, stop);
+    },
+  );
+}
+
+const sliceOf = async (file: Blob, start: number, stop: number): Promise<Uint8Array> =>
+  new Uint8Array(await file.slice(start, stop).arrayBuffer());
+
+/**
+ * A zip opened from the file itself, never read whole: the end record and the directory are read once (the
+ * directory is a few dozen bytes an entry), and an entry's packed bytes only when it is asked for. For an archive
+ * too large to hold in memory beside what is unpacked from it (a knowledgebase import's 200 MB).
+ */
+export async function openZipFile(file: Blob, options: ZipOptions = {}): Promise<ZipArchive> {
+  const tailStart = Math.max(0, file.size - EOCD_SEARCH);
+  const tail = await sliceOf(file, tailStart, file.size);
+  const { count, cdOffset, end } = locateDirectory(
+    new DataView(tail.buffer, tail.byteOffset, tail.byteLength),
+    tailStart,
+    options.maxEntries ?? OFFICE_MAX_ZIP_ENTRIES,
+  );
+  const keyOf = keyFor(options);
+  const cd =
+    cdOffset >= tailStart
+      ? tail.subarray(cdOffset - tailStart, end - tailStart)
+      : await sliceOf(file, cdOffset, end);
+  const entries = readDirectory(cd, count, keyOf);
+  return archiveOf(
+    entries,
+    keyOf,
+    options.maxUnpackedBytes ?? OFFICE_MAX_UNPACKED_BYTES,
+    async (entry) => {
+      const header = await sliceOf(file, entry.localOffset, entry.localOffset + 30);
+      const { start, stop } = dataRange(
+        new DataView(header.buffer, header.byteOffset, header.byteLength),
+        entry,
+        file.size,
+      );
+      return sliceOf(file, start, stop);
+    },
+  );
 }
 
 /** Raw deflate unpacked through DecompressionStream, counted as it arrives: past `max` both sides are cancelled
