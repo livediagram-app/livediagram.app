@@ -441,6 +441,50 @@ function joinsLegacyBreak(blocks: ArticleBlock[], block: ArticleBlock, raw: unkn
   return block.runs.length === 0;
 }
 
+// Whether a stored article still carries a legacy suggestion (see legacySuggestionKind), on a block or one of its runs.
+function holdsLegacySuggestion(raw: unknown): boolean {
+  const blocks = (raw as { blocks?: unknown } | null)?.blocks;
+  if (!Array.isArray(blocks)) return false;
+  return blocks.some((block: { sg?: unknown; runs?: unknown } | null) => {
+    if (!block || typeof block !== 'object') return false;
+    if (block.sg !== undefined) return true;
+    return (
+      Array.isArray(block.runs) &&
+      block.runs.some((run: { sg?: unknown } | null) => run?.sg !== undefined)
+    );
+  });
+}
+
+/** A stored tab with every legacy suggestion in its articles settled as rejected (`parseArticleFlow`), so no reader
+ *  of the stored tab is sent one: the suggested words and who suggested them never leave storage. A tab's plain JSON
+ *  read (the api's tab GET, a copy) does not go through `articlesOf`, which is why this runs where a stored tab is
+ *  settled (`migrateStoredTab`). The same tab back when no article holds one. */
+export function settleStoredArticles<T extends object>(tab: T): T {
+  const articles = 'articles' in tab ? tab.articles : undefined;
+  if (!articles || typeof articles !== 'object' || Array.isArray(articles)) return tab;
+  let next: Record<string, unknown> | null = null;
+  for (const [flow, raw] of Object.entries(articles)) {
+    if (!holdsLegacySuggestion(raw)) continue;
+    next ??= { ...articles };
+    next[flow] = parseArticleFlow(raw, `${flow}-b0`);
+  }
+  return next ? { ...tab, articles: next } : tab;
+}
+
+/** `settleStoredArticles` over a tab's stored `data` JSON, for a reader that passes the JSON on unparsed (a copy).
+ *  Data that names no suggestion is handed back untouched, unparsed. */
+export function settleStoredArticlesData(data: string): string {
+  if (!data.includes('"sg"')) return data;
+  try {
+    const parsed: unknown = JSON.parse(data);
+    if (!parsed || typeof parsed !== 'object') return data;
+    const settled = settleStoredArticles(parsed);
+    return settled === parsed ? data : JSON.stringify(settled);
+  } catch {
+    return data;
+  }
+}
+
 const parsedArticles = new WeakMap<object, Readonly<Record<string, ArticleFlow>>>();
 
 /** The tab's articles' writing by flow id, each read defensively (`parseArticleFlow`); the same

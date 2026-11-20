@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { settleStoredArticles, settleStoredArticlesData } from './article-flow';
 import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import type { Tab } from './index';
 
@@ -49,5 +50,87 @@ describe('migrating untrusted input', () => {
     const [, settled] = migrateIncomingElements([box, step]);
     expect(settled).not.toBe(step);
     expect((settled as { label?: string }).label).toBe('1');
+  });
+});
+
+// Suggestions are retired (docs/specs/007-editor/suggestions.md "Writing stored with a suggestion"): a stored tab is
+// settled so its plain JSON, which a Community visitor and an agent are sent, never carries the suggested words or who
+// suggested them (SG1, SG2).
+describe('legacy suggestions in stored articles', () => {
+  const by = { id: 's1', by: 'user_secret', n: 'Sam Suggester', at: 1 };
+  const suggested = {
+    blocks: [
+      {
+        id: 'b1',
+        type: 'paragraph',
+        runs: [
+          { text: 'Kept. ' },
+          { text: 'UNACCEPTED', sg: { ...by, k: 'ins' } },
+          { text: 'Stays.', sg: { ...by, k: 'del' } },
+          { text: 'Plain', bold: true, sg: { ...by, k: 'fmt', was: {} } },
+        ],
+      },
+      { id: 'b2', type: 'paragraph', sg: { ...by, k: 'ins' }, runs: [{ text: ' Joined.' }] },
+    ],
+  };
+  const clean = { blocks: [{ id: 'c1', type: 'paragraph', runs: [{ text: 'Clean' }] }] };
+  const tab = { id: 't', name: 'T', elements: [], articles: { f1: suggested, f2: clean } };
+
+  it('reads a stored tab as if every suggestion were rejected, leaving other articles as stored', () => {
+    const settled = migrateStoredTab(tab);
+    const json = JSON.stringify(settled);
+    for (const leaked of ['"sg"', 'UNACCEPTED', 'user_secret', 'Sam Suggester']) {
+      expect(json).not.toContain(leaked);
+    }
+    expect(settled.articles.f1.blocks).toEqual([
+      { id: 'b1', type: 'paragraph', runs: [{ text: 'Kept. Stays.Plain Joined.' }] },
+    ]);
+    expect(settled.articles.f2).toBe(clean);
+  });
+
+  it('hands back the same tab when no article holds one, or there are none', () => {
+    const plain = { elements: [], articles: { f2: clean } };
+    expect(settleStoredArticles(plain)).toBe(plain);
+    for (const articles of [undefined, null, 'x', [suggested]]) {
+      const odd = { elements: [], articles };
+      expect(settleStoredArticles(odd)).toBe(odd);
+    }
+    const malformed = {
+      articles: {
+        f: null,
+        g: { blocks: 'x' },
+        h: { blocks: [null, { runs: 1 }, { runs: [null] }] },
+      },
+    };
+    expect(settleStoredArticles(malformed)).toBe(malformed);
+  });
+
+  it('settles stored data JSON, and passes on untouched what names no suggestion or cannot be read', () => {
+    const data = JSON.stringify(tab);
+    const settled = settleStoredArticlesData(data);
+    expect(settled).not.toContain('"sg"');
+    expect(settled).not.toContain('UNACCEPTED');
+    const plain = JSON.stringify({ elements: [], articles: { f2: clean } });
+    expect(settleStoredArticlesData(plain)).toBe(plain);
+    // The letters appear, but no article holds a suggestion.
+    const named = JSON.stringify({ elements: [{ id: 'a', label: '"sg"' }], sg: 1 });
+    expect(settleStoredArticlesData(named)).toBe(named);
+    expect(settleStoredArticlesData('"sg"')).toBe('"sg"');
+    expect(settleStoredArticlesData('{"sg" broken')).toBe('{"sg" broken');
+  });
+
+  it('checks a large tab with nothing to settle within budget', () => {
+    const runs = Array.from({ length: 20 }, (_, i) => ({ text: `word ${i} ` }));
+    const blocks = Array.from({ length: 2_000 }, (_, i) => ({
+      id: `b${i}`,
+      type: 'paragraph',
+      runs,
+    }));
+    const big = { elements: [], articles: { f1: { blocks }, f2: { blocks } } };
+    const before = process.cpuUsage();
+    for (let i = 0; i < 20; i++) expect(settleStoredArticles(big)).toBe(big);
+    const { user, system } = process.cpuUsage(before);
+    // 80,000 runs a pass; a pass is a few milliseconds. The budget is CPU time, and loose.
+    expect((user + system) / 1000 / 20).toBeLessThan(50);
   });
 });

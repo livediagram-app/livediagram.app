@@ -7,6 +7,7 @@ import {
   mergePresentationNoteCards,
   parseStoredPresentation,
   remapTabLinks,
+  settleStoredArticlesData,
   type DeckSlidePatch,
   type Element,
 } from '@livedocuments/document';
@@ -358,7 +359,9 @@ export async function exportDocumentCopy(
   const copy: DocumentCopy = {
     images: [],
     tabs: rows.map((row) => {
-      const remapped = remapTabDataLinks(row.data, tabIdMap);
+      // No copy carries a legacy article suggestion (docs/specs/007-editor/suggestions.md "Writing stored with a
+      // suggestion"): the copy takes the stored JSON as it is, so it is settled here.
+      const remapped = settleStoredArticlesData(remapTabDataLinks(row.data, tabIdMap));
       return {
         id: tabIdMap.get(row.id)!,
         name: row.name,

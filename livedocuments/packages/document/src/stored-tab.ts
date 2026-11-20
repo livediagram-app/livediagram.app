@@ -1,6 +1,7 @@
 // Everything a stored tab needs settled on the way in, in one call: the api worker's tab read and
 // thumbnail render, the offline store's tab load and a file import all run this, so a new step is
 // added once and reaches every entry point.
+import { settleStoredArticles } from './article-flow';
 import { migrateRetiredPattern } from './retired-patterns';
 import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
@@ -15,7 +16,11 @@ export function migrateStoredTab<
   // The fields that renderers read raw (layers, the background colours) are settled before anything reads them.
   // A retired background pattern (./retired-patterns) and a retired theme (./retired-themes) move onto their
   // replacements.
-  const settled = migrateRetiredPattern(migrateRetiredTheme(settleTabFields(tab)));
+  // An article's legacy suggestions read as rejected (docs/specs/007-editor/suggestions.md "Writing stored with a
+  // suggestion"), here so the plain tab JSON a Community visitor or an agent reads never carries one.
+  const settled = settleStoredArticles(
+    migrateRetiredPattern(migrateRetiredTheme(settleTabFields(tab))),
+  );
   if (!Array.isArray(settled.elements)) return settled;
   // Stacks lay out last (docs/specs/009-elements/stack.md), over the settled elements.
   const elements = settleStacks(migrateStoredElements(settled.elements));
