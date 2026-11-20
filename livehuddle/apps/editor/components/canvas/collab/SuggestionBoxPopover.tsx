@@ -5,7 +5,7 @@ import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/
 import { lucideLightbulb, lucideRefreshCw } from '@liveworkspace/icons/lucide';
 import type { Suggestion } from '@livehuddle/api-schema';
 import { SUGGESTION_TEXT_MAX, type ShapeElement } from '@livehuddle/document';
-import { CompactEmptyState, lucideGlyph, Tooltip } from '@livehuddle/ui';
+import { Button, CompactEmptyState, lucideGlyph, Tooltip } from '@livehuddle/ui';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { apiDropSuggestion, apiListSuggestions, apiRemoveSuggestion } from '@/lib/api-client';
 import { shortDay } from '@/lib/calendar-month';
@@ -28,6 +28,8 @@ const SIZES = {
     body: 'text-[12px]',
     meta: 'text-[10px]',
     action: 'px-2.5 py-1 text-[11px]',
+    // The submit is the shared primary Button, in the brand colour.
+    button: 'xs',
     note: 'rounded-md px-2.5 py-2',
   },
   reader: {
@@ -36,6 +38,7 @@ const SIZES = {
     body: 'text-[15px] leading-relaxed',
     meta: 'text-[12px]',
     action: 'px-3 py-1.5 text-[13px]',
+    button: 'sm',
     note: 'rounded-lg px-3.5 py-3',
   },
 } as const;
@@ -211,13 +214,15 @@ function DropForm({
         <span className={`${z.meta} tabular-nums text-slate-500 dark:text-slate-400`}>
           {text.length}/{SUGGESTION_TEXT_MAX}
         </span>
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size={z.button}
+          className="ml-auto"
           disabled={!body || sending}
-          className={`ml-auto cursor-pointer rounded-md bg-sky-600 ${z.action} font-semibold text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {sending ? 'Dropping…' : 'Drop It In'}
-        </button>
+        </Button>
       </div>
       <p
         role="status"

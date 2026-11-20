@@ -11,6 +11,7 @@ import {
   type NoteColor,
   type NoticeNote,
 } from '@livehuddle/document';
+import { Button } from '@livehuddle/ui';
 import { shortDayAt } from '@/lib/calendar-month';
 
 // The parts every piece that holds notes shares (the Notice Board, docs/specs/009-elements/social-pieces.md; the
@@ -27,6 +28,8 @@ export const NOTE_SIZES = {
     body: 'text-[12px]',
     meta: 'text-[10px]',
     action: 'px-2 py-1 text-[11px]',
+    // The submit is the shared primary Button, in the brand colour.
+    button: 'xs',
     list: 'flex min-h-0 flex-col gap-1.5 overflow-y-auto',
     note: 'rounded-md px-2 py-1.5',
   },
@@ -37,6 +40,7 @@ export const NOTE_SIZES = {
     body: 'text-[15px] leading-relaxed',
     meta: 'text-[12px]',
     action: 'px-3 py-1.5 text-[13px]',
+    button: 'sm',
     list: 'grid gap-3 sm:grid-cols-2',
     note: 'rounded-lg px-3.5 py-3',
   },
@@ -122,13 +126,9 @@ export function NoteAddForm({
         <span className="ml-auto text-[10px] tabular-nums text-slate-500 dark:text-slate-400">
           {text.length}/{NOTE_TEXT_MAX}
         </span>
-        <button
-          type="submit"
-          disabled={!text.trim() || full}
-          className={`cursor-pointer rounded-md bg-sky-600 ${z.action} font-semibold text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50`}
-        >
+        <Button type="submit" variant="primary" size={z.button} disabled={!text.trim() || full}>
           {submitLabel}
-        </button>
+        </Button>
       </div>
       {full ? (
         <p className="text-[10px] text-amber-700 dark:text-amber-400">{fullMessage}</p>
