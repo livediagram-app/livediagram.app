@@ -22,3 +22,12 @@ before the suggestion, which is what a Viewer, an export and an agent already re
   with nothing to join goes); a break taken out leaves both blocks as they are.
 
 The next save writes the writing without them.
+
+A reader that is sent the tab's stored JSON without reading the writing gets the same: a stored tab is settled where
+every stored tab is (`migrateStoredTab`, so the api's tab read for a Community visitor, an agent and anyone else, the
+offline store and a file import), and a copy of a document settles each tab's stored data before it is copied. The
+suggested words, and the name and id of whoever suggested them, never leave storage.
+
+- [x] SG1: a stored tab whose article holds an insertion is read, by a link's visitor and with an agent token, without
+      the insertion's words or any `sg`.
+- [x] SG2: a copy of a document carries no `sg`.
