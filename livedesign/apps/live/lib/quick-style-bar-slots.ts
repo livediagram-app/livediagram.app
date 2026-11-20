@@ -6,8 +6,9 @@ import { useSyncExternalStore } from 'react';
 import type { AppearanceRowItem } from '@liveworkspace/workbench/components/canvas/AppearanceRowList';
 
 export type QuickStyleBarSlot = { el: HTMLElement; named: boolean };
-// Screen px the bar takes beside a page's title bar (its width and the gap). One bar, so one page at a time.
-export type QuickStyleBarRoom = { pageId: string; px: number };
+// Screen px the bar takes beside a page's title bar (its width and the gap), and what it would take with its buttons
+// named (quickStyleBarNamedRoom), which decides whether the title bar names its own. One bar, so one page at a time.
+export type QuickStyleBarRoom = { pageId: string; px: number; namedPx: number };
 
 const slots = new Map<string, QuickStyleBarSlot>();
 let room: QuickStyleBarRoom | null = null;
@@ -39,14 +40,15 @@ export function clearQuickStyleBarSlot(pageId: string, el: HTMLElement): void {
 }
 
 /** The bar's room beside a page's title bar; 0 or less when it leaves (only that page's room is given back). */
-export function setQuickStyleBarRoom(pageId: string, px: number): void {
+export function setQuickStyleBarRoom(pageId: string, px: number, namedPx = px): void {
   const next = Math.max(0, Math.round(px));
+  const named = Math.max(0, Math.round(namedPx));
   if (next === 0) {
     if (room?.pageId !== pageId) return;
     room = null;
   } else {
-    if (room?.pageId === pageId && room.px === next) return;
-    room = { pageId, px: next };
+    if (room?.pageId === pageId && room.px === next && room.namedPx === named) return;
+    room = { pageId, px: next, namedPx: named };
   }
   emit();
 }

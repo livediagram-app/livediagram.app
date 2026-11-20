@@ -70,7 +70,11 @@ selection looks like, then what the page looks like.
   their first option's glyph, muted, when mixed.
 - **Named while the title bar is.** The bar names its buttons beside their icons exactly when the
   title bar does (a desktop with the page wide enough on screen), and drops to icons when it does, so
-  the row never mixes named and bare buttons.
+  the row never mixes named and bare buttons. While the bar sits beside it, the title bar is named only
+  while the page on screen holds both named and the label's least room (the bar's named room is worked
+  out from its buttons, `quickStyleBarNamedRoom`, so the choice never flips as the bar redraws): named
+  beside a phone wireframe's named title bar at 100 %, the pair ran off the page's left edge and under
+  the Contents panel.
 - **A popover per button**, anchored under it: the row's own choices as the panel had them (the
   colour rows' swatches, Ink or Transparent, and More colours; the glyph options), headed by the
   row's full name ("Marker colour", "Marker width", "Highlighter colour", "Highlighter width",
