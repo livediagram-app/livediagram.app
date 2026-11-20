@@ -140,8 +140,8 @@ export function PromisePrism() {
             Built With Your Values in Mind
           </h2>
           <p className="mt-5 text-pretty text-lg leading-relaxed text-slate-300">
-            liveknowledge is free, open and private for everyone, and it stays that way. One light,
-            four promises, kept in the open.
+            liveknowledge is open and private by design, and you can start without an account. One
+            light, four promises, kept in the open.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
             <a

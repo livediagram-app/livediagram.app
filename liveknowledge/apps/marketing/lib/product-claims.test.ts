@@ -74,7 +74,14 @@ const NOT_BUILT: { pattern: RegExp; why: string }[] = [
     pattern: /(?<!No )semantic search\b(?! is not built)|understands meaning/i,
     why: 'search is keyword search (search-and-ask.md)',
   },
-  { pattern: /free forever|forever free/i, why: 'the promise is no paid tier and no plan for one' },
+  {
+    pattern: /free forever|forever free/i,
+    why: 'the site says free to start and promises nothing about price',
+  },
+  {
+    pattern: /no paid tier|no plan for one|free for everyone|every feature included/i,
+    why: 'the site makes no promise about tiers (owner, 2026-11-20)',
+  },
 ];
 
 describe('product claims in marketing copy', () => {

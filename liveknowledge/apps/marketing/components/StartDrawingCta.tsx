@@ -8,7 +8,7 @@ import { CheckIcon, ChevronRightIcon } from '@liveknowledge/ui';
 // the link into the editor reports as its Closing slot.
 
 // Three things true today, each a promise the page has already made.
-const CHECKS = ['Free for Everyone', 'Open Source', 'Works Offline'];
+const CHECKS = ['Free to Start', 'Open Source', 'Works Offline'];
 
 export function StartDrawingCta({ surface }: { surface: 'Home' }) {
   const source = `${surface}.Closing` as const;

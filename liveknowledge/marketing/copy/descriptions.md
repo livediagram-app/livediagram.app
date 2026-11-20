@@ -14,8 +14,8 @@ verified date, and people and agents get cited answers.
 liveknowledge is a team knowledgebase, for people and for AI. Write your
 how-tos and decisions as pages in a page tree. Every page has an owner, a
 verified date and a review that comes due. Ask it a question and the answer
-cites its sources. Your agents read the same pages over MCP. Free and open
-source.
+cites its sources. Your agents read the same pages over MCP. Open source, and free
+to start.
 
 ## Medium (~100 words)
 
@@ -30,7 +30,7 @@ claim cited, on your team's own Claude API key. When the pages do not cover
 something, it says so.
 
 Agents read the same pages through an MCP server and a command line, with each
-passage's trust attached. Free, MIT-licensed, no paid tier.
+passage's trust attached. MIT-licensed, and free to start.
 
 ## Long (~200 words)
 
@@ -57,7 +57,7 @@ suggestion a person accepts.
 Confluence space export. Export to Markdown, PDF and Word.
 
 Part of liveworkspace: one account, the same sharing roles, Offline and the
-Google Drive mirror. Open source (MIT), with no paid tier.
+Google Drive mirror. Open source (MIT), and free to start.
 
 ## Social
 

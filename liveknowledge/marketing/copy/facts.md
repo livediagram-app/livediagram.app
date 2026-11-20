@@ -55,8 +55,8 @@ livedocuments, livedesign and livehuddle.
 
 ## Price and licence
 
-Open source (MIT), with no paid tier and no plan for one. Ask is the
-one thing with a cost: the team's own Claude API usage, paid to Anthropic.
+Open source (MIT), and free to start. Ask runs on the team's own AI key,
+so that usage is paid to its provider.
 
 ## Accounts
 

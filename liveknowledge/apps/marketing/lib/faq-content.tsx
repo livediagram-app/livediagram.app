@@ -42,17 +42,17 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is liveknowledge free?',
         a: (
           <>
-            Yes. liveknowledge is open source under the MIT licence, with no paid tier and no plan
-            for one: everything on this site is in the free product, and the code is on{' '}
+            It is free to start, with no card and no trial clock, and it is open source under the
+            MIT licence: the code is on{' '}
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
               GitHub
             </a>
-            . The one thing with a cost is Ask, and that cost is your team’s own Claude usage, paid
-            to Anthropic, never to us.
+            . Writing, linking, verifying, searching and connecting an agent cost nothing. Ask runs
+            on your team’s own AI key, so that usage is paid to your provider, not to us.
           </>
         ),
         aText:
-          'Yes. liveknowledge is open source under the MIT licence, with no paid tier and no plan for one: everything on this site is in the free product, and the code is on GitHub. The one thing with a cost is Ask, and that cost is your team’s own Claude usage, paid to Anthropic, never to us.',
+          'It is free to start, with no card and no trial clock, and it is open source under the MIT licence: the code is on GitHub. Writing, linking, verifying, searching and connecting an agent cost nothing. Ask runs on your team’s own AI key, so that usage is paid to your provider, not to us.',
       },
       {
         q: 'Do I need an account?',
@@ -108,7 +108,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Who pays for Ask?',
-        a: 'Your team does, on its own Claude API key. liveknowledge is free and pays for no model, so Ask appears once an Editor adds the knowledgebase’s key in AI Settings. Search, verification, import, export and the agent connection need no key.',
+        a: 'Your team does, on its own Claude API key. liveknowledge pays for no model, so Ask appears once an Editor adds the knowledgebase’s key in AI Settings. Search, verification, import, export and the agent connection need no key.',
       },
       {
         q: 'Is my Claude API key safe?',

@@ -12,7 +12,7 @@ const UPDATED = new Date('2026-11-20');
 
 // Our side of the rows most pages share, written once so the six pages cannot drift apart.
 const US = {
-  price: 'Free, every feature. Ask runs on your own Claude API key',
+  price: 'Free to start. Ask runs on your own Claude API key',
   open: 'Yes, MIT-licensed',
   account:
     'Yes: write as a guest, kept in your browser. Verify, Ask and sharing need a free account',
@@ -33,7 +33,7 @@ const row = (label: string, us: string, them: string): ComparisonRow => ({ label
 
 const FREE_FAQ: Faq = {
   q: 'Is liveknowledge really free?',
-  a: 'Yes. It is MIT-licensed open source with a free hosted version, every feature included, and no paid tier. Ask is the one thing with a cost, and that cost is your own Claude API usage, paid to Anthropic.',
+  a: 'It is MIT-licensed open source, and the hosted version is free to start. Ask runs on your own Claude API key, so that usage is paid to Anthropic.',
 };
 
 const AGENTS_SECTION = {
@@ -80,7 +80,7 @@ const LIST: Alternative[] = [
       'Every page has an owner, a verified date and a review that comes due, in every knowledgebase, with nothing to switch on.',
       'Ask answers only from your pages, numbers every claim to its passage and says what the pages do not cover.',
       'Agents get the same pages with the trust fields attached, and their edits arrive as suggestions.',
-      'It is free and MIT-licensed, with no paid tier: the cost of AI is your own Claude usage and nothing else.',
+      'It is MIT-licensed and free to start, and the cost of AI is your own Claude usage.',
       'A Notion export imports in one step, with its page hierarchy and the links between pages.',
     ],
     sections: [
@@ -151,7 +151,7 @@ const LIST: Alternative[] = [
       'Trust is on the page: an owner, a verified tick with a name and a date, and a review that comes due.',
       'Ask cites every claim to a passage and its verifier, and says what the pages do not cover.',
       'Agents read through an MCP server and a CLI that hand over the trust fields with each passage.',
-      'Free and MIT-licensed, with no seats to count.',
+      'MIT-licensed and free to start.',
       'A space’s HTML export imports with its page tree, links and pictures.',
     ],
     sections: [
@@ -217,7 +217,7 @@ const LIST: Alternative[] = [
       'Ask runs on your own Claude API key: you choose the model and pay only for what you use.',
       'Agents are first-class readers, through an MCP server and a CLI with trust fields on every passage.',
       'AI Knowledge shows which agents read what, and the questions nobody could answer.',
-      'Free and MIT-licensed, with no paid tier.',
+      'MIT-licensed and free to start.',
       'It sits in a workspace: a page embeds a live diagram, board, document or design from the other apps.',
     ],
     sections: [
@@ -288,7 +288,7 @@ const LIST: Alternative[] = [
       'Pages rather than cards: a runbook or a handbook stays one piece of writing, with a contents and backlinks.',
       'Agents read through an MCP server and a CLI, and each passage carries its verified state.',
       'Ask runs on your own Claude API key and says what the pages do not cover.',
-      'Free and MIT-licensed, with no paid tier.',
+      'MIT-licensed and free to start.',
     ],
     sections: [
       {
@@ -358,7 +358,7 @@ const LIST: Alternative[] = [
       'Ask answers from your pages with citations, on your own Claude API key.',
       'Agents read over MCP and suggest edits a person accepts, which is its own kind of review.',
       'A knowledgebase exports as a folder of Markdown with relative links, to keep beside a repository.',
-      'Free and MIT-licensed, with no paid tier.',
+      'MIT-licensed and free to start.',
     ],
     sections: [
       {
@@ -407,7 +407,7 @@ const LIST: Alternative[] = [
       row('Source', 'Public, MIT-licensed', 'Public, under its own licence'),
       row(
         'Where it runs',
-        'The free hosted version at liveknowledge.app',
+        'The hosted version at liveknowledge.app',
         'Its hosted service, or your own servers',
       ),
       row('Page trust', US.trust, 'Document history and who last edited'),
@@ -431,7 +431,7 @@ const LIST: Alternative[] = [
       'Every page has an owner, a verified tick and a review that comes due.',
       'Ask cites each claim to its passage, on your own Claude API key, and says what the pages do not cover.',
       'An MCP server and a CLI hand agents each passage with its trust fields, and take edits as suggestions.',
-      'Free to use on the hosted version, with every feature, and MIT-licensed.',
+      'Free to start on the hosted version, and MIT-licensed.',
       'Pages embed live items from the other liveworkspace apps, under one account.',
     ],
     sections: [

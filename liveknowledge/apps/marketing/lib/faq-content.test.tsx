@@ -67,8 +67,9 @@ describe('the landing FAQ', () => {
 
   const answer = (q: string) => faqAnswerText(items.find((i) => i.q === q)!);
 
-  it('says it is free, MIT and has no paid tier', () => {
-    expect(answer('Is liveknowledge free?')).toMatch(/MIT licence.*no paid tier/);
+  it('says it is free to start and MIT, and promises nothing about tiers', () => {
+    expect(answer('Is liveknowledge free?')).toMatch(/free to start.*MIT licence/);
+    expect(answer('Is liveknowledge free?')).not.toMatch(/no paid tier|forever/i);
   });
 
   it('says the team pays for Ask on its own key, and that the rest needs none', () => {
