@@ -5,6 +5,8 @@ import type { SqlStatement } from './statement';
 export const SETTING_AI_KEY = 'ai_key';
 export const SETTING_AI_KEY_HINT = 'ai_key_hint';
 export const SETTING_AI_MODEL = 'ai_model';
+/** Whose API the key is for (model-providers.ts). No row: a key kept before there was a choice, Anthropic's. */
+export const SETTING_AI_PROVIDER = 'ai_provider';
 
 /** One setting: a row `{ value }` or none. */
 export const readSetting = (name: string): SqlStatement => ({
@@ -18,13 +20,22 @@ export const putSetting = (name: string, value: string): SqlStatement => ({
   params: [name, value],
 });
 
-/** Stores a key's envelope and its hint together. Run in one transaction. */
-export const putAiKey = (envelope: string, hint: string): SqlStatement[] => [
+/** Stores a key's envelope, its hint and its provider together. Run in one transaction, so a key is never
+ *  beside another provider's name. */
+export const putAiKey = (envelope: string, hint: string, provider: string): SqlStatement[] => [
   putSetting(SETTING_AI_KEY, envelope),
   putSetting(SETTING_AI_KEY_HINT, hint),
+  putSetting(SETTING_AI_PROVIDER, provider),
 ];
 
-/** "Remove": the key and its hint go; the model stays. */
+/** Forgets the chosen model: run with `putAiKey` when the provider changes, so the new provider starts on its
+ *  default and never on the other's model. */
+export const removeAiModel = (): SqlStatement => ({
+  sql: 'DELETE FROM knowledge_settings WHERE name = ?',
+  params: [SETTING_AI_MODEL],
+});
+
+/** "Remove": the key and its hint go; the provider and the model stay. */
 export const removeAiKey = (): SqlStatement => ({
   sql: 'DELETE FROM knowledge_settings WHERE name IN (?, ?)',
   params: [SETTING_AI_KEY, SETTING_AI_KEY_HINT],

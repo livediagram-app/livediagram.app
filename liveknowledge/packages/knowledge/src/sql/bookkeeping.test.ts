@@ -51,7 +51,9 @@ import {
   SETTING_AI_KEY,
   SETTING_AI_KEY_HINT,
   SETTING_AI_MODEL,
+  SETTING_AI_PROVIDER,
   putAiKey,
+  removeAiModel,
   putSetting,
   readSetting,
   removeAiKey,
@@ -320,13 +322,30 @@ describe('AI settings', () => {
   it('stores the sealed key with its hint, replaces and removes them, and keeps the model', () => {
     const db = knowledgeDb();
     expect(db.all(readSetting(SETTING_AI_KEY))).toEqual([]);
-    db.run([...putAiKey('v1.iv.sealed', '4f2a'), putSetting(SETTING_AI_MODEL, 'claude-opus-5-5')]);
-    db.run(putAiKey('v1.iv2.sealed2', '9c1d'));
+    expect(db.all(readSetting(SETTING_AI_PROVIDER))).toEqual([]);
+    db.run([
+      ...putAiKey('v1.iv.sealed', '4f2a', 'anthropic'),
+      putSetting(SETTING_AI_MODEL, 'claude-opus-5-5'),
+    ]);
+    db.run(putAiKey('v1.iv2.sealed2', '9c1d', 'anthropic'));
     expect(db.all(readSetting(SETTING_AI_KEY))).toEqual([{ value: 'v1.iv2.sealed2' }]);
     expect(db.all(readSetting(SETTING_AI_KEY_HINT))).toEqual([{ value: '9c1d' }]);
     db.run(removeAiKey());
     expect(db.all(readSetting(SETTING_AI_KEY))).toEqual([]);
     expect(db.all(readSetting(SETTING_AI_KEY_HINT))).toEqual([]);
     expect(db.all(readSetting(SETTING_AI_MODEL))).toEqual([{ value: 'claude-opus-5-5' }]);
+    expect(db.all(readSetting(SETTING_AI_PROVIDER))).toEqual([{ value: 'anthropic' }]);
+  });
+
+  it('keeps the provider beside the key, and forgets the model when the provider changes', () => {
+    const db = knowledgeDb();
+    db.run([
+      ...putAiKey('v1.iv.sealed', '4f2a', 'anthropic'),
+      putSetting(SETTING_AI_MODEL, 'claude-opus-5-5'),
+    ]);
+    db.run([...putAiKey('v1.iv3.sealed3', 'oai1', 'openai'), removeAiModel()]);
+    expect(db.all(readSetting(SETTING_AI_PROVIDER))).toEqual([{ value: 'openai' }]);
+    expect(db.all(readSetting(SETTING_AI_KEY))).toEqual([{ value: 'v1.iv3.sealed3' }]);
+    expect(db.all(readSetting(SETTING_AI_MODEL))).toEqual([]);
   });
 });

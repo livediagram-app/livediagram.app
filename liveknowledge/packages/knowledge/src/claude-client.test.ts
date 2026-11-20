@@ -9,7 +9,8 @@ import {
   type ClaudeFailureKind,
 } from './claude-client';
 import { CLAUDE_MODELS, DEFAULT_CLAUDE_MODEL, claudeModel } from './claude-models';
-import { claudeRequest, fenced } from './claude-request';
+import { claudeRequest } from './claude-request';
+import { fenced } from './model-request';
 
 const KEY = 'sk-ant-api03-not-a-real-key-4f2a';
 const request = (model: unknown = 'claude-fable-5-2') =>

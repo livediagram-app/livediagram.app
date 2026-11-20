@@ -1,7 +1,7 @@
 // The model's part of a conflict check (docs/specs/030-knowledgebase/ai-knowledge.md "Pages that disagree"): one
 // request that asks, of each candidate pair, whether the two passages state opposite facts, and the reading of
-// its verdicts. Same client as Ask (claude-client.ts), same fencing of other people's writing.
-import { claudeRequest, fenced, type ClaudeRequest } from './claude-request';
+// its verdicts. Same call as Ask (model-providers.ts `callModel`), same fencing of other people's writing.
+import { fenced, type ModelRequest } from './model-request';
 import { conflictId, type Conflict, type ConflictCandidate } from './conflicts';
 
 export const CONFLICT_MAX_TOKENS = 16_000;
@@ -20,9 +20,8 @@ Reply with one line for each pair, in order, and nothing else:
 
 /** The request for a check's candidate pairs. */
 export function conflictRequest(options: {
-  model: unknown;
   candidates: readonly ConflictCandidate[];
-}): ClaudeRequest {
+}): ModelRequest {
   const pairs = options.candidates
     .map(
       ({ number, changed, other }) =>
@@ -30,13 +29,12 @@ export function conflictRequest(options: {
         `<second>\n${fenced(other.text)}\n</second>\n</pair>`,
     )
     .join('\n');
-  return claudeRequest({
-    model: options.model,
+  return {
     system: CONFLICT_SYSTEM,
     messages: [{ role: 'user', content: `<pairs>\n${pairs}\n</pairs>` }],
     maxTokens: CONFLICT_MAX_TOKENS,
     effort: 'low',
-  });
+  };
 }
 
 /** The conflicts a reply names. Only a pair that was asked about, with the verdict `conflict` and a question,

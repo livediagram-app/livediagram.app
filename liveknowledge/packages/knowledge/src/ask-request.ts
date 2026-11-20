@@ -4,7 +4,7 @@
 // model is told they are material to read, never instructions.
 import { ASK_MAX_QUESTION_CHARS, ASK_MAX_TURNS } from './ask-limits';
 import type { AskPassage } from './ask-passages';
-import { claudeRequest, fenced, type ClaudeMessage, type ClaudeRequest } from './claude-request';
+import { fenced, type ModelMessage, type ModelRequest } from './model-request';
 import { dayOf } from './days';
 
 /** Room for the answer and the thinking before it. The team pays for what is used, not for the ceiling. */
@@ -58,16 +58,15 @@ export function askMessage(question: string, passages: readonly AskPassage[]): s
 const earlierAnswer = (answer: string): string =>
   `<answer>\n${answer.replace(/\s*\[\d{1,3}\]/g, '').trim()}\n</answer>`;
 
-/** The request for a question. `turns` are the conversation so far, oldest first; the last ASK_MAX_TURNS - 1 are
+/** The request for a question, for whichever provider's model answers (model-providers.ts `callModel`). `turns` are the conversation so far, oldest first; the last ASK_MAX_TURNS - 1 are
  *  kept, so the conversation is at most ASK_MAX_TURNS turns with this one. Earlier turns are sent as their
  *  question and answer alone: only this question carries passages. */
 export function askRequest(options: {
-  model: unknown;
   question: string;
   passages: readonly AskPassage[];
   turns?: readonly AskTurn[];
-}): ClaudeRequest {
-  const messages: ClaudeMessage[] = [];
+}): ModelRequest {
+  const messages: ModelMessage[] = [];
   for (const turn of (options.turns ?? []).slice(-(ASK_MAX_TURNS - 1))) {
     messages.push(
       {
@@ -78,11 +77,5 @@ export function askRequest(options: {
     );
   }
   messages.push({ role: 'user', content: askMessage(options.question, options.passages) });
-  return claudeRequest({
-    model: options.model,
-    system: ASK_SYSTEM,
-    messages,
-    maxTokens: ASK_MAX_TOKENS,
-    effort: 'medium',
-  });
+  return { system: ASK_SYSTEM, messages, maxTokens: ASK_MAX_TOKENS, effort: 'medium' };
 }

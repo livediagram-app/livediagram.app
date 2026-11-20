@@ -202,15 +202,9 @@ describe("the model's part", () => {
     },
   ]);
 
-  it('asks about every pair in one fenced request, on the same client as Ask', () => {
-    const request = conflictRequest({ model: 'claude-haiku-5-5', candidates });
-    expect(request).toMatchObject({
-      model: 'claude-haiku-5-5',
-      stream: true,
-      system: CONFLICT_SYSTEM,
-      output_config: { effort: 'low' },
-    });
-    expect(request).not.toHaveProperty('fallbacks');
+  it('asks about every pair in one fenced request, shaped as the one Ask sends', () => {
+    const request = conflictRequest({ candidates });
+    expect(request).toMatchObject({ system: CONFLICT_SYSTEM, maxTokens: 16_000, effort: 'low' });
     expect(request.messages).toEqual([
       {
         role: 'user',

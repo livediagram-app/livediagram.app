@@ -82,12 +82,17 @@ export type KnowledgeSummaryResponse = {
   yoursToReview: KnowledgeDuePage[];
 };
 
-/** `GET .../ai` (search-and-ask.md "Ask"): never the key, only whether one is set and its last characters. */
+/** Whose API a knowledgebase's key is for (search-and-ask.md "Providers"). */
+export type KnowledgeAiProvider = 'anthropic' | 'openai';
+/** `GET .../ai` (search-and-ask.md "Ask", "Providers"): never the key, only whether one is set, whose it is and
+ *  its last characters. `models` are the stored provider's; `providers` are the two a team may choose between. */
 export type KnowledgeAiSettings = {
+  provider: KnowledgeAiProvider;
   hasKey: boolean;
   keyHint: string;
   model: string;
   models: { id: string; label: string }[];
+  providers: { id: KnowledgeAiProvider; label: string; keyPrefix: string }[];
 };
 
 export type AskTurn = { question: string; answer: string };
@@ -118,7 +123,7 @@ export type AskEvent =
       gaps: string[];
       model: string;
     }
-  | { type: 'error'; kind: string; message: string };
+  | { type: 'error'; kind: string; message: string; provider?: KnowledgeAiProvider };
 
 /** How an agent connects: the MCP server, the command line, or an API token used directly. */
 export type KnowledgeAgentDoor = 'mcp' | 'cli' | 'token';

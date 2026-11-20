@@ -14,7 +14,7 @@ import {
 } from './ask-limits';
 import { askSearch, chooseAskPassages, type AskPassage } from './ask-passages';
 import { ASK_SYSTEM, askMessage, askRequest } from './ask-request';
-import { callClaude } from './claude-client';
+import { callModel } from './model-providers';
 import { pagePassages } from './passages';
 import { replacePageIndex } from './sql/page-index';
 import { foundPassage, type FoundPassage, type SearchRow } from './sql/search';
@@ -184,26 +184,15 @@ describe('the request Ask sends', () => {
     expect(ASK_SYSTEM).not.toContain(String.fromCharCode(0x2014));
   });
 
-  it('is one streamed request on the chosen model, the system prompt apart from the material', () => {
-    const request = askRequest({
-      model: 'claude-sonnet-5-5',
-      question: 'When do we deploy?',
-      passages,
-    });
-    expect(request).toMatchObject({
-      model: 'claude-sonnet-5-5',
-      stream: true,
-      system: ASK_SYSTEM,
-      output_config: { effort: 'medium' },
-    });
-    expect(request).not.toHaveProperty('fallbacks');
+  it('is one request for any provider, the system prompt apart from the material', () => {
+    const request = askRequest({ question: 'When do we deploy?', passages });
+    expect(request).toMatchObject({ system: ASK_SYSTEM, maxTokens: 16_000, effort: 'medium' });
+    // No provider's own field: the same request goes to whichever model the team chose.
+    expect(Object.keys(request).sort()).toEqual(['effort', 'maxTokens', 'messages', 'system']);
     expect(request.messages).toEqual([
       { role: 'user', content: askMessage('When do we deploy?', passages) },
     ]);
     expect(request.system).not.toContain('Tuesdays');
-    expect(askRequest({ model: 'retired-model', question: 'Q', passages }).model).toBe(
-      'claude-fable-5-2',
-    );
   });
 
   it('keeps the conversation: earlier turns without passages or their citation numbers, at most 10 turns', () => {
@@ -211,12 +200,7 @@ describe('the request Ask sends', () => {
       question: `Question <${at}>?`,
       answer: `Answer ${at} [1][12]. More [3].`,
     }));
-    const { messages } = askRequest({
-      model: 'claude-fable-5-2',
-      question: 'And now?',
-      passages,
-      turns,
-    });
+    const { messages } = askRequest({ question: 'And now?', passages, turns });
     expect(messages).toHaveLength(ASK_MAX_TURNS * 2 - 1);
     expect(messages[0]).toEqual({
       role: 'user',
@@ -325,10 +309,12 @@ describe('the answer read', () => {
     const { fetch, sent } = fakeFetch(() => streamResponse(answerEvents(reply.match(/.{1,9}/g)!)));
     const stream = askAnswerStream(passages);
     let shown = '';
-    const result = await callClaude({
+    const result = await callModel({
+      provider: 'anthropic',
       fetch,
       apiKey: 'sk-ant-test-key-0000',
-      request: askRequest({ model: 'claude-fable-5-2', question: 'When do we deploy?', passages }),
+      model: 'claude-fable-5-2',
+      request: askRequest({ question: 'When do we deploy?', passages }),
       onText: (piece) => {
         shown += stream.push(piece);
       },

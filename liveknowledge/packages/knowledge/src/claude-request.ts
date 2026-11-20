@@ -1,15 +1,15 @@
-// A request to the Claude Messages API (`POST /v1/messages`), as Ask and the conflict check send it, and the text
-// both fence untrusted writing with. Built by hand because the call is made with an injected `fetch` from a
+// A request to the Claude Messages API (`POST /v1/messages`), as Ask and the conflict check send it. Built by hand because the call is made with an injected `fetch` from a
 // Worker (claude-client.ts); the shapes are the Messages API's own.
 import { claudeModel } from './claude-models';
+import type { ModelEffort, ModelMessage } from './model-request';
 
 export const CLAUDE_MESSAGES_URL = 'https://api.anthropic.com/v1/messages';
 export const CLAUDE_API_VERSION = '2026-10-21';
 /** The beta that lets a request name `fallbacks: "default"`. */
 export const CLAUDE_FALLBACK_BETA = 'server-side-fallback-2026-07-01';
 
-export type ClaudeEffort = 'low' | 'medium' | 'high';
-export type ClaudeMessage = { role: 'user' | 'assistant'; content: string };
+export type ClaudeEffort = ModelEffort;
+export type ClaudeMessage = ModelMessage;
 
 /** The body of a Messages request. No `thinking` (every listed model thinks adaptively when it is left out, and
  *  some reject any other setting) and no sampling parameters (the current models reject them). */
@@ -43,8 +43,3 @@ export function claudeRequest(options: {
     ...(model.fallbacks ? { fallbacks: 'default' as const } : {}),
   };
 }
-
-/** Untrusted text made safe to put inside a fence: the characters that could close a tag or open one are written
- *  as entities, so no writing and no question can end its own fence or start another. */
-export const fenced = (text: string): string =>
-  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

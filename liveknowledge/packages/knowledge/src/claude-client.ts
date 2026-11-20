@@ -8,38 +8,32 @@ import {
   CLAUDE_MESSAGES_URL,
   type ClaudeRequest,
 } from './claude-request';
+import { ModelCallError, modelFailureWords, type ModelFailureKind } from './model-failure';
+import { eventData, parseEvent } from './sse';
 
-export type ClaudeFailureKind =
-  | 'bad-key'
-  | 'no-credit'
-  | 'rate-limited'
-  | 'overloaded'
-  | 'model-unavailable'
-  | 'refused'
-  | 'other';
+/** The kinds are every provider's (model-failure.ts). */
+export type ClaudeFailureKind = ModelFailureKind;
 
-/** What a person is told for each kind of failure. */
-export const CLAUDE_FAILURE_WORDS: Readonly<Record<ClaudeFailureKind, string>> = {
-  'bad-key': 'Claude did not accept the API key. Replace it in Settings.',
-  'no-credit': 'The Claude account for this key has no credit left.',
-  'rate-limited': 'The Claude account for this key is at its rate limit. Try again in a minute.',
-  overloaded: 'Claude is busy right now. Try again in a moment.',
-  'model-unavailable': 'This key cannot use the chosen model. Choose another in Settings.',
-  refused: 'Claude declined to answer this.',
-  other: 'The answer could not be made. Try again.',
-};
+const CLAUDE_KINDS: readonly ModelFailureKind[] = [
+  'bad-key',
+  'no-credit',
+  'rate-limited',
+  'overloaded',
+  'model-unavailable',
+  'refused',
+  'other',
+];
 
-/** A failed model call. Its message is the kind's words; it holds no key, no request and no API message. */
-export class ClaudeCallError extends Error {
-  readonly kind: ClaudeFailureKind;
-  /** The HTTP status, when the API answered with one. */
-  readonly status: number | undefined;
+/** What a person is told for each kind of failure of a Claude call. */
+export const CLAUDE_FAILURE_WORDS = Object.fromEntries(
+  CLAUDE_KINDS.map((kind) => [kind, modelFailureWords('anthropic', kind)]),
+) as Readonly<Record<ClaudeFailureKind, string>>;
 
+/** A failed Claude call. Its message is the kind's words; it holds no key, no request and no API message. */
+export class ClaudeCallError extends ModelCallError {
   constructor(kind: ClaudeFailureKind, status?: number) {
-    super(CLAUDE_FAILURE_WORDS[kind]);
+    super('anthropic', kind, status);
     this.name = 'ClaudeCallError';
-    this.kind = kind;
-    this.status = status;
   }
 }
 
@@ -99,37 +93,6 @@ type StreamEvent = {
   error?: unknown;
 };
 
-// The `data:` payloads of a server-sent event stream, as they complete. Other lines (`event:`, comments, blanks)
-// carry nothing the payload's own `type` does not.
-async function* eventData(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
-  const reader = body.getReader();
-  const decoder = new TextDecoder();
-  let pending = '';
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      pending += done ? decoder.decode() : decoder.decode(value, { stream: true });
-      const lines = pending.split('\n');
-      pending = done ? '' : lines.pop()!;
-      for (const line of lines) {
-        if (line.startsWith('data:')) yield line.slice(5).trim();
-      }
-      if (done) return;
-    }
-  } finally {
-    reader.releaseLock();
-  }
-}
-
-function parseEvent(data: string): StreamEvent | undefined {
-  try {
-    const event: unknown = JSON.parse(data);
-    return event && typeof event === 'object' ? event : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 /** Sends `request` and reads the streamed answer, calling `onText` with each piece of text as it arrives. Throws
  *  ClaudeCallError for every failure: no network, a refused key, no credit, a rate limit, an overloaded API, a
  *  model the key cannot use, an answer the model declined, a stream that ended early. */
@@ -165,7 +128,7 @@ export async function callClaude(options: {
   let finished = false;
   try {
     for await (const data of eventData(response.body)) {
-      const event = parseEvent(data);
+      const event = parseEvent<StreamEvent>(data);
       if (!event) continue;
       if (event.type === 'error') throw new ClaudeCallError(claudeFailureKind(undefined, event));
       if (event.type === 'message_start' && typeof event.message?.model === 'string') {
