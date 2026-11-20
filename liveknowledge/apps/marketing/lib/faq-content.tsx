@@ -92,7 +92,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What does AI Knowledge show?',
-        a: 'Which agents read your knowledgebase and what they read most, the questions nobody could answer, pages that disagree with each other, the edits agents have suggested, and the pages you marked Always in Context. Finding pages that disagree uses a model, so it needs your Claude API key; the rest needs none.',
+        a: 'Which agents read your knowledgebase and what they read most, the questions nobody could answer, pages that disagree with each other, the edits agents have suggested, and the pages you marked Always in Context. Finding pages that disagree uses a model, so it needs your own Claude or OpenAI key; the rest needs none.',
       },
     ],
   },
@@ -108,10 +108,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Who pays for Ask?',
-        a: 'Your team does, on its own Claude API key. liveknowledge pays for no model, so Ask appears once an Editor adds the knowledgebase’s key in AI Settings. Search, verification, import, export and the agent connection need no key.',
+        a: 'Your team does, on its own Claude or OpenAI key. liveknowledge pays for no model, so Ask appears once an Editor adds the knowledgebase’s key in AI Settings. Search, verification, import, export and the agent connection need no key.',
       },
       {
-        q: 'Is my Claude API key safe?',
+        q: 'Is my API key safe?',
         a: 'The key is sent once over TLS, encrypted before it is stored, and kept with that knowledgebase. It is never sent back to a browser: AI Settings shows only its last four characters, with Replace and Remove. It is never written to logs or telemetry.',
       },
       {
@@ -160,7 +160,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Does liveknowledge train a model on my pages?',
-        a: 'No. liveknowledge runs no model of its own. Ask sends your question and the passages it found to Claude under your team’s own API key, and an agent you connect reads only what you let it.',
+        a: 'No. liveknowledge runs no model of its own. Ask sends your question and the passages it found to Claude or OpenAI, whichever your team chose, under its own API key, and an agent you connect reads only what you let it.',
       },
     ],
   },
@@ -230,7 +230,7 @@ const LANDING_QUESTIONS = [
   'What can an agent see?',
   'How does verification work?',
   'Can I import from Notion and Confluence?',
-  'Is my Claude API key safe?',
+  'Is my API key safe?',
   'Does liveknowledge work offline?',
   'What is liveknowledge not?',
 ];

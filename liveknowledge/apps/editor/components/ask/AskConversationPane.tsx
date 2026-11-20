@@ -23,7 +23,7 @@ import { KnowledgeGapCard } from './KnowledgeGapCard';
 import { openPassage } from './open-passage';
 import { PagePickerDialog } from './PagePickerDialog';
 import { useDraftPage } from './useDraftPage';
-import type { AskSession } from './useAskSession';
+import { useAiSettingsState, type AskSession } from './useAskSession';
 
 const QUESTION_BUBBLE =
   'ml-auto max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-slate-900 px-4 py-2.5 text-[15px] leading-6 text-white dark:bg-slate-100 dark:text-slate-900';
@@ -50,6 +50,9 @@ export function AskConversationPane({
   const chrome = useEditorChromeStore();
   const toast = useToast();
   const { rights } = session;
+  // Whose key the knowledgebase holds, for a failure that is the provider's own.
+  const ai = useAiSettingsState(session.documentId);
+  const provider = ai.status === 'ready' ? ai.settings.provider : undefined;
   const last = turns[turns.length - 1];
   const streaming = last?.status === 'streaming';
 
@@ -158,6 +161,7 @@ export function AskConversationPane({
                     turn={turn}
                     conversation={conversation}
                     manageAi={rights.manageAi}
+                    provider={provider}
                     canSave={rights.makePages}
                     onCite={cite}
                     onSave={requestSave}

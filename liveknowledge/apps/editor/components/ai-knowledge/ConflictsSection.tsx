@@ -79,7 +79,7 @@ export function ConflictsSection({
           tone="info"
           size="md"
           role="note"
-          title="This Needs a Claude Key"
+          title="This Needs Your Team's AI Key"
           {...(canManageAi
             ? { action: { label: 'Open AI Settings', onSelect: onOpenAiSettings } }
             : {})}

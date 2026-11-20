@@ -66,6 +66,11 @@ import { AskView } from './AskView';
 import { ROLES, chromeValue, renderInEditor, type Role } from './test-chrome';
 
 const settings = (over: Partial<KnowledgeAiSettings> = {}): KnowledgeAiSettings => ({
+  provider: 'anthropic',
+  providers: [
+    { id: 'anthropic', label: 'Anthropic (Claude)', keyPrefix: 'sk-ant-' },
+    { id: 'openai', label: 'OpenAI', keyPrefix: 'sk-' },
+  ],
   hasKey: true,
   keyHint: '4f2a',
   model: 'claude-fable-5-2',
@@ -142,7 +147,7 @@ describe('when this session cannot ask', () => {
   it.each(ROLES)('with no key, as %s', async (role) => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
     await open(role);
-    expect(screen.getByText("Ask Needs Your Team's Claude Key")).toBeTruthy();
+    expect(screen.getByText("Ask Needs Your Team's AI Key")).toBeTruthy();
     const settingsButton = screen.queryByRole('button', { name: 'Open AI Settings' });
     expect(settingsButton !== null).toBe(role === 'edit');
     if (role !== 'edit') expect(screen.getByText(/Ask an Editor to add one/)).toBeTruthy();
@@ -531,6 +536,19 @@ describe('a failure, in words with the next step', () => {
     expect(field().disabled).toBe(false);
   });
 
+  it.each([
+    ['bad-key', 'OpenAI Did Not Accept the Key'],
+    ['no-credit', 'The OpenAI Account Is Out of Credit'],
+    ['rate-limited', 'The OpenAI Account Is at Its Rate Limit'],
+    ['overloaded', 'OpenAI Is Busy Right Now'],
+    ['refused', 'OpenAI Declined to Answer This'],
+  ])('names OpenAI when the key is an OpenAI one: %s', async (kind, title) => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ provider: 'openai' }));
+    const alert = await fail(kind);
+    expect(alert.textContent).toContain(title);
+    expect(alert.textContent).not.toContain('Claude');
+  });
+
   it('asks again in place', async () => {
     const alert = await fail('overloaded');
     fireEvent.click(within(alert).getByRole('button', { name: 'Ask Again' }));
@@ -552,7 +570,7 @@ describe('a failure, in words with the next step', () => {
     await open();
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
     await answer(ask('Q?'), { type: 'error', kind: 'ask_unavailable', message: 'no key' });
-    await screen.findByText("Ask Needs Your Team's Claude Key");
+    await screen.findByText("Ask Needs Your Team's AI Key");
   });
 });
 

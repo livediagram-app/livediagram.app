@@ -73,7 +73,7 @@ describe('the landing FAQ', () => {
   });
 
   it('says the team pays for Ask on its own key, and that the rest needs none', () => {
-    expect(answer('Who pays for Ask?')).toMatch(/own Claude API key/);
+    expect(answer('Who pays for Ask?')).toMatch(/own Claude or OpenAI key/);
     expect(answer('Who pays for Ask?')).toMatch(/need no key/);
   });
 
@@ -88,7 +88,7 @@ describe('the landing FAQ', () => {
   });
 
   it('says the key is encrypted and never shown again', () => {
-    expect(answer('Is my Claude API key safe?')).toMatch(/encrypted.*never sent back/);
+    expect(answer('Is my API key safe?')).toMatch(/encrypted.*never sent back/);
   });
 
   it('says what it is not, and where to go instead', () => {

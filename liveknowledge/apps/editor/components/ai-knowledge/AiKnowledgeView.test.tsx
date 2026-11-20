@@ -339,7 +339,7 @@ describe('what it shows', () => {
       </>,
     );
     const note = within(await screen.findByRole('note'));
-    expect(note.getByText('This Needs a Claude Key')).toBeTruthy();
+    expect(note.getByText("This Needs Your Team's AI Key")).toBeTruthy();
     fireEvent.click(note.getByRole('button', { name: 'Open AI Settings' }));
     expect(screen.getByTestId('open').textContent).toBe('true');
   });

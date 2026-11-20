@@ -3,6 +3,7 @@
 // and Settings > AI are built over. Each is one request through the shared funnel (identity, the index's grant, the
 // release signal, the failure report); the Ask stream is knowledge-ask.ts.
 import type {
+  KnowledgeAiProvider,
   KnowledgeAiSettings,
   KnowledgeBacklink,
   KnowledgeBacklinksResponse,
@@ -188,7 +189,8 @@ export async function apiSetPageKnowledge(
   return (await expectOk<PageKnowledgeResponse>(res, action, expected)).knowledge;
 }
 
-/** Settings > AI: whether a key is set, its last characters (to an Editor), the model and the models offered. */
+/** AI Settings: the provider, whether a key is set, its last characters (to an Editor), the model and the models
+ *  and providers offered. */
 export function apiKnowledgeAi(
   who: KnowledgeCaller,
   documentId: string,
@@ -197,13 +199,15 @@ export function apiKnowledgeAi(
   return read(who, knowledgeUrl(documentId, 'ai'), 'read ai settings', signal);
 }
 
-/** Add or replace the team's Claude API key. The key is sent once and never read back. */
+/** Add or replace the team's own key for `provider`; another provider than the stored one replaces the key. The key
+ *  is sent once and never read back. */
 export async function apiSetKnowledgeAiKey(
   who: KnowledgeCaller,
   documentId: string,
+  provider: KnowledgeAiProvider,
   key: string,
 ): Promise<KnowledgeAiSettings> {
-  const res = await write(who, knowledgeUrl(documentId, 'ai/key'), 'PUT', { key });
+  const res = await write(who, knowledgeUrl(documentId, 'ai/key'), 'PUT', { provider, key });
   return expectOk<KnowledgeAiSettings>(res, 'set ai key', expected);
 }
 

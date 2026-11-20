@@ -1,17 +1,23 @@
 'use client';
 
-// The field the team's Claude API key is typed into (docs/specs/030-knowledgebase/search-and-ask.md "Ask"). The key
+// The field the team's own key is typed into (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Providers"). The key
 // lives in the input's own DOM value and nowhere else: never in React state, a store, a log or telemetry. It is read
 // once when sent and the field is cleared in the same turn, whatever the answer, so it is never on screen or in
 // memory here after the request leaves.
 import { useId, useRef, useState, type FormEvent } from 'react';
+import type { KnowledgeAiProvider } from '@liveknowledge/api-schema';
 import { Button, TextInput } from '@liveknowledge/ui';
+import { addKeyLabel, providerWords } from '@/lib/knowledge-ask/provider-words';
 
 export function AiKeyForm({
+  provider,
   hasKey,
   busy,
   onSave,
 }: {
+  /** Whose key is being typed: the label, the placeholder and where to make one follow it. */
+  provider: KnowledgeAiProvider;
+  /** A key of this provider is saved, so this one replaces it. */
   hasKey: boolean;
   busy: boolean;
   // Handed the key once. The form holds no copy after this call.
@@ -22,6 +28,7 @@ export function AiKeyForm({
   const [typed, setTyped] = useState(false);
   const fieldId = useId();
   const hintId = useId();
+  const words = providerWords(provider);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -36,7 +43,7 @@ export function AiKeyForm({
   return (
     <form onSubmit={submit} autoComplete="off" className="flex flex-col gap-1.5">
       <label htmlFor={fieldId} className="text-xs font-medium text-slate-700 dark:text-slate-200">
-        {hasKey ? 'Replace the Key' : 'Add a Key'}
+        {hasKey ? 'Replace the Key' : addKeyLabel(provider)}
       </label>
       <div className="flex gap-2">
         <TextInput
@@ -51,7 +58,7 @@ export function AiKeyForm({
           data-1p-ignore=""
           data-lpignore="true"
           data-ai-key-field=""
-          placeholder="sk-ant-..."
+          placeholder={words.keyPlaceholder}
           hintId={hintId}
           className="min-w-0 flex-1 font-mono"
           onInput={(event) => setTyped(event.currentTarget.value.trim() !== '')}
@@ -61,7 +68,7 @@ export function AiKeyForm({
         </Button>
       </div>
       <p id={hintId} className="text-xs text-slate-600 dark:text-slate-400">
-        Make a key in the Claude Console and paste it here.
+        Make a key in {words.console} and paste it here.
       </p>
     </form>
   );

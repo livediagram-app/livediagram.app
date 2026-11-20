@@ -30,13 +30,13 @@ const PROMISES: PrivacyPromise[] = [
   {
     title: 'Never Sold, Never Traded',
     description:
-      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. liveknowledge runs no model of its own: Ask sends passages to Claude only under your team's own key. There is no paid tier and no plan to add one.",
+      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. liveknowledge runs no model of its own: Ask sends passages to Claude or OpenAI, whichever your team chose, only under your team's own key. There is no paid tier and no plan to add one.",
     art: <NoSaleArt />,
   },
   {
     title: 'Encrypted at Rest and in Transit',
     description:
-      'Everything is stored on Cloudflare, which encrypts it at rest, and every request travels over TLS. A team’s Claude API key is encrypted again before it is stored, and is never sent back to a browser.',
+      'Everything is stored on Cloudflare, which encrypts it at rest, and every request travels over TLS. A team’s Claude or OpenAI key is encrypted again before it is stored, and is never sent back to a browser.',
     art: <EncryptedArt />,
   },
   {

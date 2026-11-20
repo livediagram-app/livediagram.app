@@ -77,8 +77,8 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
   {
     tone: 'amber',
     icon: PAGE,
-    title: 'Still completely free',
-    line: 'Every feature, for everyone. No paid tier.',
+    title: 'Open source',
+    line: 'Every feature, for everyone.',
   },
 ];
 

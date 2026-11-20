@@ -2,7 +2,7 @@
 
 // AI Settings (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Share roles"): the key's state, who gets the
 // controls, and that the key is held nowhere once it has been sent.
-import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
@@ -34,7 +34,17 @@ const MODELS = [
   { id: 'claude-fable-5-2', label: 'Claude Fable 5.2' },
   { id: 'claude-haiku-5-5', label: 'Claude Haiku 5.5' },
 ];
+const OPENAI_MODELS = [
+  { id: 'gpt-6.2-astra', label: 'GPT-6.2 Astra' },
+  { id: 'gpt-6.2-sol', label: 'GPT-6.2 Sol' },
+];
+const PROVIDERS: KnowledgeAiSettings['providers'] = [
+  { id: 'anthropic', label: 'Anthropic (Claude)', keyPrefix: 'sk-ant-' },
+  { id: 'openai', label: 'OpenAI', keyPrefix: 'sk-' },
+];
 const settings = (over: Partial<KnowledgeAiSettings> = {}): KnowledgeAiSettings => ({
+  provider: 'anthropic',
+  providers: PROVIDERS,
   hasKey: false,
   keyHint: '',
   model: 'claude-fable-5-2',
@@ -82,7 +92,132 @@ describe('the key state', () => {
   it('says the two plain sentences', async () => {
     await open();
     expect(screen.getByText(/encrypted when it is saved and is never shown again/)).toBeTruthy();
-    expect(screen.getByText(/your team pays Anthropic for what Ask uses/)).toBeTruthy();
+    expect(
+      screen.getByText(
+        /liveknowledge pays for no model: your team pays Anthropic for what it uses/,
+      ),
+    ).toBeTruthy();
+    expect(document.body.textContent).not.toMatch(/is free|paid tier/i);
+  });
+});
+
+describe('the provider', () => {
+  const OPENAI_KEY = 'sk-proj-THIS-IS-THE-SECRET-9c1d';
+  const radio = (name: string) => screen.getByRole('radio', { name: new RegExp(`^${name}`) });
+  const isOn = (name: string) => (radio(name) as HTMLInputElement).checked;
+
+  it('comes first, as two named rows with no logo, the stored one chosen', async () => {
+    await open();
+    const group = screen.getByRole('radiogroup', { name: 'Provider' });
+    expect(within(group).getAllByRole('radio')).toHaveLength(2);
+    expect(isOn('Anthropic \\(Claude\\)')).toBe(true);
+    expect(isOn('OpenAI')).toBe(false);
+    expect(group.querySelector('img')).toBeNull();
+    // Provider, then the key, then the model.
+    const headings = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    expect(headings).toEqual(['Provider', 'Claude API Key', 'Model']);
+    expect(keyField()!.placeholder).toBe('sk-ant-...');
+  });
+
+  it('switches at once with no key saved: the field, its words and who is paid follow', async () => {
+    await open();
+    fireEvent.click(radio('OpenAI'));
+    expect(screen.queryByRole('dialog', { name: /^Replace the/ })).toBeNull();
+    expect(isOn('OpenAI')).toBe(true);
+    expect(screen.getByRole('heading', { name: 'OpenAI API Key' })).toBeTruthy();
+    expect(screen.getByLabelText('Add an OpenAI Key')).toBe(keyField());
+    expect(keyField()!.placeholder).toBe('sk-...');
+    expect(screen.getByText(/Make a key in the OpenAI platform/)).toBeTruthy();
+    expect(screen.getByText(/your team pays OpenAI for what it uses/)).toBeTruthy();
+    expect(document.querySelector('[data-ai-model-pending]')!.textContent).toContain(
+      "OpenAI's most capable model",
+    );
+    api.apiSetKnowledgeAiKey.mockResolvedValue(
+      settings({
+        provider: 'openai',
+        hasKey: true,
+        keyHint: '9c1d',
+        model: 'gpt-6.2-astra',
+        models: OPENAI_MODELS,
+      }),
+    );
+    type(OPENAI_KEY);
+    fireEvent.click(screen.getByRole('button', { name: 'Save Key' }));
+    expect(api.apiSetKnowledgeAiKey.mock.calls[0]!.slice(2)).toEqual(['openai', OPENAI_KEY]);
+    await waitFor(() => expect(screen.getByRole('status').textContent).toBe('Key Ending 9c1d'));
+    expect(screen.getByRole('combobox', { name: 'Model' })).toBeTruthy();
+    expect(screen.getByRole('option', { name: 'GPT-6.2 Sol' })).toBeTruthy();
+    expect(document.body.innerHTML).not.toContain('THIS-IS-THE-SECRET');
+  });
+
+  it('asks before a saved key is replaced, and keeps it when the question is cancelled', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: true, keyHint: '4f2a' }));
+    await open();
+    fireEvent.click(radio('OpenAI'));
+    const question = await screen.findByRole('dialog', {
+      name: 'Replace the Claude Key With an OpenAI Key?',
+    });
+    expect(isOn('OpenAI')).toBe(false);
+    fireEvent.click(within(question).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Replace the/ })).toBeNull());
+    expect(isOn('Anthropic \\(Claude\\)')).toBe(true);
+    expect(screen.getByRole('status').textContent).toBe('Key Ending 4f2a');
+    expect(api.apiSetKnowledgeAiKey).not.toHaveBeenCalled();
+    expect(api.apiRemoveKnowledgeAiKey).not.toHaveBeenCalled();
+  });
+
+  it('keeps the old key in use until the new one is saved, then runs on the new provider', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: true, keyHint: '4f2a' }));
+    await open();
+    fireEvent.click(radio('OpenAI'));
+    fireEvent.click(
+      within(await screen.findByRole('dialog', { name: /^Replace the Claude Key/ })).getByRole(
+        'button',
+        { name: 'Choose Provider' },
+      ),
+    );
+    await waitFor(() => expect(isOn('OpenAI')).toBe(true));
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'AiProvider');
+    expect(screen.getByRole('status').textContent).toBe(
+      'Claude Key Ending 4f2a, in Use Until This One Is Saved',
+    );
+    // Nothing was written by choosing: the route replaces the key when the new one arrives.
+    expect(api.apiSetKnowledgeAiKey).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Add an OpenAI Key')).toBeTruthy();
+    // Back to the stored provider needs no question.
+    fireEvent.click(radio('Anthropic \\(Claude\\)'));
+    expect(screen.queryByRole('dialog', { name: /^Replace the/ })).toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('Key Ending 4f2a');
+    expect(screen.getByLabelText('Replace the Key')).toBeTruthy();
+  });
+
+  it('never sends a key typed for one provider as the other: the field is emptied on a switch', async () => {
+    await open();
+    type(SECRET);
+    fireEvent.click(radio('OpenAI'));
+    expect(keyField()!.value).toBe('');
+    expect(screen.getByRole('button', { name: 'Save Key' })).toHaveProperty('disabled', true);
+  });
+
+  it('names the provider in a refusal', async () => {
+    await open();
+    fireEvent.click(radio('OpenAI'));
+    api.apiSetKnowledgeAiKey.mockRejectedValue(new ApiError('set ai key', 400, 'invalid_key'));
+    type(OPENAI_KEY);
+    fireEvent.click(screen.getByRole('button', { name: 'Save Key' }));
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain('That is not an OpenAI API key.');
+    expect(alert.textContent).not.toContain('SECRET');
+  });
+
+  it.each(['participate', 'view'] as const)('is text, with no choice, for %s', async (role) => {
+    api.apiKnowledgeAi.mockResolvedValue(
+      settings({ provider: 'openai', hasKey: true, model: 'gpt-6.2-astra', models: OPENAI_MODELS }),
+    );
+    await open(role);
+    expect(screen.queryByRole('radiogroup')).toBeNull();
+    expect(document.querySelector('[data-ai-provider-name]')!.textContent).toBe('OpenAI');
+    expect(screen.getByRole('heading', { name: 'OpenAI API Key' })).toBeTruthy();
   });
 });
 
@@ -106,7 +241,7 @@ describe('the key field', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save Key' }));
     // Sent once, to the route, and already gone from the field while the request is out.
     expect(api.apiSetKnowledgeAiKey).toHaveBeenCalledTimes(1);
-    expect(api.apiSetKnowledgeAiKey.mock.calls[0]![2]).toBe(SECRET);
+    expect(api.apiSetKnowledgeAiKey.mock.calls[0]!.slice(2)).toEqual(['anthropic', SECRET]);
     expect(keyField()!.value).toBe('');
     await act(async () => answer(settings({ hasKey: true, keyHint: '4f2a' })));
     expect(keyField()!.value).toBe('');

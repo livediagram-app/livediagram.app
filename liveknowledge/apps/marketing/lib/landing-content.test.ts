@@ -35,7 +35,7 @@ describe('the landing sections', () => {
   });
 
   it('say who pays for Ask wherever Ask is sold', () => {
-    expect(getLandingSection('ask')!.description).toMatch(/own Claude API key/);
+    expect(getLandingSection('ask')!.description).toMatch(/own Claude or OpenAI key/);
     expect(getLandingSection('ask')!.description).toMatch(/does not guess/);
   });
 

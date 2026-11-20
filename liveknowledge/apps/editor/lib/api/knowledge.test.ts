@@ -138,10 +138,10 @@ describe('the AI settings and the AI Knowledge tab', () => {
     expect((await apiKnowledgeAi(who, 'd1')).keyHint).toBe('4f2a');
     expect(calls[0]!.url).toMatch(/\/documents\/d1\/ai$/);
     calls = stub(ai);
-    await apiSetKnowledgeAiKey(who, 'd1', 'sk-test');
+    await apiSetKnowledgeAiKey(who, 'd1', 'openai', 'sk-test');
     expect(calls[0]!.url).toMatch(/\/ai\/key$/);
     expect(calls[0]!.init.method).toBe('PUT');
-    expect(bodyOf(calls[0]!)).toEqual({ key: 'sk-test' });
+    expect(bodyOf(calls[0]!)).toEqual({ provider: 'openai', key: 'sk-test' });
     calls = stub({ ...ai, hasKey: false });
     expect((await apiRemoveKnowledgeAiKey(who, 'd1')).hasKey).toBe(false);
     expect(calls[0]!.init.method).toBe('DELETE');
@@ -153,7 +153,7 @@ describe('the AI settings and the AI Knowledge tab', () => {
 
   it('says when Ask is unavailable', async () => {
     stub({ error: 'ask_unavailable' }, 503);
-    await expect(apiSetKnowledgeAiKey(who, 'd1', 'sk-test')).rejects.toMatchObject({
+    await expect(apiSetKnowledgeAiKey(who, 'd1', 'anthropic', 'sk-test')).rejects.toMatchObject({
       status: 503,
       code: 'ask_unavailable',
     });

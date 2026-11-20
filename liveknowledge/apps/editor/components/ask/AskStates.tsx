@@ -42,11 +42,11 @@ export function AskNoKey({ manageAi }: { manageAi: boolean }) {
     <StateShell>
       <EmptyState
         icon={<KeyIcon />}
-        title="Ask Needs Your Team's Claude Key"
+        title="Ask Needs Your Team's AI Key"
         description={
           manageAi
-            ? "liveknowledge is free and pays for no model. Add your team's Claude API key and Ask answers from these pages. Search works without one."
-            : 'liveknowledge is free and pays for no model, so Ask runs on a Claude API key an Editor adds. Ask an Editor to add one. Search works without it.'
+            ? "liveknowledge pays for no model: your team pays its provider for what it uses. Add your team's AI key, from Anthropic or OpenAI, and Ask answers from these pages. Search works without one."
+            : "liveknowledge pays for no model, so Ask runs on your team's AI key, which an Editor adds. Ask an Editor to add one. Search works without it."
         }
       >
         <div className={ACTIONS} data-ask-state="no-key">
@@ -69,7 +69,7 @@ export function AskSignedOut() {
       <EmptyState
         icon={<SignInIcon />}
         title="Sign In to Ask"
-        description="Ask spends this team's own Claude key, so it is off for anyone who is not signed in, a share link's visitor included. Search works as it is."
+        description="Ask spends this team's own AI key, so it is off for anyone who is not signed in, a share link's visitor included. Search works as it is."
       >
         <div className={ACTIONS} data-ask-state="signed-out">
           <a href={signInHref} className={buttonClassName({ variant: 'primary', size: 'sm' })}>

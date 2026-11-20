@@ -65,11 +65,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Ask',
     title: 'Ask, With Sources',
     description:
-      'Ask a question in plain words and get an answer written only from your pages, each claim numbered to the passage it came from and to the person who verified it. When the pages do not cover something, Ask says so and offers to start that page: it does not guess. Ask runs on your team’s own Claude API key, and search needs no key at all.',
+      'Ask a question in plain words and get an answer written only from your pages, each claim numbered to the passage it came from and to the person who verified it. When the pages do not cover something, Ask says so and offers to start that page: it does not guess. Ask runs on your team’s own Claude or OpenAI key, and search needs no key at all.',
     points: [
       'A citation on every claim',
       'It says what the pages do not cover',
-      'Your own Claude API key',
+      'Your own Claude or OpenAI key',
     ],
     art: <AskArt />,
   },

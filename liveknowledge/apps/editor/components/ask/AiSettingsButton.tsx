@@ -16,7 +16,7 @@ export function AiSettingsButton() {
   return (
     <HoverCard
       title="AI Settings"
-      description="The Claude API key and model this knowledgebase answers with."
+      description="The provider, key and model this knowledgebase answers with."
     >
       <Button variant="secondary" size="xs" onClick={openAiSettingsFrom} className="cursor-pointer">
         <SettingsIcon />

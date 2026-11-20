@@ -1,12 +1,12 @@
 'use client';
 
-// AI Settings (docs/specs/030-knowledgebase/search-and-ask.md "Ask"): this knowledgebase's Claude API key and the
-// model Ask answers with. A dialog of the knowledgebase, opened from Ask and from AI Knowledge, not a row of the
+// AI Settings (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Providers"): the provider this knowledgebase
+// runs on, the team's own key for it and the model. A dialog of the knowledgebase, opened from Ask and from AI Knowledge, not a row of the
 // Settings panel: Settings holds a person's own preferences on this device and account, and the key is the
-// knowledgebase's, the same for everyone who opens it. An Editor adds, replaces or removes the key and chooses the
-// model; everyone else sees how things stand, with no controls.
+// knowledgebase's, the same for everyone who opens it. An Editor chooses the provider, adds, replaces or removes the
+// key and chooses the model; everyone else sees how things stand, with no controls.
 import { useEffect, useId, useState } from 'react';
-import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
+import type { KnowledgeAiProvider, KnowledgeAiSettings } from '@liveknowledge/api-schema';
 import { Button, DialogCloseButton, DialogFooter, DialogHeader, Select } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/ConfirmDialog';
@@ -20,13 +20,20 @@ import { closeAiSettings, useAiSettingsOpen } from '@/lib/knowledge-ask/ai-setti
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import {
   KEY_ENCRYPTED_NOTE,
-  TEAM_PAYS_NOTE,
+  TEAM_PAYS_ANY_NOTE,
   aiSettingsFailureText,
   keyStateText,
+  teamPaysNote,
   type AiSettingsAction,
 } from '@/lib/knowledge-ask/ai-settings-words';
+import {
+  providerWords,
+  replaceProviderMessage,
+  replaceProviderTitle,
+} from '@/lib/knowledge-ask/provider-words';
 import { track } from '@/lib/telemetry';
 import { AiKeyForm } from './AiKeyForm';
+import { AiProviderPicker } from './AiProviderPicker';
 import { KeyIcon } from './ask-icons';
 import { useAiSettingsState, useAskSession, type AskSession } from './useAskSession';
 
@@ -56,6 +63,10 @@ export function AiSettingsDialog({
   const [busy, setBusy] = useState<AiSettingsAction | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
+  // The provider the Editor picked here, until a key for it is saved: the stored provider changes only with a key.
+  const [picked, setPicked] = useState<KnowledgeAiProvider | null>(null);
+  // The other provider, asked for while a key is saved: the question before the key is replaced.
+  const [confirmingProvider, setConfirmingProvider] = useState<KnowledgeAiProvider | null>(null);
 
   useEffect(() => {
     void aiSettingsStore.load(who, documentId);
@@ -70,15 +81,39 @@ export function AiSettingsDialog({
     try {
       aiSettingsStore.set(documentId, await write());
     } catch (err) {
-      setFailure(aiSettingsFailureText(err, action));
+      setFailure(aiSettingsFailureText(err, action, provider));
     } finally {
       setBusy(null);
     }
   };
 
+  const settings = state.status === 'ready' ? state.settings : null;
+  const stored: KnowledgeAiProvider = settings?.provider ?? 'anthropic';
+  const provider = picked ?? stored;
+  // A provider picked but not yet saved: the stored key stays in use until a key for the new one is saved.
+  const switching = settings !== null && provider !== stored;
+  const replacing = switching && settings.hasKey;
+
   const saveKey = (key: string) => {
     track('UI', 'Added', 'AiKey');
-    void run('save-key', () => apiSetKnowledgeAiKey(who, documentId, key));
+    void run('save-key', async () => {
+      const saved = await apiSetKnowledgeAiKey(who, documentId, provider, key);
+      setPicked(null);
+      return saved;
+    });
+  };
+  const chooseProvider = (next: KnowledgeAiProvider) => {
+    if (next === provider) return;
+    setFailure(null);
+    // Back to the stored provider is no change; away from one with a key saved is asked first.
+    if (next === stored) setPicked(null);
+    else if (settings?.hasKey) setConfirmingProvider(next);
+    else setPicked(next);
+  };
+  const confirmProvider = () => {
+    track('UI', 'Changed', 'AiProvider');
+    setPicked(confirmingProvider);
+    setConfirmingProvider(null);
   };
   const removeKey = () => {
     setConfirmingRemove(false);
@@ -90,7 +125,6 @@ export function AiSettingsDialog({
     void run('set-model', () => apiSetKnowledgeAiModel(who, documentId, model));
   };
 
-  const settings = state.status === 'ready' ? state.settings : null;
   const modelLabel =
     settings?.models.find((m) => m.id === settings.model)?.label ?? settings?.model ?? '';
 
@@ -99,7 +133,7 @@ export function AiSettingsDialog({
       <Dialog open onClose={onClose} titleId={titleId} size="md" phoneSheet>
         <DialogHeader
           title={<span id={titleId}>AI Settings</span>}
-          subtitle="Ask answers from this knowledgebase on your team's own Claude API key."
+          subtitle="Ask, AI Knowledge and Describe to Set Up run on your team's own AI key."
         >
           <DialogCloseButton onClick={onClose} />
         </DialogHeader>
@@ -120,9 +154,31 @@ export function AiSettingsDialog({
             </Callout>
           ) : null}
 
+          <section aria-labelledby={`${titleId}-provider`} className="flex flex-col gap-2">
+            <h3 id={`${titleId}-provider`} className={SECTION_TITLE}>
+              Provider
+            </h3>
+            {settings && rights.manageAi ? (
+              <AiProviderPicker
+                providers={settings.providers}
+                chosen={provider}
+                disabled={busy !== null}
+                labelledBy={`${titleId}-provider`}
+                onChoose={chooseProvider}
+              />
+            ) : (
+              <p
+                className="min-h-12 text-sm text-slate-900 dark:text-slate-100"
+                data-ai-provider-name=""
+              >
+                {settings ? providerWords(stored).name : ''}
+              </p>
+            )}
+          </section>
+
           <section aria-labelledby={`${titleId}-key`} className="flex flex-col gap-3">
             <h3 id={`${titleId}-key`} className={SECTION_TITLE}>
-              Claude API Key
+              {settings ? `${providerWords(provider).spoken} API Key` : 'API Key'}
             </h3>
             <div className="flex min-h-12 items-center gap-3 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700">
               <span
@@ -140,7 +196,15 @@ export function AiSettingsDialog({
                 data-ai-key-state=""
                 className="min-w-0 flex-1 truncate text-sm font-medium text-slate-900 dark:text-slate-100"
               >
-                {settings ? keyStateText(settings) : state.status === 'failed' ? 'Not Known' : ''}
+                {settings
+                  ? replacing
+                    ? `${providerWords(stored).spoken} ${keyStateText(settings)}, in Use Until This One Is Saved`
+                    : switching
+                      ? 'No Key Yet'
+                      : keyStateText(settings)
+                  : state.status === 'failed'
+                    ? 'Not Known'
+                    : ''}
               </p>
               {settings?.hasKey && rights.manageAi ? (
                 <Button
@@ -154,10 +218,17 @@ export function AiSettingsDialog({
               ) : null}
             </div>
             {rights.manageAi && settings ? (
-              <AiKeyForm hasKey={settings.hasKey} busy={busy === 'save-key'} onSave={saveKey} />
+              <AiKeyForm
+                // A field of its own for each provider: nothing typed for one is ever sent as the other's.
+                key={provider}
+                provider={provider}
+                hasKey={settings.hasKey && !switching}
+                busy={busy === 'save-key'}
+                onSave={saveKey}
+              />
             ) : null}
             <p className={NOTE}>
-              {KEY_ENCRYPTED_NOTE} {TEAM_PAYS_NOTE}
+              {KEY_ENCRYPTED_NOTE} {settings ? teamPaysNote(provider) : TEAM_PAYS_ANY_NOTE}
             </p>
           </section>
 
@@ -165,7 +236,15 @@ export function AiSettingsDialog({
             <h3 id={`${titleId}-model`} className={SECTION_TITLE}>
               Model
             </h3>
-            {settings && rights.manageAi ? (
+            {switching ? (
+              <p
+                className="min-h-[30px] text-sm text-slate-900 dark:text-slate-100"
+                data-ai-model-pending=""
+              >
+                {providerWords(provider).spoken}&apos;s most capable model, until you choose another
+                once the key is saved.
+              </p>
+            ) : settings && rights.manageAi ? (
               <Select
                 aria-labelledby={`${titleId}-model`}
                 value={settings.model}
@@ -185,9 +264,7 @@ export function AiSettingsDialog({
                 {modelLabel}
               </p>
             )}
-            <p className={NOTE}>
-              The Claude model that writes each answer. A larger model costs more.
-            </p>
+            <p className={NOTE}>The model that writes each answer. A larger model costs more.</p>
           </section>
 
           {failure ? (
@@ -216,6 +293,14 @@ export function AiSettingsDialog({
         confirmLabel="Remove"
         onConfirm={removeKey}
         onCancel={() => setConfirmingRemove(false)}
+      />
+      <ConfirmDialog
+        open={confirmingProvider !== null}
+        title={confirmingProvider ? replaceProviderTitle(stored, confirmingProvider) : ''}
+        message={confirmingProvider ? replaceProviderMessage(stored, confirmingProvider) : ''}
+        confirmLabel="Choose Provider"
+        onConfirm={confirmProvider}
+        onCancel={() => setConfirmingProvider(null)}
       />
     </>
   );

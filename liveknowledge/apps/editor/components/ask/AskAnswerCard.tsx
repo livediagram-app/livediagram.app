@@ -5,6 +5,7 @@
 // is formatted once it has ended (AnswerBody), from text and elements made here, never as HTML. Memoised on its turn, so an earlier answer is not drawn again when
 // a later one arrives.
 import { memo, useMemo, useState } from 'react';
+import type { KnowledgeAiProvider } from '@liveknowledge/api-schema';
 import { Button, HoverCard } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { REVIEW_DUE_PILL, VERIFIED_PILL } from '@/components/knowledge/TrustBadge';
@@ -37,6 +38,8 @@ export type AskAnswerCardProps = {
   turn: AskTurnView;
   conversation: AskConversation;
   manageAi: boolean;
+  /** Whose key the knowledgebase holds: a failure of the provider's own names it. */
+  provider?: KnowledgeAiProvider | undefined;
   // Save as Page is an Editor's.
   canSave: boolean;
   onCite: (turnId: string, number: number) => void;
@@ -135,8 +138,8 @@ function AnswerFooter({ turn, conversation, canSave, onSave }: AskAnswerCardProp
   );
 }
 
-function AnswerFailure({ turn, conversation, manageAi }: AskAnswerCardProps) {
-  const words = askFailureWords(turn.failure ?? 'other', { manageAi });
+function AnswerFailure({ turn, conversation, manageAi, provider }: AskAnswerCardProps) {
+  const words = askFailureWords(turn.failure ?? 'other', { manageAi, provider });
   const action =
     words.step === 'ai-settings'
       ? { label: 'Open AI Settings', onSelect: openAiSettingsFrom }

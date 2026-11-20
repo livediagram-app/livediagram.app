@@ -12,13 +12,13 @@ const UPDATED = new Date('2026-11-20');
 
 // Our side of the rows most pages share, written once so the six pages cannot drift apart.
 const US = {
-  price: 'Free to start. Ask runs on your own Claude API key',
+  price: 'Free to start. Ask runs on your own Claude or OpenAI key',
   open: 'Yes, MIT-licensed',
   account:
     'Yes: write as a guest, kept in your browser. Verify, Ask and sharing need a free account',
   trust:
     'An owner, a verified tick with a name and a date, and a review that comes due, on every page',
-  ask: 'Cited answers from your pages on your own Claude key. It says what the pages do not cover',
+  ask: 'Cited answers from your pages on your own Claude or OpenAI key. It says what the pages do not cover',
   agents:
     'An MCP server and a CLI in pages and passages, trust fields on every passage, edits as suggestions',
   permissions: 'Per knowledgebase: Editor, Participant, Viewer. No page-level permissions',
@@ -33,7 +33,7 @@ const row = (label: string, us: string, them: string): ComparisonRow => ({ label
 
 const FREE_FAQ: Faq = {
   q: 'Is liveknowledge really free?',
-  a: 'It is MIT-licensed open source, and the hosted version is free to start. Ask runs on your own Claude API key, so that usage is paid to Anthropic.',
+  a: 'It is MIT-licensed open source, and the hosted version is free to start. Ask runs on your own Claude or OpenAI key, so that usage is paid to Anthropic or OpenAI.',
 };
 
 const AGENTS_SECTION = {
@@ -51,7 +51,7 @@ const LIST: Alternative[] = [
     highlights: ['Verified pages', 'Cited answers', 'Open source'],
     title: 'Notion wiki alternative · liveknowledge',
     description:
-      'An open-source alternative to a Notion wiki: pages with owners and verified dates, cited answers on your own Claude key, and an MCP server for agents.',
+      'An open-source alternative to a Notion wiki: pages with owners and verified dates, cited answers on your own Claude or OpenAI key, and an MCP server for agents.',
     h1: 'An open-source alternative to a Notion wiki',
     lede: 'Notion is a whole workspace: documents, databases and wikis in one place, and many teams keep their knowledge there. liveknowledge does one of those jobs, the one a team wiki does, and builds it around a question that is easy to leave to habit: can this page still be trusted, by a person and by an agent?',
     rows: [
@@ -80,7 +80,7 @@ const LIST: Alternative[] = [
       'Every page has an owner, a verified date and a review that comes due, in every knowledgebase, with nothing to switch on.',
       'Ask answers only from your pages, numbers every claim to its passage and says what the pages do not cover.',
       'Agents get the same pages with the trust fields attached, and their edits arrive as suggestions.',
-      'It is MIT-licensed and free to start, and the cost of AI is your own Claude usage.',
+      'It is MIT-licensed and free to start, and the cost of AI is your own Claude or OpenAI usage.',
       'A Notion export imports in one step, with its page hierarchy and the links between pages.',
     ],
     sections: [
@@ -111,7 +111,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Do I pay for AI?',
-        a: 'Not to liveknowledge. Ask runs on your team’s own Claude API key, so you pay Anthropic for what you use. Search, verification and the agent connection need no key.',
+        a: 'Not to liveknowledge. Ask runs on your team’s own Claude or OpenAI key, so you pay Anthropic or OpenAI for what you use. Search, verification and the agent connection need no key.',
       },
       FREE_FAQ,
     ],
@@ -122,7 +122,7 @@ const LIST: Alternative[] = [
     highlights: ['Verified pages', 'Agents read it', 'Confluence import'],
     title: 'Confluence alternative · liveknowledge',
     description:
-      'An open-source Confluence alternative: a page tree with owners and verified dates, cited answers on your own Claude key, and import from a space export.',
+      'An open-source Confluence alternative: a page tree with owners and verified dates, cited answers on your Claude or OpenAI key, and import from a space export.',
     h1: 'An open-source Confluence alternative',
     lede: 'Confluence is the team wiki many companies already run, close to Jira and the rest of Atlassian. liveknowledge is a smaller, newer knowledgebase with a narrower aim: every page says who vouches for it and when, and your agents read those pages with that trust attached.',
     rows: [
@@ -190,10 +190,10 @@ const LIST: Alternative[] = [
   {
     slug: 'slite',
     name: 'Slite',
-    highlights: ['Your own Claude key', 'Agents read it', 'Open source'],
+    highlights: ['Your own AI key', 'Agents read it', 'Open source'],
     title: 'Slite alternative · liveknowledge',
     description:
-      'An open-source Slite alternative: verified pages, cited answers on your own Claude key, and an MCP server that hands agents each passage with its trust.',
+      'An open-source Slite alternative: verified pages, cited answers on your Claude or OpenAI key, and an MCP server that hands agents each passage with its trust.',
     h1: 'An open-source Slite alternative',
     lede: 'Slite is a team knowledge tool built around the same ideas liveknowledge cares about: documents that are verified, and answers that come with their sources. The two are close. They differ in who pays for the AI, in how agents read, and in being open source.',
     rows: [
@@ -214,7 +214,7 @@ const LIST: Alternative[] = [
       'You want a polished, focused product with native apps and a company’s support behind it.',
     ],
     usBest: [
-      'Ask runs on your own Claude API key: you choose the model and pay only for what you use.',
+      'Ask runs on your own Claude or OpenAI key: you choose the model and pay only for what you use.',
       'Agents are first-class readers, through an MCP server and a CLI with trust fields on every passage.',
       'AI Knowledge shows which agents read what, and the questions nobody could answer.',
       'MIT-licensed and free to start.',
@@ -232,7 +232,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Who pays for the AI',
         paragraphs: [
-          'liveknowledge pays for no model. An Editor adds the knowledgebase’s Claude API key once; it is encrypted, never shown again, and Ask uses it for that knowledgebase alone. Everything else, search included, needs no key.',
+          'liveknowledge pays for no model. An Editor adds the knowledgebase’s Claude or OpenAI key once; it is encrypted, never shown again, and Ask uses it for that knowledgebase alone. Everything else, search included, needs no key.',
           'That is a trade. It is one more thing to set up, and your team carries the cost. In return there is no plan to choose and no seat to pay for.',
         ],
       },
@@ -247,7 +247,7 @@ const LIST: Alternative[] = [
         a: 'Yes. Each page has an owner, a verified tick with who and when, and a review interval of 30, 90, 180 or 365 days. When it passes, the page reads Review Due.',
       },
       {
-        q: 'Do I need a Claude API key to use it?',
+        q: 'Do I need a Claude or OpenAI key to use it?',
         a: 'Only for Ask and for finding pages that disagree. Writing, search, verification, import, export and the agent connection need no key.',
       },
       FREE_FAQ,
@@ -259,7 +259,7 @@ const LIST: Alternative[] = [
     highlights: ['Verified pages', 'Pages, not cards', 'Open source'],
     title: 'Guru alternative · liveknowledge',
     description:
-      'An open-source Guru alternative: knowledge that is verified on a schedule, cited answers on your own Claude key, and an MCP server for your agents.',
+      'An open-source Guru alternative: knowledge that is verified on a schedule, cited answers on your own Claude or OpenAI key, and an MCP server for your agents.',
     h1: 'An open-source Guru alternative',
     lede: 'Guru made verification the centre of a knowledge tool: every card has an expert who confirms it on a schedule, and the answer reaches people where they work. liveknowledge shares the first idea and is much smaller on the second.',
     rows: [
@@ -287,7 +287,7 @@ const LIST: Alternative[] = [
       'Verification on every page, with an owner and a review that comes due, at no cost.',
       'Pages rather than cards: a runbook or a handbook stays one piece of writing, with a contents and backlinks.',
       'Agents read through an MCP server and a CLI, and each passage carries its verified state.',
-      'Ask runs on your own Claude API key and says what the pages do not cover.',
+      'Ask runs on your own Claude or OpenAI key and says what the pages do not cover.',
       'MIT-licensed and free to start.',
     ],
     sections: [
@@ -329,7 +329,7 @@ const LIST: Alternative[] = [
     highlights: ['For your team', 'Verified pages', 'Markdown in and out'],
     title: 'GitBook alternative · liveknowledge',
     description:
-      'An open-source GitBook alternative for internal knowledge: verified pages, cited answers on your own Claude key, and Markdown in and out.',
+      'An open-source GitBook alternative for internal knowledge: verified pages, cited answers on your own Claude or OpenAI key, and Markdown in and out.',
     h1: 'An open-source GitBook alternative for internal knowledge',
     lede: 'GitBook is a documentation platform, known for the public docs sites it publishes and for keeping them in step with a Git repository. liveknowledge is for the other half of a team’s writing: what it knows internally, and whether that is still true.',
     rows: [
@@ -355,7 +355,7 @@ const LIST: Alternative[] = [
     ],
     usBest: [
       'It is built for internal knowledge: an owner, a verified date and a review that comes due on every page.',
-      'Ask answers from your pages with citations, on your own Claude API key.',
+      'Ask answers from your pages with citations, on your own Claude or OpenAI key.',
       'Agents read over MCP and suggest edits a person accepts, which is its own kind of review.',
       'A knowledgebase exports as a folder of Markdown with relative links, to keep beside a repository.',
       'MIT-licensed and free to start.',
@@ -399,7 +399,7 @@ const LIST: Alternative[] = [
     highlights: ['Verified pages', 'Cited answers', 'Agents read it'],
     title: 'Outline alternative · liveknowledge',
     description:
-      'An alternative to Outline for team knowledge: pages with owners and verified dates, cited answers on your own Claude key, and an MCP server for agents.',
+      'An alternative to Outline for team knowledge: pages with owners and verified dates, cited answers on your Claude or OpenAI key, and an MCP server for agents.',
     h1: 'An alternative to Outline for team knowledge',
     lede: 'Outline is a fast, well-made team knowledge tool whose source is public, and a team can run it on its own servers. On openness the two are close. liveknowledge differs in what it adds on top of the writing: verification on every page, cited answers, and agents as readers.',
     rows: [
@@ -429,7 +429,7 @@ const LIST: Alternative[] = [
     ],
     usBest: [
       'Every page has an owner, a verified tick and a review that comes due.',
-      'Ask cites each claim to its passage, on your own Claude API key, and says what the pages do not cover.',
+      'Ask cites each claim to its passage, on your own Claude or OpenAI key, and says what the pages do not cover.',
       'An MCP server and a CLI hand agents each passage with its trust fields, and take edits as suggestions.',
       'Free to start on the hosted version, and MIT-licensed.',
       'Pages embed live items from the other liveworkspace apps, under one account.',
@@ -462,7 +462,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'What does liveknowledge add on top of the writing?',
-        a: 'Verification on every page (an owner, a verified date, a review that comes due), cited answers on your own Claude API key, and an MCP server and command line that hand agents each passage with how far to trust it.',
+        a: 'Verification on every page (an owner, a verified date, a review that comes due), cited answers on your own Claude or OpenAI key, and an MCP server and command line that hand agents each passage with how far to trust it.',
       },
       FREE_FAQ,
     ],
