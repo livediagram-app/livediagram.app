@@ -47,8 +47,6 @@ import type { Copier } from '@liveworkspace/index-app';
 import { importDocumentFile, type DocumentFileImport } from './document-file';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
-import { importMigratedDocument } from './document-migration';
-import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { type RouteIdentity } from './document-route';
 import {
   MAINTENANCE_KEY,
@@ -399,17 +397,6 @@ export class DocumentRoom extends DurableObject<Env> {
   async importCopy(documentId: string, copy: DocumentCopy): Promise<void> {
     this.bindDocument(documentId);
     await importDocumentCopy(this.requireEnv(), documentId, copy);
-  }
-
-  // An old livediagram.app document's liveknowledge part (the migration door, document-migration.ts): one
-  // transaction, with its own times; the outbox pushes it to the index and the media service as any write.
-  async importMigrated(
-    documentId: string,
-    payload: MigrationRoomPayload,
-  ): Promise<MigrationDoorAnswer> {
-    this.bindDocument(documentId);
-    this.requireEnv();
-    return importMigratedDocument(this.db, payload);
   }
 
   revokeCodes(

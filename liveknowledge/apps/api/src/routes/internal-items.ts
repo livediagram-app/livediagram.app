@@ -15,10 +15,8 @@
 import {
   askIndexCommunityStates,
   JOINED_TELEMETRY_TYPE,
-  checkMigrationTabSizes,
   handleInternalItems as handle,
 } from '@liveworkspace/index-app';
-import { MAX_TAB_BYTES } from '../limits';
 import { communityService } from '../community-service';
 import {
   notifyAccessGranted,
@@ -54,8 +52,6 @@ export function handleInternalItems(
     exportKey: env.MEDIA_KEY,
     driveKey: env.DRIVE_KEY,
     dataExportKey: env.DATA_EXPORT_KEY,
-    app: 'liveknowledge',
-    migrationKey: env.MIGRATION_KEY,
     // The Community's sweep calls its door with the same key this api publishes with (liveworkspace community.md).
     communityKey: env.COMMUNITY_KEY,
     waitUntil,
@@ -120,12 +116,6 @@ export function handleInternalItems(
       // A new item from one of this app's templates, a project kit's part (internal-template.ts).
       fromTemplate: (input) => documentFromTemplate(env, input),
       // A workbench pairing's access ended at liveworkspace: its sockets in this document's room close.
-      // An old livediagram.app document's liveknowledge part, into its document's room (document-room/document-migration.ts). A tab
-      // over the tab cap refuses the whole part (413) before the room is called.
-      migrate: async (payload) => {
-        checkMigrationTabSizes(payload, MAX_TAB_BYTES);
-        return documentRoom(env, payload.id).importMigrated(payload);
-      },
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
       // A revoked API token: the sockets its room tickets opened (public-api-and-tokens.md "Revoking a token").
       tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),

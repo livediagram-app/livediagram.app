@@ -189,11 +189,9 @@ None of these can be done by an agent.
 
 Found while registering, and outside the registration:
 
-- **Auth cookies.** The fork kept livedocuments' cookie names (`ldoc_signed_in` in
-  `packages/api-schema/src/signed-in-hint.ts`, `ldoc_refresh` and `ldoc_pkce` in `apps/api/src/routes/auth.ts`).
-  Every app runs on localhost in development and cookies ignore the port, so the two products sign each other out
-  there; the site's `lib/explorer/app-session.test.ts` fails until liveknowledge has a prefix of its own.
-- **The migration door.** `apps/api/src/routes/internal-items.ts` and `document-room/document-migration.test.ts` name
-  `app: 'liveknowledge'` for the move from the historical livediagram.app, which liveknowledge was never part of
-  (`MigrationApp` in `packages/migration` does not take it): the door goes, or names nothing.
+- **Auth cookies** (done). liveknowledge's cookies carry the `lkb_` prefix (`lkb_signed_in` in
+  `packages/api-schema/src/signed-in-hint.ts`, `lkb_refresh` and `lkb_pkce` in `apps/api/src/routes/auth.ts`), so
+  it and livedocuments (`ldoc_`) no longer sign each other out on localhost, where cookies ignore the port.
+- **The migration door** (done). liveknowledge was never part of the historical livediagram.app, so its api has no
+  migration door, no `MIGRATION_KEY` and no dependency on `packages/migration`.
 - **Template categories**, as under [Community](#community).
