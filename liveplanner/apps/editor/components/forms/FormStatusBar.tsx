@@ -171,7 +171,7 @@ export function FormStatusBar({
               type="button"
               aria-pressed={summary.on}
               onClick={summary.toggle}
-              className={`flex h-9 min-w-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 touch-target-y text-[13px] font-medium transition ${
+              className={`relative flex h-9 min-w-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 touch-target-y text-[13px] font-medium transition ${
                 summary.on
                   ? 'bg-brand-50 text-brand-800 dark:bg-brand-500/20 dark:text-brand-100'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'

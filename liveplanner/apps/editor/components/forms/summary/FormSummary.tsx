@@ -122,7 +122,12 @@ function SummaryView({
     );
   if (!responses)
     return (
-      <div className="flex flex-col gap-3" aria-busy="true" aria-label="Reading the responses">
+      <div
+        className="flex flex-col gap-3"
+        role="status"
+        aria-busy="true"
+        aria-label="Reading the responses"
+      >
         {[0, 1, 2].map((i) => (
           <div key={i} className={`${CARD} h-32 animate-pulse motion-reduce:animate-none`} />
         ))}
