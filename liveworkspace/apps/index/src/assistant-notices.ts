@@ -16,6 +16,7 @@ import { isMergeCaller, teamScope } from './auth';
 import { isId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
+import { DUE_SQL, dueBefore, dueRows, giveUpStale, settle, type NoticeQueue } from './notice-queue';
 
 // The apps whose items remember AI tools: only they are told.
 export const ASSISTANT_APPS: readonly App[] = ['liveplanner'];
@@ -25,8 +26,11 @@ export const ASSISTANT_RECORD_MAX = 5_000;
 // The calls one drain makes at most, across its groups.
 export const ASSISTANT_CALLS_PER_RUN = 50;
 const GROUPS_PER_RUN = 20;
-export const ASSISTANT_RETRY_AFTER_MS = 60 * 60 * 1000;
-export const ASSISTANT_GIVE_UP_MS = 7 * 24 * 60 * 60 * 1000;
+const QUEUE: NoticeQueue = {
+  table: 'assistant_notices',
+  givenUp: '[index] assistant notices given up',
+  notTaken: '[index] assistant notice not taken',
+};
 // A token's name, as accounts bounds it (TOKEN_NAME_MAX_LENGTH).
 export const CLIENT_MAX = 80;
 const TEAMS_MAX = 200;
@@ -121,20 +125,8 @@ type Group = { person_id: string; client: string; app: App };
 // apps confirmed.
 export async function drainAssistantNotices(env: Env, now = Date.now()): Promise<number> {
   const db = env.INDEX_DB;
-  const stale = await db
-    .prepare('DELETE FROM assistant_notices WHERE created_at < ?')
-    .bind(now - ASSISTANT_GIVE_UP_MS)
-    .run();
-  if ((stale.meta.changes ?? 0) > 0) {
-    console.warn('[index] assistant notices given up', { rows: stale.meta.changes });
-  }
-  const { results: groups } = await db
-    .prepare(
-      `SELECT DISTINCT person_id, client, app FROM assistant_notices
-        WHERE last_attempt_at IS NULL OR last_attempt_at < ? LIMIT ?`,
-    )
-    .bind(now - ASSISTANT_RETRY_AFTER_MS, GROUPS_PER_RUN)
-    .all<Group>();
+  await giveUpStale(db, QUEUE, now);
+  const groups = await dueRows<Group>(db, QUEUE, 'person_id, client, app', GROUPS_PER_RUN, now);
   let calls = 0;
   let confirmed = 0;
   for (const group of groups) {
@@ -142,15 +134,9 @@ export async function drainAssistantNotices(env: Env, now = Date.now()): Promise
       const { results } = await db
         .prepare(
           `SELECT item_id FROM assistant_notices WHERE person_id = ? AND client = ? AND app = ?
-             AND (last_attempt_at IS NULL OR last_attempt_at < ?) ORDER BY item_id LIMIT ?`,
+             AND ${DUE_SQL} ORDER BY item_id LIMIT ?`,
         )
-        .bind(
-          group.person_id,
-          group.client,
-          group.app,
-          now - ASSISTANT_RETRY_AFTER_MS,
-          ASSISTANT_ITEMS_PER_CALL,
-        )
+        .bind(group.person_id, group.client, group.app, dueBefore(now), ASSISTANT_ITEMS_PER_CALL)
         .all<{ item_id: string }>();
       if (results.length === 0) break;
       const items = results.map((r) => r.item_id);
@@ -162,25 +148,10 @@ export async function drainAssistantNotices(env: Env, now = Date.now()): Promise
         `/people/${encodeURIComponent(group.person_id)}/assistant-revoked`,
         { client: group.client, items },
       );
-      const ok = outcome.ok || outcome.error === 'app_not_configured';
-      await db
-        .prepare(
-          ok
-            ? `DELETE FROM assistant_notices WHERE person_id = ? AND client = ? AND app = ?
-                 AND item_id IN (SELECT value FROM json_each(?))`
-            : `UPDATE assistant_notices SET attempts = attempts + 1, last_attempt_at = ?5
-                WHERE person_id = ?1 AND client = ?2 AND app = ?3
-                  AND item_id IN (SELECT value FROM json_each(?4))`,
-        )
-        .bind(group.person_id, group.client, group.app, JSON.stringify(items), ...(ok ? [] : [now]))
-        .run();
-      if (!ok) {
-        console.warn('[index] assistant notice not taken', {
-          app: group.app,
-          error: outcome.error,
-        });
-        break;
-      }
+      // Confirmed or failed, only this call's items: the group's other rows wait their own call.
+      const key = { person_id: group.person_id, client: group.client, app: group.app };
+      const scope = { key, items };
+      if (!(await settle(db, QUEUE, outcome, { confirm: scope, fail: scope }, now))) break;
       confirmed++;
     }
   }

@@ -4,7 +4,7 @@ import type { Item } from '@liveworkspace/index-client';
 import type { MigrationRoomPayload } from '@liveworkspace/migration/contract';
 import { describe, expect, it, vi } from 'vitest';
 import { drainPersonMerges } from './person-merges';
-import { NOTICE_RETRY_AFTER_MS } from './person-notices';
+import { NOTICE_RETRY_AFTER_MS } from './notice-queue';
 import { body, call, h, makeItem, person, settle, useHarness } from './test-support';
 
 useHarness({

@@ -4,17 +4,23 @@
 //
 // The merge (merge.ts) records one row per app in its own batch. The merge request itself (at once, off its path)
 // and the frequent cron send each app `POST /api/internal/people/:guest/merge {into}`; the row goes when the app
-// confirms. An app that can't be reached is tried again an hour later, and given up on after NOTICE_GIVE_UP_MS.
+// confirms. An app that can't be reached is tried again an hour later, and given up on after a week (the shared
+// retry, notice-queue.ts).
 // A legacy merge (the migration's returning guest, merge.ts) is sent as `{into, legacy: true}`, since its `into` may
 // be a guest; the row keeps the flag until the app confirms.
 
 import { APPS, type App } from '@liveworkspace/index-client';
 import { callApp } from './app-calls';
 import type { Env } from './env';
-import { NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './person-notices';
+import { dueRows, giveUpStale, settle, type NoticeQueue } from './notice-queue';
 
 // Rows tried per run: one app call each.
 const MERGES_PER_RUN = 50;
+const QUEUE: NoticeQueue = {
+  table: 'person_app_merges',
+  givenUp: '[index] person merges given up',
+  notTaken: '[index] person merge not taken',
+};
 
 // The statement that records what each app must hear, in the merge's batch. The SELECT's `WHERE true` is SQLite's
 // rule for an upsert from a SELECT: without one it reads ON as a join.
@@ -40,20 +46,14 @@ type MergeRow = { guest_id: string; user_id: string; app: App; legacy: number };
 // One run: up to MERGES_PER_RUN due rows, one call each. Returns the rows confirmed.
 export async function drainPersonMerges(env: Env, now = Date.now()): Promise<number> {
   const db = env.INDEX_DB;
-  const stale = await db
-    .prepare('DELETE FROM person_app_merges WHERE created_at < ?')
-    .bind(now - NOTICE_GIVE_UP_MS)
-    .run();
-  if ((stale.meta.changes ?? 0) > 0) {
-    console.warn('[index] person merges given up', { rows: stale.meta.changes });
-  }
-  const { results } = await db
-    .prepare(
-      `SELECT guest_id, user_id, app, legacy FROM person_app_merges
-        WHERE last_attempt_at IS NULL OR last_attempt_at < ? LIMIT ?`,
-    )
-    .bind(now - NOTICE_RETRY_AFTER_MS, MERGES_PER_RUN)
-    .all<MergeRow>();
+  await giveUpStale(db, QUEUE, now);
+  const results = await dueRows<MergeRow>(
+    db,
+    QUEUE,
+    'guest_id, user_id, app, legacy',
+    MERGES_PER_RUN,
+    now,
+  );
   let confirmed = 0;
   for (const row of results) {
     const outcome = await callApp(
@@ -63,23 +63,11 @@ export async function drainPersonMerges(env: Env, now = Date.now()): Promise<num
       `/people/${encodeURIComponent(row.guest_id)}/merge`,
       row.legacy ? { into: row.user_id, legacy: true } : { into: row.user_id },
     );
-    // An app this deployment does not run has nothing to hear.
-    if (outcome.ok || outcome.error === 'app_not_configured') {
-      await db
-        .prepare('DELETE FROM person_app_merges WHERE guest_id = ? AND app = ? AND user_id = ?')
-        .bind(row.guest_id, row.app, row.user_id)
-        .run();
-      confirmed++;
-    } else {
-      await db
-        .prepare(
-          `UPDATE person_app_merges SET attempts = attempts + 1, last_attempt_at = ?
-            WHERE guest_id = ? AND app = ?`,
-        )
-        .bind(now, row.guest_id, row.app)
-        .run();
-      console.warn('[index] person merge not taken', { app: row.app, error: outcome.error });
-    }
+    // Confirmed, the row goes only while it still names the account sent (a guest merged again meanwhile keeps the
+    // new row to tell); a failure marks the (guest, app) row.
+    const key = { guest_id: row.guest_id, app: row.app };
+    const scopes = { confirm: { key: { ...key, user_id: row.user_id } }, fail: { key } };
+    if (await settle(db, QUEUE, outcome, scopes, now)) confirmed++;
   }
   return confirmed;
 }

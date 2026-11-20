@@ -8,19 +8,23 @@
 // purge request itself, at once) sends each app `POST /api/internal/people/:id/purge {items}` with up to
 // PERSON_ITEMS_PER_CALL of them, and the guests merged into the person (`guests`, person_notice_guests); the rows go
 // when the app confirms, and the guests once no row for the person is left. An app that can't be reached is tried
-// again an hour later, and given up on after NOTICE_GIVE_UP_MS.
+// again an hour later, and given up on after a week (the shared retry, notice-queue.ts).
 
 import { APPS, type App } from '@liveworkspace/index-client';
 import { callApp } from './app-calls';
 import type { Env } from './env';
+import { dueRows, giveUpStale, settle, type NoticeQueue } from './notice-queue';
 import { PERSON_ALIASES_MAX } from './person-aliases';
 
 export const PERSON_ITEMS_PER_CALL = 100;
 // Items recorded per source per pass: a bound on one statement; a later pass records the rest.
 const RECORD_MAX = 5_000;
 const GROUPS_PER_RUN = 20;
-export const NOTICE_RETRY_AFTER_MS = 60 * 60 * 1000;
-export const NOTICE_GIVE_UP_MS = 7 * 24 * 60 * 60 * 1000;
+const QUEUE: NoticeQueue = {
+  table: 'person_app_notices',
+  givenUp: '[index] person notices given up',
+  notTaken: '[index] person notice not taken',
+};
 
 // The statements that record what each app must hear: run first, before the rows that name the person are
 // rewritten. Their own items are left out (they are purged, and the app drops them whole), except those in a team
@@ -74,28 +78,17 @@ type Group = { person_id: string; app: App };
 // One run: up to GROUPS_PER_RUN (person, app) pairs that are due, one call each. Returns the pairs confirmed.
 export async function drainPersonNotices(env: Env, now = Date.now()): Promise<number> {
   const db = env.INDEX_DB;
-  // In the same call, the guests of every person with no notice left (confirmed or given up) go.
-  const stale = (
-    await db.batch([
-      db
-        .prepare('DELETE FROM person_app_notices WHERE created_at < ?')
-        .bind(now - NOTICE_GIVE_UP_MS),
-      db.prepare(
-        `DELETE FROM person_notice_guests
+  // In the same batch, the guests of every person with no notice left (confirmed or given up) go.
+  await giveUpStale(
+    db,
+    QUEUE,
+    now,
+    db.prepare(
+      `DELETE FROM person_notice_guests
         WHERE person_id NOT IN (SELECT person_id FROM person_app_notices)`,
-      ),
-    ])
-  )[0]!;
-  if ((stale.meta.changes ?? 0) > 0) {
-    console.warn('[index] person notices given up', { rows: stale.meta.changes });
-  }
-  const { results: groups } = await db
-    .prepare(
-      `SELECT DISTINCT person_id, app FROM person_app_notices
-        WHERE last_attempt_at IS NULL OR last_attempt_at < ? LIMIT ?`,
-    )
-    .bind(now - NOTICE_RETRY_AFTER_MS, GROUPS_PER_RUN)
-    .all<Group>();
+    ),
+  );
+  const groups = await dueRows<Group>(db, QUEUE, 'person_id, app', GROUPS_PER_RUN, now);
   let confirmed = 0;
   for (const group of groups) {
     const [notices, guestRows] = await db.batch([
@@ -121,26 +114,11 @@ export async function drainPersonNotices(env: Env, now = Date.now()): Promise<nu
       `/people/${encodeURIComponent(group.person_id)}/purge`,
       { items, guests },
     );
-    // An app this deployment does not run has nothing to hear.
-    if (outcome.ok || outcome.error === 'app_not_configured') {
-      const done = rows.includes('') ? [...items, ''] : items;
-      await db
-        .prepare(
-          `DELETE FROM person_app_notices WHERE person_id = ? AND app = ?
-             AND item_id IN (SELECT value FROM json_each(?))`,
-        )
-        .bind(group.person_id, group.app, JSON.stringify(done))
-        .run();
+    // Confirmed, the items sent go (and the '' row, once sent); a failure marks the whole (person, app) group.
+    const key = { person_id: group.person_id, app: group.app };
+    const done = rows.includes('') ? [...items, ''] : items;
+    if (await settle(db, QUEUE, outcome, { confirm: { key, items: done }, fail: { key } }, now)) {
       confirmed++;
-    } else {
-      await db
-        .prepare(
-          `UPDATE person_app_notices SET attempts = attempts + 1, last_attempt_at = ?
-            WHERE person_id = ? AND app = ?`,
-        )
-        .bind(now, group.person_id, group.app)
-        .run();
-      console.warn('[index] person notice not taken', { app: group.app, error: outcome.error });
     }
   }
   return confirmed;
