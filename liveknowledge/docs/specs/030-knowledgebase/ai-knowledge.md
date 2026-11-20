@@ -1,6 +1,8 @@
 # AI Knowledge
 
-Status: **spec**, not built ([Build plan](../005-project-roadmap/build-plan.md) step 10).
+Status: **the view is built, not yet verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md)
+step 10). What is not built is under "Not built"; the [AI Knowledge UI blueprint](blueprints/ai-knowledge-ui.md) has
+the detail.
 
 The wiki's third tab, beside Pages and Ask: what agents know, where they learned it and what they could not find.
 Most of it needs no model: it is bookkeeping the room already has.
@@ -57,6 +59,42 @@ or here. The list shows each page's size in tokens (characters / 4, rounded up t
 
 Counts of Verified, Review Due and Never Verified pages as one stacked bar with a legend, and **Remind the Owners**
 (one email each, at most once a week per wiki).
+
+## The view, as built
+
+- One read of `GET .../knowledge` each time the view opens and one after each action taken in it. Nothing is polled.
+- **Header:** "AI Knowledge", one line, **Connect an Agent** (Settings' Tokens page: the MCP server, the command line
+  and tokens) and **AI Settings**.
+- **Connected Agents:** a card each: an icon, the name, how it connects (from the name it is counted under), a
+  "Connected" dot, what it has been seen to do (**Reads**; **Suggests Edits** when one of its suggestions is
+  waiting), pages read this week and the three it read most, each opening its page.
+- **Pages That Disagree:** the question, the two passages side by side (stacked on a phone) each with its page's
+  trust, **<Page> Is Right, Fix the Other** for each side (it opens the other page) and **Not a Conflict**. Without
+  a key the section says it needs one.
+- **Questions Nobody Could Answer:** rows of the question, "Asked 4 times by people and the Coding Agent", **Draft a
+  Page** and a dismiss button.
+- **Edits Suggested by Agents:** a card each: the page, the agent, the reason's first line, the lines taken out and
+  put in (a sign and a strike as well as a colour), **Accept**, **Open the Page**, **Dismiss**. A suggestion that no
+  longer fits its page says so in words.
+- **Knowledge Health:** one stacked bar, Verified, Review Due and Never Verified, dark, mid and light so they differ
+  in lightness as well as hue, with one spoken label and a legend of the three counts.
+- **Always in Context:** the budget bar ("4,410 of 8,000 tokens"), each page with its size and a remove button, and
+  **Add a Page**, which opens a page picker. A page that would pass the budget is refused in the route's own words.
+- **What an Agent Sees:** a dark card with a short sample of how one search result reads to an agent, built from a
+  real passage of this knowledgebase when the read holds one.
+- Every section with nothing to show has an empty state. A knowledgebase kept Offline shows one empty state for the
+  whole view and reads nothing.
+- Passages, questions, reasons and suggested lines are other people's text: drawn as text, never as HTML.
+
+## Not built
+
+- **Ask Both Owners** and **Remind the Owners**: no email route exists, so neither is drawn.
+- **Fix the Other** opens the other page, not the passage with a margin note quoting the right one.
+- **An agent's scopes** are not in the read: the chips are what the agent has been seen to do.
+- **Edits Suggested by Agents** is built against the wire type and its two routes and tested over a fake; it has not
+  been exercised against a running api.
+- A dismissed question or conflict, and an accepted suggestion, leave the list on the read after the action, not
+  before it.
 
 ## Share roles
 
