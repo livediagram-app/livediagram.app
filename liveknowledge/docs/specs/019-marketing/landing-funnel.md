@@ -114,6 +114,11 @@ footer's Editor link, a link inside a help article) is deliberately not a CTA an
 counted. Adding a CTA means adding its slot to `CTA_SOURCES` and building its
 `href` with `ctaHref(href, source)`; `cta-sources.test.ts` pins the table.
 
+liveknowledge's site has no `/features/<id>` pages ([Marketing site](marketing-site.md) "Feature sections"), so the
+`Feature` surface stays in the vocabulary (the dashboard still labels it) but no page sends it. The hero sends
+`Home.Hero` from **Start a Knowledgebase**; its second button is an in-page anchor and carries no source. The slots
+the fork's hero used (`HeroSearch`, `HeroBlank`, `HeroFan`) are retired the same way.
+
 ### Server validation
 
 `Cta` pairs only with `Opened` and `Created`, and its `type` must be a source

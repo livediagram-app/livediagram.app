@@ -1,81 +1,82 @@
 # Fact sheet
 
-The canonical facts all marketing copy is built from. If something
-below stops being true, fix it here first, then propagate to the taglines and
-descriptions. Mirrors the site's own words (`SITE_DESCRIPTION` and `SITE_PITCH`
-in `packages/ui/src/site.ts`) and the marketing FAQ (`apps/marketing/lib/faq-content.tsx`).
+The canonical facts all marketing copy is built from. If something below stops
+being true, fix it here first, then propagate to the taglines and descriptions.
+Mirrors the site's own words (`apps/marketing/lib/site-words.ts`) and the
+marketing FAQ (`apps/marketing/lib/faq-content.tsx`).
 
 ## One line
 
-A free, real-time editor for documents made of pages: articles, slide decks and
-infographics, made together.
+A team knowledgebase, for people and for AI.
 
 ## What it is
 
-A real-time editor in the browser for documents made of pages. Write an article
-that flows onto as many pages as it needs, build a slide deck and present it,
-or lay out an infographic or poster for print or social. Every document is a
-stack of tabs, each holding its pages, and people work on them together live.
-There is no sign-up wall: open the editor and start.
+A place for a team's how-tos, decisions and handbooks, written as pages in a
+page tree. Every page has an owner and a verified date, and a review that comes
+due. People search it and ask it questions; agents read it through an MCP
+server and a command line, with the same access rules and with each page's
+trust attached. Part of liveworkspace, beside livediagram, liveplanner,
+livedocuments, livedesign and livehuddle.
 
 ## Who it's for
 
-Teams who write and present together: briefs, reports and proposals, launch
-decks and quarterly reviews, posters, one-pagers and social posts. The unit of
-value is the team, not the individual.
+- A team that wants its knowledge in one place, linked to each other and to the
+  diagrams, plans and designs it talks about.
+- A person who wants an answer, with its source, without knowing which page
+  holds it.
+- A team's agents (a coding agent, a support assistant), which need the same
+  knowledge and need to know how far to trust each page.
 
 ## What it does
 
-- Articles: writing that flows onto pages, with headings, lists, quotes, code,
-  pictures and charts. Paste from web pages, Google Docs or Word and the
-  formatting comes with it; import Markdown into a tab.
-- Slide decks: 16:9 or 4:3 slides from 64 slide layouts, presented full screen
-  with presenter notes, a time budget, a laser pointer and a spotlight.
-- Infographics and posters in print sizes (A4, US Letter, A3) and social sizes,
-  from 92 infographic layouts.
-- On every page: shapes, connectors, text, sticky notes, images, icons, tables,
-  charts, Sankey diagrams and embeds.
-- 23 templates and twenty-four themes that recolour every page in one click.
-- Real-time collaboration: live cursors, selection rings, presence on each tab,
-  comment threads and assigned actions.
-- Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.
-- Tabs per document, nested folders in the Explorer, and a 30-day Trash.
-- Editor, Participant or Viewer share links, with expiry, passwords and revoke any time;
-  live embeds and live images for wikis and READMEs.
-- Export pages as PDF, PNG, SVG or an animated GIF, articles as Markdown, and
-  any tab as JSON to import back.
-- For AI agents and scripts: an MCP server, a CLI (`@liveknowledge/cli`) and a
-  REST API that read, write and share documents.
-- Hybrid auth: guests get the full feature set keyed to a per-browser id;
-  signed-in users (a liveworkspace account) add cross-device sync and account self-delete.
-- Anonymous first-party telemetry with a public dashboard on liveworkspace.app
-  (`/telemetry` opens it). No
-  third-party analytics, no identifiers on the wire. Off by default in forks
-  unless configured.
+- **Pages in a page tree**, up to 500 pages a knowledgebase and eight levels
+  deep, each one continuous page of writing: tables, contents, footnotes,
+  margin notes, pictures, charts and drawings in the text, a slash menu and
+  live carets.
+- **Page links and backlinks**: type `[[` to link to a page; every page lists
+  Linked From. Items from the other liveworkspace apps embed live in a page.
+- **Verification**: an owner for every page, a Verified tick with who and when,
+  a review interval (30, 90, 180 or 365 days, or never) and Review Due when it
+  passes. Yours to Review lists what is due.
+- **Search** across a knowledgebase, by keyword, with no key.
+- **Ask**: answers from the knowledgebase's own pages with a citation on every
+  claim, a Sources rail and a trust line. It says what the pages do not cover
+  instead of guessing. Runs on the team's own Claude API key.
+- **AI Knowledge**: which agents read what, questions nobody could answer,
+  pages that disagree, edits agents suggest for a person to accept, and Always
+  in Context pages.
+- **An MCP server and a CLI** that speak in pages and passages. Every passage
+  carries its trust: verified or not, when, whether its review is due.
+- **Import** a Markdown folder, a Notion export or a Confluence space export.
+  **Export** a page to Markdown, PDF and Word.
+- **The platform every app shares**: one account, the Explorer, sharing with
+  Editor, Participant and Viewer roles, comments, snapshots, Offline, the
+  Google Drive mirror and the Community.
 
-## Open source and price
+## Price and licence
 
-- MIT-licensed and publicly viewable.
-- Hosted free at liveknowledge.app. No paid tier and no plan to introduce one.
-- The open-source core never calls home and never gates features behind a
-  license check. Sign-in through liveworkspace accounts is optional; guests
-  get saving, sharing and real-time collaboration without it.
+Free and open source (MIT), with no paid tier and no plan for one. Ask is the
+one thing with a cost: the team's own Claude API usage, paid to Anthropic.
 
-## Stack
+## Accounts
 
-Runs entirely on Cloudflare: Workers for the API and routing, a Durable Object
-per document holding its content and its realtime room, and Workers Static
-Assets for the Next.js frontends. No Node-hosted backend, no SSR. Realtime
-merges edits by element; two edits to the same element are last-writer-wins.
+Writing needs no account: a guest's knowledgebase is kept Offline in the
+browser. Verify, Ask, AI Knowledge, sharing and connecting an agent need a free
+account.
 
-## Out of scope (do not imply these exist)
+## Out of scope (never imply these)
 
-- Operational transform or CRDT editing.
-- Diagrams, whiteboards, mind maps, boards, sheets, forms, workshops (votes,
-  timers) and an in-editor AI assistant are not part of liveknowledge. AI works
-  through your own assistant, over MCP, the CLI or the API.
+- Slides, infographics, flashcards, posters, page layouts, presenting, paper
+  sizes, PowerPoint, GIF export. Those are livedocuments'.
+- Databases, page-level permissions, semantic search, public sites with their
+  own domain, Google Docs import, attachments other than pictures, a native
+  mobile app, review reminder emails.
+- A model paid for by liveworkspace. liveknowledge runs none.
+- A copy to run on your own servers. It is offered as a hosted service.
 
-## Links
+## Words
 
-- Hosted: https://www.liveknowledge.app
-- Editor: https://www.liveknowledge.app/new
+**Knowledgebase** is one word. The product is never called a "wiki" or a
+"knowledge base"; "wiki" is only for the category another tool is in. Roles are
+Editor, Participant and Viewer. **Offline** names a knowledgebase kept only in
+this browser.

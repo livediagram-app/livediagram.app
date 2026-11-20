@@ -1,165 +1,68 @@
 # Descriptions
 
-Longer blurbs grouped by budget, for the description fields on directories, app
-stores, GitHub, Product Hunt, and similar. Pick the one whose limit matches the
-field, then trim to taste. Counts in brackets are approximate (characters for
-the short ones, words for the long ones).
+Blurbs grouped by length budget, for directory listings, app stores, launch
+posts and social. Every line is built from [`facts.md`](facts.md). Don't add a
+claim that isn't there. No em dashes.
 
-Built from [`facts.md`](facts.md). No em dashes. Don't promise anything under
-"Out of scope" there.
+## One sentence (~20 words)
 
----
+A free, open-source team knowledgebase where every page has an owner and a
+verified date, and people and agents get cited answers.
 
-## Meta description, <= 160 characters
+## Short (~50 words)
 
-For HTML `<meta name="description">` and search snippets.
+liveknowledge is a team knowledgebase, for people and for AI. Write your
+how-tos and decisions as pages in a page tree. Every page has an owner, a
+verified date and a review that comes due. Ask it a question and the answer
+cites its sources. Your agents read the same pages over MCP. Free and open
+source.
 
-> A free, real-time editor for articles, slide decks and infographics. Write,
-> present and design together. Free and open source. [126]
+## Medium (~100 words)
 
-Alternate:
+liveknowledge is a team knowledgebase, for people and for AI.
 
-> Write articles, build slide decks and lay out infographics with your team in
-> real time. No sign-up wall, no paid tier. Open source. [131]
+Your team writes its how-tos, decisions and handbooks as pages in a page tree,
+linked to each other with `[[`. Every page has an owner, shows who verified it
+and when, and reads Review Due once its review interval has passed.
 
----
+Ask a question in plain words and the answer comes only from your pages, each
+claim cited, on your team's own Claude API key. When the pages do not cover
+something, it says so.
 
-## Tweet-length, <= 280 characters
+Agents read the same pages through an MCP server and a command line, with each
+passage's trust attached. Free, MIT-licensed, no paid tier.
 
-For social posts and short "about" fields.
+## Long (~200 words)
 
-> liveknowledge is a real-time editor for documents made of pages: articles
-> that flow onto pages, slide decks you present with a laser and spotlight, and
-> infographics for print or social. Live cursors, comments and assigned
-> actions. No sign-up wall. Free and open source. [269]
+liveknowledge is a team knowledgebase, for people and for AI.
 
----
+**Pages that stay organised.** A knowledgebase is a tree of pages. Each is one
+continuous page of writing, with tables, contents, footnotes, pictures, charts
+and drawings in the text. Type `[[` to link to another page, and every page
+lists the pages that link to it.
 
-## Short description, ~50 words
+**Trust built into every page.** Each page has an owner and says who verified
+it and when. A review comes due after 30, 90, 180 or 365 days, and the page
+reads Review Due until its owner checks it again.
 
-For directory cards and "short pitch" fields.
+**Ask, with sources.** Answers come only from your pages, each claim numbered
+to its passage. What the pages do not cover is said, not guessed. Ask runs on
+your team's own Claude API key; search needs no key.
 
-> liveknowledge is a free, real-time editor for articles, slide decks and
-> infographics. Open the editor and start, no sign-up needed. Write and present
-> together with live cursors, comments and assigned actions, start from 23
-> templates, and export to PDF, PNG or Markdown. MIT-licensed and free for
-> everyone. [47 words]
+**Read by your agents.** An MCP server and a command line hand agents the same
+pages, each passage with how far to trust it. An agent's edit arrives as a
+suggestion a person accepts.
 
----
+**Bring everything with you.** Import a Markdown folder, a Notion export or a
+Confluence space export. Export to Markdown, PDF and Word.
 
-## Medium description, ~100 words
+Part of liveworkspace: one account, the same sharing roles, Offline and the
+Google Drive mirror. Free and open source (MIT), with no paid tier.
 
-For Product Hunt, app store short descriptions, README intros.
+## Social
 
-> liveknowledge is a real-time editor in the browser for documents made of
-> pages. Write an article and it flows onto as many pages as it needs. Build a
-> slide deck and present it full screen, with presenter notes, a laser pointer
-> and a spotlight. Lay out an infographic or poster for print or social.
->
-> Teams work on the same document live, with cursors, comments and assigned
-> actions. Start from 23 templates, recolour every page with one of twenty-four
-> themes, and share view or edit links any time.
->
-> It is MIT-licensed, free for everyone with no paid tier, and open for anyone
-> to read. [103 words]
-
----
-
-## Long description, ~250 words
-
-For longer listing bodies and "about this project" sections.
-
-> liveknowledge is a free, real-time editor for documents made of pages:
-> articles, slide decks and infographics. It runs in the browser, and there is
-> no sign-up wall: open the editor and start, then share when you are ready.
->
-> Articles are for writing. Type with Markdown shortcuts or paste from web
-> pages, Google Docs and Word, and the writing flows onto new pages as it grows,
-> with pictures, charts and tables sitting in the text. Slide decks start from
-> 64 slide layouts and present full screen, with presenter notes, a time
-> budget, a laser pointer and a spotlight. Infographics and posters come in
-> print and social sizes, from 92 layouts.
->
-> Every page holds shapes, connectors, text, sticky notes, images, icons,
-> tables and charts. Start from 23 templates and recolour every page with one of
-> twenty-four themes. A document is a stack of tabs, filed in nested folders.
->
-> Collaboration is built in: live cursors, selection rings, presence on each
-> tab, comment threads and actions you can assign to a teammate. Every change
-> saves on its own, and undo steps back through your own edits without touching
-> anyone else's. Share view-only or editable links, with expiry and passwords,
-> and export pages as PDF, PNG, SVG or GIF.
->
-> AI assistants and scripts can work on documents too, through the MCP server,
-> the CLI and the API.
->
-> liveknowledge is MIT-licensed and free for everyone, with no paid tier and no
-> plan for one. [237 words]
-
----
-
-## Full description, ~500 words
-
-For directories with a generous body field, a landing-page "about" block, or a
-detailed GitHub / Product Hunt write-up.
-
-> ### liveknowledge: write, present and design together
->
-> liveknowledge is a free, real-time editor for documents made of pages. It
-> lives in the browser and has no sign-up wall: open the editor and start,
-> then share a link when you want others in. Signing in is free too, and keeps
-> your documents with you across devices.
->
-> #### Articles that flow onto pages
->
-> An article is writing laid out on pages. Type with Markdown shortcuts and a
-> menu for every block, or paste from web pages, Google Docs and Word and keep
-> the headings, lists and links. When the writing runs past the bottom of a
-> page it flows onto a new one. Pictures, charts and tables sit in the text, and
-> teammates comment on the words themselves. Pick one of five looks, then
-> export the whole thing as a PDF.
->
-> #### Slide decks you present
->
-> Add 16:9 or 4:3 slides, each started from one of 64 layouts, and present the
-> deck full screen. Each slide can carry presenter notes and a time budget, and
-> a laser pointer and spotlight help you guide the room. Presenting happens on
-> your screen only, so collaborators carry on working.
->
-> #### Infographics and posters
->
-> Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting
-> from one of 92 layouts. Every page holds shapes, connectors, text, sticky
-> notes, images, icons, tables, charts and Sankey diagrams. Start from 23
-> templates, and recolour every page with one of twenty-four themes in a single
-> click.
->
-> #### Made together, live
->
-> Share a link and people join the same document in real time, with live
-> cursors, selection rings and presence on each tab. Comment on anything, reply
-> in threads and resolve them, and assign an action to a teammate so follow-ups
-> stay with the document. Undo is personal: it rewinds your own changes, not
-> anyone else's.
->
-> #### Shared your way
->
-> Create editor or view-only links, give them an expiry, add a password, and
-> revoke them whenever you like. Embed a live document in a wiki, or a live
-> image in a README. Export pages as PDF, PNG, SVG or an animated GIF, and any
-> tab as JSON to bring back later.
->
-> #### Ready for agents
->
-> Your own AI assistant can read, write and share documents through the MCP
-> server. The `@liveknowledge/cli` command line and a documented REST API do the
-> same for coding agents and scripts.
->
-> #### Free, open, and yours
->
-> liveknowledge is MIT-licensed and publicly viewable. The hosted version at
-> liveknowledge.app is free for everyone, with no paid tier and no plan to
-> introduce one. If we ship it, every user gets it. The open-source core never
-> calls home and never gates features behind a license check.
->
-> Write it, present it, share it. [404 words]
+- A team knowledgebase, for people and for AI. Verified pages, cited answers,
+  and an MCP server your agents read. Free and open source.
+- Most team knowledge goes stale quietly. In liveknowledge every page has an
+  owner and a review that comes due, and your agents are told which pages to
+  trust.

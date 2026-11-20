@@ -13,13 +13,14 @@ for directory listings, app stores, launch posts, and social, plus media
 
 ## Golden rule: claims map to shipped features
 
-Same rule as the landing page ([16](marketing-site.md)): every claim in
-`marketing/` must correspond to something a visitor can do today. The unshipped
-items in [02-prototype-scope](../005-project-roadmap/prototype-scope.md) (team workspaces,
-transactional email, CRDT / conflict-free editing) must not appear, even
-softened. When the editor gains or loses a feature, update the affected copy in
-the same change. Counts (templates, themes, shapes) must match
-their source of truth, as pinned by the editor app's tests.
+Same rule as the landing page ([Marketing site](marketing-site.md)): every claim in
+`marketing/` is something a visitor can do today. What the fork brought and
+liveknowledge cut (slides, infographics, page layouts, presenting, PowerPoint)
+and what v1 leaves for later (databases, page-level permissions, semantic
+search, public sites, Google Docs import, a native mobile app, reminder emails)
+must not appear, even softened; `copy/facts.md` lists both under "Out of scope".
+When the product gains or loses a feature, update the affected copy in the same
+change.
 
 ## Layout
 
@@ -44,19 +45,25 @@ listing body uses the ~500-word description).
 
 ## Tone & brand
 
-Inherits [16](marketing-site.md) and [00-purpose](../001-project-vision/purpose.md): plain,
-confident, understated; multiplayer-from-the-start pages (articles, decks
-and infographics) for teams who make things together. Lead with the hook:
-the editor works without signing in (open a link, make, share). Be honest about trade-offs (realtime is last-write-wins,
-not CRDT). Say "free, MIT-licensed, no paid tier" where the
-format allows ([03](../002-project-scope/open-source-and-business-model.md)). Product name
-**liveknowledge** (lowercase); brand colour amber `#F59E0B`, text and fills in `#A34A0C`
-([01-color-scheme](../004-interface-design/color-scheme.md)). No em dashes in the copy.
+Inherits [Marketing site](marketing-site.md) and [Purpose](../001-project-vision/purpose.md): plain,
+concrete, understated. Lead with the pitch line, "A team knowledgebase, for
+people and for AI.", and with what makes it different: trust is part of the
+page, agents are first-class readers, Ask does not guess. Say who pays for Ask
+(the team, on its own Claude API key) wherever Ask is sold. Say "free,
+MIT-licensed, no paid tier" where the format allows
+([Open source](../002-project-scope/open-source-and-business-model.md)). Product name
+**liveknowledge** (lowercase); **knowledgebase** is one word, and the product is
+never called a wiki. Brand colour lime: accent `#4d7c0f`, tints `#f7fee7`
+`#ecfccb` `#d9f99d`, dark accent `#a3e635`
+([Colour scheme](../004-interface-design/color-scheme.md)). No em dashes in the copy.
 
 ## Media
 
-Binary assets live under `marketing/media/` (see its README for the suggested
-sub-layout and brand guidance). Prefer SVG for logos and optimised PNG / WebP
-for screenshots; screenshots should show a real deck or article with visible
-multiplayer cursors, since "no sign-in, real-time" is the pitch. Keep heavy
-binaries out of git where practical. Screenshots go in `media/desktop/` and `media/mobile/`, captioned.
+Binary assets live under `marketing/media/` (see its README for the layout and
+brand guidance). Prefer SVG for logos and optimised PNG or WebP for
+screenshots. A screenshot shows a knowledgebase made for the shot (a page tree,
+a verified page, an answer with its sources), never a real team's pages. The
+logo lockups and icons are generated from the brand module in lime
+(`pnpm icons:brand`); a test fails if a committed copy drifts
+(`apps/marketing/lib/brand-icon.test.ts`). Keep heavy binaries out of git where
+practical. Screenshots go in `media/desktop/` and `media/mobile/`, captioned.

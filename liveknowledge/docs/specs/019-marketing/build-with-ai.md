@@ -1,6 +1,6 @@
 # Build with AI
 
-`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a deck in liveknowledge" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../../liveworkspace/apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
+`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my agent just read our knowledgebase and answered from it" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../../liveworkspace/apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
 
 ## Entry points
 
@@ -10,11 +10,11 @@
 
 ## The page, top to bottom
 
-1. **Hero.** Eyebrow "Build with AI", headline "Your AI, building in liveknowledge", a lede saying it works with the AI tool you already use, then the **address card**: `https://mcp.liveknowledge.app/mcp` in a monospace field with a Copy button (the one thing every tool needs). Beside it on wide screens, a chat illustration (`AiChatArt`): a request bubble, a tool-call chip naming the liveknowledge tool, and the shared `DiagramBuildAnimation` drawing the result with its cursor labelled "AI". Reduced motion shows the finished picture.
-2. **Three steps** (`#how-it-works`), one row: **Add liveknowledge** (paste the address into your tool), **Approve** (a liveknowledge page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a diagram, board, sheet or deck; it lands in your account).
+1. **Hero.** Eyebrow "Build with AI", headline "Your AI, building in liveknowledge", a lede saying it works with the AI tool you already use, then the **address card**: `https://mcp.liveknowledge.app/mcp` in a monospace field with a Copy button (the one thing every tool needs). Beside it on wide screens, the agent transcript (`AgentTranscript`, the same drawing the landing page's Build With AI band shows): a short session in which an agent calls `get_context`, `search_pages` and `suggest_edit`, each answer with its trust fields. The tool names are the MCP server's own (`apps/mcp/src`), held by `lib/ai-clients.test.ts`. Reduced motion shows it whole.
+2. **Three steps** (`#how-it-works`), one row: **Add liveknowledge** (paste the address into your tool), **Approve** (a liveknowledge page opens: sign in or create a free account, check where access goes, Connect), **Ask** (a question your knowledgebase answers, or a page to write; reads and suggestions land in your account).
 3. **Pick your tool** (`#connect`): a tab list of clients, grouped Chat apps, Coding agents, Editors, Anything else. Selecting one shows its steps. The choice is mirrored into the URL hash (`/ai#cursor`) with `history.replaceState`, and a hash on arrival selects that client, so a link can open straight onto one tool. Every panel is in the HTML (inactive ones `hidden`), so the instructions are indexable and work before hydration (the first client shows until then).
 4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
-5. **What it can do**: a grid of the MCP's capabilities in plain words (articles written from Markdown, slide decks and infographics, templates, find and read with a picture, share links, live changes on an open document with Undo).
+5. **What it can do**: a grid of the MCP's capabilities in plain words, each a shipped tool ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md)): Always in Context pages first (`get_context`), search in passages (`search_pages`), read a page with its trust fields (`read_page`), suggest an edit a person accepts (`suggest_edit`), report what is missing (`report_gap`), and new pages from Markdown (`create_page`).
 6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › API Tokens, six-month tokens, liveknowledge runs no AI model of its own.
 7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in) and a link to the full help article.
 
@@ -56,4 +56,4 @@ The page is public marketing, outside any document, so Editor, Participant and V
 
 ## Performance
 
-The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art is `AiChatArt` (CSS keyframes, no JS tick).
+The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The art is `AgentTranscript` (static markup, CSS keyframes, no JS tick).

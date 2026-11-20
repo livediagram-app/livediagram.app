@@ -9,8 +9,9 @@ Product screenshots, split by viewport so the desktop and mobile pitches stay
 independent. Each should be captioned with what it shows so copywriters can
 match it to a claim in [`../copy/facts.md`](../copy/facts.md).
 
-They go in `desktop/` and `mobile/`, each showing liveknowledge' own work
-(articles, slide decks and infographics) and captioned here.
+They go in `desktop/` and `mobile/`, each showing a knowledgebase made for the
+shot (a page tree, a verified page, an answer with its sources), never a real
+team's pages, and captioned here.
 
 ## Logo (`logo/`)
 
@@ -38,11 +39,11 @@ also into `apps/marketing/public/`), rasterised by Playwright's Chromium. A test
 
 ## Guidance
 
-- **Brand color** is amber `#F59E0B` ("liveknowledge amber"); the logo has its own amber-to-orange prism palette. Page background
+- **Brand colour** is lime: accent `#4d7c0f`, dark accent `#a3e635`; the logo has its own lime prism palette. Page background
   `#F8FAFC`, canvas white. Full palette in [Theme](../../docs/specs/004-interface-design/color-scheme.md).
-- **Show, don't tell.** Screenshots should feature a real article, deck or
-  infographic with visible multiplayer cursors, since "made together, live" is
-  the pitch.
+- **Show, don't tell.** A screenshot should show trust at work: a verified
+  page with its owner, or an answer with its sources, since "pages your team
+  and its AI both trust" is the pitch.
 - **Keep claims current.** When the UI changes, retake the affected screenshot:
   a stale shot that shows a removed control is worse than none.
 - **Keep large binaries out of git where practical.** Prefer SVG for logos and

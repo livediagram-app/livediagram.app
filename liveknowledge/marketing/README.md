@@ -28,12 +28,16 @@ marketing/
 - **Voice**: plain, concrete, a little understated. Describe what the product
   does, not how amazing it is.
 - **No em dashes.** Use commas, colons, or parentheses.
-- **The hook is "documents made of pages, made together"**: write an article,
-  present a deck, lay out an infographic, with your team, live. Lead with it.
-- **Don't overclaim.** Check "Out of scope" in the fact sheet: no CRDT
-  editing, and no diagrams, whiteboards, boards, sheets, forms, workshops or
-  in-editor AI assistant. Never imply they exist.
+- **The hook is "a team knowledgebase, for people and for AI"**: pages your
+  team and its agents both trust, because each has an owner and a verified
+  date. Lead with it.
+- **Knowledgebase is one word.** Never "wiki" for the product, never
+  "knowledge base". "Wiki" only names the category another tool is in.
+- **Don't overclaim.** Check "Out of scope" in the fact sheet: no slides,
+  infographics or page layouts (those are livedocuments'), no databases,
+  page-level permissions, semantic search, public sites or built-in model.
+  Never imply they exist.
 - **Free means free.** MIT-licensed, no paid tier, no plan for
   one. Say so where the format allows.
-- **Brand color** is amber, `#F59E0B` ("liveknowledge amber"); text and fills in it use `#A34A0C`. See
-  [Theme](../docs/specs/004-interface-design/color-scheme.md).
+- **Brand colour** is lime: accent `#4d7c0f`, tints `#f7fee7` `#ecfccb` `#d9f99d`, dark accent
+  `#a3e635`. See [Theme](../docs/specs/004-interface-design/color-scheme.md).
