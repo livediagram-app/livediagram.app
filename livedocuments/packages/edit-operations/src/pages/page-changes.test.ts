@@ -518,6 +518,30 @@ describe('worst case', () => {
   });
 });
 
+// docs/specs/024-agents/pages-for-agents.md "Empty pictures": a layout's picture frames start empty, and the answer
+// says how many, once.
+describe('picture frames a change leaves empty', () => {
+  it('says how many a layout added, and nothing for a layout with none', () => {
+    const framed = run(tabOf({ pages: [page('p1', { kind: 'slide' })] }), [
+      { op: 'layout', page: 1, layout: 'slide-two-images' },
+    ]);
+    const frames = framed.tab.elements.filter((el) => el.type === 'image').length;
+    expect(frames).toBeGreaterThan(1);
+    expect(framed.lines.at(-1)).toMatch(
+      new RegExp(
+        `^${frames} picture frames added empty \\(the pages view marks each "no-picture"\\): `,
+      ),
+    );
+    const plain = run(tabOf({ pages: [page('p1', { kind: 'slide' })] }), [
+      { op: 'layout', page: 1, layout: 'slide-bullets' },
+    ]);
+    expect(plain.lines).toEqual(['Laid out page 1 as Title and Bullets.']);
+    // A frame that was already on the tab is not said again.
+    const again = run(framed.tab, [{ op: 'set', page: 1, name: 'Photos' }]);
+    expect(again.lines.join(' ')).not.toMatch(/picture frame/);
+  });
+});
+
 // docs/specs/024-agents/pages-for-agents.md "A layout by its plain name": a slide asked for "title" is the Title Slide.
 describe('a layout by its plain name', () => {
   it('reads a name without its page kind’s prefix, in any case, as the one layout it can mean', () => {

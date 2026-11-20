@@ -345,5 +345,16 @@ export function applyPageChanges(
     if (err instanceof Stop) return { refusal: err.refusal };
     throw err;
   }
+  // Picture frames a layout left empty, said once for the call (pages-for-agents.md "Empty pictures"): unsaid, a
+  // deck went out with grey boxes where its subject's pictures belonged.
+  const empty = current.elements.filter(
+    (el) =>
+      el.type === 'image' && !el.imageId && !tab.elements.some((before) => before.id === el.id),
+  ).length;
+  if (empty > 0)
+    lines.push(
+      `${plural(empty, 'picture frame')} added empty (the pages view marks each "no-picture"): find the subject's ` +
+        'own pictures, add each with upload_image, then set the frame’s imageId with the update tool.',
+    );
   return { tab: current, lines };
 }

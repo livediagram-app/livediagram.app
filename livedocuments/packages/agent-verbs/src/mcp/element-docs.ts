@@ -283,6 +283,11 @@ format is documented inline on each tool's element argument, so the tool definit
 it. Each element has a unique "id"; nodes are "shape" elements (a labelled box) NOT "text" (text is only for titles,
 captions and running copy); pinned arrows (node -> node) track their boxes; and the theme owns colours (a sticky keeps
 its own). Stickies, tables, code blocks and charts carry content fields, documented on each tool's element argument.
+Pictures make a document its subject's own: asked about a product, a place, a team or a game, use real pictures of it,
+never only shapes and sample text. Use what the person gave you or what list_images already holds; else, when you can
+search the web, find pictures they may use, add each with upload_image (a public https URL is enough) and put it on an
+image element's "imageId". A layout's picture frames start empty (the pages view marks each "no-picture"): fill them,
+or pick a layout without one. With no way to find pictures, say so and ask the person for some.
 search_icons finds icon ids for "iconId"; list_images lists the user's pictures for an image element's "imageId".
 list_versions lists a tab's earlier versions (kept after a pause in editing and before each of your changes), and
 restore_version makes one the tab's content again; restoring the undoVersionId it answers takes that back.`;
