@@ -1,82 +1,36 @@
-import { Arrow, Avatar, Cursor, Label, Shape } from '@liveworkspace/help-site/art/primitives';
-import { Button } from '@liveworkspace/help-site/art/primitives';
-import { Card, Stage } from '@liveworkspace/help-site/art/parts';
+import { Cursor } from '@liveworkspace/help-site/art/primitives';
+import { Stage } from '@liveworkspace/help-site/art/parts';
+import { CornerCard } from '../illustrations/editor-chrome';
+import { PixelCharacter } from '../illustrations/pixel-character';
+import { Desk, MeetingTable, Plant, Room, Sticky } from '../illustrations/space-furniture';
 
-// Collaboration: three people on one canvas at once. Their cursors, Sam's live selection, a comment thread
-// pinned to a shape, and the presence avatars beside Share.
+// Collaboration: three people in one Space at once. Aria and Jae's cursors as they build, Jae holding the meeting
+// table, Mara walking in to the Meeting Room, a note pinned to its wall, and Share in the corner.
 export function CollaborationArt() {
   return (
     <Stage>
-      {/* Presence and Share. */}
-      <Card x={254} y={12} w={134} h={32} r={10}>
-        <Avatar cx={274} cy={28} r={10} initial="M" colour="violet" />
-        <Avatar cx={290} cy={28} r={10} initial="S" colour="emerald" />
-        <Avatar cx={306} cy={28} r={10} initial="Y" colour="brand" />
-        <Button x={324} y={18} w={56} h={20} label="Share" variant="primary" />
-      </Card>
-
-      <Arrow connector from={[124, 86]} to={[170, 112]} kind="elbow" />
-      <Shape x={36} y={66} w={88} h={40} label="Research" />
-      <Shape x={172} y={94} w={96} h={40} accent label="Prototype" />
-      <Shape
-        x={60}
-        y={146}
-        w={84}
-        h={36}
-        kind="stadium"
-        label="Interviews"
-        fill="fill-amber-100"
-        stroke="stroke-amber-400"
-      />
-      <Arrow connector from={[80, 106]} to={[92, 144]} tone="muted" />
-
-      {/* Sam's live selection on Research. */}
+      <Room x={20} y={44} w={170} h={160} name="Desks" />
+      <Desk x={40} y={76} />
+      <Desk x={110} y={76} />
+      <Desk x={40} y={136} />
+      <Plant cx={168} cy={186} />
+      <Room x={196} y={44} w={184} h={160} name="Meeting Room" door="left" />
+      <MeetingTable x={230} y={110} w={96} />
       <rect
-        x={31}
-        y={61}
-        width={98}
-        height={50}
-        rx={9}
-        className="fill-none stroke-emerald-500"
-        strokeWidth={2}
-      />
-      <rect
-        x={31}
-        y={47}
-        width={34}
-        height={14}
-        rx={4}
-        className="fill-emerald-500 dark:fill-emerald-700"
-      />
-      <Label x={48} y={54.5} anchor="middle" size={8.5} weight={700} tone="onAccent">
-        Sam
-      </Label>
-
-      {/* A comment pinned to Prototype, and its thread. */}
-      <path
-        d="M262 84 a10 10 0 1 1 6 9 l-6 3 Z"
-        className="fill-amber-400 stroke-white"
+        x={222}
+        y={100}
+        width={112}
+        height={48}
+        rx={3}
+        className="fill-none stroke-amber-500"
         strokeWidth={1.5}
+        strokeDasharray="4 3"
       />
-      <Card x={212} y={146} w={170} h={60} r={10}>
-        <Avatar cx={230} cy={163} r={9} initial="M" colour="violet" />
-        <Label x={245} y={163} size={9.5} weight={700} tone="strong">
-          Maya
-        </Label>
-        <Label x={276} y={163} size={8.5} tone="muted">
-          just now
-        </Label>
-        <Label x={224} y={182} size={9.5} tone="body">
-          Can we test this on Friday?
-        </Label>
-        <Label x={224} y={196} size={8.5} weight={600} tone="accent">
-          Reply
-        </Label>
-      </Card>
-
-      <Cursor x={148} y={60} name="Maya" colour="violet" />
-      <Cursor x={112} y={92} colour="emerald" />
-      <Cursor x={240} y={126} name="You" colour="brand" />
+      <Sticky x={330} y={60} w={40} h={34} tone="sky" label="Agenda" />
+      <PixelCharacter fx={214} fy={190} px={1.4} shirt="rose" name="Mara" />
+      <Cursor x={130} y={150} name="Aria" colour="violet" />
+      <Cursor x={322} y={140} name="Jae" colour="amber" />
+      <CornerCard x={326} y={8} initial="M" />
     </Stage>
   );
 }

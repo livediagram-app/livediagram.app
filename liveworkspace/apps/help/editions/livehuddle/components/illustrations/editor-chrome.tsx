@@ -10,6 +10,12 @@ import {
   lucideArmchair,
   lucideBell,
   lucideBriefcase,
+  lucideCircleDot,
+  lucideHand,
+  lucideMessageCircle,
+  lucidePartyPopper,
+  lucideScissors,
+  lucideUser,
   lucideCoffee,
   lucideFootprints,
   lucideLogIn,
@@ -44,6 +50,12 @@ const SCREEN: readonly Prim[] = [
 const TRAVEL: readonly Prim[] = [
   { t: 'path', d: 'M4 20V6.5a1 1 0 0 1 .8-1l7-1.4a1 1 0 0 1 1.2 1V20' },
   { t: 'path', d: 'M2.6 20h12.8M17 9.5h4.4M19.2 7.3l2.2 2.2-2.2 2.2' },
+];
+const SHIRT: readonly Prim[] = [
+  {
+    t: 'path',
+    d: 'M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z',
+  },
 ];
 const MONITOR: readonly Prim[] = [
   { t: 'rect', x: 2, y: 3, w: 20, h: 14, rx: 2 },
@@ -307,6 +319,51 @@ export function EditWalk({
       {side('edit', 'Edit', x + 1.5)}
       {side('walk', 'Walk', x + 45)}
     </g>
+  );
+}
+
+/** The walking strip's width. */
+export const WALK_STRIP_W = 272;
+// While walking the strip carries the walker's own controls: Avatar, Clothes, Hair, Emotes, then Hand and React,
+// then Chat on its pale green tile (the real strip at 0.55, from its left edge).
+const WALK_SLOTS: [readonly Prim[], number][] = [
+  [lucideUser, 110],
+  [SHIRT, 133],
+  [lucideScissors, 156],
+  [lucideCircleDot, 179],
+  [lucideHand, 207],
+  [lucidePartyPopper, 230],
+  [lucideMessageCircle, 258],
+];
+
+/** The strip while walking, top-left at (x, y), WALK_STRIP_W wide: Edit | Walk with Walk on, then the walker's
+ *  controls. */
+export function WalkStrip({ x, y }: { x: number; y: number }) {
+  return (
+    <Card x={x} y={y} w={WALK_STRIP_W}>
+      <EditWalk x={x + 4} y={y + 3} on="walk" />
+      {[97, 193, 244].map((d) => (
+        <line
+          key={d}
+          x1={x + d}
+          y1={y + 7}
+          x2={x + d}
+          y2={y + CARD_H - 7}
+          className="stroke-slate-200"
+          strokeWidth={0.75}
+        />
+      ))}
+      <rect x={x + 247} y={y + 3} width={22} height={20} rx={5} className="fill-brand-50" />
+      {WALK_SLOTS.map(([prims, at], i) => (
+        <Icon
+          key={at}
+          prims={prims}
+          x={x + at}
+          y={y + CARD_H / 2}
+          className={i === WALK_SLOTS.length - 1 ? 'stroke-brand-700' : 'stroke-slate-600'}
+        />
+      ))}
+    </Card>
   );
 }
 

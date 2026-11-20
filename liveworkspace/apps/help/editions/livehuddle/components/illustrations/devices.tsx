@@ -8,7 +8,7 @@ import { BAR_H, BottomBar, Card, CornerCluster, Icon, ICONS, TopRow } from './ed
 import { AvatarPad, Desk, OfficeFloor, Plant, Room, Rug, Sofa } from './space-furniture';
 
 /** The whole editor, 520 by 300, scaled into the box at (x, y) `w` wide. */
-function EditorScreen({ x, y, w }: { x: number; y: number; w: number }) {
+export function EditorScreen({ x, y, w }: { x: number; y: number; w: number }) {
   const h = (w * 300) / 520;
   return (
     <svg x={x} y={y} width={w} height={h} viewBox="0 0 520 300">

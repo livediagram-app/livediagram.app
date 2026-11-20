@@ -1,10 +1,11 @@
-// A character as Avatar mode draws one, seen from above at a card's size: a head over a shirt in its own colour.
+import { PixelCharacter } from '../illustrations/pixel-character';
+
+// The shirts a pixel character comes in, picked by the nearest colour of the class a scene passes.
+const SHIRTS = ['brand', 'emerald', 'violet', 'rose'] as const;
+
+// A character as Avatar mode draws one, the editor's pixel character at a card's size, its head about (x, y).
 // Shared by the About and Getting Started scenes.
 export function Character({ x, y, shirt }: { x: number; y: number; shirt: string }) {
-  return (
-    <g>
-      <rect x={x - 5} y={y + 2} width={10} height={9} rx={3} className={shirt} />
-      <circle cx={x} cy={y} r={4} className="fill-amber-200 stroke-amber-700" strokeWidth={0.8} />
-    </g>
-  );
+  const tone = SHIRTS.find((s) => shirt.includes(s)) ?? 'emerald';
+  return <PixelCharacter fx={x} fy={y + 16} px={1.1} shirt={tone} />;
 }
