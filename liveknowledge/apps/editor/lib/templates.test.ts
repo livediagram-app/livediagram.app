@@ -79,8 +79,8 @@ describe('templateCanvasOverrides', () => {
     const o = templateCanvasOverrides('working-backwards');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-prfaq' })]);
     const flow = o.articles!['art-prfaq']!;
-    // On the continuous page: no footer, and no page break in the writing.
-    expect(flow.style).toEqual({ look: 'report' });
+    // No style of its own (the look is the knowledgebase's), and no page break in the writing.
+    expect(flow.style).toBeUndefined();
     expect(flow.blocks.some((b) => b.type === 'pageBreak')).toBe(false);
     const text = (b: (typeof flow.blocks)[number]) =>
       'runs' in b ? b.runs.map((r) => r.text).join('') : '';
