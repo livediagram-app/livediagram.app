@@ -374,7 +374,7 @@ export function MorePanel({
         onPick={() => onAction('strike')}
       />
       <Row
-        label="Inline code"
+        label="Inline Code"
         icon={<PanelIcons.code />}
         keys="Mod-e"
         selected={selection.marks.has('code')}
@@ -394,13 +394,13 @@ export function MorePanel({
       />
       <Rule />
       <Row
-        label="Clear formatting"
+        label="Clear Formatting"
         icon={<PanelIcons.clear />}
         keys="Mod-\\"
         onPick={() => onAction('clear')}
       />
       <Row
-        label={card ? 'Card style' : 'Article style'}
+        label={card ? 'Card Style' : 'Article Style'}
         icon={<PanelIcons.style />}
         onPick={() => onAction('style')}
       />

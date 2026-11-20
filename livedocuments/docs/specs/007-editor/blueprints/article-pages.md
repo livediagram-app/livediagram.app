@@ -365,7 +365,7 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
 - Buttons never take focus (`onMouseDown` preventDefault); `handle.run` refocuses the writing.
   ⌘K (`requestArticleLink`) opens the link field; ⌘⌥M (`requestArticleComment`) adds a comment
   when text is selected. A menu closes with the article (`!active`).
-- **More › Article style**: flush, then `requestStylePanel(pageId)`; `CanvasPages` opens that
+- **More › Article Style**: flush, then `requestStylePanel(pageId)`; `CanvasPages` opens that
   page's panel on Style.
 - **More › Word Count** (`WordCountLine`, `page-toolbar-word-count.tsx`): rendered only while More is open, it
   reads `articleCountsOf(handle.state())` (`lib/article/article-word-count.ts`): `total` is
@@ -806,8 +806,8 @@ Formatting**, **Insert**, **Comment**, **Assign Action** (each tooltip with its 
 Ctrl spelled by platform via `keyLabel`); menus **Text Style**, **Lists** (with **Increase
 indent** / **Decrease indent** while in a list), **Alignment** (**Align Left**, **Align Centre**, **Align Right**, **Justify**), **Colour** (titles **Text Colour** / **Highlight**; pickers **Text colour** / **Highlight**,
 **Default colour** / **No highlight**), **Link** (placeholder "Paste or type a link", **Apply**,
-**Remove**), **Insert**, **More Formatting** (**Strikethrough**, **Inline code**, **Superscript**,
-**Subscript**, **Clear formatting**, **Article style**, then the **Word Count** line); slash menu **Insert a block** with each
+**Remove**), **Insert**, **More Formatting** (**Strikethrough**, **Inline Code**, **Superscript**,
+**Subscript**, **Clear Formatting**, **Article Style**, then the **Word Count** line); slash menu **Insert a block** with each
 entry's hint; zone bar **Drag to Move**, **In Line**, **Wrap Left**, **Wrap Right**, **Float**,
 **Align Left**, **Align Centre**, **Align Right**, **Delete** (**Delete Drawing** on a drawing); grips **Drawing
 height / width / size**; placeholders "Title", "Subtitle", "Heading 1..3", "Quote", "List",

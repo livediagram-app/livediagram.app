@@ -251,8 +251,8 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   - **Link**;
   - **Lists** (a menu: bulleted, numbered, to-do; indent and outdent);
   - **Alignment** (a menu: left, centre, right, justify);
-  - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
-    formatting, Article style, which opens the page panel on Style, and at its foot the article's
+  - **More Formatting** (a menu: **Strikethrough**, **Inline Code**, **Superscript**, **Subscript**,
+    **Clear Formatting**, **Article Style**, which opens the page panel on Style, and at its foot the article's
     **Word Count**);
   - **Insert** (a menu: Image, Bar Chart, Pie Chart, Line Chart, then Table, Table of Contents, Footnote, Divider,
     Page break, Quote, Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a

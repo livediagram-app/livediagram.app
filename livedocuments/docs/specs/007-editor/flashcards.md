@@ -53,7 +53,7 @@ alignment. Nothing else can be put on it.
   the page toolbar, docked, as on an article page, and nothing else: no category bar, no tiles, no **Search** (whose
   tiles would place elements). Moving onto a card turns the strip to it as any kind does.
 - **The page toolbar** on a card has no **Insert** menu, no **Comment** and no **Assign Action** (a margin note is an
-  element in the card's margin), and **More Formatting**'s last entry reads **Card style** (sentence case, as its neighbours), above the card's
+  element in the card's margin), and **More Formatting**'s last entry reads **Card Style** (Title Case, as its neighbours), above the card's
   **Word Count** (article-pages.md "Word Count").
 - **The slash menu** offers the text blocks only: **Text**, **Title**, **Subtitle**, **Heading 1** to **3**,
   **Bulleted List**, **Numbered List**, **To-Do List**, **Quote**, **Code** and **Divider**. Never a page break, an
