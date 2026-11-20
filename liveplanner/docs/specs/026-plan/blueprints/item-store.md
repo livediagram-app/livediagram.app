@@ -652,8 +652,9 @@ delete `authorId === owner`, or `editor` (never an agent's); `delete` `editor` o
   takes a `removeCard` through its home (a thread left on no card is deleted there).
 - **Card restore** (`POST /items`, `/items/bulk`, an Editor's): `threads: CardThread[]` (each `readRestoredThread`;
   bad: `field_value_invalid`): a thread this plan stores and still holds takes the card back (`addCard`); one it no
-  longer holds is inserted, on this card alone; another plan's is asked back through its home (`addCard`), and
-  dropped when that home no longer holds it. The old `comments` body (one `CommentThread`) is still read, as the
+  longer holds is inserted, on this card alone; another plan's is asked back through its home (`addCard`, `via` this plan), and
+  dropped when that home no longer holds it or lists no other card of this plan (`writeThread` also refuses an
+  `addCard` whose card is neither `via`'s nor the home's). The old `comments` body (one `CommentThread`) is still read, as the
   card's legacy thread (the trigger takes it).
 - The old `/items/:itemId/comments` routes are removed.
 

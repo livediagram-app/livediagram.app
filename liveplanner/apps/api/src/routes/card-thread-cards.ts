@@ -83,7 +83,7 @@ export function readRestoredThreads(raw: unknown, owner: string): CardThread[] |
 
 /** A card put back on the threads its create carried. A thread this plan stores and still holds takes the card back;
  *  one it no longer holds comes back whole, on this card; another plan's is asked back through its home, and left
- *  out when that home no longer holds it. */
+ *  out when that home no longer holds it or no longer lists a card of this plan. */
 export async function cardBackOnThreads(
   ctx: PlanRouteContext,
   projectId: string,
@@ -111,8 +111,10 @@ export async function cardBackOnThreads(
         if (out.ok || out.error === 'thread_on_card') await linked(ctx, projectId, t, held, item);
         continue;
       }
-      // Another plan's thread: its home must still hold it, through a plan it is still on.
-      const via = t.cards.find((c) => c.projectId !== projectId)?.projectId ?? t.home;
+      // Another plan's thread: its home must still hold it, on another card of THIS plan. The create's body says
+      // which thread and which home, and anyone who can read a thread knows both, so the body is never what lets a
+      // plan onto a thread: only the home's own record of this plan's cards is (items.md "Cards coming and going").
+      const via = projectId;
       const link = await linkThread(ctx.env, projectId, {
         threadId: t.id,
         home: t.home,

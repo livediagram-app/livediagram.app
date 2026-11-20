@@ -87,9 +87,9 @@ describe('authenticationOf', () => {
 
   it('passes an aligned SPF or DKIM pass when there is no DMARC verdict', () => {
     expect(of('mx.cloudflare.net 1; spf=pass (ok); dmarc=none').reason).toBe('aligned_pass');
-    expect(of('mx.cloudflare.net; dkim=fail; dkim=pass', 'a@x.com', 'A@X.com ').verdict).toBe(
-      'pass',
-    );
+    expect(
+      of('mx.cloudflare.net; dkim=fail; dkim=pass header.d=X.com', 'a@x.com', 'A@X.com ').verdict,
+    ).toBe('pass');
     expect(of('mx.cloudflare.net; spf=pass', 'a@x.com', 'b@x.com').reason).toBe('unaligned');
     expect(
       authenticationOf('mx.cloudflare.net; spf=pass', {
@@ -99,6 +99,38 @@ describe('authenticationOf', () => {
       }).reason,
     ).toBe('unaligned');
     expect(of('mx.cloudflare.net; spf=softfail; dkim=none; junk; =x').reason).toBe('none_passed');
+  });
+
+  // A DKIM pass proves the domain that signed, not the From: anyone can sign a forged From with a domain of their
+  // own, and a domain with no DMARC policy gives no verdict to stop it.
+  it("counts a DKIM pass only when the signing domain is the sender's", () => {
+    const dkim = (rest: string, from = 'a@x.com') =>
+      of(`mx.cloudflare.net; dkim=pass ${rest}; spf=fail; dmarc=none`, from, from);
+    expect(dkim('header.d=attacker.example header.s=s1 header.b=abc').reason).toBe('unaligned');
+    expect(dkim('header.d=evilx.com').reason).toBe('unaligned');
+    expect(dkim('header.d=mail.x.com').reason).toBe('unaligned');
+    expect(dkim('').reason).toBe('unaligned');
+    expect(dkim('header.d=').reason).toBe('unaligned');
+    expect(dkim('header.i=@attacker.example').reason).toBe('unaligned');
+    // The sender's own domain, or its parent; by `header.i` when there is no `header.d`; any one of several.
+    expect(dkim('(ok)  header.d=x.com header.s=s1').reason).toBe('aligned_pass');
+    expect(dkim('header.d=x.com', 'a@mail.x.com').reason).toBe('aligned_pass');
+    expect(dkim('header.i=bob@X.com').reason).toBe('aligned_pass');
+    expect(dkim('header.d=attacker.example; dkim=pass header.d=x.com').reason).toBe('aligned_pass');
+    // An SPF pass still proves the envelope's domain, which is the From's.
+    expect(of('mx.cloudflare.net; dkim=pass header.d=attacker.example; spf=pass').reason).toBe(
+      'aligned_pass',
+    );
+    // A passing DMARC is the receiver's own alignment check.
+    expect(of('mx.cloudflare.net; dkim=pass header.d=other.example; dmarc=pass').verdict).toBe(
+      'pass',
+    );
+  });
+
+  it('reads the signing domains of the passing signatures only', () => {
+    const header =
+      'mx.cloudflare.net; dkim=fail header.d=a.com; dkim=pass header.d=B.com; dkim=pass';
+    expect(authResults(header).dkimDomains).toEqual(['b.com']);
   });
 
   it('reads the first result of each method', () => {

@@ -110,6 +110,12 @@ export async function writeThread(
     const thread = await readThread(env, home, threadId);
     if (!thread || !thread.cards.some((c) => c.projectId === via))
       return { ok: false, error: 'thread_not_found' };
+    // A plan adds its own cards only: never another plan's through itself, so no plan is put on a thread by a
+    // third. The home may add its own.
+    if (op.kind === 'change' && op.change.kind === 'addCard') {
+      const of = op.change.card.projectId;
+      if (of !== via && of !== home) return { ok: false, error: 'thread_not_found' };
+    }
     const refused = threadRightRefusal(thread, op);
     if (refused) {
       console.info('[threads] write.refused', {

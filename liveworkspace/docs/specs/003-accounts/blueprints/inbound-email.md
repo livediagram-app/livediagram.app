@@ -42,10 +42,11 @@ attachment` is an attachment (name `attachment` when none). `message/rfc822` par
 - `authenticationOf(header, { trusted, from, envelopeFrom })`: null header, or an authserv-id (the text before the
   first `;`, trimmed, lower-cased, any version after a space dropped) not in `trusted` → `fail no_results`. Results
   are read by splitting on `;` and taking each `method=result` token's method (`spf`, `dkim`, `dmarc`) and result,
-  the first of each method winning except `dkim`, where any `pass` counts. `dmarc=pass` → `pass`. `dmarc` of
-  `fail`, `quarantine`, `reject`, `permerror` or `temperror` → `fail dmarc_fail`. Otherwise `dkim=pass` or
-  `spf=pass` with `from === envelopeFrom` → `pass`; one passing with another address → `fail unaligned`; none →
-  `fail none_passed`.
+  the first of each method winning except `dkim`, where any `pass` counts and each passing part's signing domain
+  is kept (`header.d=`, else the domain of `header.i=`, lower-cased). `dmarc=pass` → `pass`. `dmarc` of
+  `fail`, `quarantine`, `reject`, `permerror` or `temperror` → `fail dmarc_fail`. Otherwise neither `spf=pass` nor
+  `dkim=pass` → `fail none_passed`; `from !== envelopeFrom` → `fail unaligned`; `spf=pass`, or a passing DKIM
+  signing domain equal to the From's domain or a parent of it → `pass`; else `fail unaligned`.
 - `stripQuotedReply(text)`: lines split on LF (CR dropped). Scanned top-down; the cut is at the first line that is
   a quote opener: trimmed, it starts with `On ` and ends with `wrote:` (or the next line ends with `wrote:`, for a
   wrapped one), or is `-----Original Message-----` (any case), or starts with `From:` right after an empty line, or
