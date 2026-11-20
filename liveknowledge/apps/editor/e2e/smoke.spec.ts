@@ -1,45 +1,81 @@
+import { test, expect, expectNoPageErrors, openStartBlank } from './fixtures';
 import {
-  onPage,
-  test,
-  expect,
-  createDocument,
-  dismissQuickTour,
-  expectNoPageErrors,
-  openStartBlank,
-  openBlankPage,
-  paletteTile,
-} from './fixtures';
+  expectCaretInTitle,
+  expectKeptOffline,
+  newKnowledgebase,
+  pageRow,
+  paragraphs,
+  titleOf,
+  treeShape,
+  writeLines,
+} from './knowledgebase';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
 // the app boot and take input without crashing", the layer the unit
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-// `/new` asks nothing: it makes a document as it mounts and opens it on its start, where the templates are
-// (docs/specs/007-editor/new-document-route.md, start-diagramming.md). A guest's lives Offline
-// (docs/specs/006-document/save-locations.md "The default depends on who is creating"): listed in this browser's
-// list for the Explorer. (Its header badge went with the header bar, experiment.)
-test('/new makes a guest’s document kept Offline and opens it on its start', async ({
+// `/new` asks nothing: it makes a knowledgebase as it mounts and opens it on its one page, Start Here, the caret in
+// its Title (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase"; new-document-route.md). A
+// guest's is kept Offline (docs/specs/006-document/save-locations.md "The default depends on who is creating"):
+// listed in this browser's list for the Explorer, and said on the Share button. `/new?blank=1` names the Blank Page
+// template and opens the same way.
+for (const url of ['/new', '/new?blank=1']) {
+  test(`${url} makes a guest's knowledgebase kept Offline, open on Start Here with the caret in its Title`, async ({
+    page,
+    pageErrors,
+  }) => {
+    const id = await newKnowledgebase(page, url);
+    expect(await treeShape(page)).toEqual(['1 Start Here']);
+    await expect(pageRow(page, 'Start Here')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('[data-knowledgebase-name]')).toHaveText('Untitled Knowledgebase');
+    await expect(page.getByRole('button', { name: 'Share, Offline' })).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          (key) =>
+            (
+              (JSON.parse(localStorage.getItem(key) ?? '{}') as { items?: { id: string }[] })
+                .items ?? []
+            ).map((i) => i.id),
+          'liveworkspace:this-browser:liveknowledge',
+        ),
+      )
+      .toContain(id);
+    // No header bar, so no badge in one.
+    await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
+    expectNoPageErrors(pageErrors);
+  });
+}
+
+// A page's Title names that page, never the knowledgebase ("A knowledgebase", "Name"): what is typed first is the
+// page's name, the tree follows once the typing stops, and the knowledgebase keeps "Untitled Knowledgebase". What is
+// written is kept in this browser, so it is there after a reload.
+test('typing the Title renames the page, not the knowledgebase, and the writing survives a reload', async ({
   page,
   pageErrors,
 }) => {
-  const id = await createDocument(page);
-  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
-  await expect(page.getByRole('region', { name: /^Start / })).toBeVisible();
-  await expect
-    .poll(() =>
-      page.evaluate(
-        (key) =>
-          (
-            (JSON.parse(localStorage.getItem(key) ?? '{}') as { items?: { id: string }[] }).items ??
-            []
-          ).map((i) => i.id),
-        'liveworkspace:this-browser:liveknowledge',
-      ),
-    )
-    .toContain(id);
-  // No header bar, so no badge in one.
-  await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
+  await newKnowledgebase(page);
+  await page.keyboard.type('Release Process');
+  await expect(pageRow(page, 'Release Process')).toBeVisible();
+  expect(await treeShape(page)).toEqual(['1 Release Process']);
+  await expect(page.locator('[data-knowledgebase-name]')).toHaveText('Untitled Knowledgebase');
+  await expect(page).toHaveTitle(/^Untitled Knowledgebase \| Release Process \| /);
+
+  // Enter leaves the Title for the first paragraph.
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('Cut the branch on Tuesday.');
+  await writeLines(page, 'Ship on Thursday.');
+  await expect(paragraphs(page)).toHaveText(['Cut the branch on Tuesday.', 'Ship on Thursday.']);
+
+  // Kept in this browser: the reload reads back what the store holds.
+  await expectKeptOffline(page, 'Release Process', 'Ship on Thursday.');
+  await page.reload();
+  await titleOf(page).waitFor();
+  await expect(paragraphs(page)).toHaveText(['Cut the branch on Tuesday.', 'Ship on Thursday.']);
+  await expect(titleOf(page)).toHaveText('Release Process');
+  await expect(pageRow(page, 'Release Process')).toBeVisible();
+  await expect(page.locator('[data-knowledgebase-name]')).toHaveText('Untitled Knowledgebase');
   expectNoPageErrors(pageErrors);
 });
 
@@ -49,7 +85,7 @@ test('/new makes a guest’s document kept Offline and opens it on its start', a
 test.describe('a first visit', () => {
   test.use({ freshVisitor: true });
 
-  test('goes through the guest handoff and comes back to make a document with a guest token', async ({
+  test('goes through the guest handoff and comes back to make a knowledgebase with a guest token', async ({
     page,
     pageErrors,
   }) => {
@@ -64,7 +100,7 @@ test.describe('a first visit', () => {
     };
     await expect.poll(cameBack, { timeout: 15_000 }).toBe(true);
     await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
-    await expect(page.getByRole('region', { name: /^Start / })).toBeVisible();
+    await expectCaretInTitle(page);
     expect(
       await page.evaluate(() => localStorage.getItem('liveknowledge:v2:guest-token')),
     ).toBeTruthy();
@@ -87,38 +123,6 @@ test('the editor header has a plain logo, with no site switcher or apps menu', a
   await expect(header.getByRole('button', { name: 'Switch site' })).toHaveCount(0);
   // The product's links (ProductNavLinks, a "Go to" navigation) are the Explorer panel's, not the header's.
   await expect(header.getByRole('navigation', { name: 'Go to' })).toHaveCount(0);
-  expectNoPageErrors(pageErrors);
-});
-
-test('create a blank document, add a shape, and it survives a reload', async ({
-  page,
-  pageErrors,
-}) => {
-  await openBlankPage(page);
-  // /new created a real document and routed to it.
-  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
-  // The tour offer opens 800 ms after the editor is ready and its backdrop takes every click
-  // (TourHost): answer it first, or a slow runner's canvas click lands on the backdrop.
-  await dismissQuickTour(page);
-
-  // The palette is open by default on desktop; its shape tiles are
-  // aria-labelled ("Add Square"). Arm the Square, then drop it on the
-  // canvas with a single click. Element views carry a role=img label
-  // (docs/specs/004-interface-design/canvas-accessibility.md), so the placed square is addressable without reaching
-  // into canvas internals.
-  const canvas = page.locator('[data-canvas-a11y-root]');
-  const square = page.getByRole('img', { name: 'Square', exact: true });
-  await (await paletteTile(page, 'Add Square')).click();
-  await canvas.click({ position: await onPage(page, 0.3, 0.25) });
-  await expect(square).toHaveCount(1);
-
-  // The autosave round-trip through the api + D1 is the part no unit
-  // test covers: reload and the shape must still be on the tab.
-  await page.waitForTimeout(1500); // let the debounced autosave flush
-  await page.reload();
-  await canvas.waitFor();
-  await expect(square).toHaveCount(1);
-
   expectNoPageErrors(pageErrors);
 });
 

@@ -38,17 +38,19 @@ test.describe('Tools', () => {
 // The search's Rename opens the Explorer panel on the open item's name, focused with the name selected
 // (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search"): there is no header bar to rename in.
 test.describe('Rename from the search', () => {
-  test('Rename Document opens the Explorer on its name field, focused', async ({
+  test('Rename Knowledgebase opens the Explorer on its name field, focused', async ({
     page,
     pageErrors,
   }) => {
     await openEditor(page);
-    await page.keyboard.press('ControlOrMeta+k');
-    // Type only once the search holds focus: keys sent before it does reach the canvas as tool shortcuts.
+    // The command search: Cmd or Ctrl K is the knowledgebase's page search, so this one keeps Cmd or Ctrl and `.`
+    // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Add").
+    await page.keyboard.press('ControlOrMeta+.');
+    // Type only once the search holds focus: keys sent before it does reach the writing.
     const search = page.getByRole('combobox', { name: 'Search' });
     await expect(search).toBeFocused();
-    await search.fill('Rename Document');
-    await expect(page.getByRole('option', { name: /^Rename Document/ })).toBeVisible();
+    await search.fill('Rename Knowledgebase');
+    await expect(page.getByRole('option', { name: /^Rename Knowledgebase/ })).toBeVisible();
     await page.keyboard.press('Enter');
     const field = page.getByRole('textbox', { name: /^Rename / });
     await expect(field).toBeFocused();

@@ -1,14 +1,7 @@
 import type { Page } from '@playwright/test';
 import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@liveknowledge/api-schema';
-import {
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  onPage,
-  paletteTile,
-  serverNewUrl,
-  test,
-} from './fixtures';
+import { expect, expectNoPageErrors, test } from './fixtures';
+import { newServerKnowledgebase, paragraphs, writeLines } from './knowledgebase';
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
 // the "older editor", and the server is made "newer" by raising the document format number every
@@ -18,8 +11,7 @@ import {
 const CANVAS = '[data-canvas-a11y-root]';
 const prompt = (page: Page) =>
   page.getByRole('status').filter({ hasText: /new version|Saving|saved yet/ });
-const squares = (page: Page) =>
-  page.locator(CANVAS).getByRole('img', { name: 'Square', exact: true });
+const lines = (page: Page) => paragraphs(page).filter({ hasText: /^Line \d+$/ });
 
 // Every api response says the server's format is one ahead of this editor; optionally, saves fail.
 async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
@@ -62,18 +54,14 @@ async function openBlank(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
   // On liveknowledge, not Offline: the prompt answers what the api's responses say.
-  await page.goto(await serverNewUrl(page, '/new?blank=1'));
-  await page.locator(CANVAS).waitFor({ timeout: 30_000 });
-  await dismissQuickTour(page);
+  await newServerKnowledgebase(page);
 }
 
-// One edit: a square dropped on the page, each beside the last. Placed by the page, not the canvas: the page is framed
-// beside the Contents sidebar, docked from the first page (docs/specs/007-editor/pages-mode.md "Contents").
-async function addSquare(page: Page) {
-  const placed = await squares(page).count();
-  await (await paletteTile(page, 'Add Square')).click();
-  await page.locator(CANVAS).click({ position: await onPage(page, 0.3 + placed * 0.2, 0.5) });
-  await expect(squares(page)).toHaveCount(placed + 1);
+// One edit: a line written under the last.
+async function addLine(page: Page) {
+  const written = await lines(page).count();
+  await writeLines(page, `Line ${written + 1}`);
+  await expect(lines(page)).toHaveCount(written + 1);
 }
 
 test.describe('new version prompt', () => {
@@ -86,7 +74,7 @@ test.describe('new version prompt', () => {
     pageErrors,
   }) => {
     await openBlank(page);
-    await addSquare(page);
+    await addLine(page);
     await page.waitForTimeout(1_500);
     await expect(prompt(page)).toHaveCount(0);
     expectNoPageErrors(pageErrors);
@@ -98,19 +86,19 @@ test.describe('new version prompt', () => {
   }) => {
     await openBlank(page);
     await serveNewerFormat(page);
-    await addSquare(page);
+    await addLine(page);
     await expect(prompt(page)).toContainText('A new version of liveknowledge is ready.');
     await page.screenshot({ path: test.info().outputPath('offered.png') });
     // It never takes focus; the keyboard reaches it.
     const reload = prompt(page).getByRole('button', { name: 'Reload' });
     await expect(reload).not.toBeFocused();
-    await addSquare(page);
+    await addLine(page);
     const reloaded = page.waitForEvent('load');
     await reload.focus();
     await page.keyboard.press('Enter');
     await reloaded;
     await page.locator(CANVAS).waitFor();
-    await expect(squares(page)).toHaveCount(2);
+    await expect(lines(page)).toHaveCount(2);
     expectNoPageErrors(pageErrors);
   });
 
@@ -118,7 +106,7 @@ test.describe('new version prompt', () => {
     test.setTimeout(45_000);
     await openBlank(page);
     await serveNewerFormat(page, { failSaves: true });
-    await addSquare(page);
+    await addLine(page);
     await expect(prompt(page)).toBeVisible();
     let reloads = 0;
     page.on('load', () => reloads++);
@@ -130,17 +118,17 @@ test.describe('new version prompt', () => {
     );
     await page.screenshot({ path: test.info().outputPath('unsaved.png') });
     expect(reloads).toBe(0);
-    await expect(squares(page)).toHaveCount(1);
+    await expect(lines(page)).toHaveCount(1);
   });
 
   test('steps aside when closed', async ({ page, pageErrors }) => {
     await openBlank(page);
     await serveNewerFormat(page);
-    await addSquare(page);
+    await addLine(page);
     await expect(prompt(page)).toBeVisible();
     await prompt(page).getByRole('button', { name: 'Dismiss' }).click();
     await expect(prompt(page)).toHaveCount(0);
-    await addSquare(page);
+    await addLine(page);
     await page.waitForTimeout(1_500);
     await expect(prompt(page)).toHaveCount(0);
     expectNoPageErrors(pageErrors);

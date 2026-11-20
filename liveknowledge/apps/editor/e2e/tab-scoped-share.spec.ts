@@ -5,13 +5,12 @@ import {
   adoptGuest,
   mintGuest,
   seedDocumentItem,
-  serverNewUrl,
 } from './fixtures';
+import { addPage, newServerKnowledgebase, pageTree } from './knowledgebase';
 
 // Tab-scoped share links (docs/specs/013-workspace/tab-scoped-share-links.md), end to end: the owner scopes a
-// pass to one tab in the Share dialog; a visitor on it sees that tab, the rest
-// as "Not shared" pills, and not one byte of the other tabs in any response or
-// realtime frame; rescoping to All tabs reloads the visitor into every tab.
+// pass to one page in the Share dialog; a visitor on it sees that page alone in the page tree, and not one byte of
+// the other pages in any response or realtime frame; rescoping to All tabs reloads the visitor into every page.
 //
 // The Share dialog is the shared one, `@liveworkspace/explorer`'s ShareDialog (its roles and labels are pinned by
 // packages/explorer/src/dialogs/ShareDialog.test.tsx): the composer's "Tabs this link opens" select and Create
@@ -20,7 +19,7 @@ import {
 
 const SECRET = 'TOP SECRET PRICING';
 
-test('a tab-scoped link opens its tab and nothing else', async ({ page, browser }) => {
+test('a link scoped to one page opens that page and nothing else', async ({ page, browser }) => {
   const owner = await mintGuest(page.request);
   const liveDoc = crypto.randomUUID();
   const [pricing, roadmap, hiring] = [
@@ -92,25 +91,25 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   await visitor.goto(url);
   const canvas = visitor.locator('[data-canvas-a11y-root]');
   await expect(canvas.getByRole('img', { name: /Q3 beta/ })).toBeVisible();
-  await expect(visitor.getByRole('button', { name: 'Not shared' })).toHaveCount(2);
-  await expect(visitor.locator('[data-tab-key]', { hasText: 'Roadmap' })).toBeVisible();
+  // The page tree names the one page the link opens, and no other.
+  const tree = visitor.getByRole('tree', { name: 'Pages' });
+  await expect(tree.getByRole('treeitem', { name: 'Roadmap', exact: true })).toBeVisible();
   await expect(visitor.getByText('Pricing')).toHaveCount(0);
   expect(leaks).toEqual([]);
 
-  // Widening the link reloads the visitor into every tab.
+  // Widening the link reloads the visitor into every page.
   await scopeSelect.selectOption({ label: 'All tabs' });
-  await expect(visitor.locator('[data-tab-key]', { hasText: 'Pricing' })).toBeVisible({
+  await expect(tree.getByRole('treeitem', { name: 'Pricing', exact: true })).toBeVisible({
     timeout: 15_000,
   });
-  await expect(visitor.getByRole('button', { name: 'Not shared' })).toHaveCount(0);
 
   await visitorContext.close();
 });
 
 test('the owner is never scoped', async ({ page, pageErrors }) => {
-  // On liveknowledge: a document kept Offline has no share links to scope.
-  await page.goto(await serverNewUrl(page, '/new?blank=1'));
-  await page.locator('[data-canvas-a11y-root]').waitFor();
-  await expect(page.getByRole('button', { name: 'Not shared' })).toHaveCount(0);
+  // On liveknowledge: a knowledgebase kept Offline has no share links to scope.
+  await newServerKnowledgebase(page);
+  await addPage(page, 'Second');
+  await expect(pageTree(page).getByRole('treeitem')).toHaveCount(2);
   expectNoPageErrors(pageErrors);
 });

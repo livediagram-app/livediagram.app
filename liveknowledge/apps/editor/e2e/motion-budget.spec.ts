@@ -1,13 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
-import {
-  expect,
-  test,
-  dismissQuickTour,
-  expectNoPageErrors,
-  onPage,
-  paletteTile,
-  serverNewUrl,
-} from './fixtures';
+import { expect, test, expectNoPageErrors } from './fixtures';
+import { newServerKnowledgebase, openRowMenu, writeLines } from './knowledgebase';
 
 // The runtime motion guard (docs/specs/004-interface-design/motion.md "Enforcement").
 //
@@ -65,11 +58,9 @@ const transitions = (all: MotionRecord[]) =>
   all.filter((m) => Number.isFinite(m.active) && m.iterations < 2);
 
 async function startBlank(page: Page): Promise<void> {
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank), made on liveknowledge (serverNewUrl). A guest's
-  // own /new keeps it Offline, where the Explorer shows no Current Document card and so no Document menu.
-  await page.goto(await serverNewUrl(page, '/new?blank=1'));
-  await page.locator('[data-canvas-a11y-root]').waitFor();
-  await dismissQuickTour(page);
+  // A new knowledgebase on liveknowledge (serverNewUrl). A guest's own /new keeps it Offline, where the Explorer shows
+  // no card for the open knowledgebase and so no menu on one.
+  await newServerKnowledgebase(page);
 }
 
 /** Open a chrome surface, let its motion play out, and close it again. `shown` is the surface
@@ -99,29 +90,25 @@ async function toggle(page: Page, name: string): Promise<void> {
 }
 
 async function tourTheChrome(page: Page): Promise<void> {
-  await (await paletteTile(page, 'Add Square')).click();
-  // On the page, framed beside the Contents sidebar (docs/specs/007-editor/pages-mode.md "Contents").
-  await page.locator('[data-canvas-a11y-root]').click({ position: await onPage(page, 0.5, 0.5) });
-  const square = page.getByRole('img', { name: 'Square', exact: true });
-  await expect(square).toHaveCount(1);
+  await writeLines(page, 'A line, so the page holds writing.');
   await page.waitForTimeout(400);
 
   await toggle(page, 'Selection mode');
-  // A category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar").
-  await openAndClose(page, () =>
-    page.locator('[data-category-bar-button][aria-label="Shapes"]').click(),
-  );
   await toggle(page, 'Fit to screen');
-  // The Explorer popover, and the Document menu on its Current Document card.
+  // The Explorer popover.
   const explorer = page.getByRole('button', { name: 'Explorer', exact: true });
-  await explorer.click();
-  await page.waitForTimeout(400);
-  await openAndClose(page, () => page.getByRole('button', { name: 'Document menu' }).click());
-  // The scrim sits over the Explorer button while the panel is open; Escape closes it.
-  await page.keyboard.press('Escape');
-  await page.waitForTimeout(300);
-  await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());
-  await openAndClose(page, () => square.click({ button: 'right' }));
+  await openAndClose(page, () => explorer.click());
+  // A page's row menu, the knowledgebase's search, and the writing's Insert menu.
+  await openAndClose(page, async () => {
+    await openRowMenu(page, 'Start Here');
+  });
+  await openAndClose(
+    page,
+    () => page.keyboard.press('ControlOrMeta+k'),
+    undefined,
+    page.getByRole('dialog', { name: 'Search This Knowledgebase' }),
+  );
+  await toggle(page, 'Insert');
   await openAndClose(
     page,
     () => page.getByRole('button', { name: 'Application settings' }).click(),
@@ -151,7 +138,8 @@ test.describe('Motion budget', () => {
     const seen = transitions(await recorded(page));
     // Guard against the probe going blind: menus, dialogs and hovers all ran.
     expect(seen.length).toBeGreaterThan(20);
-    expect(seen.some((m) => m.name === 'menu-drop')).toBe(true);
+    expect(seen.some((m) => m.name === 'dropdown-open')).toBe(true);
+    expect(seen.some((m) => m.name === 'dialog-in')).toBe(true);
     expect(seen.some((m) => m.name === 'fly-up-in')).toBe(true);
 
     const slow = seen
