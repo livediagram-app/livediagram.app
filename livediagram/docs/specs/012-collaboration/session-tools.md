@@ -357,7 +357,9 @@ on the tab. Two phases, one panel:
   "8 of 12 dots" reads as nearly finished when one person holds all four
   remaining, which is exactly when you shouldn't call it. The people are those
   who can cast: one per person however many tabs they have open, never a
-  view-link guest or an agent row (the [Participant responses](participant-responses.md) "Who counts" rule).
+  view-link guest or an agent row (the [Participant responses](participant-responses.md) "Who counts" rule). A line
+  under the rows says who the vote waits on: people who haven't cast a dot ("1 person hasn't voted yet"), then
+  people with dots left ("1 person has dots left"), and "Everyone here has voted" only once every dot is spent.
 - **Once results are revealed: the ranked list.** Every voted element, most
   dots first, each row clickable to **jump the results walkthrough** straight
   to that element (`jumpToVoteResult`, the same clamped setter Previous /
