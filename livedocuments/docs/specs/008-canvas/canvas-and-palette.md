@@ -601,7 +601,7 @@ Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships 
 | Group card          | Two Portrait post (4:5) pages: the Cover (the theme's Glow) and the Inside (the plain paper), standing as a stack.                                                                                                |
 | Event Poster        | One A3 portrait page.                                                                                                                                                                                             |
 | Year in Review      | Four A4 portrait pages: Cover, Numbers, Timeline, Thanks.                                                                                                                                                         |
-| Résumé              | One A4 portrait page.                                                                                                                                                                                             |
+| Résumé              | One A4 portrait page, on paper of its own: its ink is locked against the theme, so the main column's white and the side column's tint are too (on a dark theme's paper the ink would vanish).                     |
 | Recipe Card         | A Square page (the dish) and a Portrait post (4:5) page (the method).                                                                                                                                             |
 | Design              | One page each: the Storyboard and Floor plan, A3 landscape.                                                                                                                                                       |
 
