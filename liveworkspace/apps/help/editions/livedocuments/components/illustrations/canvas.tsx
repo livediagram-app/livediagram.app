@@ -1,274 +1,299 @@
-// Canvas-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the infinite canvas, placing and
-// selecting elements, grouping, themes, templates and links.
-// Composed only from the shared primitives so the house style holds.
+// Canvas-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md), on livedocuments' own canvas:
+// pages laid out on the dot grid, each with its label and title bar cards, holding what a deck or an infographic
+// holds. Placing, panning and zooming, selecting many, the format painter, a multicolour theme, a link to another
+// page and snapping, drawn with the editor chrome kit (./editor-chrome) and the page kit (./doc-page).
 
+import { lucideHand, lucideLink, lucidePaintbrush } from '@liveworkspace/icons/lucide';
+import { Label, Scene, SelectionBox, Shape } from '@liveworkspace/help-site/art/primitives';
+import { CLUSTER_W, CornerCluster, Icon, STRIP_W, Strip, stripSlot } from './editor-chrome';
 import {
-  Scene,
-  Shape,
-  Arrow,
-  SelectionBox,
-  Cursor,
-  Panel,
-  Tabs,
-  Label,
-  Tile,
-} from '@liveworkspace/help-site/art/primitives';
-import { Strip, stripCategory } from './toolbar-layout';
+  BarChart,
+  Heading,
+  Lines,
+  Page,
+  Picture,
+  Pointer,
+  Rule,
+  SlideContent,
+  Stat,
+} from './doc-page';
+import { Flyout, FlyoutTile } from './palette-flyout';
+import { ShapeOutline } from './toolbar-layout';
 
-/** Dropping a shape from a category's flyout onto the canvas (a curved drag trail from the Square tile in Shapes'
- *  flyout to a freshly placed, still-selected shape). */
+/** Dropping a shape from the Shapes flyout onto a slide: a dashed drag trail from the Rounded tile to the shape just
+ *  placed, still selected. */
 export function AddingElements() {
-  const shapes = stripCategory(58, 'Shapes');
-  const px = Math.round(shapes.left + shapes.w / 2 - 60);
+  const W = 420;
+  const sx = (W - STRIP_W) / 2;
+  const fx = Math.round(stripSlot(sx, 'shapes') - 40);
   return (
-    <Scene w={420} h={200}>
-      <Strip x={58} y={16} open="Shapes" />
-      <Panel x={px} y={56} w={120} h={58}>
-        <Tile x={px + 8} y={64} size={30}>
-          <rect
-            x={-6}
-            y={-6}
-            width={12}
-            height={12}
-            rx={1.5}
-            className="stroke-brand-500"
-            strokeWidth={1.8}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={px + 45} y={64} size={30}>
-          <circle r={6.5} className="stroke-slate-500" strokeWidth={1.6} fill="none" />
-        </Tile>
-        <Tile x={px + 82} y={64} size={30}>
-          <path
-            d="M0 -7 L7 0 L0 7 L-7 0 Z"
-            className="stroke-slate-500"
-            strokeWidth={1.6}
-            fill="none"
-          />
-        </Tile>
-      </Panel>
-      <Arrow from={[px + 23, 98]} to={[250, 120]} kind="curved" tone="muted" dashed />
-      <Shape x={250} y={120} w={96} h={56} kind="rect" />
-      <SelectionBox x={250} y={120} w={96} h={56} />
-      <Cursor x={300} y={148} colour="brand" />
+    <Scene w={W} h={236}>
+      <Strip x={sx} y={8} open="shapes" />
+      <Page x={222} y={150} w={184} h={78} name="Plan">
+        <Heading x={236} y={166} size={11}>
+          Next Steps
+        </Heading>
+        <Lines x={236} y={178} w={64} n={3} />
+      </Page>
+      <Flyout
+        x={fx}
+        y={40}
+        w={140}
+        h={104}
+        item="shapes"
+        blurb="Boxes and outlines"
+        footer="Click, or drag it out."
+      >
+        {(['rectangle', 'rounded', 'ellipse'] as const).map((k, i) => (
+          <FlyoutTile
+            key={k}
+            x={fx + 10 + i * 41}
+            y={82}
+            w={36}
+            name={['Square', 'Rounded', 'Circle'][i]!}
+            hover={i === 1}
+          >
+            <ShapeOutline kind={k} />
+          </FlyoutTile>
+        ))}
+      </Flyout>
+      <path
+        d={`M${fx + 69} 112 C ${fx + 100} 150, 280 150, 316 184`}
+        className="fill-none stroke-brand-400"
+        strokeWidth={1.25}
+        strokeDasharray="3 3"
+      />
+      <Shape x={314} y={170} w={74} h={40} label="Launch" />
+      <SelectionBox x={314} y={170} w={74} h={40} />
+      <Pointer x={350} y={192} />
     </Scene>
   );
 }
 
-/** Panning and zooming: shapes on the canvas with the zoom controls and a
- *  grabbing hand cursor. */
+/** Panning with the grabbing hand across two slides, and the zoom card in the corner scaling the view. */
 export function PanAndZoom() {
   return (
-    <Scene w={420} h={220}>
-      <Shape x={70} y={54} w={76} h={44} label="A" />
-      <Shape x={232} y={108} w={76} h={44} accent label="B" />
-      <Arrow from={[146, 76]} to={[232, 130]} kind="elbow" />
-      {/* Zoom controls, bottom-right */}
-      <Panel x={300} y={168} w={104} h={34}>
-        <g transform="translate(0 0)">
-          <Label x={316} y={185} size={14} weight={700} tone="muted">
-            −
-          </Label>
-          <Label x={352} y={185} size={11} weight={600} tone="body" anchor="middle">
-            100%
-          </Label>
-          <Label x={388} y={185} size={14} weight={700} tone="muted">
-            +
-          </Label>
-        </g>
-      </Panel>
-      {/* Grabbing-hand cursor */}
-      <g transform="translate(150 120)">
-        <path
-          d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
-          className="fill-white stroke-slate-500"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
+    <Scene w={420} h={210}>
+      <Page x={30} y={46} w={168} h={95} name="Cover">
+        <SlideContent x={30} y={46} w={168} h={95} title="Annual Report" layout="title" />
+      </Page>
+      <Page x={222} y={46} w={168} h={95} name="Growth">
+        <SlideContent x={222} y={46} w={168} h={95} title="Growth" />
+      </Page>
+      <path
+        d="M186 166 h-30 M163 160 l-7 6 l7 6"
+        className="fill-none stroke-slate-400"
+        strokeWidth={1}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Icon prims={lucideHand} x={200} y={166} size={15} className="stroke-slate-800" />
+      <CornerCluster x={420 - 8 - CLUSTER_W} y={176} level="80%" highlight="zoom" />
     </Scene>
   );
 }
 
-/** A marquee drag selecting several elements at once. */
+/** A marquee drag across a slide: the heading, the text and the chart fall inside and are selected; the picture on
+ *  the next slide, outside the box, is not. */
 export function MultiSelect() {
   return (
-    <Scene w={420} h={220}>
-      <Shape x={56} y={50} w={66} h={40} />
-      <Shape x={150} y={96} w={66} h={40} />
-      <Shape x={250} y={56} w={66} h={40} kind="circle" />
-      <Shape x={120} y={150} w={66} h={32} />
+    <Scene w={420} h={200}>
+      <Page x={24} y={40} w={226} h={127} name="Results">
+        <Heading x={40} y={60} size={12}>
+          Q3 Results
+        </Heading>
+        <Lines x={40} y={76} w={78} n={4} />
+        <BarChart x={140} y={60} w={92} h={86} />
+      </Page>
+      <Page x={270} y={40} w={128} h={127} name="Team" bar={{ look: false }}>
+        <Picture x={282} y={52} w={104} h={70} />
+        <Lines x={282} y={134} w={70} n={2} />
+      </Page>
       <rect
-        x={40}
-        y={38}
-        width={200}
-        height={156}
-        rx={4}
+        x={32}
+        y={50}
+        width={208}
+        height={104}
         className="fill-brand-500/10 stroke-brand-500"
-        strokeWidth={1.5}
-        strokeDasharray="5 4"
+        strokeWidth={1}
+        strokeDasharray="4 3"
       />
-      <Cursor x={232} y={186} colour="brand" />
+      {[
+        [37, 53, 76, 14],
+        [37, 73, 84, 24],
+        [137, 57, 98, 92],
+      ].map(([x, y, w, h], i) => (
+        <rect
+          key={i}
+          x={x}
+          y={y}
+          width={w}
+          height={h}
+          rx={1.5}
+          className="fill-none stroke-brand-500"
+          strokeWidth={1}
+        />
+      ))}
+      <Pointer x={240} y={154} />
     </Scene>
   );
 }
 
-/** The format painter: copying one element's style onto another. */
+/** The format painter: the brush picks up the styled plan card's look and paints it onto the plain one beside it. */
 export function FormatPainter() {
   return (
     <Scene w={420} h={200}>
-      <Shape x={48} y={66} w={88} h={52} accent label="Styled" />
-      <Arrow from={[140, 92]} to={[252, 92]} kind="curved" tone="muted" dashed />
-      <Shape x={262} y={66} w={88} h={52} accent label="Painted" />
-      {/* Paint-roller / brush cursor */}
-      <g transform="translate(196 112)">
-        <rect x={-9} y={-9} width={18} height={11} rx={2} className="fill-brand-500" />
-        <path d="M0 2 v8" className="stroke-slate-500" strokeWidth={2} />
-        <path
-          d="M-4 10 h8 v6 h-8 Z"
-          className="fill-brand-300 stroke-slate-500"
-          strokeWidth={1.5}
-        />
-      </g>
+      <Page x={44} y={40} w={332} h={140} name="Pricing">
+        <Heading x={62} y={60} size={11}>
+          Choose a Plan
+        </Heading>
+        <Shape x={62} y={78} w={120} h={76} accent />
+        <Label x={76} y={96} size={10} weight={700} tone="onAccent">
+          Team
+        </Label>
+        <Label x={76} y={112} size={9} tone="onAccent">
+          Live editing for all
+        </Label>
+        <Shape x={238} y={78} w={120} h={76} />
+        <Label x={252} y={96} size={10} weight={700} tone="strong">
+          Personal
+        </Label>
+        <Label x={252} y={112} size={9} tone="body">
+          One editor, any device
+        </Label>
+      </Page>
+      <path
+        d="M186 92 C 200 70, 220 70, 234 90"
+        className="fill-none stroke-brand-400"
+        strokeWidth={1.25}
+        strokeDasharray="3 3"
+      />
+      <Icon prims={lucidePaintbrush} x={262} y={136} size={15} className="stroke-slate-800" />
     </Scene>
   );
 }
 
-/** Multi-colour theme: each branch of a hierarchy tinted its own hue. */
+/** A multicolour theme on an infographic: each card takes its own hue from the theme's set, the title stays in the
+ *  page's ink. */
 export function MulticolourTheme() {
+  const hues = [
+    ['fill-emerald-50 stroke-emerald-500', 'fill-emerald-600', '68%', 'Reach'],
+    ['fill-violet-50 stroke-violet-500', 'fill-violet-600', '4.2k', 'Sign-ups'],
+    ['fill-amber-50 stroke-amber-500', 'fill-amber-600', '12', 'Markets'],
+    ['fill-rose-50 stroke-rose-500', 'fill-rose-600', '91%', 'Kept'],
+  ] as const;
   return (
     <Scene w={420} h={220}>
-      <Shape
-        x={172}
-        y={92}
-        w={76}
-        h={40}
-        fill="fill-slate-100"
-        stroke="stroke-slate-400"
-        label="Root"
-        labelTone="strong"
-      />
-      <Shape
-        x={40}
-        y={28}
-        w={70}
-        h={36}
-        fill="fill-emerald-100"
-        stroke="stroke-emerald-600"
-        label="A"
-        labelTone="strong"
-      />
-      <Shape
-        x={40}
-        y={156}
-        w={70}
-        h={36}
-        fill="fill-violet-100"
-        stroke="stroke-violet-600"
-        label="B"
-        labelTone="strong"
-      />
-      <Shape
-        x={310}
-        y={28}
-        w={70}
-        h={36}
-        fill="fill-amber-100"
-        stroke="stroke-amber-600"
-        label="C"
-        labelTone="strong"
-      />
-      <Shape
-        x={310}
-        y={156}
-        w={70}
-        h={36}
-        fill="fill-rose-100"
-        stroke="stroke-rose-600"
-        label="D"
-        labelTone="strong"
-      />
-      <Arrow
-        from={[172, 104]}
-        to={[110, 50]}
-        colour={{ stroke: 'stroke-emerald-600', fill: 'fill-emerald-600' }}
-      />
-      <Arrow
-        from={[172, 120]}
-        to={[110, 170]}
-        colour={{ stroke: 'stroke-violet-600', fill: 'fill-violet-600' }}
-      />
-      <Arrow
-        from={[248, 104]}
-        to={[310, 50]}
-        colour={{ stroke: 'stroke-amber-600', fill: 'fill-amber-600' }}
-      />
-      <Arrow
-        from={[248, 120]}
-        to={[310, 170]}
-        colour={{ stroke: 'stroke-rose-600', fill: 'fill-rose-600' }}
-      />
+      <Page x={88} y={34} w={244} h={172} name="Our Year" rest="A4">
+        <Heading x={210} y={56} size={13} anchor="middle">
+          Our Year in Numbers
+        </Heading>
+        <Rule x={201} y={66} />
+        {hues.map(([box, ink, value, label], i) => {
+          const x = 104 + (i % 2) * 108;
+          const y = 82 + Math.floor(i / 2) * 58;
+          return (
+            <g key={label}>
+              <rect x={x} y={y} width={100} height={50} rx={5} className={box} strokeWidth={1.25} />
+              <Label x={x + 10} y={y + 20} size={14} weight={700} className={ink}>
+                {value}
+              </Label>
+              <Label x={x + 10} y={y + 37} size={9} tone="body">
+                {label}
+              </Label>
+            </g>
+          );
+        })}
+      </Page>
     </Scene>
   );
 }
 
-/** An element linked to another tab: a follow-link badge and a jump to a tab. */
+/** An element linked to another page: the link badge on the button, and the jump to the slide it opens. */
 export function ElementLink() {
   return (
-    <Scene w={420} h={210}>
-      <Tabs x={28} y={24} items={['Overview', 'Detail']} active={0} tabW={72} h={24} />
-      <Shape x={48} y={92} w={120} h={56} kind="rect" label="See detail" labelTone="strong" />
-      {/* Follow-link badge on the shape */}
-      <g transform="translate(160 92)">
-        <circle r={11} className="fill-brand-500 stroke-white" strokeWidth={2.5} />
-        <path
-          d="M-3 1 a4 4 0 0 1 0 -5 l2 -2 a4 4 0 0 1 6 6 l-1 1 M3 -1 a4 4 0 0 1 0 5 l-2 2 a4 4 0 0 1 -6 -6 l1 -1"
-          className="stroke-white"
-          strokeWidth={1.6}
-          fill="none"
-        />
-      </g>
-      <Arrow from={[176, 100]} to={[300, 120]} kind="curved" tone="accent" />
-      {/* Target tab card */}
-      <rect
-        x={300}
-        y={104}
-        width={96}
-        height={64}
-        rx={8}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
+    <Scene w={420} h={170}>
+      <Page x={24} y={46} w={176} h={99} name="Cover">
+        <Heading x={40} y={72} size={12}>
+          Launch Plan
+        </Heading>
+        <Rule x={40} y={81} />
+        <Shape x={40} y={100} w={76} h={24} accent />
+        <Label x={78} y={112.5} size={9} weight={600} tone="onAccent" anchor="middle">
+          See Detail
+        </Label>
+      </Page>
+      <circle cx={116} cy={100} r={7} className="fill-brand-600 stroke-white" strokeWidth={1.5} />
+      <Icon prims={lucideLink} x={116} y={100} size={7} className="stroke-white" />
+      <path
+        d="M124 96 C 160 66, 196 62, 226 80"
+        className="fill-none stroke-brand-500"
+        strokeWidth={1.25}
       />
-      <Tabs x={310} y={114} items={['Detail']} active={0} tabW={56} h={18} />
-      <Shape x={314} y={140} w={32} h={20} kind="rect" />
-      <Shape x={356} y={140} w={32} h={20} kind="circle" accent />
+      <path
+        d="M219 78 l7 2 l-3 6"
+        className="fill-none stroke-brand-500"
+        strokeWidth={1.25}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <rect
+        x={229}
+        y={43}
+        width={174}
+        height={101}
+        rx={3}
+        className="fill-none stroke-brand-500"
+        strokeWidth={1.25}
+      />
+      <Page x={232} y={46} w={168} h={95} name="Detail" bare>
+        <SlideContent x={232} y={46} w={168} h={95} title="The Detail" layout="picture" />
+      </Page>
     </Scene>
   );
 }
 
-/** Dragging an element snaps it into line with a neighbour; the dashed guide
- * shows the matched edge. Holding Cmd / Ctrl skips snapping for a free drop. */
+/** Dragging the second stat card beside the first snaps their top edges together; the dashed guide shows the shared
+ *  edge. */
 export function SnappingGuides() {
   return (
-    <Scene w={400} h={200}>
-      {/* The faint dashed guide, in the theme's element stroke as the app draws it, marks the
-          shared top edge A and B aligned to. */}
-      <line
-        x1={64}
-        y1={66}
-        x2={320}
-        y2={66}
-        className="stroke-slate-600"
-        strokeWidth={1.2}
-        strokeOpacity={0.55}
-        strokeDasharray="4 3"
-      />
-      <Shape x={64} y={66} w={84} h={60} label="A" />
-      {/* The dragged element, snapped flush to A's top edge. */}
-      <Shape x={236} y={66} w={84} h={44} accent label="B" />
-      <Cursor x={288} y={84} />
+    <Scene w={420} h={200}>
+      <Page x={44} y={36} w={332} h={150} name="Highlights">
+        <Heading x={62} y={56} size={11}>
+          Highlights
+        </Heading>
+        <line
+          x1={56}
+          y1={78}
+          x2={364}
+          y2={78}
+          className="stroke-rose-500"
+          strokeWidth={0.75}
+          strokeDasharray="3 2"
+        />
+        <rect
+          x={62}
+          y={78}
+          width={116}
+          height={78}
+          rx={4}
+          className="fill-brand-50 stroke-brand-500"
+          strokeWidth={1.25}
+        />
+        <Stat x={74} y={100} value="2.4M" label="Readers" size={16} />
+        <rect
+          x={234}
+          y={78}
+          width={116}
+          height={64}
+          rx={4}
+          className="fill-brand-50 stroke-brand-500"
+          strokeWidth={1.25}
+        />
+        <Stat x={246} y={100} value="38%" label="Growth" size={16} />
+        <SelectionBox x={234} y={78} w={116} h={64} />
+      </Page>
+      <Pointer x={292} y={118} />
     </Scene>
   );
 }

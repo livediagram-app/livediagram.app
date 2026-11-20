@@ -11,7 +11,7 @@
 import type { ReactNode } from 'react';
 
 import { Scene, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { STRIP_W, Strip } from './toolbar-layout';
+import { STRIP_W, Strip, type StripItem } from './editor-chrome';
 
 const PX = 60;
 const PW = 300;
@@ -38,7 +38,7 @@ function PaletteFrame({
 }) {
   return (
     <Scene w={420} h={sceneH + DROP} bg="plain">
-      <Strip x={(420 - STRIP_W) / 2} y={8} open={category} />
+      <Strip x={(420 - STRIP_W) / 2} y={8} open={category.toLowerCase() as StripItem} />
       <Panel x={PX} y={48} w={PW} h={h - DROP} title={title.toUpperCase()}>
         <g transform={`translate(0 ${DROP})`}>{children}</g>
       </Panel>

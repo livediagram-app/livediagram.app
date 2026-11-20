@@ -1,315 +1,333 @@
-// User-Interface-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): where the editor's
-// panels and fixed controls sit (the bottom bar with its tabs and quick
-// controls, the bottom-right corner cluster), the selection toolbars, the
-// element menu and the Map. Labels are the editor's own (apps/editor:
-// TabBar, ChromeControls, CanvasChrome, ZoomMenu, SelectionPopover,
-// MultiSelectionToolbar, EditorContextMenu). Composed from the shared
-// primitives so the house style holds.
+// User-Interface-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md), on livedocuments' own
+// chrome: the bottom bar with its tabs and quick controls, the bottom-right corner cluster and its zoom presets, the
+// whole frame at a glance, the top of a shared document, and an element's menu. Labels are the editor's own
+// (apps/editor: TabBar, ChromeControls, ZoomMenu, EditorContextMenu); the chrome is ./editor-chrome's and the pages
+// ./doc-page's.
 
-import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { MenuCard, Strip } from './toolbar-layout';
-import { GLYPH, TabPill } from '@liveworkspace/help-site/art/illustrations/user-interface-chrome';
+import { lucideChevronDown, lucideChevronRight } from '@liveworkspace/icons/lucide';
+import {
+  Label,
+  Lift,
+  Panel,
+  Scene,
+  SelectionBox,
+  Shape,
+} from '@liveworkspace/help-site/art/primitives';
+import {
+  BAR_H,
+  BottomBar,
+  CLUSTER_W,
+  CORNER_W,
+  CornerCard,
+  CornerCluster,
+  Icon,
+  LOGO_W,
+  MenuButtonCard,
+  LogoCard,
+  STRIP_W,
+  Strip,
+  TopRow,
+} from './editor-chrome';
+import { Heading, Lines, Page, Rule, Sheet, SlideContent } from './doc-page';
 
-// These scenes are the shared ones (@liveworkspace/help-site/art/illustrations/user-interface-scenes), drawn as
-// they are; the quick controls, the panel layout and the corner cluster, zoom controls and Map below are this app's
-// own.
-export {
-  TabBar,
-  MultiSelectToolbar,
-  ElementContextMenu,
-} from '@liveworkspace/help-site/art/illustrations/user-interface-scenes';
+// --- The bottom bar ----------------------------------------------------------
 
-// --- Fixed chrome ------------------------------------------------------------
-
-// The glyphs, the bottom bar and its tabs are the shared help chrome; the corner cluster is this
-// editor's own, with no paintbrush (Tab Style sits on each page's title bar).
-
-/** The bottom-right corner cluster: Undo / Redo, then the zoom controls (minus, the level, plus).
- *  Tab Style is on each page's title bar, and the Layers button is retired. */
-function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?: string }) {
+/** The bottom bar: the open tab, the others, the + button, then the quick controls at its right-hand end. */
+export function TabBar() {
+  const W = 420;
   return (
-    <g>
-      <Panel x={x + 32} y={y} w={52} h={28}>
-        <path d={`M${x + 42} ${y + 15} a6 6 0 1 1 3 5`} {...GLYPH} />
-        <path d={`M${x + 40} ${y + 11} l2 4 l4 -2`} {...GLYPH} />
-        <path d={`M${x + 74} ${y + 15} a6 6 0 1 0 -3 5`} {...GLYPH} />
-        <path d={`M${x + 76} ${y + 11} l-2 4 l-4 -2`} {...GLYPH} />
-      </Panel>
-      <Panel x={x + 88} y={y} w={94} h={28}>
-        <Label x={x + 102} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
-          −
-        </Label>
-        <Label x={x + 135} y={y + 15} size={10} weight={600} tone="body" anchor="middle">
-          {level}
-        </Label>
-        <Label x={x + 168} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
-          +
-        </Label>
-      </Panel>
-    </g>
+    <Scene w={W} h={150}>
+      <Page x={110} y={26} w={200} h={88} name="Cover">
+        <SlideContent x={110} y={26} w={200} h={88} title="Pitch Deck" layout="title" />
+      </Page>
+      <BottomBar y={150 - BAR_H} w={W} tabs={['Pitch Deck', 'Brief', 'Poster']} />
+    </Scene>
   );
 }
 
-// --- The bottom bar's quick controls -----------------------------------------
-
-/** Tools' glyph: a toolbox, its handle and its lid's line (ChromeToolsMenu's ToolsGlyph). */
-function ToolsGlyph({ x, y }: { x: number; y: number }) {
-  return (
-    <g transform={`translate(${x - 8} ${y - 8})`}>
-      <rect x={2} y={5} width={12} height={8.5} rx={1.5} {...GLYPH} strokeWidth={1.4} />
-      <path d="M6 5V3.6c0-.4.3-.6.6-.6h2.8c.3 0 .6.2.6.6V5" {...GLYPH} strokeWidth={1.4} />
-      <path d="M2 8.5h12M7 8.5v1.2h2V8.5" {...GLYPH} strokeWidth={1.4} />
-    </g>
-  );
-}
-
-/** Settings is sliders in the editor, never a cog. */
-function SettingsGlyph({ x, y }: { x: number; y: number }) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <path
-        d="M-7 -4 h3 M-1 -4 h8 M-7 0 h7 M3 0 h4 M-7 4 h2 M1 4 h6 M-2.5 -6 v4 M1.5 -2 v4 M-3 2 v4"
-        {...GLYPH}
-      />
-    </g>
-  );
-}
-
-/** The appearance switch's sun (Light in force). */
-function SunGlyph({ x, y }: { x: number; y: number }) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <circle r={3} {...GLYPH} />
-      <path
-        d="M0 -7 v1.8 M0 7 v-1.8 M-7 0 h1.8 M7 0 h-1.8 M-5 -5 l1.3 1.3 M5 5 l-1.3 -1.3 M5 -5 l-1.3 1.3 M-5 5 l1.3 -1.3"
-        {...GLYPH}
-      />
-    </g>
-  );
-}
-
-/** The quick controls as the editor draws them: Tools and Settings named on a computer, the
- *  appearance switch always its glyph alone. */
-function QuickControlsRow({ x, y, labelled = true }: { x: number; y: number; labelled?: boolean }) {
-  if (!labelled) {
-    return (
-      <g>
-        <ToolsGlyph x={x + 8} y={y} />
-        <SettingsGlyph x={x + 30} y={y} />
-        <SunGlyph x={x + 52} y={y} />
-      </g>
-    );
-  }
-  return (
-    <g>
-      <ToolsGlyph x={x + 8} y={y} />
-      <Label x={x + 19} y={y + 1} size={10} tone="body">
-        Tools
-      </Label>
-      <SettingsGlyph x={x + 62} y={y} />
-      <Label x={x + 73} y={y + 1} size={10} tone="body">
-        Settings
-      </Label>
-      <SunGlyph x={x + 128} y={y} />
-    </g>
-  );
-}
-
-/** The bottom bar: tabs, the + button, then the quick controls at its right-hand end. */
-function BottomBar({ y, w, labelled = false }: { y: number; w: number; labelled?: boolean }) {
-  return (
-    <g>
-      <rect x={0} y={y} width={w} height={30} className="fill-slate-100" />
-      <line x1={0} y1={y} x2={w} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
-      <TabPill x={46} y={y + 5} w={74} label="Overview" active />
-      <TabPill x={124} y={y + 5} w={44} label="Flow" />
-      <Label x={180} y={y + 16} size={14} weight={600} tone="muted" anchor="middle">
-        +
-      </Label>
-      <QuickControlsRow x={labelled ? w - 150 : w - 72} y={y + 15} labelled={labelled} />
-    </g>
-  );
-}
-
-/** The quick controls at the bottom bar's right-hand end, outlined: Tools, Settings and the
+/** The quick controls at the bottom bar's right-hand end, outlined: Tools, Settings, notifications and the
  *  appearance switch. */
 export function QuickControls() {
+  const W = 420;
   return (
-    <Scene w={420} h={130}>
-      <Shape x={60} y={20} w={80} h={40} label="Idea" />
-      <BottomBar y={86} w={420} labelled />
+    <Scene w={W} h={150}>
+      <Page x={110} y={26} w={200} h={88} name="Cover">
+        <SlideContent x={110} y={26} w={200} h={88} title="Pitch Deck" layout="title" />
+      </Page>
+      <BottomBar y={150 - BAR_H} w={W} tabs={['Pitch Deck', 'Brief']} />
       <rect
-        x={264}
-        y={90}
-        width={150}
-        height={22}
+        x={W - 142}
+        y={150 - BAR_H + 4}
+        width={138}
+        height={20}
         rx={6}
         fill="none"
-        className="stroke-brand-400"
-        strokeWidth={1.5}
+        className="stroke-brand-500"
+        strokeWidth={1.25}
         strokeDasharray="4 3"
       />
     </Scene>
   );
 }
 
-/** The whole frame at a glance: the menu button card top-left, the palette strip across the
- *  top, the Share and account card top-right with a tool panel (Format) docked under it, Contents
- *  down the left, the corner cluster bottom-right, and the bottom bar. */
-export function PanelLayout() {
-  return (
-    <Scene w={420} h={250}>
-      <MenuCard x={12} y={12} menuOnly />
-      <Strip x={52} y={12} />
-      {/* The actions card top-right: Share, then the account. */}
-      <rect
-        x={340}
-        y={12}
-        width={68}
-        height={32}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <rect x={345} y={17} width={38} height={22} rx={6} className="fill-brand-500" />
-      <Label x={364} y={28} size={9} weight={600} tone="onAccent" anchor="middle">
-        Share
-      </Label>
-      <circle cx={396} cy={28} r={7} className="fill-slate-200" />
-      <Panel x={318} y={56} w={90} h={66} title="FORMAT">
-        {[0, 1].map((i) => (
-          <rect
-            key={i}
-            x={328}
-            y={88 + i * 14}
-            width={i === 0 ? 62 : 44}
-            height={6}
-            rx={3}
-            className={i === 0 ? 'fill-brand-200' : 'fill-slate-200'}
-          />
-        ))}
-      </Panel>
-      <Shape x={146} y={68} w={74} h={38} label="Start" />
-      <Shape x={146} y={134} w={74} h={38} accent label="Ship" />
-      <Arrow from={[183, 106]} to={[183, 134]} />
-      <Panel x={12} y={150} w={92} h={58} title="CONTENTS">
-        <rect x={36} y={182} width={14} height={8} rx={2} className="fill-slate-300" />
-        <rect x={36} y={194} width={14} height={8} rx={2} className="fill-slate-300" />
-        <rect
-          x={28}
-          y={178}
-          width={46}
-          height={26}
-          rx={3}
-          fill="none"
-          className="stroke-brand-500"
-          strokeWidth={1.4}
-        />
-      </Panel>
-      <CornerCluster x={194} y={182} />
-      <BottomBar y={220} w={420} />
-    </Scene>
-  );
-}
+// --- The whole frame ---------------------------------------------------------
 
-/** The bottom-right cluster with the zoom presets open above the level:
- *  25% to 150% and Fit to screen. */
-export function ZoomControls() {
-  const presets = ['25%', '50%', '75%', '100%', '125%', '150%'];
-  const px = 231;
-  const py = 14;
+/** The whole frame at a glance: the logo and menu cards top-left, the palette strip across the top, Share and Sign
+ *  In top-right, Contents down the left listing the deck's slides, the slide being edited, the corner cluster
+ *  bottom-right and the bottom bar. */
+export function PanelLayout() {
+  const W = 470;
+  const H = 280;
+  const slides = ['Cover', 'Results', 'Next Steps'];
   return (
-    <Scene w={420} h={240}>
-      <Shape x={40} y={60} w={110} h={52} label="Detail" />
-      <Panel x={px} y={py} w={92} h={170}>
-        {presets.map((p, i) => {
-          const ry = py + 8 + i * 22;
-          const on = p === '100%';
+    <Scene w={W} h={H}>
+      <TopRow w={W} />
+      <Panel x={8} y={44} w={96} h={174} title="Contents">
+        {slides.map((name, i) => {
+          const y = 74 + i * 46;
+          const on = i === 1;
           return (
-            <g key={p}>
+            <g key={name}>
               {on && (
-                <rect x={px + 5} y={ry} width={82} height={20} rx={5} className="fill-brand-50" />
+                <rect x={14} y={y - 4} width={84} height={44} rx={5} className="fill-brand-50" />
               )}
-              <Label
-                x={px + 46}
-                y={ry + 11}
-                size={10}
-                weight={on ? 700 : 500}
-                tone={on ? 'accent' : 'body'}
-                anchor="middle"
-              >
-                {p}
+              <Label x={20} y={y + 14} size={9} tone="muted" anchor="middle">
+                {String(i + 1)}
+              </Label>
+              <rect
+                x={28}
+                y={y}
+                width={52}
+                height={29}
+                rx={1.5}
+                className={on ? 'fill-white stroke-brand-500' : 'fill-white stroke-slate-200'}
+                strokeWidth={on ? 1.25 : 0.75}
+              />
+              <rect x={32} y={y + 5} width={22} height={3} rx={1} className="fill-slate-400" />
+              <rect x={32} y={y + 11} width={16} height={2} rx={1} className="fill-slate-200" />
+              <Label x={28} y={y + 36} size={9} tone={on ? 'accent' : 'body'} weight={on ? 600 : 400}>
+                {name}
               </Label>
             </g>
           );
         })}
-        <line
-          x1={px + 8}
-          y1={py + 143}
-          x2={px + 84}
-          y2={py + 143}
-          className="stroke-slate-200"
-          strokeWidth={1.2}
-        />
-        <Label x={px + 46} y={py + 157} size={10} weight={500} tone="body" anchor="middle">
-          Fit to screen
-        </Label>
       </Panel>
-      <CornerCluster x={110} y={198} />
+      <Page x={140} y={78} w={226} h={127} name="Results">
+        <SlideContent x={140} y={78} w={226} h={127} title="Q3 Results" />
+      </Page>
+      <CornerCluster x={W - 8 - CLUSTER_W} y={H - BAR_H - 32} level="72%" />
+      <BottomBar y={H - BAR_H} w={W} tabs={['Pitch Deck', 'Brief']} />
     </Scene>
   );
 }
 
-/** The bottom-left Map panel: a zoomed-out outline of the canvas, the area
- *  outside your view dimmed, and a brand rectangle marking what you see. */
+/** The bottom-right cluster with the zoom presets open above the level: 25% to 150%, then Fit to Screen. */
+export function ZoomControls() {
+  const presets = ['25%', '50%', '75%', '100%', '125%', '150%'];
+  const W = 420;
+  const cx = W - 8 - CLUSTER_W;
+  const px = cx + 53;
+  const pw = 80;
+  const py = 26;
+  return (
+    <Scene w={W} h={230}>
+      <Page x={24} y={60} w={196} h={110} name="Cover">
+        <SlideContent x={24} y={60} w={196} h={110} title="Field Guide" layout="picture" />
+      </Page>
+      <Lift x={px} y={py} w={pw} h={160} r={7} />
+      <rect
+        x={px}
+        y={py}
+        width={pw}
+        height={160}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={0.75}
+      />
+      {presets.map((p, i) => {
+        const ry = py + 5 + i * 20;
+        const on = p === '100%';
+        return (
+          <g key={p}>
+            {on && <rect x={px + 4} y={ry} width={pw - 8} height={18} rx={4} className="fill-brand-50" />}
+            <Label
+              x={px + pw / 2}
+              y={ry + 9.5}
+              size={9.5}
+              weight={on ? 650 : 500}
+              tone={on ? 'accent' : 'body'}
+              anchor="middle"
+            >
+              {p}
+            </Label>
+          </g>
+        );
+      })}
+      <line
+        x1={px + 6}
+        y1={py + 130}
+        x2={px + pw - 6}
+        y2={py + 130}
+        className="stroke-slate-100"
+        strokeWidth={0.75}
+      />
+      <Label x={px + pw / 2} y={py + 145} size={9.5} weight={500} tone="body" anchor="middle">
+        Fit to Screen
+      </Label>
+      <CornerCluster x={cx} y={196} highlight="zoom" />
+    </Scene>
+  );
+}
+
+/** The Map: a zoomed-out outline of the tab's pages, the part outside your view dimmed and a brand box marking what
+ *  you see. */
 export function Minimap() {
   return (
     <Scene w={420} h={210}>
-      {/* The canvas the map mirrors. */}
-      <Shape x={196} y={26} w={68} h={38} label="A" />
-      <Shape x={176} y={116} w={62} h={36} accent label="B" />
-      <Shape x={300} y={116} w={62} h={36} kind="circle" label="C" />
-      {/* Elbow connectors down out of A, splitting to B and C, one level arrowhead each. */}
-      <path
-        d="M230 64 V88 H207 V108 M230 88 H331 V108"
-        className="fill-none stroke-brand-400"
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
-      <Arrow from={[207, 106]} to={[207, 116]} tone="accent" />
-      <Arrow from={[331, 106]} to={[331, 116]} tone="accent" />
-      {/* The Map panel, bottom-left, with the current-view box. */}
-      <Panel x={20} y={110} w={136} h={88} title="MAP">
-        <rect x={26} y={136} width={124} height={56} rx={4} className="fill-slate-100" />
-        <rect x={52} y={146} width={70} height={40} rx={3} className="fill-white" />
-        {/* The miniature in the shapes' own colours, labels left out. */}
+      <Page x={196} y={34} w={196} h={110} name="Results">
+        <SlideContent x={196} y={34} w={196} h={110} title="Q3 Results" />
+      </Page>
+      <Panel x={20} y={100} w={146} h={96} title="Map">
+        <rect x={26} y={128} width={134} height={62} rx={4} className="fill-slate-100" />
+        {[0, 1, 2].map((i) => (
+          <rect
+            key={i}
+            x={34 + i * 42}
+            y={146}
+            width={36}
+            height={20}
+            rx={1}
+            className="fill-white stroke-slate-300"
+            strokeWidth={0.5}
+          />
+        ))}
         <rect
-          x={80}
-          y={150}
-          width={20}
-          height={10}
+          x={74}
+          y={140}
+          width={46}
+          height={32}
           rx={2}
-          className="fill-white stroke-brand-300"
-          strokeWidth={1}
-        />
-        <rect x={68} y={172} width={17} height={9} rx={2} className="fill-brand-500" />
-        <circle cx={112} cy={176} r={5} className="fill-white stroke-brand-300" strokeWidth={1} />
-        <path
-          d="M90 160 V166 H76 V172 M90 166 H112 V171"
-          className="fill-none stroke-brand-300"
-          strokeWidth={1}
-        />
-        <rect
-          x={52}
-          y={146}
-          width={70}
-          height={40}
-          rx={3}
           fill="none"
           className="stroke-brand-500"
-          strokeWidth={1.6}
+          strokeWidth={1.25}
         />
       </Panel>
+    </Scene>
+  );
+}
+
+// --- The top of the editor ---------------------------------------------------
+
+/** The top of a shared document as its owner sees it: the logo card, the menu card, the palette strip, and the
+ *  corner card with Share and the account, each named under it. */
+export function TitleBarParts() {
+  const W = 482;
+  const parts: [string, number][] = [
+    ['Logo', 8 + LOGO_W / 2],
+    ['Menu', 8 + LOGO_W + 6 + 14],
+    ['Palette', 0],
+    ['Share', W - 8 - CORNER_W + 14],
+    ['Account', W - 8 - CORNER_W + 40],
+  ];
+  const stripX = 8 + LOGO_W + 6 + 28 + 8;
+  parts[2]![1] = stripX + STRIP_W / 2;
+  return (
+    <Scene w={W} h={96}>
+      <LogoCard x={8} y={16} />
+      <MenuButtonCard x={8 + LOGO_W + 6} y={16} />
+      <Strip x={stripX} y={16} />
+      <CornerCard x={W - 8 - CORNER_W} y={16} initial="A" />
+      {parts.map(([name, x], i) => {
+        const low = i % 2 === 1;
+        return (
+          <g key={name}>
+            <line
+              x1={x}
+              y1={46}
+              x2={x}
+              y2={low ? 74 : 58}
+              className="stroke-slate-300"
+              strokeWidth={0.75}
+            />
+            <circle cx={x} cy={46} r={1.5} className="fill-slate-400" />
+            <Label x={x} y={low ? 82 : 66} size={9.5} weight={500} tone="body" anchor="middle">
+              {name}
+            </Label>
+          </g>
+        );
+      })}
+    </Scene>
+  );
+}
+
+// --- The element menu --------------------------------------------------------
+
+/** Right-clicking a shape on a slide opens its menu: collapsible sections for its layer, size, shape and rotation,
+ *  then Appearance, Text and Animation opening beside it, and its Link. */
+export function ElementContextMenu() {
+  const sections: [string, 'down' | 'side'][] = [
+    ['Layer', 'down'],
+    ['Size', 'down'],
+    ['Shape', 'down'],
+    ['Rotation', 'down'],
+    ['Appearance', 'side'],
+    ['Text', 'side'],
+    ['Animation', 'side'],
+    ['Link', 'down'],
+  ];
+  const mx = 236;
+  const my = 18;
+  const mw = 136;
+  const rowH = 20;
+  const mh = sections.length * rowH + 8;
+  return (
+    <Scene w={420} h={200}>
+      <Sheet x={28} y={44} w={196} h={128}>
+        <Heading x={42} y={62} size={11}>
+          Our Promise
+        </Heading>
+        <Rule x={42} y={71} />
+        <Lines x={42} y={84} w={70} n={3} />
+      </Sheet>
+      <Shape x={128} y={92} w={80} h={48} accent label="Quality" labelTone="onAccent" />
+      <SelectionBox x={128} y={92} w={80} h={48} />
+      <Lift x={mx} y={my} w={mw} h={mh} r={7} />
+      <rect
+        x={mx}
+        y={my}
+        width={mw}
+        height={mh}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={0.75}
+      />
+      {sections.map(([name, opens], i) => {
+        const ry = my + 4 + i * rowH;
+        const on = name === 'Appearance';
+        return (
+          <g key={name}>
+            {on && (
+              <rect x={mx + 4} y={ry} width={mw - 8} height={rowH} rx={4} className="fill-brand-50" />
+            )}
+            <Label
+              x={mx + 12}
+              y={ry + rowH / 2 + 0.5}
+              size={9.5}
+              weight={on ? 600 : 500}
+              tone={on ? 'accent' : 'body'}
+            >
+              {name}
+            </Label>
+            <Icon
+              prims={opens === 'side' ? lucideChevronRight : lucideChevronDown}
+              x={mx + mw - 14}
+              y={ry + rowH / 2}
+              size={8}
+              className={on ? 'stroke-brand-700' : 'stroke-slate-400'}
+            />
+          </g>
+        );
+      })}
     </Scene>
   );
 }

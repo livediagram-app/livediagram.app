@@ -3,7 +3,7 @@
 
 import type { ReactNode } from 'react';
 import { Label, Panel, Scene } from '@liveworkspace/help-site/art/primitives';
-import { STRIP_W, Strip } from './toolbar-layout';
+import { STRIP_W, Strip, type StripItem } from './editor-chrome';
 
 /** The palette strip with `category` pressed on its bar, and that category's flyout under it, `h` tall from the
  *  strip's top: the category's name, then its body. */
@@ -18,7 +18,7 @@ function PaletteFrame({
 }) {
   return (
     <g>
-      <Strip x={(420 - STRIP_W) / 2} y={8} open={category} />
+      <Strip x={(420 - STRIP_W) / 2} y={8} open={category.toLowerCase() as StripItem} />
       <Panel x={60} y={48} w={300} h={h - 38} title={category.toUpperCase()}>
         {children}
       </Panel>

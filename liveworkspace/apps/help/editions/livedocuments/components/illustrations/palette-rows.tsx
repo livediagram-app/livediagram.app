@@ -6,7 +6,7 @@
 // way the editor does. Composed from the shared primitives.
 
 import { Scene, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { STRIP_W, Strip } from './toolbar-layout';
+import { STRIP_W, Strip, type StripItem } from './editor-chrome';
 
 type Row = { caption: string; blurb: string; key?: string };
 
@@ -140,7 +140,7 @@ export function PaletteRows({ category, active }: { category: PaletteCategory; a
   const h = paletteRowsHeight(category);
   return (
     <Scene w={420} h={h + 64} bg="plain">
-      <Strip x={(420 - STRIP_W) / 2} y={8} open={category} />
+      <Strip x={(420 - STRIP_W) / 2} y={8} open={category.toLowerCase() as StripItem} />
       <PaletteCategoryPanel x={(420 - w) / 2} y={48} w={w} category={category} active={active} />
     </Scene>
   );
