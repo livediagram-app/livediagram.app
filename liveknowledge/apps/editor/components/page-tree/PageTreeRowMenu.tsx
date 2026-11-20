@@ -1,8 +1,8 @@
 'use client';
 
 // A page's menu in the tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Row menu"): icon-left verb
-// rows under the page's name. Rename, Add Subpage, Duplicate, Copy Link, Move Up, Move Down, Indent, Outdent, then
-// Delete last. A verb that cannot run stays, greyed, and says why in its hover card. A Viewer or a Participant has
+// rows under the page's name. Rename, Add Subpage, Duplicate, Copy Link, Verify, Always in Context (a checkmark
+// row), Move Up, Move Down, Indent, Outdent, then Delete last. A verb that cannot run stays, greyed, and says why in its hover card. A Viewer or a Participant has
 // Copy Link alone.
 import type { ReactNode } from 'react';
 import {
@@ -34,10 +34,22 @@ import {
   OutdentIcon,
   RenameIcon,
 } from './page-tree-icons';
+import { CheckIcon, ContextIcon, TickIcon } from '@/components/knowledge/knowledge-icons';
+import type { PageTreeKnowledge } from './PageTree';
 import type { TreeTab } from './page-tree-view';
 
 export type PageMenuVerb =
-  'rename' | 'add' | 'duplicate' | 'copy-link' | 'up' | 'down' | 'indent' | 'outdent' | 'delete';
+  | 'rename'
+  | 'add'
+  | 'duplicate'
+  | 'copy-link'
+  | 'verify'
+  | 'context'
+  | 'up'
+  | 'down'
+  | 'indent'
+  | 'outdent'
+  | 'delete';
 
 /** Why each verb cannot run on a page right now; a verb that can is absent. Pure, for the menu and its tests. */
 export function pageMenuRefusals(
@@ -72,6 +84,7 @@ export function PageTreeRowMenu({
   tabs,
   id,
   canEdit,
+  knowledge,
   onVerb,
   onClose,
 }: {
@@ -79,19 +92,22 @@ export function PageTreeRowMenu({
   tabs: readonly TreeTab[];
   id: string;
   canEdit: boolean;
+  // Verify and Always in Context (docs/specs/030-knowledgebase/verification.md, ai-knowledge.md): an Editor's.
+  knowledge?: Pick<PageTreeKnowledge, 'canVerify' | 'canEditFields' | 'inContext'> | undefined;
   onVerb: (verb: PageMenuVerb, id: string) => void;
   onClose: () => void;
 }) {
   const page = tabs.find((t) => t.id === id);
   if (!page || pageDepth(tabs, id) === 0) return null;
   const refusals = canEdit ? pageMenuRefusals(tabs, id) : {};
-  const row = (verb: PageMenuVerb, label: string, icon: ReactNode) => {
+  const row = (verb: PageMenuVerb, label: string, icon: ReactNode, aside?: ReactNode) => {
     const why = refusals[verb];
     const item = (
       <MenuActionRow
         plain
         label={label}
         icon={icon}
+        aside={aside}
         disabled={why !== undefined}
         onClick={() => {
           onClose();
@@ -115,6 +131,16 @@ export function PageTreeRowMenu({
       {canEdit ? row('add', 'Add Subpage', <AddIcon />) : null}
       {canEdit ? row('duplicate', 'Duplicate', <DuplicateIcon />) : null}
       {row('copy-link', 'Copy Link', <LinkIcon />)}
+      {knowledge?.canVerify ? row('verify', 'Verify', <TickIcon />) : null}
+      {knowledge?.canEditFields
+        ? row(
+            'context',
+            'Always in Context',
+            <ContextIcon />,
+            // A checkmark row: ticked while every agent is handed this page.
+            knowledge.inContext.has(id) ? <CheckIcon data-checked="" /> : undefined,
+          )
+        : null}
       {canEdit ? (
         <>
           {row('up', 'Move Up', <MoveUpIcon />)}

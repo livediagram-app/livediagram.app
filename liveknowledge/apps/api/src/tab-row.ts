@@ -1,4 +1,5 @@
 import { migrateStoredTab, parseTabParent, type Tab } from '@liveknowledge/document';
+import { parseKnowledgeFields } from '@liveknowledge/knowledge';
 import { storedTabConnection } from '@liveworkspace/index-app';
 import type { TabDTO, TabSummaryDTO } from './types';
 
@@ -28,6 +29,10 @@ export type TabRow = {
   // of the body by the outline alone (`json_extract(data, '$.parent')`), so the tree draws from the summaries. Read
   // sites that do not select it leave it undefined.
   parent?: unknown;
+  // The page's knowledge fields (docs/specs/030-knowledgebase/verification.md "The fields"), read out of the body by
+  // the outline alone (`json_extract(data, '$.knowledge')`, JSON text), so the page tree shows each page's verified
+  // state from the summaries, with no read per row. Read sites that do not select it leave it undefined.
+  knowledge?: unknown;
 };
 
 // The connection a row carries, as the wire shape spreads it: absent for a tab that is not connected.
@@ -40,6 +45,17 @@ function connectionField(row: TabRow) {
 function parentField(row: TabRow) {
   const parent = parseTabParent(row.parent);
   return parent === undefined ? {} : { parent };
+}
+
+// The knowledge fields a row carries: absent for a page with none, and for anything stored there that is not them.
+function knowledgeField(row: TabRow) {
+  if (typeof row.knowledge !== 'string') return {};
+  try {
+    const knowledge = parseKnowledgeFields(JSON.parse(row.knowledge));
+    return Object.keys(knowledge).length > 0 ? { knowledge } : {};
+  } catch {
+    return {};
+  }
 }
 
 // Pure mapper from a stored tab row to the wire-format DTO. Pulled out of db.ts
@@ -93,6 +109,7 @@ export function rowToTabSummary(row: TabRow): TabSummaryDTO {
     updatedAt: row.updated_at,
     folder: row.folder ?? undefined,
     ...parentField(row),
+    ...knowledgeField(row),
     ...connectionField(row),
   };
 }

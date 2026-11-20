@@ -15,9 +15,11 @@ import type {
   PageKnowledgePatch,
   PageKnowledgeResponse,
 } from '@liveknowledge/api-schema';
+// The error's own module, not `./core`: this class is made as the module loads, and `./core` may still be loading
+// then (it and the preferences import each other).
+import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 import {
   API_BASE,
-  ApiError,
   apiDelete,
   apiFetch,
   apiHeaders,

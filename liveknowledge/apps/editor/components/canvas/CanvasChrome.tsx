@@ -179,14 +179,15 @@ function CanvasChromeView(props: CanvasChromeProps) {
     },
   });
   // Panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls, explorerEl, collaborateEl, pageTree, paletteTint } = useCanvasChromePanels({
-    props,
-    renameCurrent,
-    chromeHidden,
-    isMobile,
-    panelWiringFor,
-    panelsOn,
-  });
+  const { panelEls, explorerEl, collaborateEl, pageTree, pageRail, paletteTint } =
+    useCanvasChromePanels({
+      props,
+      renameCurrent,
+      chromeHidden,
+      isMobile,
+      panelWiringFor,
+      panelsOn,
+    });
 
   // Measured against the real top-corner stacks (useStripCrowdsCorners). A
   // stack only renders while it holds a panel, so which top corners are
@@ -271,6 +272,10 @@ function CanvasChromeView(props: CanvasChromeProps) {
               ...(contentsDocked && corner.endsWith('left')
                 ? { left: pageTreeClearancePx(pageTree.width, panelScale) }
                 : undefined),
+              // Beside the docked page rail, never under it.
+              ...(pageRail.width > 0 && corner.endsWith('right')
+                ? { right: pageRail.width + 16 }
+                : undefined),
             }}
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
           >
@@ -335,6 +340,8 @@ function CanvasChromeView(props: CanvasChromeProps) {
           against the canvas, so it renders outside the corner layer. */}
       {zenMode ? null : collaborateEl}
       {pageTree.sidebarEl}
+      {/* On This Page and Page Health: docked down the right, or a Page Info button below 1,280 px. */}
+      {pageRail.el}
       {/* A reader's phone has no strip for the Pages button to ride in: it stands under the menu box. */}
       {isMobile && !menuInStrip ? pageTree.phoneButton?.(true) : null}
       {paletteShown ? (
@@ -395,12 +402,13 @@ function CanvasChromeView(props: CanvasChromeProps) {
         style={
           cornerScale === 1
             ? {
-                right: atLeastInset('16px', 'right'),
+                // Clear of the docked page rail, which stands down the canvas's right.
+                right: atLeastInset(`${16 + pageRail.width}px`, 'right'),
                 ...(clusterLeft === null ? {} : { left: clusterLeft }),
               }
             : {
                 ...uiScaleStyle(cornerScale),
-                right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
+                right: atLeastInset(`${toSurfacePx(16 + pageRail.width, cornerScale)}px`, 'right'),
                 ...(clusterLeft === null ? {} : { left: toSurfacePx(clusterLeft, cornerScale) }),
                 bottom: toSurfacePx(16, cornerScale),
               }

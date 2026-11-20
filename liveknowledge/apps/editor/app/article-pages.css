@@ -597,3 +597,17 @@ html[data-presenting] .article-flow .article-note {
   background: color-mix(in srgb, var(--article-accent) 8%, transparent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--article-accent) 8%, transparent);
 }
+
+/* A knowledgebase page's slots in its writing (lib/knowledge/page-slots-plugin.ts): the meta row under the title
+   and Linked From at the foot. Their own type, whatever the article's look; never selected with the writing. */
+.article-flow .article-page-slot {
+  user-select: none;
+  cursor: default;
+}
+.article-flow .article-page-slot-meta {
+  margin: 0.5rem 0 1.25rem;
+  min-height: 1.75rem;
+}
+.article-flow .article-page-slot-foot:not(:empty) {
+  margin-top: 3rem;
+}

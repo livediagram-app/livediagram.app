@@ -17,6 +17,7 @@ import {
 } from 'react';
 import { pageMoveRefusal, withPageMoved, type PageMove } from '@liveknowledge/document';
 import { PageTreeRow } from './PageTreeRow';
+import type { TrustMark } from '@/lib/knowledge/page-trust';
 import { PageTreeRowMenu, type PageMenuVerb } from './PageTreeRowMenu';
 import { createPageTreeUi } from './page-tree-ui';
 import {
@@ -56,7 +57,22 @@ export type PageTreeProps = {
   // Bumped to rename the current page in place (the command palette's Rename Page).
   renameNonce?: number;
   actions: PageTreeActions;
+  // Each page's verified state and what may be done about it (verification.md); absent, the tree shows none.
+  knowledge?: PageTreeKnowledge | undefined;
   className?: string;
+};
+
+/** What the tree shows and offers of its pages' knowledge (docs/specs/030-knowledgebase/verification.md): the tick
+ *  or pill in a row, and Verify and Always in Context in its menu. Read from the tab list, one pass for the whole
+ *  tree, never a request a row. */
+export type PageTreeKnowledge = {
+  marks: ReadonlyMap<string, TrustMark>;
+  inContext: ReadonlySet<string>;
+  // Verify: an Editor with an account. The fields: an Editor.
+  canVerify: boolean;
+  canEditFields: boolean;
+  onVerify: (id: string) => void;
+  onSetContext: (id: string, on: boolean) => void;
 };
 
 const rowOf = (target: EventTarget | null): HTMLElement | null =>
@@ -78,6 +94,7 @@ export function PageTree({
   people,
   renameNonce = 0,
   actions,
+  knowledge,
   className = '',
 }: PageTreeProps) {
   // Read once per change of the list or of what is closed, never per row.
@@ -93,9 +110,9 @@ export function PageTree({
     (rows.some((r) => r.id === activeId) ? activeId : (rows[0]?.id ?? null));
 
   // The handlers read the newest props when they run, so they (and the rows they are handed to) keep their identity.
-  const latest = useRef({ rows, tabs, actions, canEdit, onSetOpen, isOutOfScope });
+  const latest = useRef({ rows, tabs, actions, canEdit, onSetOpen, isOutOfScope, knowledge });
   useEffect(() => {
-    latest.current = { rows, tabs, actions, canEdit, onSetOpen, isOutOfScope };
+    latest.current = { rows, tabs, actions, canEdit, onSetOpen, isOutOfScope, knowledge };
   });
 
   // The command palette's Rename Page: each bump opens the current page's field once. The value the tree mounts
@@ -125,8 +142,12 @@ export function PageTree({
   };
 
   const onVerb = (verb: PageMenuVerb, id: string) => {
-    const { actions: act, onSetOpen: setOpen } = latest.current;
+    const { actions: act, onSetOpen: setOpen, knowledge: know } = latest.current;
     switch (verb) {
+      case 'verify':
+        return know?.onVerify(id);
+      case 'context':
+        return know?.onSetContext(id, !know.inContext.has(id));
       case 'rename':
         return setEditingId(id);
       case 'add':
@@ -312,6 +333,7 @@ export function PageTree({
             touch={touch}
             ui={ui}
             people={people?.(row.id)}
+            trust={knowledge?.marks.get(row.id)}
             onRename={onRename}
             onRenameDone={onRenameDone}
           />
@@ -323,6 +345,7 @@ export function PageTree({
           tabs={tabs}
           id={menu.id}
           canEdit={canEdit}
+          knowledge={knowledge}
           onVerb={onVerb}
           onClose={() => setMenu(null)}
         />

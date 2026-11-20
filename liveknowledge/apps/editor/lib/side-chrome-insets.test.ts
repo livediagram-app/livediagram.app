@@ -21,4 +21,25 @@ describe('sideChromeInsets', () => {
     panel.remove();
     expect(sideChromeInsets(main)).toEqual({ left: 0, right: 0 });
   });
+
+  it('keeps the page tree and the docked page rail both clear', () => {
+    const main = document.createElement('main');
+    main.getBoundingClientRect = () =>
+      ({ ...canvas, left: 0, right: 1440, width: 1440 }) as DOMRect;
+    const tree = document.createElement('aside');
+    tree.setAttribute('data-contents-sidebar', '');
+    tree.getBoundingClientRect = () => rect(0, 264);
+    const rail = document.createElement('aside');
+    rail.setAttribute('data-page-rail', 'docked');
+    rail.getBoundingClientRect = () => rect(1160, 1440);
+    // The rail's card below 1,280 px floats over the page: it takes no room.
+    const card = document.createElement('div');
+    card.setAttribute('data-page-rail', 'card');
+    card.getBoundingClientRect = () => rect(1100, 1380);
+    document.body.append(tree, rail, card);
+    expect(sideChromeInsets(main)).toEqual({ left: 264, right: 280 });
+    tree.remove();
+    rail.remove();
+    card.remove();
+  });
 });

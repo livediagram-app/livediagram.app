@@ -1,5 +1,5 @@
 import type { CSSProperties, Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { EditorState, TextSelection, type Transaction } from 'prosemirror-state';
+import { EditorState, TextSelection, type Plugin, type Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { gapCursor } from 'prosemirror-gapcursor';
 import { cleanFootnoteText, isContinuousPage, type ArticleFlow } from '@liveknowledge/document';
@@ -78,6 +78,8 @@ export type MountContext = {
   scheduleMeasure: () => void;
   scheduleReveal: () => void;
   publish: (view: EditorView) => void;
+  // Plugins the host adds after the writing's own (a knowledgebase page's slots).
+  extraPlugins?: readonly Plugin[];
 };
 
 // The writing's ProseMirror view, made once per article (ArticleEditor's mount effect): its plugins, its
@@ -108,6 +110,7 @@ export function mountArticleView({
   scheduleMeasure,
   scheduleReveal,
   publish,
+  extraPlugins = [],
 }: MountContext): (() => void) | undefined {
   const mount = host.current;
   if (!mount) return;
@@ -187,6 +190,7 @@ export function mountArticleView({
       }),
       ...tablePlugins(),
       gapCursor(),
+      ...extraPlugins,
     ],
   });
   const view = new EditorView(mount, {

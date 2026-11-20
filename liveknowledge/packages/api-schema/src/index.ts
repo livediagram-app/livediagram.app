@@ -161,6 +161,9 @@ export type TabSummary = {
   // The page this one sits under (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree"); absent
   // at the top level. Stored in the tab's body and read out for the summary, so the tree draws before any body loads.
   parent?: string;
+  // The page's knowledge fields (docs/specs/030-knowledgebase/verification.md "The fields"), read out of the body as
+  // the parent is, so the page tree shows every page's verified state before any body loads; absent for none.
+  knowledge?: Tab['knowledge'];
   // Set for a tab outside a tab-scoped visitor's scope (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its name is blanked, its folder dropped, and its content never served.
   outOfScope?: true;

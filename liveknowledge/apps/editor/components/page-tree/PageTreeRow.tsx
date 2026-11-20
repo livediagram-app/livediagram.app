@@ -8,6 +8,8 @@
 import { memo, type ReactNode } from 'react';
 import { HoverCard, Tooltip } from '@liveknowledge/ui';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
+import { TrustBadge } from '@/components/knowledge/TrustBadge';
+import type { TrustMark } from '@/lib/knowledge/page-trust';
 import { AddIcon, ChevronIcon, MoreIcon } from './page-tree-icons';
 import { useRowMark, type PageTreeUi } from './page-tree-ui';
 import {
@@ -52,6 +54,8 @@ export type PageTreeRowProps = {
   ui: PageTreeUi;
   // Who is on the page, drawn before the row's buttons.
   people?: ReactNode;
+  // The page's verified state: a tick or a Review Due pill at the row's right; absent for a page never verified.
+  trust?: TrustMark | undefined;
   onRename: (id: string, name: string) => void;
   onRenameDone: () => void;
 };
@@ -67,6 +71,7 @@ function PageTreeRowView({
   touch,
   ui,
   people,
+  trust,
   onRename,
   onRenameDone,
 }: PageTreeRowProps) {
@@ -101,7 +106,8 @@ function PageTreeRowView({
   return (
     <div
       role="treeitem"
-      aria-label={name}
+      // The state is part of the row's name: a screen reader hears it with the title.
+      aria-label={trust ? `${name}, ${trust === 'verified' ? 'Verified' : 'Review Due'}` : name}
       aria-level={row.level}
       aria-posinset={row.position}
       aria-setsize={row.siblings}
@@ -173,6 +179,7 @@ function PageTreeRowView({
           {name}
         </span>
       )}
+      {trust && !editing && !outOfScope ? <TrustBadge mark={trust} compact /> : null}
       {people}
       {/* The row's buttons: their room is kept whether they are there or not, so a hover moves nothing. */}
       <span

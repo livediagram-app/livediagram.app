@@ -8505,6 +8505,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
+      "knowledge": {
+        "$ref": "#/components/schemas/TabKnowledge"
+      },
       "name": {
         "type": "string"
       },

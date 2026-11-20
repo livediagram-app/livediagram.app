@@ -7,7 +7,8 @@ Derived from [Search and Ask](../search-and-ask.md), [Verification](../verificat
 `@liveknowledge/knowledge` (`packages/knowledge`) is the engine under search, trust, links, Ask and the conflict
 check. It is pure: it writes no storage, reads no environment and starts no timer. The room runs the SQL it makes; the
 caller hands in `fetch`, the team's key and the clock. **Built: the package, the room's wiring and the api's
-routes** ("Wiring" below). **Not built:** the editor, the MCP tools, the Offline matcher and the three emails.
+routes** ("Wiring" below); the editor's side is the [knowledge UI blueprint](knowledge-ui.md). **Not built:** the
+MCP tools and the three emails.
 
 ## Domain and naming
 

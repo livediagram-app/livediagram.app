@@ -14,6 +14,7 @@ import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { usePageTreeChrome, type PageTreeChrome } from '@/components/page-tree/usePageTreeChrome';
+import { usePageRailChrome, type PageRailChrome } from '@/components/knowledge/usePageRailChrome';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
@@ -63,6 +64,7 @@ export function useCanvasChromePanels({
   // The page tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree"): docked as the sidebar
   // down the left, where the fork's Contents sidebar stood, or a phone's Pages button (usePageTreeChrome).
   pageTree: PageTreeChrome;
+  pageRail: PageRailChrome;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -149,6 +151,8 @@ export function useCanvasChromePanels({
   // The page tree takes the docked sidebar's place (Contents listed a tab's paper pages; a knowledgebase page has
   // one).
   const pageTree = usePageTreeChrome({ chromeHidden, zenMode: props.zenMode === true, isMobile });
+  // The page rail down the right (On This Page, Page Health), or its Page Info button below 1,280 px.
+  const pageRail = usePageRailChrome({ chromeHidden, zenMode: props.zenMode === true, isMobile });
   const { laserEl, spotlightEl, formatEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -271,6 +275,7 @@ export function useCanvasChromePanels({
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
     pageTree,
+    pageRail,
     paletteTint,
   };
 }

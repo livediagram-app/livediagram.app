@@ -71,6 +71,24 @@ describe('POST pages/:tab/verify', () => {
       expect((await read(kit, who)).knowledge.state).toBe('verified');
   });
 
+  it("rides the tab summaries, so the page tree shows every page's state from one read", async () => {
+    const kit = await knowledgeKit();
+    type Summaries = { document: { tabs: { id: string; knowledge?: object }[] } };
+    const summaries = async () =>
+      (await (await kit.call('viewer', 'GET', '/api/documents/kb')).json<Summaries>()).document
+        .tabs;
+    expect((await summaries()).every((tab) => !Object.hasOwn(tab, 'knowledge'))).toBe(true);
+    const res = await kit.call('editor', 'POST', '/api/documents/kb/pages/deploys/verify');
+    const { knowledge } = await res.json<Health>();
+    const after = await summaries();
+    expect(after.find((tab) => tab.id === 'deploys')?.knowledge).toEqual({
+      owner: OWNER,
+      verifiedAt: knowledge.verifiedAt,
+      verifiedBy: OWNER,
+    });
+    expect(after.filter((tab) => Object.hasOwn(tab, 'knowledge'))).toHaveLength(1);
+  });
+
   it.each(['participant', 'viewer', 'link', 'page-link', 'stranger'] as const)(
     'is refused for %s, who changes nothing',
     async (who) => {

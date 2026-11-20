@@ -49,6 +49,8 @@ import type { ArticleEditorProps } from './article-editor-types';
 import { measureArticleLayout } from './article-measure';
 import { mountArticleView } from './article-view-mount';
 import { PageLimitNotice, replaceContent } from './article-editor-parts';
+import { createPageSlots } from '@/lib/knowledge/page-slots-plugin';
+import { PageKnowledgeSlots } from '@/components/knowledge/PageKnowledgeSlots';
 
 // How long typing pauses before it is written to the tab (docs/specs/007-editor/article-pages.md
 // "Writing", "Commits").
@@ -61,6 +63,8 @@ export type { FlowLayout, FocusRequest, ArticleEditorProps } from './article-edi
 export default function ArticleEditor(props: ArticleEditorProps) {
   const host = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  // Room in the writing for the page's meta row and Linked From (lib/knowledge/page-slots-plugin.ts).
+  const [pageSlots] = useState(createPageSlots);
   // The writing as last written to or read from the tab: the base local typing is measured from.
   const committed = useRef<ArticleFlow>(props.doc);
   const latest = useRef(props);
@@ -306,6 +310,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       scheduleMeasure,
       scheduleReveal,
       publish,
+      extraPlugins: [pageSlots.plugin],
     });
     // oxlint-disable-next-line react/exhaustive-deps -- created once per article: everything it reads is read through refs
   }, []);
@@ -379,6 +384,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   return (
     <>
       {linkCard}
+      <PageKnowledgeSlots slots={pageSlots} />
       {cutOff ? <PageLimitNotice page={props.pages[props.pages.length - 1]!} /> : null}
       {slash && props.editable && props.reshape !== false ? (
         <SlashMenu

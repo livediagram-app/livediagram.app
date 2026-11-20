@@ -36,6 +36,7 @@ export function placeholdersFromSummaries(
     name: string;
     folder?: string;
     parent?: string;
+    knowledge?: Tab['knowledge'];
     connection?: unknown;
   }[],
 ): Tab[] {
@@ -53,6 +54,8 @@ export function placeholdersFromSummaries(
         folder: summary.folder,
         // The page tree (docs/specs/030-knowledgebase/blueprints/page-tree.md) draws from the summaries alone.
         ...(summary.parent !== undefined ? { parent: summary.parent } : {}),
+        // And each page's verified state (docs/specs/030-knowledgebase/verification.md): one read, no fetch a row.
+        ...(summary.knowledge !== undefined ? { knowledge: summary.knowledge } : {}),
       },
       summary,
     ),

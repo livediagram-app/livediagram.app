@@ -1,0 +1,89 @@
+'use client';
+
+// The meta row under a page's title (docs/specs/030-knowledgebase/verification.md "States"): the verified state,
+// when the review is due, when it was last edited (where that is known), "Changed since verified", and for an
+// Editor a Verify button. Its height is kept whatever it holds, so nothing in the writing moves when the page's
+// health arrives or its state changes.
+import { Fragment, type ReactNode } from 'react';
+import { Button } from '@liveknowledge/ui';
+import { reviewDueText, trustMark, type PageTrust } from '@/lib/knowledge/page-trust';
+import { relativeSince } from '@/lib/relative-time';
+import { TrustBadge } from './TrustBadge';
+import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
+
+export type PageMetaRowProps = {
+  trust: PageTrust;
+  now: number;
+  // The verifier's name, where the editor knows it.
+  verifiedBy: string | undefined;
+  changedSinceVerified: boolean;
+  // When the writing was last edited and by whom, where a route says so.
+  edited?: { at: number; by?: string } | undefined;
+  // Absent for anyone who may not verify: a Participant, a Viewer, a guest, a link to one page.
+  onVerify: (() => void) | undefined;
+};
+
+export function PageMetaRowView({
+  trust,
+  now,
+  verifiedBy,
+  changedSinceVerified,
+  edited,
+  onVerify,
+}: PageMetaRowProps) {
+  const mark = trustMark(trust.state);
+  const notes: { key: string; node: ReactNode }[] = [];
+  if (trust.reviewAt !== undefined)
+    notes.push({ key: 'review', node: reviewDueText(trust.reviewAt, now) });
+  if (edited)
+    notes.push({
+      key: 'edited',
+      node: `Edited ${relativeSince(edited.at, now)}${edited.by ? ` by ${edited.by}` : ''}`,
+    });
+  if (mark && changedSinceVerified)
+    notes.push({
+      key: 'changed',
+      node: <span className="text-amber-800 dark:text-amber-300">Changed since verified</span>,
+    });
+  return (
+    <div
+      data-page-meta=""
+      className="flex min-h-7 flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-500 dark:text-slate-400"
+    >
+      {mark ? (
+        <TrustBadge mark={mark} {...(verifiedBy ? { label: `Verified by ${verifiedBy}` } : {})} />
+      ) : null}
+      {notes.map((note, i) => (
+        <Fragment key={note.key}>
+          {i > 0 ? <span aria-hidden>·</span> : null}
+          <span>{note.node}</span>
+        </Fragment>
+      ))}
+      {onVerify ? (
+        <Button
+          variant="secondary"
+          size="xs"
+          onClick={onVerify}
+          className="cursor-pointer phone:min-h-11 phone:px-4"
+        >
+          {mark ? 'Verify Again' : 'Verify'}
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+/** The current page's meta row, from the editor's store. */
+export function PageMetaRow() {
+  const page = usePageKnowledge();
+  const { nameOf } = useKnowledgePeople();
+  return (
+    <PageMetaRowView
+      trust={page.trust}
+      now={page.now}
+      verifiedBy={nameOf(page.trust.fields.verifiedBy)}
+      changedSinceVerified={page.health?.knowledge.changedSinceVerified === true}
+      onVerify={page.rights.verify ? () => page.verify(page.pageId) : undefined}
+    />
+  );
+}

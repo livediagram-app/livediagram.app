@@ -4,7 +4,7 @@
 // tabs as the tree reads them, who may change them, what is closed in this browser, and the actions, each read from
 // the editor's chrome store one slice at a time. A typing commit changes none of them (`sameTabsForBar` compares the
 // tabs without their writing), so it renders nothing here.
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { truncateName } from '@liveknowledge/document';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
@@ -13,7 +13,11 @@ import { useToast } from '@/hooks/ui/useToast';
 import { readClosedPages, writeClosedPages } from '@/lib/page-tree-open';
 import { track } from '@/lib/telemetry';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
-import type { PageTreeActions, PageTreeProps } from './PageTree';
+import { useKnowledgeActions } from '@/components/knowledge/usePageKnowledge';
+import { pageKnowledgeStore } from '@/lib/knowledge/page-knowledge-store';
+import { pageTrust, trustMarks } from '@/lib/knowledge/page-trust';
+import { useRelativeNow } from '@/lib/relative-time';
+import type { PageTreeActions, PageTreeKnowledge, PageTreeProps } from './PageTree';
 import { selectPage } from './select-page';
 
 /** The link to one page of a knowledgebase: the knowledgebase's address with the page pinned in its fragment, which
@@ -121,6 +125,33 @@ export function usePageTreeModel(): PageTreeModel {
     [chrome, participantsByTab, selfId, sessionRole, followingId, followerCount],
   );
 
+  // Each page's verified state, from the tab list alone (the summaries carry every page's fields, and the room
+  // patches them): one pass a change of the list, of a field just set here, or of the clock's 30 s tick, never a
+  // request a row. A typing commit changes none of the three.
+  const knowledgeActions = useKnowledgeActions();
+  const knowledgeVersion = useSyncExternalStore(
+    pageKnowledgeStore.subscribe,
+    pageKnowledgeStore.version,
+    pageKnowledgeStore.version,
+  );
+  const now = useRelativeNow();
+  const knowledge = useMemo<PageTreeKnowledge>(() => {
+    // Read for the memo's sake: a field set here moves the version, not the tab list.
+    void knowledgeVersion;
+    const inContext = new Set<string>();
+    for (const tab of tabs) {
+      if (pageTrust(pageKnowledgeStore.fieldsOf(tab), now).fields.context) inContext.add(tab.id);
+    }
+    return {
+      marks: trustMarks(tabs, now, pageKnowledgeStore.fieldsOf),
+      inContext,
+      canVerify: knowledgeActions.rights.verify,
+      canEditFields: knowledgeActions.rights.editFields,
+      onVerify: knowledgeActions.verify,
+      onSetContext: (id, on) => knowledgeActions.setFields(id, { context: on }, 'context'),
+    };
+  }, [tabs, now, knowledgeVersion, knowledgeActions]);
+
   const onRenameKnowledgebase = useCallback(
     (next: string) => {
       const trimmed = truncateName(next);
@@ -139,6 +170,7 @@ export function usePageTreeModel(): PageTreeModel {
     people: participantsByTab.size > 0 ? people : undefined,
     renameNonce,
     actions,
+    knowledge,
     name,
     onRenameKnowledgebase: canEdit ? onRenameKnowledgebase : undefined,
   };
