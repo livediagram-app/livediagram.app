@@ -9,6 +9,7 @@ import type { KnowledgeSearchResult, KnowledgeSummaryResponse } from '@liveknowl
 
 type Auth = {
   authLoaded: boolean;
+  sessionAnswered?: boolean;
   accountUserId: string | null;
   accountDisplayName: string | null;
 };
@@ -32,6 +33,8 @@ vi.mock('@/lib/api/knowledge', async (actual) => ({
   ...api,
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const hint = vi.hoisted(() => ({ signedIn: false }));
+vi.mock('@/lib/signed-in-hint', () => ({ looksSignedIn: () => hint.signedIn }));
 vi.mock('@/components/chrome/EditorHeader', () => ({ EditorHeader: () => <header /> }));
 vi.mock('@/components/chrome/OpeningScreen', () => ({
   OpeningScreen: () => <div data-testid="opening" />,
@@ -39,7 +42,7 @@ vi.mock('@/components/chrome/OpeningScreen', () => ({
 
 import { ARRIVAL_KEY } from '@/lib/knowledge-home/arrival-handoff';
 import { recentQuestionsKey } from '@/lib/knowledge-ask/recent-questions';
-import { HomeScreen } from './HomeScreen';
+import { HomeScreen, homeSignedOut } from './HomeScreen';
 import { HomeReview } from './HomeSections';
 
 const item = (id: string, title: string, updatedAt: number) => ({
@@ -111,6 +114,39 @@ describe('who sees Home', () => {
     render(<HomeScreen />);
     expect(replace).toHaveBeenCalledWith('/new');
     expect(index.listItems).not.toHaveBeenCalled();
+  });
+
+  it('keeps the opening screen when the page gave up waiting on a browser that looks signed in', () => {
+    hint.signedIn = true;
+    auth.value = {
+      authLoaded: true,
+      sessionAnswered: false,
+      accountUserId: null,
+      accountDisplayName: null,
+    };
+    render(<HomeScreen />);
+    expect(screen.getByTestId('opening')).toBeTruthy();
+    expect(replace).not.toHaveBeenCalled();
+    hint.signedIn = false;
+  });
+});
+
+describe('homeSignedOut', () => {
+  const state = { authLoaded: true, sessionAnswered: true, signedIn: false, looksSignedIn: false };
+
+  it('is false while who is here is not known, and for someone signed in', () => {
+    expect(homeSignedOut({ ...state, authLoaded: false, sessionAnswered: false })).toBe(false);
+    expect(homeSignedOut({ ...state, signedIn: true })).toBe(false);
+  });
+
+  it('is true once the session itself says nobody is signed in', () => {
+    expect(homeSignedOut(state)).toBe(true);
+    expect(homeSignedOut({ ...state, looksSignedIn: true })).toBe(true);
+  });
+
+  it('waits for the session when the page gave up on a browser that looks signed in', () => {
+    expect(homeSignedOut({ ...state, sessionAnswered: false, looksSignedIn: true })).toBe(false);
+    expect(homeSignedOut({ ...state, sessionAnswered: false })).toBe(true);
   });
 });
 

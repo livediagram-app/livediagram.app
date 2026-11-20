@@ -18,6 +18,7 @@ import {
   knowledgebaseHref,
 } from '@/lib/knowledge-home/home-links';
 import { useRelativeNow } from '@/lib/relative-time';
+import { looksSignedIn } from '@/lib/signed-in-hint';
 import { track } from '@/lib/telemetry';
 import { HomeHero, type HomeExample } from './HomeHero';
 import {
@@ -38,9 +39,31 @@ const NOT_VERIFYING: ReadonlySet<string> = new Set();
 
 const go = (href: string) => window.location.assign(href);
 
+/**
+ * Whether nobody is signed in, settled: the session itself said so, or the page gave up waiting for it (`authLoaded`
+ * without `sessionAnswered`, the bootstrap's 5 s give-up) in a browser that does not look signed in. A browser that
+ * looks signed in waits for its session's own answer, as /new does (useNewDocumentLocation): on a cold first load
+ * the session's code can arrive after the give-up, and reading that as signed out sent a signed-in person to /new.
+ */
+export function homeSignedOut(state: {
+  authLoaded: boolean;
+  sessionAnswered: boolean;
+  signedIn: boolean;
+  looksSignedIn: boolean;
+}): boolean {
+  if (state.signedIn || !state.authLoaded) return false;
+  return state.sessionAnswered || !state.looksSignedIn;
+}
+
 export function HomeScreen() {
-  const { authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
-  const signedOut = authLoaded && !accountUserId;
+  const { authLoaded, sessionAnswered, accountUserId, accountDisplayName } = useAccountBootstrap();
+  const signedOut = homeSignedOut({
+    authLoaded,
+    sessionAnswered,
+    signedIn: !!accountUserId,
+    // Read only for the one case it decides: the give-up, with no session answer yet.
+    looksSignedIn: authLoaded && !sessionAnswered && !accountUserId && looksSignedIn(),
+  });
   useEffect(() => {
     if (signedOut) window.location.replace(`${NEW_KNOWLEDGEBASE_HREF}${window.location.search}`);
   }, [signedOut]);
