@@ -1390,7 +1390,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "liveplanner.app",
       "livedocuments.app",
       "livedesign.app",
-      "livehuddle.app"
+      "livehuddle.app",
+      "liveknowledge.app"
     ],
     "type": "string"
   },
@@ -1424,10 +1425,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "careers",
       "decisions",
       "education",
+      "engineering",
       "events",
       "finance",
       "games",
       "goals",
+      "handbooks",
       "health",
       "hiring",
       "home",
@@ -6982,7 +6985,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "liveplanner",
       "livedocuments",
       "livedesign",
-      "livehuddle"
+      "livehuddle",
+      "liveknowledge"
     ],
     "type": "string"
   },

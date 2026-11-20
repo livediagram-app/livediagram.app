@@ -18,6 +18,7 @@ const FAN: readonly App[] = [
   'livedocuments',
   'livedesign',
   'livehuddle',
+  'liveknowledge',
 ];
 
 export const CONNECT_RAIL_ID = 'connect';

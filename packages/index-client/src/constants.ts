@@ -9,10 +9,11 @@ export const APPS = [
   'livedocuments',
   'livedesign',
   'livehuddle',
+  'liveknowledge',
 ] as const;
 export type App = (typeof APPS)[number];
 
-export const KINDS = ['canvas', 'plan', 'document', 'design', 'space'] as const;
+export const KINDS = ['canvas', 'plan', 'document', 'design', 'space', 'knowledgebase'] as const;
 export type Kind = (typeof KINDS)[number];
 
 export const APP_KINDS: Record<App, Kind> = {
@@ -21,6 +22,7 @@ export const APP_KINDS: Record<App, Kind> = {
   livedocuments: 'document',
   livedesign: 'design',
   livehuddle: 'space',
+  liveknowledge: 'knowledgebase',
 };
 
 export const isApp = (value: unknown): value is App =>
@@ -299,6 +301,7 @@ export const APP_LINK_LEVELS: Record<App, readonly Level[]> = {
   livedocuments: EVERY_LINK_LEVEL,
   livedesign: EVERY_LINK_LEVEL,
   livehuddle: ['edit', 'participate'],
+  liveknowledge: EVERY_LINK_LEVEL,
 };
 export const APP_DEFAULT_LINK_LEVEL: Record<App, Level> = {
   livediagram: DEFAULT_LINK_LEVEL,
@@ -306,6 +309,7 @@ export const APP_DEFAULT_LINK_LEVEL: Record<App, Level> = {
   livedocuments: DEFAULT_LINK_LEVEL,
   livedesign: DEFAULT_LINK_LEVEL,
   livehuddle: 'participate',
+  liveknowledge: DEFAULT_LINK_LEVEL,
 };
 // Whether a new link to one of `app`'s items may grant `level`.
 export const linkLevelOffered = (app: App, level: Level): boolean =>

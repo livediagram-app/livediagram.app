@@ -3,7 +3,7 @@
 // `TabConnection`, which every app's api reads and writes it with; nothing in it is secret, and it opens nothing
 // without the index.
 export type TabConnectionApp =
-  'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle';
+  'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle' | 'liveknowledge';
 
 export type TabConnectionWire = {
   id: string;

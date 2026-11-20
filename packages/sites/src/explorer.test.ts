@@ -83,6 +83,7 @@ describe("the site switcher's links on an Explorer page", () => {
       livedocuments: 'https://www.livedocuments.app/explorer/inbox',
       livedesign: 'https://www.livedesign.app/explorer/inbox',
       livehuddle: 'https://www.livehuddle.app/explorer/inbox',
+      liveknowledge: 'https://www.liveknowledge.app/explorer/inbox',
     });
     expect(explorerSwitchHref('/explorer/')!(site('liveplanner.app'))).toBe(
       'https://www.liveplanner.app/explorer',
@@ -122,6 +123,7 @@ describe("the site switcher's links on an Explorer page", () => {
       livedocuments: 'https://www.livedocuments.app/explorer/images',
       livedesign: 'https://www.livedesign.app/explorer/images',
       livehuddle: 'https://www.livehuddle.app/explorer/images',
+      liveknowledge: 'https://www.liveknowledge.app/explorer/images',
     });
     expect(links('/explorer/shape-libraries')).toMatchObject({
       livediagram: 'https://www.livediagram.app/explorer/shape-libraries',

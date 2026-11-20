@@ -28,6 +28,7 @@ const KIND_WORDS: Record<Kind, { one: string; many: string }> = {
   document: { one: 'Document', many: 'Documents' },
   design: { one: 'Design', many: 'Designs' },
   space: { one: 'Space', many: 'Spaces' },
+  knowledgebase: { one: 'Knowledgebase', many: 'Knowledgebases' },
 };
 
 function words(one: string, many: string): Words {
@@ -60,6 +61,7 @@ const HERO_WORDS: Record<Kind, HeroWords> = {
   document: { question: 'what are you writing today?', lead: LEAD },
   design: { question: 'what are you designing today?', lead: LEAD },
   space: { question: 'who are you meeting today?', lead: LEAD },
+  knowledgebase: { question: 'what are you writing down today?', lead: LEAD },
 };
 
 // The hero while the list mixes every app: no one kind's verb.

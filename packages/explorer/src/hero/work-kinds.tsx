@@ -159,6 +159,34 @@ export const WORK_KINDS: Record<App, readonly WorkKind[]> = {
       draw: (b) => <MiniAllHands {...b} />,
     },
   ],
+  // Knowledgebase pages: the page a knowledgebase opens on, then three it is often started from (the fork's article templates today;
+  // liveknowledge/docs/specs/016-platform/platform-registration.md "Explorer").
+  liveknowledge: [
+    {
+      id: 'page',
+      label: 'Page',
+      template: 'blank-article',
+      draw: (b) => <MiniArticle {...fitBox(b, 0.78)} />,
+    },
+    {
+      id: 'handbook',
+      label: 'Handbook',
+      template: 'onboarding-handbook',
+      draw: (b) => <MiniArticle {...fitBox(b, 0.78)} />,
+    },
+    {
+      id: 'design-doc',
+      label: 'Design Doc',
+      template: 'design-doc',
+      draw: (b) => <MiniArticle {...fitBox(b, 0.78)} />,
+    },
+    {
+      id: 'meeting-notes',
+      label: 'Meeting Notes',
+      template: 'meeting-notes',
+      draw: (b) => <MiniArticle {...fitBox(b, 0.78)} />,
+    },
+  ],
 };
 
 /** One tile of the hero's set: an app's kind of work. */

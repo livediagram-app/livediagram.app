@@ -34,6 +34,10 @@ const EXPECTED: Record<App, { labels: string[]; templates: string[] }> = {
     labels: ['Virtual Office', 'Team Pod', 'Coworking Space', 'All-Hands Hall'],
     templates: ['virtual-office', 'team-pod', 'coworking-space', 'all-hands-hall'],
   },
+  liveknowledge: {
+    labels: ['Page', 'Handbook', 'Design Doc', 'Meeting Notes'],
+    templates: ['blank-article', 'onboarding-handbook', 'design-doc', 'meeting-notes'],
+  },
 };
 
 const tilesOf = (root: HTMLElement) => [...root.querySelectorAll<HTMLElement>('[data-work-kind]')];
@@ -87,17 +91,15 @@ describe('WorkKinds', () => {
     for (const app of APPS) expect(WORK_KINDS[app]).toHaveLength(WORK_KINDS_PER_APP);
   });
 
-  it('lays an app’s four two by two from lg, and All’s five in one row below lg and three over two from lg', () => {
+  it('lays an app’s four two by two from lg, and All’s six three over three', () => {
     const { container: one } = render(
       <WorkKinds app="livehuddle" all={false} templateHref={href} />,
     );
     expect(one.querySelector('ul')!.className).toContain('grid-cols-4 gap-2 lg:grid-cols-2');
     const { container: all } = render(<WorkKinds app="livehuddle" all templateHref={href} />);
     const grid = all.querySelector('ul')!.className;
-    expect(grid).toContain('grid-cols-5');
-    expect(grid).toContain('lg:grid-cols-6');
-    expect(grid).toContain('lg:[&>li]:col-span-2');
-    expect(grid).toContain('lg:[&>li:nth-child(4)]:col-start-2');
+    expect(grid).toContain('grid-cols-3');
+    expect(grid).not.toContain('lg:grid-cols');
     // Every tile is the same tile as an app's own; only the grid, and on a phone the name's size, differ.
     const tileClass = (root: HTMLElement) => root.querySelector('[data-work-kind]')!.className;
     expect(tileClass(all)).toBe(tileClass(one));
@@ -109,13 +111,14 @@ describe('WorkKinds', () => {
     const { container } = render(<WorkKinds app="liveplanner" all templateHref={href} />);
     const tiles = tilesOf(container);
     expect(tiles.map((t) => t.getAttribute('data-work-app'))).toEqual([...APPS]);
-    expect(tiles).toHaveLength(5);
+    expect(tiles).toHaveLength(6);
     expect(tiles.map((t) => t.textContent)).toEqual([
       'Canvas',
       'Plan',
       'Document',
       'Design',
       'Space',
+      'Knowledgebase',
     ]);
     expect(tiles.map((t) => t.getAttribute('href'))).toEqual(
       APPS.map((app) => href(app, EXPECTED[app].templates[0]!)),
