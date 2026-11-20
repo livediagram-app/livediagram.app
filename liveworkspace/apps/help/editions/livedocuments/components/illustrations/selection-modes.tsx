@@ -257,9 +257,25 @@ export function FormatPanelScene() {
           Choose a Plan
         </Heading>
       </Page>
-      <Shape x={28} y={98} w={92} h={48} label="Team" fill="fill-brand-50" stroke="stroke-brand-500" />
+      <Shape
+        x={28}
+        y={98}
+        w={92}
+        h={48}
+        label="Team"
+        fill="fill-brand-50"
+        stroke="stroke-brand-500"
+      />
       <Arrow from={[110, 148]} to={[130, 172]} kind="curved" tone="muted" dashed />
-      <Shape x={92} y={168} w={92} h={48} label="Personal" fill="fill-amber-100" stroke="stroke-brand-500" />
+      <Shape
+        x={92}
+        y={168}
+        w={92}
+        h={48}
+        label="Personal"
+        fill="fill-amber-100"
+        stroke="stroke-brand-500"
+      />
       <ToolPanel
         x={204}
         y={56}
@@ -371,7 +387,14 @@ export function SpotlightPanelScene() {
             <Label x={22} y={ry + 17} size={10} weight={600} tone="strong">
               {['2024', '2025', '2026'][i]}
             </Label>
-            <rect x={60} y={ry + 6} width={[70, 126, 98][i]!} height={22} rx={3} className={i === 1 ? 'fill-brand-500' : 'fill-brand-200'} />
+            <rect
+              x={60}
+              y={ry + 6}
+              width={[70, 126, 98][i]}
+              height={22}
+              rx={3}
+              className={i === 1 ? 'fill-brand-500' : 'fill-brand-200'}
+            />
           </g>
         ))}
       </Sheet>
@@ -427,8 +450,23 @@ export function SpotlightTool() {
         </Heading>
         {[0, 1, 2].map((i) => (
           <g key={i}>
-            <rect x={80 + i * 92} y={100} width={80} height={96} rx={4} className={i === 1 ? 'fill-brand-500' : 'fill-brand-50 stroke-brand-500'} strokeWidth={1.25} />
-            <Label x={120 + i * 92} y={150} size={16} weight={700} anchor="middle" tone={i === 1 ? 'onAccent' : 'accent'}>
+            <rect
+              x={80 + i * 92}
+              y={100}
+              width={80}
+              height={96}
+              rx={4}
+              className={i === 1 ? 'fill-brand-500' : 'fill-brand-50 stroke-brand-500'}
+              strokeWidth={1.25}
+            />
+            <Label
+              x={120 + i * 92}
+              y={150}
+              size={16}
+              weight={700}
+              anchor="middle"
+              tone={i === 1 ? 'onAccent' : 'accent'}
+            >
               {['3x', '41%', '12'][i]}
             </Label>
           </g>

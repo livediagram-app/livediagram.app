@@ -80,7 +80,13 @@ export function PaletteCategoryPanel({
 }) {
   const rows = CATEGORY_ROWS[category]!;
   return (
-    <CategoryPanel x={x} y={y} w={w} h={paletteRowsHeight(category)} item={category.toLowerCase() as StripItem}>
+    <CategoryPanel
+      x={x}
+      y={y}
+      w={w}
+      h={paletteRowsHeight(category)}
+      item={category.toLowerCase() as StripItem}
+    >
       {rows.map((row, i) => {
         const ry = y + HEAD_H + i * ROW_H;
         const on = row.caption === active;

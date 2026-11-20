@@ -61,7 +61,13 @@ export function ZenAfter() {
           strokeWidth={0.75}
         />
         <rect x={zx + 81} y={H - 29} width={20} height={18} rx={4} className="fill-brand-50" />
-        <Icon prims={lucideMinimize2} x={zx + 91} y={H - 20} size={8} className="stroke-brand-700" />
+        <Icon
+          prims={lucideMinimize2}
+          x={zx + 91}
+          y={H - 20}
+          size={8}
+          className="stroke-brand-700"
+        />
       </Card>
     </Scene>
   );
@@ -90,7 +96,9 @@ function Stop({
 }) {
   return (
     <Card x={x} y={y} w={w} h={24}>
-      {on && <rect x={x + 2} y={y + 2} width={w - 4} height={20} rx={4} className="fill-brand-50" />}
+      {on && (
+        <rect x={x + 2} y={y + 2} width={w - 4} height={20} rx={4} className="fill-brand-50" />
+      )}
       <Icon
         prims={prims}
         x={x + 13}
@@ -98,7 +106,13 @@ function Stop({
         size={9}
         className={on ? 'stroke-brand-700' : 'stroke-slate-600'}
       />
-      <Label x={x + 23} y={y + 12.5} size={9.5} weight={on ? 600 : 500} tone={on ? 'accent' : 'body'}>
+      <Label
+        x={x + 23}
+        y={y + 12.5}
+        size={9.5}
+        weight={on ? 600 : 500}
+        tone={on ? 'accent' : 'body'}
+      >
         {label}
       </Label>
     </Card>
@@ -175,7 +189,15 @@ export function AutoAlignGrid() {
           />
         ))}
         <Shape x={116} y={85} w={70} h={44} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-        <Shape x={193} y={136} w={70} h={44} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
+        <Shape
+          x={193}
+          y={136}
+          w={70}
+          h={44}
+          dashed
+          fill="fill-slate-50"
+          stroke="stroke-slate-300"
+        />
         <Shape x={110} y={80} w={70} h={44} accent label="Reach" labelTone="onAccent" />
         <Shape x={190} y={140} w={70} h={44} accent label="Growth" labelTone="onAccent" />
       </Page>

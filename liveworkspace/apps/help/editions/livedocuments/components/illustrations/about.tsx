@@ -25,13 +25,33 @@ function Plate({
   return (
     <g>
       <Lift x={x} y={y} w={w} h={h} r={r} />
-      <rect x={x} y={y} width={w} height={h} rx={r} className={`fill-white ${stroke}`} strokeWidth={0.75} />
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={r}
+        className={`fill-white ${stroke}`}
+        strokeWidth={0.75}
+      />
     </g>
   );
 }
 
 /** A slide in miniature, `w` wide at 16:9, as a document's thumbnail. */
-function Thumb({ x, y, w, title, layout }: { x: number; y: number; w: number; title: string; layout?: 'title' | 'chart' | 'picture' }) {
+function Thumb({
+  x,
+  y,
+  w,
+  title,
+  layout,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  title: string;
+  layout?: 'title' | 'chart' | 'picture';
+}) {
   const h = Math.round((w * 9) / 16);
   return (
     <g>
@@ -121,10 +141,26 @@ export function OpenSource() {
 }
 
 /** One side of the move: a labelled card holding a guest's or an account's documents. */
-function Library({ x, title, sub, brand }: { x: number; title: string; sub: string; brand?: boolean }) {
+function Library({
+  x,
+  title,
+  sub,
+  brand,
+}: {
+  x: number;
+  title: string;
+  sub: string;
+  brand?: boolean;
+}) {
   return (
     <g>
-      <Plate x={x} y={50} w={148} h={124} stroke={brand ? 'stroke-brand-300' : 'stroke-slate-200'} />
+      <Plate
+        x={x}
+        y={50}
+        w={148}
+        h={124}
+        stroke={brand ? 'stroke-brand-300' : 'stroke-slate-200'}
+      />
       <Label x={x + 12} y={66} size={10} weight={650} tone={brand ? 'accent' : 'strong'}>
         {title}
       </Label>
@@ -163,7 +199,15 @@ export function GuestVsAccount() {
       <Label x={110} y={56} size={9} tone="muted" anchor="middle">
         Saved in this browser
       </Label>
-      <rect x={46} y={76} width={128} height={86} rx={5} className="fill-slate-50 stroke-slate-300" strokeWidth={0.75} />
+      <rect
+        x={46}
+        y={76}
+        width={128}
+        height={86}
+        rx={5}
+        className="fill-slate-50 stroke-slate-300"
+        strokeWidth={0.75}
+      />
       <Thumb x={56} y={88} w={50} title="Deck" layout="title" />
       <Thumb x={114} y={88} w={50} title="Q3" />
       <Thumb x={56} y={124} w={50} title="Trip" layout="picture" />
@@ -178,9 +222,25 @@ export function GuestVsAccount() {
       <Label x={310} y={56} size={9} tone="muted" anchor="middle">
         Synced across devices
       </Label>
-      <rect x={236} y={76} width={100} height={66} rx={5} className="fill-slate-50 stroke-slate-300" strokeWidth={0.75} />
+      <rect
+        x={236}
+        y={76}
+        width={100}
+        height={66}
+        rx={5}
+        className="fill-slate-50 stroke-slate-300"
+        strokeWidth={0.75}
+      />
       <Thumb x={246} y={86} w={80} title="Pitch Deck" layout="title" />
-      <rect x={344} y={84} width={44} height={58} rx={6} className="fill-slate-50 stroke-slate-300" strokeWidth={0.75} />
+      <rect
+        x={344}
+        y={84}
+        width={44}
+        height={58}
+        rx={6}
+        className="fill-slate-50 stroke-slate-300"
+        strokeWidth={0.75}
+      />
       <Thumb x={348} y={100} w={36} title="Deck" layout="title" />
       <Avatar cx={310} cy={176} r={10} initial="A" colour="brand" />
       <Label x={310} y={200} size={9} tone="muted" anchor="middle">

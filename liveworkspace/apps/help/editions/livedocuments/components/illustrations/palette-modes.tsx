@@ -3,7 +3,14 @@
 // (Panel Opacity, Auto-Attach Arrows). The strip is ./editor-chrome's, the pages ./doc-page's.
 
 import { lucideHand, lucidePaintbrush } from '@liveworkspace/icons/lucide';
-import { Arrow, Label, Panel, Scene, SelectionBox, Shape } from '@liveworkspace/help-site/art/primitives';
+import {
+  Arrow,
+  Label,
+  Panel,
+  Scene,
+  SelectionBox,
+  Shape,
+} from '@liveworkspace/help-site/art/primitives';
 import { Icon } from './editor-chrome';
 import { BarChart, Heading, Lines, Page, Pointer, Rule, SlideContent } from './doc-page';
 import { PickerTrigger } from './selection-modes';
@@ -139,15 +146,7 @@ export function AutoAttachArrows() {
           How It Works
         </Heading>
         <Shape x={166} y={96} w={88} h={44} label="Plan" />
-        <Shape
-          x={302}
-          y={96}
-          w={88}
-          h={44}
-          dashed
-          fill="fill-slate-50"
-          stroke="stroke-slate-300"
-        />
+        <Shape x={302} y={96} w={88} h={44} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
         <Arrow from={[254, 118]} to={[302, 118]} tone="muted" dashed />
         <Shape x={30} y={96} w={88} h={44} accent label="Write" labelTone="onAccent" />
         <Arrow from={[166, 118]} to={[118, 118]} tone="accent" />

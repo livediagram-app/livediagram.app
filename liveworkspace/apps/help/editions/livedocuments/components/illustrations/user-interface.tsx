@@ -105,7 +105,13 @@ export function PanelLayout() {
               />
               <rect x={32} y={y + 5} width={22} height={3} rx={1} className="fill-slate-400" />
               <rect x={32} y={y + 11} width={16} height={2} rx={1} className="fill-slate-200" />
-              <Label x={28} y={y + 36} size={9} tone={on ? 'accent' : 'body'} weight={on ? 600 : 400}>
+              <Label
+                x={28}
+                y={y + 36}
+                size={9}
+                tone={on ? 'accent' : 'body'}
+                weight={on ? 600 : 400}
+              >
                 {name}
               </Label>
             </g>
@@ -149,7 +155,9 @@ export function ZoomControls() {
         const on = p === '100%';
         return (
           <g key={p}>
-            {on && <rect x={px + 4} y={ry} width={pw - 8} height={18} rx={4} className="fill-brand-50" />}
+            {on && (
+              <rect x={px + 4} y={ry} width={pw - 8} height={18} rx={4} className="fill-brand-50" />
+            )}
             <Label
               x={px + pw / 2}
               y={ry + 9.5}
@@ -307,7 +315,14 @@ export function ElementContextMenu() {
         return (
           <g key={name}>
             {on && (
-              <rect x={mx + 4} y={ry} width={mw - 8} height={rowH} rx={4} className="fill-brand-50" />
+              <rect
+                x={mx + 4}
+                y={ry}
+                width={mw - 8}
+                height={rowH}
+                rx={4}
+                className="fill-brand-50"
+              />
             )}
             <Label
               x={mx + 12}

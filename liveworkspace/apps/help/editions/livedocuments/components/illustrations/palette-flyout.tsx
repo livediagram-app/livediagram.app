@@ -56,7 +56,7 @@ export function Flyout({
       {count !== undefined && (
         <g>
           <rect
-            x={x + 38 + name.length * 5.6}
+            x={x + 40 + name.length * 6.2}
             y={y + 7.5}
             width={15}
             height={11}
@@ -64,7 +64,7 @@ export function Flyout({
             className="fill-slate-100"
           />
           <Label
-            x={x + 45.5 + name.length * 5.6}
+            x={x + 47.5 + name.length * 6.2}
             y={y + 13.5}
             size={9}
             weight={600}

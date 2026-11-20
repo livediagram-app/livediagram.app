@@ -16,15 +16,7 @@ import {
   lucideDownload,
 } from '@liveworkspace/icons/lucide';
 import { Scene, SelectionBox } from '@liveworkspace/help-site/art/primitives';
-import {
-  BAR_H,
-  BottomBar,
-  Card,
-  CLUSTER_W,
-  CornerCluster,
-  Icon,
-  TopRow,
-} from './editor-chrome';
+import { BAR_H, BottomBar, Card, CLUSTER_W, CornerCluster, Icon, TopRow } from './editor-chrome';
 import { Page, SlideContent } from './doc-page';
 
 // The Font tiles and the Text, Colours and Canvas panels are drawn once for every product, in
@@ -46,7 +38,14 @@ export function EditorView({ w = 470, h = 272 }: { w?: number; h?: number }) {
     <g>
       <TopRow w={w} />
       <Page x={w / 2 - 191} y={py} w={176} h={99} name="Cover">
-        <SlideContent x={w / 2 - 191} y={py} w={176} h={99} title="Quarterly Review" layout="title" />
+        <SlideContent
+          x={w / 2 - 191}
+          y={py}
+          w={176}
+          h={99}
+          title="Quarterly Review"
+          layout="title"
+        />
       </Page>
       <Page x={w / 2 + 11} y={py} w={176} h={99} name="Results">
         <SlideContent x={w / 2 + 11} y={py} w={176} h={99} title="Q3 Results" />
@@ -70,7 +69,14 @@ export function CanvasPaletteOverview() {
 
 // --- Selecting many ----------------------------------------------------------------------------
 
-const MULTI_ICONS = [lucideEllipsis, lucideFunnel, lucideCopy, lucideDownload, lucideLock, lucideTrash2];
+const MULTI_ICONS = [
+  lucideEllipsis,
+  lucideFunnel,
+  lucideCopy,
+  lucideDownload,
+  lucideLock,
+  lucideTrash2,
+];
 
 /** A multi-selection with its floating toolbar: More, Filter Selection, Duplicate, Export, Lock and Delete, over
  *  the selected heading, chart and picture on a slide. */
