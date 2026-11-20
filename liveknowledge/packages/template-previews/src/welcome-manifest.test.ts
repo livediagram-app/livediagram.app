@@ -39,7 +39,7 @@ function start(kind: TemplateKind) {
 export function welcomeManifest() {
   return {
     app: 'liveknowledge',
-    pillFree: 'Free and open source',
+    pillFree: 'Open source',
     startBlankHref: '/new?start=blank',
     allTemplatesHref: '/new',
     searchHref: '/new?q=',

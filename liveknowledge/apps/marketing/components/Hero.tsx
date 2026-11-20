@@ -28,7 +28,7 @@ export function Hero() {
             <ul aria-label="Our promises" className="flex justify-center gap-2.5 lg:justify-start">
               <li className={BADGE}>
                 <span aria-hidden className="h-2 w-2 rounded-full bg-emerald-500" />
-                Free and Open Source
+                Open Source
               </li>
               <li className={`${BADGE} max-sm:hidden`}>
                 <span aria-hidden className="h-2 w-2 rounded-full bg-brand-500" />

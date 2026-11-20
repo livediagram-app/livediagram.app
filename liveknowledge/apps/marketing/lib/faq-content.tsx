@@ -42,8 +42,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is liveknowledge free?',
         a: (
           <>
-            Yes. liveknowledge is free and open source under the MIT licence, with no paid tier and
-            no plan for one: everything on this site is in the free product, and the code is on{' '}
+            Yes. liveknowledge is open source under the MIT licence, with no paid tier and no plan
+            for one: everything on this site is in the free product, and the code is on{' '}
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
               GitHub
             </a>
@@ -52,7 +52,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           </>
         ),
         aText:
-          'Yes. liveknowledge is free and open source under the MIT licence, with no paid tier and no plan for one: everything on this site is in the free product, and the code is on GitHub. The one thing with a cost is Ask, and that cost is your team’s own Claude usage, paid to Anthropic, never to us.',
+          'Yes. liveknowledge is open source under the MIT licence, with no paid tier and no plan for one: everything on this site is in the free product, and the code is on GitHub. The one thing with a cost is Ask, and that cost is your team’s own Claude usage, paid to Anthropic, never to us.',
       },
       {
         q: 'Do I need an account?',

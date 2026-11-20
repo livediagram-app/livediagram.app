@@ -24,9 +24,9 @@ const layout = createEmailLayout({
   // `pnpm icons:brand` writes it into the marketing app's public/email/. 64px, 2x the slot.
   logoPath: '/email/liveknowledge-mark-64.png',
   wordmarkTail: 'knowledge',
-  tagline: 'A team knowledgebase, for people and for AI. Free and open source.',
+  tagline: 'A team knowledgebase, for people and for AI. Open source.',
   accountFooter:
-    'You’re receiving this because you have a liveknowledge account. The editor is free and open source.',
+    'You’re receiving this because you have a liveknowledge account. The editor is open source.',
 });
 
 // docs/specs/014-identity/transactional-email.md: footer for an opt-out notification email, the reason plus a link to

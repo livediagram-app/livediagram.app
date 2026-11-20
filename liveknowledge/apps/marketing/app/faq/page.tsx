@@ -86,7 +86,7 @@ export default function FaqPage() {
             </a>
             <TryItCard
               title="The Quickest Answer Is to Try It"
-              body="No sign-up and nothing to install. Free and open source."
+              body="No sign-up and nothing to install. Open source."
               source="Faq.Card"
             />
           </div>

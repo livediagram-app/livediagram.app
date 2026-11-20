@@ -48,11 +48,11 @@ const LIST: Alternative[] = [
   {
     slug: 'notion-wiki',
     name: 'Notion',
-    highlights: ['Verified pages', 'Cited answers', 'Free and open source'],
+    highlights: ['Verified pages', 'Cited answers', 'Open source'],
     title: 'Notion wiki alternative · liveknowledge',
     description:
-      'A free, open-source alternative to a Notion wiki: pages with owners and verified dates, cited answers on your own Claude key, and an MCP server for agents.',
-    h1: 'A free, open-source alternative to a Notion wiki',
+      'An open-source alternative to a Notion wiki: pages with owners and verified dates, cited answers on your own Claude key, and an MCP server for agents.',
+    h1: 'An open-source alternative to a Notion wiki',
     lede: 'Notion is a whole workspace: documents, databases and wikis in one place, and many teams keep their knowledge there. liveknowledge does one of those jobs, the one a team wiki does, and builds it around a question that is easy to leave to habit: can this page still be trusted, by a person and by an agent?',
     rows: [
       row('Price', US.price, 'A free plan, then paid plans'),
@@ -122,8 +122,8 @@ const LIST: Alternative[] = [
     highlights: ['Verified pages', 'Agents read it', 'Confluence import'],
     title: 'Confluence alternative · liveknowledge',
     description:
-      'A free, open-source Confluence alternative: a page tree with owners and verified dates, cited answers on your own Claude key, and import from a space export.',
-    h1: 'A free, open-source Confluence alternative',
+      'An open-source Confluence alternative: a page tree with owners and verified dates, cited answers on your own Claude key, and import from a space export.',
+    h1: 'An open-source Confluence alternative',
     lede: 'Confluence is the team wiki many companies already run, close to Jira and the rest of Atlassian. liveknowledge is a smaller, newer knowledgebase with a narrower aim: every page says who vouches for it and when, and your agents read those pages with that trust attached.',
     rows: [
       row('Price', US.price, 'A free plan for small teams, then paid plans'),
@@ -190,11 +190,11 @@ const LIST: Alternative[] = [
   {
     slug: 'slite',
     name: 'Slite',
-    highlights: ['Your own Claude key', 'Agents read it', 'Free and open source'],
+    highlights: ['Your own Claude key', 'Agents read it', 'Open source'],
     title: 'Slite alternative · liveknowledge',
     description:
-      'A free, open-source Slite alternative: verified pages, cited answers on your own Claude key, and an MCP server that hands agents each passage with its trust.',
-    h1: 'A free, open-source Slite alternative',
+      'An open-source Slite alternative: verified pages, cited answers on your own Claude key, and an MCP server that hands agents each passage with its trust.',
+    h1: 'An open-source Slite alternative',
     lede: 'Slite is a team knowledge tool built around the same ideas liveknowledge cares about: documents that are verified, and answers that come with their sources. The two are close. They differ in who pays for the AI, in how agents read, and in being open source.',
     rows: [
       row('Price', US.price, 'Paid plans'),
@@ -256,11 +256,11 @@ const LIST: Alternative[] = [
   {
     slug: 'guru',
     name: 'Guru',
-    highlights: ['Verified pages', 'Pages, not cards', 'Free and open source'],
+    highlights: ['Verified pages', 'Pages, not cards', 'Open source'],
     title: 'Guru alternative · liveknowledge',
     description:
-      'A free, open-source Guru alternative: knowledge that is verified on a schedule, cited answers on your own Claude key, and an MCP server for your agents.',
-    h1: 'A free, open-source Guru alternative',
+      'An open-source Guru alternative: knowledge that is verified on a schedule, cited answers on your own Claude key, and an MCP server for your agents.',
+    h1: 'An open-source Guru alternative',
     lede: 'Guru made verification the centre of a knowledge tool: every card has an expert who confirms it on a schedule, and the answer reaches people where they work. liveknowledge shares the first idea and is much smaller on the second.',
     rows: [
       row('Price', US.price, 'Paid plans'),
@@ -329,8 +329,8 @@ const LIST: Alternative[] = [
     highlights: ['For your team', 'Verified pages', 'Markdown in and out'],
     title: 'GitBook alternative · liveknowledge',
     description:
-      'A free, open-source GitBook alternative for internal knowledge: verified pages, cited answers on your own Claude key, and Markdown in and out.',
-    h1: 'A free, open-source GitBook alternative for internal knowledge',
+      'An open-source GitBook alternative for internal knowledge: verified pages, cited answers on your own Claude key, and Markdown in and out.',
+    h1: 'An open-source GitBook alternative for internal knowledge',
     lede: 'GitBook is a documentation platform, known for the public docs sites it publishes and for keeping them in step with a Git repository. liveknowledge is for the other half of a team’s writing: what it knows internally, and whether that is still true.',
     rows: [
       row('Price', US.price, 'A free plan, then paid plans'),

@@ -12,7 +12,7 @@ const card = /* @__PURE__ */ createSocialCard({
   domain: 'liveknowledge.app',
   headline: 'Knowledge your team trusts,',
   pitch: () => PITCH_LINE,
-  footer: 'Free and open source. Start without signing up.',
+  footer: 'Open source. Start without signing up.',
   // The lime accent the lockup uses (lime-700: lime-600 is too pale for text on white).
   colours: { ground: ['#f7fee7', '#ecfccb'], ink: '#1a2e05', accent: '#4d7c0f' },
 });

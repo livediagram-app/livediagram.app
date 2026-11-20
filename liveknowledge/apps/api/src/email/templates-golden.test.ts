@@ -67,17 +67,17 @@ const FIXTURES: Record<string, unknown[][]> = {
 };
 
 const EXPECTED: Record<string, string> = {
-  accessRequestedEmail: '20f2205678674ef5450bd24958ad5b1685718ad7f2031e7bc3cfcd7d0b97bd2b',
-  accessGrantedEmail: '9c59fc822dc1cb275bd8919d39f8b661a1a157140a72adf61fc3bd8a157bafe0',
-  approvalRequestedEmail: '282fdee15a19586194a0e8db7259ef1260000a5dac922626bed381454917b436',
-  accountDeletedEmail: '5a83f249b242d53a149cc2f270f7b8b2a3d6964f753a19e1c961dcc00cf001c6',
-  actionAssignedEmail: 'ba501ba8f43f88f5e1e8aacb130b7405fa64d9a47da33834d1a378667d4e72a0',
-  commentNotificationEmail: 'c69894ab6b821af4ef3440a7ef05a242f613e725e4d4626ccd48f7cd54b7b9d8',
-  documentJoinedEmail: '6f4405fb6840e3ed767ec158552699b15b1dcdeb34594af633f73777e8702ecf',
-  firstShareEmail: '9a17abc98c01767945fc5e0b1fc4ae76578f77b62c32ec9da392475bce6dec59',
+  accessRequestedEmail: 'ba70e016b33611707ae143316891e89bc4438163aeb02ade24fe7f2160bea7a3',
+  accessGrantedEmail: 'ed0ece47a41bbd278eedcef11fdd6cfbdb7b2e5f1f609f863115b0dc661d17a2',
+  approvalRequestedEmail: '3f0d9983dcf732f3efeb6ddffcfa449518b62eb18f0675c269fa9bf7fdc08520',
+  accountDeletedEmail: '75b1d68f090810975a7b053eb7ff81552e89dbfda36032361887ac367e7bdb08',
+  actionAssignedEmail: 'a708d59bf11b365f8270886612c3d09f5f18e10e64a23138c205bc3dc9d0330e',
+  commentNotificationEmail: '65b2ac024b83838735f3bf65f2112389f4ebe56e435a760530f83e1aaae37e6b',
+  documentJoinedEmail: '39dc7ca8ab4321be5f0c65c9801a50646730915a4b349fc3e90fee7c77b5f7c1',
+  firstShareEmail: 'cbd681dfb43e98f52c431c6ba80c8815c63e3c8ba3f66caec4ca6d37240253d3',
   mentionQuote: '8d3f68955246da293e50ef5ebbe33ecdd4a4b7e9d61945db180b8771a547ead9',
-  mentionedEmail: '860132dc3a08186835de065096027e253672b1182ce577edc0c903c40f4a8ee1',
-  milestoneEmail: 'c230c2e528eb770befc6a4e8093b1ed3da657e9764b2fd008d292c8e87368645',
+  mentionedEmail: 'bbdc35813efac30f0227ce435b41c3634edefa33e1325aa403de6a93c949b4ac',
+  milestoneEmail: '958a8b1cbfccf9875fba961a9670dd33dfc696f6996f3239b658cb91c31cade1',
 };
 
 function renders(): Record<string, string> {

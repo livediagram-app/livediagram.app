@@ -6,7 +6,7 @@ claim that isn't there. No em dashes.
 
 ## One sentence (~20 words)
 
-A free, open-source team knowledgebase where every page has an owner and a
+An open-source team knowledgebase where every page has an owner and a
 verified date, and people and agents get cited answers.
 
 ## Short (~50 words)
@@ -57,12 +57,12 @@ suggestion a person accepts.
 Confluence space export. Export to Markdown, PDF and Word.
 
 Part of liveworkspace: one account, the same sharing roles, Offline and the
-Google Drive mirror. Free and open source (MIT), with no paid tier.
+Google Drive mirror. Open source (MIT), with no paid tier.
 
 ## Social
 
 - A team knowledgebase, for people and for AI. Verified pages, cited answers,
-  and an MCP server your agents read. Free and open source.
+  and an MCP server your agents read. Open source.
 - Most team knowledge goes stale quietly. In liveknowledge every page has an
   owner and a review that comes due, and your agents are told which pages to
   trust.

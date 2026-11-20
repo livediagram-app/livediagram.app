@@ -25,7 +25,7 @@ Classic "tagline" slot on most directories.
 - A team knowledgebase, for people and AI. [40]
 - Pages your team and its agents trust. [37]
 - Verified pages. Cited answers. [30]
-- Free, open source, no sign-up wall. [35]
+- Open source, no sign-up wall. [29]
 
 ## Medium, <= 60 characters
 
@@ -42,13 +42,13 @@ Hero subheads, Twitter/X header copy, longer headline fields.
 
 - A team knowledgebase where every page has an owner and every answer a source. [77]
 - Pages with owners and verified dates, read the same way by people and agents. [77]
-- A free, open-source knowledgebase with cited answers on your own Claude key. [76]
+- An open-source knowledgebase with cited answers on your own Claude key. [71]
 
 ## Extra-long, <= 120 characters
 
 Meta descriptions' first clause, longer directory blurbs.
 
-- A free, open-source team knowledgebase: verified pages, cited answers on your own Claude key, and an MCP server. [112]
+- An open-source team knowledgebase: verified pages, cited answers on your own Claude key, and an MCP server. [107]
 - Write your team's knowledge as pages with owners and reviews, then let people and agents ask it, with sources. [110]
 
 ## The pitch line
