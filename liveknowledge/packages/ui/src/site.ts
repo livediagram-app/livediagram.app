@@ -66,7 +66,7 @@ export const BRAND_ICONS: NonNullable<Metadata['icons']> = {
 // this hint (docs/specs/004-interface-design/appearance.md). The editor has its own
 // viewport (pinned zoom, docs/specs/007-editor/editor-app.md) and doesn't use this.
 export const PUBLIC_VIEWPORT: Viewport = {
-  themeColor: '#F59E0B',
+  themeColor: '#84cc16',
   colorScheme: 'light dark',
 };
 

@@ -1,29 +1,30 @@
 /* The landing hero's band (docs/specs/019-marketing/marketing-site.md "Hero"), which the help centre's page
    headers wear too (liveworkspace/docs/specs/017-help/help-centre.md "Shared look"): its colours, drawn from
    the brand mark's prism (packages/brand/src/apps.ts), in one place for light and dark. Light is the
-   prism's pale amber ground with its deep amber ink; dark is the page's deepest slate with the prism's light
-   amber for accents. The landing hero lays ruled paper over it (hero-band-ruled), the help headers the dots. The primary button is the header's brand-700 in light and the same deepened amber in dark
-   (white on it clears 4.5:1, where it would not on the prism's own amber or orange). */
+   prism's pale lime ground with its deep lime ink; dark is the page's deepest slate with the prism's light
+   lime for accents. The landing hero lays ruled paper over it (hero-band-ruled), the help headers the dots. The
+   primary button is the header's brand-700 in light and lime-700 in dark (white on it is 5.0:1, where it would
+   not clear 4.5:1 on the prism's own lime or green). */
 .hero-band {
-  --hero-bg: #fffbeb;
-  --hero-dots: #fde68a;
-  --hero-ink: #451a03;
+  --hero-bg: #f7fee7;
+  --hero-dots: #d9f99d;
+  --hero-ink: #1a2e05;
   --hero-muted: #475569;
-  --hero-ring: rgb(251 191 36 / 0.45);
-  --hero-ring-focus: rgb(217 119 6 / 0.55);
+  --hero-ring: rgb(163 230 53 / 0.45);
+  --hero-ring-focus: rgb(101 163 13 / 0.55);
   /* The header's primary (Button's `primary`), so the two read as one action colour. */
   --hero-cta: var(--color-brand-700);
   --hero-cta-hover: var(--color-brand-800);
   --hero-chip-bg: #ffffff;
-  --hero-chip-border: #fde68a;
-  --hero-chip-border-hover: #fbbf24;
-  --hero-chip-text: #451a03;
-  --hero-icon: #d97706;
-  --hero-link: #a34a0c;
-  --hero-thumb: #fef3c7;
-  --hero-card-shadow: rgb(69 26 3 / 0.22);
+  --hero-chip-border: #d9f99d;
+  --hero-chip-border-hover: #a3e635;
+  --hero-chip-text: #1a2e05;
+  --hero-icon: #65a30d;
+  --hero-link: #4d7c0f;
+  --hero-thumb: #ecfccb;
+  --hero-card-shadow: rgb(26 46 5 / 0.22);
   /* The landing hero's ruled paper (hero-band-ruled): its lines and its red margin rule. */
-  --hero-rule: #fde68a;
+  --hero-rule: #d9f99d;
   --hero-margin-rule: rgb(239 68 68 / 0.38);
 }
 
@@ -34,16 +35,16 @@
   --hero-dots: #1e293b;
   --hero-ink: #ffffff;
   --hero-muted: #cbd5e1;
-  --hero-ring: rgb(251 191 36 / 0.35);
-  --hero-ring-focus: rgb(251 191 36 / 0.6);
-  --hero-cta: #a34a0c;
-  --hero-cta-hover: #92400e;
+  --hero-ring: rgb(163 230 53 / 0.35);
+  --hero-ring-focus: rgb(163 230 53 / 0.6);
+  --hero-cta: #4d7c0f;
+  --hero-cta-hover: #3f6212;
   --hero-chip-bg: #0f172a;
   --hero-chip-border: #334155;
   --hero-chip-border-hover: #64748b;
   --hero-chip-text: #f1f5f9;
-  --hero-icon: #fbbf24;
-  --hero-link: #fcd34d;
+  --hero-icon: #a3e635;
+  --hero-link: #bef264;
   --hero-thumb: #1e293b;
   --hero-card-shadow: rgb(0 0 0 / 0.7);
   --hero-rule: #1e293b;

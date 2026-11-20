@@ -54,7 +54,7 @@ const LINES: Line[] = [
   { id: 'b6', x: 12, y: 130, w: 44, h: 3, tone: 'body', write: [64, 66.5] },
 ];
 const TONES: Record<string, string> = {
-  kicker: 'fill-amber-500',
+  kicker: 'fill-lime-500',
   heading: 'fill-slate-700 dark:fill-slate-200',
   body: 'fill-slate-300 dark:fill-slate-600',
 };
@@ -152,7 +152,7 @@ const fanFrames = (name: string, [dx, dy]: Point, tilt: number) => `@keyframes $
 
 // The infographic's bars, growing once it is out.
 const BARS = [
-  { h: 16, color: '#f59e0b', at: FAN[1] - 1 },
+  { h: 16, color: '#84cc16', at: FAN[1] - 1 },
   { h: 26, color: '#f97316', at: FAN[1] + 1 },
   { h: 20, color: '#14b8a6', at: FAN[1] + 3 },
 ];
@@ -234,7 +234,7 @@ export function PageBuildAnimation({
       >
         <defs>
           <linearGradient id="lpb-photo" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fde68a" />
+            <stop offset="0" stopColor="#d9f99d" />
             <stop offset="1" stopColor="#fb923c" />
           </linearGradient>
           <linearGradient id="lpb-sheen-grad" x1="0" y1="0" x2="1" y2="0">
@@ -272,7 +272,7 @@ export function PageBuildAnimation({
             cy={80}
             r={11}
             fill="none"
-            stroke="#f59e0b"
+            stroke="#84cc16"
             strokeWidth={5}
             pathLength={100}
             strokeDasharray="64 100"
@@ -341,7 +341,7 @@ export function PageBuildAnimation({
               height={IMG.h + 7}
               rx={6.5}
               fill="none"
-              stroke="#f59e0b"
+              stroke="#84cc16"
               strokeOpacity={0.7}
               strokeWidth={1.4}
               strokeDasharray="4 3"

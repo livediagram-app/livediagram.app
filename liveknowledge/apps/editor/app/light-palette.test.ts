@@ -12,8 +12,8 @@ import { parseSourceFiles } from '@liveworkspace/source-ast';
 import { describe, expect, it } from 'vitest';
 
 // White text on a solid brand fill, in light mode (docs/specs/004-interface-design/color-scheme.md, Usage
-// rules): the fill is brand-700, hovering to brand-800. On the amber ramp white reads 2.2:1 on brand-500 and
-// 4.0:1 on brand-600, both under WCAG 2.2 AA's 4.5:1, and nothing fails a build when a new button is painted
+// rules): the fill is brand-700, hovering to brand-800. On the lime ramp white reads 2.0:1 on brand-500,
+// under WCAG 2.2 AA's 4.5:1 (brand-600 holds it at 5.0:1), and nothing fails a build when a new button is painted
 // `bg-brand-500 text-white`. So this reads the source of every app and package, the way dark-palette.test.ts
 // does for the dark half.
 
@@ -65,22 +65,24 @@ describe('the light brand ramp under white text', () => {
   });
 
   // A banner's 90% white copy sits on brand-700 (color-scheme.md), so the fill holds white at 5.9:1, not just
-  // 4.5:1. Tailwind's amber-700 is 5.0:1, which is why the ramp's 700 is hand-tuned.
+  // 4.5:1. The ramp's 700 is Tailwind's lime-800 (7.1:1): lime runs lighter than the other hues step for step.
   it("holds white at 5.9:1 on the fill, so a banner's 90% white copy still clears AA", () => {
     expect(whiteOn(brand['700']!)).toBeGreaterThanOrEqual(5.9);
   });
 
   // brand-600 is the focus outline (menus.md, Accessibility), held to 3:1 on the grounds it is drawn over. Tailwind's
-  // amber-600 is 2.9:1 on slate-100 and brand-100, which is why the ramp's 600 is hand-tuned too.
+  // lime-600 is under 3:1 on slate-100 and brand-100, which is why the ramp's 600 is lime-700.
   it('holds the brand-600 focus outline at 3:1 on white, slate-100 and brand-100', () => {
     for (const ground of ['#ffffff', '#f1f5f9', brand['100']!]) {
       expect(ratio(brand['600']!, ground), ground).toBeGreaterThanOrEqual(3);
     }
   });
 
-  it('fails AA on brand-500 and brand-600, which is why neither carries white text', () => {
+  // Lime's brand-600 is a step deeper than the other products' (theme.css), so it holds white; the fill stays
+  // brand-700 all the same, as the class rule below keeps it in every product.
+  it('fails AA on brand-500, which is why it never carries white text, and holds it on brand-600', () => {
     expect(whiteOn(brand['500']!)).toBeLessThan(4.5);
-    expect(whiteOn(brand['600']!)).toBeLessThan(4.5);
+    expect(whiteOn(brand['600']!)).toBeGreaterThanOrEqual(4.5);
   });
 });
 
@@ -93,9 +95,9 @@ describe('light brand ink', () => {
     }
   });
 
-  it('fails AA in brand-500 and brand-600 on white, which is why neither is text', () => {
+  it('fails AA in brand-500 on white, which is why it is never text, and clears it in brand-600', () => {
     expect(ratio(brand['500']!, '#ffffff')).toBeLessThan(4.5);
-    expect(ratio(brand['600']!, '#ffffff')).toBeLessThan(4.5);
+    expect(ratio(brand['600']!, '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });
 });
 

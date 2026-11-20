@@ -49,32 +49,33 @@ function block(css: string, selector: string): Record<string, string> {
   return out;
 }
 
+// Steel in lime: Steel's saturation and luminance at lime's hue (packages/tailwind-config/theme.css `.dark`).
 const STEEL: Record<string, string> = {
-  '50': '#faf5ee',
-  '100': '#f4e9db',
-  '200': '#ead5bc',
-  '300': '#debf9b',
-  '400': '#e0bb8f',
-  '500': '#bf935b',
-  '600': '#996d3a',
-  '700': '#845e2f',
-  '800': '#6b4c26',
-  '900': '#533a1d',
-  '950': '#382714',
+  '50': '#edf6df',
+  '100': '#daecbf',
+  '200': '#b8d985',
+  '300': '#97c64f',
+  '400': '#89c035',
+  '500': '#6c8f37',
+  '600': '#516b29',
+  '700': '#435a20',
+  '800': '#36491a',
+  '900': '#2a3913',
+  '950': '#1d280e',
 };
-// Light mode's ramp, which the dark palette must not touch (light-palette.test.ts guards its fills).
-const AMBER: Record<string, string> = {
-  '50': '#fffbeb',
-  '100': '#fef3c7',
-  '200': '#fde68a',
-  '300': '#fcd34d',
-  '400': '#fbbf24',
-  '500': '#f59e0b',
-  '600': '#c76508',
-  '700': '#a34a0c',
-  '800': '#92400e',
-  '900': '#78350f',
-  '950': '#451a03',
+
+const LIME: Record<string, string> = {
+  '50': '#f7fee7',
+  '100': '#ecfccb',
+  '200': '#d9f99d',
+  '300': '#bef264',
+  '400': '#a3e635',
+  '500': '#84cc16',
+  '600': '#4d7c0f',
+  '700': '#3f6212',
+  '800': '#365314',
+  '900': '#2b4310',
+  '950': '#1a2e05',
 };
 
 describe('the dark palette tokens', () => {
@@ -94,7 +95,7 @@ describe('the dark palette tokens', () => {
 
   it('leaves the light ramp exactly as it was', () => {
     const light = block(THEME_CSS, '@theme');
-    for (const [stop, hex] of Object.entries(AMBER)) {
+    for (const [stop, hex] of Object.entries(LIME)) {
       expect(light[`--color-brand-${stop}`], `brand-${stop}`).toBe(hex);
     }
   });
@@ -158,9 +159,9 @@ describe('the wordmark', () => {
   // Every app's wordmark classes live in the shared logo package (packages/brand/src/apps.ts).
   const brand = readFileSync(`${REPO}../packages/brand/src/apps.ts`, 'utf8');
 
-  it('lights its "live" half amber in dark mode, and is brand-700 in light (#74)', () => {
+  it('lights its "live" half lime in dark mode, and is brand-700 in light (#74)', () => {
     expect(brand).toMatch(
-      /liveknowledge: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-amber-400'/,
+      /liveknowledge: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-lime-400'/,
     );
   });
 });

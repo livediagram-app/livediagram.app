@@ -11,12 +11,12 @@ export const dynamic = 'force-static';
 // opening at the Explorer rather than this marketing page, and the icons. Built once for every app
 // (@liveworkspace/marketing-site/lib/install). The PNGs are purpose `any`: the Living Prism's corners reach outside
 // the maskable safe zone. iOS's opaque home-screen tile is app/apple-icon.tsx. theme_color matches layout.tsx's
-// viewport, so the installed app's chrome stays brand amber.
+// viewport, so the installed app's chrome stays brand lime.
 export default function manifest(): MetadataRoute.Manifest {
   return installManifest({
     name: 'liveknowledge',
     description: SITE_DESCRIPTION,
-    themeColor: '#F59E0B',
+    themeColor: '#84cc16',
     icons: appIcons('liveknowledge'),
   });
 }
