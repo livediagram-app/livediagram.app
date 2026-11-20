@@ -16,6 +16,8 @@ const IdentityPrompt = dynamic(
 );
 
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
+import { PageFormattingBar } from '@/components/page-surface/PageFormattingBar';
+import { useDrawingZoneEditing } from '@/lib/page-surface/drawing-zone-store';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
@@ -58,6 +60,9 @@ export type { CanvasChromeProps } from './CanvasChrome.types';
 // rather than at the 16px inset, or a panel docked there (the Collaborate
 // banner) renders underneath the strip where it can't be reached
 // (toolbarTopClearancePx, lib/canvas-chrome.ts).
+
+// Screen px the menu box takes at the top left while no sidebar stands under it: the formatting bar starts clear.
+const MENU_BOX_ROOM = 72;
 
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'top-left': 'left-4 top-4 flex-col items-start',
@@ -150,7 +155,13 @@ function CanvasChromeView(props: CanvasChromeProps) {
 
   // The palette strip: an editor's (not read-only), on every mode. A Participant adds nothing, so it has none
   // (docs/specs/013-workspace/share-roles.md).
-  const paletteShown = !readOnly;
+  // The fork's strip (Selection mode, the palette, the Library) is not a knowledgebase page's bar
+  // (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"). It shows only while a drawing zone is being
+  // edited, as that drawing's tools, in the formatting bar's place.
+  const drawingZone = useDrawingZoneEditing();
+  const paletteShown = !readOnly && drawingZone;
+  // The formatting bar: an Editor's, on a desktop (a phone's writing bar is the page toolbar's own).
+  const formattingBarShown = !readOnly && !drawingZone;
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The Explorer menu button: top-left on desktop; on a phone, its own card at
@@ -336,6 +347,16 @@ function CanvasChromeView(props: CanvasChromeProps) {
       {pageRail.el}
       {/* A reader's phone has no strip for the Pages button to ride in: it stands under the menu box. */}
       {isMobile && !menuInStrip ? pageTree.phoneButton?.(true) : null}
+      {formattingBarShown && !chromeHidden && !isMobile ? (
+        <PageFormattingBar
+          left={contentsDocked ? pageTreeClearancePx(pageTree.width, panelScale) : MENU_BOX_ROOM}
+          right={pageRail.width}
+          canUndo={canUndo === true}
+          canRedo={canRedo === true}
+          onUndo={onUndo}
+          onRedo={onRedo}
+        />
+      ) : null}
       {paletteShown ? (
         <ToolbarPalette
           // Hidden, not unmounted, while the chrome is away (zen, welcome),
@@ -414,7 +435,10 @@ function CanvasChromeView(props: CanvasChromeProps) {
           <>
             {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own writing too
                 (docs/specs/013-workspace/share-roles.md); a Viewer has nothing to undo. */}
-            {!zenMode && (!readOnly || !!props.takePart) ? (
+            {/* An Editor's Undo and Redo are in the formatting bar; here on a phone, and for a Participant. */}
+            {!zenMode &&
+            (!readOnly || !!props.takePart) &&
+            (isMobile || readOnly || drawingZone) ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}

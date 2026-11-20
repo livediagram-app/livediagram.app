@@ -178,8 +178,9 @@ All of it is in `apps/editor/components/page-tree/`.
 - **Closed pages** are kept per knowledgebase in `localStorage` (`liveknowledge:v2:page-tree-closed`, the 50 most
   recent knowledgebases); a page with subpages is open until closed. The current page's ancestors are open whatever
   is stored, which is how a page opened by its link (`#t=<page>`) shows where it is.
-- **Phone:** no sidebar. `PageTreeSheet`'s Pages button rides in the strip's row beside the menu button (an Editor's
-  phone), or stands under the menu box (a reader's, which has no strip); it opens the same `PageTree` in the shared
+- **Phone:** no sidebar. `PageTreeSheet`'s Pages button stands under the menu box, for every role (the fork's strip,
+  whose row it rode in on an Editor's phone, is not a page's bar any more:
+  [page surface blueprint](page-surface.md) "The formatting bar"); it opens the same `PageTree` in the shared
   `BottomSheet`, which closes when a page is chosen or added.
 - **The bottom bar** (`components/chrome/BottomBar.tsx`, in place of `TabBar.tsx`) keeps Tools, Settings and the
   appearance, and still draws the canvas right-click menu (`TabPortalMenu`), which keeps the current page's Import,

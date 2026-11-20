@@ -5,7 +5,7 @@
 // writing leaves for them. Each article's editor is its own (ArticleEditor), loaded only
 // once the tab has an article: the editor's code (ProseMirror) is not part of the canvas until an
 // article asks for it.
-import { lazy, Suspense, useLayoutEffect, useMemo } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
 import {
   ARTICLE_TOP_MIN_PX,
   articleHeaderBandPx,
@@ -39,6 +39,7 @@ import { useZoneDrag, type ZoneDragState } from './useZoneDrag';
 import { useObjectDropCaret } from './useObjectDropCaret';
 import { useTouchPagePan } from './useTouchPagePan';
 import { publishZoneClips } from '@/lib/article/zone-clip-store';
+import { setDrawingZoneEditing } from '@/lib/page-surface/drawing-zone-store';
 import { lockedArticleFlows } from '@/lib/article/article-lock';
 import { selectionMoving, useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
@@ -136,6 +137,12 @@ export function ArticleFlows({
     return all;
   }, [row, flows, elements, moving, selectedIds]);
   useLayoutEffect(() => publishZoneClips(clips), [clips]);
+  // A drawing zone being edited shows its drawing tools, in the formatting bar's place (PageFormattingBar).
+  const drawing = target?.zone.zone === 'drawing';
+  useEffect(() => {
+    setDrawingZoneEditing(drawing);
+    return () => setDrawingZoneEditing(false);
+  }, [drawing]);
   useLayoutEffect(() => () => publishZoneClips(new Map()), []);
   // A finger that travels on the writing or its ground scrolls the page, natively (the browser then cancels the
   // press); a tap is the writing's. Nothing pans the view here: a knowledgebase page has no view to pan

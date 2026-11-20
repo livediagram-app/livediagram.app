@@ -4,8 +4,22 @@
 // toolbar"): Style, Align, Insert, the frame the colours open in, the link field, and the toolbar's
 // divider and button. Each menu opens under its button, keeps the writing's caret (buttons never take
 // focus; the link field does and hands it back), and closes on a choice, Escape or an outside press.
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronDownIcon, Tooltip, useClickOutside, useEscape, Portal } from '@liveknowledge/ui';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
+import {
+  ChevronDownIcon,
+  HoverCard,
+  Tooltip,
+  useClickOutside,
+  useEscape,
+  Portal,
+} from '@liveknowledge/ui';
 import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import {
   TOOLBAR_CONTROL_PRESSED,
@@ -172,6 +186,7 @@ export function Divider() {
 
 export function Button({
   label,
+  description,
   keys,
   pressed,
   menu,
@@ -184,8 +199,10 @@ export function Button({
   children,
 }: {
   label: string;
+  // One line under the name in its hover card.
+  description?: string;
   disabled?: boolean;
-  // Why it is unavailable, added to its tooltip while disabled.
+  // Why it is unavailable, shown in its hover card while disabled.
   why?: string;
   // What its menu opens: a menu, or a small dialog (the colours).
   popup?: 'menu' | 'dialog';
@@ -200,24 +217,33 @@ export function Button({
   children: ReactNode;
 }) {
   const name = keys ? `${label} (${keyLabel(keys)})` : label;
-  return (
-    <Tooltip label={disabled && why ? `${name}: ${why}` : name}>
-      <button
-        data-anchor={anchor}
-        type="button"
-        aria-label={name}
-        aria-pressed={menu ? undefined : pressed}
-        aria-haspopup={menu ? popup : undefined}
-        aria-expanded={menu ? (expanded ?? false) : undefined}
-        disabled={disabled}
-        onClick={onPress}
-        className={`flex h-9 shrink-0 items-center justify-center gap-1 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-35 ${
-          menu ? 'px-2' : 'w-9'
-        } ${pressed || expanded ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST}`}
-      >
-        {children}
-        {menu ? <ChevronDownIcon className="shrink-0" /> : null}
-      </button>
-    </Tooltip>
+  // A bold title and one line (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"); why it is
+  // unavailable takes the line's place while it is.
+  const line = disabled && why ? why : description;
+  const hint = (child: ReactElement) =>
+    line ? (
+      <HoverCard title={name} description={line}>
+        {child}
+      </HoverCard>
+    ) : (
+      <Tooltip label={name}>{child}</Tooltip>
+    );
+  return hint(
+    <button
+      data-anchor={anchor}
+      type="button"
+      aria-label={name}
+      aria-pressed={menu ? undefined : pressed}
+      aria-haspopup={menu ? popup : undefined}
+      aria-expanded={menu ? (expanded ?? false) : undefined}
+      disabled={disabled}
+      onClick={onPress}
+      className={`flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-35 ${
+        menu ? 'px-2' : 'w-9'
+      } ${pressed || expanded ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST}`}
+    >
+      {children}
+      {menu ? <ChevronDownIcon className="shrink-0" /> : null}
+    </button>,
   );
 }

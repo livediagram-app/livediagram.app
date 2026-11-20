@@ -200,6 +200,10 @@ export function mountArticleView({
   const view = new EditorView(mount, {
     state,
     editable: isEditable,
+    // A caret the browser scrolls into view stops clear of the formatting bar pinned over the page's top
+    // (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"), and of the window's foot.
+    scrollMargin: { top: 72, bottom: 32, left: 0, right: 0 },
+    scrollThreshold: { top: 64, bottom: 24, left: 0, right: 0 },
     attributes: () => {
       const p = latest.current;
       const frame = flowFrame(p.pages, p.margin, p.topMin);

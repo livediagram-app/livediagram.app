@@ -254,7 +254,7 @@ export function PageToolbar({
         aria-expanded={open === 'style'}
         onClick={() => toggleOpen('style')}
         // As wide as its style's name needs ("Text" stays short): no fixed width leaving space after a short name.
-        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
+        className={`flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
           open === 'style' ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_TRIGGER_TONE
         }`}
       >
@@ -265,6 +265,7 @@ export function PageToolbar({
       <Divider />
       <Button
         label="Bold"
+        description="Make the selected words bold."
         keys="Mod-b"
         pressed={selection.marks.has('bold')}
         onPress={() => run(toggleBold, 'format')}
@@ -273,6 +274,7 @@ export function PageToolbar({
       </Button>
       <Button
         label="Italic"
+        description="Set the selected words in italics."
         keys="Mod-i"
         pressed={selection.marks.has('italic')}
         onPress={() => run(toggleItalic, 'format')}
@@ -281,6 +283,7 @@ export function PageToolbar({
       </Button>
       <Button
         label="Underline"
+        description="Underline the selected words."
         keys="Mod-u"
         pressed={selection.marks.has('underline')}
         onPress={() => run(toggleUnderline, 'format')}
@@ -289,6 +292,7 @@ export function PageToolbar({
       </Button>
       <Button
         label="Colour"
+        description="Colour the selected words, or highlight them."
         anchor="colour"
         menu
         popup="dialog"
@@ -305,6 +309,7 @@ export function PageToolbar({
       </Button>
       <Button
         label="Link"
+        description="Link the selected words to a web address."
         keys="Mod-k"
         anchor="link"
         pressed={open === 'link' || selection.marks.has('link')}
@@ -315,6 +320,7 @@ export function PageToolbar({
       <Divider />
       <Button
         label="Lists"
+        description="Bullets, numbers or a checklist, and their indent."
         anchor="list"
         menu
         expanded={open === 'list'}
@@ -325,6 +331,7 @@ export function PageToolbar({
       </Button>
       <Button
         label="Alignment"
+        description="Line the paragraph up left, centred, right or justified."
         anchor="align"
         menu
         expanded={open === 'align'}
@@ -334,6 +341,7 @@ export function PageToolbar({
       </Button>
       <Button
         label="More Formatting"
+        description="Strikethrough, code, superscript, subscript and the word count."
         anchor="more"
         menu
         expanded={open === 'more'}
@@ -344,6 +352,7 @@ export function PageToolbar({
       <Divider />
       <Button
         label="Insert"
+        description="Add a picture, chart, drawing, table, embed, page link and more."
         anchor="insert"
         menu
         expanded={open === 'insert'}
@@ -354,6 +363,7 @@ export function PageToolbar({
       {selection.inTable ? (
         <Button
           label="Table"
+          description="Add and remove rows and columns, and set the header."
           anchor="table"
           menu
           expanded={open === 'table'}
@@ -365,6 +375,7 @@ export function PageToolbar({
       <Divider />
       <Button
         label="Comment"
+        description="Start a comment on the selected words."
         keys="Mod-Alt-m"
         disabled={!selection.hasText || selection.inTable || !onNote}
         why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
@@ -374,6 +385,7 @@ export function PageToolbar({
       </Button>
       <Button
         label="Assign Action"
+        description="Give someone an action on the selected words."
         disabled={!selection.hasText || selection.inTable || !onNote}
         why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
         onPress={() => onNote?.(handle.flow, 'action')}

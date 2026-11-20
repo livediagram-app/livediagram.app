@@ -123,6 +123,31 @@ browser's.
 | The minimap                        | already unreachable: it draws only on a tab without pages                               |
 | The off-screen content hint        | `Canvas` always answers false                                                           |
 
+## The formatting bar (built)
+
+`components/page-surface/PageFormattingBar.tsx`, mounted by `CanvasChrome` for an Editor on a desktop.
+
+- **One slim bar**, 44 px tall (`FORMATTING_BAR_HEIGHT`), over the top of what scrolls, centred between the page
+  tree and the docked rail and never wider than the page (820 px). The page keeps `PAGE_TOP_ROOM` (56 px) clear
+  above itself, so the bar never covers the Title; a caret the browser scrolls into view stops 72 px under the top
+  (`scrollMargin` on the writing's view, `article-view-mount.ts`).
+- **Its controls are the page toolbar's own.** The bar holds the slot the fork's strip held
+  (`lib/article/article-dock.ts`), and `PageToolbar` renders into it: block style, Bold, Italic, Underline, Colour,
+  Link, Lists, Alignment, More Formatting, Insert, Table (while the caret is in one), Comment, Assign Action. Then
+  the bar's own Undo and Redo. Each has a hover card with its name and one line (`Button`'s `description`,
+  `page-toolbar-menus.tsx`), a pointer cursor and a focus ring.
+- **No canvas tool.** The fork's strip (`ToolbarPalette`: Selection mode, the palette, the Library) is not drawn
+  for a page. It shows only while a drawing zone is being edited (`lib/page-surface/drawing-zone-store.ts`, set by
+  `ArticleFlows` from the zone its zone bar is for), in the formatting bar's place, as that drawing's tools. It is
+  still the whole strip then, Library included: a strip of the drawing tools alone is not built.
+- **Undo and Redo** left the bottom-right cluster for an Editor on a desktop; a phone and a Participant keep them
+  there.
+- **A phone** has no bar here. Its writing bar is the page toolbar's own, fixed along the top of the screen while
+  the caret is in the writing (`usePageToolbarPlacement`), as before. Not checked on a phone: with the strip gone
+  the menu button and the Pages button stand at the top left, where that bar also stands while writing.
+- **Renders:** the bar's props are the side chrome's widths and the history's two flags, none of which a keystroke
+  changes; the page toolbar inside it renders on a selection change, as it did in the strip.
+
 ## What a page no longer has (built)
 
 - **Stored fields.** `withoutPageLooks` (`packages/document/src/page-looks.ts`) runs in `migrateStoredTab`, which
@@ -160,6 +185,7 @@ browser's.
 | The page's scroll keys                                                | `page-keys.test.ts`                                              |
 | The ground follows the appearance alone                               | `view-backdrop.test.ts`                                          |
 | No zoom chords, no Hand, no Fit                                       | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts` |
+| The bar: the slot, Undo and Redo, no canvas tool                      | `PageFormattingBar.test.tsx`                                     |
 | A stored background, style or lock is dropped as a tab is read        | `page-looks.test.ts`, `tab-row.test.ts`                          |
 | Templates carry no style; no Open Theme command                       | `article-templates.test.ts`, `editor-commands.test.ts`           |
 

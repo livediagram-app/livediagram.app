@@ -35,6 +35,24 @@ replaces what the fork still shows around the writing.
   from **Insert** and the slash menu, and a drawing zone shows its own drawing tools while it is being edited.
 - **Undo and Redo** stay, in the formatting bar.
 
+## The footer
+
+Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs in the footer."
+
+- The three views are **tabs in the footer**, where the other liveworkspace editors show their tab bar, with the
+  same look: **Pages**, **Ask**, **AI Knowledge**, each with its icon, the current one raised as a tab pill is.
+  They are links (`?view=`, so Back works) with `aria-current`, reachable by keyboard, each with a hover card of a
+  title and one line. They are views, not a person's tabs: no add, close, drag or menu.
+- The footer is a bar across the bottom of the content area: the tabs at its left, then Get Started, Tools,
+  Settings, notifications and the appearance at its right. It never floats over the writing; the reading column
+  scrolls above it.
+- **Share** and the account button stand at the right end of the formatting bar's row, always; the floating corner
+  card is gone.
+- On a phone the three tabs are the footer's row, icons with short labels, 44 px targets; the footer's other items
+  go behind one **More** button where they do not fit.
+
+**Not built yet**: the views switch is still the corner card ([blueprint](blueprints/page-surface.md) "Not built").
+
 ## What a page no longer has
 
 The page's own **Style**, **Text**, **Background** and **Lock** controls are not in liveknowledge, with the page
