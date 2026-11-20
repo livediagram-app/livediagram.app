@@ -1,7 +1,7 @@
 'use client';
 
 import { createSiteAccount } from '@liveworkspace/account-menu/site-account';
-import { useSignedInHint } from './HeaderPrimaryCta';
+import { useSignedInHint } from './ExplorerLink';
 
 // The site header's account menu (docs/specs/019-marketing/marketing-site.md "Header"), at the bar's right end:
 // @liveworkspace/account-menu's, read from this product's hint cookie. The menu's code is its own chunk

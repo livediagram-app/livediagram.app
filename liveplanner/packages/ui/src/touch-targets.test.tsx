@@ -16,10 +16,11 @@ const classOf = (html: string, marker: RegExp): string => {
 };
 
 describe('touch targets on the public sites', () => {
-  it('pads the header brand and primary CTA vertically', () => {
+  it('pads the header brand, Explorer link and Start Blank vertically', () => {
     const html = renderToStaticMarkup(<SiteHeader ctaSurface="Home" shareRail={false} />);
     expect(classOf(html, /<a [^>]*href="\/"[^>]*>/)).toMatch(/\btouch-target-y\b/);
-    expect(classOf(html, /<a [^>]*aria-label="Choose Template"[^>]*>/)).toMatch(
+    expect(classOf(html, /<a [^>]*aria-label="Explorer"[^>]*>/)).toMatch(/\btouch-target-y\b/);
+    expect(classOf(html, /<a [^>]*href="\/new\?start=blank[^"]*"[^>]*>/)).toMatch(
       /\btouch-target-y\b/,
     );
   });

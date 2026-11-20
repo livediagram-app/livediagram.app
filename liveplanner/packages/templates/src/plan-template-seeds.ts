@@ -63,7 +63,7 @@ function fieldsOf(
     const rule: RepeatRule = { ...card.repeat, from: today, timeZone };
     fields[REPEAT_FIELD] = rule as unknown as ItemFields[string];
   }
-  // What Clear Example Cards finds them by (docs/specs/026-plan/items.md "Example cards").
+  // What Clear on the example cards toast finds them by (docs/specs/026-plan/items.md "Example cards").
   fields[EXAMPLE_FIELD] = true;
   return fields;
 }

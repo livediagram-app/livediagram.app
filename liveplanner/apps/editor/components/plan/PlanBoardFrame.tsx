@@ -11,7 +11,7 @@ import { centreTappedColumn } from './phone-board';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { COLUMN_ATTR } from './column-move-flip';
 import { SLOT_BOARD_GROUP } from './SlotBoardHeader';
-import { ExampleCardsNotice } from './ExampleCardsNotice';
+import { ExampleCardsToast } from './ExampleCardsToast';
 import { BoardSelectionBar } from './BoardSelectionBar';
 import { boardSurface, keepBoardPress } from './plan-board-view-consts';
 import { planBoardViewHeader } from './PlanBoardViewHeader';
@@ -69,8 +69,8 @@ export function PlanBoardFrame({ v }: { v: PlanBoardViewValues }) {
       }}
     >
       {planBoardViewHeader(v)}
-      {/* A template's example cards: Clear Example Cards or Keep Them, for an Editor (ExampleCardsNotice); left on the
-          board's tab by a slot board. */}
+      {/* A template's example cards raise one standing toast with Clear, for an Editor (ExampleCardsToast); none from
+          a slot board. */}
       {plan && selection.ids.size ? (
         <BoardSelectionBar
           plan={plan}
@@ -81,12 +81,7 @@ export function PlanBoardFrame({ v }: { v: PlanBoardViewValues }) {
         />
       ) : null}
       {interactive && plan && !simplified ? (
-        <ExampleCardsNotice
-          shown={shownItems}
-          plan={plan}
-          palette={palette}
-          held={!!plan.warmRights?.canEdit}
-        />
+        <ExampleCardsToast shown={shownItems} plan={plan} />
       ) : null}
       <div
         ref={bodyRef}

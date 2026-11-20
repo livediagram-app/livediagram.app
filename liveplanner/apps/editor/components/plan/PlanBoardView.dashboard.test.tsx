@@ -13,6 +13,21 @@ import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/us
 import { maximisePlanElement, releasePlanElement } from '@/hooks/plan/maximised-plan';
 import { FormBoardContext, type FormBoardValue } from '@/components/forms/form-board-context';
 import { planTextPx } from '@/lib/plan-font';
+import { EXAMPLE_CARDS_TOAST_KEY, resetExampleCardsToastForTests } from './ExampleCardsToast';
+
+const toastAction = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/ui/useToast', async (real) => {
+  const toast = {
+    action: toastAction,
+    dismissAction: () => {},
+    info: () => {},
+    success: () => {},
+    warning: () => {},
+    error: () => {},
+    offer: () => {},
+  };
+  return { ...(await real<object>()), useToast: () => toast };
+});
 
 // docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified": in a Dashboard slot the board is a compact one for
 // working its cards (moving, opening and adding them, each column's count against its WIP limit), with nothing that sets
@@ -225,13 +240,20 @@ describe('a board in a Dashboard slot', () => {
     expect(screen.getByText('Write the plan')).toBeTruthy();
   });
 
-  it('leaves the example cards notice on the tab', () => {
+  it('raises the example cards toast from the tab, not from a slot', () => {
     const example = { ...card, fields: { ...card.fields, [EXAMPLE_FIELD]: true } } as Item;
+    const raised = () =>
+      toastAction.mock.calls.filter(
+        ([spec]) => (spec as { key: string }).key === EXAMPLE_CARDS_TOAST_KEY,
+      ).length;
+    resetExampleCardsToastForTests();
+    toastAction.mockClear();
     draw({ dashboard: false, value: plan({ items: new Map([[card.id, example]]) }) });
-    expect(screen.getByRole('button', { name: 'Clear Example Cards' })).toBeTruthy();
+    expect(raised()).toBe(1);
     cleanup();
+    toastAction.mockClear();
     draw({ dashboard: true, value: plan({ items: new Map([[card.id, example]]) }) });
-    expect(screen.queryByRole('button', { name: 'Clear Example Cards' })).toBeNull();
+    expect(raised()).toBe(0);
   });
 
   it('draws a board with swimlanes in plain columns in a slot', () => {

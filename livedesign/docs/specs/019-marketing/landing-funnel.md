@@ -22,7 +22,7 @@ The dashboard's **Pages** tab opens with the funnel (see Dashboard below).
 Before this the marketing site reported page views and nothing else, so no
 change to the landing page could be judged. "Does the hero convert better
 than the closing CTA?", "do the template gallery's cards create designs?",
-"is Start Blank or Choose Template the stronger button?", "does anyone start
+"is Start Blank or Choose Template the stronger header button?", "does anyone start
 from a comparison page?" had no answer. [Marketing site](marketing-site.md)'s landing page work (a new
 headline, fewer sections, a prompt in the hero) needs a number to move before
 any of it is worth doing.
@@ -81,9 +81,10 @@ ingest drops.
 
 The slots:
 
-- `Header` / `HeaderBlank`: the shared `SiteHeader`'s Choose Template (`/new`) and, outside the marketing
-  pages, Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)); a marketing page's
-  bar has no Start Blank, so it never reports `HeaderBlank`.
+- `HeaderBlank`: the shared `SiteHeader`'s Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)),
+  outside the marketing pages; a marketing page's bar has no Start Blank, so its `HeaderBlank` never fires.
+- `Header` (**retired** in November 2026, Work Tracker 1317, with the header's Choose Template (`/new`):
+  no header links it now; the slot stays so its stored history still reads).
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
 - `Community` ([Community](../025-community/community.md)) has the header slots only: its Share Your Own buttons open
   Explorer Home rather than `/new`, so they are not funnel sources.

@@ -27,7 +27,7 @@ export default function AlternativesIndexPage() {
     <>
       <JsonLd data={hubItemListJsonLd(COMPARISONS)} />
       <BreadcrumbJsonLd name="Comparison" path={HUB_PATH} />
-      <Header surface="Compare" />
+      <Header />
       <Breadcrumb items={[{ label: 'Comparison' }]} />
       <main className="pb-20 sm:pb-24">
         <PageHero eyebrow="Comparison" title={hub.heading} lede={hub.lede} />

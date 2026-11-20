@@ -248,8 +248,8 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   - **Swimlanes are not drawn**: a board with swimlanes shows its cards in plain columns in a slot (a move changes
     only a card's column, never its lane). An All Cards board keeps its rows by status, since its one column holds
     every status and those rows are where a card's status is shown and changed.
-  - **Left on its tab**: the widgets (and the filter they set), the Items Not on This Board tray, the example cards'
-    **Clear Example Cards** and **Keep Them**, **Focus**, the column cogs (and adding a column), the form strip (a
+  - **Left on its tab**: the widgets (and the filter they set), the Items Not on This Board tray, the example cards toast
+    (a slot board raises none), **Focus**, the column cogs (and adding a column), the form strip (a
     form sending its responses to the board), renaming the board from its title, **Reveal**, **Add Card Type**
     and the board-setup sections of its cog. Changes to the board are made on its own tab, through **Open Tab**.
   - **The header's controls**: **Maximise Board**, then the slot's own cog (**Slot Settings**, with the slot

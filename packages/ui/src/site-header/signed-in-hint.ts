@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 
 // Whether a product's readable hint cookie says someone is signed in (docs/specs/019-marketing/marketing-site.md
 // "Header"): false in the static HTML, read after hydration. The cookie only picks a link; it authenticates
-// nothing. Each product binds it to its own cookie's reader (its HeaderPrimaryCta's useSignedInHint).
+// nothing. Each product binds it to its own cookie's reader (its ExplorerLink's useSignedInHint).
 
 const noSubscription = () => () => {};
 const signedOutOnServer = () => false;

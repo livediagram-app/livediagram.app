@@ -57,7 +57,7 @@ describe('the site header account menu', () => {
     expect(container.querySelector('[aria-label$="account menu"]')).toBeNull();
   });
 
-  it('keeps the marketing bar for someone signed in: the three links, then the menu at the far right', async () => {
+  it('keeps the marketing bar for someone signed in: its two links, then the menu at the far right', async () => {
     document.cookie = 'ld_signed_in=1; path=/';
     document.cookie = 'ld_account=Ada; path=/';
     const { container } = render(<SiteHeader ctaSurface="Home" buildWithAi="link" account />);
@@ -69,12 +69,9 @@ describe('the site header account menu', () => {
     const bar = container.querySelector('header > div > div:last-child')!;
     expect([...bar.querySelectorAll('a')].map((a) => a.getAttribute('aria-label'))).toEqual([
       'Build with AI',
-      'Choose Template',
       'Explorer',
     ]);
-    expect(screen.getByRole('link', { name: 'Choose Template' }).getAttribute('href')).toBe(
-      '/new?via=Home.Header',
-    );
+    expect(bar.innerHTML).not.toContain('Choose Template');
     const links = [...bar.querySelectorAll('a')];
     expect(
       links.every((a) => a.compareDocumentPosition(menu) & Node.DOCUMENT_POSITION_FOLLOWING),
