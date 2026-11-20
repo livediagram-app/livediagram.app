@@ -54,6 +54,24 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   most 1,000 characters; the passages sent are capped at 24,000 characters. A failed or refused model call says
   which (bad key, no credit, rate limit) in words, never a raw error.
 
+## Providers
+
+Owner, 2026-11-20: a team may bring an **OpenAI** key instead of a Claude one.
+
+- AI Settings asks for the **provider** first, **Anthropic (Claude)** or **OpenAI**, then the key and the model. A
+  knowledgebase holds one provider and one key at a time; choosing the other provider replaces the key after a
+  confirmation.
+- Everything that uses a model runs on whichever is set, with the same behaviour, limits and words: Ask, the
+  conflict check, drafting a page from a gap and [Describe to Set Up](describe-to-set-up.md). The interface says
+  "your team's AI key" wherever it does not matter which, and names the provider where it does (a refused key:
+  "OpenAI Did Not Accept the Key").
+- The key is sealed and kept exactly as a Claude key is, with its provider beside it. The api calls only the chosen
+  provider's own API host, and never sends a key to the other.
+- The models offered are each provider's current general models, a short list kept in the knowledge package and
+  checked against the provider's documentation when it is built; the default is each provider's most capable.
+- The prompts, the fenced passages, the citation markers and the answer's tagged shape are the same for both; only
+  the request and stream formats differ, behind one interface in the knowledge package.
+
 ## Share roles
 
 | Action                                | Editor | Participant | Viewer |
