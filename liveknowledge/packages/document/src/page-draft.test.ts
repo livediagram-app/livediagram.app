@@ -159,8 +159,8 @@ describe('making, discarding and stripping a draft', () => {
       elements: [
         marker('kept'),
         marker('draft-only'),
-        { id: 'box', type: 'rectangle' },
-      ] as Tab['elements'],
+        { id: 'box', type: 'shape' },
+      ] as unknown as Tab['elements'],
     });
     const tab = withDraftMade(
       plain,

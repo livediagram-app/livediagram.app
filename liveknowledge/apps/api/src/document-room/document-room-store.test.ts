@@ -264,7 +264,7 @@ describe("a document's content lives in its own Durable Object", () => {
     expect(count(w.d1.sql, 'tabs')).toBe(0);
   });
 
-  it('saves a tab in one call to the document and one transaction, and reads it back in one call', async () => {
+  it('saves a tab in one call to the document, the write and the note of its writer, and reads it back in one call', async () => {
     const w = world();
     await createDocument(w, 'A');
     const document = w.documents.get('A')!;
@@ -277,7 +277,9 @@ describe("a document's content lives in its own Durable Object", () => {
     });
     expect(saved.status).toBe(200);
     expect(w.calls).toEqual(['route']);
-    expect(document.transactions - before).toBe(1);
+    // The tab's write, then who wrote it (knowledge/page-authors.ts notePageWrite), its own batch so a failed note
+    // never fails the save.
+    expect(document.transactions - before).toBe(2);
 
     w.calls.length = 0;
     const read = await w.send('GET', '/api/documents/A/tabs/t1');
