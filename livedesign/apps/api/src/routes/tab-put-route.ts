@@ -3,6 +3,7 @@
 // PUT"). A token is refused; the save is merged with every recorded changeset its editor had not
 // seen and with the room's collaboration ledger, then written at the revision it read.
 
+import { SOMEONE, asTabWriter } from '@liveworkspace/automations/room';
 import {
   CHANGESET_MERGE_WINDOW_MS,
   CHANGESET_SEEN_HEADER,
@@ -187,16 +188,33 @@ export async function writeTabSave(
     try {
       // The merged tab may outgrow the request: the storage layer measures what it stores
       // (docs/specs/015-api/api.md "Tab size").
-      const written = await storeTab(async () => {
-        rev = await upsertTabAtRev(
-          env,
-          id,
-          sanitised,
-          orderIndex,
-          existingTab?.rev ?? 0,
-          connection,
-        );
-      });
+      const store = () =>
+        storeTab(async () => {
+          rev = await upsertTabAtRev(
+            env,
+            id,
+            sanitised,
+            orderIndex,
+            existingTab?.rev ?? 0,
+            connection,
+          );
+        });
+      // A save that makes its tab says who made it, for a Tab Added rule (docs/specs/013-workspace/automations.md).
+      const written = await (existingTab
+        ? store()
+        : asTabWriter(
+            env,
+            'tab_added',
+            async () => ({
+              by: {
+                id: owner,
+                name: writerParticipant?.name ?? SOMEONE.name,
+                color: writerParticipant?.color ?? SOMEONE.color,
+              },
+              role: 'editor' as const,
+            }),
+            store,
+          ));
       if (!written) return payloadTooLarge();
     } catch (err) {
       if (!isTabRevStale(err)) throw err;

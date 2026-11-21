@@ -43,6 +43,12 @@ const TELEMETRY_SITE = `${ROOT}/../liveworkspace/apps/site/app/telemetry`;
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
 // Snapshots (@liveworkspace/snapshots), drawn inside History in every editor's footer Tools.
 const SNAPSHOTS_PACKAGE = `${ROOT}/../packages/snapshots/src`;
+// Automations (@liveworkspace/automations-ui, the screen; @liveworkspace/automations, the kinds' names), opened from
+// Tools in every editor.
+const AUTOMATIONS_PACKAGES = [
+  `${ROOT}/../packages/automations-ui/src`,
+  `${ROOT}/../packages/automations/src`,
+];
 
 // Every printed spelling per lowercase key: two surfaces can print one name
 // in different case (a dialog's title and its own aria-label, say), and an article matching either is right.
@@ -117,6 +123,7 @@ function editorSource(): string {
   walk(TELEMETRY_SITE);
   walk(WORKBENCH_PACKAGE);
   walk(SNAPSHOTS_PACKAGE);
+  for (const dir of AUTOMATIONS_PACKAGES) walk(dir);
   return all.toLowerCase();
 }
 

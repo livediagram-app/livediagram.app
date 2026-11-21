@@ -84,6 +84,7 @@ function okResponse(request: Request): Response {
   if (path === '/teams') return json({ teams: [] });
   if (path.endsWith('/room-ticket')) return json({ ticket: 'rt2~sealed', expiresAt: 1 });
   if (path === '/trash') return json({ trash: [] });
+  if (path.endsWith('/automations')) return json({ rules: [], runsToday: 0, runsPerDay: 1000 });
   if (path.endsWith('/restore')) return json({ design: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ design: LIVE_DOC });
   if (path.endsWith('/share')) {
@@ -187,19 +188,21 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty-two documented tools, each with a description', () => {
+  it('registers the twenty-four documented tools, each with a description', () => {
     const { registered } = harness();
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
       'archive_design',
       'change_components',
       'change_pages',
+      'change_rules',
       'change_threads',
       'create_design',
       'delete_design',
       'delete_image',
       'find_designs',
       'list_images',
+      'list_rules',
       'list_templates',
       'list_threads',
       'list_trash',
@@ -310,7 +313,10 @@ describe('tool annotations', () => {
     view_live: 'read',
     // docs/specs/015-api/mcp-server.md "Comment threads": change_threads deletes the agent's own comments.
     list_threads: 'read',
+    // docs/specs/013-workspace/automations.md "Agents": change_rules deletes rules.
+    list_rules: 'read',
     change_threads: 'destructive',
+    change_rules: 'destructive',
     find_designs: 'read',
     read_design: 'read',
     list_templates: 'read',
@@ -386,6 +392,7 @@ describe('tool annotations', () => {
     expect(readOnly).toEqual([
       'find_designs',
       'list_images',
+      'list_rules',
       'list_templates',
       'list_threads',
       'list_trash',
@@ -413,6 +420,7 @@ describe('tool annotations', () => {
       'archive_design',
       'change_components',
       'change_pages',
+      'change_rules',
       'change_threads',
       'delete_design',
       'delete_image',

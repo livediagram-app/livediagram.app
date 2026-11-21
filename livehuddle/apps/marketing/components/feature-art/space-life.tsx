@@ -2,7 +2,7 @@
 // (docs/specs/008-canvas/3d-view.md, receptionist.md, docs/specs/009-elements/room-builder.md): the 3D View, the
 // Receptionist and the Room Builder. They draw through SpaceShot, or the cast's own sprite sheets, so every character is
 // the product's own; the chrome is the editor's own, with its labels. The panels a Space opens (the games, the Mini
-// View, History, Webhooks) are in ./space-panels. The motion is the shared card keyframes (app/feature-art/canvas.css),
+// View, History, Automations) are in ./space-panels. The motion is the shared card keyframes (app/feature-art/canvas.css),
 // which settle under reduced motion.
 
 import type { CSSProperties } from 'react';

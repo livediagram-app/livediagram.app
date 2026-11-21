@@ -3,13 +3,14 @@
 // screen"): a Link Cards card the plan lost reads as gone, not as nothing picked; a panel's Change reads "Change
 // Trigger" or "Change Action" and what it changes, never the field's label alone; each step card's button is told
 // apart by what the step does; and an Audit Trail row opens from a click anywhere on it, its chevron naming its run.
+import './test-kit';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import { newRuleBody, type RulePart } from './rule-draft';
-import { StepPanel } from './StepPanel';
-import { StepCard } from './StepCard';
-import { RunRow } from './RunRow';
+import { StepPanel } from '@liveworkspace/automations-ui/StepPanel';
+import { StepCard } from '@liveworkspace/automations-ui/StepCard';
+import { RunRow } from '@liveworkspace/automations-ui/RunRow';
 import { NOW, card, outline, run } from './test-fixtures';
 
 afterEach(cleanup);
@@ -22,7 +23,6 @@ function Panel({ body, part }: { body: AutomationRuleBody; part: RulePart }) {
       onChange={() => {}}
       outline={outline()}
       faultPath={null}
-      person="Ana Costa"
       now={NOW}
       timeZone="Europe/London"
     />
@@ -68,7 +68,6 @@ describe('Link Cards to a card the plan no longer has', () => {
         onChange={() => {}}
         outline={outline({ items })}
         faultPath={null}
-        person="Ana Costa"
         now={NOW}
         timeZone="Europe/London"
       />,

@@ -258,7 +258,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Where Monday.com goes further',
         paragraphs: [
-          'Monday.com has invested heavily in no-code automation and integrations, and in products built for particular teams. liveplanner’s Automations work inside the plan, moving, assigning, labelling and stamping dates, start from mail sent to a board, a GitHub pull request or another tool’s webhook, and post to Slack, Microsoft Teams, email or a webhook, but there is no catalogue of recipes for outside tools. Past that, a REST API, an MCP server and a command-line tool let a script or an AI agent do the rest.',
+          'Monday.com has invested heavily in no-code automation and integrations, and in products built for particular teams. liveplanner’s Automations work inside the plan, moving, assigning, labelling and stamping dates, start from mail sent to a board, a GitHub pull request or another tool’s call, and post to Slack, Microsoft Teams, email or your own service, but there is no catalogue of recipes for outside tools. Past that, a REST API, an MCP server and a command-line tool let a script or an AI agent do the rest.',
         ],
       },
       {
@@ -277,7 +277,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does liveplanner have automations?',
-        a: 'Yes. Rules act when a card moves, a field changes, a form response lands or a due date nears, from a ready-made template or your own, and can post to Slack, Microsoft Teams, email or a webhook. Rules run on our servers, so writing one needs a free sign-in. A REST API, an MCP server and a command-line tool let your own scripts and AI agents change cards, sheets and forms too, with their edits shown live to everyone.',
+        a: 'Yes. Rules act when a card moves, a field changes, a form response lands or a due date nears, from a ready-made template or your own, and can post to Slack, Microsoft Teams, email or your own service as signed JSON. Rules run on our servers, so writing one needs a free sign-in. A REST API, an MCP server and a command-line tool let your own scripts and AI agents change cards, sheets and forms too, with their edits shown live to everyone.',
       },
       {
         q: 'Do guests need an account?',

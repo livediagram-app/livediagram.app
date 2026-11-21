@@ -7,8 +7,6 @@
 
 import type { AutomationAction, AutomationActionKind } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
-import { startAction } from '../step-defaults';
-import { ChangeActionField } from './ChangeActionField';
 import { AssignPanel } from './AssignPanel';
 import { CopyCardPanel, SetColourPanel, SetTypePanel } from './CardActionPanels';
 import { ChecklistActionPanel } from './ChecklistActionPanel';
@@ -17,7 +15,7 @@ import { CreateCardPanel } from './CreateCardPanel';
 import { FieldActionPanel } from './FieldActionPanel';
 import { LabelActionPanel } from './LabelActionPanel';
 import { MoveActionPanel } from './MoveActionPanel';
-import { PanelNote } from './panel-parts';
+import { PanelNote } from '@liveworkspace/automations-ui/step-panels/panel-parts';
 import { TextActionPanel } from './TextActionPanel';
 
 const NOTHING_TO_SET: Partial<Record<AutomationActionKind, string>> = {
@@ -36,7 +34,7 @@ export function ActionPanel({
   outline,
   invalidPath,
   branch = false,
-  timeRule = false,
+  personless: timeRule = false,
 }: {
   action: AutomationAction;
   onChange: (next: AutomationAction) => void;
@@ -45,8 +43,8 @@ export function ActionPanel({
   invalidPath: string | null;
   // An action inside a For Related Cards branch.
   branch?: boolean;
-  // The rule's trigger is a time.
-  timeRule?: boolean;
+  // The rule's trigger has nobody behind it (a time, an incoming webhook, an email).
+  personless?: boolean;
 }) {
   const invalid = invalidPath !== null;
   const body = (() => {
@@ -126,16 +124,6 @@ export function ActionPanel({
         return <PanelNote>{NOTHING_TO_SET[action.kind]}</PanelNote>;
     }
   })();
-  return (
-    <div className="flex flex-col gap-4">
-      <ChangeActionField
-        kind={action.kind}
-        branch={branch}
-        onChange={(kind) => {
-          if (kind !== action.kind) onChange(startAction(kind, outline, timeRule));
-        }}
-      />
-      {body}
-    </div>
-  );
+  // The Action row above these fields, which changes the step into another, is the platform's (StepPanel).
+  return body;
 }

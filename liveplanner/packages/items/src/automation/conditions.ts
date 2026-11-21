@@ -3,6 +3,11 @@
 // A condition on a field the card's type lacks, or naming a type, column, field, person or saved filter that is gone,
 // does not hold; it never throws. Pure.
 
+import {
+  allHold as allHeld,
+  automationDayWords as dayWordsOf,
+  type AutomationRole,
+} from '@liveworkspace/automations';
 import { itemStatus, type Item, type ItemFieldValue, type ItemPerson } from '../item';
 import { quickFilterMatches } from '../board';
 import { cardsMatchingFilters } from '../board-lanes';
@@ -31,8 +36,8 @@ import {
 import { dayFrom, dayText, fieldText } from './values';
 
 // Who made the change a rule answers: a person through an Editor's or a Participant's access, an agent (an API
-// token), a rule, or the plan itself (a form response, a Repeat).
-export type AutomationRole = 'editor' | 'participant' | 'agent' | 'automation' | 'system';
+// token), a rule, or the plan itself (a form response, a Repeat). @liveworkspace/automations'.
+export type { AutomationRole };
 
 export interface ConditionContext {
   card: Item;
@@ -76,12 +81,7 @@ const is = (not: true | undefined) => (not ? 'is not' : 'is');
 const listed = (names: string[]) => names.join(' or ');
 
 // "Today", "Today + 3 days", "Today - 1 day", or the day.
-export function automationDayWords(day: AutomationDay): string {
-  if ('day' in day) return dayText(day.day);
-  if (day.today === 0) return 'Today';
-  const n = Math.abs(day.today);
-  return `Today ${day.today > 0 ? '+' : '-'} ${n} day${n === 1 ? '' : 's'}`;
-}
+export const automationDayWords = (day: AutomationDay): string => dayWordsOf(day, dayText);
 
 // A condition's value as words, a priority by its label as the rule's sentence reads it ("Priority is High").
 function valueWords(field: string, value: FieldValue): string {
@@ -262,6 +262,5 @@ export function allHold(
   conditions: readonly AutomationCondition[],
   ctx: ConditionContext,
 ): { ok: boolean; lines: ConditionLine[] } {
-  const lines = conditions.map((c) => holds(c, ctx));
-  return { ok: lines.every((l) => l.ok), lines };
+  return allHeld(conditions, (c) => holds(c, ctx));
 }

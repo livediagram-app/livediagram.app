@@ -1,0 +1,39 @@
+{
+  "name": "@liveworkspace/automations",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./item": "./src/item/index.ts",
+    "./room": "./src/room/index.ts",
+    "./testing/room-world": "./src/testing/room-world.ts",
+    "./testing/worker": "./src/testing/worker.ts",
+    "./testing/workerd": "./src/testing/workerd.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@liveworkspace/api-schema": "workspace:^",
+    "@liveworkspace/email": "workspace:^",
+    "@liveworkspace/icons": "workspace:^",
+    "@liveworkspace/index-app": "workspace:^",
+    "@liveworkspace/model-core": "workspace:^",
+    "@liveworkspace/telemetry": "workspace:^"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261110.1",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

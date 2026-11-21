@@ -28,7 +28,6 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVote,
-  lucideWebhook,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
 import type { ReactNode } from 'react';
@@ -409,10 +408,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M10.2 8.8v6.4l5-3.2z" />
     </Glyph>
   ),
-  // The webhook mark: an event handed on to another tool. Nothing else in either set draws it.
-  webhooks: (
+  // A lightning bolt inside a turning loop: a rule that runs on its own, again and again.
+  automations: (
     <Glyph>
-      <Prims prims={lucideWebhook} />
+      <path d="M4.5 12a7.5 7.5 0 0112.9-5.2" />
+      <path d="M17.8 3.6v3.4h-3.4" />
+      <path d="M19.5 12a7.5 7.5 0 01-12.9 5.2" />
+      <path d="M6.2 20.4V17h3.4" />
+      <path d="M12.8 7.8l-3.3 4.9h3l-.8 3.5 3.3-4.9h-3z" />
     </Glyph>
   ),
   // A camera: a save point taken of the whole item. Not a clock (history's) and not a page (export's).

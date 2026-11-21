@@ -27,6 +27,12 @@ import { rowToTabSummary, type TabRow } from '../tab-row';
 import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
 import type { TabConnection } from '@liveworkspace/index-client';
 import type { DesignEnv, TabSummaryDTO } from '../types';
+import { KINDS } from '@livedesign/design/automations';
+import {
+  copiedRulesOf,
+  landedRuleStatements,
+  type CopiedRules,
+} from '@liveworkspace/automations/room';
 
 // What the design knows of itself (design-schema.ts): its name, owner, team, provenance and creation intent. Null
 // until the design is started, by a create or by its first open with a grant (startDesign).
@@ -245,6 +251,10 @@ export type DesignCopy = {
   // The component library (docs/specs/009-elements/components.md): every main, or for a one-tab copy the mains its
   // instances use. Absent from a copy of a design without one.
   components?: DesignComponent[];
+  // The source's Automations rules (docs/specs/013-workspace/automations.md), for a copy its own people make and a
+  // file's import: they land turned off, their tabs at the copy's ids. Absent from a copy made through a share link
+  // or a Community post, whose maker never saw the rules.
+  automations?: CopiedRules;
 };
 
 // Every tab of the design (or one) with its body, in order: the read a copy makes, and the Drive file's
@@ -286,6 +296,8 @@ export async function exportDesignCopy(
   onlyTabId: string | null,
   copierId: string | null,
   community = false,
+  // The copy carries the design's Automations rules (design-room-doors.ts exportCopy decides).
+  withRules = false,
 ): Promise<DesignCopy | null> {
   const design = await env.DESIGN_DB.prepare(
     'SELECT opens_in, tab_kind, owner_id FROM design WHERE id = ?',
@@ -332,6 +344,7 @@ export async function exportDesignCopy(
   // Mains keep their ids (the copied instances name them), redacted for the copier as the tabs are.
   const mains = await readComponents(env, onlyTabId === null ? {} : { tabIds: [onlyTabId] });
   const components = mainsForReader(mains, { community, redactFor: redactAuthorsFor });
+  const rules = withRules && !community ? copiedRulesOf(env, tabIdMap) : null;
   return {
     opensIn: design?.opens_in ?? null,
     tabKind: design?.tab_kind ?? null,
@@ -340,6 +353,7 @@ export async function exportDesignCopy(
     owners: owners.results.map((r): [string, string] => [r.id, r.owner_id]),
     blobs,
     ...(components.length > 0 ? { components } : {}),
+    ...(rules ? { automations: rules } : {}),
   };
 }
 
@@ -440,5 +454,8 @@ export async function importDesignCopy(
         .bind(now, JSON.stringify(copy.blobs)),
     );
   }
+  // Its rules, turned off, in the same transaction (@liveworkspace/automations/room rules-file.ts). All off, so
+  // nothing is heard or scheduled until someone turns one on.
+  stmts.push(...landedRuleStatements(env.DESIGN_DB, KINDS, copy.automations, now));
   await db.batch(stmts);
 }

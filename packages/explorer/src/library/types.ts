@@ -150,6 +150,4 @@ export type LibraryHostProps = {
   /** History on an item's menu: what happened to the item. On by default. An editor turns it off: the open item's
    *  History is in its footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md). */
   history?: boolean;
-  /** Webhooks on an item's menu, for one who can edit it. On by default; an editor turns it off, as History. */
-  webhooks?: boolean;
 };

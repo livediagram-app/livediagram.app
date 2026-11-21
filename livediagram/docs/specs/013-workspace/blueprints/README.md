@@ -2,6 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
+- ./automations.md - when implementing or changing Automations in the api: the kinds, the schema steps, the engine in the room and its kit, every event call site, the routes and the two public doors, rules in files and copies, the workerd tests, and the list another app copies
 - ./shape-libraries.md - when implementing or changing shape libraries: the table, api, import landing, My shapes, the previews route the shared Explorer draws shapes from
 - ./share-roles.md - when implementing or changing access levels (Viewer, Participant, Editor): the participant content rule, the room's participant write path and adder keys, editor capabilities and the Share dialog
 - ./workbench-embeds.md - when implementing or changing workbench embeds: pairing, tickets, `lvw_` sessions and their confinement, the `/embed/workbench` page and its messages, the selection reference, `/workbench/pair`, Settings pairings, `workbench open` and `pair`

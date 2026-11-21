@@ -1,6 +1,11 @@
 // docs/specs/026-plan/automations.md "The rule builder": a refusal reads in words, never the path the api names.
 import { describe, expect, it } from 'vitest';
-import { refusalWords } from './refusal-words';
+import { refusalWords as platformWords } from '@liveworkspace/automations-ui/refusal-words';
+import { REFUSAL_PICKS } from './plan-words';
+
+// As the plan's builder asks for them: its word for the item, and what each of its fields' names asks for.
+const refusalWords = (r: Parameters<typeof platformWords>[0]) =>
+  platformWords(r, 'plan', REFUSAL_PICKS);
 
 describe('refusalWords', () => {
   it('says a code a person can act on in fixed words', () => {

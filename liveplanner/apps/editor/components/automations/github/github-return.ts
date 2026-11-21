@@ -5,7 +5,7 @@
 import { track } from '@/lib/telemetry';
 import type { AutomationsScope } from '../automations-client';
 import { startGithubConnect } from './github-client';
-import { keepGithubDraft, type GithubResult, type KeptRule } from './github-hash';
+import { keepGithubDraft, type KeptRule } from './github-hash';
 
 export type { GithubResult } from './github-hash';
 
@@ -18,21 +18,10 @@ export async function goConnectGithub(
 ): Promise<void> {
   track('Plan', 'Started', 'GithubConnect');
   const url = await startGithubConnect(scope);
-  keepGithubDraft(scope.projectId, draft);
+  keepGithubDraft(scope.itemId, draft);
   go(url);
 }
 
-/** What the GitHub view says about a return. */
-export const GITHUB_RESULT_WORDS: Readonly<Record<GithubResult, string>> = {
-  connected: 'GitHub is connected. The repositories this plan hears are below.',
-  failed: 'GitHub didn’t connect. Try again, or check the App is installed on that account.',
-  requested:
-    'An owner of that organisation must approve the install on GitHub. Connect again once they have.',
-};
-
-/** The same, for the rule the person came back to. */
-export const GITHUB_RULE_WORDS: Readonly<Record<GithubResult, string>> = {
-  connected: 'GitHub is connected. Finish the rule and save it.',
-  failed: GITHUB_RESULT_WORDS.failed,
-  requested: GITHUB_RESULT_WORDS.requested,
-};
+// What a return says (the GitHub view's words, and the kept rule's): github-hash.ts holds them, where the editor's
+// first load reads them without this file's routes.
+export { GITHUB_RESULT_WORDS, GITHUB_RULE_WORDS } from './github-hash';

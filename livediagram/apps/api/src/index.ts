@@ -15,6 +15,8 @@ import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
+import { handleAutomationHook } from './routes/automation-hook-route';
+import { handleEmailOptOut } from './routes/email-optout-route';
 import { handleInternalShapeLibraries, handleLibrary } from './routes/library';
 import { handleLegacyGuestClaim } from './routes/legacy-guest';
 import { handleLocalParts, LOCAL_PARTS_MAX_BYTES } from './routes/migration';
@@ -105,6 +107,14 @@ async function routeApiRequest(
     return handleInternalShapeLibraries(request, env);
   if (segments[1] === 'internal')
     return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
+
+  // An Incoming Webhook call to a canvas's rule (docs/specs/013-workspace/automations.md): its rule's secret, never a
+  // person, so answered before identity, with its own body, type and network checks (routes/automation-hook-route.ts).
+  if (segments[1] === 'hooks') return handleAutomationHook(request, env);
+
+  // A rule email's unsubscribe (routes/email-optout-route.ts): its token, never a person, so answered before identity,
+  // limited per network.
+  if (segments[1] === 'email-optout') return handleEmailOptOut(request, env);
 
   // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the router sends
   // /api/workbench/* there itself; a caller that reaches this api directly (the CLI against `wrangler dev`) is

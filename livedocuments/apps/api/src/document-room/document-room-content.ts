@@ -26,6 +26,7 @@ import {
   type CommunityPost,
 } from './community-post';
 import { drainOutbox } from './document-outbox';
+import { forgetAutomations, restoreAutomations } from './automations/document-automations';
 import type { DocumentRoom } from './document-room';
 import { closeSockets } from './document-room-sockets';
 
@@ -52,6 +53,8 @@ export function restoreContentState(room: DocumentRoom, maintenanceAt: number | 
     .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
     .toArray()[0];
   room.communityAt = post ? post.checked_at + COMMUNITY_CHECK_MS : null;
+  // The document's rules: what they hear, and what waits to run (automations/document-automations.ts).
+  restoreAutomations(room, Date.now());
 }
 
 // The schema on first use (document-schema.ts), and the document's row once its id is known, so the content's
@@ -234,5 +237,7 @@ export async function purge(room: DocumentRoom, documentId?: string): Promise<vo
   room.shares.clear();
   room.maintenanceAt = null;
   room.communityAt = null;
+  // Its rules went with its SQLite: nothing is heard and nothing of theirs wakes it.
+  forgetAutomations(room);
   console.info('[room] purged');
 }

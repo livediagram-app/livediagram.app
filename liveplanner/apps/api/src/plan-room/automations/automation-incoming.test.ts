@@ -7,11 +7,16 @@ import { newHookSecret, provesSecret, sha256Hex } from './automation-incoming';
 // signature keyed with the secret still checks, because HMAC hashes a key longer than its 64-byte block first
 // (RFC 2104 §2). Both halves of that are pinned here, so a shorter secret fails loudly.
 const BODY = new TextEncoder().encode('{"cards":[12],"build":{"status":"green"}}');
-const call = (headers: { authorization?: string; signature?: string }) => ({
+const TS = String(Math.floor(Date.now() / 1000));
+const call = (headers: { authorization?: string; signature?: string; timestamp?: string }) => ({
   body: BODY,
   authorization: headers.authorization ?? null,
   signature: headers.signature ?? null,
+  timestamp: headers.timestamp ?? TS,
 });
+// What a sender signs: the timestamp, a dot and the exact body.
+const signedBytes = (body: Uint8Array | string) =>
+  `${TS}.${typeof body === 'string' ? body : new TextDecoder().decode(body)}`;
 
 describe('a hook secret', () => {
   it('encodes to more than the 64-byte HMAC block, so its hash keys the same HMAC', () => {
@@ -26,13 +31,19 @@ describe('a hook secret', () => {
     const secret = newHookSecret();
     const hash = await sha256Hex(secret);
     expect(hash).toBe(createHash('sha256').update(secret).digest('hex'));
-    const sig = createHmac('sha256', secret).update(BODY).digest('hex');
+    const sig = createHmac('sha256', secret).update(signedBytes(BODY)).digest('hex');
     expect(await provesSecret(call({ signature: `sha256=${sig}` }), hash)).toBe(true);
+    // The body alone signed, or the signature with no timestamp, is no proof.
+    const bare = createHmac('sha256', secret).update(BODY).digest('hex');
+    expect(await provesSecret(call({ signature: `sha256=${bare}` }), hash)).toBe(false);
+    expect(
+      await provesSecret({ ...call({ signature: `sha256=${sig}` }), timestamp: null }, hash),
+    ).toBe(false);
     expect(await provesSecret(call({ authorization: `Bearer ${secret}` }), hash)).toBe(true);
     // Another secret's signature, another body's, and no stored hash all fail.
-    const other = createHmac('sha256', newHookSecret()).update(BODY).digest('hex');
+    const other = createHmac('sha256', newHookSecret()).update(signedBytes(BODY)).digest('hex');
     expect(await provesSecret(call({ signature: `sha256=${other}` }), hash)).toBe(false);
-    const changed = createHmac('sha256', secret).update('{}').digest('hex');
+    const changed = createHmac('sha256', secret).update(signedBytes('{}')).digest('hex');
     expect(await provesSecret(call({ signature: `sha256=${changed}` }), hash)).toBe(false);
     expect(await provesSecret(call({ signature: `sha256=${sig}` }), null)).toBe(false);
   });
@@ -40,7 +51,7 @@ describe('a hook secret', () => {
   it('would not be proved by a raw-secret signature were the secret 64 bytes or shorter', async () => {
     // The reason for the length guard: below the block, HMAC uses the key as it is, so the hash no longer stands in.
     const short = `${WEBHOOK_SECRET_PREFIX}${'a'.repeat(40)}`;
-    const sig = createHmac('sha256', short).update(BODY).digest('hex');
+    const sig = createHmac('sha256', short).update(signedBytes(BODY)).digest('hex');
     expect(await provesSecret(call({ signature: `sha256=${sig}` }), await sha256Hex(short))).toBe(
       false,
     );

@@ -198,6 +198,11 @@ export async function drainOutbox(
           .bind(designId, tabId)
           .first<TabRow>();
         const found = collabIndexRowsFromElements(tab ? elementsOf(tab.data) : []);
+        // The comment and action triggers read the same rows (@liveworkspace/automations/room CollabWatch): nothing
+        // but a Set lookup unless a rule that is on hears one. Here the only source, since an action's change rides
+        // a tab save. A design's drain keeps no record of who saved, so a resolve or an action names nobody.
+        if (env.COLLAB?.watching())
+          await env.COLLAB.note(tabId, tab ? found : null, now, async () => null);
         return collabPushOf(found.threads, found.actions, tab?.name);
       },
       summary: async () => {

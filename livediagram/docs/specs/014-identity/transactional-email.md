@@ -116,6 +116,11 @@ every address in one call. Guests have no address and never receive email.
   template's telemetry token (see below): it rides on the builder's return so
   it reaches `sendEmail` through the spread every caller already writes,
   instead of being re-stated (and forgotten) at each call site.
+- `apps/api/src/email/email-shell.ts`: the shell every email is written into (the shared layout in livediagram's
+  brand), the opt-out footer and the notification settings link.
+- A rule's Send Email (the platform's `itemAutomationEmail` in `automationEmailLook`, from `email-shell.ts`)
+  ([Automations](../013-workspace/automations.md#send-email)), kind `AutomationEmail`, to a person or to a typed-in
+  address with its one-click unsubscribe.
   **Branding.** Every builder renders through one shell, so every email looks
   the same: a brand-gradient band across the top of the card (sky-400 to
   blue-700, flat `#0ea5e9` where a client drops gradients), the logo mark beside

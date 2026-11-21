@@ -66,7 +66,6 @@ export function useCanvasChromePanels({
     onNewDocument,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
-    onMenuWebhooks: explorerMenuActions?.onWebhooks,
     onMenuSearch: explorerMenuActions?.onSearch,
     onMenuSettings: explorerMenuActions?.onOpenSettings,
   });
@@ -74,18 +73,16 @@ export function useCanvasChromePanels({
   // handler is, since the stable wrapper alone would always look present.
   const hasShare = !!explorerMenuActions?.onShare;
   const hasExport = !!explorerMenuActions?.onExport;
-  const hasWebhooks = !!explorerMenuActions?.onWebhooks;
   const hasSearch = !!explorerMenuActions?.onSearch;
   const hasSettings = !!explorerMenuActions?.onOpenSettings;
   const explorerMenu = useMemo(
     () => ({
       onShare: hasShare ? explorerHandlers.onMenuShare : undefined,
       onExport: hasExport ? explorerHandlers.onMenuExport : undefined,
-      onWebhooks: hasWebhooks ? explorerHandlers.onMenuWebhooks : undefined,
       onSearch: hasSearch ? explorerHandlers.onMenuSearch : undefined,
       onOpenSettings: hasSettings ? explorerHandlers.onMenuSettings : undefined,
     }),
-    [explorerHandlers, hasShare, hasExport, hasWebhooks, hasSearch, hasSettings],
+    [explorerHandlers, hasShare, hasExport, hasSearch, hasSettings],
   );
 
   const closeDockPanel = useCallback(() => {
@@ -114,13 +111,12 @@ export function useCanvasChromePanels({
   // Withheld (a phone held sideways), an open Explorer closes.
   const explorerHidden = !!props.explorerHidden;
   useWithheldExplorerCloses(explorerHidden, explorerOpen, closeDockPanel);
-  // History and Webhooks in the footer's Tools, there from the start (ItemToolsHost), the Explorer or not.
+  // History in the footer's Tools, there from the start (ItemToolsHost), the Explorer or not.
   const explorerEl = (
     <>
       <ItemToolsHost
         currentDocumentId={currentDocumentId}
         currentShareCode={currentShareCode ?? null}
-        onWebhooks={explorerMenu?.onWebhooks}
       />
       {chromeAway || explorerHidden || !explorerOpened ? null : (
         <LazyExplorer

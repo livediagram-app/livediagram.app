@@ -71,7 +71,7 @@ are one copy too, `@liveworkspace/api-schema/room-wire`, re-exported by each pro
 
 ## Fetching a URL someone gave
 
-Some Workers fetch a URL a person, an AI assistant or a stored document chose: the index's webhooks
+Some Workers fetch a URL a person, an AI assistant or a stored document chose: the index's connections
 ([webhooks.md](../004-index/webhooks.md#security)), livediagram's live service status, an MCP's `upload_image` by URL
 (`fetchPublicBytes`, `@liveworkspace/api-kit/public-fetch`) and every product's link-card unfurl (`isBlockedHost`,
 `@liveworkspace/api-kit/unfurl`, then `checkPublicHop` on every hop). Each refuses the same hosts (SSRF), by one shared rule,
@@ -93,7 +93,7 @@ Where the paths differ is deliberate, never in what they count as private:
 
 - **A public IP literal**, such as `https://93.184.216.34/a.png`, stays allowed for an image upload and a link unfurl,
   judged by its address: image hosts and pages are reached that way today, and refusing them breaks those calls for no
-  gain, since the address itself is checked. A webhook and a live status URL refuse every IP literal, public or not
+  gain, since the address itself is checked. A connection and a live status URL refuse every IP literal, public or not
   (IDX15): they are stored and fetched again for months, so they must be names re-resolved before each send.
 - **Names resolving to private addresses:** every one of them resolves the name (DNS over HTTPS, A and AAAA) before
   each request and refuses a private answer by the same address list. The image upload and the link unfurl follow

@@ -46,7 +46,7 @@ comma-separated, ≤ 50>`. Every person route then answers as that account, but 
   its lists are filtered to the app (the Trash among them, so `DELETE /trash` empties the app's items only),
   `POST /items` makes only the app's kind, and any other app's item answers 404. A guest id, a link or a
   malformed person is refused (401). The routes no agent may use answer `403` before the item is read, so the
-  refusal says nothing about it: managing webhooks ([webhooks.md](webhooks.md), `webhooks_need_account`) and making
+  refusal says nothing about it: managing connections ([webhooks.md](webhooks.md), `webhooks_need_account`) and making
   a connection ([connected-tabs.md](connected-tabs.md)); opening a connection answers `404`.
   `createIndexDelegateClient` in `@liveworkspace/index-client` makes these calls.
 - **The Google Drive mirror's service acting for an account** ([drive.md](../005-drive/drive.md) "Contracts > The index"):
@@ -348,7 +348,8 @@ holds for that person:
 - **Anonymised**: on other people's items, a comment thread they are in or are mentioned in, an action
   assigned to or by them, an event they did (in a team, an edit of someone else's item, a visit through a link), a
   team's event about them (its detail's `personId`), an action given to them in the event log (its detail's
-  `assigneeId`), and a webhook delivery of an event they did or of an action given to them, keeps its row, naming
+  `assigneeId`), and a connection's delivery of an event they did or of an action given to them (from when webhooks
+  heard events), keeps its row, naming
   `deleted` (no account or guest) in their place, with no name (an action's `assignee_name` or `assigner_name` too).
   An event's own id is left as it is: the id has already gone out to webhook receivers, as each delivery's `eventId` and its delivery header, the key they tell repeats apart by.
   So an id made per person never holds the person's id: an edit's (`ed:<item>:<key>:<day>`) and an action given to
@@ -384,7 +385,7 @@ Their rows in the team audit log ([team-audit-log.md](team-audit-log.md)) are an
 acted, the actor is `deleted` with no name; where a team event is about them, its person is `deleted` and their name
 leaves its detail. A team that closed with the account loses its log.
 
-The webhooks they added ([webhooks.md](webhooks.md)) are paused, their creator `deleted`, for anyone who can edit
+The connections they added ([webhooks.md](webhooks.md)) are paused, their creator `deleted`, for anyone who can edit
 the document to delete or resume; those on their own documents go with the documents when those are deleted.
 
 Their Google Drive mirror's flag (`drive_mirrored`, below) goes too; accounts tells the mirror's service itself.
@@ -741,7 +742,8 @@ due?}` (`ref` the card's number as its plan shows it, its card type's prefix and
   first `seen` responses (a count only grows). Opening the form marks every response so far seen; publishing
   marks them seen for the publisher. `code` is the live link's public code, sent when the link is published
   (before anyone is given it); a push without one keeps the code held, and `null` drops it with the row. A push
-  that raises the held count queues a webhook `form_response` for the item's own webhooks ([webhooks.md](webhooks.md)).
+  queues nothing for the item's connections: a rule's Form Response trigger says it, in the item's own room
+  ([webhooks.md "No event subscriptions"](webhooks.md#no-event-subscriptions)).
 - `GET /app/forms/:code`: `{itemId, tabId}`: the item and tab a live form's code names, for the app that pushed
   it (404 otherwise), so the app's Worker routes a public form request to its item without a table of its own
   (`@liveworkspace/index-app` `createFormPlaces` caches the answer a minute). `GET
@@ -749,17 +751,18 @@ due?}` (`ref` the card's number as its plan shows it, its card type's prefix and
   (0 when none), for the app's own unseen count.
 
 - `PUT /app/items/:id/events`: `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who
-  wrote to the item and when, for its History, its webhooks and Most Used. Each person's `edited` lands on one event per
+  wrote to the item and when, for its History and Most Used. Each person's `edited` lands on one event per
   item and UTC day (a later report moves its time on), and counts that day as one of their use days (one open
   when the day has none yet, so an item only edited still reaches Most Used; it never adds to a day's opens). liveplanner sends one per person who wrote since its last push, with the time of their latest
   write.
 - `PUT /app/items/:id/card-moves`: `{moves: [{cardId, cardKey, card, from, to, actorId?, actorName?, at}]}`, up to
-  100: a plan's cards that changed status (liveplanner), for the plan's own webhooks only (`card_moved`,
-  [webhooks.md](webhooks.md)); nothing goes in the event log. Each is one delivery per webhook however often it is
-  sent (its id is made from the item, card and time). 204; 400 `invalid_moves`.
+  100: a plan's cards that changed status (liveplanner), once sent to the plan's webhooks. It answers 204 and does
+  nothing, for the item's own app, until liveplanner stops pushing them
+  ([webhooks.md "No event subscriptions"](webhooks.md#no-event-subscriptions)).
 - `POST /app/items/:id/automation-sends`:
-  `{sends: [{key, webhookId, rule, card: {key, title, url} | null, text, at}]}`, up to 5, from a liveplanner plan's
-  room as an automation rule runs: each queues one `automation` delivery on the named webhook of this item
+  `{sends: [{key, webhookId, rule, subject?: {ref?, title, url} | null, card?: {key, ref?, title, url} | null, text, at}]}`,
+  up to 5, from the item's room, in any app, as an automation rule runs: each queues one `automation` delivery on the
+  named connection of this item
   ([webhooks.md "Automation sends"](webhooks.md#automation-sends)). 200
   `{results: [{key, queued: true} | {key, queued: false, reason, code}]}` in the order sent, `code` one of
   `webhook_not_found`, `webhook_paused`, `webhook_full`; 400 `invalid_sends`; 403 `wrong_app`.
@@ -794,7 +797,7 @@ never tried.
   `attempts` set to one short of the limit, its wait cleared) in the next drain, at the usual pace. One that succeeds
   is done; one that fails is parked again at once. A key may go back in at most once every 24 hours
   (`PARKED_RETRY_MS`: parking sets its `retry_at` that far ahead), so a key the index keeps refusing never loops.
-  Keys an outage parked (card moves for webhooks, a summary, a tab's Inbox rows) are delivered once the index answers
+  Keys an outage parked (a summary, a tab's Inbox rows) are delivered once the index answers
   again, with no route to call and no write needed. There is no internal route for it.
 - **Parked rows are bounded.** A parked row older than 30 days (`PARKED_KEEP_MS`, counted from when it was first
   parked, `parked_at`) is dropped, and an item keeps at most its newest 500 parked rows (`PARKED_KEEP_MAX`), so a
@@ -899,7 +902,7 @@ logged and dropped; an email is best-effort. Types and helpers are in `@livework
 ## The event log
 
 A short-lived record of what happened to items, kept 30 days (`EVENT_RETENTION_MS`). It is not a view of its own: it
-feeds each item's History, the item's webhooks ([webhooks.md](webhooks.md)) and its team's audit log
+feeds each item's History and its team's audit log
 ([team-audit-log.md](team-audit-log.md)), and an `edited` report counts towards Most Used. The audit log keeps its own
 copy for a year, so the sweep never cuts it short.
 
@@ -926,9 +929,8 @@ copy for a year, so the sweep never cuts it short.
   no identity (known by the link they came in through). Written off the response path, an open at most once a day
   per isolate.
 - Apps report `edited` (above).
-- Each event the index records about an item (`renamed`, `moved`, `trashed`, `shared`, `commented`,
-  `action_assigned`, `action_done`) is also handed, in the same batch, to that item's own webhooks that listen for
-  it ([webhooks.md](webhooks.md)).
+- No event is handed to the item's connections: they hear nothing by themselves
+  ([webhooks.md "No event subscriptions"](webhooks.md#no-event-subscriptions)).
 - liveworkspace accounts reports its teams' events, `POST /internal/events {events}` with its key (up to 100, each
   `{id, type, actorId, actorName?, title, detail?, at}`): `team_invite_sent`, `team_joined`, `team_declined`,
   `team_role_changed`, `team_member_removed` (`left` when they left) and `team_renamed` (`from`), each naming its team
@@ -943,8 +945,7 @@ copy for a year, so the sweep never cuts it short.
   `public` for a Community post's.
 - The daily run deletes events older than `EVENT_RETENTION_MS`, oldest first, through the events' time index, in
   bounded chunks (`EVENT_SWEEP_CHUNK`, 500, a statement and at most `EVENT_SWEEP_ROUNDS`, 40, a run: 20,000 events); a backlog past
-  that waits for the next day. Deleting an event deletes nothing else: its webhook deliveries and audit rows keep
-  their own copy.
+  that waits for the next day. Deleting an event deletes nothing else: its audit rows keep their own copy.
 - `GET /items/:id/history?limit=&cursor=`: `{events, nextCursor}`, one item's events of the last 30 days, newest
   first. `limit` `HISTORY_PAGE` (30) by default, at most `HISTORY_LIMIT_MAX` (100) (400 `invalid_query`; a bad
   cursor is 400 `invalid_cursor`). Only someone who reaches the item directly (its owner, or a member of its team)

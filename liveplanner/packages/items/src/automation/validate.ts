@@ -3,29 +3,30 @@
 // refusal with the `path` of the part at fault (`steps.2.text`) for the builder to mark. What a rule names that the
 // plan lacks is not a refusal: it needs attention (attention.ts). Also the rule's name rules. Pure.
 
-import { cutText } from '@liveworkspace/model-core/text-cut';
+import {
+  checkActionsCap,
+  checkStepCaps,
+  readActions as readActionList,
+  readIf,
+  readNotify,
+  readRuleShell,
+  readWait,
+  stepActions as sharedStepActions,
+} from '@liveworkspace/automations';
 import { ITEM_CHECKLIST_TEXT_MAX, ITEM_LABEL_MAX, ITEM_TITLE_MAX } from '../limits';
 import { itemColourValue } from '../item-colour';
-import { isRuleTimeZone } from '../repeat-dates';
 import {
-  AUTOMATION_ACTIONS_MAX,
   AUTOMATION_BRANCH_ACTIONS_MAX,
   AUTOMATION_CREATED_PER_RUN,
   AUTOMATION_EMAIL_ADDRESSES_MAX,
-  AUTOMATION_NAME_MAX,
-  AUTOMATION_OUTGOING_MAX,
   AUTOMATION_ROTATE_MAX,
   AUTOMATION_ROTATE_MIN,
   AUTOMATION_TEXT_MAX,
   isGithubTrigger,
   isPersonless,
   isTimeTrigger,
-  AUTOMATION_AI_STEPS_MAX,
   AUTOMATION_CHECKLIST_ITEMS_MAX,
   AUTOMATION_TYPE_MAPS_MAX,
-  AUTOMATION_WAITS_MAX,
-  AUTOMATION_WAIT_HOURS_MAX,
-  AUTOMATION_WAIT_HOURS_MIN,
   type AutomationAction,
   type AutomationAi,
   type AutomationBranch,
@@ -35,18 +36,15 @@ import {
   type AutomationRuleBody,
   type AutomationSetValue,
   type AutomationStep,
-  type AutomationWait,
+  type AutomationTrigger,
 } from './types';
-import type { ValuePlace } from './values';
+import { unknownValueIn, type ValuePlace } from './values';
 import { readAiStep } from './ai-steps';
-import { automationAddress } from './email-addresses';
+import { AUTOMATION_SUBJECT_MAX, automationAddress } from '@liveworkspace/automations';
 import {
-  ID_MAX,
-  Refused,
   day,
   id,
   ids,
-  isObj,
   obj,
   optionalIds,
   refuse,
@@ -58,10 +56,11 @@ import {
 import { readConditions, readTrigger } from './validate-conditions';
 
 export { AUTOMATION_LIST_MAX, type RuleRefusal } from './validate-read';
+// The shell of the check (name, time zone, chain, the caps every app shares) and a rule's name rules are
+// @liveworkspace/automations' (liveworkspace/docs/specs/018-automations/blueprints/engine.md "The check").
+export { AUTOMATION_SUBJECT_MAX, freeRuleName, ruleNameTaken } from '@liveworkspace/automations';
 
-export const AUTOMATION_SUBJECT_MAX = 200;
 const COPIES = new Set(['assignee', 'labels', 'due']);
-const VIA = new Set(['webhook', 'slack', 'teams']);
 // The steps a branch may not hold, and an If / Else's actions neither.
 const NOT_IN_BRANCH = new Set(['if', 'for', 'create_card', 'copy_card', 'notify', 'ai', 'wait']);
 const NOT_IN_IF = new Set(['if', 'for', 'notify', 'ai', 'wait']);
@@ -292,50 +291,15 @@ function readTypeMap(raw: unknown, path: string): { from: string; to: string }[]
   });
 }
 
-function readWait(s: Record<string, unknown>, path: string): AutomationWait {
-  const hours = s['hours'];
-  if (
-    typeof hours !== 'number' ||
-    !Number.isInteger(hours) ||
-    hours < AUTOMATION_WAIT_HOURS_MIN ||
-    hours > AUTOMATION_WAIT_HOURS_MAX
-  )
-    refuse(
-      `${path}.hours`,
-      `${path}.hours must be a whole number from ${AUTOMATION_WAIT_HOURS_MIN} to ${AUTOMATION_WAIT_HOURS_MAX}`,
-    );
-  return { kind: 'wait', hours: hours as number };
-}
-
 // The actions of an If / Else or a branch: never a step `refused` names (said as `where`).
-function readActions(
+const readActions = (
   v: unknown,
   path: string,
   refused: ReadonlySet<string>,
   where: string,
   place: ValuePlace = {},
-): AutomationAction[] {
-  if (!Array.isArray(v)) refuse(path, `${path} must be a list`);
-  return (v as unknown[]).map((a, i) => {
-    const kind = isObj(a) ? a['kind'] : undefined;
-    if (typeof kind === 'string' && refused.has(kind))
-      unsupported('automation_step_unsupported', `${path}.${i}`, `${where} can't hold ${kind}`);
-    return readAction(a, `${path}.${i}`, place);
-  });
-}
-
-function readNotify(s: Obj, path: string, place: ValuePlace): AutomationOutgoing {
-  const via = s['via'];
-  if (typeof via !== 'string' || !VIA.has(via))
-    refuse(`${path}.via`, `${path}.via must be webhook, slack or teams`);
-  return {
-    kind: 'notify',
-    via: via as AutomationOutgoing['via'],
-    webhook: id(s['webhook'], `${path}.webhook`),
-    ...(s['name'] !== undefined ? { name: text(s['name'], `${path}.name`, ID_MAX).trim() } : {}),
-    text: text(s['text'], `${path}.text`, AUTOMATION_TEXT_MAX, place),
-  };
-}
+): AutomationAction[] =>
+  readActionList(v, path, refused, where, (a, at) => readAction(a, at, place));
 
 function readRelated(v: unknown, path: string): AutomationRelated {
   const r = obj(v, path);
@@ -377,7 +341,8 @@ function readBranch(s: Obj, path: string, place: ValuePlace): AutomationBranch {
 // `place`: an Incoming Webhook rule's text may name the call's values.
 function readStep(v: unknown, path: string, place: ValuePlace): AutomationStep {
   const s = obj(v, path);
-  if (s['kind'] === 'notify') return readNotify(s, path, place);
+  if (s['kind'] === 'notify')
+    return readNotify(s, path, { unknownValue: (t) => unknownValueIn(t, place) });
   if (s['kind'] === 'for') return readBranch(s, path, place);
   if (s['kind'] === 'wait') return readWait(s, path);
   if (s['kind'] === 'ai') {
@@ -385,14 +350,11 @@ function readStep(v: unknown, path: string, place: ValuePlace): AutomationStep {
     return 'step' in read ? read.step : refuse(`${path}${read.path}`, read.message);
   }
   if (s['kind'] !== 'if') return readAction(s, path, place);
-  const conditions = readConditions(s['conditions'], `${path}.conditions`);
-  if (conditions.length === 0) refuse(`${path}.conditions`, 'an If needs a condition');
-  return {
-    kind: 'if',
-    conditions,
-    then: readActions(s['then'], `${path}.then`, NOT_IN_IF, 'an If', place),
-    else: readActions(s['else'], `${path}.else`, NOT_IN_IF, 'an If', place),
-  };
+  return readIf(s, path, {
+    conditions: readConditions,
+    action: (a, at) => readAction(a, at, place),
+    refused: NOT_IN_IF,
+  });
 }
 
 const makesCard = (a: { kind: string }) => a.kind === 'create_card' || a.kind === 'copy_card';
@@ -402,10 +364,10 @@ const creates = (actions: readonly AutomationAction[]) => actions.filter(makesCa
 export function stepActions(
   s: AutomationStep,
 ): readonly (AutomationAction | AutomationOutgoing | AutomationAi)[] {
-  if (s.kind === 'if') return [...s.then, ...s.else];
-  // A Wait is no action: it only holds the ones after it.
-  if (s.kind === 'wait') return [];
-  return s.kind === 'for' ? s.then : [s];
+  // An If / Else's both lists, none for a Wait, else the step itself: as every app's steps count.
+  return s.kind === 'for'
+    ? s.then
+    : (sharedStepActions(s) as (AutomationAction | AutomationOutgoing | AutomationAi)[]);
 }
 
 // How many actions the steps hold, counting those inside an If / Else and a branch.
@@ -449,95 +411,56 @@ function checkPersonless(
 export const ruleHasAction = (body: Pick<AutomationRuleBody, 'steps'>): boolean =>
   countActions(body.steps) > 0;
 
-export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRefusal {
-  try {
-    const r = obj(v, 'rule');
-    const name = typeof r['name'] === 'string' ? r['name'].trim() : '';
-    if (!name || name.length > AUTOMATION_NAME_MAX)
-      refuse('name', `name must be 1 to ${AUTOMATION_NAME_MAX} characters`);
-    if (!isRuleTimeZone(r['timeZone'])) refuse('timeZone', 'timeZone must name a time zone');
-    if (r['chain'] !== undefined && typeof r['chain'] !== 'boolean')
-      refuse('chain', 'chain must be true or false');
-    const trigger = readTrigger(r['trigger']);
-    const conditions = readConditions(r['conditions'] ?? [], 'conditions');
-    if (!Array.isArray(r['steps'])) refuse('steps', 'steps must be a list');
-    const place: ValuePlace =
-      trigger.kind === 'incoming_webhook'
-        ? { webhook: true }
+// The values a rule's texts may hold, from its trigger.
+const placeOf = (trigger: AutomationTrigger): ValuePlace =>
+  trigger.kind === 'incoming_webhook'
+    ? { webhook: true }
+    : isGithubTrigger(trigger)
+      ? { github: true }
+      : trigger.kind === 'email_received'
+        ? { email: true }
+        : trigger.kind === 'form_response'
+          ? { form: true }
+          : {};
+
+// The checks over the rule read whole, in the order their refusals answer: the shared caps, with the cards a run
+// may make between them; then what only a branch may hold and what a trigger with no person behind it may not.
+function checkRule(rule: {
+  trigger: AutomationTrigger;
+  conditions: AutomationCondition[];
+  steps: AutomationStep[];
+}): void {
+  const { trigger, conditions, steps } = rule;
+  checkActionsCap(steps, stepActions);
+  if (createsPerRun(steps) > AUTOMATION_CREATED_PER_RUN)
+    refuse('steps', `a run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
+  checkStepCaps(steps);
+  // Link to the card that started the rule: a branch's alone (outside one, that is the card itself).
+  steps.forEach((s, i) => {
+    if (s.kind === 'for') return;
+    for (const a of stepActions(s))
+      if (a.kind === 'link_card' && 'trigger' in a.to)
+        refuse(`steps.${i}`, 'only a branch links to the card that started the rule');
+  });
+  if (isPersonless(trigger))
+    checkPersonless(
+      conditions,
+      steps,
+      isTimeTrigger(trigger)
+        ? 'A time trigger'
         : isGithubTrigger(trigger)
-          ? { github: true }
+          ? 'A GitHub trigger'
           : trigger.kind === 'email_received'
-            ? { email: true }
-            : trigger.kind === 'form_response'
-              ? { form: true }
-              : {};
-    const steps = (r['steps'] as unknown[]).map((s, i) => readStep(s, `steps.${i}`, place));
-    if (countActions(steps) > AUTOMATION_ACTIONS_MAX)
-      refuse('steps', `a rule holds up to ${AUTOMATION_ACTIONS_MAX} actions`);
-    if (createsPerRun(steps) > AUTOMATION_CREATED_PER_RUN)
-      refuse('steps', `a run makes up to ${AUTOMATION_CREATED_PER_RUN} card`);
-    if (steps.filter((s) => s.kind === 'notify').length > AUTOMATION_OUTGOING_MAX)
-      refuse('steps', `a rule holds up to ${AUTOMATION_OUTGOING_MAX} outgoing actions`);
-    if (steps.filter((s) => s.kind === 'ai').length > AUTOMATION_AI_STEPS_MAX)
-      refuse('steps', `a rule holds up to ${AUTOMATION_AI_STEPS_MAX} AI actions`);
-    if (steps.filter((s) => s.kind === 'wait').length > AUTOMATION_WAITS_MAX)
-      refuse('steps', `a rule holds up to ${AUTOMATION_WAITS_MAX} Waits`);
-    // Link to the card that started the rule: a branch's alone (outside one, that is the card itself).
-    steps.forEach((s, i) => {
-      if (s.kind === 'for') return;
-      for (const a of stepActions(s))
-        if (a.kind === 'link_card' && 'trigger' in a.to)
-          refuse(`steps.${i}`, 'only a branch links to the card that started the rule');
-    });
-    if (isPersonless(trigger))
-      checkPersonless(
-        conditions,
-        steps,
-        isTimeTrigger(trigger)
-          ? 'A time trigger'
-          : isGithubTrigger(trigger)
-            ? 'A GitHub trigger'
-            : trigger.kind === 'email_received'
-              ? 'Email Received'
-              : 'An incoming webhook',
-      );
-    return {
-      body: {
-        name,
-        trigger,
-        conditions,
-        steps,
-        chain: r['chain'] === true,
-        timeZone: r['timeZone'] as string,
-      },
-    };
-  } catch (error) {
-    if (error instanceof Refused) return error.refusal;
-    throw error;
-  }
+            ? 'Email Received'
+            : 'An incoming webhook',
+    );
 }
 
-// ---- Names ---------------------------------------------------------------------------------------------------------
-
-const nameKey = (name: string) => name.trim().toLowerCase();
-
-// Whether another rule of the plan has this name (case aside).
-export const ruleNameTaken = (
-  name: string,
-  rules: readonly { id: string; name: string }[],
-  exceptId?: string,
-): boolean => rules.some((r) => r.id !== exceptId && nameKey(r.name) === nameKey(name));
-
-// The first free name from `base` and its `tail`: "New Rule", then "New Rule 2" and on, or with a tail of " copy",
-// "Triage copy", then "Triage copy 2". The base is cut, never the tail or the number, so both always fit.
-export function freeRuleName(
-  base: string,
-  rules: readonly { id: string; name: string }[],
-  tail = '',
-): string {
-  for (let n = 1; ; n += 1) {
-    const suffix = `${tail}${n === 1 ? '' : ` ${n}`}`;
-    const name = `${cutText(base.trim(), AUTOMATION_NAME_MAX - suffix.length)}${suffix}`;
-    if (!ruleNameTaken(name, rules)) return name;
-  }
+export function readRuleBody(v: unknown): { body: AutomationRuleBody } | RuleRefusal {
+  return readRuleShell<AutomationTrigger, AutomationCondition, AutomationStep>(v, {
+    trigger: readTrigger,
+    conditions: readConditions,
+    step: (s, path, trigger) => readStep(s, path, placeOf(trigger)),
+    check: checkRule,
+  });
 }

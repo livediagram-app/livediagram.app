@@ -7,7 +7,7 @@ precision. Paths are relative to the repository root.
 | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `packages/workbench/src/components/chrome/ChromeToolsMenu.tsx`              | `ChromeToolsMenu` (the button and its menu), `ChromeToolsItem`, `toolsDescription`         |
 | `packages/snapshots/src/ui/history-snapshots.tsx`                           | `useHistorySnapshotsHost()`: Snapshots for History (FM9), null without a door              |
-| `packages/workbench/src/components/chrome/useItemToolsRows.tsx`             | the History and Webhooks rows, History's modes (FM9)                                       |
+| `packages/workbench/src/components/chrome/useItemToolsRows.tsx`             | the History row, History's modes (FM9)                                                     |
 | `liveplanner/apps/editor/components/automations/automations-tools-item.tsx` | `useAutomationsToolsItem()`: the Automations row, null without a door                      |
 | `livedocuments/apps/editor/components/versions/history-tools-item.tsx`      | `useVersionHistoryInTools(onOpen)`: Version History offered to History                     |
 | `packages/walkthrough/src/ui/WalkthroughsTools.tsx`                         | `WalkthroughsTools({ menu })`: the Walkthroughs row (door key `walkthroughs`) and its view |
@@ -70,8 +70,9 @@ row were pressed. The liveplanner hosts ask it on a sign-in return (`useAskedOpe
 
 FM8. Retired (owner, 2026-11-17): Clear Example Content left Tools; the palette's example tray alone offers it.
 
-FM9. History with Snapshots in it (owner, 2026-11-17). `useItemToolsRows({ app, history, signedIn, offline, onWebhooks,
-snapshots })`, `snapshots` being the app's `useHistorySnapshotsHost()` (`{ useExtras, Alone }` or null; blueprint
+FM9. History with Snapshots in it (owner, 2026-11-17). `useItemToolsRows({ app, history, signedIn, offline,
+snapshots })`,
+`snapshots` being the app's `useHistorySnapshotsHost()` (`{ useExtras, Alone }` or null; blueprint
 SN22), and Version History read from `useItemVersions()` (published by livedocuments' `useVersionHistoryInTools`).
 `historyMode({ timeline, snapshots, gated, versions })` picks, in order: `timeline` (a history host and not gated),
 `snapshots` (a door), `gate` (signed out or Offline), `versions`, else no row. The row: `id: 'item-history'`,

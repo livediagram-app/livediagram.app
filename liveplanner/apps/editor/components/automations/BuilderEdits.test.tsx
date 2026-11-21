@@ -2,14 +2,15 @@
 // docs/specs/026-plan/automations.md "The rule builder": an edit made while Save Rule is on its way is kept, Test on
 // a Card tries the rule as it would save (this browser's time zone), and a test left for Another Card never lands
 // over the picker.
+import './test-kit';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RuleBuilder } from './RuleBuilder';
+import { RuleBuilder } from '@liveworkspace/automations-ui/RuleBuilder';
 import { NOW, outline, rule, run } from './test-fixtures';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const toast = vi.hoisted(() => ({ info: vi.fn(), success: vi.fn(), error: vi.fn() }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const api = { save: vi.fn(), toggle: vi.fn(), test: vi.fn() };
 function Builder({ saved = rule() }: { saved?: ReturnType<typeof rule> }) {
@@ -19,14 +20,13 @@ function Builder({ saved = rule() }: { saved?: ReturnType<typeof rule> }) {
       initial={saved}
       outline={outline()}
       api={api}
-      person="Ana Costa"
       now={NOW}
       phone={false}
       onBack={() => {}}
       onSaved={() => {}}
       onDirty={() => {}}
       timeZone="Europe/London"
-      scope={{ projectId: 'p1', shareCode: null }}
+      scope={{ ownerId: 'o1', itemId: 'p1', shareCode: null }}
     />
   );
 }

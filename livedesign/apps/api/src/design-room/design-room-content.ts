@@ -27,6 +27,7 @@ import {
   type CommunityPost,
 } from './community-post';
 import { drainOutbox } from './design-outbox';
+import { forgetAutomations, restoreAutomations } from './automations/design-automations';
 import type { DesignRoom } from './design-room';
 import { closeSockets } from './design-room-sockets';
 
@@ -53,6 +54,8 @@ export function restoreContentState(room: DesignRoom, maintenanceAt: number | un
     .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
     .toArray()[0];
   room.communityAt = post ? post.checked_at + COMMUNITY_CHECK_MS : null;
+  // The design's rules: what they hear, and what waits to run (automations/design-automations.ts).
+  restoreAutomations(room, Date.now());
 }
 
 // The schema on first use (design-schema.ts), and the design's row once its id is known, so the content's
@@ -253,5 +256,7 @@ export async function purge(room: DesignRoom, designId?: string): Promise<void> 
   room.shares.clear();
   room.maintenanceAt = null;
   room.communityAt = null;
+  // Its rules went with its SQLite: nothing is heard and nothing of theirs wakes it.
+  forgetAutomations(room);
   console.info('[room] purged');
 }

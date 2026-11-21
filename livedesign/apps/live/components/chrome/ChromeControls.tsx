@@ -12,6 +12,7 @@ import {
   ChromeToolsMenu,
   type ChromeToolsItem,
 } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
+import { useAutomationsToolsItem } from '@liveworkspace/automations-ui/automations-tools-item';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/live-app.md): search, the open-source GitHub
@@ -54,6 +55,9 @@ export function ChromeControls({
         onSelect: () => onOpenSearch(),
       }
     : null;
+  // Automations, in the Automate group (docs/specs/013-workspace/automations.md "Where it is"): there inside the
+  // editor's Automations host for whoever may use it, or must sign in or sync first; nowhere else.
+  const automations = useAutomationsToolsItem();
   return (
     <>
       {/* The Get Started button, first in the cluster and left of Tools: the one way into a tour,
@@ -62,7 +66,7 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search]} />
+      <ChromeToolsMenu labelled={labelled} items={[search, automations]} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

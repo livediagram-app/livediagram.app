@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-// History and Webhooks in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md "Always there"): always there
-// where signing in or syncing would make them work, badged Sign In then Sync <Item>, a press opening that gate first.
+// History in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md "Always there"): always there where
+// signing in or syncing would make it work, badged Sign In then Sync <Item>, a press opening that gate first.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
@@ -66,7 +66,6 @@ afterEach(cleanup);
 function Rows(props: {
   signedIn: boolean;
   offline?: ItemToolsOffline | null;
-  onWebhooks?: () => void;
   history?: ItemHistoryHost | null;
   snapshots?: ItemSnapshotsHost | null;
 }) {
@@ -93,31 +92,34 @@ function Rows(props: {
 
 const row = (name: string) => screen.getByRole('button', { name });
 
-describe('History and Webhooks in Tools', () => {
-  it('shows a guest on an item kept Offline both, badged Sign In then Sync Canvas, asking to sign in first', () => {
+describe('History in Tools', () => {
+  it('shows a guest on an item kept Offline History, badged Sign In then Sync Canvas, asking to sign in first', () => {
     render(<Rows signedIn={false} offline={{ sync: vi.fn(), ready: true }} />);
     expect(row('History').getAttribute('data-badges')).toBe('Sign In, Sync Canvas');
-    expect(row('Webhooks').getAttribute('data-badges')).toBe('Sign In, Sync Canvas');
-    fireEvent.click(row('Webhooks'));
+    fireEvent.click(row('History'));
     expect(screen.getByText('Sign In Needed')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Sign In' })).toBeTruthy();
   });
 
   it('asks someone signed in to sync, then opens the tool once the item is on the server', async () => {
     const sync = vi.fn(async () => {});
-    const onWebhooks = vi.fn();
     const { rerender } = render(<Rows signedIn offline={{ sync, ready: true }} />);
-    expect(row('Webhooks').getAttribute('data-badges')).toBe('Sync Canvas');
-    fireEvent.click(row('Webhooks'));
+    expect(row('History').getAttribute('data-badges')).toBe('Sync Canvas');
+    fireEvent.click(row('History'));
     expect(screen.getByText(/You need to sync this canvas/)).toBeTruthy();
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Sync Canvas' }));
     });
     expect(sync).toHaveBeenCalledOnce();
     expect(screen.queryByText(/You need to sync this canvas/)).toBeNull();
-    rerender(<Rows signedIn offline={null} onWebhooks={onWebhooks} />);
-    expect(onWebhooks).toHaveBeenCalledOnce();
-    expect(row('Webhooks').getAttribute('data-badges')).toBe('');
+    rerender(<Rows signedIn offline={null} history={HISTORY} />);
+    expect(screen.getByRole('dialog', { name: 'Item History' })).toBeTruthy();
+    expect(row('History').getAttribute('data-badges')).toBe('');
+  });
+
+  it('offers no Webhooks row: connections are reached from inside Automations', () => {
+    render(<Rows signedIn={false} offline={{ sync: vi.fn(), ready: true }} />);
+    expect(screen.queryByRole('button', { name: 'Webhooks' })).toBeNull();
   });
 
   it('keeps the gate open, saying so, when the sync fails', async () => {
@@ -140,10 +142,9 @@ describe('History and Webhooks in Tools', () => {
     );
   });
 
-  it('draws neither for someone signed in on a stored item who may use neither', () => {
+  it('draws no row for someone signed in on a stored item who may not use History', () => {
     render(<Rows signedIn />);
     expect(screen.queryByRole('button', { name: 'History' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Webhooks' })).toBeNull();
   });
 });
 

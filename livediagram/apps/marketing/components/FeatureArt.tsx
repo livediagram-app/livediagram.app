@@ -53,3 +53,4 @@ export * from './feature-art/library';
 export * from './feature-art/live-code';
 // The Done check, and the Agenda and Decision record that keep the record of a meeting.
 export * from './feature-art/meeting';
+export * from './feature-art/automations';

@@ -97,6 +97,7 @@ async function handleSubmit(
     dryRun: ctx.url.searchParams.get('dryRun') === '1',
     author,
     tokenId: ctx.token?.id ?? null,
+    tokenName: ctx.token?.name ?? null,
     frontDoor: frontDoorOf(ctx.request),
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
@@ -163,6 +164,7 @@ async function handleRevert(
     record,
     author,
     tokenId: ctx.token?.id ?? null,
+    tokenName: ctx.token?.name ?? null,
     frontDoor: frontDoorOf(ctx.request),
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });

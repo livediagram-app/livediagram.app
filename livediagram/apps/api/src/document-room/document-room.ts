@@ -60,6 +60,21 @@ import {
   type SharedTabCopy,
 } from './tab-shares';
 import type { RouteIdentity } from './document-route';
+import type { HookAnswer, HookCall, ItemEngine } from '@liveworkspace/automations/room';
+import type { ItemStanding } from '@liveworkspace/index-client';
+import {
+  incomingItemHook,
+  itemEmailOptOut,
+  type CollabWatch,
+  type ItemStandingKeeper,
+  type StandingGrant,
+} from '@liveworkspace/automations/room';
+import {
+  automationDoors,
+  newCollabWatch,
+  newDocumentAutomations,
+  newStanding,
+} from './automations/document-automations';
 import {
   drainIndex,
   drainShares,
@@ -260,6 +275,14 @@ export class DocumentRoom extends DurableObject<Env> {
   writes = 0;
   // The canvas's Community post as last read (null: none), and when it next asks where it stands.
   communityAt: number | null = null;
+  // Where the document stands at the index: while it is archived or in the Trash its rules hear nothing and nothing
+  // of theirs wakes it.
+  readonly standing: ItemStandingKeeper;
+  // The document's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they hear,
+  // and what waits to run on the alarm.
+  readonly automations: ItemEngine;
+  // The comment and action triggers' watch over each tab's threads.
+  readonly collab: CollabWatch;
   // The canvas's owner and team, kept from every grant the room is handed (a socket's ticket, a renewal, an API
   // request's grant), so a guest's merge into an account or a move to another team reaches the canvas's emails,
   // pushes and alarm (@liveworkspace/index-app item-head.ts). Made by room-content-state.ts roomHeadSync.
@@ -316,10 +339,15 @@ export class DocumentRoom extends DurableObject<Env> {
       ensureSchema: () => this.ensureSchema(),
       onWrite: () => this.noteWrite(),
     });
+    this.standing = newStanding(this);
+    this.automations = newDocumentAutomations(this);
+    this.collab = newCollabWatch(this);
     this.roomEnv = env
       ? {
           ...env,
           DOCUMENT_DB: this.db.asD1(),
+          AUTOMATIONS: this.automations,
+          COLLAB: this.collab,
           DOCUMENT_ROOM: localNamespace(this, env.DOCUMENT_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
@@ -388,6 +416,7 @@ export class DocumentRoom extends DurableObject<Env> {
       await this.baton.restore();
       await this.poll.restore();
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
+      this.standing.restore(await state.storage.get(this.standing.key));
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
       await this.serviceStatus.restore();
       this.armAlarm();
@@ -539,8 +568,40 @@ export class DocumentRoom extends DurableObject<Env> {
     return rpc.closeTrashed(this, documentId);
   }
 
-  joined(documentId: string, personId: string): Promise<void> {
-    return rpc.joined(this, documentId, personId);
+  joined(documentId: string, personId: string, level?: AccessLevel): Promise<void> {
+    return rpc.joined(this, documentId, personId, level);
+  }
+
+  // Someone asked for access to the canvas (the index's notice): the rules that hear it (room-rpc.ts).
+  async accessRequested(
+    documentId: string,
+    requester: { id: string; name: string | null; requestId?: string },
+  ): Promise<void> {
+    rpc.accessRequested(this, documentId, requester);
+  }
+
+  // ---------- RPC: Automations' doors (@liveworkspace/automations/room doors.ts, standing.ts) --------------------
+
+  // An Incoming Webhook call to one rule, proved by the rule's secret.
+  incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer> {
+    this.bindDocument(documentId);
+    return incomingItemHook(automationDoors(this), ruleId, call);
+  }
+
+  // A rule email's unsubscribe: false for a token the document never made.
+  async emailOptOut(documentId: string, token: string): Promise<boolean> {
+    this.bindDocument(documentId);
+    return itemEmailOptOut(automationDoors(this), token);
+  }
+
+  // Where the canvas stands at the index, after an archive, move out, trash or restore.
+  takeStanding(documentId: string, standing: ItemStanding): Promise<void> {
+    this.bindDocument(documentId);
+    return this.standing.take(standing);
+  }
+
+  takeGrantStanding(grant: StandingGrant): Promise<void> {
+    return this.standing.takeGrant(grant);
   }
 
   // A Sheet a linked chart reads changed (the index's source-changed door, @liveworkspace/index-app

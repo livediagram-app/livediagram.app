@@ -2678,14 +2678,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "at",
+      "card",
       "id",
+      "result",
       "ruleId",
       "ruleName",
-      "card",
-      "at",
-      "result",
-      "tookMs",
-      "steps"
+      "steps",
+      "tookMs"
     ],
     "type": "object"
   },

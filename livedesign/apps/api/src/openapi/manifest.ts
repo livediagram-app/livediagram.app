@@ -23,6 +23,7 @@ import {
 } from '@livedesign/design';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedesign/design-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
+import { itemAutomationOperations } from '@liveworkspace/automations/room';
 import { TAB_DELTA_OPENAPI } from '@liveworkspace/api-kit/tab-delta-door';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
@@ -38,6 +39,13 @@ interface QueryParam {
   required: boolean;
   description: string;
 }
+
+// The platform's operations name who calls by the words the other apps use; these are this api's.
+const AUTOMATION_AUTH: Readonly<Record<'public' | 'guest-or-clerk' | 'clerk', AuthMode>> = {
+  public: 'public',
+  'guest-or-clerk': 'guest-or-account',
+  clerk: 'account',
+};
 
 export interface RouteSpec {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -1721,4 +1729,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'account',
     statuses: [204, 401, 404],
   },
+  // A design's Automations (docs/specs/013-workspace/automations.md): the platform's operations
+  // (@liveworkspace/automations/room openapi.ts) under this api's collection, in this api's names for who calls.
+  ...itemAutomationOperations({ collection: 'designs', itemWord: 'design' }).map(
+    (op): RouteSpec => ({ ...op, auth: AUTOMATION_AUTH[op.auth] }),
+  ),
 ];

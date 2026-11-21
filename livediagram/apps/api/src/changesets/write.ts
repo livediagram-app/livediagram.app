@@ -21,6 +21,8 @@ import {
   type ChangesetFingerprints,
   type ChangesetRecord,
 } from '../db';
+import { AGENT_CHANGED_EVENT } from '@livediagram/document/automations';
+import { asTabWriter, queueEvent, writerOf } from '@liveworkspace/automations/room';
 import { TabTooLargeError } from '../limits';
 import { relayChangeset } from '../room-client';
 import { lockTabWrite } from '../whole-tab-lock';
@@ -45,6 +47,8 @@ type ChangesetWrite = {
   orderIndex: number;
   author: Author;
   tokenId: string | null;
+  // The token's name, for a rule's Who Did It (docs/specs/013-workspace/automations.md "Agent Made Changes").
+  tokenName?: string | null;
   summary: string | null;
   baseRev: number | null;
   rebasedOver: number;
@@ -120,17 +124,34 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
   if (Object.values(parts).some((p) => byteLength(p) > CHANGESET_PART_MAX_BYTES)) {
     return { kind: 'too_large' };
   }
+  // Whoever a rule's run names for this write: an agent by its token's name, a person by their own.
+  const who = writerOf(w.author, w.tokenId ? { name: w.tokenName } : null);
   // One re-mint inside the attempt on an id collision (CS7, E21).
   for (let mint = 0; mint < 2; mint += 1) {
     try {
-      const results = await env.DOCUMENT_DB.batch([
-        ...tabWriteStatements(env, w.documentId, next, w.orderIndex, { expected }, now),
-        insertChangesetStatement(env, record),
-        insertChangesetPartStatement(env, record.id, 'ops', parts.ops),
-        insertChangesetPartStatement(env, record.id, 'inverse', parts.inverse),
-        insertChangesetPartStatement(env, record.id, 'results', parts.results),
-      ]);
+      const write = () =>
+        env.DOCUMENT_DB.batch([
+          ...tabWriteStatements(env, w.documentId, next, w.orderIndex, { expected }, now),
+          insertChangesetStatement(env, record),
+          insertChangesetPartStatement(env, record.id, 'ops', parts.ops),
+          insertChangesetPartStatement(env, record.id, 'inverse', parts.inverse),
+          insertChangesetPartStatement(env, record.id, 'results', parts.results),
+        ]);
+      // A changeset that makes its tab says who made it, for a Tab Added rule.
+      const results = await (creates
+        ? asTabWriter(env, 'tab_added', async () => who, write)
+        : write());
       record = { ...record, rev: revFromBatch(results) };
+      // Agent Made Changes (docs/specs/013-workspace/automations.md): once per changeset a token wrote, queued in
+      // the same stretch as the write.
+      if (w.tokenId)
+        queueEvent(env, {
+          id: `agent:${record.id}`,
+          kind: AGENT_CHANGED_EVENT,
+          at: now,
+          tab: w.tabId,
+          ...who,
+        });
       break;
     } catch (err) {
       if (err instanceof TabTooLargeError) return { kind: 'too_large' };

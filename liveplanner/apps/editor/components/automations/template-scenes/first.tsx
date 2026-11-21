@@ -22,7 +22,7 @@ import {
   Pill,
   SlackChannel,
   type ToneClasses,
-} from '../scene-parts';
+} from '@liveworkspace/automations-ui/scene-parts';
 
 export function StampFinish({ tone }: { tone: ToneClasses }) {
   return (

@@ -146,7 +146,7 @@ headset's microphone still switches it to its call profile, which narrows the so
 has only the clock, the level, Discard and Finish, so what a walkthrough hides is settled before it starts.
 
 **The set-up** (owner, 2026-11-17) opens from Record Walkthrough in Tools as a popover beside it (a drawer on a phone,
-as Add Webhook does): the microphone and camera, the **Mic Level** meter (filled from -65 dBFS, just above a silent room
+as Add Connection does): the microphone and camera, the **Mic Level** meter (filled from -65 dBFS, just above a silent room
 after the browser's noise suppression, to -15 dBFS, a shout: talking fills half to four fifths), the bubble's corner,
 Hide From Recording and Start Recording. A press outside it, Escape, or Tools closing lets the devices go; one
 outside while picking what to hide does not. Start Recording closes Tools for the count. Walkthroughs in Tools closes on

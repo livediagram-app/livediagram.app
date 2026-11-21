@@ -288,6 +288,23 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: SLUG_WHY,
   },
 
+  // The Automations screen's templates (docs/specs/013-workspace/automations.md "Templates"): one per template id,
+  // SPACE_TEMPLATES in @livehuddle/document/automations, written out as this app takes no dependency on it.
+  'apps/editor/components/automations/space-plumbing.ts UI·Opened': {
+    values: [
+      'reset-nightly',
+      'tidy-up',
+      'office-open',
+      'standup-soon',
+      'meeting-wrap',
+      'suggestions-slack',
+      'empty-box',
+      'visitor-joined',
+      'snapshot-friday',
+      'access-slack',
+    ].map((id) => `AutomationTemplate.${id}`),
+  },
+
   // Shared packages.
   'packages/telemetry-client/src/errors.ts Error·Client': {
     values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],

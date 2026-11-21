@@ -495,6 +495,14 @@ export const LOCAL_MOVE_OFFERED = opened(
   (t) => t === 'LocalMovePrompt',
 );
 
+// The Automations screen (docs/specs/013-workspace/automations.md "Telemetry"): the screen itself, its Sign In and Sync
+// gates, Describe a Rule and each template, by its id.
+export const AUTOMATIONS_OPENED = opened(
+  'Automations Opened',
+  'The Automations screen opened from Tools, or its Sign In or Sync gate, Describe a Rule or a template.',
+  (t) => (t ?? '').startsWith('Automation'),
+);
+
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 
 export const PANELS_OPENED: MetricStack = {
@@ -508,6 +516,7 @@ export const PANELS_OPENED: MetricStack = {
     PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
+    AUTOMATIONS_OPENED,
   ],
   seeAlso: { tab: 'editing', label: 'See Each Dialog on the Editing Tab' },
 };

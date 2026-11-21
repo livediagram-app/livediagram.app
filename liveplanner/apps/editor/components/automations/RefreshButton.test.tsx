@@ -2,13 +2,14 @@
 // docs/specs/026-plan/automations.md "The Automations screen": Refresh beside the Runs today meter reads the rules,
 // Runs today and the open Audit Trail again, busy and turning meanwhile with what was shown kept, and a failed read
 // keeps it and says it could not refresh. On a phone (jsdom's default here) and on a wide screen.
+import './test-kit';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
-import { AutomationsDialog } from './AutomationsDialog';
-import type { AutomationsTarget } from './AutomationsContext';
-import { REFRESH_FAILED } from './RefreshButton';
+import { AutomationsDialog } from '@liveworkspace/automations-ui/AutomationsDialog';
+import type { AutomationsTarget } from '@liveworkspace/automations-ui/AutomationsContext';
+import { REFRESH_FAILED } from '@liveworkspace/automations-ui/RefreshButton';
 import { forgetAutomations } from './use-automations';
 import { ANA, outline, rule, run } from './test-fixtures';
 
@@ -24,9 +25,9 @@ const toast = vi.hoisted(() => ({
   error: vi.fn(),
   warn: vi.fn(),
 }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const o = outline();
 const plan = {
   types: o.types,

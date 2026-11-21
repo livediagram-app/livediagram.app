@@ -7,7 +7,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import type { AutomationRuleBody, AutomationTrigger } from '@liveplanner/items';
-import { TriggerPanel } from '../step-panels/TriggerPanel';
+import '../test-kit';
+import { StepPanel } from '@liveworkspace/automations-ui/StepPanel';
+import { newRuleBody } from '../rule-draft';
 import { outline, pickerTile } from '../test-fixtures';
 import { GithubAutomationsContext, type GithubAutomations } from './github-automations';
 import { repositoryChoices, withRepositories } from './GithubTriggerFields';
@@ -34,7 +36,7 @@ vi.mock('./github-return', async (importOriginal) => {
 });
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const DRAFT = {
   name: 'Done on Merge',
   trigger: { kind: 'pull_request_merged' },
@@ -57,15 +59,18 @@ function Panel({
 }) {
   const [t, setT] = useState(trigger);
   const panel = (
-    <TriggerPanel
-      trigger={t}
+    // The When panel as the builder draws it: the platform's Trigger row, then the plan's fields (TriggerPanel).
+    <StepPanel
+      body={{ ...newRuleBody('Rule', 'UTC'), trigger: t }}
+      part={{ part: 'trigger' }}
       onChange={(next) => {
-        latest = next;
-        setT(next);
+        latest = next.trigger;
+        setT(next.trigger);
       }}
       outline={outline()}
+      faultPath={null}
+      now={0}
       timeZone="UTC"
-      conditions={0}
     />
   );
   const value: GithubAutomations = {
@@ -73,7 +78,6 @@ function Panel({
     scope: SCOPE,
     openView,
     draft: () => ({ body: DRAFT, picks: [] }),
-    keepDraft: () => {},
   };
   return inside ? (
     <GithubAutomationsContext value={value}>{panel}</GithubAutomationsContext>

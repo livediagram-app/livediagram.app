@@ -50,6 +50,8 @@ export const HELP_ARTICLES = {
   markdownImport: 'tools/markdown-import',
   // The Find bar's `?` (docs/specs/007-editor/find-and-replace.md "The bar").
   findAndReplace: 'tools/find-and-replace',
+  // The Automations screen's How Rules Work and its gate (docs/specs/013-workspace/automations.md "The screen").
+  automations: 'tools/automations',
   // Teams
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
@@ -192,6 +194,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   importTabs: {
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
+  },
+  automations: {
+    title: 'Learn about Automations',
+    description:
+      'Rules a document runs on its own: triggers, steps, templates and the Audit Trail.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',

@@ -5,7 +5,8 @@
 // livedesign no longer has, docs/specs/012-collaboration/presentation-mode.md) is read past.
 // Images stay references to livedesign's image store; no bytes are embedded. The design's component library
 // (docs/specs/009-elements/components.md) rides beside its tabs as `components` when it has one, so the instances on
-// the tabs draw after an import; a file without it reads as a design without one.
+// the tabs draw after an import; a file without it reads as a design without one. Its Automations rules
+// (docs/specs/013-workspace/automations.md) ride as `automations` when it has any.
 
 import type { DesignComponent } from './components';
 import { isValidDesignComponent } from './component-validate';
@@ -26,13 +27,17 @@ export type DesignEnvelope = {
     name: string;
     tabs: EnvelopeTab[];
     components?: DesignComponent[];
+    // The design's Automations rules as its file carries them: each rule's body and whether it was on, read back
+    // through the rules' own check, so they are opaque here. Absent from a file with none, and from every file
+    // written before rules.
+    automations?: unknown[];
   };
 };
 
 type DesignEnvelopeFailure = 'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
 
 export function designToEnvelopeText(
-  liveDoc: { id: string; name: string },
+  liveDoc: { id: string; name: string; automations?: readonly unknown[] },
   tabs: EnvelopeTab[],
   exportedAt: number,
   components: readonly DesignComponent[] = [],
@@ -46,6 +51,7 @@ export function designToEnvelopeText(
       name: liveDoc.name,
       tabs,
       ...(components.length > 0 ? { components: [...components] } : {}),
+      ...(liveDoc.automations?.length ? { automations: [...liveDoc.automations] } : {}),
     },
   };
   return JSON.stringify(envelope, null, 2);
@@ -99,6 +105,8 @@ export function parseDesignEnvelope(
         name: d.name,
         tabs: d.tabs,
         ...(components.length > 0 ? { components } : {}),
+        // Anything but a list is no rules; what each entry holds is the rules' own check's to read.
+        ...(Array.isArray(d.automations) ? { automations: d.automations as unknown[] } : {}),
       },
     },
   };
@@ -106,9 +114,11 @@ export function parseDesignEnvelope(
 
 // A copy of an envelope's design (the Drive mirror's import door, liveworkspace/docs/specs/005-drive/drive.md): fresh tab ids, with
 // the tab links following them, so the copy navigates like the original. Mains keep their ids: the instances name them.
+// `tabIds` is each tab's id in the file to its id in the copy, for whatever else names a tab (the file's rules).
 export function copyDesignEnvelope(envelope: DesignEnvelope): {
   tabs: EnvelopeTab[];
   components: DesignComponent[];
+  tabIds: Map<string, string>;
 } {
   const idMap = new Map(envelope.design.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
   const tabs = envelope.design.tabs.map((t) => ({
@@ -116,5 +126,5 @@ export function copyDesignEnvelope(envelope: DesignEnvelope): {
     id: idMap.get(t.id)!,
     elements: remapTabLinks(t.elements, idMap),
   }));
-  return { tabs, components: envelope.design.components ?? [] };
+  return { tabs, components: envelope.design.components ?? [], tabIds: idMap };
 }

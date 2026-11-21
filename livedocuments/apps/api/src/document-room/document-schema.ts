@@ -19,6 +19,10 @@ import {
   outboxRetrySchema,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
+import {
+  COLLAB_SEEN_SCHEMA_STEP,
+  itemAutomationSchemaSteps,
+} from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SCHEMA } from '../versions/version-schema';
 
@@ -326,6 +330,17 @@ const V10 = CANVAS_SUGGESTIONS_SCHEMA;
 // Additive, every statement IF NOT EXISTS: `tab_versions` is untouched.
 const V11 = NAMED_STORE_STEP;
 
+// Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
+// in its order, one entry each. Steps 12 to 19 are its rules, schedule, Incoming Webhook secrets, held runs, Describe
+// a Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 20 is the item
+// engine's tables and its
+// three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room itemAutomationSchemaSteps).
+const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
+
+// Step 21: each tab's comment threads and actions as the comment triggers last saw them (the platform's collab
+// watch), kept only while a rule that is on hears one.
+const V21 = COLLAB_SEEN_SCHEMA_STEP;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -338,6 +353,8 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V9,
   V10,
   V11,
+  ...AUTOMATION_STEPS,
+  V21,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

@@ -47,7 +47,7 @@ describe('the Reset All Settings row', () => {
   it('says what it reaches: every app for an account, this browser for a guest', () => {
     const { rerender } = render(<ResetSettingsRow row={ROW} reach="account" reset={ok} />);
     expect(screen.getByText(RESET_SETTINGS_ACCOUNT)).toBeTruthy();
-    expect(RESET_SETTINGS_ACCOUNT).toMatch(/profile, API tokens, webhooks and sign-ins stay/);
+    expect(RESET_SETTINGS_ACCOUNT).toMatch(/profile, API tokens, connections and sign-ins stay/);
     rerender(<ResetSettingsRow row={ROW} reach="browser" reset={ok} />);
     expect(screen.getByText(RESET_SETTINGS_BROWSER)).toBeTruthy();
     expect(RESET_SETTINGS_BROWSER).toMatch(/in this browser/);

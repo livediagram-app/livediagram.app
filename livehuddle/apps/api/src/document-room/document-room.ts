@@ -65,6 +65,17 @@ import {
   type SharedTabCopy,
 } from './tab-shares';
 import type { RouteIdentity } from './document-route';
+import type { ItemStanding } from '@liveworkspace/index-client';
+import {
+  incomingItemHook,
+  itemEmailOptOut,
+  type HookAnswer,
+  type HookCall,
+  type ItemEngine,
+  type ItemStandingKeeper,
+  type StandingGrant,
+} from '@liveworkspace/automations/room';
+import { automationDoors, newSpaceAutomations, newStanding } from './automations/space-automations';
 import {
   drainIndex,
   drainShares,
@@ -269,6 +280,12 @@ export class DocumentRoom extends DurableObject<Env> {
   // request's grant), so a guest's merge into an account or a move to another team reaches the canvas's emails,
   // pushes and alarm (@liveworkspace/index-app item-head.ts). Made by room-content-state.ts roomHeadSync.
   readonly head: ItemHeadSync;
+  // Where the Space stands at the index: while it is archived or in the Trash its rules hear nothing and nothing of
+  // theirs wakes it.
+  readonly standing: ItemStandingKeeper;
+  // The Space's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they hear, and
+  // what waits to run on the alarm.
+  readonly automations: ItemEngine;
 
   // The tab write queue (blueprint SR2): a Participant's writes, one at a time per document. A Durable Object only
   // serialises the synchronous parts of its handlers: while one write is awaiting its store, the runtime happily
@@ -342,10 +359,13 @@ export class DocumentRoom extends DurableObject<Env> {
       ensureSchema: () => this.ensureSchema(),
       onWrite: () => this.noteWrite(),
     });
+    this.standing = newStanding(this);
+    this.automations = newSpaceAutomations(this);
     this.roomEnv = env
       ? {
           ...env,
           DOCUMENT_DB: this.db.asD1(),
+          AUTOMATIONS: this.automations,
           DOCUMENT_ROOM: localNamespace(this, env.DOCUMENT_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
@@ -408,6 +428,7 @@ export class DocumentRoom extends DurableObject<Env> {
       }
       await this.baton.restore();
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
+      this.standing.restore(await state.storage.get(this.standing.key));
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
       // Visits a restart left open (room-attendance.ts): only when the room starts with nobody connected.
       sweepStaleAttendance(this);
@@ -548,8 +569,40 @@ export class DocumentRoom extends DurableObject<Env> {
     return rpc.revokeCodes(this, documentId, codes, reason);
   }
 
-  joined(documentId: string, personId: string): Promise<void> {
-    return rpc.joined(this, documentId, personId);
+  joined(documentId: string, personId: string, level?: AccessLevel): Promise<void> {
+    return rpc.joined(this, documentId, personId, level);
+  }
+
+  // Someone asked for access to the Space (the index's notice): the rules that hear it (room-rpc.ts).
+  async accessRequested(
+    documentId: string,
+    requester: { id: string; name: string | null; requestId?: string },
+  ): Promise<void> {
+    rpc.accessRequested(this, documentId, requester);
+  }
+
+  // ---------- RPC: Automations' doors (@liveworkspace/automations/room doors.ts, standing.ts) --------------------
+
+  // An Incoming Webhook call to one rule, proved by the rule's secret.
+  incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer> {
+    this.bindDocument(documentId);
+    return incomingItemHook(automationDoors(this), ruleId, call);
+  }
+
+  // A rule email's unsubscribe: false for a token the Space never made.
+  async emailOptOut(documentId: string, token: string): Promise<boolean> {
+    this.bindDocument(documentId);
+    return itemEmailOptOut(automationDoors(this), token);
+  }
+
+  // Where the Space stands at the index, after an archive, move out, trash or restore.
+  takeStanding(documentId: string, standing: ItemStanding): Promise<void> {
+    this.bindDocument(documentId);
+    return this.standing.take(standing);
+  }
+
+  takeGrantStanding(grant: StandingGrant): Promise<void> {
+    return this.standing.takeGrant(grant);
   }
 
   anonymise(

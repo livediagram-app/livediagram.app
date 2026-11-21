@@ -98,15 +98,15 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
           `/items/${enc(itemId)}/forms/${enc(tabId)}/seen/${enc(personId)}`,
         )
       )?.seen ?? 0,
-    // Up to APP_EVENTS_MAX events about one item, for its History, webhooks and Most Used. Safe to send again: an
+    // Up to APP_EVENTS_MAX events about one item, for its History and Most Used. Safe to send again: an
     // `edited` is one event per person and day whatever the count.
     pushEvents: (itemId: string, events: readonly AppEvent[]) =>
       put(`/items/${enc(itemId)}/events`, { events }),
-    // Up to CARD_MOVES_MAX cards that changed status (liveplanner), for the item's scope's webhooks. Safe to send
-    // again: each is one delivery per webhook.
+    // Up to CARD_MOVES_MAX cards that changed status (liveplanner). The index answers 204 and does nothing with them
+    // (connections hear no events): here until @liveworkspace/index-app's outbox stops sending them.
     pushCardMoves: (itemId: string, moves: readonly CardMove[]) =>
       put(`/items/${enc(itemId)}/card-moves`, { moves }),
-    // Up to AUTOMATION_SENDS_MAX messages a plan's automation rules post through its own webhooks (liveplanner), each
+    // Up to AUTOMATION_SENDS_MAX messages an item's automation rules post through its own connections (any app), each
     // answered queued or refused, in the order sent. Safe to send again: a key already queued answers queued.
     pushAutomationSends: (
       itemId: string,

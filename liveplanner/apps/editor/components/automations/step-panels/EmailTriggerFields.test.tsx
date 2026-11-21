@@ -91,7 +91,7 @@ function Fields({
   ownerId?: string;
   boards?: OutlineBoard[];
 }) {
-  const state = useEmailAddressesState({ ownerId, projectId: 'p1', shareCode: null });
+  const state = useEmailAddressesState({ ownerId, itemId: 'p1', shareCode: null });
   const [t, setT] = useState(trigger);
   const [shown, setShown] = useState(true);
   return (

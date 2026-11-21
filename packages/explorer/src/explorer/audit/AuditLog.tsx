@@ -331,7 +331,7 @@ function AuditBody({
             compact
             icon={<ShieldIcon size={28} />}
             title="No audit events yet"
-            description="Who joins or leaves, shares, moves or deletes the team’s documents, and the team’s webhooks show here for a year."
+            description="Who joins or leaves, shares, moves or deletes the team’s documents, and the team’s connections show here for a year."
           />
         )
       ) : (

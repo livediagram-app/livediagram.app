@@ -23,4 +23,9 @@ export * from './template-tab';
 export * from './template-slides';
 export * from './template-slides-data';
 export { templateCatalogue } from './template-catalogue';
+export {
+  automationTabTemplateNames,
+  automationTabTemplates,
+  type AutomationTabTemplate,
+} from './automation-tab-templates';
 export { templateExampleText } from './template-example-text';

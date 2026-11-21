@@ -6,6 +6,7 @@
 import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
 import { mcpChangeThreads, mcpListThreads } from '../mcp/thread-tools';
+import { mcpChangeRules, mcpListRules } from '../mcp/rule-tools';
 import { mcpViewEdit, mcpViewLive, mcpViewTab } from '../mcp/view-tool';
 import { mcpArchiveDocument, mcpUnarchiveDocument } from '../mcp/archive-tools';
 import { listImagesOutput, listImagesShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
@@ -229,6 +230,8 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpRestoreDocument,
   mcpListThreads,
   mcpChangeThreads,
+  mcpListRules,
+  mcpChangeRules,
   mcpViewTab,
   mcpViewLive,
   mcpViewEdit,

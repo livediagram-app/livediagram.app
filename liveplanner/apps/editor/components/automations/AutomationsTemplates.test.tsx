@@ -2,13 +2,15 @@
 // docs/specs/026-plan/automations.md "The Automations screen" (Templates, Empty, Paused) and "Outgoing actions": the
 // gallery under the empty list and on its own tab, New Rule's menu, a template opening the builder unsaved and off
 // with its picks marked, a time rule's Next, Fix Webhook, and an outgoing action's webhook picker.
+import { PLAN_AUTOMATIONS_KIT } from './plan-kit';
+import './test-kit';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
-import { AutomationsDialog, templateStart } from './AutomationsDialog';
-import type { AutomationsTarget } from './AutomationsContext';
+import { AutomationsDialog, templateStart } from '@liveworkspace/automations-ui/AutomationsDialog';
+import type { AutomationsTarget } from '@liveworkspace/automations-ui/AutomationsContext';
 import { forgetAutomations } from './use-automations';
 import { ANA, NOW, outline, pickerTile, rule, run } from './test-fixtures';
 
@@ -25,33 +27,23 @@ vi.mock('./automations-client', async (importOriginal) => ({
 }));
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
-vi.mock('@/hooks/ui/useToast', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({
   useToast: () => ({ info: vi.fn(), success: vi.fn(), error: vi.fn(), warn: vi.fn() }),
 }));
 const listWebhooks = vi.hoisted(() => vi.fn());
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: { listWebhooks },
 }));
-vi.mock('@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog', () => ({
-  ItemWebhooksDialog: ({
-    open,
-    onClose,
-    title,
-  }: {
-    open: boolean;
-    onClose: () => void;
-    title: string;
-  }) =>
-    open ? (
-      <div role="dialog" aria-label={`Webhooks for ${title}`}>
-        <button type="button" onClick={onClose}>
-          Close Webhooks
-        </button>
-      </div>
-    ) : null,
+// The Connections tab's list is the index's own (settings-ui): here, a mark of what it was handed.
+vi.mock('@liveworkspace/settings-ui/connections', () => ({
+  Connections: ({ itemId, app }: { itemId: string; app: string }) => (
+    <div data-testid="connections">
+      {app}:{itemId}
+    </div>
+  ),
 }));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const o = outline();
 const plan = {
   types: o.types,
@@ -89,7 +81,6 @@ function Harness({
         target={target}
         onTarget={setTarget}
         onClose={() => {}}
-        planName="Launch Plan"
         signedIn={signedIn}
       />
     </PlanProvider>
@@ -168,18 +159,18 @@ describe('the Templates gallery', () => {
     await screen.findByRole('textbox', { name: 'Rule name' });
     const marked = () => [...document.querySelectorAll('[data-pick]')].map((c) => c.textContent);
     expect(marked().some((t) => t?.includes('Pick a label'))).toBe(true);
-    expect(marked().some((t) => t?.includes('Pick a webhook'))).toBe(true);
-    const slack = cards().find((c) => c.textContent?.includes('Pick a webhook'))!;
+    expect(marked().some((t) => t?.includes('Pick a connection'))).toBe(true);
+    const slack = cards().find((c) => c.textContent?.includes('Pick a connection'))!;
     fireEvent.click(within(slack as HTMLElement).getAllByRole('button')[0]!);
-    const picker = await screen.findByRole('combobox', { name: 'Webhook' });
+    const picker = await screen.findByRole('combobox', { name: 'Connection' });
     await waitFor(() =>
       expect(within(picker).getByRole('option', { name: 'Launch Channel' })).toBeTruthy(),
     );
-    // Only the plan's Slack webhooks, a paused one said so.
+    // Only the plan's Slack connections, a paused one said so.
     expect(within(picker).queryByRole('option', { name: 'Ops Service' })).toBeNull();
     expect(within(picker).getByRole('option', { name: 'Old Channel (Paused)' })).toBeTruthy();
     fireEvent.change(picker, { target: { value: 'w1' } });
-    expect(marked().some((t) => t?.includes('Pick a webhook'))).toBe(false);
+    expect(marked().some((t) => t?.includes('Pick a connection'))).toBe(false);
     expect(listWebhooks).toHaveBeenCalledTimes(1);
   });
 
@@ -235,6 +226,7 @@ describe('building a time rule', () => {
 describe('templateStart', () => {
   it('builds over the plan, naming the rule uniquely; an unknown id builds nothing', () => {
     const got = templateStart(
+      PLAN_AUTOMATIONS_KIT,
       'stamp-finish',
       o,
       [{ id: 'r1', name: 'Stamp the Finish Date' }],
@@ -242,12 +234,12 @@ describe('templateStart', () => {
     );
     expect(got!.body.name).toBe('Stamp the Finish Date 2');
     expect(got!.body.trigger).toEqual({ kind: 'card_moved', to: ['done'] });
-    expect(templateStart('nope' as never, o, [], 'UTC')).toBeNull();
+    expect(templateStart(PLAN_AUTOMATIONS_KIT, 'nope', o, [], 'UTC')).toBeNull();
   });
 });
 
 describe('the Rules list in Phase 2', () => {
-  it('says a time rule’s next moment, and offers Fix Webhook on a rule a webhook paused', async () => {
+  it('says a time rule’s next moment, and offers Fix Connection on a rule a connection paused', async () => {
     list([
       rule({
         trigger: { kind: 'scheduled', every: 'weekday', at: '09:00' },
@@ -262,10 +254,14 @@ describe('the Rules list in Phase 2', () => {
     ]);
     render(<Harness />);
     expect(await screen.findByText(/Next: /)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Fix Webhook' }));
-    expect(screen.getByRole('dialog', { name: 'Webhooks for Launch Plan' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Close Webhooks' }));
-    expect(screen.queryByRole('dialog', { name: 'Webhooks for Launch Plan' })).toBeNull();
+    // Fix Connection opens the screen's Connections tab, on this plan's connections.
+    fireEvent.click(screen.getByRole('button', { name: 'Fix Connection' }));
+    expect(screen.getByRole('tab', { name: 'Connections' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect((await screen.findByTestId('connections')).textContent).toBe('liveplanner:p1');
+    // Nothing was left behind: no rule to go back to.
+    expect(screen.queryByRole('button', { name: 'Back to Rule' })).toBeNull();
   });
 });
 
@@ -290,28 +286,65 @@ describe('an outgoing action', () => {
     fireEvent.click(within(step as HTMLElement).getAllByRole('button')[0]!);
   }
 
-  it('reads the plan’s webhooks once, and reads them again after Add a Webhook…', async () => {
+  it('reads the plan’s connections once, and Add a Connection… keeps the rule as it stands', async () => {
     await openSlackStep();
-    const picker = await screen.findByRole('combobox', { name: 'Webhook' });
+    const picker = await screen.findByRole('combobox', { name: 'Connection' });
     await waitFor(() => expect(picker).toHaveProperty('value', 'w1'));
     expect(listWebhooks).toHaveBeenCalledWith('p1', null);
-    fireEvent.click(screen.getByRole('button', { name: 'Add a Webhook…' }));
-    expect(screen.getByRole('dialog', { name: 'Webhooks for Launch Plan' })).toBeTruthy();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Close Webhooks' }));
+    expect(listWebhooks).toHaveBeenCalledTimes(1);
+    // An unsaved change, then off to add a connection: the Connections tab, with no Discard Changes?.
+    fireEvent.change(screen.getByRole('textbox', { name: 'Message' }), {
+      target: { value: 'Shipped today' },
     });
-    expect(listWebhooks).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Add a Connection…' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.getByRole('tab', { name: 'Connections' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect((await screen.findByTestId('connections')).textContent).toBe('liveplanner:p1');
+    expect(screen.getByRole('status').textContent).toContain('is kept as you left it');
+    // Back to Rule: the builder again, on the same step, the change still unsaved, the list read afresh.
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Back to Rule' }));
+    });
+    expect(
+      await screen.findByRole<HTMLTextAreaElement>('textbox', { name: 'Message' }),
+    ).toHaveProperty('value', 'Shipped today');
+    expect(
+      screen.getByRole('button', { name: 'Save Rule' }).getAttribute('aria-disabled'),
+    ).toBeNull();
+    await waitFor(() => expect(listWebhooks).toHaveBeenCalledTimes(2));
+    expect(client.updateRule).not.toHaveBeenCalled();
+  });
+
+  it('asks Discard Changes? before a rule kept on the Connections tab is left for another tab', async () => {
+    await openSlackStep();
+    await screen.findByRole('combobox', { name: 'Connection' });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Message' }), {
+      target: { value: 'Shipped today' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Add a Connection…' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Templates' }));
+    expect(screen.getByText('Discard Changes?')).toBeTruthy();
+    // Keep Editing stays on Connections, the rule still kept.
+    fireEvent.click(screen.getByRole('button', { name: 'Keep Editing' }));
+    expect(screen.getByRole('button', { name: 'Back to Rule' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Templates' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Discard Changes' }));
+    expect(screen.getByRole('tab', { name: 'Templates' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
   });
 
   it('offers Try Again when the list would not load', async () => {
     listWebhooks.mockRejectedValueOnce(new Error('offline'));
     await openSlackStep();
     fireEvent.click(await screen.findByRole('button', { name: 'Try Again' }));
-    expect(await screen.findByRole('combobox', { name: 'Webhook' })).toBeTruthy();
+    expect(await screen.findByRole('combobox', { name: 'Connection' })).toBeTruthy();
     expect(listWebhooks).toHaveBeenCalledTimes(2);
   });
 
-  it('tells a guest webhooks are an account’s, and reads nothing', async () => {
+  it('tells a guest connections are an account’s, and reads nothing', async () => {
     await openSlackStep(false);
     expect(await screen.findByText(/only someone signed in can pick one/)).toBeTruthy();
     expect(listWebhooks).not.toHaveBeenCalled();

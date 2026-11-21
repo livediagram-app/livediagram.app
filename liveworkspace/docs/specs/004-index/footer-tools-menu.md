@@ -27,7 +27,7 @@ its name, one line on what it does (never wrapping: kept short enough for one li
 the band's paper under the pointer, so the list reads as the header's.
 
 The rows are grouped under small headings, in this order, a heading drawn only when its group holds a row: **Find**
-(Search), **Automate** (Automations, liveplanner's Email to Board, then Webhooks), **Collaborate** (Walkthroughs, and
+(Search), **Automate** (Automations, then liveplanner's Email to Board), **Collaborate** (Walkthroughs, and
 liveplanner's Subscribe to Calendar), **Versioning** (History alone: Snapshots and livedocuments' Version History live
 inside it). Clear Example Content is not in Tools (owner, 2026-11-17): the palette's example tray offers it, and needs nothing more. Each
 group is a labelled group for screen readers; the arrow keys walk the rows straight through the groups.
@@ -35,7 +35,6 @@ group is a labelled group for screen readers; the arrow keys walk the rows strai
 | Row              | App                                                 | Drawn when                                                                                                                                                               | Opens, inside Tools                      |
 | ---------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
 | **History**      | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor); or the person may take snapshots; or livedocuments offers Version History | the History below, with Snapshots in it  |
-| **Webhooks**     | every app                                           | as its row on the item's ⋯ menu was (gone from the Explorer header's and every item's menu inside an editor)                                                             | the item's Webhooks                      |
 | **Search**       | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                                                               | the Search dialog (closes Tools)         |
 | **Automations**  | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")                                                        | the Automations screen, widened          |
 | **Walkthroughs** | livediagram, livedocuments, liveplanner, livedesign | walkthroughs fit and there is one to play or the person may record ([Walkthroughs](../../../../livediagram/docs/specs/012-collaboration/walkthroughs.md) "In Tools")     | the list to play, and Record Walkthrough |
@@ -79,16 +78,16 @@ Owner, 2026-11-16 (Work Tracker 1182): a tool opens in the Tools popover itself,
 between tools, never in a modal of its own on top of the editor.
 
 - **The main button stays at the foot** (owner, 2026-11-17). A tool's main action (Record Walkthrough; New Slide and
-  Present in Slide Deck) is pinned at the bottom of its view, and only the content above it scrolls. The Webhooks
-  dialog does the same with Add Webhook.
+  Present in Slide Deck) is pinned at the bottom of its view, and only the content above it scrolls. The Connections
+  list does the same with Add Connection.
 - **Every tool is the list's height** (owner, 2026-11-17). Opening a tool keeps Tools exactly as tall as its list:
   a short tool fills it, its main buttons at the very bottom, and a long one scrolls inside it with those buttons
   pinned and always in view. Tools never jumps in height as you move between the list and a tool.
 - **A tool loads in its empty shape** (owner, 2026-11-17: opening a tool juddered). Most tools open empty, so while a
   tool's code or data loads it draws its explainer's skeleton (the art's frame, the heading, two lines, the steps)
   with its footer and a button's place pinned at the foot (`ToolSkeleton`, `ToolExplainerSkeleton` in
-  `@liveworkspace/ui/tool-explainer`). An empty tool then fills in where it stands, nothing moving; Webhooks shows
-  its real footer, Add Webhook waiting, from the first frame.
+  `@liveworkspace/ui/tool-explainer`). An empty tool then fills in where it stands, nothing moving; the
+  Connections list shows its real footer, Add Connection waiting, from the first frame.
 - **The drill-in.** Choosing a row replaces the list with that tool's view. Tools' illustrated hero band stays at the top
   of every view (owner, 2026-11-17), with its close in the corner; under it the shared
   [back bar](../../../../livediagram/docs/specs/004-interface-design/back-bar.md) is the breadcrumb: **Tools**, with the
@@ -109,11 +108,11 @@ between tools, never in a modal of its own on top of the editor.
 - **Motion** (owner, 2026-11-17). Going into a tool slides its view in from the right, as a phone opens a menu; going
   back slides the list in from the left (`animate-view-forward` / `-back`, short motion), while the popover's height
   eases between the two (`AnimatedHeightBox`), and again whenever a view's own content grows or shrinks. Reduced motion keeps only the fade.
-- **Skeletons.** A tool that reads its content (History's timeline, Webhooks' list, Email to Board's address, Subscribe
+- **Skeletons.** A tool that reads its content (History's timeline, the Connections list, Email to Board's address, Subscribe
   to Calendar's feed) shows skeleton rows of its own shape while it loads, never a spinner that changes the height when
   the rows land.
 - **Inside a tool.** A dialog a tool opens on top of itself (Automations' Describe a Rule, a Discard Changes confirm,
-  Webhooks from a rule) is still a dialog, drawn over Tools; a press in it, or in a menu a tool opens, never closes
+  Connections from a rule) is still a dialog, drawn over Tools; a press in it, or in a menu a tool opens, never closes
   Tools.
 - **Focus.** Opening a tool moves focus into its view (the back bar, or the control the tool focuses itself, such as a
   confirm's button); stepping back puts focus on that tool's row. A polite live region says where focus went
@@ -142,18 +141,21 @@ second press on either button closes what it opened, on every screen.
 
 ## Rows from outside the footer
 
-The open item's **History** and **Webhooks** come from each editor's Explorer host, which holds the item, the reader
-and the Webhooks handler: it publishes them through the Tools door (`usePublishToolsItems`,
-`packages/workbench/src/components/chrome/tools-door.ts`; `useItemToolsRows`), and the popover lists them beside the
+The open item's **History** comes from each editor's `ItemToolsHost`, which holds the item and the reader: it
+publishes the row through the Tools door (`usePublishToolsItems`,
+`packages/workbench/src/components/chrome/tools-door.ts`; `useItemToolsRows`), and the popover lists it beside the
 rows its host hands it. The host also takes the app's Snapshots (`useHistorySnapshotsHost()`), and livedocuments'
 footer offers Version History to it (`usePublishItemVersions`), so History holds all three.
 
 Each canvas editor's walkthroughs publish their **Walkthroughs** row the same way, from where the editor mounts them
 (`WalkthroughsTools`, `@liveworkspace/walkthrough`), so the footer needs to know nothing about them.
 
-Inside an editor, History and Webhooks are on no item's ⋯ menu: the editor's Explorer panel passes `history={false}`
-and `webhooks={false}`, and Tools has them for the open item. The Explorer on liveworkspace.app, with no footer, keeps
-both on its item menus.
+Inside an editor, History is on no item's ⋯ menu: the editor's Explorer panel passes `history={false}`, and Tools has
+it for the open item. The Explorer on liveworkspace.app, with no footer, keeps it on its item menus.
+
+**Webhooks is not a tool** (2026-11-20): no row in Tools, no item on any ⋯ menu, no dialog of its own. What is left of
+a webhook is a connection, managed on the **Connections** tab inside Automations
+([automations.md "Connections"](../018-automations/automations.md#connections)).
 
 ### Always there
 
@@ -163,18 +165,18 @@ A tool that would work for this person but for an account or for where the item 
 Sync Space; it needs the item saved to the server). Signed out on an item kept Offline, it wears both. A press opens
 that tool's gate in its place, in Automations' shape, on the first thing it needs: Sign In leaves for the sign-in page
 and comes back with the tool open; Sync syncs in place and goes on to the tool. Where neither would help (a share-link holder for a tool only an
-owner has, a Viewer for an Editor's tool, an embed) the row stays out. In liveplanner: Automations, Subscribe to Calendar and Email to Board; everywhere: History and Webhooks (each Sign In,
+owner has, a Viewer for an Editor's tool, an embed) the row stays out. In liveplanner: Automations, Subscribe to Calendar and Email to Board; everywhere: History (Sign In,
 then Sync), and in the four canvas apps Walkthroughs (owner, 2026-11-17), when it has none to play: it wears the item rows'
 badges and opens their gate through the Tools door (`usePublishToolGate` / `useToolGate`, blueprint FM10), and once
 synced Tools opens at its own row.
 
-Signed out, or on an item kept Offline, **History** and **Webhooks** still show in Tools (owner, 2026-11-16), so
-everyone can find them, badged **Sign In** and **Sync <Item>** as they need. A press
+Signed out, or on an item kept Offline, **History** still shows in Tools (owner, 2026-11-16), so
+everyone can find it, badged **Sign In** and **Sync <Item>** as it needs. A press
 opens a small dialog in that tool's hero header (its art, name and line), a sentence on what signing in gives, and
-**Sign In** (to the app's sign-in page, coming back here) beside **Not Now**. Signed in, they behave as above: History for
-an item not shared by link, Webhooks for one who can manage them.
+**Sign In** (to the app's sign-in page, coming back here) beside **Not Now**. Signed in, it behaves as above: History for
+an item not shared by link.
 
-Webhooks sits in **Automate**, under Automations where the app has them (liveplanner); there is no Connect group.
+There is no Connect group: connections are inside Automations, in **Automate**.
 
 liveplanner adds two of its own (owner, 2026-11-16), moved out of the tab menu so the tools that work on the whole plan
 live in one place: **Email to Board** in Automate, under Automations (mail in becomes cards with nobody filing them) and **Subscribe to
@@ -195,7 +197,7 @@ component (`ToolExplainer` and `tool-explainer-art` in `@liveworkspace/ui`), so 
 | Tool                  | Title                                                   | When          |
 | --------------------- | ------------------------------------------------------- | ------------- |
 | Email to Board        | Mail In, Cards Out                                      | Not turned on |
-| Webhooks              | No webhooks yet                                         | None added    |
+| Connections           | No connections yet                                      | None added    |
 | Subscribe to Calendar | This Plan in Your Calendar / Your Work in Your Calendar | No link made  |
 | Walkthroughs          | No walkthroughs yet                                     | None recorded |
 | Slide Deck            | Build Your Deck                                         | No slides     |

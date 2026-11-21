@@ -30,7 +30,7 @@ const connectionOf = (n: number): GithubConnectionView =>
     })),
   }) as GithubConnectionView;
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 
 it('opens, scrolls, searches and flips 1,000 repositories within a CPU budget, drawing a window of rows', () => {
   const c = connectionOf(1000);

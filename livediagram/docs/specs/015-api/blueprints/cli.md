@@ -523,7 +523,7 @@ Resources
   wait, watch     block until, or stream, comments and changes
   graph           lint, render: a graph or Mermaid file, before writing
   pull, push      one document to a file and back; export --all
-  template, icon, schema, guide, skill, api, auth, telemetry
+  rule, template, icon, schema, guide, skill, api, auth, telemetry
 
 Addressing
   <doc>     name, id prefix or livediagram URL     "Auth flow", 3f9c

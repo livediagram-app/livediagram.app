@@ -20,6 +20,7 @@ export type {
   ClientMessage,
 } from '@liveplanner/api-schema';
 
+import type { AutomationsAi } from '@liveworkspace/automations/room';
 import type { PlanAutomations } from './plan-room/automations/automation-queue';
 import type { PlanRoom } from './plan-room/plan-room';
 import type { RemovalGuard } from './plan-room/removal-guard-store';
@@ -168,13 +169,7 @@ export type Env = {
 };
 
 // The part of the Workers AI binding Automations calls (plan-room/automations/automation-ai.ts).
-export interface AutomationsAi {
-  run(
-    model: string,
-    inputs: Record<string, unknown>,
-    options?: { gateway?: { id: string } },
-  ): Promise<unknown>;
-}
+export type { AutomationsAi };
 
 // The env a plan's own code runs with, inside its Durable Object (src/plan-room/plan-room.ts): the
 // worker's bindings plus `PLAN_DB`, the plan's own SQLite behind the D1 surface (plan-room/plan-db.ts).

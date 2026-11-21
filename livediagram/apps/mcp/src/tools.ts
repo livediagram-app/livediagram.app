@@ -78,6 +78,7 @@ import { registerTool } from './tool-annotations';
 import { appendTemplateDeck, deckNote, slidesForTemplateTab } from './template-deck';
 import { registerArchiveTools } from './archive-tools';
 import { registerThreadTools } from './thread-tools';
+import { registerRuleTools } from './rule-tools';
 import { registerViewTool, VIEW_TOOL_META } from './view-tab';
 import {
   createDocumentTab,
@@ -638,6 +639,9 @@ export function registerTools(server: McpServer, env: Env): void {
 
   // Comment threads (docs/specs/015-api/mcp-server.md "Comment threads"): list_threads and change_threads.
   registerThreadTools(server, env);
+
+  // Automations rules (docs/specs/013-workspace/automations.md "Agents"): list_rules and change_rules.
+  registerRuleTools(server, env);
 
   // The interactive view's own call.
   registerViewTool(server, env);

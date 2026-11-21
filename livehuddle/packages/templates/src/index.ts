@@ -22,3 +22,8 @@ export * from './template-tab';
 export { templateFloors, type TemplateFloor } from './template-floors';
 export { templateFirstFloorName } from './template-floor-names';
 export { templateCatalogue } from './template-catalogue';
+export {
+  automationTabTemplateNames,
+  automationTabTemplates,
+  type AutomationTabTemplate,
+} from './automation-tab-templates';

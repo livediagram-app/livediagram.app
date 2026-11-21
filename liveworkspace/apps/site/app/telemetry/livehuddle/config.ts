@@ -74,6 +74,7 @@ import {
   NEW_VERSION_PROMPT,
   NEW_VISITORS,
   OFFLINE_MODE,
+  SPACE_AUTOMATIONS,
   ONBOARDING_TOURS,
   ORGANISATION,
   PAGE_VIEWS_BY_APP,
@@ -247,6 +248,7 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
         LOOK_AND_FEEL,
         PANELS_OPENED,
         OFFLINE_MODE,
+        SPACE_AUTOMATIONS,
       ],
     },
     // Live Together is the only stack that counts two people on one canvas at

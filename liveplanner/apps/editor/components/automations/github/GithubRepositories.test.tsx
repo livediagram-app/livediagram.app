@@ -20,7 +20,7 @@ vi.mock('./github-client', async (importOriginal) => ({
   ...client,
 }));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const connectionOf = (n: number, chosen = 0): GithubConnectionView =>
   ({
     installationId: 7,

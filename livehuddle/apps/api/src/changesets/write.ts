@@ -21,6 +21,7 @@ import {
   type ChangesetFingerprints,
   type ChangesetRecord,
 } from '../db';
+import { asTabWriter, writerOf } from '@liveworkspace/automations/room';
 import { TabTooLargeError } from '../limits';
 import { relayChangeset } from '../room-client';
 import type { DocumentEnv } from '../types';
@@ -108,13 +109,24 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
   // One re-mint inside the attempt on an id collision (CS7, E21).
   for (let mint = 0; mint < 2; mint += 1) {
     try {
-      const results = await env.DOCUMENT_DB.batch([
-        ...tabWriteStatements(env, w.documentId, w.next, w.orderIndex, { expected }, now),
-        insertChangesetStatement(env, record),
-        insertChangesetPartStatement(env, record.id, 'ops', parts.ops),
-        insertChangesetPartStatement(env, record.id, 'inverse', parts.inverse),
-        insertChangesetPartStatement(env, record.id, 'results', parts.results),
-      ]);
+      const write = () =>
+        env.DOCUMENT_DB.batch([
+          ...tabWriteStatements(env, w.documentId, w.next, w.orderIndex, { expected }, now),
+          insertChangesetStatement(env, record),
+          insertChangesetPartStatement(env, record.id, 'ops', parts.ops),
+          insertChangesetPartStatement(env, record.id, 'inverse', parts.inverse),
+          insertChangesetPartStatement(env, record.id, 'results', parts.results),
+        ]);
+      // A changeset that makes its tab says who made it, for a Tab Added rule
+      // (docs/specs/013-workspace/automations.md): a token's write is an agent's.
+      const results = await (creates
+        ? asTabWriter(
+            env,
+            'tab_added',
+            async () => writerOf(w.author, w.tokenId ? {} : null),
+            write,
+          )
+        : write());
       record = { ...record, rev: revFromBatch(results) };
       break;
     } catch (err) {

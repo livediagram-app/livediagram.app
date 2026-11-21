@@ -72,9 +72,11 @@ describe('auditSentence', () => {
     expect(says('restored')).toBe('Ann Lee restored Roadmap from the Trash');
     expect(says('deleted')).toBe('Ann Lee deleted Roadmap for good');
     expect(says('webhook_added', { detail: { host: 'hooks.slack.com' } })).toBe(
-      'Ann Lee added the webhook hooks.slack.com',
+      'Ann Lee added the connection hooks.slack.com',
     );
-    expect(says('webhook_removed', { title: 'Alerts' })).toBe('Ann Lee removed the webhook Alerts');
+    expect(says('webhook_removed', { title: 'Alerts' })).toBe(
+      'Ann Lee removed the connection Alerts',
+    );
   });
 
   it('has a line for every kind the log keeps', () => {
@@ -122,11 +124,11 @@ describe('auditGroups', () => {
 
   it('names the items group in each app’s word for its items', () => {
     const labels = (app: App) => auditGroups(kindWords(app).many).map((g) => g.label);
-    expect(labels('livedesign')).toEqual(['People', 'Designs', 'Webhooks']);
-    expect(labels('livediagram')).toEqual(['People', 'Canvases', 'Webhooks']);
-    expect(labels('liveplanner')).toEqual(['People', 'Plans', 'Webhooks']);
-    expect(labels('livedocuments')).toEqual(['People', 'Documents', 'Webhooks']);
-    expect(labels('livehuddle')).toEqual(['People', 'Spaces', 'Webhooks']);
+    expect(labels('livedesign')).toEqual(['People', 'Designs', 'Connections']);
+    expect(labels('livediagram')).toEqual(['People', 'Canvases', 'Connections']);
+    expect(labels('liveplanner')).toEqual(['People', 'Plans', 'Connections']);
+    expect(labels('livedocuments')).toEqual(['People', 'Documents', 'Connections']);
+    expect(labels('livehuddle')).toEqual(['People', 'Spaces', 'Connections']);
   });
 });
 

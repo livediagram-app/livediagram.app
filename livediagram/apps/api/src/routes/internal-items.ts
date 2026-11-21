@@ -76,14 +76,28 @@ export function handleInternalItems(
       approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
       // Request Access (liveworkspace request-access.md "The emails"): a manager's email when someone asks, and the
       // requester's when a manager shares it.
-      accessRequested: (id, notice) => notifyAccessRequested(env, id, notice),
+      // And Access Requested, for the canvas's rules that hear it (docs/specs/013-workspace/automations.md).
+      accessRequested: async (id, notice) => {
+        await Promise.all([
+          notifyAccessRequested(env, id, notice),
+          documentRoom(env, id)
+            .accessRequested({
+              id: notice.requesterId,
+              name: notice.requesterName,
+              requestId: notice.requestId,
+            })
+            .catch((err: unknown) =>
+              console.warn('[automations] access request not heard', { error: String(err) }),
+            ),
+        ]);
+      },
       accessGranted: (id, notice) => notifyAccessGranted(env, id, notice),
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
           : // Someone's first time in through a link: the owner's email, and Document·Joined by the link's level.
             Promise.all([
-              documentRoom(env, id).joined(notice.personId),
+              documentRoom(env, id).joined(notice.personId, notice.level),
               reportServerEvent(env, 'Document', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
             ]),
       copy: async (from, to, tabId, copier, title) => {
@@ -150,8 +164,10 @@ export function handleInternalItems(
       tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),
       // Where the canvas stands after an archive, move out, trash or restore (the index calls it off its own path, so
       // the room call costs the trash nothing). Into the Trash, from anywhere: its room ends every session now
-      // (docs/specs/013-workspace/trash.md). Nothing else here runs on its own clock for a put-away canvas.
+      // (docs/specs/013-workspace/trash.md).
+      // The room keeps where it stands (@liveworkspace/automations/room standing.ts): put away, its rules run nothing.
       standing: async (id, standing) => {
+        await documentRoom(env, id).takeStanding(standing);
         if (standing.trashed) await documentRoom(env, id).trashed();
         // Archived from anywhere (one-explorer.md "Archived from elsewhere while open"): every session ends with 4010,
         // and each editor leaves for the Explorer. A move or a restore (neither flag) closes nothing.

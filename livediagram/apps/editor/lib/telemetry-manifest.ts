@@ -52,18 +52,25 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Activity·Opened',
   'Activity·Resolved',
   'Activity·Selected',
+  // Automations (docs/specs/013-workspace/automations.md "Telemetry"): a rule, draft or secret Created; a secret
+  // Changed or Copied; a rule Toggled on or off, Deleted, Tested, or Ran by hand (components/automations).
+  'Document·Changed',
+  'Document·Copied',
   'Document·Created',
   'Document·Deleted',
   'Document·Duplicated',
   'Document·Exported',
   'Document·Loaded',
   'Document·Moved',
+  'Document·Ran',
   'Document·Redone',
   // A share link revoked in the Share dialog (type ShareLink).
   'Document·Removed',
   'Document·Renamed',
   // A pass issued in the Share dialog, typed by its level (Edit / Participate / View).
   'Document·Shared',
+  'Document·Tested',
+  'Document·Toggled',
   // Draw mode (docs/specs/023-draw-mode/draw-mode.md): a Whiteboard tab created (Template /
   // NewTab / Import), a pen picked, the eraser mode or background changed, recognition toggled.
   'Draw·Changed',

@@ -21,6 +21,12 @@ import { rowToTabSummary, type TabRow } from '../tab-row';
 import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
 import type { TabConnection } from '@liveworkspace/index-client';
 import type { DocumentEnv, TabSummaryDTO } from '../types';
+import { KINDS } from '@livedocuments/document/automations';
+import {
+  copiedRulesOf,
+  landedRuleStatements,
+  type CopiedRules,
+} from '@liveworkspace/automations/room';
 
 // What the document knows of itself (document-schema.ts): its name, owner, team and provenance. Null until the
 // document is started, by a create or by its first open with a grant (initDocument).
@@ -311,6 +317,10 @@ export type DocumentCopy = {
   // The images its bodies place that the source may serve (db/image-grants.ts): the copy is granted each, so an
   // image a teammate placed in the source still shows in a copy its new owner makes.
   images: string[];
+  // The source's Automations rules (docs/specs/013-workspace/automations.md), for a copy its own people make and a
+  // file's import: they land turned off, their tabs at the copy's ids. Absent from a copy made through a share link
+  // or a Community post, whose maker never saw the rules.
+  automations?: CopiedRules;
 };
 
 // Every tab of the document (or one) with its body, in order: the read a copy makes, and the Drive file's
@@ -352,6 +362,8 @@ export async function exportDocumentCopy(
   onlyTabId: string | null,
   redactAuthorsFor: string | null,
   redactForCommunity = false,
+  // The copy carries the document's Automations rules (document-room-doors.ts exportCopy decides).
+  withRules = false,
 ): Promise<DocumentCopy | null> {
   const rows = await readContentTabRows(env, documentId, onlyTabId);
   // Every fresh tab id minted up front, so a tab or element link on one tab can be re-pointed at its sibling's copy.
@@ -381,6 +393,8 @@ export async function exportDocumentCopy(
   };
   const placed = copyImageIds(copy);
   if (placed.length > 0) copy.images = [...(await servableImageIds(env, documentId, placed))];
+  const rules = withRules && !redactForCommunity ? copiedRulesOf(env, tabIdMap) : null;
+  if (rules) copy.automations = rules;
   return copy;
 }
 
@@ -393,11 +407,12 @@ export async function exportDocumentCopyFor(
   onlyTabId: string | null,
   copiedBy: string | null,
   community = false,
+  withRules = false,
 ): Promise<DocumentCopy | null> {
   const ownerId =
     copiedBy === null ? null : ((await readDocumentMeta(env, documentId))?.ownerId ?? null);
   const redact = copiedBy !== null && copiedBy !== ownerId ? copiedBy : null;
-  return exportDocumentCopy(env, documentId, onlyTabId, redact, community);
+  return exportDocumentCopy(env, documentId, onlyTabId, redact, community, withRules);
 }
 
 // The images a copy's bodies place, for the placement grants the copy carries (db/image-grants.ts).
@@ -488,5 +503,8 @@ export async function importDocumentCopy(
         .bind(now, JSON.stringify(granted)),
     );
   }
+  // Its rules, turned off, in the same transaction (@liveworkspace/automations/room rules-file.ts). All off, so
+  // nothing is heard or scheduled until someone turns one on.
+  stmts.push(...landedRuleStatements(env.DOCUMENT_DB, KINDS, copy.automations, now));
   await db.batch(stmts);
 }

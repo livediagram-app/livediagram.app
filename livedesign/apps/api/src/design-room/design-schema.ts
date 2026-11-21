@@ -17,6 +17,10 @@ import {
   outboxRetrySchema,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
+import {
+  COLLAB_SEEN_SCHEMA_STEP,
+  itemAutomationSchemaSteps,
+} from '@liveworkspace/automations/room';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -316,11 +320,33 @@ const V8 = `${CANVAS_SUGGESTIONS_SCHEMA}
 ALTER TABLE design ADD COLUMN review TEXT NULL;
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8];
+type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
+
+// Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
+// in its order, one entry each. Steps 9 to 16 are its rules, schedule, Incoming Webhook secrets, held runs, Describe
+// a Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 17 is the item
+// engine's tables and its
+// three SQL triggers on `tabs` and `design_tabs` (@liveworkspace/automations/room itemAutomationSchemaSteps).
+const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'design_tabs' }).map((s) => s.run);
+
+// Step 18: each tab's comment threads and actions as the comment triggers last saw them (the platform's collab
+// watch), kept only while a rule that is on hears one.
+const V18 = COLLAB_SEEN_SCHEMA_STEP;
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  V8,
+  ...AUTOMATION_STEPS,
+  V18,
+];
 
 export const DESIGN_SCHEMA_VERSION = STEPS.length;
-
-type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
 
 // Bring the design's SQLite up to DESIGN_SCHEMA_VERSION. Idempotent: every statement is IF NOT EXISTS, and the
 // version row skips what already ran. Runs inside the caller's transaction when it has one.
@@ -329,7 +355,11 @@ export function migrateDesignSchema(exec: Exec): void {
   const row = exec('SELECT version FROM _design_schema LIMIT 1').toArray()[0];
   const at = typeof row?.version === 'number' ? row.version : 0;
   if (at >= STEPS.length) return;
-  for (let step = at; step < STEPS.length; step++) exec(STEPS[step]!);
+  for (let step = at; step < STEPS.length; step++) {
+    const run = STEPS[step]!;
+    if (typeof run === 'string') exec(run);
+    else run(exec);
+  }
   exec('DELETE FROM _design_schema');
   exec(`INSERT INTO _design_schema (version) VALUES (${STEPS.length})`);
 }

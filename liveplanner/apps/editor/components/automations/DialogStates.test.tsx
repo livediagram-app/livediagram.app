@@ -2,12 +2,13 @@
 // docs/specs/026-plan/automations.md "The Automations screen", "Runs, limits and loops": a rule opened by its id
 // that the plan no longer has says so (never a blank new rule), the full meter's line, and the Audit Trail's
 // keeping line, with the api client mocked.
+import './test-kit';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
-import { AutomationsDialog } from './AutomationsDialog';
-import type { AutomationsTarget } from './AutomationsContext';
+import { AutomationsDialog } from '@liveworkspace/automations-ui/AutomationsDialog';
+import type { AutomationsTarget } from '@liveworkspace/automations-ui/AutomationsContext';
 import { forgetAutomations, readAutomations } from './use-automations';
 import { ANA, outline, rule, run } from './test-fixtures';
 
@@ -23,9 +24,9 @@ vi.mock('./automations-client', async (importOriginal) => ({
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const toast = vi.hoisted(() => ({ info: vi.fn(), success: vi.fn(), error: vi.fn() }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const o = outline();
 const plan = {
   types: o.types,
@@ -117,7 +118,7 @@ describe('the Automations screen', () => {
     const view = render(<Harness initial={{ view: 'rule', ruleId: 'r-new' }} />);
     expect(await screen.findByText('This Rule Was Deleted')).toBeTruthy();
     // The other plan's list, read earlier, lacks the rule too; its read for this opening has not answered.
-    const other = { ...SCOPE, projectId: 'p2' };
+    const other = { ...SCOPE, itemId: 'p2' };
     client.listAutomations.mockResolvedValueOnce({
       rules: [rule()],
       runsToday: 1,

@@ -145,7 +145,7 @@ export const ORDER: readonly string[] = [
   'collaboration/snapshots',
   'collaboration/walkthroughs',
   'collaboration/history',
-  'collaboration/webhooks',
+  'tools/automations',
   'tools/zen-mode',
   'tools/dark-mode',
   'palette/shapes/style-presets',

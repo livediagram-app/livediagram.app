@@ -13,7 +13,7 @@ import {
 } from '@liveplanner/items';
 import { CloseIcon } from '@liveplanner/ui';
 import type { AutomationOutline } from '../automation-outline';
-import { PanelField, PanelSelect } from './panel-parts';
+import { PanelField, PanelSelect } from '@liveworkspace/automations-ui/step-panels/panel-parts';
 import { PersonPicker } from './PeopleActionPanel';
 
 type Assign = AutomationAction & { kind: 'assign' };

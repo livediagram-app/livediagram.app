@@ -8,6 +8,12 @@ export {
   type SnapshotCaller,
   type SnapshotDoor,
 } from './routes';
+export {
+  revertToSnapshot,
+  type RevertInput,
+  type RevertRefusal,
+  type RevertResult,
+} from './revert';
 export { fenceStaleWrite, requestGeneration, stampGeneration } from './fence';
 export {
   advanceGeneration,

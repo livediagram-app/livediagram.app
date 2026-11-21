@@ -86,9 +86,9 @@ export function auditSentence(event: TeamAuditEvent, teamId: string): AuditSente
     case 'approval_cancelled':
       return { who, action: 'cancelled the approval request on', target: title };
     case 'webhook_added':
-      return { who, action: 'added the webhook', target: detail.host ?? title };
+      return { who, action: 'added the connection', target: detail.host ?? title };
     case 'webhook_removed':
-      return { who, action: 'removed the webhook', target: detail.host ?? title };
+      return { who, action: 'removed the connection', target: detail.host ?? title };
   }
 }
 
@@ -127,7 +127,7 @@ export function auditDetail(event: TeamAuditEvent): string | null {
 
 type AuditGroup = { label: string; kinds: readonly TeamAuditEventType[] };
 
-// What happened to the team's items: every kind but an account's and a webhook's.
+// What happened to the team's items: every kind but an account's and a connection's (stored as `webhook_*`).
 const ITEM_KINDS: readonly TeamAuditEventType[] = TEAM_AUDIT_EVENT_TYPES.filter(
   (k) => !(TEAM_AUDIT_ACCOUNT_TYPES as readonly string[]).includes(k) && !k.startsWith('webhook_'),
 );
@@ -138,7 +138,7 @@ export function auditGroups(items: string): readonly AuditGroup[] {
   return [
     { label: 'People', kinds: TEAM_AUDIT_ACCOUNT_TYPES },
     { label: items, kinds: ITEM_KINDS },
-    { label: 'Webhooks', kinds: ['webhook_added', 'webhook_removed'] },
+    { label: 'Connections', kinds: ['webhook_added', 'webhook_removed'] },
   ];
 }
 

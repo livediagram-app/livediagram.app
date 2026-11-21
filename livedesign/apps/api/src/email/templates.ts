@@ -5,13 +5,7 @@
 // plus a team name the inviter already chose.
 
 import { xmlEscape } from '@liveworkspace/icons';
-import {
-  createEmailLayout,
-  mentionQuote,
-  notificationSettingsUrl,
-  subjectText,
-  type EmailSection,
-} from '@liveworkspace/email/layout';
+import { mentionQuote, subjectText } from '@liveworkspace/email/layout';
 import { accessGrantedParts, accessRequestedParts } from '@liveworkspace/email/access-request';
 import type {
   AccessGrantedEmailInput,
@@ -20,30 +14,9 @@ import type {
 } from '@liveworkspace/index-app';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
+import { manageNotificationsFooter, profilePath, shell } from './email-shell';
 
 export { MENTION_QUOTE_CHARS, mentionQuote } from '@liveworkspace/email/layout';
-
-// The shared look (@liveworkspace/email/layout), in livedesign's brand.
-const layout = createEmailLayout({
-  // brand-700: it carries the button's white text and the links' text, and white on
-  // rose-500 is 2.2:1 where brand-700 clears AA at 5.9:1.
-  brand: '#be123c',
-  wordmarkAccent: '#be123c',
-  bandGradient: 'linear-gradient(90deg,#fb7185 0%,#f43f5e 45%,#be185d 100%)',
-  canvas: '#fff1f2',
-  // `pnpm icons:brand` writes it into the marketing app's public/email/. 64px, 2x the slot.
-  logoPath: '/email/livedesign-mark-64.png',
-  wordmarkTail: 'design',
-  tagline: 'Design logos and wireframes together, live. Free and open source.',
-  accountFooter:
-    'You’re receiving this because you have a livedesign account. The editor is free and open source.',
-});
-
-// docs/specs/014-identity/transactional-email.md: footer for an opt-out notification email, the reason plus a link to
-// the settings where the recipient can turn the category off in one click.
-function manageNotificationsFooter(env: Env, reason: string): string {
-  return layout.manageNotificationsFooter(appBaseUrl(env), reason);
-}
 
 // `kind` is the template's telemetry token (docs/specs/017-telemetry/telemetry.md 'Email' category): it rides
 // along on the builder's return so it reaches `sendEmail` through the same
@@ -60,7 +33,9 @@ export type EmailKind =
   | 'AccessRequested'
   | 'AccessGranted'
   | 'Mentioned'
-  | 'AccountDeleted';
+  | 'AccountDeleted'
+  // A rule's Send Email (docs/specs/013-workspace/automations.md; @liveworkspace/automations/room email.ts).
+  | 'AutomationEmail';
 
 export type RenderedEmail = {
   kind: EmailKind;
@@ -68,15 +43,6 @@ export type RenderedEmail = {
   html: string;
   unsubscribeUrl?: string;
 };
-
-// Where every opt-out category can be turned off, for the footer link and the List-Unsubscribe header.
-function profilePath(env: Env): string {
-  return notificationSettingsUrl(appBaseUrl(env));
-}
-
-function shell(env: Env, section: EmailSection): string {
-  return layout.shell(appBaseUrl(env), section);
-}
 
 export function accountDeletedEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);

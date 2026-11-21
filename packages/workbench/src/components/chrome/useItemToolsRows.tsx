@@ -1,17 +1,17 @@
 'use client';
 
-// Webhooks and History in the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md), for the item
-// the editor has open: published through the Tools door by each editor's ItemToolsHost, which is mounted with the
-// editor (not with the Explorer panel, which mounts only once opened). Nothing is read until History is pressed.
-// Returns the dialog to render while one is open; opened from Tools, it draws inside Tools (footer-tools-menu.md
-// "Opening a tool inside Tools"). Both rows always show where signing in or syncing would make them work
-// (footer-tools-menu.md "Always there"), badged Sign In and Sync <Item>, and a press opens that gate first: Sign In
-// leaves for the sign-in page; Sync <Item> saves the item to the server and goes on to the tool.
+// History in the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md), for the item the editor
+// has open: published through the Tools door by each editor's ItemToolsHost, which is mounted with the editor (not
+// with the Explorer panel, which mounts only once opened). Nothing is read until History is pressed. Returns the
+// dialog to render while one is open; opened from Tools, it draws inside Tools (footer-tools-menu.md "Opening a tool
+// inside Tools"). The row always shows where signing in or syncing would make it work (footer-tools-menu.md "Always
+// there"), badged Sign In and Sync <Item>, and a press opens that gate first: Sign In leaves for the sign-in page;
+// Sync <Item> saves the item to the server and goes on to the tool.
 import { useDeferredAuth } from '../providers/deferred-auth';
 import { useSavedLook } from './AuthControls';
 import { accountAvatarFill, accountInitials } from '../../lib/account-avatar';
 import { explorerAccounts } from '../../lib/explorer-accounts';
-import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react';
+import { useMemo, useState, type ComponentType, type ReactNode } from 'react';
 import {
   ButtonContent,
   DialogCloseButton,
@@ -30,7 +30,7 @@ import { useAuthHrefs } from './auth-routes';
 import { ItemHistoryDialog, useOpenItem, type HistoryExtras } from '@liveworkspace/explorer';
 import type { IndexClient } from '@liveworkspace/index-client';
 import { lucideGlyph } from '@liveworkspace/ui';
-import { lucideHistory, lucideWebhook } from '@liveworkspace/icons/lucide';
+import { lucideHistory } from '@liveworkspace/icons/lucide';
 import type { ChromeToolsItem } from './ChromeToolsMenu';
 import {
   requestToolsView,
@@ -40,7 +40,6 @@ import {
   type ToolGate,
 } from './tools-door';
 
-const WebhookIcon = lucideGlyph(lucideWebhook, 16);
 const HistoryIcon = lucideGlyph(lucideHistory, 16);
 
 type Teams = Parameters<typeof ItemHistoryDialog>[0]['teams'];
@@ -61,7 +60,6 @@ export type ItemHistoryHost = {
 // Each gated tool's name; what its gate says is the shared plain copy (toolGateCopy).
 const SIGN_IN = {
   history: { title: 'History' },
-  webhooks: { title: 'Webhooks' },
   walkthroughs: { title: 'Walkthroughs' },
 } as const;
 type SignInFor = keyof typeof SIGN_IN;
@@ -95,7 +93,6 @@ export function historyMode(input: {
 
 export function useItemToolsRows({
   app,
-  onWebhooks,
   history,
   signedIn,
   offline = null,
@@ -103,13 +100,11 @@ export function useItemToolsRows({
 }: {
   // The app, whose word for its item the sign-in dialogs use ("this canvas", "this plan").
   app: AppName;
-  // Present only for someone who may manage the open item's webhooks.
-  onWebhooks?: () => void;
   // The open item's History; null where it is not offered (no item open, or one opened by a share link).
   history: ItemHistoryHost | null;
-  // Whether someone is signed in; until they are, both rows show and ask for a sign-in.
+  // Whether someone is signed in; until they are, the row shows and asks for a sign-in.
   signedIn: boolean;
-  // Set while the open item lives Offline: both rows show, badged Sync <Item>, and ask for a sync.
+  // Set while the open item lives Offline: the row shows, badged Sync <Item>, and asks for a sync.
   offline?: ItemToolsOffline | null;
   // Snapshots, for someone who may take them (useHistorySnapshotsHost); null otherwise.
   snapshots?: ItemSnapshotsHost | null;
@@ -139,25 +134,11 @@ export function useItemToolsRows({
     gated,
     versions: !!versions,
   });
-  const showWebhooks = guest || !!offline || !!onWebhooks;
-  // Synced, the tool asked for opens as soon as the synced item gives it its host: History here, as it renders;
-  // Webhooks (the app's own dialog) from an effect, once per ask.
-  const [webhooksDue, setWebhooksDue] = useState(0);
-  if (pending && !offline) {
-    if (pending === 'history' && history) {
-      setPending(null);
-      setHistoryOpen(true);
-    } else if (pending === 'webhooks' && onWebhooks) {
-      setPending(null);
-      setWebhooksDue((n) => n + 1);
-    }
+  // Synced, History opens as soon as the synced item gives it its host, as it renders.
+  if (pending === 'history' && !offline && history) {
+    setPending(null);
+    setHistoryOpen(true);
   }
-  const webhooksOpened = useRef(0);
-  useEffect(() => {
-    if (webhooksDue <= webhooksOpened.current || !onWebhooks) return;
-    webhooksOpened.current = webhooksDue;
-    onWebhooks();
-  }, [webhooksDue, onWebhooks]);
   const rows = useMemo<ChromeToolsItem[]>(
     () => [
       ...(mode
@@ -182,22 +163,8 @@ export function useItemToolsRows({
             },
           ]
         : []),
-      ...(showWebhooks
-        ? [
-            {
-              id: 'webhooks',
-              group: 'automate' as const,
-              label: 'Webhooks',
-              description: 'Tell other services when it changes.',
-              icon: <WebhookIcon />,
-              inPlace: true,
-              ...(gated ? { badges } : {}),
-              onSelect: () => (gated ? setGate('webhooks') : onWebhooks?.()),
-            },
-          ]
-        : []),
     ],
-    [mode, showWebhooks, gated, badges, onWebhooks, versions, snapshots],
+    [mode, badges, versions, snapshots],
   );
   usePublishToolsItems('item', rows);
   const versionsLink = (close: () => void) =>
@@ -365,7 +332,7 @@ function AccountLine({ noun }: { noun: string }) {
   );
 }
 
-// A gated press on History or Webhooks, drawn as Automations' gate is (liveplanner SyncGateDialog with
+// A gated press on History or Walkthroughs, drawn as Automations' gate is (liveplanner SyncGateDialog with
 // SyncProjectPrompt): the tool's name over why it is held, a ringed disc, why it needs that, the move (Sign In, back to
 // this page; or Sync <Item>, which goes on to the tool), and Cancel in the footer. Signed out comes first.
 function SignInDialog({

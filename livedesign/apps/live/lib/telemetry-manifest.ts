@@ -51,17 +51,24 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Activity·Opened',
   'Activity·Resolved',
   'Activity·Selected',
+  // Automations (docs/specs/013-workspace/automations.md "Telemetry"): a rule, draft or secret Created; a secret
+  // Changed or Copied; a rule Toggled on or off, Deleted, Tested, or Ran by hand (components/automations).
+  'Document·Changed',
+  'Document·Copied',
   'Document·Created',
   'Document·Deleted',
   'Document·Duplicated',
   'Document·Exported',
   'Document·Loaded',
   'Document·Moved',
+  'Document·Ran',
   'Document·Redone',
   // A share link revoked in the Share dialog (type ShareLink).
   'Document·Removed',
   'Document·Renamed',
   'Document·Shared',
+  'Document·Tested',
+  'Document·Toggled',
   // The markers (docs/specs/023-draw-mode/drawing-tools.md): a marker's colour or width changed,
   // a stroke flipped between ink and a shape.
   'Draw·Changed',

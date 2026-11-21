@@ -30,18 +30,25 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // CTA's source from the closed CTA_SOURCES table.
   'Cta·Created',
   'Cta·Opened',
+  // Automations (docs/specs/013-workspace/automations.md "Telemetry"): a rule, draft or secret Created; a secret
+  // Changed or Copied; a rule Toggled on or off, Deleted, Tested, or Ran by hand (components/automations).
+  'Document·Changed',
+  'Document·Copied',
   'Document·Created',
   'Document·Deleted',
   'Document·Duplicated',
   'Document·Exported',
   'Document·Loaded',
   'Document·Moved',
+  'Document·Ran',
   'Document·Redone',
   // A share link revoked in the Share dialog (type ShareLink).
   'Document·Removed',
   'Document·Renamed',
   // A pass issued in the Share dialog, typed by its level (Edit / Participate / View).
   'Document·Shared',
+  'Document·Tested',
+  'Document·Toggled',
   'Document·Undone',
   'Element·Added',
   'Element·Changed',

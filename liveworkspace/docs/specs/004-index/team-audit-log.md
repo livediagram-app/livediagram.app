@@ -2,9 +2,9 @@
 
 What a team's admins can look back on: who joined, left or changed role, who shared a team document publicly or
 made or revoked its share links, which documents came into the team, left it or were deleted, and who added or
-removed webhooks on the team's documents (Work Tracker #160), and who asked for, gave or withheld approval of
+removed connections (once webhooks) on the team's documents (Work Tracker #160), and who asked for, gave or withheld approval of
 them ([approvals.md](approvals.md), Work Tracker 937). It answers "who shared this?", "who joined?" and "who made that
-webhook?" for a team that relies on the product.
+connection?" for a team that relies on the product.
 
 It is the index's: one log for every app (platform first, [platform.md](../001-platform-scope/platform.md)), next to
 the event log it is written with. The event log ([one-explorer-contracts.md "The event log"](one-explorer-contracts.md#the-event-log))
@@ -34,8 +34,8 @@ History and the app's (liveplanner's no-activity-log rule for content stands). A
 | `approval_approved`          | An approver approves it (`complete` on the last)                                                                  | the index |
 | `approval_changes_requested` | An approver asks for changes (`note`)                                                                             | the index |
 | `approval_cancelled`         | An approval request is cancelled, or replaced (`replaced`)                                                        | the index |
-| `webhook_added`              | Someone adds a webhook to a team document (`kind`, `host`)                                                        | the index |
-| `webhook_removed`            | Someone deletes a webhook from a team document (`kind`, `host`)                                                   | the index |
+| `webhook_added`              | Someone adds a connection to a team document (`kind`, `host`); the stored type keeps its name                     | the index |
+| `webhook_removed`            | Someone deletes a connection from a team document (`kind`, `host`)                                                | the index |
 
 Left out, as decided on the card: API tokens and OAuth apps belong to an account, not a team, and the index
 keeps no event of them (team-scoped tokens are a separate idea). Also left out: `team_deleted` (the team is gone,
@@ -43,7 +43,7 @@ so nobody can read its log), a move between folders of the same team, a share li
 a withdrawn invitation (none of these is an event either), and the Trash's own 30-day purge (no person did it;
 the `trashed` row already says who sent it there).
 
-Each row: the team, its kind, the app (the document's; `liveworkspace` for a team's own and a webhook's), who did it
+Each row: the team, its kind, the app (the document's; `liveworkspace` for a team's own and a connection's), who did it
 (their id, and the name accounts sent for a team event), whom a team event is about (`personId`), the document's id
 and its name then, the event's detail, and when. A row of a document that is later deleted keeps its id and name.
 
@@ -51,8 +51,8 @@ and its name then, the event's detail, and when. A row of a document that is lat
 
 - In the same D1 batch as the change and its event, so a change is never logged without happening, nor
   happens without being logged. A row is copied from the event the batch writes (its id, kind, app, actor,
-  title, detail and time), so the two never disagree; webhooks and Delete Forever, which have no event, write
-  theirs beside the webhook's or the item's own statements.
+  title, detail and time), so the two never disagree; connections and Delete Forever, which have no event, write
+  theirs beside the connection's or the item's own statements.
 - A document event is logged for the team the document is in. A `moved` is logged for the team it left and the team it
   went to (both, when it moves between teams), and not at all when no team is involved.
 - A team event from accounts (`POST /internal/events`) is logged for the team its detail names (`teamId`).
@@ -113,14 +113,14 @@ the reader is an admin, and the read would refuse them anyway.
 - **Filters**, above the list, each reading the first page again: **Person** (who did it: Everyone, the team's joined
   members by name, then anyone else the loaded rows name, such as a member who has left), **Event** (All Events, or
   one kind by its label, grouped People, the host app's own items in its word (Canvases, Plans, Documents, Designs,
-  Spaces) and Webhooks), and **From** and **To** (whole days in the reader's
+  Spaces) and Connections), and **From** and **To** (whole days in the reader's
   time zone, both included: To is sent as the next day's midnight). **Clear Filters** shows while any is set. There is
   no filter by whom an event is about (`IDX32`). A From after To is turned round, never refused. A day not on the
   calendar (2026-02-31) bounds nothing, never rolling into the next month.
 - **Each row**: the kind's glyph; one line saying who did what ("Ann Lee made a share link on Roadmap", "Ann Lee
-  removed Bo Chen", "Ann Lee added the webhook hooks.slack.com"); then the kind's label, the detail that matters
-  (the link's level, into or out of the team, the webhook's kind, a renamed team's old name, Take Offline), the app
-  (its mark and name; a team's own and a webhook's read liveworkspace) and the time. Rows sit under day bands
+  removed Bo Chen", "Ann Lee added the connection hooks.slack.com"); then the kind's label ("Connection Added", "Connection Removed" for the two `webhook_*` kinds), the detail that matters
+  (the link's level, into or out of the team, the connection's kind, a renamed team's old name, Take Offline), the app
+  (its mark and name; a team's own and a connection's read liveworkspace) and the time. Rows sit under day bands
   (the reader's date), newest first; a row's time carries the UTC time as its tooltip. A closed account reads
   "Deleted account"; a person with no name reads "Someone".
 - **Pages**: 50 rows, then **Show More** for the next page. A Show More that fails keeps the rows and says so, with
@@ -136,7 +136,7 @@ the reader is an admin, and the read would refuse them anyway.
   holds its 200,000 rows (about 40 MB of text) in memory; closing the picker cancels quietly, and a failure drops
   the half-written file. Elsewhere the files are joined and saved as one download, as before.
 - **States**: three placeholder rows while the first page loads; empty, "No audit events yet" ("Who joins or leaves,
-  shares, moves or deletes the team's documents, and the team's webhooks show here for a year."); nothing matching,
+  shares, moves or deletes the team's documents, and the team's connections show here for a year."); nothing matching,
   "No events match" with Clear Filters; refused (`403 not_team_admin`, an admin who has just stepped down), "Only the
   team's admins can see its audit log."; anything else (`503 team_audit_unavailable` included), "Couldn't load the
   audit log" with Try again.

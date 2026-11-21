@@ -3,7 +3,7 @@
 // (forms.md "Content blocks"), which ask nothing.
 
 import { CONTENT_BLOCKS, type ContentBlock, type QuestionType } from '@liveplanner/forms';
-import type { SceneTone } from '@/components/tile-picker/tile-scene';
+import type { SceneTone } from '@liveworkspace/automations-ui/tile-picker/tile-scene';
 
 export type QuestionGroupId = 'text' | 'choices' | 'ratings' | 'dates' | 'contact' | 'content';
 

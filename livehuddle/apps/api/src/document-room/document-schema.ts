@@ -11,6 +11,7 @@
 // Made on first use, never on construction (@liveworkspace/index-app item-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
+import { itemAutomationSchemaSteps } from '@liveworkspace/automations/room';
 import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
@@ -321,7 +322,25 @@ CREATE TABLE IF NOT EXISTS visitor_names (
 );
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8];
+// Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
+// in its order, one entry each. Steps 9 to 16 are its rules, schedule, Incoming Webhook secrets, held runs, Describe a
+// Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 17 is the item
+// engine's tables and its
+// three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room itemAutomationSchemaSteps).
+// livehuddle has no comment threads, so no collab step follows.
+const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  V8,
+  ...AUTOMATION_STEPS,
+];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 
@@ -334,7 +353,11 @@ export function migrateDocumentSchema(exec: Exec): void {
   const row = exec('SELECT version FROM _document_schema LIMIT 1').toArray()[0];
   const at = typeof row?.version === 'number' ? row.version : 0;
   if (at >= STEPS.length) return;
-  for (let step = at; step < STEPS.length; step++) exec(STEPS[step]!);
+  for (let step = at; step < STEPS.length; step++) {
+    const run = STEPS[step]!;
+    if (typeof run === 'string') exec(run);
+    else run(exec);
+  }
   exec('DELETE FROM _document_schema');
   exec(`INSERT INTO _document_schema (version) VALUES (${STEPS.length})`);
 }

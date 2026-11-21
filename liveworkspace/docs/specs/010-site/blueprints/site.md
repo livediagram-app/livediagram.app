@@ -212,7 +212,7 @@ chunks; each product's `docs/specs/016-platform/web-performance.md`).
 gzipped on main, 7 under its 380 KiB budget, so the archived-arrival toast (+128 bytes) put it over. The team view
 (`packages/explorer/src/explorer/TeamPane.tsx`) imported the Audit Log statically, so every first load carried its
 rows, filters and CSV export, which only a team's admins ever draw. It is now a `lazy` import inside `Suspense`, as
-History and Webhooks are (`Dialogs.tsx`). Measured the same way: 389,241 to 379,814 bytes (380.1 to 370.9 KiB), the
+History is (`Dialogs.tsx`). Measured the same way: 389,241 to 379,814 bytes (380.1 to 370.9 KiB), the
 same 19 scripts. The budget stays at 380 KiB.
 
 **The team card loads with the team view (2026-11-19, Work Tracker 1315).** Holding the Inbox's done rows across a
@@ -371,7 +371,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `packages/settings-ui/src/account-panels/lazy.tsx`               | accountPanels: API Tokens and Your Data drawn in place, each panel its own chunk fetched when its category first shows                                                                                                                                                   |
 | `packages/settings-ui/src/account-panels/tokens-in-place.ts`     | Whether the Account section draws the API tokens, so an editor's own API Tokens row leaves out its link to liveworkspace.app                                                                                                                                             |
 | `packages/settings-ui/src/account-panels/tokens/TokensPanel.tsx` | Settings › API Tokens, in every app's Settings and liveworkspace.app's: making one, its secret shown once, revoking one                                                                                                                                                  |
-| `packages/settings-ui/src/webhooks/`                             | a document's Webhooks dialog body (`@liveworkspace/settings-ui/webhooks`), opened from the Explorer's ⋯ menu (liveworkspace/docs/specs/004-index/blueprints/webhooks.md)                                                                                                 |
+| `packages/settings-ui/src/connections/`                          | an item's Connections list and dialog (`@liveworkspace/settings-ui/connections`; `packages/settings-ui/src/webhooks/` keeps the old names as aliases), reached from inside Automations (liveworkspace/docs/specs/004-index/blueprints/webhooks.md)                       |
 | `packages/settings-ui/src/bind.ts`                               |                                                                                                                                                                                                                                                                          |
 | `packages/settings-ui/src/catalogue-model.tsx`                   | One app's settings as plain data (its derived catalogue, @liveworkspace/settings/catalogues/<app>, and its stored scopes) as the Settings view's model, so the Settings pa…                                                                                              |
 | `packages/settings-ui/src/cloud-sync/GoogleDriveRow.tsx`         | Google Drive's row in Settings > Account > Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting")                                                                                                                                                         |
@@ -742,7 +742,7 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `packages/settings-ui/src/account-panels/account-panels.test.tsx`
 - `packages/settings-ui/src/account-panels/data-export/data-export-panel.test.tsx`
 - `packages/settings-ui/src/account-panels/tokens/tokens-panel.test.tsx`
-- `packages/settings-ui/src/webhooks/document-webhooks.test.tsx`
+- `packages/settings-ui/src/connections/connections.test.tsx`
 - `packages/settings-ui/src/bind.test.ts`
 - `packages/settings-ui/src/catalogue-model.test.tsx`
 - `packages/settings-ui/src/cloud-sync/GoogleDriveRow.test.tsx`

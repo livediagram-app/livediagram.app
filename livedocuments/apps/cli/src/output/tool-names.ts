@@ -22,6 +22,8 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   unarchive_document: 'document unarchive',
   list_threads: 'comment ls',
   change_threads: 'comment add',
+  list_rules: 'rule ls',
+  change_rules: 'rule set',
   list_images: 'image ls',
   upload_image: 'image add',
   delete_image: 'image rm',

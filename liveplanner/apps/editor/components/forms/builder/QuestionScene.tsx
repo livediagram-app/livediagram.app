@@ -25,7 +25,7 @@ import {
   after,
   at,
   type ToneClasses,
-} from '@/components/tile-picker/tile-scene';
+} from '@liveworkspace/automations-ui/tile-picker/tile-scene';
 import { QUESTION_GROUPS, type AddKind } from './question-groups';
 
 const TickGlyph = lucideGlyph(lucideCheck, 7);

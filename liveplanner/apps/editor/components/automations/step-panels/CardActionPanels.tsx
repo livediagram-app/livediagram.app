@@ -7,7 +7,11 @@
 import type { AutomationAction, TypeFieldMap } from '@liveplanner/items';
 import { ColourSelect } from '@/components/plan/ColourSwatches';
 import type { AutomationOutline } from '../automation-outline';
-import { PanelField, PanelNote, PanelSelect } from './panel-parts';
+import {
+  PanelField,
+  PanelNote,
+  PanelSelect,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
 import { TypeFieldMapEditor } from './TypeFieldMapEditor';
 
 export function SetTypePanel({

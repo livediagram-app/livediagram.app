@@ -34,9 +34,10 @@ import {
   AUTOMATION_AI_DRAFTS_SCHEMA,
   AUTOMATION_FIRED_SCHEMA,
   AUTOMATION_ADDRESSES_SCHEMA,
+  AUTOMATION_COUNTS_SCHEMA,
   AUTOMATIONS_SCHEMA,
-  automationsV19,
-} from './automations/automation-schema';
+  automationsScheduleStep,
+} from '@liveworkspace/automations/room';
 import { GITHUB_PULLS_SCHEMA, GITHUB_SCHEMA } from './github/github-schema';
 import { addCalendarFeedTypes, CALENDAR_FEEDS_SCHEMA } from '../calendar/feed-store';
 import { ROADMAPS_SCHEMA } from '../roadmap/roadmap-store';
@@ -474,26 +475,26 @@ const V17 = (exec: Exec) => {
     exec('ALTER TABLE card_threads ADD COLUMN resolved_by_id TEXT NULL');
 };
 
-// Automations (docs/specs/026-plan/automations.md; automations/automation-schema.ts): a plan's rules, the triggers
+// Automations (docs/specs/026-plan/automations.md; @liveworkspace/automations/room automation-schema.ts): a plan's rules, the triggers
 // waiting for its alarm and its Audit Trail.
 const V18 = AUTOMATIONS_SCHEMA;
 
-// Automations Phase 2 (automations/automation-schema.ts): the time triggers' schedule and Assign in Turn's place.
-const V19 = automationsV19;
+// Automations Phase 2 (@liveworkspace/automations/room automation-schema.ts): the time triggers' schedule and Assign in Turn's place.
+const V19 = automationsScheduleStep;
 
-// Automations Phase 3 (automations/automation-schema.ts): Incoming Webhook rules' hashed secrets.
+// Automations Phase 3 (@liveworkspace/automations/room automation-schema.ts): Incoming Webhook rules' hashed secrets.
 const V20 = AUTOMATION_HOOKS_SCHEMA;
 
 // The plan's GitHub connection, its repositories, its connect states and the deliveries it has acted on
 // (github/github-schema.ts; docs/specs/026-plan/github-pull-requests.md "Storage").
 const V21 = GITHUB_SCHEMA;
 
-// Automations' Wait (automations/automation-schema.ts): the runs a Wait holds.
+// Automations' Wait (@liveworkspace/automations/room automation-schema.ts): the runs a Wait holds.
 const V22 = AUTOMATION_WAITING_SCHEMA;
 // GitHub pull requests part 3: each pull request's latest state and its commits' check suites (github/github-schema.ts;
 // docs/specs/026-plan/github-pull-requests.md "Pull request state on cards").
 const V23 = GITHUB_PULLS_SCHEMA;
-// Describe a Rule (automations/automation-schema.ts): each ask, for the day's AI count and the drafts a day.
+// Describe a Rule (@liveworkspace/automations/room automation-schema.ts): each ask, for the day's AI count and the drafts a day.
 const V24 = AUTOMATION_AI_DRAFTS_SCHEMA;
 
 // A Sheet cell thread's Inbox label names its cell by A1 (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"): a
@@ -511,7 +512,7 @@ BEGIN
 END;
 `;
 
-// Automations' time triggers (automations/automation-schema.ts): the cards each Due In, Overdue and Card Stuck rule
+// Automations' time triggers (@liveworkspace/automations/room automation-schema.ts): the cards each Due In, Overdue and Card Stuck rule
 // has run on, kept apart from the Audit Trail's trim.
 const V26 = AUTOMATION_FIRED_SCHEMA;
 
@@ -522,7 +523,7 @@ const V27 = (exec: Exec) => {
   for (const table of ['outbox', 'share_outbox']) outboxParkingStep(exec, table);
 };
 
-// Automations' Send Email to typed-in addresses (automations/automation-schema.ts): each address's unsubscribe token
+// Automations' Send Email to typed-in addresses (@liveworkspace/automations/room automation-schema.ts): each address's unsubscribe token
 // and the day's count.
 const V28 = AUTOMATION_ADDRESSES_SCHEMA;
 
@@ -593,6 +594,10 @@ const V39 = KNOWN_ASSISTANTS_SCHEMA;
 // message makes"): a card type and a status of its own.
 const V40 = addIntakeTarget;
 
+// Automations' two small counts (@liveworkspace/automations/room automation-schema.ts): the signatures each Incoming
+// Webhook rule took in the last 10 minutes (a replay is refused), and the AI calls asked each day.
+const V41 = AUTOMATION_COUNTS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -634,6 +639,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V38,
   V39,
   V40,
+  V41,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

@@ -339,3 +339,6 @@ export * from '@liveworkspace/api-schema/image-summary';
 
 // Preference keys whose feature is gone, dropped as a stored blob is read (./legacy-preferences.ts).
 export { upgradeLegacyPreferences } from './legacy-preferences';
+
+// Automations on the wire (./automations.ts): a design's rules, their runs and the Incoming Webhook door.
+export * from './automations';

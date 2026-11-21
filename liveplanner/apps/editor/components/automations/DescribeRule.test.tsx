@@ -2,15 +2,17 @@
 // docs/specs/026-plan/automations.md "Describe a Rule": New Rule's row and the empty state's button, the dialog (the
 // examples, the count, Ctrl / ⌘ Enter, busy while drafting, Cancel), a draft opening the builder unsaved and off with
 // Drafted by AI and its picks marked, a refusal said in the api's fixed words, and Discard Changes? on leaving.
+import './test-kit';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import type { AutomationDraftResponse } from '@liveplanner/api-schema';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
-import { AutomationsDialog } from './AutomationsDialog';
-import type { AutomationsTarget } from './AutomationsContext';
+import { AutomationsDialog } from '@liveworkspace/automations-ui/AutomationsDialog';
+import type { AutomationsTarget } from '@liveworkspace/automations-ui/AutomationsContext';
 import { AutomationRefusal } from './automations-client';
-import { DESCRIBE_EXAMPLES, DESCRIBE_FAILED } from './DescribeRuleDialog';
+import { DESCRIBE_FAILED } from '@liveworkspace/automations-ui/DescribeRuleDialog';
+import { DESCRIBE_EXAMPLES } from './plan-words';
 import { forgetAutomations } from './use-automations';
 import { ANA, outline, rule } from './test-fixtures';
 
@@ -25,17 +27,14 @@ vi.mock('./automations-client', async (importOriginal) => ({
 }));
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
-vi.mock('@/hooks/ui/useToast', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({
   useToast: () => ({ info: vi.fn(), success: vi.fn(), error: vi.fn(), warn: vi.fn() }),
 }));
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   indexClient: { listWebhooks: () => Promise.resolve({ webhooks: [] }) },
 }));
-vi.mock('@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog', () => ({
-  ItemWebhooksDialog: () => null,
-}));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const o = outline();
 const plan = {
   types: o.types,
@@ -153,7 +152,7 @@ describe('the dialog', () => {
     expect(document.querySelector('[data-drafted-note]')!.textContent).toContain('Drafted by AI.');
     expect(screen.queryByRole('switch', { name: /On|Off/ })).toBeNull();
     const marked = [...document.querySelectorAll('[data-pick]')].map((c) => c.textContent);
-    expect(marked.some((t) => t?.includes('Pick a webhook'))).toBe(true);
+    expect(marked.some((t) => t?.includes('Pick a connection'))).toBe(true);
     expect(track).toHaveBeenCalledWith('Plan', 'Created', 'AutomationDraft');
   });
 

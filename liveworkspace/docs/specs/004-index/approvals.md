@@ -190,7 +190,7 @@ Four events, written in the batch that makes the change, with the actor named as
 - **Team audit log.** On a team's item each is copied into the team's audit log, kept a year
   ([team-audit-log.md](team-audit-log.md)): who asked whom, who approved and who asked for changes is a sign-off
   record a team looks back on. The Event filter lists them under the items' group.
-- They are no webhook's events (yet).
+- No automation rule is triggered by them (yet).
 
 ## In the editor
 
@@ -234,5 +234,5 @@ next read.
 
 - Approval chains or stages, required approver counts below everyone, or approvers outside who can open the item.
 - Locking the item while approval is pending or after it.
-- Webhook events, an MCP tool or a CLI verb for approvals.
+- An Automations trigger, an MCP tool or a CLI verb for approvals.
 - livehuddle's door (a Space is not sent for sign-off, above).

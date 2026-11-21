@@ -129,6 +129,42 @@ describe('the store', () => {
     expect(orphans.n).toBe(0);
   });
 
+  // SN35: a snapshot a rule names is beside the five, never removed to make room.
+  it('keeps the ones a rule names through a sixth take and beyond, uncounted', async () => {
+    const { db } = testDb();
+    const take = async (i: number, keptIds?: readonly string[]) => {
+      const taken = await takeSnapshot(db, {
+        itemId: 'p1',
+        text: `v${i}`,
+        name: `n${i}`,
+        kind: 'manual',
+        author,
+        now: 100 + i,
+        ...(keptIds ? { keptIds } : {}),
+      });
+      if (!taken.ok) throw new Error('refused');
+      return taken.snapshot.id;
+    };
+    // The two oldest are kept by rules; five more fill the five without touching them.
+    const kept = [await take(0), await take(1)];
+    for (let i = 2; i < 7; i += 1) await take(i, kept);
+    const names = async () => (await listSnapshots(db, 'p1')).map((s) => s.name);
+    expect(await names()).toEqual(['n6', 'n5', 'n4', 'n3', 'n2', 'n1', 'n0']);
+    // An eighth removes the oldest that no rule names (n2), never a kept one.
+    await take(7, kept);
+    expect(await names()).toEqual(['n7', 'n6', 'n5', 'n4', 'n3', 'n1', 'n0']);
+    expect(await readSnapshotText(db, 'p1', kept[0]!)).toBe('v0');
+    // An id of another item, or of nothing, keeps nothing more.
+    await take(8, [...kept, 'elsewhere']);
+    expect(await names()).toHaveLength(7);
+    // Its rule gone, n0 is among the five again: the next take removes the oldest past them.
+    await take(9, [kept[1]!]);
+    expect(await names()).toEqual(['n9', 'n8', 'n7', 'n6', 'n5', 'n1']);
+    // Kept by nothing, the plain five.
+    await take(10);
+    expect(await names()).toEqual(['n10', 'n9', 'n8', 'n7', 'n6']);
+  });
+
   it('keeps each item to its own five', async () => {
     const { db } = testDb();
     for (let i = 0; i < SNAPSHOTS_KEPT; i += 1) {

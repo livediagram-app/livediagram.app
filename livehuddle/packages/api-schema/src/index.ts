@@ -374,3 +374,6 @@ export * from '@liveworkspace/api-schema/teams';
 export * from '@liveworkspace/api-schema/share-links';
 export * from '@liveworkspace/api-schema/participants';
 export * from '@liveworkspace/api-schema/image-summary';
+
+// Automations on the wire (./automations.ts): a Space's rules, their runs and the Incoming Webhook door.
+export * from './automations';

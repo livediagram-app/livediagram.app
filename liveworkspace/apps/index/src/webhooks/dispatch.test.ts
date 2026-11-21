@@ -19,6 +19,7 @@ import {
   answerWorld,
   deliveries,
   newWorld,
+  sendThrough,
   WEBHOOK_KEY,
   type World,
 } from './test-webhooks';
@@ -68,16 +69,19 @@ const run = (over: Partial<DispatchDeps> = {}) => {
 };
 const states = () => deliveries().map((d) => `${d.type}:${d.state}:${d.attempts}`);
 
-// A person, a plan of theirs with a webhook, and `bump`, which renames the plan: one `renamed` event a call.
+// A person, a plan of theirs with a webhook, and `bump`, which sends a rule's message through it: one `automation`
+// delivery a call, its text the message.
 async function personWithHook(id: string, input: Record<string, unknown> = {}) {
   const ada = await person(id);
   const item = await makeItem(ada.auth, { title: 'Start' });
-  const hook = await addWebhook(ada.auth, item.id, { events: ['renamed', 'shared'], ...input });
+  const hook = await addWebhook(ada.auth, item.id, input);
   let n = 0;
-  const bump = (title = `t${++n}`) =>
-    call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title } });
+  const bump = (text = `t${++n}`) => sendThrough(item.id, hook.webhook.id, text);
   return { ada, item, bump, ...hook };
 }
+
+// The messages sent, in order.
+const texts = () => sent.map((s) => JSON.parse(s.body).detail.text);
 
 describe('a delivery', () => {
   it('is a signed JSON POST to the endpoint, never following a redirect', async () => {
@@ -91,7 +95,7 @@ describe('a delivery', () => {
     expect(s.init.method).toBe('POST');
     expect(s.init.redirect).toBe('manual');
     expect(s.headers.get('Content-Type')).toBe('application/json');
-    expect(s.headers.get(WEBHOOK_EVENT_HEADER)).toBe('renamed');
+    expect(s.headers.get(WEBHOOK_EVENT_HEADER)).toBe('automation');
     const delivery = s.headers.get(WEBHOOK_DELIVERY_HEADER)!;
     const timestamp = s.headers.get(WEBHOOK_TIMESTAMP_HEADER)!;
     expect(Number(timestamp)).toBe(Math.floor(clock / 1000));
@@ -100,10 +104,11 @@ describe('a delivery', () => {
     const payload = JSON.parse(s.body);
     expect(payload).toMatchObject({
       id: delivery,
-      type: 'renamed',
+      type: 'automation',
       app: 'liveplanner',
-      item: { id: item.id, title: 'Roadmap', url: `https://liveplanner.app/project/${item.id}` },
-      actor: { id: 'user_wd1' },
+      item: { id: item.id, title: 'Start', url: `https://liveplanner.app/project/${item.id}` },
+      actor: { id: null, name: 'Automation' },
+      detail: { rule: 'Tell the channel', subject: null, text: 'Roadmap' },
     });
     expect(deliveries()[0]).toMatchObject({
       state: 'delivered',
@@ -117,36 +122,19 @@ describe('a delivery', () => {
   it('sends Slack its message, unsigned, and opens a card at the card', async () => {
     const ada = await person('user_wd2');
     const plan = await makeItem(ada.auth, { title: 'Sprint' });
-    await addWebhook(ada.auth, plan.id, {
+    const { webhook } = await addWebhook(ada.auth, plan.id, {
       kind: 'slack',
       url: 'https://hooks.slack.com/services/T/B/x',
-      events: ['card_moved'],
     });
-    await call(`/app/items/${plan.id}/card-moves`, {
-      method: 'PUT',
-      auth: 'lp-key',
-      headers: { 'X-Index-App': 'liveplanner' },
-      body: {
-        moves: [
-          {
-            cardId: 'c1',
-            cardKey: 1,
-            card: 'Fix',
-            from: 'Doing',
-            to: 'Done',
-            actorName: 'Ada',
-            at: clock,
-          },
-        ],
-      },
+    const url = `https://liveplanner.app/project/${plan.id}#item=c1`;
+    await sendThrough(plan.id, webhook.id, 'Fix is done', {
+      subject: { ref: 'WI-1', title: 'Fix', url },
     });
     await run();
     expect(sent[0]!.headers.get(WEBHOOK_SIGNATURE_HEADER)).toBeNull();
     const body = JSON.parse(sent[0]!.body);
-    expect(body.text).toBe('Ada moved “Fix” from Doing to Done on “Sprint”');
-    expect(body.blocks[0].text.text).toContain(
-      `https://liveplanner.app/project/${plan.id}#item=c1|Open in liveplanner`,
-    );
+    expect(body.text).toBe('Fix is done');
+    expect(body.blocks[0].text.text).toBe(`Fix is done\nWI-1 Fix · <${url}|Open in liveplanner>`);
   });
 
   it('links nothing for an app with no origin set', async () => {
@@ -172,7 +160,7 @@ describe('retries', () => {
       retrying: 2,
       nextAt: clock + RETRY_DELAYS_MS[0]!,
     });
-    expect(states()).toEqual(['renamed:pending:1', 'renamed:pending:0']);
+    expect(states()).toEqual(['automation:pending:1', 'automation:pending:0']);
     expect(deliveries()[0]).toMatchObject({ status: 503, next_at: clock + RETRY_DELAYS_MS[0]! });
     expect(deliveries()[1]!.next_at).toBe(clock + RETRY_DELAYS_MS[0]!);
     // Nothing is due before then.
@@ -184,14 +172,14 @@ describe('retries', () => {
       await run();
     }
     // Seven tries, then given up; the next one goes on (and fails its first try in the same run).
-    expect(states()).toEqual(['renamed:failed:7', 'renamed:pending:1']);
+    expect(states()).toEqual(['automation:failed:7', 'automation:pending:1']);
     expect(h.db.sql.prepare('SELECT failures FROM webhooks WHERE id = ?').get(webhook.id)).toEqual({
       failures: 1,
     });
     answer = () => new Response(null, { status: 204 });
     clock += RETRY_DELAYS_MS.at(-1)!;
     await run();
-    expect(states()).toEqual(['renamed:failed:7', 'renamed:delivered:2']);
+    expect(states()).toEqual(['automation:failed:7', 'automation:delivered:2']);
     expect(h.db.sql.prepare('SELECT failures FROM webhooks WHERE id = ?').get(webhook.id)).toEqual({
       failures: 0,
     });
@@ -202,21 +190,23 @@ describe('retries', () => {
     await bump('A');
     answer = () => new Response('busy', { status: 503 });
     await run();
-    expect(sent.map((s) => JSON.parse(s.body).item.title)).toEqual(['A']);
+    expect(texts()).toEqual(['A']);
     // Queued while A waits: it waits behind A, not due before it.
     answer = () => new Response(null, { status: 204 });
     await bump('B');
     await bump('C');
     expect(deliveries().map((d) => d.next_at)).toEqual(Array(3).fill(clock + RETRY_DELAYS_MS[0]!));
     // Even a row someone made due early waits for the earlier one.
-    h.db.sql.prepare("UPDATE webhook_deliveries SET next_at = 0 WHERE title = 'C'").run();
+    h.db.sql
+      .prepare(`UPDATE webhook_deliveries SET next_at = 0 WHERE detail ->> '$.text' = 'C'`)
+      .run();
     sent = [];
     clock += 1_000;
     expect(await run()).toMatchObject({ delivered: 0 });
     expect(sent).toEqual([]);
     clock += RETRY_DELAYS_MS[0]!;
     await run();
-    expect(sent.map((s) => JSON.parse(s.body).item.title)).toEqual(['A', 'B', 'C']);
+    expect(texts()).toEqual(['A', 'B', 'C']);
   });
 
   it.each([
@@ -259,7 +249,7 @@ describe('retries', () => {
     answer = () => new Response(null, { status: 410 });
     await run();
     expect(sent).toHaveLength(1);
-    expect(states()).toEqual(['renamed:failed:1', 'renamed:failed:0']);
+    expect(states()).toEqual(['automation:failed:1', 'automation:failed:0']);
     expect(
       h.db.sql.prepare('SELECT paused_reason FROM webhooks WHERE id = ?').get(webhook.id),
     ).toEqual({
@@ -311,17 +301,17 @@ describe('what is checked before sending', () => {
     const bo = await person('user_wx4', { teams: [{ id: 'teamX' }] });
     world.roles.user_wx4 = [{ id: 'teamX', role: 'member' }];
     const item = await makeItem(bo.auth, { teamId: 'teamX' });
-    const { webhook } = await addWebhook(bo.auth, item.id, { events: ['renamed'] });
-    await call(`/items/${item.id}`, { method: 'PATCH', auth: bo.auth, body: { title: 'One' } });
+    const { webhook } = await addWebhook(bo.auth, item.id);
+    await sendThrough(item.id, webhook.id, 'One');
     world.accountsDown = true;
     expect(await run()).toMatchObject({ retrying: 1, delivered: 0 });
     expect(sent).toEqual([]);
-    expect(states()).toEqual(['renamed:pending:0']);
+    expect(states()).toEqual(['automation:pending:0']);
     world.accountsDown = false;
     clock += 60_000;
     // Still a member: it sends.
     expect(await run()).toMatchObject({ delivered: 1 });
-    await call(`/items/${item.id}`, { method: 'PATCH', auth: bo.auth, body: { title: 'Two' } });
+    await sendThrough(item.id, webhook.id, 'Two');
     world.roles.user_wx4 = [];
     sent = [];
     await run();
@@ -358,14 +348,8 @@ describe('what is checked before sending', () => {
       });
       const { link: made } = (await link.json()) as { link: { code: string } };
       const ed = await person('user_wx8');
-      const { webhook } = await addWebhook(
-        ed.auth,
-        item.id,
-        { events: ['renamed'] },
-        { 'X-Share-Code': made.code },
-      );
-      const rename = (title: string) =>
-        call(`/items/${item.id}`, { method: 'PATCH', auth: ada.auth, body: { title } });
+      const { webhook } = await addWebhook(ed.auth, item.id, {}, { 'X-Share-Code': made.code });
+      const rename = (text: string) => sendThrough(item.id, webhook.id, text);
       await rename('One');
       expect(await run()).toMatchObject({ delivered: 1 });
       h.db.sql.prepare(change).run();
@@ -396,7 +380,11 @@ describe('what is checked before sending', () => {
     });
     expect(asked).toEqual(['hooks.example.com', 'hooks.example.com', 'hooks.example.com']);
     expect(sent).toHaveLength(2);
-    expect(states()).toEqual(['renamed:delivered:1', 'renamed:delivered:1', 'renamed:failed:1']);
+    expect(states()).toEqual([
+      'automation:delivered:1',
+      'automation:delivered:1',
+      'automation:failed:1',
+    ]);
     expect(deliveries()[2]).toMatchObject({ error: 'private_address' });
   });
 
@@ -463,7 +451,7 @@ describe('a run', () => {
     h.db.sql.prepare('UPDATE webhooks SET paused_at = 1 WHERE id = ?').run(webhook.id);
     expect(await run()).toEqual({ delivered: 0, failed: 0, retrying: 0, nextAt: null });
     expect(sent).toEqual([]);
-    expect(states()).toEqual(['renamed:pending:0']);
+    expect(states()).toEqual(['automation:pending:0']);
     // Another webhook's row waits behind it in the due index: it alone schedules the next run.
     const bo = await personWithHook('user_wb4');
     await bo.bump();
@@ -528,7 +516,7 @@ describe('the dispatcher', () => {
     clock += RETRY_DELAYS_MS[0]!;
     await state.storage.setAlarm(0);
     await dispatcher.alarm();
-    expect(states()).toEqual(['renamed:delivered:2']);
+    expect(states()).toEqual(['automation:delivered:2']);
     // Nothing left: no alarm set again.
     expect(state.alarm).toBe(0);
     expect(dispatcher.deps.personTeams).toBeTypeOf('function');

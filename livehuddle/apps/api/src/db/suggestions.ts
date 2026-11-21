@@ -64,3 +64,13 @@ export async function deleteSuggestion(
     .first<{ id: string }>();
   return row !== null;
 }
+
+/** Every note in every box of the Space (Clear the Suggestion Box, a rule's step); how many went. */
+export async function clearSuggestions(env: DocumentEnv, documentId: string): Promise<number> {
+  const { results } = await env.DOCUMENT_DB.prepare(
+    'DELETE FROM suggestions WHERE document_id = ? RETURNING id',
+  )
+    .bind(documentId)
+    .all<{ id: string }>();
+  return results.length;
+}

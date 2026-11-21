@@ -4,7 +4,8 @@
 //   PUT   /api/designs/<id>/components/<componentId>   make (or replace) one main
 //   PATCH /api/designs/<id>/components/<componentId>   change one main, element by element
 // Writes need an edit grant (a tab-scoped Editor too, on a main no other tab draws); API tokens may write here, as
-// agents patch mains. Each stored write is announced to the room as a `component` system op.
+// agents patch mains. Each stored write is announced to the room as a `component` system op, and queued for the
+// design's rules that hear Component Changed (design-room/automations/component-events.ts).
 
 import {
   applyComponentPatch,
@@ -28,6 +29,8 @@ import {
 } from '../db/components';
 import { badRequest, conflict, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { relayComponent } from '../room-client';
+import { queueComponentChanged } from '../design-room/automations/component-events';
+import { authorOf } from './changesets';
 import {
   COMMUNITY_CONTENT,
   gateEdit,
@@ -136,6 +139,12 @@ async function answerStored(
   main: DesignComponent,
 ): Promise<Response> {
   await touchDesignSaved(ctx.env, w.designId, Date.now());
+  // Component Changed, and Agent Made Changes for a token's write (docs/specs/013-workspace/automations.md).
+  await queueComponentChanged(ctx.env, {
+    main,
+    author: () => authorOf(ctx, w.owner),
+    token: ctx.token ? { name: ctx.token.name ?? null } : null,
+  });
   const tabIds = await componentTabIds(ctx.env, main.id);
   // Comment author ids never reach the room (as opForTheWire strips them from every other op).
   const wire = { ...main, elements: redactCommentAuthorIds(main.elements, null) };

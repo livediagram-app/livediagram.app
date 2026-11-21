@@ -66,12 +66,69 @@ const LIVE_DOC = {
 const BOX = { id: 'b1', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 40 };
 const TAB_2 = { id: 't2', name: 'Tab 2', rev: 3, elements: [BOX] };
 const MAIN = { id: 'card', name: 'Card', width: 100, height: 40, updatedAt: 1, elements: [BOX] };
+// A time rule that paused and needs attention, an Incoming Webhook rule, and a run, for the rule tools
+// (docs/specs/013-workspace/automations.md "Agents").
+const BY = { id: 'u1', name: 'Ana', color: '#000' };
+const RULE = {
+  id: 'r1',
+  name: 'Friday snapshot',
+  enabled: false,
+  trigger: { kind: 'scheduled', every: 'week', days: [5], at: '17:00' },
+  conditions: [],
+  steps: [{ kind: 'take_snapshot', name: 'Week of {{now.date}}' }],
+  chain: false,
+  timeZone: 'UTC',
+  paused: { reason: 'Failed 10 times in a row', at: 1 },
+  made: { by: BY, at: 1 },
+  edited: { by: BY, at: 2, ai: true },
+  stats: { lastRunAt: 1, nextAt: 3, runsThisWeek: 2, failuresInARow: 10 },
+  needs: ['Tab t9 is gone'],
+  attention: [{ kind: 'tab', id: 't9' }],
+};
+const HOOK_RULE = {
+  ...RULE,
+  id: 'r2',
+  name: 'From the shop',
+  enabled: true,
+  trigger: { kind: 'incoming_webhook' },
+  paused: undefined,
+  needs: [],
+  attention: [],
+  hook: { url: 'https://api.example/hooks/r2', secret: null },
+};
+const RULE_RUN = {
+  id: 'run1',
+  ruleId: 'r1',
+  ruleName: 'Friday snapshot',
+  at: 1,
+  result: 'failed',
+  reason: 'The tab is gone',
+  tookMs: 3,
+  subject: { id: 't1', title: 'Tab 1' },
+  steps: [
+    { kind: 'trigger', text: 'Friday at 17:00' },
+    { kind: 'action', ok: false, text: 'Took no snapshot' },
+  ],
+};
 // A plausible api with non-empty lists, so the array item schemas are exercised.
 async function api(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname.replace(/^\/api/, '');
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
+  if (path.includes('/automations')) {
+    if (path.endsWith('/runs')) return json({ runs: [RULE_RUN] });
+    if (path.endsWith('/test') || path.endsWith('/run')) return json({ run: RULE_RUN });
+    if (request.method === 'GET')
+      return json({
+        rules: [RULE, HOOK_RULE],
+        runsToday: 1,
+        runsPerDay: 1000,
+        tabs: [{ id: 't1', name: 'Tab 1' }],
+        people: [{ id: 'u1', name: 'Ana' }],
+      });
+    return json({ rule: RULE });
+  }
   // A design view: text with the tab revision as its ETag, as the api answers it.
   if (url.searchParams.has('view')) {
     return new Response('tab t1 "Tab 1" · 0 elements · rev 3', { headers: { ETag: 'W/"3"' } });
@@ -243,6 +300,34 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     tool: 'change_threads',
     output: 'changeThreadsOutput',
     args: { designId: 'd1', changes: [{ op: 'resolve', ref: 'e1' }] },
+  },
+  { tool: 'list_rules', output: 'listRulesOutput', args: { designId: 'd1' } },
+  {
+    tool: 'list_rules',
+    output: 'listRulesOutput',
+    args: { designId: 'd1', rule: 'Friday snapshot', runs: true, limit: 5 },
+  },
+  {
+    tool: 'change_rules',
+    output: 'changeRulesOutput',
+    args: {
+      designId: 'd1',
+      changes: [
+        { op: 'add', rule: { name: 'New', trigger: { kind: 'manual' } } },
+        { op: 'set', rule: 'r1', steps: [] },
+        { op: 'off', rule: 'r1' },
+        { op: 'on', rule: 'r1' },
+        { op: 'duplicate', rule: 'r1' },
+        { op: 'test', rule: 'r1', tab: 'Tab 1' },
+        { op: 'run', rule: 'From the shop' },
+        { op: 'delete', rule: 'r1' },
+      ],
+    },
+  },
+  {
+    tool: 'change_rules',
+    output: 'changeRulesOutput',
+    args: { designId: 'd1', changes: [{ op: 'off', rule: 'r1' }] },
   },
   { tool: 'view_tab', output: 'viewTabOutput', args: { designId: 'd1' } },
   { tool: 'view_live', output: 'viewLiveOutput', args: { designId: 'd1' } },

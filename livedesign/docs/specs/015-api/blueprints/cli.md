@@ -512,7 +512,7 @@ Resources
   presence        set, clear
   wait, watch     block until, or stream, comments and changes
   pull, push      one design to a file and back; export --all
-  template, icon, schema, guide, skill, api, auth, telemetry
+  rule, template, icon, schema, guide, skill, api, auth, telemetry
 
 Addressing
   <doc>     name, id prefix or livedesign URL     "Auth flow", 3f9c

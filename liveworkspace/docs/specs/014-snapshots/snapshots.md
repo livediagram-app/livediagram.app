@@ -6,10 +6,12 @@ Status: built (Work Tracker 948)
 
 A **snapshot** is a save point for a whole item: a plan, a livediagram document, a livedocuments document, a design or
 a Space. Anyone who can edit the whole item takes one by hand, names it if they like, and can later **revert** the
-item to it. A revert puts the item back for everyone with it open.
+item to it. A revert puts the item back for everyone with it open. An item's
+[automation rules](../018-automations/automations.md) can take one and revert to one too
+([Taken and reverted by a rule](#taken-and-reverted-by-a-rule)).
 
-Snapshots are manual save points, not an activity log: nothing is taken on a schedule, no edit is recorded one by one,
-and nothing is kept beyond the latest five. They replace the hourly snapshots, the operation log and the Free and Pro
+Snapshots are save points, not an activity log: nothing is taken unless a person or one of the item's rules asks, no
+edit is recorded one by one, and nothing is kept beyond the latest five and the few a rule names. They replace the hourly snapshots, the operation log and the Free and Pro
 retention ideas (the owner's direction, 2026-11-15). They cost nothing extra and have no paid tier, like every other
 feature.
 
@@ -28,8 +30,9 @@ tab ("Save points of one part of an item" below).
 - A **name**: what the person typed, trimmed, at most 80 characters, or none. The list shows a snapshot without a
   name by its time.
 - **When** it was taken and **who** took it (their name and colour as the item shows them; their id is kept only to
-  say "You").
-- Its **kind**: `manual` (Take Snapshot) or `before-revert` (the automatic one a revert takes first).
+  say "You"). One a rule took is by the rule: its name, under the id `automation`, in violet (`#7c3aed`).
+- Its **kind**: `manual` (Take Snapshot, a person's or a rule's step) or `before-revert` (the automatic one a revert
+  takes first).
 - Its **size** in bytes.
 
 ## Only the latest five
@@ -37,6 +40,25 @@ tab ("Save points of one part of an item" below).
 An item keeps at most **five** snapshots, manual and automatic alike. Taking a sixth removes the oldest in the same
 transaction. The dialog says so ("The latest 5 are kept") and, with five already kept, names the one the next snapshot
 will remove.
+
+### Kept by a rule
+
+A snapshot that one of the item's rules names in a **Revert to Snapshot** step
+([automations.md](../018-automations/automations.md#revert-to-snapshot)) is **kept**, while any rule (on or off)
+names it:
+
+- It **does not count toward the latest five** and is **never removed to make room**: a take, a rule's take and a
+  revert's safety snapshot remove the oldest snapshot no rule names, and "the one the next snapshot will remove" is
+  that one.
+- History marks it **Kept by a Rule** (a badge in the look of `Before revert`, which says on hover and focus: "A rule
+  reverts to this snapshot. Change or delete the rule to let it go.") and offers **no Delete**. The route refuses a
+  delete too (409 `snapshot_kept`). Revert stays.
+- **Letting it go** is the rule's doing: deleting the rule, or picking another snapshot in it, puts the snapshot back
+  among the five. Nothing is removed at that moment; the next take keeps the newest five and removes any older.
+- **At most 5** snapshots are kept this way in an item. Automations refuses a rule that would name a sixth (409
+  `automation_snapshots_full`), so an item holds ten snapshots at most.
+- Which snapshots are kept is the rules' to say, never stored with the snapshot: the app's door reads the ids its
+  rules name, on each request.
 
 ## Where they live
 
@@ -46,8 +68,8 @@ In the item's own Durable Object SQLite, beside its content, never in R2 or D1. 
 - `snapshot_chunks`: its file text in order, cut into pieces small enough that no row nears the Durable Object's 2 MB
   row limit, however the text encodes.
 
-A snapshot larger than **32 MiB** is refused before anything is written ("too large to snapshot"), so five of them
-stay well under the object's storage. Deleting the item deletes its snapshots with it, as its object goes.
+A snapshot larger than **32 MiB** is refused before anything is written ("too large to snapshot"), so the five and
+the five a rule may keep stay well under the object's storage. Deleting the item deletes its snapshots with it, as its object goes.
 
 ### Save points of one part of an item
 
@@ -105,6 +127,19 @@ Revert replaces the item's content in place with the snapshot's. Its steps, in o
 
 A revert is undone by reverting to its `before-revert` snapshot.
 
+## Taken and reverted by a rule
+
+An item's [automation rules](../018-automations/automations.md#steps-every-app-has) use the same store and the same
+revert, inside the item's object, with no request of their own:
+
+- **Take Snapshot** (a step) takes one of the whole item: kind `manual`, named by the rule (its values filled in),
+  its author the rule. It is an ordinary snapshot, one of the five, and removes the oldest as any take does.
+- **Revert to Snapshot** (a step) runs the revert above, every step of it: the target read first, the safety snapshot
+  never skipped (its author the rule), the content replaced, the generation advanced, every open editor reloaded. A
+  snapshot that is gone or unreadable, or a safety snapshot that can't be taken, fails the run and changes nothing.
+- A rule acts as an Editor of the whole item whoever started it, so the share roles below are about people's
+  requests. An API token still can't take or revert, and can't save a rule that reverts.
+
 ## No stale writes after a revert
 
 A revert must reach every open client cleanly, with nothing an editor held from before landing after it. Three things
@@ -156,7 +191,7 @@ On the timeline:
   line under it says which snapshot the next one removes.
 - Each snapshot is an entry on the rail among the item's events, newest first, under its day. It is pinned: a camera
   on the brand's wash in place of the event's disc, a small "Snapshot" label over it, then the same row as below
-  (name or time, who took it, how long ago, its size, the `Before revert` badge), with **Revert** (asked first, in the shared confirm popover beside it) and **Delete** (at once, no
+  (name or time, who took it, how long ago, its size, the `Before revert` and `Kept by a Rule` badges), with **Revert** (asked first, in the shared confirm popover beside it) and **Delete** (at once, no
   question; owner, 2026-11-17). A day's heading counts its snapshots beside its events ("4 events · 1 snapshot").
 - History has no filter (owner, 2026-11-17): every event and snapshot shows, newest first. Its summary is four
   tiles: Created, Last Changed and Events, each a glyph on a soft tinted disc with the value over its name, and
@@ -170,7 +205,9 @@ On their own (no timeline), the same parts in a list:
 
 - The take row, as above.
 - The snapshots, newest first. Each row: its name (or its time), then who took it, how long ago and its size; a
-  `Before revert` badge on an automatic one (on a phone the badge takes its own line under the name). Two actions: **Revert** and **Delete** (a bin, named "Delete snapshot").
+  `Before revert` badge on an automatic one and a `Kept by a Rule` badge on one a rule names (on a phone the badges
+  take their own line under the name). Two actions: **Revert** and **Delete** (a bin, named "Delete snapshot"); one
+  kept by a rule has Revert alone.
 - **Delete** goes at once, its bin spinning while it runs (owner, 2026-11-17: no question). **Revert** asks first in
   the shared confirm popover beside its button: "Revert to this snapshot?" over "Everyone's work since then is
   replaced. A snapshot of the <item> as it is now is taken first, so you can undo this.", with **Cancel** and
@@ -191,10 +228,11 @@ Under each app's item route (`/api/projects/<id>`, `/api/documents/<id>`, `/api/
 | ---------------------------------------- | ----------------------------------- | ------------------------------------------------------- |
 | `GET    …/snapshots`                     | Lists them, newest first, no bodies | 200 `{ snapshots, kept }`                               |
 | `POST   …/snapshots` `{ name? }`         | Takes one of the item now           | 201 `{ snapshot }`, 413 `snapshot_too_large`            |
-| `DELETE …/snapshots/<snapshotId>`        | Deletes one                         | 204, 404                                                |
+| `DELETE …/snapshots/<snapshotId>`        | Deletes one                         | 204, 404, 409 `snapshot_kept`                           |
 | `POST   …/snapshots/<snapshotId>/revert` | Reverts to one (steps above)        | 200 `{ reverted }`, 404, 413, 422 `snapshot_unreadable` |
 
-Each refuses a token (403) and answers 404 to anyone else who may not use snapshots.
+Each refuses a token (403) and answers 404 to anyone else who may not use snapshots. In the list each snapshot
+carries `kept: true | false` (a rule names it); the list's own `kept` is the five.
 
 ## Telemetry
 
@@ -206,14 +244,16 @@ Reverted against Created to see whether people come back to what they keep.
 ## Built once
 
 Everything the apps share lives in `@liveworkspace/snapshots` (packages/snapshots): the store with its five-snapshot
-cap, chunking and size check, the routes, the revert's order, the generation fence on both sides, and the editor's
+cap, chunking and size check, the routes, the revert's order (`revertToSnapshot`, which the route and a rule's step
+both call), the kept snapshots, the generation fence on both sides, and the editor's
 parts (Take Snapshot, the row, the list on its own, the pins History lays on its timeline) and their state. Each app adds a thin door: how it exports its file, how it replaces its content from
-one, its gate, and handing `useHistorySnapshotsHost()` to the History host it already mounts. The tab replacement every app shares is `replaceTabs` in
+one, its gate, the ids its rules keep, and handing `useHistorySnapshotsHost()` to the History host it already mounts. The tab replacement every app shares is `replaceTabs` in
 `@liveworkspace/index-app` (item-tab-writes.ts), beside the other tab writes.
 
 ## Not in scope
 
-- Automatic or scheduled snapshots, an operation log, per-edit history, retention tiers.
+- An operation log, per-edit history, retention tiers. (A snapshot on a schedule is a rule: Scheduled, then Take
+  Snapshot.)
 - Restoring a snapshot as a copy (Make a Copy already copies the item as it is).
 - Snapshots of an item kept Offline.
-- Agent access: no MCP tool or CLI verb takes or reverts a snapshot.
+- Agent access: no MCP tool or CLI verb takes or reverts a snapshot, or saves a rule that reverts to one.

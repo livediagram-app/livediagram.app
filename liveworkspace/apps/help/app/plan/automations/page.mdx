@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Automations',
   description:
-    'How to make automation rules: triggers, conditions, actions, Slack and webhook posts, AI actions, rules drafted from your words, the Audit Trail and the CLI.',
+    'How to make automation rules: triggers, conditions, actions, Slack and Teams connections, AI actions, rules drafted from words, the Audit Trail and the CLI.',
   path: '/help/plan/automations/',
 });
 
@@ -22,11 +22,12 @@ An **automation rule** does the small step that always follows the same event: a
 
 Press **Tools** in the footer, then **Automations…** under **Automate**. It is there for an Editor of the whole plan. A badge at the row's end counts the rules that are on, and turns amber when a rule has paused itself (below); the **Tools** button then shows an amber dot too, so you see it with the menu shut.
 
-The screen has three tabs:
+The screen has four tabs:
 
 - **Rules**: every rule in the plan, each with its switch, its name, what it does in a sentence ("When Card Moved to Done then Set Completed On"), when it **Last Run** and how many runs it made **This Week**. A rule on a time also says when it runs next ("Next: Mon 9:00"). Find one by name, or narrow the list by trigger or by **On and Off**. A row's **⋯** menu holds **Edit**, **Duplicate**, **Audit Trail** and **Delete**.
 - **Audit Trail**: what each rule did, newest first, kept for 30 days or the last 2,000 runs (and, apart from them, the last 500 No Match runs, when a rule's conditions didn't hold). Open a run to see its steps: who did what, each condition and what it found, and each action, with **Open Card**. A For Related Cards step says how many cards it ran on, each card's own steps beneath it, headed by its number.
 - **Templates**: ready-made rules (below).
+- **Connections**: the Slack and Microsoft Teams channels and your own services that rules post to ([below](#post-to-slack-teams-or-your-own-service)).
 
 At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs a day have been used. A No Match costs nothing, and **Last Run** and **This Week** leave No Matches out too.
 
@@ -34,15 +35,15 @@ At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs
 
 The **Templates** tab, and the empty Rules list, show ready-made rules: **Stamp the Finish Date**, **Assign on Start**, **Overdue Nudge**, **Share Out Form Responses**, **Post Shipped Work to Slack**, **Triage New Bugs**, **Unblock the Next Card**, **Due Soon Reminder**, **Clean Up Done**, **Escalate Urgent Work**, **Reopen on New Comment**, **Route Reviews**, **Give It a Due Date**, **Flag Blocked Cards**, **Verify the Fix**, **Back to the Backlog**, **Close the Parent**, **Tell Them It’s Unblocked**, **Nudge Stuck Cards**, **Done When Feedback Is Resolved**, **Flag Cards Due Soon**, **Done When the Checklist Is Complete**, two that use AI: **Sort Incoming Cards** and **Summarise Form Requests**, and six for GitHub pull requests ([Connect GitHub](/help/plan/connect-github/)). The chips above them (**Status**, **Assigning**, **Due Dates**, **Forms**, **Telling People**, **AI**, and **GitHub** where it is set up) narrow the list. Hover a template to watch it at work on a small board.
 
-Pick one and it opens in the builder, filled in from your plan: its done columns, its In Progress and Review columns, a date field named like Completed On, a Bug card type. Whatever your plan doesn't have, or the rule leaves to you (a label, the people in turn, a Slack channel), is marked on its step ("Pick a label", "Pick a webhook") until you pick it. Nothing is saved, and the rule stays off, until you press **Save Rule**. **New Rule** offers **Start From a Template** too.
+Pick one and it opens in the builder, filled in from your plan: its done columns, its In Progress and Review columns, a date field named like Completed On, a Bug card type. Whatever your plan doesn't have, or the rule leaves to you (a label, the people in turn, a Slack channel), is marked on its step ("Pick a label") until you pick it. Nothing is saved, and the rule stays off, until you press **Save Rule**. **New Rule** offers **Start From a Template** too.
 
 ## Describe a Rule
 
 Press **New Rule**, then **Describe a Rule** (or **Describe a Rule** under an empty Rules list), and say in your own words when the rule should run and what it should do: "When a card moves to Done, set Completed On to today and remove the blocked label". The examples under the box fill it in for you. Press **Draft Rule**, or Ctrl or ⌘ Enter.
 
-A few seconds later the rule opens in the builder, filled in from your plan, with **Drafted by AI** above its steps. It is not saved and it is off: check each step, try it with **Test on a Card**, then press **Save Rule**. Anything your plan doesn't have (a person it can't find, say) is marked on its step, and a Slack, Teams or webhook post waits for you to pick the webhook. If the request isn't a rule for this plan, or no rule could be made from it, the dialog says so and keeps your words to change.
+A few seconds later the rule opens in the builder, filled in from your plan, with **Drafted by AI** above its steps. It is not saved and it is off: check each step, try it with **Test on a Card**, then press **Save Rule**. Anything your plan doesn't have (a person it can't find, say) is marked on its step, and a Slack, Teams or Send to Webhook step waits for you to pick its connection. If the request isn't a rule for this plan, or no rule could be made from it, the dialog says so and keeps your words to change.
 
-Describing a rule uses AI: each ask counts toward the plan's 100 AI steps a day (a draft that needs a second try asks twice), and a plan drafts up to 20 rules a day. Only your words and the names of your plan's columns, card types, fields and labels are sent, never a person, a card's text or a webhook. Whatever it answers, nothing is saved or turned on until you save the rule.
+Describing a rule uses AI: each ask counts toward the plan's 100 AI steps a day (a draft that needs a second try asks twice), and a plan drafts up to 20 rules a day. Only your words and the names of your plan's columns, card types, fields and labels are sent, never a person, a card's text or a connection. Whatever it answers, nothing is saved or turned on until you save the rule.
 
 ## Make a Rule
 
@@ -78,9 +79,11 @@ At its time, the rule runs once for each card its conditions match: "Every Weekd
 
 A **For Related Cards** step runs its own steps on each of the card's related cards: its **Linked Cards** (through one Card field, or any), the cards it is **Blocked By**, the **Cards It Blocks**, its **Child Cards**, or the **Cards Matching a Saved Filter** of one of your boards. It shows as a card, "For each Blocked By Card", with its own conditions and up to 10 actions beneath it, each added with its own **+ Add Condition** and **+ Add Action**. It runs on up to 100 related cards. Inside it, the card values are the related card's, and **Trigger Title**, **Trigger Number** and **Trigger Link** are the card that started the rule.
 
-### Post to Slack, Teams or a Webhook
+### Post to Slack, Teams or Your Own Service
 
-**Post to Slack**, **Post to Microsoft Teams** and **Send to Webhook** send a message through one of the plan's [webhooks](/help/explorer/explorer-page/). Pick the webhook by name, or press **Add a Webhook…** to make one; then write the message, with values and a **Preview**. Picking a webhook needs you signed in, since webhooks belong to an account. A rule holds up to 5 of these steps. **Test on a Card** sends nothing and shows the message it would post.
+**Post to Slack**, **Post to Microsoft Teams** and **Send to Webhook** send a message through one of the plan's **connections**. Pick the connection by name, or press **Add a Connection…**, which opens the **Connections** tab with your rule kept as you left it and **Back to Rule** to return; then write the message, with values and a **Preview**. Picking a connection needs you signed in, since connections are added by an account.
+
+On the **Connections** tab, **Add Connection** asks **Where Should It Post?** (**Slack**, **Microsoft Teams** or **Your Own Service**, which receives signed JSON) and the address, with how to get a Slack Webhook URL or a Teams Workflow URL, then a name. A connection sends only what a rule tells it to. Each has **Send Test**, **Pause Connection**, **Delete Connection** and its **Recent Deliveries**, and a plan holds up to 10. For your own service, the signing secret is shown once when you add it: each delivery carries `X-Liveworkspace-Signature: v1=<hex>`, an HMAC-SHA256 of `<timestamp>.<body>` keyed with it, with the time in `X-Liveworkspace-Timestamp`. A rule holds up to 5 of these steps. **Test on a Card** sends nothing and shows the message it would post.
 
 ### AI Actions
 
@@ -121,20 +124,24 @@ curl -X POST 'https://www.liveplanner.app/api/hooks/automations/<plan>/<rule>' \
   -d '{"cards": [12, 14], "build": {"status": "green"}}'
 ```
 
-With a signature, an HMAC-SHA256 of the exact body keyed with the secret, so the secret itself never travels:
+With a signature, so the secret itself never travels. Put the Unix time in seconds in `X-Liveworkspace-Timestamp`, and in `X-Liveplanner-Signature` put `sha256=` and the HMAC-SHA256, keyed with the secret, of exactly this string: the timestamp, a full stop, then the body as sent (`<timestamp>.<body>`):
 
 ```bash
 BODY='{"cards": [12, 14], "build": {"status": "green"}}'
-SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/^.* //')
+TS=$(date +%s)
+SIG=$(printf '%s.%s' "$TS" "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/^.* //')
 curl -X POST 'https://www.liveplanner.app/api/hooks/automations/<plan>/<rule>' \
+  -H "X-Liveworkspace-Timestamp: $TS" \
   -H "X-Liveplanner-Signature: sha256=$SIG" \
   -H 'Content-Type: application/json' \
   -d "$BODY"
 ```
 
+A signed call is refused if its timestamp is more than five minutes away from now, either way, or if the same signed call already reached the rule in the last ten minutes, so a call someone copies can't be sent again. Make a fresh timestamp and signature for each call. A call answered `429` or `400` wasn't taken, so it can be sent again as it is.
+
 The rule runs on each card the body names by number in `cards` (up to 10). With no cards named, it runs once with no card, which suits a rule that only makes a card or posts a message; a rule whose steps change a card is skipped instead. Anything else in the body is yours to use: in Insert a Value, **Webhook Field…** takes a path such as `build.status` and fills it in as plain text, up to 5 names deep and 500 characters. The runs are by **Automation**, and Who Did It reads "Incoming webhook".
 
-The tool hears back `202` with how many runs were queued. A wrong or old secret, or a rule that is off or deleted, all answer `401`; a call not sent as JSON (`Content-Type: application/json`) `415`; a body that isn't a JSON object, or a `cards` that isn't a list of card numbers, `400`; one over 16 KB `413`; more than 60 calls a minute, or a plan past its runs for the day, `429` with when to try again. **Regenerate** makes a new secret and stops the old one at once; turning the rule off or deleting it stops calls too. Only an Editor of the whole plan, signed in, makes or regenerates the secret.
+The tool hears back `202` with how many runs were queued. A wrong or old secret, a missing or stale timestamp, a call sent twice, or a rule that is off or deleted, all answer `401`; a call not sent as JSON (`Content-Type: application/json`) `415`; a body that isn't a JSON object, or a `cards` that isn't a list of card numbers, `400`; one over 16 KB `413`; more than 60 calls a minute, or a plan past its runs for the day, `429` with when to try again. **Regenerate** makes a new secret and stops the old one at once; turning the rule off or deleting it stops calls too. Only an Editor of the whole plan, signed in, makes or regenerates the secret.
 
 ## Start a Rule from an Email
 
@@ -178,7 +185,7 @@ A rule's changes don't set off other rules, so two rules can never keep changing
 - A plan makes up to 1,000 runs a day (UTC), counted as each run starts, so runs that start together never pass it; past that, what would start a rule is let go and rules run again the next day. A No Match doesn't count. A rule with a **Wait** is two runs, one up to the Wait and one after it, as the Audit Trail shows them.
 - One move runs **Card Unblocked** or **Related Cards Done** on up to 100 cards, the first by their number; past that the Audit Trail says "Ran on 100 of 340 cards: at most 100 a move" and the rest are left out. A time trigger runs on up to 100 cards a time. Past that, **Overdue** and **Card Stuck** reach the rest at their next times; **Scheduled** and **Due In** leave the rest out, and the Audit Trail says so.
 - A rule holds up to 3 AI actions, and a plan makes up to 100 AI steps a day, rules and Describe a Rule together, even when they ask at once; past that, AI steps are skipped until the next day.
-- A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a webhook stopped it, **Fix Webhook** opens the plan's webhooks.
+- A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a paused connection stopped it, **Fix Connection** opens the plan's connections.
 - A rule that names something the plan no longer has (a column, a card type, a field, a person, a saved filter, a Form tab, or the card a **Link Cards** step points at, deleted or in the Trash) says **Needs Attention** and what is missing, in words: "Needs Attention: A column is gone · Someone is gone". Its steps say the same ("Move to a column no longer here", "Assign Someone No Longer Here"). A condition naming one doesn't hold, and an action that reaches one fails its run, saying what is gone. Open the step and pick again.
 - A rule with a GitHub trigger on a plan that isn't connected to GitHub (or no longer is) hears nothing, so it says **Needs Attention: GitHub isn't connected**, with **Connect GitHub** after it. Connect the plan and the line goes. A rule whose repositories have all left the plan's connection says so ("acme/old-site isn't heard any more"), with **Manage Repositories** after it, which opens the plan's GitHub repositories.
 - A plan that is [archived](/help/explorer/explorer-page/#archived) or in the [Trash](/help/account-and-data/trash/) runs no rules: no rule on a time reaches its time, no **Wait** goes on, its repeating cards make no copies, and calls from another tool or GitHub start nothing. Its rules and their Audit Trail are kept. When it comes back, a rule on a time whose time passed meanwhile runs once, for the latest time it missed, and only when that was at most a day ago; a run held by a Wait whose time came meanwhile goes on at once if that was at most a day ago, and is skipped otherwise.

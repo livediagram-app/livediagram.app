@@ -1,13 +1,12 @@
-// The Automations routes as the editor calls them (docs/specs/026-plan/automations.md, blueprint automations.md
-// "Routes"): the plan's rules, their runs, Test on a Card and Run Rule, typed with @liveplanner/api-schema. A plan in
-// Offline never calls them (its footer shows no button). A refusal the api names (`automation_*`, with the
-// `path` of the step at fault) throws AutomationRefusal, an answer the builder shows rather than an error to report.
+// liveplanner's Automations routes (docs/specs/026-plan/automations.md, blueprint automations.md "Routes"): the
+// platform's client (@liveworkspace/automations-ui/automations-client) over this editor's fetch, headers and
+// `/api/projects/:id/automations`, typed with @liveplanner/api-schema. A plan in Offline never calls them (its
+// footer opens the gate). A refusal the api names (`automation_*`, with the `path` of the step at fault) throws
+// AutomationRefusal, an answer the builder shows rather than an error to report.
 
 import {
   AUTOMATION_ERRORS,
-  type AutomationError,
   type AutomationDraftResponse,
-  type AutomationErrorBody,
   type AutomationRuleBody,
   type AutomationRuleResponse,
   type AutomationRunResponse,
@@ -17,144 +16,66 @@ import {
   type AutomationSummaryResponse,
   type AutomationsListResponse,
 } from '@liveplanner/api-schema';
+import {
+  AutomationRefusal,
+  createAutomationsClient,
+} from '@liveworkspace/automations-ui/automations-client';
+import type { AutomationsScope } from '@liveworkspace/automations-ui/kit';
 import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from '@/lib/api/core';
 
-// Who is asking, about which plan: the items scope's parts (a share link's code rides along).
-export type AutomationsScope = { ownerId: string; projectId: string; shareCode: string | null };
+export { AutomationRefusal };
+// Who is asking, about which plan: the items scope's parts (a share link's code rides along). `itemId` is the
+// project's id.
+export type { AutomationsScope };
 
-export class AutomationRefusal extends Error {
-  readonly status: number;
-  readonly code: AutomationError;
-  readonly path: string | null;
-  constructor(status: number, body: AutomationErrorBody) {
-    super(body.message ?? body.error);
-    this.name = 'AutomationRefusal';
-    this.status = status;
-    this.code = body.error;
-    this.path = body.path ?? null;
-  }
-}
-
-const isAutomationError = (v: unknown): v is AutomationError =>
-  typeof v === 'string' && (AUTOMATION_ERRORS as readonly string[]).includes(v);
-
-async function refusalOf(res: Response): Promise<AutomationRefusal | null> {
-  try {
-    const body = (await res.clone().json()) as Partial<AutomationErrorBody>;
-    if (!isAutomationError(body.error)) return null;
-    return new AutomationRefusal(res.status, {
-      error: body.error,
-      ...(typeof body.path === 'string' ? { path: body.path } : {}),
-      ...(typeof body.message === 'string' ? { message: body.message } : {}),
-    });
-  } catch {
-    return null;
-  }
-}
-
-function url(scope: AutomationsScope, rest = '', query = ''): string {
-  return `${API_BASE}/projects/${encodeURIComponent(scope.projectId)}/automations${rest}${query}`;
-}
-
-async function call<T>(
-  scope: AutomationsScope,
-  rest: string,
-  action: string,
-  init: { method?: string; body?: unknown; query?: string } = {},
-): Promise<T> {
-  const res = await apiFetch(url(scope, rest, init.query), {
-    method: init.method ?? 'GET',
-    headers: await apiHeaders(scope.ownerId, {
-      share: scope.shareCode,
-      body: init.body !== undefined,
-    }),
-    ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
-  });
-  if (!res.ok) {
-    const refusal = await refusalOf(res);
-    if (refusal) throw refusal;
-  }
-  if (res.status === 204) {
-    await expectOkVoid(res, action);
-    return undefined as T;
-  }
-  return expectOk<T>(res, action);
-}
-
-const enc = encodeURIComponent;
+const client = createAutomationsClient({
+  url: (scope) => `${API_BASE}/projects/${encodeURIComponent(scope.itemId)}/automations`,
+  fetch: (url, init) => apiFetch(url, init),
+  headers: (scope, body) => apiHeaders(scope.ownerId, { share: scope.shareCode, body }),
+  expectOk,
+  expectOkVoid,
+  errors: AUTOMATION_ERRORS,
+  // A test and a run name their card as `item`.
+  subject: (item) => ({ item }),
+});
 
 export const listAutomations = (scope: AutomationsScope) =>
-  call<AutomationsListResponse>(scope, '', 'automations');
+  client.list(scope) as Promise<AutomationsListResponse>;
 
 export const createRule = (scope: AutomationsScope, rule: AutomationRuleBody) =>
-  call<AutomationRuleResponse>(scope, '', 'automation create', { method: 'POST', body: rule });
+  client.create(scope, rule) as Promise<AutomationRuleResponse>;
 
 export const updateRule = (scope: AutomationsScope, id: string, rule: AutomationRuleBody) =>
-  call<AutomationRuleResponse>(scope, `/${enc(id)}`, 'automation save', {
-    method: 'PUT',
-    body: rule,
-  });
+  client.update(scope, id, rule) as Promise<AutomationRuleResponse>;
 
 export const toggleRule = (scope: AutomationsScope, id: string, enabled: boolean) =>
-  call<AutomationRuleResponse>(scope, `/${enc(id)}/toggle`, 'automation toggle', {
-    method: 'POST',
-    body: { enabled },
-  });
+  client.toggle(scope, id, enabled) as Promise<AutomationRuleResponse>;
 
 export const duplicateRule = (scope: AutomationsScope, id: string) =>
-  call<AutomationRuleResponse>(scope, `/${enc(id)}/duplicate`, 'automation duplicate', {
-    method: 'POST',
-  });
+  client.duplicate(scope, id) as Promise<AutomationRuleResponse>;
 
-export const deleteRule = (scope: AutomationsScope, id: string) =>
-  call<void>(scope, `/${enc(id)}`, 'automation delete', { method: 'DELETE' });
+export const deleteRule = (scope: AutomationsScope, id: string) => client.remove(scope, id);
 
 export const testRule = (scope: AutomationsScope, rule: AutomationRuleBody, item: string) =>
-  call<AutomationRunResponse>(scope, '/test', 'automation test', {
-    method: 'POST',
-    body: { rule, item },
-  });
+  client.test(scope, rule, item) as Promise<AutomationRunResponse>;
 
 // Describe a Rule: the person's words drafted into a rule to open in the builder, unsaved and off.
 export const draftRule = (scope: AutomationsScope, prompt: string, timeZone: string) =>
-  call<AutomationDraftResponse>(scope, '/draft', 'automation draft', {
-    method: 'POST',
-    body: { prompt, timeZone },
-  });
+  client.draft(scope, prompt, timeZone) as Promise<AutomationDraftResponse>;
 
 export const runRule = (scope: AutomationsScope, id: string, item: string) =>
-  call<AutomationRunResponse>(scope, `/${enc(id)}/run`, 'automation run', {
-    method: 'POST',
-    body: { item },
-  });
+  client.run(scope, id, item) as Promise<AutomationRunResponse>;
 
-export function listRuns(scope: AutomationsScope, query: AutomationRunsQuery = {}) {
-  const params = new URLSearchParams();
-  if (query.rule) params.set('rule', query.rule);
-  if (query.result) params.set('result', query.result);
-  if (query.since !== undefined) params.set('since', String(query.since));
-  if (query.limit !== undefined) params.set('limit', String(query.limit));
-  const q = params.toString();
-  return call<AutomationRunsResponse>(scope, '/runs', 'automation runs', {
-    query: q ? `?${q}` : '',
-  });
-}
+export const listRuns = (scope: AutomationsScope, query: AutomationRunsQuery = {}) =>
+  client.runs(scope, query) as Promise<AutomationRunsResponse>;
 
 // Make Secret and Regenerate for an Incoming Webhook rule: the secret, in this answer only.
 export const makeHookSecret = (scope: AutomationsScope, id: string) =>
-  call<AutomationSecretResponse>(scope, `/${enc(id)}/secret`, 'automation secret', {
-    method: 'POST',
-  });
+  client.makeSecret(scope, id) as Promise<AutomationSecretResponse>;
 
 /** A rule as a reader sees it (spec "On cards"): by its id (a comment's mark) or its name (a history line's), on a tab
  *  link with its tab. A rule gone throws AutomationRefusal `automation_not_found`. */
-export function readRuleSummary(
+export const readRuleSummary = (
   scope: AutomationsScope & { tabId: string | null },
   ask: { ruleId?: string | undefined; name: string },
-): Promise<AutomationSummaryResponse> {
-  const query = new URLSearchParams(ask.ruleId ? { rule: ask.ruleId } : { name: ask.name });
-  if (scope.tabId) query.set('tabId', scope.tabId);
-  return call<AutomationSummaryResponse>(scope, '/summary', 'Read rule summary', {
-    query: `?${query.toString()}`,
-  });
-}
+) => client.summary(scope, ask) as Promise<AutomationSummaryResponse>;

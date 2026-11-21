@@ -1,13 +1,17 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "Time triggers", "For Related Cards", "Assign in turn" and "Outgoing actions":
 // each Phase 2 step's panel, from the time trigger's Every and At to a branch's related cards and its Trigger values.
+import './test-kit';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import { newRuleBody, type RulePart } from './rule-draft';
-import { StepPanel } from './StepPanel';
-import { PlanWebhooksProvider, type PlanWebhooks } from './plan-webhooks';
+import { StepPanel } from '@liveworkspace/automations-ui/StepPanel';
+import {
+  ItemConnectionsProvider,
+  type ItemConnections,
+} from '@liveworkspace/automations-ui/item-connections';
 import { freshTimeTrigger, withEvery } from './step-panels/TimeTriggerPanel';
 import { cardFields } from './step-panels/BranchPanel';
 import { outline, pickStep } from './test-fixtures';
@@ -24,7 +28,7 @@ function Panel({
   body: AutomationRuleBody;
   part: RulePart;
   o?: ReturnType<typeof outline>;
-  hooks?: PlanWebhooks;
+  hooks?: ItemConnections;
 }) {
   const [b, setB] = useState(body);
   const panel = (
@@ -37,12 +41,11 @@ function Panel({
       }}
       outline={o}
       faultPath={null}
-      person="Ana Costa"
       now={Date.UTC(2026, 10, 11)}
       timeZone="Europe/London"
     />
   );
-  return hooks ? <PlanWebhooksProvider value={hooks}>{panel}</PlanWebhooksProvider> : panel;
+  return hooks ? <ItemConnectionsProvider value={hooks}>{panel}</ItemConnectionsProvider> : panel;
 }
 const body = (over: Partial<AutomationRuleBody> = {}) => ({
   ...newRuleBody('Wrap Up', 'UTC'),
@@ -247,19 +250,19 @@ describe('For Related Cards', () => {
 });
 
 describe('an outgoing action', () => {
-  const hooks = (over: Partial<PlanWebhooks> = {}): PlanWebhooks => ({
+  const hooks = (over: Partial<ItemConnections> = {}): ItemConnections => ({
     status: 'ready',
-    webhooks: [
+    connections: [
       { id: 'w1', name: 'Launch Channel', kind: 'slack', pausedAt: null },
       { id: 'w4', name: 'Team Room', kind: 'teams', pausedAt: null },
     ] as never,
     load: vi.fn(),
     retry: vi.fn(),
-    openDialog: vi.fn(),
+    openTab: vi.fn(),
     ...over,
   });
 
-  it('switches between Webhook, Slack and Teams, keeping the message, and saves the webhook’s name', () => {
+  it('switches between Webhook, Slack and Teams, keeping the message, and saves the connection’s name', () => {
     const h = hooks();
     render(
       <Panel
@@ -277,12 +280,12 @@ describe('an outgoing action', () => {
       text: 'Shipped {{card.title}}',
       webhook: '',
     });
-    pick('Webhook', 'w4');
+    pick('Connection', 'w4');
     expect(latest.steps[0]).toMatchObject({ webhook: 'w4', name: 'Team Room' });
     expect(screen.getByText(/To Team Room/)).toBeTruthy();
   });
 
-  it('says a webhook it names is no longer here, and offers one when the plan has none of the kind', () => {
+  it('says a connection it names is no longer here, and offers one when the plan has none of the kind', () => {
     render(
       <Panel
         body={body({
@@ -293,7 +296,7 @@ describe('an outgoing action', () => {
       />,
     );
     expect(screen.getByRole('option', { name: /No Longer Here/ })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Add a Webhook…' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Add a Connection…' })).toBeTruthy();
   });
 
   it('says it is reading while the list loads', () => {
@@ -301,9 +304,9 @@ describe('an outgoing action', () => {
       <Panel
         body={body({ steps: [{ kind: 'notify', via: 'slack', webhook: '', text: 'x' }] })}
         part={{ part: 'step', index: 0 }}
-        hooks={hooks({ status: 'loading', webhooks: [] })}
+        hooks={hooks({ status: 'loading', connections: [] })}
       />,
     );
-    expect(screen.getByRole('option', { name: 'Loading webhooks…' })).toBeTruthy();
+    expect(screen.getByRole('option', { name: 'Loading connections…' })).toBeTruthy();
   });
 });

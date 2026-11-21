@@ -30,6 +30,7 @@ const GROUPED_ROWS = [
   },
 ] as const;
 const NAMED_ONLY = [
+  'rule',
   'template',
   'icon',
   'image',

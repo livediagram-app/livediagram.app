@@ -10,14 +10,12 @@
 
 import { fenceStaleWrite, requestGeneration, stampGeneration } from './fence';
 import { SNAPSHOTS_KEPT, SNAPSHOT_NAME_MAX } from './limits';
+import { keptIdsOf, revertToSnapshot, type RevertRefusal, type SnapshotDoor } from './revert';
 import {
-  advanceGeneration,
   deleteSnapshot,
   listSnapshots,
   readGeneration,
-  readSnapshotText,
   takeSnapshot,
-  getSnapshot,
   type SnapshotDb,
 } from './store';
 import type {
@@ -29,15 +27,7 @@ import type {
   SnapshotTakeResponse,
 } from './wire';
 
-/** What an app does for snapshots: its own export file, and its content replaced from one. */
-export type SnapshotDoor = {
-  /** The item as its export file now; null for an item never started. */
-  exportFile: () => Promise<string | null>;
-  /** The item's content replaced in place from a file this door exported. */
-  replaceContent: (text: string) => Promise<'ok' | 'invalid' | 'too_large'>;
-  /** After a revert: the room ends every session (the close code) and forgets its ledger. */
-  afterRevert?: (generation: number) => void;
-};
+export { beforeRevertName, type SnapshotDoor } from './revert';
 
 /** Who is asking, as the app's gate judged it (SN11). */
 export type SnapshotCaller = {
@@ -73,6 +63,7 @@ const MESSAGES: Record<SnapshotErrorCode, string> = {
   snapshot_too_large: 'This is too large to snapshot.',
   snapshot_unreadable: 'That snapshot can no longer be read.',
   snapshot_reverted: 'Someone reverted this to a snapshot. Reload to see it.',
+  snapshot_kept: 'A rule reverts to this snapshot. Change or delete the rule to let it go.',
   method_not_allowed: 'Method not allowed.',
 };
 
@@ -98,12 +89,6 @@ async function bodyName(request: Request): Promise<string | null> {
   } catch {
     return null;
   }
-}
-
-/** The automatic snapshot's name (SN12). */
-export function beforeRevertName(target: string | null): string {
-  const name = target ? `Before reverting to "${target}"` : 'Before reverting';
-  return [...name].slice(0, SNAPSHOT_NAME_MAX).join('');
 }
 
 /** SN18: the snapshot routes, the fence, the app's handlers, and the generation on every answer. */
@@ -160,14 +145,17 @@ export async function answerSnapshotRoute(opts: ServeSnapshots): Promise<Respons
     console.info('[snapshots] refused', { itemId, reason: 'role' });
     return refusal('not_found', 404);
   }
+  const door = opts.door();
+  // SN35: the snapshots the item's rules name, read once a request.
+  const keptIds = await keptIdsOf(door);
   if (route.kind === 'list') {
+    const named = new Set(keptIds);
     const body: SnapshotListResponse = {
-      snapshots: await listSnapshots(db, itemId),
+      snapshots: (await listSnapshots(db, itemId)).map((s) => ({ ...s, kept: named.has(s.id) })),
       kept: SNAPSHOTS_KEPT,
     };
     return json(body);
   }
-  const door = opts.door();
   if (route.kind === 'take') {
     const name = await bodyName(request);
     const text = await door.exportFile();
@@ -178,6 +166,7 @@ export async function answerSnapshotRoute(opts: ServeSnapshots): Promise<Respons
       name,
       kind: 'manual',
       author: caller.person,
+      keptIds,
     });
     if (!taken.ok) {
       console.warn('[snapshots] refused', { itemId, reason: 'too-large' });
@@ -193,58 +182,30 @@ export async function answerSnapshotRoute(opts: ServeSnapshots): Promise<Respons
     return json(body, 201);
   }
   if (route.kind === 'delete') {
+    if (keptIds.includes(route.id)) {
+      console.info('[snapshots] refused', { itemId, snapshotId: route.id, reason: 'kept' });
+      return refusal('snapshot_kept', 409);
+    }
     if (!(await deleteSnapshot(db, itemId, route.id))) return refusal('not_found', 404);
     console.info('[snapshots] deleted', { itemId, snapshotId: route.id });
     return new Response(null, { status: 204 });
   }
-  return revert(opts, door, caller, route.id);
-}
-
-// SN12, SN13: read the target, keep the item as it is (never skipped), replace, advance, tell the room.
-async function revert(
-  opts: ServeSnapshots,
-  door: SnapshotDoor,
-  caller: SnapshotCaller,
-  snapshotId: string,
-): Promise<Response> {
-  const { db, itemId } = opts;
-  const target = await getSnapshot(db, itemId, snapshotId);
-  if (!target) return refusal('not_found', 404);
-  const text = await readSnapshotText(db, itemId, snapshotId);
-  if (typeof text !== 'string') {
-    console.warn('[snapshots] refused', { itemId, snapshotId, reason: 'unreadable' });
-    return refusal('snapshot_unreadable', 422);
-  }
-  const now = await door.exportFile();
-  if (now === null) return refusal('not_found', 404);
-  const safety = await takeSnapshot(db, {
+  const result = await revertToSnapshot({
+    db,
     itemId,
-    text: now,
-    name: beforeRevertName(target.name),
-    kind: 'before-revert',
+    snapshotId: route.id,
+    door,
     author: caller.person,
   });
-  if (!safety.ok) {
-    console.warn('[snapshots] refused', { itemId, snapshotId, reason: 'safety-too-large' });
-    return refusal('snapshot_too_large', 413);
-  }
-  const replaced = await door.replaceContent(text);
-  if (replaced !== 'ok') {
-    console.warn('[snapshots] refused', { itemId, snapshotId, reason: replaced });
-    return replaced === 'too_large'
-      ? refusal('snapshot_too_large', 413)
-      : refusal('snapshot_unreadable', 422);
-  }
-  const generation = await advanceGeneration(db, itemId);
-  door.afterRevert?.(generation);
-  console.info('[snapshots] reverted', {
-    itemId,
-    snapshotId,
-    safetySnapshotId: safety.snapshot.id,
-    generation,
-  });
-  const body: SnapshotRevertResponse = {
-    reverted: { snapshotId, safetySnapshotId: safety.snapshot.id, generation },
-  };
+  if (!result.ok) return refusal(...REVERT_REFUSALS[result.reason]);
+  const body: SnapshotRevertResponse = { reverted: result.reverted };
   return json(body);
 }
+
+// How the route answers each reason a revert changed nothing.
+const REVERT_REFUSALS: Record<RevertRefusal, [SnapshotErrorCode, number]> = {
+  snapshot_missing: ['not_found', 404],
+  item_missing: ['not_found', 404],
+  unreadable: ['snapshot_unreadable', 422],
+  too_large: ['snapshot_too_large', 413],
+};

@@ -32,6 +32,8 @@
 @import './scroll-edge-fade.css';
 /* The 3D view while walking (docs/specs/008-canvas/3d-view.md). */
 @import './space-3d.css';
+/* The Automations pictures' motion (docs/specs/013-workspace/automations.md "The screen"), the platform's. */
+@import '@liveworkspace/automations-ui/automation-scenes.css';
 
 /* A phone: narrower than `sm`, or a touch screen under 500px tall (one held sideways). The JS twin
  * is PHONE_MEDIA_QUERY (@liveworkspace/workbench/lib/responsive.ts); the two state the same query. Phone-only layout uses
@@ -76,6 +78,8 @@
 /* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
 @source '../../../../packages/workbench/src';
 @source '../../../../packages/capture/src';
+/* The Automations screen and builder every app shares (@liveworkspace/automations-ui). */
+@source '../../../../packages/automations-ui/src';
 /* So does Avatar mode's code (@livehuddle/avatar). */
 @source '../../../packages/avatar/src';
 

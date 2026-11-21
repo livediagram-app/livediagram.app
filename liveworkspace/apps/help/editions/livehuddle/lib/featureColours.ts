@@ -48,7 +48,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   undo: '#0ea5e9',
   redo: '#06b6d4',
   'layout-cleanup': '#2563eb',
-  webhooks: '#7c3aed',
+  automations: '#7c3aed',
   // Edit or Walk (the selection-modes category)
   'avatar-mode': '#ec4899',
   'avatar-tour': '#db2777',

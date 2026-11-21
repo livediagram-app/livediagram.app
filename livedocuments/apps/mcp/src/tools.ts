@@ -46,6 +46,7 @@ import { changesetErrorText, isChangesetRefusal } from './changeset-client';
 import { registerTool } from './tool-annotations';
 import { registerArchiveTools } from './archive-tools';
 import { registerThreadTools } from './thread-tools';
+import { registerRuleTools } from './rule-tools';
 import { registerVersionTools } from './version-tools';
 import { registerPagesTools } from './pages-tools';
 import {
@@ -365,6 +366,9 @@ export function registerTools(server: McpServer, env: Env): void {
 
   // Comment threads (docs/specs/015-api/mcp-server.md "Comment threads"): list_threads and change_threads.
   registerThreadTools(server, env);
+
+  // Automations rules (docs/specs/013-workspace/automations.md "Agents"): list_rules and change_rules.
+  registerRuleTools(server, env);
 
   // Version history (docs/specs/015-api/mcp-server.md §4.9e): list_versions and restore_version.
   registerVersionTools(server, env);

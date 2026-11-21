@@ -5,7 +5,11 @@
 
 import type { AutomationCondition } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
-import { PanelField, PanelNote, PanelSelect } from './panel-parts';
+import {
+  PanelField,
+  PanelNote,
+  PanelSelect,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 type SavedFilterCondition = AutomationCondition & { kind: 'saved_filter' };
 

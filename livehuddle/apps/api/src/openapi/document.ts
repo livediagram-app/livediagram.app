@@ -176,6 +176,11 @@ const TAGS = [
       'How scripts and agents change a tab: atomic, live for everyone with it open, credited and revertable.',
   },
   { name: 'Sharing', description: 'Share links, passwords, and the Spaces shared with you.' },
+  {
+    name: 'Automations',
+    description:
+      'Rules a Space runs on its own: when something happens, if some conditions hold, then do these steps.',
+  },
   { name: 'Folders', description: 'Organise Spaces into a personal or team folder tree.' },
   {
     name: 'Trash',

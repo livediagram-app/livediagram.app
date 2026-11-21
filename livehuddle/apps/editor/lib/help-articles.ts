@@ -49,6 +49,8 @@ export const HELP_ARTICLES = {
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
+  // The Automations screen's How Rules Work and its gate (docs/specs/013-workspace/automations.md "The screen").
+  automations: 'tools/automations',
   minimap: 'user-interface/minimap',
   imageGallery: 'explorer/image-gallery',
   sharedWithYou: 'explorer/shared-with-you',
@@ -152,6 +154,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   explorerPanel: {
     title: 'Learn about the Explorer',
     description: 'Tips and tricks to help you get the most out of the Explorer.',
+  },
+  automations: {
+    title: 'Learn about Automations',
+    description: 'Rules a Space runs on its own: triggers, steps, templates and the Audit Trail.',
   },
   minimap: {
     title: 'Learn about the Map',

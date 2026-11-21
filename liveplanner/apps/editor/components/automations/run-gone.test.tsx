@@ -2,10 +2,11 @@
 // docs/specs/026-plan/automations.md "The Automations screen": an Audit Trail run whose step failed on something the
 // plan lost says what is gone in words, never by its id, in its reason and its lines; a run kept from before, with no
 // `gone` beside its text, reads as stored.
+import './test-kit';
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { AutomationGone } from '@liveplanner/items';
-import { RunRow } from './RunRow';
+import { RunRow } from '@liveworkspace/automations-ui/RunRow';
 import { NOW, run } from './test-fixtures';
 
 afterEach(cleanup);

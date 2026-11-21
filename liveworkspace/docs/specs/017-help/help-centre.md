@@ -417,6 +417,9 @@ article or category from being redirected away. What each app has retired:
   Diagram and Draw modes and their mode-only elements, Event Storming and repositories, and Auto Layout), each landing
   on the nearest article that stays; it renamed Your First Diagram to Your First Space and Exporting Diagrams to
   Exporting Spaces.
+- **Every item app** (livediagram, livedocuments, livedesign, livehuddle): Webhooks, under both Collaboration and
+  Tools, to Automations (`tools/automations#connections`), where outgoing messages are now Connections; on
+  liveplanner both old addresses land on Plan Automations.
 
 ## Telemetry
 

@@ -5,6 +5,14 @@
 // rule needing attention still says what it names to an agent. The editor, which never shows an id, sets `goneWords`:
 // then one reads as the step panels' gone picks do ("a column no longer here", "Someone No Longer Here"). Pure.
 
+import {
+  AUTOMATION_NOTIFY_NAMES,
+  addressWords,
+  notifyChip as notifyWords,
+  sentenceOrList,
+  waitWords,
+  type RuleSentencePart,
+} from '@liveworkspace/automations';
 import { automationDayWords } from './conditions';
 import { builtInFieldLabel, builtInFieldName } from '../built-in-field-labels';
 import { isPriority, PRIORITY_LABELS } from '../fields';
@@ -16,7 +24,6 @@ import type {
   AutomationActionKind,
   AutomationOutgoing,
   AutomationRelated,
-  AutomationVia,
   AutomationCondition,
   AutomationFieldOp,
   AutomationRuleBody,
@@ -28,7 +35,6 @@ import type {
 } from './types';
 import { isTimeTrigger } from './types';
 import { aiStepChip } from './ai-steps';
-import { addressWords } from './email-addresses';
 import { checkboxOf, fieldKind, personNamed } from './set-value';
 
 // What the sentence reads a rule against. `tabs` names Form tabs and the boards' tabs; `filters` names saved filters
@@ -73,8 +79,8 @@ const gone = (outline: RuleSentenceOutline, id: string, kind: keyof typeof GONE_
 /** A saved filter's key in RuleSentenceOutline.filters: its board's tab and its id. */
 export const savedFilterKey = (tab: string, filter: string): string => `${tab}\u0000${filter}`;
 
-// A joining word, or a chip (the trigger's own chip is drawn in the brand tint).
-export type RuleSentencePart = { word: string } | { chip: string; trigger?: true };
+// The sentence's parts, a list, a Wait and where a message goes read as every app's do (@liveworkspace/automations).
+export { AUTOMATION_NOTIFY_NAMES, sentenceOrList, waitWords, type RuleSentencePart };
 
 export const AUTOMATION_TRIGGER_NAMES: Readonly<Record<AutomationTriggerKind, string>> = {
   card_created: 'Card Created',
@@ -140,13 +146,6 @@ export const AUTOMATION_STEP_NAMES: Readonly<
   notify: 'Send a Message',
 };
 
-// An outgoing action by where it posts.
-export const AUTOMATION_NOTIFY_NAMES: Readonly<Record<AutomationVia, string>> = {
-  webhook: 'Send to Webhook',
-  slack: 'Post to Slack',
-  teams: 'Post to Microsoft Teams',
-};
-
 // The ways a branch picks its cards, as "For each …" names them.
 export const AUTOMATION_RELATED_NAMES: Readonly<Record<AutomationRelated['kind'], string>> = {
   linked: 'Linked Card',
@@ -191,13 +190,10 @@ export function timeTriggerWords(trigger: AutomationTimeTrigger): string {
 }
 
 /** An outgoing action as its chip reads: "Post to Slack Launch Channel", or its kind alone with no name known. */
-export function notifyChip(
+export const notifyChip = (
   step: AutomationOutgoing,
   outline?: Pick<RuleSentenceOutline, 'webhooks'>,
-): string {
-  const name = outline?.webhooks?.get(step.webhook) ?? step.name;
-  return name ? `${AUTOMATION_NOTIFY_NAMES[step.via]} ${name}` : AUTOMATION_NOTIFY_NAMES[step.via];
-}
+): string => notifyWords(step, outline);
 
 /** How a branch picks its cards: "For each Blocked By Card", "For each Linked Card (Parent)". */
 export function branchWords(related: AutomationRelated, outline?: RuleSentenceOutline): string {
@@ -232,12 +228,6 @@ const ROLE_WORDS: Readonly<Record<'editor' | 'participant' | 'agent', string>> =
 
 // A literal set value this long or shorter reads in the sentence; a longer one is left to the builder.
 export const SENTENCE_VALUE_MAX = 24;
-
-/** "A", "A or B", "A, B or C". */
-export function sentenceOrList(names: readonly string[]): string {
-  if (names.length <= 1) return names[0] ?? '';
-  return `${names.slice(0, -1).join(', ')} or ${names[names.length - 1]!}`;
-}
 
 export function outlineStatusName(status: string, outline: RuleSentenceOutline): string {
   return outline.statuses.get(status) ?? gone(outline, status, 'column');
@@ -389,15 +379,6 @@ export function actionChip(action: AutomationAction, outline: RuleSentenceOutlin
     case 'resolve_threads':
       return AUTOMATION_STEP_NAMES[action.kind];
   }
-}
-
-/** A Wait as its chip reads: "Wait 2 Days", "Wait 1 Day 4 Hours", "Wait 3 Hours". */
-export function waitWords(hours: number): string {
-  const days = Math.floor(hours / 24);
-  const rest = hours % 24;
-  const part = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`;
-  if (!days) return `Wait ${part(rest, 'Hour')}`;
-  return rest ? `Wait ${part(days, 'Day')} ${part(rest, 'Hour')}` : `Wait ${part(days, 'Day')}`;
 }
 
 /** A step as its chip reads: an action's words, If / Else, a branch's "For each …" or where a message goes. */

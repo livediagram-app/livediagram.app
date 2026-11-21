@@ -406,7 +406,7 @@ export const articles: Article[] = [
     description:
       'The always-available Tools (with Search), Settings and appearance controls at the end of the bottom bar, with Get Started while a tour is on offer.',
     keywords:
-      'corner buttons actions tools toolbox search settings get started tour receptionist history snapshots webhooks walkthroughs slide deck github bottom bar cluster appearance light dark automations sign in sync plan badge',
+      'corner buttons actions tools toolbox search settings get started tour receptionist history snapshots connections walkthroughs slide deck github bottom bar cluster appearance light dark automations sign in sync plan badge',
     category: 'User Interface',
     categorySlug: 'user-interface',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],

@@ -18,6 +18,7 @@ import { NAME_MAX_LENGTH } from '@livehuddle/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livehuddle/document-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
 import { TAB_DELTA_OPENAPI } from '@liveworkspace/api-kit/tab-delta-door';
+import { itemAutomationOperations } from '@liveworkspace/automations/room';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
@@ -1449,4 +1450,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     },
     statuses: [204],
   },
+  // A Space's Automations (docs/specs/013-workspace/automations.md): the platform's operations
+  // (@liveworkspace/automations/room openapi.ts) under this api's collection.
+  ...itemAutomationOperations({ collection: 'documents', itemWord: 'Space' }),
 ];

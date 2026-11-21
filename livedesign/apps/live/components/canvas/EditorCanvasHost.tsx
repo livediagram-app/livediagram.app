@@ -9,8 +9,6 @@ import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { canManageWebhooks as canManageWebhooksOf } from '@liveworkspace/workbench/lib/can-manage-webhooks';
-import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 import { LockedElementMenu } from '@/components/canvas/LockedElementMenu';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
@@ -80,7 +78,6 @@ export function EditorCanvasHost() {
     fitToScreen,
     formatSourceId,
     hydrated,
-    sessionTabScope,
     identityOnlyScreenOpen,
     imageContext,
     isOwner,
@@ -174,16 +171,6 @@ export function EditorCanvasHost() {
   // (docs/specs/008-canvas/canvas-and-palette.md "Colours"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
   const [projectStockColours] = useState(createStockColourProjector);
-  // The document's own Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): offered to a signed-in account that
-  // edits the whole design (not a Viewer, a Participant or a one-tab link); the index checks again on every call.
-  const [webhooksOpen, setWebhooksOpen] = useState(false);
-  const canManageWebhooks = canManageWebhooksOf({
-    hydrated,
-    accountUserId,
-    isReadOnly,
-    participating,
-    sessionTabScope,
-  });
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
@@ -253,7 +240,7 @@ export function EditorCanvasHost() {
     if (sessionId) componentActions.finishEdit(sessionId);
   }, [sessionId, componentActions]);
 
-  const menuProps = useMenuCanvasProps({ setLockedMenu, canManageWebhooks, setWebhooksOpen });
+  const menuProps = useMenuCanvasProps({ setLockedMenu });
   const panelProps = usePanelCanvasProps();
   const insertProps = useInsertCanvasProps({ handleStartArrow });
   const editProps = useEditCanvasProps({ setPointerTip, inspecting });
@@ -406,16 +393,6 @@ export function EditorCanvasHost() {
             />
           ) : null}
         </ComponentFaceContext.Provider>
-        {designId !== null && (
-          <ItemWebhooksDialog
-            open={webhooksOpen}
-            onClose={() => setWebhooksOpen(false)}
-            itemId={designId}
-            app="livedesign"
-            title={designName}
-            shareCode={sessionShareCode}
-          />
-        )}
       </TagColoursProvider>
     </CanvasThemeProvider>
   );

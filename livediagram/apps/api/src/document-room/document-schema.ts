@@ -12,6 +12,10 @@
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
 import {
+  COLLAB_SEEN_SCHEMA_STEP,
+  itemAutomationSchemaSteps,
+} from '@liveworkspace/automations/room';
+import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
   outboxParkingStep,
@@ -330,7 +334,28 @@ const V7 = (exec: Exec) => {
   if (!have.has('review')) exec('ALTER TABLE document ADD COLUMN review TEXT NULL');
 };
 
-const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7];
+// Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
+// in its order, one entry each. Steps 8 to 15 are its rules, schedule, Incoming Webhook secrets, held runs, Describe a
+// Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 16 is the item
+// engine's tables and its
+// three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room itemAutomationSchemaSteps).
+const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
+
+// Step 17: each tab's comment threads and actions as the comment triggers last saw them (the platform's collab
+// watch), kept only while a rule that is on hears one.
+const V17 = COLLAB_SEEN_SCHEMA_STEP;
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  ...AUTOMATION_STEPS,
+  V17,
+];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

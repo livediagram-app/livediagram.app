@@ -5,7 +5,9 @@ import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards
 // The editor's chrome motion budget (docs/specs/004-interface-design/motion.md): every
 // chrome transition settles within 250ms, hovers within 150ms, cascades as a
 // whole within 250ms. Canvas motion follows its own specs and lives only in the
-// stylesheets listed here, which the guard does not read.
+// stylesheets listed here, which the guard does not read. The Automations pictures' motion (a content
+// illustration, motion.md "Where durations live") is the platform's now: @liveworkspace/automations-ui's
+// automation-scenes.css, outside this root.
 const CANVAS_STYLESHEETS = [
   'app/canvas-motion.css',
   'app/collab-cards.css',
@@ -13,9 +15,6 @@ const CANVAS_STYLESHEETS = [
   'app/motion-page.css',
   // The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md).
   'app/auth-motion.css',
-  // The Automations template tiles' living previews, a content illustration (docs/specs/026-plan/automations.md
-  // "The Automations screen", motion.md "Where durations live").
-  'app/automation-scenes.css',
 ];
 
 describe('editor motion budget', () => {
