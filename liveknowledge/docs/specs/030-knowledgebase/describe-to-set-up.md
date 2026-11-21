@@ -52,7 +52,7 @@ and picks that structure on its start, so it is created exactly as a pick here i
     structure's own top pages in its real titles, the first page with subpages opened on one or two of them and
     chosen; at the right that page, with a cover band in the group's colour, the structure's **emblem** as its page
     icon over the cover's edge, its title and a few lines of writing. Each group has its colour (Company violet,
-    Engineering sky, Product fuchsia, Customers emerald, Operations slate, Community orange, Education amber,
+    Engineering sky, Product fuchsia, Customers emerald, Operations indigo, Community orange, Education amber,
     Personal rose) and each structure its own emblem, none shared (a chef's hat for Recipe Book, a shield for IT and
     Security, a git fork for Open Source Project), so no two of the thirty-two cards look alike. Blank
     Knowledgebase is the same window holding only Start Here and an empty page with a plus for its icon; Describe
