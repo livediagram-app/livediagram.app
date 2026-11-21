@@ -1,13 +1,14 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "The Automations screen": the Rules list in every state, the Audit Trail, and the
 // rule builder's save, refusal, discard and test, with the api client mocked.
+import './test-kit';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState, type ReactNode } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
-import { AutomationsDialog } from './AutomationsDialog';
-import type { AutomationsTarget } from './AutomationsContext';
+import { AutomationsDialog } from '@liveworkspace/automations-ui/AutomationsDialog';
+import type { AutomationsTarget } from '@liveworkspace/automations-ui/AutomationsContext';
 import { forgetAutomations } from './use-automations';
 import { ANA, outline, pickerTile, rule, run } from './test-fixtures';
 
@@ -34,11 +35,11 @@ const toast = vi.hoisted(() => ({
   error: vi.fn(),
   warn: vi.fn(),
 }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const { AutomationRefusal } = await import('./automations-client');
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const o = outline();
 const openItem = vi.fn();
 const plan = {

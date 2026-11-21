@@ -320,6 +320,26 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: SLUG_WHY,
   },
 
+  // The Automations screen's templates (docs/specs/013-workspace/automations.md "Templates"): one per template id,
+  // DOCUMENT_TEMPLATES in @livediagram/document/automations, written out as this app takes no dependency on it.
+  'apps/editor/components/automations/document-plumbing.ts UI·Opened': {
+    values: [
+      'reset-nightly',
+      'snapshot-friday',
+      'slack-on-change',
+      'comments-slack',
+      'review-finished',
+      'still-right',
+      'weekly-summary',
+      'access-slack',
+      'fresh-retro',
+      'poll-results-slack',
+      'questions-slack',
+      'agent-edits',
+      'snapshot-release',
+    ].map((id) => `AutomationTemplate.${id}`),
+  },
+
   // Shared packages.
   'packages/telemetry-client/src/errors.ts Error·Client': {
     values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],

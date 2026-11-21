@@ -12,7 +12,7 @@ Follow the references below only as needed; never upfront.
 - ./approvals.md - when working on approvals: asking named people to approve an item, their decisions, the badge, Changed Since Approval, who may approve (a Viewer included), the email, History and the audit log
 - ./request-access.md - when working on Request Access: asking for an item you can't open, revealing nothing, the limits, who is told (Inbox and email), granting in one click and declining
 - ./inbox-notices.md - when working on Inbox notices: an open editor hearing of a new Inbox row, which kinds notify, the one read per browser, how a notice looks, groups and goes away, seen rows across tabs, the Explorer button's count
-- ./webhooks.md - when working on webhooks: one document's, who adds them (its editors), the events, Slack and Teams, delivery and retries, SSRF and secrets
+- ./webhooks.md - when working on connections (what webhooks became): one item's, who adds them (its editors), what a rule sends through them, Slack and Teams, delivery and retries, SSRF and secrets
 - ./dialog-hero-header.md - when building a dialog's hero header: the band, title mark and title every app's main dialogs wear, its colours, the title's face and each dialog's art
 - ./footer-tools-menu.md - when working on the editor footer's Tools menu: the one button holding Automations, Snapshots and History, when it is drawn, its rows and badges
 - ./index-service.md - when working on the index Worker itself: who calls it, the decisions the contract left open, its secrets, performance, local running, deploys

@@ -6,7 +6,7 @@
 
 import type { AutomationAssignee, AutomationEmailRecipient } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
-import { PanelField, PanelSelect } from './panel-parts';
+import { PanelField, PanelSelect } from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 type Who = AutomationAssignee | AutomationEmailRecipient;
 

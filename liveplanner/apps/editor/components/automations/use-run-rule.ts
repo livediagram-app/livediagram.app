@@ -8,12 +8,12 @@ import { useMemo } from 'react';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { useAutomationsAccess } from './AutomationsContext';
+import { useAutomationsAccess } from '@liveworkspace/automations-ui/AutomationsContext';
 import { AutomationRefusal } from './automations-client';
 import type { RunRuleChoices } from './RunRuleMenu';
 import { useAutomations } from './use-automations';
 import { goneText } from './needs-words';
-import { nextRunWords } from './run-words';
+import { nextRunWords } from '@liveworkspace/automations-ui/run-words';
 
 export function useRunRule(itemId: string): RunRuleChoices | null {
   const access = useAutomationsAccess();

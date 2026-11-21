@@ -38,11 +38,11 @@ const toast = vi.hoisted(() => ({
   error: vi.fn(),
   warn: vi.fn(),
 }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const { GithubRefusal } = await import('./github-client');
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const NOW = Date.UTC(2026, 10, 12, 12);
 const repo = (
   id: number,

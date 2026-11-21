@@ -1161,6 +1161,795 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "AutomationDraftPick<ItemPick>": {
+    "additionalProperties": false,
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "pick": {
+        "$ref": "#/components/schemas/ItemPick"
+      }
+    },
+    "required": [
+      "path",
+      "pick"
+    ],
+    "type": "object"
+  },
+  "AutomationDraftRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "prompt": {
+        "type": "string"
+      },
+      "timeZone": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "prompt",
+      "timeZone"
+    ],
+    "type": "object"
+  },
+  "AutomationDraftResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "picks": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationDraftPick%3CItemPick%3E"
+        },
+        "type": "array"
+      },
+      "rule": {
+        "$ref": "#/components/schemas/AutomationRuleBody"
+      }
+    },
+    "required": [
+      "rule",
+      "picks"
+    ],
+    "type": "object"
+  },
+  "AutomationGone": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "kind": {
+        "type": "string"
+      },
+      "more": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "kind",
+      "id"
+    ],
+    "type": "object"
+  },
+  "AutomationHookAccepted": {
+    "additionalProperties": false,
+    "properties": {
+      "queued": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "queued"
+    ],
+    "type": "object"
+  },
+  "AutomationHookRequest": {
+    "additionalProperties": {},
+    "properties": {
+      "tab": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "AutomationListedRule<AutomationRule,AutomationNeed>": {
+    "additionalProperties": false,
+    "properties": {
+      "attention": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationNeed"
+        },
+        "type": "array"
+      },
+      "chain": {
+        "type": "boolean"
+      },
+      "conditions": {
+        "items": {
+          "$ref": "#/components/schemas/ItemPart"
+        },
+        "type": "array"
+      },
+      "edited": {
+        "$ref": "#/components/schemas/AutomationStamp"
+      },
+      "enabled": {
+        "type": "boolean"
+      },
+      "hook": {
+        "$ref": "#/components/schemas/AutomationWireHook"
+      },
+      "id": {
+        "type": "string"
+      },
+      "made": {
+        "$ref": "#/components/schemas/AutomationStamp"
+      },
+      "name": {
+        "type": "string"
+      },
+      "needs": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "paused": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "gone": {
+            "$ref": "#/components/schemas/AutomationGone"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "webhook": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "at"
+        ],
+        "type": "object"
+      },
+      "stats": {
+        "$ref": "#/components/schemas/AutomationWireStats"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/components/schemas/ItemPart"
+        },
+        "type": "array"
+      },
+      "timeZone": {
+        "type": "string"
+      },
+      "trigger": {
+        "$ref": "#/components/schemas/ItemPart"
+      }
+    },
+    "required": [
+      "attention",
+      "chain",
+      "conditions",
+      "edited",
+      "enabled",
+      "id",
+      "made",
+      "name",
+      "needs",
+      "stats",
+      "steps",
+      "timeZone",
+      "trigger"
+    ],
+    "type": "object"
+  },
+  "AutomationNeed": {
+    "$ref": "#/components/schemas/ItemRef"
+  },
+  "AutomationOrderRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "ids": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "ids"
+    ],
+    "type": "object"
+  },
+  "AutomationPerson": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "color"
+    ],
+    "type": "object"
+  },
+  "AutomationResult": {
+    "enum": [
+      "done",
+      "no_match",
+      "skipped",
+      "failed",
+      "waiting"
+    ],
+    "type": "string"
+  },
+  "AutomationRuleBody": {
+    "$ref": "#/components/schemas/ItemRuleBody"
+  },
+  "AutomationRuleResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "rule": {
+        "$ref": "#/components/schemas/AutomationListedRule%3CAutomationRule%2CAutomationNeed%3E"
+      }
+    },
+    "required": [
+      "rule"
+    ],
+    "type": "object"
+  },
+  "AutomationRuleSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "conditions": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      },
+      "made": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "by",
+          "at"
+        ],
+        "type": "object"
+      },
+      "name": {
+        "type": "string"
+      },
+      "on": {
+        "type": "boolean"
+      },
+      "paused": {
+        "type": "boolean"
+      },
+      "picks": {
+        "type": "boolean"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationSummaryStep"
+        },
+        "type": "array"
+      },
+      "trigger": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "on",
+      "paused",
+      "trigger",
+      "picks",
+      "conditions",
+      "steps",
+      "made"
+    ],
+    "type": "object"
+  },
+  "AutomationRun": {
+    "additionalProperties": false,
+    "properties": {
+      "afterWait": {
+        "type": "number"
+      },
+      "at": {
+        "type": "number"
+      },
+      "gone": {
+        "$ref": "#/components/schemas/AutomationGone"
+      },
+      "id": {
+        "type": "string"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "result": {
+        "$ref": "#/components/schemas/AutomationResult"
+      },
+      "ruleId": {
+        "type": "string"
+      },
+      "ruleName": {
+        "type": "string"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationStepLine"
+        },
+        "type": "array"
+      },
+      "subject": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/AutomationSubject"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "tookMs": {
+        "type": "number"
+      },
+      "waitsUntil": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "at",
+      "id",
+      "result",
+      "ruleId",
+      "ruleName",
+      "steps",
+      "subject",
+      "tookMs"
+    ],
+    "type": "object"
+  },
+  "AutomationRunNowRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "tab": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "AutomationRunResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "run": {
+        "$ref": "#/components/schemas/AutomationRun"
+      }
+    },
+    "required": [
+      "run"
+    ],
+    "type": "object"
+  },
+  "AutomationRunsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "runs": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationRun"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "runs"
+    ],
+    "type": "object"
+  },
+  "AutomationSecretResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "hook": {
+        "$ref": "#/components/schemas/AutomationWireHook"
+      },
+      "secret": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "secret",
+      "hook"
+    ],
+    "type": "object"
+  },
+  "AutomationStamp": {
+    "additionalProperties": false,
+    "properties": {
+      "ai": {
+        "const": true,
+        "type": "boolean"
+      },
+      "at": {
+        "type": "number"
+      },
+      "by": {
+        "$ref": "#/components/schemas/AutomationPerson"
+      }
+    },
+    "required": [
+      "by",
+      "at"
+    ],
+    "type": "object"
+  },
+  "AutomationStepLine": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "by": {
+            "$ref": "#/components/schemas/AutomationPerson"
+          },
+          "kind": {
+            "const": "trigger",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "gone": {
+            "$ref": "#/components/schemas/AutomationGone"
+          },
+          "kind": {
+            "const": "condition",
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "ok",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "ai": {
+            "const": true,
+            "type": "boolean"
+          },
+          "already": {
+            "const": true,
+            "type": "boolean"
+          },
+          "gone": {
+            "$ref": "#/components/schemas/AutomationGone"
+          },
+          "kind": {
+            "const": "action",
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "ok",
+          "text"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "AutomationSubject": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "ref": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "title"
+    ],
+    "type": "object"
+  },
+  "AutomationSummaryLine": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "type": "string"
+      },
+      "via": {
+        "$ref": "#/components/schemas/AutomationVia"
+      },
+      "words": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "words"
+    ],
+    "type": "object"
+  },
+  "AutomationSummaryResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "rule": {
+        "$ref": "#/components/schemas/AutomationRuleSummary"
+      }
+    },
+    "required": [
+      "rule"
+    ],
+    "type": "object"
+  },
+  "AutomationSummaryStep": {
+    "additionalProperties": false,
+    "properties": {
+      "conditions": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "else": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationSummaryLine"
+        },
+        "type": "array"
+      },
+      "kind": {
+        "type": "string"
+      },
+      "then": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationSummaryLine"
+        },
+        "type": "array"
+      },
+      "via": {
+        "$ref": "#/components/schemas/AutomationVia"
+      },
+      "words": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "words"
+    ],
+    "type": "object"
+  },
+  "AutomationTestRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "rule": {
+        "$ref": "#/components/schemas/AutomationRuleBody"
+      },
+      "tab": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "rule"
+    ],
+    "type": "object"
+  },
+  "AutomationToggleRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "enabled"
+    ],
+    "type": "object"
+  },
+  "AutomationVia": {
+    "enum": [
+      "webhook",
+      "slack",
+      "teams"
+    ],
+    "type": "string"
+  },
+  "AutomationWireHook": {
+    "additionalProperties": false,
+    "properties": {
+      "secret": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "last4": {
+                "type": "string"
+              },
+              "madeAt": {
+                "type": "number"
+              },
+              "usedAt": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "last4",
+              "madeAt",
+              "usedAt"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "url": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "url",
+      "secret"
+    ],
+    "type": "object"
+  },
+  "AutomationWireStats": {
+    "additionalProperties": false,
+    "properties": {
+      "failuresInARow": {
+        "type": "number"
+      },
+      "lastRunAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "nextAt": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "runsThisWeek": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "lastRunAt",
+      "runsThisWeek",
+      "failuresInARow"
+    ],
+    "type": "object"
+  },
+  "AutomationsListResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "people": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "rules": {
+        "items": {
+          "$ref": "#/components/schemas/AutomationListedRule%3CAutomationRule%2CAutomationNeed%3E"
+        },
+        "type": "array"
+      },
+      "runsPerDay": {
+        "type": "number"
+      },
+      "runsToday": {
+        "type": "number"
+      },
+      "tabs": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "rules",
+      "runsToday",
+      "runsPerDay"
+    ],
+    "type": "object"
+  },
   "BackgroundPattern": {
     "enum": [
       "grid",
@@ -3901,6 +4690,84 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "width",
       "height",
       "createdAt"
+    ],
+    "type": "object"
+  },
+  "ItemPart": {
+    "properties": {
+      "kind": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind"
+    ],
+    "type": "object"
+  },
+  "ItemPick": {
+    "$ref": "#/components/schemas/ItemRefKind"
+  },
+  "ItemRef": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/ItemRefKind"
+      }
+    },
+    "required": [
+      "kind",
+      "id"
+    ],
+    "type": "object"
+  },
+  "ItemRefKind": {
+    "enum": [
+      "tab",
+      "snapshot",
+      "connection",
+      "template",
+      "person"
+    ],
+    "type": "string"
+  },
+  "ItemRuleBody": {
+    "additionalProperties": false,
+    "properties": {
+      "chain": {
+        "type": "boolean"
+      },
+      "conditions": {
+        "items": {
+          "$ref": "#/components/schemas/ItemPart"
+        },
+        "type": "array"
+      },
+      "name": {
+        "type": "string"
+      },
+      "steps": {
+        "items": {
+          "$ref": "#/components/schemas/ItemPart"
+        },
+        "type": "array"
+      },
+      "timeZone": {
+        "type": "string"
+      },
+      "trigger": {
+        "$ref": "#/components/schemas/ItemPart"
+      }
+    },
+    "required": [
+      "name",
+      "trigger",
+      "conditions",
+      "steps",
+      "chain",
+      "timeZone"
     ],
     "type": "object"
   },

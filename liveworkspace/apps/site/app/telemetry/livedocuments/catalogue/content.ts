@@ -112,7 +112,9 @@ export const DOCUMENTS_LOADED: Metric = {
 export const DOCUMENTS_CREATED: Metric = {
   category: 'Document',
   action: 'Created',
-  allTypes: true,
+  // A new document is typed by where it is kept; Automations' rules, drafts and secrets are Created too, charted
+  // below, never counted as documents.
+  typeIn: (t) => t === 'Cloud' || t === 'Offline',
   title: 'Documents Created',
   blurb: 'New documents from the New Document wizard, stored in the cloud or Offline.',
 };
@@ -128,7 +130,8 @@ export const DOCUMENTS_DELETED: Metric = {
   rising: 'neutral',
   category: 'Document',
   action: 'Deleted',
-  type: null,
+  // Untyped: an automation rule's deletion is typed, and charted with Automations.
+  typeIn: (t) => t === null,
   title: 'Documents Deleted',
 };
 

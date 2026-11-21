@@ -2,23 +2,32 @@
 // "Files"). `{{card.title}}` and the rest, found, checked against the names Insert a Value offers, and filled in when a
 // rule runs, in the rule's time zone. Filling is one pass: what a card holds is never read as a value again. Pure.
 
+import {
+  dayWords,
+  fillValues as fill,
+  isSharedValue,
+  sharedValue,
+  unknownValueIn as firstUnknownValue,
+  type WebhookValues,
+} from '@liveworkspace/automations';
 import { itemAssignee, itemStatus, itemTitle, type Item, type ItemFieldValue } from '../item';
 import type { ItemTypeDef } from '../item-types';
 import { cardRefOrKey } from '../card-prefix';
 import { PRIORITY_LABELS, isPriority } from '../fields';
-import { addDays, isDay, localDay } from '../repeat-dates';
-import { dayNumber, dayParts, MONTH_SHORT } from '../plan-view-dates';
-import { zonedParts } from '../date-time-fields';
+import { isDay } from '../repeat-dates';
+import { dayNumber } from '../plan-view-dates';
 import {
   AUTOMATION_BRANCH_VALUE_NAMES,
   AUTOMATION_EMAIL_VALUE_NAMES,
   AUTOMATION_PULL_REQUEST_VALUE_NAMES,
   AUTOMATION_VALUE_NAMES,
-  type AutomationDay,
 } from './types';
 import { pullRequestTitleValue, type PullRequestValues } from './github-triggers';
 import { fieldOfName, statusName, type AutomationOutline } from './outline';
-import { webhookPathOf, type WebhookValues } from './webhook-paths';
+
+// The scanner, the one-pass fill and the names every app shares (`person`, `rule`, `now`, `now.date`, `now ± Nd`,
+// `webhook.<path>`) are @liveworkspace/automations'; the card names and what they read are here.
+export { dayFrom, todayIn, valuesIn } from '@liveworkspace/automations';
 
 export const VALUE_NAMES = AUTOMATION_VALUE_NAMES;
 const FIXED: ReadonlySet<string> = new Set(AUTOMATION_VALUE_NAMES);
@@ -38,8 +47,6 @@ export type ValuePlace = {
   form?: boolean;
 };
 
-const VALUE = /\{\{([^{}]*)\}\}/g;
-const SHIFT = /^now\s*([+-])\s*(\d{1,4})\s*d$/;
 const FIELD_PREFIX = 'card.field.';
 const ANSWER_PREFIX = 'answer.';
 
@@ -59,41 +66,27 @@ function fieldNameOf(name: string): string | null {
   return rest.trim() ? rest : null;
 }
 
-// The names a text's values give, in order, as written between the braces (trimmed).
-export function valuesIn(text: string): string[] {
-  return [...text.matchAll(VALUE)].map((m) => m[1]!.trim());
-}
-
 // Whether the builder knows a value's name: a fixed name, a field by name, or a day from today; in a branch, the
 // triggering card's too.
 export const isKnownValue = (name: string, place: ValuePlace = {}): boolean =>
   FIXED.has(name) ||
-  SHIFT.test(name) ||
+  isSharedValue(name, place) ||
   fieldNameOf(name) !== null ||
   (place.branch === true && BRANCH.has(name)) ||
   (place.github === true && PULL_REQUEST.has(name)) ||
   (place.email === true && EMAIL.has(name)) ||
-  (place.form === true && answerNameOf(name) !== null) ||
-  (place.webhook === true && webhookPathOf(name) !== null);
+  (place.form === true && answerNameOf(name) !== null);
 
 // The first value a text holds that the builder does not know, or null.
 export const unknownValueIn = (text: string, place: ValuePlace = {}): string | null =>
-  valuesIn(text).find((name) => !isKnownValue(name, place)) ?? null;
+  firstUnknownValue(text, (name) => isKnownValue(name, place));
 
 // ---- Days ----------------------------------------------------------------------------------------------------------
 
-export const todayIn = (now: number, timeZone: string): string => localDay(now, timeZone);
-
-// A condition's or a Set Field's day: a fixed day, or today shifted by whole days.
-export const dayFrom = (day: AutomationDay, now: number, timeZone: string): string =>
-  'day' in day ? day.day : addDays(todayIn(now, timeZone), day.today);
-
-// "11 Nov 2026" for `2026-11-11`; anything else as it is.
+// "11 Nov 2026" for `2026-11-11` (or for the day a Date and Time moment falls on); anything else as it is.
 export function dayText(day: string): string {
   const n = dayNumber(day);
-  if (n === undefined) return day;
-  const p = dayParts(n);
-  return `${p.date} ${MONTH_SHORT[p.month]} ${p.year}`;
+  return n === undefined ? day : dayWords(n);
 }
 
 // A field's value as a line of text: a day as a day, a person by name, a list joined, Yes or No.
@@ -144,8 +137,6 @@ export interface ValueContext {
   outgoing?: boolean;
 }
 
-const pad = (n: number) => String(n).padStart(2, '0');
-
 // The answer to the question worded `question`: as written, else the one worded alike in any case. Own keys only.
 function answerValueOf(answers: ValueContext['answers'], question: string): string {
   if (!answers) return '';
@@ -158,18 +149,9 @@ function answerValueOf(answers: ValueContext['answers'], question: string): stri
 // One value's text. `iso`: a day reads `YYYY-MM-DD`, for a date field.
 function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
   const day = (d: string) => (iso ? d : dayText(d));
-  const shift = SHIFT.exec(name);
-  if (shift) {
-    const n = Number(shift[2]) * (shift[1] === '-' ? -1 : 1);
-    return day(addDays(todayIn(ctx.now, ctx.timeZone), n));
-  }
-  const path = webhookPathOf(name);
-  if (path !== null) {
-    // Own values only: `{{webhook.constructor}}` (a valid path) never reads the prototype.
-    const key = path.join('.');
-    const value = ctx.webhook && Object.hasOwn(ctx.webhook, key) ? ctx.webhook[key] : undefined;
-    return value === undefined ? '' : String(value);
-  }
+  // The names every app shares: a day from today, a webhook call's field, who did it, the rule, now.
+  const shared = sharedValue(name, ctx, iso);
+  if (shared !== undefined) return shared;
   const question = answerNameOf(name);
   if (question !== null) return answerValueOf(ctx.answers, question);
   if (ctx.cardless && name.startsWith('card.')) return '';
@@ -198,10 +180,6 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
       const due = ctx.card.fields['due'];
       return typeof due === 'string' ? day(due) : '';
     }
-    case 'person':
-      return ctx.person;
-    case 'rule':
-      return ctx.rule;
     case 'trigger.title':
       return ctx.trigger ? itemTitle(ctx.trigger.card) : '';
     case 'trigger.key':
@@ -216,12 +194,6 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
       return ctx.github?.url ?? '';
     case 'from':
       return ctx.email ?? '';
-    case 'now.date':
-      return day(todayIn(ctx.now, ctx.timeZone));
-    case 'now': {
-      const p = zonedParts(ctx.now, ctx.timeZone);
-      return `${dayText(todayIn(ctx.now, ctx.timeZone))}, ${pad(p.hour)}:${pad(p.minute)}`;
-    }
     default:
       // A value the builder does not know (refused on save) reads as nothing.
       return '';
@@ -230,5 +202,5 @@ function valueOf(name: string, ctx: ValueContext, iso: boolean): string {
 
 // The text with every value filled in, in one pass.
 export function fillValues(text: string, ctx: ValueContext, opts: { iso?: boolean } = {}): string {
-  return text.replace(VALUE, (_all, name: string) => valueOf(name.trim(), ctx, opts.iso === true));
+  return fill(text, (name) => valueOf(name, ctx, opts.iso === true));
 }

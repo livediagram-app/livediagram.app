@@ -10,18 +10,14 @@
 import { truncateName } from '@livedocuments/document';
 import { VERSION_NAMED_MAX, type VersionSummary } from '@livedocuments/api-schema';
 import { redactCommentAuthorIds } from '../comments';
+import { VERSION_NAMED_EVENT } from '@livedocuments/document/automations';
+import { getDocument, getVersion, listVersions, nameVersion, namedVersionCount } from '../db';
 import {
-  copyTabStatement,
-  getDocument,
-  getVersion,
-  keepNamedVersion,
-  listVersions,
-  nameVersion,
-  namedVersionCount,
-  tabRev,
-  versionAtRev,
-  versionId,
-} from '../db';
+  hearsVersion,
+  personWho,
+  queueVersionEvent,
+} from '../document-room/automations/version-events';
+import { nameCurrentVersion } from '../versions/name-current';
 import { forbidden, json, notFound } from '../responses';
 import { frontDoorOf } from '../changesets/front-door';
 import type { DocumentDTO } from '../types';
@@ -98,6 +94,7 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
       version,
       author,
       tokenId,
+      tokenName: ctx.token?.name ?? null,
     });
     if (result.status === 200 && result.body.restored) {
       ctx.waitUntil?.(versionTelemetry(ctx.env, 'Restored', frontDoorOf(ctx.request)));
@@ -112,7 +109,15 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
   if ((grantOn(ctx, document.id)?.tabScope ?? null) !== null) return forbidden();
   const raw = await readOptionalBody(ctx.request);
   const name = typeof raw.name === 'string' ? raw.name : null;
-  const result = await copyVersion({ env: ctx.env, document, version, name, author, tokenId });
+  const result = await copyVersion({
+    env: ctx.env,
+    document,
+    version,
+    name,
+    author,
+    tokenId,
+    tokenName: ctx.token?.name ?? null,
+  });
   if (result.status === 201) {
     ctx.waitUntil?.(versionTelemetry(ctx.env, 'Copied', frontDoorOf(ctx.request)));
   }
@@ -153,8 +158,7 @@ const tooManyNames = () =>
 const tabBusy = () =>
   json({ error: 'tab_busy', message: 'The tab kept changing; try again.' }, { status: 409 });
 
-// Name This Version (VH10, VH20): a named version already holding the tab's revision is renamed; otherwise the
-// content is kept as a `manual` one in the snapshots' store, or in `tab_versions` when that store fails.
+// Name This Version (VH10, VH20), by the path a rule's step takes too (versions/name-current.ts).
 async function nameCurrent(
   ctx: DocumentRouteContext,
   document: DocumentDTO,
@@ -163,60 +167,21 @@ async function nameCurrent(
 ): Promise<Response> {
   const name = nameOf(await readOptionalBody(ctx.request));
   if (!name) return invalidName();
-  const rev = await tabRev(ctx.env, tabId);
-  if (rev === null) return notFound();
-  const existing = await versionAtRev(ctx.env, tabId, rev);
-  if (existing?.name != null) {
-    const version = await nameVersion(ctx.env, tabId, existing.id, name);
-    return json({ version }, { status: 201 });
-  }
-  if ((await namedVersionCount(ctx.env, tabId)) >= VERSION_NAMED_MAX) return tooManyNames();
-  const author = await authorOf(ctx, owner);
-  const now = Date.now();
-  try {
-    const kept = await keepNamedVersion(ctx.env, { tabId, name, author, now });
-    if (kept === undefined) return notFound();
-    // Another version took the revision between the read and the write: name it on the next try.
-    if (kept === null) return tabBusy();
-    console.info('[versions] kept', {
-      documentId: document.id,
-      tabId,
-      kind: 'manual',
-      rev: kept.rev,
-      store: 'snapshots',
-    });
-    return json({ version: kept }, { status: 201 });
-  } catch (err) {
-    console.warn('[versions] refused', { documentId: document.id, tabId, reason: 'store' }, err);
-  }
-  return keepInTabVersions(ctx, document, tabId, { rev, name, author, now });
+  const outcome = await nameCurrentVersion(ctx.env, {
+    documentId: document.id,
+    tabId,
+    name,
+    author: () => authorOf(ctx, owner),
+    who: (author) => personWho(author, tokenOf(ctx)),
+  });
+  if (outcome.ok) return json({ version: outcome.version }, { status: 201 });
+  if (outcome.reason === 'too_many_names') return tooManyNames();
+  return outcome.reason === 'tab_busy' ? tabBusy() : notFound();
 }
 
-// Name This Version as it was before the snapshots' store: a `manual` row of `tab_versions`, the fallback when that
-// store cannot be written (VH20).
-async function keepInTabVersions(
-  ctx: DocumentRouteContext,
-  document: DocumentDTO,
-  tabId: string,
-  v: { rev: number; name: string; author: Awaited<ReturnType<typeof authorOf>>; now: number },
-): Promise<Response> {
-  const { rev, name, author, now } = v;
-  const id = versionId();
-  await copyTabStatement(ctx.env, {
-    id,
-    tabId,
-    rev,
-    kind: 'manual',
-    name,
-    author,
-    now,
-  }).run();
-  const version = await getVersion(ctx.env, tabId, id);
-  // The tab moved between the read and the copy: name what now holds its revision on the next try.
-  if (!version) return tabBusy();
-  console.info('[versions] kept', { documentId: document.id, tabId, kind: 'manual', rev });
-  return json({ version: version.summary }, { status: 201 });
-}
+// The token that asks, for an agent's name on the rules' events; null for a person.
+const tokenOf = (ctx: DocumentRouteContext) =>
+  ctx.token ? { name: ctx.token.name ?? null } : null;
 
 // A name given, changed or taken off (VH11).
 async function rename(
@@ -232,5 +197,16 @@ async function rename(
   }
   const version = await nameVersion(ctx.env, tabId, current.id, name);
   console.info('[versions] named', { documentId: document.id, tabId, named: name !== null });
+  // A name given or changed is a version named, for the document's rules; one taken off is not.
+  if (version && name !== null && hearsVersion(ctx.env, VERSION_NAMED_EVENT)) {
+    const owner = ctx.resolveOwner();
+    if (owner !== null)
+      queueVersionEvent(ctx.env, 'named', {
+        tab: tabId,
+        version: version.id,
+        name: version.name,
+        who: personWho(await authorOf(ctx, owner), tokenOf(ctx)),
+      });
+  }
   return json({ version });
 }

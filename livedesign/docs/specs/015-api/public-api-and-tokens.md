@@ -420,7 +420,9 @@ OAuth / third-party app authorization landed in [MCP server](mcp-server.md).)
 Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.
 
-**Webhooks** are no longer out of scope: liveworkspace sends them for every app's items, from the index's
-events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. Anyone signed in who can edit the whole design adds one
-from the design's ⋯ menu in the Explorer (**Webhooks**): its owner, its team's people, or an Editor link to every
-tab; a Viewer, a Participant or a one-tab link never can, and a webhook reports on that design alone. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).
+**Outgoing messages** are not out of scope: an automation rule's step sends them, for every app's items, through one
+of the design's **connections**: any HTTPS endpoint (a signed JSON POST), a Slack channel or a Microsoft Teams channel. A
+connection hears no events by itself. Anyone signed in who can edit the whole design adds one on the Connections tab
+inside its [Automations](../013-workspace/automations.md): its owner, its team's people, or an Editor link to every
+tab; a Viewer, a Participant or a one-tab link never can, and an API token never picks one. See
+[Connections](../../../../liveworkspace/docs/specs/004-index/webhooks.md).

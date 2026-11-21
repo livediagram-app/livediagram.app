@@ -5,7 +5,7 @@
 // app/automation-scenes.css. Decoration only: aria-hidden.
 
 import type { ReactNode } from 'react';
-import { TileStage } from '@/components/tile-picker/tile-scene';
+import { TileStage } from '@liveworkspace/automations-ui/tile-picker/tile-scene';
 import type { AutomationTriggerKind } from '@liveplanner/items';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideClock, lucideMail, lucideWebhook } from '@liveworkspace/icons/lucide';
@@ -36,7 +36,7 @@ import {
   at,
   type SceneTone,
   type ToneClasses,
-} from './scene-parts';
+} from '@liveworkspace/automations-ui/scene-parts';
 import type { TriggerGroupId } from './trigger-groups';
 
 const TRIGGER_GROUP_TONES: Readonly<Record<TriggerGroupId, SceneTone>> = {

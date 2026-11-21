@@ -239,7 +239,7 @@ people connect files and follow them.
   words, and the default is Editor because the person asked for that. Only someone who may already share the target
   can make a pass to it.
 - **The code stays on the index.** It is handed to a reader of the host per open, with `Cache-Control: no-store`, and
-  never written into the host's content, its exports, its copies, its Community post, an agent's read or a webhook.
+  never written into the host's content, its exports, its copies, its Community post, an agent's read or a connection's message.
   A public (Community) link's grant opens no connection; a tab-scoped grant opens only a connection in its tab.
 - **Copies carry nothing.** A tab copied into another item keeps `{id, app, itemId}`, and the index refuses that id
   anywhere but its own host and tab. A tab forged by hand (an edited export, say) holds ids that open nothing, and

@@ -25,6 +25,9 @@ import { hasDocumentSchema } from './document-schema';
 import { documentShares, type ShareAnswer, type ShareMessage } from './tab-shares';
 import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
 import { communityOf } from './room-community';
+import type { AccessLevel } from '@livehuddle/api-schema';
+import { SOMEONE, hearsEvent, queueEvent, roleOfLevel } from '@liveworkspace/automations/room';
+import { getParticipant } from '../liveworkspace/profiles';
 import type { DocumentRoom } from './document-room';
 
 // The bodies of what the worker asks of a document (document-room.ts "RPC", document-client.ts): the class keeps
@@ -41,7 +44,11 @@ export async function route(
 ): Promise<Response> {
   room.bindDocument(documentId);
   const env = room.requireEnv();
-  if (identity.grant?.item === documentId) await room.takeHead(identity.grant);
+  if (identity.grant?.item === documentId) {
+    await room.takeHead(identity.grant);
+    // A grant signed since the Space was last put away says it is back (@liveworkspace/automations/room standing.ts).
+    await room.takeGrantStanding(identity.grant);
+  }
   const community = await communityOf(room, documentId);
   const writesBefore = room.writes;
   const response = await answerDocumentRequest(
@@ -175,12 +182,16 @@ export async function exportCopy(
   const post = copier?.code ? await communityOf(room, documentId) : null;
   const community = post !== null && post.open && post.code === copier?.code;
   const by = copier?.by ?? null;
+  // The rules go with a copy the Space's own people make, never one made through a share link or a Community post:
+  // the rules are an Editor's of the whole Space, and may name addresses (docs/specs/013-workspace/automations.md).
+  const withRules = !community && !copier?.code;
   const copy = await exportDocumentCopy(
     env,
     documentId,
     onlyTabId,
     by !== null && by !== meta.ownerId ? by : null,
     community,
+    withRules,
   );
   return copy ? { copy, community } : null;
 }
@@ -212,6 +223,7 @@ export async function joined(
   room: DocumentRoom,
   documentId: string,
   personId: string,
+  level?: AccessLevel,
 ): Promise<void> {
   room.bindDocument(documentId);
   if (!room.hasSchema()) return;
@@ -221,6 +233,36 @@ export async function joined(
   room.state.waitUntil(
     notifyDocumentJoin(env, { id: documentId, ownerId: meta.ownerId, name: meta.name }, personId),
   );
+  // Someone Joined (docs/specs/013-workspace/automations.md): the same first time in through a link.
+  if (hearsEvent(env, 'joined')) {
+    const who = await getParticipant(env, personId);
+    queueEvent(env, {
+      id: `joined:${personId}`,
+      kind: 'joined',
+      at: Date.now(),
+      by: { id: personId, name: who?.name ?? SOMEONE.name, color: who?.color ?? SOMEONE.color },
+      role: roleOfLevel(level),
+    });
+  }
+}
+
+// Someone asked for access to the Space (the index's `access_requested` notice): Access Requested, for the rules
+// that hear it. A Space never started has none, and is not started to say so.
+export function accessRequested(
+  room: DocumentRoom,
+  documentId: string,
+  requester: { id: string; name: string | null; requestId?: string },
+): void {
+  room.bindDocument(documentId);
+  if (!room.hasSchema()) return;
+  room.ensureSchema();
+  const env = room.requireEnv();
+  queueEvent(env, {
+    id: `access:${requester.requestId ?? requester.id}`,
+    kind: 'access_requested',
+    at: Date.now(),
+    by: { id: requester.id, name: requester.name?.trim() || SOMEONE.name, color: SOMEONE.color },
+  });
 }
 
 // A closed account's name off this canvas (document-anonymise.ts): the index's person purge, through the api.

@@ -10,20 +10,19 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { getSessionSharePassword } from '@/lib/api-client';
 import { itemHref, useTokenTeams } from '@/lib/explorer-host';
 
-// History and Webhooks for the open item in the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md),
-// mounted with the editor so they are there before the Explorer panel ever opens. Signed out, both show and ask for a
-// sign-in; signed in, History for an item not opened by a share link, Webhooks for one who may manage them.
+// History for the open item in the footer's Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md), mounted
+// with the editor so it is there before the Explorer panel ever opens. Signed out, it shows and asks for a sign-in;
+// signed in, it is offered for an item not opened by a share link. The plan's connections are a tab of its
+// Automations screen (docs/specs/026-plan/automations.md "Outgoing actions").
 export function ItemToolsHost({
   currentProjectId,
   currentShareCode,
-  onWebhooks,
 }: {
   currentProjectId: string | null | undefined;
   currentShareCode: string | null | undefined;
-  onWebhooks?: () => void;
 }) {
   const { isSignedIn, accountUserId } = useAccountBootstrap();
-  // Offline, both rows ask for a sync first (footer-tools-menu.md "Always there"), with Share's Sync move.
+  // Offline, the row asks for a sync first (footer-tools-menu.md "Always there"), with Share's Sync move.
   const { syncToCloud, selfParticipant } = useEditorContext();
   const isOffline = useIsOfflineProject(currentProjectId ?? null);
   const ready = selfParticipant.id !== 'self';
@@ -38,7 +37,6 @@ export function ItemToolsHost({
     app: 'liveplanner',
     signedIn: !!isSignedIn,
     offline,
-    onWebhooks,
     history:
       currentProjectId && !currentShareCode
         ? {

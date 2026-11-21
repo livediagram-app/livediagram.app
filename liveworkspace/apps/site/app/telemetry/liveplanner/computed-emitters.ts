@@ -392,7 +392,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/api/src/plan-room/automations/automation-telemetry.ts Plan·Ran': {
     values: AUTOMATION_TRIGGER_KINDS.map((kind) => `AutomationTrigger.${pascalToken(kind)}`),
   },
-  'apps/editor/components/automations/AutomationsDialog.tsx UI·Opened': {
+  'apps/editor/components/automations/plan-plumbing.ts UI·Opened': {
     values: AUTOMATION_TEMPLATE_IDS.map((id) => `AutomationTemplate.${id}`),
   },
   'apps/editor/components/dialogs/SettingsDialog.tsx UI·Opened': {

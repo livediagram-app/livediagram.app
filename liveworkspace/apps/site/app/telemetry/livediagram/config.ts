@@ -53,6 +53,7 @@ import {
   DISCUSSION,
   DOCUMENTS_CREATED,
   DOCUMENT_ACTIONS,
+  DOCUMENT_AUTOMATIONS,
   DRAW_TOUR,
   DRY_HELP_SEARCHES,
   EDITOR_CHROME,
@@ -257,7 +258,15 @@ export const LIVEDIAGRAM: TelemetryAppConfig = {
     },
     {
       title: 'Features',
-      metrics: [WHITEBOARDS, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+      metrics: [
+        WHITEBOARDS,
+        PALETTE_USE,
+        CANVAS_MODES,
+        LOOK_AND_FEEL,
+        PANELS_OPENED,
+        OFFLINE_MODE,
+        DOCUMENT_AUTOMATIONS,
+      ],
     },
     // Live Together is the only stack that counts two people on one canvas at
     // the same moment; the rest of Collaboration counts invitations to be there,

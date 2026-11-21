@@ -29,7 +29,7 @@ import { newRuleBody } from './rule-draft';
 
 // The automations routes (docs/specs/026-plan/blueprints/automations.md "Routes"): each call's path, method and body,
 // and a refusal read from the answer's body so the builder can mark the part it names.
-const SCOPE = { ownerId: 'me', projectId: 'p 1', shareCode: null };
+const SCOPE = { ownerId: 'me', itemId: 'p 1', shareCode: null };
 const body = newRuleBody('R', 'UTC');
 const fetched = vi.mocked(apiFetch);
 

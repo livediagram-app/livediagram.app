@@ -12,7 +12,9 @@ import { handleTabDelta } from './tab-delta-route';
 import { TAB_DELTA_SEGMENT } from '@liveworkspace/api-schema/tab-delta';
 import { handleTabRename } from './tab-name-route';
 import { handleTabPages } from './tab-pages-route';
-import { handleChangesetRoutes, refreshAfterRead } from './changesets';
+import { authorOf, handleChangesetRoutes, refreshAfterRead } from './changesets';
+import { SOMEONE, asTabWriter, writerOf } from '@liveworkspace/automations/room';
+import { handleAutomationRoutes } from './automation-routes';
 import { handleCommentRoutes } from './comment-routes';
 import { handleComponentRoutes } from './component-routes';
 import { handleNotifyAction } from './notify-action-route';
@@ -36,6 +38,9 @@ import { answerTabView, parseViewQuery } from './design-views-route';
 // null to let the main dispatcher fall through to the remaining routes.
 export async function handleDesignSubresources(ctx: DesignRouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
+  // The design's Automations (docs/specs/013-workspace/automations.md).
+  const automations = await handleAutomationRoutes(ctx);
+  if (automations) return automations;
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
@@ -169,7 +174,17 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
       // Read before the gates' awaits, the count is checked again in the delete itself, so two token deletes at
       // once can't take the last two tabs.
-      const removed = await deleteTabRow(env, id, tabId, { keepLast: !!ctx.token });
+      // Whoever removes it, for a Tab Removed rule (docs/specs/013-workspace/automations.md).
+      const removed = await asTabWriter(
+        env,
+        'tab_removed',
+        async () => {
+          const owner = ctx.resolveOwner();
+          const author = owner !== null ? await authorOf(ctx, owner) : SOMEONE;
+          return writerOf(author, ctx.token ? { name: ctx.token.name ?? null } : null);
+        },
+        () => deleteTabRow(env, id, tabId, { keepLast: !!ctx.token }),
+      );
       if (removed === 'last') return conflict('last_tab');
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       return noContent();

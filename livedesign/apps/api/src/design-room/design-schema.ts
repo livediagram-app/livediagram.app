@@ -18,6 +18,10 @@ import {
   tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
+import {
+  COLLAB_SEEN_SCHEMA_STEP,
+  itemAutomationSchemaSteps,
+} from '@liveworkspace/automations/room';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -324,7 +328,30 @@ type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
 // Automatic.
 const V9 = tabFolderColourStep('design_tabs');
 
-const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7, V8, V9];
+// Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
+// in its order, one entry each. Steps 10 to 17 are its rules, schedule, Incoming Webhook secrets, held runs, Describe
+// a Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 18 is the item
+// engine's tables and its three SQL triggers on `tabs` and `design_tabs` (@liveworkspace/automations/room
+// itemAutomationSchemaSteps). They follow the folder colour step, which shipped first.
+const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'design_tabs' }).map((s) => s.run);
+
+// Step 19: each tab's comment threads and actions as the comment triggers last saw them (the platform's collab
+// watch), kept only while a rule that is on hears one.
+const V19 = COLLAB_SEEN_SCHEMA_STEP;
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  V8,
+  V9,
+  ...AUTOMATION_STEPS,
+  V19,
+];
 
 export const DESIGN_SCHEMA_VERSION = STEPS.length;
 

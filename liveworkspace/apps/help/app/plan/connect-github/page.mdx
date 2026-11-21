@@ -58,7 +58,7 @@ The rule runs once on each card the pull request links, with any conditions and 
 
 When the plan hears more than one repository, the trigger's **Repositories** chips keep the rule to the ones you press. Press none and it hears every repository the plan hears.
 
-A GitHub rule's comments and messages can name the pull request: **Insert a Value** has a **Pull Request** group with its **Title**, **Number** and **Link** (`Merged: {{pull_request.title}}`). A private repository's title only goes out in Slack, Teams and webhook messages; in a comment, an email or anything else the plan keeps, it reads the pull request's short name (acme/web#42) instead.
+A GitHub rule's comments and messages can name the pull request: **Insert a Value** has a **Pull Request** group with its **Title**, **Number** and **Link** (`Merged: {{pull_request.title}}`). A private repository's title only goes out in Slack, Teams and Send to Webhook messages, which go to the plan's own connections; in a comment, an email or anything else the plan keeps, it reads the pull request's short name (acme/web#42) instead.
 
 ### Start From a Template
 
@@ -71,7 +71,7 @@ The quickest way in: **New Rule**, then **Start From a Template**, then the **Gi
 - **Back to In Progress When Closed**: moves the card back to In Progress when its pull request closes without merging (a card already done stays put).
 - **Post Merged Work to Slack**: posts the card's title and link to a Slack channel.
 
-Each fills in your plan's columns and fields by their names, and marks what it can't find ("Pick a column", "Pick a webhook") until you pick it. If the plan isn't connected yet, the rule's **When** step shows **Connect GitHub First**: connect there, and GitHub brings you back to the rule, unsaved as you left it. The GitHub chip shows only where GitHub is set up for liveplanner.
+Each fills in your plan's columns and fields by their names, and marks what it can't find ("Pick a column") until you pick it, and leaves a message step's connection for you to pick. If the plan isn't connected yet, the rule's **When** step shows **Connect GitHub First**: connect there, and GitHub brings you back to the rule, unsaved as you left it. The GitHub chip shows only where GitHub is set up for liveplanner.
 
 A GitHub rule on a plan that isn't connected, or was disconnected, never runs, so the Rules list marks it **Needs Attention: GitHub isn't connected**, with **Connect GitHub** beside it.
 

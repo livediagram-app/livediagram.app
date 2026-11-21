@@ -20,6 +20,10 @@ import {
   tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
+import {
+  COLLAB_SEEN_SCHEMA_STEP,
+  itemAutomationSchemaSteps,
+} from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SCHEMA } from '../versions/version-schema';
 
@@ -331,6 +335,17 @@ const V11 = NAMED_STORE_STEP;
 // the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as Automatic.
 const V12 = tabFolderColourStep('document_tabs');
 
+// Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
+// in its order, one entry each. Steps 13 to 20 are its rules, schedule, Incoming Webhook secrets, held runs, Describe
+// a Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 21 is the item
+// engine's tables and its three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room
+// itemAutomationSchemaSteps). They follow the folder colour step, which shipped first.
+const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
+
+// Step 22: each tab's comment threads and actions as the comment triggers last saw them (the platform's collab
+// watch), kept only while a rule that is on hears one.
+const V22 = COLLAB_SEEN_SCHEMA_STEP;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -344,6 +359,8 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V10,
   V11,
   V12,
+  ...AUTOMATION_STEPS,
+  V22,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

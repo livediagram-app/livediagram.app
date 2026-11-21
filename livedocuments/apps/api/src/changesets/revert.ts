@@ -25,6 +25,7 @@ type RevertArgs = {
   record: ChangesetRecord;
   author: Author;
   tokenId: string | null;
+  tokenName?: string | null;
   frontDoor: FrontDoor;
   waitUntil?: (promise: Promise<unknown>) => void;
 };
@@ -70,6 +71,7 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
       orderIndex: stored.orderIndex,
       author: args.author,
       tokenId: args.tokenId,
+      tokenName: args.tokenName ?? null,
       summary: null,
       baseRev: stored.rev,
       rebasedOver: 0,

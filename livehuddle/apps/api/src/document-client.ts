@@ -5,7 +5,8 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
-import type { CommunityAuthor } from '@livehuddle/api-schema';
+import type { AccessLevel, CommunityAuthor } from '@livehuddle/api-schema';
+import type { HookAnswer, HookCall } from '@liveworkspace/automations/room';
 import type {
   Copier,
   ExportCommentsResult,
@@ -19,10 +20,13 @@ import type { ShareAnswer, ShareMessage, SharedTabCopy } from './document-room/t
 import type { HearingAnswer, HearingAsk } from './calls/room-calls';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
-import type { ConnectedTabWrite } from '@liveworkspace/index-client';
+import type { ConnectedTabWrite, ItemStanding } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 export type CopySource = { copy: DocumentCopy; community: boolean };
+
+// Whoever asked for access, as the index's notice names them.
+export type AccessRequester = { id: string; name: string | null; requestId?: string };
 
 export type DocumentRoomClient = {
   // The tabs (no bodies) and slide deck a document read carries.
@@ -63,7 +67,15 @@ export type DocumentRoomClient = {
   // The post's id and author, for a visitor through its open link; null otherwise.
   communityListing(code: string): Promise<{ postId: string; author: CommunityAuthor } | null>;
   // Someone opened the canvas through a share link for the first time (the index's notice): the owner's email.
-  joined(personId: string): Promise<void>;
+  joined(personId: string, level?: AccessLevel): Promise<void>;
+  // Someone asked for access to the Space (the index's notice): Access Requested, for the rules that hear it.
+  accessRequested(requester: AccessRequester): Promise<void>;
+  // Automations' doors (@liveworkspace/automations/room doors.ts): an Incoming Webhook call to one rule, and a
+  // rule email's unsubscribe (false for a token the Space never made).
+  incomingHook(ruleId: string, call: HookCall): Promise<HookAnswer>;
+  emailOptOut(token: string): Promise<boolean>;
+  // Where the Space stands at the index (@liveworkspace/automations/room standing.ts): put away, its rules run nothing.
+  takeStanding(standing: ItemStanding): Promise<void>;
   // A closed account's name off the canvas (document-anonymise.ts), and the guests it signed in from off its
   // Attendance (`guestKeys`, their collab keys) and as its own (`guestIds`, the index's): answers the rows changed.
   anonymise(
@@ -108,7 +120,11 @@ export function documentRoom(
     community: () => room.community(documentId),
     communityPostTitle: (code) => room.communityPostTitle(documentId, code),
     communityListing: (code) => room.communityListing(documentId, code),
-    joined: (personId) => room.joined(documentId, personId),
+    joined: (personId, level) => room.joined(documentId, personId, level),
+    accessRequested: (requester) => room.accessRequested(documentId, requester),
+    incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
+    emailOptOut: (token) => room.emailOptOut(documentId, token),
+    takeStanding: (standing) => room.takeStanding(documentId, standing),
     anonymise: (personId, guestKeys = [], guestIds = []) =>
       room.anonymise(documentId, personId, guestKeys, guestIds),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
@@ -148,7 +164,11 @@ export type DocumentRoomRpc = {
     documentId: string,
     code: string,
   ): Promise<{ postId: string; author: CommunityAuthor } | null>;
-  joined(documentId: string, personId: string): Promise<void>;
+  joined(documentId: string, personId: string, level?: AccessLevel): Promise<void>;
+  accessRequested(documentId: string, requester: AccessRequester): Promise<void>;
+  incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
+  emailOptOut(documentId: string, token: string): Promise<boolean>;
+  takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
   anonymise(
     documentId: string,
     personId: string,

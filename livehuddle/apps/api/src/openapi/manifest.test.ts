@@ -21,6 +21,12 @@ function dispatchedSegments(): Set<string> {
   const source = readFileSync(fileURLToPath(new URL('../index.ts', import.meta.url).href), 'utf8');
   const segments = new Set<string>();
   for (const m of source.matchAll(/case '([^']+)':/g)) if (m[1]) segments.add(m[1]);
+  // An Incoming Webhook call, answered ahead of identity (docs/specs/013-workspace/automations.md).
+  if (/segments\[1\] === 'hooks'\) return handleAutomationHook\(/.test(source))
+    segments.add('hooks');
+  // A rule email's unsubscribe door, answered ahead of identity too.
+  if (/segments\[1\] === 'email-optout'\) return handleEmailOptOut\(/.test(source))
+    segments.add('email-optout');
   return segments;
 }
 

@@ -2,12 +2,13 @@
 // docs/specs/026-plan/automations.md: the details the browser check turned up. Automation's bolt (never a rule
 // name's initials) wherever a change is stamped, a run's trigger line naming who once, and a column pick's hint
 // only while nothing is picked.
+import './test-kit';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { GITHUB_PERSON, automationPerson } from '@liveplanner/items';
 import { PersonDisc } from '@/components/plan/PersonDisc';
-import { RunSteps } from './RunSteps';
-import { ChipToggles } from './step-panels/panel-parts';
+import { RunSteps } from '@liveworkspace/automations-ui/RunSteps';
+import { ChipToggles } from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 afterEach(cleanup);
 

@@ -33,7 +33,7 @@ import { VisibilityBadge } from './badges';
 import { useExtras } from './extras';
 import { thenReload } from './ThisBrowser';
 import { useLibraryHost } from '../library/context';
-import { HistoryIcon, WebhookIcon } from '../ui/library-icons';
+import { HistoryIcon } from '../ui/library-icons';
 import { preloadMenuDialogs } from './lazy-dialogs';
 
 export function canManage(item: ShownItem): boolean {
@@ -60,7 +60,7 @@ export function ItemMenu({
 }) {
   const { actions, openItem, setRenamingId, openDialog, navigate, reloadLists, viewerId } =
     useExplorer();
-  const { slideOut, signedIn } = useExtras();
+  const { slideOut } = useExtras();
   const host = useLibraryHost();
   const trashed = item.trashedAt !== null;
   // Share and Change Folder load as the menu opens, so a press on either opens it at once (lazy-dialogs.ts).
@@ -165,14 +165,6 @@ export function ItemMenu({
           label="History"
           icon={<HistoryIcon />}
           onClick={run(() => openDialog({ kind: 'history', item }))}
-        />
-      ) : null}
-      {/* The document's own webhooks (004-index/webhooks.md): for a signed-in account who can edit it. */}
-      {renames && signedIn && host.webhooks ? (
-        <MenuActionRow
-          label="Webhooks"
-          icon={<WebhookIcon />}
-          onClick={run(() => openDialog({ kind: 'webhooks', item }))}
         />
       ) : null}
       {/* The label says what the click does, and so the state: no badge anywhere else. */}

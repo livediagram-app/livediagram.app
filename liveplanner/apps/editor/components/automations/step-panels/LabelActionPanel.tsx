@@ -7,7 +7,7 @@ import { useId } from 'react';
 import type { AutomationAction } from '@liveplanner/items';
 import { TextInput } from '@liveplanner/ui';
 import type { AutomationOutline } from '../automation-outline';
-import { PanelField } from './panel-parts';
+import { PanelField } from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 export function LabelActionPanel({
   action,

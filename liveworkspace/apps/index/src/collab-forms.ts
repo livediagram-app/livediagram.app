@@ -4,7 +4,6 @@ import type { App, CollabFormInput } from '@liveworkspace/index-client';
 import { isId, isPartId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, noContent, notFound, readObject } from './http';
-import { formResponseStatement } from './webhooks/outbox';
 import { FORM_CODE, LABEL_MAX, RESPONSES_MAX, clip, isCount, isTime } from './collab-parse';
 
 export function parseForm(value: unknown): CollabFormInput | null | undefined {
@@ -74,9 +73,7 @@ export async function pushForm(
       form.latestAt,
       form.code ?? null,
     );
-  // A count above none can be news to a webhook: its statement reads the held count, so it goes first, in one batch.
-  if (form.responses > 0) await db.batch([formResponseStatement(db, itemId, tabId, form), store]);
-  else await store.run();
+  await store.run();
   return noContent();
 }
 

@@ -3,13 +3,14 @@
 // GitHub chip and its six templates only where the deployment has the GitHub App, a GitHub template opening on When
 // with Connect GitHub First on a plan not connected, the rule and its picks kept for the round trip and marked again
 // on return, and nothing for someone who is not an Editor (the screen refuses them before the gallery).
+import '../test-kit';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
-import { AutomationsDialog } from '../AutomationsDialog';
-import type { AutomationsTarget } from '../AutomationsContext';
+import { AutomationsDialog } from '@liveworkspace/automations-ui/AutomationsDialog';
+import type { AutomationsTarget } from '@liveworkspace/automations-ui/AutomationsContext';
 import { AutomationRefusal } from '../automations-client';
 import { forgetAutomations } from '../use-automations';
 import { ANA, outline, rule } from '../test-fixtures';
@@ -42,11 +43,11 @@ vi.mock('@/hooks/persistence/useCapabilities', () => ({
 }));
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
-vi.mock('@/hooks/ui/useToast', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({
   useToast: () => ({ info: vi.fn(), success: vi.fn(), error: vi.fn(), warn: vi.fn() }),
 }));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 // The fixture plan: To Do, In Progress and Done, no column named like Review.
 const o = outline();
 const plan = {
@@ -164,8 +165,7 @@ describe('the GitHub templates', () => {
         initial={{
           view: 'rule',
           ruleId: null,
-          kept: { body, picks: [{ path: 'steps.0', pick: 'column' }] },
-          github: 'connected',
+          kept: { ruleId: null, body, picks: [{ path: 'steps.0', pick: 'column' }], part: null },
         }}
       />,
     );

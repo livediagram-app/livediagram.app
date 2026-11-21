@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // The room entry runs in a Durable Object; the pure entry uses none of the Workers types.
+    "lib": ["ES2023"],
+    "types": ["@cloudflare/workers-types", "node"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}

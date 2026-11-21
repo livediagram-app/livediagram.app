@@ -1,7 +1,7 @@
 'use client';
 
 // Record a Walkthrough's set-up (liveworkspace/docs/specs/006-media/walkthroughs.md "Recording"), a popover beside
-// Tools and a drawer on a phone, as Add Webhook is (owner, 2026-11-17: it floated over the canvas): the microphone and
+// Tools and a drawer on a phone, as Add Connection is (owner, 2026-11-17: it floated over the canvas): the microphone and
 // camera, the level meter, the bubble's corner, Hide From Recording, and Start Recording, which closes Tools for the
 // count. Loaded when it first opens.
 import { DevicePicker, NO_CAMERA } from '@liveworkspace/capture';

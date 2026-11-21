@@ -93,13 +93,12 @@ function parseDetail(text: string | null): Record<string, string | null> | null 
   }
 }
 
-// The item's link in its app (a card's opens the card), or null for none.
-function itemUrl(env: Env, row: DueRow, detail: Record<string, string | null> | null) {
+// The item's link in its app, or null for none (a test).
+function itemUrl(env: Env, row: DueRow) {
   if (!row.item_id || !isApp(row.app)) return null;
   const origin = appOrigin(env, row.app);
   if (!origin) return null;
-  const url = `${origin}${APP_ITEMS[row.app].itemPath}${encodeURIComponent(row.item_id)}`;
-  return detail?.cardId ? `${url}#item=${encodeURIComponent(detail.cardId)}` : url;
+  return `${origin}${APP_ITEMS[row.app].itemPath}${encodeURIComponent(row.item_id)}`;
 }
 
 const eventOf = (env: Env, row: DueRow): DeliveryEvent => {
@@ -114,7 +113,7 @@ const eventOf = (env: Env, row: DueRow): DeliveryEvent => {
     actorName: row.actor_name,
     detail,
     occurredAt: row.occurred_at,
-    url: itemUrl(env, row, detail),
+    url: itemUrl(env, row),
   };
 };
 

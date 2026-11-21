@@ -1,67 +1,14 @@
-// Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): what happens to one document, sent to another tool as it
-// happens. The names, limits and wire shapes the index, the document's Webhooks dialog and liveplanner's card moves
-// agree on.
+// Connections, once Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): an address one item's automation rules
+// send messages through. The names, limits and wire shapes the index, the Connections list and each app's rules
+// agree on; the identifiers keep the word webhook, as the index's routes, tables and codes do.
 
-import { APPS, type App } from './constants';
+import type { App } from './constants';
 
-/** The events a webhook can listen for: what can happen to an existing document (the event log's item events after
- *  it is made) and liveplanner's card moves and form responses. */
-export const WEBHOOK_EVENTS = [
-  'renamed',
-  'moved',
-  'trashed',
-  'shared',
-  'commented',
-  'action_assigned',
-  'action_done',
-  'card_moved',
-  'form_response',
-] as const;
-export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
+/** What a delivery can be: an automation rule's message, or Send Test's `ping`. A connection hears no events. */
+export type WebhookDeliveryType = 'automation' | 'ping';
 
-/** What a delivery can be about: an event, an automation rule's addressed send (never one a webhook picks), or Send
- *  Test's `ping`. */
-export type WebhookDeliveryType = WebhookEvent | 'automation' | 'ping';
-
-export const isWebhookEvent = (value: unknown): value is WebhookEvent =>
-  (WEBHOOK_EVENTS as readonly unknown[]).includes(value);
-
-/** Which apps send each event: every app has documents (the event log's events) and pushes its comment threads and
- *  actions; card moves and form responses are liveplanner's alone. */
-export const WEBHOOK_EVENT_APPS: Record<WebhookEvent, readonly App[]> = {
-  renamed: APPS,
-  moved: APPS,
-  trashed: APPS,
-  shared: APPS,
-  commented: APPS,
-  action_assigned: APPS,
-  action_done: APPS,
-  card_moved: ['liveplanner'],
-  form_response: ['liveplanner'],
-};
-
-/** The events a document of `app` can send, in WEBHOOK_EVENTS order. */
-export const webhookEventsOf = (app: App): WebhookEvent[] =>
-  WEBHOOK_EVENTS.filter((event) => WEBHOOK_EVENT_APPS[event].includes(app));
-
-/** Whose actions a webhook reports: anyone's, or only its creator's. */
-export const WEBHOOK_WHO = ['anyone', 'me'] as const;
-export type WebhookWho = (typeof WEBHOOK_WHO)[number];
-
-export const isWebhookWho = (value: unknown): value is WebhookWho =>
-  (WEBHOOK_WHO as readonly unknown[]).includes(value);
-
-/** Each event as the dialog's fallback names it (the dialog names an item event by its app's own word). */
+/** Each delivery type as Recent Deliveries and a chat's footer name it. */
 export const WEBHOOK_EVENT_LABELS: Record<WebhookDeliveryType, string> = {
-  renamed: 'Renamed',
-  moved: 'Moved',
-  trashed: 'Moved to the Trash',
-  shared: 'Share Link Made',
-  commented: 'Comment Added',
-  action_assigned: 'Action or Card Assigned',
-  action_done: 'Action or Card Done',
-  card_moved: 'Card Moved',
-  form_response: 'Form Response',
   automation: 'Automation',
   ping: 'Test',
 };
@@ -85,7 +32,8 @@ export const WEBHOOK_URL_MAX = 2048;
 export const WEBHOOK_PAYLOAD_MAX_BYTES = 16 * 1024;
 export const WEBHOOK_DELIVERIES_KEPT = 20;
 export const WEBHOOK_PENDING_MAX = 500;
-// Card moves one push may carry.
+// Card moves one push may carry. The index takes the push and drops it (connections hear no events): here until
+// @liveworkspace/index-app's outbox stops sending it.
 export const CARD_MOVES_MAX = 100;
 // Automation sends one push may carry, and how long a send's message and rule name may be (longer is cut).
 export const AUTOMATION_SENDS_MAX = 5;
@@ -98,20 +46,16 @@ export const WEBHOOK_TIMESTAMP_HEADER = 'X-Liveworkspace-Timestamp';
 export const WEBHOOK_EVENT_HEADER = 'X-Liveworkspace-Event';
 export const WEBHOOK_DELIVERY_HEADER = 'X-Liveworkspace-Delivery';
 
-/** A document's webhook as its dialog lists it: never its URL or secret, only the URL's host. */
+/** An item's connection as its list shows it: never its URL or secret, only the URL's host. */
 export type Webhook = {
   id: string;
-  // The document it reports on, and its app.
+  // The item it belongs to, and its app.
   itemId: string;
   app: App;
   name: string;
   kind: WebhookKind;
   host: string;
-  // The events it sends, in WEBHOOK_EVENTS order.
-  events: WebhookEvent[];
-  // Whose actions: anyone's, or only its creator's.
-  who: WebhookWho;
-  // Whether the person asking added it (or resumed it last), so Only Me reads "Only You" to them.
+  // Whether the person asking added it (or resumed it last): "Added by you".
   mine: boolean;
   createdAt: number;
   pausedAt: number | null;
@@ -143,19 +87,23 @@ export type CreateWebhookInput = {
   name: string;
   kind: WebhookKind;
   url: string;
-  events: WebhookEvent[];
-  // Absent: anyone.
-  who?: WebhookWho;
+  /** @deprecated A connection hears no events: ignored by the index. */
+  events?: readonly string[];
+  /** @deprecated Ignored by the index. */
+  who?: 'anyone' | 'me';
 };
 
 export type UpdateWebhookInput = {
   name?: string;
-  events?: WebhookEvent[];
-  who?: WebhookWho;
   paused?: boolean;
+  /** @deprecated A connection hears no events: ignored by the index. */
+  events?: readonly string[];
+  /** @deprecated Ignored by the index. */
+  who?: 'anyone' | 'me';
 };
 
-/** One card that changed status, as liveplanner pushes it (`PUT /app/items/:id/card-moves`). */
+/** One card that changed status, as liveplanner pushes it (`PUT /app/items/:id/card-moves`). The index answers 204
+ *  and does nothing with it. */
 export type CardMove = {
   cardId: string;
   cardKey: number | null;
@@ -163,30 +111,36 @@ export type CardMove = {
   card: string;
   from: string;
   to: string;
-  // Who moved it: their id (an account's for Only Me), and their name.
+  // Who moved it: their id and their name.
   actorId?: string | null;
   actorName?: string | null;
   at: number;
 };
 
-/** One message an automation rule posts through one of its plan's webhooks, as liveplanner pushes it
+/** What a rule's message is about: a card or a tab. `ref` is how the item numbers it ("WI-48", "#48"; a tab has
+ *  none), `url` a link that opens it in its app (dropped by the index unless it is on that app's origin). */
+export type AutomationSendSubject = { ref?: string; title: string; url: string };
+
+/** One message an automation rule posts through one of its item's connections, as the item's app pushes it
  *  (`POST /app/items/:id/automation-sends`, webhooks.md "Automation sends"). */
 export type AutomationSend = {
   // Made from the run and the step: the same key again queues nothing new.
   key: string;
-  // The webhook the rule names, one of the plan's own.
+  // The connection the rule names, one of the item's own.
   webhookId: string;
   // The rule's name.
   rule: string;
-  // The card the rule ran on (its number, its prefixed ref "WI-48" when its type has a prefix, title and link in
-  // liveplanner), or null for none.
-  card: { key: number; ref?: string; title: string; url: string } | null;
+  // What the run is about, or null (or absent) for the item alone.
+  subject?: AutomationSendSubject | null;
+  /** @deprecated Send `subject`. Read only when `subject` is absent: `ref` is the card's ref, else `#<key>`. */
+  card?: { key: number; ref?: string; title: string; url: string } | null;
   // The message, the rule's values filled in.
   text: string;
   at: number;
 };
 
-/** Why a send was refused: the webhook is not the plan's (or gone), it is paused, or it holds WEBHOOK_PENDING_MAX. */
+/** Why a send was refused: the connection is not the item's (or gone), it is paused, or it holds
+ *  WEBHOOK_PENDING_MAX. */
 export type AutomationSendRefusal = 'webhook_not_found' | 'webhook_paused' | 'webhook_full';
 
 /** One send's answer, in the order sent: queued, or refused with words for the rule's Audit Trail. */

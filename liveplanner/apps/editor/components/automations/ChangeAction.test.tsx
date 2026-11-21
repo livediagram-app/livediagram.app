@@ -2,12 +2,13 @@
 // docs/specs/026-plan/automations.md "The rule builder", "Time triggers": Change the Action to Assign on a rule with
 // nobody behind its trigger starts on the plan's first person, as + Add Action does, never on whoever triggered it
 // (which the api refuses for a time rule or an incoming webhook).
+import './test-kit';
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { useState } from 'react';
 import type { AutomationRuleBody, AutomationTrigger } from '@liveplanner/items';
 import { newRuleBody } from './rule-draft';
-import { StepPanel } from './StepPanel';
+import { StepPanel } from '@liveworkspace/automations-ui/StepPanel';
 import { startAction } from './step-defaults';
 import { ANA, outline, pickStep } from './test-fixtures';
 
@@ -30,7 +31,6 @@ function Panel({ trigger }: { trigger: AutomationTrigger }) {
       }}
       outline={outline()}
       faultPath={null}
-      person="Ana Costa"
       now={Date.UTC(2026, 10, 11)}
       timeZone="Europe/London"
     />

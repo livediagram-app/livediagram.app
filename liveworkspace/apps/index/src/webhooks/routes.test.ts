@@ -52,7 +52,6 @@ const post = (
       name: 'n',
       kind: 'json',
       url: 'https://hooks.example.com',
-      events: ['renamed'],
       ...input,
     },
   });
@@ -68,8 +67,6 @@ describe('who may manage a document’s webhooks', () => {
       name: 'Build bot',
       kind: 'json',
       host: 'hooks.example.com',
-      events: ['renamed', 'commented', 'card_moved'],
-      who: 'anyone',
       mine: true,
       pausedAt: null,
       lastDelivery: null,
@@ -77,6 +74,10 @@ describe('who may manage a document’s webhooks', () => {
     expect(secret).toMatch(/^whsec_/);
     const row = h.db.sql.prepare('SELECT * FROM webhooks').get() as Record<string, string>;
     expect(row.item_id).toBe(item.id);
+    // A connection hears no events: the columns left from when it did are written empty, and never listed.
+    expect(row).toMatchObject({ events: '[]', who: 'anyone' });
+    expect(webhook).not.toHaveProperty('events');
+    expect(webhook).not.toHaveProperty('who');
     expect(row.url_sealed).not.toContain('example');
     expect(row.secret_sealed).not.toContain(secret!);
     const key = (await importSealKey(WEBHOOK_KEY))!;
@@ -235,19 +236,6 @@ describe('what an add checks', () => {
     // Only invisible characters, or only bidi controls: a name that would look blank.
     [{ name: '​⁠﻿' }, 'invalid_webhook'],
     [{ name: '‮⁦' }, 'invalid_webhook'],
-    [{ events: [] }, 'invalid_webhook'],
-    [{ events: ['edited'] }, 'invalid_webhook'],
-    // Retired: a document is never made again, and mentions are gone.
-    [{ events: ['created'] }, 'invalid_webhook'],
-    [{ events: ['mention'] }, 'invalid_webhook'],
-    // The per-app topics of before are not events.
-    [{ events: ['livediagram:shared'] }, 'invalid_webhook'],
-    [{ events: ['shared', 7] }, 'invalid_webhook'],
-    // Object.prototype's names are no events (once a 500: they have no app list).
-    [{ events: ['constructor'] }, 'invalid_webhook'],
-    [{ events: ['toString', 'shared'] }, 'invalid_webhook'],
-    [{ events: ['__proto__'] }, 'invalid_webhook'],
-    [{ who: 'everyone' }, 'invalid_webhook'],
     [{ kind: 'discord' }, 'invalid_webhook'],
     [{ url: 'http://hooks.example.com' }, 'webhook_url_invalid'],
     [{ url: 'https://10.0.0.1/x' }, 'webhook_url_private'],
@@ -260,29 +248,19 @@ describe('what an add checks', () => {
     expect(await body(res)).toEqual({ error });
   });
 
-  it("offers a document only its app's events: a canvas has no card moves or forms", async () => {
+  it('ignores events and Who Did It in a body, from a client of before connections', async () => {
     const ada = await person('user_wa4');
     const canvas = await makeItem(ada.auth, { app: 'livediagram' });
-    for (const events of [['card_moved'], ['form_response'], ['shared', 'card_moved']]) {
-      expect(await body(await post(ada.auth, canvas.id, { events }))).toEqual({
-        error: 'invalid_webhook',
-      });
+    for (const old of [
+      { events: ['card_moved'], who: 'me' },
+      { events: 7, who: 'everyone' },
+    ]) {
+      const res = await post(ada.auth, canvas.id, old);
+      expect(res.status).toBe(201);
     }
-    const { webhook } = await addWebhook(ada.auth, canvas.id, {
-      events: ['commented', 'shared', 'commented'],
-    });
-    // De-duplicated, in WEBHOOK_EVENTS order, stored comma-wrapped.
-    expect(webhook.events).toEqual(['shared', 'commented']);
-    expect(h.db.sql.prepare('SELECT events FROM webhooks').get()).toEqual({
-      events: ',shared,commented,',
-    });
-  });
-
-  it('takes Who Did It: Anyone by default, Only Me when asked', async () => {
-    const ada = await person('user_wa5');
-    const item = await makeItem(ada.auth);
-    expect((await addWebhook(ada.auth, item.id)).webhook.who).toBe('anyone');
-    expect((await addWebhook(ada.auth, item.id, { who: 'me' })).webhook.who).toBe('me');
+    expect(h.db.sql.prepare('SELECT DISTINCT events, who FROM webhooks').all()).toEqual([
+      { events: '[]', who: 'anyone' },
+    ]);
   });
 
   it('refuses a host that resolves to a private address, or to nothing', async () => {
@@ -326,45 +304,32 @@ describe('what an add checks', () => {
 });
 
 describe('changing one', () => {
-  it('renames it and changes its events and Who Did It', async () => {
-    const ada = await person('user_wc1');
-    const item = await makeItem(ada.auth);
-    const { webhook } = await addWebhook(ada.auth, item.id);
+  it('renames it, ignoring events and Who Did It', async () => {
+    const bo = await person('user_wc1', { teams: [{ id: 'team1' }] });
+    const item = await makeItem(bo.auth, { teamId: 'team1' });
+    const { webhook } = await addWebhook(bo.auth, item.id);
+    const cy = await person('user_wc8', { teams: [{ id: 'team1' }] });
     const res = await call(`/webhooks/${webhook.id}`, {
       method: 'PATCH',
-      auth: ada.auth,
-      body: { name: 'Renamed', events: ['trashed', 'trashed'], who: 'me' },
+      auth: cy.auth,
+      body: { name: 'Renamed', events: ['mention'], who: 'me' },
     });
     expect((await body<{ webhook: Webhook }>(res)).webhook).toMatchObject({
       name: 'Renamed',
-      events: ['trashed'],
-      who: 'me',
+      mine: false,
     });
-    for (const bad of [
-      { name: '' },
-      { events: [] },
-      { events: ['mention'] },
-      { who: 'all' },
-      { paused: 'yes' },
-      [],
-    ]) {
+    // A rename leaves the creator alone, and nothing is kept of the rest.
+    expect(h.db.sql.prepare('SELECT created_by, events, who FROM webhooks').get()).toEqual({
+      created_by: 'user_wc1',
+      events: '[]',
+      who: 'anyone',
+    });
+    for (const bad of [{ name: '' }, { paused: 'yes' }, []]) {
       expect(
-        (await call(`/webhooks/${webhook.id}`, { method: 'PATCH', auth: ada.auth, body: bad }))
+        (await call(`/webhooks/${webhook.id}`, { method: 'PATCH', auth: cy.auth, body: bad }))
           .status,
       ).toBe(400);
     }
-  });
-
-  it("refuses an event the document's app never sends", async () => {
-    const ada = await person('user_wc6');
-    const canvas = await makeItem(ada.auth, { app: 'livediagram' });
-    const { webhook } = await addWebhook(ada.auth, canvas.id, { events: ['shared'] });
-    const res = await call(`/webhooks/${webhook.id}`, {
-      method: 'PATCH',
-      auth: ada.auth,
-      body: { events: ['card_moved'] },
-    });
-    expect(res.status).toBe(400);
   });
 
   it('keeps a name without bidi controls or invisible ends, as added and as renamed', async () => {
@@ -420,31 +385,6 @@ describe('changing one', () => {
     expect(h.db.sql.prepare('SELECT created_by, failures FROM webhooks').get()).toEqual({
       created_by: 'user_wc3',
       failures: 0,
-    });
-  });
-
-  it('makes whoever sets Only Me its creator, so Only Me means them', async () => {
-    const bo = await person('user_wc7', { teams: [{ id: 'team3' }] });
-    const item = await makeItem(bo.auth, { teamId: 'team3' });
-    const { webhook } = await addWebhook(bo.auth, item.id);
-    const cy = await person('user_wc8', { teams: [{ id: 'team3' }] });
-    // A rename leaves the creator alone.
-    await call(`/webhooks/${webhook.id}`, { method: 'PATCH', auth: cy.auth, body: { name: 'x' } });
-    expect(h.db.sql.prepare('SELECT created_by FROM webhooks').get()).toEqual({
-      created_by: 'user_wc7',
-    });
-    const res = await call(`/webhooks/${webhook.id}`, {
-      method: 'PATCH',
-      auth: cy.auth,
-      body: { who: 'me' },
-    });
-    expect((await body<{ webhook: Webhook }>(res)).webhook).toMatchObject({
-      who: 'me',
-      mine: true,
-    });
-    expect(h.db.sql.prepare('SELECT created_by, who FROM webhooks').get()).toEqual({
-      created_by: 'user_wc8',
-      who: 'me',
     });
   });
 
@@ -606,28 +546,29 @@ describe("a team's audit log", () => {
 });
 
 describe("a plan's card moves", () => {
-  it("keeps the mover's id, so an Only Me webhook hears only its creator's moves", async () => {
+  // liveplanner still pushes them (packages/index-app's outbox): taken and dropped, whatever they say.
+  it('answers 204 and queues nothing, from the item’s own app only', async () => {
     const ada = await person('user_wm1');
     const plan = await makeItem(ada.auth);
-    await addWebhook(ada.auth, plan.id, { events: ['card_moved'], who: 'me' });
-    const at = Date.now();
-    const move = (cardId: string, actorId: string) => ({
-      cardId,
+    await addWebhook(ada.auth, plan.id);
+    const push = (payload: unknown, app = 'liveplanner', key = 'lp-key') =>
+      call(`/app/items/${plan.id}/card-moves`, {
+        method: 'PUT',
+        auth: key,
+        headers: { 'X-Index-App': app },
+        body: payload,
+      });
+    const move = {
+      cardId: 'c1',
       cardKey: 1,
       card: 'Fix',
       from: 'Doing',
       to: 'Done',
-      actorId,
-      actorName: 'Someone',
-      at,
-    });
-    const res = await call(`/app/items/${plan.id}/card-moves`, {
-      method: 'PUT',
-      auth: 'lp-key',
-      headers: { 'X-Index-App': 'liveplanner' },
-      body: { moves: [move('c1', 'user_wm1'), move('c2', 'user_someone')] },
-    });
-    expect(res.status).toBe(204);
-    expect(deliveries().map((d) => [d.type, d.actor_id])).toEqual([['card_moved', 'user_wm1']]);
+      at: Date.now(),
+    };
+    expect((await push({ moves: [move] })).status).toBe(204);
+    expect((await push({ moves: 'anything' })).status).toBe(204);
+    expect(deliveries()).toEqual([]);
+    expect((await push({ moves: [] }, 'livediagram', 'ld-key')).status).toBe(403);
   });
 });

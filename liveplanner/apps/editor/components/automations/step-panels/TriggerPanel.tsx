@@ -1,7 +1,7 @@
 'use client';
 
 // The When panel (docs/specs/026-plan/automations.md "Triggers"): which trigger starts the rule, a card's or a
-// time's (picked in the Pick a Trigger picker, ChangeTriggerField), then what narrows it: Card Created's column, Form Response's Form tab, Email Received's
+// time's (picked in the platform's Pick a Trigger picker, above these fields), then what narrows it: Card Created's column, Form Response's Form tab, Email Received's
 // board and From (EmailTriggerFields), Card Moved's Card Types and its From and To columns (only those the picked types use, card-moved-columns.ts),
 // Field Changed's fields (at least one), nothing for Comment Added and Run from a Card, and a time trigger's
 // schedule (TimeTriggerPanel), an Incoming Webhook's address and secret (IncomingWebhookPanel), and a GitHub trigger's
@@ -20,12 +20,15 @@ import {
   outlineFields,
   type AutomationOutline,
 } from '../automation-outline';
-import { ChipToggles, PanelField, PanelNote, PanelSelect } from './panel-parts';
-import { IncomingWebhookPanel } from './IncomingWebhookPanel';
+import {
+  ChipToggles,
+  PanelField,
+  PanelNote,
+  PanelSelect,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
+import { IncomingWebhookPanel } from '@liveworkspace/automations-ui/step-panels/IncomingWebhookPanel';
 import { EmailTriggerFields } from './EmailTriggerFields';
 import { TimeTriggerPanel } from './TimeTriggerPanel';
-import { ChangeTriggerField } from './ChangeTriggerField';
-import { freshTrigger } from '../trigger-groups';
 import {
   cardMovedColumns,
   unusedPicks,
@@ -104,20 +107,7 @@ export function TriggerPanel({
     }
   }
   return (
-    <div className="flex flex-col gap-4">
-      <ChangeTriggerField
-        kind={trigger.kind}
-        onChange={(kind) =>
-          onChange(
-            freshTrigger(
-              kind,
-              fields.map((f) => f.id),
-              outline.columns.map((c) => c.status),
-              trigger,
-            ),
-          )
-        }
-      />
+    <>
       {trigger.kind === 'card_created' ? (
         <PanelField label="In Column">
           {(id) => (
@@ -307,6 +297,6 @@ export function TriggerPanel({
           While the rule is on, it is listed under Run Rule in every card’s ⋯ menu.
         </PanelNote>
       ) : null}
-    </div>
+    </>
   );
 }

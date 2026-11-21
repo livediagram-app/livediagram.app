@@ -11,7 +11,11 @@ import {
 import { TextInput } from '@liveplanner/ui';
 import { outlineFields, type AutomationOutline } from '../automation-outline';
 import { FLAG_OP_WORDS, fieldClass, isDateOp, opTakesValue, opsFor } from '../field-kinds';
-import { PanelField, PanelSelect, TodayShift } from './panel-parts';
+import {
+  PanelField,
+  PanelSelect,
+  TodayShift,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 type FieldCondition = AutomationCondition & { kind: 'field' };
 

@@ -8,8 +8,15 @@ export * from './validate';
 export * from './attention';
 export * from './plan-actions';
 export * from './sentence';
-export * from './email-addresses';
-export * from './email-trigger';
+// Typed-in addresses and an email trigger's From filter: @liveworkspace/automations'.
+export {
+  EMAIL_SENDER_MAX,
+  addressWords,
+  automationAddress,
+  emailSenderFilter,
+  senderHeard,
+  splitAddresses,
+} from '@liveworkspace/automations';
 export * from './schedule';
 export * from './related';
 export * from './derived';

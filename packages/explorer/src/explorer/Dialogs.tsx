@@ -40,11 +40,6 @@ const HistoryDialog = lazy(() =>
   import('../library/HistoryDialog').then((m) => ({ default: m.HistoryDialog })),
 );
 
-// Webhooks loads when it is first opened: its forms and pickers are only for the few who add one.
-const WebhooksDialog = lazy(() =>
-  import('../library/WebhooksDialog').then((m) => ({ default: m.WebhooksDialog })),
-);
-
 // The Community tab (@liveworkspace/community-ui: its guide, section and publish dialog) loads when an item with a
 // Community is first shared, so an Explorer that never shares one never downloads it.
 const ShareDialogWithCommunity = lazy(() =>
@@ -315,12 +310,6 @@ export function ExplorerDialogs() {
       return (
         <Suspense fallback={null}>
           <HistoryDialog item={dialog.item} onClose={close} />
-        </Suspense>
-      );
-    case 'webhooks':
-      return (
-        <Suspense fallback={null}>
-          <WebhooksDialog item={dialog.item} onClose={close} />
         </Suspense>
       );
     case 'delete-local': {

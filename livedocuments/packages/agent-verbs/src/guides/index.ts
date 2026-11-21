@@ -1,5 +1,8 @@
 // How-tos (docs/specs/015-api/cli.md "Help"): the depth top-level help leaves out, paid for only when asked.
 
+import { ruleGuide } from '@liveworkspace/agent-verbs/verbs/rule';
+import { AGENT_PRODUCT } from '../agent-product';
+
 // The most one topic may cost (blueprint "Constants and configuration", CLI49).
 export const GUIDE_TOPIC_MAX_TOKENS = 1200;
 
@@ -95,6 +98,7 @@ Threads sit on elements. Read the open ones as a view:
 
 Reply to and resolve threads in the editor.`,
   },
+  rules: ruleGuide(AGENT_PRODUCT),
   collaborate: {
     summary: 'work beside people on the same document',
     text: `Collaborate

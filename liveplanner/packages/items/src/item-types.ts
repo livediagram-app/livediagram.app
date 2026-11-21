@@ -137,10 +137,9 @@ export const RATING_FIELD_SCALE_DEFAULT = 5;
 export const ratingScaleOf = (field: Pick<CustomFieldDef, 'scale'>): number =>
   field.scale ?? RATING_FIELD_SCALE_DEFAULT;
 export const CURRENCY_CODE = /^[A-Z]{3}$/;
-// An email address as a field keeps it: something@domain.tld, no spaces, up to 254 characters.
-export const EMAIL_MAX = 254;
-export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-export const isEmailAddress = (v: string) => v.length <= EMAIL_MAX && EMAIL_PATTERN.test(v);
+// An email address as a field keeps it: something@domain.tld, no spaces, up to 254 characters. The one check, shared
+// with a rule's typed-in addresses (@liveworkspace/automations email-addresses.ts).
+export { EMAIL_MAX, EMAIL_PATTERN, isEmailAddress } from '@liveworkspace/automations';
 
 // A Calculated field's menu (docs/specs/026-plan/item-types.md "Calculated fields"), in the order it is offered:
 // how many children a card has, the share of them that are done, one of the children's fields aggregated (a Rollup),

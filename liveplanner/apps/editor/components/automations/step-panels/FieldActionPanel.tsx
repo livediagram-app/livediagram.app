@@ -12,8 +12,12 @@ import { TextInput } from '@liveplanner/ui';
 import { fieldChangeFields, outlineFields, type AutomationOutline } from '../automation-outline';
 import { fieldPick, OWN_ACTION_FIELDS, startText, type Choice } from '../field-pick';
 import { fieldClass } from '../field-kinds';
-import { ValueTextField } from '../ValueInsert';
-import { PanelField, PanelSelect, TodayShift } from './panel-parts';
+import { ValueTextField } from '@liveworkspace/automations-ui/ValueInsert';
+import {
+  PanelField,
+  PanelSelect,
+  TodayShift,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 type FieldAction = AutomationAction & { kind: 'set_field' | 'clear_field' };
 type SetFrom = 'text' | 'number' | 'date' | 'from';
@@ -199,7 +203,8 @@ export function FieldActionPanel({
           label="Text"
           multiline={false}
           value={value.text}
-          fields={fields}
+          // Insert a Value offers the fields this step may read, no more.
+          narrow={fields}
           invalid={invalid}
           branch={branch}
           hint={cls === 'list' ? 'Labels or values, separated by commas.' : undefined}

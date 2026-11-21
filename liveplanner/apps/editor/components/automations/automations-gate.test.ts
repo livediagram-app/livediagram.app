@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { automationsGateFor, automationsScopeFor } from './automations-gate';
+import {
+  automationsGateFor,
+  automationsScopeFor,
+} from '@liveworkspace/automations-ui/automations-gate';
 
 // docs/specs/026-plan/automations.md "Who may do what": an Editor of the whole plan, on a plan saved to an account.
-const SCOPE = { ownerId: 'me', projectId: 'p1', shareCode: null, tabId: null };
+const SCOPE = { ownerId: 'me', itemId: 'p1', shareCode: null, tabId: null };
 const EDITOR = {
   level: 'edit' as const,
   structureReadOnly: false,
@@ -18,13 +21,15 @@ describe('automationsScopeFor', () => {
   it('opens for an Editor of the whole plan saved to an account', () => {
     expect(automationsScopeFor(EDITOR)).toEqual({
       ownerId: 'me',
-      projectId: 'p1',
+      itemId: 'p1',
       shareCode: null,
+      as: ':edit',
     });
     expect(automationsScopeFor({ ...EDITOR, scope: { ...SCOPE, shareCode: 'abc' } })).toEqual({
       ownerId: 'me',
-      projectId: 'p1',
+      itemId: 'p1',
       shareCode: 'abc',
+      as: ':edit',
     });
   });
 

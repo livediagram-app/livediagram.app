@@ -3,6 +3,11 @@
 // fill a rule by role (the done columns, an In Progress column, a column named like Review, a date field named like
 // Completed On, a Bug type). Pure.
 
+import type {
+  AutomationTemplate as Template,
+  AutomationTemplateFill as TemplateFill,
+  AutomationTemplatePickAt as TemplatePickAt,
+} from '@liveworkspace/automations';
 import type { ItemTypeDef } from '../item-types';
 import type { StatusPhase } from '../plan-views';
 import type {
@@ -51,18 +56,13 @@ export const AUTOMATION_PICK_WORDS: Readonly<Record<AutomationPick, string>> = {
   field: 'Pick a field',
   label: 'Pick a label',
   people: 'Pick people',
-  webhook: 'Pick a webhook',
+  webhook: 'Pick a connection',
 };
 
-export interface AutomationTemplatePickAt {
-  path: string;
-  pick: AutomationPick;
-}
+// A template, its fill and its picks are @liveworkspace/automations' shapes, over a plan's rule and picks.
+export type AutomationTemplatePickAt = TemplatePickAt<AutomationPick>;
 
-export interface AutomationTemplateFill {
-  body: AutomationRuleBody;
-  picks: AutomationTemplatePickAt[];
-}
+export type AutomationTemplateFill = TemplateFill<AutomationRuleBody, AutomationPick>;
 
 // The fixed list (telemetry carries the id: `UI · Opened · AutomationTemplate`).
 export const AUTOMATION_TEMPLATE_IDS = [
@@ -99,14 +99,14 @@ export const AUTOMATION_TEMPLATE_IDS = [
 ] as const;
 export type AutomationTemplateId = (typeof AUTOMATION_TEMPLATE_IDS)[number];
 
-export interface AutomationTemplate {
-  id: AutomationTemplateId;
-  name: string;
-  // The tile's sentence (the spec's table).
-  description: string;
-  category: AutomationTemplateCategory;
-  build: (plan: AutomationTemplatePlan) => AutomationTemplateFill;
-}
+// `description`: the tile's sentence (the spec's table).
+export type AutomationTemplate = Template<
+  AutomationTemplateId,
+  AutomationTemplateCategory,
+  AutomationTemplatePlan,
+  AutomationRuleBody,
+  AutomationPick
+>;
 
 // ---- Filling by role --------------------------------------------------------------------------------------------
 

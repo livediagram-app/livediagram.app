@@ -3,61 +3,82 @@
 // schedule.ts and related.ts.
 // Plain JSON throughout: a rule is stored, sent and copied as written.
 
+import {
+  AUTOMATION_COLOR,
+  AUTOMATION_PERSON_ID,
+  type AutomationGone as Gone,
+  type AutomationIf as If,
+  type AutomationRule as Rule,
+  type AutomationRuleBody as RuleBody,
+  type AutomationRunShell,
+  type AutomationStamp as Stamp,
+  type AutomationStepLine as StepLine,
+  type AutomationClock,
+  type AutomationDay,
+  type AutomationOutgoing,
+  type AutomationWait,
+} from '@liveworkspace/automations';
 import type { ItemPerson } from '../item';
 
-// Limits (spec "Limits").
-export const AUTOMATION_RULES_MAX = 50;
-export const AUTOMATION_CONDITIONS_MAX = 10;
-export const AUTOMATION_ACTIONS_MAX = 20;
-export const AUTOMATION_CHAIN_MAX = 5;
-export const AUTOMATION_RUNS_PER_DAY = 1000;
-export const AUTOMATION_QUEUE_MAX = 500;
-export const AUTOMATION_FAILURES_TO_PAUSE = 10;
-export const AUTOMATION_LOG_MAX = 2000;
-export const AUTOMATION_LOG_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-export const AUTOMATION_TEXT_MAX = 2000;
-export const AUTOMATION_NAME_MAX = 60;
+// The limits every app's rules share, the rule shell and the steps every app has (Wait, a message through a webhook)
+// are @liveworkspace/automations' (liveworkspace/docs/specs/018-automations/automations.md); the card kinds are here.
+export {
+  AUTOMATION_ACTIONS_MAX,
+  AUTOMATION_ADDRESS_EMAILS_PER_DAY,
+  AUTOMATION_AI_PER_DAY,
+  AUTOMATION_AI_STEPS_MAX,
+  AUTOMATION_AI_SUMMARY_MAX,
+  AUTOMATION_CHAIN_MAX,
+  AUTOMATION_COLOR,
+  AUTOMATION_CONDITIONS_MAX,
+  AUTOMATION_EMAIL_ADDRESSES_MAX,
+  AUTOMATION_FAILURES_TO_PAUSE,
+  AUTOMATION_LATE_MAX_MS,
+  AUTOMATION_LOG_MAX,
+  AUTOMATION_LOG_MAX_AGE_MS,
+  AUTOMATION_NAME_MAX,
+  AUTOMATION_OUTGOING_MAX,
+  AUTOMATION_PERSON_ID,
+  AUTOMATION_QUEUE_MAX,
+  AUTOMATION_RULES_MAX,
+  AUTOMATION_RUNS_PER_DAY,
+  AUTOMATION_TEXT_MAX,
+  AUTOMATION_WAITING_RUNS_MAX,
+  AUTOMATION_WAITS_MAX,
+  AUTOMATION_WAIT_HOURS_MAX,
+  AUTOMATION_WAIT_HOURS_MIN,
+  type AutomationClock,
+  type AutomationDay,
+  type AutomationOutgoing,
+  type AutomationResult,
+  type AutomationRuleStats,
+  type AutomationVia,
+  type AutomationWait,
+} from '@liveworkspace/automations';
+
+// Limits of the card kinds (spec "Limits").
 export const AUTOMATION_CREATED_PER_RUN = 1;
-// Phase 2 (spec "Time triggers", "For Related Cards", "Outgoing actions", "Assign in turn").
+// Phase 2 (spec "Time triggers", "For Related Cards", "Assign in turn").
 export const AUTOMATION_TIME_CARDS_MAX = 100;
 export const AUTOMATION_BRANCH_CARDS_MAX = 100;
 // Card Unblocked and Related Cards Done (spec "Triggers"): the cards one move runs the rule on, the first by number.
 export const AUTOMATION_DERIVED_CARDS_MAX = 100;
 export const AUTOMATION_BRANCH_ACTIONS_MAX = 10;
-export const AUTOMATION_OUTGOING_MAX = 5;
 export const AUTOMATION_ROTATE_MIN = 2;
 export const AUTOMATION_ROTATE_MAX = 10;
 export const AUTOMATION_DUE_DAYS_MAX = 30;
-export const AUTOMATION_LATE_MAX_MS = 24 * 60 * 60 * 1000;
-// Phase 3's AI actions (spec "AI actions"): the calls a plan makes a day (UTC), the AI steps one rule holds, a
-// summary's length and the labels Triage adds.
-export const AUTOMATION_AI_PER_DAY = 100;
-export const AUTOMATION_AI_STEPS_MAX = 3;
-export const AUTOMATION_AI_SUMMARY_MAX = 600;
+// Phase 3's AI actions (spec "AI actions"): the labels Triage adds.
 export const AUTOMATION_AI_LABELS_MAX = 3;
-// The actions after Phase 3 (spec "Actions", "Wait"): a checklist's items, the Waits a rule holds and how long one
-// holds, and the runs a plan holds waiting.
+// The actions after Phase 3 (spec "Actions"): a checklist's items.
 export const AUTOMATION_CHECKLIST_ITEMS_MAX = 20;
 // Change Card Type's explicit mappings (Map Fields): a type's 12 custom fields and its Description, each named once.
 export const AUTOMATION_TYPE_MAPS_MAX = 13;
-export const AUTOMATION_WAITS_MAX = 3;
-export const AUTOMATION_WAIT_HOURS_MIN = 1;
-export const AUTOMATION_WAIT_HOURS_MAX = 30 * 24;
-export const AUTOMATION_WAITING_RUNS_MAX = 500;
 // The triggers after Phase 3 (spec "Triggers"): Card Stuck's days and Column Over Limit's limit.
 export const AUTOMATION_STUCK_DAYS_MAX = 90;
 export const AUTOMATION_COLUMN_LIMIT_MAX = 500;
-// Send Email's typed-in addresses (spec "Typed-in addresses"): the most one step holds, and the emails a plan sends to
-// such addresses a UTC day, over every rule, each address one. 50 is the owner's choice (2026-11-13, "Cap and
-// unsubscribe"): a team's own notices to a few outside people fit in it many times over, while a plan can never be
-// turned into a bulk mailer from liveplanner's sending domain.
-export const AUTOMATION_EMAIL_ADDRESSES_MAX = 10;
-export const AUTOMATION_ADDRESS_EMAILS_PER_DAY = 50;
 
 // Who a rule's changes are by: `name` is the rule's name at the moment it ran, the history tag says it was a rule.
 // `via`: a GitHub-triggered run's stamp says so (automations.md "On cards").
-export const AUTOMATION_PERSON_ID = 'automation';
-export const AUTOMATION_COLOR = '#7c3aed';
 export function automationPerson(ruleName: string, via?: 'github'): ItemPerson {
   return {
     id: AUTOMATION_PERSON_ID,
@@ -84,9 +105,6 @@ export const EMAIL_TEST_PERSON: ItemPerson = {
 };
 
 // ---- Triggers ----------------------------------------------------------------------------------------------------
-
-// A time of day, 'HH:MM' in the rule's time zone, on the quarter hour.
-export type AutomationClock = string;
 
 export type AutomationTrigger =
   | { kind: 'card_created'; status?: string }
@@ -202,9 +220,6 @@ export type AutomationFieldOp =
   | 'less_than'
   | 'more_than';
 
-// A day a date condition compares with: a fixed day, or today shifted by whole days.
-export type AutomationDay = { day: string } | { today: number };
-
 export type AutomationWho = { person: string } | { role: 'editor' | 'participant' | 'agent' };
 
 export type AutomationCondition =
@@ -278,18 +293,6 @@ export type AutomationAction =
 
 export type AutomationActionKind = AutomationAction['kind'];
 
-// Send to Webhook, Post to Slack, Post to Teams: through one of the plan's platform webhooks, by id.
-export type AutomationOutgoing = {
-  kind: 'notify';
-  via: 'webhook' | 'slack' | 'teams';
-  webhook: string;
-  // The webhook's name when it was picked, for the Audit Trail's "Queued for Launch Channel" (the room holds no list of
-  // the plan's webhooks); the builder's sentence reads the current name where it has one.
-  name?: string;
-  text: string;
-};
-export type AutomationVia = AutomationOutgoing['via'];
-
 // Which cards a branch runs on, from the triggering card.
 export type AutomationRelated =
   | { kind: 'linked'; field?: string }
@@ -298,12 +301,7 @@ export type AutomationRelated =
   | { kind: 'children' }
   | { kind: 'saved_filter'; tab: string; filter: string };
 
-export type AutomationIf = {
-  kind: 'if';
-  conditions: AutomationCondition[];
-  then: AutomationAction[];
-  else: AutomationAction[];
-};
+export type AutomationIf = If<AutomationCondition, AutomationAction>;
 
 // For Related Cards: no If, branch, Create Card or outgoing action inside.
 export type AutomationBranch = {
@@ -328,9 +326,6 @@ export const AUTOMATION_AI_TASKS: readonly AutomationAiTask[] = [
   'triage',
 ];
 
-// Wait (spec "Wait"): the rest of the rule holds for `hours` (1 to 720). The rule's top level only.
-export type AutomationWait = { kind: 'wait'; hours: number };
-
 export type AutomationStep =
   | AutomationAction
   | AutomationOutgoing
@@ -342,89 +337,38 @@ export type AutomationStep =
 // ---- A rule ------------------------------------------------------------------------------------------------------
 
 // What a person writes in the builder: everything but the stamps.
-export interface AutomationRuleBody {
-  name: string;
-  trigger: AutomationTrigger;
-  conditions: AutomationCondition[];
-  steps: AutomationStep[];
-  // "Let this rule's changes trigger other rules".
-  chain: boolean;
-  // The saver's IANA time zone, for Today and {{now}}.
-  timeZone: string;
-}
+export type AutomationRuleBody = RuleBody<AutomationTrigger, AutomationCondition, AutomationStep>;
 
-export interface AutomationStamp {
-  by: ItemPerson;
-  at: number;
-  // Made through an API token (an agent), for "Edited by Ana Costa (Agent)".
-  ai?: true;
-}
+export type AutomationStamp = Stamp<ItemPerson>;
 
-export interface AutomationRule extends AutomationRuleBody {
-  id: string;
-  enabled: boolean;
-  // Set when the rule turned itself off after AUTOMATION_FAILURES_TO_PAUSE failures; cleared by Resume.
-  paused?: { reason: string; at: number; webhook?: string; gone?: AutomationGone };
-  made: AutomationStamp;
-  edited: AutomationStamp;
-}
+// `paused`: set when the rule turned itself off after AUTOMATION_FAILURES_TO_PAUSE failures; cleared by Resume.
+export type AutomationRule = Rule<
+  AutomationTrigger,
+  AutomationCondition,
+  AutomationStep,
+  AutomationStamp,
+  AutomationGone
+>;
 
 // ---- Runs --------------------------------------------------------------------------------------------------------
-
-// `waiting`: a run held by a Wait until `waitsUntil`; it settles when the run goes on (its own row) or is dropped.
-export type AutomationResult = 'done' | 'no_match' | 'skipped' | 'failed' | 'waiting';
 
 // What a failed step or an unheld condition names that the plan lacks, as data: its kind and its stored id (by
 // construction the plan no longer has its name). The text keeps the id for agents ("Field estimate_x is gone"); the
 // editor words the line without it ("A field is gone"). Set only on such a line, and on the run or pause it explains.
-export type AutomationGone = {
-  kind: 'column' | 'type' | 'field' | 'person' | 'filter';
-  id: string;
-  // A condition naming several of its kind gone: the rest of them, after `id` (absent for one).
-  more?: string[];
-};
+export type AutomationGone = Gone<'column' | 'type' | 'field' | 'person' | 'filter'>;
 
-export type AutomationStepLine =
-  | { kind: 'trigger'; text: string; by?: ItemPerson }
-  | { kind: 'condition'; ok: boolean; text: string; gone?: AutomationGone }
-  // `ai`: an AI step that asked the model (the day's AI count reads it).
-  | {
-      kind: 'action';
-      ok: boolean;
-      text: string;
-      already?: true;
-      ai?: true;
-      gone?: AutomationGone;
-    }
-  | { kind: 'branch'; ok: boolean; text: string; cards: number };
+// The shared lines (trigger, condition, action), and a branch's: how many cards it ran on.
+export type AutomationStepLine = StepLine<
+  AutomationGone,
+  ItemPerson,
+  { kind: 'branch'; ok: boolean; text: string; cards: number }
+>;
 
-export interface AutomationRun {
-  id: string;
-  ruleId: string;
-  ruleName: string;
+// A run as the Audit Trail keeps it: the shared run, about a card.
+export interface AutomationRun extends AutomationRunShell<AutomationStepLine, AutomationGone> {
   // The card the trigger was about (null for a dropped burst line).
   // `ref`, its prefixed number as it ran ("WI-12"), absent from a run stored before refs or for a type of no prefix.
   card: { id: string; key: number; ref?: string; title: string } | null;
-  at: number;
-  result: AutomationResult;
-  // Why a run was skipped or failed, in a sentence; `gone`, what the reason names that the plan lacks.
-  reason?: string;
-  gone?: AutomationGone;
-  tookMs: number;
-  steps: AutomationStepLine[];
-  // A waiting run's moment to go on (ms).
-  waitsUntil?: number;
-  // A run that went on after a Wait: how long it waited, in hours.
-  afterWait?: number;
-}
-
-// One rule's figures for the Rules list.
-export interface AutomationRuleStats {
-  lastRunAt: number | null;
-  // A time trigger's next moment (ms), for "Next: Mon 9:00"; null otherwise.
-  nextAt?: number | null;
-  runsThisWeek: number;
-  failuresInARow: number;
 }
 
 // ---- Values ------------------------------------------------------------------------------------------------------

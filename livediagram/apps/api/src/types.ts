@@ -21,6 +21,7 @@ export type {
   ClientMessage,
 } from '@livediagram/api-schema';
 
+import type { AutomationsAi, ItemHost } from '@liveworkspace/automations/room';
 import type { DocumentRoom } from './document-room/document-room';
 import type { PersonStore } from './person-store/person-store';
 
@@ -195,6 +196,11 @@ export type Env = {
   // docs/specs/021-event-storming/note-reader.md "Security"). A positive whole number; unset or anything else
   // is the code default, 1000.
   AI_DAILY_CAP?: string;
+  // Workers AI, for Automations' Summarise with AI and Describe a Rule (docs/specs/013-workspace/automations.md;
+  // liveworkspace/docs/specs/018-automations/automations.md "AI"). Absent, both answer "AI isn't set up here" and
+  // nothing else changes. AI_GATEWAY (unset by default) routes the calls through an AI Gateway of that id.
+  AI?: AutomationsAi;
+  AI_GATEWAY?: string;
 };
 
 // The env a document's own code runs with, inside its Durable Object (src/document-room/document-room.ts): the
@@ -205,8 +211,12 @@ export type Env = {
 // already looking at it (docs/specs/014-identity/phone-notifications.md).
 // `SNAPSHOT_REVERTED`: a snapshot's revert landed (docs/specs/013-workspace/snapshots.md), so the room forgets its
 // ledger and closes every socket with SNAPSHOT_REVERTED_CLOSE.
-export type DocumentEnv = Env & {
-  DOCUMENT_DB: D1Database;
-  ROOM_PEOPLE?: () => ReadonlySet<string>;
-  SNAPSHOT_REVERTED?: (generation: number) => void;
-};
+// `AUTOMATIONS` (ItemHost): the document's rules engine (document-room/automations/), so a write a rule hears queues its trigger
+// beside itself; `COLLAB`: the comment triggers' watch the outbox's drain hands each changed tab to. Both absent
+// outside a room (a test's env, the route probe), where nothing is heard.
+export type DocumentEnv = Env &
+  ItemHost & {
+    DOCUMENT_DB: D1Database;
+    ROOM_PEOPLE?: () => ReadonlySet<string>;
+    SNAPSHOT_REVERTED?: (generation: number) => void;
+  };

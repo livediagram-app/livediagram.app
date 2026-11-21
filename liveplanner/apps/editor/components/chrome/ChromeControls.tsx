@@ -11,7 +11,7 @@ import {
   ChromeToolsMenu,
   type ChromeToolsItem,
 } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
-import { useAutomationsToolsItem } from '@/components/automations/automations-tools-item';
+import { useAutomationsToolsItem } from '@liveworkspace/automations-ui/automations-tools-item';
 import { useCalendarFeedToolsItem } from '@/components/calendar-feed/calendar-feed-tools-item';
 import { useEmailIntakeToolsItem } from '@/components/email-intake/email-intake-tools-item';
 import { useRoadmapToolsItem } from '@/components/roadmap/roadmap-tools-item';

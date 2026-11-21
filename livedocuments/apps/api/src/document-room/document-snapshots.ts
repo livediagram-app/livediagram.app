@@ -12,6 +12,7 @@ import {
 import { replaceTabs } from '../db/tabs';
 import { authorOf } from '../routes/changesets';
 import { gateEdit, type DocumentRouteContext } from '../routes/context';
+import { hearsEvent, keptSnapshots, queueEvent, silently } from '@liveworkspace/automations/room';
 import { setDocumentPresentation } from './document-content';
 import { exportDocumentFile, readDocumentFile } from './document-file';
 
@@ -33,11 +34,18 @@ export function documentSnapshotDoor(
         folder: t.folder,
         folderColor: t.folderColor ?? null,
       }));
-      await replaceTabs(env, documentId, tabs);
-      await setDocumentPresentation(env, documentId, read.content.presentation);
+      // Nothing a revert rewrites is an edit, a tab added or a tab removed to the document's rules, whoever reverts
+      // (docs/specs/013-workspace/automations.md; liveworkspace 018-automations "Revert to Snapshot"). Its rules stay
+      // as they are: a snapshot puts back content, never a rule.
+      await silently(env, async () => {
+        await replaceTabs(env, documentId, tabs);
+        await setDocumentPresentation(env, documentId, read.content.presentation);
+      });
       return 'ok';
     },
     afterRevert: (generation) => env.SNAPSHOT_REVERTED?.(generation),
+    // The snapshots the document's rules revert to: kept beside the latest five, and not deletable.
+    kept: () => keptSnapshots(env),
   };
 }
 
@@ -58,13 +66,13 @@ async function snapshotCaller(
 
 // Every request the room answers passes here: `/api/documents/<id>/snapshots...` is answered, a write on the document
 // from before a revert is fenced, and the rest go on to `handle`.
-export function serveDocumentSnapshots(
+export async function serveDocumentSnapshots(
   ctx: DocumentRouteContext,
   handle: () => Promise<Response>,
 ): Promise<Response> {
   const [api, collection, documentId, ...rest] = ctx.segments;
   if (api !== 'api' || collection !== 'documents' || !documentId) return handle();
-  return serveSnapshots({
+  const answer = await serveSnapshots({
     db: ctx.env.DOCUMENT_DB,
     itemId: documentId,
     request: ctx.request,
@@ -73,4 +81,21 @@ export function serveDocumentSnapshots(
     door: () => documentSnapshotDoor(ctx.env, documentId),
     handle,
   });
+  // Snapshot Taken (docs/specs/013-workspace/automations.md): a person's take, never a rule's own or a revert's
+  // safety snapshot.
+  const taken =
+    rest.length === 1 &&
+    rest[0] === 'snapshots' &&
+    ctx.request.method.toUpperCase() === 'POST' &&
+    answer.status === 201;
+  if (taken && hearsEvent(ctx.env, 'snapshot_taken')) {
+    const owner = ctx.resolveOwner();
+    queueEvent(ctx.env, {
+      id: `snapshot:${crypto.randomUUID()}`,
+      kind: 'snapshot_taken',
+      at: Date.now(),
+      ...(owner !== null ? { by: await authorOf(ctx, owner), role: 'editor' as const } : {}),
+    });
+  }
+  return answer;
 }

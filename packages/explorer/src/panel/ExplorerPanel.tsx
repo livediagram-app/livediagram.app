@@ -164,7 +164,6 @@ export function ExplorerPanel({
   imports,
   itemMenu,
   history,
-  webhooks,
   teamsHost,
   thisBrowser = null,
   accounts = null,
@@ -184,7 +183,6 @@ export function ExplorerPanel({
           imports={imports}
           itemMenu={itemMenu}
           history={history}
-          webhooks={webhooks}
         >
           <TeamsProvider
             host={teamsHost}

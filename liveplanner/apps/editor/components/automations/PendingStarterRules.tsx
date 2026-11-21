@@ -17,7 +17,10 @@ import {
 } from '@/components/plan/start/describe-plan/starter-rules-client';
 import { starterRulesAskOf } from '@/lib/api/starter-rules-ask';
 import { offlineSaveStarterRules } from '@/lib/offline/offline-store';
-import { useAutomationsAccess, useAutomationsDoor } from './AutomationsContext';
+import {
+  useAutomationsAccess,
+  useAutomationsDoor,
+} from '@liveworkspace/automations-ui/AutomationsContext';
 import { readAutomations } from './use-automations';
 
 export function PendingStarterRules({

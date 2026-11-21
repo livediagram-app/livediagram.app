@@ -22,7 +22,7 @@ export const RESET_DONE_MS = 4_000;
 export type ResetSettingsReach = 'account' | 'browser';
 
 export const RESET_SETTINGS_ACCOUNT =
-  'Puts every setting back to its default, in every liveworkspace app. Your profile, API tokens, webhooks and sign-ins stay as they are.';
+  'Puts every setting back to its default, in every liveworkspace app. Your profile, API tokens, connections and sign-ins stay as they are.';
 export const RESET_SETTINGS_BROWSER =
   'Puts every setting in this app back to its default, in this browser.';
 

@@ -18,7 +18,7 @@ const IDLE: GithubState = { status: 'idle', connection: null };
 
 type Entry = { state: GithubState; listeners: Set<() => void>; reading: boolean };
 const entries = new Map<string, Entry>();
-const keyOf = (scope: AutomationsScope) => `${scope.ownerId}\u0000${scope.projectId}`;
+const keyOf = (scope: AutomationsScope) => `${scope.ownerId}\u0000${scope.itemId}`;
 
 function entryOf(scope: AutomationsScope): Entry {
   const key = keyOf(scope);

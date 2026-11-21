@@ -8,6 +8,14 @@ import {
 } from '../db/tab-attendance';
 import type { SessionAttachment } from '../room-session';
 import { armUpkeep } from './room-content-state';
+import {
+  hearsAnyVisit,
+  queueArrival,
+  queueEmptied,
+  queueFilled,
+  tabOccupied,
+  visitHearing,
+} from './automations/visit-events';
 import type { DocumentRoom } from './document-room';
 
 // A tab's Attendance, the room's side (docs/specs/012-collaboration/tab-attendance.md; blueprint "Behaviour and
@@ -78,9 +86,13 @@ export function noteAttendance(
     const elsewhere = tabsElsewhere(room, ws, key);
     let wrote = false;
     const presence = after?.presence;
+    // The visit triggers (automations/visit-events.ts): three Set lookups, and nothing more unless one is heard.
+    const hearing = visitHearing(room.automations);
+    const heard = hearsAnyVisit(hearing);
     for (const tab of gained) {
       if (!presence || elsewhere.has(tab) || !documentHasTab(sql, tab)) continue;
-      joinVisit(
+      const wasEmpty = heard && (hearing.arrived || hearing.filled) && !tabOccupied(sql, tab);
+      const visit = joinVisit(
         sql,
         tab,
         key,
@@ -93,11 +105,16 @@ export function noteAttendance(
         now,
       );
       wrote = true;
+      if (!heard) continue;
+      if (visit === 'inserted' && hearing.arrived)
+        queueArrival(room.automations, { tab, key, session: after, wasEmpty, at: now });
+      if (visit !== 'open' && wasEmpty && hearing.filled) queueFilled(room.automations, tab, now);
     }
     for (const tab of lost) {
       if (elsewhere.has(tab)) continue;
       leaveVisit(sql, tab, key, now);
       wrote = true;
+      if (hearing.emptied && !tabOccupied(sql, tab)) queueEmptied(room.automations, sql, tab, now);
     }
     if (!wrote) return;
     touchOpenVisits(sql, now);

@@ -2,21 +2,32 @@
 // automations.md "The event"). A landed card write's events go into `automation_queue` in the same batch as its
 // history entry (db/item-history.ts), a new comment's on its own (the thread routes), and only for the kinds some rule
 // that is on hears: a plan with none builds no event and runs no statement. At most AUTOMATION_QUEUE_MAX wait; a
-// burst past it drops the newest, which the next wake logs once. `AutomationSchedule` is the wake the queue asks for,
-// as RepeatSchedule is the repeats'; `PlanAutomations` is what the room puts on its env for the writes and routes.
+// burst past it drops the newest, which the next wake logs once. The wake the queue asks for (`AutomationSchedule`, as
+// RepeatSchedule is the repeats') and the room's holder are @liveworkspace/automations/room's
+// (liveworkspace/docs/specs/018-automations/blueprints/engine.md "The room entry"); `PlanAutomations` is that holder
+// over a plan's rules, what the room puts on its env for the writes and routes.
 import {
   AUTOMATION_QUEUE_MAX,
   eventOfWrite,
   type AutomationEvent,
   type AutomationEventKind,
   type AutomationRole,
+  type AutomationRule,
   type Item,
   type ItemHistoryChange,
   type ItemHistoryTag,
 } from '@liveplanner/items';
 import type { PlanEnv } from '../../types';
 import type { RunnerDeps } from './automation-runner';
-import { AutomationStore, type Sql } from './automation-store';
+import {
+  AutomationSchedule as Schedule,
+  ItemAutomations,
+  type AutomationsHook as Hook,
+} from '@liveworkspace/automations/room';
+import { PLAN_RULES, type Sql } from './automation-store';
+
+// The wake a plan's queue asks for, over its events.
+export type AutomationSchedule = Schedule<AutomationEvent>;
 
 // Who made a write and why, as the write's caller knows it. `role` may be worked out only when an event is built
 // (an Editor check the caller would otherwise not make); absent, the history tag says.
@@ -36,10 +47,7 @@ export type HistorySource = {
 
 // What a plan's writes ask of its Automations: the kinds its rules hear (the hot-path check), and a wake once
 // events are queued (with how many the queue had no room for).
-export interface AutomationsHook {
-  readonly kinds: ReadonlySet<AutomationEventKind>;
-  queued(dropped: number): void;
-}
+export type AutomationsHook = Hook<AutomationEventKind>;
 
 // A write's role when its caller named none: from the history tag.
 export function roleOfTag(tag: ItemHistoryTag | undefined): AutomationRole {
@@ -110,116 +118,15 @@ export async function enqueueComment(
   }
 }
 
-const NONE_HEARD: ReadonlySet<AutomationEventKind> = new Set();
-
-// The wake the queue asks for (now while a trigger waits, else none), and the time triggers' (their earliest
-// `next_at`, one indexed MIN read, none when no time rule is on).
-export class AutomationSchedule {
-  at: number | null = null;
-  timeAt: number | null = null;
-  // Triggers the queue had no room for since the last wake (one Skipped line says so).
-  dropped = 0;
-
-  private readonly sql: () => Sql;
-  private readonly ready: () => boolean;
-
-  constructor(sql: () => Sql, ready: () => boolean) {
-    this.sql = sql;
-    this.ready = ready;
-  }
-
-  waiting(): boolean {
-    return (
-      this.ready() && this.sql().exec('SELECT 1 FROM automation_queue LIMIT 1').toArray().length > 0
-    );
-  }
-
-  // After a wake (the object restarted): now when a trigger waits, and the time triggers' next moment.
-  restore(now: number): void {
-    this.at = this.waiting() ? now : null;
-    this.restoreTimes();
-  }
-
-  // The earliest time-trigger moment stored, or a waiting run's.
-  restoreTimes(): void {
-    if (!this.ready()) {
-      this.timeAt = null;
-      return;
-    }
-    // With the waiting runs' (a Wait's) earliest moment: one indexed MIN read each.
-    const row = this.sql()
-      .exec(
-        `SELECT MIN(at) AS at FROM (SELECT MIN(next_at) AS at FROM automation_schedule
-           UNION ALL SELECT MIN(at) FROM automation_waiting)`,
-      )
-      .toArray()[0];
-    this.timeAt = typeof row?.['at'] === 'number' ? row['at'] : null;
-  }
-
-  // The room's wake: the earlier of the two.
-  get wakeAt(): number | null {
-    if (this.at === null) return this.timeAt;
-    return this.timeAt === null ? this.at : Math.min(this.at, this.timeAt);
-  }
-
-  timeDue(now: number): boolean {
-    return this.timeAt !== null && this.timeAt <= now;
-  }
-
-  queueDue(now: number): boolean {
-    return this.at !== null && this.at <= now;
-  }
-
-  // Events were queued: a wake now. Whether the alarm needs arming.
-  queued(now: number): boolean {
-    if (this.at !== null && this.at <= now) return false;
-    this.at = now;
-    return true;
-  }
-
-  due(now: number): boolean {
-    return this.queueDue(now) || this.timeDue(now);
-  }
-
-  clear(): void {
-    this.at = null;
-    this.timeAt = null;
-    this.dropped = 0;
-  }
-
-  // The oldest waiting triggers, up to `n`.
-  next(n: number): { id: number; event: AutomationEvent | null }[] {
-    return this.sql()
-      .exec('SELECT id, event FROM automation_queue ORDER BY id LIMIT ?', n)
-      .toArray()
-      .map((row) => {
-        const r = row as unknown as { id: number; event: string };
-        let event: AutomationEvent | null = null;
-        try {
-          event = JSON.parse(r.event) as AutomationEvent;
-        } catch {
-          // A row from a later release, or a damaged one: dropped like a done one.
-        }
-        return { id: Number(r.id), event };
-      });
-  }
-
-  done(id: number): void {
-    this.sql().exec('DELETE FROM automation_queue WHERE id = ?', id);
-  }
-}
-
 // A plan's Automations as its room holds them: the rules, the queue's wake, the hook its writes call, and what a
-// run needs from the room (null while it holds no plan), for the wake and the routes alike.
-export class PlanAutomations implements AutomationsHook {
-  readonly store: AutomationStore;
-  readonly schedule: AutomationSchedule;
-  readonly sql: () => Sql;
-  readonly deps: () => RunnerDeps | null;
-  private readonly arm: () => void;
-  // Whether the plan is archived or in the Trash (plan-standing.ts): its schedule reads as empty and it hears nothing.
-  private readonly putAway: () => boolean;
-
+// run needs from the room (null while it holds no plan), for the wake and the routes alike. `putAway`: whether the
+// plan is archived or in the Trash (plan-standing.ts): its schedule reads as empty and it hears nothing.
+export class PlanAutomations extends ItemAutomations<
+  AutomationRule,
+  AutomationEventKind,
+  AutomationEvent,
+  RunnerDeps
+> {
   constructor(
     sql: () => Sql,
     ready: () => boolean,
@@ -227,39 +134,6 @@ export class PlanAutomations implements AutomationsHook {
     deps: () => RunnerDeps | null,
     putAway: () => boolean = () => false,
   ) {
-    this.sql = sql;
-    this.putAway = putAway;
-    this.store = new AutomationStore(sql, ready);
-    this.schedule = new AutomationSchedule(sql, () => ready() && !putAway());
-    this.arm = arm;
-    this.deps = deps;
-    // A rule write changed when a time rule next runs: the room's alarm asks again.
-    this.store.onSchedule = () => {
-      this.schedule.restoreTimes();
-      this.arm();
-    };
-  }
-
-  // Put away, none: no write, comment or delivery builds an event.
-  get kinds(): ReadonlySet<AutomationEventKind> {
-    return this.putAway() ? NONE_HEARD : this.store.kinds;
-  }
-
-  queued(dropped: number): void {
-    if (dropped > 0) {
-      this.schedule.dropped += dropped;
-      console.warn('[automations] queue.full', { dropped });
-    }
-    if (this.schedule.queued(Date.now())) this.arm();
-  }
-
-  restore(now: number): void {
-    this.store.load();
-    this.schedule.restore(now);
-  }
-
-  clear(): void {
-    this.store.kinds.clear();
-    this.schedule.clear();
+    super({ sql, ready, arm, deps, putAway, kit: PLAN_RULES });
   }
 }

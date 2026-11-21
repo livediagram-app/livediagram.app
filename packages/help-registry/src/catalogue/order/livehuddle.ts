@@ -120,7 +120,7 @@ export const ORDER: readonly string[] = [
   'collaboration/session-tools',
   'collaboration/snapshots',
   'tools/layout-cleanup',
-  'tools/webhooks',
+  'tools/automations',
   'canvas/size',
   'canvas/rotation',
   'canvas/shadows',

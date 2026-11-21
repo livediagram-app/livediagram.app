@@ -12,6 +12,12 @@ import { rowToTabSummary, type TabRow } from '../tab-row';
 import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
 import type { TabConnection } from '@liveworkspace/index-client';
 import type { DocumentEnv, TabSummaryDTO } from '../types';
+import { KINDS } from '@livehuddle/document/automations';
+import {
+  copiedRulesOf,
+  landedRuleStatements,
+  type CopiedRules,
+} from '@liveworkspace/automations/room';
 import { tabFolderColourOf } from '@liveworkspace/api-schema/tab-folder-colour';
 
 // What the document knows of itself (document-schema.ts): its name, owner, team and provenance. Null until the
@@ -245,6 +251,10 @@ export type DocumentCopy = {
   // The images its bodies place that the source may serve (db/image-grants.ts): the copy is granted each, so an
   // image a teammate placed in the source still shows in a copy its new owner makes.
   images: string[];
+  // The source's Automations rules (docs/specs/013-workspace/automations.md "Files and copies"), for a copy its own
+  // people make and a file's import: they land turned off, their tabs at the copy's ids. Absent from a copy made
+  // through a share link or a Community post, whose maker never saw the rules.
+  automations?: CopiedRules;
 };
 
 // Every tab of the document (or one) with its body, in order: the read a copy makes, and the Drive file's
@@ -281,12 +291,14 @@ export async function readContentTabRows(
 // `redactAuthorsFor`: anyone but the owner copies the comments as the tab read serves them to them.
 // `redactForCommunity`: a copy through a Community post's link (docs/specs/025-community/community.md) carries the
 // document without its comments or the people on its actions.
+// `withRules`: the copy carries the Space's Automations rules (room-rpc.ts exportCopy decides).
 export async function exportDocumentCopy(
   env: DocumentEnv,
   documentId: string,
   onlyTabId: string | null,
   redactAuthorsFor: string | null,
   redactForCommunity = false,
+  withRules = false,
 ): Promise<DocumentCopy | null> {
   const rows = await readContentTabRows(env, documentId, onlyTabId);
   // Every fresh tab id minted up front, so a tab or element link on one tab can be re-pointed at its sibling's copy.
@@ -315,6 +327,8 @@ export async function exportDocumentCopy(
   };
   const placed = copyImageIds(copy);
   if (placed.length > 0) copy.images = [...(await servableImageIds(env, documentId, placed))];
+  const rules = withRules && !redactForCommunity ? copiedRulesOf(env, tabIdMap) : null;
+  if (rules) copy.automations = rules;
   return copy;
 }
 
@@ -413,5 +427,8 @@ export async function importDocumentCopy(
         .bind(now, JSON.stringify(granted)),
     );
   }
+  // Its rules, turned off, in the same transaction (@liveworkspace/automations/room rules-file.ts). All off, so nothing is heard or
+  // scheduled until someone turns one on.
+  stmts.push(...landedRuleStatements(env.DOCUMENT_DB, KINDS, copy.automations, now));
   await db.batch(stmts);
 }

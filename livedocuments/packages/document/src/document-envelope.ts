@@ -22,13 +22,22 @@ export type DocumentEnvelope = {
     name: string;
     presentation: string | null;
     tabs: EnvelopeTab[];
+    // The document's Automations rules as its file carries them (docs/specs/013-workspace/automations.md): each
+    // rule's body and whether it was on, read back through the rules' own check, so they are opaque here. Absent from
+    // a file with none, and from every file written before rules.
+    automations?: unknown[];
   };
 };
 
 type DocumentEnvelopeFailure = 'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
 
 export function documentToEnvelopeText(
-  liveDoc: { id: string; name: string; presentation: string | null },
+  liveDoc: {
+    id: string;
+    name: string;
+    presentation: string | null;
+    automations?: readonly unknown[];
+  },
   tabs: EnvelopeTab[],
   exportedAt: number,
 ): string {
@@ -41,6 +50,7 @@ export function documentToEnvelopeText(
       name: liveDoc.name,
       presentation: liveDoc.presentation,
       tabs,
+      ...(liveDoc.automations?.length ? { automations: [...liveDoc.automations] } : {}),
     },
   };
   return JSON.stringify(envelope, null, 2);
@@ -97,6 +107,8 @@ export function parseDocumentEnvelope(
         name: d.name,
         presentation: d.presentation ?? null,
         tabs: d.tabs,
+        // Anything but a list is no rules; what each entry holds is the rules' own check's to read.
+        ...(Array.isArray(d.automations) ? { automations: d.automations as unknown[] } : {}),
       },
     },
   };
@@ -104,10 +116,12 @@ export function parseDocumentEnvelope(
 
 // A copy of an envelope's document (the Drive mirror's import door): fresh tab ids, with the tab links and the
 // deck's slides following them, so the copy navigates and presents like the original. An unreadable deck is
-// dropped rather than carried broken.
+// dropped rather than carried broken. `tabIds` is each tab's id in the file to its id in the copy, for whatever else
+// names a tab (the file's Automations rules).
 export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
   tabs: EnvelopeTab[];
   presentation: string | null;
+  tabIds: Map<string, string>;
 } {
   const idMap = new Map(envelope.document.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
   const tabs = envelope.document.tabs.map((t) => ({
@@ -127,5 +141,5 @@ export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
       presentation = null;
     }
   }
-  return { tabs, presentation };
+  return { tabs, presentation, tabIds: idMap };
 }

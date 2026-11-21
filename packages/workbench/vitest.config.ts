@@ -182,6 +182,9 @@ const HELD_AT_100 = [
   // The label toolbar kept inside the screen at every edge (label-editor.md "The toolbar", Work Tracker 1313).
   'src/components/label-editor/useLabelToolbarPlacement.ts',
   'src/lib/clamp-to-viewport.ts',
+  // The Sync gate a tool opens on an item kept Offline, every editor's one copy (each app's offline-mode.md, the
+  // platform's automations.md "Who may do what").
+  'src/components/dialogs/SyncGateDialog.tsx',
 ];
 
 export default defineProject({

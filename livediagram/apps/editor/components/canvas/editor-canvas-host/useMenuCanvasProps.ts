@@ -17,12 +17,8 @@ export type LockedMenuState = {
 // canvas context menus, the Explorer's document menu, and the empty-canvas deselect.
 export function useMenuCanvasProps({
   setLockedMenu,
-  canManageWebhooks,
-  setWebhooksOpen,
 }: {
   setLockedMenu: (menu: LockedMenuState | null) => void;
-  canManageWebhooks: boolean;
-  setWebhooksOpen: (open: boolean) => void;
 }) {
   const {
     canvasPointerRef,
@@ -86,7 +82,6 @@ export function useMenuCanvasProps({
         setExportScope('tab');
         setExportOpen(true);
       },
-      onWebhooks: canManageWebhooks ? () => setWebhooksOpen(true) : undefined,
       onSearch: () => openSearchWithPrefetch(setSearchOpen, loadAllTabs),
       onOpenSettings: () => {
         setSettingsOpen(true);

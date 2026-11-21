@@ -92,8 +92,14 @@ const seedRuns = (n: number, steps: unknown[] = []) => {
   );
   for (let i = 0; i < n; i += 1) insert.run(`old${i}`, Date.now(), JSON.stringify({ steps }));
 };
-const aiLines = (n: number) =>
-  Array.from({ length: n }, () => ({ kind: 'action', ok: true, text: 'x', ai: true }));
+// `n` more AI calls asked today, as each is counted when asked (automation_ai_days).
+const seedAsks = (n: number) =>
+  plan()
+    .db.prepare(
+      `INSERT INTO automation_ai_days (day, asks) VALUES (?, ?)
+       ON CONFLICT (day) DO UPDATE SET asks = asks + excluded.asks`,
+    )
+    .run(Math.floor(Date.now() / 86_400_000) * 86_400_000, n);
 
 // A request's read of the plan (its types, for a Set Field) or of the card held until `between` has run: another
 // Editor's write landing at that await.
@@ -167,7 +173,7 @@ describe('a run and a person writing the same card', () => {
 
 describe('the day’s caps under runs at once', () => {
   it('never lets a wake and a Run Rule pass the 100 AI calls between them', async () => {
-    seedRuns(1, aiLines(AUTOMATION_AI_PER_DAY - 1));
+    seedAsks(AUTOMATION_AI_PER_DAY - 1);
     await w.rule({ name: 'Wake', steps: [{ kind: 'ai', task: 'summarise' }] });
     const manual = await w.rule({
       name: 'Manual',
@@ -276,15 +282,10 @@ describe('rebaseLabels', () => {
 
 describe('Describe a Rule and a rule’s AI step at once', () => {
   it('refuses a first ask once a rule’s call spent the day while the plan was read', async () => {
-    seedRuns(1, aiLines(AUTOMATION_AI_PER_DAY - 1));
+    seedAsks(AUTOMATION_AI_PER_DAY - 1);
     vi.mocked(items.listItems).mockImplementationOnce(async (...args) => {
-      // A rule's run marks the day's 100th call meanwhile.
-      seedRuns(0);
-      plan()
-        .db.prepare(
-          "INSERT INTO automation_runs (id, rule_id, at, result, body) VALUES ('p', 'x', ?, 'pending', ?)",
-        )
-        .run(Date.now(), JSON.stringify({ steps: [{ ai: true }] }));
+      // A rule's run counts the day's 100th call meanwhile.
+      seedAsks(1);
       return vi.mocked(items.listItems).getMockImplementation()!(...args);
     });
     const res = await w.call('POST', '/draft', {

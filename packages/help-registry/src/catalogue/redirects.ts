@@ -59,6 +59,20 @@ export const HELP_REDIRECTS: readonly HelpRedirect[] = [
   { from: 'canvas/links', to: 'canvas', apps: ['livedocuments'] },
   { from: 'canvas/notes', to: 'canvas', apps: ['livedocuments'] },
   { from: 'tabs/linking-tabs', to: 'tabs', apps: ['livedocuments'] },
+  // Webhooks, retired for Automations (liveworkspace/docs/specs/018-automations/automations.md): what was left of a
+  // webhook is a connection, managed inside Automations. liveplanner's rules have their own article.
+  {
+    from: 'collaboration/webhooks',
+    to: 'tools/automations#connections',
+    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+  },
+  { from: 'collaboration/webhooks', to: 'plan/automations', apps: ['liveplanner'] },
+  {
+    from: 'tools/webhooks',
+    to: 'tools/automations#connections',
+    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+  },
+  { from: 'tools/webhooks', to: 'plan/automations', apps: ['liveplanner'] },
   // liveworkspace.app's own help pages, which the one help centre replaced (liveworkspace/docs/specs/010-site/site.md
   // "Help"): the Explorer's guide (its landing, /help/explorer, and /help/explorer/folders keep their paths here) and
   // the Google Drive article.

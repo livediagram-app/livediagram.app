@@ -60,7 +60,8 @@ const ALLOWED: Readonly<Record<string, string>> = {
     'a removal confirm strip with two buttons',
   'livediagram/apps/editor/components/panels/session-studio/PollPane.tsx':
     'the live poll state card',
-  'liveplanner/apps/editor/components/automations/step-panels/IncomingWebhookPanel.tsx':
+  // Moved with the Automations screen from liveplanner's editor to the platform's package.
+  'packages/automations-ui/src/step-panels/IncomingWebhookPanel.tsx':
     'the Secret Made state card with a copy field',
   'liveplanner/apps/editor/components/forms/respond/FormFill.tsx':
     'the public form error summary, a focus target',

@@ -400,20 +400,21 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'webhooks',
-    title: 'Webhooks',
+    title: 'Connections',
     body: (
       <>
         <p>
-          If you add a webhook (for your own items, or as a team&rsquo;s admin for the
-          team&rsquo;s), we send what happens to those items to the address you choose: any HTTPS
-          address, a Slack channel or a Microsoft Teams channel. Each message holds the item&rsquo;s
-          name and link, who did it, and a short detail, such as the opening words of a comment.
-          What happens to it there is governed by that service&rsquo;s own terms and privacy policy.
+          If you add a connection to an item (for your own items, or as a team&rsquo;s admin for the
+          team&rsquo;s), the item&rsquo;s automation rules can post messages through it to the
+          address you choose: any HTTPS address, a Slack channel or a Microsoft Teams channel. Each
+          message holds the item&rsquo;s name and link, the rule&rsquo;s name, and the words the
+          rule wrote, which can include a short detail such as the opening words of a comment. What
+          happens to it there is governed by that service&rsquo;s own terms and privacy policy.
         </p>
         <p>
-          We keep each webhook&rsquo;s name, the events it hears, and its address and signing secret
-          (both encrypted), with its last 20 deliveries (the event, when, and the answer that came
-          back). Your own webhooks are deleted with your account; a team&rsquo;s are paused when the
+          We keep each connection&rsquo;s name, and its address and signing secret (both encrypted),
+          with its last 20 deliveries (the kind of message, when, and the answer that came back).
+          Your own connections are deleted with your account; a team&rsquo;s are paused when the
           person who added it stops being one of its admins.
         </p>
       </>
@@ -456,8 +457,8 @@ const SECTIONS: LegalSection[] = [
         <p>
           The editors load fonts from <strong>Google Fonts</strong>, and an embedded video, link
           card or website loads from its provider, which sees the viewer&rsquo;s IP address. Link
-          previews are fetched by our server. A webhook goes where you point it. An app that uses
-          anyone else says so in its section below.
+          previews are fetched by our server. A connection&rsquo;s messages go where you point it.
+          An app that uses anyone else says so in its section below.
         </p>
       </>
     ),
@@ -488,7 +489,7 @@ const SECTIONS: LegalSection[] = [
           email you to confirm it. Your liveworkspace account closes, for every app at once: the
           documents you own in every app (the Trash included), your folders, images and preferences,
           your account details and Google picture address, sessions, API tokens, sign-in records,
-          phone notification devices and your own webhooks are deleted straight away. We also
+          phone notification devices and your own connections are deleted straight away. We also
           disconnect your Google Drive and delete any download of your data at the same time; if
           either fails, the Drive access ends when you remove it in your Google account, and a
           download is deleted by itself after 3 days. You leave every team (a team you ran alone

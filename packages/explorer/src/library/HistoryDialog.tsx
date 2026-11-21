@@ -215,7 +215,9 @@ export function HistoryDialog({
         </div>
       ) : null}
       <div
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        // Never squeezed under a few rows (inside Tools, the strip and the foot share a fixed height): past that the
+        // view itself scrolls.
+        className="min-h-28 flex-1 overflow-y-auto overscroll-contain"
         data-history-dialog=""
         aria-busy={state.loading || undefined}
       >

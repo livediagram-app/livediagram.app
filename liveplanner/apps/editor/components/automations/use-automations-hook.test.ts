@@ -13,7 +13,7 @@ vi.mock('./automations-client', async (importOriginal) => ({
 
 import { foldHook, forgetAutomations, readAutomations, useAutomations } from './use-automations';
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const URL_ = 'https://www.liveplanner.app/api/hooks/automations/p1/r1';
 
 afterEach(() => {
@@ -82,7 +82,7 @@ describe('a change answered while the list is read', () => {
   });
 
   it('lands a change on the plan it was made on, when another plan is open by then', async () => {
-    const OTHER = { ...SCOPE, projectId: 'p2' };
+    const OTHER = { ...SCOPE, itemId: 'p2' };
     client.listAutomations.mockResolvedValueOnce({ rules: [rule(true)] });
     await readAutomations(SCOPE);
     client.listAutomations.mockResolvedValueOnce({ rules: [{ ...rule(true), id: 'r9' }] });

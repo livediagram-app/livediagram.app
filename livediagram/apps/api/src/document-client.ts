@@ -5,8 +5,9 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
-import type { SourceChange } from '@liveworkspace/index-client';
-import type { CommunityAuthor } from '@livediagram/api-schema';
+import type { ItemStanding, SourceChange } from '@liveworkspace/index-client';
+import type { HookAnswer, HookCall } from '@liveworkspace/automations/room';
+import type { AccessLevel, CommunityAuthor } from '@livediagram/api-schema';
 import type {
   Copier,
   ExportCommentsResult,
@@ -34,6 +35,9 @@ export type ActionNotice = Omit<Parameters<typeof notifyActionAssigned>[1], 'doc
 export type MentionNotice = Omit<Parameters<typeof notifyMentioned>[1], 'document'>;
 
 export type CopySource = { copy: DocumentCopy; community: boolean };
+
+// Whoever asked for access, as the index's notice names them.
+export type AccessRequester = { id: string; name: string | null; requestId?: string };
 
 export type DocumentRoomClient = {
   // The tabs (no bodies) and slide deck a document read carries.
@@ -78,7 +82,15 @@ export type DocumentRoomClient = {
   // The post's id and author, for a visitor through its open link; null otherwise.
   communityListing(code: string): Promise<{ postId: string; author: CommunityAuthor } | null>;
   // Someone opened the canvas through a share link for the first time (the index's notice): the owner's email.
-  joined(personId: string): Promise<void>;
+  joined(personId: string, level?: AccessLevel): Promise<void>;
+  // Someone asked for access to the canvas (the index's notice): Access Requested, for the rules that hear it.
+  accessRequested(requester: AccessRequester): Promise<void>;
+  // Automations' doors (@liveworkspace/automations/room doors.ts): an Incoming Webhook call to one rule, and a
+  // rule email's unsubscribe (false for a token the canvas never made).
+  incomingHook(ruleId: string, call: HookCall): Promise<HookAnswer>;
+  emailOptOut(token: string): Promise<boolean>;
+  // Where the canvas stands at the index (@liveworkspace/automations/room standing.ts): put away, its rules run nothing.
+  takeStanding(standing: ItemStanding): Promise<void>;
   // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
   sourceChanged(change: SourceChange): Promise<void>;
   // A closed account's name off the canvas (document-anonymise.ts), and the guests merged into it (`guestIds`) as its
@@ -126,7 +138,11 @@ export function documentRoom(
     community: () => room.community(documentId),
     communityPostTitle: (code) => room.communityPostTitle(documentId, code),
     communityListing: (code) => room.communityListing(documentId, code),
-    joined: (personId) => room.joined(documentId, personId),
+    joined: (personId, level) => room.joined(documentId, personId, level),
+    accessRequested: (requester) => room.accessRequested(documentId, requester),
+    incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
+    emailOptOut: (token) => room.emailOptOut(documentId, token),
+    takeStanding: (standing) => room.takeStanding(documentId, standing),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
     anonymise: (personId, guestIds = []) => room.anonymise(documentId, personId, guestIds),
     notifyAction: (input) => room.notifyAction(documentId, input),
@@ -169,7 +185,11 @@ export type DocumentRoomRpc = {
     documentId: string,
     code: string,
   ): Promise<{ postId: string; author: CommunityAuthor } | null>;
-  joined(documentId: string, personId: string): Promise<void>;
+  joined(documentId: string, personId: string, level?: AccessLevel): Promise<void>;
+  accessRequested(documentId: string, requester: AccessRequester): Promise<void>;
+  incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
+  emailOptOut(documentId: string, token: string): Promise<boolean>;
+  takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
   sourceChanged(documentId: string, change: SourceChange): Promise<void>;
   anonymise(documentId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   notifyAction(documentId: string, input: ActionNotice): Promise<boolean>;

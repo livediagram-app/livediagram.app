@@ -132,6 +132,60 @@ describe('serveSnapshots: the routes', () => {
     expect((await serve(db, door, 'DELETE', ['snapshots', snapshot.id])).status).toBe(404);
   });
 
+  // SN35: what the item's rules name, from the app's door.
+  it('marks the snapshots a rule keeps, refuses their delete, and never removes them to make room', async () => {
+    const { db } = testDb();
+    const { state, door } = item('v0');
+    const first = await serve(db, door, 'POST', ['snapshots'], { body: { name: 'Clean board' } });
+    const keptId = ((await first.json()) as { snapshot: { id: string } }).snapshot.id;
+    // A door may read its rules from storage: the ids may come as a promise.
+    const ruled: SnapshotDoor = { ...door, kept: async () => [keptId] };
+    for (let i = 1; i <= 6; i += 1) {
+      state.content = `v${i}`;
+      await serve(db, ruled, 'POST', ['snapshots'], { body: { name: `n${i}` } });
+    }
+    const listed = (await (await serve(db, ruled, 'GET', ['snapshots'])).json()) as {
+      snapshots: { id: string; name: string; kept: boolean }[];
+      kept: number;
+    };
+    expect(listed.snapshots.map((s) => [s.name, s.kept])).toEqual([
+      ['n6', false],
+      ['n5', false],
+      ['n4', false],
+      ['n3', false],
+      ['n2', false],
+      ['Clean board', true],
+    ]);
+    expect(listed.kept).toBe(5);
+    const refused = await serve(db, ruled, 'DELETE', ['snapshots', keptId]);
+    expect(refused.status).toBe(409);
+    expect(await refused.json()).toEqual({
+      error: 'snapshot_kept',
+      message: 'A rule reverts to this snapshot. Change or delete the rule to let it go.',
+    });
+    expect(await readSnapshotText(db, 'p1', keptId)).toBe('v0');
+    // A revert's safety snapshot is an ordinary one: it removes n2, never the kept one.
+    const reverted = await serve(db, ruled, 'POST', ['snapshots', keptId, 'revert']);
+    expect(reverted.status).toBe(200);
+    expect(state.content).toBe('v0');
+    const after = await listSnapshots(db, 'p1');
+    expect(after.map((s) => s.name)).toEqual([
+      'Before reverting to "Clean board"',
+      'n6',
+      'n5',
+      'n4',
+      'n3',
+      'Clean board',
+    ]);
+    // A door that names none (a synchronous one, here) lists none as kept; its rule gone, the delete goes through.
+    const none: SnapshotDoor = { ...door, kept: () => [] };
+    const plain = (await (await serve(db, none, 'GET', ['snapshots'])).json()) as {
+      snapshots: { kept: boolean }[];
+    };
+    expect(plain.snapshots.every((s) => s.kept === false)).toBe(true);
+    expect((await serve(db, none, 'DELETE', ['snapshots', keptId])).status).toBe(204);
+  });
+
   it('refuses a token before anything, and anyone else who may not use them as missing', async () => {
     const { db } = testDb();
     const { door } = item();

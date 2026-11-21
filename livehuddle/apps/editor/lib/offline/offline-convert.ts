@@ -164,7 +164,7 @@ export function syncFailureMessage(e: unknown): string {
     return 'This space kept changing while syncing. Your copy is safe: try again soon.';
   return e instanceof ApiError && e.status === 413
     ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
-    : 'Could not sync this space. Check your connection and try again.';
+    : 'Could not sync this Space. Check your connection and try again.';
 }
 
 // Re-exported for callers that only need to create an offline document from

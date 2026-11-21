@@ -11,6 +11,7 @@
 // Made on first use, never on construction (@liveworkspace/index-app item-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
+import { itemAutomationSchemaSteps } from '@liveworkspace/automations/room';
 import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
@@ -329,7 +330,26 @@ type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
 // Automatic.
 const V9 = tabFolderColourStep('document_tabs');
 
-const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7, V8, V9];
+// Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
+// in its order, one entry each. Steps 10 to 17 are its rules, schedule, Incoming Webhook secrets, held runs, Describe a
+// Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 18 is the item
+// engine's tables and its three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room
+// itemAutomationSchemaSteps). They follow the folder colour step, which shipped first.
+// livehuddle has no comment threads, so no collab step follows.
+const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  V8,
+  V9,
+  ...AUTOMATION_STEPS,
+];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

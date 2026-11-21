@@ -1,14 +1,15 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "AI actions": the AI group in Add Action, each AI action's card and panel with its
 // "Uses AI" line, its first form, and its line in a run with the sparkle.
+import './test-kit';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import type { AutomationAi, AutomationRuleBody, ItemTypeDef } from '@liveplanner/items';
 import { addAction, canAddAi, canDuplicate, newRuleBody } from './rule-draft';
-import { RuleSteps, type StepsActions } from './RuleSteps';
-import { RunSteps } from './RunSteps';
-import { StepPanel } from './StepPanel';
+import { RuleSteps, type StepsActions } from '@liveworkspace/automations-ui/RuleSteps';
+import { RunSteps } from '@liveworkspace/automations-ui/RunSteps';
+import { StepPanel } from '@liveworkspace/automations-ui/StepPanel';
 import { ADD_NAMES, defaultStep, isAiKind } from './step-defaults';
 import { summaryFields } from './step-panels/AiStepPanel';
 import { outline, pickable, pickerTile } from './test-fixtures';
@@ -129,7 +130,6 @@ function Panel({
       }}
       outline={o}
       faultPath={null}
-      person="Ana Costa"
       now={Date.UTC(2026, 10, 11)}
       timeZone="Europe/London"
     />

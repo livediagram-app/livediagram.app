@@ -97,10 +97,15 @@ describe('copyDesignEnvelope', () => {
     );
     const parsed = parseDesignEnvelope(text);
     if (!parsed.ok) throw new Error(parsed.failure);
-    const { tabs } = copyDesignEnvelope(parsed.envelope);
+    const { tabs, tabIds } = copyDesignEnvelope(parsed.envelope);
     expect(tabs.map((t) => t.id)).not.toContain('t1');
     const second = tabs[1]!.id;
     expect((tabs[0]!.elements[0] as { link?: { tabId: string } }).link?.tabId).toBe(second);
+    // Each file id to its copy's, for what else names a tab (the file's rules).
+    expect([...tabIds]).toEqual([
+      ['t1', tabs[0]!.id],
+      ['t2', second],
+    ]);
   });
 
   // docs/specs/012-collaboration/presentation-mode.md "Saved data": an older file's deck stays behind.
@@ -151,5 +156,33 @@ describe('the component library in the file', () => {
     if (!parsed.ok) throw new Error(parsed.failure);
     expect(parsed.envelope.design).not.toHaveProperty('components');
     expect(copyDesignEnvelope(parsed.envelope).components).toEqual([]);
+  });
+});
+
+// docs/specs/013-workspace/automations.md: the design's rules ride its file, opaque here.
+describe('the rules in the file', () => {
+  const rules = [{ name: 'Weekly', enabled: true }];
+
+  it('writes them only when the design has some, and reads them back as they are', () => {
+    const none = JSON.parse(
+      designToEnvelopeText({ id: 'd', name: 'n', automations: [] }, [tab], 1),
+    ) as { design: object };
+    expect(none.design).not.toHaveProperty('automations');
+    const text = designToEnvelopeText({ id: 'd', name: 'n', automations: rules }, [tab], 1);
+    const parsed = parseDesignEnvelope(text);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    expect(parsed.envelope.design.automations).toEqual(rules);
+  });
+
+  it('reads anything but a list as no rules', () => {
+    const odd = JSON.stringify({
+      kind: DESIGN_ENVELOPE_KIND,
+      schemaVersion: 1,
+      exportedAt: 1,
+      design: { id: 'd', name: 'n', tabs: [tab], automations: 'nope' },
+    });
+    const parsed = parseDesignEnvelope(odd);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    expect(parsed.envelope.design).not.toHaveProperty('automations');
   });
 });

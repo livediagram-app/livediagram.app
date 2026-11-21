@@ -1,4 +1,14 @@
+import {
+  POLL_ENDED_EVENT,
+  QUESTION_ASKED_EVENT,
+  QUESTION_DATA,
+  QUESTION_TEXT_MAX,
+} from '@livediagram/document/automations';
 import { writeQaAction, type QaWriteRequest } from '../qa-board-write';
+import type { SessionAttachment } from '../room-session';
+import type { ParticipantPresence } from '../types';
+import { cutTo, hearsEvent, queueEvent, roleOfLevel } from '@liveworkspace/automations/room';
+import { pollEndedEvent } from './automations/poll-event';
 import type { DocumentRoom } from './document-room';
 
 // The room's Q&A board writes and live poll answers (document-room.ts): each function takes the room it acts for.
@@ -20,6 +30,16 @@ export async function handleQaWrite(room: DocumentRoom, request: Request): Promi
   const step = room.queueTabWrite(async () => {
     const result = await writeQaAction(env, req);
     if (result.ok && result.changed) {
+      // Question Asked (docs/specs/013-workspace/automations.md): a note added, with its text and nobody's name,
+      // queued in the same stretch as the write that added it.
+      if (req.action.type === 'add')
+        queueEvent(env, {
+          id: `question:${req.elementId}:${req.action.id}`,
+          kind: QUESTION_ASKED_EVENT,
+          at: Date.now(),
+          tab: req.tabId,
+          data: { [QUESTION_DATA]: cutTo(req.action.text.trim(), QUESTION_TEXT_MAX) },
+        });
       room.broadcastOrderedSystemOp({
         kind: 'qa',
         tabId: req.tabId,
@@ -65,4 +85,32 @@ export async function relayPollAnswer(
     return;
   }
   room.broadcast({ kind: 'op', from: sender.id, op: outcome.op }, ws);
+}
+
+// Poll Ended (docs/specs/013-workspace/automations.md "Triggers of its own"): a facilitator's poll-end the room is
+// about to act on, for the rules that hear it. The tally is the room's own (room-live-poll.ts), read before the poll
+// is let go; whoever ended it is named as the room knows them, by the name on their cursor, never by an account.
+// Nothing is read or built unless a rule hears it.
+export function notePollEnded(
+  room: DocumentRoom,
+  op: unknown,
+  session: SessionAttachment,
+  sender: ParticipantPresence,
+): void {
+  const env = room.roomEnv;
+  const held = room.poll.state;
+  if (!env || !held || !hearsEvent(env, POLL_ENDED_EVENT)) return;
+  if (held.poll.id !== (op as { pollId?: unknown } | null)?.pollId) return;
+  queueEvent(
+    env,
+    pollEndedEvent(
+      held.poll,
+      held.answers,
+      {
+        by: { id: '', name: sender.name, color: sender.color },
+        role: roleOfLevel(session.verifiedRole),
+      },
+      Date.now(),
+    ),
+  );
 }

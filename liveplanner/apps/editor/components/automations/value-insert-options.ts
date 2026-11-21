@@ -15,14 +15,15 @@ import {
   AUTOMATION_VALUE_LABELS,
   AUTOMATION_VALUE_NAMES,
 } from '@liveplanner/items';
+import {
+  WEBHOOK_VALUE_GROUP,
+  filterValueGroups,
+  type ValueGroup,
+  type ValueOption,
+} from '@liveworkspace/automations-ui/value-groups';
 
-export type ValueOption =
-  // A value to insert, by the name written between the braces.
-  | { kind: 'value'; id: string; label: string; name: string }
-  // Webhook Field…: opens the path line.
-  | { kind: 'webhook'; id: string; label: string };
-
-export type ValueGroup = { id: string; label: string; options: readonly ValueOption[] };
+export { filterValueGroups };
+export type { ValueGroup, ValueOption };
 
 const THIS_CARD: ValueGroup = {
   id: 'card',
@@ -70,12 +71,6 @@ const EMAIL: ValueGroup = {
     name,
   })),
 };
-const WEBHOOK: ValueGroup = {
-  id: 'webhook',
-  label: 'Webhook',
-  options: [{ kind: 'webhook', id: 'webhook', label: 'Webhook Field…' }],
-};
-
 /** The groups for a field: inside a branch or not, the card's fields, whether the rule is an Incoming Webhook's,
  *  whether a GitHub trigger's (the Pull Request group, after This Card) and whether an Email Received's (the Email
  *  group, after This Card). An Incoming Webhook or Email Received rule's This Card leaves out Who Did It. */
@@ -114,15 +109,6 @@ export function valueInsertGroups(
         name: `card.field.${f.name}`,
       })),
     });
-  if (incoming) groups.push(WEBHOOK);
+  if (incoming) groups.push(WEBHOOK_VALUE_GROUP);
   return groups;
-}
-
-/** The groups a search leaves: each option whose label holds the words typed, any case; empty groups go. */
-export function filterValueGroups(groups: readonly ValueGroup[], query: string): ValueGroup[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return [...groups];
-  return groups
-    .map((g) => ({ ...g, options: g.options.filter((o) => o.label.toLowerCase().includes(q)) }))
-    .filter((g) => g.options.length > 0);
 }

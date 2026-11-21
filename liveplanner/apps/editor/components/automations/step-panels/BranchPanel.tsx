@@ -12,7 +12,11 @@ import {
   type AutomationRelated,
 } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
-import { PanelField, PanelNote, PanelSelect } from './panel-parts';
+import {
+  PanelField,
+  PanelNote,
+  PanelSelect,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
 import { SavedFilterSelect } from './SavedFilterConditionPanel';
 
 type RelatedKind = AutomationRelated['kind'];

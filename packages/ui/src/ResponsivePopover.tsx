@@ -63,22 +63,32 @@ export function placeResponsivePopover(
     : { left, bottom: viewport.height - anchor.top + GAP, maxHeight: above, width: w };
 }
 
-/** Beside the anchor: its right when the panel fits there, else its left, else held inside the window's right edge;
- *  level with its top, lifted so at least half the window's height is left to it. */
+/** Beside the anchor: its right when the panel fits there, else its left; level with its top, lifted so at least half
+ *  the window's height is left to it. Without room either side, inside the dialog it was opened from (`within`, its
+ *  box), at its right edge and within its height, never hanging over the dialog's edge; else held inside the window's
+ *  right edge. */
 export function placeSidePopover(
   anchor: { left: number; right: number; top: number; bottom: number },
   width: number,
   viewport: { width: number; height: number },
+  within?: { left: number; right: number; top: number; bottom: number } | null,
 ): Place {
   const w = Math.min(width, viewport.width - EDGE * 2);
   const right = anchor.right + GAP;
   const leftSide = anchor.left - GAP - w;
-  const left =
-    right + w <= viewport.width - EDGE
-      ? right
-      : leftSide >= EDGE
-        ? leftSide
-        : viewport.width - w - EDGE;
+  const fitsRight = right + w <= viewport.width - EDGE;
+  const fitsLeft = leftSide >= EDGE;
+  if (!fitsRight && !fitsLeft && within) {
+    const inner = Math.min(w, within.right - within.left - GAP * 2);
+    const top = Math.max(within.top, EDGE) + GAP;
+    return {
+      left: within.right - inner - GAP,
+      top,
+      maxHeight: Math.min(within.bottom, viewport.height - EDGE) - GAP - top,
+      width: inner,
+    };
+  }
+  const left = fitsRight ? right : fitsLeft ? leftSide : viewport.width - w - EDGE;
   const top = clampIntoRange(anchor.top, EDGE, Math.max(EDGE, viewport.height / 2));
   return { left, top, maxHeight: viewport.height - top - EDGE, width: w };
 }
@@ -130,7 +140,12 @@ function AnchoredPanel({
       const at = anchor.getBoundingClientRect();
       setPlace(
         placement === 'side'
-          ? placeSidePopover(at, width, viewport)
+          ? placeSidePopover(
+              at,
+              width,
+              viewport,
+              anchor.closest('[data-dialog-panel]')?.getBoundingClientRect() ?? null,
+            )
           : placeResponsivePopover(at, width, viewport, align),
       );
     };

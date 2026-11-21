@@ -1,7 +1,7 @@
 // What a delivery says (liveworkspace/docs/specs/004-index/webhooks.md "Destinations"): the signed JSON event for a
-// plain endpoint, a Slack message, or a Teams Adaptive Card, each from the delivery's own copy of the event and
-// never more than the event's detail an Editor of the document already sees. Every body is capped at WEBHOOK_PAYLOAD_MAX_BYTES.
-// An automation rule's send ("Automation sends") is the rule's own message, with its card and rule beneath.
+// plain endpoint, a Slack message, or a Teams Adaptive Card. A connection sends two things only: a rule's message
+// ("Automation sends": the rule's own words, with its subject and rule beneath) and Send Test's ping. Every body is
+// capped at WEBHOOK_PAYLOAD_MAX_BYTES.
 
 import {
   WEBHOOK_EVENT_LABELS,
@@ -21,86 +21,56 @@ export type DeliveryEvent = {
   actorName: string | null;
   detail: Record<string, string | null> | null;
   occurredAt: number;
-  // The item's (or card's) link in its app, or null for none (a test).
+  // The item's link in its app, or null for none (a test).
   url: string | null;
 };
 
-// A detail value cut to this before anything is dropped, and a comment's words in a chat message.
+// A detail value cut to this before anything is dropped.
 const DETAIL_TEXT_MAX = 500;
-const CHAT_TEXT_MAX = 300;
 
 const cut = (text: string, max: number) =>
   text.length > max ? `${text.slice(0, max - 1)}…` : text;
-const quoted = (text: string) => `“${text || 'Untitled'}”`;
 
-/** An automation send's detail as the outbox wrote it: `{rule, card: {key, ref?, title, url} | null, text}`. */
+/** What a rule's send is about: a card or a tab, by its reference ("WI-48", "#48"; a tab has none), title and link. */
+export type AutomationSubject = { ref?: string; title: string; url: string | null };
+
+/** An automation send's detail as the outbox wrote it. */
 export type AutomationDetail = {
   rule: string;
-  // `ref`: its prefixed number ("WI-48"); absent from a send before refs, or for a type of no prefix.
-  card: { key: number; ref?: string; title: string; url: string | null } | null;
+  subject: AutomationSubject | null;
+  // liveplanner's alone, beside a subject that is a card: the card as receivers read it before subjects.
+  card?: { key: number; ref?: string; title: string; url: string | null };
   text: string;
 };
 
 // The detail is parsed JSON, so each part is checked before it is used.
 function automationOf(event: DeliveryEvent): AutomationDetail {
   const d = (event.detail ?? {}) as Record<string, unknown>;
-  const c = d.card as Record<string, unknown> | null | undefined;
-  const card =
-    c && typeof c === 'object' && typeof c.title === 'string'
+  const s = d.subject as Record<string, unknown> | null | undefined;
+  const subject =
+    s && typeof s === 'object' && typeof s.title === 'string'
       ? {
-          key: Number(c.key),
-          ...(typeof c.ref === 'string' ? { ref: c.ref } : {}),
-          title: c.title,
-          url: typeof c.url === 'string' ? c.url : null,
+          ...(typeof s.ref === 'string' ? { ref: s.ref } : {}),
+          title: s.title,
+          url: typeof s.url === 'string' ? s.url : null,
         }
       : null;
   return {
     rule: typeof d.rule === 'string' ? d.rule : '',
-    card,
+    subject,
     text: typeof d.text === 'string' ? d.text : '',
   };
 }
 
-// A card as a chat names it: "WI-48 Publish pricing page", "#48 Publish pricing page" from a send before refs.
-const cardLabel = (card: NonNullable<AutomationDetail['card']>) =>
-  Number.isInteger(card.key) ? `${card.ref ?? `#${card.key}`} ${card.title}` : card.title;
+// A subject as a chat names it: "WI-48 Publish pricing page", or a tab's title alone.
+const subjectLabel = (subject: AutomationSubject) =>
+  subject.ref ? `${subject.ref} ${subject.title}` : subject.title;
 
-/** The one sentence a chat shows for an event: "Ada moved “Fix sign-in” from Doing to Done on “Sprint 4”". */
+/** The one sentence a chat shows: a rule's message as it wrote it, or Send Test's. */
 export function summaryOf(event: DeliveryEvent): string {
-  const who = event.actorName?.trim() || 'Someone';
-  const d = event.detail ?? {};
-  const item = quoted(event.title);
-  switch (event.type) {
-    case 'renamed':
-      return d.from ? `${who} renamed ${quoted(d.from)} to ${item}` : `${who} renamed ${item}`;
-    case 'moved':
-      return d.folderName
-        ? `${who} moved ${item} to ${quoted(d.folderName)}`
-        : `${who} moved ${item}`;
-    case 'trashed':
-      return `${who} moved ${item} to the Trash`;
-    case 'shared':
-      return d.level ? `${who} shared ${item} (${d.level} link)` : `${who} shared ${item}`;
-    case 'commented':
-      return d.text
-        ? `${who} commented on ${item}: ${cut(d.text, CHAT_TEXT_MAX)}`
-        : `${who} commented on ${item}`;
-    case 'action_assigned':
-      return `${who} assigned ${quoted(d.action ?? '')} to ${d.assigneeName || 'someone'} on ${item}`;
-    case 'action_done':
-      return `${who} finished ${quoted(d.action ?? '')} on ${item}`;
-    case 'card_moved':
-      return `${who} moved ${quoted(d.card ?? '')} from ${d.from ?? '?'} to ${d.to ?? '?'} on ${item}`;
-    case 'form_response': {
-      const count = Number(d.responses) || 1;
-      const form = quoted(d.form ?? '');
-      return `${count === 1 ? 'A new response' : `${count} new responses`} to ${form} on ${item}`;
-    }
-    case 'automation':
-      return automationOf(event).text;
-    case 'ping':
-      return `Test from liveworkspace: “${event.title}” is set up and working.`;
-  }
+  return event.type === 'automation'
+    ? automationOf(event).text
+    : `Test from liveworkspace: “${event.title}” is set up and working.`;
 }
 
 // The app's name as a chat shows it ("livediagram"), or liveworkspace's.
@@ -111,13 +81,13 @@ const footerOf = (event: DeliveryEvent) =>
     ? `${WEBHOOK_EVENT_LABELS.automation} · ${automationOf(event).rule}`
     : `${appName(event.app)} · ${WEBHOOK_EVENT_LABELS[event.type]}`;
 
-// What a chat message links to: an automation send's card when it has a link, else the item's.
+// What a chat message links to: an automation send's subject when it has a link, else the item's.
 const linkOf = (event: DeliveryEvent) =>
-  (event.type === 'automation' ? automationOf(event).card?.url : null) ?? event.url;
+  (event.type === 'automation' ? automationOf(event).subject?.url : null) ?? event.url;
 
-// The card an automation send is about, for a chat's line above the link; null for any other event.
-const cardOf = (event: DeliveryEvent) =>
-  event.type === 'automation' ? automationOf(event).card : null;
+// What an automation send is about, for a chat's line above the link; null for a test.
+const subjectOf = (event: DeliveryEvent) =>
+  event.type === 'automation' ? automationOf(event).subject : null;
 
 /** The plain endpoint's event: `{id, type, occurredAt, app, item, actor, detail}`. */
 export function jsonBodyOf(event: DeliveryEvent, detail = event.detail): unknown {
@@ -150,12 +120,12 @@ export function slackCut(escaped: string, max: number): string {
   return `${head}…`;
 }
 
-/** A Slack incoming webhook's message: the sentence, a link back, and the app and event beneath. */
+/** A Slack incoming webhook's message: the sentence, a link back, and what sent it beneath. */
 export function slackBodyOf(event: DeliveryEvent, summary = summaryOf(event)): unknown {
   const url = linkOf(event);
-  const card = cardOf(event);
+  const subject = subjectOf(event);
   const open = url ? `<${url}|Open in ${appName(event.app)}>` : '';
-  const label = card ? slackEscape(cardLabel(card)) : '';
+  const label = subject ? slackEscape(subjectLabel(subject)) : '';
   const line = [label, open].filter(Boolean).join(' · ');
   const link = line ? `\n${line}` : '';
   // Escaping can make a 2,000-character message five times longer: cut so the section stays within Slack's limit.
@@ -182,10 +152,10 @@ const teamsText = (
   inlines: [{ type: 'TextRun', text, ...style }],
 });
 
-/** A Teams Workflows webhook's message: one Adaptive Card with the sentence, the app and event, and a button back. */
+/** A Teams Workflows webhook's message: one Adaptive Card with the sentence, what sent it, and a button back. */
 export function teamsBodyOf(event: DeliveryEvent, summary = summaryOf(event)): unknown {
   const url = linkOf(event);
-  const card = cardOf(event);
+  const subject = subjectOf(event);
   return {
     type: 'message',
     attachments: [
@@ -198,7 +168,7 @@ export function teamsBodyOf(event: DeliveryEvent, summary = summaryOf(event)): u
           version: '1.4',
           body: [
             teamsText(summary),
-            ...(card ? [teamsText(cardLabel(card), { weight: 'Bolder' })] : []),
+            ...(subject ? [teamsText(subjectLabel(subject), { weight: 'Bolder' })] : []),
             teamsText(footerOf(event), { isSubtle: true, size: 'Small' }, { spacing: 'None' }),
           ],
           actions: url
@@ -215,7 +185,7 @@ const bytesOf = (text: string) => new TextEncoder().encode(text).length;
 function shortened(detail: DeliveryEvent['detail']): DeliveryEvent['detail'] {
   if (!detail) return detail;
   return Object.fromEntries(
-    // A nested value (an automation send's card) is kept as it is: its texts were cut when it was queued.
+    // A nested value (an automation send's subject) is kept as it is: its texts were cut when it was queued.
     Object.entries(detail).map(([k, v]) => [
       k,
       typeof v === 'string' ? cut(v, DETAIL_TEXT_MAX) : v,

@@ -22,6 +22,7 @@ import { storedTabConnection, tabConnectionOf, type ExportResult } from '@livewo
 import { MAX_DECK_LEN, MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
 import type { DocumentEnv } from '../types';
+import { hostRulesForFile, type CopiedRules } from '@liveworkspace/automations/room';
 import {
   importDocumentCopy,
   initDocument,
@@ -71,7 +72,12 @@ export async function exportDocumentFile(
   const tabs = (await readContentTabRows(env, documentId, null)).map(envelopeTabOf);
   return {
     status: 'ok',
-    body: documentToEnvelopeText({ id: documentId, name: meta.name, presentation }, tabs, savedAt),
+    body: documentToEnvelopeText(
+      // The Space's rules ride its file (@liveworkspace/automations/room rules-file.ts): each one's body and whether it was on.
+      { id: documentId, name: meta.name, presentation, automations: hostRulesForFile(env) },
+      tabs,
+      savedAt,
+    ),
     contentType: DOCUMENT_FILE_FORMAT.mimeType,
     version: savedAt,
   };
@@ -106,12 +112,17 @@ const ROW_FIELDS = [
 export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {}): DocumentFileRead {
   const parsed = parseDocumentEnvelope(text);
   if (!parsed.ok) return { ok: false, failure: 'invalid_file' };
-  const { tabs, presentation } = opts.keepIds
+  // A revert (`keepIds`) puts back content only: the Space's rules stay as they are, so the file's are not read.
+  const { tabs, presentation, tabIds } = opts.keepIds
     ? {
         tabs: parsed.envelope.document.tabs,
         presentation: parsed.envelope.document.presentation ?? null,
+        tabIds: null,
       }
     : copyDocumentEnvelope(parsed.envelope);
+  const filed = parsed.envelope.document.automations;
+  const automations: CopiedRules | null =
+    tabIds && filed && filed.length > 0 ? { rules: filed, tabs: [...tabIds] } : null;
   if (presentation !== null && presentation.length > MAX_DECK_LEN) {
     return { ok: false, failure: 'too_large' };
   }
@@ -144,7 +155,13 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
       connection: tabConnectionOf(incoming) ?? null,
     });
   }
-  return { ok: true, content: { presentation, copy: { tabs: copied, images: [] } } };
+  return {
+    ok: true,
+    content: {
+      presentation,
+      copy: { tabs: copied, images: [], ...(automations ? { automations } : {}) },
+    },
+  };
 }
 
 export type DocumentFileImport = DocumentFileContent & { name: string; ownerId: string };

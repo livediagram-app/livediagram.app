@@ -21,6 +21,7 @@ export type {
   ClientMessage,
 } from '@livedesign/api-schema';
 
+import type { AutomationsAi, ItemHost } from '@liveworkspace/automations/room';
 import type { DesignRoom } from './design-room/design-room';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
@@ -152,6 +153,11 @@ export type Env = {
   // Unset, blank or non-positive = no limit (the default when unset). Hosted livedesign.app sets
   // "536870912" (512 MB).
   PHOTO_MAX_BYTES_PER_TAB?: string;
+  // Workers AI, for Automations' Summarise with AI and Describe a Rule (docs/specs/013-workspace/automations.md;
+  // liveworkspace/docs/specs/018-automations/automations.md "AI"). Absent, both answer "AI isn't set up here" and
+  // nothing else changes. AI_GATEWAY (unset by default) routes the calls through an AI Gateway of that id.
+  AI?: AutomationsAi;
+  AI_GATEWAY?: string;
 };
 
 // The env a design's own code runs with, inside its Durable Object (src/design-room/design-room.ts): the
@@ -162,8 +168,12 @@ export type Env = {
 // someone already looking at it (docs/specs/014-identity/phone-notifications.md).
 // `SNAPSHOT_REVERTED`: a snapshot's revert landed (docs/specs/013-workspace/snapshots.md), so the room forgets its
 // ledger and closes every socket with SNAPSHOT_REVERTED_CLOSE.
-export type DesignEnv = Env & {
-  DESIGN_DB: D1Database;
-  ROOM_PEOPLE?: () => ReadonlySet<string>;
-  SNAPSHOT_REVERTED?: (generation: number) => void;
-};
+// `AUTOMATIONS` (ItemHost): the design's rules engine (design-room/automations/), so a write a rule hears queues
+// its trigger beside itself; `COLLAB`: the comment triggers' watch the outbox's drain hands each changed tab to. Both
+// absent outside a room (a test's env, the route probe), where nothing is heard.
+export type DesignEnv = Env &
+  ItemHost & {
+    DESIGN_DB: D1Database;
+    ROOM_PEOPLE?: () => ReadonlySet<string>;
+    SNAPSHOT_REVERTED?: (generation: number) => void;
+  };

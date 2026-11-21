@@ -54,9 +54,10 @@ describe('the dialog hero header', () => {
     expect(root.className).toContain('px-4');
     expect(root.className).toContain('sm:px-6');
     const line = container.querySelector('[data-dialog-hero-subtitle]')!;
-    // One line from sm; on a phone it wraps to a second rather than lose its end (Work Tracker 1092).
-    expect(line.className).toContain('sm:truncate');
-    expect(line.className).toContain('max-sm:line-clamp-2');
+    // Up to two lines at every width, wrapping rather than losing its end (Work Tracker 1092; a wide dialog's line
+    // beside a centre piece, Automations' at 1440).
+    expect(line.className).toMatch(/(^|\s)line-clamp-2(\s|$)/);
+    expect(line.className).not.toContain('truncate');
     expect(line.className).not.toContain('sr-only');
   });
 

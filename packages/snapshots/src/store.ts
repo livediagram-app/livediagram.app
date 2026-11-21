@@ -161,6 +161,8 @@ export type TakeInput = {
   id?: string;
   /** SN31: how many of the item's snapshots stay; `null` keeps every one (the app bounds them). */
   keep?: number | null;
+  /** SN35: the snapshots a rule names. Never removed to make room, and not counted toward `keep`. */
+  keptIds?: readonly string[];
   /** SN31: statements run in the take's own batch after its chunks, given the snapshot's id. */
   alongside?: (id: string) => SnapshotStatement[];
 };
@@ -168,8 +170,8 @@ export type TakeInput = {
 export type TakeResult =
   { ok: true; snapshot: SnapshotSummary } | { ok: false; reason: 'too_large' };
 
-/** SN4, SN5: the text kept as a snapshot, refused whole when over the cap, the oldest past SNAPSHOTS_KEPT removed in
- *  the same transaction. */
+/** SN4, SN5, SN35: the text kept as a snapshot, refused whole when over the cap, the oldest past SNAPSHOTS_KEPT
+ *  removed in the same transaction, those in `keptIds` left alone and uncounted. */
 export async function takeSnapshot(db: SnapshotDb, input: TakeInput): Promise<TakeResult> {
   const bytes = utf8Bytes(input.text);
   if (bytes > SNAPSHOT_MAX_BYTES) return { ok: false, reason: 'too_large' };
@@ -201,13 +203,18 @@ export async function takeSnapshot(db: SnapshotDb, input: TakeInput): Promise<Ta
     ...(input.alongside?.(id) ?? []),
   ];
   if (keep !== null) {
+    // One statement whatever the count of kept ids (a JSON list): the newest `keep` of the rest stay.
     statements.push(
       db
         .prepare(
-          `DELETE FROM snapshots WHERE item_id = ?1 AND id NOT IN (
-             SELECT id FROM snapshots WHERE item_id = ?1 ORDER BY created_at DESC, rowid DESC LIMIT ?2)`,
+          `DELETE FROM snapshots WHERE item_id = ?1
+             AND id NOT IN (SELECT value FROM json_each(?3))
+             AND id NOT IN (
+               SELECT id FROM snapshots
+                WHERE item_id = ?1 AND id NOT IN (SELECT value FROM json_each(?3))
+                ORDER BY created_at DESC, rowid DESC LIMIT ?2)`,
         )
-        .bind(input.itemId, keep),
+        .bind(input.itemId, keep, JSON.stringify(input.keptIds ?? [])),
       // A database without foreign keys on (a test's) keeps no orphan chunk either.
       db.prepare('DELETE FROM snapshot_chunks WHERE snapshot_id NOT IN (SELECT id FROM snapshots)'),
     );

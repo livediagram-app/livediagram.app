@@ -181,6 +181,19 @@ There is no route for it. When a guest signs in or signs up, the liveworkspace a
 | GET    | `/api/preferences` | owner (any path) | Returns `{ prefs }` for the resolved owner (account userId for signed-in users, the guest id for guests), kept by liveworkspace with the account or under the guest's id. `{ prefs: null }` when there is nowhere to keep them (a guest-only deployment), and the editor keeps them in the browser alone; `503 preferences_unavailable` when liveworkspace is out of reach. The blob is opaque to the worker; the client owns the shape (`apps/editor/lib/user-preferences.ts`'s `UserPreferences` type).                                                                                                                                    |
 | PUT    | `/api/preferences` | owner (any path) | Body `{ prefs }`, a **patch**: each key it names takes its new value whole, `null` deletes the key, keys it leaves out stay. Returns 204. The body is capped at 8 KB (`PREFERENCES_PATCH_MAX`: the editor's whole blob stays under 4 KB, and a patch is at most that plus a null per dropped key); over it, or not an object, is `400`, and liveworkspace's own refusal passes on (`413` for its size cap). `409 preferences_local_only` when there is nowhere to keep them. Same hybrid auth as `GET`. Last-write-wins per key; the client tolerates failure by keeping its localStorage cache authoritative until the next successful PUT. |
 
+**Automations** (see [Automations](../013-workspace/automations.md); wiring in its
+[blueprint](../013-workspace/blueprints/automations.md#routes))
+
+A document's rules are served inside its Durable Object by the platform's routes
+(`@liveworkspace/automations/room`) at `/api/documents/:id/automations[/…]`: the list, a rule's save, delete, toggle,
+duplicate, run and secret, the order, Test Rule (`/test`), Describe a Rule (`/draft`), the Audit Trail (`/runs`) and
+one rule's summary (`/summary`). Every route but the summary needs a signed-in Editor of the whole document, in
+person or through their API token (403 `automations_need_editor`); the summary answers anyone holding a grant. Two
+doors are answered by the worker before identity, each proved by what it carries and limited per network:
+`POST /api/hooks/automations/:documentId/:ruleId` (an Incoming Webhook call, proved by the rule's secret) and
+`POST /api/email-optout/:documentId/:token` (a rule email's unsubscribe). All are in `/api/openapi.json` under
+**Automations**.
+
 ### Document dates
 
 A document's dates are its `createdAt` (shown as created) and `savedAt` (last

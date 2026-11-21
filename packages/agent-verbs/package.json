@@ -19,6 +19,7 @@
     "./mcp/archive-tools": "./src/mcp/archive-tools.ts",
     "./mcp/image-schema": "./src/mcp/image-schema.ts",
     "./mcp/image-tools": "./src/mcp/image-tools.ts",
+    "./mcp/rule-tools": "./src/mcp/rule-tools.ts",
     "./mcp/tab-folder-tools": "./src/mcp/tab-folder-tools.ts",
     "./mcp/thread-run": "./src/mcp/thread-run.ts",
     "./mcp/thread-tools": "./src/mcp/thread-tools.ts",
@@ -26,6 +27,7 @@
     "./mcp/view-tool": "./src/mcp/view-tool.ts",
     "./product": "./src/product.ts",
     "./refs": "./src/refs.ts",
+    "./rules": "./src/rules/index.ts",
     "./tab-folders": "./src/tab-folders.ts",
     "./testing/fake-api": "./src/testing/fake-api.ts",
     "./testing/memory-copies": "./src/testing/memory-copies.ts",
@@ -33,6 +35,7 @@
     "./verbs/comment-change": "./src/verbs/comment-change.ts",
     "./verbs/folder": "./src/verbs/folder.ts",
     "./verbs/image": "./src/verbs/image.ts",
+    "./verbs/rule": "./src/verbs/rule.ts",
     "./verbs/tab-folder": "./src/verbs/tab-folder.ts",
     "./write": "./src/write.ts"
   },
@@ -47,6 +50,7 @@
     "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/automations": "workspace:*",
     "@liveworkspace/element-model": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "zod": "^4.6.7"

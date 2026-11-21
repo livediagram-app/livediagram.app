@@ -10,10 +10,8 @@
 // Test on a Card asks nothing and says what it would do. Never throws.
 import {
   AI_CAPPED,
-  AI_FAILED,
   AI_NOT_ASKED,
   AI_NOT_SET_UP,
-  AI_SLOW,
   AI_UNREADABLE,
   AUTOMATION_AI_PER_DAY,
   STEP_NOT_DONE,
@@ -24,7 +22,6 @@ import {
   planLabels,
   readAiReply,
   type AiOutcome,
-  type AiRequest,
   type AutomationAiTask,
   type AutomationRule,
   type AutomationStepLine,
@@ -37,58 +34,25 @@ import { reportServerEvent } from '../../server-telemetry';
 import type { AutomationsAi, PlanEnv } from '../../types';
 import type { AutomationPlan } from './automation-plan';
 import type { HistorySource } from './automation-queue';
+import { aiToday, ask } from '@liveworkspace/automations/room';
 import { markAiAsked } from './automation-log';
 import type { Sql } from './automation-store';
 import { addComment, patchCard, type WriteDeps } from './automation-writes';
 
 export type { AutomationsAi } from '../../types';
 
-// The model (Workers AI's catalogue, Nov 2026): a small, cheap instruct model with JSON mode, not on the deprecation
-// list, its thinking mode turned off so an answer costs only its own tokens.
-export const AUTOMATION_AI_MODEL = '@cf/google/gemma-4-26b-a4b-it';
-export const AUTOMATION_AI_TIMEOUT_MS = 15_000;
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-// The binding the room asks through, or null where there is none (tests, local dev without Cloudflare, a fork).
-export function aiClient(env: Pick<PlanEnv, 'AI'>): AutomationsAi | null {
-  return env.AI ?? null;
-}
-
-const midnight = (now: number) => Math.floor(now / DAY_MS) * DAY_MS;
-
-// The AI calls the plan made today (UTC): the Audit Trail's lines marked `ai`, pending runs' too once settled, and
-// Describe a Rule's asks.
-export function aiToday(sql: Sql, now: number): number {
-  const day = midnight(now);
-  const row = sql
-    .exec(
-      `SELECT (SELECT COUNT(*) FROM automation_runs r, json_each(r.body, '$.steps') s
-                WHERE r.at >= ? AND s.value ->> '$.ai' = 1)
-            + (SELECT COUNT(*) FROM automation_ai_drafts WHERE at >= ?) AS n`,
-      day,
-      day,
-    )
-    .toArray()[0];
-  return Number(row?.['n'] ?? 0);
-}
-
-// The rules Describe a Rule drafted today (UTC): each draft's first ask.
-export function draftsToday(sql: Sql, now: number): number {
-  const row = sql
-    .exec(
-      'SELECT COUNT(*) AS n FROM automation_ai_drafts WHERE at >= ? AND retry = 0',
-      midnight(now),
-    )
-    .toArray()[0];
-  return Number(row?.['n'] ?? 0);
-}
-
-// One Describe a Rule ask, counted; asks past two days go.
-export function countDraftAsk(sql: Sql, now: number, retry: boolean): void {
-  sql.exec('DELETE FROM automation_ai_drafts WHERE at < ?', midnight(now) - DAY_MS);
-  sql.exec('INSERT INTO automation_ai_drafts (at, retry) VALUES (?, ?)', now, retry ? 1 : 0);
-}
+// The binding, the model, the bounded ask and the day's counts are @liveworkspace/automations/room's
+// (liveworkspace/docs/specs/018-automations/blueprints/engine.md "The room entry").
+export {
+  AUTOMATION_AI_MODEL,
+  AUTOMATION_AI_TIMEOUT_MS,
+  aiClient,
+  aiToday,
+  ask,
+  countDraftAsk,
+  draftsToday,
+  type Asked,
+} from '@liveworkspace/automations/room';
 
 // Each call's telemetry, by task (literal types, so the telemetry catalogue's scan reads them).
 function called(env: PlanEnv, task: AutomationAiTask): Promise<void> {
@@ -130,38 +94,6 @@ export type AiStepsOutcome = {
   // A step the day's cap skipped (that step only: the run goes on, and is Skipped when nothing failed or waits).
   skipped?: string;
 };
-
-const SLOW = Symbol('slow');
-
-export type Asked = { ok: true; raw: unknown } | { ok: false; reason: string };
-
-// One call, bounded by the timeout; the model's own error and a gateway's refusal are the same failure to a rule.
-export async function ask(
-  client: AutomationsAi,
-  request: AiRequest,
-  gateway: string | undefined,
-): Promise<Asked> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const slow = new Promise<typeof SLOW>((resolve) => {
-    timer = setTimeout(() => resolve(SLOW), AUTOMATION_AI_TIMEOUT_MS);
-  });
-  try {
-    const raw = await Promise.race([
-      client.run(
-        AUTOMATION_AI_MODEL,
-        { ...request, chat_template_kwargs: { enable_thinking: false } },
-        gateway ? { gateway: { id: gateway } } : undefined,
-      ),
-      slow,
-    ]);
-    return raw === SLOW ? { ok: false, reason: AI_SLOW } : { ok: true, raw };
-  } catch (error) {
-    console.warn('[automations] ai.failed', { error: String(error) });
-    return { ok: false, reason: AI_FAILED };
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 // The newest comments on the card's threads this plan holds, text only.
 async function latestComments(env: PlanEnv, planId: string, cardId: string): Promise<string[]> {

@@ -16,7 +16,7 @@ import {
   NEXT_COLUMN,
   Pill,
   type ToneClasses,
-} from '../scene-parts';
+} from '@liveworkspace/automations-ui/scene-parts';
 
 // A small child row on a parent card, ticked when done.
 function ChildRow({ done, d }: { done: boolean; d?: number }) {

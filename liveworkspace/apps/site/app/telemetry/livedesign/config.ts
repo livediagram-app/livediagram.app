@@ -50,6 +50,7 @@ import {
   CONNECTED_TABS,
   DESIGNS_CREATED,
   DESIGN_ACTIONS,
+  DESIGN_AUTOMATIONS,
   DISCUSSION,
   DRY_HELP_SEARCHES,
   EDITOR_CHROME,
@@ -240,7 +241,15 @@ export const LIVEDESIGN: TelemetryAppConfig = {
     },
     {
       title: 'Features',
-      metrics: [PAGE_WORK, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+      metrics: [
+        PAGE_WORK,
+        PALETTE_USE,
+        CANVAS_MODES,
+        LOOK_AND_FEEL,
+        PANELS_OPENED,
+        OFFLINE_MODE,
+        DESIGN_AUTOMATIONS,
+      ],
     },
     // Live Together is the only stack that counts two people on one canvas at
     // the same moment; the rest of Collaboration counts invitations to be there,

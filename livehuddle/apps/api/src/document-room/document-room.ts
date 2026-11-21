@@ -27,11 +27,7 @@ import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import type { InternalRoom } from '../room-internal';
 import type { FacilitatorState } from '../facilitator';
 import { RoomFacilitator } from '../room-facilitator';
-import {
-  newSessionAttachment,
-  readSessionAttachment,
-  type SessionAttachment,
-} from '../room-session';
+import { readSessionAttachment, type SessionAttachment } from '../room-session';
 import type { CommunityAuthor } from '@livehuddle/api-schema';
 import { documentHasTab } from '../db/tabs';
 import { callsMode } from '../calls/calls-mode';
@@ -65,6 +61,17 @@ import {
   type SharedTabCopy,
 } from './tab-shares';
 import type { RouteIdentity } from './document-route';
+import type { ItemStanding } from '@liveworkspace/index-client';
+import {
+  incomingItemHook,
+  itemEmailOptOut,
+  type HookAnswer,
+  type HookCall,
+  type ItemEngine,
+  type ItemStandingKeeper,
+  type StandingGrant,
+} from '@liveworkspace/automations/room';
+import { automationDoors, newSpaceAutomations, newStanding } from './automations/space-automations';
 import {
   drainIndex,
   drainShares,
@@ -88,7 +95,9 @@ import {
   frameFor,
   relaySessionOf,
   sendToPresence,
+  acceptSession as acceptRoomSession,
   turnAwayIfFull,
+  type SessionArgs,
 } from './room-sockets';
 import { alarm, armAlarm, purge } from './room-lifecycle';
 import { renamePerson } from './room-names';
@@ -269,6 +278,12 @@ export class DocumentRoom extends DurableObject<Env> {
   // request's grant), so a guest's merge into an account or a move to another team reaches the canvas's emails,
   // pushes and alarm (@liveworkspace/index-app item-head.ts). Made by room-content-state.ts roomHeadSync.
   readonly head: ItemHeadSync;
+  // Where the Space stands at the index: while it is archived or in the Trash its rules hear nothing and nothing of
+  // theirs wakes it.
+  readonly standing: ItemStandingKeeper;
+  // The Space's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they hear, and
+  // what waits to run on the alarm.
+  readonly automations: ItemEngine;
 
   // The tab write queue (blueprint SR2): a Participant's writes, one at a time per document. A Durable Object only
   // serialises the synchronous parts of its handlers: while one write is awaiting its store, the runtime happily
@@ -342,10 +357,13 @@ export class DocumentRoom extends DurableObject<Env> {
       ensureSchema: () => this.ensureSchema(),
       onWrite: () => this.noteWrite(),
     });
+    this.standing = newStanding(this);
+    this.automations = newSpaceAutomations(this);
     this.roomEnv = env
       ? {
           ...env,
           DOCUMENT_DB: this.db.asD1(),
+          AUTOMATIONS: this.automations,
           DOCUMENT_ROOM: localNamespace(this, env.DOCUMENT_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
@@ -408,6 +426,7 @@ export class DocumentRoom extends DurableObject<Env> {
       }
       await this.baton.restore();
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
+      this.standing.restore(await state.storage.get(this.standing.key));
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
       // Visits a restart left open (room-attendance.ts): only when the room starts with nobody connected.
       sweepStaleAttendance(this);
@@ -548,8 +567,40 @@ export class DocumentRoom extends DurableObject<Env> {
     return rpc.revokeCodes(this, documentId, codes, reason);
   }
 
-  joined(documentId: string, personId: string): Promise<void> {
-    return rpc.joined(this, documentId, personId);
+  joined(documentId: string, personId: string, level?: AccessLevel): Promise<void> {
+    return rpc.joined(this, documentId, personId, level);
+  }
+
+  // Someone asked for access to the Space (the index's notice): the rules that hear it (room-rpc.ts).
+  async accessRequested(
+    documentId: string,
+    requester: { id: string; name: string | null; requestId?: string },
+  ): Promise<void> {
+    rpc.accessRequested(this, documentId, requester);
+  }
+
+  // ---------- RPC: Automations' doors (@liveworkspace/automations/room doors.ts, standing.ts) --------------------
+
+  // An Incoming Webhook call to one rule, proved by the rule's secret.
+  incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer> {
+    this.bindDocument(documentId);
+    return incomingItemHook(automationDoors(this), ruleId, call);
+  }
+
+  // A rule email's unsubscribe: false for a token the Space never made.
+  async emailOptOut(documentId: string, token: string): Promise<boolean> {
+    this.bindDocument(documentId);
+    return itemEmailOptOut(automationDoors(this), token);
+  }
+
+  // Where the Space stands at the index, after an archive, move out, trash or restore.
+  takeStanding(documentId: string, standing: ItemStanding): Promise<void> {
+    this.bindDocument(documentId);
+    return this.standing.take(standing);
+  }
+
+  takeGrantStanding(grant: StandingGrant): Promise<void> {
+    return this.standing.takeGrant(grant);
   }
 
   anonymise(
@@ -614,60 +665,9 @@ export class DocumentRoom extends DurableObject<Env> {
     return turnAwayIfFull(this, server);
   }
 
-  // Admit one server-side socket into the room: pin its hibernation-proof
-  // session state (attachment) and hand it to the runtime. Split out of
-  // fetch so tests can drive sessions without constructing WebSocketPair.
-  acceptSession(
-    ws: WebSocket,
-    verifiedRole?: AccessLevel,
-    isOwner = false,
-    tabScope: string | null = null,
-    shareCode: string | null = null,
-    personTag: string | null = null,
-    adderKey: string | null = null,
-    documentId: string | null = null,
-    grantExp: number | null = null,
-    // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
-    // none mints one for this socket.
-    collabKey: string | null = null,
-    // The person stamped on its reactions (X-Verified-Reaction-Person,
-    // docs/specs/012-collaboration/comment-reactions.md).
-    reactionPerson: string | null = null,
-    // The person's presence name, their profile's (X-Verified-Name, docs/specs/014-identity/
-    // auth-and-guest-access.md "Presence names"): none for a session with no identity.
-    name: string | null = null,
-    // A verified account holds this session (X-Verified-Account): only such a session keeps a Google picture, and
-    // its Attendance visits are not a guest's (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
-    account = false,
-    // The API token whose ticket opened it (X-Verified-Api-Token, public-api-and-tokens.md "Revoking a token"):
-    // revoking the token closes it.
-    apiToken: string | null = null,
-  ): void {
-    ws.serializeAttachment(
-      newSessionAttachment(
-        {
-          verifiedRole,
-          collabKey,
-          reactionPerson,
-          name,
-          account,
-          isOwner,
-          tabScope,
-          shareCode,
-          personTag,
-          adderKey,
-          documentId,
-          grantExp,
-          apiToken,
-        },
-        crypto.randomUUID(),
-      ),
-    );
-    // Hibernation-aware accept: the runtime owns the socket's event
-    // delivery (webSocketMessage / webSocketClose / webSocketError) and
-    // may evict this DO between events. NOT ws.accept(), which would pin
-    // the DO in memory for the socket's whole life.
-    this.state.acceptWebSocket(ws);
+  // Admit one server-side socket (room-sockets.ts), apart from fetch so tests need no WebSocketPair.
+  acceptSession(...args: SessionArgs): void {
+    acceptRoomSession(this, ...args);
   }
 
   // Read a socket's session attachment (room-session.ts); frames from a null one are dropped.

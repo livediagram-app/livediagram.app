@@ -2,18 +2,21 @@
 // docs/specs/026-plan/automations.md "Incoming Webhook" and "Values": the trigger in the When panel, its address and
 // secret (made once, shown once, then only its last 4 characters, Regenerate behind a confirm), How to Send, and
 // Webhook Field… in Insert a Value, offered only in an incoming rule.
+import { PLAN_AUTOMATIONS_PLUMBING } from '@/components/automations/plan-plumbing';
+import './test-kit';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState, type ReactNode } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import type { AutomationHookInfo } from '@liveplanner/api-schema';
-import { AutomationsContext } from './AutomationsContext';
-import { IncomingRuleProvider, type IncomingRule } from './incoming-rule';
+import { AutomationsContext } from '@liveworkspace/automations-ui/AutomationsContext';
+import { RuleContextProvider, type RuleContext } from '@liveworkspace/automations-ui/rule-context';
+import { PLAN_AUTOMATIONS_KIT } from './plan-kit';
 import { newRuleBody, type RulePart } from './rule-draft';
-import { StepPanel } from './StepPanel';
-import { sendExamples } from './step-panels/IncomingWebhookPanel';
+import { StepPanel } from '@liveworkspace/automations-ui/StepPanel';
+import { sendExamples } from '@liveworkspace/automations-ui/step-panels/IncomingWebhookPanel';
 import { outline } from './test-fixtures';
-import { ValueTextField } from './ValueInsert';
+import { ValueTextField } from '@liveworkspace/automations-ui/ValueInsert';
 
 const client = vi.hoisted(() => ({ makeHookSecret: vi.fn() }));
 vi.mock('./automations-client', async (importOriginal) => ({
@@ -23,7 +26,7 @@ vi.mock('./automations-client', async (importOriginal) => ({
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const NOW = Date.UTC(2026, 10, 11, 12);
 const URL_ = 'https://www.liveplanner.app/api/hooks/automations/p1/r1';
 const SECRET = `lwh_${'A'.repeat(82)}Xf3k`;
@@ -41,11 +44,12 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
+// The builder's word of its rule, as an Incoming Webhook rule's parts read it; the body is the panel's own.
+type IncomingRule = Omit<RuleContext, 'body'>;
 const incoming = (over: Partial<IncomingRule> = {}): IncomingRule => ({
   incoming: true,
   ruleId: 'r1',
   hook: { url: URL_, secret: null },
-  cardless: false,
   now: NOW,
   ...over,
 });
@@ -62,8 +66,10 @@ function Panel({
 }) {
   const [b, setB] = useState(body);
   return (
-    <AutomationsContext.Provider value={{ scope: SCOPE, open: () => {} }}>
-      <IncomingRuleProvider value={rule}>
+    <AutomationsContext.Provider
+      value={{ scope: SCOPE, plumbing: PLAN_AUTOMATIONS_PLUMBING, open: () => {} }}
+    >
+      <RuleContextProvider value={{ ...rule, body: b }}>
         <StepPanel
           body={b}
           part={part}
@@ -73,11 +79,10 @@ function Panel({
           }}
           outline={outline()}
           faultPath={null}
-          person="Ana Costa"
           now={NOW}
           timeZone="Europe/London"
         />
-      </IncomingRuleProvider>
+      </RuleContextProvider>
     </AutomationsContext.Provider>
   );
 }
@@ -159,9 +164,15 @@ describe('the address and secret', () => {
   });
 
   it('says what a call runs on, and How to Send shows both ways with the address', () => {
-    const { rerender } = render(<Panel body={body()} rule={incoming({ cardless: true })} />);
+    // A rule whose steps change no card runs with none named; one that changes a card needs them named.
+    render(
+      <Panel
+        body={body({ steps: [{ kind: 'notify', via: 'slack', webhook: 'w1', text: 'Built' }] })}
+      />,
+    );
     expect(screen.getByText(/With none named, it runs once with no card/)).toBeTruthy();
-    rerender(<Panel body={body()} rule={incoming({ cardless: false })} />);
+    cleanup();
+    render(<Panel body={body({ steps: [{ kind: 'archive' }] })} />);
     expect(screen.getByText(/the call must name cards/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'How to Send' }));
     expect(screen.getByLabelText('the header example').textContent).toContain(
@@ -172,13 +183,20 @@ describe('the address and secret', () => {
     );
   });
 
-  it('builds curl lines that sign the body sent', () => {
-    const { header, signature } = sendExamples(URL_);
+  it('builds curl lines that sign the timestamp and the body sent', () => {
+    const { example, signatureHeader } = PLAN_AUTOMATIONS_KIT.incoming;
+    const { header, signature } = sendExamples(URL_, example, signatureHeader);
     expect(header).toContain(`curl -X POST '${URL_}'`);
-    expect(signature).toContain('openssl dgst -sha256 -hmac "$SECRET"');
+    expect(signature).toContain('TS=$(date +%s)');
+    expect(signature).toContain(
+      `printf '%s.%s' "$TS" "$BODY" | openssl dgst -sha256 -hmac "$SECRET"`,
+    );
+    expect(signature).toContain('-H "X-Liveworkspace-Timestamp: $TS"');
     expect(signature).toContain('-d "$BODY"');
   });
 });
+
+const NO_FIELDS: readonly never[] = [];
 
 describe('Webhook Field…', () => {
   function Field({ rule }: { rule?: IncomingRule }) {
@@ -187,8 +205,14 @@ describe('Webhook Field…', () => {
       latestText = next;
       setText(next);
     };
-    const field = <ValueTextField label="Comment" value={text} onChange={change} fields={[]} />;
-    return rule ? <IncomingRuleProvider value={rule}>{field}</IncomingRuleProvider> : field;
+    const field = (
+      <ValueTextField label="Comment" value={text} onChange={change} narrow={NO_FIELDS} />
+    );
+    return rule ? (
+      <RuleContextProvider value={{ ...rule, body: body() }}>{field}</RuleContextProvider>
+    ) : (
+      field
+    );
   }
   let latestText = '';
   const wrap = (node: ReactNode) => {

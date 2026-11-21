@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "The rule builder": Card Moved's panel picks Card Types above From and To, which
 // then list only the columns those types use; an old rule with no types lists every column; a deleted type shows gone.
+import './test-kit';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { useState } from 'react';
 import type { AutomationRuleBody, AutomationTrigger, ItemTypeDef } from '@liveplanner/items';
 import { newRuleBody } from './rule-draft';
-import { StepPanel } from './StepPanel';
+import { StepPanel } from '@liveworkspace/automations-ui/StepPanel';
 import { outline } from './test-fixtures';
 
 afterEach(cleanup);
@@ -45,7 +46,6 @@ function Panel({ trigger }: { trigger: AutomationTrigger }) {
       }}
       outline={PLAN}
       faultPath={null}
-      person="Ana Costa"
       now={Date.UTC(2026, 10, 11)}
       timeZone="Europe/London"
     />

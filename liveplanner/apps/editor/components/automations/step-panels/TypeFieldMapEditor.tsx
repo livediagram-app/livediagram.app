@@ -15,7 +15,7 @@ import {
   type TypeFieldMap,
 } from '@liveplanner/items';
 import { Button, CloseIcon } from '@liveplanner/ui';
-import { PanelSelect } from './panel-parts';
+import { PanelSelect } from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 // A source: a custom field of some type, with that type's name, for the From list's groups.
 type Source = { type: ItemTypeDef; def: CustomFieldDef };

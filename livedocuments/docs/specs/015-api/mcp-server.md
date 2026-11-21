@@ -425,7 +425,7 @@ element's `imageId` takes. The shared code is `@liveworkspace/agent-verbs`'s `pa
 - **Fetching a URL.** `@liveworkspace/api-kit`'s `fetchPublicBytes` (`public-fetch.ts`), the server-side fetch of a
   URL someone else chose: https on port 443 only, with no user name or password; a literal address is judged as it
   stands and a name is resolved (DNS over HTTPS, A and AAAA) and refused when any answer is private, loopback,
-  link-local, carrier NAT, multicast, reserved or a cloud metadata address (`public-address.ts`, the index's webhook
+  link-local, carrier NAT, multicast, reserved or a cloud metadata address (`public-address.ts`, the index's connection
   checks), or an internal name (`localhost`, `.local`, `.internal`, a single label). Redirects are followed by hand,
   at most 3, each target checked the same way; the whole exchange, body included, has 10 seconds; the body is read
   through a byte counter that stops one chunk past 10 MB, so a huge or endless answer is cut off there. The answer's
@@ -699,6 +699,24 @@ comment, text }` and `delete { ref, comment }`, each with an optional `tabId`. A
 - **Limits.** Text up to 2,000 characters (the api's `COMMENT_TEXT_MAX`); a full thread (500 comments) answers
   `thread_full`. Bursts meet the per-token write limiter, and the owner's new-comment email goes at most once per
   document per 15 minutes.
+
+### 4.9e Automations rules: `list_rules` and `change_rules`
+
+An assistant works a document's [Automations](../013-workspace/automations.md#agents) rules as an Editor does in the
+Rules list, over the same routes (`/api/documents/<id>/automations[/…]`), with exactly their authority. Both are declared
+once for every product with item rules (`@liveworkspace/agent-verbs/mcp/rule-tools`, run by
+`@liveworkspace/agent-verbs/rules`) with this product's kinds, so the rule format in the tool is this product's
+triggers, conditions, steps and values.
+
+- **`list_rules`**: `{ documentId, rule?, runs?, limit? }`. Read. Every rule in order with its sentence, on or off,
+  paused, needs attention, last run, runs this week and next run, and the document's tabs and people; `rule` (an id or
+  exact name) adds its whole body, `runs: true` the recent Audit Trail (20, up to 50). A read-only token may call it.
+- **`change_rules`**: `{ documentId, changes }`. Destructive (it deletes rules). Up to 20 changes in order: `add {rule}`,
+  `set {rule, …}`, `on`, `off`, `duplicate` and `delete {rule}`, `test {rule, tab?}` and `run {rule, tab?}`. Tabs and
+  people may be named by id or name. A refusal is a tool error in words, naming what was applied before it: an
+  Editor of the whole document only (`automations_need_editor`), a read-only token (`read_only_token`), Revert to Snapshot
+  saved only by a person (`automation_needs_a_person`), a rule that does not read (the engine's path and reason), the
+  limits, and a rule or tab it cannot name. It never makes or reads an Incoming Webhook's secret.
 
 ### 4.9f Tab folders: `change_tabs`
 

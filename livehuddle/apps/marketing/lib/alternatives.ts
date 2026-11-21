@@ -72,7 +72,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Programmatic access',
-        us: 'A free REST API with personal tokens, and webhooks to Slack, Teams or signed JSON',
+        us: 'A free REST API with personal tokens, and Automations that post to Slack, Teams or signed JSON',
         them: 'Calendar, GitHub and Spotify integrations, and webhooks from smart objects',
       },
     ],
@@ -94,7 +94,7 @@ const LIST: Alternative[] = [
       'A Receptionist by the Avatar Pad who welcomes newcomers and answers how-do-I questions by pointing at the real control.',
       'A Space is also a board: sticky notes, text and stickers on the walls, and a Timer or a Stopwatch in any room.',
       'Share links for each role: an Editor reshapes the office, and a Participant, the default, walks, talks and reacts without moving a thing. Add a password or an expiry, or revoke a link at any time.',
-      'A free REST API and webhooks, so your own scripts can set up your Spaces and Slack or Teams hears when one is renamed, moved, shared or trashed.',
+      'A free REST API, so your own scripts can set up your Spaces, and Automations: rules a Space runs on its own, so a room tidies itself once everyone leaves and Slack or Teams hears when the office opens.',
       'Your Spaces can sync to your own Google Drive, or stay Offline and never reach our servers.',
     ],
     sections: [
@@ -189,7 +189,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Programmatic access',
-        us: 'A free REST API with personal tokens, and webhooks to Slack, Teams or signed JSON',
+        us: 'A free REST API with personal tokens, and Automations that post to Slack, Teams or signed JSON',
         them: 'Calendar, Slack, Teams, Zoom and Google Drive integrations',
       },
     ],
@@ -211,7 +211,7 @@ const LIST: Alternative[] = [
       'Knock before walking in on a meeting, Nudge a teammate from Collaborators, and see who came and went in a tab’s Attendance.',
       'The walls hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch in any room.',
       'Participant links let people walk, talk and react without moving the furniture, and a Space can take a password and any link an expiry.',
-      'A free REST API and webhooks, so a script can set up a Space and Slack or Teams hears when it is renamed, moved, shared or trashed.',
+      'A free REST API, so a script can set up a Space, and Automations, so a meeting room puts itself back once everyone leaves and Slack or Teams hears when the first person arrives.',
       'Your Spaces can sync to your own Google Drive, or stay Offline and never reach our servers.',
     ],
     sections: [

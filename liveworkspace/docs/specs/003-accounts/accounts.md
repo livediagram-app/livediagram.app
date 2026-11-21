@@ -47,7 +47,7 @@ id that is no team are left out, so the service never deletes for a team that st
 | Leave                                                          | ✓ (not the last admin while others remain) | ✓      |
 
 **The team audit log.** A team's admins can look back on who joined, left or changed role, who shared a team document or
-made or revoked its links, which documents came in, went out or were deleted, and who added or removed its webhooks:
+made or revoked its links, which documents came in, went out or were deleted, and who added or removed its connections:
 an append-only log the index keeps for a year beside its event log, written in the same batch as each event
 ([../004-index/team-audit-log.md](../004-index/team-audit-log.md)). The team events below reach it through the same
 `POST /internal/events`; nothing about an API token does (a token is its owner's, not the team's). When an admin reads
@@ -1137,7 +1137,7 @@ preference, so a reset never turns them back on for someone who turned them off.
 `all` scope as it now is. Every app then reads its defaults: "no stored value" is what a default already means, so
 nothing is written for them.
 
-Nothing else on the account changes: the profile (name, colour, picture), API tokens, webhooks, sessions, sign-in
+Nothing else on the account changes: the profile (name, colour, picture), API tokens, connections, sessions, sign-in
 methods, phone devices and teams are their own tables. Tours offer again afterwards, since a tour's seen flag is a
 setting. A guest and a self-hosted editor have no account settings to reset: the editor resets its own copy in that
 browser instead, and its next save sends the cleared keys as it sends any change. A workbench's Settings have no
@@ -1298,7 +1298,7 @@ becomes an account is never swept; their items are the account's by then.
 ## Names and other typed text
 
 Token names, team names and organisations, account names and display names are kept as typed, with three things
-taken out (`@liveworkspace/api-kit/typed-text`, which the index's webhook names and the MCP servers' client
+taken out (`@liveworkspace/api-kit/typed-text`, which the index's connection names and the MCP servers' client
 names go through too): the bidi embeddings, overrides and isolates (U+202A to U+202E, U+2066 to U+2069), which
 would turn the text drawn after a name around or make one name pass for another (right-to-left letters need none of
 them); spaces and invisible formatting characters (zero-width spaces and joiners, word joiners, byte order marks,

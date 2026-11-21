@@ -546,7 +546,7 @@ and the dialog stays as the one complete, browsable index of them.
   every setting in every liveworkspace app goes back to its default. Then this editor drops its own copy to its
   defaults through the same change path every row uses (no stored value is what a default means, so nothing is
   hard-coded), and the panel draws itself again, so the change shows at once with no reload; the row says **Settings
-  Reset** for a moment. The profile, API tokens, webhooks, sign-ins and phone devices stay as they are, and so does
+  Reset** for a moment. The profile, API tokens, connections, sign-ins and phone devices stay as they are, and so does
   the Send Anonymous Usage Events choice (a consent, `RESET_KEEPS`). A guest and a self-hosted editor have no account
   settings (a workbench's Settings have no Account at all): the row resets this app's settings in this browser only, and says so. The device-only
   switches (Appearance, Keyboard Shortcuts and the like, kept apart from the preferences) are left alone. Tours offer
@@ -573,8 +573,9 @@ and the dialog stays as the one complete, browsable index of them.
   (email footers, the old `/explorer/profile` redirect) and every in-app
   link to them still opens the same pane.
 
-  **Webhooks** are no longer in Settings (since 8 November 2026): they are set per document, from a document's ⋯
-  menu in the Explorer (**Webhooks**), see [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).
+  **Webhooks** are no longer in Settings (since 8 November 2026), nor a tool anywhere (since 20 November 2026): what
+  is left of one is a connection, set per design on the Connections tab inside its
+  [Automations](../013-workspace/automations.md).
   The old category id `webhooks` is an alias of Profile, so an old `?settings=webhooks` link opens Profile.
 
   **Your Data** is an account's too: downloading everything the person owns, in every app, as one zip, the same card as in

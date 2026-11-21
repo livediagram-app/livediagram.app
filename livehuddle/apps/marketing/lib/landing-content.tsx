@@ -3,6 +3,7 @@ import {
   ApiArt,
   AttendanceArt,
   ArriveArt,
+  AutomationsArt,
   BringFocusArt,
   BrowserSpaceArt,
   BubbleArt,
@@ -43,7 +44,6 @@ import {
   TalkNearArt,
   TeamsArt,
   WalkInArt,
-  WebhooksArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -472,12 +472,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Before a big rearrange, press Take Snapshot in History. The latest five are kept, and Revert puts the whole Space back as it was in one step, taking a Before revert snapshot first in case you change your mind.',
       },
       {
-        art: <WebhooksArt />,
-        href: '/help/explorer/explorer-page/',
+        art: <AutomationsArt />,
+        href: '/help/tools/automations/',
         group: 'Your Spaces, your way',
-        title: 'Webhooks to Slack and Teams',
+        title: 'Automations that keep the office',
         description:
-          'Signed in, add a webhook to a Space and it tells a Slack or Microsoft Teams channel, or any address as signed JSON, when it is renamed, moved, shared or sent to the Trash.',
+          'Signed in, give a Space rules of its own: put a room back as it was once everyone leaves, tell Slack or Teams when the first person arrives, or post a stand-up reminder every weekday.',
       },
       {
         art: <ApiArt />,

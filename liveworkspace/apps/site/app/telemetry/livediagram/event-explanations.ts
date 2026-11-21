@@ -247,6 +247,31 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Document|Deleted|': 'A document was deleted.',
   'Document|Duplicated|': 'A document was duplicated into a new one.',
   'Document|Duplicated|Copy': 'A document was duplicated into a new one.',
+  // Automations (docs/specs/013-workspace/automations.md "Telemetry", in the livediagram folder).
+  'Document|Created|AutomationRule':
+    'Someone saved a new automation rule on the Automations screen.',
+  'Document|Created|AutomationDraft':
+    'Someone opened a rule Describe a Rule drafted in the rule builder, unsaved and off until they save it.',
+  'Document|Created|AutomationSecret':
+    'Someone made the secret for an Incoming Webhook automation rule, so another tool can start it.',
+  'Document|Changed|AutomationSecret':
+    "Someone regenerated an Incoming Webhook rule's secret, which stops the old one at once.",
+  'Document|Copied|AutomationSecret':
+    "Someone copied an Incoming Webhook rule's new secret from the field that shows it once.",
+  'Document|Toggled|AutomationOn': 'Someone turned an automation rule on.',
+  'Document|Toggled|AutomationOff': 'Someone turned an automation rule off.',
+  'Document|Deleted|AutomationRule': 'Someone deleted an automation rule.',
+  'Document|Tested|AutomationRule':
+    'Someone tried an automation rule with Test, which shows what it would do and changes nothing.',
+  'Document|Ran|AutomationManual':
+    'Someone ran a Run by Hand automation rule from the Automations screen.',
+  'UI|Opened|Automations': 'Someone opened the Automations screen from the Tools menu.',
+  'UI|Opened|AutomationsOffline':
+    'Someone opened Automations on a canvas kept Offline, which asks them to sync it first.',
+  'UI|Opened|AutomationsSignIn':
+    'Someone opened Automations without signing in, which asks them to sign in first.',
+  'UI|Opened|AutomationDescribe':
+    'Someone opened Describe a Rule on the Automations screen, to draft a rule from words with AI.',
   'Document|Joined|Edit':
     'Someone came into a document through an edit-role share link. Counted once per person per document, not on every revisit.',
   'Document|Joined|Participate':
@@ -2617,6 +2642,11 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Comment|Resolved': 'A comment thread was marked resolved.',
   'Comment|Unresolved': 'A resolved comment thread was reopened.',
   'Document|Created': 'A brand-new document was created.',
+  'Document|Changed': 'Someone changed part of a document, like an automation rule’s secret.',
+  'Document|Copied': 'Someone copied something from a document, like a new webhook secret.',
+  'Document|Toggled': 'Someone turned something in a document on or off, like an automation rule.',
+  'Document|Tested': 'Someone tried an automation rule with Test, which changes nothing.',
+  'Document|Ran': 'An automation rule ran in a document.',
   'Document|Deleted': 'A document was deleted.',
   'Document|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',
   'Document|Duplicated': 'A document was duplicated into a new one.',

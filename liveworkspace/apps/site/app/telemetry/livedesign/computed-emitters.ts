@@ -299,6 +299,23 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: SLUG_WHY,
   },
 
+  // The Automations screen's templates (docs/specs/013-workspace/automations.md "Templates"): one per template id,
+  // DESIGN_TEMPLATES in @livedesign/design/automations, written out as this app takes no dependency on it.
+  'apps/live/components/automations/design-plumbing.ts UI·Opened': {
+    values: [
+      'feedback-slack',
+      'feedback-done',
+      'ready-for-build',
+      'slack-on-change',
+      'library-updated',
+      'snapshot-friday',
+      'weekly-summary',
+      'agent-edits',
+      'still-current',
+      'access-slack',
+    ].map((id) => `AutomationTemplate.${id}`),
+  },
+
   // Shared packages.
   'packages/telemetry-client/src/errors.ts Error·Client': {
     values: ['Uncaught.Design.TypeError', 'UnhandledRejection.Explorer.Error'],

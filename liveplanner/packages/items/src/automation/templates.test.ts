@@ -372,7 +372,7 @@ describe('picksLeft', () => {
     expect(AUTOMATION_PICK_WORDS.field).toBe('Pick a field');
     expect(AUTOMATION_PICK_WORDS.label).toBe('Pick a label');
     expect(AUTOMATION_PICK_WORDS.people).toBe('Pick people');
-    expect(AUTOMATION_PICK_WORDS.webhook).toBe('Pick a webhook');
+    expect(AUTOMATION_PICK_WORDS.webhook).toBe('Pick a connection');
   });
 });
 

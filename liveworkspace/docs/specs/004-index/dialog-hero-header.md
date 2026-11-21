@@ -15,7 +15,7 @@ Action and Pick a Trigger (the same spec's "The rule builder"), Share
 (livediagram/docs/specs/007-editor/editor-app.md "Layout, top to bottom", every app's Share alike), Export and Import
 (each product's docs/specs/020-import-export/README.md "The dialogs' header", with livediagram's import dialogs that
 open from the Explorer), History (livediagram/docs/specs/013-workspace/history.md "The dialog", every app's alike),
-Share to Community (liveworkspace/docs/specs/007-community/community.md "Publishing"), Webhooks
+Share to Community (liveworkspace/docs/specs/007-community/community.md "Publishing"), Connections
 ([webhooks.md "Managing them"](./webhooks.md#managing-them)), the team dialogs (Members, New Team, Edit Team and
 Invite by Link, [one-explorer.md "Teams are run in the Explorer"](./one-explorer.md#teams-are-run-in-the-explorer)),
 liveplanner's Configure Board, Setup Board and Setup Sheet (liveplanner/docs/specs/026-plan/plan-board.md "Configure"
@@ -37,7 +37,7 @@ Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
   landmark, so every dialog wearing the hero would give the page it opens over a second banner. The `<h2>` is what
   names it.
 - **Height.** The header is exactly 100px tall in every dialog, at every width, its row centred in it. Nothing in it
-  can make it taller: from `sm` the title and its line are one line each, truncated.
+  can make it taller: from `sm` the title is one line, truncated, and its line at most two.
 - **On a phone** (below `sm`) it keeps the desktop look, so a dialog is as pretty there: the same 100px, the 36px
   mark, the 20px title and its visible line, with 16px at either side rather than 24px. A long title may wrap to a
   second line rather than lose words, and so may the line under it (Work Tracker 1092: the Export panel's "Copy this tab
@@ -49,8 +49,9 @@ Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
 - **Title.** A real `<h2>` whose id the dialog passes to its panel's `aria-labelledby` (a dialog may keep an
   `aria-label` that names more, as Share does), 20px, in the app's heading face (below), in the
   band's ink.
-- **The line.** One line from `sm`, 13px, in the band's muted ink, truncated with an ellipsis; on a phone up to two
-  lines, then the ellipsis. Words that
+- **The line.** 13px, in the band's muted ink, up to two lines at every width, then an ellipsis: beside a centre
+  piece it stops short of, a wide dialog's line wrapped rather than lost its end (Automations' "Rules this design runs
+  for you…" at 1440px). Words that
   can run long are said in fewer words, with the full sentence for screen readers, as Share's status does.
 - **Actions, then the close.** The dialog's own controls (a primary button, Show Me, Help) sit at the right, then
   the standard close (`DialogCloseButton`) last. Every control keeps its own look, pointer cursor and hover card.
@@ -133,7 +134,7 @@ What each dialog draws:
 | Import             | A grid of dots fading toward the title; in the bottom right a dashed frame waits, an accent badge with an arrow down at its side and a file dropping in over its edge, bobbing twice. Glyph: an arrow into a tray.                                                                                                                                                                            |
 | History            | The baseline grid fading toward the title, a ruled ledger; in the bottom right a timeline of versions pinned up from the edge, the newest solid at its end, a dashed arrow arching back from it to the one restored, in the accent, its ring spreading twice. Glyph: a clock turning back.                                                                                                    |
 | Share to Community | Rings spreading from the top right, a spotlight; in the bottom right a shelf along the foot with two cards on it, the owner's card rising onto it between them (an accent sparkle on its corner), bobbing twice over the dashed place it will stand. Glyph: a sparkle.                                                                                                                        |
-| Webhooks           | A grid of dots fading toward the title; in the bottom right the Automations flow's cousin, a line arriving as an arrow at an endpoint, a port whose ring spreads twice as it is delivered. Glyph: a webhook, three nodes joined.                                                                                                                                                              |
+| Connections        | A grid of dots fading toward the title; in the bottom right the Automations flow's cousin, a line arriving as an arrow at an endpoint, a port whose ring spreads twice as it is delivered. Glyph: a webhook, three nodes joined.                                                                                                                                                              |
 | Walkthrough        | A grid of dots fading toward the title; in the bottom right, low under the header's buttons, a screen rising from the edge with a small canvas on it (two boxes joined, a dashed pointer path), the presenter's bubble at its corner, and the accent's play badge in front, its ring spreading twice. Glyph: a play button in a screen. Worn by the walkthrough video player (`VideoDialog`). |
 | Team               | Rings spreading from the bottom right, where three people stand gathered and a fourth, ringed in the accent with a plus badge, has just joined them. Glyph: two people, one in front.                                                                                                                                                                                                         |
 | Team Invite        | Team's drawing (Invite by Link), the newcomer's badge a link. Glyph: the same.                                                                                                                                                                                                                                                                                                                |

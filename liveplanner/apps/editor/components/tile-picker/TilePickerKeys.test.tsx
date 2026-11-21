@@ -3,8 +3,11 @@
 // tiles, walking past a full group's dimmed tiles (which take no focus) rather than stopping at them.
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { addActionHeroArt } from '@/components/automations/AddActionHeroArt';
-import { TilePicker, type PickerSection } from './TilePicker';
+import { addActionHeroArt } from '@liveworkspace/automations-ui/AddActionHeroArt';
+import {
+  TilePicker,
+  type PickerSection,
+} from '@liveworkspace/automations-ui/tile-picker/TilePicker';
 
 afterEach(cleanup);
 

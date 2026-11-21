@@ -383,7 +383,13 @@ never replays a cached pass of those guards.
     Object state, and a document's SQLite as in-memory SQLite (see
     Conventions); a future move to `@cloudflare/vitest-pool-workers` would
     let the Durable Objects run in a real `workerd` runtime, but
-    that's an aspiration, not the current setup.
+    that's an aspiration, not the current setup. One suite does run the real
+    `DocumentRoom` on workerd today: `apps/api/test/workerd-automations`
+    starts a small test Worker through wrangler's `unstable_dev` (nothing
+    persisted, nothing deployed) and drives a canvas's Automations against a
+    Durable Object's own SQLite, since the rules engine leans on SQL triggers
+    node's SQLite alone had run
+    ([Automations blueprint](../013-workspace/blueprints/automations.md#tests)).
 
 Browser end-to-end tests are not part of this gate; they are specified in
 [End-to-end tests](e2e-smoke.md).

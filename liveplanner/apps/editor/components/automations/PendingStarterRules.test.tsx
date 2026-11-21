@@ -7,7 +7,7 @@ import {
   AutomationsDoorContext,
   type AutomationsAccess,
   type AutomationsDoor,
-} from './AutomationsContext';
+} from '@liveworkspace/automations-ui/AutomationsContext';
 
 // A template's starter rules made once the plan can hold them (docs/specs/026-plan/plan-templates.md "Starter
 // rules"): a signed-in Editor's cloud plan gets them; a plan kept Offline or a guest's drops them for good.
@@ -21,14 +21,20 @@ vi.mock('./use-automations', () => ({ readAutomations }));
 const toast = { error: vi.fn() };
 const offlineSaveStarterRules = vi.fn(async () => {});
 vi.mock('@/lib/offline/offline-store', () => ({ offlineSaveStarterRules }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const { PendingStarterRules } = await import('./PendingStarterRules');
 const { markPendingStarterRules, takePendingStarterRules } =
   await import('@/lib/pending-starter-rules');
 
-const SCOPE = { ownerId: 'o', projectId: 'p', shareCode: null };
-const access: AutomationsAccess = { scope: SCOPE, open: () => {} };
+const SCOPE = { ownerId: 'o', itemId: 'p', shareCode: null };
+// The starter rules read no word, route or event of the platform's plumbing.
+const PLAN_AUTOMATIONS_PLUMBING = {} as AutomationsAccess['plumbing'];
+const access: AutomationsAccess = {
+  scope: SCOPE,
+  plumbing: PLAN_AUTOMATIONS_PLUMBING,
+  open: () => {},
+};
 
 function wrap(value: AutomationsAccess | null, door: AutomationsDoor | null) {
   return ({ children }: { children: ReactNode }) => (
@@ -52,7 +58,11 @@ describe('PendingStarterRules', () => {
   it('makes a signed-in Editor’s rules once, each as its template ships it', async () => {
     markPendingStarterRules('t1', 'kanban');
     const { rerender } = render(<PendingStarterRules tabId="t1" projectId="p" offline={false} />, {
-      wrapper: wrap(access, { open: () => {}, offline: false }),
+      wrapper: wrap(access, {
+        open: () => {},
+        offline: false,
+        plumbing: PLAN_AUTOMATIONS_PLUMBING,
+      }),
     });
     await waitFor(() => expect(makeStarterRules).toHaveBeenCalledTimes(1));
     const [scope, rules] = makeStarterRules.mock.calls[0] as unknown as [
@@ -90,7 +100,7 @@ describe('PendingStarterRules', () => {
   it('keeps the kind with a plan kept Offline, for its sync to make', async () => {
     markPendingStarterRules('t1', 'kanban');
     render(<PendingStarterRules tabId="t1" projectId="p" offline />, {
-      wrapper: wrap(null, { open: () => {}, offline: true }),
+      wrapper: wrap(null, { open: () => {}, offline: true, plumbing: PLAN_AUTOMATIONS_PLUMBING }),
     });
     await settle();
     expect(makeStarterRules).not.toHaveBeenCalled();
@@ -103,7 +113,7 @@ describe('PendingStarterRules', () => {
   it('keeps nothing Offline while no project is open', async () => {
     markPendingStarterRules('t1', 'kanban');
     render(<PendingStarterRules tabId="t1" projectId={null} offline />, {
-      wrapper: wrap(null, { open: () => {}, offline: true }),
+      wrapper: wrap(null, { open: () => {}, offline: true, plumbing: PLAN_AUTOMATIONS_PLUMBING }),
     });
     await settle();
     expect(offlineSaveStarterRules).not.toHaveBeenCalled();
@@ -113,7 +123,7 @@ describe('PendingStarterRules', () => {
     offlineSaveStarterRules.mockRejectedValueOnce(new Error('idb'));
     markPendingStarterRules('t1', 'kanban');
     render(<PendingStarterRules tabId="t1" projectId="p" offline />, {
-      wrapper: wrap(null, { open: () => {}, offline: true }),
+      wrapper: wrap(null, { open: () => {}, offline: true, plumbing: PLAN_AUTOMATIONS_PLUMBING }),
     });
     await settle();
     expect(toast.error).toHaveBeenCalledWith('failed');
@@ -122,7 +132,7 @@ describe('PendingStarterRules', () => {
   it('drops the kind for a guest on a server plan, who can hold no rule', async () => {
     markPendingStarterRules('t1', 'kanban');
     render(<PendingStarterRules tabId="t1" projectId="p" offline={false} />, {
-      wrapper: wrap(null, { open: () => {}, offline: true }),
+      wrapper: wrap(null, { open: () => {}, offline: true, plumbing: PLAN_AUTOMATIONS_PLUMBING }),
     });
     await settle();
     expect(makeStarterRules).not.toHaveBeenCalled();

@@ -53,7 +53,7 @@ export const ALL_APPS_CATEGORIES: readonly AllAppsCategory[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: zen mode, light and dark mode, and cleanup.',
+      'Do more with less effort using the editor helpers: automations, zen mode, light and dark mode, and cleanup.',
   },
   {
     slug: 'search-panel',

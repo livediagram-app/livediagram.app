@@ -150,7 +150,7 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: find and replace, zen mode, light and dark mode, Markdown import, and cleanup.',
+      'Do more with less effort: automations, find and replace, zen mode, light and dark mode, Markdown import, and cleanup.',
     articleCount: 5,
     kind: 'feature',
   },

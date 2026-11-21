@@ -1,13 +1,15 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "Triggers", "Conditions", "Actions", "Values": each step's panel, picking from
 // the plan's own columns, types, fields and people, and the Preview on a real card.
+import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
+import './test-kit';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { useState } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import { newRuleBody, type RulePart } from './rule-draft';
-import { StepPanel, faultWithin } from './StepPanel';
-import { outline, pickStep } from './test-fixtures';
+import { StepPanel, faultWithin } from '@liveworkspace/automations-ui/StepPanel';
+import { ANA, outline, pickStep } from './test-fixtures';
 
 afterEach(cleanup);
 
@@ -34,7 +36,6 @@ function Panel({
       }}
       outline={o}
       faultPath={fault}
-      person="Ana Costa"
       now={Date.UTC(2026, 10, 11)}
       timeZone="Europe/London"
     />
@@ -552,11 +553,14 @@ describe('StepPanel', () => {
   });
 
   it('writes a comment with values and previews it on a real card', () => {
+    // The Preview fills Who Did It with whoever is building the rule.
     render(
-      <Panel
-        body={body({ steps: [{ kind: 'comment', text: 'Shipped by ' }] })}
-        part={{ part: 'step', index: 0 }}
-      />,
+      <PlanProvider value={{ self: ANA } as unknown as PlanContextValue}>
+        <Panel
+          body={body({ steps: [{ kind: 'comment', text: 'Shipped by ' }] })}
+          part={{ part: 'step', index: 0 }}
+        />
+      </PlanProvider>,
     );
     const area = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Comment' });
     area.setSelectionRange(11, 11);

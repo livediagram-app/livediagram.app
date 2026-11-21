@@ -53,7 +53,10 @@ export async function handleLegacyGuestClaim(ctx: RouteContext): Promise<Respons
     outcome = await claimLegacyGuest(credentials, { legacyId, signature, into: callerId });
   } catch (err) {
     console.error('[legacy-guest] accounts unreachable', { error: String(err) });
-    return json({ error: 'accounts_unavailable' }, { status: 503, headers: { 'Retry-After': '5' } });
+    return json(
+      { error: 'accounts_unavailable' },
+      { status: 503, headers: { 'Retry-After': '5' } },
+    );
   }
   if (outcome.merged) {
     console.info('[legacy-guest] claimed', { signed: signature !== null });
@@ -61,7 +64,10 @@ export async function handleLegacyGuestClaim(ctx: RouteContext): Promise<Respons
   }
   if (outcome.reason === 'unavailable') {
     console.warn('[legacy-guest] claim unavailable', { status: outcome.status });
-    return json({ error: 'accounts_unavailable' }, { status: 503, headers: { 'Retry-After': '5' } });
+    return json(
+      { error: 'accounts_unavailable' },
+      { status: 503, headers: { 'Retry-After': '5' } },
+    );
   }
   console.info('[legacy-guest] nothing to claim', { reason: outcome.reason });
   return json({ merged: false, reason: outcome.reason } satisfies LegacyGuestClaimAnswer);

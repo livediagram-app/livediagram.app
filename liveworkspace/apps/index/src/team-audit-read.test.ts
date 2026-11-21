@@ -395,7 +395,7 @@ describe('the CSV export', () => {
     const text = await file.text();
     expect(text.split('\r\n')).toEqual([
       'Time (UTC),Event,Kind,App,By,By ID,About,About ID,Name,Document ID,Detail',
-      `2026-01-02T03:04:05.000Z,Webhook Added,webhook_added,liveplanner,"Ada, ""the admin""",user_ad,,,"'=HYPERLINK(""x"")",,webhookId=wh1; kind=json; host=hooks.example.com`,
+      `2026-01-02T03:04:05.000Z,Connection Added,webhook_added,liveplanner,"Ada, ""the admin""",user_ad,,,"'=HYPERLINK(""x"")",,webhookId=wh1; kind=json; host=hooks.example.com`,
       '2026-01-01T00:00:00.000Z,Removed or Left,team_member_removed,liveplanner,"Ada, ""the admin""",user_ad,Bo,user_bo,Design,,left=true',
       '',
     ]);

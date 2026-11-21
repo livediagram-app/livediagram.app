@@ -40,6 +40,8 @@ import { mediaClient } from '../media';
 import { reportOwnerActivity } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import type { DocumentEnv } from '../types';
+import type { AutomationPerson } from '@liveworkspace/automations';
+import { getParticipant } from '../liveworkspace/profiles';
 
 type TabRow = {
   id: string;
@@ -101,6 +103,16 @@ function parseElements(data: string): Element[] {
   } catch {
     return [];
   }
+}
+
+// Whoever alone saved since the last drain, as a rule's run names them; null for nobody, or for several people.
+async function soleEditorPerson(
+  env: DocumentEnv,
+  soleEditor: string | null,
+): Promise<AutomationPerson | null> {
+  if (!soleEditor) return null;
+  const who = await getParticipant(env, soleEditor);
+  return { id: soleEditor, name: who?.name ?? 'Someone', color: who?.color ?? '#94a3b8' };
 }
 
 // ---------- Summary ------------------------------------------------------------------------------------------
@@ -283,6 +295,12 @@ export async function drainOutbox(
           .bind(documentId, tabId)
           .first<TabRow>();
         const found = collabIndexRowsFromElements(tab ? parseElements(tab.data) : []);
+        // The comment and action triggers read the same rows (@liveworkspace/automations/room CollabWatch): nothing but a Set
+        // lookup unless a rule that is on hears one.
+        if (env.COLLAB?.watching())
+          await env.COLLAB.note(tabId, tab ? found : null, now, () =>
+            soleEditorPerson(env, soleEditor),
+          );
         return collabPushOf(found.threads, found.actions, soleEditor);
       },
       summary: async () => {

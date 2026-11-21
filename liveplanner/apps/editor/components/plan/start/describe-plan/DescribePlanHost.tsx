@@ -16,7 +16,7 @@ import {
   type PlanDraftPlan,
 } from '@liveplanner/items';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
-import { useAutomationsAccess } from '@/components/automations/AutomationsContext';
+import { useAutomationsAccess } from '@liveworkspace/automations-ui/AutomationsContext';
 import { readAutomations } from '@/components/automations/use-automations';
 import { authHrefWithReturn } from '@/components/chrome/auth-shared';
 import { useToast } from '@/hooks/ui/useToast';

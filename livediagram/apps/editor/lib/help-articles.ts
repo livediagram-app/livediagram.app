@@ -84,6 +84,8 @@ export const HELP_ARTICLES = {
   layers: 'canvas/layers',
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
   layoutCleanup: 'tools/layout-cleanup',
+  // The Automations screen's How Rules Work and its gate (docs/specs/013-workspace/automations.md "The screen").
+  automations: 'tools/automations',
   minimap: 'user-interface/minimap',
   sessionPolls: 'collaboration/session-tools/polls',
   sessionVoting: 'collaboration/session-tools/voting',
@@ -241,6 +243,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   drawioImport: {
     title: 'Learn about draw.io import',
     description: 'Which files it reads and how each diagram becomes a canvas.',
+  },
+  automations: {
+    title: 'Learn about Automations',
+    description: 'Rules a canvas runs on its own: triggers, steps, templates and the Audit Trail.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',

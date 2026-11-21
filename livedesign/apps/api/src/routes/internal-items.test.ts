@@ -13,6 +13,20 @@ vi.mock('../room-access-client', async (importOriginal) => ({
   tellTrashed,
   closeArchivedSessions,
 }));
+// Where it stands, kept by the room for its rules (@liveworkspace/automations/room standing.ts).
+const stoodRooms = vi.hoisted(() => [] as string[]);
+vi.mock('../design-client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../design-client')>();
+  return {
+    ...actual,
+    designRoom: (...args: Parameters<typeof actual.designRoom>) => ({
+      ...actual.designRoom(...args),
+      takeStanding: async (standing: { archived: boolean; trashed: boolean }) => {
+        stoodRooms.push(`${args[1]}:${standing.archived || standing.trashed ? 'away' : 'live'}`);
+      },
+    }),
+  };
+});
 
 // docs/specs/013-workspace/trash.md "Open editors": the index pushes where an item stands after every trash (the api,
 // MCP or the Explorer alike), and a trashed design's room tells its editors and closes.
@@ -39,6 +53,8 @@ describe('POST /api/internal/items/:id/standing', () => {
     // An archived item sent to the Trash is trashed: its room hears the trash, not the archive.
     expect((await stand('D', true, true))?.status).toBe(200);
     expect(closeArchivedSessions).toHaveBeenCalledTimes(1);
+    // Each room keeps where it stands first, for its rules.
+    expect(stoodRooms).toEqual(['A:away', 'B:away', 'C:live', 'D:away']);
   });
 });
 

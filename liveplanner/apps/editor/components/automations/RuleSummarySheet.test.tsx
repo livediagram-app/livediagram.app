@@ -2,14 +2,16 @@
 // docs/specs/026-plan/automations.md "On cards": for a Participant or a Viewer the rule's name opens a read-only sheet
 // (its name, on or off, trigger, conditions, steps, who made it); an Editor still opens the builder; a rule gone says
 // This Rule Was Deleted. The sheet has no control but Close.
+import { PLAN_AUTOMATIONS_PLUMBING } from '@/components/automations/plan-plumbing';
+import './test-kit';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AutomationRuleSummary } from '@liveplanner/api-schema';
 import { PlanCardContext } from '@/components/plan/PlanCardContext';
-import { AutomationsContext } from './AutomationsContext';
+import { AutomationsContext } from '@liveworkspace/automations-ui/AutomationsContext';
 import { AutomationAuthorName } from './AutomationAuthor';
 import { AutomationRefusal } from './automations-client';
-import { RuleSummarySheet } from './RuleSummarySheet';
+import { PlanRuleSummarySheet } from './PlanRuleSummarySheet';
 
 const readRuleSummary = vi.hoisted(() => vi.fn());
 vi.mock('./automations-client', async (importOriginal) => ({
@@ -19,12 +21,15 @@ vi.mock('./automations-client', async (importOriginal) => ({
 // next/dynamic resolves the sheet straight away here, as the browser does once its chunk arrives.
 vi.mock('next/dynamic', () => ({
   default: () =>
-    function Sheet(props: Parameters<typeof RuleSummarySheet>[0]) {
-      return <RuleSummarySheet {...props} />;
+    function Sheet(props: Parameters<typeof PlanRuleSummarySheet>[0]) {
+      return <PlanRuleSummarySheet {...props} />;
     },
 }));
 
 const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: 'share', tabId: 't1' };
+// The same reader, as the platform's routes name the plan.
+const READ_SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: 'share', tabId: 't1' };
+const EDITOR_SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: 'share' };
 
 const SUMMARY: AutomationRuleSummary = {
   id: 'r1',
@@ -75,7 +80,7 @@ describe('a rule’s name for a reader', () => {
     asReader(<AutomationAuthorName rule="Done Means Wrapped Up" ruleId="r1" />);
     fireEvent.click(screen.getByRole('button', { name: 'Done Means Wrapped Up' }));
     const dialog = await screen.findByRole('dialog');
-    expect(readRuleSummary).toHaveBeenCalledWith(SCOPE, {
+    expect(readRuleSummary).toHaveBeenCalledWith(READ_SCOPE, {
       ruleId: 'r1',
       name: 'Done Means Wrapped Up',
     });
@@ -108,7 +113,7 @@ describe('a rule’s name for a reader', () => {
     asReader(<AutomationAuthorName rule="Done Means Wrapped Up" />);
     fireEvent.click(screen.getByRole('button', { name: 'Done Means Wrapped Up' }));
     expect(await screen.findByText('Paused')).toBeTruthy();
-    expect(readRuleSummary).toHaveBeenCalledWith(SCOPE, {
+    expect(readRuleSummary).toHaveBeenCalledWith(READ_SCOPE, {
       ruleId: undefined,
       name: 'Done Means Wrapped Up',
     });
@@ -147,7 +152,9 @@ describe('a rule’s name for a reader', () => {
   it('still opens the builder for an Editor, never the sheet', () => {
     const open = vi.fn();
     asReader(
-      <AutomationsContext.Provider value={{ scope: SCOPE, open }}>
+      <AutomationsContext.Provider
+        value={{ scope: EDITOR_SCOPE, plumbing: PLAN_AUTOMATIONS_PLUMBING, open }}
+      >
         <AutomationAuthorName rule="Done Means Wrapped Up" ruleId="r1" />
       </AutomationsContext.Provider>,
     );

@@ -5,7 +5,7 @@
 // moved by app/automation-scenes.css. Decoration only: aria-hidden.
 
 import type { ReactNode } from 'react';
-import { TileStage } from '@/components/tile-picker/tile-scene';
+import { TileStage } from '@liveworkspace/automations-ui/tile-picker/tile-scene';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideAtSign,
@@ -41,7 +41,7 @@ import {
   Subject,
   type SceneTone,
   type ToneClasses,
-} from './scene-parts';
+} from '@liveworkspace/automations-ui/scene-parts';
 import type { AddKind } from './step-defaults';
 
 export const ACTION_GROUP_TONES: Readonly<Record<ActionGroupId, SceneTone>> = {

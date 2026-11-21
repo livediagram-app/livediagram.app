@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { POPOVER_VIEWPORT_MARGIN as EDGE } from './popover';
-import { ResponsivePopover, placeResponsivePopover } from './ResponsivePopover';
+import { ResponsivePopover, placeResponsivePopover, placeSidePopover } from './ResponsivePopover';
 
 // A panel that opens from the control that asked for it: a popover under its anchor from `sm` up, a phone sheet
 // below it, never in place in the page.
@@ -87,6 +87,27 @@ describe('placeResponsivePopover', () => {
     );
     expect(place.top).toBeUndefined();
     expect(place.bottom).toBe(900 - 800 + 8);
+  });
+});
+
+describe('placeSidePopover', () => {
+  const viewport = { width: 1440, height: 900 };
+
+  it('opens beside its anchor where there is room', () => {
+    const anchor = { left: 200, right: 600, top: 300, bottom: 340 };
+    expect(placeSidePopover(anchor, 440, viewport).left).toBe(608);
+  });
+
+  it('stays inside the dialog it was opened from when neither side has room', () => {
+    // A full-width foot button in a dialog from 180 to 1260, 34 to 866 (Add Connection).
+    const anchor = { left: 190, right: 1250, top: 820, bottom: 858 };
+    const dialog = { left: 180, right: 1260, top: 34, bottom: 866 };
+    const place = placeSidePopover(anchor, 440, viewport, dialog);
+    expect(place.left + place.width).toBe(1260 - 8);
+    expect(place.top).toBe(34 + 8);
+    expect(place.top! + place.maxHeight).toBe(866 - 8);
+    // With no dialog, held inside the window's right edge as before.
+    expect(placeSidePopover(anchor, 440, viewport).left).toBe(1440 - 440 - EDGE);
   });
 });
 

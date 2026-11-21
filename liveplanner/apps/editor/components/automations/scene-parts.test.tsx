@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "Motion": a card a template scene moves into the next column lands crisp and
 // whole over that column, and what it gains on the way stays inside it.
+import './test-kit';
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { TemplateScene } from './TemplateScene';
-import { NEXT_COLUMN, PREV_COLUMN } from './scene-parts';
+import { NEXT_COLUMN, PREV_COLUMN } from '@liveworkspace/automations-ui/scene-parts';
 
 afterEach(cleanup);
 

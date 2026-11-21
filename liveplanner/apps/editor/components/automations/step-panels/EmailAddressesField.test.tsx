@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "Typed-in addresses": Send Email's address chips.
+import '../test-kit';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { useState } from 'react';
-import { EmailAddressesField } from './EmailAddressesField';
+import { EmailAddressesField } from '@liveworkspace/automations-ui/step-panels/EmailAddressesField';
 
 afterEach(cleanup);
 

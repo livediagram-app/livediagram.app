@@ -1,7 +1,7 @@
 'use client';
 
 // Rows a host adds to the footer's Tools popover from outside the footer's tree (liveworkspace/docs/specs/004-index/
-// footer-tools-menu.md): the editor's Explorer host offers Webhooks and History for the open item, which the tab bar
+// footer-tools-menu.md): the editor's ItemToolsHost offers History for the open item, which the tab bar
 // knows nothing about. A module store keyed by who published, so each host replaces its own rows and clears them as
 // it unmounts; ChromeToolsMenu reads them beside the rows it is handed.
 import { useEffect, useSyncExternalStore } from 'react';

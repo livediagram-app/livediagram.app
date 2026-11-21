@@ -320,7 +320,7 @@ describe('the reply', () => {
     expect((body.steps[0] as { title: string }).title).toHaveLength(ITEM_TITLE_MAX);
   });
 
-  it('leaves every outgoing step to Pick a webhook', () => {
+  it('leaves every outgoing step to Pick a connection', () => {
     const { body, picks } = drafted(
       rule({
         steps: [

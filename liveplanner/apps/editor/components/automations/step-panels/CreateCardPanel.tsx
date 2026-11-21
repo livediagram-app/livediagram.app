@@ -4,9 +4,13 @@
 // it copies from the triggering card, and a Card field on the new card that points back at it.
 
 import type { AutomationAction } from '@liveplanner/items';
-import { outlineFields, type AutomationOutline } from '../automation-outline';
-import { ValueTextField } from '../ValueInsert';
-import { ChipToggles, PanelField, PanelSelect } from './panel-parts';
+import type { AutomationOutline } from '../automation-outline';
+import { ValueTextField } from '@liveworkspace/automations-ui/ValueInsert';
+import {
+  ChipToggles,
+  PanelField,
+  PanelSelect,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 type CreateCard = AutomationAction & { kind: 'create_card' };
 type Copy = NonNullable<CreateCard['copy']>[number];
@@ -28,7 +32,6 @@ export function CreateCardPanel({
   outline: AutomationOutline;
   invalid: boolean;
 }) {
-  const fields = outlineFields(outline.types);
   const type = outline.types.find((t) => t.id === action.type);
   const cardFields = (type?.custom ?? []).filter((f) => f.kind === 'card');
   const { status: _s, ...noStatus } = action;
@@ -56,7 +59,6 @@ export function CreateCardPanel({
         multiline={false}
         maxLength={200}
         value={action.title}
-        fields={fields}
         invalid={invalid}
         onChange={(title) => onChange({ ...action, title })}
       />

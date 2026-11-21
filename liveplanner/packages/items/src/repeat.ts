@@ -4,7 +4,8 @@
 // planner's one recurrence.
 import type { Item } from './item';
 import { ITEM_STATUS_MAX } from './limits';
-import { dayKey, daysInMonth } from './plan-view-dates';
+import { RECURRENCE_SEARCH_DAYS, occursOn as recurs } from '@liveworkspace/automations';
+import { dayKey } from './plan-view-dates';
 import {
   addDays,
   dayNo,
@@ -13,7 +14,6 @@ import {
   isRuleTimeZone,
   laterDay,
   localDay,
-  weekdayOf,
 } from './repeat-dates';
 import { isObj } from './validate';
 
@@ -22,7 +22,7 @@ export const REPEAT_EVERY = ['day', 'weekday', 'week', 'month'] as const;
 export type RepeatEvery = (typeof REPEAT_EVERY)[number];
 
 // How far a rule's next or last day is looked for: a year and a month, inside which every rule meets a day.
-export const REPEAT_SEARCH_DAYS = 400;
+export const REPEAT_SEARCH_DAYS = RECURRENCE_SEARCH_DAYS;
 
 export interface RepeatRule {
   every: RepeatEvery;
@@ -100,21 +100,7 @@ export function repeatChanged(
 }
 
 // Whether the rule falls on `day` (its end aside).
-export function occursOn(rule: RepeatRule, day: string): boolean {
-  const weekday = weekdayOf(day);
-  switch (rule.every) {
-    case 'day':
-      return true;
-    case 'weekday':
-      return weekday >= 1 && weekday <= 5;
-    case 'week':
-      return (rule.days ?? []).includes(weekday);
-    case 'month': {
-      const [y, m, d] = day.split('-').map(Number) as [number, number, number];
-      return d === Math.min(rule.date ?? 1, daysInMonth(y, m - 1));
-    }
-  }
-}
+export const occursOn = (rule: RepeatRule, day: string): boolean => recurs(rule, day);
 
 // The first due day strictly after `after`, or null: past the rule's end, or none within REPEAT_SEARCH_DAYS.
 export function nextOccurrence(rule: RepeatRule, after: string): string | null {

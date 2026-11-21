@@ -116,7 +116,7 @@ describe("the Explorer's own dialogs", () => {
   });
 
   // The item menu's own dialogs, each opened the way a person does: a menu, then its entry.
-  for (const entry of ['Change Folder', 'Share', 'History', 'Webhooks']) {
+  for (const entry of ['Change Folder', 'Share', 'History']) {
     it(`has none on the ${entry} dialog an item menu opens`, async () => {
       page(seeded(), { kind: 'all' });
       await screen.findByText('Zebra');

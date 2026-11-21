@@ -1,7 +1,5 @@
 // Webhooks' numbers (liveworkspace/docs/specs/004-index/webhooks.md); the shared limits are @liveworkspace/index-client's.
 
-// An event recorded longer ago than this is never queued: a merge, a migration or a resent push replaying history.
-export const WEBHOOK_FRESH_MS = 60 * 60 * 1000;
 // A delivery's answer must come within this.
 export const DELIVERY_TIMEOUT_MS = 10_000;
 // After each failed try, the wait before the next: seven tries in about 21 hours, then given up.

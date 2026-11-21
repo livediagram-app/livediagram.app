@@ -1281,7 +1281,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Reset All Settings',
         keywords: 'reset restore default defaults factory clear settings preferences start over',
         description:
-          'Puts every setting back to its default, in every liveworkspace app. Your profile, API tokens, webhooks and sign-ins stay as they are.',
+          'Puts every setting back to its default, in every liveworkspace app. Your profile, API tokens, connections and sign-ins stay as they are.',
       },
       {
         kind: 'deleteAccount',

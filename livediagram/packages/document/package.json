@@ -9,9 +9,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./infra-code": "./src/infra-code/index.ts",
-    "./infra-sources": "./src/infra-code/record.ts"
+    "./infra-sources": "./src/infra-code/record.ts",
+    "./automations": "./src/automations/index.ts"
   },
   "dependencies": {
+    "@liveworkspace/automations": "workspace:^",
     "@liveworkspace/element-model": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",

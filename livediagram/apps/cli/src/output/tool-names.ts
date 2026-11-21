@@ -21,6 +21,8 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   list_threads: 'comment ls',
   change_tabs: 'tab folder',
   change_threads: 'comment add',
+  list_rules: 'rule ls',
+  change_rules: 'rule set',
   view_tab: 'document view',
   view_live: 'watch',
   view_edit: 'changeset apply',

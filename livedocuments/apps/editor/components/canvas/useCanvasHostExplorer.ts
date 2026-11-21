@@ -1,46 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import { canManageWebhooks as canManageWebhooksOf } from '@liveworkspace/workbench/lib/can-manage-webhooks';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { ExplorerMenuActions } from '@/components/panels/Explorer.types';
 import { track } from '@/lib/telemetry';
 
-// The Explorer menu's document actions for EditorCanvasHost, with the Webhooks dialog's open state that one of
-// them opens.
-export function useCanvasHostExplorer(): {
-  explorerMenuActions: ExplorerMenuActions;
-  webhooksOpen: boolean;
-  setWebhooksOpen: (open: boolean) => void;
-} {
+// The Explorer menu's document actions for EditorCanvasHost.
+export function useCanvasHostExplorer(): { explorerMenuActions: ExplorerMenuActions } {
   const {
-    accountUserId,
     canShareDocument,
     hydrated,
-    isReadOnly,
     loadAllTabs,
-    participating,
-    sessionTabScope,
     setExportOpen,
     setExportScope,
     setSearchOpen,
     setSettingsOpen,
     setShareDialogOpen,
   } = useEditorContext();
-  // The document's own Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): offered to a signed-in account that
-  // edits the whole document (not a Viewer, a Participant or a one-tab link); the index checks again on every call.
-  const [webhooksOpen, setWebhooksOpen] = useState(false);
-  const canManageWebhooks = canManageWebhooksOf({
-    hydrated,
-    accountUserId,
-    isReadOnly,
-    participating,
-    sessionTabScope,
-  });
   return {
-    webhooksOpen,
-    setWebhooksOpen,
     explorerMenuActions: {
       // The header's Share gate: the owner, or a joined member of the document's team
       // (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-documents.md).
@@ -55,7 +32,6 @@ export function useCanvasHostExplorer(): {
         setExportScope('tab');
         setExportOpen(true);
       },
-      onWebhooks: canManageWebhooks ? () => setWebhooksOpen(true) : undefined,
       onSearch: () => openSearchWithPrefetch(setSearchOpen, loadAllTabs),
       onOpenSettings: () => {
         setSettingsOpen(true);

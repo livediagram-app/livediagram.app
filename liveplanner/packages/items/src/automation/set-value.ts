@@ -3,6 +3,7 @@
 // read as the field's kind reads it (a day, a number, a priority, a person by name or id, a Checkbox's Yes or No).
 // One the field can't hold is refused with why. Pure; plan-actions.ts calls it.
 
+import { Failed as StepFailed, personNamed } from '@liveworkspace/automations';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { Item, ItemFieldValue } from '../item';
 import type { CustomFieldDef } from '../item-types';
@@ -34,13 +35,8 @@ export const checkboxOf = (text: string): boolean | undefined =>
   CHECKBOX_WORDS.get(text.trim().toLowerCase());
 
 // A step the card refuses: the run fails there, with why (and, for something the plan lost, what: AutomationGone).
-export class Failed extends Error {
-  readonly gone: AutomationGone | undefined;
-  constructor(reason: string, gone?: AutomationGone) {
-    super(reason);
-    this.gone = gone;
-  }
-}
+// @liveworkspace/automations' Failed, about what a plan can lose.
+export class Failed extends StepFailed<AutomationGone> {}
 export const fail = (reason: string, gone?: AutomationGone): never => {
   throw new Failed(reason, gone);
 };
@@ -61,11 +57,7 @@ export const goneLine = (gone: AutomationGone): string =>
   `${GONE_WORDS[gone.kind]} ${gone.id} is gone`;
 
 /** The person Set Field's text names: by id (the builder's pick) or by name, any case (an agent's). */
-export const personNamed = <P extends { id: string; name: string }>(
-  people: readonly P[],
-  text: string,
-): P | undefined =>
-  people.find((x) => x.id === text || x.name.toLowerCase() === text.toLowerCase());
+export { personNamed };
 
 // How a field reads a value: its built-in kind, else its custom field's.
 export function fieldKind(field: string, def: CustomFieldDef | undefined): string {

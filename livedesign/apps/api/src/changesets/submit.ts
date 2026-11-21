@@ -48,6 +48,7 @@ type SubmitArgs = {
   dryRun: boolean;
   author: Author;
   tokenId: string | null;
+  tokenName?: string | null;
   frontDoor: FrontDoor;
   waitUntil?: (promise: Promise<unknown>) => void;
 };
@@ -121,6 +122,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       orderIndex: stored?.orderIndex ?? nextOrderIndex(design.tabs),
       author: args.author,
       tokenId: args.tokenId,
+      tokenName: args.tokenName ?? null,
       summary: request.summary,
       baseRev: request.base?.rev ?? null,
       rebasedOver: base.rebasedOver,

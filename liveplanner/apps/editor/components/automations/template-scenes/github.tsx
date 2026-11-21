@@ -25,7 +25,7 @@ import {
   SlackChannel,
   type PrFace,
   type ToneClasses,
-} from '../scene-parts';
+} from '@liveworkspace/automations-ui/scene-parts';
 
 const DRAFT: PrFace = { pill: 'draft', Mark: PrDraftGlyph };
 const OPEN: PrFace = { pill: 'open', Mark: PrOpenGlyph };

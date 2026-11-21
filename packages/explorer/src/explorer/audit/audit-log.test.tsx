@@ -199,7 +199,7 @@ describe('the Audit Log', () => {
     expect(first!.querySelector('[data-app-mark="liveplanner"]')).toBeTruthy();
     expect(second!.textContent).toContain('Ann Lee removed Bo Chen');
     expect(second!.textContent).toContain('liveworkspace');
-    expect(third!.textContent).toContain('Ann Lee added the webhook hooks.slack.com');
+    expect(third!.textContent).toContain('Ann Lee added the connection hooks.slack.com');
     expect(third!.textContent).toContain('Slack');
     // Two days, two bands; the UTC time is the row's tooltip.
     expect(document.querySelectorAll('[data-audit-day]').length).toBe(2);
@@ -244,7 +244,7 @@ describe('the Audit Log', () => {
     const kind = screen.getByLabelText('Event') as HTMLSelectElement;
     const groups = [...kind.querySelectorAll('optgroup')].map((g) => g.label);
     // liveplanner's word for its items names the middle group.
-    expect(groups).toEqual(['People', 'Plans', 'Webhooks']);
+    expect(groups).toEqual(['People', 'Plans', 'Connections']);
     // No token or OAuth app kind is offered.
     expect([...kind.options].some((o) => /token|oauth/i.test(o.value))).toBe(false);
     fireEvent.change(kind, { target: { value: 'moved' } });

@@ -53,7 +53,7 @@ async function call<T>(
   init: { method?: string; body?: unknown } = {},
 ): Promise<T> {
   const res = await apiFetch(
-    `${API_BASE}/projects/${encodeURIComponent(scope.projectId)}/github${rest}`,
+    `${API_BASE}/projects/${encodeURIComponent(scope.itemId)}/github${rest}`,
     {
       method: init.method ?? 'GET',
       headers: await apiHeaders(scope.ownerId, {

@@ -5,6 +5,18 @@ export type SnapshotKind = 'manual' | 'before-revert';
 
 export type SnapshotAuthor = { id: string; name: string; color: string };
 
+/** The author of what a rule does: a snapshot its Take Snapshot step takes, the safety snapshot its revert takes
+ *  first. Never a person's id, so the row never reads "You", and a closed account's sweep never matches it. */
+export const AUTOMATION_AUTHOR_ID = 'automation';
+export const AUTOMATION_AUTHOR_COLOR = '#7c3aed';
+
+/** A rule as a snapshot's author: named by the rule. */
+export const automationAuthor = (ruleName: string): SnapshotAuthor => ({
+  id: AUTOMATION_AUTHOR_ID,
+  name: ruleName,
+  color: AUTOMATION_AUTHOR_COLOR,
+});
+
 export type SnapshotSummary = {
   id: string;
   name: string | null;
@@ -12,6 +24,9 @@ export type SnapshotSummary = {
   author: SnapshotAuthor | null;
   createdAt: number;
   bytes: number;
+  /** In a list: whether a rule names it (Revert to Snapshot), so it is kept beside the latest five and can't be
+   *  deleted. Absent from a take's or a revert's answer. */
+  kept?: boolean;
 };
 
 export type SnapshotListResponse = { snapshots: SnapshotSummary[]; kept: number };
@@ -26,6 +41,7 @@ export type SnapshotErrorCode =
   | 'snapshot_too_large'
   | 'snapshot_unreadable'
   | 'snapshot_reverted'
+  | 'snapshot_kept'
   | 'method_not_allowed';
 
 export type SnapshotError = { error: SnapshotErrorCode; message: string };

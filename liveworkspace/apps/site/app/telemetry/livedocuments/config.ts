@@ -50,6 +50,7 @@ import {
   CONNECTED_TABS,
   DISCUSSION,
   DOCUMENTS_CREATED,
+  DOCUMENT_AUTOMATIONS,
   DOCUMENT_ACTIONS,
   DRY_HELP_SEARCHES,
   EDITOR_CHROME,
@@ -242,7 +243,15 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
     },
     {
       title: 'Features',
-      metrics: [PAGE_WORK, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+      metrics: [
+        PAGE_WORK,
+        PALETTE_USE,
+        CANVAS_MODES,
+        LOOK_AND_FEEL,
+        PANELS_OPENED,
+        OFFLINE_MODE,
+        DOCUMENT_AUTOMATIONS,
+      ],
     },
     // Live Together is the only stack that counts two people on one canvas at
     // the same moment; the rest of Collaboration counts the ways in and keeping

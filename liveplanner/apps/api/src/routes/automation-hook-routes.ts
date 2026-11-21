@@ -2,8 +2,9 @@
 //
 // `POST /api/hooks/automations/:projectId/:ruleId`: another tool's call to one rule. The worker answers it before
 // identity (index.ts), so a `Bearer lwh_…` is never read as a person or a token: the address must be one (404), the
-// method POST (405), the body JSON (415) and at most 16 KB, declared or read (413), and the caller's network inside
-// the write limit (429), all before the plan is asked anything. The plan's room checks the secret, the rule's minute
+// caller's network inside the write limit (429, before a byte of the body is read), the method POST (405), the body
+// JSON (415) and at most 16 KB, declared or read (413), all before the plan is asked anything. A signed call's
+// timestamp rides in `X-Liveworkspace-Timestamp`, as every app's does. The plan's room checks the secret, the rule's minute
 // and the day, reads the body and queues the runs (plan-room/automations/automation-incoming.ts).
 //
 // `POST /api/projects/:id/automations/:ruleId/secret` (dispatched by automation-routes.ts behind its gate): Make
@@ -14,6 +15,7 @@ import {
   WEBHOOK_SIGNATURE_HEADER,
   type AutomationRule,
 } from '@liveplanner/items';
+import { WEBHOOK_TIMESTAMP_HEADER } from '@liveworkspace/automations';
 import type { AutomationSecretResponse } from '@liveplanner/api-schema';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { readCappedBody } from '@liveworkspace/api-kit/request-body';
@@ -45,6 +47,12 @@ export async function handleAutomationHook(request: Request, env: Env): Promise<
   const address = ADDRESS.exec(new URL(request.url).pathname);
   if (!address) return notFound();
   const [, projectId = '', ruleId = ''] = address;
+  // One network's calls, whatever rule they name, before the body is read or any plan is woken.
+  if (env.WRITE_RATE_LIMITER) {
+    const ok = await env.WRITE_RATE_LIMITER.limit({ key: `hook:${clientRateKey(request)}` });
+    if (!ok.success)
+      return answer({ status: 429, body: { error: 'webhook_rate_limited' }, retryAfter: 60 });
+  }
   if (request.method !== 'POST') return methodNotAllowed();
   if (!isJson(request.headers.get('Content-Type')))
     return answer({ status: 415, body: { error: 'webhook_json_only' } });
@@ -55,16 +63,11 @@ export async function handleAutomationHook(request: Request, env: Env): Promise<
     ? await readCappedBody(request.body as ReadableStream<Uint8Array>, WEBHOOK_BODY_MAX)
     : new Uint8Array();
   if (!body) return tooLarge();
-  // One network's calls, whatever rule they name, before any plan is woken.
-  if (env.WRITE_RATE_LIMITER) {
-    const ok = await env.WRITE_RATE_LIMITER.limit({ key: `hook:${clientRateKey(request)}` });
-    if (!ok.success)
-      return answer({ status: 429, body: { error: 'webhook_rate_limited' }, retryAfter: 60 });
-  }
   const a = await planRoom(env, projectId).incomingHook(ruleId, {
     body,
     authorization: request.headers.get('Authorization'),
     signature: request.headers.get(WEBHOOK_SIGNATURE_HEADER),
+    timestamp: request.headers.get(WEBHOOK_TIMESTAMP_HEADER),
   });
   return answer(a);
 }

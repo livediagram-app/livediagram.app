@@ -113,7 +113,9 @@ export const DESIGNS_LOADED: Metric = {
 export const DESIGNS_CREATED: Metric = {
   category: 'Document',
   action: 'Created',
-  allTypes: true,
+  // A new design is typed by where it is kept; Automations' rules, drafts and secrets are Created too, charted
+  // below, never counted as designs.
+  typeIn: (t) => t === 'Cloud' || t === 'Offline',
   title: 'Designs Created',
   blurb: 'New designs from the New Design wizard, stored in the cloud or Offline.',
 };
@@ -129,7 +131,8 @@ export const DESIGNS_DELETED: Metric = {
   rising: 'neutral',
   category: 'Document',
   action: 'Deleted',
-  type: null,
+  // Untyped: an automation rule's deletion is typed, and charted with Automations.
+  typeIn: (t) => t === null,
   title: 'Designs Deleted',
 };
 
@@ -710,4 +713,87 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   blurb: 'Diagrams leaving livedesign as files and text, and tabs coming in from JSON exports.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
   seeAlso: { tab: 'editing', label: 'See Each Export Format on the Editing Tab' },
+};
+
+// Automations (docs/specs/013-workspace/automations.md "Telemetry", in the livedesign folder): what an Editor does on
+// the Automations screen. The kind only, never a rule's name, a message or a secret.
+export const DESIGN_AUTOMATION_RULES = chart(
+  'Document',
+  'Created',
+  'Automation Rules Made',
+  'A rule saved for the first time on the Automations screen, or a rule Describe a Rule drafted opened in the builder, unsaved.',
+  { types: ['AutomationRule', 'AutomationDraft'] },
+);
+
+export const DESIGN_AUTOMATIONS_TOGGLED = chart(
+  'Document',
+  'Toggled',
+  'Automation Rules Turned On and Off',
+  "A rule's switch flipped, on the Rules list or in the rule builder.",
+  { types: ['AutomationOn', 'AutomationOff'], rising: 'neutral' },
+);
+
+export const DESIGN_AUTOMATIONS_DELETED = chart(
+  'Document',
+  'Deleted',
+  'Automation Rules Deleted',
+  'A rule deleted from the Automations screen.',
+  { types: ['AutomationRule'], rising: 'neutral' },
+);
+
+export const DESIGN_AUTOMATIONS_TESTED = chart(
+  'Document',
+  'Tested',
+  'Automation Rules Tested',
+  'A rule tried with Test: it shows what the rule would do and changes nothing.',
+  { types: ['AutomationRule'] },
+);
+
+export const DESIGN_AUTOMATIONS_RAN = chart(
+  'Document',
+  'Ran',
+  'Automation Rules Run by Hand',
+  'A Run by Hand rule started from the Automations screen.',
+  { types: ['AutomationManual'] },
+);
+
+export const DESIGN_AUTOMATION_SECRETS = chart(
+  'Document',
+  'Created',
+  'Incoming Webhook Secrets',
+  "An Incoming Webhook rule's secret made for the first time.",
+  { types: ['AutomationSecret'], rising: 'neutral' },
+);
+
+export const DESIGN_AUTOMATION_SECRETS_CHANGED = chart(
+  'Document',
+  'Changed',
+  'Incoming Webhook Secrets Changed',
+  "An Incoming Webhook rule's secret made again, which stops the old one working.",
+  { types: ['AutomationSecret'], rising: 'neutral' },
+);
+
+export const DESIGN_AUTOMATION_SECRETS_COPIED = chart(
+  'Document',
+  'Copied',
+  'Incoming Webhook Secrets Copied',
+  "An Incoming Webhook rule's new secret copied, to paste into the service that calls it.",
+  { types: ['AutomationSecret'], rising: 'neutral' },
+);
+
+export const DESIGN_AUTOMATIONS: MetricStack = {
+  stack: true,
+  title: 'Automations',
+  blurb:
+    'Rules a design runs on its own, as Editors make them on the Automations screen: saved, turned on and off, tested, run by hand and deleted, and the Incoming Webhook secrets they make and copy.',
+  members: [
+    DESIGN_AUTOMATION_RULES,
+    DESIGN_AUTOMATIONS_TOGGLED,
+    DESIGN_AUTOMATIONS_TESTED,
+    DESIGN_AUTOMATIONS_RAN,
+    DESIGN_AUTOMATIONS_DELETED,
+    DESIGN_AUTOMATION_SECRETS,
+    DESIGN_AUTOMATION_SECRETS_CHANGED,
+    DESIGN_AUTOMATION_SECRETS_COPIED,
+  ],
 };
