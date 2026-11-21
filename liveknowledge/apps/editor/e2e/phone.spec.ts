@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from './fixtures';
 import {
   expectCaretInTitle,
@@ -12,14 +13,32 @@ import {
 // three views within reach, and no view scrolling sideways. A guest's knowledgebase, kept Offline; Home's phone
 // width is signed-in/knowledge-audit.spec.ts's.
 
-test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 3 });
+test.use({
+  viewport: { width: 390, height: 844 },
+  hasTouch: true,
+  isMobile: true,
+  deviceScaleFactor: 3,
+});
 
-test('the Pages sheet opens, a row opens its page, and writing works', async ({ page, pageErrors }) => {
+// The phone's keyboard put away (its Done key): the writing lets go of the caret, as it does on a phone.
+const putKeyboardAway = (page: Page) =>
+  page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+
+test('the Pages sheet opens, a row opens its page, and writing works', async ({
+  page,
+  pageErrors,
+}) => {
   await newKnowledgebase(page);
   await page.keyboard.type('Handbook');
   // No sidebar on a phone: the tree is a sheet.
   await expect(page.getByRole('complementary', { name: 'Pages' })).toHaveCount(0);
+  // While the caret is in the writing its bar has the top row; with the caret gone the row's own buttons are back.
   const pagesButton = page.getByRole('button', { name: 'Pages', exact: true });
+  await expect(page.locator('[data-page-toolbar]')).toBeVisible();
+  await expect(pagesButton).toBeHidden();
+  await putKeyboardAway(page);
+  await expect(page.locator('[data-page-toolbar]')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Share' })).toBeVisible();
   await pagesButton.tap();
   const sheet = page.getByRole('dialog', { name: 'Pages' });
   await expect(sheet.getByRole('treeitem', { name: 'Handbook', exact: true })).toBeVisible();
@@ -33,7 +52,10 @@ test('the Pages sheet opens, a row opens its page, and writing works', async ({ 
   await expect(paragraphs(page).first()).toHaveText('File receipts by Friday.');
 
   // A row opens its page, and the sheet gets out of the way.
-  if (!(await sheet.isVisible())) await pagesButton.tap();
+  if (!(await sheet.isVisible())) {
+    await putKeyboardAway(page);
+    await pagesButton.tap();
+  }
   const rows = sheet.getByRole('treeitem');
   await expect(rows).toHaveCount(2);
   // Rows are finger sized.
@@ -53,7 +75,10 @@ test('the Pages sheet opens, a row opens its page, and writing works', async ({ 
   expectNoPageErrors(pageErrors);
 });
 
-test('the view switch is within reach, and no view scrolls sideways', async ({ page, pageErrors }) => {
+test('the view switch is within reach, and no view scrolls sideways', async ({
+  page,
+  pageErrors,
+}) => {
   await newKnowledgebase(page);
   const views = page.getByRole('navigation', { name: 'Knowledgebase Views' });
   for (const view of ['Pages', 'Ask', 'AI Knowledge']) {

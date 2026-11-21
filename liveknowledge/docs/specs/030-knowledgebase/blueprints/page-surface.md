@@ -183,7 +183,14 @@ browser's.
   and the footer is the one column child it leaves live.
 - **A phone while writing:** the page toolbar's own bar is fixed along the top (`usePageToolbarPlacement`) and sets
   `data-article-toolbar-top` on the root; `globals.css` hides the page row's children under that attribute, so the
-  bar has the row to itself and the menu, Pages, Page Info, Share and account buttons return when the caret leaves.
+  bar has the row to itself. The bar is drawn while the writing has the caret (`ActiveArticle.focused`), or while
+  one of its own menus is open, since a menu's field (the link) takes the caret too. Once the writing lets go
+  (`useShownArticle`'s `letGo`: the worked-on article, no longer focused) with no menu open, `PageToolbar` draws
+  nothing, the attribute goes, and the menu, Pages, Page Info, Share and account buttons return. The article stays
+  the worked-on one (a desktop ends it only on a press off its pages, `useOffPagePressClears`), so a tap back in the
+  writing brings the bar straight back. On a phone there is nowhere off the page to press, which is why the caret,
+  not the active article, decides. Tests: `page-toolbar-presence.test.tsx` (`letGo`), `e2e/phone.spec.ts` (the bar
+  has the row while writing, the keyboard put away gives Pages and Share back).
 
 Tests: `KnowledgeViewTabs.test.tsx` (the links, `aria-current`, the press, the history entry, every role, each
 case they are not offered in, the footer's order, a phone's More), `KnowledgeTopRow.test.tsx` (the row's order,
@@ -419,6 +426,10 @@ See "Narrow windows" below: investigated, not built.
   (`e2e/signed-in/knowledge-audit.spec.ts`) passes on Pages, Ask, AI Knowledge and Home in light and dark, the
   footer's view tabs included, with no known failure.
 - **A drawing's tools on a phone** show in the row (`CanvasChrome`), unchecked in a browser.
+- **A phone keyboard put away without a blur.** The row comes back when the writing loses the caret. iOS blurs the
+  writing as its keyboard is put away; an Android keyboard closed by its Back gesture can leave the caret in the
+  writing, and the bar keeps the row until the next press outside the writing. Checked in Chromium's phone emulation
+  (390 x 844, touch), not on a real Android phone.
 - **The e2e specs** follow this surface: `menu-keyboard` holds the knowledgebase's menu by keyboard (it has no zoom
   menu), `motion-budget` tours the menu and Knowledgebase Style and opens the search panel from Cmd or Ctrl K,
   `smoke`'s phone test holds the top row on screen in one row, `page-tree`'s breadcrumb test runs at 1,280 px,
@@ -428,13 +439,6 @@ See "Narrow windows" below: investigated, not built.
   dark) and `settings-memory` opens Settings from the phone footer's More. `search.spec.ts` still waits for the
   deleted Search This Knowledgebase dialog (the search moved to the editor's search panel) and fails: it belongs to
   the search work, not this surface.
-- **A phone's Pages button does not come back after writing** (`phone.spec.ts` "the Pages sheet opens" fails). The
-  phone's writing bar takes the top row while an article is active (`data-article-toolbar-top`, set by
-  `usePageToolbarPlacement` from `useShownArticle`), not only while its writing has the caret, and the active article
-  ends only on a press off its pages (`useOffPagePressClears`). On a phone the page fills the width and a new page
-  the height, so there is nowhere to press: the menu button, Pages and Share stay hidden. The fix is to give the row
-  back when the writing loses the caret (`ActiveArticle.focused`) while keeping the bar for its own open menus, which
-  blur the writing too; it needs a browser to check and was not made here.
 
 ## Narrow windows
 

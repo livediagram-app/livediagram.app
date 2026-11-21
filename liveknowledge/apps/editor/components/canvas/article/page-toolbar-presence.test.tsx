@@ -4,9 +4,15 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  blurActiveArticle,
+  setActiveArticle,
+  type ArticleEditorHandle,
+} from '@/lib/article/article-editor-store';
+import {
   pinPageToolbar,
   readPinnedPageToolbar,
   useHoveredArticlePage,
+  useShownArticle,
 } from './page-toolbar-presence';
 
 const PAGES = [
@@ -16,6 +22,7 @@ const PAGES = [
 
 afterEach(() => {
   pinPageToolbar(null);
+  setActiveArticle(null);
   cleanup();
 });
 
@@ -34,5 +41,35 @@ describe('useHoveredArticlePage', () => {
     const { result } = renderHook(() => useHoveredArticlePage(PAGES));
     act(() => pinPageToolbar('gone'));
     expect(result.current).toBeNull();
+  });
+});
+
+// A phone's writing bar gives the top row back once the writing lets go of the caret
+// (docs/specs/030-knowledgebase/page-surface.md "The footer": "until the caret leaves").
+describe('useShownArticle letGo', () => {
+  const handle = { flow: 'f1', selection: () => ({}) } as unknown as ArticleEditorHandle;
+  const worked = (focused: boolean) => ({
+    handle,
+    pageId: 'p1',
+    selection: handle.selection(),
+    focused,
+  });
+
+  it('is false while the writing has the caret, true once it lets go, and false with nothing worked on', () => {
+    const { result } = renderHook(() => useShownArticle(PAGES));
+    expect(result.current.letGo).toBe(false);
+    act(() => setActiveArticle(worked(true)));
+    expect(result.current.letGo).toBe(false);
+    expect(result.current.shown?.pageId).toBe('p1');
+    act(() => blurActiveArticle('f1'));
+    expect(result.current.letGo).toBe(true);
+    // Still the article worked on: a desktop keeps its toolbar until a press off its pages.
+    expect(result.current.active?.handle.flow).toBe('f1');
+  });
+
+  it('is false for a pinned page nobody is writing on', () => {
+    const { result } = renderHook(() => useShownArticle(PAGES));
+    act(() => pinPageToolbar('p2'));
+    expect(result.current.letGo).toBe(false);
   });
 });

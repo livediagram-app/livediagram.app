@@ -178,5 +178,8 @@ export function useShownArticle(articlePages: readonly { id: string; flow: strin
         }
       : null);
   useOffPagePressClears(worked, articlePages);
-  return { active, dock, shown };
+  // The worked-on article's writing has let go of the caret (it stays active until a press off its
+  // pages): a phone's bar gives the top row back unless one of its own menus is open.
+  const letGo = !!selected && !selected.focused;
+  return { active, dock, shown, letGo };
 }

@@ -130,7 +130,7 @@ export function PageToolbar({
   onInsert?: (flow: string, what: ObjectInsert) => void;
 }) {
   // Which article it is for, worked on, hovered or kept docked (page-toolbar-presence.ts).
-  const { active, dock, shown } = useShownArticle(articlePages);
+  const { active, dock, shown, letGo } = useShownArticle(articlePages);
   const [open, setOpen] = useState<Open>(null);
   const linkRequest = useArticleLinkRequest();
   // ⌘K in the writing opens the link field.
@@ -163,13 +163,17 @@ export function PageToolbar({
   if (open === 'table' && !shown?.selection.inTable) setOpen(null);
 
   const phone = useIsMobileViewport();
+  // On a phone the bar is up while the caret is in the writing, or while one of its own menus is
+  // open (a menu's field takes the caret): with the caret gone it gives the top row back (its menu
+  // button, Pages and Share), as there is nowhere off the page to press on a phone.
+  const phoneIdle = phone && !dock && letGo && open === null;
   const bar = usePageToolbarPlacement({
-    pageId: dock ? null : (shown?.pageId ?? null),
+    pageId: dock || phoneIdle ? null : (shown?.pageId ?? null),
     phone,
     topRoomOf,
   });
 
-  if (!shown) return null;
+  if (!shown || phoneIdle) return null;
   const { handle, selection } = shown;
   const run = (command: Parameters<typeof handle.run>[0], event?: keyof typeof FORMAT_EVENT) => {
     handle.run(command);
