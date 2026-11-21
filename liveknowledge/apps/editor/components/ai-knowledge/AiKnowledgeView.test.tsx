@@ -136,6 +136,17 @@ const full = (over: Partial<KnowledgeOverviewResponse> = {}): KnowledgeOverviewR
   health: { verified: 59, reviewDue: 3, neverVerified: 2, total: 64 },
   hasKey: true,
   reviewEmails: { available: true },
+  reads: {
+    days: Array.from({ length: 14 }, (_, at) => ({
+      day: `2026-11-${String(at + 7).padStart(2, '0')}`,
+      people: at,
+      agents: at % 3,
+    })),
+    mostRead: [
+      { tab: 'p1', title: 'Release Process', people: 30, agents: 12 },
+      { tab: 'p2', title: 'Hotfixes', people: 4, agents: 9 },
+    ],
+  },
   ...over,
 });
 const empty = (): KnowledgeOverviewResponse =>
@@ -146,6 +157,10 @@ const empty = (): KnowledgeOverviewResponse =>
     suggestions: [],
     context: { budget: 8000, used: 0, pages: [] },
     health: { verified: 0, reviewDue: 0, neverVerified: 0, total: 0 },
+    reads: {
+      days: full().reads.days.map((day) => ({ ...day, people: 0, agents: 0 })),
+      mostRead: [],
+    },
   });
 
 beforeEach(() => {
@@ -177,6 +192,12 @@ async function open(role: Role = 'edit', over: Record<string, unknown> = {}) {
 const section = (name: string): BoundFunctions<typeof queries> =>
   within(screen.getByRole('region', { name }));
 const WHO = { ownerId: 'me', shareCode: null };
+const showDisagreements = () =>
+  fireEvent.click(
+    within(section('Needs Attention').getByRole('group', { name: 'Show' })).getByRole('button', {
+      name: 'Disagreements',
+    }),
+  );
 
 describe('reading it', () => {
   it('asks once when the view opens, and again only after an action', async () => {
@@ -184,24 +205,32 @@ describe('reading it', () => {
     expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(1);
     await new Promise((resolve) => setTimeout(resolve, 30));
     expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(1);
-    fireEvent.click(section('Pages That Disagree').getByRole('button', { name: 'Not a Conflict' }));
+    fireEvent.click(section('Needs Attention').getByRole('button', { name: 'Not a Conflict' }));
     await waitFor(() => expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(2));
     expect(api.apiDismissKnowledgeConflict).toHaveBeenCalledWith(WHO, 'd1', 'c1');
   });
 
-  it('gives every section a proper empty state', async () => {
+  it('gives every card a proper empty state, and each Needs Attention filter its own', async () => {
     api.apiKnowledgeOverview.mockResolvedValue(empty());
     await open();
     for (const title of [
+      'Nothing Needs Attention',
       'No Agents Yet',
-      'No Disagreements Yet',
-      'No Unanswered Questions Yet',
-      'No Suggested Edits Yet',
       'No Pages Yet',
       'No Pages in Context Yet',
+      'No Reads Yet',
     ])
       expect(screen.getByText(title)).toBeTruthy();
-    expect(document.querySelectorAll('[data-empty-state]')).toHaveLength(6);
+    expect(document.querySelectorAll('[data-empty-state]')).toHaveLength(5);
+    const filters = within(section('Needs Attention').getByRole('group', { name: 'Show' }));
+    for (const [filter, title] of [
+      ['Questions', 'No Unanswered Questions Yet'],
+      ['Disagreements', 'No Disagreements Yet'],
+      ['Edits', 'No Suggested Edits Yet'],
+    ] as const) {
+      fireEvent.click(filters.getByRole('button', { name: filter }));
+      expect(section('Needs Attention').getByText(title)).toBeTruthy();
+    }
     // A static sample still shows what an agent sees.
     expect(
       section('What an Agent Sees').getByLabelText('A sample search result').textContent,
@@ -264,7 +293,7 @@ describe('what it shows', () => {
 
   it('a conflict: the question and both passages as text, each with its page trust', async () => {
     await open();
-    const conflicts = section('Pages That Disagree');
+    const conflicts = section('Needs Attention');
     expect(conflicts.getByText('Which day do we release?')).toBeTruthy();
     expect(conflicts.getByText('Verified 8 Nov')).toBeTruthy();
     expect(conflicts.getByText('Never Verified')).toBeTruthy();
@@ -275,9 +304,7 @@ describe('what it shows', () => {
   it('a question: how often it was asked and by whom', async () => {
     await open();
     expect(
-      section('Questions Nobody Could Answer').getByText(
-        'Asked 4 times by people and the Coding Agent',
-      ),
+      section('Needs Attention').getByText('Asked 4 times by people and the Coding Agent'),
     ).toBeTruthy();
   });
 
@@ -330,7 +357,7 @@ describe('what it shows', () => {
     expect(sample).toContain('"We release on Thursdays."');
   });
 
-  it('without a key, says the conflicts need one', async () => {
+  it('without a key, says so quietly under Disagreements alone', async () => {
     api.apiKnowledgeOverview.mockResolvedValue(full({ hasKey: false, conflicts: [] }));
     const Open = () => <output data-testid="open">{String(useAiSettingsOpen())}</output>;
     renderInEditor(
@@ -339,8 +366,12 @@ describe('what it shows', () => {
         <Open />
       </>,
     );
-    const note = within(await screen.findByRole('note'));
-    expect(note.getByText("This Needs Your Team's AI Key")).toBeTruthy();
+    await screen.findByRole('region', { name: 'Needs Attention' });
+    // The key is never a blocker: it is one quiet line under the Disagreements filter alone.
+    expect(screen.queryByRole('note')).toBeNull();
+    showDisagreements();
+    const note = within(screen.getByRole('note'));
+    expect(note.getByText("Finding pages that disagree uses your team's AI key.")).toBeTruthy();
     fireEvent.click(note.getByRole('button', { name: 'Open AI Settings' }));
     expect(screen.getByTestId('open').textContent).toBe('true');
   });
@@ -356,16 +387,16 @@ describe.each(ROLES)('as %s', (role) => {
 
   it(`${writer ? 'offers' : 'hides'} every writer's action, and shows everything else`, async () => {
     await open(role);
-    const conflicts = section('Pages That Disagree');
+    const conflicts = section('Needs Attention');
     expect(has(conflicts, 'Release Process Is Right, Fix the Other')).toBe(writer);
     expect(has(conflicts, 'Hotfixes Is Right, Fix the Other')).toBe(writer);
     expect(has(conflicts, 'Not a Conflict')).toBe(writer);
     expect(has(conflicts, 'Ask Both Owners')).toBe(writer);
     expect(has(section('Knowledge Health'), 'Remind the Owners')).toBe(writer);
-    const questions = section('Questions Nobody Could Answer');
+    const questions = section('Needs Attention');
     expect(has(questions, 'Draft a Page')).toBe(writer);
     expect(has(questions, 'Dismiss: Who approves a release?')).toBe(writer);
-    const suggestions = section('Edits Suggested by Agents');
+    const suggestions = section('Needs Attention');
     expect(has(suggestions, 'Accept')).toBe(writer);
     expect(has(suggestions, 'Dismiss')).toBe(writer);
     expect(has(suggestions, 'Open the Page')).toBe(true);
@@ -386,6 +417,7 @@ describe.each(ROLES)('as %s', (role) => {
   it('without a key, an Editor gets Open AI Settings and anyone else is told who can add one', async () => {
     api.apiKnowledgeOverview.mockResolvedValue(full({ hasKey: false }));
     await open(role);
+    showDisagreements();
     const note = within(screen.getByRole('note'));
     expect(note.queryByRole('button', { name: 'Open AI Settings' }) !== null).toBe(editor);
     expect(/Ask an Editor to add one/.test(screen.getByRole('note').textContent)).toBe(!editor);
@@ -395,7 +427,7 @@ describe.each(ROLES)('as %s', (role) => {
 describe('an Editor’s actions', () => {
   it('opens the other page to fix, whichever is right', async () => {
     await open();
-    const conflicts = section('Pages That Disagree');
+    const conflicts = section('Needs Attention');
     fireEvent.click(
       conflicts.getByRole('button', { name: 'Release Process Is Right, Fix the Other' }),
     );
@@ -440,10 +472,10 @@ describe('an Editor’s actions', () => {
 
   it('accepts and dismisses a suggestion, and says in words when one no longer fits', async () => {
     await open();
-    fireEvent.click(section('Edits Suggested by Agents').getByRole('button', { name: 'Accept' }));
+    fireEvent.click(section('Needs Attention').getByRole('button', { name: 'Accept' }));
     await waitFor(() => expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(2));
     expect(suggestionsApi.apiAcceptKnowledgeSuggestion).toHaveBeenCalledWith(WHO, 'd1', 's1');
-    fireEvent.click(section('Edits Suggested by Agents').getByRole('button', { name: 'Dismiss' }));
+    fireEvent.click(section('Needs Attention').getByRole('button', { name: 'Dismiss' }));
     await waitFor(() =>
       expect(suggestionsApi.apiDismissKnowledgeSuggestion).toHaveBeenCalledWith(WHO, 'd1', 's1'),
     );
@@ -451,7 +483,7 @@ describe('an Editor’s actions', () => {
     suggestionsApi.apiAcceptKnowledgeSuggestion.mockRejectedValue(
       new ApiError('accept suggestion', 409, 'suggestion_stale'),
     );
-    fireEvent.click(section('Edits Suggested by Agents').getByRole('button', { name: 'Accept' }));
+    fireEvent.click(section('Needs Attention').getByRole('button', { name: 'Accept' }));
     expect((await screen.findByRole('alert')).textContent).toContain(
       'The page has changed since this was suggested',
     );
@@ -613,7 +645,7 @@ describe('allowing an agent to write', () => {
 // ai-knowledge.md "Pages that disagree", "Knowledge Health": the two emails an Editor asks for.
 describe('emailing the owners', () => {
   const health = () => section('Knowledge Health');
-  const conflicts = () => section('Pages That Disagree');
+  const conflicts = () => section('Needs Attention');
 
   it('asks both owners of a conflict, says what was sent, and shows when in the button’s place', async () => {
     emailsApi.apiAskConflictOwners.mockResolvedValue({ outcome: 'sent', sent: 2, owners: 2 });

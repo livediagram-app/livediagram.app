@@ -16,6 +16,9 @@ import {
 } from '@/lib/knowledge-ask/overview-words';
 import { AddIcon, ContextIcon, DismissIcon, HealthIcon, RemindIcon } from './ai-knowledge-icons';
 import { AI_MUTED, AiSection } from './AiSection';
+import { useShowAll } from './useShowAll';
+
+export const CONTEXT_CAP = 5;
 
 // Light theme: dark, mid, light. Dark theme: light, mid, dark. Each neighbour is a clear step of lightness apart.
 const HEALTH_FILL: Record<HealthPart['key'], string> = {
@@ -41,13 +44,16 @@ export function HealthSection({
   onRemind: () => void;
 }) {
   const { parts, label } = healthParts(health);
+  // Rounded down, as the Verified tile is, so one page unverified never reads as 100%.
+  const share = health.total === 0 ? 0 : Math.floor((health.verified / health.total) * 100);
   // Nobody to remind while every page is verified.
   const toReview = health.reviewDue + health.neverVerified;
   return (
     <AiSection
       id="ai-health"
       title="Knowledge Health"
-      about="How much of this knowledgebase someone vouches for, worked out now from each page's review date."
+      icon={<HealthIcon />}
+      about="How much of this knowledgebase someone vouches for, from each page's review date."
       action={
         !canRemind || toReview === 0 ? undefined : remindedThisWeek(remindedAt, now) ? (
           <span className={`flex min-h-8 items-center gap-1.5 text-xs ${AI_MUTED}`}>
@@ -76,6 +82,15 @@ export function HealthSection({
         />
       ) : (
         <>
+          <p className="mb-3 flex items-baseline gap-2">
+            <span className="text-3xl font-semibold tabular-nums tracking-tight text-slate-900 dark:text-white">
+              {share}%
+            </span>
+            <span className={`text-[13px] ${AI_MUTED}`}>
+              of {health.total.toLocaleString('en')} {health.total === 1 ? 'page' : 'pages'}{' '}
+              verified
+            </span>
+          </p>
           <div
             role="img"
             aria-label={label}
@@ -126,12 +141,14 @@ export function ContextSection({
   onOpenPage: (tab: string) => void;
 }) {
   const over = context.used > context.budget;
+  const { shown, toggle } = useShowAll(context.pages, CONTEXT_CAP);
   const share = context.budget > 0 ? Math.min(100, (context.used / context.budget) * 100) : 0;
   return (
     <AiSection
       id="ai-context"
       title="Always in Context"
-      about="Pages every agent is handed before it starts. Keep them few and short: they are sent with every task."
+      icon={<ContextIcon />}
+      about="Pages every agent is handed first. Keep them few and short."
       count={context.pages.length}
       action={
         canEdit ? (
@@ -174,40 +191,43 @@ export function ContextSection({
           }
         />
       ) : (
-        <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-          {context.pages.map((page) => (
-            <li
-              key={page.tab}
-              data-context-page={page.tab}
-              className="flex min-h-11 items-center gap-3 py-1"
-            >
-              <button
-                type="button"
-                onClick={() => onOpenPage(page.tab)}
-                className="min-w-0 flex-1 cursor-pointer truncate rounded text-left text-sm font-medium text-slate-900 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 phone:min-h-11 dark:text-slate-100"
+        <>
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+            {shown.map((page) => (
+              <li
+                key={page.tab}
+                data-context-page={page.tab}
+                className="flex min-h-11 items-center gap-3 py-1"
               >
-                {page.title || 'Untitled Page'}
-              </button>
-              <span className={`shrink-0 text-[13px] tabular-nums ${AI_MUTED}`}>
-                {tokensText(page.tokens)}
-              </span>
-              {canEdit ? (
-                <HoverCard title="Remove" description="Takes this page out of Always in Context.">
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    aria-label={`Remove ${page.title || 'Untitled Page'} from Always in Context`}
-                    busy={busy.has(`context:${page.tab}`)}
-                    onClick={() => onRemove(page.tab)}
-                    className="shrink-0 !px-2 phone:min-h-11 phone:min-w-11"
-                  >
-                    <DismissIcon />
-                  </Button>
-                </HoverCard>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+                <button
+                  type="button"
+                  onClick={() => onOpenPage(page.tab)}
+                  className="min-w-0 flex-1 cursor-pointer truncate rounded text-left text-sm font-medium text-slate-900 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 phone:min-h-11 dark:text-slate-100"
+                >
+                  {page.title || 'Untitled Page'}
+                </button>
+                <span className={`shrink-0 text-[13px] tabular-nums ${AI_MUTED}`}>
+                  {tokensText(page.tokens)}
+                </span>
+                {canEdit ? (
+                  <HoverCard title="Remove" description="Takes this page out of Always in Context.">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      aria-label={`Remove ${page.title || 'Untitled Page'} from Always in Context`}
+                      busy={busy.has(`context:${page.tab}`)}
+                      onClick={() => onRemove(page.tab)}
+                      className="shrink-0 !px-2 phone:min-h-11 phone:min-w-11"
+                    >
+                      <DismissIcon />
+                    </Button>
+                  </HoverCard>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          {toggle}
+        </>
       )}
     </AiSection>
   );

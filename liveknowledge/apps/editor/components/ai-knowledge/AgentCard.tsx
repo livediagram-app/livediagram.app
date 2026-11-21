@@ -31,8 +31,9 @@ const DOOR_ICON: Record<AgentDoor, ReactNode> = {
   token: <TokenIcon />,
   named: <AgentIcon />,
 };
+// A page it read most: a small chip that opens the page.
 const PAGE_LINK =
-  'block w-full cursor-pointer truncate rounded text-left text-[13px] text-slate-800 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 phone:min-h-11 dark:text-slate-200';
+  'block max-w-full cursor-pointer truncate rounded-md bg-slate-100 px-2 py-0.5 text-left text-xs text-slate-800 transition-colors hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 phone:min-h-11 phone:py-2 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700';
 const MORE_BUTTON =
   'flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-default disabled:opacity-60 phone:h-11 phone:w-11 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
 const MENU_ROW =
@@ -61,7 +62,7 @@ export function AgentCard({
   return (
     <li
       data-agent={agent.name}
-      className="rounded-xl border border-slate-200 p-3.5 dark:border-slate-800"
+      className="rounded-xl border border-slate-200 p-3.5 dark:border-slate-700"
     >
       <div className="flex items-start gap-3">
         <span
@@ -74,15 +75,23 @@ export function AgentCard({
           <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
             {agent.name}
           </p>
-          <p className={`truncate text-xs ${AI_MUTED}`}>{how}</p>
-          {agent.lastSeenAt ? (
-            <p className={`truncate text-xs ${AI_MUTED}`}>{lastSeenText(agent.lastSeenAt, now)}</p>
-          ) : null}
+          <p className={`line-clamp-2 text-xs ${AI_MUTED}`}>{how}</p>
+          {/* Connected, then when it was last seen, on one line under how it connects. */}
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs">
+            <span className="flex items-center gap-1.5 font-medium text-emerald-800 dark:text-emerald-300">
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span>Connected</span>
+            </span>
+            {agent.lastSeenAt ? (
+              <>
+                <span aria-hidden className={AI_MUTED}>
+                  ·
+                </span>
+                <span className={AI_MUTED}>{lastSeenText(agent.lastSeenAt, now)}</span>
+              </>
+            ) : null}
+          </p>
         </div>
-        <span className="flex h-8 shrink-0 items-center gap-1.5 text-xs font-medium text-emerald-800 dark:text-emerald-300">
-          <span aria-hidden className="h-2 w-2 rounded-full bg-emerald-500" />
-          Connected
-        </span>
         {choice.kind === 'none' ? null : (
           <AgentMenu
             name={agent.name}
@@ -106,9 +115,9 @@ export function AgentCard({
         {readsText(agent.readsThisWeek)}
       </p>
       {agent.topPages.length > 0 ? (
-        <ol className="mt-1 flex flex-col gap-0.5" aria-label="The pages it read most">
+        <ol className="mt-1.5 flex flex-wrap gap-1.5" aria-label="The pages it read most">
           {agent.topPages.slice(0, 3).map((page) => (
-            <li key={page.tab}>
+            <li key={page.tab} className="min-w-0 max-w-full">
               <button type="button" onClick={() => onOpenPage(page.tab)} className={PAGE_LINK}>
                 {page.title || 'Untitled Page'}
               </button>

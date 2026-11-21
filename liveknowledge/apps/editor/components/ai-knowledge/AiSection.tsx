@@ -1,5 +1,6 @@
-// One section of AI Knowledge (docs/specs/030-knowledgebase/ai-knowledge.md): a card with its heading, one line
-// about it, an action at its right, and its rows or its empty state.
+// One card of the AI Knowledge dashboard (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): its
+// glyph and heading, one line about it, an action at its right (under the heading where there is no room), and its
+// rows or its empty state. A figure tile brings it into view and focuses it, so it takes focus without being a stop.
 import type { ReactNode } from 'react';
 import { CountBadge } from '@liveknowledge/ui';
 
@@ -15,10 +16,15 @@ export function AiSection({
   about,
   count,
   action,
+  icon,
+  className = '',
   children,
 }: {
   id: string;
   title: string;
+  // The card's glyph, before its heading.
+  icon?: ReactNode;
+  className?: string;
   about: string;
   // How many rows, beside the heading; left out at none.
   count?: number;
@@ -26,17 +32,32 @@ export function AiSection({
   children: ReactNode;
 }) {
   return (
-    <section aria-labelledby={id} data-ai-section={id} className={`${AI_CARD} p-4 sm:p-5`}>
-      <div className="mb-4 flex min-h-9 items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-base font-semibold tracking-tight text-slate-900 dark:text-white">
-            {/* The section is named by its words alone; the count is beside them. */}
+    <section
+      aria-labelledby={id}
+      data-ai-section={id}
+      tabIndex={-1}
+      className={`${AI_CARD} min-w-0 scroll-mt-4 p-4 outline-none focus-visible:ring-2 focus-visible:ring-brand-600 sm:p-5 ${className}`}
+    >
+      {/* The heading row (glyph, words, action), then the line about the card under it at full width, so a narrow
+          card keeps its action beside its heading. */}
+      <div className="mb-4">
+        <div className="flex min-h-8 flex-wrap items-center gap-x-3 gap-y-2">
+          {icon ? (
+            <span
+              aria-hidden
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300 [&_svg]:size-4"
+            >
+              {icon}
+            </span>
+          ) : null}
+          <h2 className="flex flex-1 items-center gap-2 whitespace-nowrap text-base font-semibold tracking-tight text-slate-900 dark:text-white">
+            {/* The card is named by its words alone; the count is beside them. */}
             <span id={id}>{title}</span>
             {count ? <CountBadge count={count} /> : null}
           </h2>
-          <p className={`mt-0.5 text-[13px] leading-5 ${AI_MUTED}`}>{about}</p>
+          {action ? <div className="ml-auto max-w-full shrink-0">{action}</div> : null}
         </div>
-        {action ? <div className="shrink-0">{action}</div> : null}
+        <p className={`mt-1.5 text-[13px] leading-5 ${AI_MUTED}`}>{about}</p>
       </div>
       {children}
     </section>

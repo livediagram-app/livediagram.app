@@ -1,8 +1,8 @@
 'use client';
 
-// AI Knowledge (docs/specs/030-knowledgebase/ai-knowledge.md): the knowledgebase's third view. What agents know,
-// where they learned it and what they could not find, from one read of `GET knowledge` when the view opens and one
-// after each action here. Everyone sees it; settling a conflict, drafting or dismissing a question, accepting or
+// AI Knowledge (docs/specs/030-knowledgebase/ai-knowledge.md): the knowledgebase's third view, a dashboard
+// (AiDashboard). What agents know, where they learned it and what they could not find, from one read of
+// `GET knowledge` when the view opens and one after each action here. Everyone sees it; settling a conflict, drafting or dismissing a question, accepting or
 // dismissing a suggestion and Always in Context are an Editor's.
 import { useState } from 'react';
 import type { KnowledgeEmailResult } from '@liveknowledge/api-schema';
@@ -30,7 +30,6 @@ import {
   emailResultText,
   type OwnersEmail,
 } from '@/lib/knowledge-ask/email-words';
-import { agentSample } from '@/lib/knowledge-ask/overview-words';
 import {
   apiAcceptKnowledgeSuggestion,
   apiDismissKnowledgeSuggestion,
@@ -39,14 +38,11 @@ import {
 import { knowledgeFailureText } from '@/lib/knowledge/knowledge-words';
 import { useRelativeNow } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
-import { AgentsSection } from './AgentsSection';
+import { AiDashboard } from './AiDashboard';
 import { AgentWriteDialog } from './AgentWriteDialog';
+import { DashboardLoading } from './DashboardLoading';
 import { ConnectAgentDialog } from './ConnectAgentDialog';
 import { useAgentWrite } from './useAgentWrite';
-import { ConflictsSection } from './ConflictsSection';
-import { AgentSampleCard, ContextSection, HealthSection } from './HealthAndContext';
-import { QuestionsSection } from './QuestionsSection';
-import { SuggestionsSection } from './SuggestionsSection';
 import { useKnowledgeOverview } from './useKnowledgeOverview';
 
 export function AiKnowledgeView() {
@@ -133,7 +129,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
         {offline ? null : <AiSettingsButton />}
       </KnowledgeViewHeader>
       <div className="min-h-0 flex-1 overflow-y-auto" data-ai-knowledge="">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:px-6">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 sm:py-6">
           {offline ? (
             <EmptyState
               icon={<AiViewIcon />}
@@ -141,14 +137,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
               description="This knowledgebase is kept in this browser, where no agent can reach it and nothing is counted. Its pages and search work as they are."
             />
           ) : state.status === 'loading' ? (
-            <div role="status" aria-label="Loading AI Knowledge" className="flex flex-col gap-4">
-              {[0, 1, 2].map((at) => (
-                <div
-                  key={at}
-                  className="h-40 rounded-2xl border border-slate-200 bg-white motion-safe:animate-pulse dark:border-slate-800 dark:bg-slate-900"
-                />
-              ))}
-            </div>
+            <DashboardLoading />
           ) : !overview ? (
             <Callout
               tone="error"
@@ -166,102 +155,71 @@ function AiKnowledge({ session }: { session: AskSession }) {
                   {failure}
                 </Callout>
               ) : null}
-              <AgentsSection
+              <AiDashboard
+                overview={overview}
+                rights={rights}
                 agents={agentWrite.shown}
-                canGrant={rights.grantAgents}
-                busy={agentWrite.busy}
-                now={now}
-                onConnect={connect}
-                onOpenPage={openPage}
-                onAskWrite={agentWrite.ask}
-              />
-              <ConflictsSection
-                conflicts={overview.conflicts}
-                hasKey={overview.hasKey}
-                canResolve={rights.resolve}
-                canManageAi={rights.manageAi}
-                canAskOwners={canEmailOwners}
-                onAskOwners={(id) =>
-                  emailOwners('ask', `ask:${id}`, () => apiAskConflictOwners(who, documentId, id))
-                }
+                agentsBusy={agentWrite.busy}
                 busy={busy}
-                now={now}
-                onOpenPage={openPage}
-                onOpenAiSettings={openAiSettingsFrom}
-                onDismiss={(id) => {
-                  if (!rights.resolve) return;
-                  track('UI', 'Used', 'ConflictDismissed');
-                  void run(
-                    id,
-                    () => apiDismissKnowledgeConflict(who, documentId, id),
-                    (err) => overviewFailureText(err, 'dismiss-conflict'),
-                  );
-                }}
-              />
-              <QuestionsSection
-                questions={overview.questions}
-                canDraft={rights.makePages}
-                canDismiss={rights.resolve}
                 drafting={drafting}
-                busy={busy}
-                onDraft={(question) => void draft(question.question)}
-                onDismiss={(key) => {
-                  if (!rights.resolve) return;
-                  track('UI', 'Used', 'QuestionDismissed');
-                  void run(
-                    key,
-                    () => apiDismissKnowledgeQuestion(who, documentId, key),
-                    (err) => overviewFailureText(err, 'dismiss-question'),
-                  );
-                }}
-              />
-              <SuggestionsSection
-                suggestions={overview.suggestions}
-                canResolve={rights.resolve}
-                busy={busy}
-                onOpenPage={openPage}
-                onAccept={(suggestion) => {
-                  if (!rights.resolve) return;
-                  track('UI', 'Used', 'SuggestionAccepted');
-                  void run(
-                    `accept:${suggestion.id}`,
-                    () => apiAcceptKnowledgeSuggestion(who, documentId, suggestion.id),
-                    (err) => overviewFailureText(err, 'accept-suggestion'),
-                  );
-                }}
-                onDismiss={(suggestion) => {
-                  if (!rights.resolve) return;
-                  track('UI', 'Used', 'SuggestionDismissed');
-                  void run(
-                    `dismiss:${suggestion.id}`,
-                    () => apiDismissKnowledgeSuggestion(who, documentId, suggestion.id),
-                    (err) => overviewFailureText(err, 'dismiss-suggestion'),
-                  );
-                }}
-              />
-              <HealthSection
-                health={overview.health}
-                canRemind={canEmailOwners}
-                remindedAt={overview.reviewEmails.remindedAt}
-                reminding={busy.has('remind-owners')}
+                canEmailOwners={canEmailOwners}
                 now={now}
-                onRemind={() =>
-                  emailOwners('remind', 'remind-owners', () => apiRemindOwners(who, documentId))
-                }
-              />
-              <ContextSection
-                context={overview.context}
-                canEdit={rights.context}
-                busy={busy}
-                onOpenPage={openPage}
-                onAdd={() => setAdding(true)}
-                onRemove={(tab) => {
-                  if (!rights.context) return;
-                  track('UI', 'Removed', 'ContextPage');
-                  void setContext(tab, false);
+                actions={{
+                  openPage,
+                  connect,
+                  openAiSettings: openAiSettingsFrom,
+                  askWrite: agentWrite.ask,
+                  dismissConflict: (id) => {
+                    if (!rights.resolve) return;
+                    track('UI', 'Used', 'ConflictDismissed');
+                    void run(
+                      id,
+                      () => apiDismissKnowledgeConflict(who, documentId, id),
+                      (err) => overviewFailureText(err, 'dismiss-conflict'),
+                    );
+                  },
+                  askOwners: (id) =>
+                    emailOwners('ask', `ask:${id}`, () =>
+                      apiAskConflictOwners(who, documentId, id),
+                    ),
+                  draft: (question) => void draft(question.question),
+                  dismissQuestion: (key) => {
+                    if (!rights.resolve) return;
+                    track('UI', 'Used', 'QuestionDismissed');
+                    void run(
+                      key,
+                      () => apiDismissKnowledgeQuestion(who, documentId, key),
+                      (err) => overviewFailureText(err, 'dismiss-question'),
+                    );
+                  },
+                  accept: (suggestion) => {
+                    if (!rights.resolve) return;
+                    track('UI', 'Used', 'SuggestionAccepted');
+                    void run(
+                      `accept:${suggestion.id}`,
+                      () => apiAcceptKnowledgeSuggestion(who, documentId, suggestion.id),
+                      (err) => overviewFailureText(err, 'accept-suggestion'),
+                    );
+                  },
+                  dismissSuggestion: (suggestion) => {
+                    if (!rights.resolve) return;
+                    track('UI', 'Used', 'SuggestionDismissed');
+                    void run(
+                      `dismiss:${suggestion.id}`,
+                      () => apiDismissKnowledgeSuggestion(who, documentId, suggestion.id),
+                      (err) => overviewFailureText(err, 'dismiss-suggestion'),
+                    );
+                  },
+                  remindOwners: () =>
+                    emailOwners('remind', 'remind-owners', () => apiRemindOwners(who, documentId)),
+                  addContext: () => setAdding(true),
+                  removeContext: (tab) => {
+                    if (!rights.context) return;
+                    track('UI', 'Removed', 'ContextPage');
+                    void setContext(tab, false);
+                  },
                 }}
               />
-              <AgentSampleCard sample={agentSample(overview, now)} />
             </>
           )}
         </div>
