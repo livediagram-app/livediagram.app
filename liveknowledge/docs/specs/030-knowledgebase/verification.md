@@ -30,7 +30,8 @@ own.
 - States are worked out when read, from the fields and the clock; nothing is written when a review comes due.
 - The tick or pill sits in the page's meta row under the title, in the page tree row and on every page link's hover
   card. The meta row also says "Review due <date>" and "Edited <when> by <name>".
-- **Verify** (meta row, tree row menu, the Page Health card) sets `verifiedAt` to now and `verifiedBy` to the person.
+- **Verify** (the Page Health card in the right rail, or behind Page Info on a narrower window, and the tree row
+  menu; never a button in the page itself, which keeps the writing clear) sets `verifiedAt` to now and `verifiedBy` to the person.
   A page with no owner takes the verifier as its owner. Verify is one press; it never asks for confirmation.
 - An agent never rewrites a page that is Verified or Review Due, whatever it was granted: it suggests the edit, and
   a person accepts it ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md)). A due page is the

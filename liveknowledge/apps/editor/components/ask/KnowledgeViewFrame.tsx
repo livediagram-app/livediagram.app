@@ -8,6 +8,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { KnowledgeTopRow } from '@/components/chrome/KnowledgeTopRow';
+import { KnowledgeLogo } from '@/components/chrome/KnowledgeLogo';
 
 /** A zero-height mark in the editor's column: the frame starts at its top, under anything in the flow above it (an
  *  approver's banner). */
@@ -95,7 +96,7 @@ export function KnowledgeViewFrame({ label, children }: { label: string; childre
   );
 }
 
-/** A view's header, the top row every view shares: its name, one line about it where there is room, its own
+/** A view's header, the top row every view shares: the logo, its name, one line about it where there is room, its own
  *  buttons, then Share and the account button (the row's slot). */
 export function KnowledgeViewHeader({
   title,
@@ -110,6 +111,12 @@ export function KnowledgeViewHeader({
   return (
     <header aria-labelledby={titleId} className="shrink-0">
       <KnowledgeTopRow rank="view" className="pl-4 sm:pl-6 phone:pl-3">
+        {/* The logo leads every view's row, as it heads the page tree on a page. */}
+        <KnowledgeLogo className="shrink-0" />
+        <span
+          aria-hidden
+          className="mx-3 h-5 w-px shrink-0 bg-slate-200 phone:mx-2 dark:bg-slate-700"
+        />
         <h1 id={titleId} className="shrink-0 truncate text-sm font-semibold tracking-tight">
           {title}
         </h1>

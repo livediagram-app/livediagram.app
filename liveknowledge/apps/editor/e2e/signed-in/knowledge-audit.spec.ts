@@ -21,7 +21,7 @@ async function open(page: Page, screen: Screen): Promise<void> {
   await writeLines(page, 'Restart the queue worker with the blue lever.');
   await saved;
   await page
-    .locator('[data-page-meta]')
+    .getByRole('region', { name: 'Page Health' })
     .getByRole('button', { name: 'Verify', exact: true })
     .click();
   await expect(page.locator('[data-page-meta]')).toContainText('Verified by');

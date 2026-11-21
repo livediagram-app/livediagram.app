@@ -29,7 +29,6 @@ describe('the meta row', () => {
         now={NOW}
         verifiedBy="Priya Nair"
         changedSinceVerified={false}
-        onVerify={undefined}
       />,
     );
     expect(screen.getByText('Verified by Priya Nair')).toBeTruthy();
@@ -45,7 +44,6 @@ describe('the meta row', () => {
         verifiedBy={undefined}
         changedSinceVerified
         edited={{ at: NOW - 2 * DAY, by: 'Marcus Oyelaran' }}
-        onVerify={undefined}
       />,
     );
     expect(screen.getByText('Review Due')).toBeTruthy();
@@ -61,7 +59,6 @@ describe('the meta row', () => {
         now={NOW}
         verifiedBy={undefined}
         changedSinceVerified={false}
-        onVerify={undefined}
       />,
     );
     const row = container.querySelector('[data-page-meta]')!;
@@ -69,26 +66,13 @@ describe('the meta row', () => {
     expect(row.className).toContain('min-h-7');
   });
 
-  it('an Editor verifies in one press; a Participant and a Viewer have no button', () => {
-    const onVerify = vi.fn();
-    const view = render(
+  it("holds no Verify button: verifying is the right rail's", () => {
+    render(
       <PageMetaRowView
         trust={never}
         now={NOW}
         verifiedBy={undefined}
         changedSinceVerified={false}
-        onVerify={onVerify}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Verify' }));
-    expect(onVerify).toHaveBeenCalledTimes(1);
-    view.rerender(
-      <PageMetaRowView
-        trust={never}
-        now={NOW}
-        verifiedBy={undefined}
-        changedSinceVerified={false}
-        onVerify={undefined}
       />,
     );
     expect(screen.queryByRole('button')).toBeNull();

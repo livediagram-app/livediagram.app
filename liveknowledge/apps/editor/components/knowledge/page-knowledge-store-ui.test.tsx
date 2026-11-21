@@ -148,10 +148,10 @@ describe('a page’s knowledge in the editor', () => {
     api.apiVerifyPage.mockReturnValue(new Promise((resolve) => (answer = resolve)));
     mount('edit');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-    fireEvent.click(screen.getAllByRole('button', { name: 'Verify' })[0]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Verify' }));
     // Before the server answers.
     expect(screen.getByText('Verified by Priya Nair')).toBeTruthy();
-    expect(screen.getAllByRole('button', { name: 'Verify Again' })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: 'Verify Again' })).toHaveLength(1);
     await act(async () => {
       answer({
         tab: 'p1',
@@ -171,12 +171,12 @@ describe('a page’s knowledge in the editor', () => {
     api.apiVerifyPage.mockRejectedValue(new Error('down'));
     mount('edit');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-    fireEvent.click(screen.getAllByRole('button', { name: 'Verify' })[0]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Verify' }));
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith('The page could not be verified. Try again.'),
     );
     expect(screen.queryByText(/^Verified/)).toBeNull();
-    expect(screen.getAllByRole('button', { name: 'Verify' })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: 'Verify' })).toHaveLength(1);
   });
 
   it('shows the due date under the knowledgebase’s Review Period, and follows a change of it at once', async () => {

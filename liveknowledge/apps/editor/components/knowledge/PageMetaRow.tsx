@@ -1,11 +1,10 @@
 'use client';
 
 // The meta row under a page's title (docs/specs/030-knowledgebase/verification.md "States"): the verified state,
-// when the review is due, when it was last edited (where that is known), "Changed since verified", and for an
-// Editor a Verify button. Its height is kept whatever it holds, so nothing in the writing moves when the page's
+// when the review is due, when it was last edited (where that is known) and "Changed since verified". Verifying is
+// the right rail's (Page Health), never the page's own. Its height is kept whatever it holds, so nothing in the writing moves when the page's
 // health arrives or its state changes.
 import { Fragment, type ReactNode } from 'react';
-import { Button } from '@liveknowledge/ui';
 import { reviewDueText, trustMark, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
 import { TrustBadge } from './TrustBadge';
@@ -19,8 +18,6 @@ export type PageMetaRowProps = {
   changedSinceVerified: boolean;
   // When the writing was last edited and by whom, where a route says so.
   edited?: { at: number; by?: string } | undefined;
-  // Absent for anyone who may not verify: a Participant, a Viewer, a guest, a link to one page.
-  onVerify: (() => void) | undefined;
 };
 
 export function PageMetaRowView({
@@ -29,7 +26,6 @@ export function PageMetaRowView({
   verifiedBy,
   changedSinceVerified,
   edited,
-  onVerify,
 }: PageMetaRowProps) {
   const mark = trustMark(trust.state);
   const notes: { key: string; node: ReactNode }[] = [];
@@ -59,16 +55,6 @@ export function PageMetaRowView({
           <span>{note.node}</span>
         </Fragment>
       ))}
-      {onVerify ? (
-        <Button
-          variant="secondary"
-          size="xs"
-          onClick={onVerify}
-          className="cursor-pointer phone:min-h-11 phone:px-4"
-        >
-          {mark ? 'Verify Again' : 'Verify'}
-        </Button>
-      ) : null}
     </div>
   );
 }
@@ -83,7 +69,6 @@ export function PageMetaRow() {
       now={page.now}
       verifiedBy={nameOf(page.trust.fields.verifiedBy)}
       changedSinceVerified={page.health?.knowledge.changedSinceVerified === true}
-      onVerify={page.rights.verify ? () => page.verify(page.pageId) : undefined}
     />
   );
 }

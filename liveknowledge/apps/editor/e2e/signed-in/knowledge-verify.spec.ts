@@ -37,15 +37,16 @@ test('a new knowledgebase is saved to the account, and Verify shows who vouches 
   await writeLines(page, 'Restart the queue worker with the blue lever.');
   await saved;
 
-  // Never verified: nothing but the Verify button, and no mark in the tree.
+  // Never verified: no mark on the page or in the tree; Verify is the right rail's (Page Health).
   await expect(meta(page)).not.toContainText('Verified');
   await expect(pageRow(page, 'Runbook').getByRole('img')).toHaveCount(0);
 
   // One press, no confirmation.
-  await meta(page).getByRole('button', { name: 'Verify', exact: true }).click();
+  await health(page).getByRole('button', { name: 'Verify', exact: true }).click();
   await expect(meta(page)).toContainText(`Verified by ${who.firstName} ${who.lastName}`);
   await expect(meta(page)).toContainText(/Review due \w+ \d+, \d{4}/);
-  await expect(meta(page).getByRole('button', { name: 'Verify Again' })).toBeVisible();
+  await expect(health(page).getByRole('button', { name: 'Verify Again' })).toBeVisible();
+  await expect(meta(page).getByRole('button')).toHaveCount(0);
   const row = pageRow(page, 'Runbook, Verified');
   await expect(row.getByRole('img', { name: 'Verified' })).toBeVisible();
   // A page with no owner takes its verifier.
@@ -69,7 +70,7 @@ test('Page Health changes the owner and says the Review Period, and Always in Co
 }) => {
   const { who } = await signedInKnowledgebase(page);
   await nameOpenPage(page, 'Runbook');
-  await meta(page).getByRole('button', { name: 'Verify', exact: true }).click();
+  await health(page).getByRole('button', { name: 'Verify', exact: true }).click();
   const owner = health(page).getByRole('combobox', { name: 'Owner' });
   await expect(owner).toHaveValue(who.id);
   // The Review Period is the knowledgebase's: the card says it and when this page comes due, with no control.

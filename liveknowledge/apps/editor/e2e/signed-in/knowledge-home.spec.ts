@@ -24,7 +24,10 @@ test('Home lists the knowledgebase with its page count and verified share, and s
 }) => {
   const { who, id } = await signedInKnowledgebase(page);
   await nameOpenPage(page, 'Handbook');
-  await page.locator('[data-page-meta]').getByRole('button', { name: 'Verify', exact: true }).click();
+  await page
+    .getByRole('region', { name: 'Page Health' })
+    .getByRole('button', { name: 'Verify', exact: true })
+    .click();
   await expect(pageRow(page, 'Handbook, Verified')).toBeVisible();
   await addPage(page, 'Expenses');
   const saved = savedWith(page, 'director to approve');
@@ -33,7 +36,10 @@ test('Home lists the knowledgebase with its page count and verified share, and s
 
   await page.goto('/home');
   await expect(
-    home(page).getByRole('heading', { level: 1, name: `What do you need to know, ${who.firstName}?` }),
+    home(page).getByRole('heading', {
+      level: 1,
+      name: `What do you need to know, ${who.firstName}?`,
+    }),
   ).toBeVisible();
   const card = home(page).locator(`[data-home-knowledgebase="${id}"]`);
   await expect(card).toContainText('Untitled Knowledgebase');
@@ -41,7 +47,9 @@ test('Home lists the knowledgebase with its page count and verified share, and s
   await expect(card).toContainText('50% verified');
   await expect(card.getByRole('img')).toHaveAccessibleName('50 percent of pages verified');
   await expect(
-    home(page).getByRole('region', { name: 'Recently Updated' }).getByRole('link', { name: /^Expenses/ }),
+    home(page)
+      .getByRole('region', { name: 'Recently Updated' })
+      .getByRole('link', { name: /^Expenses/ }),
   ).toBeVisible();
 
   // The field searches every knowledgebase the person can open; a result opens its page at the passage.
