@@ -3,9 +3,9 @@ import {
   SETUP_BUILT_IN_MODEL,
   SETUP_REFUSED_NOT_JSON,
   SETUP_REPLY_SCHEMA,
-  builtInReplyText,
   setupBuiltInInput,
 } from './setup-built-in';
+import { builtInReplyText } from './built-in-client';
 import { SETUP_MAX_PAGES, SETUP_MAX_TOKENS } from './setup-limits';
 import { SETUP_SYSTEM } from './setup-request';
 import { parseSetupSuggestion } from './setup-suggestion';

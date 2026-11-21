@@ -29,6 +29,8 @@ export * from './openai-request';
 export * from './openai-client';
 export * from './model-providers';
 export * from './setup-built-in';
+export * from './built-in-client';
+export * from './built-in-limits';
 export * from './setup-limits';
 export * from './setup-request';
 export * from './setup-suggestion';

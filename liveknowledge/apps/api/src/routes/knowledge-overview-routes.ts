@@ -183,6 +183,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     health,
     reviewEvery: every,
     hasKey: ai.hasKey,
+    hasAi: ai.hasKey || ai.builtIn,
     reviewEmails: {
       available: emailEnabled(env),
       ...(reminded.has('owners') ? { remindedAt: reminded.get('owners') } : {}),

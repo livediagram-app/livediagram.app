@@ -36,25 +36,28 @@ export function conflictId(passageA: string, passageB: string): string {
   return stableHash('conflict', first, second);
 }
 
-export type ConflictCheckRefusal = 'no-key' | 'checked-recently' | 'daily-limit';
+export type ConflictCheckRefusal = 'no-ai' | 'checked-recently' | 'daily-limit';
 
 /** Why a page is not checked now, or undefined when it may be. */
 export function conflictCheckRefusal(check: {
-  hasKey: boolean;
+  /** Whether any AI can be asked: the team's key, or built-in AI. */
+  hasAi: boolean;
   /** Checks already counted in the knowledgebase's day. */
   checksToday: number;
+  /** The day's cap: CONFLICT_CHECKS_PER_DAY on a key (the default), CONFLICT_BUILT_IN_CHECKS_PER_DAY on built-in AI. */
+  perDay?: number;
   /** When this page was last checked (epoch ms), if it was. */
   lastCheckedAt?: number;
   now: number;
 }): ConflictCheckRefusal | undefined {
-  if (!check.hasKey) return 'no-key';
+  if (!check.hasAi) return 'no-ai';
   if (
     check.lastCheckedAt !== undefined &&
     check.now - check.lastCheckedAt < CONFLICT_PAGE_INTERVAL_MS
   ) {
     return 'checked-recently';
   }
-  if (check.checksToday >= CONFLICT_CHECKS_PER_DAY) return 'daily-limit';
+  if (check.checksToday >= (check.perDay ?? CONFLICT_CHECKS_PER_DAY)) return 'daily-limit';
   return undefined;
 }
 

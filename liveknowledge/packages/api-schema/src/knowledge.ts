@@ -165,6 +165,8 @@ export type KnowledgeAiSettings = {
   model: string;
   models: { id: string; label: string }[];
   providers: { id: KnowledgeAiProvider; label: string; keyPrefix: string }[];
+  /** Whether this deployment has built-in AI (search-and-ask.md "Built-in AI"): with no key, it answers. */
+  builtIn: boolean;
 };
 
 export type AskTurn = { question: string; answer: string };
@@ -194,8 +196,10 @@ export type AskEvent =
       notUsed: AskNotUsed[];
       gaps: string[];
       model: string;
+      /** Which AI answered: built-in AI with no key, else the team's provider. */
+      provider: KnowledgeSetupProvider;
     }
-  | { type: 'error'; kind: string; message: string; provider?: KnowledgeAiProvider };
+  | { type: 'error'; kind: string; message: string; provider?: KnowledgeSetupProvider };
 
 /** `POST .../setup/suggest` (describe-to-set-up.md "The model"): what the knowledgebase is for and, when adding
  *  pages, the titles already there in tree order with their depth (1 is the top). */
@@ -430,6 +434,8 @@ export type KnowledgeOverviewResponse = {
   /** The knowledgebase's Review Period, which `health` is worked out under. */
   reviewEvery: KnowledgeReviewEvery;
   hasKey: boolean;
+  /** Whether any AI answers here: the team's key, or built-in AI (the conflict check, Draft a Page). */
+  hasAi: boolean;
   /** The Knowledgebase Reviews emails: whether this deployment sends email, and when the owners were last
    *  reminded (Remind the Owners is once a week). */
   reviewEmails: { available: boolean; remindedAt?: number };

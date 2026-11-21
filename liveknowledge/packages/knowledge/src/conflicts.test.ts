@@ -60,14 +60,17 @@ describe('the limits of a conflict check', () => {
     ]);
   });
 
-  it("needs a key, ten minutes since the page's last check and room in the day", () => {
-    const ok = { hasKey: true, checksToday: 0, now: NOW };
+  it("needs an AI, ten minutes since the page's last check and room in the day", () => {
+    const ok = { hasAi: true, checksToday: 0, now: NOW };
     expect(conflictCheckRefusal(ok)).toBeUndefined();
-    expect(conflictCheckRefusal({ ...ok, hasKey: false })).toBe('no-key');
+    expect(conflictCheckRefusal({ ...ok, hasAi: false })).toBe('no-ai');
     expect(conflictCheckRefusal({ ...ok, lastCheckedAt: NOW - 599_999 })).toBe('checked-recently');
     expect(conflictCheckRefusal({ ...ok, lastCheckedAt: NOW - 600_000 })).toBeUndefined();
     expect(conflictCheckRefusal({ ...ok, checksToday: 49 })).toBeUndefined();
     expect(conflictCheckRefusal({ ...ok, checksToday: 50 })).toBe('daily-limit');
+    // Built-in AI's lower day.
+    expect(conflictCheckRefusal({ ...ok, checksToday: 19, perDay: 20 })).toBeUndefined();
+    expect(conflictCheckRefusal({ ...ok, checksToday: 20, perDay: 20 })).toBe('daily-limit');
   });
 });
 

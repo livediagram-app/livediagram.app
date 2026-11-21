@@ -1,11 +1,12 @@
 // "Pages that disagree" (docs/specs/030-knowledgebase/ai-knowledge.md): after a page's writing is saved or the page
-// is verified, and only when the knowledgebase has a key, its changed passages are looked up on other pages and the
-// model is asked whether any pair states opposite facts. Never in the save: the save owes the check
-// (`knowledge_work`), and the room's alarm runs it here, outside any transaction, on the team's own key.
-// Bounds (the package's, checked by `conflictCheckRefusal`): once a page per 10 minutes, 50 a knowledgebase a day,
-// 5 passages looked up, 5 pairs asked about.
+// is verified, its changed passages are looked up on other pages and the model is asked whether any pair states
+// opposite facts. Never in the save: the save owes the check (`knowledge_work`), and the room's alarm runs it here,
+// outside any transaction, on the team's own key or, with none, on built-in AI (search-and-ask.md "Built-in AI").
+// Bounds (the package's, checked by `conflictCheckRefusal`): once a page per 10 minutes, 50 a knowledgebase a day on
+// a key and 20 on built-in AI, 5 passages looked up, 5 pairs asked about, one call.
 import type { ItemSql } from '@liveworkspace/index-app';
 import {
+  CONFLICT_BUILT_IN_CHECKS_PER_DAY,
   CONFLICT_CHECK_SCOPE,
   CONFLICT_PAGE_INTERVAL_MS,
   ModelCallError,
@@ -25,6 +26,7 @@ import {
   parseConflictVerdicts,
   probeSearch,
   readCounter,
+  type ModelCaller,
   type Passage,
   type SearchRow,
 } from '@liveknowledge/knowledge';
@@ -32,6 +34,7 @@ import type { DocumentEnv } from '../types';
 import { readDocumentMeta } from '../document-room/document-content';
 import { openAi } from './ai-settings';
 import { modelDoorFor } from './model-door';
+import { builtInAi } from './setup-built-in-ai';
 import type { IndexedPage } from './knowledge-index';
 import { rowsOf, runAll, sqlOf } from './knowledge-db';
 import { oweWork, type Work } from './knowledge-work';
@@ -41,7 +44,7 @@ import { queueDisagreements } from '../document-room/automations/knowledge-event
 export const CONFLICT_CHECK_DELAY_MS = 60_000;
 
 /** Owe a check of each page whose writing was just indexed (a save), or that was just verified (`before` empty:
- *  its longest passages are looked up). Nothing is owed for a knowledgebase with no key (`before` null). */
+ *  its longest passages are looked up). Whether any AI can check is decided when the check runs. */
 export function oweConflictChecks(
   sql: ItemSql,
   pages: readonly IndexedPage[],
@@ -89,20 +92,34 @@ export async function runConflictCheck(
   now: number,
 ): Promise<number | null> {
   const tab = work.key;
-  const ai = await openAi(env, documentId);
+  const opened = await openAi(env, documentId);
+  // The team's key when it opens; with none, built-in AI. A key that does not open is never swapped for it.
+  const builtIn = typeof opened === 'string' && opened !== 'unreadable' ? builtInAi(env) : null;
+  const caller: ModelCaller | null =
+    typeof opened !== 'string'
+      ? {
+          provider: opened.provider,
+          fetch: modelDoorFor(env, opened.provider),
+          apiKey: opened.apiKey,
+          model: opened.model,
+        }
+      : builtIn
+        ? { provider: 'built-in', ai: builtIn }
+        : null;
   const [last] = await rowsOf<{ checkedAt: number }>(env, lastConflictCheck(tab));
   const [counter] = await rowsOf<{ used: number }>(
     env,
     readCounter(CONFLICT_CHECK_SCOPE, dayOf(now)),
   );
   const refusal = conflictCheckRefusal({
-    hasKey: typeof ai !== 'string',
+    hasAi: caller !== null,
     checksToday: counter?.used ?? 0,
+    ...(caller?.provider === 'built-in' ? { perDay: CONFLICT_BUILT_IN_CHECKS_PER_DAY } : {}),
     ...(last ? { lastCheckedAt: last.checkedAt } : {}),
     now,
   });
   if (refusal === 'checked-recently' && last) return last.checkedAt + CONFLICT_PAGE_INTERVAL_MS;
-  if (refusal || typeof ai === 'string') {
+  if (refusal || !caller) {
     console.info('[knowledge] conflict check skipped', { documentId, tab, reason: refusal });
     return null;
   }
@@ -133,13 +150,7 @@ export async function runConflictCheck(
   const candidates = chooseConflictCandidates(lookups, known);
   if (candidates.length === 0) return null;
   try {
-    const reply = await callModel({
-      provider: ai.provider,
-      fetch: modelDoorFor(env, ai.provider),
-      apiKey: ai.apiKey,
-      model: ai.model,
-      request: conflictRequest({ candidates }),
-    });
+    const reply = await callModel({ ...caller, request: conflictRequest({ candidates }) });
     const conflicts = parseConflictVerdicts(reply.text, candidates);
     // A passage that changed while the model read it is no longer the one judged: the pair closes at once.
     await runAll(env, [
@@ -151,13 +162,19 @@ export async function runConflictCheck(
     console.info('[knowledge] conflict check', {
       documentId,
       tab,
+      provider: caller.provider,
       pairs: candidates.length,
       found: conflicts.length,
     });
   } catch (error) {
     // The kind only: never the upstream's message, the request or the key. Not retried: the next save owes another.
     const kind = error instanceof ModelCallError ? error.kind : 'other';
-    console.warn('[knowledge] conflict check failed', { documentId, tab, kind });
+    console.warn('[knowledge] conflict check failed', {
+      documentId,
+      tab,
+      provider: caller.provider,
+      kind,
+    });
   }
   return null;
 }

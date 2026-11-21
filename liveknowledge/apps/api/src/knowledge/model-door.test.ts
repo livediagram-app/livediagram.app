@@ -5,7 +5,7 @@ import {
   CLAUDE_MESSAGES_URL,
   MODEL_PROVIDERS,
   OPENAI_RESPONSES_URL,
-  type ModelProviderId,
+  type KeyProviderId,
 } from '@liveknowledge/knowledge';
 import {
   E2E_VERIFIED_AT_HEADER,
@@ -15,11 +15,11 @@ import {
   verifyMoment,
 } from './model-door';
 
-const API: Record<ModelProviderId, string> = {
+const API: Record<KeyProviderId, string> = {
   anthropic: CLAUDE_MESSAGES_URL,
   openai: OPENAI_RESPONSES_URL,
 };
-const OTHER: Record<ModelProviderId, ModelProviderId> = {
+const OTHER: Record<KeyProviderId, KeyProviderId> = {
   anthropic: 'openai',
   openai: 'anthropic',
 };

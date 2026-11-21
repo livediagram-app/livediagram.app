@@ -3,12 +3,14 @@
 // model liveplanner's Describe a Plan uses. This module writes the request in Workers AI's chat shape and reads the
 // binding's answer into the text `parseSetupSuggestion` reads; the api makes the call and keeps the count
 // (apps/api/src/knowledge/setup-built-in-ai.ts). Pure.
+import { BUILT_IN_MODEL } from './built-in-client';
 import { fenced } from './model-request';
 import { SETUP_MAX_PAGES } from './setup-limits';
 import { setupRequest, type SetupExistingPage } from './setup-request';
 
-/** liveplanner's Describe a Plan model (its automation-ai.ts): small, cheap, with JSON mode, thinking off. */
-export const SETUP_BUILT_IN_MODEL = '@cf/google/gemma-4-26b-a4b-it';
+/** liveplanner's Describe a Plan model (its automation-ai.ts): small, cheap, with JSON mode, thinking off. The one
+ *  model built-in AI answers everything with (built-in-client.ts). */
+export const SETUP_BUILT_IN_MODEL = BUILT_IN_MODEL;
 /** The asks one suggestion may make: the first, and one more with what was wrong with the first reply. */
 export const SETUP_BUILT_IN_ASKS = 2;
 /** How long one built-in ask may take before it is given up. */
@@ -83,23 +85,4 @@ export function setupBuiltInInput(
     },
     chat_template_kwargs: { enable_thinking: false },
   };
-}
-
-const isObject = (value: unknown): value is Record<string, unknown> =>
-  !!value && typeof value === 'object' && !Array.isArray(value);
-
-/** The reply's text, from any shape the binding answers: `{ response }` (text, or the object JSON mode parsed),
- *  `{ choices: [{ message: { content } }] }`, or a string. Undefined when it holds none. */
-export function builtInReplyText(raw: unknown): string | undefined {
-  let value: unknown = raw;
-  if (isObject(raw)) {
-    if ('response' in raw) value = raw.response;
-    else if (Array.isArray(raw.choices)) {
-      const first: unknown = raw.choices[0];
-      const message = isObject(first) ? first.message : undefined;
-      value = isObject(message) ? message.content : undefined;
-    } else value = undefined;
-  }
-  if (typeof value === 'string') return value;
-  return isObject(value) ? JSON.stringify(value) : undefined;
 }

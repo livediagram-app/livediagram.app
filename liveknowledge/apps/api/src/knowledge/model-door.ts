@@ -3,7 +3,7 @@
 // team's key and their pages' passages ride on these requests, so the address is checked where the request leaves.
 // The provider is the one stored beside the key (ai-settings.ts), never anything a client sent: a key therefore
 // reaches only its own provider's host, and never the other's. Tests stub the global `fetch`.
-import { modelProvider, type ModelProviderId } from '@liveknowledge/knowledge';
+import { modelProvider, type KeyProviderId } from '@liveknowledge/knowledge';
 
 const addressOf = (input: RequestInfo | URL): string =>
   typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
@@ -11,12 +11,12 @@ const addressOf = (input: RequestInfo | URL): string =>
 const refuse = () => Promise.reject(new Error('outbound host refused'));
 
 // Whether `url` is the provider's API, over HTTPS on its default port.
-const allowed = (url: URL, provider: ModelProviderId): boolean =>
+const allowed = (url: URL, provider: KeyProviderId): boolean =>
   url.protocol === 'https:' && url.host === modelProvider(provider).host;
 
 /** `fetch`, refusing any address that is not the provider's API. */
 export const modelDoor =
-  (provider: ModelProviderId): typeof fetch =>
+  (provider: KeyProviderId): typeof fetch =>
   (input, init) =>
     allowed(new URL(addressOf(input)), provider) ? fetch(input, init) : refuse();
 
@@ -46,7 +46,7 @@ function standInOrigin(value: string | undefined): string | undefined {
  * provider at all; an address that is not the provider's API is refused either way. The var is in no wrangler.toml,
  * hosted var or secret list.
  */
-export function modelDoorFor(env: ModelDoorEnv, provider: ModelProviderId): typeof fetch {
+export function modelDoorFor(env: ModelDoorEnv, provider: KeyProviderId): typeof fetch {
   const standIn = standInOrigin(env.E2E_CLAUDE_STAND_IN);
   if (!standIn) return modelDoor(provider);
   return (input, init) => {

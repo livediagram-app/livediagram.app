@@ -82,6 +82,8 @@ describe('the Claude API key', () => {
         { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5' },
         { id: 'claude-haiku-5-5', label: 'Claude Haiku 5.5' },
       ],
+      // This deployment has no `AI` binding.
+      builtIn: false,
     });
     const read = await Promise.all(
       (['editor', 'participant', 'viewer', 'link'] as Who[]).map(async (who) =>
@@ -159,7 +161,10 @@ describe('the Claude API key', () => {
     const res = await setKey(kit);
     expect([res.status, await res.json()]).toEqual([
       503,
-      { error: 'ask_unavailable', message: 'Ask is not set up on this server.' },
+      {
+        error: 'ask_unavailable',
+        message: "Built-in AI isn't set up on this server, and it keeps no key.",
+      },
     ]);
     expect((await kit.call('viewer', 'GET', '/api/documents/kb/search?q=deploy')).status).toBe(200);
     expect(await (await kit.call('viewer', 'GET', '/api/documents/kb/ai')).json()).toMatchObject({
@@ -168,9 +173,10 @@ describe('the Claude API key', () => {
     const ask = await kit.call('viewer', 'POST', '/api/documents/kb/ask', {
       question: 'When do we deploy?',
     });
+    // No key and no built-in AI either: nothing can answer.
     expect([ask.status, (await ask.json<{ error: string }>()).error]).toEqual([
       503,
-      'ask_unavailable',
+      'built-in-unavailable',
     ]);
   });
 });
@@ -357,6 +363,7 @@ describe('POST ask', () => {
         gaps: ['Who approves a deploy?'],
         notUsed: [],
         model: 'claude-fable-5-2',
+        provider: 'anthropic',
       });
       expect(done.sources).toEqual([
         expect.objectContaining({ number: 1, tab: 'deploys', title: 'Deploys', trust: 'verified' }),
@@ -392,7 +399,7 @@ describe('POST ask', () => {
     },
   );
 
-  it('says a knowledgebase with no key cannot answer, and refuses a question with no words or too many', async () => {
+  it('says a knowledgebase with no key and no built-in AI cannot answer, and refuses a question with no words or too many', async () => {
     const claude = fakeClaude(ANSWER);
     vi.stubGlobal('fetch', claude.fetch);
     const kit = await knowledgeKit(withSecret);
@@ -400,7 +407,7 @@ describe('POST ask', () => {
       const res = await kit.call('viewer', 'POST', '/api/documents/kb/ask', { question });
       return [res.status, (await res.json<{ error: string }>()).error];
     };
-    expect(await ask('When do we deploy?')).toEqual([409, 'ask_unavailable']);
+    expect(await ask('When do we deploy?')).toEqual([503, 'built-in-unavailable']);
     await setKey(kit);
     expect(await ask('   ')).toEqual([400, 'no-question']);
     expect(await ask(7)).toEqual([400, 'no-question']);
@@ -546,6 +553,8 @@ describe('AI Knowledge', () => {
         health: { verified: 1, reviewDue: 0, neverVerified: 2, total: 3 },
         reviewEvery: 90,
         hasKey: false,
+        // No key, and this deployment has no built-in AI.
+        hasAi: false,
         // This deployment sends no email, and nobody was reminded.
         reviewEmails: { available: false },
         // The agent's two reads of Deploys, today (knowledge-overview-reads.test.ts has the rest).
@@ -686,7 +695,7 @@ describe('pages that disagree', () => {
     expect(claude.sent).toHaveLength(1);
   });
 
-  it('owes no check for a knowledgebase with no key', async () => {
+  it('owes no check for a page indexed with nothing before it to compare', async () => {
     const kit = await knowledgeKit(withSecret, PAGES);
     const sql = nodeItemSql(kit.db.sql);
     expect(oweConflictChecks(sql, [{ tab: 'deploys', before: null }], 1_000)).toBe(0);

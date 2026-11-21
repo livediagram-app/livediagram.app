@@ -7,14 +7,30 @@
 // migration), under a name no document id can take: document ids are UUIDs, and none starts with `~`. The instance
 // only ever holds the one storage key below, never a document's schema, so nothing that reads a document reaches it.
 // It keeps no description, no reply and no account id: only the day and how many.
-import { SETUP_BUILT_IN_PER_PERSON_PER_DAY } from '@liveknowledge/knowledge';
+//
+// Built-in questions (search-and-ask.md "Built-in AI": 30 a person a day, Draft a Page among them) are counted the
+// same way, in a second instance per account (`~ask-built-in:`), through the same room call: each instance keeps
+// one count.
+import {
+  ASK_BUILT_IN_PER_PERSON_PER_DAY,
+  SETUP_BUILT_IN_PER_PERSON_PER_DAY,
+} from '@liveknowledge/knowledge';
 import type { Env } from '../types';
 
 /** The storage key of the count, `{ day, count }`. */
 export const SETUP_DRAFT_COUNT_KEY = 'setup-drafts';
 
-/** The DOCUMENT_ROOM instance that keeps an account's count. */
-export const setupDraftCountName = (accountId: string): string => `~setup-drafts:${accountId}`;
+/** What a person's built-in calls are counted for: Describe to Set Up's suggestions, or questions. */
+export type BuiltInCount = 'setup' | 'ask';
+
+const COUNTS: Readonly<Record<BuiltInCount, { prefix: string; cap: number }>> = {
+  setup: { prefix: '~setup-drafts:', cap: SETUP_BUILT_IN_PER_PERSON_PER_DAY },
+  ask: { prefix: '~ask-built-in:', cap: ASK_BUILT_IN_PER_PERSON_PER_DAY },
+};
+
+/** The DOCUMENT_ROOM instance that keeps an account's count of one kind. */
+export const setupDraftCountName = (accountId: string, kind: BuiltInCount = 'setup'): string =>
+  `${COUNTS[kind].prefix}${accountId}`;
 
 /** The UTC day `now` falls on, as `YYYY-MM-DD`: the count starts again from zero on a new one. */
 export const utcDay = (now: number): string => new Date(now).toISOString().slice(0, 10);
@@ -47,12 +63,15 @@ export async function spendSetupDraft(
   env: Pick<Env, 'DOCUMENT_ROOM'>,
   accountId: string,
   now: number = Date.now(),
+  kind: BuiltInCount = 'setup',
 ): Promise<boolean | 'unavailable'> {
   const ns = env.DOCUMENT_ROOM as Env['DOCUMENT_ROOM'] | undefined;
   if (!ns) return 'unavailable';
   try {
-    const store = ns.get(ns.idFromName(setupDraftCountName(accountId))) as unknown as CountRpc;
-    return await store.spendSetupDraft(utcDay(now), SETUP_BUILT_IN_PER_PERSON_PER_DAY);
+    const store = ns.get(
+      ns.idFromName(setupDraftCountName(accountId, kind)),
+    ) as unknown as CountRpc;
+    return await store.spendSetupDraft(utcDay(now), COUNTS[kind].cap);
   } catch (error) {
     console.warn(
       '[knowledge] setup count unavailable',

@@ -11,6 +11,8 @@ export const ASK_KNOWLEDGEBASE_SCOPE = 'ask:knowledgebase';
 /** The scope of one person's Describe to Set Up suggestions, and of the knowledgebase's (setup-limits.ts). */
 export const setupPersonScope = (person: string): string => `setup:person:${person}`;
 export const SETUP_KNOWLEDGEBASE_SCOPE = 'setup:knowledgebase';
+/** The scope of the knowledgebase's questions answered on built-in AI (built-in-limits.ts), beside its every-AI one. */
+export const ASK_BUILT_IN_SCOPE = 'ask:built-in';
 /** The scope of the knowledgebase's conflict checks. */
 export const CONFLICT_CHECK_SCOPE = 'conflicts:check';
 

@@ -21,17 +21,18 @@ import {
   removeAiKey,
   removeAiModel,
   sealApiKey,
-  type ModelProviderId,
+  type KeyProviderId,
 } from '@liveknowledge/knowledge';
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
 import type { DocumentEnv } from '../types';
 import { rowsOf, runAll } from './knowledge-db';
+import { builtInAi } from './setup-built-in-ai';
 
 const settingOf = async (env: DocumentEnv, name: string): Promise<string | null> =>
   (await rowsOf<{ value: string }>(env, readSetting(name)))[0]?.value ?? null;
 
 /** The provider the knowledgebase's key is for. No row (a key kept before there was a choice) is Anthropic. */
-const storedProvider = async (env: DocumentEnv): Promise<ModelProviderId> =>
+const storedProvider = async (env: DocumentEnv): Promise<KeyProviderId> =>
   modelProvider(await settingOf(env, SETTING_AI_PROVIDER)).id;
 
 /** What AI Settings and the Ask tab read. `withHint`: an Editor's read; anyone else learns only that a key is set. */
@@ -52,6 +53,7 @@ export async function readAiSettings(
     model: providerModel(provider, model).id,
     models: modelProvider(provider).models.map(({ id, name }) => ({ id, label: name })),
     providers: MODEL_PROVIDERS.map(({ id, name, keyPrefix }) => ({ id, label: name, keyPrefix })),
+    builtIn: builtInAi(env) !== null,
   };
 }
 
@@ -93,7 +95,7 @@ export async function storeAiModel(env: DocumentEnv, model: unknown): Promise<bo
   return true;
 }
 
-export type OpenedAi = { provider: ModelProviderId; apiKey: string; model: string };
+export type OpenedAi = { provider: KeyProviderId; apiKey: string; model: string };
 
 /** The key in plain form with its provider and model, for a call; `no-secret`, `no-key` or `unreadable` when no
  *  model can be called. */
@@ -115,9 +117,11 @@ export async function openAi(
   }
 }
 
-/** The words for a knowledgebase no model can be called in. */
+/** The words for a knowledgebase no model can be called in: no key and no built-in AI (`no-secret`, `no-key`), or a
+ *  stored key that does not open (never swapped for built-in AI). */
 export const ASK_UNAVAILABLE_WORDS = {
-  'no-secret': 'Ask is not set up on this server.',
-  'no-key': "Ask needs your team's AI key. An Editor can add one in AI Settings.",
+  'no-secret': "Built-in AI isn't set up on this server, and it keeps no key.",
+  'no-key':
+    "Built-in AI isn't set up on this server. An Editor can add your team's AI key in AI Settings.",
   unreadable: "Your team's stored AI key could not be read. Replace it in AI Settings.",
 } as const;

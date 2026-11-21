@@ -1275,6 +1275,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "array"
           },
+          "provider": {
+            "$ref": "#/components/schemas/KnowledgeSetupProvider",
+            "description": "Which AI answered: built-in AI with no key, else the team's provider."
+          },
           "sources": {
             "items": {
               "$ref": "#/components/schemas/AskSource"
@@ -1295,7 +1299,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "sources",
           "notUsed",
           "gaps",
-          "model"
+          "model",
+          "provider"
         ],
         "type": "object"
       },
@@ -1309,7 +1314,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "string"
           },
           "provider": {
-            "$ref": "#/components/schemas/KnowledgeAiProvider"
+            "$ref": "#/components/schemas/KnowledgeSetupProvider"
           },
           "type": {
             "const": "error",
@@ -5397,6 +5402,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "`GET .../ai` (search-and-ask.md \"Ask\", \"Providers\"): never the key, only whether one is set, whose it is and its last characters. `models` are the stored provider's; `providers` are the two a team may choose between.",
     "properties": {
+      "builtIn": {
+        "description": "Whether this deployment has built-in AI (search-and-ask.md \"Built-in AI\"): with no key, it answers.",
+        "type": "boolean"
+      },
       "hasKey": {
         "type": "boolean"
       },
@@ -5458,7 +5467,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "keyHint",
       "model",
       "models",
-      "providers"
+      "providers",
+      "builtIn"
     ],
     "type": "object"
   },
@@ -5868,6 +5878,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "hasAi": {
+        "description": "Whether any AI answers here: the team's key, or built-in AI (the conflict check, Draft a Page).",
+        "type": "boolean"
+      },
       "hasKey": {
         "type": "boolean"
       },
@@ -5939,6 +5953,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "health",
       "reviewEvery",
       "hasKey",
+      "hasAi",
       "reviewEmails",
       "reads"
     ],

@@ -36,7 +36,8 @@ export function builtInAi(env: Pick<Env, 'AI' | 'E2E_CLAUDE_STAND_IN'>): BuiltIn
           body: JSON.stringify({ model, input }),
         });
         if (!res.ok) throw new Error(`stand-in ${res.status}`);
-        return res.json();
+        // A streamed ask is answered as the binding streams: the event stream itself.
+        return (input as { stream?: unknown }).stream === true ? res.body : res.json();
       },
     };
   return env.AI ?? null;

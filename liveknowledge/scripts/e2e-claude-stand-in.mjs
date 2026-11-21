@@ -2,7 +2,9 @@
 // stand-in"): a tiny server on the loopback that answers `POST /v1/messages` the way Anthropic's Messages API
 // streams and `POST /v1/responses` the way OpenAI's Responses API does, so Ask, the conflict check and Describe to
 // Set Up run end to end with no model, no network and no real key. `POST /workers-ai/run` answers Describe to Set
-// Up's built-in AI as the Workers AI binding would (`{ response }`, the object JSON mode parsed). The api reaches it
+// Up's built-in AI as the Workers AI binding would (`{ response }`, the object JSON mode parsed), and a streamed ask
+// (`stream: true`: Ask and the conflict check on built-in AI) as an event stream of `{ response }` pieces, then
+// `[DONE]`. The api reaches it
 // only because the stack sets `E2E_CLAUDE_STAND_IN` (apps/api/src/knowledge/model-door.ts `modelDoorFor`,
 // setup-built-in-ai.ts `builtInAi`).
 //
@@ -151,10 +153,18 @@ async function answerOpenAi(req, res, body) {
   res.end(event('response.completed', { response: { ...response, status: 'completed' } }));
 }
 
-// Workers AI's binding, as the api's `builtInAi` asks it: `{ model, input }`, answered whole. JSON mode hands back the
-// reply as an object; text that is no JSON comes back as text.
+// Workers AI's binding, as the api's `builtInAi` asks it: `{ model, input }`. Streamed when the input asks, as the
+// binding streams; else answered whole: JSON mode hands back the reply as an object, text that is no JSON as text.
 async function answerWorkersAi(_req, res, body) {
   const text = standInReply(body?.input);
+  if (body?.input?.stream === true) {
+    res.writeHead(200, STREAM_HEADERS);
+    for (const piece of piecesOf(text)) {
+      res.write(`data: ${JSON.stringify({ response: piece })}\n\n`);
+      await pause();
+    }
+    return res.end('data: [DONE]\n\n');
+  }
   let response = text;
   try {
     response = JSON.parse(text);

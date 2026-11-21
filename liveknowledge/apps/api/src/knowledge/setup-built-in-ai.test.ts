@@ -41,6 +41,13 @@ describe('the built-in client', () => {
     expect(AI.run).not.toHaveBeenCalled();
     vi.stubGlobal('fetch', async () => new Response('no', { status: 500 }));
     await expect(client.run('m', {})).rejects.toThrow('stand-in 500');
+    // A streamed ask (Ask, the conflict check) is answered with the stand-in's event stream itself.
+    vi.stubGlobal('fetch', async () => new Response('data: {"response":"Hi"}\n\n'));
+    const streamed = await client.run('m', { stream: true });
+    expect(streamed).toBeInstanceOf(ReadableStream);
+    expect(await new Response(streamed as ReadableStream).text()).toBe(
+      'data: {"response":"Hi"}\n\n',
+    );
   });
 
   it('asks twice at most, and a binding that errs with a non-Error is failed', async () => {

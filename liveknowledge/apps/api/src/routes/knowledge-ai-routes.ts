@@ -1,5 +1,5 @@
 // The knowledgebase's AI settings over REST (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Providers"):
-//   GET    /api/documents/<id>/ai         { provider, hasKey, keyHint, model, models, providers }, never the key
+//   GET    /api/documents/<id>/ai         { provider, hasKey, keyHint, model, models, providers, builtIn }, never the key
 //   PUT    /api/documents/<id>/ai/key     { provider, key }: seal and store it; another provider replaces the key
 //   DELETE /api/documents/<id>/ai/key     remove it
 //   PUT    /api/documents/<id>/ai/model   { model }: one of the stored provider's

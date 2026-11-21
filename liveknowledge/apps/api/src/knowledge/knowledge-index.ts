@@ -84,11 +84,9 @@ export type SettledPage =
   'indexed' | 'indexed-trust' | 'trust' | 'unchanged' | 'removed' | 'unreadable';
 
 /** A page whose writing was indexed anew, with its passages' hashes as they stood before (for the conflict check's
- *  probes, read only when the knowledgebase has a key: conflicts.ts `conflictProbes`). */
+ *  probes: conflicts.ts `conflictProbes`). Read for every knowledgebase, since built-in AI checks one with no key
+ *  (search-and-ask.md "Built-in AI"); `null` only for a caller that owes no check. */
 export type IndexedPage = { tab: string; before: { id: string; textHash: string }[] | null };
-
-const hasAiKey = (sql: ItemSql): boolean =>
-  sql.exec("SELECT 1 AS held FROM knowledge_settings WHERE name = 'ai_key'").toArray().length > 0;
 
 /** Bring one page's index up to its stored tab. Runs inside the caller's transaction. */
 export function settlePage(sql: ItemSql, tab: string, indexed?: IndexedPage[]): SettledPage {
@@ -128,14 +126,9 @@ export function settlePage(sql: ItemSql, tab: string, indexed?: IndexedPage[]): 
   if (writingChanged && indexed)
     indexed.push({
       tab,
-      before: hasAiKey(sql)
-        ? (sql
-            .exec(
-              'SELECT id, text_hash AS textHash FROM passages WHERE tab = ? AND ordinal >= 0',
-              tab,
-            )
-            .toArray() as { id: string; textHash: string }[])
-        : null,
+      before: sql
+        .exec('SELECT id, text_hash AS textHash FROM passages WHERE tab = ? AND ordinal >= 0', tab)
+        .toArray() as { id: string; textHash: string }[],
     });
   const statements = writingChanged
     ? replacePageIndex({ tab, title, passages, links, trust })

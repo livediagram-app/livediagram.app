@@ -1,11 +1,13 @@
 // The providers a team may bring a key for (docs/specs/030-knowledgebase/search-and-ask.md "Providers"), and the
 // one call everything that uses a model makes: Ask, the conflict check and Describe to Set Up hand `callModel` a
-// provider-neutral request, and the provider's own client writes and reads its API's shapes. The key and `fetch`
+// provider-neutral request, and the provider's own client writes and reads its API's shapes; built-in AI
+// ("Built-in AI", built-in-client.ts) is the third, answered through the `AI` binding with no key. The key and `fetch`
 // are parameters: nothing here reads an environment, logs, or puts a key in an error.
 import { callClaude } from './claude-client';
 import { CLAUDE_MODELS, DEFAULT_CLAUDE_MODEL, claudeModel } from './claude-models';
 import { claudeRequest } from './claude-request';
-import type { ModelProviderId } from './model-failure';
+import { callBuiltIn, type BuiltInAiBinding } from './built-in-client';
+import type { KeyProviderId } from './model-failure';
 import type { ModelRequest } from './model-request';
 import { callOpenAi } from './openai-client';
 import { DEFAULT_OPENAI_MODEL, OPENAI_MODELS, openAiModel } from './openai-models';
@@ -14,7 +16,7 @@ import { openAiRequest } from './openai-request';
 export type ProviderModel = { id: string; name: string };
 
 export type ModelProvider = {
-  id: ModelProviderId;
+  id: KeyProviderId;
   /** As AI Settings lists it. */
   name: string;
   /** As a sentence names it ("OpenAI Did Not Accept the Key"). */
@@ -48,9 +50,10 @@ export const MODEL_PROVIDERS: readonly ModelProvider[] = [
   },
 ];
 
-export const DEFAULT_MODEL_PROVIDER: ModelProviderId = 'anthropic';
+export const DEFAULT_MODEL_PROVIDER: KeyProviderId = 'anthropic';
 
-export const isModelProviderId = (value: unknown): value is ModelProviderId =>
+/** Whether `value` names a provider a key can be saved for (built-in AI is never one). */
+export const isModelProviderId = (value: unknown): value is KeyProviderId =>
   MODEL_PROVIDERS.some((p) => p.id === value);
 
 /** The provider a stored setting names. Nothing stored (a key kept before there was a choice) is Anthropic. */
@@ -59,11 +62,11 @@ export function modelProvider(id: unknown): ModelProvider {
 }
 
 /** Whether `model` is one of the provider's own. */
-export const isProviderModel = (provider: ModelProviderId, model: unknown): boolean =>
+export const isProviderModel = (provider: KeyProviderId, model: unknown): boolean =>
   modelProvider(provider).models.some((m) => m.id === model);
 
 /** The provider's model a stored setting names, or its default (a model of the other provider, or none). */
-export function providerModel(provider: ModelProviderId, model: unknown): ProviderModel {
+export function providerModel(provider: KeyProviderId, model: unknown): ProviderModel {
   const { id, name } = provider === 'openai' ? openAiModel(model) : claudeModel(model);
   return { id, name };
 }
@@ -76,20 +79,31 @@ export type ModelReply = {
   model: string;
 };
 
-/** One streamed model call on the team's own key. Throws a ModelCallError (model-failure.ts) for every failure,
- *  whichever provider: its `kind` is what a person is told, and its message never holds the key. */
-export function callModel(options: {
-  provider: ModelProviderId;
-  fetch: typeof fetch;
-  apiKey: string;
-  /** A stored setting: an id that is not the provider's reads as its default. */
-  model: unknown;
-  request: ModelRequest;
-  onText?: (text: string) => void;
-  signal?: AbortSignal;
-}): Promise<ModelReply> {
-  const { provider, model, request, ...call } = options;
-  return provider === 'openai'
-    ? callOpenAi({ ...call, request: openAiRequest(model, request) })
-    : callClaude({ ...call, request: claudeRequest({ model, ...request }) });
+/** Which AI a call goes to: built-in AI through the binding, or a provider on the team's key. */
+export type ModelCaller =
+  | { provider: 'built-in'; ai: BuiltInAiBinding }
+  | {
+      provider: KeyProviderId;
+      fetch: typeof fetch;
+      apiKey: string;
+      /** A stored setting: an id that is not the provider's reads as its default. */
+      model: unknown;
+    };
+
+/** One streamed model call, on built-in AI or the team's own key. Throws a ModelCallError (model-failure.ts) for
+ *  every failure, whichever provider: its `kind` is what a person is told, and its message never holds a key. */
+export function callModel(
+  options: ModelCaller & {
+    request: ModelRequest;
+    onText?: (text: string) => void;
+    signal?: AbortSignal;
+  },
+): Promise<ModelReply> {
+  const { request, onText, signal } = options;
+  const streamed = { ...(onText ? { onText } : {}), ...(signal ? { signal } : {}) };
+  if (options.provider === 'built-in') return callBuiltIn({ ai: options.ai, request, ...streamed });
+  const call = { fetch: options.fetch, apiKey: options.apiKey, ...streamed };
+  return options.provider === 'openai'
+    ? callOpenAi({ ...call, request: openAiRequest(options.model, request) })
+    : callClaude({ ...call, request: claudeRequest({ model: options.model, ...request }) });
 }

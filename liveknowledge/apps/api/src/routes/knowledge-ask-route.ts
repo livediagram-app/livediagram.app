@@ -1,10 +1,14 @@
-// POST /api/documents/<id>/ask (docs/specs/030-knowledgebase/search-and-ask.md "Ask"): a question answered from the
-// knowledgebase's own pages on the team's own key (Claude's or OpenAI's), streamed as server-sent events (`AskEvent`): `delta`
+// POST /api/documents/<id>/ask (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Built-in AI"): a question
+// answered from the knowledgebase's own pages, on the team's own key (Claude's or OpenAI's) when one is set, else on
+// built-in AI (Workers AI, liveknowledge's, under its daily caps), streamed as server-sent events (`AskEvent`): `delta`
 // pieces of the answer, then one `done` with the sources, what was found but not used and the gaps; or one `error`.
 // A signed-in Editor, Participant or Viewer may ask (an API token asks for its account); a guest or a visitor
-// through a share link may not, since it would spend the team's key for strangers.
+// through a share link may not, since it would spend the team's key or liveknowledge's built-in AI for strangers.
 import { newQuestions, queueNewQuestions } from '../document-room/automations/question-events';
 import {
+  ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY,
+  ASK_BUILT_IN_PER_PERSON_PER_DAY,
+  ASK_BUILT_IN_SCOPE,
   ASK_MAX_QUESTION_CHARS,
   ASK_MAX_TURNS,
   ASK_PER_KNOWLEDGEBASE_PER_DAY,
@@ -15,21 +19,27 @@ import {
   askRefusal,
   askRequest,
   askSearch,
+  bumpCounter,
   callModel,
   chooseAskPassages,
+  dayOf,
   foundPassage,
   modelFailureWords,
   questionKey,
+  readCounter,
   recordPageAnswers,
   upsertQuestion,
   type AskPassage,
   type AskRefusal,
+  type ModelCaller,
   type SearchRow,
   type SqlStatement,
 } from '@liveknowledge/knowledge';
 import type { AskEvent, AskSource, AskTurn } from '@liveknowledge/api-schema';
 import { ASK_UNAVAILABLE_WORDS, openAi } from '../knowledge/ai-settings';
 import { modelDoorFor } from '../knowledge/model-door';
+import { builtInAi } from '../knowledge/setup-built-in-ai';
+import { spendSetupDraft } from '../knowledge/setup-draft-count';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { CORS_HEADERS, json } from '../responses';
@@ -54,8 +64,35 @@ const REFUSAL: Record<AskRefusal, { status: number; message: string }> = {
   },
 };
 
+/** Built-in AI's refusals (search-and-ask.md "Built-in AI"): its kind, status and fixed words. */
+export const ASK_BUILT_IN = {
+  unavailable: {
+    status: 503,
+    error: 'built-in-unavailable',
+    message:
+      "Built-in AI isn't set up on this server. An Editor can add your team's AI key in AI Settings.",
+  },
+  'person-limit': {
+    status: 429,
+    error: 'built-in-limit',
+    message: `You have used today's ${ASK_BUILT_IN_PER_PERSON_PER_DAY} built-in questions. Try again tomorrow, or add your team's AI key in AI Settings.`,
+  },
+  'knowledgebase-limit': {
+    status: 429,
+    error: 'built-in-knowledgebase-limit',
+    message: `This knowledgebase has used today's ${ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY} built-in questions. Try again tomorrow, or add your team's AI key in AI Settings.`,
+  },
+  failed: {
+    status: 503,
+    error: 'built-in-failed',
+    message: "The built-in AI couldn't answer just now. Try again in a moment.",
+  },
+} as const;
+
 const refused = (status: number, error: string, message: string) =>
   json({ error, message }, { status });
+const refusedBuiltIn = (why: (typeof ASK_BUILT_IN)[keyof typeof ASK_BUILT_IN]) =>
+  refused(why.status, why.error, why.message);
 
 // The conversation so far, read defensively: at most the turns the package sends, each within its bounds.
 function turnsOf(value: unknown): AskTurn[] {
@@ -103,10 +140,34 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
   });
   if (refusal) return refused(REFUSAL[refusal].status, refusal, REFUSAL[refusal].message);
   const ai = await openAi(env, document.id);
-  if (typeof ai === 'string')
-    return refused(ai === 'no-secret' ? 503 : 409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
-  // Counted before the model is called: a question that fails still spent a call on the team's key.
-  await runAll(env, counters.bump);
+  // A key that is kept but does not open is refused, never swapped for built-in AI.
+  if (ai === 'unreadable') return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
+  let caller: ModelCaller;
+  if (typeof ai === 'string') {
+    // No key (or no secret to keep one under): built-in AI, under its own caps.
+    const client = builtInAi(env);
+    if (!client) return refusedBuiltIn(ASK_BUILT_IN.unavailable);
+    const day = dayOf(now);
+    const answeredToday = await usedOf(env, readCounter(ASK_BUILT_IN_SCOPE, day));
+    if (answeredToday >= ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY)
+      return refusedBuiltIn(ASK_BUILT_IN['knowledgebase-limit']);
+    const spent = await spendSetupDraft(env, person, now, 'ask');
+    // The count guards a bill: unreachable, the question is refused rather than the cap lifted.
+    if (spent === 'unavailable') return refusedBuiltIn(ASK_BUILT_IN.failed);
+    if (!spent) return refusedBuiltIn(ASK_BUILT_IN['person-limit']);
+    await runAll(env, [...counters.bump, bumpCounter(ASK_BUILT_IN_SCOPE, day)]);
+    caller = { provider: 'built-in', ai: client };
+  } else {
+    // Counted before the model is called: a question that fails still spent a call on the team's key.
+    await runAll(env, counters.bump);
+    caller = {
+      provider: ai.provider,
+      fetch: modelDoorFor(env, ai.provider),
+      apiKey: ai.apiKey,
+      model: ai.model,
+    };
+  }
+  const { provider } = caller;
   const search = askSearch(question, {
     now,
     reviewEvery: document.knowledgeSettings.reviewEvery,
@@ -127,10 +188,7 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
       const answer = askAnswerStream(passages);
       try {
         const reply = await callModel({
-          provider: ai.provider,
-          fetch: modelDoorFor(env, ai.provider),
-          apiKey: ai.apiKey,
-          model: ai.model,
+          ...caller,
           request,
           signal: ctx.request.signal,
           onText: (piece) => {
@@ -139,14 +197,15 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           },
         });
         const read = answer.finish();
+        // Each source under the number the answer shows (1 first, as first cited), not the one it was sent as.
         const byNumber = new Map(passages.map((p) => [p.number, p]));
         const sources = read.cited.flatMap((c) => {
-          const passage = byNumber.get(c.number);
-          return passage ? [sourceOf(passage)] : [];
+          const passage = byNumber.get(c.sent);
+          return passage ? [{ ...sourceOf(passage), number: c.number }] : [];
         });
         const notUsed = read.notUsed.flatMap((n) => {
-          const passage = byNumber.get(n.number);
-          return passage ? [{ ...sourceOf(passage), reason: n.reason }] : [];
+          const passage = byNumber.get(n.sent);
+          return passage ? [{ ...sourceOf(passage), number: n.number, reason: n.reason }] : [];
         });
         // Each part the pages did not cover is a question nobody could answer (ai-knowledge.md).
         const gaps = read.gaps.flatMap((gap) => {
@@ -177,6 +236,7 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           passages: passages.length,
           cited: sources.length,
           gaps: read.gaps.length,
+          provider,
           model: reply.model,
         });
         send({
@@ -186,21 +246,17 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           notUsed,
           gaps: read.gaps,
           model: reply.model,
+          provider,
         });
       } catch (error) {
         // The kind and its fixed words; never the upstream's own message, the request or the key.
         const kind = error instanceof ModelCallError ? error.kind : 'other';
         console.warn('[knowledge] ask failed', {
           documentId: document.id,
-          provider: ai.provider,
+          provider,
           kind,
         });
-        send({
-          type: 'error',
-          kind,
-          provider: ai.provider,
-          message: modelFailureWords(ai.provider, kind),
-        });
+        send({ type: 'error', kind, provider, message: modelFailureWords(provider, kind) });
       }
       controller.close();
     },

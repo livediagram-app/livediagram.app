@@ -3,7 +3,10 @@
 // it holds no key, no request and nothing the provider's API said.
 
 /** Whose API a knowledgebase's key is for. */
-export type ModelProviderId = 'anthropic' | 'openai';
+export type KeyProviderId = 'anthropic' | 'openai';
+/** Which AI answers a call: built-in AI (Workers AI, liveknowledge's; search-and-ask.md "Built-in AI") with no key,
+ *  else the provider the team's key is for. No key can be saved for `built-in`. */
+export type ModelProviderId = KeyProviderId | 'built-in';
 
 export type ModelFailureKind =
   | 'bad-key'
@@ -15,10 +18,15 @@ export type ModelFailureKind =
   | 'other';
 
 // What each provider is called inside a sentence.
-const SPOKEN: Readonly<Record<ModelProviderId, string>> = { anthropic: 'Claude', openai: 'OpenAI' };
+const SPOKEN: Readonly<Record<KeyProviderId, string>> = { anthropic: 'Claude', openai: 'OpenAI' };
+
+/** Built-in AI has no key, no credit and no model to choose: every failure is that it could not answer. */
+export const BUILT_IN_FAILED_WORDS =
+  "The built-in AI couldn't answer just now. Try again in a moment.";
 
 /** What a person is told for a kind of failure, naming the provider where it matters. */
 export function modelFailureWords(provider: ModelProviderId, kind: ModelFailureKind): string {
+  if (provider === 'built-in') return BUILT_IN_FAILED_WORDS;
   const name = SPOKEN[provider];
   switch (kind) {
     case 'bad-key':

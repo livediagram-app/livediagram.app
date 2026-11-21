@@ -235,13 +235,16 @@ describe('the answer read', () => {
       ].join('\n'),
       passages,
     );
+    // Numbered as first cited: passage 2 is the answer's 1, passage 1 its 2; set aside, passage 3 comes after.
     expect(answer).toEqual({
-      text: 'We deploy on Tuesdays [2]. Rollbacks take one command [1][2].\nThe passages do not say who approves a deploy.',
+      text: 'We deploy on Tuesdays [1]. Rollbacks take one command [2][1].\nThe passages do not say who approves a deploy.',
       cited: [
-        { number: 2, passageId: 'b' },
-        { number: 1, passageId: 'a' },
+        { number: 1, sent: 2, passageId: 'b' },
+        { number: 2, sent: 1, passageId: 'a' },
       ],
-      notUsed: [{ number: 3, passageId: 'c', reason: 'Older than passage 2 and says Fridays.' }],
+      notUsed: [
+        { number: 3, sent: 3, passageId: 'c', reason: 'Older than passage 2 and says Fridays.' },
+      ],
       gaps: ['Who approves a deploy?'],
     });
   });
@@ -251,9 +254,26 @@ describe('the answer read', () => {
       '<answer>True [2]. Invented [9] [14]. Also [0].</answer><not_used passage="7">x</not_used><not_used passage="1">a</not_used><not_used passage="1">again</not_used>',
       passages,
     );
-    expect(answer.text).toBe('True [2]. Invented. Also.');
-    expect(answer.cited).toEqual([{ number: 2, passageId: 'b' }]);
-    expect(answer.notUsed).toEqual([{ number: 1, passageId: 'a', reason: 'a' }]);
+    expect(answer.text).toBe('True [1]. Invented. Also.');
+    expect(answer.cited).toEqual([{ number: 1, sent: 2, passageId: 'b' }]);
+    expect(answer.notUsed).toEqual([{ number: 2, sent: 1, passageId: 'a', reason: 'a' }]);
+  });
+
+  it('numbers one source 1, whatever it was sent as, and reads a list of numbers in one marker', () => {
+    // The owner's answer: one source, sent as passage 2, shown as 1.
+    const one = parseAskAnswer('<answer>Use blue for all text colours [2].</answer>', passages);
+    expect(one.text).toBe('Use blue for all text colours [1].');
+    expect(one.cited).toEqual([{ number: 1, sent: 2, passageId: 'b' }]);
+    const listed = parseAskAnswer(
+      '<answer>A [3, 1]. B [9, 3]. C [7, 8]. D [2, 2].</answer>',
+      passages,
+    );
+    expect(listed.text).toBe('A [1, 2]. B [1]. C. D [3].');
+    expect(listed.cited.map((c) => [c.number, c.sent])).toEqual([
+      [1, 3],
+      [2, 1],
+      [3, 2],
+    ]);
   });
 
   it('reads a reply that ignores the form as an answer without citations', () => {
@@ -286,22 +306,42 @@ describe('the answer read', () => {
       let shown = '';
       for (let at = 0; at < reply.length; at += size)
         shown += stream.push(reply.slice(at, at + size));
-      expect(shown).toBe('We deploy on Tuesdays [2]. Is 1 < 2? Yes.\n');
+      expect(shown).toBe('We deploy on Tuesdays [1]. Is 1 < 2? Yes.\n');
       expect(stream.finish()).toEqual({
-        text: 'We deploy on Tuesdays [2]. Is 1 < 2? Yes.',
-        cited: [{ number: 2, passageId: 'b' }],
+        text: 'We deploy on Tuesdays [1]. Is 1 < 2? Yes.',
+        cited: [{ number: 1, sent: 2, passageId: 'b' }],
         notUsed: [],
         gaps: ['Who approves?'],
       });
     }
   });
 
+  it('renumbers markers as they stream, however the pieces fall, as the finished answer does', () => {
+    const reply = '<answer>A [3]. B [1, 3]. C [9]. D [2][3]. [</answer>';
+    for (const size of [1, 2, 4, 1000]) {
+      const stream = askAnswerStream(passages);
+      let shown = '';
+      for (let at = 0; at < reply.length; at += size)
+        shown += stream.push(reply.slice(at, at + size));
+      const done = stream.finish();
+      expect(shown).toBe('A [1]. B [2, 1]. C. D [3][1]. [');
+      expect(done.text).toBe(shown);
+      expect(done.cited.map((c) => c.sent)).toEqual([3, 1, 2]);
+    }
+    // A marker still open when the stream pauses is held, then shown whole.
+    const held = askAnswerStream(passages);
+    expect(held.push('<answer>Fact [')).toBe('Fact');
+    expect(held.push('2')).toBe('');
+    expect(held.push('] more')).toBe(' [1] more');
+  });
+
   it('shows a streamed reply that does not open with the form as it comes', () => {
     const stream = askAnswerStream(passages);
     expect(stream.push('<')).toBe('');
     expect(stream.push('an')).toBe('');
-    expect(stream.push('y text ')).toBe('<any text ');
-    expect(stream.push('more</ans')).toBe('more');
+    // A space at a piece's end waits for what follows: a marker that cites nothing goes with it.
+    expect(stream.push('y text ')).toBe('<any text');
+    expect(stream.push('more</ans')).toBe(' more');
     expect(stream.push('wers> end')).toBe('</answers> end');
     expect(stream.finish().text).toBe('<any text more</answers> end');
     const plain = askAnswerStream(passages);
@@ -325,7 +365,7 @@ describe('the answer read', () => {
     });
     expect(result.text).toBe(reply);
     expect(shown).toBe('We deploy on Tuesdays [1].');
-    expect(stream.finish().cited).toEqual([{ number: 1, passageId: 'a' }]);
+    expect(stream.finish().cited).toEqual([{ number: 1, sent: 1, passageId: 'a' }]);
     expect(stream.finish().gaps).toEqual(['Who approves a deploy?']);
     expect((sent[0]!.body.system as string).startsWith('You answer questions')).toBe(true);
   });
