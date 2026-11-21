@@ -132,7 +132,8 @@ export function useEditorTabs({
   // The page's name follows its Title as it is typed (usePageNameFromTitle).
   usePageNameFromTitle({
     activeTab,
-    canEdit: !isStructureReadOnly,
+    // In edit mode the Title is the draft's: the name follows it on Save (docs/specs/030-knowledgebase/editing.md).
+    canEdit: !isStructureReadOnly && documentSlice.editingTabId !== activeTab.id,
     localEditSeq: documentSlice.localEditSeqRef,
     rename: renameTabFromTitle,
   });

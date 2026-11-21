@@ -13,6 +13,12 @@ import { ClockIcon } from './knowledge-icons';
 import { pageWords, readingMinutes } from '@/lib/knowledge/reading-time';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
+import { savedArticleOf } from '@liveknowledge/document';
+import { usePageEditors, type PageEditor } from '@/lib/page-edit/page-edit-store';
+import { editorsPhrase } from '@/lib/page-edit/page-edit-text';
+import { EditorDiscs } from '@/components/page-edit/EditorDiscs';
+
+const NO_EDITORS: readonly PageEditor[] = [];
 
 export type PageMetaRowProps = {
   /** Whole minutes the page takes to read (reading-time.ts); 0 for an empty page, which shows none. */
@@ -24,6 +30,9 @@ export type PageMetaRowProps = {
   changedSinceVerified: boolean;
   // When the writing was last edited and by whom, where a route says so.
   edited?: { at: number; by?: string } | undefined;
+  // The others editing the page right now (docs/specs/030-knowledgebase/editing.md "Who is editing"): shown to
+  // everyone who is not editing it.
+  editors?: readonly PageEditor[];
 };
 
 export function PageMetaRowView({
@@ -33,6 +42,7 @@ export function PageMetaRowView({
   verifiedBy,
   changedSinceVerified,
   edited,
+  editors = [],
 }: PageMetaRowProps) {
   const mark = trustMark(trust.state);
   const notes: { key: string; node: ReactNode }[] = [];
@@ -60,6 +70,18 @@ export function PageMetaRowView({
       key: 'changed',
       node: <span className="text-amber-800 dark:text-amber-300">Changed since verified</span>,
     });
+  if (editors.length > 0) {
+    const names = editorsPhrase(editors.map((e) => e.name));
+    notes.push({
+      key: 'editing',
+      node: (
+        <span data-page-being-edited="" className="inline-flex items-center gap-1.5">
+          <EditorDiscs editors={editors} size={16} label={`Editing: ${names}`} />
+          Being edited by {names}
+        </span>
+      ),
+    });
+  }
   return (
     <div
       data-page-meta=""
@@ -83,11 +105,15 @@ export function PageMetaRowView({
 export function PageMetaRow() {
   const page = usePageKnowledge();
   const { nameOf } = useKnowledgePeople();
-  // Counted from the committed blocks (cached per block list), so it moves when the writing commits, not per key.
+  // Counted from the saved blocks (cached per block list), so it moves when the writing is saved, not per key: a
+  // draft is nobody's reading yet (docs/specs/030-knowledgebase/editing.md).
   const minutes = useEditorChrome((s) => {
-    const article = Object.values(s.activeTab.articles ?? {})[0];
+    const article = savedArticleOf(s.pageTab);
     return article ? readingMinutes(pageWords(article.blocks)) : 0;
   });
+  const tabId = useEditorChrome((s) => s.pageTab.id);
+  const editingHere = useEditorChrome((s) => s.pageEditing.editing);
+  const editors = usePageEditors(tabId);
   return (
     <PageMetaRowView
       minutes={minutes}
@@ -95,6 +121,7 @@ export function PageMetaRow() {
       now={page.now}
       verifiedBy={nameOf(page.trust.fields.verifiedBy)}
       changedSinceVerified={page.health?.knowledge.changedSinceVerified === true}
+      editors={editingHere ? NO_EDITORS : editors}
     />
   );
 }

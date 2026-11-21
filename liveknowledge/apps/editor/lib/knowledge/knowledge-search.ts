@@ -2,6 +2,7 @@
 // - the server's marked snippets read as text and marks, never as HTML;
 // - one search at a time: debounced, the last request aborted before the next starts;
 // - the same search in the browser for a knowledgebase kept Offline, over the pages this editor holds.
+import { savedArticlesOf } from '@liveknowledge/document';
 import {
   MATCH_END,
   MATCH_START,
@@ -181,9 +182,10 @@ export function searchLoadedPages(
         lastBlock: '',
       });
     if (titles.length + passages.length >= SEARCH_MAX_RESULTS * 2) continue;
-    const flow = Object.values(page.articles ?? {})[0];
+    // The saved writing: a page's draft is nobody's to find yet (docs/specs/030-knowledgebase/editing.md).
+    const flow = Object.values(savedArticlesOf(page))[0];
     if (!flow) continue;
-    for (const passage of pagePassages(page.id, { blocks: flow.blocks as ArticleBlock[] })) {
+    for (const passage of pagePassages(page.id, { blocks: flow.blocks })) {
       if (!has(passage.text)) continue;
       passages.push({
         ...base,

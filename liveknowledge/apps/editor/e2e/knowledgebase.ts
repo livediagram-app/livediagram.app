@@ -90,18 +90,43 @@ export async function newServerKnowledgebase(page: Page): Promise<string> {
   return newKnowledgebase(page, await serverNewUrl(page, '/new?blank=1'));
 }
 
-/** Types the open page's name into its Title, where the caret is, and waits for the tree to follow. */
+const editButton = (page: Page): Locator => page.getByRole('button', { name: 'Edit', exact: true });
+const saveButton = (page: Page): Locator => page.getByRole('button', { name: 'Save', exact: true });
+
+/** Edit mode on the open page (docs/specs/030-knowledgebase/editing.md): Edit pressed when the page is being read. */
+export async function ensureEditing(page: Page): Promise<void> {
+  if (await editButton(page).isVisible()) await editButton(page).click();
+  await expect(writing(page)).toHaveAttribute('contenteditable', 'true');
+}
+
+/** Saves the open page's draft and goes on editing it, as a person pressing Save and then Edit would: readers, the
+ *  tree and the index see what was written (docs/specs/030-knowledgebase/editing.md "Save"). */
+export async function saveAndGoOn(page: Page): Promise<void> {
+  if (!(await saveButton(page).isVisible())) return;
+  await saveButton(page).click();
+  await expect(editButton(page)).toBeVisible();
+  await editButton(page).click();
+  await expect(writing(page)).toHaveAttribute('contenteditable', 'true');
+}
+
+/** Types the open page's name into its Title, where the caret is, saves it and waits for the tree to follow; the
+ *  page stays in edit mode with the caret at the end of its Title. */
 export async function nameOpenPage(page: Page, name: string): Promise<void> {
   await expectCaretInTitle(page);
   await page.keyboard.type(name);
+  await saveAndGoOn(page);
   await expect(pageRow(page, name)).toBeVisible();
+  await titleOf(page).click();
+  await page.keyboard.press('End');
 }
 
 /** The key that takes the caret to the foot of the writing: Cmd and Down on a Mac, Ctrl and End elsewhere. */
 export const END_OF_WRITING = process.platform === 'darwin' ? 'Meta+ArrowDown' : 'Control+End';
 
-/** Writes lines under the Title: the caret goes to the end of the writing, and each line is a new paragraph. */
-export async function writeLines(page: Page, ...lines: string[]): Promise<void> {
+/** Writes lines under the Title into the page's draft, in edit mode: the caret goes to the end of the writing, and each
+ *  line is a new paragraph. Nothing is saved for readers (docs/specs/030-knowledgebase/editing.md). */
+export async function draftLines(page: Page, ...lines: string[]): Promise<void> {
+  await ensureEditing(page);
   await writing(page).focus();
   await page.keyboard.press(END_OF_WRITING);
   for (const line of lines) {
@@ -109,6 +134,14 @@ export async function writeLines(page: Page, ...lines: string[]): Promise<void> 
     await page.keyboard.type(line);
   }
   await expect(writing(page)).toContainText(lines[lines.length - 1]!);
+}
+
+/** Writes lines under the Title and saves them for readers, the page staying in edit mode with the caret at the end. */
+export async function writeLines(page: Page, ...lines: string[]): Promise<void> {
+  await draftLines(page, ...lines);
+  await saveAndGoOn(page);
+  await writing(page).focus();
+  await page.keyboard.press(END_OF_WRITING);
 }
 
 /** New Page at the foot of the tree, named: the new page takes the caret in its Title. */

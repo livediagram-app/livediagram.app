@@ -15,6 +15,7 @@ import type { EditorTabs } from './useEditorTabs';
 import type { EditorElements } from './useEditorElements';
 import type { EditorStyle } from './useEditorStyle';
 import type { EditorInput } from './useEditorInput';
+import type { EditorPageEditing } from './useEditorPageEditing';
 
 // The editor's view-model: every field EditorContext hands the editor, picked out of useEditorState's slices in the
 // order and shape it has always had, so no caller changes. Spreads keep their place, and a field after a spread
@@ -36,6 +37,7 @@ export function editorView({
   elementsSlice,
   styleSlice,
   inputSlice,
+  pageEditingSlice,
 }: {
   documentSlice: EditorDocument;
   selectionSlice: EditorSelection;
@@ -53,6 +55,7 @@ export function editorView({
   elementsSlice: EditorElements;
   styleSlice: EditorStyle;
   inputSlice: EditorInput;
+  pageEditingSlice: EditorPageEditing;
 }) {
   return {
     surface: documentSlice.surface,
@@ -100,6 +103,9 @@ export function editorView({
     ...sessionSlice.persistence,
     ...sessionSlice.realtime,
     activeTab: collaborationSlice.activeTab,
+    // The page as stored (the lens's source, docs/specs/030-knowledgebase/editing.md), and its read and edit mode.
+    pageTab: collaborationSlice.pageTab,
+    pageEditing: pageEditingSlice.pageEditing,
     activeTabLocked: pagesSlice.activeTabLocked,
     activeTabConnected: pagesSlice.activeTabConnected,
     connectedTabs: tabsSlice.connectedTabs,

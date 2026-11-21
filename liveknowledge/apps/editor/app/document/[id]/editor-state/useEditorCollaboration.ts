@@ -25,6 +25,9 @@ import type { EditorTools } from './useEditorTools';
 import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';
 import type { Tab } from '@liveknowledge/document';
+import { pageEditLens, pageReadLens } from '@/lib/page-edit/lens';
+import { readLensLocked } from '@/lib/page-edit/page-edit-roles';
+import { myEditingPage } from '@/lib/page-edit/page-edit-store';
 import {
   useTabDrafts,
   type TabDraftDoors,
@@ -254,6 +257,10 @@ export function useEditorCollaboration({
     },
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
+      // A fresh session holds no edit mode: say it again (docs/specs/030-knowledgebase/editing.md "Edit mode").
+      const editing = myEditingPage();
+      if (editing)
+        roomRef.current?.send({ kind: 'op', op: { kind: 'page-editing', tabId: editing } });
     },
   });
 
@@ -328,7 +335,17 @@ export function useEditorCollaboration({
     documentId,
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
-  const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // The page as stored, and the page as this editor works on it (docs/specs/030-knowledgebase/editing.md): its draft
+  // in edit mode, its saved writing otherwise, locked for an Editor who is reading (lib/page-edit/lens.ts). Every
+  // reader of `activeTab` draws the lens; what is stored and what readers are told read `pageTab`.
+  const pageTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  const activeTab =
+    documentSlice.editingTabId === pageTab.id
+      ? pageEditLens(pageTab)
+      : pageReadLens(
+          pageTab,
+          readLensLocked({ isReadOnly, participating: participant.participating }),
+        );
   // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
   // the collab key their presence publishes; a session that may not edit sends them through the comment endpoints.
   const commentReactions = useCommentReactionScope({
@@ -416,6 +433,7 @@ export function useEditorCollaboration({
     teams,
     commentMentions,
     activeTab,
+    pageTab,
     commentReactions,
     editorMode,
     addCustomColour,

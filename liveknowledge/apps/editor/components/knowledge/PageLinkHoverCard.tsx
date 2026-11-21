@@ -4,6 +4,7 @@
 // title, its verified state and its first lines. Listens on the writing's own element, as the ordinary link's card
 // does; shown after a short dwell, gone when the pointer leaves. It reads nothing from the network: the state comes
 // from the page list, and the first lines from the page's writing when this editor already holds it.
+import { savedArticlesOf } from '@liveknowledge/document';
 import { useEffect, useState, type RefObject } from 'react';
 import type { EditorView } from 'prosemirror-view';
 import { Portal } from '@liveknowledge/ui';
@@ -64,7 +65,7 @@ export function PageLinkHoverCard({
                 Date.now(),
               ).state,
             ),
-            lines: firstLines(Object.values(tab.articles ?? {})[0]?.blocks ?? []),
+            lines: firstLines(Object.values(savedArticlesOf(tab))[0]?.blocks ?? []),
           },
         });
       }, PAGE_LINK_CARD_DWELL_MS);

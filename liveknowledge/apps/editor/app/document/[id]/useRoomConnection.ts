@@ -25,6 +25,7 @@ import { joinRefusedBecauseTrashed } from './room-refusal';
 import { resetArticlePeers, syncArticlePeople } from '@/lib/article/article-carets-store';
 import { resetArticleHolds, syncArticleHolders } from '@/lib/article/article-holds-store';
 import { receiveRoomOp } from './room-op-receive';
+import { clearPageEditors, notePageEditors } from '@/lib/page-edit/page-edit-store';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
 import {
   aimPreRoomOutbox,
@@ -129,6 +130,8 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
       // drawn (docs/specs/008-canvas/drag-preview.md).
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
+      // Who is editing which page (docs/specs/030-knowledgebase/editing.md "Edit mode"), from each session's `editing`.
+      notePageEditors(participants);
       setLivePresence(presenceRows(participants, lastSeenRef.current, now));
       // Each arrival seeded, the colour a later joiner yields, and what goes with whoever left
       // (@liveworkspace/workbench/lib/room-presence).
@@ -292,6 +295,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       presence.cancel();
       resetArticlePeers();
       resetArticleHolds();
+      clearPageEditors();
       openedRoom.close();
       roomRef.current = null;
       // The room closed: anything still held goes too (it was handed over as the room was made).

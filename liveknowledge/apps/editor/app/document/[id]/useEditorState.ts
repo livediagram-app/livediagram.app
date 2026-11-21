@@ -11,6 +11,7 @@ import { useEditorUndoState } from './editor-state/useEditorUndoState';
 import { useEditorInput } from './editor-state/useEditorInput';
 import { useEditorLayers } from './editor-state/useEditorLayers';
 import { useEditorPages } from './editor-state/useEditorPages';
+import { useEditorPageEditing } from './editor-state/useEditorPageEditing';
 import { useEditorPersistence } from './editor-state/useEditorPersistence';
 import { useEditorSelection } from './editor-state/useEditorSelection';
 import { useEditorSession } from './editor-state/useEditorSession';
@@ -72,6 +73,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     collaborationSlice,
     viewportSlice,
     commentsSlice,
+  });
+  const pageEditingSlice = useEditorPageEditing({
+    documentSlice,
+    selectionSlice,
+    sessionSlice,
+    collaborationSlice,
+    pagesSlice,
   });
   const layersSlice = useEditorLayers({
     documentSlice,
@@ -171,6 +179,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     elementsSlice,
     styleSlice,
     inputSlice,
+    pageEditingSlice,
   });
   return view;
 }

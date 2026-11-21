@@ -48,6 +48,8 @@ import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-sca
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 import type { CanvasChromeProps } from './CanvasChrome.types';
+import { PageEditBar } from '@/components/page-edit/PageEditBar';
+import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 
 export type { CanvasChromeProps } from './CanvasChrome.types';
 
@@ -165,6 +167,8 @@ function CanvasChromeView(props: CanvasChromeProps) {
   // The top row of the content area (docs/specs/030-knowledgebase/page-surface.md "The footer"): there for every
   // role, with the chrome.
   const topRowShown = useTopRowShown(!readOnly) && !chromeHidden;
+  // Edit mode on the open page (docs/specs/030-knowledgebase/editing.md): the formatting controls are its alone.
+  const pageEditing = useEditorChrome((s) => s.pageEditing.editing);
   // Rename <Kind> from the search opens the Explorer panel from its menu button, on the open item's name
   // field (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search").
   const explorerButtonRef = useRef<HTMLButtonElement>(null);
@@ -360,9 +364,17 @@ function CanvasChromeView(props: CanvasChromeProps) {
               </>
             ) : undefined
           }
-          trailing={pageRail.rowButton}
+          trailing={
+            <>
+              {/* Edit, or the draft bar while editing (docs/specs/030-knowledgebase/editing.md). */}
+              <PageEditBar />
+              {/* A phone's row is too narrow for Cancel, Save and Page Info together: writing comes first. */}
+              {isMobile && pageEditing ? null : pageRail.rowButton}
+            </>
+          }
         >
-          {!readOnly && !isMobile ? (
+          {/* Read mode keeps the row's left empty: the formatting controls are edit mode's. */}
+          {!readOnly && !isMobile && pageEditing ? (
             <PageFormattingBar
               canUndo={canUndo === true}
               canRedo={canRedo === true}

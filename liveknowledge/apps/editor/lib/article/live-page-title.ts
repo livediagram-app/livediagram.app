@@ -6,6 +6,7 @@
 import { useSyncExternalStore } from 'react';
 import type { Node as PMNode } from 'prosemirror-model';
 import { truncateName } from '@liveknowledge/document';
+import { myEditingPage } from '@/lib/page-edit/page-edit-store';
 
 let live: string | null = null;
 const listeners = new Set<() => void>();
@@ -28,6 +29,8 @@ export function titleTextOf(doc: PMNode): string | null {
 
 /** An Editor typed in the Title: the tree follows it. */
 export function noteLivePageTitle(text: string): void {
+  // In edit mode the Title is the draft's: the tree keeps the saved name until Save (editing.md "Save").
+  if (myEditingPage() !== null) return;
   set(text);
 }
 

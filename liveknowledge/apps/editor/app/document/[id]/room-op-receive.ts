@@ -16,6 +16,7 @@ import type { RoomConnectionOptions } from './useRoomConnection.types';
 import { remoteSelectionOf } from '@/lib/presence-rows';
 import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
+import { notePeerSaved } from '@/lib/page-edit/page-edit-store';
 
 type RoomOpFrom = Parameters<NonNullable<RoomHandlers['onOp']>>[0];
 type RoomOp = Parameters<NonNullable<RoomHandlers['onOp']>>[1];
@@ -179,6 +180,9 @@ export function receiveRoomOp(
       // the Explorer is liveworkspace's, on another origin (liveworkspace/docs/specs/010-site/site.md "Addresses handed over").
       window.location.assign('/explorer?ended=revoked');
     } else if (effect === 'reload') window.location.reload();
+  } else if (op.kind === 'page-saved') {
+    // A peer saved a page's draft (docs/specs/030-knowledgebase/editing.md "Save"): whoever is editing it is told who.
+    if (typeof op.tabId === 'string') notePeerSaved(from, op.tabId);
   } else if (op.kind === 'tab-saved') {
     // A peer's save landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"): its element
     // ops came first and are in the baseline, so the baseline's tab is what it stored unless something else differs.

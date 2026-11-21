@@ -64,7 +64,8 @@ describe('room op vocabulary', () => {
     const handled = new Set(handledKinds());
     // Kinds the room keeps and never relays, so none ever arrives: a `follow` reaches the person followed as a
     // `followers` frame instead (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom").
-    const roomKept = new Set(['follow']);
+    // A `page-editing` is kept on the roster as the session's `editing` (docs/specs/030-knowledgebase/editing.md).
+    const roomKept = new Set(['follow', 'page-editing']);
     const unhandled = [...PRESENCE_OP_KINDS, ...MUTATION_OP_KINDS, ...SYSTEM_OP_KINDS].filter(
       (kind) => !handled.has(kind) && !roomKept.has(kind),
     );

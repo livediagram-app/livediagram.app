@@ -23,6 +23,12 @@ export function takeTitleFocus(pageId: string): boolean {
   return wanted.delete(pageId);
 }
 
+/** Whether the page was asked for, leaving the ask for the Title to take: a page made here opens in edit mode
+ *  (docs/specs/030-knowledgebase/editing.md "Edit mode"). */
+export function wantsTitleFocus(pageId: string): boolean {
+  return wanted.has(pageId);
+}
+
 /** Forgets every ask (tests). */
 export function clearTitleFocus(): void {
   wanted.clear();

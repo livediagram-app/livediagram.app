@@ -7,6 +7,21 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { createTab } from '../editor-page-helpers';
 import { guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
+import { liftTabs, lowerTabs, type LensWriter } from '@/lib/page-edit/lens';
+
+type PageEditRef = { readonly current: { tabId: string; writer: LensWriter } | null };
+
+// Every map over the tabs, while a page is being edited, runs over that page as its draft (lib/page-edit/lens.ts):
+// lifted into the lens, mapped, lowered back. A map with no page being edited runs as it is.
+function throughPageLens(ref: PageEditRef, mapTabs: (ts: Tab[]) => Tab[]) {
+  return (ts: Tab[]) => {
+    const editing = ref.current;
+    if (!editing) return mapTabs(ts);
+    // Lowered even when the lens is the tab itself (a page with no draft yet): its first change makes the draft.
+    const lifted = liftTabs(ts, editing.tabId);
+    return lowerTabs(ts, lifted, mapTabs(lifted), editing.tabId, editing.writer);
+  };
+}
 
 // The guard every local edit of the active tab passes (Pages mode): locked pages, saying why after the commit.
 const guardPagesIn = (prev: readonly Tab[], next: Tab[], guard: PageLockGuard | null): Tab[] =>
@@ -75,16 +90,32 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
   // The active layer's stamp for commitTabs (docs/specs/006-document/layers.md), refreshed once the layers slice has
   // computed (useEditorLayers): declared here, before the commit choke point that reads it.
   const activeLayerStampRef = useRef<{ tabId: string; layerId: string } | null>(null);
+  // The page this editor is editing (docs/specs/030-knowledgebase/editing.md "Edit mode"; blueprint "The choice"):
+  // its id, or null while reading. State for what renders it (the lens on the active tab, the draft bar); the ref,
+  // with who is writing, for the commit choke point below, which lifts the page into its draft and lowers it back.
+  const [editingTabId, setEditingTabIdState] = useState<string | null>(null);
+  const pageEditRef = useRef<{ tabId: string; writer: LensWriter } | null>(null);
+  const throughLens = (mapTabs: (ts: Tab[]) => Tab[]) => throughPageLens(pageEditRef, mapTabs);
   // A tick (a drag landing, a nudge, a resize, a slider) passes the same lock guard as a commit.
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
     (mapTabs: (ts: Tab[]) => Tab[]) =>
       rawTickTabs((ts) =>
-        guardPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
+        guardPagesIn(
+          ts,
+          settleChipsInTabs(ts, throughPageLens(pageEditRef, mapTabs)(ts)),
+          pageLockGuardRef.current,
+        ),
       ),
     [rawTickTabs],
   );
-  const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
+  // A write to the stored tabs as they are, never through the lens: Save and Discard (usePageEditing).
+  const commitRealTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
+    localEditSeqRef.current += 1;
+    rawCommitTabs(mapTabs);
+  };
+  const commitTabs = (mapTabsOuter: (ts: Tab[]) => Tab[]) => {
+    const mapTabs = throughLens(mapTabsOuter);
     localEditSeqRef.current += 1;
     // Layer stamping (docs/specs/006-document/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
@@ -197,6 +228,10 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
     activeLayerStampRef,
     tickTabs,
     commitTabs,
+    commitRealTabs,
+    editingTabId,
+    setEditingTabIdState,
+    pageEditRef,
     markCheckpoint,
     resetTabs,
     cancelToCheckpoint,
