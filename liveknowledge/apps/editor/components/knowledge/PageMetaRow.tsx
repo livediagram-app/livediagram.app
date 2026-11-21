@@ -41,7 +41,7 @@ export function PageMetaRowView({
       key: 'read',
       node: (
         <span data-reading-time="" className="inline-flex items-center gap-1 tabular-nums">
-          <span className="text-slate-400 dark:text-slate-500">
+          <span className="text-slate-400 dark:text-slate-400">
             <ClockIcon />
           </span>
           {minutes} min read

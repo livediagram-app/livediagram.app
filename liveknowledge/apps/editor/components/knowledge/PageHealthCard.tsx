@@ -81,7 +81,7 @@ function FreshnessRing({ state, left }: { state: PageTrust['state']; left: numbe
   const tone =
     state === 'review-due'
       ? 'text-amber-500 dark:text-amber-400'
-      : 'text-brand-600 dark:text-brand-400';
+      : 'text-brand-700 dark:text-brand-400';
   return (
     <span className="relative flex size-10 shrink-0 items-center justify-center" aria-hidden>
       <svg viewBox="0 0 36 36" className="absolute inset-0 size-10 -rotate-90">
@@ -105,7 +105,7 @@ function FreshnessRing({ state, left }: { state: PageTrust['state']; left: numbe
             strokeLinecap="round"
             stroke="currentColor"
             strokeDasharray={`${c * (left ?? 1)} ${c}`}
-            className={`${tone} motion-safe:transition-[stroke-dasharray] motion-safe:duration-500`}
+            className={`${tone} motion-safe:transition-[stroke-dasharray] motion-safe:duration-200`}
           />
         )}
       </svg>
@@ -168,7 +168,7 @@ function StampRow({ what, stamp, now }: { what: string; stamp: PageStamp; now: n
         aria-hidden
         className="flex size-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200"
       >
-        {stamp.by ? initials(stamp.by) : '?'}
+        <span className="text-optical-centre">{stamp.by ? initials(stamp.by) : '?'}</span>
       </span>
       <span className="min-w-0 flex-1 leading-4">
         <span className="block truncate text-[13px] text-slate-800 dark:text-slate-200">
@@ -200,7 +200,7 @@ function ReadStat({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-slate-400 dark:text-slate-500">{icon}</span>
+      <span className="text-slate-400 dark:text-slate-400">{icon}</span>
       <dt className="sr-only">{label}</dt>
       <dd className="truncate">
         <span className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">

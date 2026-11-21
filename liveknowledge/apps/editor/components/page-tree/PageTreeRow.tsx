@@ -29,7 +29,7 @@ const ROW =
 const ROW_CURRENT =
   'bg-brand-100 font-medium text-brand-900 dark:bg-brand-500/20 dark:text-brand-100';
 // A row's buttons while it is not pointed at: there, but faint, so a long tree stays calm.
-const QUIET = 'text-slate-400/70 dark:text-slate-500/70';
+const QUIET = 'text-slate-400/70 dark:text-slate-400/60';
 const ROW_REST = 'text-slate-700 hover:bg-slate-200/70 dark:text-slate-200 dark:hover:bg-slate-800';
 const ROW_NEST = 'ring-2 ring-inset ring-brand-500';
 const ROW_BUTTON =

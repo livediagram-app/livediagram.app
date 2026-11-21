@@ -57,7 +57,7 @@ own.
   Page is. Page Health leads with the page's state beside a thin **freshness ring**, the share of the Review Period
   left, in the state's colour (green verified, amber due, an empty dashed ring for a page never verified), with one
   line under it: "Fresh for 80 more days", "Was due 14 Jan", "Verify it once it is right." The week's reads are two
-  quiet figures (people, agents) under "Read This Week". The ring fills over half a second when it changes, and not
+  quiet figures (people, agents) under "Read This Week". The ring fills over 200 ms when it changes (the chrome motion budget), and not
   at all with reduced motion.
 - **The meta row** under the title is drawn only when it has something to say (a tick or pill, a due date, an edit,
   how long it takes to read): an empty page never verified has no row, so the writing starts right under the title.
