@@ -27,8 +27,10 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   since ...", or an agent's change; no "Editing" label, owner 2026-11-21), then Cancel and Save, floating 24 px inside the bottom right corner of the document's white area (left of the rail, above the footer;
   owner 2026-11-21), where Edit floats too while reading. Edit, Cancel (with an X) and Save are one size, each standing
   on its own, no capsule round them. No tooltips on them (owner 2026-11-21). Each says it happened: Edit, Save and
-  Cancel make the white area glow once round its edge (brand for Edit and Save, slate for Cancel) and the buttons that
-  take over pop in; a double-click to edit sends a ring out from the pointer. Reduced motion turns them off. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
+  Cancel ripple inward round the document area a person sees, clear of the page tree and the Page Info rail (owner
+  2026-11-21): its edge glows and three rings travel in from the edge and fade, one after another, in about 0.9 s
+  (brand for Edit and Save, slate for Cancel), and the buttons that take over pop in; a double-click to edit sends a
+  96 px ring out from the pointer. Reduced motion turns them off. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
   the buttons are named Edit and Save.
 - A page made here (New Page, Add Subpage) opens straight into edit mode with the caret in its Title: it was made
   to be written.
