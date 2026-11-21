@@ -84,9 +84,7 @@ every page. The route writes the field and the row in one transaction; a deleted
 - **The meta row:** the Pending or Rejected pill, nothing else. Its popover: who asked and when ("Requested by Priya Shah,
   3 hours ago"), and for a Rejected page who rejected it, when, and the note in a quote; then the actions the person
   may take.
-- **The page tree row:** a 6 px dot after the title, violet for Pending Approval and rose for Rejected, named
-  "Pending Approval" or "Rejected" for a screen reader; an Approved page shows the Verified tick as any verified
-  page does.
+- **The page tree row:** nothing (owner 2026-11-21: no approval mark in the sidebar).
 - **Page Health:** an **Approval** section after Page Health in the Page Info rail, shown when the page has an
   approval or the person may ask for one: the state with its glyph in a ring, who asked and when, who decided and
   when, the note, and the actions (the meta row popover's own body, so the two never differ).

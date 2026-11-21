@@ -102,8 +102,7 @@ Public) already own the word.
   section holding Move Up, Move Down, Indent and Outdent. A verb that cannot run stays, greyed, and says why. Delete is not red: the shared menu row never colours a verb.
   Verify and Always in Context are [Verification](verification.md)'s and [AI Knowledge](ai-knowledge.md)'s, and an
   Editor's.
-- A row shows its page's verified state at its right: a tick, or a Review Due pill; nothing for a page never
-  verified. The state is part of the row's name for a screen reader.
+- A row shows a Review Due pill at its right when its page is due; no Verified tick (owner 2026-11-21). The state is part of the row's name for a screen reader.
 - **Search** stands at the sidebar's head, under the knowledgebase's name ([Search and Ask](search-and-ask.md)).
 - **Duplicate** copies the page beside it, under the same parent, without its subpages.
 - **Copy Link** copies the page's address: the knowledgebase's, with the page in its fragment (`#t=<page>`).

@@ -28,7 +28,7 @@ test('Home lists the knowledgebase with its page count and verified share, and s
     .getByRole('region', { name: 'Page Health' })
     .getByRole('button', { name: 'Verify', exact: true })
     .click();
-  await expect(pageRow(page, 'Handbook, Verified')).toBeVisible();
+  await expect(pageRow(page, 'Handbook')).toBeVisible();
   await addPage(page, 'Expenses');
   const saved = savedWith(page, 'director to approve');
   await writeLines(page, 'File receipts by Friday.', 'Flights need a director to approve them.');

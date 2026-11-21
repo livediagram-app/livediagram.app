@@ -55,7 +55,7 @@ opens that in a new tab". (This replaces the earlier ask that connected files sh
 **Details** (decided 2026-11-21, building the owner's ask):
 
 - **Where Connect File is.** The sidebar's foot keeps New Page and, beside it, an Add to Sidebar button whose menu
-  holds New Page and Connect File; a page's row menu has Connect File Here, which places the file as that page's last
+  holds Connect File, with liveworkspace's mark (New Page is beside it, so the menu does not repeat it; owner 2026-11-21); a page's row menu has Connect File Here, which places the file as that page's last
   subpage. Either opens the Connect File dialog (the shared Connect list: Recent, Find a file, the role, both ways);
   picking a file adds its row and closes the dialog. A file already in the sidebar says Connected, and picking it
   goes to its row. Connect File needs an account and a knowledgebase on the server (never one kept Offline, an embed

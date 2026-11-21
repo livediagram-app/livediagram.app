@@ -60,7 +60,7 @@ own.
 | **Never Verified** | no `verifiedAt`                                   | nothing on the page; grey in the counts |
 
 - States are worked out when read, from the fields and the clock; nothing is written when a review comes due.
-- The tick or pill sits in the page's meta row under the title, in the page tree row and on every page link's hover
+- The tick or pill sits in the page's meta row under the title, on every page link's hover
   card. The meta row also says "Edited <when> by <name>"; "Review due <date>" rides the badge's hover (and a screen
   reader's reading of it), so the row stays one line (owner 2026-11-21).
 - **Verify** (the Page Health card in the right rail, or behind Page Info on a narrower window, the tree row menu,

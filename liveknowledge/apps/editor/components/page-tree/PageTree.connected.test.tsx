@@ -249,12 +249,12 @@ describe('Connect File', () => {
     expect(menuItems()).not.toContain('Connect File Here');
   });
 
-  it('is in the sidebar foot’s Add to Sidebar menu, beside New Page', () => {
+  it('is in the sidebar foot’s Add to Sidebar menu, which does not repeat the New Page beside it', () => {
     const onAdd = vi.fn();
     const onConnect = vi.fn();
     render(<AddToSidebar tabs={TABS} onAdd={onAdd} onConnect={onConnect} />);
     fireEvent.click(screen.getByRole('button', { name: 'Add to Sidebar' }));
-    expect(menuItems()).toEqual(['New Page', 'Connect File']);
+    expect(menuItems()).toEqual(['Connect File']);
     fireEvent.click(screen.getByRole('menuitem', { name: 'Connect File' }));
     expect(onConnect).toHaveBeenCalled();
     expect(screen.queryByRole('menu')).toBeNull();

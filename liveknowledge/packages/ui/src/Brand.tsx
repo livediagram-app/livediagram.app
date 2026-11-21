@@ -2,6 +2,7 @@
 
 import {
   Brand as SharedBrand,
+  BrandGlyph,
   BrandMark as SharedBrandMark,
   type BrandProps,
 } from '@liveworkspace/brand';
@@ -15,6 +16,11 @@ export function Brand(props: Omit<BrandProps, 'app'>) {
 
 export function BrandMark(props: Omit<ComponentProps<typeof SharedBrandMark>, 'app'>) {
   return <SharedBrandMark app={BRAND_APP} {...props} />;
+}
+
+/** liveworkspace's own mark, one colour (Connect File: a file from another liveworkspace app). */
+export function WorkspaceMark(props: { className?: string }) {
+  return <BrandGlyph {...props} />;
 }
 
 /** Another app's logo mark (a connected file's row: links-and-embeds.md "Connected files in the sidebar"). */

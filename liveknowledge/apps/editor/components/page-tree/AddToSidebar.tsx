@@ -1,19 +1,19 @@
 'use client';
 
 // The sidebar's foot (docs/specs/030-knowledgebase/links-and-embeds.md "Connected files in the sidebar"): New Page,
-// and beside it Add to Sidebar, whose menu holds New Page and Connect File (a file from another app, which opens in a
-// new browser tab). Without Connect File (offline, no account, a link confined to one page) the foot is New Page
+// and beside it Add to Sidebar, whose menu holds Connect File (a file from another app, which opens in a new browser
+// tab); New Page is the button beside it, so the menu does not repeat it (owner 2026-11-21). A menu, for more to come. Without Connect File (offline, no account, a link confined to one page) the foot is New Page
 // alone.
 import { useState } from 'react';
 import { pageAddRefusal } from '@liveknowledge/document';
-import { HoverCard } from '@liveknowledge/ui';
+import { HoverCard, WorkspaceMark } from '@liveknowledge/ui';
 import {
   MenuActionRow,
   MenuHeader,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
-import { AddIcon, ConnectFileIcon, MoreToAddIcon, NewPageIcon } from './page-tree-icons';
+import { AddIcon, MoreToAddIcon } from './page-tree-icons';
 import type { PageTreeProps } from './PageTree';
 
 /** The dashed button that adds a page (the sidebar's foot, the phone sheet's). */
@@ -69,7 +69,6 @@ export function AddToSidebar({
   const open = anchor !== null;
   const setOpen = (_: false) => setAnchor(null);
   if (!onConnect) return <NewPageButton tabs={tabs} onAdd={onAdd} />;
-  const refused = pageAddRefusal(tabs);
   return (
     <div className="flex items-stretch gap-1.5" data-add-to-sidebar="">
       <div className="min-w-0 flex-1">
@@ -77,7 +76,7 @@ export function AddToSidebar({
       </div>
       <HoverCard
         title="Add to Sidebar"
-        description="A new page, or a file from another app that opens in a new tab."
+        description="A file from another app, opening in a new tab."
         disabled={open}
       >
         <button
@@ -100,31 +99,11 @@ export function AddToSidebar({
           label="Add to Sidebar"
         >
           <MenuHeader title="Add to Sidebar" />
-          {refused ? (
-            <HoverCard block title="New Page" description={pageTreeRefusalText(refused)}>
-              <MenuActionRow
-                plain
-                label="New Page"
-                icon={<NewPageIcon />}
-                disabled
-                onClick={() => {}}
-              />
-            </HoverCard>
-          ) : (
-            <MenuActionRow
-              plain
-              label="New Page"
-              icon={<NewPageIcon />}
-              onClick={() => {
-                setOpen(false);
-                onAdd();
-              }}
-            />
-          )}
           <MenuActionRow
             plain
             label="Connect File"
-            icon={<ConnectFileIcon />}
+            // liveworkspace's mark: the file comes from another of its apps (owner 2026-11-21).
+            icon={<WorkspaceMark className="size-4" />}
             onClick={() => {
               setOpen(false);
               onConnect();

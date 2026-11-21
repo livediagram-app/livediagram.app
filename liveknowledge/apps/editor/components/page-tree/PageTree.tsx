@@ -424,8 +424,9 @@ export function PageTree({
               touch={touch}
               ui={ui}
               people={people?.(row.id)}
-              trust={knowledge?.marks.get(row.id)}
-              approval={knowledge?.approvalMarks?.get(row.id)}
+              // Only Review Due shows in the sidebar: no Verified tick and no approval dot (owner 2026-11-21); the page's
+              // own meta row and Page Health carry those.
+              trust={knowledge?.marks.get(row.id) === 'review-due' ? 'review-due' : undefined}
               onRename={onRename}
               onRenameDone={onRenameDone}
             />

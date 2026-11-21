@@ -80,9 +80,9 @@ afterEach(() => {
 });
 
 describe('a row’s verified state', () => {
-  it('shows the tick or the pill at the row’s right and says it in the row’s name', () => {
+  it('shows only the Review Due pill at the row’s right, no Verified tick, and says it in the row’s name', () => {
     mount('view');
-    expect(within(row('Handbook, Verified')).getByRole('img', { name: 'Verified' })).toBeTruthy();
+    expect(within(row('Handbook')).queryByRole('img')).toBeNull();
     expect(
       within(row('Release Process, Review Due')).getByRole('img', { name: 'Review Due' }),
     ).toBeTruthy();
