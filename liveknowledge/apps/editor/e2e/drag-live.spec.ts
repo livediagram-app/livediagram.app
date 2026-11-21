@@ -128,6 +128,8 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
   // A drawing moves in edit mode (docs/specs/030-knowledgebase/editing.md); the collaborator, who may edit too,
   // joins it ("Everyone joins") and sees the draft live.
   await ensureEditMode(ownerPage);
+  // The collaborator joins on their own ("Everyone joins"); the drag starts once they are in the draft with the owner.
+  await expect(peerPage.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
   await ownerPage.keyboard.press('v');
   const r = (await box(ownerPage, 'a').boundingBox())!;
   await ownerPage.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
