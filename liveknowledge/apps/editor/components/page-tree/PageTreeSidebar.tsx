@@ -164,7 +164,12 @@ export function PageTreeSidebar({
   const body = (mode: 'open' | 'peek', withBand: boolean) => (
     <>
       {withBand ? <MenuJoinBand height={px(top)} /> : null}
-      <div className="flex min-h-11 items-center gap-1 pl-3 pr-2 pt-2">
+      {/* Joined under the menu box, the Hide Pages button stands in one column with the box's menu button above it
+          (owner 2026-11-21: "the hamburger and hide pages button should be in the same horizontal position"): the
+          menu button's centre is 34 px in from the sidebar's right edge, so this row keeps 17 px on its right. */}
+      <div
+        className={`flex min-h-11 items-center gap-1 pl-3 pt-2 ${withBand ? 'pr-[17px]' : 'pr-2'}`}
+      >
         {renaming && onRenameKnowledgebase ? (
           <NameEditor
             label="Knowledgebase name"
