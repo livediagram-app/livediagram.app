@@ -241,7 +241,6 @@ livedocuments/packages/document/src/article-notes.ts	liveknowledge/packages/docu
 livedocuments/packages/document/src/article-readability.ts	liveknowledge/packages/document/src/article-readability.ts
 livedocuments/packages/document/src/article-table.ts	liveknowledge/packages/document/src/article-table.ts
 livedocuments/packages/document/src/article-toc.ts	liveknowledge/packages/document/src/article-toc.ts
-livedocuments/packages/document/src/article-zone-plan.ts	liveknowledge/packages/document/src/article-zone-plan.ts
 livedocuments/packages/document/src/article-zones.ts	liveknowledge/packages/document/src/article-zones.ts
 livedocuments/packages/document/src/auto-layout-sweep.ts	liveknowledge/packages/document/src/auto-layout-sweep.ts
 livedocuments/packages/document/src/auto-layout-tree.ts	liveknowledge/packages/document/src/auto-layout-tree.ts
