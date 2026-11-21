@@ -218,7 +218,11 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
   the caret is in the writing (`usePageToolbarPlacement`); the top row's own buttons step aside for it ("The footer
   and the top row").
 - **Narrow:** where the row has less room than the controls need (about 1,024 px with the tree open) the slot
-  scrolls sideways; there is no mark that more controls follow.
+  scrolls sideways, and each edge with more past it fades into the row's ground and holds a round chevron that
+  pages by 70% of the row (**More Formatting Controls** at the right, **Earlier Formatting Controls** at the left),
+  as the tab strip's scroll buttons do. `useScrollEdges` (`components/page-surface/`) reads the slot's scroll box
+  once a frame after a scroll, and when the slot or what it holds resizes or is swapped; never on a keystroke. A
+  chevron with nothing past it is out of the tab order and hidden from assistive technology.
 - **Renders:** the bar's props are the history's two flags, which a keystroke does not change; the page toolbar inside it renders on a selection change, as it did in the strip.
 
 ## What a page no longer has (built)
@@ -410,10 +414,9 @@ See "Narrow windows" below: investigated, not built.
 - **Help:** the Keyboard list in Settings follows what is bound now (`shortcut-sections.ts`); the help centre's
   articles on zoom, the hand tool, the Selection mode, the Library, the page panel and the page lock are not yet
   retired from liveknowledge's scope (`lib/help-articles.ts`, `packages/help-registry`).
-- **The formatting controls on a narrow row** scroll sideways with no mark that more follow.
-- **Optical alignment:** the meta row's "Verified by" pill was measured 0.63 px off centre by the e2e audit and is
-  not corrected; the footer's view tabs have not been through the audit (`e2e/signed-in/knowledge-audit.spec.ts`,
-  which still expects the old switch and marks Pages and AI Knowledge as known failures).
+- **Optical alignment:** the meta row's "Verified by" pill is centred (`TrustBadge`: even padding with
+  `optical-edges`; its contents measured 0.05 px off centre in a browser, from 0.63). The footer's view tabs have
+  not been through the audit (`e2e/signed-in/knowledge-audit.spec.ts`).
 - **A drawing's tools on a phone** show in the row (`CanvasChrome`), unchecked in a browser.
 - **The e2e specs** have not been updated for this surface or run against it: `menu-keyboard`, `motion-budget`,
   `smoke`'s phone cluster test, `page-tree`'s breadcrumb test, `chrome-drift`, `knowledge-audit`, the perf probe,

@@ -7,6 +7,7 @@ import {
   useDrawingZoneEditing,
 } from '@/lib/page-surface/drawing-zone-store';
 import { PageFormattingBar } from './PageFormattingBar';
+import { scrollEdgesOf } from './useScrollEdges';
 
 // docs/specs/030-knowledgebase/page-surface.md "The formatting bar": the left of the top row while a page is being
 // written, formatting only, then Undo and Redo.
@@ -83,5 +84,69 @@ describe('the drawing zone store', () => {
     const before = onRender.mock.calls.length;
     resetDrawingZoneEditing();
     expect(onRender.mock.calls.length).toBe(before);
+  });
+});
+
+// docs/specs/030-knowledgebase/page-surface.md "The formatting bar", "Narrow": where the row has less room than the
+// controls need they scroll sideways, and each edge with more past it fades and holds a chevron that pages to it.
+describe('the formatting controls on a narrow row', () => {
+  it('says which edges have more past them', () => {
+    const box = (scrollLeft: number) => ({ scrollLeft, scrollWidth: 900, clientWidth: 500 });
+    expect(scrollEdgesOf({ scrollLeft: 0, scrollWidth: 500, clientWidth: 500 })).toEqual({
+      left: false,
+      right: false,
+    });
+    expect(scrollEdgesOf(box(0))).toEqual({ left: false, right: true });
+    expect(scrollEdgesOf(box(200))).toEqual({ left: true, right: true });
+    expect(scrollEdgesOf(box(400))).toEqual({ left: true, right: false });
+    // A sub-pixel of range is rounding, not content.
+    expect(scrollEdgesOf({ scrollLeft: 0, scrollWidth: 500.6, clientWidth: 500 })).toEqual({
+      left: false,
+      right: false,
+    });
+  });
+
+  it('shows no chevron while everything fits: neither is reachable', () => {
+    const { container } = render(bar());
+    const edges = [...container.querySelectorAll('[data-formatting-edge]')];
+    expect(edges.map((e) => e.getAttribute('data-shown'))).toEqual(['false', 'false']);
+    for (const button of container.querySelectorAll('[data-formatting-edge] button')) {
+      expect(button.getAttribute('aria-hidden')).toBe('true');
+      expect(button.getAttribute('tabindex')).toBe('-1');
+    }
+    expect(screen.queryByRole('button', { name: 'More Formatting Controls' })).toBeNull();
+  });
+
+  it('shows More Formatting Controls where the controls do not fit, and pages to them', async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    const { container } = render(bar());
+    const dock = container.querySelector<HTMLElement>('[data-article-dock]')!;
+    Object.defineProperties(dock, {
+      scrollWidth: { value: 900, configurable: true },
+      clientWidth: { value: 500, configurable: true },
+    });
+    const scrollBy = vi.fn();
+    dock.scrollBy = scrollBy as never;
+    // The row is read once a frame after a scroll, never while typing.
+    const { act } = await import('@testing-library/react');
+    act(() => {
+      fireEvent.scroll(dock);
+      frames.splice(0).forEach((cb) => cb(0));
+    });
+    const more = screen.getByRole('button', { name: 'More Formatting Controls' });
+    expect(screen.queryByRole('button', { name: 'Earlier Formatting Controls' })).toBeNull();
+    fireEvent.click(more);
+    expect(scrollBy).toHaveBeenCalledWith(expect.objectContaining({ left: 350 }));
+    vi.unstubAllGlobals();
+  });
+
+  it('hides the edges with the controls while a drawing’s tools take their place', () => {
+    const { container } = render(bar({ drawing: <div>Tools</div> }));
+    expect(container.querySelector('[data-formatting-scroll]')!.className).toContain(
+      '[&:has(>[hidden])]:hidden',
+    );
+    expect(container.querySelector('[data-article-dock]')!.hasAttribute('hidden')).toBe(true);
   });
 });
