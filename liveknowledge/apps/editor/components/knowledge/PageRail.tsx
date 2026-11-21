@@ -24,6 +24,8 @@ import { PageActivity, PageHealthCard, type PageStamp } from './PageHealthCard';
 import { ReviewPeriodButton } from '@/components/knowledge-settings/ReviewPeriodButton';
 import { useSettingsOffered } from '@/components/knowledge-settings/useSettingsOffered';
 import { PageHealthApproval } from './approval/PageHealthApproval';
+import { usePageApproval } from './approval/usePageApproval';
+import { askApproval, useApprovalAsked } from '@/lib/knowledge/approval-asked';
 import { PageRailAiContext } from './PageAiContext';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 import { RailCollapseIcon, RailExpandIcon } from '@/components/page-tree/page-tree-icons';
@@ -121,6 +123,16 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
     [chrome, writing.flow],
   );
   const { rights, pageId } = page;
+  // The Approval row under Review Period: only for a page never sent for approval, and not while its form is open.
+  const stored = useEditorChrome((s) => s.activeTab.knowledge);
+  const approval = usePageApproval(pageId, stored);
+  const asking = useApprovalAsked(pageId);
+  const approvalRow =
+    approval.approval || asking
+      ? undefined
+      : {
+          onRequest: approval.actions.includes('request') ? () => askApproval(pageId) : undefined,
+        };
   // The pencil beside the Review Period: an Editor of the whole knowledgebase's alone.
   const changesPeriod = useSettingsOffered();
   const activity = (
@@ -153,6 +165,7 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         }
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
         periodControl={changesPeriod ? <ReviewPeriodButton /> : undefined}
+        approvalRow={approvalRow}
       />
       {/* Page Health leads, On This Page under it (owner 2026-11-21). */}
       <OnThisPage headings={writing.headings} current={current} onGo={go} />
