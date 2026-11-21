@@ -19,6 +19,7 @@ import { randomName } from '@/lib/identity';
 import { useToast } from '@/hooks/ui/useToast';
 import { useKnowledgeImportProps } from '@/components/dialogs/knowledge-import/useKnowledgeImportProps';
 import { SetupWhenOpen } from '@/components/setup/SetupHost';
+import { DescribeStructureWhenOpen } from '@/components/describe-structure/DescribeStructureHost';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -58,6 +59,8 @@ export function EditorTabDialogs() {
       {/* Describe to Set Up (describe-to-set-up.md): it reads its own open state, and its code is fetched when it
           is first opened. */}
       <SetupWhenOpen />
+      {/* Describe Structure on a page (describe-to-set-up.md), the same way. */}
+      <DescribeStructureWhenOpen />
     </>
   );
 }

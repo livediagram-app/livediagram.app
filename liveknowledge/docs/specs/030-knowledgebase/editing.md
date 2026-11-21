@@ -21,7 +21,9 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **An empty page** (owner, 2026-11-21), read: a page with nothing under its title shows a drawing of a blank page,
   "Nothing Written Yet", and for whoever may edit **Start Writing** (opens edit mode, the caret in the Title on a
   desktop); a reader is told it has no
-  writing yet. Never while editing.
+  writing yet. Never while editing. Beside Edit, for a signed-in person who may edit, **Describe Structure** drafts the
+  page's headings with AI ([Describe to set up](describe-to-set-up.md#describe-structure-on-a-page)); while editing a
+  page with nothing under its Title it stands to the left of Cancel.
 - **The buttons** (owner, 2026-11-21: "look rubbish"): Edit is a solid accent button with a pencil and its key, E.
   While editing, one capsule holds the draft's status only when there is one (an amber dot and "Unsaved changes
   since ...", or an agent's change; no "Editing" label, owner 2026-11-21), then Cancel and Save, floating 24 px inside the bottom right corner of the document's white area (left of the rail, above the footer;

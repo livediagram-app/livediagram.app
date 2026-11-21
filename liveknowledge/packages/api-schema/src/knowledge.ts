@@ -229,6 +229,28 @@ export type KnowledgeSetupSuggestion = {
   provider?: KnowledgeSetupProvider;
 };
 
+/** `POST .../pages/<tab>/describe-structure` (describe-to-set-up.md "Describe Structure on a page"): what the page is
+ *  for, in the person's words (may be empty when the page has a title), the draft's Title, and `ai: "built-in"` when
+ *  the person chose built-in AI over the team's key. */
+export type PageStructureRequest = {
+  purpose: string;
+  /** The draft's Title, when it is not yet the saved name; absent: the saved name. */
+  title?: string;
+  ai?: AskAiChoice;
+};
+/** One block of a drafted page structure. Plain text throughout. */
+export type PageStructureBlock =
+  | { kind: 'heading'; level: 2 | 3; text: string }
+  | { kind: 'text'; text: string }
+  | { kind: 'callout'; text: string }
+  | { kind: 'bullets' | 'numbered' | 'checklist'; items: string[] }
+  | { kind: 'table'; columns: string[] };
+/** A drafted structure for one empty page, and which AI answered. Nothing is written by the route. */
+export type PageStructureResponse = {
+  blocks: PageStructureBlock[];
+  provider: KnowledgeSetupProvider;
+};
+
 /** How an agent connects: the MCP server, the command line, or an API token used directly. */
 export type KnowledgeAgentDoor = 'mcp' | 'cli' | 'token';
 /** One connection of AI Knowledge's Connected Agents (ai-knowledge.md "Connected agents"). What the room knows of

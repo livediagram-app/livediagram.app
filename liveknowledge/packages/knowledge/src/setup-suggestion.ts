@@ -30,9 +30,10 @@ export const SETUP_MAX_REPLY_CHARS = 60_000;
 /** How many of the reply's page objects are looked at before the rest are ignored. */
 const MAX_RAW_PAGES = 200;
 
-// One line of plain text: control characters and line breaks become spaces, runs of space collapse, and the text is
-// cut at `max` without splitting a surrogate pair. Not a string: nothing.
-function line(value: unknown, max: number): string {
+/** One line of plain text: control characters and line breaks become spaces, runs of space collapse, and the text is
+ *  cut at `max` without splitting a surrogate pair. Not a string: nothing. Describe Structure reads its reply with it
+ *  too (page-structure.ts). */
+export function plainLine(value: unknown, max: number): string {
   if (typeof value !== 'string') return '';
   const text = value
     .replace(/\p{Cc}+/gu, ' ')
@@ -57,17 +58,17 @@ type RawPage = {
 function rawPage(value: unknown, at: number): RawPage | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
   const page = value as Record<string, unknown>;
-  const title = line(page.title, SETUP_MAX_TITLE_CHARS);
+  const title = plainLine(page.title, SETUP_MAX_TITLE_CHARS);
   if (!title) return undefined;
   const headings = (Array.isArray(page.headings) ? page.headings : [])
-    .map((heading) => line(heading, SETUP_MAX_HEADING_CHARS))
+    .map((heading) => plainLine(heading, SETUP_MAX_HEADING_CHARS))
     .filter(Boolean)
     .slice(0, SETUP_MAX_HEADINGS);
   return {
     key: keyOf(page.id) ?? `#${at}`,
     parent: keyOf(page.parent),
     title,
-    summary: line(page.summary, SETUP_MAX_SUMMARY_CHARS),
+    summary: plainLine(page.summary, SETUP_MAX_SUMMARY_CHARS),
     headings,
   };
 }
@@ -139,5 +140,5 @@ export function parseSetupSuggestion(reply: string): SetupSuggestion | undefined
   };
   place(null, null, 1);
   if (pages.length === 0) return undefined;
-  return { name: line(read.name, SETUP_MAX_TITLE_CHARS), pages };
+  return { name: plainLine(read.name, SETUP_MAX_TITLE_CHARS), pages };
 }

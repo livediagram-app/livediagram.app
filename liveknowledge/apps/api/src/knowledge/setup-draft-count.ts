@@ -9,23 +9,26 @@
 // It keeps no description, no reply and no account id: only the day and how many.
 //
 // Built-in questions (search-and-ask.md "Built-in AI": 30 a person a day, Draft a Page among them) are counted the
-// same way, in a second instance per account (`~ask-built-in:`), through the same room call: each instance keeps
-// one count.
+// same way, in a second instance per account (`~ask-built-in:`), and Describe Structure's drafts in a third
+// (`~page-structure:`), through the same room call: each instance keeps one count.
 import {
   ASK_BUILT_IN_PER_PERSON_PER_DAY,
   SETUP_BUILT_IN_PER_PERSON_PER_DAY,
+  STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY,
 } from '@liveknowledge/knowledge';
 import type { Env } from '../types';
 
 /** The storage key of the count, `{ day, count }`. */
 export const SETUP_DRAFT_COUNT_KEY = 'setup-drafts';
 
-/** What a person's built-in calls are counted for: Describe to Set Up's suggestions, or questions. */
-export type BuiltInCount = 'setup' | 'ask';
+/** What a person's built-in calls are counted for: Describe to Set Up's suggestions, questions, or Describe
+ *  Structure's drafts of a page (describe-to-set-up.md "Describe Structure on a page"). */
+export type BuiltInCount = 'setup' | 'ask' | 'structure';
 
 const COUNTS: Readonly<Record<BuiltInCount, { prefix: string; cap: number }>> = {
   setup: { prefix: '~setup-drafts:', cap: SETUP_BUILT_IN_PER_PERSON_PER_DAY },
   ask: { prefix: '~ask-built-in:', cap: ASK_BUILT_IN_PER_PERSON_PER_DAY },
+  structure: { prefix: '~page-structure:', cap: STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY },
 };
 
 /** The DOCUMENT_ROOM instance that keeps an account's count of one kind. */

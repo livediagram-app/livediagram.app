@@ -15,6 +15,7 @@
 //   - a question with no passages is not answered, and comes back as one gap: the question itself;
 //   - a description (Describe to Set Up) gets `SETUP_STRUCTURE` as JSON, or text that is no JSON when the
 //     description holds "not json";
+//   - a page title (Describe Structure on a page) gets `PAGE_STRUCTURE` as JSON;
 //   - a request with none of these (the conflict check) gets a reply that names no conflict.
 // The answer arrives in several pieces, a few milliseconds apart, so a page can be seen streaming it.
 import http from 'node:http';
@@ -67,6 +68,18 @@ export const SETUP_STRUCTURE = {
   ],
 };
 
+/** The structure every page is drafted (packages/knowledge/src/page-structure.ts reads it). */
+export const PAGE_STRUCTURE = {
+  blocks: [
+    { kind: 'heading', level: 2, text: 'What This Page Covers', items: [] },
+    { kind: 'text', level: null, text: 'One or two lines on what a reader finds here.', items: [] },
+    { kind: 'heading', level: 2, text: 'How It Works', items: [] },
+    { kind: 'numbered', level: null, text: '', items: ['The first step', 'The next step'] },
+    { kind: 'heading', level: 2, text: 'Who to Ask', items: [] },
+    { kind: 'table', level: null, text: '', items: ['Area', 'Person'] },
+  ],
+};
+
 const descriptionOf = (content) =>
   /<description>\n([\s\S]*?)\n<\/description>/.exec(content)?.[1]?.trim();
 
@@ -76,6 +89,7 @@ export function standInReply(body) {
   const turns = Array.isArray(body?.messages) ? body.messages : body?.input;
   const last = Array.isArray(turns) ? turns[turns.length - 1] : undefined;
   const content = typeof last?.content === 'string' ? last.content : '';
+  if (content.includes('<page_title>')) return JSON.stringify(PAGE_STRUCTURE);
   const description = descriptionOf(content);
   if (description !== undefined)
     return description.includes('not json')

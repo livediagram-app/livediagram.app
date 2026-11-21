@@ -816,6 +816,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Describe to Set Up suggested a page tree from what someone described, on the team's own AI key.",
   'UI|Used|SetupSuggestedBuiltIn':
     'Describe to Set Up suggested a page tree from what someone described, on built-in AI (no team key set).',
+  'UI|Used|DescribeStructure':
+    "Describe Structure put AI-drafted headings into an empty page's draft (nothing saved until Save).",
+  'UI|Opened|DescribeStructure': 'Someone opened Describe Structure on an empty page.',
   'UI|Added|AiKey':
     "Someone added the team's own Claude or OpenAI key to a knowledgebase. Never the key.",
   'UI|Removed|AiKey': "Someone removed a knowledgebase's AI key.",

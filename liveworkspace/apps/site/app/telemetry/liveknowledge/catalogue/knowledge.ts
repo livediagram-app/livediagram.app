@@ -467,6 +467,14 @@ export const SETUPS_SUGGESTED = chart(
   { types: ['SetupSuggested', 'SetupSuggestedBuiltIn'] },
 );
 
+export const STRUCTURES_DRAFTED = chart(
+  'UI',
+  'Used',
+  'Page Structures Drafted',
+  "Describe Structure drafted an empty page's headings into its draft, on the team's own key or on built-in AI.",
+  { types: ['DescribeStructure'] },
+);
+
 export const AI_KEYS_ADDED = chart(
   'UI',
   'Added',
@@ -514,6 +522,7 @@ export const AI_SETUP: MetricStack = {
     "Getting a knowledgebase going: Describe to Set Up's suggestions, and the team's own AI key added, removed or pointed at another provider or model.",
   members: [
     SETUPS_SUGGESTED,
+    STRUCTURES_DRAFTED,
     AI_KEYS_ADDED,
     AI_KEYS_REMOVED,
     AI_PROVIDERS_CHANGED,
