@@ -8,13 +8,12 @@ import { Button, EmptyState, buttonClassName } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { knowledgeSearch } from '@/lib/knowledge/search-open';
-import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
 import { openAiSettingsFrom } from './AiSettingsButton';
 import { KeyIcon, OfflineIcon, SearchIcon, SignInIcon } from './ask-icons';
 
-/** Search the pages: Pages shows again and the search dialog opens over it. */
+/** Search the pages: the search opens over the view showing, which stays (owner 2026-11-21); a page picked in it
+ *  shows Pages. */
 export function searchThePages(): void {
-  showKnowledgeView('pages');
   knowledgeSearch.open();
 }
 

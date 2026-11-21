@@ -1,6 +1,7 @@
 'use client';
 
 import { leavePageThen } from '@/lib/page-edit/page-edit-store';
+import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { useThisKnowledgebaseSearch } from '@/components/knowledge/useThisKnowledgebaseSearch';
@@ -110,12 +111,14 @@ export function EditorSearchPanel() {
       }}
       onSelectTab={(tabId) => {
         leavePageThen(tabId, () => {
+          showKnowledgeView('pages');
           setActiveId(tabId);
           setSelectedId(null);
         });
       }}
       onSelectElement={(tabId, elementId) => {
         leavePageThen(tabId, () => {
+          showKnowledgeView('pages');
           setActiveId(tabId);
           setSelectedId(elementId);
         });

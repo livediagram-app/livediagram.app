@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import type { App, IndexClient } from '@liveworkspace/index-client';
 import { appLabel, everyAppResults, useItemSearch } from '@liveworkspace/explorer/item-search';
 import { ThisBrowserPill } from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
@@ -313,14 +314,15 @@ export function SearchPanel({
     }
   };
 
-  return (
+  // Over whatever shows, Ask and AI Knowledge included (they stand over the canvas): drawn at the body's level.
+  return createPortal(
     <div
       onPointerDown={(e) => {
         // Outside-click closes (any click on the backdrop, not
         // inside the panel itself).
         if (e.target === e.currentTarget) onClose();
       }}
-      className="absolute inset-0 z-[var(--z-modal)] flex items-start justify-center bg-slate-900/30 px-4 pt-[12vh] backdrop-blur-sm dark:bg-slate-950/50"
+      className="fixed inset-0 z-[var(--z-modal)] flex items-start justify-center bg-slate-900/30 px-4 pt-[12vh] backdrop-blur-sm dark:bg-slate-950/50"
     >
       <div
         ref={panelRef}
@@ -527,7 +529,8 @@ export function SearchPanel({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

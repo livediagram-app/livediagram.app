@@ -8,6 +8,8 @@ field stands at the head of the page tree. Ask (step 9) is its own change.
 
 Owner, 2026-11-20: the sidebar's search is the **universal search**, with this knowledgebase's results first.
 
+- **Where it opens** (owner 2026-11-21): over the view showing. Ask and AI Knowledge stay behind it; only picking a page
+  shows Pages, at that page.
 - The search field at the head of the page tree, and Cmd or Ctrl K, open the universal search panel every
   liveworkspace editor has (Tools > Search…): one field over everything the person can reach. liveknowledge adds a
   source to it and puts that source first; it has no search dialog of its own.
