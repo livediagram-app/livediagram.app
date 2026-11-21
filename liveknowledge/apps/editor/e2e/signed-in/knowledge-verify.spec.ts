@@ -57,7 +57,9 @@ test('a new knowledgebase is saved to the account, and Verify shows who vouches 
   await page.reload();
   await titleOf(page).waitFor();
   await expect(meta(page)).toContainText(`Verified by ${who.firstName} ${who.lastName}`);
-  await expect(pageRow(page, 'Runbook, Verified').getByRole('img', { name: 'Verified' })).toBeVisible();
+  await expect(
+    pageRow(page, 'Runbook, Verified').getByRole('img', { name: 'Verified' }),
+  ).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -77,7 +79,9 @@ test('Page Health changes the owner and says the Review Period, and Always in Co
 
   const patched = () =>
     page.waitForResponse(
-      (r) => r.request().method() === 'PUT' && /\/pages\/[^/]+\/knowledge$/.test(new URL(r.url()).pathname),
+      (r) =>
+        r.request().method() === 'PUT' &&
+        /\/pages\/[^/]+\/knowledge$/.test(new URL(r.url()).pathname),
     );
   let done = patched();
   await owner.selectOption({ label: 'No Owner' });
@@ -148,6 +152,15 @@ test('Knowledgebase Settings changes the Review Period, and a page comes due at 
 
   // A shorter period says how many pages it makes due before anything changes; Cancel leaves it be.
   const body = settings.locator('[data-knowledge-settings]');
+  // Measured once the dialog's entrance has finished: mid-animation its box is still scaled.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
   const height = (await body.boundingBox())!.height;
   await period('Every 30 Days').click();
   await expect(settings).toContainText('1 page will be due for review');
