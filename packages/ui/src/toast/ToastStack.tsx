@@ -121,6 +121,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
       tone={toast.tone}
       message={toast.message}
       actions={actions}
+      toggle={toast.toggle}
       leaving={leaving}
       full={toast.full === true}
       highlight={toast.highlight === true}

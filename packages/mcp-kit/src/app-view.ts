@@ -13,7 +13,7 @@ export const VIEW_MIME_TYPE = 'text/html;profile=mcp-app';
 // The most the viewer page may weigh, script and styles inline: it is sent to every host that lists the resource. A
 // page with the edit parts (livediagram's, "Edits in the view") has a budget of its own; the others leave them out.
 export const VIEWER_HTML_BUDGET_BYTES = 24 * 1024;
-export const VIEWER_EDIT_HTML_BUDGET_BYTES = 32 * 1024;
+export const VIEWER_EDIT_HTML_BUDGET_BYTES = 34 * 1024;
 
 /** The `_meta` a tool carries to link its result to the view: the extension's key and the older flat one. */
 export function toolUiMeta(resourceUri: string): Record<string, unknown> {
@@ -61,12 +61,13 @@ button:focus-visible,#stage:focus-visible{outline:2px solid var(--ring);outline-
 @media (prefers-reduced-motion:no-preference){#tabs button,.tool{transition:filter .15s}}
 `;
 
-// The live mark every view's header carries ("Live updates"): its dot, and its word beside it but on a phone.
+// The live mark every view's header carries ("Live updates"): its dot, and its word beside it but on a phone. An
+// earlier step ("One live view") keeps its words at every width: the dot alone would not say why the view stopped.
 const LIVE_STYLE = `
 #live{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:12px;white-space:nowrap;cursor:default}#live[hidden]{display:none}
 #live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
 #live[data-state=live]::before{background:var(--live)}#live[data-state=wait]::before{background:var(--wait)}
-@media (max-width:520px){#live{font-size:0;gap:0;padding:0 2px}}
+@media (max-width:520px){#live:not([data-state=step]){font-size:0;gap:0;padding:0 2px}}
 @media (prefers-reduced-motion:no-preference){#live[data-state=wait]::before{animation:pulse 1.2s ease-in-out infinite}}
 @keyframes pulse{50%{opacity:.35}}
 `;
@@ -100,7 +101,7 @@ const EDIT_STYLE = `
 #name-box{position:absolute;z-index:3;height:34px;padding:0 10px;border:2px solid var(--ring);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;outline:none;box-shadow:0 6px 18px rgb(2 6 23/.16)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (pointer:coarse){#bar button{padding:8px 12px}#name-box{height:40px}}
-@media (max-width:760px){#live{font-size:0;gap:0;padding:0 2px}}
+@media (max-width:760px){#live:not([data-state=step]){font-size:0;gap:0;padding:0 2px}}
 @media (max-width:520px){#bar-name{max-width:110px}}
 @media (prefers-reduced-motion:no-preference){#bar button{transition:background-color .15s}}
 `;

@@ -28,7 +28,7 @@ export function isDataImageId(imageId: string | null | undefined): boolean {
 }
 
 // Every picture a tab names: its image elements'.
-export function tabImageIds(tab: Tab): string[] {
+export function tabImageIds(tab: Pick<Tab, 'elements'>): string[] {
   const ids = new Set<string>();
   for (const el of tab.elements) if (el.type === 'image' && el.imageId) ids.add(el.imageId);
   return [...ids];

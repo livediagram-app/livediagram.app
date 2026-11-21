@@ -29,7 +29,6 @@ import {
   StripPopover,
   useStripPopover,
 } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
-import { Divider } from './strip-rail-items';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
@@ -319,12 +318,7 @@ export function ToolbarPalette(props: Props) {
                   }
                 >
                   <>
-                    {props.editWalk ? (
-                      <>
-                        {props.editWalk}
-                        <Divider />
-                      </>
-                    ) : null}
+                    {props.editWalk ?? null}
                     <CategoryBarButtons
                       bar={bar}
                       categories={barCategories}
@@ -335,7 +329,6 @@ export function ToolbarPalette(props: Props) {
                   </>
                   {/* Search, last: any element type the palette offers (docs/specs/007-editor/toolbar-layout.md
                     "Search: every element type"). */}
-                  <Divider />
                   <div ref={searchButtonRef} className="flex">
                     <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
                   </div>

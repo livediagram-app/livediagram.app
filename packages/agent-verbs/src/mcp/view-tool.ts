@@ -73,6 +73,30 @@ const tabInput = () => ({
   tabId: z.string().optional().describe('Which tab to draw; defaults to the first.'),
 });
 
+// One live view (each product's mcp-server.md "One live view"): the view says which step it was opened by, and
+// view_tab says whether an agent changed the tab after it.
+const stepInput = () => ({
+  rev: z
+    .number()
+    .optional()
+    .describe(
+      'The tab revision the view’s own result left: asks whether an agent changed the tab after it.',
+    ),
+  held: z
+    .boolean()
+    .optional()
+    .describe(
+      'Whether the view holds its own result’s picture, so a superseded answer needs no drawing.',
+    ),
+});
+const stepOutput = () => ({
+  rev: z.number().optional().describe('The tab revision drawn.'),
+  superseded: z
+    .boolean()
+    .optional()
+    .describe('True when an agent changed the tab after `rev`: the view keeps its own step.'),
+});
+
 /**
  * view_tab, view_live and view_edit for a canvas product (livediagram): a whole tab drawn as SVG, followed live, and
  * renamed or moved in the view when the token is edit-level.
@@ -80,14 +104,14 @@ const tabInput = () => ({
 export function createViewTools<K extends string>(product: AgentProduct, idKey: K) {
   const word = wordOf(product);
   const id = idShape(idKey, word);
-  const drawn = { ...id, ...tabOutput(), ...drawingOutput(product, true) };
+  const drawn = { ...id, ...tabOutput(), ...drawingOutput(product, true), ...stepOutput() };
   const viewTab = mcpTool('view_tab', {
     behaviour: 'read',
     title: 'Draw a tab for the interactive view',
     description:
       `The interactive view’s own call: a tab drawn as SVG with its elements’ boxes and the ${word}’s tabs, for ` +
       `hosts that show the view. To read a tab, use read_${product.noun}.`,
-    inputSchema: { ...id, ...tabInput() },
+    inputSchema: { ...id, ...tabInput(), ...stepInput() },
     outputSchema: drawn,
   });
 
@@ -184,6 +208,7 @@ export function createPageViewTool<K extends string>(product: AgentProduct, idKe
         .string()
         .optional()
         .describe('Which page to draw (from `pages`); defaults to the first.'),
+      ...stepInput(),
     },
     outputSchema: {
       ...id,
@@ -198,6 +223,7 @@ export function createPageViewTool<K extends string>(product: AgentProduct, idKe
         )
         .describe('Every page of the tab, in order, for the pager.'),
       ...drawingOutput(product),
+      ...stepOutput(),
     },
   });
 }

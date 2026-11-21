@@ -195,6 +195,7 @@ describe('planListing', () => {
     expect(listing.notOnBoard).toEqual(expect.arrayContaining(['T-1', 'T-2']));
   });
 
+  // The title and the status stand on the card itself, so its fields say neither again.
   it('names custom fields as writes do', async () => {
     const withSev = [
       item(7, 'fff777', { title: 'Sev', status: 'done~x', 'f-sev': 'S2', 'f-gone': 1 }, 'bug'),
@@ -202,8 +203,6 @@ describe('planListing', () => {
     const { api: a } = api({ [`/projects/${D}/items`]: { items: withSev, rev: 1 } });
     const listing = planListing(await readPlanState(a, D));
     expect(listing.items[0]!.fields).toEqual({
-      title: 'Sev',
-      status: 'done~x',
       Severity: 'S2',
       'f-gone': 1,
     });
@@ -227,7 +226,6 @@ describe('planListing', () => {
     );
     const listing = planListing(await readPlanState(a, D));
     expect(listing.items[0]!.fields).toEqual({
-      title: 'Poll',
       votes: { p: 1 },
       'Priority Vote': { p: 2, q: 1 },
     });
@@ -263,7 +261,6 @@ describe('planListing', () => {
     );
     const listing = planListing(await readPlanState(a, D));
     expect(listing.items[0]!.fields).toEqual({
-      title: 'Timed',
       Planned: '2h 30m',
       'Time Spent': '1h 30m',
     });
@@ -273,7 +270,7 @@ describe('planListing', () => {
         running: [{ by: 'Sam', since: '2026-10-31T08:00:00.000Z' }],
       },
     });
-    expect(listing.items[1]!.fields).toEqual({ title: 'Untimed', Planned: null });
+    expect(listing.items[1]!.fields).toEqual({ Planned: null });
     expect(listing.items[1]).not.toHaveProperty('time');
     expect(listing.types.find((t) => t.id === 'work')!.custom).toEqual([
       { id: 'f-plan', name: 'Planned', kind: 'duration' },
@@ -316,14 +313,13 @@ describe('planListing', () => {
     );
     const listing = planListing(await readPlanState(a, D));
     expect(listing.items[0]!.fields).toEqual({
-      title: 'Launch',
       When: '2026-10-31T17:00:00Z',
       Trip: '2026-10-31/2026-11-02',
       Slot: '2026-10-31T09:00:00Z/2026-10-31T17:00:00Z',
       Phone: '+44 20 7946 0958',
     });
     // A stray value is listed as stored.
-    expect(listing.items[1]!.fields).toEqual({ title: 'Odd', When: 'soon', Trip: 'later' });
+    expect(listing.items[1]!.fields).toEqual({ When: 'soon', Trip: 'later' });
     expect(listing.types.find((t) => t.id === 'event')!.custom).toEqual([
       { id: 'f-when', name: 'When', kind: 'datetime' },
       { id: 'f-trip', name: 'Trip', kind: 'daterange' },

@@ -8,6 +8,8 @@ import {
   imageSourceOf,
   MAX_IMAGE_BYTES,
   ORIGINAL_NAME_MAX,
+  MEDIA_ID_MAX,
+  parseUnusedImageIds,
 } from '@liveworkspace/media';
 import {
   galleryUsage,
@@ -24,7 +26,14 @@ import {
   mediaOwner,
   rememberMediaOwner,
 } from '../media';
-import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../responses';
+import {
+  badRequest,
+  CORS_HEADERS,
+  forbidden,
+  imagesUnavailable,
+  json,
+  notFound,
+} from '../responses';
 import { grantCallerOf, requireOwner, type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 
@@ -110,6 +119,22 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     return json(await usageOf(ctx, media, owner));
+  }
+
+  // GET /api/images/unused?d=<documentId>&ids=a,b: which of the caller's own pictures nothing but document `d` uses, in any
+  // app (docs/specs/009-elements/images.md "Deleting an unused picture"). Signed in only: a guest, an API token and a
+  // workbench session never get the offer. One read of the media service; the editor reads `d` itself.
+  if (segments.length === 3 && segments[2] === 'unused' && request.method === 'GET') {
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
+    if (!ctx.accountUserId || ctx.token || ctx.workbench) return forbidden();
+    const d = url.searchParams.get('d');
+    if (!d || d.length > MEDIA_ID_MAX) return badRequest('invalid_document');
+    const ids = parseUnusedImageIds(url.searchParams.get('ids'));
+    if (!ids) return badRequest('invalid_ids');
+    const answered = await media.unused(await mediaOwner(owner), d, ids);
+    if (!answered.ok) return serviceAnswer(answered);
+    return json({ unused: answered.value.unused });
   }
 
   // GET /api/images/:id: byte read. Auth: owner of the

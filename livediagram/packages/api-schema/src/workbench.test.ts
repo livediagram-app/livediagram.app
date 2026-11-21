@@ -160,6 +160,7 @@ describe('workbenchRouteVerdict', () => {
     ['POST', 'shape-libraries'],
     ['DELETE', 'images/img1'],
     ['GET', 'images/usage'],
+    ['GET', 'images/unused'],
     ['GET', 'images'],
     ['POST', 'workbench/tickets'],
     ['POST', 'workbench/sessions'],

@@ -69,6 +69,56 @@ describe('sayDescriptionsOnce', () => {
     expect(sayDescriptionsOnce(schema)).toEqual(schema);
   });
 
+  it('says a short description once for a property of the same name, and again for another name or other words', () => {
+    const member = (op: string, extra: Record<string, unknown> = {}) => ({
+      type: 'object',
+      properties: {
+        op: { type: 'string', const: op },
+        tabId: { type: 'string', description: 'The tab.' },
+        ...extra,
+      },
+    });
+    const schema = {
+      type: 'object',
+      description: 'The call.',
+      properties: {
+        projectId: { type: 'string', description: SHORT },
+        changes: {
+          type: 'array',
+          description: 'The changes.',
+          items: {
+            description: 'One change.',
+            oneOf: [
+              member('add', { name: { description: 'Its name.' } }),
+              member('set', {
+                name: { description: 'Its new name.' },
+                plan: { description: SHORT },
+              }),
+              member('delete', { name: { description: 'Its name.' } }),
+            ],
+          },
+        },
+      },
+    };
+    const out = sayDescriptionsOnce(schema);
+    const [add, set, del] = out.properties.changes.items.oneOf as {
+      properties: Record<string, { description?: string }>;
+    }[];
+    expect(add!.properties.tabId).toEqual({ type: 'string', description: 'The tab.' });
+    // The same name and words again: only the type is left.
+    expect(set!.properties.tabId).toEqual({ type: 'string' });
+    expect(del!.properties.tabId).toEqual({ type: 'string' });
+    expect(del!.properties.name).toEqual({});
+    // Other words for the same name, and the same words for another name, are said.
+    expect(set!.properties.name!.description).toBe('Its new name.');
+    expect(set!.properties.plan!.description).toBe(SHORT);
+    // A description that is not a property's (the schema's own, an array's items) is never left out.
+    expect(out.description).toBe('The call.');
+    expect(out.properties.changes.items.description).toBe('One change.');
+    // The schema given is not changed.
+    expect(schema.properties.changes.items.oneOf[1]!.properties.tabId.description).toBe('The tab.');
+  });
+
   it('names a union member by kind or type, and a member with no constant by its place', () => {
     const member = (key: string, name: string) => ({
       type: 'object',

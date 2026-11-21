@@ -7,7 +7,9 @@ import {
   IMAGE_SOURCE_HEADER,
   imageSourceOf,
   MAX_IMAGE_BYTES,
+  MEDIA_ID_MAX,
   ORIGINAL_NAME_MAX,
+  parseUnusedImageIds,
 } from '@liveworkspace/media';
 import {
   galleryUsage,
@@ -119,6 +121,22 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     return json(await usageOf(ctx, media, owner));
+  }
+
+  // GET /api/images/unused?d=<documentId>&ids=a,b: which of the caller's own pictures nothing but document `d` uses,
+  // in any app (docs/specs/009-elements/images.md "Deleting an unused picture"). Signed in only: a guest, an API
+  // token and a workbench session never get the offer. One read of the media service; the editor reads `d` itself.
+  if (segments.length === 3 && segments[2] === 'unused' && request.method === 'GET') {
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
+    if (!ctx.accountUserId || ctx.token || ctx.workbench) return forbidden();
+    const d = url.searchParams.get('d');
+    if (!d || d.length > MEDIA_ID_MAX) return badRequest('invalid_document');
+    const ids = parseUnusedImageIds(url.searchParams.get('ids'));
+    if (!ids) return badRequest('invalid_ids');
+    const answered = await media.unused(await mediaOwner(owner), d, ids);
+    if (!answered.ok) return serviceAnswer(answered);
+    return json({ unused: answered.value.unused });
   }
 
   // POST /api/images/grants?d=<documentId>: a Participant's placement claim (docs/specs/009-elements/images.md

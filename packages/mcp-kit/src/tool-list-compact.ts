@@ -1,8 +1,10 @@
 // A tools/list answer with each long description said once per tool (each product's docs/specs/015-api/mcp-server.md
 // "Tool list size"). A schema built from shared parts repeats their descriptions wherever the part is used: a rule's
 // trigger under both `add` and `set`, a question under `questions` and under each section. Every client pays for the
-// whole list in each session, so a repeat becomes a pointer to the first place the text stands. Only the listing
-// changes: the SDK validates a call against the tool's own schema, never this JSON.
+// whole list in each session, so a repeat becomes a pointer to the first place the text stands. A short description
+// said again of a property of the same name (`tabId` under each of a tool's ops) is left out of the repeats: the
+// first already said what that property is, and a pointer would be longer than the words. Only the listing changes:
+// the SDK validates a call against the tool's own schema, never this JSON.
 
 // The shortest description worth pointing at: under this a pointer saves little and reads worse.
 export const REPEAT_MIN_CHARS = 200;
@@ -23,11 +25,17 @@ function variantOf(schema: { [key: string]: Json }): string | null {
   return null;
 }
 
-/** One schema with every repeat of a long description replaced by a pointer to its first place. */
+/**
+ * One schema with every repeat of a long description replaced by a pointer to its first place, and every repeat of a
+ * short one left out where it describes a property of the same name as the first.
+ */
 export function sayDescriptionsOnce<T>(schema: T): T {
   const firstAt = new Map<string, string>();
-  const walk = (node: Json, path: string): Json => {
-    if (Array.isArray(node)) return node.map((entry) => walk(entry, path));
+  // Short descriptions already said, by the property they describe and their words.
+  const said = new Set<string>();
+  // `name`: the property this node is the schema of, null for anything else (an array's items, a union member).
+  const walk = (node: Json, path: string, name: string | null): Json => {
+    if (Array.isArray(node)) return node.map((entry) => walk(entry, path, name));
     if (!isObject(node)) return node;
     const out: { [key: string]: Json } = {};
     for (const [key, value] of Object.entries(node)) {
@@ -39,27 +47,32 @@ export function sayDescriptionsOnce<T>(schema: T): T {
         }
         firstAt.set(value, path);
         out[key] = value;
+      } else if (key === 'description' && typeof value === 'string' && name !== null) {
+        const words = `${name}\u0000${value}`;
+        if (said.has(words)) continue;
+        said.add(words);
+        out[key] = value;
       } else if (key === 'properties' && isObject(value)) {
         out[key] = Object.fromEntries(
-          Object.entries(value).map(([name, property]) => [
-            name,
-            walk(property, path ? `${path}.${name}` : name),
+          Object.entries(value).map(([property, given]) => [
+            property,
+            walk(given, path ? `${path}.${property}` : property, property),
           ]),
         );
       } else if (key === 'items') {
-        out[key] = walk(value, `${path}[]`);
+        out[key] = walk(value, `${path}[]`, null);
       } else if ((key === 'oneOf' || key === 'anyOf') && Array.isArray(value)) {
         out[key] = value.map((member) => {
           const variant = isObject(member) ? variantOf(member) : null;
-          return walk(member, variant ? `${path}(${variant})` : path);
+          return walk(member, variant ? `${path}(${variant})` : path, null);
         });
       } else {
-        out[key] = walk(value, path);
+        out[key] = walk(value, path, null);
       }
     }
     return out;
   };
-  return walk(schema as Json, '') as T;
+  return walk(schema as Json, '', null) as T;
 }
 
 /** A JSON-RPC tools/list answer, its tools' schemas compacted; anything else is handed back as it came. */

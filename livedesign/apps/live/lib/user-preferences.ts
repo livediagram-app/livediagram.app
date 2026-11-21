@@ -219,6 +219,9 @@ export type UserPreferences = {
   // deck since 25 October 2026 (docs/specs/012-collaboration/presentation-mode.md "Saved data") and never
   // reads it; it is typed only so a commit carries the value through untouched for the apps that present.
   presentation?: Record<string, unknown>;
+  // What a delete does with a picture nothing else uses (docs/specs/009-elements/images.md "Deleting an unused
+  // picture"): a common setting, read through @liveworkspace/workbench/lib/unused-image-choice. Unset is Ask.
+  unusedImageChoice?: 'ask' | 'delete' | 'keep';
 };
 
 // Re-exported under this module's own name because everything here reads it

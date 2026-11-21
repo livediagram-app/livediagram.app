@@ -1021,6 +1021,30 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 401, 503],
   },
   {
+    method: 'GET',
+    path: '/images/unused',
+    segment: 'images',
+    tag: 'Images',
+    summary:
+      "Which of the caller's own images nothing but one document uses, in any app: no other item, Library item or unconfirmed reference.",
+    auth: 'clerk',
+    tokenUsable: false,
+    query: [
+      {
+        name: 'd',
+        required: true,
+        description: 'The document asking (its own reference is left out).',
+      },
+      { name: 'ids', required: true, description: 'Up to 50 image ids, comma-separated.' },
+    ],
+    responseSchema: {
+      type: 'object',
+      properties: { unused: { type: 'array', items: { type: 'string' } } },
+      required: ['unused'],
+    },
+    statuses: [200, 400, 403, 503],
+  },
+  {
     method: 'POST',
     path: '/images/grants',
     segment: 'images',

@@ -313,3 +313,94 @@ describe('view_live', () => {
     expect(JSON.stringify(result)).not.toContain('G.bare');
   });
 });
+
+// docs/specs/015-api/mcp-server.md "One live view": a view that names the step it was opened by hears whether an agent
+// changed the tab after it.
+describe('view_tab for a view that names its own step', () => {
+  const tab = { id: 't1', name: 'Board', rev: 6, elements: [] };
+  function api(changesets: unknown[] | null) {
+    const seen: string[] = [];
+    const env = {
+      API: {
+        fetch: async (request: Request) => {
+          const url = new URL(request.url);
+          seen.push(url.pathname + url.search);
+          if (url.pathname.endsWith('/changesets'))
+            return changesets
+              ? Response.json({ changesets })
+              : new Response('down', { status: 500 });
+          return Response.json(
+            url.pathname.includes('/tabs/')
+              ? { tab }
+              : { design: { id: 'd1', name: 'D', tabs: [{ id: 't1', name: 'Board' }] } },
+          );
+        },
+      },
+      CONSENT_BASE_URL: 'https://www.acme.app',
+    } as unknown as Env;
+    return { env, seen };
+  }
+  const listed = (seen: string[]) => seen.filter((p) => p.includes('/changesets'));
+  const quiet = () => {
+    const spies = [
+      vi.spyOn(console, 'info').mockImplementation(() => {}),
+      vi.spyOn(console, 'error').mockImplementation(() => {}),
+      vi.spyOn(console, 'warn').mockImplementation(() => {}),
+    ];
+    return () => spies.forEach((s) => s.mockRestore());
+  };
+
+  it('asks nothing for a view that sent no revision, and says the revision drawn', async () => {
+    const restore = quiet();
+    const { env, seen } = api([{ rev: 9, agent: true }]);
+    const result = await viewTab(env, 'lwt_x', { designId: 'd1' });
+    expect(listed(seen)).toEqual([]);
+    expect(result.structuredContent).toMatchObject({ tabId: 't1', rev: 6 });
+    expect(result.structuredContent).not.toHaveProperty('superseded');
+    restore();
+  });
+
+  it('answers no drawing to a view that holds its own picture once an agent wrote after it', async () => {
+    const restore = quiet();
+    const { env, seen } = api([{ rev: 6, agent: true }]);
+    const result = await viewTab(env, 'lwt_x', { designId: 'd1', rev: 4, held: true });
+    expect(listed(seen)).toHaveLength(1);
+    expect(listed(seen)[0]).toMatch(/\/designs\/d1\/changesets\?tab=t1&limit=5$/);
+    expect(result.structuredContent).toMatchObject({
+      designId: 'd1',
+      tabId: 't1',
+      name: 'Board',
+      rev: 6,
+      svg: '',
+      elements: [],
+      tabs: [],
+      superseded: true,
+    });
+    expect(result.content).toEqual([
+      { type: 'text', text: 'Tab "Board" has a later step: the view keeps its own.' },
+    ]);
+    restore();
+  });
+
+  it('draws the tab as it is, marked superseded, for a view with no picture of its own', async () => {
+    const restore = quiet();
+    const { env } = api([{ rev: 6, agent: true }]);
+    const result = await viewTab(env, 'lwt_x', { designId: 'd1', rev: 4 });
+    const value = result.structuredContent as { svg: string };
+    expect(value).toMatchObject({ tabId: 't1', rev: 6, superseded: true });
+    expect(value.svg).toContain('<svg');
+    restore();
+  });
+
+  it('lets the view follow when no agent wrote after it, or the list cannot be read', async () => {
+    const restore = quiet();
+    for (const changesets of [[{ rev: 6, agent: true }], [{ rev: 7, agent: false }], [], null]) {
+      const { env } = api(changesets);
+      const result = await viewTab(env, 'lwt_x', { designId: 'd1', rev: 6, held: true });
+      const value = result.structuredContent as { svg: string };
+      expect(value).not.toHaveProperty('superseded');
+      expect(value.svg).toContain('<svg');
+    }
+    restore();
+  });
+});

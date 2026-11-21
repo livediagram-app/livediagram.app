@@ -6,6 +6,7 @@
 import type { MediaApp } from './apps';
 import { LIBRARY_PATH } from './library';
 import { libraryCalls } from './library-client';
+import { unusedImageIdsParam, type MediaUnusedResponse } from './unused';
 import { walkthroughCalls } from './walkthrough-client';
 import {
   IMAGE_HEIGHT_HEADER,
@@ -138,6 +139,13 @@ export function createMediaClient({ app, key, url, fetch: doFetch = fetch }: Med
 
     /** Which documents, in any app, place each of the owner's images. */
     usage: async (owner: string) => json<MediaUsageResponse>(await call('/usage', {}, { owner })),
+
+    /** Which of the owner's images of `ids` nothing but `document` (in this app) uses: no other document's
+     *  reference in any app, no Library item's and no unconfirmed one (media.md "Unused after a delete"). */
+    unused: async (owner: string, document: string, ids: readonly string[]) =>
+      json<MediaUnusedResponse>(
+        await call('/unused', {}, { owner, document, ids: unusedImageIdsParam(ids) }),
+      ),
 
     /** Tell the service which images each document places now. */
     syncRefs: async (sync: MediaRefsSync) =>

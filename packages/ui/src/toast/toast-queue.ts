@@ -21,11 +21,22 @@ export type ToastAction = {
   ariaLabel?: string;
   onSelect: () => void;
   disabled?: boolean;
+  // The answer removes something for good (toasts.md "A destructive answer"): rose, never the brand colour.
+  destructive?: boolean;
+};
+// A switch on an action toast (liveworkspace/docs/specs/016-notifications/toasts.md "A switch on a toast"): one
+// on/off choice read when an answer is pressed, such as Remember My Choice. Flipping it answers nothing.
+export type ToastToggle = {
+  label: string;
+  // Where it starts each time the toast appears (a newer upsert with a new toggle starts it again). Off unless said.
+  checked?: boolean;
+  onChange: (on: boolean) => void;
 };
 export type ToastActionSpec = {
   key: string;
   message: string;
   actions: ToastAction[];
+  toggle?: ToastToggle;
   // Info unless said (a standing warning: the account not answering).
   tone?: ToastTone;
   // Shown even with In-Editor Notifications off: it explains why something the person did had no effect.
@@ -45,6 +56,7 @@ export type ToastEntry = {
   offer?: ToastOffer;
   key?: string;
   actions?: ToastAction[];
+  toggle?: ToastToggle;
   sticky?: boolean;
   onDismiss?: () => void;
   // Dismissed, still playing its exit before the stack removes it, or how it left (ToastLeft). `closed`: the person
@@ -140,6 +152,7 @@ export function upsertActionToast(
     tone: spec.tone ?? 'info',
     key: spec.key,
     actions: spec.actions,
+    toggle: spec.toggle,
     sticky: spec.sticky,
     onDismiss: spec.onDismiss,
     highlight: spec.highlight,

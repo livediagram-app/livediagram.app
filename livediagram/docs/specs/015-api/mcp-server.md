@@ -1333,7 +1333,7 @@ says why by its status (no such tab, view only, the last tab).
 | `find_documents`     | `count`, `documents[]` of `{ id, name, updatedAt, library, url, archived? }`                                                 |
 | `read_document`      | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                          |
 | `list_templates`     | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                    |
-| `create_document`    | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                            |
+| `create_document`    | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `rev` (the first tab's), `folder`, `url`                   |
 | `add_tab`            | `documentId`, `tabId`, `name`, `url`, `changesetId`, `rev`, `text`, `lint`, `notes` when the graph or Mermaid lost something |
 | `update_document`    | `id` and `documentId` (the same), `tabId`, `url`                                                                             |
 | `share_document`     | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                                      |
@@ -1404,9 +1404,13 @@ as they can be without saying less.
 
 - **Tool list size.** A schema built from shared parts repeats their descriptions wherever the part is used. In the
   `tools/list` answer each description of 200 characters or more is said once per tool: a repeat reads
-  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). Only the
+  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). A shorter
+  description said again of a property of the same name (`tabId` under each of a tool's ops, in the same words) is
+  left out of the repeats, since the first already said what that property is and a pointer would be longer than
+  the words; other words for the same name, and the same words for another name, are kept. Only the
   listing changes; a call is validated against the tool's own schema
-  (`../packages/mcp-kit/src/tool-list-compact.ts`).
+  (`../packages/mcp-kit/src/tool-list-compact.ts`). Nothing points from one tool to another: a host that loads
+  tools one at a time would be left with a pointer to a schema it never read.
 - **An answer's text** is its structured result as one-line JSON (§4.17).
 - **A tab by its name.** Where a tool reads a tab (`read_document`, `update_document` and the tools that load a tab the same
   way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
@@ -1523,8 +1527,8 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
 
 - **The view resource.** The server lists `ui://livediagram/view.html` (`text/html;profile=mcp-app`), one
   self-contained page with its script and styles inline: the shared viewer (`@liveworkspace/mcp-kit/app-view`,
-  `viewerHtml(app, { edits: true })`, about 29 KB with live updates and in-view edits), its size held under
-  `VIEWER_EDIT_HTML_BUDGET_BYTES` (32 KB) by a test; a page without edits (the other products', about 20 KB) stays
+  `viewerHtml(app, { edits: true })`, about 32 KB with live updates and in-view edits), its size held under
+  `VIEWER_EDIT_HTML_BUDGET_BYTES` (34 KB) by a test; a page without edits (the other products', about 22 KB) stays
   under `VIEWER_HTML_BUDGET_BYTES` (24 KB), the edit parts left out of it. The script ships without indentation,
   blank lines or comment lines (`compactScript`). The SVG is
   drawn as an image, so nothing in it fetches: its `_meta.ui.csp` allows one connection only, the WebSocket to
@@ -1541,10 +1545,10 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
   (another `view_tab`); clicking an element opens the editor at it (`ui/open-link` to
   `/document/<id>#t=<tab>&el=<element>`, the Inbox's element deep link), and **Open in editor** opens the tab.
   A tab that cannot be read says so in the frame; nothing is cached between results.
-- **`view_tab`**: `{ documentId, tabId? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a host
+- **`view_tab`**: `{ documentId, tabId?, rev?, held? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a host
   with MCP Apps keeps it from the model): the tab's SVG, its view box, every element's box with its ref and label
   (for the click) and what an edit may do to it (`canRename`, `canMove`, "Edits in the view"), the document's tabs
-  and links. Its text block is one short line, not the SVG, so a host without
+  and links, the revision drawn (`rev`) and `superseded` ("One live view"). Its text block is one short line, not the SVG, so a host without
   MCP Apps that shows it to the model spends few tokens on it; `read_document` stays the model's read.
 - **Authority.** The view holds no lasting credential. It reads only through the host's own connection to this
   server, so every `view_tab` is the user's token, through the api's ordinary read gate, and a read-only token
@@ -1584,6 +1588,37 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
   - **Cost.** A document with no open view gets no ticket and no socket: `view_live` runs only when a view asks.
     An open view is one idle socket on the room, one mint every 10 minutes, and at most one `view_tab` per
     `LIVE_REDRAW_MS` while people edit.
+- **One live view.** A chat holds one view for every tool call that draws or reads a tab, and each used to follow
+  the document, so a build of ten steps ended as ten identical pictures redrawing together, each holding a socket. A
+  view now follows only until **an agent's later change lands on its tab**; from then it keeps its own step, so the
+  chat reads as the history of the build and the newest view is the live one.
+  - **The step.** A view is opened by a result that says where it left the tab: `rev` on `create_document` (its first tab's),
+    `add_tab`, `update_document`, and `tab.rev` on `read_document`. The view keeps it with the result's PNG.
+  - **While it listens.** A `changeset` op on the shown tab that carries an `agentKey` (a token wrote it: the MCP,
+    the CLI, another view's edit), and is not the view's own edit, stops the view: it closes its socket, keeps the
+    picture it has and its live mark reads **Earlier step**. A person's edits, and a changeset without an
+    `agentKey` (a revert from the editor), draw the tab again as before. Two views opened with no agent change
+    between them (a read after an update) both stay live: they show the same step.
+  - **When it opens again or catches up.** A view the room cannot have told (the chat reloaded, the frame was
+    hidden, the socket dropped, the ticket was renewed) sends `rev` on that `view_tab`, and the server reads the
+    tab's newest `LATER_STEP_LOOK` (5) changesets (`GET /api/documents/:id/changesets?tab=&limit=5`): `superseded` is
+    true when one of them is an agent's and past `rev`. A redraw for a change the view heard sends no `rev`, so
+    the busy path costs nothing more. A view that sends none (an older page, a result without one) is not asked,
+    and a list that cannot be read answers no: the view follows as it always did.
+  - **What it shows then.** A view already drawn keeps its picture. One opening again shows **the picture its own
+    result came with** (it says `held`, and the server answers the tab's name and link with no drawing): it pans
+    and zooms, **Open in editor** still opens the tab, and there are no boxes to click, no tab strip and no pager,
+    since the picture is the step's and not the tab's. With no picture of its own (a host that hands the view no
+    content, an empty tab) it draws the tab as it is now, once, and its mark reads **Snapshot**. Either way its
+    title says a later step changed the document. A view that stopped offers no
+    Edit toggle; the view's own edit moves its step on to the revision it wrote (`view_edit`'s `rev`).
+  - **Cost.** One more api read on a view's first draw and on each catch-up, none on a live redraw; measured
+    locally `view_tab` took 13 to 15 ms with and without it. A superseded view that holds its picture costs no SVG
+    build and holds no socket, where it used to redraw with every change. The page grew by 1.3 KB (31.5 to 32.8 KB).
+    `create` reads its first tab once more for `rev` when it has not already (one api read); a read that fails leaves
+    `rev` out and never fails the create. The **Earlier step** mark keeps its words at every width, where the
+    live mark shrinks to its dot in a narrow frame: the dot alone would not say why the view stopped.
+    (`../packages/mcp-kit/src/app-view-step.ts`, `app-viewer-script.ts`.)
 - **`view_live`**: `{ documentId }`. Read. The view's own tool, kept from the model like `view_tab`: the socket's
   address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms, read from the grant inside), and whether
   the token may edit through the view (`canEdit`, below). Its text block is one line without the ticket.

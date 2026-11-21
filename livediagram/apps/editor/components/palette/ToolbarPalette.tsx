@@ -422,8 +422,6 @@ export function ToolbarPalette(props: Props) {
                         onChange={onCanvasToolChange}
                         options={canvasToolOptions}
                       />
-                      {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
-                      {swipe ? null : <Divider />}
                       {categoryBar ? (
                         <CategoryBarButtons
                           bar={bar}
@@ -431,14 +429,7 @@ export function ToolbarPalette(props: Props) {
                           labels={fittedLabels || swipe}
                           shown={swipe ? null : barShown}
                           scrollable={swipe}
-                          trailing={
-                            libraryInBar ? (
-                              <>
-                                <Divider />
-                                {libraryButton}
-                              </>
-                            ) : null
-                          }
+                          trailing={libraryInBar ? libraryButton : null}
                         />
                       ) : (
                         <>
@@ -471,7 +462,7 @@ export function ToolbarPalette(props: Props) {
                           </SnapWidth>
                         </>
                       )}
-                      {/* The bar ends on its last category; Search brings its own divider. */}
+                      {/* The bar ends on its last category: no divider before the Library and Search, whose colour sets them apart. */}
                       {categoryBar ? null : <Divider />}
                     </>
                   )}
@@ -523,7 +514,6 @@ export function ToolbarPalette(props: Props) {
                     its palette. */}
                   {esBoard || participant ? null : (
                     <>
-                      <Divider />
                       {libraryInBar ? null : libraryButton}
                       <div ref={searchButtonRef} className="flex">
                         <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />

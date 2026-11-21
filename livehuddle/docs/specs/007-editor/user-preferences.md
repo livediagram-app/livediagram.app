@@ -299,6 +299,11 @@ type UserPreferences = {
   // ('top'), a row along its bottom edge ('footer') or none ('off'). Unset, or anything
   // else, is Top (lib/element-indicator-style).
   elementIndicatorStyle?: 'top' | 'footer' | 'off';
+  // What a delete does with a picture nothing else uses (../009-elements/images.md
+  // "Deleting an unused picture"): ask ('ask'), delete it from storage ('delete') or keep
+  // it ('keep'). A common setting, one value in every app. Unset, or anything else, is
+  // Ask (@liveworkspace/workbench lib/unused-image-choice).
+  unusedImageChoice?: 'ask' | 'delete' | 'keep';
 };
 ```
 
@@ -310,6 +315,11 @@ another version's flags.
 
 Missing key === undefined === default behaviour. Concretely:
 
+- `unusedImageChoice` undefined → Ask Every Time: deleting the last image element
+  that places a picture nothing else uses offers to delete it from storage. `'delete'`
+  deletes it after the same checks, with a notice; `'keep'` asks nothing. Set from
+  Settings > Editor ("When I Delete an Unused Image") or the offer's Remember My Choice
+  ([Images](../009-elements/images.md#deleting-an-unused-picture)).
 - `autoRebindArrows` is not read (the Auto-Attach Arrows switch is gone from livehuddle, Work Tracker #423
   part 4): the auto-rebind always runs ([Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)),
   whatever an old browser stored. The stored value is kept, like any key this version does not know.

@@ -1,4 +1,9 @@
 import { DATA_EXPORT_CATEGORY } from '@liveworkspace/settings/account';
+import {
+  readUnusedImageChoice,
+  withUnusedImageChoice,
+  type UnusedImageChoice,
+} from '@liveworkspace/workbench/lib/unused-image-choice';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import {
@@ -366,6 +371,26 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.rotateIn3D === true,
         write: (p, v) => ({ ...p, rotateIn3D: v }),
         event: { category: 'UI', on: 'RotateIn3DOn', off: 'RotateIn3DOff' },
+      },
+      {
+        // docs/specs/009-elements/images.md "Deleting an unused picture": one setting in every app, also set by the
+        // offer's Remember My Choice.
+        kind: 'choice',
+        key: 'unusedImageChoice',
+        keywords:
+          'image picture photo delete remove storage gallery unused remember ask keep prompt',
+        section: 'Canvas',
+        label: 'When I Delete an Unused Image',
+        description:
+          'After you delete an image nothing else uses: ask whether to delete it from storage too, always delete it from storage, or always keep it.',
+        options: [
+          { id: 'ask', label: 'Ask Every Time' },
+          { id: 'delete', label: 'Always Delete' },
+          { id: 'keep', label: 'Always Keep' },
+        ],
+        read: readUnusedImageChoice,
+        write: (p, v) => withUnusedImageChoice(p, v as UnusedImageChoice),
+        event: { category: 'UI', changed: 'UnusedImages' },
       },
       {
         kind: 'toggle',

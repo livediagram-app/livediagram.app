@@ -29,6 +29,9 @@ type EditorSelectionActionsDeps = {
   activeTab: Tab;
   // History-aware element mutator (snapshots + emits the log).
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // Told the elements a delete took, before its commit lands: the offer to delete their pictures from storage
+  // when nothing else uses them (docs/specs/009-elements/images.md "Deleting an unused picture").
+  onElementsRemoved?: (removed: Element[]) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
@@ -45,6 +48,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     readSelection,
     activeTab,
     commit,
+    onElementsRemoved,
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,
@@ -82,6 +86,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setEditingId(null);
     track('Element', 'Deleted');
     announceDeleted(targetIds);
+    reportRemoved(targetIds);
   };
 
   // SR announcement for a delete (docs/specs/004-interface-design/canvas-accessibility.md), named like the change log
@@ -91,6 +96,14 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     const deleted = activeTab.elements.filter((el) => targetIds.has(el.id));
     if (deleted.length === 0) return;
     announce(`Deleted ${deleted.length === 1 ? describeOne(deleted[0]!) : describeMany(deleted)}`);
+  };
+
+  // The elements a delete took, read before its commit lands as above, for the editor's offer to delete their
+  // pictures from storage (onElementsRemoved).
+  const reportRemoved = (targetIds: Set<string>) => {
+    if (!onElementsRemoved) return;
+    const removed = activeTab.elements.filter((el) => targetIds.has(el.id));
+    if (removed.length > 0) onElementsRemoved(removed);
   };
 
   // Marquee box-select committed by Canvas on pointer-up. Mutex with
@@ -128,6 +141,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   const removeMultiSelected = (targetIds: Set<string>) => {
     track('Element', 'Deleted'); // parity with single-element deleteSelected
     announceDeleted(targetIds);
+    reportRemoved(targetIds);
     commit((els) => els.filter((el) => !targetIds.has(el.id)));
     setMultiSelectedIds(new Set());
     setEditingId(null);

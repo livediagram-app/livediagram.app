@@ -156,6 +156,7 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'participants/user_2'],
     ['DELETE', 'images/img1'],
     ['GET', 'images/usage'],
+    ['GET', 'images/unused'],
     ['GET', 'images'],
     ['POST', 'workbench/tickets'],
     ['POST', 'workbench/sessions'],

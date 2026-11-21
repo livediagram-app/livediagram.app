@@ -261,12 +261,7 @@ export function AvatarPalette(props: AvatarPaletteProps) {
           >
             {/* An Editor's Edit | Walk toggle, first, so it stays put as the building strip gives way to this one
                 (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"). */}
-            {props.editWalk ? (
-              <>
-                {props.editWalk}
-                <Divider />
-              </>
-            ) : null}
+            {props.editWalk ?? null}
             {/* On a phone the look and the actions swipe together; Say stays put. */}
             {swipe ? (
               <div data-strip-rail="" className={`flex min-w-0 items-center ${STRIP_RAIL_SCROLL}`}>

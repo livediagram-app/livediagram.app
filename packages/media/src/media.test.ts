@@ -187,6 +187,25 @@ describe('createMediaClient', () => {
       'http://localhost:8792/api/media/app/images/img%201/release?document=plan-1',
     );
   });
+
+  it('asks which pictures nothing but the document uses, the ids in one query value', async () => {
+    const seen: Request[] = [];
+    const client = createMediaClient({
+      app: 'livediagram.app',
+      key: 'k',
+      url: 'http://localhost:8792/api/media',
+      fetch: async (input, init) => {
+        seen.push(new Request(input, init));
+        return Response.json({ unused: ['img-1'] });
+      },
+    });
+    const out = await client.unused('user_1', 'doc-1', ['img-1', 'img-2', 'img-1']);
+    expect(out).toEqual({ ok: true, value: { unused: ['img-1'] } });
+    expect(seen[0]!.method).toBe('GET');
+    expect(seen[0]!.url).toBe(
+      'http://localhost:8792/api/media/app/unused?owner=user_1&document=doc-1&ids=img-1%2Cimg-2',
+    );
+  });
 });
 
 describe('isImageSource', () => {

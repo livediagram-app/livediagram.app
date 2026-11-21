@@ -20,6 +20,7 @@ export { fetchShareCard, type ShareCardAnswer, type ShareCardOptions } from './s
 export * from './sniff';
 export * from './wire';
 export * from './usage';
+export * from './unused';
 export * from './walkthrough';
 export * from './walkthrough-client';
 export * from './walkthrough-door';
