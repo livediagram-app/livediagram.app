@@ -3,6 +3,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import {
+  notePageSaved,
+  usePageSaves,
   leavePageThen,
   setLeaveGuard,
   clearPageEditors,
@@ -104,5 +106,18 @@ describe('leavePageThen', () => {
     leavePageThen('p2', go);
     expect(go).not.toHaveBeenCalled();
     expect(guard).toHaveBeenCalledWith('p2', go);
+  });
+});
+
+describe('usePageSaves', () => {
+  it('moves on each save of that page, here or a peer’s, and not another page’s', () => {
+    const { result } = renderHook(() => usePageSaves('ps1'));
+    expect(result.current).toBe(0);
+    act(() => notePageSaved('ps1'));
+    expect(result.current).toBe(1);
+    act(() => notePeerSaved('someone', 'ps1'));
+    expect(result.current).toBe(2);
+    act(() => notePageSaved('other'));
+    expect(result.current).toBe(2);
   });
 });

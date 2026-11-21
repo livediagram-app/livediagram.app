@@ -83,7 +83,7 @@ function CommentItem({
           </Tooltip>
           {comment.editedAt ? <EditedCommentMark /> : null}
           {mine && !editing ? (
-            <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:none)]:opacity-100">
+            <span className="ml-auto flex shrink-0 items-center gap-0.5">
               <Tooltip label="Edit">
                 <button
                   type="button"

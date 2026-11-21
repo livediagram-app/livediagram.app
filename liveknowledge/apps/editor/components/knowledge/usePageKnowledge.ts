@@ -4,7 +4,10 @@
 // the clock gives them, Page Health once read, who may change them, the names the editor knows, and the actions,
 // each optimistic with a toast on a refusal. Reads the chrome store one slice at a time, so a typing commit renders
 // nothing here.
-import { rosterName } from '@/lib/page-edit/page-edit-store';
+import { rosterName, usePageSaves } from '@/lib/page-edit/page-edit-store';
+
+// How long after a save Page Health is read again: the save's write to the api lands first.
+const HEALTH_AFTER_SAVE_MS = 1500;
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { PageHealthResponse, PageKnowledgePatch } from '@liveknowledge/api-schema';
 import {
@@ -153,6 +156,22 @@ export function usePageKnowledge(): PageKnowledgeView {
       pageId,
     );
   }, [chrome, documentId, pageId, offline]);
+  // After a save (here or by someone else), read the health again once the save has reached the api: its Updated
+  // stamp, editors and badges moved. One read a save, after a short wait for the write.
+  const saves = usePageSaves(pageId);
+  useEffect(() => {
+    if (!documentId || offline || saves === 0) return;
+    const handle = window.setTimeout(() => {
+      const editor = chrome.get();
+      void pageKnowledgeStore.load(
+        { ownerId: editor.selfParticipant.id, shareCode: editor.sessionShareCode },
+        documentId,
+        pageId,
+        true,
+      );
+    }, HEALTH_AFTER_SAVE_MS);
+    return () => window.clearTimeout(handle);
+  }, [chrome, documentId, pageId, offline, saves]);
   const fields = pageKnowledgeStore.fieldsOf({ id: pageId, knowledge: stored }, at);
   // The knowledgebase's Review Period: a change of it moves the state and the due date at once.
   const every = useReviewEvery(documentId);

@@ -23,6 +23,7 @@ import {
   pageEditorsOf,
   setMyEditingPage,
   setLeaveGuard,
+  notePageSaved,
   myEditingPage,
   usePageEditors,
 } from '@/lib/page-edit/page-edit-store';
@@ -147,6 +148,7 @@ export function useEditorPageEditing({
     enter(null);
     flashMode('save');
     roomRef.current?.send({ kind: 'op', op: { kind: 'page-saved', tabId } });
+    notePageSaved(tabId);
     debugLog('[page-edit] saved', { tabId, changed });
     track('Tab', 'Ended', 'Save');
     toast.success('Page saved');

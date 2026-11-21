@@ -76,7 +76,8 @@ own.
 - Writing on a verified page does not clear the tick. A large change (more than a fifth of the writing's characters
   since `verifiedAt`) adds "Changed since verified" beside it, until someone verifies again.
 - **Page Health** (right rail): owner (changeable), last verified (one line: the date, then the verifier's disc,
-  named on hover; owner 2026-11-21), when the review is due, reads by people and
+  named on hover; owner 2026-11-21; Page Health is read again 1.5 s after each Save, this person's or a
+  peer's, so Updated moves without a reload), when the review is due, reads by people and
   by agents this week, and Verify Again; at its foot, who created the page and who last updated it, each the
   person's initials disc, their whole name, and under it "Created 3 days ago" or "Updated 7 mins ago", as a liveplanner
   card's footer.

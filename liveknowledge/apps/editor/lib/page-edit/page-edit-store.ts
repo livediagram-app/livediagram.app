@@ -89,6 +89,7 @@ export const peerEditing = (presenceId: string, tabId: string): boolean =>
 
 /** A peer saved a page (the page-saved presence op): told to whoever listens, with the peer's roster name. */
 export function notePeerSaved(presenceId: string, tabId: string): void {
+  notePageSaved(tabId);
   const name = names.get(presenceId) ?? 'Guest';
   saveListeners.forEach((l) => l(tabId, name));
 }
@@ -138,4 +139,29 @@ export function setLeaveGuard(guard: LeaveGuard | null): void {
 export function leavePageThen(to: string, go: () => void): void {
   if (leaveGuard && mine !== null && mine !== to) leaveGuard(to, go);
   else go();
+}
+
+// Each page's saves seen here, this editor's own and the room's, so what is read from the saved page (Page Health's
+// Updated stamp) reads it again after one (owner 2026-11-21: "Updated x ago doesn't update till I refresh").
+const saves = new Map<string, number>();
+const saveCountListeners = new Set<() => void>();
+
+/** A page was saved, here or by a peer. */
+export function notePageSaved(tabId: string): void {
+  saves.set(tabId, (saves.get(tabId) ?? 0) + 1);
+  saveCountListeners.forEach((l) => l());
+}
+
+const subscribeSaves = (l: () => void) => {
+  saveCountListeners.add(l);
+  return () => saveCountListeners.delete(l);
+};
+
+/** How many saves of the page this editor has seen: a dependency that moves on each. */
+export function usePageSaves(tabId: string): number {
+  return useSyncExternalStore(
+    subscribeSaves,
+    () => saves.get(tabId) ?? 0,
+    () => 0,
+  );
 }
