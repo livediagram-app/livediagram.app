@@ -26,11 +26,12 @@ function accounts(options: { unreadable?: boolean; down?: boolean } = {}) {
   const binding = {
     fetch: async (input: string | Request, init?: RequestInit) => {
       // The app's other account calls (names, profiles) are no concern here.
-      if (!String(input).endsWith('/internal/ai-key')) return Response.json({}, { status: 404 });
-      const body = JSON.parse(String(init?.body)) as Asked;
+      const url = typeof input === 'string' ? input : input.url;
+      if (!url.endsWith('/internal/ai-key')) return Response.json({}, { status: 404 });
+      const body = JSON.parse(typeof init?.body === 'string' ? init.body : '{}') as Asked;
       asked.push({
         ...body,
-        url: String(input),
+        url,
         authorization: new Headers(init?.headers).get('authorization'),
       });
       if (options.down) throw new Error('binding down');

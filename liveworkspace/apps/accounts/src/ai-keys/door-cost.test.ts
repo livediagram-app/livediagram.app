@@ -1,7 +1,6 @@
 // What the internal door costs an app's model call (liveworkspace/docs/specs/003-accounts/ai-keys.md "What it costs"):
 // one call over the binding, whose work here is the client check (cached), the person's introspection, one indexed
 // read and one HKDF and AES-GCM open. A CPU-time budget, so a slow runner's scheduling never fails it.
-import { cpuUsage } from 'node:process';
 import { describe, expect, it } from 'vitest';
 import type { Auth } from '../auth.ts';
 import type { Env } from '../env.ts';
@@ -23,7 +22,9 @@ const auth = {
 } as unknown as Auth;
 
 const cpuMs = () => {
-  const { user, system } = cpuUsage();
+  const { user, system } = (
+    globalThis as unknown as { process: { cpuUsage(): { user: number; system: number } } }
+  ).process.cpuUsage();
   return (user + system) / 1000;
 };
 
