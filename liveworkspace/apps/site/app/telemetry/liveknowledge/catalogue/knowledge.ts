@@ -331,6 +331,49 @@ export const PAGES_FROM_STRUCTURE = chart(
   { types: ['FromStructure'] },
 );
 
+// ---- Reading and editing a page (editing.md) and AI Context (ai-knowledge.md "AI Context on a page") ----------
+
+export const EDITS_STARTED = chart(
+  'Tab',
+  'Started',
+  'Edits Started',
+  "Someone pressed Edit (or E, or double-clicked the writing) to open a page's shared draft.",
+  { types: ['Edit'] },
+);
+
+export const EDITS_SAVED = chart(
+  'Tab',
+  'Ended',
+  'Drafts Saved',
+  "Someone saved a page's draft, publishing it for every reader.",
+  { types: ['Save'] },
+);
+
+export const EDITS_DISCARDED = chart(
+  'Tab',
+  'Ended',
+  'Drafts Discarded',
+  'The last person editing a page threw its unsaved draft away.',
+  { types: ['Discard'], rising: 'neutral' },
+);
+
+export const ASK_ABOUT_PAGE = chart(
+  'UI',
+  'Used',
+  'Ask About This Page',
+  "Someone opened Ask from a page's AI Context, with the page named in the question.",
+  { types: ['AskAboutPage'] },
+);
+
+export const PAGE_EDITING: MetricStack = {
+  stack: true,
+  title: 'Editing Pages',
+  blurb:
+    'Pages open to read; Edit opens their one shared draft, which is saved for every reader or thrown away. And Ask opened from a page about that page.',
+  members: [EDITS_STARTED, EDITS_SAVED, EDITS_DISCARDED, ASK_ABOUT_PAGE],
+  headline: [EDITS_STARTED, EDITS_SAVED],
+};
+
 export const PAGES_BY_SOURCE: MetricStack = {
   stack: true,
   title: 'New Pages by Source',
