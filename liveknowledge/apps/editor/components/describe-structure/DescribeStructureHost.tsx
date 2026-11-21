@@ -20,14 +20,19 @@ const DescribeStructureDialog = dynamic(
 
 export function DescribeStructureWhenOpen() {
   const tabId = useDescribeStructureOpen();
+  useEffect(() => closeDescribeStructure, []);
+  // Closed, the host reads nothing of the chrome: a typing commit never reaches it.
+  return tabId ? <DescribeStructureOpen tabId={tabId} /> : null;
+}
+
+function DescribeStructureOpen({ tabId }: { tabId: string }) {
   const here = useEditorChrome((s) => s.pageTab.id);
   const mayEdit = useEditorChrome((s) => s.pageEditing.mayEdit);
-  const away = tabId !== null && (tabId !== here || !mayEdit);
+  const away = tabId !== here || !mayEdit;
   useEffect(() => {
     if (away) closeDescribeStructure();
   }, [away]);
-  useEffect(() => closeDescribeStructure, []);
-  if (!tabId || away) return null;
+  if (away) return null;
   return (
     <AreaErrorBoundary area="Modals" fallback="none">
       <DescribeStructureDialog tabId={tabId} onClose={closeDescribeStructure} />
