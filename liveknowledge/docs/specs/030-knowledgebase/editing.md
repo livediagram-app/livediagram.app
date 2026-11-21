@@ -60,7 +60,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **Save** makes the draft the saved page for everyone: readers see it at once, search and agents read it, the
   Updated stamp (verification.md "Created and Updated") moves to the person who pressed Save, "Changed since
   verified" is worked out against it, and the draft is gone. Everyone else still in edit mode stays in edit mode on
-  the new saved page, with a toast "Priya saved the page".
+  the new saved page, with a toast "Priya saved the page". The person who saved sees a toast naming the page, "Release Process
+  Saved" (owner 2026-11-21; a title past 60 characters is cut, "Page Saved" with none).
 - **Cancel** leaves edit mode. If others are still editing, the draft stays theirs and nothing is lost. If you are the
   last one editing and the draft has unsaved changes, Cancel asks first: "Discard your changes to this page?" with
   **Discard Changes** (destructive) and **Keep Editing**. Discarding throws the draft away, with any comment or action started on words only the draft held (its margin marker goes too).

@@ -146,6 +146,9 @@ export function useEditorPageEditing({
     if (before) flushWriting(before);
     // Read after the flush's commit is queued: the commit below maps the newest tabs, so it saves that writing too.
     const changed = before ? draftDiffers(before) || draftOf(before) !== null : false;
+    // The toast names the page as saved, its draft's title included (owner 2026-11-21: "<Page Title> Saved").
+    const title =
+      (before && holdsDraft(before) ? withDraftSaved(before) : before)?.name.trim() ?? '';
     commitRealTabs((ts) =>
       ts.map((t) => (t.id === tabId && holdsDraft(t) ? withDraftSaved(t) : t)),
     );
@@ -156,7 +159,7 @@ export function useEditorPageEditing({
     notePageSaved(tabId);
     debugLog('[page-edit] saved', { tabId, changed });
     track('Tab', 'Ended', 'Save');
-    toast.success('Page saved');
+    toast.success(savedToast(title));
   };
 
   const discard = (tabId: string) => {
@@ -370,3 +373,9 @@ export function useEditorPageEditing({
 }
 
 export type EditorPageEditing = ReturnType<typeof useEditorPageEditing>;
+
+/** The save toast: "Release Process Saved", a long title cut to 60 characters, "Page Saved" with none. */
+export function savedToast(title: string): string {
+  const name = title.length > 60 ? `${title.slice(0, 59).trimEnd()}…` : title;
+  return name ? `${name} Saved` : 'Page Saved';
+}
