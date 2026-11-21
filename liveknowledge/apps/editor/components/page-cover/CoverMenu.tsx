@@ -110,7 +110,9 @@ export function CoverMenu({
             Choose a Picture
           </button>
           <div>
-            <p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">Gradients</p>
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Gradients
+            </p>
             <div role="group" aria-label="Gradients" className="grid grid-cols-7 gap-1.5">
               {COVER_GRADIENT_IDS.map((id) => {
                 const on = id === current;

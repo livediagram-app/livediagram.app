@@ -91,7 +91,7 @@ function CommentItem({
                   <Tooltip label="Edit">
                     <button
                       type="button"
-                      aria-label="Edit comment"
+                      aria-label="Edit Comment"
                       onClick={() => setEditing(true)}
                       className={ROW_BUTTON}
                     >
@@ -101,7 +101,7 @@ function CommentItem({
                   <Tooltip label="Delete">
                     <button
                       type="button"
-                      aria-label="Delete comment"
+                      aria-label="Delete Comment"
                       aria-haspopup="dialog"
                       onClick={(e) => setConfirm(e.currentTarget)}
                       className={`${ROW_BUTTON} hover:text-rose-700 dark:hover:text-rose-300`}

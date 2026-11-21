@@ -35,7 +35,7 @@ export function techTileDef(icon: TechIconDef): PaletteTileDef {
     section: 'technology',
     label: `Add ${headlineCase(icon.label)}`,
     caption: icon.short ?? icon.label,
-    description: 'Drops this technology icon on the canvas.',
+    description: 'Drops this technology icon in the drawing.',
     // Full-colour brand art keeps its own colours under any theme.
     noTint: true,
     action: { type: 'tech-icon', iconId: icon.id },

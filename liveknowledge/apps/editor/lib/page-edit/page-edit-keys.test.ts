@@ -60,6 +60,16 @@ describe('the edit keys', () => {
     menu.setAttribute('role', 'menu');
     document.body.append(menu);
     expect(pageEditKeyAction(key('Escape'), editing)).toBeNull();
+    menu.remove();
+  });
+
+  it("Escape is the drawing palette flyout's while it is open", () => {
+    const tile = document.createElement('button');
+    tile.setAttribute('data-flyout-item', '');
+    document.body.append(tile);
+    expect(pageEditKeyAction(key('Escape'), editing)).toBeNull();
+    tile.remove();
+    expect(pageEditKeyAction(key('Escape'), editing)).toBe('cancel');
   });
 
   it('does nothing for someone who may not edit, or with no target', () => {

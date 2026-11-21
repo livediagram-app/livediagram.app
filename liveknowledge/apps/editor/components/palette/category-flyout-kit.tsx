@@ -39,6 +39,11 @@ export const FLYOUT_KIT: FlyoutKit<PaletteTileDef, PaletteTileActions, PendingDr
   },
   // A tile with presets opens a side panel rather than placing.
   opensSide: (def) => !!def.variants?.length,
+  // A drawing sits in a page here, never on a canvas.
+  hint: {
+    click: 'Click to add one, or drag it onto the page.',
+    touch: 'Tap to add one, or drag it onto the page.',
+  },
   groups: (_categoryId, tiles) => flyoutGroups(tiles),
   layout: flyoutLayout,
   columns: flyoutColumns,

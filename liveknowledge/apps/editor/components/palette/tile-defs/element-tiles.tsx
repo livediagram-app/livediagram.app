@@ -22,7 +22,7 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add Checklist',
     caption: 'Checklist',
-    description: 'Checkable to-do rows. Tick boxes on the canvas; edit rows from the menu.',
+    description: 'Checkable to-do rows. Tick boxes in the drawing; edit rows from the menu.',
     filled: true,
     action: { type: 'shape', kind: 'checklist' },
     icon: (
@@ -60,7 +60,7 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add YouTube Embed',
     description:
-      'Embeds a YouTube link on the canvas. Double-click it to set the link; it loads when you press play.',
+      'Embeds a YouTube link in the drawing. Double-click it to set the link; it loads when you press play.',
     action: { type: 'video', provider: 'youtube' },
     icon: <YouTubeTileArt />,
   },
@@ -72,7 +72,7 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Vimeo Embed',
     description:
-      'Embeds a Vimeo link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
+      'Embeds a Vimeo link in the drawing. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'vimeo' },
     icon: <VimeoTileArt />,
   },
@@ -84,7 +84,7 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Loom Embed',
     description:
-      'Embeds a Loom link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
+      'Embeds a Loom link in the drawing. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'loom' },
     icon: <LoomTileArt />,
   },
@@ -96,7 +96,7 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Figma Embed',
     description:
-      'Embeds a Figma link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
+      'Embeds a Figma link in the drawing. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'figma' },
     icon: <FigmaTileArt />,
   },
@@ -108,7 +108,7 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Google Docs Embed',
     description:
-      'Embeds a Google Docs link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
+      'Embeds a Google Docs link in the drawing. Double-click it to set the link; it loads when you press Load embed.',
     action: { type: 'video', provider: 'gdocs' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
@@ -119,12 +119,12 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
   {
     id: 'media:embed-website',
     tileGroup: 'embed',
-    blurb: 'Any site, framed on the canvas',
+    blurb: 'Any site, framed in the drawing',
     caption: 'Website',
     section: 'media',
     label: 'Add Website Embed',
     description:
-      'Embeds any website on the canvas. Double-click it to set the address; it loads when you press Load embed. Some sites refuse to be framed and will come up blank.',
+      'Embeds any website in the drawing. Double-click it to set the address; it loads when you press Load embed. Some sites refuse to be framed and will come up blank.',
     action: { type: 'video', provider: 'website' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
@@ -140,7 +140,7 @@ export const ELEMENT_TILES: PaletteTileDef[] = [
     section: 'media',
     label: 'Add Live Embed',
     description:
-      'Shows a canvas, plan, page or design from our apps, live and read-only. Double-click it to choose the file; everyone sees it with their own access.',
+      'Shows a diagram, plan, document or design from our apps, live and read-only. Double-click it to choose the file; everyone sees it with their own access.',
     dividerAfter: true,
     action: { type: 'video', provider: 'live' },
     icon: <LiveEmbedTileArt />,

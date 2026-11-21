@@ -17,6 +17,8 @@ import { useRelativeNow } from '@/lib/relative-time';
 import { DoubleClickToEdit } from './DoubleClickToEdit';
 import { EditorDiscs } from './EditorDiscs';
 import { useArticleZoneCorner } from './useArticleZoneCorner';
+import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
+import { useKnowledgebaseStartOffered } from '@/components/start/knowledgebase-start';
 
 // Edit, in the top row before Page Info and Share, and while editing the draft bar, floating at the bottom right of the
 // article zone (docs/specs/030-knowledgebase/editing.md; blueprint "Presentation and UX"). Reads the chrome store a slice at a time, so typing renders it
@@ -192,7 +194,10 @@ export function PageEditBar() {
   const inHistory = useVersionHistoryState() !== null;
   // Ask and AI Knowledge are not a page: no Edit there either (owner 2026-11-21).
   const onPages = useKnowledgeView() === 'pages';
-  if (inHistory || !onPages) return null;
+  // A new knowledgebase's start screen covers its first page: no Cancel and Save floating beside it.
+  const startMayShow = useEditorChrome(templateStartShownOf);
+  const startOffered = useKnowledgebaseStartOffered(tabId);
+  if (inHistory || !onPages || (startMayShow && startOffered)) return null;
   return (
     <>
       <DoubleClickToEdit

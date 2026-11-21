@@ -19,12 +19,13 @@ function typingIn(target: EventTarget | null): boolean {
   );
 }
 
-// A dialog or a menu is open: its keys are its own.
+// A dialog, a menu or the drawing palette's flyout (its tiles, `data-flyout-item`) is open: its keys are its own.
+// Escape closing the flyout once asked to discard the page too.
 function overlayOpen(): boolean {
   if (typeof document === 'undefined') return false;
   return (
     document.querySelector(
-      '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]',
+      '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [data-flyout-item]',
     ) !== null
   );
 }

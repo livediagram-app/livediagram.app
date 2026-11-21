@@ -174,10 +174,10 @@ function OpenEditorElementDialogs() {
     linkTarget?.type === 'video'
       ? {
           subtitle: isWebsiteEmbed
-            ? 'Paste any web address. The page loads right here on the canvas.'
+            ? 'Paste any web address. The page loads right here in the drawing.'
             : embedNamed
-              ? `Paste ${withArticle(embedNamed)} link. It loads right here on the canvas.`
-              : 'Paste a link. The content plays or loads right here on the canvas.',
+              ? `Paste ${withArticle(embedNamed)} link. It loads right here in the drawing.`
+              : 'Paste a link. The content plays or loads right here in the drawing.',
           fieldLabel: isWebsiteEmbed
             ? 'Web address'
             : embedNamed

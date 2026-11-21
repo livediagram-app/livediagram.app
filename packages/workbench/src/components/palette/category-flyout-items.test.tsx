@@ -33,6 +33,14 @@ describe('InfoFooter with no tile hovered', () => {
     expect(tap.className).toMatch(/(^|\s)hidden\b/);
     expect(tap.className).toMatch(/\bpointer-coarse:inline\b/);
   });
+
+  it("says the editor's own hint when its kit has one (a page, not a canvas)", () => {
+    const own = { click: 'Click to add one, or drag it onto the page.', touch: 'Tap to add one.' };
+    render(<InfoFooter def={null} kit={{ ...kit, hint: own }} />);
+    expect(screen.getByText(own.click)).toBeTruthy();
+    expect(screen.getByText(own.touch)).toBeTruthy();
+    expect(screen.queryByText(/onto the canvas/)).toBeNull();
+  });
 });
 
 // docs/specs/007-editor/toolbar-layout.md "The category bar": one height whatever the footer says, so pointing along

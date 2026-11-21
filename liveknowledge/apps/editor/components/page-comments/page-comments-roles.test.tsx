@@ -93,13 +93,13 @@ describe('the comments at a page’s foot, by role', () => {
 
   it('offers Edit and Delete on one’s own comment only, and asks before deleting', async () => {
     const { change } = draw('participant', [OPEN]);
-    expect(screen.getAllByRole('button', { name: 'Edit comment' })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: 'Delete comment' })).toHaveLength(1);
-    fireEvent.click(screen.getByRole('button', { name: 'Delete comment' }));
+    expect(screen.getAllByRole('button', { name: 'Edit Comment' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Delete Comment' })).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Comment' }));
     expect(change).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(change).toHaveBeenCalledWith({ op: 'delete', thread: 't1', comment: 'c1' });
-    fireEvent.click(screen.getByRole('button', { name: 'Edit comment' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Comment' }));
     fireEvent.change(screen.getByLabelText('Edit your comment'), { target: { value: 'Is it?' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() =>
@@ -122,7 +122,7 @@ describe('the comments at a page’s foot, by role', () => {
       draw(who, [OPEN, RESOLVED]);
       expect(screen.getByText('Is the Friday rule still true?')).toBeTruthy();
       expect(screen.queryByLabelText('Add a comment')).toBeNull();
-      for (const name of ['Reply', 'Resolve', 'Reopen', 'Edit comment', 'Delete comment'])
+      for (const name of ['Reply', 'Resolve', 'Reopen', 'Edit Comment', 'Delete Comment'])
         expect(screen.queryByRole('button', { name })).toBeNull();
     });
 

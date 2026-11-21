@@ -24,6 +24,9 @@ function trackChange(change: PageThreadChange): void {
   else track('UI', 'Used', 'EditPageComment');
 }
 
+// The wait before a failed first read tries once more.
+const RETRY_MS = 2000;
+
 export type PageCommentsView = {
   pageId: string;
   entry: PageThreadsEntry;
@@ -62,14 +65,21 @@ export function usePageComments(): PageCommentsView {
     if (!documentId || offline) return;
     const editor = chrome.get();
     // After the page has drawn: a read on its own, never on the writing's render path.
+    const who = { ownerId: editor.selfParticipant.id, shareCode: editor.sessionShareCode };
+    let retry = 0;
+    let live = true;
     const handle = window.setTimeout(() => {
-      void pageThreadsStore.load(
-        { ownerId: editor.selfParticipant.id, shareCode: editor.sessionShareCode },
-        documentId,
-        pageId,
-      );
+      void pageThreadsStore.load(who, documentId, pageId).then(() => {
+        // A page made a moment ago (a template's tree) may not be stored yet: one more read before saying it failed.
+        if (live && pageThreadsStore.entryOf(documentId, pageId).status === 'failed')
+          retry = window.setTimeout(() => void pageThreadsStore.load(who, documentId, pageId), RETRY_MS);
+      });
     }, 0);
-    return () => window.clearTimeout(handle);
+    return () => {
+      live = false;
+      window.clearTimeout(handle);
+      window.clearTimeout(retry);
+    };
   }, [chrome, documentId, pageId, offline]);
   const entry = pageThreadsStore.entryOf(documentId ?? '', pageId, at);
   const canWrite = takePart && !offline;

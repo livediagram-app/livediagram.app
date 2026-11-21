@@ -48,7 +48,7 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - The page title is part of the draft: a renamed title reaches the page tree when the draft is saved.
 - The top of the page shows the draft bar: who is editing (discs), "Unsaved changes" once the draft differs from the
   saved page, then **Cancel** and **Save** (primary). `Mod-S` saves; `Escape` with the caret not in a menu asks to
-  Cancel.
+  Cancel; while a menu, a dialog or the drawing palette's flyout is open, Escape only closes that.
 - **The Title is always there** (owner, 2026-11-21): Backspace at its start does nothing, and an edit that would remove
   it (a selection across it deleted, a paste over it) leaves it in place, empty if its words went.
 - **The Title and the writing** (owner, 2026-11-21): select all (`Mod-A`) takes the box the caret is in, the Title's
@@ -65,7 +65,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   **Discard Changes** (destructive) and **Keep Editing**. Discarding throws the draft away, with any comment or action started on words only the draft held (its margin marker goes too).
 - **Only on a page:** while Version History is open, or the footer shows Ask or AI Knowledge, the floating Edit button
   and double-click to edit are gone
-  (owner 2026-11-21).
+  (owner 2026-11-21). So are the floating Edit, Cancel and Save while a new knowledgebase's start screen covers its
+  first page: the start's own choices are the way on.
 - **Leaving with unsaved changes** (owner 2026-11-21: "require me to cancel or save it before navigating"): opening
   another page (the tree, a breadcrumb, a page link, Linked From, search) while the page you edit has unsaved changes,
   and nobody else is editing it, asks first: "Save Your Changes First?" with **Save and Leave** (saves, then opens

@@ -49,7 +49,7 @@ describe('a flyout’s layout', () => {
 
   it('words a category’s line, or falls back on its own', () => {
     expect(flyoutTagline('write', 'fallback')).toBe(
-      'Words on the canvas: text, notes and comments.',
+      'Words in the drawing: text, notes and comments.',
     );
     expect(flyoutTagline('unknown', 'fallback')).toBe('fallback');
   });

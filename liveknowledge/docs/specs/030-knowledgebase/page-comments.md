@@ -65,7 +65,8 @@ Every change is written by the api and told to the room as one `page-thread` op 
 removal), from the system: everyone on the page sees a new thread, a reply, a resolve, an edit or a delete at once.
 Threads are read once when a page first opens in a session (`GET .../pages/<tab>/threads`) and kept; the room's
 ops keep them current (a system op, replayed from the room's log after a short drop like any other), and opening the
-knowledgebase again reads them afresh. A change made here shows at once and is put back, with a
+knowledgebase again reads them afresh. A first read that fails (a page a template made a moment ago, not yet stored)
+tries once more two seconds later before the foot says the comments could not be loaded. A change made here shows at once and is put back, with a
 toast, if the api refuses it.
 
 ## Agents

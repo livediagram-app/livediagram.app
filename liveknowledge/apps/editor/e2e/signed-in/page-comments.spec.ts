@@ -55,7 +55,7 @@ test('threads at a page’s foot: start, reply and resolve, live for everyone on
   await expect(titleOf(visitor)).toHaveText('Runbook');
   await expect(thread(visitor)).toContainText('Is the blue lever still the right one?');
   // Someone else's comment has no Edit or Delete.
-  await expect(thread(visitor).getByRole('button', { name: 'Edit comment' })).toHaveCount(0);
+  await expect(thread(visitor).getByRole('button', { name: 'Edit Comment' })).toHaveCount(0);
   // The thread ends in its own reply line: no Reply button to find first.
   await thread(visitor).getByLabel('Reply').fill('Yes, since March.');
   await thread(visitor).getByRole('button', { name: 'Reply' }).click();

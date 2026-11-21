@@ -41,7 +41,7 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 // listed falls back to its own description.
 const TAGLINES: Readonly<Record<string, string>> = {
   shapes: 'The basics, the flowchart vocabulary and more.',
-  write: 'Words on the canvas: text, notes and comments.',
+  write: 'Words in the drawing: text, notes and comments.',
   draw: 'Sketch, outline and connect by hand.',
   build: 'Frames, stacks and tables that hold other work.',
   concepts: 'Ideas laid out as one element that arranges itself.',
