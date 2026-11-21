@@ -104,6 +104,22 @@ describe('POST pages/:tab/verify', () => {
     expect(stored(kit, 'holidays').knowledge).toBeUndefined();
   });
 
+  it.each([{ owner: 'user_editor' }, { context: true }])(
+    'refuses an agent setting %o: a page’s owner and Always in Context are a person’s',
+    async (body) => {
+      const kit = await knowledgeKit();
+      const res = await kit.call(
+        'agent',
+        'PUT',
+        '/api/documents/kb/pages/holidays/knowledge',
+        body,
+      );
+      expect(res.status).toBe(403);
+      expect(await res.json()).toMatchObject({ error: 'needs_a_person' });
+      expect(stored(kit, 'holidays').knowledge).toBeUndefined();
+    },
+  );
+
   it.each(['viewer', 'link', 'page-link', 'stranger'] as const)(
     'is refused for %s, who changes nothing',
     async (who) => {

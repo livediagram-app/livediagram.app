@@ -38,15 +38,17 @@ and the 5 pages read most in the last 7 days with each one's reads by people and
   nothing, or when an agent calls `report_gap`. Like questions are grouped (same words after stemming); the row shows
   the question and how many times it was asked, by people and by each named agent ("Asked 4 times by people and
   Coding Agent"). The count is of asks, not of distinct people: no asker's identity is kept.
-- **Draft a Page** starts a page titled from the question. With a key it is drafted from the nearest passages, marked
-  "Draft, Not Verified" in its first line; without one it opens empty with the question as its first heading.
+- **Draft a Page** starts a page titled from the question, drafted from the nearest passages (on the team's key, or
+  built-in AI without one: [Built-in AI](search-and-ask.md#built-in-ai)), marked "Draft, Not Verified" in its first
+  line; when no AI can answer (no key and no built-in AI on the server, or the draft's call fails) it opens with the
+  question as its first heading alone.
   **Dismiss** removes the row.
 
 ## Pages that disagree
 
-- When a page is verified or its writing is saved (at most once per page per 10 minutes), and the knowledgebase has a key, the
+- When a page is verified or its writing is saved (at most once per page per 10 minutes), the
   room looks up passages on other pages that match its passages and asks the model whether any pair states opposite
-  facts. A found pair is a **conflict**: the question it answers, both passages, and each page's verified state.
+  facts, on the team's key or, without one, on built-in AI. A found pair is a **conflict**: the question it answers, both passages, and each page's verified state.
 - Resolving: **<Page> Is Right, Fix the Other** opens the other page with the passage selected and a margin note
   quoting the right one; **Ask Both Owners** emails them; **Not a Conflict** dismisses the pair for good.
 - **Ask Both Owners** sends each owner of the two pages one email, **Two Pages Disagree**: the question, both
@@ -56,8 +58,9 @@ and the 5 pages read most in the last 7 days with each one's reads by people and
   still open the knowledgebase, the same 50 a day. The answer says what happened: sent to how many owners, already
   asked and when, nobody owns either page, the owners cannot be reached, the day's emails are spent, or this
   server sends no email.
-- A conflict closes by itself when either passage changes. Bounds: 50 checks a knowledgebase a day; at most 5 candidate
-  passages a check. Without a key the section explains that it needs one.
+- A conflict closes by itself when either passage changes. Bounds: 50 checks a knowledgebase a day on a key, 20 on built-in AI;
+  at most 5 candidate passages a check. Only a deployment with no built-in AI and a knowledgebase with no key has no
+  check, and the section says so.
 
 ## Edits suggested by agents
 
@@ -71,6 +74,10 @@ step in the acceptor's name and does not verify the page.
 Pages every agent is handed before it starts: `Tab.knowledge.context: true`, set from the row menu ("Always in Context")
 or here. The list shows each page's size in tokens (characters / 4, rounded up to 10) against a budget of 8,000
 (`CONTEXT_BUDGET_TOKENS`); a page that would pass the budget cannot be added, and says so.
+
+- **A person's to set** (security review, 2026-11-21): an agent's token, even one allowed to write, cannot put a page
+  in or out of Always in Context, nor change its owner (`403 needs_a_person`): what is in context is handed to every
+  agent.
 
 ## AI Context on a page
 
@@ -171,9 +178,10 @@ rows and actions, long lists capped so the page never grows with the data.
   - Most Read: "No Reads Yet": opening a page counts a read, as does an agent's `read_page` or search result.
   - Knowledge Health: "No Pages Yet". Always in Context: "No Pages in Context Yet" (an Editor's line says how to add
     one; anyone else's who can).
-- **The AI key** is never a blocker on the dashboard (owner, 2026-11-21: built-in AI is coming for when there is no
-  key). While the conflict check needs one, the Disagreements filter carries one small note, with **Open AI
-  Settings** for an Editor; the All list, the tiles and the empty states say nothing of a key.
+- **The AI key** is never a blocker on the dashboard: built-in AI checks for conflicts when there is no key
+  (owner, 2026-11-21). Only where no AI can check (no key, and no built-in AI on this server) does the Disagreements
+  filter carry one small note, with **Open AI Settings** for an Editor; the All list, the tiles and the empty states
+  say nothing of a key.
 - **Connect an Agent** is a dialog: a new connection can read, search and suggest; how an Editor allows writing
   (anyone else reads that an Editor can); then the MCP server's address and its first tools (`get_context`,
   `search_pages`, `read_page`, `suggest_edit`), the command line (`liveknowledge auth login`, `context`, `search`)
