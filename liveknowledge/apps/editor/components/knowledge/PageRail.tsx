@@ -21,6 +21,7 @@ import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
 import { useKnowledgebaseSettings } from '@/components/knowledge-settings/KnowledgeSettingsHost';
 import { PageActivity, PageHealthCard, type PageStamp } from './PageHealthCard';
+import { PageRailAiContext } from './PageAiContext';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 
 /** The rail's width, in px. */
@@ -137,6 +138,7 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         onChangeReviewPeriod={changeReviewPeriod?.onSelect}
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
       />
+      <PageRailAiContext page={page} />
       {docked ? null : activity}
     </div>
   );

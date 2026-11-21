@@ -136,8 +136,9 @@ after Page Health in `PageRailBody` (docked and in the Page Info card alike), ov
 | Ask's waiting question          | `apps/editor/lib/knowledge-ask/ask-draft.ts`                                      |
 
 - **The table.** `page_answers (tab TEXT, key TEXT, day TEXT, question TEXT, asked INTEGER, PRIMARY KEY (tab, key,
-  day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows with its tab
-  (`page_answers_tab_removed`). Schema step V19, additive, `IF NOT EXISTS`.
+day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows with its tab
+  (`page_answers_tab_removed`), and `page_reads_tab` on `page_reads (tab, day)`, so a page's reads are a range of
+  its own rows. Schema step V19, additive, `IF NOT EXISTS`.
 - **Recording** (`recordPageAnswers(key, question, tabs, now)`): one `INSERT ... SELECT value FROM json_each(?)`
   upsert, a row for each distinct cited tab (12 at most, the passages Ask sends), `asked + 1` on a row already there
   and the newest words kept. The Ask route adds it to the batch that logs the answer's gaps, only when the request
@@ -149,7 +150,7 @@ after Page Health in `PageRailBody` (docked and in the Page Info card alike), ov
   first, then the latest day, then the key, `PAGE_ANSWERS_LISTED` (3); the words are those of the group's latest
   day. `countPageAgentReads(tab, now)`: the page's agent reads of the last 7 days by agent, most first, then by
   name, `PAGE_AGENTS_LISTED` (3). Both run beside the reads and the authors in `handlePageHealth`'s one
-  `Promise.all`; each is a range of a primary key. The answer gains `answered: { question, asked }[]` and
+  `Promise.all`; each is a range of an index. The answer gains `answered: { question, asked }[]` and
   `agents: { agent, reads }[]` (`PageHealthResponse`, optional so a read held from before them is still one).
 - **The section** (`PageAiContext`): a `section` named "AI Context", its `RAIL_LABEL` heading, then three blocks
   each under a smaller label, no card and no border:
@@ -158,8 +159,8 @@ after Page Health in `PageRailBody` (docked and in the Page Info card alike), ov
     `setFields(pageId, { context }, 'context')`, which shows the change at once and puts it back with the route's
     budget words in a toast on a refusal. Anyone else reads "Handed to Every Agent First" or "Not Handed to Agents
     First". Telemetry `UI·Added·ContextPage` / `UI·Removed·ContextPage`, as AI Knowledge sends.
-  - **Answered From This Page**: up to three quotes (the question in curly quotes, two lines at most, the full
-    words in a `Tooltip` when cut) with "Asked once" or "Asked 6 times" under each; before the read, quiet
+  - **Answered From This Page**: up to three quotes (an opening curly quote in the brand's colour, then the
+    question, clamped to three lines with the whole words still in the page for a screen reader) with "Asked once" or "Asked 6 times" under each; before the read, quiet
     placeholder lines; with none, "No questions answered from this page yet."
   - **Read by Agents**: each agent's name and its reads ("12 reads"), or "No agent has read this page this week."
   - **Ask About This Page**: a secondary `Button`, full width. It puts "About <title>: " in `ask-draft.ts` for this

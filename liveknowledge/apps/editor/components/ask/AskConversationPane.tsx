@@ -37,6 +37,7 @@ export function AskConversationPane({
   nameOf,
   now,
   onNew,
+  waiting,
 }: {
   session: AskSession;
   conversation: AskConversation;
@@ -46,6 +47,8 @@ export function AskConversationPane({
   nameOf: (id: string | undefined) => string | undefined;
   now: number;
   onNew: () => void;
+  // Words waiting in the field when the view opened (Ask About This Page).
+  waiting?: string | undefined;
 }) {
   const chrome = useEditorChromeStore();
   const toast = useToast();
@@ -206,6 +209,7 @@ export function AskConversationPane({
                 streaming={streaming}
                 followUp={turns.length > 0}
                 onAsk={conversation.ask}
+                {...(waiting ? { initialValue: waiting } : {})}
                 onStop={() => {
                   track('UI', 'Ended', 'AskStopped');
                   conversation.stop();
