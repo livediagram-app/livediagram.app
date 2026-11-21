@@ -65,8 +65,8 @@ group, pages }`, its pages a nested outline (title, one-line summary, headings, 
   structure to those bounds and to its outline surviving the parser whole.
 - **The rail** (`start-structure-items.ts`): a first group **Start** (`id: 'start'`) holding `blank` (Blank
   Knowledgebase) and, where `useSetupOffered() === 'set-up'`, `describe` (Describe to Set Up); then the eight
-  `STRUCTURE_GROUPS` (**Company and Team**, **Engineering**, **Product and Research**, **Customers**,
-  **Operations**, **Clients and Communities**, **Education**, **Personal**) from each structure's `group`, each
+  `STRUCTURE_GROUPS` (**Company**, **Engineering**, **Product**, **Customers**,
+  **Operations**, **Community**, **Education**, **Personal**) from each structure's `group`, each
   with its rail glyph (`RAIL_ICONS` in `StartFromTemplates.tsx`: users, code, package, handshake, briefcase, globe,
   graduation cap, user). The search matches a structure's name, line and page titles (`knowledgebaseStart`'s
   `search`). A card (`structure-card.tsx`) draws the

@@ -10,16 +10,16 @@ import {
 // docs/specs/019-marketing/marketing-site.md "Structure" 3: the gallery's templates are the knowledgebase
 // structures, the same ones the editor's start offers, on one shelf per group.
 describe('the gallery shelves', () => {
-  it('are the structure groups, in the start’s order, Company and Team first', () => {
+  it('are the structure groups, in the start’s order, Company first', () => {
     const shelves = galleryShelves();
     expect(shelves.map((s) => s.id)).toEqual(STRUCTURE_GROUPS.map((g) => g.id));
     expect(shelves.map((s) => s.label)).toEqual([
-      'Company and Team',
+      'Company',
       'Engineering',
-      'Product and Research',
+      'Product',
       'Customers',
       'Operations',
-      'Clients and Communities',
+      'Community',
       'Education',
       'Personal',
     ]);

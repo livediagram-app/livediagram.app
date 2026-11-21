@@ -23,7 +23,7 @@ window.scrollTo = () => {};
 // docs/specs/019-marketing/marketing-site.md "Structure" 3: the gallery's cards are knowledgebase structures, each an
 // outline of its tree and a link that makes a new knowledgebase from it.
 describe('the template gallery', () => {
-  it('opens on Company and Team, each card a structure linking to /new?structure=', () => {
+  it('opens on Company, each card a structure linking to /new?structure=', () => {
     render(<TemplateGallery />);
     const cards = [...document.querySelectorAll<HTMLAnchorElement>('[data-structure-card]')];
     expect(cards.map((c) => c.dataset.structureCard)).toEqual([

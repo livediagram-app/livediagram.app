@@ -21,12 +21,12 @@ const ICON = 18;
 // SETUP_STRUCTURES by faq-content.test.tsx. Written out rather than read from @liveknowledge/knowledge: this module
 // ships in the FAQ's client bundle.
 export const STRUCTURE_GROUP_NAMES = [
-  'Company and Team',
+  'Company',
   'Engineering',
-  'Product and Research',
+  'Product',
   'Customers',
   'Operations',
-  'Clients and Communities',
+  'Community',
   'Education',
   'Personal',
 ];

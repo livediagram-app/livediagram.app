@@ -15,7 +15,7 @@ import {
 
 // "Browse every template" (docs/specs/019-marketing/marketing-site.md "Structure" 3), anchored #templates: the
 // knowledgebase structures, liveknowledge's templates, the same thirty-two a new knowledgebase's start offers. ONE group
-// is open as a four-across carousel (TemplateCarousel), Company and Team on load; Blank Knowledgebase leads the
+// is open as a four-across carousel (TemplateCarousel), Company on load; Blank Knowledgebase leads the
 // folded tiles as a link that makes a blank knowledgebase at once (no group); every other group sits folded
 // underneath as a tile that opens it in the open one's place, fanning its structures' trees (StructurePreview).
 // Every card is the structure's outline and a link that makes a new knowledgebase from it straight away

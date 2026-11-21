@@ -22,7 +22,7 @@ export type { SetupStructure, StructureGroup, StructurePage } from './structures
 export const STRUCTURE_GROUPS: readonly { id: StructureGroup; name: string; line: string }[] = [
   {
     id: 'team',
-    name: 'Company and Team',
+    name: 'Company',
     line: 'How the company and its teams work, and how someone new finds their feet.',
   },
   {
@@ -32,7 +32,7 @@ export const STRUCTURE_GROUPS: readonly { id: StructureGroup; name: string; line
   },
   {
     id: 'product',
-    name: 'Product and Research',
+    name: 'Product',
     line: 'What the product does, what is learned about its users and how projects run.',
   },
   {
@@ -47,7 +47,7 @@ export const STRUCTURE_GROUPS: readonly { id: StructureGroup; name: string; line
   },
   {
     id: 'community',
-    name: 'Clients and Communities',
+    name: 'Community',
     line: 'Work done with people outside the team: clients, contributors, members and guests.',
   },
   {

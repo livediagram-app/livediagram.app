@@ -34,14 +34,15 @@ and picks that structure on its start, so it is created exactly as a pick here i
   - **Start**, first: **Blank Knowledgebase** (the first card), which closes onto Start Here, the caret in its
     Title; and **Describe to Set Up** (where it is offered: a signed-in Editor, not Offline), a card that closes the
     start and opens this feature's dialog over the empty knowledgebase, so the AI proposes a structure.
-  - Then the **knowledgebase structures**, thirty-two, four to a group, grouped by who they are for: **Company and
-    Team** (Company Knowledgebase, Team Handbook, Onboarding, People Operations), **Engineering** (Engineering
-    Handbook, Runbooks and On-Call, Design System, API Docs), **Product and Research** (Product Docs, Research
+  - Then the **knowledgebase structures**, thirty-two, four to a group, grouped by who they are for: **Company
+    ** (Company Knowledgebase, Team Handbook, Onboarding, People Operations), **Engineering** (Engineering
+    Handbook, Runbooks and On-Call, Design System, API Docs), **Product** (Product Docs, Research
     Library, Project Hub, Product Strategy), **Customers** (Support Knowledgebase, Sales Playbook, Customer
     Success, Marketing Playbook), **Operations** (IT and Security, Finance and Legal, Data and Analytics, Meetings
-    and Decisions), **Clients and Communities** (Client Projects, Open Source Project, Community and Nonprofit, Event
+    and Decisions), **Community** (Client Projects, Open Source Project, Community and Nonprofit, Event
     Planning), **Education** (Course Handbook, Study Notes, Training Academy, Research Lab) and **Personal** (Second
-    Brain, Job Search, Recipe Book, Home Manual). Owner, 2026-11-21: "Add more templates to give structure for lots
+    Brain, Job Search, Recipe Book, Home Manual). A group has one name, never two joined by "and" (owner,
+    2026-11-21). Owner, 2026-11-21: "Add more templates to give structure for lots
     of different use cases people might have", so the second sixteen reach past the software company: the business
     underneath it, work done with people outside a team, teaching and learning, and a knowledgebase of one's own. The
     groups run in that order, work for a company first and a person's own last. Each card shows the structure, not a picture of a page: an outline of its page tree two levels

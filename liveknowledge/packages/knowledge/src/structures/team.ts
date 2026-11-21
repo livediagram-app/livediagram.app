@@ -1,4 +1,4 @@
-// The Company and Team structures (setup-structures.ts, docs/specs/030-knowledgebase/describe-to-set-up.md "The start
+// The Company structures (setup-structures.ts, docs/specs/030-knowledgebase/describe-to-set-up.md "The start
 // screen"): how the company and its teams work, and how someone new finds their feet.
 import { p, type SetupStructure } from './shape';
 

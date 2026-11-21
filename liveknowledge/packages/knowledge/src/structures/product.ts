@@ -1,4 +1,4 @@
-// The Product and Research structures (setup-structures.ts, docs/specs/030-knowledgebase/describe-to-set-up.md "The start
+// The Product structures (setup-structures.ts, docs/specs/030-knowledgebase/describe-to-set-up.md "The start
 // screen"): what the product does, what is learned about its users and how projects run.
 import { p, type SetupStructure } from './shape';
 

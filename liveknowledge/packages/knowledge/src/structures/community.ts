@@ -1,4 +1,4 @@
-// The Clients and Communities structures (setup-structures.ts, docs/specs/030-knowledgebase/describe-to-set-up.md
+// The Community structures (setup-structures.ts, docs/specs/030-knowledgebase/describe-to-set-up.md
 // "The start screen"): work done with people outside the team, clients, contributors, members and guests.
 import { p, type SetupStructure } from './shape';
 
