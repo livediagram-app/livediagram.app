@@ -69,7 +69,12 @@ const withRow = (a: DocumentAutomations) =>
 describe('who sees Automations', () => {
   it('gives an Editor of the whole canvas the screen, and the row', () => {
     const a = door(ctx());
-    expect(a.scope).toEqual({ ownerId: 'user_me', itemId: 'doc1', shareCode: null });
+    expect(a.scope).toEqual({
+      ownerId: 'user_me',
+      itemId: 'doc1',
+      shareCode: null,
+      as: 'user_me:edit',
+    });
     expect(a.gate).toBeNull();
     withRow(a);
     expect(screen.getByRole('button', { name: 'Automations…' }).dataset['badges']).toBe('');

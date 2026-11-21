@@ -69,7 +69,12 @@ const withRow = (a: SpaceAutomations) =>
 describe('who sees Automations', () => {
   it('gives an Editor of the whole Space the screen, and the row', () => {
     const a = door(ctx());
-    expect(a.scope).toEqual({ ownerId: 'user_me', itemId: 'doc1', shareCode: null });
+    expect(a.scope).toEqual({
+      ownerId: 'user_me',
+      itemId: 'doc1',
+      shareCode: null,
+      as: 'user_me:edit',
+    });
     expect(a.gate).toBeNull();
     expect(a.item.team).toEqual({ ownerId: 'user_me', team: { id: 'team1', name: 'Studio' } });
     withRow(a);

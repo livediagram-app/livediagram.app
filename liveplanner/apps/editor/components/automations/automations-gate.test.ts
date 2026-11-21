@@ -23,11 +23,13 @@ describe('automationsScopeFor', () => {
       ownerId: 'me',
       itemId: 'p1',
       shareCode: null,
+      as: ':edit',
     });
     expect(automationsScopeFor({ ...EDITOR, scope: { ...SCOPE, shareCode: 'abc' } })).toEqual({
       ownerId: 'me',
       itemId: 'p1',
       shareCode: 'abc',
+      as: ':edit',
     });
   });
 
