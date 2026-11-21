@@ -49,6 +49,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - The top of the page shows the draft bar: who is editing (discs), "Unsaved changes" once the draft differs from the
   saved page, then **Cancel** and **Save** (primary). `Mod-S` saves; `Escape` with the caret not in a menu asks to
   Cancel.
+- **The Title is always there** (owner, 2026-11-21): Backspace at its start does nothing, and an edit that would remove
+  it (a selection across it deleted, a paste over it) leaves it in place, empty if its words went.
 - **The Title and the writing** (owner, 2026-11-21): select all (`Mod-A`) takes the box the caret is in, the Title's
   words or all the writing under it, never both; Tab in the Title puts the caret at the start of the writing (a body
   line is made there on a page with none).

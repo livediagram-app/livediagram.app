@@ -52,6 +52,7 @@ import { measureArticleLayout } from './article-measure';
 import { mountArticleView } from './article-view-mount';
 import { PageLimitNotice, replaceContent } from './article-editor-parts';
 import { createPageSlots } from '@/lib/knowledge/page-slots-plugin';
+import { keepTitlePlugin } from '@/lib/article/keep-title-plugin';
 import { PageKnowledgeSlots } from '@/components/knowledge/PageKnowledgeSlots';
 import { usePageLinks } from '@/components/knowledge/usePageLinks';
 
@@ -70,6 +71,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   const viewRef = useRef<EditorView | null>(null);
   // Room in the writing for the page's meta row and Linked From (lib/knowledge/page-slots-plugin.ts).
   const [pageSlots] = useState(createPageSlots);
+  // The page's Title is always there (lib/article/keep-title-plugin.ts).
+  const [keepTitle] = useState(keepTitlePlugin);
   // The writing as last written to or read from the tab: the base local typing is measured from.
   const committed = useRef<ArticleFlow>(props.doc);
   const latest = useRef(props);
@@ -331,7 +334,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       scheduleReveal,
       publish,
       leadingPlugins: [pageLinks.makePlugin()],
-      extraPlugins: [pageSlots.plugin],
+      extraPlugins: [pageSlots.plugin, keepTitle],
     });
     // oxlint-disable-next-line react/exhaustive-deps -- created once per article: everything it reads is read through refs
   }, []);

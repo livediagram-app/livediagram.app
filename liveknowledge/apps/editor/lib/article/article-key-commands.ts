@@ -92,6 +92,8 @@ export const backspaceAtStart: Command = (state, dispatch, view) => {
   if (!here) return false;
   const { node, pos } = here;
   if (node.type === LIST) return shiftLevel(-1)(state, dispatch);
+  // The page's Title stays a Title (keep-title-plugin.ts): Backspace at its start does nothing.
+  if (node.type === PARAGRAPH && node.attrs.style === 'title' && $from.index(0) === 0) return true;
   if (node.type === PARAGRAPH && node.attrs.style !== 'body')
     return setBlockStyle('body')(state, dispatch);
   // The block before: a divider or a page break goes; a zone is selected (a second Backspace
