@@ -259,6 +259,15 @@ describe('the answer read', () => {
     expect(answer.notUsed).toEqual([{ number: 2, sent: 1, passageId: 'a', reason: 'a' }]);
   });
 
+  it('sets nothing aside for a bare mark with no reason', () => {
+    const answer = parseAskAnswer(
+      '<answer>True [2].</answer><not_used passage="1"></not_used><not_used passage="3">  </not_used>',
+      passages,
+    );
+    expect(answer.notUsed).toEqual([]);
+    expect(answer.text).toBe('True [1].');
+  });
+
   it('numbers one source 1, whatever it was sent as, and reads a list of numbers in one marker', () => {
     // The owner's answer: one source, sent as passage 2, shown as 1.
     const one = parseAskAnswer('<answer>Use blue for all text colours [2].</answer>', passages);

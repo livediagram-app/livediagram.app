@@ -48,26 +48,32 @@ function Passage({ text, question }: { text: string; question: string }) {
 // above the passage follow, on a line of their own.
 function Breadcrumb({
   path,
+  title,
   headings,
 }: {
   path: { parents: string[]; name: string };
+  title: string;
   headings: string;
 }) {
+  // A top-level page's path is its name alone, already the card's title.
+  const showPath = path.parents.length > 0 || path.name !== title;
   return (
     <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-400" data-source-path="">
-      <span className="flex min-w-0 items-center gap-1">
-        {path.parents.length > 0 ? (
-          <>
-            <span className="min-w-0 truncate">{path.parents.join(' / ')}</span>
-            <span aria-hidden className="shrink-0 text-slate-400 dark:text-slate-600">
-              /
-            </span>
-          </>
-        ) : null}
-        <span className="max-w-full shrink-0 truncate font-medium text-slate-700 dark:text-slate-300">
-          {path.name}
+      {showPath ? (
+        <span className="flex min-w-0 items-center gap-1">
+          {path.parents.length > 0 ? (
+            <>
+              <span className="min-w-0 truncate">{path.parents.join(' / ')}</span>
+              <span aria-hidden className="shrink-0 text-slate-400 dark:text-slate-600">
+                /
+              </span>
+            </>
+          ) : null}
+          <span className="max-w-full shrink-0 truncate font-medium text-slate-700 dark:text-slate-300">
+            {path.name}
+          </span>
         </span>
-      </span>
+      ) : null}
       {headings ? <span className="block truncate">{headings}</span> : null}
     </span>
   );
@@ -127,7 +133,10 @@ function SourceCard({
   }, [lit]);
   const page = pages.find((p) => p.id === source.tab);
   const verifier = nameOf(parseKnowledgeFields(page?.knowledge).verifiedBy);
-  const headings = source.headings.join(' › ');
+  // The card's title is the page's: a top-level page's path, or a heading that only repeats it, would say it twice.
+  const title = source.title || 'Untitled Page';
+  const headings = source.headings.filter((h) => h !== title).join(' › ');
+  const path = pagePath(pages, source.tab, source.title);
   return (
     <li>
       <button
@@ -154,11 +163,13 @@ function SourceCard({
             </>
           )}
           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-            {source.title || 'Untitled Page'}
+            {title}
           </span>
           {stale ? <span className={STALE_PILL}>Stale</span> : null}
         </span>
-        <Breadcrumb path={pagePath(pages, source.tab, source.title)} headings={headings} />
+        {path.parents.length > 0 || path.name !== title || headings ? (
+          <Breadcrumb path={path} title={title} headings={headings} />
+        ) : null}
         <Passage text={source.text} question={question} />
         {'reason' in source && source.reason ? (
           <span className="mt-1.5 block break-words text-[13px] leading-5 text-amber-900 dark:text-amber-200">

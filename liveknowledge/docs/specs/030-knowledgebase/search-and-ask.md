@@ -56,7 +56,9 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   the passage was sent to the model under: the stream's pieces, the finished answer and its Sources all use the same
   numbers, and so does each follow-up's own answer; a **Sources** rail with each cited passage, its page
   and who verified it when; a trust line ("Answered From 3 Verified Pages", or how many were unverified or due);
-  **Found but Not Used** for a passage set aside because it is stale and disagrees with a newer verified one.
+  **Found but Not Used** for a passage set aside because it is stale and disagrees with a newer verified one. A
+  set-aside carries its reason; a bare mark with none (a small model marks any passage it skipped) sets nothing
+  aside, so a page is never called Stale without a why.
 - **It does not guess.** The model is told to say so when the passages do not answer the question or part of it. That
   part is recorded as an unanswered question ([AI Knowledge](ai-knowledge.md)) and shown as a **Knowledge Gap** card
   with **Draft a Page From What We Know** and, once it has an email of its own (the review emails are built; this
@@ -176,7 +178,8 @@ strangers.
   cut off"), top to bottom:
   - its number (the answer's own, 1 first) and the page's title;
   - the page's path as a breadcrumb (Foundations / Colour) on its own line, the parents shortened from the start so
-    the page's own name always shows; the headings above the passage follow it;
+    the page's own name always shows; the headings above the passage follow it. A top-level page has no path line
+    (its name is the title already), and a heading that only repeats the title is left out;
   - the passage with the question's words softly marked;
   - its **trust**, in the badges and colours of the page's meta row and Page Health: **Verified** (a green tick),
     then "21 Nov by Roger Blake" on the line, wrapping to a second line rather than cutting a name; **Review Due**

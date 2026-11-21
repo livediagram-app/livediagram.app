@@ -71,13 +71,11 @@ export function parseAskAnswer(
     (_all, digits: string, reason: string) => {
       const number = Number(digits);
       const passageId = idOf.get(number);
-      if (passageId && !notUsed.some((n) => n.sent === number)) {
-        notUsed.push({
-          number,
-          sent: number,
-          passageId,
-          reason: oneLine(reason, MAX_REASON_CHARS),
-        });
+      const why = oneLine(reason, MAX_REASON_CHARS);
+      // A passage is set aside only with its reason (it is stale and disagrees with a newer one); a bare mark, which
+      // a small model sends for any passage it skipped, is no set-aside, and showing it Stale would wrong the page.
+      if (passageId && why && !notUsed.some((n) => n.sent === number)) {
+        notUsed.push({ number, sent: number, passageId, reason: why });
       }
       return '';
     },

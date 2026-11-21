@@ -264,6 +264,10 @@ describe('a question and its answer', () => {
     expect(document.querySelector('[data-source="2"] [data-source-path]')!.textContent).toBe(
       'Release Process/Hotfixes',
     );
+    // A top-level page says its name once: the card's title, with no path repeating it.
+    expect(document.querySelector('[data-source="1"] [data-source-path]')!.textContent).toBe(
+      'Shipping',
+    );
     // The matched word is marked by the page.
     expect([...document.querySelectorAll('mark')].map((m) => m.textContent)).toContain('release');
     expect(field().disabled).toBe(false);
