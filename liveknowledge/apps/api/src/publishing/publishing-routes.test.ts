@@ -130,6 +130,10 @@ describe('who may publish', () => {
   it('refuses another method and a body that does not read', async () => {
     const kit = await knowledgeKit();
     expect((await kit.call('editor', 'POST', PUBLISHING, {})).status).toBe(405);
+    // No body at all reads as no body.
+    expect(await (await kit.call('editor', 'PUT', PUBLISHING)).json()).toMatchObject({
+      error: 'invalid_body',
+    });
     for (const body of [
       null,
       [],
