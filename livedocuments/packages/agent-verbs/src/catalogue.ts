@@ -46,6 +46,7 @@ import {
 } from './verbs/lifecycle';
 import { documentArchive, documentUnarchive } from './verbs/archive';
 import { tabLint, tabLs, tabView } from './verbs/tab';
+import { tabFolder } from './verbs/tab-folder';
 import { pagesVerbs } from './verbs/pages';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
@@ -67,6 +68,7 @@ export const VERBS: readonly Verb[] = [
   tabDiff,
   tabAdd,
   tabRename,
+  tabFolder,
   tabRm,
   ...elementVerbs,
   ...pagesVerbs,

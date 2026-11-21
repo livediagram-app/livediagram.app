@@ -16,6 +16,8 @@ import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 import { classifySource } from '../source-kind';
 import { submitChangeset, writeFlags, type WriteFlags } from '../write';
+import { fileNewTab, TAB_FOLDER_NAME_MAX } from '@liveworkspace/agent-verbs/tab-folders';
+import { AGENT_PRODUCT } from '../agent-product';
 import { documentOf } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livedocuments URL');
@@ -277,6 +279,13 @@ export const tabAdd = defineVerb({
   input: z.object({
     doc: docArg,
     name: z.string().min(1).describe('The new tab\u2019s name'),
+    folder: z
+      .string()
+      .trim()
+      .min(1)
+      .max(TAB_FOLDER_NAME_MAX)
+      .optional()
+      .describe('A tab folder to put it in: an existing name joins it, a new name starts one'),
     ...sourceFlags,
     ...writeFlags,
   }),
@@ -310,9 +319,14 @@ export const tabAdd = defineVerb({
       /revert: livedocuments changeset revert \S+ \S+$/m,
       `undo: livedocuments tab rm ${document.id} ${target.tabId}`,
     );
+    // A tab folder files the new tab once it is made (docs/specs/006-document/tab-folders.md "Agents"); a dry run makes none.
+    const folder =
+      input.folder && !response.dryRun
+        ? await fileNewTab(ctx.api, AGENT_PRODUCT, document.id, target.tabId, input.folder)
+        : null;
     return {
       // The tab first, as `tab rename` names it: an empty tab has no element lines, so this is all that says which.
-      text: `+ tab ${target.tabId} ${JSON.stringify(input.name)}\n${footer}`,
+      text: `+ tab ${target.tabId} ${JSON.stringify(input.name)}${folder ? ` in ${JSON.stringify(folder)}` : ''}\n${footer}`,
       dryRun: response.dryRun,
       changeset: response.changeset && { id: response.changeset.id, rev: response.changeset.rev },
     };

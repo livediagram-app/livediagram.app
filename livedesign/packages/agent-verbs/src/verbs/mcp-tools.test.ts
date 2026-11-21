@@ -22,6 +22,7 @@ describe('the MCP tool verbs', () => {
       'update_design',
       'share_design',
       'rename_design',
+      'change_tabs',
       'delete_design',
       'list_trash',
       'archive_design',

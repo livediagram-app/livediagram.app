@@ -77,6 +77,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('UpdateDesign', 'Update Design', 'Editing a design’s elements.'),
   mcpTool('ShareDesign', 'Share Design', 'Creating a share link for a design.'),
   mcpTool('RenameDesign', 'Rename Design', 'Renaming a design.'),
+  mcpTool(
+    'ChangeTabs',
+    'Change Tabs',
+    'Putting tabs in tab folders or taking them out, and renaming or ungrouping folders.',
+  ),
   mcpTool('DeleteDesign', 'Delete Design', 'Moving a design to the Trash, or deleting one tab.'),
   mcpTool('ListTrash', 'List Trash', 'Listing the designs in the Trash.'),
   mcpTool('RestoreDesign', 'Restore Design', 'Bringing a design back from the Trash.'),

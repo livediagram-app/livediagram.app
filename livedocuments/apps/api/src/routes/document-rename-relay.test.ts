@@ -106,3 +106,69 @@ describe('a document rename', () => {
     ]);
   });
 });
+
+// An agent's tab order and tab folders (docs/specs/006-document/tab-folders.md "Agents", the MCP's change_tabs) reach the
+// open editors the same way, so their bars regroup at once; an editor's own reorder is sent to the room by the editor.
+describe('a tab order with tab folders', () => {
+  const order = {
+    tabs: [
+      { id: 't2', folder: 'Plans' },
+      { id: 't1', folder: null },
+    ],
+  };
+
+  it('relays an agent’s order with each tab’s folder', async () => {
+    const { db, room } = await setUp();
+    expect((await call(db, 'PUT', '/api/documents/D', order, true)).status).toBe(200);
+    await Promise.all(pending);
+    expect(room.bodies).toEqual([
+      {
+        op: {
+          kind: 'document-meta',
+          name: 'Shop',
+          tabs: [
+            { id: 't2', name: 'Flow', orderIndex: 0, folder: 'Plans' },
+            { id: 't1', name: 'Main', orderIndex: 1 },
+          ],
+        },
+      },
+    ]);
+  });
+
+  it('is an Editor’s alone: a Participant’s or a Viewer’s grant is refused, and nothing is relayed', async () => {
+    const { db, room } = await setUp();
+    for (const level of ['participate', 'view']) {
+      const response = await handleDocuments(
+        makeTestRouteContext('PUT', '/api/documents/D', {
+          env: db.env,
+          owner: 'user_v',
+          accountUserId: null,
+          verifiedUserId: 'user_v',
+          body: order,
+          token: { id: 'tok_v' },
+          grant: {
+            item: 'D',
+            level,
+            tab: null,
+            sub: 'user_v',
+            team: null,
+            exp: 2_000_000_000,
+            shareCode: null,
+            token: 'g',
+          } as never,
+          waitUntil: (p) => void pending.push(p),
+        }),
+      );
+      expect(response.status).toBe(403);
+    }
+    await Promise.all(pending);
+    expect(room.bodies).toEqual([]);
+  });
+
+  it('does not relay an editor’s order again', async () => {
+    const { db, room } = await setUp();
+    expect((await call(db, 'PUT', '/api/documents/D', order, false)).status).toBe(200);
+    await Promise.all(pending);
+    expect(room.bodies).toEqual([]);
+  });
+});
