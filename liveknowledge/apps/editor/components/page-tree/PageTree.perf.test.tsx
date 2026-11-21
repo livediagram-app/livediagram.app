@@ -77,7 +77,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('500 pages', () => {
+// The budgets are CPU time (cpuBudgetMs); the wall-clock timeout only stops a hang, so a busy CI runner's waits never
+// fail a run that stayed within budget (docs/ci.md "Speed budgets").
+describe('500 pages', { timeout: 30_000 }, () => {
   it('render every row once, within budget, with no windowing', () => {
     const start = cpuNowMs();
     mount();
