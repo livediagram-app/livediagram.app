@@ -46,6 +46,6 @@ export const OVERRIDES: readonly Override[] = [
     version: '2.6.2',
     texts: [{ label: 'LICENSE (resvg-js 2.6.2)', file: 'resvg-js-2.6.2-LICENSE.txt' }],
   },
-  // fontkit, its dfa and its WOFF2 decoder, in the PDF export (@liveworkspace/vector-export).
+  // fontkit's dfa and its WOFF2 decoder, in the PDF export (@liveworkspace/vector-export).
   ...VECTOR_EXPORT_OVERRIDES,
 ];

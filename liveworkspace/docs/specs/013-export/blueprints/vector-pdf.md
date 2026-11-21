@@ -160,8 +160,9 @@ the embedded faces. No telemetry.
 
 ## Assets and external resources
 
-fontkit 2.0.4 (with dfa 1.2.0 and brotli 1.3.3), lazy; their licence texts are `VECTOR_EXPORT_OVERRIDES` in
-`packages/licences/src/tables.ts`, spread into every product's overrides. Inter from Google Fonts through each product's
+fontkit 3.0.0 (with dfa 2.0.0 and brotli 2.1.0), lazy. fontkit ships its own LICENSE; dfa and brotli ship none, so
+their licence texts are `VECTOR_EXPORT_OVERRIDES` in `packages/licences/src/tables.ts`, spread into every product's
+overrides. Inter from Google Fonts through each product's
 `embeddedFontFaceCss`.
 
 ## Defaults ledger
