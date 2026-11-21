@@ -810,6 +810,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|AskAboutPage': "Someone opened Ask from a page's AI Context, asking about that page.",
   'UI|Used|OnThisPage': 'Someone jumped to a heading from the On This Page list.',
   'UI|Used|CopyPageLink': "Someone copied a page's link from its menu in the page tree.",
+  'UI|Used|RestorePage': "Someone restored a page from the knowledgebase's page Trash.",
+  'UI|Used|DeletePageForever': 'An Editor deleted a page in the page Trash forever.',
+  'UI|Used|EmptyPageTrash': "An Editor emptied the knowledgebase's page Trash.",
+  'UI|Opened|PageTrash': "Someone opened the knowledgebase's page Trash.",
   'UI|Changed|PageTreeCollapsed': 'Someone folded the page tree away.',
   'UI|Changed|PageTreeExpanded': 'Someone opened the page tree out again.',
   'UI|Used|SetupSuggested':

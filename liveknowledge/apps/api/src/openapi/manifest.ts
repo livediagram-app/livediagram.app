@@ -1139,10 +1139,55 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Delete one tab from a document.',
+    summary:
+      "Delete one page: it moves to the knowledgebase's page Trash (docs/specs/030-knowledgebase/knowledgebases-and-pages.md \"The page Trash\"), restorable by a person in the editor for 30 days. A connected file's row, and a tab shared with another item, are removed outright.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404, 410],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/trash',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "The knowledgebase's page Trash, newest first: each page put there with its trashed subpages, who put it there and when. Pages past their 30 days, and past the newest 500, are removed for good first. A Writer of the whole knowledgebase in person; a token is refused 403 `trash_is_a_persons`.",
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/trash',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Empty Trash: remove every page in the page Trash for good. An Editor of the whole knowledgebase in person.',
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    statuses: [204, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/trash/{tabId}/restore',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Restore a page and its trashed subpages to where they stood: under the old parent at the old place, or at the top level when that parent is gone (`topLevel`). Told to every open editor. 404 `not_in_trash`; 409 `page_limit` past 500 pages. A Writer of the whole knowledgebase in person.',
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    statuses: [200, 401, 403, 404, 405, 409, 410],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/trash/{tabId}',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Delete Forever: remove a page in the page Trash, and its trashed subpages, for good. 404 `not_in_trash`. An Editor of the whole knowledgebase in person.',
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    statuses: [204, 401, 403, 404, 405, 410],
   },
   {
     method: 'POST',

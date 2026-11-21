@@ -365,8 +365,12 @@ describe('Created and Updated (verification.md)', () => {
       { by: 'user_p', at: 3_000_000, kind: 'human' },
     ]);
 
-    // A deleted page takes its row with it.
+    // A page in the Trash keeps its rows; deleted forever, it takes them with it.
     await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/fresh');
+    expect(
+      kit.db.sql.prepare("SELECT tab FROM page_authors WHERE tab = 'fresh'").get(),
+    ).toEqual({ tab: 'fresh' });
+    await kit.call('editor', 'DELETE', '/api/documents/kb/trash/fresh');
     expect(
       kit.db.sql.prepare("SELECT tab FROM page_authors WHERE tab = 'fresh'").get(),
     ).toBeUndefined();

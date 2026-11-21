@@ -36,6 +36,7 @@ import { emailMarksSchemaStep } from '../knowledge/email-marks';
 import { pageAnswersSchemaStep } from '../knowledge/page-answers';
 import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
 import { pageThreadsSchemaStep } from '../knowledge/page-threads';
+import { pageTrashSchemaStep } from './page-trash';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -425,6 +426,12 @@ const V34 = VERSION_SAVE_STEP;
 // the steps before it, never among the engine's own. Without it a room's restore reads a table it never made.
 const V35 = automationSchemaStep('wake');
 
+// Step 36: the knowledgebase's page Trash (document-room/page-trash.ts; docs/specs/030-knowledgebase/
+// knowledgebases-and-pages.md "The page Trash"): where each trashed page stood and who put it there, and the
+// triggers that take a relinked page out of it and mark a page's index when its link comes or goes. Additive,
+// IF NOT EXISTS.
+const V36 = pageTrashSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -453,6 +460,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V33,
   V34,
   V35,
+  V36,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

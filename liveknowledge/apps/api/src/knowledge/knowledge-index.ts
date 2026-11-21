@@ -90,8 +90,15 @@ export type IndexedPage = { tab: string; before: { id: string; textHash: string 
 
 /** Bring one page's index up to its stored tab. Runs inside the caller's transaction. */
 export function settlePage(sql: ItemSql, tab: string, indexed?: IndexedPage[]): SettledPage {
-  const row = sql.exec('SELECT name, data, connection FROM tabs WHERE id = ?', tab).toArray()[0] as
-    { name: string; data: string; connection?: string | null } | undefined;
+  // Only a tab linked in the knowledgebase is a page of it: one in the page Trash (document-room/page-trash.ts) keeps
+  // its row but has lost its link, and settles as gone until a restore links it again.
+  const row = sql
+    .exec(
+      `SELECT name, data, connection FROM tabs t
+        WHERE t.id = ? AND EXISTS (SELECT 1 FROM document_tabs dt WHERE dt.tab_id = t.id)`,
+      tab,
+    )
+    .toArray()[0] as { name: string; data: string; connection?: string | null } | undefined;
   // A connected file in the tree is no page (links-and-embeds.md "Connected files in the sidebar"): nothing of it is
   // searched, asked about, linked or trusted, so it settles as a page gone.
   if (!row || (typeof row.connection === 'string' && row.connection !== '')) {

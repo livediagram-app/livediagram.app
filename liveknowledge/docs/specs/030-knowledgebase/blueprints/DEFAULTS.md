@@ -16,3 +16,6 @@ One row per default applied where a spec is silent or qualitative.
 | D10 | editing         | Where the draft bar stands                                | In the top row, in Edit's place before Page Info and Share                                             |
 | D11 | editing         | How fresh "Unsaved changes from X, <when>" is             | The record moves at most once a minute (`DRAFT_TOUCH_MS`)                                              |
 | D12 | editing         | An agent's write and the draft's change to the same block | The draft's wins; the agent's other blocks stay (`mergeDraftOverSaved`)                                |
+| D13 | page-tree       | Restoring a subpage trashed apart from its parent page    | It comes back at the top level when its parent is not in the tree, saying so ("at the top level")      |
+| D14 | page-tree       | An Offline knowledgebase's Trash                          | None: its delete keeps the old words and Undo brings a page back                                       |
+| D15 | page-tree       | Who "deleted" a page an agent deleted                     | The agent's token name, else "An agent"; agents never list, restore or empty the Trash                 |

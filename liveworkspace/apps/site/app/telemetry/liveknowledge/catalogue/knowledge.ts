@@ -335,6 +335,22 @@ export const PAGE_LINKS_COPIED = chart(
   { types: ['CopyPageLink'] },
 );
 
+export const PAGES_RESTORED = chart(
+  'UI',
+  'Used',
+  'Pages Restored From the Trash',
+  "A page brought back from the knowledgebase's page Trash to where it was.",
+  { types: ['RestorePage'] },
+);
+
+export const PAGES_DELETED_FOREVER = chart(
+  'UI',
+  'Used',
+  'Pages Deleted Forever',
+  'A page removed for good from the page Trash, one at a time or the whole Trash emptied, by an Editor.',
+  { types: ['DeletePageForever', 'EmptyPageTrash'], rising: 'neutral' },
+);
+
 export const PAGE_TREE_FOLDED = chart(
   'UI',
   'Changed',
@@ -353,6 +369,8 @@ export const PAGE_NAVIGATION: MetricStack = {
     BACKLINKS_FOLLOWED,
     ON_THIS_PAGE_JUMPS,
     PAGE_LINKS_COPIED,
+    PAGES_RESTORED,
+    PAGES_DELETED_FOREVER,
     PAGE_TREE_FOLDED,
   ],
   headline: [PAGE_LINKS_FOLLOWED, BACKLINKS_FOLLOWED, ON_THIS_PAGE_JUMPS],
