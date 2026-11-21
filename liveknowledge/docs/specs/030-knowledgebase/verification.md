@@ -109,6 +109,98 @@ own.
   empty page. The right rail no longer shows it. **Add Cover** follows it, for whoever may change the page's cover
   ([The page surface](page-surface.md) "The cover").
 
+## Health Score
+
+Owner, 2026-11-21: "Page Health should provide a score per page in the sidebar, taking into account verification,
+age, length and more", and "MCP and AI should use it to judge the accuracy of the information provided, it isn't
+just a score for humans reading the page". Every page has a **Health Score**, 0 to 100: how far a reader, a person
+or an agent, can lean on it. One pure function (`pageHealth`, @liveknowledge/knowledge) works it out from the page's
+facts and the clock, in the editor and in the api alike, so a person and an agent always see the same number.
+Nothing is stored: it is worked out when read, as the states are.
+
+**The formula.** Eight factors, each a whole number of points, summed (never below 0 or above 100):
+
+| Factor       | Points | Full when                                                           | Less when                                                                                                                                                                                                                                                                                                    |
+| ------------ | ------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Verification | 30     | Verified, the review not yet due                                    | Review Due 10; Never Verified 0                                                                                                                                                                                                                                                                              |
+| Freshness    | 20     | 10: the share of the Review Period left; 10: touched lately         | Review left: 10 times the share left (all 10 under Never; none when due or never verified). Touched: the later of the last edit and the last Verify; 10 within 90 days, then down evenly to 0 at 455 days. A page with no edit kept and never verified counts from nothing: the full 10 (nothing is guessed) |
+| Owner        | 10     | Someone owns it                                                     | No owner 0                                                                                                                                                                                                                                                                                                   |
+| Length       | 10     | 50 words or more                                                    | Empty 0; under 20 words 3; under 50 words 6                                                                                                                                                                                                                                                                  |
+| Structure    | 10     | Under 300 words, or any heading                                     | 300 to 2,500 words with no heading 5; over 2,500 words with no heading 0                                                                                                                                                                                                                                     |
+| Links        | 5      | No broken page link, and another page links here                    | 4 with no backlink; each broken link (to a page no longer in the knowledgebase) takes 2 of the 4                                                                                                                                                                                                             |
+| Open Issues  | 10     | Nothing open on the page                                            | Each open conflict ([Pages That Disagree](ai-knowledge.md#pages-that-disagree)) 5; Pending Approval 2; each unresolved comment thread 1 (3 at most); each agent's suggested edit waiting 1 (2 at most)                                                                                                       |
+| Use          | 5      | Read this week, by a person or an agent; or made in the last 7 days | Not read this week 0 (a page in its first week is never marked down for it)                                                                                                                                                                                                                                  |
+
+- **Under a Review Period of Never** (owner 2026-11-21: "if I set no review period, / never, then don't show the
+  verification stuff, and don't include it in the health scorings"): the score leaves verification out. There is
+  no Verification factor, Freshness counts only the last edit (10 within 90 days, down evenly to 0 at 455; no edit
+  kept, the full share), and the seven factors left are re-weighted to 100: **Freshness 15, Owner 15, Length 15,
+  Structure 15, Links 10, Open Issues 20, Use 10**. Each factor is worked out as above, scaled to its new weight and
+  rounded (its gain too), so the factors still add up to the score. A page is never marked down, given a reason
+  or offered a fix for not being verified: the breakdown has no Verification row and no Verify button, Freshness
+  says "Bring it up to date" and "Not edited in 14 months". Knowledge Health's average and low pages, the agents'
+  `health` and Ask's passages follow the same rule, so no agent is told a page is unverified. (Hiding the rest of
+  Page Health's verification rows under Never is its own change, not this one.)
+- **The word:** 75 and over is **Healthy** (green, the verified palette), 45 to 74 **Fair** (amber, Review Due's),
+  under 45 **Needs Work** (rose). The word always shows beside the number: colour is never alone.
+- **Bands, not every word:** length and structure count in bands (empty, under 20, under 50, under 300, up to
+  2,500, more), so typing a word changes the score only when it crosses a band, and a typing commit inside one works
+  nothing out again. Words are counted as reading time counts them (230 a minute; [Reading time](#page-health)).
+- **The main reason** is the factor that lost the most points (the first in the table's order on a tie), in a few
+  words: "Never verified", "Review due 40 days ago", "2 broken links", "No owner", "Under 50 words", "No headings
+  in a long page", "1 open conflict", "Pending approval", "3 open comments", "Not read this week", "Not touched in
+  14 months". A page with every point says "Every check passes".
+- **Each factor says what would raise it** with the points it gains: "Verify this page: +30", "Verify again: +20",
+  "Set an owner: +10", "Add a heading: +5", "Write at least 50 words: +4", "Fix 2 broken links: +4", "Resolve the
+  conflict: +5". A factor at full says nothing.
+- **Not counted:** unanswered questions a page is cited for. A question nobody could answer is logged with no page
+  (it found none), so no page can be held to it.
+
+### In Page Health
+
+- **At the top of Page Health**, above the state panel: the score as a large figure in a small ring that fills to
+  it (the ring's colour is the word's; the 200 ms fill follows the freshness ring's, none with reduced motion),
+  then the word, then the main reason on one line.
+- **The breakdown** is a disclosure under it, **Score Breakdown**, closed by default (owner's convention: closed
+  accordions). Open, it lists the eight factors in the table's order, each with its points of its maximum
+  ("8 / 10") and, where it is short, what would raise it. Where a fix is a press away it is a small button on the
+  row: **Verify** (Verification, and Freshness when the review is due), **Set an Owner** (opens the Owner picker
+  beside it), **Add a Heading** (opens the page for editing if it is not, then puts an empty level-two heading after the block
+  the caret is in, under the title when the writing was not yet clicked into, the caret in it). The rest
+  read as text (a broken link is fixed in the writing; a conflict in AI Knowledge).
+- **Roles:** everyone who can read the page sees the score, its word, its reason and the breakdown. The buttons are
+  only for those who may do them: Verify and Set an Owner for an Editor or a Participant (as Verify and the owner
+  are), Add a Heading for anyone who may change the page's writing. A Viewer reads the same rows with no buttons.
+- **What it is worked out from, in the editor:** the page's fields and the Review Period as the state is, the
+  committed writing (words, headings and page links, against the pages the editor holds), and Page Health's read:
+  the week's reads and Created / Updated, which it already holds, and `signals` (open conflicts, unresolved
+  threads, suggested edits waiting, backlinks), four counts the same read now answers. No request more: the score
+  is there once Page Health is read, and before it the page's own facts give it, the read's counts as none.
+- **Kept Offline:** no room, so no signals and no reads: the score counts what the page itself holds (verification,
+  freshness, owner, length, structure, broken links), Links' backlink point and Use as full, Open Issues as none,
+  and the breakdown says "Kept in this browser: reads and open issues are not counted."
+- **Phone:** the same, in the Page Info sheet.
+- **Not in the page tree.** A score dot beside each tree row is not built: the tree holds each page's fields and
+  title but not its words, headings or Page Health's counts, so a dot would need every page's writing walked in the
+  editor, or one more read of the knowledgebase's scores (the overview's, below) on every open.
+
+### For agents and Ask
+
+- `read_page`, `search_pages` (each result) and `get_context` (each page) carry `health: { score, label, reason,
+factors }` beside `verified` and `stale`: `label` is `healthy`, `fair` or `needs-work`, each factor `{ factor,
+points, max }` and, when short, `raise`. The CLI's `read`, `search` and `context` say "health 42 (needs work: never
+  verified)" on the trust line.
+- The tools' descriptions, the MCP server's instructions and the CLI's knowledgebase guide tell an agent: weigh a
+  passage from a low-scoring page as less reliable; when pages disagree, prefer the higher-scoring one; and say so
+  to the person ("this comes from a page with a low health score: never verified and 14 months old").
+- **Ask** hands the model each passage with its page's score and word; the system prompt says to prefer
+  higher-scoring sources and to flag a low-scoring one in the answer. Each source card shows its page's score
+  beside its trust ([Search and Ask](search-and-ask.md) "Sources").
+- **Cost:** the api works the score out from one read for the pages it answers, never a read a page: one statement
+  over the room's own tables (the index's words, headings and owner, `page_trust`, the link table, threads,
+  approvals, conflicts, suggestions, the week's reads, the authors), for a set of pages (a search's, chunked at 50)
+  or every page (the overview's). Measured in the [blueprint](blueprints/knowledge-package.md#page-health).
+
 ## The Review Period
 
 - **Changed from Page Health**, beside the Review Period row, by an Editor of the whole knowledgebase only (never a

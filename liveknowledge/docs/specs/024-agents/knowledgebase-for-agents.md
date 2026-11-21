@@ -28,6 +28,14 @@ words). The page tools replace livedocuments' element and page-layout tools:
 
 - Scopes: `read` (get, list, search, read, report, list comments), `suggest` (plus create, suggest, request
   approval and change comments), `write` (plus write and move). A token or OAuth grant names its scopes; the default for a new connection is `read` and `suggest`.
+- **Health:** `get_context` (each page), `search_pages` (each result) and `read_page` carry `health: { score,
+label, reason, factors }` beside the trust fields: the page's Health Score, 0 to 100, its word (`healthy`, `fair`,
+  `needs-work`), its main reason, and each factor's `points` of its `max` with `raise` when short
+  ([Verification](../030-knowledgebase/verification.md#health-score)). It is the same number a person sees in Page
+  Health. The tools' descriptions and the server's instructions tell the agent to weigh a passage from a
+  low-scoring page as less reliable, to prefer the higher-scoring page when two disagree, and to tell the person
+  when an answer rests on a low-scoring page and why. `list_pages` does not carry it (the tree is read without the
+  pages' signals); read or search a page for it.
 - Every read is counted for [AI Knowledge](../030-knowledgebase/ai-knowledge.md) under the client's name.
 - Tool results are small by default (a passage, not a page) and name the next tool to call for more.
 
