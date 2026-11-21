@@ -196,6 +196,15 @@ const base = {
   selfParticipant: self,
   livePresence: [],
   documentOwnerName: null,
+  // Connected files in the sidebar (useConnectedRows): none.
+  connectedTabs: {
+    grant: () => null,
+    connected: [],
+    addConnectedTab: () => {},
+    showConnected: () => {},
+    connectAgainTab: () => {},
+    goTo: () => {},
+  },
   // The tab bar.
   tabs: [tab],
   activeId: 't1',
