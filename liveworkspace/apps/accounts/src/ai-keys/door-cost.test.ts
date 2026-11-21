@@ -33,7 +33,9 @@ describe('the cost of a key', () => {
     const { db, sql } = testD1();
     addUser(sql, { id: 'user_ada', email: 'ada@example.com' });
     addClient(sql, 'liveknowledge', 'liveknowledge.app');
-    const secrets = aiKeySecrets({ AI_KEY_SECRET: '1:cost-secret' })!;
+    const secrets = aiKeySecrets({
+      AI_KEY_SECRET: '1:cost-secret-of-thirty-two-characters-or-more',
+    })!;
     const { sealed, version } = await sealAiKey(secrets, 'account:user_ada', 'anthropic', KEY);
     await saveAiKeyStatement(db, {
       ownerKind: 'account',
@@ -46,7 +48,10 @@ describe('the cost of a key', () => {
       setBy: 'user_ada',
       setAt: 1,
     }).run();
-    const env = { AUTH_DB: db, AI_KEY_SECRET: '1:cost-secret' } as unknown as Env;
+    const env = {
+      AUTH_DB: db,
+      AI_KEY_SECRET: '1:cost-secret-of-thirty-two-characters-or-more',
+    } as unknown as Env;
     const door = () =>
       handleAiKeyInternal(
         new Request(`http://accounts${AI_KEY_INTERNAL_PATH}`, {

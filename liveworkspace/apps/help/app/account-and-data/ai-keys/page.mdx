@@ -31,7 +31,7 @@ AI keys are a **signed-in-only** feature, like [API Tokens](/help/account-and-da
   **Save Key**.
 </Step>
 
-Before it is saved, the key is checked with one small request to the provider, so a mistyped key, a key with no credit or a key that cannot use the model is refused there and then, in plain words. Once saved, Settings shows only the provider, the model and "Key ending" with its last four characters.
+The field hides what you type, and your browser is never offered it to save as a password. Before it is saved, the key is checked with one small request to the provider, so a mistyped key, a key with no credit or a key that cannot use the model is refused there and then, in plain words. Once saved, Settings shows only the provider, the model and "Key ending" with its last four characters.
 
 ## A Team's Key
 
@@ -48,7 +48,7 @@ When an app calls a model for you, it uses the first of these that is set:
 3. Your own key.
 4. Built-in AI.
 
-A key that is set but cannot be read is never swapped quietly for the next one: the app says so, and asks you (or the team's admins) to replace it.
+A key that is set but cannot be read is never swapped quietly for the next one: the app says so, and asks you (or the team's admins) to replace it. If the app can't reach your key settings for a moment, it says so too, rather than sending your words to built-in AI.
 
 <AppNote app="liveknowledge">
   A Knowledgebase's [AI Settings](/help/knowledgebase/ai-settings/) say which key answers you there
@@ -73,7 +73,7 @@ A key that is set but cannot be read is never swapped quietly for the next one: 
 
 Each time your key is added, replaced or removed, you get an email, **"Your liveworkspace AI key was changed"**, saying what changed, who changed it and when, and never any part of the key. A team's admins get one for the team's key. If it wasn't you, remove the key and revoke it in the provider's console.
 
-Closing your account deletes your key; deleting a team deletes the team's key.
+Closing your account deletes your key, and any team key you added. Leaving a team, or being removed, deletes the team key you added, since it bills you; the team's admins can add another. Deleting a team deletes the team's key.
 
 ## Who Pays
 

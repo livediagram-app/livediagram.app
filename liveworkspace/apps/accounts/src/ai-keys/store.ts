@@ -159,7 +159,7 @@ export const RESEAL_BATCH = 50;
 
 export type ResealResult = { resealed: number; unreadable: number; left: number };
 
-/** A rotation's second half (ai-keys.md "Rotating the master secret"): rows sealed under an older version, opened
+/** A rotation's second half (ai-keys.md "Rotating the master secret"): rows sealed under the previous version, opened
  *  and sealed again under the current secret, `RESEAL_BATCH` a run, oldest first. A row replaced meanwhile is left
  *  as it is; one that opens under neither secret is counted and left. Runs only while a previous secret is set. */
 export async function resealAiKeys(
@@ -170,9 +170,11 @@ export async function resealAiKeys(
   const result: ResealResult = { resealed: 0, unreadable: 0, left: 0 };
   if (!secrets.previous) return result;
   const version = secrets.current.version;
+  // Only the previous secret's rows: a row under any other version opens under neither secret, and taking those
+  // first would stall the sweep behind them run after run.
   const { results } = await db
-    .prepare(`SELECT ${COLUMNS} FROM ai_key k WHERE k.key_version != ? ORDER BY k.set_at LIMIT ?`)
-    .bind(version, batch)
+    .prepare(`SELECT ${COLUMNS} FROM ai_key k WHERE k.key_version = ? ORDER BY k.set_at LIMIT ?`)
+    .bind(secrets.previous.version, batch)
     .all<AiKeyRow>();
   for (const row of results ?? []) {
     let apiKey: string;

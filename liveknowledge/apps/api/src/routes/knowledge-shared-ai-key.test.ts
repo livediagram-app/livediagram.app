@@ -206,11 +206,21 @@ describe('which key answers', () => {
     expect(await uses(kit, 'viewer')).toEqual(expect.objectContaining({ uses: 'personal' }));
   });
 
-  it('falls back to built-in AI when accounts cannot answer', async () => {
+  // Security review M2: a person or team that chose its own key never has its words sent to built-in AI because
+  // accounts was down, slow or rate limited.
+  it('refuses, never falling back to built-in AI, when accounts cannot answer', async () => {
     const kit = await kitWith(accounts({ down: true }));
+    const fetch = vi.fn(async () => Response.json({}, { status: 404 }));
+    vi.stubGlobal('fetch', onlyProvider({ fetch: fetch as never, sent: [] }).fetch);
     const res = await ask(kit, 'participant');
-    expect((await res.json<{ error: string }>()).error).toBe('built-in-unavailable');
-    expect(await uses(kit, 'participant')).toEqual(expect.objectContaining({ uses: 'built-in' }));
+    expect([res.status, await res.json()]).toEqual([
+      409,
+      {
+        error: 'ask_unavailable',
+        message: "Your AI key settings couldn't be reached just now. Try again in a moment.",
+      },
+    ]);
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('uses the shared key for Describe to Set Up too', async () => {

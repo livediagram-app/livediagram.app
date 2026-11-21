@@ -9,6 +9,7 @@ import type { Env } from '../env.ts';
 import { addClient, addUser, testD1 } from '../test-d1.ts';
 import { AI_KEY_INTERNAL_PATH, fromBinding, handleAiKeyInternal } from './internal.ts';
 import { aiKeySecrets, sealAiKey } from './seal.ts';
+import { leaveAllTeams, removeMember } from '../teams/members.ts';
 import { readAiKey, resealAiKeys } from './store.ts';
 
 const BASE = 'https://liveworkspace.app';
@@ -16,7 +17,7 @@ const CLIENT = `Basic ${btoa('liveknowledge:secret')}`;
 const OTHER_CLIENT = `Basic ${btoa('liveplanner:secret')}`;
 const KEY = 'sk-ant-api03-planted-secret-key-4f2a';
 const TEAM_KEY = 'sk-proj-planted-team-secret-key-9c1d';
-const SECRET = '1:test-ai-key-master-secret';
+const SECRET = '1:test-ai-key-master-secret-of-thirty-two-characters';
 
 let env: Env;
 let sql: ReturnType<typeof testD1>['sql'];
@@ -289,6 +290,46 @@ describe('a person’s own key', () => {
     expect(providerCalls).toEqual([]);
   });
 
+  // Security review L7: saving is no way to test stolen keys from many accounts on one network.
+  it('limits writes per network too, across accounts', async () => {
+    const counts = new Map<string, number>();
+    const limit = vi.fn(async ({ key }: { key: string }) => {
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+      return { success: (counts.get(key) ?? 0) <= 10 };
+    });
+    env = { ...env, AI_KEY_WRITE_LIMITER: { limit } } as unknown as Env;
+    const from = { 'cf-connecting-ip': '203.0.113.7' };
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i++) {
+      signedIn = i % 2 ? BEA : ADA;
+      statuses.push(
+        (
+          await call('/ai-key', {
+            method: 'PUT',
+            body: { provider: 'anthropic', key: KEY },
+            headers: from,
+          })
+        ).status,
+      );
+    }
+    expect(statuses.slice(0, 10).every((status) => status === 200)).toBe(true);
+    expect(statuses[10]).toBe(429);
+    expect([...counts.keys()].filter((key) => key.startsWith('write-range:'))).toHaveLength(1);
+    expect(providerCalls).toHaveLength(10);
+  });
+
+  // Security review L8: a body too big for any key is refused before it is read.
+  it('refuses a body too big for a key, unread', async () => {
+    const refused = await call('/ai-key', {
+      method: 'PUT',
+      body: { provider: 'anthropic', key: KEY, padding: 'x'.repeat(5000) },
+      headers: { 'content-length': '5100' },
+    });
+    expect([refused.status, await refused.json()]).toEqual([413, { error: 'too_large' }]);
+    expect(providerCalls).toEqual([]);
+    expect(await readAiKey(env.AUTH_DB, 'account', 'user_ada')).toBeNull();
+  });
+
   it('needs a signed-in person: no one signed out, no cross-origin write', async () => {
     expect((await putKey('/ai-key', { provider: 'anthropic', key: KEY, headers: {} })).status).toBe(
       200,
@@ -307,11 +348,24 @@ describe('a person’s own key', () => {
 });
 
 describe('through an app, by bearer', () => {
+  // An access token as the provider mints it: `sid`, the session it was minted under. The verifier stand-in reads the
+  // payload unsigned; the session is checked in D1 as the Worker checks it.
+  const jwt = (payload: Record<string, unknown>) =>
+    `e30.${btoa(JSON.stringify(payload)).replace(/=+$/, '')}.sig`;
+  const ADA_TOKEN = jwt({ sub: 'user_ada', sid: 'sess_ada' });
+  const addSession = (id: string, userId: string, expiresAt: string) =>
+    sql
+      .prepare(
+        'INSERT INTO session (id, expiresAt, token, createdAt, updatedAt, userId) VALUES (?, ?, ?, ?, ?, ?)',
+      )
+      .run(id, expiresAt, `t-${id}`, '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', userId);
+
   beforeEach(() => {
     signedIn = null;
+    addSession('sess_ada', 'user_ada', '2999-01-01T00:00:00Z');
     __setBearerVerifier(
       () => async (token) =>
-        token === 'tok-ada'
+        token.startsWith('e30.') && JSON.parse(atob(token.split('.')[1]!)).sub === 'user_ada'
           ? {
               kind: 'account',
               userId: 'user_ada',
@@ -338,10 +392,10 @@ describe('through an app, by bearer', () => {
   it('lets the account set and read their key, and refuses a guest, an API token and a forged token', async () => {
     const saved = await call(
       '/ai-key',
-      bearer('tok-ada', { method: 'PUT', body: { provider: 'anthropic', key: KEY } }),
+      bearer(ADA_TOKEN, { method: 'PUT', body: { provider: 'anthropic', key: KEY } }),
     );
     expect(saved.status).toBe(200);
-    expect(await (await call('/ai-key', bearer('tok-ada'))).json()).toMatchObject({
+    expect(await (await call('/ai-key', bearer(ADA_TOKEN))).json()).toMatchObject({
       key: { hint: '4f2a' },
     });
     for (const token of ['tok-guest', 'lwt_0123456789abcdef0123456789abcdef', 'forged']) {
@@ -354,6 +408,34 @@ describe('through an app, by bearer', () => {
     }
     expect(await readAiKey(env.AUTH_DB, 'account', 'user_ada')).not.toBeNull();
   });
+
+  // Security review M1: an access token outlives Sign out by up to 15 minutes; a change to a key does not.
+  it("refuses a change once the token's session has ended, expired, or when it names none", async () => {
+    const put = (token: string) =>
+      call('/ai-key', bearer(token, { method: 'PUT', body: { provider: 'anthropic', key: KEY } }));
+    addSession('sess_old', 'user_ada', '2001-01-01T00:00:00Z');
+    addSession('sess_bea', 'user_bea', '2999-01-01T00:00:00Z');
+    for (const token of [
+      jwt({ sub: 'user_ada', sid: 'sess_gone' }),
+      jwt({ sub: 'user_ada', sid: 'sess_old' }),
+      jwt({ sub: 'user_ada', sid: 'sess_bea' }),
+      jwt({ sub: 'user_ada' }),
+    ]) {
+      const refused = await put(token);
+      expect([refused.status, await refused.json()]).toEqual([401, { error: 'signed_out' }]);
+      const removed = await call('/ai-key', bearer(token, { method: 'DELETE' }));
+      expect(removed.status).toBe(401);
+    }
+    expect(await readAiKey(env.AUTH_DB, 'account', 'user_ada')).toBeNull();
+    expect(providerCalls).toEqual([]);
+    // Signed out: the session row goes, and with it the token's right to change the key.
+    expect((await put(ADA_TOKEN)).status).toBe(200);
+    sql.prepare(`DELETE FROM session WHERE id = 'sess_ada'`).run();
+    expect((await call('/ai-key', bearer(ADA_TOKEN, { method: 'DELETE' }))).status).toBe(401);
+    expect(await readAiKey(env.AUTH_DB, 'account', 'user_ada')).not.toBeNull();
+    // Reading which key is kept still works for the token's life: it shows nothing of a key.
+    expect((await call('/ai-key', bearer(ADA_TOKEN))).status).toBe(200);
+  });
 });
 
 describe("a team's key", () => {
@@ -363,6 +445,47 @@ describe("a team's key", () => {
       ['user_bea', 'member'],
       ['user_cy', 'member', 'removed'],
     ]);
+  });
+
+  // Security review L1: a team key bills the admin who set it; when they go, it goes, so it never keeps billing
+  // someone who can no longer remove it. Written to the team's audit log.
+  it('goes with the admin who set it, when they leave or are removed, and only then', async () => {
+    sql.prepare(`UPDATE team_member SET role = 'admin' WHERE id = 'team_1-user_bea'`).run();
+    expect(
+      (await putKey('/teams/team_1/ai-key', { provider: 'openai', key: TEAM_KEY })).status,
+    ).toBe(200);
+    // Another member going leaves it.
+    const bea = { id: 'user_bea', name: 'Bea', email: 'bea@example.com' };
+    addUser(sql, { id: 'user_dee', email: 'dee@example.com', name: 'Dee' });
+    sql
+      .prepare(
+        `INSERT INTO team_member (id, teamId, userId, email, role, status, createdAt, updatedAt, rev)
+         VALUES ('team_1-user_dee', 'team_1', 'user_dee', 'dee@example.com', 'member', 'joined', 1, 1, 1)`,
+      )
+      .run();
+    expect((await removeMember(env.AUTH_DB, bea, 'team_1', 'team_1-user_dee')).ok).toBe(true);
+    expect(await readAiKey(env.AUTH_DB, 'team', 'team_1')).not.toBeNull();
+    // Ada, who set it, is removed by Bea: the key goes, in the audit log as removed by Bea.
+    expect((await removeMember(env.AUTH_DB, bea, 'team_1', 'team_1-user_ada')).ok).toBe(true);
+    expect(await readAiKey(env.AUTH_DB, 'team', 'team_1')).toBeNull();
+    const events = sql
+      .prepare(`SELECT body FROM index_events_outbox ORDER BY rowid`)
+      .all()
+      .map((r) => JSON.parse((r as { body: string }).body) as Record<string, unknown>)
+      .filter((e) => e.type === 'team_ai_key_changed');
+    expect(events.at(-1)).toMatchObject({
+      actorId: 'user_bea',
+      detail: { change: 'removed', provider: 'openai' },
+    });
+    expect(JSON.stringify(events)).not.toContain(TEAM_KEY);
+  });
+
+  it('goes with the account that set it when the account closes', async () => {
+    expect(
+      (await putKey('/teams/team_1/ai-key', { provider: 'openai', key: TEAM_KEY })).status,
+    ).toBe(200);
+    await leaveAllTeams(env.AUTH_DB, 'user_ada');
+    expect(await readAiKey(env.AUTH_DB, 'team', 'team_1')).toBeNull();
   });
 
   it('is set only by an admin, written to the audit log and emailed to the admins, with no key in either', async () => {
@@ -510,6 +633,21 @@ describe('the internal door', () => {
       auth,
     );
     expect(get.status).toBe(404);
+    // Security review L3: a public path that normalises onto the door (dot segments, encoded or not) arrives from the
+    // internet, so with Cloudflare's CF-Connecting-IP, which no client can strip: refused, with full proofs too.
+    for (const path of [
+      '/api/account/../../internal/ai-key',
+      '/api/account/%2e%2e/%2e%2e/internal/ai-key',
+    ]) {
+      const request = new Request(`https://www.liveworkspace.app${path}`, {
+        method: 'POST',
+        headers: { authorization: CLIENT, 'cf-connecting-ip': '203.0.113.9' },
+        body: JSON.stringify({ token: 'jwt-ada', want: 'key' }),
+      });
+      expect(new URL(request.url).pathname).toBe(AI_KEY_INTERNAL_PATH);
+      const response = await handleAiKeyInternal(request, env, auth);
+      expect([response.status, await response.text()]).toEqual([404, 'Not found']);
+    }
     const refusals: [Response, number, string][] = [
       // No client, a wrong client secret.
       [await door({ token: 'jwt-ada', want: 'key' }, {}, ''), 401, 'invalid_client'],
@@ -540,16 +678,33 @@ describe('the internal door', () => {
     expect(await response.json()).toMatchObject({ source: 'account' });
   });
 
-  it('limits reads per account', async () => {
-    const limit = vi.fn(async () => ({ success: false }));
+  // Security review M2: `which` (every page read of AI Settings) and `key` (a model call) are counted apart, so
+  // reading which key applies never uses up the calls a model needs.
+  it('limits reads per account, which and key apart', async () => {
+    const limit = vi.fn(async ({ key }: { key: string }) => ({
+      success: key.startsWith('which:'),
+    }));
     env = { ...env, AI_KEY_LIMITER: { limit } } as unknown as Env;
     const response = await door({ token: 'jwt-ada', want: 'key' });
     expect([response.status, await response.json()]).toEqual([429, { error: 'rate_limited' }]);
-    expect(limit).toHaveBeenCalledWith({ key: 'use:user_ada' });
+    expect((await door({ token: 'jwt-ada', want: 'which' })).status).toBe(200);
+    expect(limit.mock.calls.map(([arg]) => arg.key)).toEqual(['key:user_ada', 'which:user_ada']);
+  });
+
+  // Security review L4: only an app that calls a model is handed a key; any app may ask which applies.
+  it('hands a key only to an app that calls a model', async () => {
+    sql
+      .prepare(`UPDATE oauth_client_app SET app = 'livediagram.app' WHERE clientId = 'liveplanner'`)
+      .run();
+    const key = await door({ token: 'jwt-ada-planner', want: 'key' }, {}, OTHER_CLIENT);
+    expect([key.status, await key.clone().json()]).toEqual([403, { error: 'not_a_key_reader' }]);
+    const which = await door({ token: 'jwt-ada-planner', want: 'which' }, {}, OTHER_CLIENT);
+    expect(which.status).toBe(200);
+    expect(await everythingThatLeft([key, which])).not.toContain(KEY);
   });
 
   it('says a stored key could not be read, and nothing of it, when the secret no longer opens it', async () => {
-    env = { ...env, AI_KEY_SECRET: '1:a-different-secret' } as Env;
+    env = { ...env, AI_KEY_SECRET: '1:a-different-secret-of-thirty-two-characters' } as Env;
     const response = await door({ token: 'jwt-ada', want: 'key' });
     expect([response.status, await response.clone().json()]).toEqual([
       409,
@@ -573,6 +728,30 @@ describe('the internal door', () => {
 });
 
 describe('rotating the master secret', () => {
+  // Security review L5: rows left from an older rotation, which neither secret opens, never stall the sweep.
+  it('re-seals the previous version only, so rows from an older rotation never stall it', async () => {
+    const insert = sql.prepare(
+      `INSERT INTO ai_key (owner_kind, owner_id, provider, model, sealed, key_version, hint, set_by, set_at)
+       VALUES ('team', ?, 'anthropic', 'claude-fable-5-2', ?, ?, '', 'x', ?)`,
+    );
+    for (let i = 0; i < 60; i++) insert.run(`team_old${i}`, '1.AAAA.AAAA.AAAA', 1, i);
+    const previous = aiKeySecrets({ AI_KEY_SECRET: `2:${'p'.repeat(32)}` })!;
+    const { sealed } = await sealAiKey(previous, 'team:team_new', 'anthropic', TEAM_KEY);
+    insert.run('team_new', sealed, 2, 100);
+    const rotated = aiKeySecrets({
+      AI_KEY_SECRET: `3:${'n'.repeat(32)}`,
+      AI_KEY_SECRET_PREVIOUS: `2:${'p'.repeat(32)}`,
+    })!;
+    expect(await resealAiKeys(env.AUTH_DB, rotated)).toEqual({
+      resealed: 1,
+      unreadable: 0,
+      left: 60,
+    });
+    expect(sql.prepare(`SELECT key_version FROM ai_key WHERE owner_id = 'team_new'`).get()).toEqual(
+      { key_version: 3 },
+    );
+  });
+
   it('re-seals every row under the new secret, then the old one can go', async () => {
     for (let i = 0; i < 3; i++) addUser(sql, { id: `user_r${i}`, email: `r${i}@example.com` });
     const old = aiKeySecrets({ AI_KEY_SECRET: SECRET })!;
@@ -593,7 +772,7 @@ describe('rotating the master secret', () => {
       )
       .run();
     const rotated = aiKeySecrets({
-      AI_KEY_SECRET: '2:the-new-secret',
+      AI_KEY_SECRET: '2:the-new-secret-of-thirty-two-characters-or-more',
       AI_KEY_SECRET_PREVIOUS: SECRET,
     })!;
     expect(await resealAiKeys(env.AUTH_DB, aiKeySecrets({ AI_KEY_SECRET: SECRET })!)).toEqual({
@@ -613,7 +792,7 @@ describe('rotating the master secret', () => {
     });
 
     // With only the new secret, every re-sealed key still answers.
-    env = { ...env, AI_KEY_SECRET: '2:the-new-secret' } as Env;
+    env = { ...env, AI_KEY_SECRET: '2:the-new-secret-of-thirty-two-characters-or-more' } as Env;
     TOKENS['jwt-r2'] = { sub: 'user_r2', client_id: 'liveknowledge' };
     expect(await (await door({ token: 'jwt-r2', want: 'key' })).json()).toMatchObject({
       key: `${KEY}2`,
@@ -643,7 +822,10 @@ describe('rotating the master secret', () => {
         };
       },
     });
-    const rotated = aiKeySecrets({ AI_KEY_SECRET: '2:new', AI_KEY_SECRET_PREVIOUS: SECRET })!;
+    const rotated = aiKeySecrets({
+      AI_KEY_SECRET: '2:new-secret-of-thirty-two-characters-or-more',
+      AI_KEY_SECRET_PREVIOUS: SECRET,
+    })!;
     expect(await resealAiKeys(racing, rotated)).toMatchObject({ resealed: 0 });
     expect(sql.prepare(`SELECT sealed FROM ai_key`).get()).toEqual({ sealed: 'replaced' });
   });

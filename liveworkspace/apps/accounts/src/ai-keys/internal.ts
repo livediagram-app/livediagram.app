@@ -29,6 +29,11 @@ const notFound = () => new Response('Not found', { status: 404 });
 
 const noStore = (body: unknown, status = 200) => json(body, status);
 
+// The apps whose servers call a model with a key, and so may be handed one (`want: 'key'`): today liveknowledge only
+// (ai-keys.md "Which apps use it"). Every registered app may ask which key applies (`want: 'which'`). An app that
+// adopts the key is added here in the same change.
+export const AI_KEY_READERS: ReadonlySet<string> = new Set(['liveknowledge.app']);
+
 type Answer = { source: 'team' | 'account'; provider: KeyProviderId; model: string };
 
 export async function handleAiKeyInternal(
@@ -46,16 +51,23 @@ export async function handleAiKeyInternal(
   if (person instanceof Response) return person;
   // An account's own token only: a guest has no key.
   if (!USER_ID.test(person)) return error(401, 'invalid_token');
-  if (env.AI_KEY_LIMITER && !(await env.AI_KEY_LIMITER.limit({ key: `use:${person}` })).success) {
+  const { teamId, want } = body;
+  if (want !== 'key' && want !== 'which') return error(400, 'invalid_want');
+  if (want === 'key' && !(client.app && AI_KEY_READERS.has(client.app))) {
+    return error(403, 'not_a_key_reader');
+  }
+  // `which` and `key` counted apart, so a page reading which key applies never uses up the calls a model needs.
+  if (
+    env.AI_KEY_LIMITER &&
+    !(await env.AI_KEY_LIMITER.limit({ key: `${want}:${person}` })).success
+  ) {
     return error(429, 'rate_limited');
   }
-  const { teamId, want } = body;
   if (teamId !== undefined && teamId !== null) {
     if (typeof teamId !== 'string' || teamId.length === 0 || teamId.length > 100) {
       return error(400, 'invalid_team');
     }
   }
-  if (want !== 'key' && want !== 'which') return error(400, 'invalid_want');
   const keys = await readApplyingKeys(
     env.AUTH_DB,
     person,

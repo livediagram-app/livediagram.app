@@ -29,6 +29,8 @@ import {
 } from './reads.ts';
 import { newDeclineToken } from './tokens.ts';
 import { deleteTeamRows } from './manage.ts';
+import type { KeyProviderId } from '@liveworkspace/ai';
+import { teamAiKeyEvent } from '../ai-keys/notify.ts';
 import { ANONYMISED_PERSON } from '@liveworkspace/index-client';
 
 export async function inviteMember(
@@ -263,6 +265,18 @@ export async function removeMember(
     }
     if ((await adminCount(db, teamId)) <= 1) return fail(409, 'last_admin');
   }
+  // A team AI key they set goes with them (ai-keys.md "Deletion and export"): their provider bills it, and once out of
+  // the team they could no longer remove it. Gone only if they went (the guard), and written to the audit log.
+  const theirKey =
+    target.status === 'joined' && target.userId
+      ? await db
+          .prepare(
+            `SELECT provider FROM ai_key WHERE owner_kind = 'team' AND owner_id = ? AND set_by = ?`,
+          )
+          .bind(teamId, target.userId)
+          .first<{ provider: KeyProviderId }>()
+      : null;
+  const gone = memberGuard(memberId, 'removed', now);
   const [, updated] = await db.batch([
     db.prepare(BUMP),
     db
@@ -271,6 +285,27 @@ export async function removeMember(
          ${KEEPS_AN_ADMIN}`,
       )
       .bind(teamId, now, memberId),
+    ...(theirKey
+      ? [
+          db
+            .prepare(
+              `DELETE FROM ai_key WHERE owner_kind = 'team' AND owner_id = ? AND set_by = ? AND ${gone.sql}`,
+            )
+            .bind(teamId, target.userId, ...gone.args),
+          teamAiKeyEvent(
+            db,
+            {
+              teamId,
+              teamName: me.teamName,
+              actor,
+              change: 'removed',
+              provider: theirKey.provider,
+              at: now,
+            },
+            gone,
+          ),
+        ]
+      : []),
     // A member removed, or leaving; an invitation withdrawn or a refusal cleared is no news.
     ...(target.status === 'joined'
       ? [
@@ -425,7 +460,10 @@ export async function leaveAllTeams(
     )
     .bind(userId)
     .all<{ id: string; teamId: string; role: TeamRole; joined: number; admins: number }>();
-  const statements: D1PreparedStatement[] = [];
+  // Every team AI key the account set goes with it, as its own key does (ai-keys.md "Deletion and export").
+  const statements: D1PreparedStatement[] = [
+    db.prepare(`DELETE FROM ai_key WHERE owner_kind = 'team' AND set_by = ?`).bind(userId),
+  ];
   const closed: string[] = [];
   for (const row of results) {
     if (row.joined <= 1) {

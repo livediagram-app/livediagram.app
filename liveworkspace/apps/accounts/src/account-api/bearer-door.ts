@@ -1,14 +1,19 @@
 // The account API's door for an app's bearer (account-api.ts).
 
 import { bearerPerson, bearerSessionId } from '../bearer.ts';
-import { listOwnSessions, endOtherSessions, endOwnSession } from '../own-sessions.ts';
+import {
+  listOwnSessions,
+  endOtherSessions,
+  endOwnSession,
+  isLiveSession,
+} from '../own-sessions.ts';
 import { signInMethods, startGoogleLink } from '../link-google.ts';
 import type { Auth } from '../auth.ts';
 import type { Env } from '../env.ts';
 import { resetSettings } from '../settings.ts';
 import { pushDeviceRoutes } from '../push/routes.ts';
 import { handleDataExport } from '../data-export/routes.ts';
-import { aiKeyRoutes } from '../ai-keys/routes.ts';
+import { aiKeyRoutes, isAiKeyPath } from '../ai-keys/routes.ts';
 import { error, json, type WaitUntil } from './http.ts';
 import {
   accountName,
@@ -61,7 +66,15 @@ export async function handleBearer(
     email: person.emailVerified && person.email ? person.email.toLowerCase() : null,
   };
   // Their AI key and their teams' (ai-keys/routes.ts): an account's own access token only, never a guest's or an API
-  // token's (refused above), so no tool or agent reads or changes one.
+  // token's (refused above), so no tool or agent reads or changes one. A change also needs the token's session to be
+  // live, so it never outlives Sign out (ai-keys.md "Who may change a key").
+  if (
+    isAiKeyPath(parts) &&
+    method !== 'GET' &&
+    !(await isLiveSession(db, actor.id, bearerSessionId(token)))
+  ) {
+    return error(401, 'signed_out');
+  }
   const ai = await aiKeyRoutes(request, env, actor, parts, waitUntil);
   if (ai) return ai;
   if (section === 'teams' || section === 'invitations') {

@@ -97,6 +97,10 @@ The knowledgebase's own key stays, and comes first.
 - **A shared key that will not open** is refused in words ("Your team's AI key could not be read. An admin can
   replace it in Settings, under AI." or "Your AI key could not be read. Replace it in Settings, under AI."), never
   swapped quietly for the next in line.
+- **Accounts that cannot answer** (down, slow or rate limited) for a signed-in asker with no knowledgebase key: the
+  call is refused ("Your AI key settings couldn't be reached just now. Try again in a moment."), never sent to
+  built-in AI on a guess, since the person or their team may have chosen their own key. A server with no accounts to
+  ask (self-hosted) has no shared keys.
 - **The plain key** is held in the one request's memory for the one call, never stored in the room.
 - **Which is in use** is said in AI Settings ("Uses This Knowledgebase's Key", "Uses Your Team's Key", "Uses Your Key",
   "Uses Built-In AI"), with **Your AI Keys** linking to the shared Settings category (`?settings=ai`), and on Ask's

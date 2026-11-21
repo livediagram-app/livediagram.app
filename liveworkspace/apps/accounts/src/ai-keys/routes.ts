@@ -15,6 +15,7 @@ import {
 import { accountName } from '../account-api/shared.ts';
 import { error, json, readBody, type WaitUntil } from '../account-api/http.ts';
 import type { Env } from '../env.ts';
+import { rangeOf } from '../rate-limit.ts';
 import { getMembership } from '../teams.ts';
 import { sendAiKeyChanged, teamAiKeyEvent, type AiKeyChange } from './notify.ts';
 import { aiKeyHint, aiKeySecrets, isAiKeyShaped, sealAiKey, type AiKeyOwner } from './seal.ts';
@@ -49,6 +50,15 @@ const CHECK_REFUSAL: Partial<Record<ModelFailureKind, [number, string]>> = {
   'no-credit': [422, 'key_no_credit'],
   'model-unavailable': [422, 'key_model_unavailable'],
 };
+
+// The most a change's body may be: a key is at most 512 characters, so a few KB is plenty, and a bigger body is
+// refused before it is read.
+export const MAX_AI_KEY_BODY_BYTES = 4096;
+
+/** Whether `parts` is an AI key route (`['ai-key']`, `['teams', id, 'ai-key']`). */
+export const isAiKeyPath = (parts: string[]): boolean =>
+  (parts.length === 1 && parts[0] === 'ai-key') ||
+  (parts.length === 3 && parts[0] === 'teams' && parts[2] === 'ai-key');
 
 type Owner = { kind: AiKeyOwnerKind; id: string; teamName?: string };
 
@@ -85,9 +95,9 @@ export async function aiKeyRoutes(
   waitUntil: WaitUntil,
   deps: AiKeyDeps = {},
 ): Promise<Response | null> {
-  const personal = parts.length === 1 && parts[0] === 'ai-key';
-  const team = parts.length === 3 && parts[0] === 'teams' && parts[2] === 'ai-key';
-  if (!personal && !team) return null;
+  if (!isAiKeyPath(parts)) return null;
+  const personal = parts.length === 1;
+  const team = !personal;
   const { method } = request;
   const db = env.AUTH_DB;
   if (personal && method === 'GET') return json(await readState(env, actor.id));
@@ -103,11 +113,12 @@ export async function aiKeyRoutes(
   }
   const secrets = aiKeySecrets(env);
   if (!secrets) return error(503, 'ai_keys_unavailable');
-  if (
-    env.AI_KEY_WRITE_LIMITER &&
-    !(await env.AI_KEY_WRITE_LIMITER.limit({ key: `write:${actor.id}` })).success
-  ) {
-    return error(429, 'rate_limited');
+  // Per account, and per network across accounts, so saving is no way to test a list of stolen keys.
+  if (env.AI_KEY_WRITE_LIMITER) {
+    for (const key of [`write:${actor.id}`, `write-range:${rangeOf(request, env)}`]) {
+      if (!(await env.AI_KEY_WRITE_LIMITER.limit({ key })).success)
+        return error(429, 'rate_limited');
+    }
   }
   const now = (deps.now ?? Date.now)();
   const stored = await readAiKey(db, owner.kind, owner.id);
@@ -153,7 +164,10 @@ export async function aiKeyRoutes(
     return json(await readState(env, actor.id));
   }
 
-  // The body is read here and nowhere logged: a PUT's holds the key.
+  // The body is read here and nowhere logged: a PUT's holds the key. A body too big for any key is not read.
+  if (Number(request.headers.get('content-length') ?? 0) > MAX_AI_KEY_BODY_BYTES) {
+    return error(413, 'too_large');
+  }
   const body = await readBody(request);
   if (method === 'PATCH') {
     if (!stored) return error(404, 'no_key');

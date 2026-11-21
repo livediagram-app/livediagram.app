@@ -25,7 +25,7 @@ import {
 } from '@liveknowledge/knowledge';
 import { ModelCallError, callModel, modelFailureWords } from '@liveworkspace/ai';
 import type { KnowledgeSetupProvider, KnowledgeSetupSuggestion } from '@liveknowledge/api-schema';
-import { ASK_UNAVAILABLE_WORDS, applyingAi, askerOf } from '../knowledge/ai-settings';
+import { ASK_UNAVAILABLE_WORDS, applyingAi, askerOf, isAiRefusal } from '../knowledge/ai-settings';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { modelDoorFor } from '../knowledge/model-door';
 import { builtInAi, suggestOnBuiltIn } from '../knowledge/setup-built-in-ai';
@@ -120,9 +120,8 @@ export async function handleSetupSuggest({
   if (refusal) return refused(REFUSAL[refusal].status, refusal, REFUSAL[refusal].message);
   // The knowledgebase's key, its team's, the person's own, or built-in AI (search-and-ask.md "Which key answers").
   const ai = await applyingAi(env, document.id, askerOf(ctx, document.teamId));
-  // A key that is kept but does not open is refused as Ask refuses it, never swapped for the next in line.
-  if (ai === 'unreadable' || ai === 'team-unreadable' || ai === 'personal-unreadable')
-    return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
+  // A key that does not open, or accounts that could not answer, is refused as Ask refuses it (isAiRefusal).
+  if (isAiRefusal(ai)) return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
   const existing = existingOf(body?.existing);
   if (typeof ai === 'string') {
     // No key (or no secret to keep one under): built-in AI.

@@ -48,8 +48,8 @@ none).
   limits. No key needed.") and **Your Own Key** ("Your Anthropic or OpenAI key, billed by the provider, with no daily
   limits."). With no key saved it starts on Built-In AI.
 - **Your Own Key** shows the **Provider** (the same switch: Anthropic (Claude) or OpenAI, the name as text, no
-  company logo), a password field for the key (its placeholder the provider's prefix, `sk-ant-…`; never filled in or
-  offered by the browser), **Save Key**, and the **Model** (the provider's list, its most capable first chosen). Saving
+  company logo), a masked text field for the key (its placeholder the provider's prefix, `sk-ant-…`), in no form and never a
+  password field, so no browser offers to save it, **Save Key**, and the **Model** (the provider's list, its most capable first chosen). Saving
   checks the key first ([Saving checks the key](#saving-checks-the-key)); a refusal is said in words and the field is
   cleared. A sentence says it is checked, kept encrypted and never shown again, and who the provider bills.
 - **Once saved** the switch gives way to the key: the provider, "Key ending 4f2a · Added 3 Nov 2026", the **Model**
@@ -100,8 +100,10 @@ cannot be pointed at an internal service.
 
 ### Changes are deliberate
 
-- Setting, replacing or removing a key needs a signed-in person: the session, or an account's bearer. Never a guest,
-  an API token, an agent or an app's server: the internal door below only reads.
+- Setting, replacing or removing a key needs a signed-in person: the session, or an account's bearer whose session
+  (`sid`) is still live, so a change never outlives Sign out (an access token alone lives out its 15 minutes). Never a
+  guest, an API token or an agent: the internal door below only reads. An app's server that is sent a person's bearer
+  could use it here for those 15 minutes, as for every bearer setting; the change email is the person's warning.
 - A team key, only a team admin.
 - Each team key change goes to the team's audit log as `team_ai_key_changed` ([Team events for the audit
   log](accounts.md#team-events-for-the-audit-log)), its detail `{ change: 'set' | 'replaced' | 'model' | 'removed',
@@ -111,7 +113,9 @@ provider }`, in the same batch as the change.
   AI Key Was Changed**: what changed, the provider, who did it and when, and "If this wasn't you, remove the key in
   Settings and revoke it with the provider". No email holds any part of a key, its hint included. These are account
   messages: they cannot be turned off.
-- Writes are limited to 10 a minute per account (`AI_KEY_WRITE_LIMITER`), since each save calls a provider.
+- Writes are limited to 10 a minute per account and 10 a minute per network range across accounts
+  (`AI_KEY_WRITE_LIMITER`), since each save calls a provider: saving is no way to test a list of stolen keys. A body
+  over 4 KB is refused unread (`413 too_large`).
 
 ## How an app's server gets the key
 
@@ -131,15 +135,22 @@ provider }`, in the same batch as the change.
   by account or team id alone.
 - **A team key only for a member.** `teamId` (optional) names the item's team; accounts reads the person's membership
   itself, now. Not a joined member, and the team's key is not answered.
+- **A key only to an app that calls a model.** `want: 'key'` is answered only to the apps listed in
+  `AI_KEY_READERS` (liveknowledge today; an app that adopts the key is added in the same change), else
+  `403 not_a_key_reader`. Every registered app may ask `which`.
 - **`want`**: `key` answers `{ source: 'team' | 'account', provider, model, key }`; `which` answers the same without
   `key` (for a settings view saying which applies); none applies: `{ source: null }`. A key that will not open
   answers `409 ai_key_unreadable` `{ source }`, so the app says so rather than quietly using another.
-- **Limited** to 120 calls a minute per account (`AI_KEY_LIMITER`), `429 rate_limited`.
+- **Limited** to 120 calls a minute per account for each of `key` and `which`, counted apart (`AI_KEY_LIMITER`),
+  `429 rate_limited`, so a page reading which key applies never uses up the calls a model needs.
 - **Not cached.** Every answer is `no-store`. The app holds the plain key in the one request's memory and drops it
   when the call ends: never in KV, a Durable Object's storage, a module global, a log or telemetry. A key removed or
   replaced stops being answered at once, so it stops working at the next call.
 
-Unset `AI_KEY_SECRET`, the door answers `503 ai_keys_unavailable` and the app goes on as if there were no key.
+Unset `AI_KEY_SECRET`, the door answers `503 ai_keys_unavailable`. An app that cannot get an answer (accounts down,
+slow, rate limited) for a signed-in person refuses the call in words ("Your AI key settings couldn't be reached just
+now"), never sending the person's words to built-in AI on a guess; an app with no accounts to ask (self-hosted) has
+no shared keys.
 
 ## Sealing
 
@@ -150,7 +161,9 @@ Unset `AI_KEY_SECRET`, the door answers `503 ai_keys_unavailable` and the app go
   ciphertext's additional data: a sealed key copied to another account's or team's row, or relabelled to the other
   provider, does not open.
 - **A key version on each record**, so the master secret can be rotated. `AI_KEY_SECRET` is `<version>:<secret>`
-  (a bare secret is version 1), and `AI_KEY_SECRET_PREVIOUS` holds the one before while a rotation runs.
+  (a bare secret is version 1), and `AI_KEY_SECRET_PREVIOUS` holds the one before while a rotation runs. A secret
+  under 32 characters is refused (every route fails closed), and a previous secret with the current version is
+  ignored; each is said once in the log, never with the secret.
 
 ### Rotating the master secret
 
@@ -158,8 +171,8 @@ Unset `AI_KEY_SECRET`, the door answers `503 ai_keys_unavailable` and the app go
    version). Nothing changes: every record still opens under the current secret.
 2. `wrangler secret put AI_KEY_SECRET` with `<n+1>:<openssl rand -hex 32>`. New keys are sealed under it; a record of
    version n opens under the previous secret.
-3. The 15-minute cron re-seals every record of an older version under the current one, 50 a run, and logs how many
-   are left (`[ai-keys] resealed`). A record that will not open under either is left, and counted.
+3. The 15-minute cron re-seals every record of the previous version under the current one, 50 a run, and logs how
+   many of any older version are left (`[ai-keys] resealed`). A record that will not open under either is left, and counted.
 4. Once the log says none are left, `wrangler secret delete AI_KEY_SECRET_PREVIOUS`.
 
 Losing the secret makes every stored key unreadable: each person and team saves theirs again. Nothing else breaks.
@@ -168,10 +181,12 @@ Losing the secret makes every stored key unreadable: each person and team saves 
 
 - **Closing an account** deletes its personal key, in the same steps as its settings ([Closing an
   account](accounts.md#closing-an-account) step 2). Its team keys stay with their teams; their "set by" reads "Deleted
-  account".
+  account". A team key the account set goes too (below).
 - **Deleting a team** (and the last member leaving, and a team closing with the account that ran it alone) deletes the
   team's key in the same batch.
-- **Leaving or being removed** from a team ends the person's use of its key at once (above); the key stays the team's.
+- **Leaving or being removed** from a team ends the person's use of its key at once (above). A team key the person
+  set goes with them, in the same batch, written to the audit log as removed: their provider bills it, and once out
+  of the team they could no longer remove it. A key another admin set stays.
 - **Download Your Data** never includes a key, sealed or not, nor its hint ([data-export.md](data-export.md)).
 
 ## Never readable

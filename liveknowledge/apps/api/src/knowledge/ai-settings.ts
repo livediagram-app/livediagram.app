@@ -141,7 +141,12 @@ export type SharedKeyDoor = typeof aiKeyFor;
 export type AiSource = 'knowledgebase' | 'team' | 'personal';
 export type AppliedAi = OpenedAi & { source: AiSource };
 export type AiUnavailable =
-  'no-secret' | 'no-key' | 'unreadable' | 'team-unreadable' | 'personal-unreadable';
+  | 'no-secret'
+  | 'no-key'
+  | 'unreadable'
+  | 'team-unreadable'
+  | 'personal-unreadable'
+  | 'shared-unavailable';
 
 async function sharedKey(
   env: DocumentEnv,
@@ -150,7 +155,8 @@ async function sharedKey(
   door: SharedKeyDoor,
 ): Promise<AiKeyAnswer> {
   const credentials = asker ? accountCredentials(env) : null;
-  if (!asker || !credentials) return { status: 'unavailable' };
+  // No asker, or a server with no accounts to ask (self-hosted): no shared key can apply.
+  if (!asker || !credentials) return { status: 'none' };
   return door(credentials, { accessToken: asker.accessToken, teamId: asker.teamId, want });
 }
 
@@ -169,6 +175,9 @@ export async function applyingAi(
   if (own === 'unreadable') return own;
   const shared = await sharedKey(env, asker, 'key', door);
   if (shared.status === 'unreadable') return `${sharedSource(shared.source)}-unreadable`;
+  // Accounts could not say (down, slow, rate limited): the person or their team may have chosen their own key, so
+  // their words never go to built-in AI on a guess.
+  if (shared.status === 'unavailable') return 'shared-unavailable';
   if (shared.status !== 'key' || !shared.key) return own;
   return {
     provider: shared.provider,
@@ -177,6 +186,15 @@ export async function applyingAi(
     source: sharedSource(shared.source),
   };
 }
+
+/** The answers refused in words rather than passed to built-in AI: a key that is kept but does not open, and accounts
+ *  that could not say whose key applies. */
+export type AiRefusal = Exclude<AiUnavailable, 'no-secret' | 'no-key'>;
+export const isAiRefusal = (ai: AppliedAi | AiUnavailable | 'chosen'): ai is AiRefusal =>
+  ai === 'unreadable' ||
+  ai === 'team-unreadable' ||
+  ai === 'personal-unreadable' ||
+  ai === 'shared-unavailable';
 
 const sharedSource = (source: 'team' | 'account'): 'team' | 'personal' =>
   source === 'team' ? 'team' : 'personal';
@@ -211,4 +229,5 @@ export const ASK_UNAVAILABLE_WORDS = {
   'team-unreadable':
     "Your team's AI key could not be read. An admin can replace it in Settings, under AI.",
   'personal-unreadable': 'Your AI key could not be read. Replace it in Settings, under AI.',
+  'shared-unavailable': "Your AI key settings couldn't be reached just now. Try again in a moment.",
 } as const;

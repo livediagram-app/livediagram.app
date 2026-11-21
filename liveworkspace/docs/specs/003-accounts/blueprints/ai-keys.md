@@ -107,31 +107,47 @@ invalid_client`.
 
 ### The reseal sweep (`store.ts` `resealAiKeys`)
 
-In the 15-minute cron, with `previous` set only: up to 50 rows whose `key_version` is not the current version,
-oldest first; each opened and sealed again under the current secret, written back only if its `sealed` is still the
+In the 15-minute cron, with `previous` set only: up to 50 rows whose `key_version` is the previous secret's version,
+oldest first (a row of any older version opens under neither, and taking it would stall the sweep behind it); each opened and sealed again under the current secret, written back only if its `sealed` is still the
 one read (a key replaced meanwhile is left as it is). Logs `{ resealed, unreadable, left }`.
 
 ## Security and trust: the threat model
 
-| Threat                                                       | What stops it                                                                                                                                       |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Someone on the internet calls the internal door              | Not on any zone route; `CF-Connecting-IP` refused; client credentials; the person's own token                                                       |
-| A router forwards a crafted public request to it             | Routers forward only `/api/auth` and `/api/account` targets to accounts; a forwarded request carries the visitor's headers and the proxy's, refused |
-| An app (or a compromised app's secret) asks for anyone's key | Needs a live access token minted for that same client, for that person: only a person signed in to that app now, while their token lasts (15 min)   |
-| An app asks for a team's key for a non-member                | Membership read in accounts on each call; the token's team claim is never trusted                                                                   |
-| A stolen access token, used on the account API               | Reads only the hint and state; a change emails the owner (or admins) and, for a team, lands in the audit log; changing a key needs a working key    |
-| A stolen API token or an agent                               | Not a bearer: refused on every key route; the internal door takes only an access token minted for the calling client                                |
-| The database is read (a backup, a D1 query log, an export)   | Keys are sealed under a secret D1 never holds; the hint is four characters; no route or export reads `sealed` out                                   |
-| A sealed key is moved to another row                         | Owner, provider and version are AES-GCM additional data and HKDF info: it does not open                                                             |
-| The master secret leaks                                      | Rotation (spec "Rotating the master secret") re-seals every row; a leak of D1 and the secret together is a breach of every key, so both stay apart  |
-| A key ends up in logs, telemetry, errors or emails           | Bodies with keys are never logged; provider bodies are never passed on (`ModelCallError` kinds); emails name the provider only; tests plant a key   |
-| Server-side request forgery through the key check            | The provider's host is fixed in `@liveworkspace/ai`; `providerFetch` refuses any other URL; no caller-supplied URL exists                           |
-| A key outlives its removal                                   | No cache anywhere: every call reads the row; apps hold the plain key in one request's memory only                                                   |
-| Someone floods the doors                                     | `AI_KEY_LIMITER` 120 a minute and `AI_KEY_WRITE_LIMITER` 10 a minute, per account                                                                   |
-| Someone changes a team's key without being its admin         | `getMembership` role check inside the route; the audit log and the admins' email                                                                    |
-| A guest or a closed account keeps a key                      | Guests have no key routes; closing deletes the personal key; a deleted team's key goes in the same batch                                            |
+| Threat                                                       | What stops it                                                                                                                                                                             |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Someone on the internet calls the internal door              | Not on any zone route; `CF-Connecting-IP` refused; client credentials; the person's own token                                                                                             |
+| A router forwards a crafted public request to it             | Routers forward only `/api/auth` and `/api/account` targets to accounts; a forwarded request carries the visitor's headers and the proxy's, refused                                       |
+| An app (or a compromised app's secret) asks for anyone's key | Needs a live access token minted for that same client, for that person: only a person signed in to that app now, while their token lasts (15 min)                                         |
+| An app asks for a team's key for a non-member                | Membership read in accounts on each call; the token's team claim is never trusted                                                                                                         |
+| A stolen access token, used on the account API               | Reads only the hint and state; a change needs the token's session live (no use after Sign out), emails the owner (or admins), lands in the audit log for a team, and needs a working key  |
+| A stolen API token or an agent                               | Not a bearer: refused on every key route; the internal door takes only an access token minted for the calling client                                                                      |
+| The database is read (a backup, a D1 query log, an export)   | Keys are sealed under a secret D1 never holds; the hint is four characters; no route or export reads `sealed` out                                                                         |
+| A sealed key is moved to another row                         | Owner, provider and version are AES-GCM additional data and HKDF info: it does not open                                                                                                   |
+| The master secret leaks                                      | Rotation (spec "Rotating the master secret") re-seals every row; a leak of D1 and the secret together is a breach of every key, so both stay apart                                        |
+| A key ends up in logs, telemetry, errors or emails           | Bodies with keys are never logged; provider bodies are never passed on (`ModelCallError` kinds); emails name the provider only; tests plant a key                                         |
+| Server-side request forgery through the key check            | The provider's host is fixed in `@liveworkspace/ai`; `providerFetch` refuses any other URL; no caller-supplied URL exists                                                                 |
+| A key outlives its removal                                   | No cache anywhere: every call reads the row; apps hold the plain key in one request's memory only                                                                                         |
+| Someone floods the doors                                     | `AI_KEY_LIMITER` 120 a minute per account for `key` and for `which` apart; `AI_KEY_WRITE_LIMITER` 10 a minute per account and per network range; a write body over 4 KB is refused unread |
+| Saving used to test stolen keys                              | The write limit per network range across accounts, besides the one per account                                                                                                            |
+| An app that calls no model reads a key                       | `AI_KEY_READERS`: only liveknowledge is answered `want: 'key'`; every other client `403 not_a_key_reader`                                                                                 |
+| Accounts can't answer, and the words go to built-in AI       | The app refuses the call for a signed-in asker (`shared-unavailable`), never guessing built-in AI                                                                                         |
+| A former admin's key keeps billing them                      | A team key goes with the member who set it, when they leave, are removed or close the account, written to the audit log                                                                   |
+| The browser saves the key as a password                      | No `<form>` and no password field: masked text (`-webkit-text-security`), sent by the button or Enter                                                                                     |
+| A weak or misrotated master secret                           | Under 32 characters refused (fail closed); a previous secret of the current version ignored; each said once in the log, never the secret                                                  |
+| Someone changes a team's key without being its admin         | `getMembership` role check inside the route; the audit log and the admins' email                                                                                                          |
+| A guest or a closed account keeps a key                      | Guests have no key routes; closing deletes the personal key; a deleted team's key goes in the same batch                                                                                  |
 
-What is accepted: an app's server that holds its client secret and a person's live access token can read that
+What is accepted, after the security review (2026-11-21):
+
+- The binding-only guarantee rests on Cloudflare setting `CF-Connecting-IP` on every request from the internet (a
+  client cannot strip or forge it): a public path that normalises onto `/internal/ai-key` carries it and is refused.
+  A named `WorkerEntrypoint` method for the door would make it structural; it needs every reader's binding changed,
+  so it waits for the second app that reads keys.
+- An app's server sent a person's bearer could change their key (or, for an admin, the team's) on the bearer door
+  for that token's 15 minutes, as it could any bearer setting; the change is emailed and, for a team, audited.
+- Firefox shows the key as typed (it has no `-webkit-text-security`); it is still never saved, kept or sent back.
+
+And: an app's server that holds its client secret and a person's live access token can read that
 person's key (and their team's, while they are a member), for as long as the token lasts. That is what the feature
 is: the app calls the model for that person.
 
@@ -141,14 +157,14 @@ Measured locally against the test D1 (node, `ai-keys/internal.test.ts` "costs"):
 check and introspection stubbed, under 5 ms a call; HKDF plus AES-GCM open under 1 ms. In production the
 introspection is Better Auth's own (a JWT check), the same as every vouched internal call.
 
-| Limit                    | Value                  |
-| ------------------------ | ---------------------- |
-| `AI_KEY_LIMITER`         | 120 / 60 s per account |
-| `AI_KEY_WRITE_LIMITER`   | 10 / 60 s per account  |
-| `MAX_AI_KEY_CHARS`       | 512                    |
-| `KEY_CHECK_TIMEOUT_MS`   | 8,000                  |
-| `RESEAL_BATCH`           | 50 a cron run          |
-| `AI_KEY_CALL_TIMEOUT_MS` | 5,000 (`aiKeyFor`)     |
+| Limit                    | Value                                           |
+| ------------------------ | ----------------------------------------------- |
+| `AI_KEY_LIMITER`         | 120 / 60 s per account, `key` and `which` apart |
+| `AI_KEY_WRITE_LIMITER`   | 10 / 60 s per account, and per network range    |
+| `MAX_AI_KEY_CHARS`       | 512                                             |
+| `KEY_CHECK_TIMEOUT_MS`   | 8,000                                           |
+| `RESEAL_BATCH`           | 50 a cron run                                   |
+| `AI_KEY_CALL_TIMEOUT_MS` | 5,000 (`aiKeyFor`)                              |
 
 ## Observability
 

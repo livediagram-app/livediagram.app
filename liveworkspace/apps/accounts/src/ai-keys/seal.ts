@@ -14,6 +14,9 @@ const SALT_BYTES = 16;
 const IV_BYTES = 12;
 // A rotation's version, as `AI_KEY_SECRET` names it: `<version>:<secret>`.
 const VERSIONED = /^(\d{1,4}):(.+)$/s;
+/** The shortest master secret taken: 32 characters (`openssl rand -hex 32` gives 64). A shorter one is refused, so
+ *  every route fails closed rather than sealing under a guessable secret. */
+export const MIN_SECRET_CHARS = 32;
 // Whitespace or a control character: no provider's key holds one, and a pasted one is a mistake.
 // oxlint-disable-next-line no-control-regex -- control characters are what it refuses
 const NOT_A_KEY_CHAR = /[\s\u0000-\u001f\u007f]/;
@@ -38,21 +41,47 @@ function parseSecret(value: string | undefined): AiKeySecret | null {
   const versioned = VERSIONED.exec(raw);
   if (versioned) {
     const version = Number(versioned[1]);
-    return version >= 1 ? { version, secret: versioned[2]! } : null;
+    const secret = versioned[2]!;
+    return version >= 1 && secret.length >= MIN_SECRET_CHARS ? { version, secret } : null;
   }
-  return { version: 1, secret: raw };
+  return raw.length >= MIN_SECRET_CHARS ? { version: 1, secret: raw } : null;
 }
 
-/** The master secrets this deployment holds, or null without `AI_KEY_SECRET`: then no key is sealed or opened, and
- *  every route fails closed. A previous secret of the current one's version is ignored. */
+// Each misconfiguration is said once an isolate, never with any of the secret.
+const said = new Set<string>();
+function sayOnce(what: string) {
+  if (said.has(what)) return;
+  said.add(what);
+  console.error(`[ai-keys] ${what}`);
+}
+
+/** The master secrets this deployment holds, or null without a usable `AI_KEY_SECRET` (missing, or under 32
+ *  characters): then no key is sealed or opened, and every route fails closed. A previous secret that is too short,
+ *  or of the current one's version (a rotation that forgot to raise it), is ignored and said in the log. */
 export function aiKeySecrets(env: {
   AI_KEY_SECRET?: string;
   AI_KEY_SECRET_PREVIOUS?: string;
 }): AiKeySecrets | null {
   const current = parseSecret(env.AI_KEY_SECRET);
-  if (!current) return null;
+  if (!current) {
+    if (env.AI_KEY_SECRET?.trim()) sayOnce('AI_KEY_SECRET is not a usable secret; AI keys are off');
+    return null;
+  }
   const previous = parseSecret(env.AI_KEY_SECRET_PREVIOUS);
-  return previous && previous.version !== current.version ? { current, previous } : { current };
+  if (!previous) {
+    if (env.AI_KEY_SECRET_PREVIOUS?.trim())
+      sayOnce('AI_KEY_SECRET_PREVIOUS is not a usable secret; ignored');
+    return { current };
+  }
+  if (previous.version === current.version) {
+    if (previous.secret !== current.secret) {
+      sayOnce(
+        'AI_KEY_SECRET_PREVIOUS has the current version; raise AI_KEY_SECRET to the next version',
+      );
+    }
+    return { current };
+  }
+  return { current, previous };
 }
 
 /** Whether `value` could be a key: a string of 1 to 512 characters with no whitespace or control character. */

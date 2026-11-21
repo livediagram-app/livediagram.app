@@ -17,22 +17,28 @@ export function teamAiKeyEvent(
   change: {
     teamId: string;
     teamName: string;
-    actor: { id: string; name: string };
+    actor: { id: string; name?: string | null };
     change: AiKeyChange;
     provider: KeyProviderId;
     at: number;
   },
+  // Written only when the batch's change took (teamEvent's guard).
+  guard?: { sql: string; args: unknown[] },
 ): D1PreparedStatement {
-  return teamEvent(db, {
-    // Two changes in one millisecond are two events: the outbox ignores an id it has.
-    id: `team_ai_key_changed:${change.teamId}:${change.at}:${crypto.randomUUID()}`,
-    type: 'team_ai_key_changed',
-    teamId: change.teamId,
-    teamName: change.teamName,
-    actor: change.actor,
-    at: change.at,
-    detail: { change: change.change, provider: change.provider },
-  });
+  return teamEvent(
+    db,
+    {
+      // Two changes in one millisecond are two events: the outbox ignores an id it has.
+      id: `team_ai_key_changed:${change.teamId}:${change.at}:${crypto.randomUUID()}`,
+      type: 'team_ai_key_changed',
+      teamId: change.teamId,
+      teamName: change.teamName,
+      actor: change.actor,
+      at: change.at,
+      detail: { change: change.change, provider: change.provider },
+    },
+    guard,
+  );
 }
 
 const providerName = (provider: KeyProviderId) =>

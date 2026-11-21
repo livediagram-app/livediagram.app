@@ -98,7 +98,7 @@ const press = async (name: string, nth = 0) => {
   await act(async () => buttons(name)[nth]!.click());
   await settle();
 };
-const field = () => container.querySelector<HTMLInputElement>('input[type=password]')!;
+const field = () => container.querySelector<HTMLInputElement>('input[autocomplete=off]')!;
 function type(input: HTMLInputElement, value: string) {
   const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
   act(() => {
@@ -126,6 +126,11 @@ describe('Settings › AI, your own key', () => {
     await press('Your Own Key');
     const input = field();
     expect(input.autocomplete).toBe('off');
+    // Security review L2: masked text outside any form, so no browser offers to save the key as a password.
+    expect(input.type).toBe('text');
+    expect(input.closest('form')).toBeNull();
+    expect(container.querySelector('input[type=password], form')).toBeNull();
+    expect(input.className).toContain('[-webkit-text-security:disc]');
     type(input, KEY);
     await press('Save Key');
     expect(writes()).toEqual([
@@ -140,6 +145,18 @@ describe('Settings › AI, your own key', () => {
     );
     expect(field()).toBeNull();
     expect(container.innerHTML).not.toContain(KEY);
+  });
+
+  it('saves on Enter in the field too', async () => {
+    await render();
+    await press('Your Own Key');
+    type(field(), KEY);
+    await act(async () => {
+      field().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+    await settle();
+    expect(writes()).toHaveLength(1);
+    expect(field()).toBeNull();
   });
 
   it("sends the chosen provider's model, and nothing until a key is typed", async () => {

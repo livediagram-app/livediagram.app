@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useState } from 'react';
 import { Button, SegmentedToggle, Select } from '@liveworkspace/ui';
 import { BUTTON, ErrorNote, INPUT } from '../account-ui';
 import { ConfirmAction } from '../ConfirmAction';
@@ -210,8 +210,7 @@ function KeyForm({
   const [busy, setBusy] = useState(false);
   const keyId = useId();
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  async function submit() {
     if (busy || !key.trim()) return;
     setBusy(true);
     await onSave({ provider: providerId, model, key });
@@ -221,7 +220,9 @@ function KeyForm({
   }
 
   return (
-    <form className="space-y-4" onSubmit={(event) => void submit(event)} autoComplete="off">
+    // No <form> and no password field: a browser offers to save, and sync, what a password field in a form sends,
+    // whatever autocomplete says. The key is masked text, sent by the button or Enter.
+    <div className="space-y-4" role="group" aria-label={`${provider?.label ?? 'API'} key`}>
       <SegmentedToggle
         label="Provider"
         className="w-fit max-w-full"
@@ -244,20 +245,26 @@ function KeyForm({
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
             id={keyId}
-            // Write-only: a password field, never filled in or offered by the browser, cleared once sent.
-            type="password"
+            // Write-only: masked text, never filled in, offered or saved by the browser, cleared once sent.
+            type="text"
             autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
             spellCheck={false}
             data-1p-ignore=""
             data-lpignore="true"
-            className={INPUT}
+            className={`${INPUT} [-webkit-text-security:disc]`}
             placeholder={provider ? `${provider.keyPrefix}…` : ''}
             maxLength={512}
             value={key}
             onChange={(event) => setKey(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') void submit();
+            }}
           />
           <Button
-            type="submit"
+            type="button"
+            onClick={() => void submit()}
             variant="none"
             className={`${BUTTON.primary} shrink-0`}
             busy={busy}
@@ -278,6 +285,6 @@ function KeyForm({
         </p>
       </div>
       <ModelPicker provider={provider} value={model} label={model} onChoose={setModel} />
-    </form>
+    </div>
   );
 }

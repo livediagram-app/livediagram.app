@@ -1,5 +1,5 @@
 // Sealing a customer's AI key (liveworkspace/docs/specs/003-accounts/ai-keys.md "Sealing").
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   AiKeySealError,
   MAX_AI_KEY_CHARS,
@@ -12,10 +12,10 @@ import {
 } from './seal.ts';
 
 const KEY = 'sk-ant-api03-planted-secret-key-4f2a';
-const V1 = aiKeySecrets({ AI_KEY_SECRET: 'first-master-secret' })!;
+const V1 = aiKeySecrets({ AI_KEY_SECRET: 'first-master-secret-of-thirty-two-characters' })!;
 const V2 = aiKeySecrets({
-  AI_KEY_SECRET: '2:second-master-secret',
-  AI_KEY_SECRET_PREVIOUS: 'first-master-secret',
+  AI_KEY_SECRET: '2:second-master-secret-of-thirty-two-characters',
+  AI_KEY_SECRET_PREVIOUS: 'first-master-secret-of-thirty-two-characters',
 })!;
 
 describe('the master secrets', () => {
@@ -23,15 +23,51 @@ describe('the master secrets', () => {
     expect(aiKeySecrets({})).toBeNull();
     expect(aiKeySecrets({ AI_KEY_SECRET: '  ' })).toBeNull();
     expect(aiKeySecrets({ AI_KEY_SECRET: '0:zero is no version' })).toBeNull();
-    expect(V1).toEqual({ current: { version: 1, secret: 'first-master-secret' } });
+    expect(V1).toEqual({
+      current: { version: 1, secret: 'first-master-secret-of-thirty-two-characters' },
+    });
     expect(V2).toEqual({
-      current: { version: 2, secret: 'second-master-secret' },
-      previous: { version: 1, secret: 'first-master-secret' },
+      current: { version: 2, secret: 'second-master-secret-of-thirty-two-characters' },
+      previous: { version: 1, secret: 'first-master-secret-of-thirty-two-characters' },
     });
     // A previous secret of the same version is no rotation.
-    expect(aiKeySecrets({ AI_KEY_SECRET: '1:a', AI_KEY_SECRET_PREVIOUS: '1:b' })).toEqual({
-      current: { version: 1, secret: 'a' },
+    const a = 'a'.repeat(32);
+    expect(
+      aiKeySecrets({ AI_KEY_SECRET: `1:${a}`, AI_KEY_SECRET_PREVIOUS: `1:${'b'.repeat(32)}` }),
+    ).toEqual({ current: { version: 1, secret: a } });
+  });
+
+  // Security review L6: a guessable master secret is refused (every route fails closed), and a rotation that kept the
+  // version, or a short previous secret, is said in the log, never with the secret.
+  it('refuses a short secret, and says so once, without it', () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(aiKeySecrets({ AI_KEY_SECRET: '1:abc' })).toBeNull();
+    expect(aiKeySecrets({ AI_KEY_SECRET: 'x'.repeat(31) })).toBeNull();
+    expect(aiKeySecrets({ AI_KEY_SECRET: '1:abc' })).toBeNull();
+    const good = `1:${'g'.repeat(32)}`;
+    expect(aiKeySecrets({ AI_KEY_SECRET: good, AI_KEY_SECRET_PREVIOUS: '0:short' })).toEqual({
+      current: { version: 1, secret: 'g'.repeat(32) },
     });
+    expect(
+      aiKeySecrets({ AI_KEY_SECRET: good, AI_KEY_SECRET_PREVIOUS: `1:${'h'.repeat(32)}` }),
+    ).toEqual({
+      current: { version: 1, secret: 'g'.repeat(32) },
+    });
+    expect(aiKeySecrets({ AI_KEY_SECRET: good, AI_KEY_SECRET_PREVIOUS: good })).toEqual({
+      current: { version: 1, secret: 'g'.repeat(32) },
+    });
+    const said = errors.mock.calls.map((call) => String(call[0]));
+    // Each said at most once an isolate (the tests above may have said some already), and only these words.
+    const words = [
+      '[ai-keys] AI_KEY_SECRET is not a usable secret; AI keys are off',
+      '[ai-keys] AI_KEY_SECRET_PREVIOUS is not a usable secret; ignored',
+      '[ai-keys] AI_KEY_SECRET_PREVIOUS has the current version; raise AI_KEY_SECRET to the next version',
+    ];
+    expect(said.length).toBe(new Set(said).size);
+    for (const line of said) expect(words).toContain(line);
+    expect(said).toContain(words[1]);
+    expect(JSON.stringify(errors.mock.calls)).not.toMatch(/abc|ggg|hhh/);
+    errors.mockRestore();
   });
 });
 
@@ -79,14 +115,14 @@ describe('sealing and opening', () => {
       openAiKey(V1, 'account:team_1', 'openai', sealed),
       openAiKey(V1, 'team:team_1', 'anthropic', sealed),
       openAiKey(
-        aiKeySecrets({ AI_KEY_SECRET: 'another-secret' })!,
+        aiKeySecrets({ AI_KEY_SECRET: 'another-secret-of-thirty-two-characters-or-more' })!,
         'team:team_1',
         'openai',
         sealed,
       ),
       // Relabelled to another version: the version is in the derivation and the additional data.
       openAiKey(
-        aiKeySecrets({ AI_KEY_SECRET: '2:first-master-secret' })!,
+        aiKeySecrets({ AI_KEY_SECRET: '2:first-master-secret-of-thirty-two-characters' })!,
         'team:team_1',
         'openai',
         sealed.replace(/^1\./, '2.'),

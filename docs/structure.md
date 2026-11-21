@@ -148,7 +148,7 @@ product folder holds only what makes that product different.
 liveworkspace/
 ├─ packages/                       @liveworkspace/*, used by every product
 │  ├─ config-*                     tsconfig, oxlint, prettier, vitest, tailwind, next
-│  ├─ auth-client
+│  ├─ auth-client, ai
 │  ├─ api-client, telemetry-client, render-png, source-ast, icons
 │  ├─ document, document-views, edit-operations, agent-verbs, api-schema
 │  ├─ templates, template-previews
