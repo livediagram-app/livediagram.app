@@ -11,8 +11,15 @@ const sections: HomeSection[] = [
     id: 'editor-guides',
     eyebrow: 'Editor Guides',
     heading: 'Everything in a Knowledgebase',
-    lede: 'In-depth guides to pages, trust, search, Ask and AI Knowledge, then the parts every liveworkspace app shares.',
-    categories: ['knowledgebase', 'collaboration', 'explorer', 'search-panel', 'user-interface'],
+    lede: 'In-depth guides to pages, trust, search, Ask, AI Knowledge and Automations, then the parts every liveworkspace app shares.',
+    categories: [
+      'knowledgebase',
+      'collaboration',
+      'explorer',
+      'tools',
+      'search-panel',
+      'user-interface',
+    ],
   },
   {
     id: 'account',

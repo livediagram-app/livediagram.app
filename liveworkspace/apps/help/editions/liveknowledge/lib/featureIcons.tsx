@@ -206,6 +206,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 10h6M9 13h6M9 16h3.5" />
     </Glyph>
   ),
+  // A lightning bolt inside a turning loop: a rule that runs on its own, again and again.
+  automations: (
+    <Glyph>
+      <path d="M4.5 12a7.5 7.5 0 0112.9-5.2" />
+      <path d="M17.8 3.6v3.4h-3.4" />
+      <path d="M19.5 12a7.5 7.5 0 01-12.9 5.2" />
+      <path d="M6.2 20.4V17h3.4" />
+      <path d="M12.8 7.8l-3.3 4.9h3l-.8 3.5 3.3-4.9h-3z" />
+    </Glyph>
+  ),
   'explorer-page': (
     <Glyph>
       <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
@@ -325,5 +335,11 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
   explorer: lucide(lucideFolderRoot),
   'user-interface': lucide(lucideAppWindow),
   // A wrench.
+  tools: (
+    <Glyph>
+      <path d="M14.5 5.5a3.5 3.5 0 00-4.8 4.6l-6 6a1.5 1.5 0 002.1 2.1l6-6a3.5 3.5 0 004.6-4.8l-2.3 2.3-2-2 2.4-2.2z" />
+    </Glyph>
+  ),
+  // A side panel with a magnifier.
   'search-panel': lucide(lucidePanelsTopLeft),
 };

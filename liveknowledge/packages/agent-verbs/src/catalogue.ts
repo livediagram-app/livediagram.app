@@ -52,6 +52,7 @@ import { knowledgeVerbs } from './verbs/knowledge';
 import { pageFeedbackVerbs } from './verbs/page-feedback';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
+import { ruleVerbs } from './rules';
 
 export const VERBS: readonly Verb[] = [
   // The knowledgebase commands first: what an agent reaches for (verbs/knowledge.ts).
@@ -116,6 +117,7 @@ export const VERBS: readonly Verb[] = [
   workbenchPair,
   folderLs,
   folderCreate,
+  ...ruleVerbs,
 ] as Verb[];
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
@@ -132,6 +134,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
+  { name: 'rule', summary: 'Automations rules: list, change, test and run them' },
   {
     name: 'workbench',
     summary: 'Workbenches: open a document in a developer tool, pair one',

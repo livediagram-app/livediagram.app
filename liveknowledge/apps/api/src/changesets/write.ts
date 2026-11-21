@@ -25,6 +25,8 @@ import {
 import { TabTooLargeError } from '../limits';
 import { relayChangeset } from '../room-client';
 import type { DocumentEnv } from '../types';
+import { asTabWriter, writerOf } from '@liveworkspace/automations/room';
+import { queueAgentChanged } from '../document-room/automations/version-events';
 import { mintChangesetId } from './changeset-id';
 import { agentKeyFor, changesetRoomOp } from './room-op';
 import type { StoredTab } from './stored-tab';
@@ -45,6 +47,8 @@ type ChangesetWrite = {
   orderIndex: number;
   author: Author;
   tokenId: string | null;
+  // The token's name, for a rule's Who Did It (docs/specs/013-workspace/automations.md "Agent Made Changes").
+  tokenName?: string | null;
   summary: string | null;
   baseRev: number | null;
   rebasedOver: number;
@@ -126,15 +130,34 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
             ]
           : []),
       ];
-      const results = await env.DOCUMENT_DB.batch([
-        ...pre,
-        ...tabWriteStatements(env, w.documentId, w.next, w.orderIndex, { expected }, now),
-        insertChangesetStatement(env, record),
-        insertChangesetPartStatement(env, record.id, 'ops', parts.ops),
-        insertChangesetPartStatement(env, record.id, 'inverse', parts.inverse),
-        insertChangesetPartStatement(env, record.id, 'results', parts.results),
-      ]);
+      const write = () =>
+        env.DOCUMENT_DB.batch([
+          ...pre,
+          ...tabWriteStatements(env, w.documentId, w.next, w.orderIndex, { expected }, now),
+          insertChangesetStatement(env, record),
+          insertChangesetPartStatement(env, record.id, 'ops', parts.ops),
+          insertChangesetPartStatement(env, record.id, 'inverse', parts.inverse),
+          insertChangesetPartStatement(env, record.id, 'results', parts.results),
+        ]);
+      // A changeset that makes its tab says who made it, for a Tab Added rule: an agent by its token's name.
+      const results = await (creates
+        ? asTabWriter(
+            env,
+            'tab_added',
+            async () => writerOf(w.author, w.tokenId ? { name: w.tokenName } : null),
+            write,
+          )
+        : write());
       record = { ...record, rev: revFromBatch(results.slice(pre.length)) };
+      // Agent Made Changes (docs/specs/013-workspace/automations.md): once per changeset a token wrote, queued in
+      // the same stretch as the write.
+      if (w.tokenId)
+        queueAgentChanged(env, {
+          key: record.id,
+          tab: w.tabId,
+          author: w.author,
+          tokenName: w.tokenName ?? null,
+        });
       break;
     } catch (err) {
       if (err instanceof TabTooLargeError) return { kind: 'too_large' };

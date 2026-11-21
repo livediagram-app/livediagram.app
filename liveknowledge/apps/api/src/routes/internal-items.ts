@@ -70,14 +70,28 @@ export function handleInternalItems(
       approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
       // Request Access (liveworkspace request-access.md "The emails"): a manager's email when someone asks, and the
       // requester's when a manager shares it.
-      accessRequested: (id, notice) => notifyAccessRequested(env, id, notice),
+      // And Access Requested, for the document's rules that hear it (docs/specs/013-workspace/automations.md).
+      accessRequested: async (id, notice) => {
+        await Promise.all([
+          notifyAccessRequested(env, id, notice),
+          documentRoom(env, id)
+            .accessRequested({
+              id: notice.requesterId,
+              name: notice.requesterName,
+              requestId: notice.requestId,
+            })
+            .catch((err: unknown) =>
+              console.warn('[automations] access request not heard', { error: String(err) }),
+            ),
+        ]);
+      },
       accessGranted: (id, notice) => notifyAccessGranted(env, id, notice),
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)
           : // Someone's first time in through a link: the owner's email, and Document·Joined by the link's level.
             Promise.all([
-              documentRoom(env, id).joined(notice.personId),
+              documentRoom(env, id).joined(notice.personId, notice.level),
               reportServerEvent(env, 'Document', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
             ]),
       // A Sheet a chart in the document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md): the
@@ -122,7 +136,10 @@ export function handleInternalItems(
       // Where the document stands after an archive, move, trash or restore (docs/specs/013-workspace/trash.md "Open
       // editors"): trashed anywhere (the api, MCP delete_document, the Explorer), its room tells every editor and
       // closes. Nothing is kept, so a restore reopens as before.
+      // The room keeps where it stands first (@liveworkspace/automations/room standing.ts): put away, its rules run
+      // nothing.
       standing: async (id, standing) => {
+        await documentRoom(env, id).takeStanding(standing);
         if (standing.trashed) await tellTrashed(env, id, 'document-trashed');
         // Archived from anywhere (one-explorer.md "Archived from elsewhere while open"): every session ends with 4010,
         // and each editor leaves for the Explorer. A move or a restore (neither flag) closes nothing.

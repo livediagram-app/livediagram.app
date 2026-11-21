@@ -6,6 +6,9 @@
 //   POST /api/documents/<id>/suggestions/<sid>/accept  Editor: applied through the article write, in their name
 //   POST /api/documents/<id>/suggestions/<sid>/dismiss Editor
 // A suggestion changes nothing until it is accepted, and accepting never verifies the page.
+import { SUGGESTION_ADDED_EVENT } from '@liveknowledge/document/automations';
+import { hearsKnowledge, queueSuggestion } from '../document-room/automations/knowledge-events';
+import { routeWho } from '../document-room/automations/knowledge-who';
 import { levelAtLeast, type SuggestEditRequest } from '@liveknowledge/api-schema';
 import { replacePassage } from '@liveknowledge/knowledge';
 import { readStoredTab } from '../changesets/stored-tab';
@@ -111,6 +114,14 @@ export async function handleSuggest(route: KnowledgeRoute, tab: string): Promise
       'suggestions_full',
       `This knowledgebase already has ${SUGGESTIONS_MAX_PENDING} suggestions waiting for an Editor. Try again once some are accepted or dismissed.`,
     );
+  // Agent Suggested a Change (docs/specs/013-workspace/automations.md): an agent's suggestion alone.
+  if (reader.kind === 'agent' && hearsKnowledge(ctx.env, SUGGESTION_ADDED_EVENT))
+    queueSuggestion(ctx.env, {
+      id: suggestion.id,
+      tab,
+      reason,
+      who: await routeWho(ctx),
+    });
   console.info('[knowledge] suggested', {
     documentId: document.id,
     tabId: tab,

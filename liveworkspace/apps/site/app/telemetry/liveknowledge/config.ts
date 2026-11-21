@@ -33,6 +33,7 @@ import {
   AGENT_VIEWED,
   ALL_VISITORS,
   API_TOKEN_ACTIVITY,
+  DOCUMENT_AUTOMATIONS,
   ARTICLE_VIEWS,
   ASSIGNED_ACTIONS,
   CALLS_TO_ACTION,
@@ -326,9 +327,10 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
   },
   connections: {
     intro:
-      'API tokens, agent changes and version history, beside agent access, the MCP and the CLI on the Dashboard',
+      'API tokens, agent changes, version history and Automations, beside agent access, the MCP and the CLI on the Dashboard',
     groups: [
       { title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS, VERSION_HISTORY] },
+      { title: 'Automations', metrics: [DOCUMENT_AUTOMATIONS] },
     ],
   },
   pages: [{ title: 'Calls to action', metrics: [CALLS_TO_ACTION] }],

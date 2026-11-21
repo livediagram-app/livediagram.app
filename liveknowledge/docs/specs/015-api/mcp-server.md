@@ -706,6 +706,28 @@ comment, text }` and `delete { ref, comment }`, each with an optional `tabId`. A
   `thread_full`. Bursts meet the per-token write limiter, and the owner's new-comment email goes at most once per
   document per 15 minutes.
 
+### 4.9g Automations rules: `list_rules` and `change_rules`
+
+An assistant works a knowledgebase's [Automations](../013-workspace/automations.md#agents) rules as an Editor does in
+the Rules list, over the same routes (`/api/documents/<id>/automations[/…]`), with exactly their authority. Both are
+declared once for every product with item rules (`@liveworkspace/agent-verbs/mcp/rule-tools`, run by
+`@liveworkspace/agent-verbs/rules`) with this product's kinds, so the rule format in the tool is this product's
+triggers, conditions, steps and values.
+
+- **`list_rules`**: `{ documentId, rule?, runs?, limit? }`. Read. Every rule in order with its sentence, on or off,
+  paused, needs attention, last run, runs this week and next run, and the knowledgebase's pages and people; `rule` (an
+  id or exact name) adds its whole body, `runs: true` the recent Audit Trail (20, up to 50). A read-only token may call
+  it.
+- **`change_rules`**: `{ documentId, changes }`. Destructive (it deletes rules). Up to 20 changes in order:
+  `add {rule}`, `set {rule, …}`, `on`, `off`, `duplicate` and `delete {rule}`, `test {rule, tab?}` and
+  `run {rule, tab?}`. The rule format keeps the field `tab`, which names a page by its id or title, as `list_pages`
+  lists them; people go by id or name. A refusal is a tool error in words, naming what was applied before it: an
+  Editor of the whole knowledgebase only (`automations_need_editor`), a token below the write scope or read-only
+  (`read_only_token`), Revert to Snapshot saved only by a person (`automation_needs_a_person`), a rule that does not
+  read (the engine's path and reason), the limits, and a rule or page it cannot name. It never makes or reads an
+  Incoming Webhook's secret. A Restore a Version step names a version by its id, which no tool here lists (there is
+  no `list_versions`), so it is left to a person.
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts**: pre-canned templates a client surfaces as slash

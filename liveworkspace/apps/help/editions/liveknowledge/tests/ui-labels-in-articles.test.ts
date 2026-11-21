@@ -40,6 +40,12 @@ const TELEMETRY_SITE = `${ROOT}/../liveworkspace/apps/site/app/telemetry`;
 // The shared editor chrome (@liveworkspace/workbench): the comment thread's reactions, the Collaborators modal's
 // footer and the rest every editor renders as its own.
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
+// Automations (@liveworkspace/automations-ui and its kinds in @liveworkspace/automations), the screen footer Tools
+// opens, rendered by the editor as its own.
+const AUTOMATIONS_PACKAGES = [
+  `${ROOT}/../packages/automations-ui/src`,
+  `${ROOT}/../packages/automations/src`,
+];
 // Snapshots (@liveworkspace/snapshots), drawn inside History in every editor's footer Tools.
 const SNAPSHOTS_PACKAGE = `${ROOT}/../packages/snapshots/src`;
 // The Walkthroughs menu, recording dock and player (@liveworkspace/walkthrough), with its device picker
@@ -123,6 +129,7 @@ function editorSource(): string {
   walk(WORKBENCH_PACKAGE);
   walk(SNAPSHOTS_PACKAGE);
   for (const dir of WALKTHROUGH_PACKAGES) walk(dir);
+  for (const dir of AUTOMATIONS_PACKAGES) walk(dir);
   return all.toLowerCase();
 }
 

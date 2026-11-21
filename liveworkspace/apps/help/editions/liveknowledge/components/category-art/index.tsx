@@ -9,6 +9,7 @@ import { GettingStartedArt } from './getting-started';
 import { KnowledgebaseArt } from './knowledgebase';
 import { PrivacyAndSecurityArt } from './privacy-and-security';
 import { SearchPanelArt } from './search-panel';
+import { ToolsArt } from './tools';
 import { TroubleshootingArt } from './troubleshooting';
 import { UserInterfaceArt } from './user-interface';
 
@@ -25,6 +26,7 @@ export const CATEGORY_ART: Record<string, ComponentType> = {
   policies: PoliciesArt,
   'privacy-and-security': PrivacyAndSecurityArt,
   'search-panel': SearchPanelArt,
+  tools: ToolsArt,
   troubleshooting: TroubleshootingArt,
   'user-interface': UserInterfaceArt,
 };

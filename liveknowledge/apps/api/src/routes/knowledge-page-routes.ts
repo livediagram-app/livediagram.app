@@ -29,19 +29,18 @@ import {
   type PageReadsRow,
 } from '@liveknowledge/knowledge';
 import type { PageKnowledgePatch } from '@liveknowledge/api-schema';
-import { requestGrant } from '../index-service';
 import { accountOf } from '../knowledge/knowledge-caller';
 import { rowsOf } from '../knowledge/knowledge-db';
 import { contextPages } from '../knowledge/knowledge-reads';
 import {
   pageKnowledgeOf,
   readPageKnowledge,
-  writePageKnowledge,
   type StoredPageKnowledge,
 } from '../knowledge/page-knowledge';
+import { personCanOpen, savePageFields } from '../knowledge/page-fields-save';
+import { routeWho } from '../document-room/automations/knowledge-who';
 import { readStoredPages } from '../document-room/page-tree-store';
 import { conflict, json, notFound } from '../responses';
-import { relayPages } from '../room-client';
 import type { DocumentDTO } from '../types';
 import type { DocumentRouteContext } from './context';
 
@@ -94,8 +93,8 @@ export async function handlePageHealth(
   });
 }
 
-// The write, repeated once when the tab moved between the read and the write (an autosave landing), then told to
-// every open editor as the `tab-meta` patch its own change would send. `also` rides the write's transaction
+// The write (knowledge/page-fields-save.ts): at the revision read, repeated once when the tab moved, told to every
+// open editor, and heard by the knowledgebase's own triggers as the caller's. `also` rides the write's transaction
 // (writePageKnowledge).
 export async function saveFields(
   ctx: DocumentRouteContext,
@@ -104,41 +103,22 @@ export async function saveFields(
   change: (page: StoredPageKnowledge) => Promise<KnowledgeFields | Response>,
   opts: { verified?: boolean; also?: (rev: number) => D1PreparedStatement[] } = {},
 ): Promise<Response> {
-  const now = Date.now();
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const page = await readPageKnowledge(ctx.env, document.id, tab);
-    if (!page) return notFound();
-    const next = await change(page);
-    if (next instanceof Response) return next;
-    const rev = await writePageKnowledge(ctx.env, page, next, { ...opts, now });
-    if (rev === null) continue;
-    const after = await readPageKnowledge(ctx.env, document.id, tab);
-    if (!after) return notFound();
-    console.info('[knowledge] fields', {
-      documentId: document.id,
-      tabId: tab,
-      rev,
-      verified: opts.verified === true,
-    });
-    const patch = Object.keys(after.fields).length > 0 ? { knowledge: after.fields } : {};
-    await relayPages(
-      ctx.env,
-      document.id,
-      [
-        {
-          kind: 'tab-meta',
-          tabId: tab,
-          patch,
-          ...(patch.knowledge ? {} : { clear: ['knowledge'] }),
-        },
-      ],
-      '[knowledge]',
-    );
-    return json({
-      knowledge: pageKnowledgeOf(after, document.knowledgeSettings.reviewEvery, now),
-    });
-  }
-  return conflict('tab_busy');
+  const saved = await savePageFields<Response>(
+    ctx.env,
+    document.id,
+    tab,
+    async (page) => {
+      const next = await change(page);
+      return next instanceof Response ? { refused: next } : next;
+    },
+    { ...opts, who: () => routeWho(ctx) },
+  );
+  if (saved.kind === 'gone') return notFound();
+  if (saved.kind === 'busy') return conflict('tab_busy');
+  if (saved.kind === 'refused') return saved.refusal;
+  return json({
+    knowledge: pageKnowledgeOf(saved.after, document.knowledgeSettings.reviewEvery, saved.now),
+  });
 }
 
 export function handleVerify(
@@ -164,14 +144,7 @@ async function hasAccess(
   document: DocumentDTO,
   person: string,
 ): Promise<boolean> {
-  if (person === accountOf(ctx) || person === document.ownerId) return true;
-  const outcome = await requestGrant(
-    ctx.env,
-    { kind: 'delegate', personId: person, teams: [] },
-    document.id,
-    null,
-  );
-  return outcome.ok;
+  return person === accountOf(ctx) || personCanOpen(ctx.env, document, person);
 }
 
 export async function handleKnowledgePatch(

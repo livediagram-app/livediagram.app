@@ -63,6 +63,7 @@ export async function handleTabPages(
     request: parsed,
     author,
     tokenId: ctx.token?.id ?? null,
+    tokenName: ctx.token?.name ?? null,
   });
   // An agent's write counts as one applied change, by its front door, as a changeset does.
   if (result.status === 200 && ctx.token)

@@ -73,6 +73,7 @@ import {
   exportCopy,
   revokeCodes,
   joined,
+  accessRequested,
   anonymise,
   receiveShares,
 } from './document-room-doors';
@@ -93,6 +94,25 @@ import {
   roomInternal,
 } from './document-room-wiring';
 import { dropSession, roomPeople, broadcastPresence } from './document-room-presence';
+import type { ItemStanding } from '@liveworkspace/index-client';
+import {
+  incomingItemHook,
+  itemEmailOptOut,
+  type CollabWatch,
+  type HookAnswer,
+  type HookCall,
+  type ItemEngine,
+  type ItemStandingKeeper,
+  type StandingGrant,
+} from '@liveworkspace/automations/room';
+import {
+  automationDoors,
+  newCollabWatch,
+  newDocumentAutomations,
+  watchReviewRules,
+  newStanding,
+  runDocumentAutomations,
+} from './automations/document-automations';
 import { RoomKnowledge } from '../knowledge/room-knowledge';
 import { CONFLICT_CHECK_DELAY_MS, oweConflictChecks } from '../knowledge/conflict-check';
 import { runKnowledgeWork } from '../knowledge/knowledge-turn';
@@ -229,6 +249,14 @@ export class DocumentRoom extends DurableObject<Env> {
   communityAt: number | null = null;
   // The knowledgebase's index, backfill and owed work (knowledge/room-knowledge.ts).
   readonly knowledge: RoomKnowledge;
+  // Where the knowledgebase stands at the index: while it is archived or in the Trash its rules hear nothing and
+  // nothing of theirs wakes it.
+  readonly standing: ItemStandingKeeper;
+  // The knowledgebase's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they
+  // hear, and what waits to run on the alarm.
+  readonly automations: ItemEngine;
+  // The comment and action triggers' watch over each page's threads.
+  readonly collab: CollabWatch;
 
   // The tab write queue. Every write this room makes to this document's tabs
   // runs through here ONE AT A TIME. A Durable Object only serialises the
@@ -301,10 +329,17 @@ export class DocumentRoom extends DurableObject<Env> {
         onWrite: () => {},
       }),
     ).asD1();
+    this.standing = newStanding(this);
+    this.automations = newDocumentAutomations(this);
+    this.collab = newCollabWatch(this);
+    // A Review Due rule turned on: the review check looks soon, so its first look marks what is already due.
+    watchReviewRules(this.automations, oweReviewCheck);
     this.roomEnv = env
       ? {
           ...env,
           DOCUMENT_DB: this.db.asD1(),
+          AUTOMATIONS: this.automations,
+          COLLAB: this.collab,
           KNOWLEDGE_DB: quiet,
           DOCUMENT_ROOM: localNamespace(this, env.DOCUMENT_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
@@ -340,6 +375,7 @@ export class DocumentRoom extends DurableObject<Env> {
         await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
       }
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
+      this.standing.restore(await state.storage.get(this.standing.key));
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
       this.armAlarm();
     });
@@ -453,8 +489,40 @@ export class DocumentRoom extends DurableObject<Env> {
     );
   }
 
-  joined(documentId: string, personId: string): Promise<void> {
-    return joined(this, documentId, personId);
+  joined(documentId: string, personId: string, level?: AccessLevel): Promise<void> {
+    return joined(this, documentId, personId, level);
+  }
+
+  // Someone asked for access to the document (the index's notice): the rules that hear it (document-room-doors.ts).
+  async accessRequested(
+    documentId: string,
+    requester: { id: string; name: string | null; requestId?: string },
+  ): Promise<void> {
+    accessRequested(this, documentId, requester);
+  }
+
+  // ---------- RPC: Automations' doors (@liveworkspace/automations/room doors.ts, standing.ts) --------------------
+
+  // An Incoming Webhook call to one rule, proved by the rule's secret.
+  incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer> {
+    this.bindDocument(documentId);
+    return incomingItemHook(automationDoors(this), ruleId, call);
+  }
+
+  // A rule email's unsubscribe: false for a token the document never made.
+  async emailOptOut(documentId: string, token: string): Promise<boolean> {
+    this.bindDocument(documentId);
+    return itemEmailOptOut(automationDoors(this), token);
+  }
+
+  // Where the document stands at the index, after an archive, move out, trash or restore.
+  takeStanding(documentId: string, standing: ItemStanding): Promise<void> {
+    this.bindDocument(documentId);
+    return this.standing.take(standing);
+  }
+
+  takeGrantStanding(grant: StandingGrant): Promise<void> {
+    return this.standing.takeGrant(grant);
   }
 
   anonymise(
@@ -630,7 +698,9 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 
   // The room's one alarm, at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's
-  // next push, the Community post's next check, the document's next upkeep. None when nothing is due.
+  // next push, the Community post's next check, the document's next upkeep, and its Automations (a waiting trigger,
+  // a time rule's moment, a Wait's end, a quiet stretch's end, the comment triggers' baseline). None when nothing is
+  // due.
   armAlarm(): void {
     const due = [
       this.agents.nextExpiry(),
@@ -640,6 +710,8 @@ export class DocumentRoom extends DurableObject<Env> {
       this.maintenanceAt,
       this.knowledge.at,
       nextGrantDue(this),
+      this.automations.schedule.wakeAt,
+      this.collab.at,
     ];
     // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
     armRoomAlarm(this.state.storage, due, Date.now());
@@ -652,6 +724,8 @@ export class DocumentRoom extends DurableObject<Env> {
     if (expired.length > 0) this.broadcastPresence();
     const now = Date.now();
     checkGrants(this, now);
+    // Before the drain, so a page's standing threads are read before the drain diffs them (the platform's CollabWatch).
+    this.collab.baseline(now);
     if (this.flushAt !== null && this.flushAt <= now) await drainIndex(this);
     // A shared tab written while the push was in flight (its write armed nothing then).
     this.shares.noteWrite();
@@ -660,6 +734,9 @@ export class DocumentRoom extends DurableObject<Env> {
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await maintain(this, now);
     if (this.knowledge.at !== null && this.knowledge.at <= now && this.schemaReady)
       await this.knowledge.turn(now);
+    // The knowledgebase's rules, after the drain and the knowledge turn that may have queued their triggers. Never
+    // throws.
+    await runDocumentAutomations(this, Date.now());
     this.armAlarm();
   }
 

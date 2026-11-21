@@ -380,10 +380,10 @@ export const articles: Article[] = [
     description:
       'Rules your work runs on its own: when something happens, if conditions hold, then do the steps.',
     keywords:
-      'automation automations automate rule rules trigger condition step workflow schedule scheduled recurring nightly reset revert snapshot slack microsoft teams connection connections webhook incoming signed hmac email notify audit trail template templates ai summarise describe zapier',
+      'automation automations automate rule rules trigger condition step workflow schedule scheduled recurring nightly reset revert snapshot slack microsoft teams connection connections webhook incoming signed hmac email notify audit trail template templates ai summarise describe zapier review due verified owner unanswered question disagree',
     category: 'Tools',
     categorySlug: 'tools',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle', 'liveknowledge'],
   },
   {
     slug: 'browser-compatibility',

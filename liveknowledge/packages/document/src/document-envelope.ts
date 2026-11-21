@@ -28,6 +28,10 @@ export type DocumentEnvelope = {
     /** The Knowledgebase Style; absent is the default (the Everyday look, the product's own theme). */
     knowledgeStyle?: KnowledgeStyle;
     tabs: EnvelopeTab[];
+    // The knowledgebase's Automations rules as its file carries them (docs/specs/013-workspace/automations.md): each
+    // rule's body and whether it was on, read back through the rules' own check, so they are opaque here. Absent
+    // from a file with none, and from every file written before rules.
+    automations?: unknown[];
   };
 };
 
@@ -48,6 +52,7 @@ export function documentToEnvelopeText(
     presentation: string | null;
     knowledgeSettings?: KnowledgeSettings;
     knowledgeStyle?: KnowledgeStyle;
+    automations?: readonly unknown[];
   },
   tabs: EnvelopeTab[],
   exportedAt: number,
@@ -63,6 +68,7 @@ export function documentToEnvelopeText(
       ...fileSettings(liveDoc.knowledgeSettings),
       ...carriedKnowledgeStyle(liveDoc.knowledgeStyle),
       tabs,
+      ...(liveDoc.automations?.length ? { automations: [...liveDoc.automations] } : {}),
     },
   };
   return JSON.stringify(envelope, null, 2);
@@ -121,6 +127,8 @@ export function parseDocumentEnvelope(
         ...fileSettings(d.knowledgeSettings),
         ...carriedKnowledgeStyle(d.knowledgeStyle),
         tabs: d.tabs,
+        // Anything but a list is no rules; what each entry holds is the rules' own check's to read.
+        ...(Array.isArray(d.automations) ? { automations: d.automations as unknown[] } : {}),
       },
     },
   };
@@ -128,10 +136,12 @@ export function parseDocumentEnvelope(
 
 // A copy of an envelope's document (the Drive mirror's import door): fresh tab ids, with the tab links and the
 // deck's slides following them, so the copy navigates and presents like the original. An unreadable deck is
-// dropped rather than carried broken.
+// dropped rather than carried broken. `tabIds` is each tab's id in the file to its id in the copy, for whatever else
+// names a tab (the file's Automations rules).
 export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
   tabs: EnvelopeTab[];
   presentation: string | null;
+  tabIds: Map<string, string>;
   knowledgeSettings?: KnowledgeSettings;
   knowledgeStyle?: KnowledgeStyle;
 } {
@@ -156,6 +166,7 @@ export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
   return {
     tabs,
     presentation,
+    tabIds: idMap,
     ...fileSettings(envelope.document.knowledgeSettings),
     ...carriedKnowledgeStyle(envelope.document.knowledgeStyle),
   };

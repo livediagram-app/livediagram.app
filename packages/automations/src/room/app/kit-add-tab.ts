@@ -2,14 +2,15 @@
 // item-engine.md "The kit": addTab): the tab is made as the app's New Tab makes it from that template and written
 // last in order, and everyone with the item open sees it arrive. This module holds the order of the checks, the
 // limit and the words; the app hands in how it knows a template, builds a tab from one and writes it.
-import type { ItemWord } from '../../item';
+import { inTabWords, type ItemWord } from '../../item';
 
 // The most tabs an item may hold for a rule to add another: a rule that adds a tab on a schedule would otherwise add
 // one for ever. Items hold under 20 tabs in practice; the safe range is 50 to the 500 a migration carries.
 export const RULE_TABS_MAX = 200;
 
+// In the item's own words: a knowledgebase's tabs are pages (tab-word.ts).
 export const tabLimitWords = (itemWord: ItemWord): string =>
-  `This ${itemWord} has ${RULE_TABS_MAX} tabs, the most a rule adds to`;
+  inTabWords(`This ${itemWord} has ${RULE_TABS_MAX} tabs, the most a rule adds to`, itemWord);
 export const TEMPLATE_GONE = 'The template is gone';
 export const TEMPLATE_FAILED = "Couldn't make a tab from that template";
 export const TAB_TOO_LARGE = 'The tab came out too large to store';
@@ -35,15 +36,15 @@ export async function addTemplateTab<Tab>(
   name: string,
 ): Promise<{ id: string; name: string } | { failed: string }> {
   const count = await input.tabCount();
-  if (count === null) return { failed: TEMPLATE_FAILED };
+  if (count === null) return { failed: inTabWords(TEMPLATE_FAILED, input.itemWord) };
   if (count >= RULE_TABS_MAX) return { failed: tabLimitWords(input.itemWord) };
   const kind = input.kindOf(template);
   if (!kind) return { failed: TEMPLATE_GONE };
   const id = crypto.randomUUID();
   const stored = input.storedName(name) || 'Untitled';
   const tab = input.build({ id, name: stored, kind });
-  if (tab === null) return { failed: TEMPLATE_FAILED };
-  if (input.tooLarge(tab)) return { failed: TAB_TOO_LARGE };
+  if (tab === null) return { failed: inTabWords(TEMPLATE_FAILED, input.itemWord) };
+  if (input.tooLarge(tab)) return { failed: inTabWords(TAB_TOO_LARGE, input.itemWord) };
   await input.write(tab, id, stored);
   console.info('[automations] tab added', { template: kind });
   return { id, name: stored };

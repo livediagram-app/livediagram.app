@@ -27,6 +27,21 @@ export function Noun({
   return <>{capital ? capitalise(word) : word}</>;
 }
 
+/** The scope's word for one part of the work: "tab" everywhere but liveknowledge, whose interface never says tab and
+ *  calls them pages (liveworkspace/docs/specs/018-automations/automations.md "Naming"). */
+export function TabWord({
+  scope,
+  plural = false,
+  capital = false,
+}: {
+  scope: HelpScope;
+  plural?: boolean;
+  capital?: boolean;
+}) {
+  const word = `${scope === 'liveknowledge' ? 'page' : 'tab'}${plural ? 's' : ''}`;
+  return <>{capital ? capitalise(word) : word}</>;
+}
+
 /** The scope's app's name, lower case like its logo; "every app" under All Apps. */
 export function AppName({ scope }: { scope: HelpScope }) {
   return <>{scopeName(scope)}</>;

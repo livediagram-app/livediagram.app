@@ -23,6 +23,7 @@ import { registerImageTools } from './image-tools';
 import { registerTool } from './tool-annotations';
 import { registerArchiveTools } from './archive-tools';
 import { registerThreadTools } from './thread-tools';
+import { registerRuleTools } from './rule-tools';
 import { registerCreateTool } from './create-tool';
 import { registerKnowledgeReadTools } from './knowledge-read-tools';
 import { registerKnowledgeWriteTools } from './knowledge-write-tools';
@@ -209,6 +210,9 @@ export function registerTools(server: McpServer, env: Env): void {
 
   // Comment threads (docs/specs/015-api/mcp-server.md "Comment threads"): list_threads and change_threads.
   registerThreadTools(server, env);
+
+  // Automations rules (docs/specs/013-workspace/automations.md "Agents"): list_rules and change_rules.
+  registerRuleTools(server, env);
 }
 
 // Why a delete was refused, in this product's words: the shared ones name a page a tab and point at a tool this

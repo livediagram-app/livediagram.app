@@ -35,6 +35,8 @@ describe('the MCP tool verbs', () => {
       'delete_image',
       'list_threads',
       'change_threads',
+      'list_rules',
+      'change_rules',
     ]);
     for (const v of MCP_TOOL_VERBS) {
       expect(v.id).toBe(`mcp.${v.mcp.tool}`);
@@ -66,6 +68,7 @@ describe('the MCP tool verbs', () => {
       'list_templates',
       'list_images',
       'list_threads',
+      'list_rules',
     ]);
   });
 });
@@ -112,7 +115,10 @@ describe('the page tools', () => {
       ]);
       expect(words).not.toMatch(/wiki|knowledge base/i);
       expect(words).not.toContain('\u2014');
-      expect(words).not.toMatch(/\bupdate_document|read_document|add_tab|write_article\b/);
+      // The rule format's step kind add_tab (Add a Page from a Template) keeps its shared name, quoted as a kind;
+      // no tool of that name is offered.
+      const tools = words.replace(/\\?"add_tab\\?"/g, '');
+      expect(tools).not.toMatch(/\bupdate_document|read_document|add_tab|write_article\b/);
     }
   });
 });

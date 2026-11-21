@@ -26,6 +26,7 @@ const GROUPED_ROWS = [
   },
 ] as const;
 const NAMED_ONLY = [
+  'rule',
   'page',
   'article',
   'template',

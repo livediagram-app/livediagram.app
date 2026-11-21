@@ -30,6 +30,9 @@ import { teamPeople } from '../person/notify';
 import type { DocumentDTO, DocumentEnv } from '../types';
 import { claimMark, dropMark, marksOf, putMarks, reserveEmails } from './email-marks';
 import { REMIND_OWNERS_GAP_MS, REVIEW_EMAIL_GAP_MS } from './knowledge-review-timing';
+import { REVIEW_DUE_EVENT } from '@liveknowledge/document/automations';
+import { hearsKnowledge } from '../document-room/automations/knowledge-events';
+import { queueReviewsDue } from '../document-room/automations/review-events';
 import type { Work } from './knowledge-work';
 
 const DAY_MS = 86_400_000;
@@ -41,7 +44,7 @@ type OwnedPage = EmailPage & { owner: string; verifiedAt?: number };
 
 // Each page with what its stored fields, the knowledgebase's Review Period (read once, with the document) and
 // the clock say (`trustState`): no page's writing is read.
-function pagesOf(document: DocumentDTO, now: number) {
+export function pagesOf(document: DocumentDTO, now: number) {
   const { reviewEvery } = document.knowledgeSettings;
   // A connected file in the tree is no page: nobody answers for it (links-and-embeds.md).
   return document.tabs.flatMap((tab) => {
@@ -190,7 +193,16 @@ export async function runKnowledgeEmail(
   work: Work,
   now: number,
 ): Promise<number | null> {
-  if (work.kind === 'review-email') return runReviewEmails(env, documentId, now);
+  if (work.kind === 'review-email') {
+    // Review Due rules look first, whether the emails are on or not (review-events.ts); the work wakes again at the
+    // sooner of the two answers.
+    const document = hearsKnowledge(env, REVIEW_DUE_EVENT)
+      ? await getDocument(env, documentId)
+      : null;
+    const rules = document ? await queueReviewsDue(env, pagesOf(document, now), now) : null;
+    const emails = await runReviewEmails(env, documentId, now);
+    return rules === null ? emails : emails === null ? rules : Math.min(rules, emails);
+  }
   console.warn('[knowledge] email work unknown', { documentId, kind: work.kind });
   return null;
 }

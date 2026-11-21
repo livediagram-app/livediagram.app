@@ -107,6 +107,14 @@ export const categories: Category[] = [
     kind: 'feature',
   },
   {
+    slug: 'tools',
+    title: 'Tools',
+    description:
+      'Let a Knowledgebase run its routine on its own: Automations, rules that ask for reviews, tell Slack and keep pages owned.',
+    articleCount: 1,
+    kind: 'feature',
+  },
+  {
     slug: 'search-panel',
     title: 'Search Panel',
     description:

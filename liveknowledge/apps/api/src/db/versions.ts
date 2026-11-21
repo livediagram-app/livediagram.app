@@ -8,6 +8,7 @@ import {
   type VersionKind,
   type VersionSummary,
 } from '@liveknowledge/api-schema';
+import { AUTOMATION_PERSON_ID } from '@liveworkspace/automations';
 import type { DocumentEnv } from '../types';
 import {
   countNamedVersions,
@@ -20,12 +21,30 @@ import {
 
 export type VersionAuthor = { id: string; name: string; color: string };
 
+/** A stored author as a version's "by" line: a rule's reads "Automation · <rule>", so it never passes for a person
+ *  (liveworkspace/docs/specs/018-automations/automations.md "Who may do what"). */
+export function versionAuthorOf(row: {
+  author_id: string | null;
+  author_name: string | null;
+  author_color: string | null;
+}): VersionSummary['author'] {
+  if (row.author_name === null) return null;
+  const name =
+    row.author_id === AUTOMATION_PERSON_ID
+      ? row.author_name
+        ? `Automation · ${row.author_name}`
+        : 'Automation'
+      : row.author_name;
+  return { name, color: row.author_color ?? '' };
+}
+
 type VersionRow = {
   id: string;
   tab_id: string;
   rev: number;
   kind: VersionKind;
   name: string | null;
+  author_id: string | null;
   author_name: string | null;
   author_color: string | null;
   tab_name: string;
@@ -38,7 +57,7 @@ type VersionRow = {
 export type StoredVersion = { summary: VersionSummary; tabName: string; data: string };
 
 const SUMMARY_COLUMNS =
-  'id, tab_id, rev, kind, name, author_name, author_color, tab_name, bytes, element_count, saved_at, created_at';
+  'id, tab_id, rev, kind, name, author_id, author_name, author_color, tab_name, bytes, element_count, saved_at, created_at';
 
 // A version id: `v_` and 16 lower-case hex characters, as the schema's SQL_VERSION_ID mints them.
 export function versionId(): string {
@@ -53,8 +72,7 @@ function rowToSummary(row: VersionRow): VersionSummary {
     rev: row.rev,
     kind: row.kind,
     name: row.name,
-    author:
-      row.author_name !== null ? { name: row.author_name, color: row.author_color ?? '' } : null,
+    author: versionAuthorOf(row),
     savedAt: row.saved_at,
     createdAt: row.created_at,
     bytes: row.bytes,

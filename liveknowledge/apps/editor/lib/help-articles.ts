@@ -49,6 +49,8 @@ export const HELP_ARTICLES = {
   markdownImport: 'knowledgebase/import-a-markdown-folder',
   // The Find bar's `?` (docs/specs/007-editor/find-and-replace.md "The bar").
   findAndReplace: 'knowledgebase/writing-on-a-page',
+  // The Automations screen's How Rules Work and its gate (docs/specs/013-workspace/automations.md "The screen").
+  automations: 'tools/automations',
   // Teams
   // Canvas / themes
   changingTheBackground: 'knowledgebase/knowledgebase-style',
@@ -124,6 +126,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   findAndReplace: {
     title: 'Learn about Find and Replace',
     description: 'What Find searches, Match Case and Whole Word, and who may replace.',
+  },
+  automations: {
+    title: 'Learn about Automations',
+    description:
+      'Rules a knowledgebase runs on its own: triggers, steps, templates and the Audit Trail.',
   },
   community: {
     title: 'Learn about the Community',

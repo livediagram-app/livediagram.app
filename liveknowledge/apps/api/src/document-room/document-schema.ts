@@ -11,6 +11,7 @@
 // Made on first use, never on construction (document-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
+import { pageEditorsSchemaStep } from '../knowledge/page-editors';
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import {
   TAB_CONNECTION_SCHEMA,
@@ -20,6 +21,10 @@ import {
   tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
+import {
+  COLLAB_SEEN_SCHEMA_STEP,
+  itemAutomationSchemaSteps,
+} from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SCHEMA } from '../versions/version-schema';
 import { knowledgeSchemaStep } from '../knowledge/knowledge-schema';
@@ -28,6 +33,8 @@ import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
 import { agentSeenSchemaStep } from '../knowledge/agent-seen';
 import { emailMarksSchemaStep } from '../knowledge/email-marks';
 import { pageAnswersSchemaStep } from '../knowledge/page-answers';
+import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
+import { pageThreadsSchemaStep } from '../knowledge/page-threads';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -385,6 +392,29 @@ const V19 = pageAnswersSchemaStep;
 // Asks before the ALTER, so a rerun is safe.
 const V20 = tabFolderColourStep('document_tabs');
 
+// Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
+// in its order, one entry each. Steps 21 to 28 are its rules, schedule, Incoming Webhook secrets, held runs, Describe
+// a Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 29 is the item
+// engine's tables and its three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room
+// itemAutomationSchemaSteps). They follow the folder colour step, which shipped first.
+const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
+
+// Step 30: each page's comment threads and actions as the comment triggers last saw them (the platform's collab
+// watch), kept only while a rule that is on hears one.
+const V30 = COLLAB_SEEN_SCHEMA_STEP;
+
+// Step 31: each page's current approval, the index of the pages waiting (knowledge/page-approvals.ts;
+// docs/specs/030-knowledgebase/approval.md). Additive, IF NOT EXISTS.
+const V31 = pageApprovalsSchemaStep;
+
+// Step 32: the comment threads at the foot of each page (knowledge/page-threads.ts;
+// docs/specs/030-knowledgebase/page-comments.md). Additive, IF NOT EXISTS.
+const V32 = pageThreadsSchemaStep;
+
+// Step 33: everyone who made or changed each page (knowledge/page-editors.ts; docs/specs/030-knowledgebase/
+// page-surface.md "Who made the page"). Additive, IF NOT EXISTS.
+const V33 = pageEditorsSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -406,6 +436,11 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V18,
   V19,
   V20,
+  ...AUTOMATION_STEPS,
+  V30,
+  V31,
+  V32,
+  V33,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

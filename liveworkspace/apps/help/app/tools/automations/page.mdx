@@ -19,42 +19,127 @@ export const metadata = helpMetadata({
 
 An **automation rule** does the small step that always follows the same thing: every night the workshop board goes back to how it started; every Friday a snapshot is taken; someone comments and the team's Slack channel hears about it. Each rule has a **trigger** (what starts it), **conditions** (what must hold) and **steps** (what it does). Rules belong to one <Noun />, live with it and run on our servers, even when nobody has the <Noun /> open.
 
-<Figure app="livediagram,all" caption="The Automations screen: three rules, each with its switch, what it does in a sentence and when it last ran.">
+<Figure
+  app="livediagram,all"
+  caption="The Automations screen: three rules, each with its switch, what it does in a sentence and when it last ran."
+>
   <AutomationsScreen
     rules={[
-      { name: 'Reset Every Night', sentence: 'When Every Day at 0:00 then Revert to Snapshot', last: 'Today' },
-      { name: 'Comments to Slack', sentence: 'When Comment Added then Post to Slack', last: '2h ago' },
-      { name: 'Poll Results to Slack', sentence: 'When Poll Ended then Post to Slack', last: 'Yesterday' },
+      {
+        name: 'Reset Every Night',
+        sentence: 'When Every Day at 0:00 then Revert to Snapshot',
+        last: 'Today',
+      },
+      {
+        name: 'Comments to Slack',
+        sentence: 'When Comment Added then Post to Slack',
+        last: '2h ago',
+      },
+      {
+        name: 'Poll Results to Slack',
+        sentence: 'When Poll Ended then Post to Slack',
+        last: 'Yesterday',
+      },
     ]}
   />
 </Figure>
 
-<Figure app="livedocuments" caption="The Automations screen: three rules, each with its switch, what it does in a sentence and when it last ran.">
+<Figure
+  app="livedocuments"
+  caption="The Automations screen: three rules, each with its switch, what it does in a sentence and when it last ran."
+>
   <AutomationsScreen
     rules={[
-      { name: 'Name a Version Every Friday', sentence: 'When Weekly on Friday at 17:00 then Name This Version', last: 'Friday' },
-      { name: 'Signed Off', sentence: 'When All Threads Resolved then Name This Version', last: '3h ago' },
-      { name: 'Comments to Slack', sentence: 'When Comment Added then Post to Slack', last: '2h ago' },
+      {
+        name: 'Name a Version Every Friday',
+        sentence: 'When Weekly on Friday at 17:00 then Name This Version',
+        last: 'Friday',
+      },
+      {
+        name: 'Signed Off',
+        sentence: 'When All Threads Resolved then Name This Version',
+        last: '3h ago',
+      },
+      {
+        name: 'Comments to Slack',
+        sentence: 'When Comment Added then Post to Slack',
+        last: '2h ago',
+      },
     ]}
   />
 </Figure>
 
-<Figure app="livedesign" caption="The Automations screen: three rules, each with its switch, what it does in a sentence and when it last ran.">
+<Figure
+  app="livedesign"
+  caption="The Automations screen: three rules, each with its switch, what it does in a sentence and when it last ran."
+>
   <AutomationsScreen
     rules={[
-      { name: 'Feedback to Slack', sentence: 'When Comment Added then Post to Slack', last: '2h ago' },
-      { name: 'Library Updated', sentence: 'When Component Changed then Post to Slack', last: 'Yesterday' },
-      { name: 'Snapshot Every Friday', sentence: 'When Weekly on Friday at 17:00 then Take Snapshot', last: 'Friday' },
+      {
+        name: 'Feedback to Slack',
+        sentence: 'When Comment Added then Post to Slack',
+        last: '2h ago',
+      },
+      {
+        name: 'Library Updated',
+        sentence: 'When Component Changed then Post to Slack',
+        last: 'Yesterday',
+      },
+      {
+        name: 'Snapshot Every Friday',
+        sentence: 'When Weekly on Friday at 17:00 then Take Snapshot',
+        last: 'Friday',
+      },
     ]}
   />
 </Figure>
 
-<Figure app="livehuddle" caption="The Automations screen: three rules, each with its switch, what it does in a sentence and when it last ran.">
+<Figure
+  app="livehuddle"
+  caption="The Automations screen: three rules, each with its switch, what it does in a sentence and when it last ran."
+>
   <AutomationsScreen
     rules={[
-      { name: 'Reset Every Night', sentence: 'When Every Day at 0:00 then Revert to Snapshot', last: 'Today' },
-      { name: 'Tidy Up When Everyone Leaves', sentence: 'When Everyone Left then Revert to Snapshot', last: '1h ago' },
-      { name: 'Stand-Up in Fifteen', sentence: 'When Every Weekday at 9:45 then Post to Slack', last: 'Today' },
+      {
+        name: 'Reset Every Night',
+        sentence: 'When Every Day at 0:00 then Revert to Snapshot',
+        last: 'Today',
+      },
+      {
+        name: 'Tidy Up When Everyone Leaves',
+        sentence: 'When Everyone Left then Revert to Snapshot',
+        last: '1h ago',
+      },
+      {
+        name: 'Stand-Up in Fifteen',
+        sentence: 'When Every Weekday at 9:45 then Post to Slack',
+        last: 'Today',
+      },
+    ]}
+  />
+</Figure>
+
+<Figure
+  app="liveknowledge"
+  caption="The Automations screen: three rules, each with its switch, what it does in a sentence and when it last ran."
+>
+  <AutomationsScreen
+    rules={[
+      {
+        name: 'Review Due to Slack',
+        sentence: 'When Review Due then Post to Slack',
+        last: 'Today',
+      },
+      {
+        name: 'Ask the Owner to Check an Agent’s Edit',
+        sentence: 'When Agent Made Changes then Email the Page Owner',
+        last: '2h ago',
+      },
+      {
+        name: 'Unanswered Questions to Slack',
+        sentence: 'When Unanswered Question then Post to Slack',
+        last: 'Yesterday',
+      },
     ]}
   />
 </Figure>
@@ -94,6 +179,15 @@ The **Templates** tab, and the empty Rules list, show ready-made rules in groups
   version every night) and **Access Requests to Slack**.
 </AppNote>
 
+<AppNote app="liveknowledge">
+  The groups are **Keep Pages Trusted**, **AI Knowledge**, **Stay in the Loop** and **Keep It
+  Safe**: **Review Due to Slack**, **Ask the Owner to Check an Agent’s Edit**, **Agents’ New Pages
+  Get an Owner**, **A Restored Page Needs Verifying Again**, **Name a Version When Verified**,
+  **Unanswered Questions to Slack**, **Pages That Disagree to Slack**, **Tell the Owner About a
+  Suggested Edit**, **Announce Verified Pages**, **Comments to Slack**, **Access Requests to
+  Slack**, **Weekly Summary by Email** and **Snapshot Every Month**.
+</AppNote>
+
 <AppNote app="livedesign">
   **Feedback to Slack**, **Feedback Addressed** (an email once every thread is resolved), **Ready
   for Build** (run by hand: a handoff snapshot and a Slack post with the design's link), **Tell
@@ -105,18 +199,18 @@ The **Templates** tab, and the empty Rules list, show ready-made rules in groups
 <AppNote app="livehuddle">
   In four groups. **Keep It Safe**: **Reset Every Night** (a workshop Space back to a snapshot at
   midnight, so it starts clean each day), **Tidy Up When Everyone Leaves** (back to a snapshot 10
-  minutes after the last person leaves) and **Snapshot Every Friday**. **Rooms and Meetings**:
-  **The Office Is Open** (a Slack post when the first person arrives), **Stand-Up in Fifteen** and
-  **Meeting Wrap-Up** (an email of who came and for how long). **The Suggestion Box**:
-  **Suggestions to Slack** and **Empty the Suggestion Box Weekly**. **Stay in the Loop**: **A
-  Visitor Arrived** and **Access Requests to Slack**.
+  minutes after the last person leaves) and **Snapshot Every Friday**. **Rooms and Meetings**: **The
+  Office Is Open** (a Slack post when the first person arrives), **Stand-Up in Fifteen** and
+  **Meeting Wrap-Up** (an email of who came and for how long). **The Suggestion Box**: **Suggestions
+  to Slack** and **Empty the Suggestion Box Weekly**. **Stay in the Loop**: **A Visitor Arrived**
+  and **Access Requests to Slack**.
 </AppNote>
 
 ## Describe a Rule
 
 Press **New Rule**, then **Describe a Rule**, and say in your own words when the rule should run and what it should do: "Every Friday at 5, take a snapshot and email me". The examples under the box fill it in for you. Press **Draft Rule**, and a few seconds later the rule opens in the builder, drafted from your words. It is not saved and it is off: check each step, try it with **Test Rule**, then press **Save Rule**. If no rule could be made from your words, the dialog says so and keeps them to change.
 
-Only your words, the names of the <Noun />'s tabs and the kinds of trigger and step are sent, never what the <Noun /> holds, its people or its connections. Drafting counts toward the <Noun />'s 100 AI asks a day.
+Only your words, the names of the <Noun />'s <TabWord plural /> and the kinds of trigger and step are sent, never what the <Noun /> holds, its people or its connections. Drafting counts toward the <Noun />'s 100 AI asks a day.
 
 ## Make a Rule
 
@@ -129,14 +223,14 @@ Every app has these:
 - **Scheduled**: every day, every weekday, weekly on the days you pick, or monthly on a day, at a time on the quarter hour, in your time zone when you saved the rule.
 - **Run by Hand**: you start it with **Run Rule** (below).
 - **Incoming Webhook**: another tool starts it by calling the rule's own address ([below](#start-a-rule-from-another-tool)).
-- **Tab Added** and **Tab Removed**.
-- **Edited, Then Quiet**: the <Noun /> changed and then nothing changed for a while you choose (5 minutes to 24 hours), on any tab or one. It runs once when a burst of edits settles, never on every keystroke, so it is the trigger for "tell me when this changed".
+- **<TabWord capital /> Added** and **<TabWord capital /> Removed**.
+- **Edited, Then Quiet**: the <Noun /> changed and then nothing changed for a while you choose (5 minutes to 24 hours), on any <TabWord /> or one. It runs once when a burst of edits settles, never on every keystroke, so it is the trigger for "tell me when this changed".
 - **Not Edited For**: nothing in the <Noun /> has changed for 1 to 365 days, checked once a day at a time you pick. It runs once each time the <Noun /> goes that long untouched.
 - **Snapshot Taken**: someone takes a snapshot by hand.
 - **Someone Joined**: a person opens the <Noun /> through a share link for the first time.
 - **Access Requested**: someone asks for access to the <Noun />.
 
-<AppNote app="livediagram,livedocuments,livedesign">
+<AppNote app="livediagram,livedocuments,livedesign,liveknowledge">
   With comments, there are also **Comment Added** (a new thread or a reply), **Thread Resolved**,
   **All Threads Resolved** (the last open thread on a tab is resolved), **Action Assigned** and
   **Action Done**. A rule's own comments start nothing. These are heard when the <Noun /> next
@@ -144,20 +238,39 @@ Every app has these:
 </AppNote>
 
 <AppNote app="livediagram">
-  - **Poll Ended**: a facilitator ends a [live poll](/help/collaboration/session-tools/polls/). It carries the question and the tally, never who answered what.
-  - **Question Asked**: someone adds a note to a Q&A board. Notes are anonymous to the rule, as on the board.
-  - **Agent Made Changes**: an AI agent or a script changes the canvas through the MCP server, the command line or the API. It runs once per change, with the token's name as who did it.
+  - **Poll Ended**: a facilitator ends a [live poll](/help/collaboration/session-tools/polls/). It
+  carries the question and the tally, never who answered what. - **Question Asked**: someone adds a
+  note to a Q&A board. Notes are anonymous to the rule, as on the board. - **Agent Made Changes**:
+  an AI agent or a script changes the canvas through the MCP server, the command line or the API. It
+  runs once per change, with the token's name as who did it.
 </AppNote>
 
 <AppNote app="livedocuments">
-  - **Version Named**: someone names a version of a tab in [Version History](/help/tabs/version-history/).
-  - **Version Restored**: someone restores a tab to an earlier version.
-  - **Agent Made Changes**: an AI agent or a script changes pages or writes an article.
+  - **Version Named**: someone names a version of a tab in [Version
+  History](/help/tabs/version-history/). - **Version Restored**: someone restores a tab to an
+  earlier version. - **Agent Made Changes**: an AI agent or a script changes pages or writes an
+  article.
+</AppNote>
+
+<AppNote app="liveknowledge">
+  - **Page Verified**: someone [verifies a page](/help/knowledgebase/owners-and-verifying/), on any page or one you pick.
+  - **Review Due**: a verified page's review comes due (when it was verified plus the Review Period), once for each review. Nobody is behind it. A new rule starts nothing for pages already due when it was saved.
+  - **Page Owner Changed**: someone gives a page a new owner or takes its owner away, Verify included when it makes you the owner of a page nobody owned.
+  - **Unanswered Question**: a question nobody's pages answer is asked for the first time, in Ask, by an agent's search or by an agent reporting a gap. Like questions count as one.
+  - **Pages Disagree**: two pages are found stating opposite facts. Each pair starts the rule once.
+  - **Agent Suggested a Change**: an agent suggests an edit to a page.
+  - **Agent Made Changes**: an agent makes or writes a page through the MCP server, the command line or the API.
+  - **Version Named** and **Version Restored**: someone names a version of a page, or restores one, in Version History.
+
+Verifying a page, changing its owner and Always in Context are never edits, so they start no Edited, Then Quiet rule.
+
 </AppNote>
 
 <AppNote app="livedesign">
-  - **Component Changed**: a main component of the design's library is changed, on any component or one you pick. It runs once after a burst of changes settles (2 minutes of quiet), with the component's name.
-  - **Agent Made Changes**: an AI agent or a script changes the canvas, its pages or a component.
+  - **Component Changed**: a main component of the design's library is changed, on any component or
+  one you pick. It runs once after a burst of changes settles (2 minutes of quiet), with the
+  component's name. - **Agent Made Changes**: an AI agent or a script changes the canvas, its pages
+  or a component.
 </AppNote>
 
 <AppNote app="livehuddle">
@@ -165,14 +278,15 @@ Every app has these:
   - **Everyone Left**: the last person leaves a tab and it stays empty for a while you choose (1 minute to 12 hours), so a dropped connection or a short break starts nothing.
   - **Suggestion Dropped**: someone drops a note in the Suggestion Box. The box is anonymous, so the rule never knows who.
 
-  A tab picked on Someone Arrived or Everyone Left means that tab; with none, each tab counts on its own. A knock, a nudge, a raised hand or a bell starts no rule. livehuddle has no comment triggers.
+A tab picked on Someone Arrived or Everyone Left means that tab; with none, each tab counts on its own. A knock, a nudge, a raised hand or a bell starts no rule. livehuddle has no comment triggers.
+
 </AppNote>
 
 ### Conditions
 
 **+ Add Condition** checks, before any step runs:
 
-- **Tab**: the run's tab is, or is not, one of the tabs you pick.
+- **<TabWord capital />**: the run's <TabWord /> is, or is not, one of the <TabWord plural /> you pick.
 - **Who Did It**: whoever started the rule is, or is not, a person you pick, an Editor, a Participant or an agent. A rule on a time or an Incoming Webhook has nobody behind it, so this isn't offered there.
 - **Day of Week**: today, in the rule's time zone, is one of the days you pick.
 - **Text**: a value (a comment, a webhook field) contains, or does not contain, some text, in any case.
@@ -183,13 +297,14 @@ Every app has these:
 - **Revert to Snapshot**: puts the whole <Noun /> back to a snapshot you pick, for everyone ([below](#revert-to-snapshot)).
 - **Send Email**: to the <Noun />'s owner, whoever started the rule, a person you pick, or addresses you type in ([below](#email-from-a-rule)).
 - **Post to Slack**, **Post to Microsoft Teams** and **Send to Webhook**: a message through one of the <Noun />'s [connections](#connections).
-- **Summarise with AI**: reads the <Noun />'s text (or one tab's) and keeps a summary for the steps after it, as the **Summary** value.
+- **Summarise with AI**: reads the <Noun />'s text (or one <TabWord />'s) and keeps a summary for the steps after it, as the **Summary** value.
 - **Wait**: holds the rest of the rule for 1 hour to 30 days. The run shows as **Waiting** in the Audit Trail until then.
 - **If / Else**: runs one list of steps when its conditions hold, another when they don't.
 
-<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
-  **Add a Tab from a Template** adds a tab made from a template you pick, named by the rule, last in
-  order, as **New Tab** makes it. Everyone with the <Noun /> open sees it arrive.
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle,liveknowledge">
+  **Add a <TabWord capital /> from a Template** adds a <TabWord /> made from a template you pick,
+  named by the rule, last in order, as **New <TabWord capital />
+  ** makes it. Everyone with the <Noun /> open sees it arrive.
 </AppNote>
 
 <AppNote app="livediagram">
@@ -198,8 +313,21 @@ Every app has these:
 </AppNote>
 
 <AppNote app="livedocuments">
-  - **Name This Version** names the current content of a tab (the run's tab, or one you pick). A tab already holding its 25 named versions fails the step.
-  - **Restore a Version** puts a tab you pick back to one of its named versions, as Restore does, so it can be undone there. Unlike Revert to Snapshot it touches one tab, so steps may follow it.
+  - **Name This Version** names the current content of a tab (the run's tab, or one you pick). A tab
+  already holding its 25 named versions fails the step. - **Restore a Version** puts a tab you pick
+  back to one of its named versions, as Restore does, so it can be undone there. Unlike Revert to
+  Snapshot it touches one tab, so steps may follow it.
+</AppNote>
+
+<AppNote app="liveknowledge">
+  - **Set the Page Owner** makes a person you pick, or whoever started the rule, the owner of a page (the run's page or one you pick). For an agent, whoever started it is the person whose agent it is. Someone who can no longer open the knowledgebase fails the step.
+  - **Clear Verification** takes a page's verification away, so it reads Not Verified until someone verifies it again. Its owner stays.
+  - **Email the Page Owner** emails the owner of the run's page. A page with no owner fails the step, and the Audit Trail says so.
+  - **Add to Always in Context** and **Remove from Always in Context** put a page in, or take it out of, the pages every agent is handed, within the 8,000 token budget.
+  - **Name This Version** and **Restore a Version** work on one page's Version History, as they do there.
+
+There is no Verify step: verifying says a person vouches for the page, and a rule can't.
+
 </AppNote>
 
 <AppNote app="livehuddle">
@@ -210,14 +338,22 @@ A failed step stops the run; the steps before it stay done.
 
 ### Insert a Value
 
-Text a rule writes (a snapshot's name, an email, a message) can hold values filled in when it runs. Pick one from **Insert a Value**: the <Noun />'s name and link, the run's tab and its link, **Who Did It**, the comment, the rule's name, today's date or a day before or after it, and the **Summary** a Summarise with AI step made. An Incoming Webhook rule adds **Webhook Field…**, which reads a field of the call's body by its path, such as `build.status`. They show as chips in the text.
+Text a rule writes (a snapshot's name, an email, a message) can hold values filled in when it runs. Pick one from **Insert a Value**: the <Noun />'s name and link, the run's <TabWord /> and its link, **Who Did It**, the comment, the rule's name, today's date or a day before or after it, and the **Summary** a Summarise with AI step made. An Incoming Webhook rule adds **Webhook Field…**, which reads a field of the call's body by its path, such as `build.status`. They show as chips in the text.
 
 <AppNote app="livediagram">
   A Poll Ended rule adds the poll's question, its results (each option and its count, the most
   chosen first) and how many answered; a Question Asked rule adds the question's text.
 </AppNote>
 
-<AppNote app="livedocuments">A Version Named or Version Restored rule adds the version's name.</AppNote>
+<AppNote app="livedocuments">
+  A Version Named or Version Restored rule adds the version's name.
+</AppNote>
+
+<AppNote app="liveknowledge">
+  **Page Owner** reads the run's page's owner ("Nobody" when it has none). An Unanswered Question or
+  Pages Disagree rule adds the **Question**, Pages Disagree the **Other Page Name**, Agent Suggested
+  a Change the **Suggestion Reason**, and Version Named or Version Restored the version's name.
+</AppNote>
 
 <AppNote app="livedesign">A Component Changed rule adds the component's name.</AppNote>
 
@@ -229,7 +365,7 @@ Text a rule writes (a snapshot's name, an email, a message) can hold values fill
 
 ## Test Rule and Run Rule
 
-**Test Rule** runs the rule as it stands, saved or not, and changes nothing: you see each condition and each step as it would go ("Would post to Launch Channel", "Would revert to “Clean board”"). When the trigger is about a tab it asks which one first.
+**Test Rule** runs the rule as it stands, saved or not, and changes nothing: you see each condition and each step as it would go ("Would post to Launch Channel", "Would revert to “Clean board”"). When the trigger is about a <TabWord /> it asks which one first.
 
 A rule whose trigger is **Run by Hand** runs for real with **Run Rule**, on its row or in its **⋯** menu. A message says it ran, or why it couldn't.
 
@@ -250,7 +386,7 @@ A message step's panel picks a connection by name, or offers **Add a Connection�
 
 Each connection in the list shows where it posts and who added it, with **Send Test**, **Pause Connection** (and **Resume Connection**), **Delete Connection** and its **Recent Deliveries**: what it sent lately and whether each one arrived. A failed delivery is tried again for about a day. A connection pauses itself after 20 deliveries in a row fail, when the address says it is gone, or when whoever added it can no longer edit the <Noun />; a rule that a paused connection stopped offers **Fix Connection**. A <Noun /> holds up to **10** connections, and a rule up to 5 message steps.
 
-**Signed messages.** For Your Own Service, the connection's signing secret is shown once, when you add it: copy it then. Each delivery is a JSON `POST` with the rule's message, the tab it is about (if any) and a link back, signed with that secret. The headers carry the signature as `X-Liveworkspace-Signature: v1=<hex>`, an HMAC-SHA256 over `<timestamp>.<body>` keyed with the secret, the Unix time in `X-Liveworkspace-Timestamp`, `automation` or `ping` (a Send Test) in `X-Liveworkspace-Event`, and the delivery's id in `X-Liveworkspace-Delivery`, the same on every retry. Your service recomputes the HMAC, compares it in constant time and refuses a timestamp more than five minutes old.
+**Signed messages.** For Your Own Service, the connection's signing secret is shown once, when you add it: copy it then. Each delivery is a JSON `POST` with the rule's message, the <TabWord /> it is about (if any) and a link back, signed with that secret. The headers carry the signature as `X-Liveworkspace-Signature: v1=<hex>`, an HMAC-SHA256 over `<timestamp>.<body>` keyed with the secret, the Unix time in `X-Liveworkspace-Timestamp`, `automation` or `ping` (a Send Test) in `X-Liveworkspace-Event`, and the delivery's id in `X-Liveworkspace-Delivery`, the same on every retry. Your service recomputes the HMAC, compares it in constant time and refuses a timestamp more than five minutes old.
 
 A team <Noun />'s connections show in the team's [Audit Log](/help/collaboration/teams/audit-log/) when one is added or removed.
 
@@ -286,7 +422,7 @@ curl -X POST '<address>' \
 
 A signed call is refused if its timestamp is more than five minutes away from now, either way, or if the same signed call already reached the rule in the last ten minutes, so a call someone copies can't be sent again. Make a fresh timestamp and signature for each call. A call answered `429` or `400` wasn't taken, so it can be sent again as it is.
 
-Name a tab in `tab`, by its name or its id, to run the rule on that tab; with none, it runs once on the <Noun /> alone. Anything else in the body is yours to read with **Webhook Field…** values (`{{webhook.version}}`). The tool hears back `202` with how many runs were queued. A wrong or old secret, a missing or stale timestamp, a call sent twice, or a rule that is off or deleted, answers `401`; a call not sent as JSON `415`; a body over 16 KB `413`; more than 60 calls a minute, or a <Noun /> past its runs for the day, `429`. **Regenerate** makes a new secret and stops the old one at once.
+Name a <TabWord /> in `tab`, by its name or its id, to run the rule on that <TabWord />; with none, it runs once on the <Noun /> alone. Anything else in the body is yours to read with **Webhook Field…** values (`{{webhook.version}}`). The tool hears back `202` with how many runs were queued. A wrong or old secret, a missing or stale timestamp, a call sent twice, or a rule that is off or deleted, answers `401`; a call not sent as JSON `415`; a body over 16 KB `413`; more than 60 calls a minute, or a <Noun /> past its runs for the day, `429`. **Regenerate** makes a new secret and stops the old one at once.
 
 ## Revert to Snapshot
 
@@ -324,11 +460,17 @@ A rule's changes don't start other rules, so two rules can never keep answering 
 
 ## Who Can
 
-Only an **Editor of the whole <Noun />**, signed in, makes, changes, turns on or off, tests and runs rules and manages connections: its owner, its team, or someone with an Editor link to every tab. Everyone's changes can start a rule, a Participant's or a Viewer's comment included, and what a rule does it does as **Automation**, with an Editor's rights.
+Only an **Editor of the whole <Noun />**, signed in, makes, changes, turns on or off, tests and runs rules and manages connections: its owner, its team, or someone with an Editor link to every <TabWord />. Everyone's changes can start a rule, a Participant's or a Viewer's comment included, and what a rule does it does as **Automation**, with an Editor's rights.
 
-- **Participants and Viewers** don't see the Automations row, and neither do Editors through a link to one tab. Where a rule changed something, they see it by **Automation** with the rule's name beside it ("Automation · Reset Every Night"), as everyone does.
+- **Participants and Viewers** don't see the Automations row, and neither do Editors through a link to one <TabWord />. Where a rule changed something, they see it by **Automation** with the rule's name beside it ("Automation · Reset Every Night"), as everyone does.
 - **Signed out**, even with an Editor link, the row carries a **Sign In** badge: a rule sends email and messages in a person's name, so it asks you to sign in first.
 - **Offline.** Rules run on our servers, so a <Noun /> kept [Offline](/help/privacy-and-security/offline-mode/) has none: its row carries a **Sync <Noun capital />** badge, and pressing it offers to sync the <Noun /> first.
+
+<AppNote app="liveknowledge">
+  A **Participant** writes pages but doesn't see Automations, as with Knowledgebase Settings and
+  Style. An agent lists rules and the Audit Trail with any scope, and changes them only with the
+  **write** scope an Editor grants it in AI Knowledge.
+</AppNote>
 
 ## Copies and Files
 

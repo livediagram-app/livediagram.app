@@ -3,6 +3,7 @@
 // pieces of the answer, then one `done` with the sources, what was found but not used and the gaps; or one `error`.
 // A signed-in Editor, Participant or Viewer may ask (an API token asks for its account); a guest or a visitor
 // through a share link may not, since it would spend the team's key for strangers.
+import { newQuestions, queueNewQuestions } from '../document-room/automations/question-events';
 import {
   ASK_MAX_QUESTION_CHARS,
   ASK_MAX_TURNS,
@@ -162,7 +163,15 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
               sources.map((s) => s.tab),
               now,
             );
+        const fresh = await newQuestions(
+          ctx,
+          read.gaps.flatMap((gap) => {
+            const key = questionKey(gap);
+            return key ? [{ key, question: gap }] : [];
+          }),
+        );
         await runAll(env, answered ? [...gaps, answered] : gaps);
+        await queueNewQuestions(ctx, fresh);
         console.info('[knowledge] ask', {
           documentId: document.id,
           passages: passages.length,

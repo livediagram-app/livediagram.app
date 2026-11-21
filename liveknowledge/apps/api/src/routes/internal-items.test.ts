@@ -16,6 +16,20 @@ vi.mock('../room-access-client', async (importOriginal) => ({
   tellTrashed,
   closeArchivedSessions,
 }));
+// Where it stands, kept by the room for its rules (@liveworkspace/automations/room standing.ts).
+const stoodRooms = vi.hoisted(() => [] as string[]);
+vi.mock('../document-client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../document-client')>();
+  return {
+    ...actual,
+    documentRoom: (...args: Parameters<typeof actual.documentRoom>) => ({
+      ...actual.documentRoom(...args),
+      takeStanding: async (standing: { archived: boolean; trashed: boolean }) => {
+        stoodRooms.push(`${args[1]}:${standing.archived || standing.trashed ? 'away' : 'live'}`);
+      },
+    }),
+  };
+});
 
 // The index's copy door (docs/specs/015-api/api.md "Internal"): a copy made by anyone but the source's owner takes
 // the comments as the tab read serves them to that person, other people's author ids redacted.
@@ -123,6 +137,8 @@ describe('POST /api/internal/items/:id/standing', () => {
     // An archived item sent to the Trash is trashed: its room hears the trash, not the archive.
     expect((await stand('D', true, true))?.status).toBe(200);
     expect(closeArchivedSessions).toHaveBeenCalledTimes(1);
+    // Each room keeps where it stands first, for its rules.
+    expect(stoodRooms).toEqual(['A:away', 'B:away', 'C:live', 'D:away']);
   });
 });
 

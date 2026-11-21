@@ -5,6 +5,7 @@
 //   POST   /api/documents/<id>/conflicts/<id>/dismiss  Not a Conflict (Editor)
 //   (Ask Both Owners and Remind the Owners are knowledge-email-routes.ts.)
 // Seeing the tab is every role's; resolving is an Editor's. All of it is the room's own bookkeeping: no model.
+import { newQuestions, queueNewQuestions } from '../document-room/automations/question-events';
 import {
   ASK_MAX_QUESTION_CHARS,
   CONTEXT_BUDGET_TOKENS,
@@ -202,7 +203,9 @@ export async function handleOverviewRoutes(route: KnowledgeRoute): Promise<Respo
         'question_too_long',
         `A question is at most ${ASK_MAX_QUESTION_CHARS.toLocaleString('en')} characters.`,
       );
+    const fresh = await newQuestions(ctx, [{ key, question }]);
     await runAll(env, upsertQuestion(key, question, readerOf(ctx), Date.now()));
+    await queueNewQuestions(ctx, fresh);
     console.info('[knowledge] gap reported', { documentId: document.id });
     return json({ key }, { status: 201 });
   }

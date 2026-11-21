@@ -1,6 +1,7 @@
 // GET /api/documents/<id>/search?q= (docs/specs/030-knowledgebase/search-and-ask.md "Search"): the knowledgebase's
 // own index, page titles first, then passages, verified pages preferred. No model and no key. Every role, signed in
 // or through a share link; a link confined to one page finds only that page.
+import { newQuestions, queueNewQuestions } from '../document-room/automations/question-events';
 import {
   SEARCH_MAX_QUERY_CHARS,
   foundPassage,
@@ -83,8 +84,11 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
       recordRead(tab, reader, now),
     );
     const key = questionKey(query);
-    if (results.length === 0 && key) notes.push(...upsertQuestion(key, query.trim(), reader, now));
+    const asked = results.length === 0 && key ? [{ key, question: query.trim() }] : [];
+    const fresh = await newQuestions(ctx, asked);
+    if (asked.length > 0) notes.push(...upsertQuestion(key, query.trim(), reader, now));
     await runAll(ctx.env, notes);
+    await queueNewQuestions(ctx, fresh);
     return json({ results: answered });
   }
   return json({ results: results.map(searchResultOf) });

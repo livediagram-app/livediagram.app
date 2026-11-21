@@ -128,6 +128,22 @@ export const ROOT_TYPES = [
   'TemplateCatalogueResponse',
   'IconSearchResponse',
   'UnfurlResult',
+  // Automations (docs/specs/013-workspace/automations.md): the rule as a save sends it, and each route's body.
+  'AutomationsListResponse',
+  'AutomationRuleResponse',
+  'AutomationRuleBody',
+  'AutomationToggleRequest',
+  'AutomationOrderRequest',
+  'AutomationTestRequest',
+  'AutomationRunNowRequest',
+  'AutomationDraftRequest',
+  'AutomationDraftResponse',
+  'AutomationRunResponse',
+  'AutomationRunsResponse',
+  'AutomationSummaryResponse',
+  'AutomationSecretResponse',
+  'AutomationHookRequest',
+  'AutomationHookAccepted',
 ];
 
 // Code names that differ from the published component name. The document's TypeScript type is

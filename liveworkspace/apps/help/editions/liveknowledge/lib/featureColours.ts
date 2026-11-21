@@ -50,6 +50,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'roles-and-invites': '#a855f7',
   'team-shared-documents': '#0ea5e9',
   'audit-log': '#10b981',
+  automations: '#7c3aed',
   'explorer-page': '#64748b',
   home: '#8b5cf6',
   'personal-space': '#f59e0b',
@@ -74,5 +75,6 @@ export const FEATURE_CATEGORY_HEX: Record<string, string> = {
   collaboration: '#f59e0b',
   explorer: '#64748b',
   'user-interface': '#6366f1',
+  tools: '#475569',
   'search-panel': '#0891b2',
 };

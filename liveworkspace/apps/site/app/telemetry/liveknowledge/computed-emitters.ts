@@ -559,6 +559,25 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
   },
+  // The Automations screen's templates (docs/specs/013-workspace/automations.md "Templates"): one per template id,
+  // DOCUMENT_TEMPLATES in @liveknowledge/document/automations, written out as this app takes no dependency on it.
+  'apps/editor/components/automations/document-plumbing.ts UI·Opened': {
+    values: [
+      'review-slack',
+      'agent-check',
+      'agent-owner',
+      'restored-unverify',
+      'verified-version',
+      'questions-slack',
+      'disagree-slack',
+      'suggestion-owner',
+      'verified-slack',
+      'comments-slack',
+      'access-slack',
+      'weekly-summary',
+      'snapshot-monthly',
+    ].map((id) => `AutomationTemplate.${id}`),
+  },
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): every editor timing and every app's Web
   // Vitals go through the one reportTiming, so this one site sends every metric in every bucket.
   'packages/telemetry-client/src/timing.ts Timing·Measured': { values: ALL_TIMING_TYPES },

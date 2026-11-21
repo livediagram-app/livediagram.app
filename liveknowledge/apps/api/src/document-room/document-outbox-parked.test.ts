@@ -131,7 +131,7 @@ describe("a document's parked outbox keys", () => {
 });
 
 describe('the parking schema step (V7)', () => {
-  it('brings a room whose version ran ahead of its retry columns up to date, and is the latest step', () => {
+  it('brings a room whose version ran ahead of its retry columns up to date, to the latest version', () => {
     const raw = new DatabaseSync(':memory:');
     const sql = nodeItemSql(raw);
     const exec = (q: string) => sql.exec(q);
@@ -144,7 +144,7 @@ describe('the parking schema step (V7)', () => {
     expect(() => outboxDueAt(nodeSql(raw))).toThrow();
     migrateDocumentSchema(exec);
     expect(outboxDueAt(nodeSql(raw))).toBeNull();
-    expect(DOCUMENT_SCHEMA_VERSION).toBe(20);
+    expect(DOCUMENT_SCHEMA_VERSION).toBe(33);
     // The Community triggers key the summary by delete-then-insert now.
     const triggers = raw
       .prepare(

@@ -21,6 +21,7 @@ export type {
   ClientMessage,
 } from '@liveknowledge/api-schema';
 
+import type { ItemHost } from '@liveworkspace/automations/room';
 import type { DocumentRoom } from './document-room/document-room';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
@@ -153,6 +154,10 @@ export type Env = {
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
+  // Automations' Summarise with AI and Describe a Rule ask the same Workers AI binding (AI above;
+  // docs/specs/013-workspace/automations.md). AI_GATEWAY (unset by default) routes their calls through an AI Gateway
+  // of that id.
+  AI_GATEWAY?: string;
 };
 
 // The env a document's own code runs with, inside its Durable Object (src/document-room/document-room.ts): the
@@ -163,14 +168,18 @@ export type Env = {
 // someone already looking at it (docs/specs/014-identity/phone-notifications.md).
 // `SNAPSHOT_REVERTED`: a snapshot's revert landed (docs/specs/013-workspace/snapshots.md), so the room forgets its
 // ledger and closes every socket with SNAPSHOT_REVERTED_CLOSE.
-export type DocumentEnv = Env & {
-  DOCUMENT_DB: D1Database;
-  // The same database with no write note (knowledge/knowledge-db.ts): what the knowledge bookkeeping writes
-  // through, so a counted read or a logged question is never recorded as an edit. Absent in a test's env.
-  KNOWLEDGE_DB?: D1Database;
-  ROOM_PEOPLE?: () => ReadonlySet<string>;
-  SNAPSHOT_REVERTED?: (generation: number) => void;
-  // The knowledgebase's Review Period changed (document-content.ts setKnowledgeSettings): the room owes its
-  // review check, since the next review to wait for moved.
-  REVIEW_PERIOD_CHANGED?: () => void;
-};
+// `AUTOMATIONS` (ItemHost): the knowledgebase's rules engine (document-room/automations/), so a write a rule hears
+// queues its trigger beside itself; `COLLAB`: the comment triggers' watch the outbox's drain hands each changed page
+// to. Both absent outside a room (a test's env, the route probe), where nothing is heard.
+export type DocumentEnv = Env &
+  ItemHost & {
+    DOCUMENT_DB: D1Database;
+    // The same database with no write note (knowledge/knowledge-db.ts): what the knowledge bookkeeping writes
+    // through, so a counted read or a logged question is never recorded as an edit. Absent in a test's env.
+    KNOWLEDGE_DB?: D1Database;
+    ROOM_PEOPLE?: () => ReadonlySet<string>;
+    SNAPSHOT_REVERTED?: (generation: number) => void;
+    // The knowledgebase's Review Period changed (document-content.ts setKnowledgeSettings): the room owes its
+    // review check, since the next review to wait for moved.
+    REVIEW_PERIOD_CHANGED?: () => void;
+  };

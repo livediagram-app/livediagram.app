@@ -38,6 +38,9 @@ type EmailMessage = {
   // a native unsubscribe affordance (we point it at the profile page rather than
   // a one-click POST endpoint, by design — docs/specs/014-identity/transactional-email.md).
   unsubscribeUrl?: string;
+  // `unsubscribeUrl` is a one-click POST door (RFC 8058), sent with List-Unsubscribe-Post: a rule's email to a
+  // typed-in address (@liveworkspace/automations/room email.ts).
+  oneClick?: boolean;
 };
 
 export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: boolean }> {
@@ -53,6 +56,7 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
       html: msg.html,
       ...(msg.text !== undefined && { text: msg.text }),
       ...(msg.unsubscribeUrl && { unsubscribeUrl: msg.unsubscribeUrl }),
+      ...(msg.unsubscribeUrl && msg.oneClick && { oneClick: true }),
     });
     // One anonymous telemetry row per outcome (docs/specs/017-telemetry/telemetry.md), written server-side
     // because nothing about an email reaches a browser: the send happens in a

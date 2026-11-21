@@ -36,6 +36,7 @@ import type { DocumentDTO, DocumentEnv } from '../types';
 import { heldArticleTargets, heldMessage } from './held-paragraphs';
 import { readStoredTab } from './stored-tab';
 import { SUBMIT_ATTEMPTS, withServerRules } from './submit';
+import { queueAgentChanged } from '../document-room/automations/version-events';
 import { writeChangeset, type Author } from './write';
 
 type PagesArgs = {
@@ -45,6 +46,8 @@ type PagesArgs = {
   request: PagesRequest;
   author: Author;
   tokenId: string | null;
+  // The token's name, for a rule's Who Did It (docs/specs/013-workspace/automations.md "Agent Made Changes").
+  tokenName?: string | null;
 };
 
 type PagesResult = {
@@ -175,6 +178,7 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
         orderIndex: stored.orderIndex,
         author: args.author,
         tokenId: args.tokenId,
+        tokenName: args.tokenName ?? null,
         summary: null,
         baseRev: null,
         rebasedOver: 0,
@@ -204,6 +208,14 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
           }).run();
         }
         rev = await upsertTabAtRev(env, document.id, next, stored.orderIndex, stored.rev);
+        // Agent Made Changes for a write no changeset records (writeChangeset queues its own).
+        if (args.tokenId)
+          queueAgentChanged(env, {
+            key: `pages:${tabId}:${rev}`,
+            tab: tabId,
+            author: args.author,
+            tokenName: args.tokenName ?? null,
+          });
       } catch (err) {
         if (err instanceof TabTooLargeError) return tooLarge();
         if (isTabRevStale(err)) {

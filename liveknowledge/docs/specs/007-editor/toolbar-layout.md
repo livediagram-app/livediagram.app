@@ -249,10 +249,8 @@ button's left edge (`computeDockAnchor(..., 'button')`). The button has no hover
 got in the way of the Explorer's app switcher, and the icon is plain. Its `aria-label` ("Explorer") names it.
 
 The Explorer's header has its own **⋯** menu: New Document and Open Explorer, then the open document's own verbs
-(**Share**, **Export**, and the open document's own **Webhooks**), then the app's rows (Search, Settings and the like). Webhooks is
-offered to a signed-in account who can edit the whole document (not a Viewer, a Participant or a one-tab link) and opens
-the same Webhooks dialog as an item's ⋯ menu in the Explorer, for this document alone
-([webhooks.md](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)).
+(**Share** and **Export**), then the app's rows (Search, Settings and the like). It has no Webhooks row: what is left
+of a webhook is a connection, on the Connections tab inside [Automations](../013-workspace/automations.md).
 
 Collaborate, Slides and Contents open as **popovers over their bottom-row
 buttons** ([Editor app](editor-app.md)): they are not corner panels. Every

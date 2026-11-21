@@ -7,4 +7,5 @@ export * from './page-feedback-schema';
 export * from '@liveworkspace/agent-verbs/mcp/image-schema';
 export * from './archive-tools';
 export * from './thread-tools';
+export * from './rule-tools';
 export * from '../verbs/mcp-tools';

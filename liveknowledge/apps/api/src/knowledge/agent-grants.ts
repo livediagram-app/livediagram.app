@@ -69,8 +69,10 @@ export async function scopeRefusalOf(ctx: DocumentRouteContext, res: Response): 
     .clone()
     .json()
     .catch(() => null)) as { error?: unknown } | null;
-  if (body?.error !== 'forbidden') return res;
-  const needs: AgentScope = access.scopes.includes('suggest') ? 'write' : 'suggest';
+  // The rules' routes answer a token below `write` as read-only (routes/automation-routes.ts): it needs `write`.
+  const rules = body?.error === 'read_only_token' && ctx.agent.readOnly !== true;
+  if (body?.error !== 'forbidden' && !rules) return res;
+  const needs: AgentScope = rules || access.scopes.includes('suggest') ? 'write' : 'suggest';
   console.info('[knowledge] scope needed', {
     documentId: ctx.segments[2],
     tokenId: ctx.token?.id,
@@ -81,8 +83,9 @@ export async function scopeRefusalOf(ctx: DocumentRouteContext, res: Response): 
       error: 'scope_needed',
       needs,
       scopes: access.scopes,
-      message:
-        needs === 'write'
+      message: rules
+        ? 'This connection holds the read and suggest scopes here, so it reads the knowledgebase’s rules and changes none. Ask an Editor of the knowledgebase to grant this connection the write scope.'
+        : needs === 'write'
           ? 'This connection holds the read and suggest scopes here, so it does not change the knowledgebase directly. Suggest a change to a page instead with suggest_edit, or ask an Editor of the knowledgebase to grant this connection the write scope.'
           : 'This connection holds the read scope alone here. Ask an Editor of the knowledgebase to grant it the suggest scope.',
     },

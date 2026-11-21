@@ -5,6 +5,8 @@
 //   kind `review-owner`, key the owner:     when that owner was last sent a Review Due email (one a day)
 //   kind `remind`,       key `owners`:      when an Editor last reminded the owners (one a week)
 //   kind `ask`,          key the conflict:  when both owners were asked (once a conflict)
+//   kind `rule-review`,  key the page:      the verification a Review Due rule was last started for (key '': when
+//                                           the first check was), document-room/automations/review-events.ts
 //
 // Ids and times only: no address and no words. The day's total of emails is a `usage_counters` row (the scope
 // `emails`), pruned with the other counters. Written through `knowledgeDb`: none of it is an edit.
@@ -17,7 +19,7 @@ import { knowledgeDb, runAll } from './knowledge-db';
 export const KNOWLEDGE_EMAILS_PER_DAY = 50;
 const EMAILS_SCOPE = 'emails';
 
-export type MarkKind = 'review-page' | 'review-owner' | 'remind' | 'ask';
+export type MarkKind = 'review-page' | 'review-owner' | 'remind' | 'ask' | 'rule-review';
 type Exec = (query: string) => unknown;
 
 /** The schema step (document-schema.ts STEPS). A knowledgebase that already holds verified pages is owed its first

@@ -35,6 +35,7 @@ import { modelDoorFor } from './model-door';
 import type { IndexedPage } from './knowledge-index';
 import { rowsOf, runAll, sqlOf } from './knowledge-db';
 import { oweWork, type Work } from './knowledge-work';
+import { queueDisagreements } from '../document-room/automations/knowledge-events';
 
 /** How long after a save its check runs: long enough for a burst of autosaves to settle into one check. */
 export const CONFLICT_CHECK_DELAY_MS = 60_000;
@@ -145,6 +146,8 @@ export async function runConflictCheck(
       ...conflicts.map((c) => insertConflict(c, now)),
       closeChangedConflicts(tab),
     ]);
+    // Pages Disagree (docs/specs/013-workspace/automations.md): each new pair, about the page checked.
+    queueDisagreements(env, tab, conflicts);
     console.info('[knowledge] conflict check', {
       documentId,
       tab,

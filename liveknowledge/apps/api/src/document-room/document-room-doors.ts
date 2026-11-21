@@ -33,7 +33,10 @@ import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDocumentComments } from './document-comments';
 import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
 import type { DocumentRoom } from './document-room';
-import { noteWrite } from './document-room-content';
+import { ensureSchema, noteWrite } from './document-room-content';
+import type { AccessLevel } from '@liveknowledge/api-schema';
+import { getParticipant } from '../person/profiles';
+import { SOMEONE, hearsEvent, queueEvent, roleOfLevel } from '@liveworkspace/automations/room';
 import { closeSessionsOfChangedLink, sequenceMutation } from './document-room-sockets';
 import { clearAgentsFor } from './document-room-presence';
 
@@ -49,7 +52,12 @@ export async function route(
   room.bindDocument(documentId);
   const env = room.requireEnv();
   // Before the write counter is read: taking the owner and team is no edit.
-  if (identity.grant?.item === documentId) await room.takeHead(identity.grant);
+  if (identity.grant?.item === documentId) {
+    await room.takeHead(identity.grant);
+    // A grant signed since the document was last put away says it is back (@liveworkspace/automations/room
+    // standing.ts).
+    await room.takeGrantStanding(identity.grant);
+  }
   const community = await communityOf(room, documentId);
   const writesBefore = room.writes;
   const response = await answerDocumentRequest(
@@ -246,12 +254,17 @@ export async function exportCopy(
   const env = room.requireEnv();
   const post = copier?.code ? await communityOf(room, documentId) : null;
   const community = post !== null && post.open && post.code === copier?.code;
+  // The rules go with a copy the document's own people make, never one made through a share link or a Community
+  // post: the rules are an Editor's of the whole document, and may name addresses
+  // (docs/specs/013-workspace/automations.md).
+  const withRules = !community && !copier?.code;
   const copy = await exportDocumentCopyFor(
     env,
     documentId,
     onlyTabId,
     copier?.by ?? null,
     community,
+    withRules,
   );
   return copy ? { copy, community } : null;
 }
@@ -282,6 +295,7 @@ export async function joined(
   room: DocumentRoom,
   documentId: string,
   personId: string,
+  level?: AccessLevel,
 ): Promise<void> {
   room.bindDocument(documentId);
   const env = room.requireEnv();
@@ -290,6 +304,35 @@ export async function joined(
   room.state.waitUntil(
     notifyDocumentJoin(env, { id: documentId, ownerId: meta.ownerId, name: meta.name }, personId),
   );
+  // Someone Joined (docs/specs/013-workspace/automations.md): the same first time in through a link.
+  if (hearsEvent(env, 'joined')) {
+    const who = await getParticipant(env, personId);
+    queueEvent(env, {
+      id: `joined:${personId}`,
+      kind: 'joined',
+      at: Date.now(),
+      by: { id: personId, name: who?.name ?? SOMEONE.name, color: who?.color ?? SOMEONE.color },
+      role: roleOfLevel(level),
+    });
+  }
+}
+
+// Someone asked for access to the document (the index's `access_requested` notice): Access Requested, for the rules
+// that hear it. A document never started has none, and is not started to say so.
+export function accessRequested(
+  room: DocumentRoom,
+  documentId: string,
+  requester: { id: string; name: string | null; requestId?: string },
+): void {
+  room.bindDocument(documentId);
+  if (!room.storedSchema()) return;
+  ensureSchema(room);
+  queueEvent(room.requireEnv(), {
+    id: `access:${requester.requestId ?? requester.id}`,
+    kind: 'access_requested',
+    at: Date.now(),
+    by: { id: requester.id, name: requester.name?.trim() || SOMEONE.name, color: SOMEONE.color },
+  });
 }
 
 // A closed account's name off this document (document-anonymise.ts): the index's person purge, through the api.

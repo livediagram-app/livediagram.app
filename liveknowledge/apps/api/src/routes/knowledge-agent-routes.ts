@@ -11,6 +11,8 @@
 //   PUT  /api/documents/<id>/agents/<token>/scopes what an API token may do here: an Editor in person
 // Reading is every role's. A page read here is counted as `GET tabs/<tab>` counts it. `<tab>`, `parent` and `before`
 // take a page's id, or its title when one page alone has it.
+import { asTabWriter, queueAgentChanged } from '@liveworkspace/automations/room';
+import { routeWho } from '../document-room/automations/knowledge-who';
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
 import {
   agentScopesFor,
@@ -352,7 +354,13 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
   const { tab } = made;
   let rev: number;
   try {
-    rev = await upsertTabAtRev(ctx.env, document.id, tab, nextOrderIndex(document.tabs), 0);
+    // A page an agent makes says so, for a Page Added rule (docs/specs/013-workspace/automations.md).
+    rev = await asTabWriter(
+      ctx.env,
+      'tab_added',
+      () => routeWho(ctx),
+      () => upsertTabAtRev(ctx.env, document.id, tab, nextOrderIndex(document.tabs), 0),
+    );
   } catch (err) {
     if (err instanceof TabTooLargeError) return payloadTooLarge();
     if (isTabRevStale(err)) return conflict('tab_busy');
@@ -360,6 +368,16 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
   }
   // Who made it (verification.md "Made by a person or an agent"): an agent's create_page, or a person's Import.
   await notePageWrite(ctx.env, id, writerOf(ctx, owner));
+  // Agent Made Changes: once for the page a token made.
+  if (ctx.token) {
+    const who = await routeWho(ctx);
+    queueAgentChanged(ctx.env, {
+      key: `create:${id}`,
+      tab: id,
+      author: { ...who.by, id: owner },
+      tokenName: ctx.token.name ?? null,
+    });
+  }
   await relayTree(route);
   console.info('[knowledge] page created', {
     documentId: document.id,

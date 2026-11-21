@@ -8,10 +8,12 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./map-geometry": "./src/map-geometry.generated.ts"
+    "./map-geometry": "./src/map-geometry.generated.ts",
+    "./automations": "./src/automations/index.ts"
   },
   "dependencies": {
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/automations": "workspace:^",
     "@liveworkspace/element-model": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/icons": "workspace:*",

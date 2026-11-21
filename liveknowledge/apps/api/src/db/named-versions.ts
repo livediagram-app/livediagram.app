@@ -13,7 +13,7 @@ import {
 } from '@liveworkspace/snapshots/server';
 import type { VersionSummary } from '@liveknowledge/api-schema';
 import type { DocumentEnv } from '../types';
-import type { StoredVersion, VersionAuthor } from './versions';
+import { versionAuthorOf, type StoredVersion, type VersionAuthor } from './versions';
 
 /** The snapshots' item id a tab's named versions live under. */
 export const namedScope = (tabId: string): string => `tab:${tabId}`;
@@ -23,6 +23,7 @@ type NamedRow = {
   tab_id: string;
   rev: number;
   name: string | null;
+  author_id: string | null;
   author_name: string | null;
   author_color: string | null;
   tab_name: string;
@@ -32,7 +33,7 @@ type NamedRow = {
   created_at: number;
 };
 
-const COLUMNS = `s.id, m.tab_id, m.rev, s.name, s.author_name, s.author_color, m.tab_name, s.bytes, m.element_count,
+const COLUMNS = `s.id, m.tab_id, m.rev, s.name, s.author_id, s.author_name, s.author_color, m.tab_name, s.bytes, m.element_count,
   m.saved_at, s.created_at`;
 const FROM = `FROM tab_named_versions m JOIN snapshots s ON s.id = m.snapshot_id AND s.item_id = 'tab:' || m.tab_id`;
 
@@ -43,8 +44,7 @@ function summaryOf(row: NamedRow): VersionSummary {
     rev: row.rev,
     kind: 'manual',
     name: row.name,
-    author:
-      row.author_name !== null ? { name: row.author_name, color: row.author_color ?? '' } : null,
+    author: versionAuthorOf(row),
     savedAt: row.saved_at,
     createdAt: row.created_at,
     bytes: row.bytes,

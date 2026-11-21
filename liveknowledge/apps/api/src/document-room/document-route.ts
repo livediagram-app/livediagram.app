@@ -18,7 +18,7 @@ export type RouteIdentity = {
   accountEmail: string | null;
   // resolveOwner()'s answer.
   owner: string | null;
-  token: { id: string; readOnly?: boolean } | null;
+  token: { id: string; readOnly?: boolean; name?: string | null } | null;
   workbench: WorkbenchContext | null;
   teams: TeamClaim[] | null;
   bearer: string | null;
