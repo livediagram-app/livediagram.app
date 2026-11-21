@@ -23,6 +23,7 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'TabDiff', command: 'tab diff', what: 'comparing a tab with an earlier read' },
   { type: 'TabAdd', command: 'tab add', what: 'adding a tab' },
   { type: 'TabRename', command: 'tab rename', what: 'renaming a tab' },
+  { type: 'TabFolder', command: 'tab folder', what: 'putting tabs in tab folders' },
   { type: 'TabRm', command: 'tab rm', what: 'deleting a tab' },
   { type: 'ElementAdd', command: 'element add', what: 'adding an element' },
   { type: 'ElementSet', command: 'element set', what: 'changing elements' },

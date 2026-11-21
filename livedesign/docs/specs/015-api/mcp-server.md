@@ -247,6 +247,8 @@ component library rather than a tab), `budget` (8,000 tokens unless
 given), `only`, `ref`, `q`, `coarse`, `all` and `style`; a ref that names nothing or several comes back as a
 correctable result naming the candidates.
 
+Its `tabs` list gives each tab in a [tab folder](../006-design/tab-folders.md#agents) its `folder` name.
+
 ### 4.3 `create_design`
 
 Create a new design from elements the model produced. Input: `name`, `tabs:
@@ -302,6 +304,9 @@ exactly like a `create_design` tab, then submits a [changeset](../024-agents/age
 that creates the tab, so anyone with the design open sees it arrive. Returns the new `tabId`, `url`,
 and the rendered PNG. (Pair with `read_design`, which lists the design's
 existing tabs, to decide where a new one fits.)
+
+An optional `folder` puts the new tab in a [tab folder](../006-design/tab-folders.md#agents): an existing name adds it as
+that folder's last tab, a new name starts one. The answer's `folder` names it.
 
 ### 4.4 `update_design`
 
@@ -718,6 +723,17 @@ comment, text }` and `delete { ref, comment }`, each with an optional `tabId`. A
   `thread_full`. Bursts meet the per-token write limiter, and the owner's new-comment email goes at most once per
   design per 15 minutes.
 
+### 4.9f Tab folders: `change_tabs`
+
+`{ designId, changes }`. Write. Puts the design's tabs in [tab folders](../006-design/tab-folders.md#agents), as the editor's
+Organise in Tab Folder does: up to 50 changes in order, `move { tab, folder }` (`null` takes it out), `rename_folder {
+folder, to }` and `ungroup { folder }`. A tab is named by its id or a name one tab alone has. Reads `GET /api/designs/:id`,
+then writes the whole order once with `PUT /api/designs/:id` `{ tabs: [{ id, folder }] }`, which reaches everyone with the
+design open. Answers `{ applied, tabs, url }`: one line per change, and every tab after them, in order, with its folder. An
+unknown tab or folder answers an error naming the tabs or folders, before anything is written; a Participant's or a
+Viewer's grant answers "Only an Editor can change tab folders". Declared once for every product
+(`@liveworkspace/agent-verbs/mcp/tab-folder-tools`).
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts**: pre-canned templates a client surfaces as slash
@@ -795,11 +811,11 @@ which is how the gap was found.
 Three behaviours cover the nineteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                             |
-| --------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`                      |
-| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`, `unarchive_design`, `upload_image` |
-| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`, `delete_image`           |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                            |
+| --------------- | -------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`                                     |
+| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `change_tabs`, `share_design`, `rename_design`, `restore_design`, `unarchive_design`, `upload_image` |
+| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`, `delete_image`                          |
 
 Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on
 `mcpTool`) and `@liveworkspace/mcp-kit`'s `toolAnnotations`: `delete_image` is `idempotentHint: true` (removing
@@ -990,22 +1006,23 @@ code or status: a design in the Trash, a view-only grant, an id that names nothi
 (a tab id the design lacks names its tabs, `rename_design` and `change_pages` included, whose tab routes answer a bare 404 that would otherwise read as "no such design"); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
-| Tool                | Result object                                                                                                                                             |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `find_designs`      | `count`, `designs[]` of `{ id, name, updatedAt, library, url, archived? }`                                                                                |
-| `read_design`       | `id`, `name`, `tab { id, name, rev, ... }` (for `view: "components"`, `components` text instead), `tabs[]` of `{ id, name }` (every tab, in order), `url` |
-| `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                 |
-| `create_design`     | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `rev` (the first tab's), `folder`, `url`                                                  |
-| `add_tab`           | `designId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                    |
-| `update_design`     | `id` and `designId` (the same), `tabId`, `url`                                                                                                            |
-| `share_design`      | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                                                                     |
-| `rename_design`     | `renamed` (`design` or `tab`), `name`, then `id` + `url` for a design or `tabId` for a tab                                                                |
-| `delete_design`     | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`                                                                |
-| `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                         |
-| `restore_design`    | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                              |
-| `archive_design`    | `archived`, `id`, `name`                                                                                                                                  |
-| `unarchive_design`  | `unarchived`, `id`, `name`, `library`, `url`                                                                                                              |
-| `change_components` | `designId`, `component` (null for a `detach`), `lines[]`, `rev` (null for a `patch`), `url`                                                               |
+| Tool                | Result object                                                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `find_designs`      | `count`, `designs[]` of `{ id, name, updatedAt, library, url, archived? }`                                                                                         |
+| `read_design`       | `id`, `name`, `tab { id, name, rev, ... }` (for `view: "components"`, `components` text instead), `tabs[]` of `{ id, name, folder? }` (every tab, in order), `url` |
+| `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                          |
+| `create_design`     | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `rev` (the first tab's), `folder`, `url`                                                           |
+| `add_tab`           | `designId`, `tabId`, `name`, `folder` when given, `url`, `note` when a template has more tabs than it added                                                        |
+| `change_tabs`       | `applied[]` (one line per change), `tabs[]` of `{ id, name, folder? }` (every tab, in order), `url`                                                                |
+| `update_design`     | `id` and `designId` (the same), `tabId`, `url`                                                                                                                     |
+| `share_design`      | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                                                                              |
+| `rename_design`     | `renamed` (`design` or `tab`), `name`, then `id` + `url` for a design or `tabId` for a tab                                                                         |
+| `delete_design`     | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`                                                                         |
+| `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                                  |
+| `restore_design`    | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                       |
+| `archive_design`    | `archived`, `id`, `name`                                                                                                                                           |
+| `unarchive_design`  | `unarchived`, `id`, `name`, `library`, `url`                                                                                                                       |
+| `change_components` | `designId`, `component` (null for a `detach`), `lines[]`, `rev` (null for a `patch`), `url`                                                                        |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its

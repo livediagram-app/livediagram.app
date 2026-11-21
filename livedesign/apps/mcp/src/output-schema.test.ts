@@ -191,6 +191,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'renameDesignOutput',
     args: { designId: 'd1', tabId: 't1', name: 'Renamed' },
   },
+  {
+    tool: 'change_tabs',
+    output: 'changeTabsOutput',
+    args: { designId: 'd1', changes: [{ op: 'move', tab: 't1', folder: 'Plans' }] },
+  },
   { tool: 'delete_design', output: 'deleteDesignOutput', args: { designId: 'd1' } },
   {
     tool: 'delete_design',

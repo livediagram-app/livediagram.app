@@ -190,12 +190,13 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty-four documented tools, each with a description', () => {
+  it('registers the twenty-five documented tools, each with a description', () => {
     const { registered } = harness();
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
       'archive_document',
       'change_pages',
+      'change_tabs',
       'change_threads',
       'create_document',
       'delete_document',
@@ -327,6 +328,7 @@ describe('tool annotations', () => {
     add_tab: 'write',
     share_document: 'write',
     rename_document: 'write',
+    change_tabs: 'write',
     list_trash: 'read',
     restore_document: 'write',
     archive_document: 'destructive',

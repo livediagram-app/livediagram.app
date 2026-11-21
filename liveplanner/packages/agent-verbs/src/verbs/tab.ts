@@ -15,21 +15,40 @@ const tabFlag = z
 
 // A project's tabs as `tab ls` lists them: in order, numbered from 1, each with the shortest unique ref. The CLI
 // lists a pull file's tabs with it too.
-export function tabListOf(tabs: readonly { id: string; name: string; orderIndex: number }[]) {
+export function tabListOf(
+  tabs: readonly { id: string; name: string; orderIndex: number; folder?: string }[],
+) {
   const ordered = [...tabs].sort((a, b) => a.orderIndex - b.orderIndex);
   const refs = shortestUniquePrefixes(ordered.map((t) => t.id));
-  return ordered.map((t, i) => ({ index: i + 1, ref: refs.get(t.id)!, id: t.id, name: t.name }));
+  return ordered.map((t, i) => {
+    // Its tab folder, when it has one (docs/specs/006-project/tab-folders.md "Agents").
+    const folder = t.folder?.trim();
+    return {
+      index: i + 1,
+      ref: refs.get(t.id)!,
+      id: t.id,
+      name: t.name,
+      ...(folder ? { folder } : {}),
+    };
+  });
 }
 
 export const tabLs = defineVerb({
   id: 'tab.ls',
   summary: "The plan's tabs",
-  description: 'Lists the tabs of a plan in order: position, ref and name.',
+  description:
+    'Lists the tabs of a plan in order: position, ref, name and the tab folder it is in.',
   behaviour: 'read',
   input: z.object({ project: z.string().describe('A name, id prefix or liveplanner URL') }),
   output: z.object({
     tabs: z.array(
-      z.object({ index: z.number(), ref: z.string(), id: z.string(), name: z.string() }),
+      z.object({
+        index: z.number(),
+        ref: z.string(),
+        id: z.string(),
+        name: z.string(),
+        folder: z.string().optional(),
+      }),
     ),
   }),
   listKey: 'tabs',
@@ -39,13 +58,20 @@ export const tabLs = defineVerb({
   },
   text: ({ tabs }) =>
     tabs.length
-      ? columns(tabs.map((t) => [String(t.index), t.ref, JSON.stringify(t.name)]))
+      ? columns(
+          tabs.map((t) => [
+            String(t.index),
+            t.ref,
+            JSON.stringify(t.name),
+            ...(t.folder ? [`in ${JSON.stringify(t.folder)}`] : []),
+          ]),
+        )
       : ['no tabs'],
   quiet: ({ tabs }) => tabs.map((t) => t.ref),
   cli: {
     positionals: ['project'],
     examples: ['liveplanner tab ls "Auth flow"', 'liveplanner tab ls 3f9c -q'],
-    prints: 'one tab a line: position, ref, name',
+    prints: 'one tab a line: position, ref, name, then in "<folder>" for a tab in a tab folder',
   },
 });
 

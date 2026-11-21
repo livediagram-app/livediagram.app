@@ -161,6 +161,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'renameDocumentOutput',
     args: { documentId: 'd1', tabId: 't1', name: 'Renamed' },
   },
+  {
+    tool: 'change_tabs',
+    output: 'changeTabsOutput',
+    args: { documentId: 'd1', changes: [{ op: 'move', tab: 't1', folder: 'Plans' }] },
+  },
   { tool: 'delete_document', output: 'deleteDocumentOutput', args: { documentId: 'd1' } },
   {
     tool: 'delete_document',
@@ -259,7 +264,7 @@ describe('tool output schemas', () => {
     });
   }
 
-  it('add_tab declares no field it never sends: only the graph notes are conditional', async () => {
+  it('add_tab declares no field it never sends: only the tab folder and the graph notes are conditional', async () => {
     const client = await connectTestClient(api);
     await client.listTools();
     const result = await client.callTool({
@@ -271,7 +276,7 @@ describe('tool output schemas', () => {
     const declared = Object.keys(
       outputs.MCP_TOOL_VERBS.find((v) => v.mcp.tool === 'add_tab')!.mcpShapes.output,
     );
-    expect(declared.filter((k) => !sent.includes(k))).toEqual(['notes']);
+    expect(declared.filter((k) => !sent.includes(k))).toEqual(['folder', 'notes']);
   });
 
   it('sends no structuredContent on an error result', async () => {

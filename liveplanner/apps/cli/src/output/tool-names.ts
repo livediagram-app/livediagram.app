@@ -23,6 +23,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   change_items: 'item set',
   upload_image: 'image add',
   list_threads: 'thread ls',
+  change_tabs: 'tab folder',
   change_threads: 'thread reply',
   list_rules: 'rule ls',
   change_rules: 'rule set',

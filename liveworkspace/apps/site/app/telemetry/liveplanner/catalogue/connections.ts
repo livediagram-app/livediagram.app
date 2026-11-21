@@ -69,6 +69,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('UpdateProject', 'Update Project', 'Editing a project’s elements.'),
   mcpTool('ShareProject', 'Share Project', 'Creating a share link for a project.'),
   mcpTool('RenameProject', 'Rename Project', 'Renaming a project.'),
+  mcpTool(
+    'ChangeTabs',
+    'Change Tabs',
+    'Putting tabs in tab folders or taking them out, and renaming or ungrouping folders.',
+  ),
   mcpTool('DeleteProject', 'Delete Project', 'Moving a project to the Trash, or deleting one tab.'),
   mcpTool('ListTrash', 'List Trash', 'Listing the projects in the Trash.'),
   mcpTool('RestoreProject', 'Restore Project', 'Bringing a project back from the Trash.'),

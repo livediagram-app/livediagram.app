@@ -22,6 +22,7 @@ describe('the MCP tool verbs', () => {
       'update_document',
       'share_document',
       'rename_document',
+      'change_tabs',
       'delete_document',
       'list_trash',
       'archive_document',

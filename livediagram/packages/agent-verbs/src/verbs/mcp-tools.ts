@@ -8,6 +8,7 @@ import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
 import { mcpChangeThreads, mcpListThreads } from '../mcp/thread-tools';
 import { mcpViewEdit, mcpViewLive, mcpViewTab } from '../mcp/view-tool';
 import { mcpArchiveDocument, mcpUnarchiveDocument } from '../mcp/archive-tools';
+import { mcpChangeTabs } from '../mcp/tab-folder-tools';
 import { listImagesOutput, listImagesShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
 import { mcpDeleteImage, mcpUploadImage } from '@liveworkspace/agent-verbs/mcp/image-tools';
 import {
@@ -222,6 +223,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpUpdateDocument,
   mcpShareDocument,
   mcpRenameDocument,
+  mcpChangeTabs,
   mcpDeleteDocument,
   mcpListTrash,
   mcpArchiveDocument,

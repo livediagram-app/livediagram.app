@@ -43,6 +43,7 @@ import {
 } from './verbs/lifecycle';
 import { projectArchive, projectUnarchive } from './verbs/archive';
 import { tabLs, tabView } from './verbs/tab';
+import { tabFolder } from './verbs/tab-folder';
 import { itemVerbs } from './verbs/item';
 import { threadVerbs } from './verbs/thread';
 import { ruleVerbs } from './verbs/rule';
@@ -71,6 +72,7 @@ export const VERBS: readonly Verb[] = [
   tabDiff,
   tabAdd,
   tabRename,
+  tabFolder,
   tabRm,
   ...elementVerbs,
   ...itemVerbs,

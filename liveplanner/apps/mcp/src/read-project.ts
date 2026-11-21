@@ -11,7 +11,7 @@ import {
 import { ApiError, apiJson, apiText } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { tabPreview } from './image-result';
-import { READ_PROJECT_DEFAULT_BUDGET } from '@liveplanner/agent-verbs/mcp';
+import { listedTabsOf, READ_PROJECT_DEFAULT_BUDGET } from '@liveplanner/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
 type ReadProjectArgs = {
@@ -96,9 +96,7 @@ export async function readProject(
   const tabId = summary?.id ?? args.tabId;
   if (tabId === undefined) return errorResult('That plan has no tabs.');
   // Every tab, in order, so a caller can read the others (a Plan template's Board, Requests and Flow).
-  const tabs = [...project.tabs]
-    .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
-    .map((t) => ({ id: t.id, name: t.name }));
+  const tabs = listedTabsOf(project.tabs);
   if (!summary)
     return errorResult(
       `No tab "${tabId}" in this plan. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,

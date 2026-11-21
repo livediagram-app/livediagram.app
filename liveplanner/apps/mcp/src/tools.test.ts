@@ -256,7 +256,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the thirty-four documented tools, each with a description', () => {
+  it('registers the thirty-five documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered;
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -271,6 +271,7 @@ describe('registerTools', () => {
       'change_items',
       'change_rules',
       'change_sheet',
+      'change_tabs',
       'change_threads',
       'create_project',
       'delete_project',
@@ -401,6 +402,7 @@ describe('tool annotations', () => {
     add_tab: 'write',
     share_project: 'write',
     rename_project: 'write',
+    change_tabs: 'write',
     list_trash: 'read',
     restore_project: 'write',
     archive_project: 'destructive',

@@ -7,6 +7,7 @@ import { TRASH_RETENTION_DAYS } from '@liveplanner/api-schema';
 import { QUESTION_TYPES } from '@liveplanner/forms';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
 import { mcpArchiveProject, mcpUnarchiveProject } from '../mcp/archive-tools';
+import { mcpChangeTabs } from '../mcp/tab-folder-tools';
 import { mcpViewLive, mcpViewTab } from '../mcp/view-tool';
 import {
   addFormOutput,
@@ -555,6 +556,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpUpdateProject,
   mcpShareProject,
   mcpRenameProject,
+  mcpChangeTabs,
   mcpDeleteProject,
   mcpListTrash,
   mcpArchiveProject,

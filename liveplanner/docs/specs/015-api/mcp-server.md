@@ -243,6 +243,8 @@ It also takes `view` (`outline`, `comments`, `show`, `find`), `budget` (8,000 to
 given), `only`, `ref`, `q`, `all` and `style`; a ref that names nothing or several comes back as a
 correctable result naming the candidates.
 
+Its `tabs` list gives each tab in a [tab folder](../006-project/tab-folders.md#agents) its `folder` name.
+
 ### 4.3 `create_project`
 
 Create a new project from elements the model produced. Input: `name`, `tabs:
@@ -289,6 +291,9 @@ exactly like a `create_project` tab, then submits a [changeset](../024-agents/ag
 that creates the tab, so anyone with the project open sees it arrive. Returns the new `tabId`, `url`,
 and the rendered PNG. (Pair with `read_project`, which lists the project's
 existing tabs, to decide where a new one fits.)
+
+An optional `folder` puts the new tab in a [tab folder](../006-project/tab-folders.md#agents): an existing name adds it as
+that folder's last tab, a new name starts one. The answer's `folder` names it.
 
 ### 4.4 `update_project`
 
@@ -643,6 +648,17 @@ built with the editor's own edits (`@liveplanner/forms`) and started as Start Pl
 - `read_project` lists a Form tab as `kind=form` with a line naming `read_form`; its `image` draws the form as
   `read_form` does.
 
+### 4.9f Tab folders: `change_tabs`
+
+`{ projectId, changes }`. Write. Puts the plan's tabs in [tab folders](../006-project/tab-folders.md#agents), as the editor's
+Organise in Tab Folder does: up to 50 changes in order, `move { tab, folder }` (`null` takes it out), `rename_folder {
+folder, to }` and `ungroup { folder }`. A tab is named by its id or a name one tab alone has. Reads `GET /api/projects/:id`,
+then writes the whole order once with `PUT /api/projects/:id` `{ tabs: [{ id, folder }] }`, which reaches everyone with the
+plan open. Answers `{ applied, tabs, url }`: one line per change, and every tab after them, in order, with its folder. An
+unknown tab or folder answers an error naming the tabs or folders, before anything is written; a Participant's or a
+Viewer's grant answers "Only an Editor can change tab folders". Declared once for every product
+(`@liveworkspace/agent-verbs/mcp/tab-folder-tools`).
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts**: pre-canned templates a client surfaces as slash
@@ -727,11 +743,11 @@ which is how the gap was found.
 Three behaviours cover the tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                                                                  |
-| --------------- | -------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_rules`, `list_sheets`, `read_sheet`, `read_form`                                                                  |
-| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `share_project`, `rename_project`, `restore_project`, `unarchive_project`, `add_board`, `change_board`, `import_board`, `add_sheet`, `add_form`, `share_form`, `try_form`, `upload_image` |
-| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `archive_project`, `change_items`, `change_threads`, `change_rules`, `change_card_types`, `change_sheet`, `change_form`                                                            |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                                                                                 |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_rules`, `list_sheets`, `read_sheet`, `read_form`                                                                                 |
+| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `change_tabs`, `share_project`, `rename_project`, `restore_project`, `unarchive_project`, `add_board`, `change_board`, `import_board`, `add_sheet`, `add_form`, `share_form`, `try_form`, `upload_image` |
+| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `archive_project`, `change_items`, `change_threads`, `change_rules`, `change_card_types`, `change_sheet`, `change_form`                                                                           |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -921,10 +937,11 @@ says why by its status (no such tab, view only, the last tab).
 | Tool                | Result object                                                                                                                                                                                                                                                                                                                                                                          |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `find_projects`     | `count`, `projects[]` of `{ id, name, updatedAt, library, url, archived? }`                                                                                                                                                                                                                                                                                                            |
-| `read_project`      | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                                                                                                                                                                                                                                                                                    |
+| `read_project`      | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name, folder? }` (every tab, in order), `url`                                                                                                                                                                                                                                                                           |
 | `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                                                                                                                                                                                                                                              |
 | `create_project`    | `id` and `projectId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                                                                                                                                                                                                                                                       |
-| `add_tab`           | `projectId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                                                                                                                                                                                                                                                |
+| `add_tab`           | `projectId`, `tabId`, `name`, `folder` when given, `url`, `note` when a template has more tabs than it added                                                                                                                                                                                                                                                                           |
+| `change_tabs`       | `applied[]` (one line per change), `tabs[]` of `{ id, name, folder? }` (every tab, in order), `url`                                                                                                                                                                                                                                                                                    |
 | `update_project`    | `id` and `projectId` (the same), `tabId`, `url`                                                                                                                                                                                                                                                                                                                                        |
 | `share_project`     | `url`, `role`, `expiresAt` (ms epoch, or null for never), `projectUrl`                                                                                                                                                                                                                                                                                                                 |
 | `rename_project`    | `renamed` (`project` or `tab`), `name`, then `id` + `url` for a project or `tabId` for a tab                                                                                                                                                                                                                                                                                           |
