@@ -17,8 +17,9 @@ const OFFSET_Y = 20;
 
 const WRITING = '.article-flow[data-readonly]';
 // The document area the label rides over (owner, 2026-11-21: "keep it on screen while I hover over the document and
-// move around"): the whole reading area, its margins and the gaps between blocks included, while the page is read.
-const DOCUMENT = '[data-canvas-root]';
+// move around"): the scrolling reading area, its margins and the gaps between blocks included, while the page is
+// read. Never the sidebars, the top row or the footer (owner, same day), which stand beside it, not in it.
+const DOCUMENT = '[data-page-scroller]';
 // Over these a click does its own thing, so the label stands aside.
 const INTERACTIVE =
   'a, button, input, textarea, select, [role="button"], [data-page-link], summary';

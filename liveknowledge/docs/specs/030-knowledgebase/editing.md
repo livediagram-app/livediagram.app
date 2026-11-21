@@ -16,15 +16,17 @@ editing share live and that nobody else sees until it is saved.
 - **Double-click to edit** (owner, 2026-11-21): while an Editor reads, a small quiet label rides just under the
   pointer over the writing, "Double-click to Edit" (a dark pill, 11 px, shown after the pointer rests a moment, never
   over a link or a control, never for touch). It stays with the pointer anywhere over the page being read, margins and
-  gaps included, and through a scroll; a double-click there opens edit mode.
+  gaps included, and through a scroll, but never over the sidebars, the top row or the footer (owner 2026-11-21); a
+  double-click there opens edit mode.
 - **An empty page** (owner, 2026-11-21), read: a page with nothing under its title shows a drawing of a blank page,
   "Nothing Written Yet", and for whoever may edit **Start Writing** (opens edit mode, the caret in the Title on a
   desktop); a reader is told it has no
   writing yet. Never while editing.
 - **The buttons** (owner, 2026-11-21: "look rubbish"): Edit is a solid accent button with a pencil and its key, E.
   While editing, one capsule holds the draft's status only when there is one (an amber dot and "Unsaved changes
-  since ...", or an agent's change; no "Editing" label, owner 2026-11-21), then Cancel and Save, floating at the bottom right of the document itself (the reading column's right edge, 24 px above the footer, never
-  over the rail; owner 2026-11-21), where Edit floats too while reading. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
+  since ...", or an agent's change; no "Editing" label, owner 2026-11-21), then Cancel and Save, floating 24 px inside the bottom right corner of the document's white area (left of the rail, above the footer;
+  owner 2026-11-21), where Edit floats too while reading. Edit, Cancel (with an X) and Save are one size, each standing
+  on its own, no capsule round them. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
   the buttons are named Edit and Save.
 - A page made here (New Page, Add Subpage) opens straight into edit mode with the caret in its Title: it was made
   to be written.

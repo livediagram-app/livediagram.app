@@ -1,6 +1,6 @@
 'use client';
 
-import { lucideCheck } from '@liveworkspace/icons/lucide';
+import { lucideCheck, lucideX } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph, Portal, Tooltip } from '@liveknowledge/ui';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { PencilIcon } from '@/components/primitives/explorer-icons';
@@ -20,12 +20,15 @@ import { useArticleZoneCorner } from './useArticleZoneCorner';
 // article zone (docs/specs/030-knowledgebase/editing.md; blueprint "Presentation and UX"). Reads the chrome store a slice at a time, so typing renders it
 // only when what it says changes; its buttons call the newest handlers when pressed.
 
-// The bar's buttons: one height and shape, a little taller than the row's icon buttons so they read as the page's
-// actions.
+// The floating buttons: Edit, Cancel and Save share one height, shape and lift (owner 2026-11-21: "same size as the
+// edit button"), each standing on its own over the page, no capsule round them.
 const PILL =
-  'inline-flex h-8 shrink-0 cursor-pointer items-center rounded-lg text-[13px] font-semibold motion-safe:transition-colors motion-safe:duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 phone:h-11';
+  'inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl text-[13px] font-semibold shadow-lg motion-safe:transition-colors motion-safe:duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 phone:h-11';
+const BRAND =
+  'bg-brand-700 pl-3 pr-2 text-white shadow-brand-900/25 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500';
 
 const CheckIcon = lucideGlyph(lucideCheck, 14);
+const XIcon = lucideGlyph(lucideX, 14);
 
 // A key's hint inside a button, quieter than the label.
 function Kbd({ children }: { tone: 'onBrand'; children: string }) {
@@ -64,7 +67,7 @@ export function PageEditBarView({
   onSave,
   onCancel,
 }: PageEditBarViewProps) {
-  const corner = useArticleZoneCorner(mayEdit, `${editing}`);
+  const corner = useArticleZoneCorner(mayEdit);
   if (!mayEdit) return null;
   if (!editing)
     return (
@@ -77,12 +80,7 @@ export function PageEditBarView({
             title="Edit"
             description="Change this page with anyone else editing it. Press E."
           >
-            <button
-              type="button"
-              onClick={onEdit}
-              data-page-edit=""
-              className={`${PILL} h-10 gap-1.5 rounded-xl bg-brand-700 pl-3 pr-2 text-white shadow-lg shadow-brand-900/25 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500`}
-            >
+            <button type="button" onClick={onEdit} data-page-edit="" className={`${PILL} ${BRAND}`}>
               <PencilIcon size={14} />
               Edit
               <Kbd tone="onBrand">E</Kbd>
@@ -106,70 +104,69 @@ export function PageEditBarView({
         <span className="contents phone:hidden">
           <EditorDiscs editors={others} label={`Also editing: ${names}`} />
         </span>
-        {/* One capsule: the draft's state when there is one to tell (unsaved changes, an agent's change), then Cancel
-          and Save. No "Editing" label (owner 2026-11-21): the buttons say it. */}
-        <div className="flex min-w-0 items-center gap-1 rounded-2xl bg-white/95 p-1.5 shadow-lg shadow-slate-900/10 ring-1 ring-slate-200/80 backdrop-blur dark:bg-slate-800/95 dark:shadow-black/40 dark:ring-slate-700/80">
-          <span
-            aria-live="polite"
-            data-page-edit-status=""
-            className={`flex min-w-0 items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 ${
-              unsaved || agentChanges > 0 ? 'pl-2 pr-1' : ''
-            }`}
-          >
-            {unsaved ? (
-              <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-amber-500" />
-            ) : null}
-            {agentChanges > 0 ? (
-              <HoverCard
-                title="An Agent Changed the Saved Page"
-                description={agentChangeDetail(agentChanges)}
+        {/* The draft's state when there is one to tell (unsaved changes, an agent's change), a quiet note on the
+          page's ground, then Cancel and Save. No "Editing" label (owner 2026-11-21): the buttons say it. */}
+        <span
+          aria-live="polite"
+          data-page-edit-status=""
+          className={`flex min-w-0 items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 ${
+            unsaved || agentChanges > 0 ? 'pr-1' : ''
+          }`}
+        >
+          {unsaved ? (
+            <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-amber-500" />
+          ) : null}
+          {agentChanges > 0 ? (
+            <HoverCard
+              title="An Agent Changed the Saved Page"
+              description={agentChangeDetail(agentChanges)}
+            >
+              <span
+                tabIndex={0}
+                data-page-edit-agent=""
+                className="truncate text-amber-700 phone:hidden dark:text-amber-300"
               >
-                <span
-                  tabIndex={0}
-                  data-page-edit-agent=""
-                  className="truncate text-amber-700 phone:hidden dark:text-amber-300"
-                >
-                  An agent changed the saved page
-                </span>
-              </HoverCard>
-            ) : null}
-            {unsaved ? (
-              <>
-                <span className="max-w-[18rem] truncate phone:hidden">{status}</span>
-                <span className="hidden phone:inline-flex">
-                  <Tooltip label={status}>
-                    <span tabIndex={0} role="img" aria-label={status} className="text-[11px]">
-                      Unsaved
-                    </span>
-                  </Tooltip>
-                </span>
-              </>
-            ) : null}
-          </span>
+                An agent changed the saved page
+              </span>
+            </HoverCard>
+          ) : null}
+          {unsaved ? (
+            <>
+              <span className="max-w-[18rem] truncate phone:hidden">{status}</span>
+              <span className="hidden phone:inline-flex">
+                <Tooltip label={status}>
+                  <span tabIndex={0} role="img" aria-label={status} className="text-[11px]">
+                    Unsaved
+                  </span>
+                </Tooltip>
+              </span>
+            </>
+          ) : null}
+        </span>
+        <button
+          type="button"
+          onClick={onCancel}
+          data-page-edit-cancel=""
+          className={`${PILL} bg-white pl-3 pr-3.5 text-slate-700 shadow-slate-900/10 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-slate-400 dark:bg-slate-800 dark:text-slate-200 dark:shadow-black/40 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-white`}
+        >
+          <XIcon />
+          Cancel
+        </button>
+        <HoverCard
+          title="Save"
+          description={`Publish this draft for everyone. Press ${modifier()}+S.`}
+        >
           <button
             type="button"
-            onClick={onCancel}
-            data-page-edit-cancel=""
-            className={`${PILL} px-2.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-slate-400 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white`}
+            onClick={onSave}
+            data-page-edit-save=""
+            className={`${PILL} ${BRAND}`}
           >
-            Cancel
+            <CheckIcon />
+            Save
+            <Kbd tone="onBrand">{modifier() === 'Cmd' ? '⌘S' : 'Ctrl S'}</Kbd>
           </button>
-          <HoverCard
-            title="Save"
-            description={`Publish this draft for everyone. Press ${modifier()}+S.`}
-          >
-            <button
-              type="button"
-              onClick={onSave}
-              data-page-edit-save=""
-              className={`${PILL} gap-1.5 bg-brand-700 pl-2.5 pr-1.5 text-white shadow-sm shadow-brand-900/20 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500`}
-            >
-              <CheckIcon />
-              Save
-              <Kbd tone="onBrand">{modifier() === 'Cmd' ? '⌘S' : 'Ctrl S'}</Kbd>
-            </button>
-          </HoverCard>
-        </div>
+        </HoverCard>
       </div>
     </Portal>
   );

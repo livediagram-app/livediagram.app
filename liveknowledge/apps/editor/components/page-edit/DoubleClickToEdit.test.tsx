@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DoubleClickToEdit, HINT_DELAY_MS, overWriting } from './DoubleClickToEdit';
 
 const page = () => {
-  document.body.innerHTML = `<div data-canvas-root><div id="margin">margin</div><div class="article-flow" data-readonly><p id="words">Some words <a id="link" href="#x">a link</a></p></div></div><p id="outside">Elsewhere</p>`;
+  document.body.innerHTML = `<div data-canvas-root><aside id="rail">rail</aside><div data-page-scroller><div id="margin">margin</div><div class="article-flow" data-readonly><p id="words">Some words <a id="link" href="#x">a link</a></p></div></div></div><p id="outside">Elsewhere</p>`;
   return {
     words: document.getElementById('words')!,
     link: document.getElementById('link')!,
@@ -26,6 +26,8 @@ describe('Double-click to Edit', () => {
     expect(overWriting(document.getElementById('margin'))).toBe(true);
     expect(overWriting(link)).toBe(false);
     expect(overWriting(outside)).toBe(false);
+    // A sidebar inside the editor's area is beside the document, not in it.
+    expect(overWriting(document.getElementById('rail'))).toBe(false);
     expect(overWriting(null)).toBe(false);
   });
 

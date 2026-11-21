@@ -72,6 +72,8 @@ top space above the page with it between the sidebars" and "The add cover button
 1 min read bit, and make it a bit better looking." Then: "The cover should also allow gradients and animated like
 forms do" and "The gradients offered should be related to the knowledgebases theme."
 
+- **Under the band.** The page's blank top margin tucks under the band, so the Title stands 36 px below it (owner
+  2026-11-21: "too much space under the cover"; `COVER_TITLE_GAP`).
 - **What it is.** A page may have one cover, of three kinds: a **picture**, a **gradient** or an **animated**
   background. It is the page's own (`Tab.cover`), never the
   knowledgebase's, and it is not part of the writing: no block, no draft, no undo step of the writing.

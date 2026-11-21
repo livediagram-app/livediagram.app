@@ -5,6 +5,7 @@ import {
   WORLD_HEIGHT_CSS,
   computePageLock,
   coverHeightOf,
+  COVER_TITLE_GAP,
   PAGE_MIN_SCALE,
   PAGE_SIDE_ROOM,
   PAGE_SIDE_ROOM_PHONE,
@@ -183,11 +184,9 @@ describe('a page with a cover', () => {
         cover,
       });
       const { zoom, offset } = lock.view;
-      expect(lock.top).toBe(PAGE_TOP_ROOM + cover);
-      expect(zoom * offset.y + (size.height / 2) * (1 - zoom)).toBeCloseTo(
-        PAGE_TOP_ROOM + cover,
-        6,
-      );
+      // The page's blank top margin tucks under the band: its first line stands COVER_TITLE_GAP below it.
+      expect(lock.top + MARGIN * zoom).toBeCloseTo(cover + COVER_TITLE_GAP, 6);
+      expect(zoom * offset.y + (size.height / 2) * (1 - zoom)).toBeCloseTo(lock.top, 6);
       const foot = zoom * (size.height + offset.y) + (size.height / 2) * (1 - zoom);
       expect(foot).toBeLessThanOrEqual(height + 1e-6);
       expect(pageFreeHeight(height, 1, cover)).toBe(

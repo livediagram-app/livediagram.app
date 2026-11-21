@@ -15,6 +15,9 @@ export const PAGE_FOOT_ROOM = 96;
  *  on a phone, over the page's top room. Screen px, never scaled with the page. */
 export const COVER_HEIGHT = 220;
 export const COVER_HEIGHT_PHONE = 140;
+/** Screen px between a cover's band and the page's first line (owner, 2026-11-21: "too much space between cover and
+ *  title"): the page's blank top margin tucks under the band, so the Title stands this far below it. */
+export const COVER_TITLE_GAP = 36;
 /** The band's height for a page with a cover or none. */
 export const coverHeightOf = (hasCover: boolean, phone: boolean): number =>
   hasCover ? (phone ? COVER_HEIGHT_PHONE : COVER_HEIGHT) : 0;
@@ -67,7 +70,10 @@ export function computePageLock(input: PageLockInput): PageLock {
   // Whole px, so the writing's glyphs land on the pixel grid.
   const columnLeft = Math.round(sides.left + (available - columnWidth) / 2);
   const left = columnLeft - margin * zoom;
-  const top = PAGE_TOP_ROOM + cover;
+  // Under a cover, the page's blank top room and margin tuck under the band (which stands over the world), leaving
+  // COVER_TITLE_GAP between the band and the first line.
+  const tuck = cover > 0 ? Math.max(0, PAGE_TOP_ROOM + margin * zoom - COVER_TITLE_GAP) : 0;
+  const top = PAGE_TOP_ROOM + cover - tuck;
   return {
     view: {
       zoom,
