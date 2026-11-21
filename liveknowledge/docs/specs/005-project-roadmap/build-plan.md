@@ -15,7 +15,7 @@ its own. Specs first at every step.
 | 6   | Page links, backlinks, embeds ([Links and embeds](../030-knowledgebase/links-and-embeds.md))                                  |                 |
 | 7   | Verification ([Verification](../030-knowledgebase/verification.md))                                                           |                 |
 | 8   | Search ([Search and Ask](../030-knowledgebase/search-and-ask.md))                                                             |                 |
-| 9   | Ask, on the team's own key                                                                                                    |                 |
+| 9   | Ask, on built-in AI or the team's own key                                                                                     |                 |
 | 10  | AI Knowledge ([AI Knowledge](../030-knowledgebase/ai-knowledge.md))                                                           |                 |
 | 11  | Knowledgebase Home ([Knowledgebase Home](../030-knowledgebase/knowledgebase-home.md))                                         |                 |
 | 12  | Knowledgebase import ([Knowledgebase import](../020-import-export/knowledgebase-import.md))                                   | built           |

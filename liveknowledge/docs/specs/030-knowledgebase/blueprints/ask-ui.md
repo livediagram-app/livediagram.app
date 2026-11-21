@@ -172,9 +172,11 @@ console after a save, Remove with its question, the model, and the controls per 
   all among the sources becomes `CitationChip` buttons (named "Source 2: <page>") wherever it stands but in code;
   any other marker stays text (`answerParts`, per run).
 - **Nothing is HTML.** Every piece is a React text node or an element `AnswerBody` makes: a tag the model wrote
-  (`<img onerror>`, `<script>`) is the characters it was. A link keeps its address only when `safeHref` reads it as
-  `http` or `https`; it opens in a new tab with `rel="noopener noreferrer nofollow"`. Any other link (`javascript:`,
-  `data:`, `mailto:`, a relative path) is its words alone.
+  (`<img onerror>`, `<script>`) is the characters it was. **No link is drawn** (search-and-ask.md "No outside links
+  in an answer"): a link `safeHref` reads as `http` or `https` is its words and then " (<address>)" as text (the
+  address once, after the link's last run; not repeated when the words are the address). Any other link
+  (`javascript:`, `data:`, `mailto:`, a relative path) is its words alone. The only pressable things in an answer are
+  its citation chips. Tests: `answer-blocks.test.ts`, and `AnswerBody.test.tsx` with `[click here](https://evil.example)`.
 - **Streaming is untouched.** While the answer streams it is still the one text node; the Markdown is read once,
   when the answer has ended (the card is memoised on its turn and `AnswerBody` on the text), never per token.
   Measured (`answer-blocks.test.ts`): a 40,000 character answer of dense Markdown is read in 27 ms of CPU, held

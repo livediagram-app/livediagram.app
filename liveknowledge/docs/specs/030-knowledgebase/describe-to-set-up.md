@@ -137,8 +137,9 @@ One centred dialog of steady height, in three steps.
 Owner, 2026-11-21: Describe to Set Up runs on **built-in AI** by default, as liveplanner's
 Describe a Plan does, so it works with no key at all.
 The team's own AI key, Claude's or OpenAI's ([Providers](search-and-ask.md#providers)), is optional and is used when
-one is set. (This reverses "runs on the team's own key; liveknowledge pays for no model" for this feature only:
-Ask, the conflict check and drafting a page from a gap stay on the team's key.)
+one is set. (This reversed "runs on the team's own key; liveknowledge pays for no model", first for this feature;
+since 2026-11-21 Ask, the conflict check and drafting a page from a gap run on built-in AI too:
+[Built-in AI](search-and-ask.md#built-in-ai).)
 
 - **Built-in AI.** With no key set, the suggestion is asked of Cloudflare Workers AI through the api's `AI` binding:
   no key and no secret, the binding is the credential, billed to liveknowledge's account. The model is the one
