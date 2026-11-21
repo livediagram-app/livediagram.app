@@ -108,6 +108,7 @@ export function AiKeyEditor({
       {!replacing && (
         <SegmentedToggle
           label="Which AI"
+          className="w-fit max-w-full"
           value={source}
           options={SOURCE_OPTIONS}
           onChange={(next) => {
@@ -118,7 +119,9 @@ export function AiKeyEditor({
       )}
       {source === 'built-in' && !replacing ? (
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Every app’s AI features run on built-in AI, with its daily limits.
+          {teamId === null
+            ? 'Every app’s AI features run on built-in AI for you, with its daily limits.'
+            : 'The team’s work runs on built-in AI, or on each member’s own key, until a team key is added.'}
         </p>
       ) : (
         <KeyForm
@@ -221,6 +224,7 @@ function KeyForm({
     <form className="space-y-4" onSubmit={(event) => void submit(event)} autoComplete="off">
       <SegmentedToggle
         label="Provider"
+        className="w-fit max-w-full"
         value={providerId}
         options={providers.map((p) => ({
           value: p.id,

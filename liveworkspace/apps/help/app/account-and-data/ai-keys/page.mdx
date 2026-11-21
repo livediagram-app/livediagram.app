@@ -1,0 +1,82 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Your AI Keys',
+  description:
+    'Add your own Anthropic or OpenAI API key, or a key for your team, in Settings › AI. Every app uses it instead of built-in AI, and it is never shown again.',
+  path: '/help/account-and-data/ai-keys/',
+});
+
+<ArticleLayout path="account-and-data/ai-keys" title="Your AI Keys" description="Use your own Anthropic or OpenAI key, or your team’s, for every app’s AI features instead of built-in AI." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+The AI features of every liveworkspace app run on **built-in AI** by default: included, no key needed, with daily limits. In **Settings › AI** you can add **your own key** from Anthropic (Claude) or OpenAI instead, and a team's admins can add **a key for the team**. The key belongs to your liveworkspace account, so you add it once and every app uses it, <AppName /> included.
+
+## You need an account
+
+AI keys are a **signed-in-only** feature, like [API Tokens](/help/account-and-data/api-tokens/). A guest, a visitor through a share link, an API token and an AI tool connected over MCP never use anyone's key: they get built-in AI.
+
+## Add Your Own Key
+
+<Step n={1}>
+  Open **Settings** and choose **AI** in the Account section.
+</Step>
+
+<Step n={2}>
+  Under **Your Key**, choose **Your Own Key**, then **Anthropic (Claude)** or **OpenAI**.
+</Step>
+
+<Step n={3}>
+  Make an API key in the provider's own console, paste it into the field, pick the model and press
+  **Save Key**.
+</Step>
+
+Before it is saved, the key is checked with one small request to the provider, so a mistyped key, a key with no credit or a key that cannot use the model is refused there and then, in plain words. Once saved, Settings shows only the provider, the model and "Key ending" with its last four characters.
+
+## A Team's Key
+
+A team's **admins** see each team they run under **Your Teams' Keys**, and add, replace or remove its key the same way. Everyone in the team then uses it in the team's work, and the team pays its provider. Members are told the team has a key and which provider, never its ending, and cannot change it.
+
+Each change to a team's key is written to the team's [audit log](/help/collaboration/teams/audit-log/) as **AI Key Changed**, with who made it and the provider.
+
+## Which Key Answers
+
+When an app calls a model for you, it uses the first of these that is set:
+
+1. A key of the thing you are working in, where the app has one (a Knowledgebase's own key in liveknowledge).
+2. The key of the team the work belongs to, if you are a member.
+3. Your own key.
+4. Built-in AI.
+
+A key that is set but cannot be read is never swapped quietly for the next one: the app says so, and asks you (or the team's admins) to replace it.
+
+<AppNote app="liveknowledge">
+  A Knowledgebase's [AI Settings](/help/knowledgebase/ai-settings/) say which key answers you there
+  ("Uses Your Team's Key", "Uses Your Key", "Uses Built-In AI"), and **Your AI Keys** opens this
+  setting. The background check for [pages that disagree](/help/knowledgebase/pages-that-disagree/)
+  uses only the Knowledgebase's own key or built-in AI, never a team's or a person's.
+</AppNote>
+
+## How Your Key Is Kept
+
+- It is sent once, over an encrypted connection, and **encrypted when it is saved**, with a key of its own for each record. Nothing liveworkspace stores holds it in the clear.
+- It is **never shown again**, to you or anyone else, and never sent to any browser. The field is cleared as soon as the key is sent.
+- An app's server is handed the key only while it makes a call for you, and only for the call it is making. It is not kept afterwards, and it is never written to a log, telemetry or an error.
+- It is sent only to the provider you chose, at that provider's own address.
+- [Downloading your data](/help/account-and-data/download-your-data/) never includes it.
+
+## Replace or Remove a Key
+
+- **Replace Key:** paste a new key and press **Replace Key**. The new key takes over from that moment.
+- **Remove:** press **Remove**, then **Remove now**. The key stops working at once, in every app: the next call uses the next key in line, or built-in AI.
+- **Model:** choose another from the list at any time.
+
+Each time your key is added, replaced or removed, you get an email, **"Your liveworkspace AI key was changed"**, saying what changed, who changed it and when, and never any part of the key. A team's admins get one for the team's key. If it wasn't you, remove the key and revoke it in the provider's console.
+
+Closing your account deletes your key; deleting a team deletes the team's key.
+
+## Who Pays
+
+Built-in AI costs nothing. On a key, its owner pays the provider directly, at the provider's prices, for what the apps ask of it: you for your own key, the team for the team's. liveworkspace adds no charge.
+
+</ArticleLayout>

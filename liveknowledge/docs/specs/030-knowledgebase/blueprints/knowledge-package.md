@@ -371,7 +371,7 @@ knowledgebase's own key. The names below are unchanged; they are imported from `
   (`x-api-key` for Claude, `Authorization: Bearer` for OpenAI) and nowhere else.
 - **Built-in AI is the third provider** ([Search and Ask](../search-and-ask.md) "Built-in AI"). `ModelCaller` is
   `{ provider: 'built-in', ai }` or `{ provider: KeyProviderId, fetch, apiKey, model }`; `callModel` hands the first
-  to `callBuiltIn` (`built-in-client.ts`): `builtInInput(request)` (the system prompt first, then the messages,
+  to `callBuiltIn` (`@liveworkspace/ai` `built-in-client.ts`): `builtInInput(request)` (the system prompt first, then the messages,
   `max_tokens` at most `BUILT_IN_MAX_TOKENS` 2,000, temperature 0.2, `stream: true`, thinking off), the binding's
   event stream read as `{ response }` or chat-completion pieces through to `[DONE]` (or one object, read by
   `builtInReplyText`), bounded by `BUILT_IN_TIMEOUT_MS` (60 s) and the caller's signal; after either, what arrives is

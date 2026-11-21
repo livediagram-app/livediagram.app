@@ -8,7 +8,7 @@ import { SETUP_MAX_PAGES } from './setup-limits';
 import { setupRequest, type SetupExistingPage } from './setup-request';
 
 /** liveplanner's Describe a Plan model (its automation-ai.ts): small, cheap, with JSON mode, thinking off. The one
- *  model built-in AI answers everything with (built-in-client.ts). */
+ *  model built-in AI answers everything with (@liveworkspace/ai built-in-client.ts). */
 export const SETUP_BUILT_IN_MODEL = BUILT_IN_MODEL;
 /** The asks one suggestion may make: the first, and one more with what was wrong with the first reply. */
 export const SETUP_BUILT_IN_ASKS = 2;

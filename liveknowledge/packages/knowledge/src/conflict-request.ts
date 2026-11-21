@@ -1,6 +1,6 @@
 // The model's part of a conflict check (docs/specs/030-knowledgebase/ai-knowledge.md "Pages that disagree"): one
 // request that asks, of each candidate pair, whether the two passages state opposite facts, and the reading of
-// its verdicts. Same call as Ask (model-providers.ts `callModel`), same fencing of other people's writing.
+// its verdicts. Same call as Ask (@liveworkspace/ai model-providers.ts `callModel`), same fencing of other people's writing.
 import { fenced, type ModelRequest } from '@liveworkspace/ai';
 import { conflictId, type Conflict, type ConflictCandidate } from './conflicts';
 

@@ -102,7 +102,7 @@ The knowledgebase's own key stays, and comes first.
   "Uses Built-In AI"), with **Your AI Keys** linking to the shared Settings category (`?settings=ai`), and on Ask's
   **Answer With**, whose second choice names the key's model and its source ("Claude Fable 5.2 (Team Key)", "(Your
   Key)", "(Knowledgebase Key)"). `GET ai` answers it as `uses` (`knowledgebase`, `team`, `personal`, `built-in`) with
-  `usesModel`, read for the asker; the AI Knowledge overview does not ask accounts.
+  `usesModel` and its name `usesModelLabel`, read for the asker; the AI Knowledge overview does not ask accounts.
 
 ## Built-in AI
 

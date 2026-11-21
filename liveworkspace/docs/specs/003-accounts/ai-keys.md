@@ -44,21 +44,24 @@ built-in AI. This is deliberate: storing a person's credential to use it later w
 host's door, as API Tokens are, for a signed-in account only (a guest, a workbench and a self-hosted editor show
 none).
 
-- **Your AI** opens with **Which AI**: two bordered rows, **Built-In AI** ("The app's own AI, where it has one. Daily
-  limits apply.", an "Included" pill) and **Your Own Key** ("Anthropic or OpenAI, billed to you"). With no key saved
-  Built-In AI is chosen; with one, Your Own Key. Choosing Built-In AI with a key saved asks first ("Remove Your Key?")
-  and removes it.
-- **Your Own Key** shows the **Provider** (two bordered rows, Anthropic (Claude) and OpenAI, a generic mark and the
-  name as text, no company logo), a password field for the key (its placeholder the provider's prefix, `sk-ant-…`),
-  the **Model**, and **Save Key**. Saving checks the key first ([Saving checks the key](#saving-checks-the-key)). Once
-  saved: "Key Ending 4f2a", the provider, the model (a select, changed in place), when it was set, **Replace** and
-  **Remove** (asked first). Two sentences say it is encrypted and never shown again, and that the provider bills the
-  person for what it uses.
-- **Team Keys** lists the person's teams, each with its state: "No Key", or the provider and model. A team's admins
-  get the same controls as Your Own Key, and the hint; a member sees only that the team has a key and which
-  provider, with "Only the team's admins can change this".
-- **The typed key** is held only in its field, read once when sent and cleared in the same turn, whatever the
-  answer. It is never kept in the page's state, a browser store, a log, telemetry or an error message.
+- **Your Key** opens with **Which AI**, a two-way switch: **Built-In AI** ("Included with every app, with daily
+  limits. No key needed.") and **Your Own Key** ("Your Anthropic or OpenAI key, billed by the provider, with no daily
+  limits."). With no key saved it starts on Built-In AI.
+- **Your Own Key** shows the **Provider** (the same switch: Anthropic (Claude) or OpenAI, the name as text, no
+  company logo), a password field for the key (its placeholder the provider's prefix, `sk-ant-…`; never filled in or
+  offered by the browser), **Save Key**, and the **Model** (the provider's list, its most capable first chosen). Saving
+  checks the key first ([Saving checks the key](#saving-checks-the-key)); a refusal is said in words and the field is
+  cleared. A sentence says it is checked, kept encrypted and never shown again, and who the provider bills.
+- **Once saved** the switch gives way to the key: the provider, "Key ending 4f2a · Added 3 Nov 2026", the **Model**
+  (a select, changed in place), **Replace Key** (the same form, with Cancel) and **Remove**, which asks in place
+  (**Remove now** or **Keep**). Removed, it is back on Built-In AI.
+- **Your Teams' Keys** lists each team the person has joined. A team's admins get the same controls, for the team
+  ("bills the team Design"); a member sees only "Uses the team's OpenAI key in the team's work. Only its admins can
+  change it.", or "No team key: the team's work uses your key, or built-in AI. Its admins can add one."
+- **The typed key** is held only in its field's own state, read once when sent and cleared in the same turn, whatever
+  the answer. It is never kept anywhere else in the page, in a browser store, a log, telemetry or an error message.
+- Without the master secret on the server, a note says "AI keys can't be kept here just now. Built-in AI still
+  works.", and a save is refused (`503 ai_keys_unavailable`).
 
 ## The account API
 
