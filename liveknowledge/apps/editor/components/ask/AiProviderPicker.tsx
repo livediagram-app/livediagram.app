@@ -15,7 +15,7 @@ const ICONS: Record<KnowledgeAiProvider, ReactNode> = {
 };
 
 const OPTION =
-  'flex min-h-12 flex-1 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors duration-short motion-reduce:transition-none pointer-coarse:min-h-11 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500 has-[:focus-visible]:ring-offset-1 dark:has-[:focus-visible]:ring-offset-slate-900 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60';
+  'flex min-h-12 min-w-0 flex-1 basis-0 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors duration-short motion-reduce:transition-none pointer-coarse:min-h-11 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500 has-[:focus-visible]:ring-offset-1 dark:has-[:focus-visible]:ring-offset-slate-900 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60';
 const OPTION_ON = 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/10';
 const OPTION_OFF =
   'border-slate-200 hover:border-brand-300 dark:border-slate-700 dark:hover:border-brand-500/60';
@@ -74,7 +74,7 @@ export function AiProviderPicker({
               <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                 {label}
               </span>
-              <span className="block truncate text-xs text-slate-600 dark:text-slate-400">
+              <span className="block text-xs text-slate-600 dark:text-slate-400">
                 {providerWords(id).about}
               </span>
             </span>

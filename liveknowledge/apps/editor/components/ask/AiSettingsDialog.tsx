@@ -5,7 +5,7 @@
 // Settings panel: Settings holds a person's own preferences on this device and account, and the key is the
 // knowledgebase's, the same for everyone who opens it. An Editor chooses the provider, adds, replaces or removes the
 // key and chooses the model; everyone else sees how things stand, with no controls.
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { KnowledgeAiProvider, KnowledgeAiSettings } from '@liveknowledge/api-schema';
 import { Button, DialogCloseButton, DialogFooter, DialogHeader, Select } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
@@ -44,8 +44,25 @@ const NOTE = 'text-xs leading-relaxed text-slate-600 dark:text-slate-400';
 export function AiSettingsHost() {
   const open = useAiSettingsOpen();
   const session = useAskSession();
-  // Another knowledgebase, or the host going, closes it.
-  useEffect(() => closeAiSettings, [session?.documentId]);
+  // Another knowledgebase, or the host going, closes it. Not a cleanup that closes outright: React's development
+  // StrictMode runs every cleanup once right after mounting, which closed the dialog the moment it opened, from every
+  // door (sweep 2026-11-21). A real unmount is told apart by the remount not following.
+  const documentId = session?.documentId;
+  const shown = useRef<string | undefined>(undefined);
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (shown.current !== undefined && shown.current !== documentId) closeAiSettings();
+    shown.current = documentId;
+  }, [documentId]);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      queueMicrotask(() => {
+        if (!mounted.current) closeAiSettings();
+      });
+    };
+  }, []);
   if (!open || !session) return null;
   return <AiSettingsDialog session={session} onClose={closeAiSettings} />;
 }

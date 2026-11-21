@@ -76,7 +76,7 @@ const FORMATS: FormatEntry[] = [
     kind: 'text',
     title: 'JSON',
     description:
-      'A liveknowledge tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
+      'A liveknowledge page (a .json export). Restores it exactly. Paste it or pick a file.',
     placeholder: '{\n  "schemaVersion": 1,\n  "kind": "liveknowledge.tab",\n  "tab": { … }\n}',
   },
   {

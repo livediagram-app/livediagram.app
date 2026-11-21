@@ -22,14 +22,14 @@ import { useSetupOffered } from './useSetupOffered';
 const SetupDialog = dynamic(() => import('./SetupDialog').then((m) => m.SetupDialog), {
   ssr: false,
 });
-// AI Settings, opened from the dialog's no-key step. Over Ask or AI Knowledge the views' host draws it; the setup
-// dialog opens over Pages, where nothing else does.
+// AI Settings over Pages, opened from the dialog's no-key step or the knowledgebase menu. Over Ask or AI Knowledge the
+// views' host draws it.
 const AiSettingsDialogHost = dynamic(
   () => import('@/components/ask/AiSettingsDialog').then((m) => m.AiSettingsHost),
   { ssr: false },
 );
 
-/** The dialog while it is open and this session is offered it; nothing otherwise. */
+/** The dialog while it is open and this session is offered it, and AI Settings while it is open over Pages. */
 export function SetupWhenOpen() {
   const mode = useSetupOpen();
   const offered = useSetupOffered();
@@ -43,13 +43,18 @@ export function SetupWhenOpen() {
     publishSetupOffered(offered);
     return () => publishSetupOffered(null);
   }, [offered]);
-  const settingsOpen = useAiSettingsOpen();
+  // Over the Pages view this host draws AI Settings, whether opened from Describe to Add Pages or from the
+  // knowledgebase menu (the Ask and AI Knowledge views draw their own). It was drawn only beside an open Describe, so
+  // the menu's AI Settings did nothing there (sweep 2026-11-21).
+  const aiSettingsOpen = useAiSettingsOpen();
   const overPages = useKnowledgeView() === 'pages';
-  if (!mode || !offered) return null;
+  const settingsOpen = aiSettingsOpen && overPages;
+  const setup = mode && offered;
+  if (!setup && !settingsOpen) return null;
   return (
     <AreaErrorBoundary area="Modals" fallback="none">
-      <SetupDialog mode={mode} onClose={closeSetup} />
-      {settingsOpen && overPages ? <AiSettingsDialogHost /> : null}
+      {setup ? <SetupDialog mode={mode} onClose={closeSetup} /> : null}
+      {settingsOpen ? <AiSettingsDialogHost /> : null}
     </AreaErrorBoundary>
   );
 }
