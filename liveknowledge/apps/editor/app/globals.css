@@ -111,6 +111,36 @@
   background-color: var(--color-slate-900) !important;
 }
 
+/* The chrome keeps its edges (docs/specs/030-knowledgebase/page-surface.md "The chrome keeps its edges"): the
+   sidebar's right edge, the top row's foot, the rail's left edge and the footer's top are a fixed step off the
+   ground the page stands on, mixed from that ground, so they read alike under every look in both appearances, and
+   the sidebar stands a shade off the page. Slate stops did not: the dark palette's slate-800 is a breath off
+   slate-900 (#16202e on #131b26, 1.06:1), so under Everyday the sidebar, the top row and the page ran together,
+   and in the light Everyday's slate-200 edge (1.23:1) and slate-50 sidebar (1.05:1) were the faintest of any look.
+   Unlayered, so these outrank the elements' own border and background utilities. */
+:root {
+  --lk-chrome-edge: color-mix(in oklab, var(--color-white), var(--color-slate-900) 16%);
+  --lk-chrome-side: color-mix(in oklab, var(--color-white), var(--color-slate-900) 4%);
+}
+.dark {
+  --lk-chrome-edge: color-mix(in oklab, var(--color-slate-900), #ffffff 13%);
+  --lk-chrome-side: color-mix(in oklab, var(--color-slate-900), #000000 30%);
+}
+[data-contents-sidebar],
+[data-page-tree-over] {
+  border-right-color: var(--lk-chrome-edge);
+  background-color: var(--lk-chrome-side);
+}
+[data-knowledge-top-row] {
+  border-bottom-color: var(--lk-chrome-edge);
+}
+[data-page-rail] {
+  border-left-color: var(--lk-chrome-edge);
+}
+[data-editor-tabbar] {
+  border-top-color: var(--lk-chrome-edge);
+}
+
 /* Pages mode's page clip (components/canvas/PageClip.tsx): the layer covers the
    canvas world without taking presses itself, so a press on the empty canvas still reaches the
    canvas; the element views inside take them as anywhere else. Zero specificity, in the base layer,
