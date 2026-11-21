@@ -209,13 +209,12 @@ export function PageTreeSidebar({
       <p className="px-[18px] pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Pages
       </p>
-      <PageTree {...tree} className="flex-1 px-1.5 pb-2" />
-      {/* The Trash, directly above New Page (knowledgebases-and-pages.md "The page Trash"). */}
-      {trash ? (
-        <div className="px-1.5 pb-1.5">
-          <PageTrashRow />
-        </div>
-      ) : null}
+      {/* The pages, then the Trash as the list's last item, scrolling together (knowledgebases-and-pages.md "The page
+          Trash"); the row draws nothing while the Trash is empty. */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1.5 pb-2">
+        <PageTree {...tree} />
+        {trash ? <PageTrashRow /> : null}
+      </div>
       <div className="border-t border-slate-200 p-3 dark:border-slate-800">
         {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"). */}
         {tree.canEdit ? <DescribeToSetUpButton /> : null}

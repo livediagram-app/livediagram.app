@@ -130,10 +130,10 @@ and the two never mix: a page is never listed in the Explorer, and a knowledgeba
   comment threads and its versions. A connected file's row under it is not a page and is removed with it, as Remove
   from Sidebar removes one; it is connected again after a restore. A page shared in from another knowledgebase
   leaves as it does today, with no Trash.
-- **Where it is.** A **Trash** row with a trash icon stands at the foot of the page tree, directly above New Page, in
-  the sidebar and in the phone's Pages sheet. It is always there for a writer, so it is found when it is looked for;
-  empty, it is muted and its count is absent; holding pages, its count is a badge at its right (the pages a person
-  sees in the Trash, a subpage counted with its page). It is absent for a Viewer, a link confined to one page, a
+- **Where it is.** A **Trash** row with a trash icon is the last item in the page list, after the last page and
+  scrolling with the pages, in the sidebar and in the phone's Pages sheet. It shows only while the Trash holds pages
+  (owner 2026-11-21), with its count a badge at its right (the pages a person sees in the Trash, a subpage counted
+  with its page); an empty Trash shows no row, and a link to a trashed page still opens it. It is absent for a Viewer, a link confined to one page, a
   Community visitor, an embed and an Offline knowledgebase. On the rail, it is an icon button under New Page.
 - **The Trash** opens over the page as a centred dialog (a sheet on a phone), "Trash", with a note that pages wait
   here for 30 days and then are removed for good. Each page put in the Trash at once with its subpages is one row:

@@ -377,10 +377,10 @@ listed.
 - `pageTrashStore` (`lib/knowledge/page-trash-store.ts`): one knowledgebase's Trash as last read, `refresh()`, and
   `scheduleRefresh()` (`TRASH_REFRESH_MS`, 1.5 s, after the page list's count changes, which is after the autosave's
   DELETEs land); a read a session may not make is never sent. `openPageTrash(focus?)` opens the dialog.
-- `PageTrashRow` (`components/page-trash/PageTrashRow.tsx`): above the foot of `PageTreeSidebar` and of the
-  `PageTreeSheet`, a 32 px row (44 on touch) with the tree's `DeleteIcon`, "Trash" and the count's `CountBadge`;
-  muted while empty; named "Trash, empty" or "Trash, 3 pages". On the rail, an icon button under New Page, a dot
-  while it holds pages. Hover card: "Trash", "Deleted pages wait here for 30 days." Opening it from the sheet closes
+- `PageTrashRow` (`components/page-trash/PageTrashRow.tsx`): after the `PageTree` inside the list's scroll area in
+  `PageTreeSidebar` and `PageTreeSheet`, a 32 px row (44 on touch) with the tree's `DeleteIcon`, "Trash" and the
+  count's `CountBadge`; renders nothing while the Trash is empty; named "Trash, 3 pages". On the rail, an icon button
+  under New Page with a dot, also only while it holds pages. Hover card: "Trash", "Deleted pages wait here for 30 days." Opening it from the sheet closes
   the sheet first. Shown where `pageTrashRightsOf` sees it: a writer of the whole saved knowledgebase (no
   `sessionTabScope`), outside an embed, a workbench pane, a Community visit and an Offline knowledgebase.
 - `PageTrashDialog` (`components/page-trash/PageTrashDialog.tsx`): the shared `Dialog` (`md`, `phoneSheet`), the

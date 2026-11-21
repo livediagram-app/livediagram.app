@@ -144,14 +144,13 @@ export function PageTreeSheet({
             actions={sheetActions}
             connected={sheetConnected}
             touch
-            className="px-2 pb-2"
+            className="px-2"
           />
-          {/* The Trash, directly above New Page; its dialog opens over the page, so the sheet closes. */}
-          {trash ? (
-            <div className="px-2 pb-2">
-              <PageTrashRow touch onOpen={() => setOpen(false)} />
-            </div>
-          ) : null}
+          {/* The Trash, the list's last item, only while it holds pages; its dialog opens over the page, so the sheet
+              closes. */}
+          <div className="px-2 pb-2">
+            {trash ? <PageTrashRow touch onOpen={() => setOpen(false)} /> : null}
+          </div>
           {tree.canEdit ? (
             <div className="border-t border-slate-200 p-3 dark:border-slate-800">
               {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"): its

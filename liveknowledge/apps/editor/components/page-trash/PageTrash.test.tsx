@@ -215,15 +215,15 @@ describe('the words', () => {
 });
 
 describe('the Trash row', () => {
-  it('is muted while the Trash is empty, and counts what it holds', async () => {
+  it('is hidden while the Trash is empty, and counts what it holds', async () => {
     api.list.mockResolvedValueOnce([]);
     act(() => pageTrashStore.attach(SESSION));
     await flush();
-    const { rerender } = render(<PageTrashRow />);
-    const row = screen.getByRole('button', { name: 'Trash, empty' });
-    expect(row.className).toContain('text-slate-500');
-    expect(row.className).toContain('min-h-8');
+    const { rerender, container } = render(<PageTrashRow />);
+    expect(container.querySelector('[data-page-trash-row]')).toBeNull();
     await act(() => pageTrashStore.refresh());
+    rerender(<PageTrashRow />);
+    expect(screen.getByRole('button', { name: 'Trash, 4 pages' }).className).toContain('min-h-8');
     rerender(<PageTrashRow touch />);
     const full = screen.getByRole('button', { name: 'Trash, 4 pages' });
     expect(full.className).toContain('min-h-11');
@@ -241,12 +241,12 @@ describe('the Trash row', () => {
     expect(pageTrashStore.get().open).toBe(true);
   });
 
-  it('stands on the rail as an icon, marked while it holds pages', async () => {
+  it('stands on the rail as an icon only while it holds pages', async () => {
     api.list.mockResolvedValueOnce([]);
     act(() => pageTrashStore.attach(SESSION));
     await flush();
     const { container } = render(<PageTrashRailButton className="x" />);
-    expect(container.querySelector('[data-page-trash-rail] > span')).toBeNull();
+    expect(container.querySelector('[data-page-trash-rail]')).toBeNull();
     await act(() => pageTrashStore.refresh());
     expect(container.querySelector('[data-page-trash-rail] > span')).not.toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Trash, 4 pages' }));
