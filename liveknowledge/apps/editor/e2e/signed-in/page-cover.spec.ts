@@ -180,10 +180,8 @@ test("an agent's write shows as AI Edited, with its name in the card", async ({
   await writeLines(page, 'Restart the queue worker with the blue lever.');
   const tab = openPageId(page);
   const url = page.url();
-  await expect(page.locator('[data-page-maker="updated"]')).toHaveAttribute(
-    'data-maker-kind',
-    'human',
-  );
+  // Made and last changed by a person: one pill says both.
+  await expect(page.locator('[data-page-maker="both"]')).toHaveText('Human Written');
   const agent = await writingAgent(page, who, id);
   // Nobody has the page open while the agent writes.
   await page.goto('/');

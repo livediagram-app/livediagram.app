@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makerWords } from './page-makers';
+import { makerPills, makerWords } from './page-makers';
 
 // docs/specs/030-knowledgebase/verification.md "Made by a person or an agent".
 const NOW = Date.UTC(2026, 10, 21, 12);
@@ -68,5 +68,22 @@ describe('who made and edited a page, in words', () => {
         NOW,
       ).description,
     ).toBe('Created by an agent, from a suggestion an Editor accepted on 3 Jan 2025');
+  });
+});
+
+describe('makerPills', () => {
+  const nameOf = (id: string | undefined) => (id === 'u1' ? 'Priya Shah' : undefined);
+  const NOW_ = Date.UTC(2026, 10, 21);
+  it('says one pill when the same kind made and last changed the page, else one each', () => {
+    const human = { by: 'u1', at: NOW_ - 60_000, kind: 'human' as const };
+    const both = makerPills({ created: human, updated: human }, nameOf, NOW_);
+    expect(both.map((p) => [p.key, p.label])).toEqual([['both', 'Human Written']]);
+    expect(both[0]!.description).toMatch(/^Created by Priya Shah .*\. Last edited by Priya Shah/);
+    const ai = { by: 'u1', at: NOW_, kind: 'ai' as const, agent: 'Claude' };
+    expect(makerPills({ created: human, updated: ai }, nameOf, NOW_).map((p) => p.label)).toEqual([
+      'Human Generated',
+      'AI Edited',
+    ]);
+    expect(makerPills({}, nameOf, NOW_)).toEqual([]);
   });
 });

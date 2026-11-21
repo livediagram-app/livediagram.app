@@ -36,3 +36,28 @@ export function makerWords(
       : `Last edited by ${writer}${door}${accepted}, ${relativeSince(stamp.at, now)}`;
   return { kind: ai ? 'ai' : 'human', label, description };
 }
+
+/** The meta row's pills: one per stamp, or one for both when the same kind of writer made and last changed the page
+ *  ("Human Written", "AI Written"; owner 2026-11-21: "if both human created and human edited, just use one badge"),
+ *  its hover card saying both. */
+export function makerPills(
+  makers: { created?: PageAuthorStamp; updated?: PageAuthorStamp },
+  nameOf: (id: string | undefined) => string | undefined,
+  now: number,
+): (MakerWords & { key: string })[] {
+  const created = makers.created ? makerWords(makers.created, 'created', nameOf, now) : null;
+  const updated = makers.updated ? makerWords(makers.updated, 'updated', nameOf, now) : null;
+  if (created && updated && created.kind === updated.kind)
+    return [
+      {
+        key: 'both',
+        kind: created.kind,
+        label: `${created.kind === 'ai' ? 'AI' : 'Human'} Written`,
+        description: `${created.description}. ${updated.description}.`,
+      },
+    ];
+  return [
+    ...(created ? [{ key: 'created', ...created }] : []),
+    ...(updated ? [{ key: 'updated', ...updated }] : []),
+  ];
+}

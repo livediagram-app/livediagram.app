@@ -17,15 +17,16 @@ import type { FaqCategory, FaqItem } from '@liveworkspace/marketing-site/lib/faq
 
 const ICON = 18;
 
-// The template categories as the answers name them, pinned to TEMPLATE_CATEGORIES by faq-content.test.tsx. Written
-// out rather than read from @liveknowledge/templates: this module ships in the FAQ's client bundle.
-export const TEMPLATE_CATEGORY_NAMES = [
+// The structure groups as the answers name them, and how many structures there are, pinned to STRUCTURE_GROUPS and
+// SETUP_STRUCTURES by faq-content.test.tsx. Written out rather than read from @liveknowledge/knowledge: this module
+// ships in the FAQ's client bundle.
+export const STRUCTURE_GROUP_NAMES = [
+  'Company and Team',
   'Engineering',
-  'Handbooks',
-  'Onboarding',
-  'Product',
-  'Support',
+  'Product and Research',
+  'Customers',
 ];
+export const STRUCTURE_COUNT_WORD = 'sixteen';
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -85,7 +86,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Are there templates?',
-        a: `Yes, for writing: a page can start blank or from a template such as Meeting Notes, Design Doc, Status Report or Onboarding Handbook. They are filed under five categories: ${TEMPLATE_CATEGORY_NAMES.slice(0, -1).join(', ')} and ${TEMPLATE_CATEGORY_NAMES.at(-1)}.`,
+        a: `Yes, and each is a whole knowledgebase rather than a single page: ${STRUCTURE_COUNT_WORD} structures such as Team Handbook, Engineering Handbook, Runbooks and On-Call and Sales Playbook, each a tree of pages with a line on what belongs on each and the headings to write under. They are grouped under ${STRUCTURE_GROUP_NAMES.slice(0, -1).join(', ')} and ${STRUCTURE_GROUP_NAMES.at(-1)}. Pick one from the template gallery or from a new knowledgebase’s start.`,
       },
     ],
   },

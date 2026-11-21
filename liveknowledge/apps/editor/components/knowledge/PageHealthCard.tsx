@@ -149,18 +149,34 @@ function FreshnessRing({ state, left }: { state: PageTrust['state']; left: numbe
 }
 
 // One fact: a quiet glyph, its label, and the value at the right. `wrap`: a value of two parts (a date and a name)
-// that are each read in full, on two lines, where a one-part value truncates.
+// that are each read in full, on two lines, where a one-part value truncates. `whole`: a value never cut short (the
+// Review Period beside its pencil): it stays on the label's line when it fits, and takes a line of its own, at the
+// right, when it does not.
 function Row({
   icon,
   label,
   wrap = false,
+  whole = false,
   children,
 }: {
   icon: ReactNode;
   label: string;
   wrap?: boolean;
+  whole?: boolean;
   children: ReactNode;
 }) {
+  if (whole)
+    return (
+      <div className="flex min-h-9 flex-wrap items-center justify-between gap-x-1.5 py-1">
+        <dt className="flex shrink-0 items-center gap-2 text-slate-500 dark:text-slate-400">
+          <span className="flex text-slate-400 dark:text-slate-400/60">{icon}</span>
+          {label}
+        </dt>
+        <dd className="ml-auto whitespace-nowrap text-right font-medium text-slate-800 dark:text-slate-200">
+          {children}
+        </dd>
+      </div>
+    );
   return (
     <div
       className={`flex min-h-9 justify-between gap-3 ${wrap ? 'items-baseline py-1.5' : 'items-center'}`}
@@ -434,28 +450,26 @@ export function PageHealthCard({
             </span>
           )}
         </Row>
-        {/* The date and who verified, each whole: the name takes a line of its own rather than being cut short. */}
-        <Row
-          icon={<VerifiedRowIcon />}
-          label="Last Verified"
-          wrap={verifiedAt !== undefined && !!verifier}
-        >
+        {/* One line (owner 2026-11-21): the date, and the verifier as their disc, named on hover. */}
+        <Row icon={<VerifiedRowIcon />} label="Last Verified">
           {verifiedAt === undefined ? (
             'Never'
           ) : (
-            <>
-              <span data-verified-date="" className="block whitespace-nowrap">
-                {shortDate(verifiedAt, now)}
-              </span>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+              <span data-verified-date="">{shortDate(verifiedAt, now)}</span>
               {verifier ? (
-                <span
-                  data-verified-by=""
-                  className="block text-xs font-normal text-slate-500 dark:text-slate-400"
-                >
-                  by {verifier}
-                </span>
+                <Tooltip label={`Verified by ${verifier}`}>
+                  <span
+                    data-verified-by=""
+                    tabIndex={0}
+                    aria-label={`Verified by ${verifier}`}
+                    className="inline-flex cursor-default rounded-full focus-visible:outline-2 focus-visible:outline-brand-600"
+                  >
+                    <Disc name={verifier} size="size-5" />
+                  </span>
+                </Tooltip>
               ) : null}
-            </>
+            </span>
           )}
         </Row>
         <Row icon={<DueRowIcon />} label="Review Due">
@@ -467,13 +481,11 @@ export function PageHealthCard({
                 : shortDate(trust.reviewAt, now)}
           </span>
         </Row>
-        {/* The knowledgebase's Review Period; an Editor changes it from Change, beside the value. */}
-        <Row icon={<PeriodIcon />} label="Review Period">
+        {/* The knowledgebase's Review Period; an Editor changes it from the pencil beside the value. */}
+        <Row icon={<PeriodIcon />} label="Review Period" whole={!!periodControl}>
           {periodControl ? (
-            <span className="flex min-w-0 items-center justify-end gap-1.5">
-              <span data-review-period="" className="truncate">
-                {reviewPeriodLabel(reviewEvery)}
-              </span>
+            <span className="flex items-center justify-end gap-1">
+              <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
               {periodControl}
             </span>
           ) : (

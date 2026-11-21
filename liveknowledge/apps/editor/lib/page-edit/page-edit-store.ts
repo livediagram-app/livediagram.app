@@ -81,6 +81,9 @@ export function pageEditorsOf(tabId: string): PageEditor[] {
 }
 
 /** Whether the peer with this presence id is editing that page. */
+/** A person in the room's roster by presence id (a guest's is their participant id), or undefined. */
+export const rosterName = (presenceId: string): string | undefined => names.get(presenceId);
+
 export const peerEditing = (presenceId: string, tabId: string): boolean =>
   others.get(presenceId)?.tabId === tabId;
 

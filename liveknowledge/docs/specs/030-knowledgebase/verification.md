@@ -37,7 +37,9 @@ saved since the table began has no row and shows neither: nothing is guessed. Pa
 - A stamp from before V18 was always a person's (V17 noted people's saves only), and reads as one.
 - The meta row shows two small quiet pills for a page that has a row, after the reading time: **AI Generated** or
   **Human Generated** (who made the page), then **AI Edited** or **Human Edited** (who changed it last). A page whose
-  last change is its making shows the second too, from the same stamp. A sparkle icon marks an agent's, a person
+  last change is its making shows the second too, from the same stamp. When the same kind of writer made the page
+  and changed it last, one pill says both: **Human Written** or **AI Written**, its hover card giving both lines
+  (owner 2026-11-21: "if both human created and human edited, just use one badge"). A sparkle icon marks an agent's, a person
   icon a person's. Each opens a hover card: "Created by an agent through MCP", "Created by Claude through MCP on
   12 Nov", "Last edited by Priya Shah, 3 hours ago", "Last edited by Claude, from a suggestion Priya Shah
   accepted". A page with no row shows neither pill. The pills are neutral grey, never the accent or a state colour,
@@ -72,7 +74,8 @@ own.
   one most likely to need a person's eye.
 - Writing on a verified page does not clear the tick. A large change (more than a fifth of the writing's characters
   since `verifiedAt`) adds "Changed since verified" beside it, until someone verifies again.
-- **Page Health** (right rail): owner (changeable), last verified, when the review is due, reads by people and
+- **Page Health** (right rail): owner (changeable), last verified (one line: the date, then the verifier's disc,
+  named on hover; owner 2026-11-21), when the review is due, reads by people and
   by agents this week, and Verify Again; at its foot, who created the page and who last updated it, each the
   person's initials disc, their whole name, and under it "Created 3 days ago" or "Updated 7 mins ago", as a liveplanner
   card's footer.

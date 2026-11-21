@@ -138,11 +138,11 @@ describe('Page Health', () => {
     nameOf: (id) => ({ u1: 'Priya Nair', u2: 'Marcus Oyelaran' })[id ?? ''],
     onSetOwner: vi.fn(),
     onVerify: vi.fn(),
-    periodControl: <button type="button">Change</button>,
+    periodControl: <button type="button" aria-label="Change Review Period" />,
     ...over,
   });
 
-  it('an Editor changes the owner, verifies again, and has Change beside the Review Period', () => {
+  it('an Editor changes the owner, verifies again, and has the pencil beside the Review Period', () => {
     const p = props();
     render(<Rail {...p} />);
     fireEvent.change(screen.getByLabelText('Owner'), { target: { value: 'u2' } });
@@ -152,12 +152,10 @@ describe('Page Health', () => {
     // The Review Period is the knowledgebase's: the card says it, with the control it is given beside it.
     expect(screen.queryByLabelText('Review Interval')).toBeNull();
     expect(screen.getAllByRole('combobox')).toHaveLength(1);
-    expect(screen.getByText('Every 90 Days').closest('dd')!.textContent).toBe(
-      'Every 90 DaysChange',
-    );
+    expect(screen.getByText('Every 90 Days').closest('dd')!.textContent).toBe('Every 90 Days');
     expect(
       within(screen.getByText('Every 90 Days').closest('dd')!).getByRole('button', {
-        name: 'Change',
+        name: 'Change Review Period',
       }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Verify Again' }));
@@ -180,26 +178,18 @@ describe('Page Health', () => {
     expect(screen.queryByRole('button')).toBeNull();
     expect(screen.getByText('Priya Nair')).toBeTruthy();
     expect(screen.getByText('Every 90 Days')).toBeTruthy();
-    expect(screen.getByText(/by Priya Nair$/)).toBeTruthy();
+    expect(screen.getByLabelText('Verified by Priya Nair')).toBeTruthy();
   });
 
-  // "Nov 20 by Priya N…": the value was one truncated line. The date and the name are each whole now, the name on
-  // a line of its own when the card is too narrow for both.
-  it('shows when it was last verified and by whom, each in full, never cut short', () => {
+  // One line (owner 2026-11-21): the date, then the verifier's disc, its name whole on hover and to a screen reader.
+  it('shows when it was last verified on one line, and who by their disc, named in full', () => {
     const long = 'Priyamvada Nair-Oyelaran of Platform Reliability';
     const { container } = render(<Rail {...props({ nameOf: (id) => (id ? long : undefined) })} />);
     const date = container.querySelector('[data-verified-date]')!;
     const by = container.querySelector('[data-verified-by]')!;
-    expect(by.textContent).toBe(`by ${long}`);
     expect(date.textContent).not.toBe('');
-    const value = date.closest('dd')!;
-    // No ellipsis on the value or on either part, and each part is a block, so the name wraps under the date.
-    for (const el of [value, date, by]) expect(el.className).not.toMatch(/\btruncate\b|line-clamp/);
-    expect(date.className).toContain('block');
-    expect(by.className).toContain('block');
-    expect(value.className).toContain('break-words');
-    // The other rows keep one line.
-    expect(screen.getByText('12').closest('dd')!.className).toContain('truncate');
+    expect(by.getAttribute('aria-label')).toBe(`Verified by ${long}`);
+    expect(date.parentElement!.className).toContain('whitespace-nowrap');
   });
 
   it('keeps every row while the reads load, and names a page never verified', () => {

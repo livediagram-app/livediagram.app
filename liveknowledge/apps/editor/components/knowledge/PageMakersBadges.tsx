@@ -5,7 +5,7 @@
 // the accent or a state colour, so neither reads as a warning; a page with no stamps shows neither.
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
 import { HoverCard } from '@liveknowledge/ui';
-import { makerWords, type MakerWhich } from '@/lib/knowledge/page-makers';
+import { makerPills } from '@/lib/knowledge/page-makers';
 import { MakerAgentIcon, MakerPersonIcon } from './knowledge-icons';
 
 // slate-700 on slate-100 and slate-200 on slate-800 both hold well over 4.5:1.
@@ -23,20 +23,17 @@ export function PageMakersBadges({
   nameOf: (id: string | undefined) => string | undefined;
   now: number;
 }) {
-  const pills: [MakerWhich, PageAuthorStamp][] = [];
-  if (makers.created) pills.push(['created', makers.created]);
-  if (makers.updated) pills.push(['updated', makers.updated]);
+  const pills = makerPills(makers, nameOf, now);
   if (pills.length === 0) return null;
   return (
     <span data-page-makers="" className="inline-flex items-center gap-1">
-      {pills.map(([which, stamp]) => {
-        const words = makerWords(stamp, which, nameOf, now);
+      {pills.map((words) => {
         return (
-          <HoverCard key={which} title={words.label} description={words.description}>
+          <HoverCard key={words.key} title={words.label} description={words.description}>
             <span
               // Focusable, so the keyboard reaches its card as a pointer does.
               tabIndex={0}
-              data-page-maker={which}
+              data-page-maker={words.key}
               data-maker-kind={words.kind}
               className={`${PILL} focus-visible:outline-2 focus-visible:outline-brand-600`}
             >

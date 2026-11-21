@@ -4,9 +4,11 @@
 // the clock gives them, Page Health once read, who may change them, the names the editor knows, and the actions,
 // each optimistic with a toast on a refusal. Reads the chrome store one slice at a time, so a typing commit renders
 // nothing here.
+import { rosterName } from '@/lib/page-edit/page-edit-store';
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { PageHealthResponse, PageKnowledgePatch } from '@liveknowledge/api-schema';
 import {
+  guestName,
   guestVerifier,
   guestVerifierName,
   isGuestVerifier,
@@ -33,6 +35,7 @@ export function useKnowledgePeople(): {
 } {
   const accountUserId = useEditorChrome((s) => s.accountUserId ?? null);
   const selfName = useEditorChrome((s) => s.selfParticipant.name);
+  const selfId = useEditorChrome((s) => s.selfParticipant.id);
   const candidates = useEditorChrome((s) => s.commentMentions.candidates);
   return useMemo(() => {
     const people: KnowledgePerson[] = [];
@@ -44,10 +47,19 @@ export function useKnowledgePeople(): {
     const names = new Map(people.map((p) => [p.id, p.name]));
     return {
       people,
-      nameOf: (id) =>
-        id && isGuestVerifier(id) ? guestVerifierName(id) : id ? names.get(id) : undefined,
+      // A stamp by a guest holds their participant id: named from this guest's own name, or the room's roster, as
+      // "Bright Marlin (Guest)" (owner 2026-11-21); a guest no longer here reads "Guest".
+      nameOf: (id) => {
+        if (!id) return undefined;
+        if (isGuestVerifier(id)) return guestVerifierName(id);
+        const known = names.get(id);
+        if (known) return known;
+        if (!accountUserId && id === selfId) return guestName(selfName);
+        const seen = rosterName(id);
+        return seen ? guestName(seen) : undefined;
+      },
     };
-  }, [accountUserId, selfName, candidates]);
+  }, [accountUserId, selfName, selfId, candidates]);
 }
 
 export type KnowledgeActions = {

@@ -31,8 +31,9 @@ Public) already own the word.
 - A new knowledgebase has one page, **Start Here**. Made from `/new` (the Explorer's New, Home's Make Your First
   Knowledgebase) it opens on the **start screen** ([Describe to set up](describe-to-set-up.md#the-start-screen)),
   whose choices are shapes of a whole knowledgebase: Blank Knowledgebase, Describe to Set Up, and structures (Team
-  Handbook, Engineering Wiki and the rest) whose picking makes their whole page tree; Import at its foot. Blank
-  Knowledgebase, `/new?blank=1` and a `/new?template=` link open Start Here with the caret in its Title. Its name is "Untitled Knowledgebase"
+  Handbook, Engineering Handbook and the rest) whose picking makes their whole page tree; Import at its foot. A
+  `/new?structure=<id>` link (the landing gallery, Home) makes the knowledgebase and picks that structure on it at
+  once. Blank Knowledgebase, `/new?blank=1` and a `/new?template=` link open Start Here with the caret in its Title. Its name is "Untitled Knowledgebase"
   until a person names it: a page's Title names that page, never the knowledgebase. Its creator owns every page it
   starts with ([Verification](verification.md) "The owner"): a signed-in person's create carries their account as
   each seeded page's `knowledge.owner` (`lib/new-page-owner.ts`), and the pages a structure adds get theirs from the
