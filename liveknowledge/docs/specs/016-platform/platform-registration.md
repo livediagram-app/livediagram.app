@@ -166,8 +166,9 @@ None of these can be done by an agent.
   `wrangler d1 export liveworkspace-index --remote --output prod.sql` (it only reads), then
   `node scripts/items-rebuild-counts.ts rehearse prod.sql` in `liveworkspace/apps/index`. It prints the time the
   rebuild takes on the real data; one that runs far past 30 seconds is the sign to split it first.
-- **Domain:** register `liveknowledge.app` and add it as a zone on the liveworkspace Cloudflare account, so the
-  router's custom domains (`liveknowledge.app`, `www.liveknowledge.app`, `staging.liveknowledge.app`) and the MCP's
+- **Domain:** registered (owner, 2026-11-21): `liveknowledge.app` is in Cloudflare. It must be a zone on the
+  liveworkspace account (`851be7d244b76a6557bcbe6c4ded80f5`), the one every `wrangler.toml` pins, so the router's
+  custom domains (`liveknowledge.app`, `www.liveknowledge.app`, `staging.liveknowledge.app`) and the MCP's
   (`mcp.liveknowledge.app`) can attach.
 - **Accounts client:** run `register-client.ts` per environment and set `ACCOUNTS_CLIENT_SECRET` on the api Worker.
 - **Index, media, telemetry, drive, Community and data export keys:** one value each, set on the service
