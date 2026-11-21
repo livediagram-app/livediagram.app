@@ -821,6 +821,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Removed|AiKey': "Someone removed a knowledgebase's AI key.",
   'UI|Changed|AiProvider': "Someone switched a knowledgebase's AI provider.",
   'UI|Changed|AiModel': 'Someone picked another model for Ask and AI Knowledge.',
+  'UI|Changed|AskAiBuiltIn': 'Someone chose built-in AI to answer their questions on Ask.',
+  'UI|Changed|AskAiKey': "Someone chose the team's key to answer their questions on Ask.",
   'UI|Opened|AskView': 'Someone opened the Ask view, to ask the knowledgebase a question.',
   'UI|Opened|AiKnowledgeView': 'Someone opened the AI Knowledge view.',
   'UI|Opened|KnowledgeSearch': 'Someone opened the search panel to search this knowledgebase.',

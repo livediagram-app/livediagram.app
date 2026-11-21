@@ -499,6 +499,14 @@ export const AI_MODELS_CHANGED = chart(
   { types: ['AiModel'], rising: 'neutral' },
 );
 
+export const ASK_AI_CHOSEN = chart(
+  'UI',
+  'Changed',
+  'Ask AI Chosen',
+  "Which AI answers a person's questions switched on Ask, between built-in AI and the team's key.",
+  { types: ['AskAiBuiltIn', 'AskAiKey'], rising: 'neutral' },
+);
+
 export const AI_SETUP: MetricStack = {
   stack: true,
   title: 'Set-Up and AI Key',
@@ -510,6 +518,7 @@ export const AI_SETUP: MetricStack = {
     AI_KEYS_REMOVED,
     AI_PROVIDERS_CHANGED,
     AI_MODELS_CHANGED,
+    ASK_AI_CHOSEN,
   ],
   headline: [SETUPS_SUGGESTED, AI_KEYS_ADDED],
 };

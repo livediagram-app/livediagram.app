@@ -170,7 +170,10 @@ export type KnowledgeAiSettings = {
 };
 
 export type AskTurn = { question: string; answer: string };
-export type AskRequest = { question: string; turns?: AskTurn[] };
+/** Which AI a person asked to answer (search-and-ask.md "Choosing which AI answers"): built-in AI even with a key
+ *  set, or the team's key (built-in AI when none is set). */
+export type AskAiChoice = 'built-in' | 'key';
+export type AskRequest = { question: string; turns?: AskTurn[]; ai?: AskAiChoice };
 /** A passage an answer cites, or one it found and set aside. */
 export type AskSource = {
   number: number;

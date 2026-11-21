@@ -1,6 +1,6 @@
 // POST /api/documents/<id>/ask (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Built-in AI"): a question
-// answered from the knowledgebase's own pages, on the team's own key (Claude's or OpenAI's) when one is set, else on
-// built-in AI (Workers AI, liveknowledge's, under its daily caps), streamed as server-sent events (`AskEvent`): `delta`
+// answered from the knowledgebase's own pages, on the team's own key (Claude's or OpenAI's) when one is set and the
+// person did not choose built-in AI, else on built-in AI (Workers AI, liveknowledge's, under its daily caps), streamed as server-sent events (`AskEvent`): `delta`
 // pieces of the answer, then one `done` with the sources, what was found but not used and the gaps; or one `error`.
 // A signed-in Editor, Participant or Viewer may ask (an API token asks for its account); a guest or a visitor
 // through a share link may not, since it would spend the team's key or liveknowledge's built-in AI for strangers.
@@ -139,12 +139,13 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
     knowledgebaseToday: await usedOf(env, counters.readKnowledgebase),
   });
   if (refusal) return refused(REFUSAL[refusal].status, refusal, REFUSAL[refusal].message);
-  const ai = await openAi(env, document.id);
-  // A key that is kept but does not open is refused, never swapped for built-in AI.
+  // Built-in AI when the person chose it, whatever key is kept (search-and-ask.md "Choosing which AI answers").
+  const ai = body?.ai === 'built-in' ? 'chosen' : await openAi(env, document.id);
+  // A key that is kept but does not open is refused, never swapped quietly for built-in AI.
   if (ai === 'unreadable') return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
   let caller: ModelCaller;
   if (typeof ai === 'string') {
-    // No key (or no secret to keep one under): built-in AI, under its own caps.
+    // Chosen, or no key (or no secret to keep one under): built-in AI, under its own caps.
     const client = builtInAi(env);
     if (!client) return refusedBuiltIn(ASK_BUILT_IN.unavailable);
     const day = dayOf(now);

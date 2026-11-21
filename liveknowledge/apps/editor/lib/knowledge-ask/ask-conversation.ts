@@ -2,7 +2,13 @@
 // The turn list changes when a question is asked and when its answer ends; it does not change while an answer
 // streams. The stream's pieces are gathered and handed to whoever draws the answer once a frame at most
 // (`watchStream`), so a token is one string append and never a render of the conversation.
-import type { AskNotUsed, AskRequest, AskSource, AskTurn } from '@liveknowledge/api-schema';
+import type {
+  AskNotUsed,
+  AskRequest,
+  AskSource,
+  AskTurn,
+  KnowledgeSetupProvider,
+} from '@liveknowledge/api-schema';
 import { ASK_MAX_QUESTION_CHARS, ASK_MAX_TURNS } from '@liveknowledge/knowledge';
 import type { AskOutcome } from '@/lib/api/knowledge-ask';
 
@@ -19,6 +25,8 @@ export type AskTurnView = {
   notUsed: AskNotUsed[];
   gaps: string[];
   model: string;
+  /** Which AI answered, once it has: built-in AI or the team's provider. */
+  provider?: KnowledgeSetupProvider;
   /** Why it failed: the stream's `error` kind, the route's refusal, or `network`. */
   failure?: string;
   feedback?: AskFeedback;
@@ -147,6 +155,7 @@ export function createAskConversation(deps: {
                 notUsed: outcome.notUsed,
                 gaps: outcome.gaps,
                 model: outcome.model,
+                provider: outcome.provider,
               }
             : { status: 'failed', failure: outcome.kind },
         );

@@ -1238,6 +1238,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "AskAiChoice": {
+    "description": "Which AI a person asked to answer (search-and-ask.md \"Choosing which AI answers\"): built-in AI even with a key set, or the team's key (built-in AI when none is set).",
+    "enum": [
+      "built-in",
+      "key"
+    ],
+    "type": "string"
+  },
   "AskEvent": {
     "anyOf": [
       {
@@ -1388,6 +1396,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AskRequest": {
     "additionalProperties": false,
     "properties": {
+      "ai": {
+        "$ref": "#/components/schemas/AskAiChoice"
+      },
       "question": {
         "type": "string"
       },

@@ -154,6 +154,57 @@ describe('POST ask on built-in AI', () => {
     expect(ai.sent).toEqual([]);
   });
 
+  it('answers on built-in AI when the person chooses it with a key set, under built-in caps; the key when chosen', async () => {
+    const claude = fakeClaude('<answer>Tuesdays [1].</answer>');
+    vi.stubGlobal('fetch', claude.fetch);
+    const ai = fakeAi('<answer>Built in [1].</answer>');
+    const kit = await knowledgeKit({ AI: ai, AI_KEY_SECRET: SECRET });
+    await kit.call('editor', 'PUT', '/api/documents/kb/ai/key', { key: KEY });
+    const asked = (choice: 'built-in' | 'key') =>
+      kit.call('viewer', 'POST', '/api/documents/kb/ask', {
+        question: 'When do we deploy?',
+        ai: choice,
+      });
+    expect((await events(await asked('built-in'))).at(-1)).toMatchObject({
+      provider: 'built-in',
+      model: BUILT_IN_MODEL,
+    });
+    expect(ai.sent).toHaveLength(1);
+    expect(claude.sent).toEqual([]);
+    expect(counters(kit)).toEqual([
+      { scope: 'ask:built-in', used: 1 },
+      { scope: 'ask:knowledgebase', used: 1 },
+      { scope: 'ask:person:user_v', used: 1 },
+    ]);
+    expect((await events(await asked('key'))).at(-1)).toMatchObject({ provider: 'anthropic' });
+    expect(claude.sent).toHaveLength(1);
+    expect(ai.sent).toHaveLength(1);
+    // The built-in day is not spent by a question on the key.
+    expect(counters(kit)).toContainEqual({ scope: 'ask:built-in', used: 1 });
+    // At built-in AI's cap, choosing it is refused in its own words; the key still answers.
+    kit.db.sql
+      .prepare("UPDATE usage_counters SET used = ? WHERE scope = 'ask:built-in'")
+      .run(ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY);
+    expect(await failure(await asked('built-in'))).toEqual([429, 'built-in-knowledgebase-limit']);
+    expect((await events(await asked('key'))).at(-1)).toMatchObject({ provider: 'anthropic' });
+    // A key that no longer opens: built-in AI, chosen, still answers; the key is refused.
+    kit.db.sql.prepare("UPDATE usage_counters SET used = 0 WHERE scope = 'ask:built-in'").run();
+    (kit.db.env as { AI_KEY_SECRET?: string }).AI_KEY_SECRET = 'another-secret';
+    expect(await failure(await asked('key'))).toEqual([409, 'ask_unavailable']);
+    expect((await events(await asked('built-in'))).at(-1)).toMatchObject({ provider: 'built-in' });
+  });
+
+  it('answers on built-in AI when the key is chosen and none is set', async () => {
+    const ai = fakeAi('<answer>Built in [1].</answer>');
+    const kit = await knowledgeKit({ AI: ai });
+    const res = await kit.call('viewer', 'POST', '/api/documents/kb/ask', {
+      question: 'When do we deploy?',
+      ai: 'key',
+    });
+    expect((await events(res)).at(-1)).toMatchObject({ provider: 'built-in' });
+    expect(ai.sent).toHaveLength(1);
+  });
+
   it(`answers ${ASK_BUILT_IN_PER_PERSON_PER_DAY} a person and ${ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY} a knowledgebase a day`, async () => {
     const ai = fakeAi('<answer>Tuesdays [1].</answer>');
     const kit = await knowledgeKit({ AI: ai });

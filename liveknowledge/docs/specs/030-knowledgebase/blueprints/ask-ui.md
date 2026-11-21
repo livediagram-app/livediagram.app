@@ -122,7 +122,7 @@ provider, key)`).
   - Without `manageAi` the provider is its name as text.
 - **Words.** "Your team's AI key" wherever it does not matter which provider it is (the no-AI state of Ask, the
   key note under AI Knowledge's Disagreements on a server with no built-in AI); "Uses built-in AI" or "Uses your
-  team's key" (`aiInUseLine`) under Ask's field and in Describe to Set Up; the provider's name where a failure is the provider's own
+  team's key" (`aiInUseLine`) under Ask's field (with a key, Ask's becomes the Answer With picker) and in Describe to Set Up; the provider's name where a failure is the provider's own
   (`askFailureWords(kind, { manageAi, provider })`: "OpenAI Did Not Accept the Key"). The provider comes from the
   settings the view already read. No AI copy says liveknowledge is free or has no paid tier: built-in AI is
   "Included", with daily limits, and on its own key the team pays its provider for what it uses.
@@ -254,8 +254,29 @@ draft. Telemetry: `Tab·Created·FromAnswer` and `FromGap`.
 `ask_unavailable`, `sign_in_required`, `network`, built-in AI's `built-in-unavailable`, `built-in-limit`,
 `built-in-knowledgebase-limit`, `built-in-failed` and anything else to a title, a line and a step (`ai-settings`,
 `ask-again`, `none`). On `provider: 'built-in'` a model's failure (`bad-key`, `overloaded`, `other`, ...) is "The
-Built-In AI Could Not Answer". The server's own `message` is never shown. Under the field, `aiInUseLine` adds "Uses
-built-in AI" or "Uses your team's key" (`data-ask-ai`).
+Built-In AI Could Not Answer". The server's own `message` is never shown. Under the field, with no key, `aiInUseLine` adds
+"Uses built-in AI" (`data-ask-ai`).
+
+### Which AI answers
+
+[Search and Ask](../search-and-ask.md) "Choosing which AI answers".
+
+- **The choice.** `lib/knowledge-ask/ask-ai-choice.ts`: `askAiChoiceStore` (`get`, `set`, `subscribe`) keeps
+  `'built-in' | 'key'` per person and knowledgebase in `localStorage` under
+  `liveknowledge:ask-ai:v1:<person>:<knowledgebase>` (a value it does not know, or storage that throws, reads as
+  `key`). `askConversationFor` sends it with each question (`send` reads it at the moment of asking, so a follow-up
+  takes the choice in force), and `useAskAiChoice(who, documentId)` reads it for the view.
+- **The picker.** `components/ask/AskAiPicker.tsx`, drawn under the field in place of the quiet line once a key is
+  set (`settings.hasKey`, and `settings.builtIn`: a server without built-in AI has nothing to choose): the shared
+  `SegmentedToggle` named and led by "Answer With", **Built-In AI** ("Included with liveknowledge, with daily limits. Applies to your next question.") and
+  `teamKeyLabel(settings)` ("Claude Fable 5.2 (Team Key)", from the model's label; "Team Key" when it is not
+  listed), each with its hover card. A change sends `UI·Changed·AskAiBuiltIn` or `UI·Changed·AskAiKey`.
+- **Which answered.** The `done` event's `provider` is kept on the turn (`AskTurnView.provider`); with a key set the
+  answer card shows `answeredByLabel(turn, settings)` (`data-ask-answered-by`) at the end of its trust line.
+- **The route** (`knowledge-ask-route.ts`) reads `body.ai`: `'built-in'` runs built-in AI whatever key is stored
+  (an unreadable key included); anything else is today's path (the key when it opens, built-in AI with none).
+- Tests: `ask-ai-choice.test.ts`, `AskView.test.tsx` (the picker, its persistence, the request's `ai`, the caption),
+  `knowledge-ask-built-in.test.ts` (built-in chosen with a key set counts against built-in caps; key chosen uses the key).
 
 ### Share roles
 

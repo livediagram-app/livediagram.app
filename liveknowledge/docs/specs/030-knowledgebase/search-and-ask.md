@@ -43,14 +43,14 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   stored key that cannot be opened is refused ("Replace it in AI Settings"), never quietly swapped for built-in AI.
   With no key, the Ask view says quietly under the field **Uses built-in AI**.
 - **Choosing which AI answers** (owner, 2026-11-21: "on Ask, I want to be able to choose whether to ask my configured
-  AI, or the built in AI"). Once a key is set, the quiet line under Ask's field becomes a small choice of two:
+  AI, or the built in AI"). Once a key is set, the quiet line under Ask's field becomes a small choice of two, **Answer With**:
   **Built-In AI** and the team's key named by its model ("Claude Fable 5.2 (Team Key)"). The team's key is chosen
   until the person picks otherwise; the choice is kept per person, per knowledgebase, in this browser, beside the
   chats. Each question carries it (`ai: 'built-in' | 'key'`); a follow-up uses the choice in force when it is asked,
   so switching mid-chat applies to the next question. The server honours `built-in` even when a key is set, under
   built-in AI's caps ([Built-in AI](#built-in-ai)), and even when the stored key cannot be opened (the person asked
   for built-in AI, so nothing is swapped quietly); `key` with no key set answers on built-in AI, which is what the
-  person sees. With a key set, each answer says under its trust line which AI answered ("Built-In AI", or the
+  person sees. With a key set, each answer says on its trust line which AI answered ("Built-In AI", or the
   model). Draft a Page From What We Know, the conflict check and Describe to Set Up keep the key first.
 - **Built-in AI's bounds**, since liveknowledge pays for it ([Built-in AI](#built-in-ai)).
 - **The key** is sent once over TLS to the api, encrypted with AES-GCM under the Worker's `AI_KEY_SECRET`, and kept in

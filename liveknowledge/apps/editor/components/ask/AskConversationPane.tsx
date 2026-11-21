@@ -24,6 +24,8 @@ import { openPassage } from './open-passage';
 import { PagePickerDialog } from './PagePickerDialog';
 import { useDraftPage } from './useDraftPage';
 import { aiInUseLine } from '@/lib/knowledge-ask/ai-settings-words';
+import { answeredByLabel, offersAiChoice, useAskAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
+import { AskAiPicker } from './AskAiPicker';
 import { useAiSettingsState, type AskSession } from './useAskSession';
 
 const QUESTION_BUBBLE =
@@ -60,9 +62,17 @@ export function AskConversationPane({
   const { rights } = session;
   // Whose key the knowledgebase holds, for a failure that is the provider's own.
   const ai = useAiSettingsState(session.documentId);
-  const provider =
-    ai.status === 'ready' ? (ai.settings.hasKey ? ai.settings.provider : 'built-in') : undefined;
-  const aiLine = aiInUseLine(ai.status === 'ready' ? ai.settings : null);
+  const settings = ai.status === 'ready' ? ai.settings : null;
+  // With a key set and built-in AI here, the person chooses which answers (search-and-ask.md "Choosing which AI
+  // answers"); else the quiet line says which does.
+  const choosing = settings !== null && offersAiChoice(settings);
+  const choice = useAskAiChoice(session.who, session.documentId);
+  const provider = settings
+    ? settings.hasKey && !(choosing && choice === 'built-in')
+      ? settings.provider
+      : 'built-in'
+    : undefined;
+  const aiLine = choosing ? null : aiInUseLine(settings);
   const last = turns[turns.length - 1];
   const streaming = last?.status === 'streaming';
 
@@ -172,6 +182,7 @@ export function AskConversationPane({
                     conversation={conversation}
                     manageAi={rights.manageAi}
                     provider={provider}
+                    answeredBy={choosing ? answeredByLabel(turn, settings) : null}
                     canSave={rights.makePages}
                     onCite={cite}
                     onSave={requestSave}
@@ -246,6 +257,21 @@ export function AskConversationPane({
                 </span>
               ) : null}
             </p>
+            {choosing ? (
+              <div
+                data-ask-ai-choice=""
+                className="mt-1.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1"
+              >
+                <span aria-hidden className="text-xs text-slate-600 dark:text-slate-400">
+                  Answer With
+                </span>
+                <AskAiPicker
+                  who={session.who}
+                  documentId={session.documentId}
+                  settings={settings}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       </section>

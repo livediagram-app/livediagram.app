@@ -46,6 +46,8 @@ export type AskAnswerCardProps = {
   manageAi: boolean;
   /** Which AI answers: a failure of the provider's own names it, built-in AI's says so. */
   provider?: KnowledgeSetupProvider | undefined;
+  /** Which AI answered, shown once there is a choice ("Built-In AI", or the model); none otherwise. */
+  answeredBy?: string | null | undefined;
   // Save as Page is an Editor's.
   canSave: boolean;
   onCite: (turnId: string, number: number) => void;
@@ -66,9 +68,20 @@ function AnswerText({ turn, onCite }: { turn: AskTurnView; onCite: AskAnswerCard
   );
 }
 
-function TrustLine({ turn }: { turn: AskTurnView }) {
+function TrustLine({
+  turn,
+  answeredBy,
+}: {
+  turn: AskTurnView;
+  answeredBy?: string | null | undefined;
+}) {
   const trust = answerTrust(turn.sources);
-  if (!trust) return null;
+  if (!trust)
+    return answeredBy ? (
+      <p className="mt-3 text-[13px] leading-5">
+        <AnsweredBy label={answeredBy} spoken />
+      </p>
+    ) : null;
   return (
     <p
       data-ask-trust=""
@@ -83,7 +96,25 @@ function TrustLine({ turn }: { turn: AskTurnView }) {
         {trust.pill}
       </span>
       {trust.rest ? <span className="text-slate-600 dark:text-slate-400">{trust.rest}</span> : null}
+      {answeredBy ? (
+        <>
+          <span aria-hidden className="text-slate-600 dark:text-slate-400">
+            ·
+          </span>
+          <AnsweredBy label={answeredBy} />
+        </>
+      ) : null}
     </p>
+  );
+}
+
+// Which AI answered: after the trust line it is the name alone (read as "Answered by"); alone it says so.
+function AnsweredBy({ label, spoken = false }: { label: string; spoken?: boolean }) {
+  return (
+    <span data-ask-answered-by="" className="text-slate-600 dark:text-slate-400">
+      <span className={spoken ? undefined : 'sr-only'}>Answered by </span>
+      {label}
+    </span>
   );
 }
 
@@ -212,7 +243,7 @@ export const AskAnswerCard = memo(function AskAnswerCard(props: AskAnswerCardPro
       ) : null}
       {turn.status === 'done' ? (
         <>
-          <TrustLine turn={turn} />
+          <TrustLine turn={turn} answeredBy={props.answeredBy} />
           {turn.gaps.map((gap) => (
             <Callout
               key={gap}

@@ -3,7 +3,7 @@
 // and when it was accepted (Completed Questions). Newest first, 50 at most and about 1.5 MB in all, the oldest going
 // first. Pure over a `Storage`, so a private window that refuses writes costs nothing but the list. A row kept
 // before chats (a question alone, no `id`) still reads, as a question to ask again.
-import type { AskNotUsed, AskSource } from '@liveknowledge/api-schema';
+import type { AskNotUsed, AskSource, KnowledgeSetupProvider } from '@liveknowledge/api-schema';
 
 export const RECENT_QUESTIONS_MAX = 50;
 export const RECENT_QUESTIONS_PREFIX = 'liveknowledge:ask-recent:v1:';
@@ -20,6 +20,8 @@ export type SavedTurn = {
   notUsed: AskNotUsed[];
   gaps: string[];
   model: string;
+  /** Which AI answered (kept since the choice of AI; an older chat has none). */
+  provider?: KnowledgeSetupProvider;
   failure?: string;
   feedback?: 'helpful' | 'not-helpful';
 };

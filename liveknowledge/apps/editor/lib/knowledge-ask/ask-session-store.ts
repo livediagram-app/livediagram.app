@@ -7,6 +7,7 @@ import type { KnowledgeCaller } from '@/lib/api/knowledge';
 import { apiAskKnowledge } from '@/lib/api/knowledge-ask';
 import { track } from '@/lib/telemetry';
 import { aiSettingsStore } from './ai-settings-store';
+import { askAiChoiceStore } from './ask-ai-choice';
 import { createAskConversation, type AskConversation, type AskTurnView } from './ask-conversation';
 import {
   chatIdOf,
@@ -121,7 +122,14 @@ export function askConversationFor(who: KnowledgeCaller, documentId: string): As
   const held = conversations.get(key);
   if (held) return held;
   const conversation = createAskConversation({
-    send: (request, opts) => apiAskKnowledge(who, documentId, request, opts),
+    // The choice of AI in force when the question is asked: switching mid-chat applies to the next question.
+    send: (request, opts) =>
+      apiAskKnowledge(
+        who,
+        documentId,
+        { ...request, ai: askAiChoiceStore.get(who, documentId) },
+        opts,
+      ),
     onAsked: () => {
       // The count of asks, never the words.
       track('UI', 'Used', 'AskQuestion');
@@ -152,4 +160,5 @@ export function resetAskSession(): void {
   conversations.forEach((conversation) => conversation.reset());
   conversations.clear();
   recents.clear();
+  askAiChoiceStore.reset();
 }

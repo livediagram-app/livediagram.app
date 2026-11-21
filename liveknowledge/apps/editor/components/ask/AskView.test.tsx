@@ -172,6 +172,15 @@ describe('when this session cannot ask', () => {
     api.apiKnowledgeAi.mockResolvedValue(settings());
     aiSettingsStore.reset();
     await open('view');
+    // With a key, the quiet line is the choice of AI.
+    expect(document.querySelector('[data-ask-ai]')).toBeNull();
+    expect(screen.getByRole('group', { name: 'Answer With' })).toBeTruthy();
+  });
+
+  it('keeps the quiet line, with no choice, on a server with a key and no built-in AI', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ builtIn: false }));
+    await open('view');
+    expect(screen.queryByRole('group', { name: 'Answer With' })).toBeNull();
     expect(document.querySelector('[data-ask-ai]')!.textContent).toContain("Uses your team's key");
   });
 
@@ -219,7 +228,7 @@ describe('a question and its answer', () => {
   it('shows the question, streams the answer in, then draws citations, the trust line and Sources', async () => {
     await open();
     const call = ask('When do we release?');
-    expect(call.request).toEqual({ question: 'When do we release?' });
+    expect(call.request).toEqual({ question: 'When do we release?', ai: 'key' });
     expect(
       within(screen.getByRole('region', { name: 'Conversation' })).getByText('When do we release?'),
     ).toBeTruthy();
@@ -250,7 +259,7 @@ describe('a question and its answer', () => {
     );
     expect(screen.getByRole('button', { name: 'Source 1: Release Process' })).toBeTruthy();
     expect(card.querySelector('[data-ask-trust]')!.textContent).toBe(
-      'Answered From 1 Verified PageOf the others, 1 is due a review.',
+      'Answered From 1 Verified PageOf the others, 1 is due a review.·Answered by Claude Fable 5.2',
     );
     const rail = within(screen.getByRole('complementary', { name: 'Sources' }));
     expect(rail.getAllByRole('button')).toHaveLength(2);
@@ -597,7 +606,7 @@ describe('a failure, in words with the next step', () => {
     const alert = await fail('overloaded');
     fireEvent.click(within(alert).getByRole('button', { name: 'Ask Again' }));
     expect(wire.calls).toHaveLength(2);
-    expect(wire.calls[1]!.request).toEqual({ question: 'Q?' });
+    expect(wire.calls[1]!.request).toEqual({ question: 'Q?', ai: 'key' });
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
@@ -660,7 +669,7 @@ describe('chats: recent, completed and deleted', () => {
     );
     await open();
     fireEvent.click(mine().getByRole('button', { name: 'Old question?' }));
-    expect(wire.calls[0]!.request).toEqual({ question: 'Old question?' });
+    expect(wire.calls[0]!.request).toEqual({ question: 'Old question?', ai: 'key' });
   });
 
   it('accepts an answer into a closed Completed Questions group, to read and reopen', async () => {
@@ -744,7 +753,7 @@ describe('a question handed over by the Knowledgebase Home', () => {
     handArrival({ kind: 'ask', documentId: 'd1', question: 'When do we release?' });
     const first = await open();
     await waitFor(() => expect(wire.calls).toHaveLength(1));
-    expect(wire.calls[0]!.request).toEqual({ question: 'When do we release?' });
+    expect(wire.calls[0]!.request).toEqual({ question: 'When do we release?', ai: 'key' });
     first.unmount();
     await open();
     expect(wire.calls).toHaveLength(1);
@@ -754,5 +763,63 @@ describe('a question handed over by the Knowledgebase Home', () => {
     handArrival({ kind: 'ask', documentId: 'elsewhere', question: 'Not here?' });
     await open();
     expect(wire.calls).toHaveLength(0);
+  });
+});
+
+describe('choosing which AI answers', () => {
+  const picker = () => screen.getByRole('group', { name: 'Answer With' });
+  const choice = (name: string) => within(picker()).getByRole('button', { name });
+
+  it('offers Built-In AI and the team key by its model, the key first, and asks on the choice', async () => {
+    await open('view');
+    expect(choice('Built-In AI').getAttribute('aria-pressed')).toBe('false');
+    expect(choice('Claude Fable 5.2 (Team Key)').getAttribute('aria-pressed')).toBe('true');
+    expect(ask('When do we release?').request).toEqual({
+      question: 'When do we release?',
+      ai: 'key',
+    });
+    await answer(wire.calls[0]!, done('Thursdays [1].', { sources: [source(1)] }));
+    expect(document.querySelector('[data-ask-answered-by]')!.textContent).toBe(
+      'Answered by Claude Fable 5.2',
+    );
+    // Switching mid-chat applies to the next question, a follow-up.
+    fireEvent.click(choice('Built-In AI'));
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'AskAiBuiltIn');
+    expect(choice('Built-In AI').getAttribute('aria-pressed')).toBe('true');
+    const followUp = ask('And on Fridays?');
+    expect(followUp.request).toMatchObject({ question: 'And on Fridays?', ai: 'built-in' });
+    expect(followUp.request.turns).toHaveLength(1);
+    await answer(followUp, done('No [1].', { sources: [source(1)], provider: 'built-in' }));
+    expect(
+      [...document.querySelectorAll('[data-ask-answered-by]')].map((el) => el.textContent),
+    ).toEqual(['Answered by Claude Fable 5.2', 'Answered by Built-In AI']);
+    fireEvent.click(choice('Claude Fable 5.2 (Team Key)'));
+    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'AskAiKey');
+  });
+
+  it('remembers the choice per person per knowledgebase in this browser', async () => {
+    await open('view');
+    fireEvent.click(choice('Built-In AI'));
+    expect(Object.values({ ...localStorage })).toContain('built-in');
+    cleanup();
+    resetAskSession();
+    await open('view');
+    expect(choice('Built-In AI').getAttribute('aria-pressed')).toBe('true');
+    expect(ask('Q?').request.ai).toBe('built-in');
+  });
+
+  it("names built-in AI's failure when built-in AI is chosen", async () => {
+    await open('view');
+    fireEvent.click(choice('Built-In AI'));
+    await answer(ask('Q?'), { type: 'error', kind: 'overloaded', message: 'x' });
+    expect(screen.getByText('The Built-In AI Could Not Answer')).toBeTruthy();
+  });
+
+  it('shows no caption and no choice with no key', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
+    await open('view');
+    expect(screen.queryByRole('group', { name: 'Answer With' })).toBeNull();
+    await answer(ask('Q?'), done('Yes [1].', { sources: [source(1)], provider: 'built-in' }));
+    expect(document.querySelector('[data-ask-answered-by]')).toBeNull();
   });
 });

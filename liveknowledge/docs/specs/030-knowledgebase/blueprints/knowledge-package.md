@@ -305,7 +305,8 @@ in memory what the room's `questions` table groups in SQL.
    (`knowledge-ask-route.ts`) checks the knowledgebase's built-in day (`ask:built-in`, 100) first, then spends the
    person's account count (`~ask-built-in:<account>`, 30, through `spendSetupDraft`), then bumps; a counter it cannot
    reach refuses (`503 built-in-failed`), never lifts. No binding: `503 built-in-unavailable`; at a cap `429
-built-in-limit` or `built-in-knowledgebase-limit`. The done event carries `provider`.
+built-in-limit` or `built-in-knowledgebase-limit`. The done event carries `provider`. A request whose `ai` is
+   `built-in` takes this path even when a key is stored (search-and-ask.md "Choosing which AI answers").
 
 ## The Claude API
 
