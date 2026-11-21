@@ -18,7 +18,7 @@ describe('what AI Knowledge says', () => {
   it('who asked, counting asks', () => {
     expect(
       askedByText({ asked: 4, byPeople: 3, agents: [{ name: 'Coding Agent', asked: 1 }] }),
-    ).toBe('Asked 4 times by people and the Coding Agent');
+    ).toBe('Asked 4 times by people and Coding Agent');
     expect(askedByText({ asked: 1, byPeople: 1, agents: [] })).toBe('Asked once by people');
     expect(
       askedByText({
@@ -30,7 +30,7 @@ describe('what AI Knowledge says', () => {
           { name: 'Coding Agent', asked: 100 },
         ],
       }),
-    ).toBe('Asked 1,200 times by the MCP, the CLI and the Coding Agent');
+    ).toBe('Asked 1,200 times by MCP, CLI and Coding Agent');
     expect(askedByText({ asked: 2, byPeople: 0, agents: [] })).toBe('Asked 2 times');
   });
 

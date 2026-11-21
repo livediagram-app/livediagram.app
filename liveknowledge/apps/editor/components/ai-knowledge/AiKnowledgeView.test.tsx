@@ -304,7 +304,7 @@ describe('what it shows', () => {
   it('a question: how often it was asked and by whom', async () => {
     await open();
     expect(
-      section('Needs Attention').getByText('Asked 4 times by people and the Coding Agent'),
+      section('Needs Attention').getByText('Asked 4 times by people and Coding Agent'),
     ).toBeTruthy();
   });
 

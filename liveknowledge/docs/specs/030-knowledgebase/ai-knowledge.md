@@ -37,7 +37,7 @@ and the 5 pages read most in the last 7 days with each one's reads by people and
 - A question is logged (`questions`) when Ask says the knowledgebase does not cover it, when a search by an agent returns
   nothing, or when an agent calls `report_gap`. Like questions are grouped (same words after stemming); the row shows
   the question and how many times it was asked, by people and by each named agent ("Asked 4 times by people and
-  the Coding Agent"). The count is of asks, not of distinct people: no asker's identity is kept.
+  Coding Agent"). The count is of asks, not of distinct people: no asker's identity is kept.
 - **Draft a Page** starts a page titled from the question. With a key it is drafted from the nearest passages, marked
   "Draft, Not Verified" in its first line; without one it opens empty with the question as its first heading.
   **Dismiss** removes the row.
@@ -188,7 +188,7 @@ rows and actions, long lists capped so the page never grows with the data.
 - **A conflict's row:** the question, the two passages side by side (stacked on a phone) each with its page's
   trust, **<Page> Is Right, Fix the Other** for each side (it opens the other page), **Ask Both Owners** and **Not
   a Conflict**. Once the owners were asked, "Owners asked 14 Nov" stands in the button's place.
-- **A question's row:** the question, "Asked 4 times by people and the Coding Agent", **Draft a Page** and a dismiss
+- **A question's row:** the question, "Asked 4 times by people and Coding Agent", **Draft a Page** and a dismiss
   button.
 - **A suggestion's row:** the page, the agent, the reason's first line, the lines taken out and put in (a sign and a
   strike as well as a colour), **Accept**, **Open the Page**, **Dismiss**. A suggestion that no longer fits its page

@@ -15,13 +15,13 @@ const list = (names: readonly string[]) =>
     ? (names[0] ?? '')
     : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 
-/** "Asked 4 times by people and the Coding Agent": the count is of asks, and no asker is named but an agent. */
+/** "Asked 4 times by people and Coding Agent" (an agent by its own name, never "the Claude Code"): the count is of asks, and no asker is named but an agent. */
 export function askedByText(
   question: Pick<KnowledgeQuestion, 'asked' | 'byPeople' | 'agents'>,
 ): string {
   const by: string[] = [];
   if (question.byPeople > 0) by.push('people');
-  for (const agent of question.agents) if (agent.asked > 0) by.push(`the ${agent.name}`);
+  for (const agent of question.agents) if (agent.asked > 0) by.push(agent.name);
   const times = question.asked === 1 ? 'once' : `${count(question.asked)} times`;
   return by.length > 0 ? `Asked ${times} by ${list(by)}` : `Asked ${times}`;
 }

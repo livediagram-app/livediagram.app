@@ -887,7 +887,7 @@ change's file while this was written; they move there when it is committed.
 - **"Verified pages first" among passages, not among title rows.** Title rows are ordered by bm25 alone among
   themselves and come before every passage, as "page titles first, then passages" asks.
 - **`people` is asks by people, not distinct people.** No reader's identity is kept, so two asks by one person
-  count as two; the spec now reads "Asked 4 times by people and the Coding Agent".
+  count as two; the spec now reads "Asked 4 times by people and Coding Agent".
 - **A page's size in tokens is its passages' characters** (`knowledge_pages.chars`, `tokensOfChars`), not its
   Markdown's: the index already holds the count, and no page is parsed to list the context pages.
 - **An owner must be reachable by the index as a person.** `PUT pages/<tab>/knowledge` takes the caller, the
