@@ -146,6 +146,7 @@ export function EditorView() {
     renameTabFolder,
     moveTabToFolder,
     removeTabFromFolder,
+    setFolderColour,
     reorderTabs,
     selfParticipant,
     sessionRole,
@@ -298,6 +299,7 @@ export function EditorView() {
             onOpenAttendance={openAttendance}
             onMoveTabToFolder={moveTabToFolder}
             onRemoveTabFromFolder={removeTabFromFolder}
+            onSetFolderColour={setFolderColour}
             onRenameFolder={renameTabFolder}
             activeTabHasContent={activeTab.elements.length > 0}
             onSelect={selectTab}

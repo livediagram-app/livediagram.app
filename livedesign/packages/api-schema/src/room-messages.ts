@@ -329,6 +329,8 @@ export type RoomOp =
         name: string;
         orderIndex: number;
         folder?: string;
+        // The folder's colour, a hue name (tab-folders.md "Folder colour"); omitted = Automatic.
+        folderColor?: string;
         outOfScope?: true;
         connection?: TabConnectionWire;
       }[];

@@ -21,6 +21,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   archive_document: 'document archive',
   unarchive_document: 'document unarchive',
   list_threads: 'comment ls',
+  change_tabs: 'tab folder',
   change_threads: 'comment add',
   list_rules: 'rule ls',
   change_rules: 'rule set',

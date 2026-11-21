@@ -224,6 +224,16 @@ describe('TabFolderGroup', () => {
     expect(group.style.getPropertyValue('--tfd')).toMatch(/^#/);
   });
 
+  it('colours itself in the colour chosen for it, from its first member that has one', () => {
+    const tabs = [TABS[0]!, { ...TABS[1]!, folderColor: 'emerald' }, TABS[2]!];
+    const { container } = render(
+      <TabFolderGroup<T & { folderColor?: string }> {...props()} tabs={tabs} />,
+    );
+    const group = container.querySelector('[data-tab-folder]') as HTMLElement;
+    expect(group.style.getPropertyValue('--tf')).toBe('#059669');
+    expect(group.style.getPropertyValue('--tfd')).toBe('#6ee7b7');
+  });
+
   it('toggles on a click of the chip', () => {
     const onToggle = vi.fn();
     render(<TabFolderGroup {...props({ onToggle })} />);

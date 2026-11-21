@@ -32,6 +32,7 @@ export function documentSnapshotDoor(
       const tabs = read.content.copy.tabs.map((t) => ({
         tab: { ...(JSON.parse(t.data) as Omit<Tab, 'id' | 'name'>), id: t.id, name: t.name },
         folder: t.folder,
+        folderColor: t.folderColor ?? null,
       }));
       // Nothing a revert rewrites is an edit, a tab added or a tab removed to the Space's rules, whoever reverts
       // (docs/specs/013-workspace/automations.md; liveworkspace 018-automations "Revert to Snapshot"). Its rules stay

@@ -1,13 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
+  folderColourIn,
   folderNamesInDocument,
   groupTabsIntoRuns,
   normalizeFolderOrder,
   tabFolderName,
+  tabFolderSummaries,
+  tabInFolder,
+  withFolderColour,
+  withFolderRenamed,
+  withTabInFolder,
 } from './tab-folders';
 
 // A tab as these helpers see it.
-type Tab = { id: string; name: string; elements: unknown[]; folder?: string };
+type Tab = { id: string; name: string; elements: unknown[]; folder?: string; folderColor?: string };
 
 // Minimal tab stand-ins; only id + folder matter to these helpers.
 const tab = (id: string, folder?: string): Tab => ({ id, name: id, elements: [], folder });
@@ -110,5 +116,95 @@ describe('folderNamesInDocument', () => {
 
   it('ignores loose and whitespace-only tabs', () => {
     expect(folderNamesInDocument([tab('a'), tab('b', '  ')])).toEqual([]);
+  });
+});
+
+describe('folder colours', () => {
+  const coloured = (id: string, folder?: string, folderColor?: string): Tab => ({
+    ...tab(id, folder),
+    folderColor,
+  });
+  const colours = (tabs: Tab[]) => tabs.map((t) => [t.id, t.folder, t.folderColor]);
+
+  it("reads a folder's colour from its first member that has one", () => {
+    const tabs = [coloured('a', 'F'), coloured('b', 'F', 'rose'), coloured('c', 'F', 'cyan')];
+    expect(folderColourIn(tabs, 'F')).toBe('rose');
+    expect(folderColourIn(tabs, 'F', tabs[1])).toBe('cyan');
+    expect(folderColourIn(tabs, 'G')).toBeNull();
+  });
+
+  it('summarises every folder with its count and colour, in bar order', () => {
+    const tabs = [
+      coloured('a', 'Plans'),
+      coloured('b', 'Plans', 'amber'),
+      coloured('e', 'Plans', 'rose'),
+      coloured('c'),
+      coloured('d', 'Org', 'blue'),
+    ];
+    expect(tabFolderSummaries(tabs)).toEqual([
+      { name: 'Plans', count: 3, colour: 'amber' },
+      { name: 'Org', count: 1, colour: 'blue' },
+    ]);
+  });
+
+  it('gives a tab the colour of the folder it joins, and none when loose', () => {
+    const tabs = [coloured('a', 'F', 'rose'), coloured('b')];
+    expect(tabInFolder(tabs[1]!, 'F', tabs).folderColor).toBe('rose');
+    expect(tabInFolder(tabs[0]!, null, tabs)).toMatchObject({
+      folder: undefined,
+      folderColor: undefined,
+    });
+    expect(tabInFolder(tabs[0]!, 'F', tabs)).toBe(tabs[0]);
+    expect(tabInFolder(tabs[1]!, 'New', tabs).folderColor).toBeUndefined();
+  });
+
+  it('stores a chosen colour for a new folder only', () => {
+    const tabs = [coloured('a', 'F', 'rose'), coloured('b'), coloured('c')];
+    expect(colours(withTabInFolder(tabs, 'b', 'New', 'cyan'))).toContainEqual(['b', 'New', 'cyan']);
+    expect(colours(withTabInFolder(tabs, 'b', 'New'))).toContainEqual(['b', 'New', undefined]);
+    // An existing folder keeps its own colour, whatever was chosen.
+    expect(colours(withTabInFolder(tabs, 'c', 'F', 'cyan'))).toContainEqual(['c', 'F', 'rose']);
+    // Already there: nothing changes.
+    expect(withTabInFolder(tabs, 'a', 'F', 'cyan')).toBe(tabs);
+  });
+
+  it('keeps the colour on a rename, and takes the target folder colour on a merge', () => {
+    const tabs = [
+      coloured('a', 'F', 'rose'),
+      coloured('b', 'F', 'rose'),
+      coloured('c', 'G', 'cyan'),
+    ];
+    expect(colours(withFolderRenamed(tabs, 'F', 'Renamed'))).toEqual([
+      ['a', 'Renamed', 'rose'],
+      ['b', 'Renamed', 'rose'],
+      ['c', 'G', 'cyan'],
+    ]);
+    expect(colours(withFolderRenamed(tabs, 'F', 'G'))).toEqual([
+      ['a', 'G', 'cyan'],
+      ['b', 'G', 'cyan'],
+      ['c', 'G', 'cyan'],
+    ]);
+    const automatic = [coloured('a', 'F'), coloured('b', 'G')];
+    expect(colours(withFolderRenamed(automatic, 'F', 'G'))).toEqual([
+      ['a', 'G', undefined],
+      ['b', 'G', undefined],
+    ]);
+  });
+
+  it("sets a folder's colour on every member, back to Automatic with null", () => {
+    const tabs = [coloured('a', 'F'), coloured('b', 'F', 'amber'), coloured('c')];
+    const set = withFolderColour(tabs, 'F', 'amber');
+    expect(colours(set)).toEqual([
+      ['a', 'F', 'amber'],
+      ['b', 'F', 'amber'],
+      ['c', undefined, undefined],
+    ]);
+    expect(set[1]).toBe(tabs[1]);
+    expect(set[2]).toBe(tabs[2]);
+    expect(colours(withFolderColour(set, 'F', null))).toEqual([
+      ['a', 'F', undefined],
+      ['b', 'F', undefined],
+      ['c', undefined, undefined],
+    ]);
   });
 });

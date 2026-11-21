@@ -168,6 +168,7 @@ export function useEditorTabs({
     moveTabToFolder,
     removeTabFromFolder,
     renameFolder: renameTabFolder,
+    setFolderColour,
   } = useTabFolders({
     tabs,
     commitTabs,
@@ -317,6 +318,7 @@ export function useEditorTabs({
       renameTabFolder,
       moveTabToFolder,
       removeTabFromFolder,
+      setFolderColour,
       reorderTabs,
       setBackgroundColor,
       setBackgroundOpacity,

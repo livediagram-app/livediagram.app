@@ -16,6 +16,7 @@ import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 
@@ -322,11 +323,18 @@ CREATE TABLE IF NOT EXISTS visitor_names (
 );
 `;
 
+type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
+
+// A tab folder's chosen colour (docs/specs/006-document/tab-folders.md "Folder colour"), `document_tabs.folder_color`: a hue
+// name beside the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as
+// Automatic.
+const V9 = tabFolderColourStep('document_tabs');
+
 // Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
-// in its order, one entry each. Steps 9 to 16 are its rules, schedule, Incoming Webhook secrets, held runs, Describe a
-// Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 17 is the item
-// engine's tables and its
-// three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room itemAutomationSchemaSteps).
+// in its order, one entry each. Steps 10 to 17 are its rules, schedule, Incoming Webhook secrets, held runs, Describe a
+// Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 18 is the item
+// engine's tables and its three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room
+// itemAutomationSchemaSteps). They follow the folder colour step, which shipped first.
 // livehuddle has no comment threads, so no collab step follows.
 const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
 
@@ -339,12 +347,11 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V6,
   V7,
   V8,
+  V9,
   ...AUTOMATION_STEPS,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
-
-type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
 
 // Bring the document's SQLite up to DOCUMENT_SCHEMA_VERSION. Idempotent: every statement is IF NOT EXISTS, and the
 // version row skips what already ran. Runs inside the caller's transaction when it has one.

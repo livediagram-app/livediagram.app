@@ -11,7 +11,7 @@ import {
 import { ApiError, apiJson, apiText } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { tabPreview } from './image-result';
-import { READ_DOCUMENT_DEFAULT_BUDGET } from '@livediagram/agent-verbs/mcp';
+import { READ_DOCUMENT_DEFAULT_BUDGET, listedTabsOf } from '@livediagram/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
 type ReadDocumentArgs = {
@@ -97,9 +97,7 @@ export async function readDocument(
   const tabId = summary?.id ?? args.tabId;
   if (tabId === undefined) return errorResult('That document has no tabs.');
   // Every tab, in order, so a caller can read the others.
-  const tabs = [...document.tabs]
-    .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
-    .map((t) => ({ id: t.id, name: t.name }));
+  const tabs = listedTabsOf(document.tabs);
   if (!summary)
     return errorResult(
       `No tab "${tabId}" in this document. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,

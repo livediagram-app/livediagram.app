@@ -31,7 +31,7 @@ packages/api-schema/src/automations.ts      the wire types, filled in with the i
 packages/api-schema/src/telemetry-schema.ts the `Ran` action
 
 apps/api/src/document-room/
-  document-schema.ts                        steps 8 to 17
+  document-schema.ts                        steps 9 to 18
   document-room.ts                          `standing`, `automations`, `collab`; the doors' RPC methods
   room-content-state.ts                     restoreAutomations on wake
   room-lifecycle.ts                         the alarm's due list and run; the purge
@@ -88,15 +88,16 @@ template's kind, `name` its title; `automationTabTemplateNames()` is the same as
 
 ## Schema (checklist 2)
 
-Appended to `document-schema.ts` `STEPS`, never edited once shipped:
+Appended to `document-schema.ts` `STEPS` after step 8 (the tab folder colour, which shipped first), never edited once
+shipped:
 
 | Step    | Makes                                                                                                 |
 | ------- | ----------------------------------------------------------------------------------------------------- |
-| 8 to 15 | the engine's `rules`, `schedule`, `hooks`, `waiting`, `ai_drafts`, `fired`, `addresses`, `counts`     |
-| 16      | the engine's `item` step: its five tables and three SQL triggers on `tabs` and `document_tabs`        |
-| 17      | `automation_collab_seen (tab_id PRIMARY KEY, summary)`: each tab's threads and actions as last diffed |
+| 9 to 16 | the engine's `rules`, `schedule`, `hooks`, `waiting`, `ai_drafts`, `fired`, `addresses`, `counts`     |
+| 17      | the engine's `item` step: its five tables and three SQL triggers on `tabs` and `document_tabs`        |
+| 18      | `automation_collab_seen (tab_id PRIMARY KEY, summary)`: each tab's threads and actions as last diffed |
 
-`DOCUMENT_SCHEMA_VERSION` is 17. Steps 8 to 16 are `itemAutomationSchemaSteps({ links: 'document_tabs' })`, one entry
+`DOCUMENT_SCHEMA_VERSION` is 18. Steps 9 to 17 are `itemAutomationSchemaSteps({ links: 'document_tabs' })`, one entry
 each.
 
 ## The engine in the room (checklist 3, 5, 6)

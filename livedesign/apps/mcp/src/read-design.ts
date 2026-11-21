@@ -13,7 +13,7 @@ import type { Env } from '@liveworkspace/mcp-kit/env';
 import { tabPreview } from './image-result';
 import { laidOutPagesOf, type LaidOutPage, type Tab } from '@livedesign/design';
 import { resolvePage } from '@livedesign/edit-operations';
-import { READ_DESIGN_DEFAULT_BUDGET } from '@livedesign/agent-verbs/mcp';
+import { READ_DESIGN_DEFAULT_BUDGET, listedTabsOf } from '@livedesign/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
 type ReadDesignArgs = {
@@ -101,9 +101,7 @@ export async function readDesign(
   const tabId = summary?.id ?? args.tabId;
   if (tabId === undefined) return errorResult('That design has no tabs.');
   // Every tab, in order, so a caller can read the others.
-  const tabs = [...design.tabs]
-    .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
-    .map((t) => ({ id: t.id, name: t.name }));
+  const tabs = listedTabsOf(design.tabs);
   if (!summary)
     return errorResult(
       `No tab "${tabId}" in this design. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,

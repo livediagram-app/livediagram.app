@@ -417,6 +417,11 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'renameProjectOutput',
     args: { projectId: 'd1', tabId: 't1', name: 'Renamed' },
   },
+  {
+    tool: 'change_tabs',
+    output: 'changeTabsOutput',
+    args: { projectId: 'd1', changes: [{ op: 'move', tab: 't1', folder: 'Plans' }] },
+  },
   { tool: 'delete_project', output: 'deleteProjectOutput', args: { projectId: 'd1' } },
   {
     tool: 'delete_project',

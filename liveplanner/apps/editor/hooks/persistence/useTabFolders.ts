@@ -1,5 +1,5 @@
 // Tab-folder membership actions (docs/specs/006-project/tab-folders.md): move a tab into a folder,
-// remove it, and rename a folder. Kept out of the already-busy
+// remove it, rename a folder, and set a folder's colour. Kept out of the already-busy
 // useTabActions so the folder concern has its own focused home.
 //
 // Membership is menu-only — dragging never changes it (that lives in
@@ -15,6 +15,10 @@ import {
   folderNamesInProject,
   normalizeFolderOrder,
   tabFolderName,
+  tabInFolder,
+  withFolderColour,
+  withFolderRenamed,
+  withTabInFolder,
   type Tab,
 } from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
@@ -33,15 +37,14 @@ export function useTabFolders(deps: TabFoldersDeps) {
   // folder). Empty / whitespace names are a no-op. Telemetry
   // distinguishes a freshly-created folder from a move into an existing
   // one, without ever shipping the name.
-  const moveTabToFolder = (tabId: string, rawName: string) => {
+  // A brand-new folder takes `colour` (null or left out: Automatic); an existing one keeps its own.
+  const moveTabToFolder = (tabId: string, rawName: string, colour?: string | null) => {
     const name = rawName.trim();
     if (!name) return;
     const target = tabs.find((t) => t.id === tabId);
     if (!target || tabFolderName(target) === name) return;
     const isNewFolder = !folderNamesInProject(tabs).includes(name);
-    commitTabs((ts) =>
-      normalizeFolderOrder(ts.map((t) => (t.id === tabId ? { ...t, folder: name } : t))),
-    );
+    commitTabs((ts) => withTabInFolder(ts, tabId, name, colour));
     // Two facts when the name is new, so two events (the deliberate double-emit
     // pattern docs/specs/017-telemetry/telemetry.md uses for Tab·Started·Vote + PrivateVote): the folder came
     // into existence, AND this tab is now filed in it. The old either/or made
@@ -57,7 +60,7 @@ export function useTabFolders(deps: TabFoldersDeps) {
     if (!target || tabFolderName(target) === null) return;
     const previous = tabFolderName(target);
     commitTabs((ts) =>
-      normalizeFolderOrder(ts.map((t) => (t.id === tabId ? { ...t, folder: undefined } : t))),
+      normalizeFolderOrder(ts.map((t) => (t.id === tabId ? tabInFolder(t, null, ts) : t))),
     );
     trackTabFolderTransition(previous, null);
   };
@@ -69,15 +72,19 @@ export function useTabFolders(deps: TabFoldersDeps) {
     if (!newName || newName === oldName) return;
     const members = tabs.filter((t) => tabFolderName(t) === oldName);
     if (members.length === 0) return;
-    commitTabs((ts) =>
-      normalizeFolderOrder(
-        ts.map((t) => (tabFolderName(t) === oldName ? { ...t, folder: newName } : t)),
-      ),
-    );
+    // The colour stays (a merge into another folder takes that folder's, withFolderRenamed).
+    commitTabs((ts) => withFolderRenamed(ts, oldName, newName));
     // The folder is the subject here, not a tab: this used to emit
     // `Tab·Renamed`, which the dashboard counts as tabs renamed.
     track('Folder', 'Renamed', 'Tab');
   };
 
-  return { moveTabToFolder, removeTabFromFolder, renameFolder };
+  // Set a folder's colour on every member in one commit (one undo step), the tabs staying where they are; null is
+  // Automatic. Sends no event (tab-folders.md "Telemetry").
+  const setFolderColour = (name: string, colour: string | null) => {
+    if (!tabs.some((t) => tabFolderName(t) === name)) return;
+    commitTabs((ts) => withFolderColour(ts, name, colour));
+  };
+
+  return { moveTabToFolder, removeTabFromFolder, renameFolder, setFolderColour };
 }

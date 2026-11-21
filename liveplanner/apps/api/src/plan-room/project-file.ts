@@ -58,6 +58,7 @@ import {
   type ContentTabRow,
   type PlanCopy,
 } from './plan-content';
+import { tabFolderColourOf } from '@liveworkspace/api-schema/tab-folder-colour';
 
 export const PROJECT_FILE_FORMAT = APP_FILE_FORMATS.liveplanner;
 
@@ -69,8 +70,8 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
   const body = migrateStoredTab(JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>) as Omit<
     Tab,
     'id' | 'name'
-  > & { folder?: unknown };
-  const { folder: _stale, ...rest } = body;
+  > & { folder?: unknown; folderColor?: unknown };
+  const { folder: _stale, folderColor: _staleColour, ...rest } = body;
   // A connected tab's connection travels as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry nothing").
   const connection = storedTabConnection(row.connection);
   return {
@@ -78,6 +79,9 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
     id: row.id,
     name: row.name,
     ...(row.folder ? { folder: row.folder } : {}),
+    ...(row.folder && tabFolderColourOf(row.folder_color)
+      ? { folderColor: tabFolderColourOf(row.folder_color) }
+      : {}),
     ...(connection ? { connection } : {}),
   };
 }
@@ -135,7 +139,15 @@ const fail = (failure: Failure): { ok: false; failure: Failure } => ({ ok: false
 // The fields a tab read adds beside the body (tab-row.ts rowToTab), which a file written from a tab read carries;
 // the body is stored without them.
 // A connected tab's `connection` is its own column, read with tabConnectionOf, never stored in the body.
-const ROW_FIELDS = ['projectId', 'orderIndex', 'updatedAt', 'rev', 'folder', 'connection'] as const;
+const ROW_FIELDS = [
+  'projectId',
+  'orderIndex',
+  'updatedAt',
+  'rev',
+  'folder',
+  'folderColor',
+  'connection',
+] as const;
 
 const MAX_ID = 200;
 const NOBODY = { id: '', name: 'Someone', color: '#94a3b8' };
@@ -149,6 +161,8 @@ function tabsOf(tabs: EnvelopeTab[], tabIdMap: Map<string, string>): PlanCopy['t
     const tab = migrateIncomingTab(incoming);
     if (!isValidTab(tab)) return 'invalid_file';
     const folder = typeof incoming.folder === 'string' ? incoming.folder.trim() || null : null;
+    // A hue name for a tab in a folder; anything else in a file is dropped (Automatic).
+    const folderColor = folder ? (tabFolderColourOf(incoming.folderColor) ?? null) : null;
     const body: Record<string, unknown> = { ...tab, elements: capElementActions(tab.elements) };
     delete body.id;
     delete body.name;
@@ -165,6 +179,7 @@ function tabsOf(tabs: EnvelopeTab[], tabIdMap: Map<string, string>): PlanCopy['t
       name: capStoredName(tab.name, null, 'tab') || 'Untitled',
       orderIndex: index,
       folder,
+      folderColor,
       data,
       elementCount: drawnCount(tab),
       connection: tabConnectionOf(incoming) ?? null,

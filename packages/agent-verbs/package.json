@@ -20,6 +20,7 @@
     "./mcp/image-schema": "./src/mcp/image-schema.ts",
     "./mcp/image-tools": "./src/mcp/image-tools.ts",
     "./mcp/rule-tools": "./src/mcp/rule-tools.ts",
+    "./mcp/tab-folder-tools": "./src/mcp/tab-folder-tools.ts",
     "./mcp/thread-run": "./src/mcp/thread-run.ts",
     "./mcp/thread-tools": "./src/mcp/thread-tools.ts",
     "./mcp/tool": "./src/mcp/tool.ts",
@@ -27,6 +28,7 @@
     "./product": "./src/product.ts",
     "./refs": "./src/refs.ts",
     "./rules": "./src/rules/index.ts",
+    "./tab-folders": "./src/tab-folders.ts",
     "./testing/fake-api": "./src/testing/fake-api.ts",
     "./testing/memory-copies": "./src/testing/memory-copies.ts",
     "./verbs/archive": "./src/verbs/archive.ts",
@@ -34,6 +36,7 @@
     "./verbs/folder": "./src/verbs/folder.ts",
     "./verbs/image": "./src/verbs/image.ts",
     "./verbs/rule": "./src/verbs/rule.ts",
+    "./verbs/tab-folder": "./src/verbs/tab-folder.ts",
     "./write": "./src/write.ts"
   },
   "scripts": {

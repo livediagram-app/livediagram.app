@@ -13,7 +13,15 @@ export async function readStoredTab(
 ): Promise<StoredTab | null> {
   const record = await getTab(env, documentId, tabId);
   if (!record) return null;
-  const { rev, orderIndex, documentId: _doc, updatedAt: _at, folder: _folder, ...tab } = record;
+  const {
+    rev,
+    orderIndex,
+    documentId: _doc,
+    updatedAt: _at,
+    folder: _folder,
+    folderColor: _colour,
+    ...tab
+  } = record;
   return { tab, rev, orderIndex };
 }
 

@@ -30,7 +30,7 @@ export function itemTabReads<Env, Row, Dto>(config: ItemTabReadsConfig<Env, Row,
   }
   const commentTest = markers.map((m) => `instr(t.data, '${m}') > 0`).join(' OR ');
   const hasComments = markers.length === 1 ? commentTest : `(${commentTest})`;
-  const summary = `SELECT t.id, dt.${key}, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder, t.connection
+  const summary = `SELECT t.id, dt.${key}, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder, dt.folder_color, t.connection
        FROM tabs t
        JOIN ${links} dt ON dt.tab_id = t.id`;
 

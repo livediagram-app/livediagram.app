@@ -121,6 +121,7 @@ export function planSnapshotDoor(env: PlanEnv, planId: string): SnapshotDoor {
             name: t.name,
           },
           folder: t.folder,
+          folderColor: t.folderColor ?? null,
         })),
         now,
       );

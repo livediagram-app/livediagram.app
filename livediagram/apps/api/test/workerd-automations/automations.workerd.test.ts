@@ -123,7 +123,7 @@ describe('the schema', () => {
     ])
       expect(names).toContain(name);
     const [version] = await c.rows<{ version: number }>('SELECT version FROM _document_schema');
-    expect(version!.version).toBe(17);
+    expect(version!.version).toBe(18);
   });
 });
 

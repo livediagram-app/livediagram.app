@@ -466,7 +466,8 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
       const liveDoc = await getDesign(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab
       // renames"); an editor sends its own rename to the room itself.
-      if (ctx.token && liveDoc && name !== existing.name)
+      // An agent's tab order and folders (the MCP's change_tabs, tab-folders.md "Agents") reach them the same way.
+      if (ctx.token && liveDoc && (name !== existing.name || order))
         ctx.waitUntil?.(relayDesignRename(env, id, liveDoc.name, liveDoc.tabs));
       return json({ design: liveDoc ? redactDesignForReader(liveDoc, owner) : liveDoc });
     }

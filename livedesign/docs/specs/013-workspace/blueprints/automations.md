@@ -33,7 +33,7 @@ packages/api-schema/src/automations.ts        the wire types, filled in with the
 packages/api-schema/src/telemetry-schema.ts   the `Ran` action
 
 apps/api/src/design-room/
-  design-schema.ts                            steps 9 to 18
+  design-schema.ts                            steps 10 to 19
   design-room.ts                              `standing`, `automations`, `collab`; the alarm; the doors' RPC methods
   design-room-content.ts                      restoreAutomations on wake; the purge
   design-room-doors.ts                        a grant's standing; `joined`, `accessRequested`; a copy's `withRules`
@@ -88,10 +88,10 @@ no step of its own: Add a Tab from a Template is the engine's `add_tab`.
 
 ## Schema
 
-Appended to `design-schema.ts` `STEPS`, never edited once shipped: steps 9 to 17 are
+Appended to `design-schema.ts` `STEPS` after step 9 (the tab folder colour, which shipped first), never edited once shipped: steps 10 to 18 are
 `itemAutomationSchemaSteps({ links: 'design_tabs' })`, one entry each (the item step a function, so the migrate loop
-runs a function step with the transaction's `exec`); step 18 is `COLLAB_SEEN_SCHEMA_STEP`. `DESIGN_SCHEMA_VERSION`
-is 18. The snapshot store keeps making its own tables on first use (`@liveworkspace/snapshots`).
+runs a function step with the transaction's `exec`); step 19 is `COLLAB_SEEN_SCHEMA_STEP`. `DESIGN_SCHEMA_VERSION`
+is 19. The snapshot store keeps making its own tables on first use (`@liveworkspace/snapshots`).
 
 ## The engine in the room
 

@@ -78,6 +78,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('ShareDocument', 'Share Document', 'Creating a share link for a document.'),
   mcpTool('RenameDocument', 'Rename Document', 'Renaming a document.'),
   mcpTool(
+    'ChangeTabs',
+    'Change Tabs',
+    'Putting tabs in tab folders or taking them out, and renaming or ungrouping folders.',
+  ),
+  mcpTool(
     'DeleteDocument',
     'Delete Document',
     'Moving a document to the Trash, or deleting one tab.',

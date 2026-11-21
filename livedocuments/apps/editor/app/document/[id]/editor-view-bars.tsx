@@ -182,6 +182,7 @@ function EditorViewFooterBar(view: {
           onOpenCollaborators={(...a) => chrome.get().openCollaborators(...a)}
           onMoveTabToFolder={(...a) => chrome.get().moveTabToFolder(...a)}
           onRemoveTabFromFolder={(...a) => chrome.get().removeTabFromFolder(...a)}
+          onSetFolderColour={(...a) => chrome.get().setFolderColour(...a)}
           onRenameFolder={(...a) => chrome.get().renameTabFolder(...a)}
           activeTabHasContent={activeTabHasContent}
           onSelect={onSelectTab}

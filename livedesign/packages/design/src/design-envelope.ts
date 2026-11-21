@@ -16,7 +16,7 @@ import type { Tab } from './index';
 export const DESIGN_ENVELOPE_KIND = 'livedesign.design';
 export const DESIGN_SCHEMA_VERSION = 1;
 
-export type EnvelopeTab = Tab & { folder?: string };
+export type EnvelopeTab = Tab & { folder?: string; folderColor?: string };
 
 export type DesignEnvelope = {
   kind: typeof DESIGN_ENVELOPE_KIND;

@@ -11,7 +11,7 @@ import type { StoredPresentation } from './slide-deck';
 export const DOCUMENT_ENVELOPE_KIND = 'livedocuments.document';
 export const DOCUMENT_SCHEMA_VERSION = 1;
 
-export type EnvelopeTab = Tab & { folder?: string };
+export type EnvelopeTab = Tab & { folder?: string; folderColor?: string };
 
 export type DocumentEnvelope = {
   kind: typeof DOCUMENT_ENVELOPE_KIND;

@@ -293,6 +293,7 @@ export function editorView({
     renameTabFolder: tabsSlice.renameTabFolder,
     moveTabToFolder: tabsSlice.moveTabToFolder,
     removeTabFromFolder: tabsSlice.removeTabFromFolder,
+    setFolderColour: tabsSlice.setFolderColour,
     reorderTabs: tabsSlice.reorderTabs,
     resetColorsSelected: styleSlice.resetColorsSelected,
     // Style-preset hover preview + click commit (docs/specs/010-palette/style-presets.md).

@@ -45,6 +45,7 @@ import { addOperationsFor, addToTemplateTab, getTab } from './template-elements'
 import { imageIdIssue, registerImageTools } from './image-tools';
 import { changesetErrorText, isChangesetRefusal } from './changeset-client';
 import { registerTool } from './tool-annotations';
+import { registerTabFolderTools } from './tab-folder-tools';
 import { registerArchiveTools } from './archive-tools';
 import { registerThreadTools } from './thread-tools';
 import { registerRuleTools } from './rule-tools';
@@ -290,6 +291,8 @@ export function registerTools(server: McpServer, env: Env): void {
       url: deepLink(env, liveDoc.id),
     });
   });
+
+  registerTabFolderTools(server, env);
 
   registerTool(server, env, mcpDeleteDocument, async (args, extra) => {
     const token = requireToken(extra);

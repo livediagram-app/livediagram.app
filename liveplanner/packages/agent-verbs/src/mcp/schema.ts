@@ -6,6 +6,7 @@
 // connector-listing flag (docs/specs/015-api/mcp-server.md §4.15). isValidTab in the project package stays the runtime
 // guard.
 import { z } from 'zod';
+import { addTabFolder } from './tab-folder-tools';
 import { findArchived } from './archive-tools';
 import { FLOW_RANGES, METRIC_KINDS, PLAN_VISUALISATIONS } from '@liveplanner/items';
 import {
@@ -386,6 +387,7 @@ export const createProjectShape = {
 export const addTabShape = {
   projectId: z.string().describe('The plan to add a tab to (from find_projects / read_project).'),
   name: nameField('Name of the new tab.'),
+  folder: addTabFolder,
   elements: elementArray.optional(),
   template: templateField,
   dashboard: dashboardField,

@@ -44,6 +44,7 @@ import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
 import { imageIdIssue, registerImageTools } from './image-tools';
 import { registerTool } from './tool-annotations';
+import { registerTabFolderTools } from './tab-folder-tools';
 import { registerArchiveTools } from './archive-tools';
 import { registerThreadTools } from './thread-tools';
 import { registerRuleTools } from './rule-tools';
@@ -296,6 +297,8 @@ export function registerTools(server: McpServer, env: Env): void {
       url: deepLink(env, liveDoc.id),
     });
   });
+
+  registerTabFolderTools(server, env);
 
   registerTool(server, env, mcpDeleteDesign, async (args, extra) => {
     const token = requireToken(extra);

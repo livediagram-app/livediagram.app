@@ -81,7 +81,7 @@ packages/api-schema/src/automations.ts
 
 packages/automations/src/room/
   automation-schema.ts   the tables (below), as named steps: the plan schema registers each at the version it
-                         shipped under (plan-schema.ts V18, V19, V20, V22, V24, V26, V28)
+                         shipped under (plan-schema.ts V18, V19, V20, V22, V24, V26, V28, V42)
   automation-fired.ts    the event ids a time rule has run on
 
 apps/api/src/plan-room/automations/
@@ -888,7 +888,7 @@ body, retryAfter? }`, made into the response.
   hook row, else 401; the proof: Bearer → `timingSafeEqual(sha256hex(sent), hash)`; else signature →
   `timingSafeEqual(hmacHex(hashBytes, "<timestamp>." + body), sent)` (`@liveworkspace/index-app/timing-safe`), then
   the timestamp within 5 minutes of now; a missing row still hashes the sent value against a fixed dummy so the work
-  is the same; a signature the rule took in the last 10 minutes (`hookReplayed`, `automation_hook_seen`, V41) is a
+  is the same; a signature the rule took in the last 10 minutes (`hookReplayed`, `automation_hook_seen`, V42) is a
   replay; else 401. Then the minute window
   (`window_at + 60 s > now` and `window_calls >= 60` → 429 with `Retry-After`), in ONE `UPDATE … RETURNING` that also
   stamps `used_at`; then the day's budget (`runsToday >= 1000` → 429 until UTC midnight); then `readHookBody` (400);

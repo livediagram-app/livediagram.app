@@ -15,6 +15,7 @@ import {
   migrationSchema,
   outboxParkingStep,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
@@ -594,9 +595,13 @@ const V39 = KNOWN_ASSISTANTS_SCHEMA;
 // message makes"): a card type and a status of its own.
 const V40 = addIntakeTarget;
 
+// A tab folder's chosen colour (docs/specs/006-project/tab-folders.md "Folder colour"), `plan_tabs.folder_color`: a hue name beside
+// the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as Automatic.
+const V41 = tabFolderColourStep('plan_tabs');
+
 // Automations' two small counts (@liveworkspace/automations/room automation-schema.ts): the signatures each Incoming
 // Webhook rule took in the last 10 minutes (a replay is refused), and the AI calls asked each day.
-const V41 = AUTOMATION_COUNTS_SCHEMA;
+const V42 = AUTOMATION_COUNTS_SCHEMA;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -640,6 +645,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V39,
   V40,
   V41,
+  V42,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

@@ -20,6 +20,7 @@ import {
   migrationSchema,
   outboxParkingStep,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 
@@ -334,16 +335,20 @@ const V7 = (exec: Exec) => {
   if (!have.has('review')) exec('ALTER TABLE document ADD COLUMN review TEXT NULL');
 };
 
+// A tab folder's chosen colour (docs/specs/006-document/tab-folders.md "Folder colour"), `document_tabs.folder_color`: a hue name beside
+// the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as Automatic.
+const V8 = tabFolderColourStep('document_tabs');
+
 // Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
-// in its order, one entry each. Steps 8 to 15 are its rules, schedule, Incoming Webhook secrets, held runs, Describe a
-// Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 16 is the item
-// engine's tables and its
-// three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room itemAutomationSchemaSteps).
+// in its order, one entry each. Steps 9 to 16 are its rules, schedule, Incoming Webhook secrets, held runs, Describe a
+// Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 17 is the item
+// engine's tables and its three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room
+// itemAutomationSchemaSteps). They follow the folder colour step, which shipped first.
 const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
 
-// Step 17: each tab's comment threads and actions as the comment triggers last saw them (the platform's collab
+// Step 18: each tab's comment threads and actions as the comment triggers last saw them (the platform's collab
 // watch), kept only while a rule that is on hears one.
-const V17 = COLLAB_SEEN_SCHEMA_STEP;
+const V18 = COLLAB_SEEN_SCHEMA_STEP;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -353,8 +358,9 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V5,
   V6,
   V7,
+  V8,
   ...AUTOMATION_STEPS,
-  V17,
+  V18,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

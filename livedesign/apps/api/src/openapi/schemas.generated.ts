@@ -8477,6 +8477,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "folder": {
         "type": "string"
       },
+      "folderColor": {
+        "type": "string"
+      },
       "font": {
         "type": "string"
       },
@@ -8627,6 +8630,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "folder": {
         "type": "string"
       },
+      "folderColor": {
+        "type": "string"
+      },
       "font": {
         "type": "string"
       },
@@ -8718,6 +8724,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "folder": {
+        "type": "string"
+      },
+      "folderColor": {
         "type": "string"
       },
       "id": {

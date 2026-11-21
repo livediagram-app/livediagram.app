@@ -17,6 +17,7 @@ import {
   migrationSchema,
   outboxParkingStep,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 import {
@@ -330,16 +331,20 @@ const V10 = CANVAS_SUGGESTIONS_SCHEMA;
 // Additive, every statement IF NOT EXISTS: `tab_versions` is untouched.
 const V11 = NAMED_STORE_STEP;
 
+// A tab folder's chosen colour (docs/specs/006-document/tab-folders.md "Folder colour"), `document_tabs.folder_color`: a hue name beside
+// the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as Automatic.
+const V12 = tabFolderColourStep('document_tabs');
+
 // Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
-// in its order, one entry each. Steps 12 to 19 are its rules, schedule, Incoming Webhook secrets, held runs, Describe
-// a Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 20 is the item
-// engine's tables and its
-// three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room itemAutomationSchemaSteps).
+// in its order, one entry each. Steps 13 to 20 are its rules, schedule, Incoming Webhook secrets, held runs, Describe
+// a Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 21 is the item
+// engine's tables and its three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room
+// itemAutomationSchemaSteps). They follow the folder colour step, which shipped first.
 const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
 
-// Step 21: each tab's comment threads and actions as the comment triggers last saw them (the platform's collab
+// Step 22: each tab's comment threads and actions as the comment triggers last saw them (the platform's collab
 // watch), kept only while a rule that is on hears one.
-const V21 = COLLAB_SEEN_SCHEMA_STEP;
+const V22 = COLLAB_SEEN_SCHEMA_STEP;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -353,8 +358,9 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V9,
   V10,
   V11,
+  V12,
   ...AUTOMATION_STEPS,
-  V21,
+  V22,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

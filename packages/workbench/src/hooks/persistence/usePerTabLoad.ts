@@ -9,8 +9,13 @@ import {
 import { isTabOutOfScope } from '../../lib/tab-scope';
 import { useLatest } from '../ui/useLatest';
 
-/** As much of a tab as the loader reads: its id, its elements (to tell a drawn-on tab) and its folder. */
-export type PerTabLoadTab = { id: string; elements: readonly unknown[]; folder?: unknown };
+/** As much of a tab as the loader reads: its id, its elements (to tell a drawn-on tab), its folder and its colour. */
+export type PerTabLoadTab = {
+  id: string;
+  elements: readonly unknown[];
+  folder?: unknown;
+  folderColor?: unknown;
+};
 
 /** The editor's facts the loader is made around, each bound once in the editor's usePerTabLoad.ts. */
 export type PerTabLoadDeps<Tab extends PerTabLoadTab> = {
@@ -140,7 +145,7 @@ export function createPerTabLoad<Tab extends PerTabLoadTab>({
         const onScreen = tabsRef.current.find((t) => t.id === tab.id);
         if (onScreen && !userHasEdited(onScreen)) {
           lastSavedTabsRef.current = lastSavedTabsRef.current.map((t) =>
-            t.id === tab.id ? { ...tab, folder: t.folder } : t,
+            t.id === tab.id ? { ...tab, folder: t.folder, folderColor: t.folderColor } : t,
           );
           noteChangesetSeen(tab.id, rev);
         }

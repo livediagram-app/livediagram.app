@@ -176,7 +176,7 @@ where `run` is SQL or a function of the schema's `exec`. A step, once shipped, i
 | `counts`    | `automation_hook_seen` (each signature a rule took, 10 minutes), `automation_ai_days` |
 
 No table holds an item id. liveplanner registers the same SQL at the versions it shipped under (V18, V19, V20, V22,
-V24, V26, V28, V41), by the exported constants; `automationSchemaStep(name)` answers one step.
+V24, V26, V28, V42), by the exported constants; `automationSchemaStep(name)` answers one step.
 
 ### What an app hands in
 
