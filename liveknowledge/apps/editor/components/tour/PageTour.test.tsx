@@ -164,9 +164,9 @@ const popover = (name: string) =>
 
 describe('Show Me on every page', () => {
   it.each([
-    ['slide', '/help/pages/slide-pages/'],
-    ['infographic', '/help/pages/infographic-layouts/'],
-    ['article', '/help/pages/articles/'],
+    ['slide', '/help/knowledgebase/writing-on-a-page/'],
+    ['infographic', '/help/knowledgebase/writing-on-a-page/'],
+    ['article', '/help/knowledgebase/writing-on-a-page/'],
   ] as const)('heads a %s page’s panel beside its own Help', (kind, href) => {
     render(<Page of={page(kind)} />);
     expect(screen.getByRole('button', { name: 'Show Me' })).toBeTruthy();

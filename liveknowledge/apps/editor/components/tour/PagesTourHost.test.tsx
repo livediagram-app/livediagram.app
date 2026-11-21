@@ -135,7 +135,7 @@ describe('PagesTourHost offer', () => {
     await press();
     expect(startedTour()).toBe(true);
     expect(stage.engine?.active).toBe(true);
-    expect(stage.helpHref).toBe('/help/pages/slide-pages/');
+    expect(stage.helpHref).toBe('/help/knowledgebase/writing-on-a-page/');
   });
 
   // Work Tracker #177: once every kind on the tab is taken the button leaves; a kind's Settings row (clearing it from
@@ -284,7 +284,7 @@ describe('PagesTourHost end', () => {
         pages: [{ id: 'p2', orientation: 'portrait', kind: 'article', flow: 'f' }],
       },
     });
-    expect(stage.helpHref).toBe('/help/pages/articles/');
+    expect(stage.helpHref).toBe('/help/knowledgebase/writing-on-a-page/');
   });
 
   it('counts the page’s steps on screen', async () => {

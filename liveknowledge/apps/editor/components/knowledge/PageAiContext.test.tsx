@@ -62,15 +62,15 @@ describe('AI Context', () => {
 
   it('says so when nothing was answered from the page and no agent read it', () => {
     view({ answered: [], agents: [] });
-    expect(screen.getByText('No questions answered from this page yet.')).toBeTruthy();
-    expect(screen.getByText('No agent has read this page this week.')).toBeTruthy();
+    expect(screen.getByText('No Questions Answered Yet')).toBeTruthy();
+    expect(screen.getByText('No Agent Reads This Week')).toBeTruthy();
   });
 
   it('holds quiet placeholders before Page Health is read, and no size', () => {
     view({ answered: undefined, agents: undefined, tokens: undefined });
     expect(section().querySelector('[data-ai-context-placeholder]')).not.toBeNull();
     expect(section().querySelector('[data-context-size]')).toBeNull();
-    expect(screen.queryByText('No questions answered from this page yet.')).toBeNull();
+    expect(screen.queryByText('No Questions Answered Yet')).toBeNull();
   });
 
   it("draws other people's words as text, never as markup", () => {

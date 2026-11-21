@@ -37,8 +37,15 @@ test('a new knowledgebase is saved to the account, and Verify shows who vouches 
   await writeLines(page, 'Restart the queue worker with the blue lever.');
   await saved;
 
-  // Never verified: no mark on the page or in the tree; Verify is the right rail's (Page Health).
+  // Never verified: no mark on the page or in the tree. The meta row's Verify asks first (VerifyPageButton);
+  // Page Health's is one press.
   await expect(meta(page)).not.toContainText('Verified');
+  await meta(page).getByRole('button', { name: 'Verify', exact: true }).click();
+  const ask = page.locator('[data-verify-popover]');
+  await expect(ask).toContainText('Verify This Page?');
+  await ask.getByRole('button', { name: 'Cancel' }).click();
+  await expect(ask).toHaveCount(0);
+  await expect(meta(page)).not.toContainText('Verified by');
   await expect(pageRow(page, 'Runbook').getByRole('img')).toHaveCount(0);
 
   // One press, no confirmation.
@@ -46,7 +53,8 @@ test('a new knowledgebase is saved to the account, and Verify shows who vouches 
   await expect(meta(page)).toContainText(`Verified by ${who.firstName} ${who.lastName}`);
   await expect(meta(page)).toContainText(/Review due \w+ \d+, \d{4}/);
   await expect(health(page).getByRole('button', { name: 'Verify Again' })).toBeVisible();
-  await expect(meta(page).getByRole('button')).toHaveCount(0);
+  // The row now offers Verify Again (asking first), never a one-press verify.
+  await expect(meta(page).getByRole('button', { name: 'Verify Again' })).toBeVisible();
   const row = pageRow(page, 'Runbook, Verified');
   await expect(row.getByRole('img', { name: 'Verified' })).toBeVisible();
   // A page with no owner takes its verifier.

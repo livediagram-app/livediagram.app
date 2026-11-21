@@ -6,7 +6,7 @@
 // the rest of the rail is: small-capital headings, no card, no border.
 import { useId } from 'react';
 import type { PageAgentReads, PageAnsweredQuestion } from '@liveknowledge/api-schema';
-import { Button, Switch } from '@liveknowledge/ui';
+import { Button, CompactEmptyState, Switch } from '@liveknowledge/ui';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { askAboutPageText, setAskDraft } from '@/lib/knowledge-ask/ask-draft';
@@ -115,7 +115,13 @@ export function PageAiContext({
         {answered === undefined ? (
           <Placeholder />
         ) : answered.length === 0 ? (
-          <p className={`mt-1.5 ${QUIET}`}>No questions answered from this page yet.</p>
+          <CompactEmptyState
+            size="small"
+            icon={<AskViewIcon />}
+            title="No Questions Answered Yet"
+            description="Questions Ask answers from this page show here."
+            className="mt-1.5"
+          />
         ) : (
           <ul className="mt-2 flex flex-col gap-3">
             {answered.map((q) => (
@@ -144,7 +150,13 @@ export function PageAiContext({
       <div data-ai-context-agents="" className="mt-5">
         <h3 className={SUB_LABEL}>Read by Agents</h3>
         {agents === undefined ? null : agents.length === 0 ? (
-          <p className={`mt-1.5 ${QUIET}`}>No agent has read this page this week.</p>
+          <CompactEmptyState
+            size="small"
+            icon={<AgentsIcon />}
+            title="No Agent Reads This Week"
+            description="Agents that read this page show here."
+            className="mt-1.5"
+          />
         ) : (
           <ul className="mt-1.5 flex flex-col">
             {agents.map((a) => (
