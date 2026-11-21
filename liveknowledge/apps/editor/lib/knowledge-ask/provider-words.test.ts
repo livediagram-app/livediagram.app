@@ -44,7 +44,7 @@ describe('how the two providers are named', () => {
 
   it('says who the team pays, and never that liveknowledge is free or has no paid tier', () => {
     expect(teamPaysNote('anthropic')).toBe(
-      'Ask runs on your team's own key: your team pays Anthropic for what it uses.',
+      "Ask runs on your team's own key: your team pays Anthropic for what it uses.",
     );
     expect(teamPaysNote('openai')).toContain('pays OpenAI');
     for (const note of [teamPaysNote('anthropic'), teamPaysNote('openai'), TEAM_PAYS_ANY_NOTE])

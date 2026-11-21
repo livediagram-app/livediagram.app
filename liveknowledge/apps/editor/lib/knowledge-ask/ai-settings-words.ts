@@ -17,7 +17,7 @@ export const teamPaysNote = (provider: KnowledgeAiProvider): string =>
   `Ask runs on your team's own key: your team pays ${providerWords(provider).company} for what it uses.`;
 /** The same where no provider is chosen yet, or it does not matter which. */
 export const TEAM_PAYS_ANY_NOTE =
-  'Ask runs on your team's own key: your team pays its provider for what it uses.';
+  "Ask runs on your team's own key: your team pays its provider for what it uses.";
 
 export type AiSettingsAction = 'save-key' | 'remove-key' | 'set-model';
 
