@@ -38,6 +38,10 @@ replaces what the fork still shows around the writing.
 - **The logo** (mark, and the wordmark on a desktop) is always top left: heading the page tree, leading the top row
   left of the menu button when the tree is folded away, and leading the Ask and AI Knowledge header. A phone shows
   the mark alone. It opens the Explorer on the place that holds the knowledgebase.
+- **Sidebars slide.** Opening or folding the page tree slides it in from, or out to, the left (200 ms; at once with
+  reduced motion). Folded to its rail, resting a mouse on the rail for 150 ms slides the whole tree out over the page
+  (a shadow, the page not moving), with **Keep Pages Open** in place of Hide Pages; it slides back 300 ms after the
+  pointer leaves it, unless a menu opened from it is still open. Touch has no hover, so a phone keeps its Pages sheet.
 - **Reading time:** On This Page's heading carries how long the page takes to read ("4 min read"), at 230 words a
   minute over its text, lists, tables and code, rounded, at least 1 minute; an empty page shows none, and a page with
   writing but no headings shows the time alone. It follows the committed writing, never each keystroke.

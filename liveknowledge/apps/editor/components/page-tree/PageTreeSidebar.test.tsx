@@ -2,7 +2,7 @@
 
 // The page tree's sidebar and its phone sheet (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page
 // tree"): the knowledgebase's name, New Page at the foot, the collapse to a rail, the brand tint's contrast.
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,7 +11,13 @@ import { contrastRatio, MAX_KNOWLEDGEBASE_PAGES } from '@liveknowledge/document'
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import type { PageTreeActions } from './PageTree';
 import { PageTreeSheet } from './PageTreeSheet';
-import { PageTreeSidebar, type PageTreeSidebarProps } from './PageTreeSidebar';
+import {
+  PEEK_CLOSE_MS,
+  PEEK_OPEN_MS,
+  PageTreeSidebar,
+  type PageTreeSidebarProps,
+} from './PageTreeSidebar';
+import { SLIDE_MS } from '@/lib/ui/use-slide-out';
 import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_TOUCH_ROW, PAGE_TREE_WIDTH } from './page-tree-view';
 
 const TABS = [
@@ -141,6 +147,39 @@ describe('PageTreeSidebar', () => {
     expect(screen.queryByRole('tree')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Show Pages' }));
     expect(p.onSetCollapsed).toHaveBeenCalledWith(false);
+  });
+
+  it('slides the whole tree out over the page while a mouse rests on the rail, and back when it leaves', () => {
+    vi.useFakeTimers();
+    try {
+      const p = props({ collapsed: true, joined: false });
+      render(<PageTreeSidebar {...p} />);
+      const rail = document.querySelector<HTMLElement>('[data-page-tree="rail"]')!;
+      // Touch has no hover: a tap on the rail is not a peek.
+      fireEvent.pointerEnter(rail, { pointerType: 'touch' });
+      act(() => vi.advanceTimersByTime(PEEK_OPEN_MS));
+      expect(document.querySelector('[data-page-tree-over="peek"]')).toBeNull();
+      fireEvent.pointerEnter(rail, { pointerType: 'mouse' });
+      act(() => vi.advanceTimersByTime(PEEK_OPEN_MS));
+      const peek = document.querySelector<HTMLElement>('[data-page-tree-over="peek"]')!;
+      expect(peek.style.width).toBe(`${PAGE_TREE_WIDTH}px`);
+      // Over the page: the framing still measures the rail.
+      expect(document.querySelectorAll('[data-contents-sidebar]')).toHaveLength(1);
+      expect(within(peek).getByRole('tree')).toBeTruthy();
+      fireEvent.pointerLeave(peek, { pointerType: 'mouse' });
+      act(() => vi.advanceTimersByTime(PEEK_CLOSE_MS));
+      // Sliding out, then gone.
+      expect(peek.className.split(' ')).toContain('-translate-x-full');
+      act(() => vi.advanceTimersByTime(SLIDE_MS));
+      expect(document.querySelector('[data-page-tree-over="peek"]')).toBeNull();
+      // Keep Pages Open opens the tree for good.
+      fireEvent.pointerEnter(rail, { pointerType: 'mouse' });
+      act(() => vi.advanceTimersByTime(PEEK_OPEN_MS));
+      fireEvent.click(screen.getByRole('button', { name: 'Keep Pages Open' }));
+      expect(p.onSetCollapsed).toHaveBeenCalledWith(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('keeps presses and the context menu from reaching the canvas under it', () => {

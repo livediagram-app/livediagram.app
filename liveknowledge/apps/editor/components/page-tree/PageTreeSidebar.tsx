@@ -3,8 +3,9 @@
 // The page tree as the editor's left sidebar (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page
 // tree"): the knowledgebase's name (its menu's button), the pages, and New Page at its foot. It takes the docked sidebar's place in the
 // canvas chrome (it is what the page framing and Zoom to Fit measure, `data-contents-sidebar`), joined to the menu box
-// above it. Collapsed, it is a narrow rail with the way back.
-import { useState, type ReactNode } from 'react';
+// above it. Collapsed, it is a narrow rail with the way back; resting the pointer on the rail slides the whole tree out
+// over the page until the pointer leaves it (page-surface.md "Sidebars slide"). Every open and close is a slide.
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { pageAddRefusal } from '@liveknowledge/document';
 import { HoverCard } from '@liveknowledge/ui';
 import { MenuJoinBand } from '@liveworkspace/workbench/components/canvas/menu-join';
@@ -18,9 +19,14 @@ import { AddIcon, CollapseIcon, ExpandIcon } from './page-tree-icons';
 import { SearchField } from '@/components/knowledge/SearchField';
 import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton';
 import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
+import { useSlideOut } from '@/lib/ui/use-slide-out';
+
+/** How long the pointer rests on the rail before the tree slides out, and lingers off it before it slides back (ms). */
+export const PEEK_OPEN_MS = 150;
+export const PEEK_CLOSE_MS = 300;
 
 const SURFACE =
-  'pointer-events-auto absolute bottom-0 z-[var(--z-panel)] flex cursor-default flex-col overflow-hidden border-r border-slate-200 bg-slate-50 text-slate-900 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100';
+  'pointer-events-auto absolute bottom-0 z-[var(--z-panel)] flex cursor-default flex-col overflow-hidden border-r border-slate-200 bg-slate-50 text-slate-900 motion-safe:transition-[translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-x-full dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100';
 const ICON_BUTTON =
   'flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 /** The dashed button that adds a page (the sidebar's foot, the phone sheet's). */
@@ -85,66 +91,108 @@ export function PageTreeSidebar({
   const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
   const [renaming, setRenaming] = useState(false);
-  const shell = (width: number, rise: boolean, children: ReactNode) => (
+  // Open, the tree slides out to the left before the rail takes its place.
+  const open = useSlideOut(!collapsed);
+  // The peek: the whole tree over the page while the pointer rests on the rail.
+  const [peek, setPeek] = useState(false);
+  const peeking = useSlideOut(collapsed && peek);
+  const peekRef = useRef<HTMLElement>(null);
+  const timer = useRef(0);
+  const clearTimer = () => window.clearTimeout(timer.current);
+  useEffect(() => clearTimer, []);
+  // Opening or folding the tree ends a peek, so the next fold starts from the rail alone.
+  const setTreeCollapsed = (next: boolean) => {
+    clearTimer();
+    setPeek(false);
+    onSetCollapsed(next);
+  };
+  const startPeek = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimer();
+    timer.current = window.setTimeout(() => setPeek(true), PEEK_OPEN_MS);
+  }, []);
+  const endPeek = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimer();
+    timer.current = window.setTimeout(() => {
+      // A menu opened from the peek (the knowledgebase's, a row's) holds it open until it closes.
+      if (peekRef.current?.querySelector('[aria-haspopup][aria-expanded="true"]')) return;
+      setPeek(false);
+    }, PEEK_CLOSE_MS);
+  }, []);
+  const shell = (
+    width: number,
+    rise: boolean,
+    children: ReactNode,
+    over?: { kind: 'leaving' | 'peek'; leaving: boolean },
+    key = 'rail',
+  ) => (
     <aside
+      key={key}
+      ref={over?.kind === 'peek' ? peekRef : undefined}
       aria-label="Pages"
-      data-contents-sidebar=""
-      data-page-tree={collapsed ? 'rail' : 'open'}
+      aria-hidden={over?.kind === 'leaving' ? true : undefined}
+      // The framing measures the sidebar the page stands beside, never one sliding over it.
+      {...(over ? { 'data-page-tree-over': over.kind } : { 'data-contents-sidebar': '' })}
+      data-page-tree={over?.kind === 'peek' ? 'peek' : collapsed && !over ? 'rail' : 'open'}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
       }}
+      {...(over?.kind === 'peek'
+        ? { onPointerEnter: clearTimer, onPointerLeave: endPeek }
+        : collapsed && !over
+          ? { onPointerEnter: startPeek, onPointerLeave: endPeek }
+          : {})}
       style={{ ...uiScaleStyle(scale), left: 0, top: rise ? 0 : px(top), width }}
-      className={SURFACE}
+      className={`${SURFACE} ${over ? 'shadow-xl' : ''} ${over?.leaving ? '-translate-x-full' : ''} ${
+        over?.kind === 'leaving' ? 'pointer-events-none' : ''
+      }`}
     >
       {children}
     </aside>
   );
-  if (collapsed) {
-    // The rail stands under the top row, which the menu button leads while nothing is joined to it.
-    return shell(
-      PAGE_TREE_RAIL_WIDTH,
-      false,
-      <div className="flex flex-col items-center gap-1 py-2">
-        <HoverCard title="Show Pages" description="Opens the page tree.">
+  // The rail stands under the top row, which the logo and the menu button lead while nothing is joined to it.
+  const rail = shell(
+    PAGE_TREE_RAIL_WIDTH,
+    false,
+    <div className="flex flex-col items-center gap-1 py-2">
+      <HoverCard title="Show Pages" description="Opens the page tree.">
+        <button
+          type="button"
+          aria-label="Show Pages"
+          aria-expanded={false}
+          data-page-tree-expand=""
+          onClick={() => setTreeCollapsed(false)}
+          className={ICON_BUTTON}
+        >
+          <ExpandIcon />
+        </button>
+      </HoverCard>
+      <SearchField compact />
+      {tree.canEdit ? (
+        <HoverCard
+          title="New Page"
+          description="Adds a page at the top level of this knowledgebase."
+        >
           <button
             type="button"
-            aria-label="Show Pages"
-            aria-expanded={false}
-            data-page-tree-expand=""
-            onClick={() => onSetCollapsed(false)}
-            className={ICON_BUTTON}
+            aria-label="New Page"
+            disabled={pageAddRefusal(tree.tabs) !== null}
+            onClick={() => tree.actions.onAdd()}
+            className={`${ICON_BUTTON} disabled:cursor-not-allowed disabled:opacity-50`}
           >
-            <ExpandIcon />
+            <AddIcon />
           </button>
         </HoverCard>
-        <SearchField compact />
-        {tree.canEdit ? (
-          <HoverCard
-            title="New Page"
-            description="Adds a page at the top level of this knowledgebase."
-          >
-            <button
-              type="button"
-              aria-label="New Page"
-              disabled={pageAddRefusal(tree.tabs) !== null}
-              onClick={() => tree.actions.onAdd()}
-              className={`${ICON_BUTTON} disabled:cursor-not-allowed disabled:opacity-50`}
-            >
-              <AddIcon />
-            </button>
-          </HoverCard>
-        ) : null}
-      </div>,
-    );
-  }
+      ) : null}
+    </div>,
+  );
   const shownName = name.trim() || 'Untitled Knowledgebase';
-  return shell(
-    PAGE_TREE_WIDTH,
-    joined,
+  const body = (mode: 'open' | 'peek', withBand: boolean) => (
     <>
-      {joined ? <MenuJoinBand height={px(top)} /> : null}
+      {withBand ? <MenuJoinBand height={px(top)} /> : null}
       <div className="flex min-h-11 items-center gap-1 pl-3 pr-2 pt-2">
         {renaming && onRenameKnowledgebase ? (
           <NameEditor
@@ -171,18 +219,35 @@ export function PageTreeSidebar({
             {shownName}
           </p>
         )}
-        <HoverCard title="Hide Pages" description="Collapses the page tree to a narrow rail.">
-          <button
-            type="button"
-            aria-label="Hide Pages"
-            aria-expanded
-            data-page-tree-collapse=""
-            onClick={() => onSetCollapsed(true)}
-            className={ICON_BUTTON}
+        {mode === 'peek' ? (
+          <HoverCard
+            title="Keep Pages Open"
+            description="Keeps the page tree open beside the page."
           >
-            <CollapseIcon />
-          </button>
-        </HoverCard>
+            <button
+              type="button"
+              aria-label="Keep Pages Open"
+              data-page-tree-pin=""
+              onClick={() => setTreeCollapsed(false)}
+              className={ICON_BUTTON}
+            >
+              <ExpandIcon />
+            </button>
+          </HoverCard>
+        ) : (
+          <HoverCard title="Hide Pages" description="Collapses the page tree to a narrow rail.">
+            <button
+              type="button"
+              aria-label="Hide Pages"
+              aria-expanded
+              data-page-tree-collapse=""
+              onClick={() => setTreeCollapsed(true)}
+              className={ICON_BUTTON}
+            >
+              <CollapseIcon />
+            </button>
+          </HoverCard>
+        )}
       </div>
       {/* Search the knowledgebase (search-and-ask.md "Search"): the same dialog Cmd or Ctrl K opens. */}
       <div className="px-3 pt-2">
@@ -199,6 +264,33 @@ export function PageTreeSidebar({
           <NewPageButton tabs={tree.tabs} onAdd={() => tree.actions.onAdd()} />
         </div>
       ) : null}
-    </>,
+    </>
+  );
+  // One element for the open tree, whether it stands beside the page or is sliding out over the rail, so folding it
+  // away animates it rather than swapping it for a copy.
+  return (
+    <>
+      {!collapsed
+        ? shell(PAGE_TREE_WIDTH, joined, body('open', joined), undefined, 'open')
+        : open.drawn
+          ? shell(
+              PAGE_TREE_WIDTH,
+              false,
+              body('open', false),
+              { kind: 'leaving', leaving: open.leaving },
+              'open',
+            )
+          : null}
+      {collapsed ? rail : null}
+      {peeking.drawn
+        ? shell(
+            PAGE_TREE_WIDTH,
+            false,
+            body('peek', false),
+            { kind: 'peek', leaving: peeking.leaving },
+            'peek',
+          )
+        : null}
+    </>
   );
 }
