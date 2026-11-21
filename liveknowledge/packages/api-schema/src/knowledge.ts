@@ -85,6 +85,9 @@ export type PageHealthResponse = PageKnowledgeResponse & {
    *  page not saved since the server began keeping them. */
   created?: PageAuthorStamp;
   updated?: PageAuthorStamp;
+  /** Everyone who made or changed the page, the first writer first, 12 at most (page-surface.md "Who made the
+   *  page"); `at` is when each first wrote it. Absent for a page not saved since the server began keeping them. */
+  editors?: PageAuthorStamp[];
   /** The questions Ask answered citing this page in the last 30 days, the most asked first, 3 at most
    *  (ai-knowledge.md "AI Context on a page"). */
   answered?: PageAnsweredQuestion[];

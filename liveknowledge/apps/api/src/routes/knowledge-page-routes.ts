@@ -8,6 +8,7 @@
 // Reading is every role's; Verify and the fields are an Editor's (verification.md "Share roles"). When a page's
 // review comes due is the knowledgebase's Review Period (knowledge-settings-routes.ts), never the page's.
 import { readPageAuthors } from '../knowledge/page-authors';
+import { readPageEditors } from '../knowledge/page-editors';
 import { verifyMoment } from '../knowledge/model-door';
 import { pageTreeRows } from '@liveknowledge/document';
 import {
@@ -76,9 +77,10 @@ export async function handlePageHealth(
   if (!page) return notFound();
   // AI Context (ai-knowledge.md "AI Context on a page") rides this read: the questions a range of their
   // table's key, the agents a range of `page_reads_tab` (schema step V19).
-  const [readRows, authors, answered, agents] = await Promise.all([
+  const [readRows, authors, editors, answered, agents] = await Promise.all([
     rowsOf<PageReadsRow>(ctx.env, countPageReads(tab, now)),
     readPageAuthors(ctx.env, tab),
+    readPageEditors(ctx.env, tab),
     rowsOf<PageAnswerRow>(ctx.env, listPageAnswers(tab, now)),
     rowsOf<PageAgentReadsRow>(ctx.env, countPageAgentReads(tab, now)),
   ]);
@@ -86,6 +88,7 @@ export async function handlePageHealth(
     knowledge: pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now),
     reads: pageReads(readRows),
     ...(authors ?? {}),
+    ...(editors.length > 0 ? { editors } : {}),
     answered: answered.map((r) => ({ question: r.question, asked: r.asked })),
     agents: agents.map((r) => ({ agent: r.agent, reads: r.reads })),
   });

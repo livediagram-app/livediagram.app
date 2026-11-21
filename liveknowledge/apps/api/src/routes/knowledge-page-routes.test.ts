@@ -30,6 +30,7 @@ type Health = {
   reads?: { people: number; agents: number };
   created?: { by: string; at: number; kind: string };
   updated?: { by: string; at: number; kind: string };
+  editors?: { by: string; at: number; kind: string }[];
 };
 const read = async (kit: Kit, who: Who = 'viewer', tab = 'deploys') =>
   await (await kit.call(who, 'GET', `/api/documents/kb/pages/${tab}/health`)).json<Health>();
@@ -311,11 +312,25 @@ describe('Created and Updated (verification.md)', () => {
     const later = await read(kit, 'viewer', 'fresh');
     expect(later.created).toEqual({ by: OWNER, at: 1_000_000, kind: 'human' });
     expect(later.updated).toEqual({ by: OWNER, at: 2_000_000, kind: 'human' });
+    // Everyone who made or changed it, the first writer first, each person once (page-surface.md "Who made the page").
+    expect(later.editors).toEqual([{ by: OWNER, at: 1_000_000, kind: 'human' }]);
+    vi.setSystemTime(3_000_000);
+    const byParticipant = await kit.call('participant', 'PUT', '/api/documents/kb/tabs/fresh', {
+      ...page('fresh', 'Fresh', [{ id: 'p1', type: 'paragraph', runs: [{ text: 'Three' }] }]),
+    });
+    expect(byParticipant.status).toBeLessThan(300);
+    expect((await read(kit, 'viewer', 'fresh')).editors).toEqual([
+      { by: OWNER, at: 1_000_000, kind: 'human' },
+      { by: 'user_p', at: 3_000_000, kind: 'human' },
+    ]);
 
     // A deleted page takes its row with it.
     await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/fresh');
     expect(
       kit.db.sql.prepare("SELECT tab FROM page_authors WHERE tab = 'fresh'").get(),
+    ).toBeUndefined();
+    expect(
+      kit.db.sql.prepare("SELECT tab FROM page_editors WHERE tab = 'fresh'").get(),
     ).toBeUndefined();
   });
 });

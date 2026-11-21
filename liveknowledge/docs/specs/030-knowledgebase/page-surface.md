@@ -33,7 +33,8 @@ replaces what the fork still shows around the writing.
   box. On the page itself the canvas's bare-ground gestures do not exist: held Space scrolls the page, the middle
   button is the browser's, a drag on the ground draws no marquee (selecting text is the browser's own), the ground's
   cursor is the plain one, and a letter typed outside the writing adds no shape.
-- **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, then the Title (40 px,
+- **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
+  has one ("The page icon"), then the Title (40 px,
   bold, tight tracking), then the meta row ([Verification](verification.md)). **Beside it** on a wide window, the right rail (On This Page, Page Health): docked from 1,280 px,
   and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
@@ -65,7 +66,21 @@ replaces what the fork still shows around the writing.
 controls are 40 px targets with 18 px glyphs in slate-700 at rest, and the gap between them grows with the room the
 row has (up to 12 px), so a wide window spreads them across the top. Undo and Redo match.
 
-## The cover
+## Who made the page
+
+Owner, 2026-11-21: "In the header, when we aren't editing there is nothing in the top left. It would be nice to see the
+avatars of everybody who has created or edited that page, creator first, then all the editors, hovering the avatar
+shows their name."
+
+- **Where.** The top row's left while the page is read (edit mode gives it to the formatting controls).
+- **What.** Overlapping 28 px discs, the creator first, then everyone else who saved the page in the order they
+  first did: a person by their initials in a colour of their name (a person nobody here can name is "Guest"), an
+  agent as a sparkle. Six at most; past that the sixth is "+N". Hovering or focusing a disc names them: "Priya Shah,
+  Created", "Claude, Edited".
+- **Kept.** One row a page and writer, `page_editors` (schema step V33), written in the same batch as the creator and
+  last change (`page_authors`) on every write that counts; a person is one row, each agent its own. Page Health
+  returns them as `editors`, the first writer first, 12 at most. A page not saved since the table began shows none.
+- **Roles.** Everyone who can read the page sees it. Offline there is no Page Health, so no stack.
 
 Owner, 2026-11-21: "Let me also add a cover to a page in a knowledgebase, a bit like how I do it on forms, fill the
 top space above the page with it between the sidebars" and "The add cover button should also be placed next to the
@@ -143,6 +158,48 @@ speed }` (a motion id such as `aurora`; a colouring `deep`, `night`, `vivid`, `b
   every page picture's is (at most 4,096 px on its longer side, 2,048 on a touch screen), and decoded off the main
   thread; the band never re-renders for a scroll or a keystroke.
 - **Telemetry:** `Element` `Added` `Cover` when a cover is set, `Element` `Deleted` `Cover` when it is removed.
+
+## The page icon
+
+Owner, 2026-11-21: "Add ability to add icon to page title, then it shows in the sidebar like confluence. button
+should be to the right of Add Cover under the title."
+
+- **What it is.** A page may have one icon: an **emoji** (`{ emoji: "🚀" }`, one emoji as the system draws it) or an
+  **icon** from the line-art catalogue the drawings use (`{ iconId: "rocket" }`). It is the page's own
+  (`Tab.icon`), never the knowledgebase's, and it is not part of the writing: no block, no draft, no undo step of
+  the writing.
+- **Where it shows.** Large above the Title, under the breadcrumb (and under the cover when there is one): an emoji
+  at 48 px (36 px on a phone), an icon at the same size in the writing's accent. In the **page tree**, the row's
+  icon stands before its title at 16 px; a page with none shows its title alone, as today. The **breadcrumb** names
+  each ancestor with its icon too.
+- **Add Icon** sits in the meta row, right after Add Cover (or where Add Cover would be, on a page with a cover):
+  the same quiet ghost button, a smile icon and "Add Icon", with a hover card "Add an emoji or an icon beside this
+  page's title, shown in the page tree too." It opens the icon picker.
+- **On a page with an icon**, the icon above the Title is a button, for whoever may change it: it takes a soft
+  ground on hover, a tooltip "Change Icon", and opens the picker. For anyone else it is a picture and nothing more.
+- **The picker** is a popover (a sheet on a phone) titled "Change Icon" or "Add Icon", with **Remove** at its top
+  right when the page has an icon, then two tabs, **Emoji** and **Icons**, a search field ("Search Emoji", "Search
+  Icons") that takes the focus when it opens, and the grid. Emoji come in groups (Recent, Smileys, People, Nature,
+  Food, Travel, Activities, Objects, Symbols, Flags), each found by its name and words; **Recent** is this browser's
+  last 16 picks and shows only when it has some. Icons are the catalogue's categories, found by their names and
+  words. A pick sets the icon and closes the picker. The arrow keys move through the grid, Enter picks, Escape
+  closes. An empty search says "No emoji match" or "No icons match".
+- **Remove** takes the icon away at once, with an Undo in the toast that says so ("Icon removed").
+- **Who changes it.** The cover's rule: an Editor or a Participant, and only in edit mode. A Viewer and a link
+  visitor see the icon, in the page and the tree, and none of its controls. The room and the api refuse an icon from
+  anyone else, as they refuse a cover.
+- **It is saved at once**, as the cover is: not part of the draft, and Save and Cancel neither keep nor drop it.
+  Everyone with the knowledgebase open sees it change, in the page and in their tree.
+- **Agents.** `read_page` (and the api's page read) answers the icon as `{ kind: "emoji", emoji }` or `{ kind:
+"icon", iconId }`. Agents cannot set it yet.
+- **Exports.** A copy of the knowledgebase, its Drive file and a snapshot carry the icon. The PDF, Word and Markdown
+  exports leave it out: they are the writing.
+- **Cost.** A page with no icon draws nothing for it. An emoji is text: nothing is fetched. An icon uses the line-art
+  catalogue, which loads once (an async chunk) only when a page with an icon of the catalogue, or the picker's Icons
+  tab, is shown. The emoji list loads only when the picker opens. A tree row's icon is a plain value of the row, so
+  a tree of 500 pages renders no row for a change that is not its own.
+- **Telemetry:** `Element` `Added` `PageIcon` when an icon is set on a page with none, `Element` `Changed`
+  `PageIcon` when it is changed, `Element` `Deleted` `PageIcon` when it is removed.
 
 ## The footer
 
@@ -301,7 +358,7 @@ per-page and no per-tab style.
 
 Changing the Knowledgebase Style is Editor only: a Participant is never offered it and the api refuses its style
 write ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)). Everyone sees the same look. A page's
-cover is changed by an Editor or a Participant, and seen by everyone.
+cover and its icon are changed by an Editor or a Participant, and seen by everyone.
 
 ## Performance
 

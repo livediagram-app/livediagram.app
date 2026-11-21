@@ -49,6 +49,7 @@ import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 import type { CanvasChromeProps } from './CanvasChrome.types';
 import { PageEditBar } from '@/components/page-edit/PageEditBar';
+import { PageMakersStack } from '@/components/knowledge/PageMakersStack';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 
 export type { CanvasChromeProps } from './CanvasChrome.types';
@@ -373,7 +374,7 @@ function CanvasChromeView(props: CanvasChromeProps) {
             </>
           }
         >
-          {/* Read mode keeps the row's left empty: the formatting controls are edit mode's. */}
+          {/* Read mode's left is who made the page; the formatting controls are edit mode's. */}
           {!readOnly && !isMobile && pageEditing ? (
             <PageFormattingBar
               canUndo={canUndo === true}
@@ -398,6 +399,9 @@ function CanvasChromeView(props: CanvasChromeProps) {
               pendingDraw={pendingDraw}
               themeTint={paletteTint}
             />
+          ) : !pageEditing ? (
+            // Reading: who made the page, creator first (page-surface.md "Who made the page").
+            <PageMakersStack />
           ) : null}
         </KnowledgeTopRow>
       ) : null}

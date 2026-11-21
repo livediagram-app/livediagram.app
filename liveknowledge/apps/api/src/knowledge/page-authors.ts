@@ -7,6 +7,7 @@ import { sameArticleValue, savedArticlesOf } from '@liveknowledge/document';
 import type { DocumentEnv } from '../types';
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
 import { personWriter, stampOf, type PageWriter } from './page-writer';
+import { pageEditorStatement } from './page-editors';
 
 type Exec = (query: string) => unknown;
 
@@ -63,7 +64,12 @@ export async function notePageWrite(
   at = Date.now(),
 ): Promise<void> {
   try {
-    await pageAuthorStatement(env, tab, by, at).run();
+    // The creator and last change, and the page's list of writers (page-editors.ts), in one batch.
+    const w = typeof by === 'string' ? personWriter(by) : by;
+    await env.DOCUMENT_DB.batch([
+      pageAuthorStatement(env, tab, w, at),
+      pageEditorStatement(env, tab, w, at),
+    ]);
   } catch (err) {
     console.warn('[knowledge] page author not noted', { tabId: tab, err: String(err) });
   }
@@ -77,7 +83,13 @@ export async function notePageWrites(
   at: number,
 ): Promise<void> {
   try {
-    await env.DOCUMENT_DB.batch(tabs.map((tab) => pageAuthorStatement(env, tab, by, at)));
+    const w = typeof by === 'string' ? personWriter(by) : by;
+    await env.DOCUMENT_DB.batch(
+      tabs.flatMap((tab) => [
+        pageAuthorStatement(env, tab, w, at),
+        pageEditorStatement(env, tab, w, at),
+      ]),
+    );
   } catch (err) {
     console.warn('[knowledge] page authors not noted', { pages: tabs.length, err: String(err) });
   }
