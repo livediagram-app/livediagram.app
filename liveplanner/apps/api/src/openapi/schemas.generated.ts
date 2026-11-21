@@ -7245,25 +7245,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "FormCover": {
-    "additionalProperties": false,
-    "properties": {
-      "credit": {
-        "type": "string"
-      },
-      "fill": {
-        "$ref": "#/components/schemas/PageColourFill"
-      },
-      "focus": {
-        "type": "number"
-      },
-      "imageId": {
-        "type": "string"
-      },
-      "pattern": {
-        "$ref": "#/components/schemas/PagePattern"
-      }
-    },
-    "type": "object"
+    "$ref": "#/components/schemas/PageCover"
   },
   "FormDefinition": {
     "additionalProperties": false,
@@ -11333,6 +11315,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       }
     ]
+  },
+  "PageCover": {
+    "additionalProperties": false,
+    "description": "`imageId` a picture of the item's, `focus` where it sits vertically (0 top to 100 bottom, 50 when absent), `credit` an Image Search pick's credit line.",
+    "properties": {
+      "credit": {
+        "type": "string"
+      },
+      "fill": {
+        "$ref": "#/components/schemas/PageColourFill"
+      },
+      "focus": {
+        "type": "number"
+      },
+      "imageId": {
+        "type": "string"
+      },
+      "pattern": {
+        "$ref": "#/components/schemas/PagePattern"
+      }
+    },
+    "type": "object"
   },
   "PageMotion": {
     "enum": [
