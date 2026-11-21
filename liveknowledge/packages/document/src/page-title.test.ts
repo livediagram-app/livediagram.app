@@ -69,7 +69,7 @@ it('takes a tab\'s one article where no page names it', () => {
     name: 'Old',
     elements: [],
     articles: { f1: { blocks: [{ id: 'b1', type: 'paragraph', style: 'title', runs: [{ text: 'Old' }] }] } },
-  } as Tab;
+  };
   expect(pageFlowOf(old)).toBe('f1');
   expect(pageTitleOf(old)).toBe('Old');
 });

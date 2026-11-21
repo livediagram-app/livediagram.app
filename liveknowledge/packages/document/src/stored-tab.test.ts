@@ -18,7 +18,8 @@ describe('migrateStoredTab', () => {
   // docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen": an api-made tab with no page kind opens as
   // an empty article page, never on a start.
   it('reads an empty tab with no page of a kind as an empty knowledgebase page', () => {
-    const settled = migrateStoredTab({ id: 't', name: 'From an Agent', elements: [] } as Tab);
+    const empty: Tab = { id: 't', name: 'From an Agent', elements: [] };
+    const settled = migrateStoredTab(empty);
     expect(isKnowledgebasePage(settled)).toBe(true);
     expect(pagesOf(settled)).toHaveLength(1);
     expect(settled.name).toBe('From an Agent');

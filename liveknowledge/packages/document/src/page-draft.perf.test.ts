@@ -19,7 +19,7 @@ function bigPage(): Tab {
   const blocks: ArticleBlock[] = [{ id: 't', type: 'paragraph', style: 'title', runs: [{ text: 'Runbook' }] }];
   for (let i = 0; i < 250; i++) {
     const text = `${WORDS} step ${i} done now`.split(' ').slice(0, 20).join(' ');
-    blocks.push({ id: `b${i}`, type: 'paragraph', runs: [{ text }] } as ArticleBlock);
+    blocks.push({ id: `b${i}`, type: 'paragraph', runs: [{ text }] });
   }
   return {
     id: 't1',
@@ -27,7 +27,7 @@ function bigPage(): Tab {
     elements: [],
     pages: [{ id: 'p', orientation: 'portrait', kind: 'article', flow: 'art-1', size: 'fit', fit: { width: 856, height: 9000 } }],
     articles: { 'art-1': { blocks } },
-  } as Tab;
+  };
 }
 
 describe('a 5,000 word page', () => {

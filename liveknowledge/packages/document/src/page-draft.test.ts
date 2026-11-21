@@ -35,7 +35,7 @@ const para = (id: string, text: string, style?: 'title'): ArticleBlock =>
     type: 'paragraph',
     ...(style ? { style } : {}),
     runs: text ? [{ text }] : [],
-  }) as ArticleBlock;
+  });
 
 const flowOf = (...blocks: ArticleBlock[]): ArticleFlow => ({ blocks });
 
@@ -56,7 +56,7 @@ const page = (blocks: ArticleBlock[], extra: Partial<Tab> = {}): Tab =>
     ],
     articles: { 'art-1': flowOf(...blocks) },
     ...extra,
-  }) as Tab;
+  });
 
 const saved = [para('t', 'Onboarding', 'title'), para('a', 'First'), para('b', 'Second')];
 
@@ -153,7 +153,7 @@ describe('making, discarding and stripping a draft', () => {
 
   it('drops the margin notes only the draft marked, and keeps those the saved writing marks', () => {
     const marked = (id: string, note: string): ArticleBlock =>
-      ({ id, type: 'paragraph', runs: [{ text: 'on-call', note, nk: 'action' }] }) as ArticleBlock;
+      ({ id, type: 'paragraph', runs: [{ text: 'on-call', note, nk: 'action' }] });
     const marker = (id: string) => ({ id, type: 'article-note', kind: 'action', x: 0, y: 0 });
     const plain = page([...saved, marked('c', 'kept')], {
       elements: [
@@ -180,7 +180,7 @@ describe('making, discarding and stripping a draft', () => {
       draftDiffers(withDraftMade(page(saved), flowOf(para('t', 'New', 'title')), 'P', 1)),
     ).toBe(true);
     const noSaved = withDraftMade(
-      { id: 't', name: '', elements: [] } as Tab,
+      { id: 't', name: '', elements: [] },
       flowOf(para('x', 'y')),
       'P',
       1,
@@ -224,7 +224,7 @@ describe('Save', () => {
     const stray = { ...plain, draft: { by: 'a', at: 1, base: {} } };
     expect(holdsDraft(withDraftSaved(stray))).toBe(false);
     const noFlow = withDraftMade(
-      { id: 't', name: 'n', elements: [] } as Tab,
+      { id: 't', name: 'n', elements: [] },
       flowOf(para('x', 'y')),
       'P',
       1,
