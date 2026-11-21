@@ -115,7 +115,7 @@ it. The menu is icon-left verb rows under the knowledgebase's name:
 - A row a session is not offered is absent, not greyed: each is decided by the feature it opens, so the menu never
   offers what the feature would refuse.
 - **Keyboard and screen readers:** the button says it has a menu and whether it is open, and is named with the
-  knowledgebase's name. Enter, Space or a press opens the menu with the first row focused; the arrow keys, Home and
+  knowledgebase's name. Enter, Space, Down Arrow or a press opens the menu with the first row focused; the arrow keys, Home and
   End move through the rows, a letter jumps to the row that starts with it, Enter chooses, and Escape closes it with
   the focus back on the button. Each row is a menu item.
 - **On a phone** the same menu opens from the head of the Pages sheet, its button 44 px tall. Rename renames in the

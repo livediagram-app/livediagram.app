@@ -155,6 +155,14 @@ describe('the knowledgebase’s menu', () => {
     expect(document.activeElement).toBe(button());
   });
 
+  it('opens on Down Arrow from the button', () => {
+    open();
+    button().focus();
+    fireEvent.keyDown(button(), { key: 'ArrowDown' });
+    expect(screen.getByRole('menu')).toBeTruthy();
+    expect(button().getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('leaves out a row its feature does not offer', () => {
     Object.assign(offered, { settings: false, describe: false, ai: false });
     open();

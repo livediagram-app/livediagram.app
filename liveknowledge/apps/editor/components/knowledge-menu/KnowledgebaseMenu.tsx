@@ -99,6 +99,13 @@ export function KnowledgebaseMenu({
           aria-haspopup="menu"
           aria-expanded={open}
           onClick={() => setOpen((was) => !was)}
+          // Down Arrow opens it from the keyboard, as it opens every menu button (docs/specs/004-interface-design/
+          // menus.md); Enter and Space are the button's own press.
+          onKeyDown={(e) => {
+            if (e.key !== 'ArrowDown' || open) return;
+            e.preventDefault();
+            setOpen(true);
+          }}
           className={`flex w-full min-w-0 cursor-pointer items-center gap-1 rounded-md px-1.5 text-left text-sm font-semibold text-slate-900 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-200/70 focus-visible:outline-2 focus-visible:outline-brand-600 aria-expanded:bg-slate-200/70 dark:text-slate-100 dark:hover:bg-slate-800 dark:aria-expanded:bg-slate-800 ${
             touch ? 'min-h-11' : 'min-h-8'
           }`}
