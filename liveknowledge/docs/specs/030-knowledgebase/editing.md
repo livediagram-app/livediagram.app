@@ -11,8 +11,10 @@ editing share live and that nobody else sees until it is saved.
 
 - Every page opens to read, for every role: the writing, the meta row, the right rail, links and embeds all work, and
   nothing in the writing is editable (no caret, no toolbar, no slash menu, no drag handles).
-- An Editor or Participant sees **Edit** (pencil icon, primary, at the top right of the page next to Share; also the
-  `E` key while reading). A Viewer, a link visitor and an agent never see it.
+- An Editor sees **Edit** (pencil icon, primary, at the top right of the page next to Share; also the `E` key while
+  reading). A Participant, a Viewer, a link visitor and an agent never see it.
+- A page made here (New Page, Add Subpage) opens straight into edit mode with the caret in its Title: it was made
+  to be written.
 - While anyone is editing, readers see a quiet "Being edited by Priya" note (their discs) in the meta row. Readers keep
   seeing the saved page: the draft never reaches them.
 
@@ -35,7 +37,8 @@ editing share live and that nobody else sees until it is saved.
 - Leaving the page, closing the tab or losing the connection is not Cancel: the draft is kept (stored in the
   knowledgebase), and the next Edit opens it with "Unsaved changes from Priya, 2 hours ago" and Save / Discard. A draft
   untouched for 30 days is thrown away by the room's daily upkeep.
-- Undo and redo work within the draft. Version history records saves only, never draft keystrokes.
+- Undo and redo work within the draft: Edit starts the undo history and Save or Discard ends it, so undo never
+  undoes a save. Version history records saves only, never draft keystrokes.
 
 ## What reads the saved page only
 
@@ -52,14 +55,16 @@ stay).
 
 ## Share roles
 
-- **Editor, Participant:** Edit, Save, Cancel, Discard.
-- **Viewer, link visitor:** read mode only; never sees the draft or who is editing beyond the "Being edited" note.
+- **Editor:** Edit, Save, Cancel, Discard.
+- **Participant, Viewer, link visitor:** read mode only; never sees the draft or who is editing beyond the "Being
+  edited" note. Writing on a page is an Editor's ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)),
+  and a draft is writing; a Participant comments as before.
 
 ## Offline
 
 A knowledgebase kept Offline has no shared draft: Edit opens a local draft, Save writes it, Cancel discards it.
 
-## How it is built (summary; blueprint to follow)
+## How it is built (summary; [blueprint](blueprints/editing.md))
 
 The draft is a second article flow on the page's tab (`articles.draft`), synced by the same room ops as the page's
 writing today, so live co-editing comes from the engine that exists. The saved writing stays in the page's own flow.
