@@ -21,7 +21,7 @@ function typingIn(target: EventTarget | null): boolean {
 
 // A dialog, a menu or the drawing palette's flyout (its tiles, `data-flyout-item`) is open: its keys are its own.
 // Escape closing the flyout once asked to discard the page too.
-function overlayOpen(): boolean {
+export function overlayOpen(): boolean {
   if (typeof document === 'undefined') return false;
   return (
     document.querySelector(
@@ -33,13 +33,22 @@ function overlayOpen(): boolean {
 /** What a key press does to the mode, or null for nothing. */
 export function pageEditKeyAction(
   e: KeyEventLike,
-  state: { editing: boolean; mayEdit: boolean },
+  // `overlayAtKeyDown`: whether an overlay was open as the key went down (read in the window's capture phase), since
+  // the flyout's own Escape closes it before this handler, on the window's bubble, sees the key.
+  state: { editing: boolean; mayEdit: boolean; overlayAtKeyDown?: boolean },
 ): PageEditKey | null {
   if (e.defaultPrevented || !state.mayEdit) return null;
   const mod = e.metaKey || e.ctrlKey;
   if (state.editing && mod && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 's')
     return 'save';
-  if (state.editing && e.key === 'Escape' && !mod && !overlayOpen()) return 'cancel';
+  if (
+    state.editing &&
+    e.key === 'Escape' &&
+    !mod &&
+    !state.overlayAtKeyDown &&
+    !overlayOpen()
+  )
+    return 'cancel';
   if (
     !state.editing &&
     !mod &&

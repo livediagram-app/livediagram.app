@@ -70,6 +70,8 @@ describe('the edit keys', () => {
     expect(pageEditKeyAction(key('Escape'), editing)).toBeNull();
     tile.remove();
     expect(pageEditKeyAction(key('Escape'), editing)).toBe('cancel');
+    // Closed by its own Escape before this saw the key: the open it had as the key went down still counts.
+    expect(pageEditKeyAction(key('Escape'), { ...editing, overlayAtKeyDown: true })).toBeNull();
   });
 
   it('does nothing for someone who may not edit, or with no target', () => {

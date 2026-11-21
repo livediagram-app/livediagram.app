@@ -280,6 +280,10 @@
 .article-flow[data-readonly] .article-zone[data-zone='drawing'] {
   background: none;
 }
+/* Reading: a zone still selected as edit mode ended shows no outline. */
+.article-flow[data-readonly] .article-zone.ProseMirror-selectednode {
+  outline-color: transparent;
+}
 
 /* Inline formats */
 .article-flow .article-link {

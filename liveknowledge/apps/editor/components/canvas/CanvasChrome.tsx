@@ -161,15 +161,16 @@ function CanvasChromeView(props: CanvasChromeProps) {
   // (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"). It shows only while a drawing zone is being
   // edited, as that drawing's tools, in the formatting bar's place.
   const drawingZone = useDrawingZoneEditing();
+  // Edit mode on the open page (docs/specs/030-knowledgebase/editing.md): the formatting controls are its alone.
+  const pageEditing = useEditorChrome((s) => s.pageEditing.editing);
   // A shape picked from them and still to be drawn keeps them up: the press that draws it is outside the strip.
-  const paletteShown = !readOnly && (drawingZone || !!pendingDraw);
+  // Only while editing: a zone still selected as Save or Cancel ended edit mode keeps no tools in the row.
+  const paletteShown = !readOnly && pageEditing && (drawingZone || !!pendingDraw);
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The top row of the content area (docs/specs/030-knowledgebase/page-surface.md "The footer"): there for every
   // role, with the chrome.
   const topRowShown = useTopRowShown(!readOnly) && !chromeHidden;
-  // Edit mode on the open page (docs/specs/030-knowledgebase/editing.md): the formatting controls are its alone.
-  const pageEditing = useEditorChrome((s) => s.pageEditing.editing);
   // Rename <Kind> from the search opens the Explorer panel from its menu button, on the open item's name
   // field (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search").
   const explorerButtonRef = useRef<HTMLButtonElement>(null);

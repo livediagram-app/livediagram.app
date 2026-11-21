@@ -29,7 +29,7 @@ import {
 } from '@/lib/page-edit/page-edit-store';
 import { newEditorOf } from '@/lib/page-edit/follow-editors';
 import { flashMode } from '@/components/page-edit/mode-flash';
-import { pageEditKeyAction } from '@/lib/page-edit/page-edit-keys';
+import { overlayOpen, pageEditKeyAction } from '@/lib/page-edit/page-edit-keys';
 import { wantsTitleFocus } from '@/lib/page-title-focus';
 import { track } from '@/lib/telemetry';
 import type { EditorDocument } from './useEditorDocument';
@@ -67,7 +67,7 @@ export function useEditorPageEditing({
     tabs,
     accountUserId,
   } = documentSlice;
-  const { activeId } = selectionSlice;
+  const { activeId, setSelectedId, setEditingId } = selectionSlice;
   const { confirm, toast, isReadOnly, participant, roomRef, selfParticipant } = sessionSlice;
   const { pageTab } = collaborationSlice;
   const { activeTabLoadState, activeTabConnected } = pagesSlice;
@@ -99,6 +99,11 @@ export function useEditorPageEditing({
             },
           };
     sessionRef.current = tabId === null ? null : { tabId, since: Date.now() };
+    // Leaving edit mode lets go of a drawing's selected element: reading shows no selection outline.
+    if (tabId === null) {
+      setEditingId(null);
+      setSelectedId(null);
+    }
     setEditingTabIdState(tabId);
     setMyEditingPage(tabId);
     roomRef.current?.send({ kind: 'op', op: { kind: 'page-editing', tabId } });
@@ -321,17 +326,32 @@ export function useEditorPageEditing({
   const latest = useRef({ start, save, cancel, editing: editingTabId !== null, mayEdit });
   latest.current = { start, save, cancel, editing: editingTabId !== null, mayEdit };
   useEffect(() => {
+    // Whether a menu, dialog or flyout was open as the key went down: the window's capture phase runs before any
+    // of them closes on the same Escape.
+    let overlayAtKeyDown = false;
+    const onKeyCapture = (e: KeyboardEvent) => {
+      overlayAtKeyDown = e.key === 'Escape' && overlayOpen();
+    };
     const onKey = (e: KeyboardEvent) => {
       const l = latest.current;
-      const action = pageEditKeyAction(e, { editing: l.editing, mayEdit: l.mayEdit });
+      const action = pageEditKeyAction(e, {
+        editing: l.editing,
+        mayEdit: l.mayEdit,
+        overlayAtKeyDown,
+      });
+      overlayAtKeyDown = false;
       if (!action) return;
       e.preventDefault();
       if (action === 'edit') l.start();
       else if (action === 'save') l.save();
       else void l.cancel();
     };
+    window.addEventListener('keydown', onKeyCapture, true);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKeyCapture, true);
+      window.removeEventListener('keydown', onKey);
+    };
   }, []);
 
   const editing = editingTabId !== null && editingTabId === pageTab.id;
