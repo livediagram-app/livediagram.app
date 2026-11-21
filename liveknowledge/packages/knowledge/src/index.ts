@@ -38,6 +38,7 @@ export * from './sql/page-index';
 export * from './sql/search';
 export * from './sql/reads';
 export * from './sql/questions';
+export * from './sql/page-answers';
 export * from './sql/conflicts';
 export * from './sql/counters';
 export * from './sql/settings';

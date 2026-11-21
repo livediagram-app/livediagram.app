@@ -5502,6 +5502,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['id', 'orientation'],
     type: 'object',
   },
+  PageAgentReads: {
+    additionalProperties: false,
+    description: "One agent's reads of a page this week, by the agent's name.",
+    properties: {
+      agent: {
+        type: 'string',
+      },
+      reads: {
+        type: 'number',
+      },
+    },
+    required: ['agent', 'reads'],
+    type: 'object',
+  },
+  PageAnsweredQuestion: {
+    additionalProperties: false,
+    description:
+      "One question answered from a page: the asker's words (the latest day's of like questions) and how many times.",
+    properties: {
+      asked: {
+        type: 'number',
+      },
+      question: {
+        type: 'string',
+      },
+    },
+    required: ['question', 'asked'],
+    type: 'object',
+  },
   PageArrangement: {
     description:
       'How a tab\'s pages stand (pages-mode.md "Stacked or side by side"): one page in front with the rest fanned behind it, or side by side.',
@@ -5790,6 +5819,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     additionalProperties: false,
     description: 'Page Health (verification.md): the fields, and the reads of the last seven days.',
     properties: {
+      agents: {
+        description:
+          'The agents that read this page in the last 7 days, the most reads first, 3 at most.',
+        items: {
+          $ref: '#/components/schemas/PageAgentReads',
+        },
+        type: 'array',
+      },
+      answered: {
+        description:
+          'The questions Ask answered citing this page in the last 30 days, the most asked first, 3 at most (ai-knowledge.md "AI Context on a page").',
+        items: {
+          $ref: '#/components/schemas/PageAnsweredQuestion',
+        },
+        type: 'array',
+      },
       created: {
         $ref: '#/components/schemas/PageAuthorStamp',
         description:

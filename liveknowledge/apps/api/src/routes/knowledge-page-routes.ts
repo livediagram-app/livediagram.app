@@ -1,7 +1,8 @@
 // A page's knowledge over REST (docs/specs/030-knowledgebase/verification.md, links-and-embeds.md "Backlinks",
 // ai-knowledge.md "Always in Context"):
 //   GET   /api/documents/<id>/pages/<tab>/backlinks   the pages whose writing links here, in tree order
-//   GET   /api/documents/<id>/pages/<tab>/health      the fields, the state, the week's reads (Page Health)
+//   GET   /api/documents/<id>/pages/<tab>/health      the fields, the state, the week's reads (Page Health), and
+//                                                    AI Context: the questions answered from it, its agents
 //   POST  /api/documents/<id>/pages/<tab>/verify      Verify: now, by the caller, who owns a page with no owner
 //   PUT   /api/documents/<id>/pages/<tab>/knowledge   owner, Always in Context (each optional)
 // Reading is every role's; Verify and the fields are an Editor's (verification.md "Share roles"). When a page's
@@ -13,12 +14,16 @@ import {
   CONTEXT_BUDGET_TOKENS,
   backlinkRows,
   backlinks,
+  countPageAgentReads,
   countPageReads,
   fitsContextBudget,
+  listPageAnswers,
   pageReads,
   tokensOfChars,
   verified,
   type KnowledgeFields,
+  type PageAgentReadsRow,
+  type PageAnswerRow,
   type PageReadsRow,
 } from '@liveknowledge/knowledge';
 import type { PageKnowledgePatch } from '@liveknowledge/api-schema';
@@ -68,14 +73,20 @@ export async function handlePageHealth(
   const now = Date.now();
   const page = await readPageKnowledge(ctx.env, document.id, tab);
   if (!page) return notFound();
-  const [readRows, authors] = await Promise.all([
+  // AI Context (ai-knowledge.md "AI Context on a page") rides this read: the questions a range of their
+  // table's key, the agents a range of `page_reads_tab` (schema step V19).
+  const [readRows, authors, answered, agents] = await Promise.all([
     rowsOf<PageReadsRow>(ctx.env, countPageReads(tab, now)),
     readPageAuthors(ctx.env, tab),
+    rowsOf<PageAnswerRow>(ctx.env, listPageAnswers(tab, now)),
+    rowsOf<PageAgentReadsRow>(ctx.env, countPageAgentReads(tab, now)),
   ]);
   return json({
     knowledge: pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now),
     reads: pageReads(readRows),
     ...(authors ?? {}),
+    answered: answered.map((r) => ({ question: r.question, asked: r.asked })),
+    agents: agents.map((r) => ({ agent: r.agent, reads: r.reads })),
   });
 }
 

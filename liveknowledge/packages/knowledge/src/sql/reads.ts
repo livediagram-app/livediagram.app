@@ -48,6 +48,20 @@ export function pageReads(rows: readonly PageReadsRow[]): { people: number; agen
   return { people: of('person'), agents: of('agent') };
 }
 
+/** How many agents a page's AI Context names. */
+export const PAGE_AGENTS_LISTED = 3;
+
+export type PageAgentReadsRow = { agent: string; reads: number };
+
+/** The agents that read a page in the last `days` days, the most reads first, then by name, PAGE_AGENTS_LISTED at
+ *  most (ai-knowledge.md "AI Context on a page"). */
+export const countPageAgentReads = (tab: string, now: number, days = 7): SqlStatement => ({
+  sql: `SELECT agent, SUM(reads) AS reads FROM page_reads
+    WHERE tab = ? AND reader_kind = 'agent' AND day > ? GROUP BY agent
+    ORDER BY SUM(reads) DESC, agent LIMIT ?`,
+  params: [tab, daysBefore(now, days), PAGE_AGENTS_LISTED],
+});
+
 export type AgentReadsRow = { agent: string; tab: string; reads: number; week: number };
 
 /** Every agent seen in AGENT_SEEN_DAYS days, a row per page it read: its reads in that time, and in the last 7

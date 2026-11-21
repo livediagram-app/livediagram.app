@@ -19,6 +19,7 @@ import {
   foundPassage,
   modelFailureWords,
   questionKey,
+  recordPageAnswers,
   upsertQuestion,
   type AskPassage,
   type AskRefusal,
@@ -112,7 +113,8 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
   const passages = chooseAskPassages(
     search ? (await rowsOf<SearchRow>(env, search)).map(foundPassage) : [],
   );
-  const request = askRequest({ question, passages, turns: turnsOf(body?.turns) });
+  const earlier = turnsOf(body?.turns);
+  const request = askRequest({ question, passages, turns: earlier });
   const asker = readerOf(ctx);
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -150,7 +152,17 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           const key = questionKey(gap);
           return key ? upsertQuestion(key, gap, asker, now) : [];
         });
-        await runAll(env, gaps);
+        // A first question that cited pages counts for each of them (ai-knowledge.md "AI Context on a page"): one
+        // statement, in the gaps' transaction. A follow-up leans on the turns before it, so it is not counted.
+        const answered = earlier.length
+          ? null
+          : recordPageAnswers(
+              questionKey(question),
+              question,
+              sources.map((s) => s.tab),
+              now,
+            );
+        await runAll(env, answered ? [...gaps, answered] : gaps);
         console.info('[knowledge] ask', {
           documentId: document.id,
           passages: passages.length,

@@ -83,7 +83,16 @@ export type PageHealthResponse = PageKnowledgeResponse & {
    *  page not saved since the server began keeping them. */
   created?: PageAuthorStamp;
   updated?: PageAuthorStamp;
+  /** The questions Ask answered citing this page in the last 30 days, the most asked first, 3 at most
+   *  (ai-knowledge.md "AI Context on a page"). */
+  answered?: PageAnsweredQuestion[];
+  /** The agents that read this page in the last 7 days, the most reads first, 3 at most. */
+  agents?: PageAgentReads[];
 };
+/** One question answered from a page: the asker's words (the latest day's of like questions) and how many times. */
+export type PageAnsweredQuestion = { question: string; asked: number };
+/** One agent's reads of a page this week, by the agent's name. */
+export type PageAgentReads = { agent: string; reads: number };
 /** What kind of writer made a stamp (verification.md "Made by a person or an agent"). */
 export type PageAuthorKind = 'human' | 'ai';
 /** The door an agent's write came through; `suggestion` is an agent's suggestion a person accepted. */

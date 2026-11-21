@@ -5,6 +5,7 @@ import type { ItemDbHooks, ItemSql } from '@liveworkspace/index-app';
 import {
   READS_KEPT_DAYS,
   pruneCounters,
+  prunePageAnswers,
   pruneQuestions,
   pruneReads,
 } from '@liveknowledge/knowledge';
@@ -91,12 +92,14 @@ export class RoomKnowledge {
 }
 
 /** The daily prune (the room's upkeep): reads past 90 days, counters past their window, questions past the cap,
- *  suggestions nobody decided about in 90 days or whose page is gone, connections not seen in 90 days. */
+ *  suggestions nobody decided about in 90 days or whose page is gone, connections not seen in 90 days, the
+ *  questions answered from each page past 30 days or past their cap. */
 export function pruneKnowledge(sql: ItemSql, now: number): void {
   for (const statement of [
     pruneReads(now),
     pruneCounters(now),
     ...pruneQuestions(),
+    ...prunePageAnswers(now),
     ...pruneSuggestions(now),
     pruneAgentSeen(now, READS_KEPT_DAYS),
     ...pruneEmailMarks(),

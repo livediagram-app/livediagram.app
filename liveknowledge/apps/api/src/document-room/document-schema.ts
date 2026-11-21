@@ -26,6 +26,7 @@ import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
 import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
 import { agentSeenSchemaStep } from '../knowledge/agent-seen';
 import { emailMarksSchemaStep } from '../knowledge/email-marks';
+import { pageAnswersSchemaStep } from '../knowledge/page-answers';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -375,6 +376,9 @@ const V17 = pageAuthorsSchemaStep;
 // before each ALTER, as V15 does; a row V17 wrote reads as a person's.
 const V18 = pageAuthorKindsSchemaStep;
 
+// The questions Ask answered from each page, by day (knowledge/page-answers.ts). Additive, IF NOT EXISTS.
+const V19 = pageAnswersSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -394,6 +398,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V16,
   V17,
   V18,
+  V19,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
