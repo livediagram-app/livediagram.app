@@ -20,7 +20,6 @@ import {
   lucideLink,
   lucideList,
   lucideMessageSquare,
-  lucidePlus,
   lucideTable,
   lucideType,
   lucideUnderline,
@@ -54,14 +53,10 @@ import {
   toggleSup,
   toggleUnderline,
 } from '@/lib/article/article-commands';
-import { articleSchema } from '@/lib/article/article-schema';
 import { articleCountsOf } from '@/lib/article/article-word-count';
 import { selectNextLongSentence } from '@/lib/article/article-long-sentences';
 import { track } from '@/lib/telemetry';
-import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
-import { insertFootnote } from '@/lib/article/article-footnotes';
 import {
-  insertTable,
   tableCommand,
   tableCommandBlock,
   type TableCommandName,
@@ -74,16 +69,13 @@ import {
   AlignGlyph,
   AlignPanel,
   ColourPanel,
-  InsertPanel,
   LIST_OPTIONS,
   ListGlyph,
   ListPanel,
   MorePanel,
   STYLE_OPTIONS,
   StylePanel,
-  type BlockInsert,
   type MoreAction,
-  type ObjectInsert,
 } from './page-toolbar-panels';
 
 const I = (glyph: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(glyph, 16);
@@ -93,7 +85,6 @@ const Underline = I(lucideUnderline);
 const LinkIcon = I(lucideLink);
 const Colour = I(lucideBaseline);
 const ListIcon = I(lucideList);
-const Plus = I(lucidePlus);
 const More = I(lucideEllipsis);
 const CommentIcon = I(lucideMessageSquare);
 const ActionIcon = I(lucideCircleCheck);
@@ -107,13 +98,12 @@ const FORMAT_EVENT = {
   link: 'ArticleLink',
 } as const;
 
-type Open = 'style' | 'list' | 'align' | 'colour' | 'link' | 'insert' | 'table' | 'more' | null;
+type Open = 'style' | 'list' | 'align' | 'colour' | 'link' | 'table' | 'more' | null;
 
 export function PageToolbar({
   accent,
   topRoomOf,
   articlePages,
-  onInsert,
   onNote,
 }: {
   // A comment or an action on the selected text (a margin note): handled by the host.
@@ -126,8 +116,6 @@ export function PageToolbar({
   topRoomOf: (pageId: string) => number;
   // The article's accent (the theme's when it has none of its own).
   accent: string;
-  // An insert the writing alone cannot make (an object or a drawing): handled by the host.
-  onInsert?: (flow: string, what: ObjectInsert) => void;
 }) {
   // Which article it is for, worked on, hovered or kept docked (page-toolbar-presence.ts).
   const { active, dock, shown, letGo } = useShownArticle(articlePages);
@@ -196,26 +184,6 @@ export function PageToolbar({
   // On a phone the button shows the short name (H1, Bullets) and is only as wide as it, so no room
   // is spent on the longest style's width; its accessible name stays the full one.
   const styleShown = phone ? (styleOption?.short ?? styleLabel) : styleLabel;
-  const S = articleSchema;
-  const insertBlock = (what: BlockInsert) => {
-    if (what === 'table') {
-      if (!handle.run(insertTable)) return;
-    } else if (what === 'footnote') {
-      if (!handle.run(insertFootnote)) return;
-    } else
-      handle.insert(
-        what === 'toc'
-          ? [S.nodes.toc.create(), S.nodes.paragraph.create()]
-          : what === 'divider'
-            ? [S.nodes.divider.create()]
-            : what === 'pageBreak'
-              ? [S.nodes.page_break.create(), S.nodes.paragraph.create()]
-              : what === 'quote'
-                ? [S.nodes.paragraph.create({ style: 'quote' })]
-                : [S.nodes.code_block.create()],
-      );
-    track('Element', 'Added', ARTICLE_BLOCK_INSERT_EVENT[what]);
-  };
   const reshapeTable = (name: TableCommandName) => {
     if (handle.run(tableCommand(name))) track('Element', 'Changed', 'ArticleTableShape');
   };
@@ -353,17 +321,6 @@ export function PageToolbar({
       >
         <More />
       </Button>
-      <Divider />
-      <Button
-        label="Insert"
-        description="Add a picture, chart, drawing, table, embed, page link and more."
-        anchor="insert"
-        menu
-        expanded={open === 'insert'}
-        onPress={() => toggleOpen('insert')}
-      >
-        <Plus />
-      </Button>
       {selection.inTable ? (
         <Button
           label="Table"
@@ -454,14 +411,6 @@ export function PageToolbar({
                 : null
             }
             onCancel={close}
-          />
-        </ToolbarPopover>
-      ) : null}
-      {open === 'insert' ? (
-        <ToolbarPopover anchor="insert" menu onClose={close} label="Insert" width={264}>
-          <InsertPanel
-            onObject={(what) => choose(() => onInsert?.(handle.flow, what))}
-            onBlock={(what) => choose(() => insertBlock(what))}
           />
         </ToolbarPopover>
       ) : null}

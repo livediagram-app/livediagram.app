@@ -277,7 +277,6 @@ export function ArticleFlows({
                 return (articleTopMarginPx(style) - articleHeaderBandPx(style)) * zoom;
               }}
               // For the article the toolbar shows for: the one worked on, or the one hovered.
-              onInsert={articles.insertObject}
               onNote={articles.addNote}
             />
           </Suspense>

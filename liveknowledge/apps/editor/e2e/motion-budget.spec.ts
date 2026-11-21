@@ -120,7 +120,7 @@ async function tourTheChrome(page: Page): Promise<void> {
     undefined,
     page.getByRole('dialog', { name: 'Search', exact: true }),
   );
-  await toggle(page, 'Insert');
+  await toggle(page, 'More Formatting');
   // The slash menu (page-surface.md "The slash menu", "Motion"): it unfolds from the `/` typed in the writing, and
   // Escape closes it; the `/` typed goes again so the writing is as it was.
   await openAndClose(

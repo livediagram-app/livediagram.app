@@ -50,7 +50,8 @@ replaces what the fork still shows around the writing.
   writing but no headings shows the time alone. It follows the committed writing, never each keystroke.
 - **The formatting bar** is the left of the top row ("The footer") while writing: block style, bold,
   italic, underline, colour, link, lists, alignment, more formatting, insert, comment. It holds formatting only.
-  Pictures, charts, tables, drawings and embeds are added from **Insert** and the slash menu.
+  Pictures, charts, tables, drawings and embeds are added from the slash menu (`/`). The formatting bar has no
+  Insert (+) menu (owner, 2026-11-21: "the / menu does a better job, it's just visual noise").
 - **A drawing's tools.** While a drawing zone is being edited the formatting controls give their place in the row
   to that drawing's tools, and only then: four categories (Shapes, Write, Concepts, Icons), each opening its tiles.
   They stay up while they are reached for and used, and go with the next press or typing elsewhere. The marquee,
@@ -209,7 +210,7 @@ it opens and closes). It never takes the caret from the writing: what is typed a
   its name and line; the writing points at the highlighted one (`aria-activedescendant`).
 - **Cost**: it draws only while open, and opening it measures nothing of the writing but the `/`'s place; typing
   with it closed costs what it did.
-- **Telemetry**: a block put in from it counts as the toolbar's Insert does (`Element` `Added`, the block's type).
+- **Telemetry**: a block put in from it counts as `Element` `Added`, the block's type.
 - **Share roles**: an Editor and a Participant have it; a Viewer does not.
 
 ## What a page no longer has
