@@ -2,7 +2,7 @@
 
 // The three views as tabs in the footer (docs/specs/030-knowledgebase/page-surface.md "The footer"): links with
 // `aria-current`, the view in the address, a hover card each, and nothing a person's tab has (add, close, menu).
-import { cleanup, fireEvent, screen } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -18,15 +18,45 @@ import { track } from '@/lib/telemetry';
 import { ROLES, chromeValue, renderInEditor } from '@/components/ask/test-chrome';
 import { BottomBar } from './BottomBar';
 import { KnowledgeViewTabs } from './KnowledgeViewTabs';
+import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
+import { askGate } from '@/components/ask/AskGate';
+import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
+
+const keyed = (hasKey: boolean) => aiSettingsStore.set('d1', { hasKey } as KnowledgeAiSettings);
 
 afterEach(() => {
   offline.on = false;
   cleanup();
+  aiSettingsStore.reset();
+  askGate.close();
   window.history.replaceState(null, '', '/document/d1');
   vi.clearAllMocks();
 });
 
 const link = (name: string) => screen.getByRole('link', { name });
+
+describe('the Ask gate', () => {
+  it('with no key, stays on Pages and opens the gate over it; its Search closes it', async () => {
+    keyed(false);
+    renderInEditor(<KnowledgeViewTabs />);
+    fireEvent.click(link('Ask'));
+    const dialog = await screen.findByRole('dialog', { name: "Ask Needs Your Team's AI Key" });
+    expect(window.location.search).toBe('');
+    expect(track).not.toHaveBeenCalledWith('UI', 'Opened', 'AskView');
+    expect(dialog.textContent).toContain('Open AI Settings');
+    fireEvent.click(screen.getByRole('button', { name: 'Search the Pages' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  it('for someone not signed in, asks them to sign in, without reading the key', async () => {
+    renderInEditor(<KnowledgeViewTabs />, chromeValue('view', { accountUserId: null }));
+    fireEvent.click(link('Ask'));
+    const dialog = await screen.findByRole('dialog', { name: 'Sign In to Ask' });
+    expect(dialog.textContent).toContain('Sign In');
+    expect(aiSettingsStore.get('d1').status).toBe('idle');
+    expect(window.location.search).toBe('');
+  });
+});
 
 describe('the view tabs', () => {
   it('are three links in order, each with its icon, the showing view marked current', () => {
@@ -70,11 +100,12 @@ describe('the view tabs', () => {
     expect(screen.getByRole('button', { name: 'Sync Knowledgebase' })).toBeTruthy();
   });
 
-  it('moves in place on a plain press, as a history entry, and tells telemetry which view', () => {
+  it('moves in place on a plain press, as a history entry, and tells telemetry which view', async () => {
+    keyed(true);
     renderInEditor(<KnowledgeViewTabs />);
     const before = window.history.length;
     fireEvent.click(link('Ask'));
-    expect(window.location.search).toBe('?view=ask');
+    await waitFor(() => expect(window.location.search).toBe('?view=ask'));
     expect(window.history.length).toBe(before + 1);
     expect(link('Ask').getAttribute('aria-current')).toBe('page');
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AskView');

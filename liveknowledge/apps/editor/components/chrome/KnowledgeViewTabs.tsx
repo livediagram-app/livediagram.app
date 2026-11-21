@@ -15,6 +15,8 @@ import {
 } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { AiViewIcon, AskViewIcon, PagesViewIcon } from '@/components/ask/ask-icons';
+import { AskGateDialog, askGate, askGateFor } from '@/components/ask/AskGate';
+import { useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { SyncKnowledgebaseButton } from '@/components/ask/SyncKnowledgebaseButton';
 import { useKnowledgeViewsOffered } from '@/components/ask/useKnowledgeViewsOffered';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -44,11 +46,23 @@ function pressed(
   event: MouseEvent<HTMLAnchorElement>,
   view: KnowledgeView,
   current: KnowledgeView,
+  session: AskSession | null,
 ) {
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
     return;
   event.preventDefault();
   if (view === current) return;
+  // Ask this session cannot use opens its gate over the knowledgebase, not a view to leave for (AskGate).
+  if (view === 'ask' && session) {
+    void askGateFor(session).then((gate) => {
+      if (gate) askGate.open(gate);
+      else {
+        trackView(view);
+        showKnowledgeView(view);
+      }
+    });
+    return;
+  }
   trackView(view);
   showKnowledgeView(view);
 }
@@ -72,53 +86,59 @@ export function KnowledgeViewTabs() {
   const current = useKnowledgeView();
   const href = useKnowledgeViewHref(useEditorChrome((s) => (s.hydrated ? s.activeId : null)));
   const offline = useIsOfflineDocument(useEditorChrome((s) => s.documentId));
+  const session = useAskSession();
   if (!offered) return null;
   return (
-    <nav
-      aria-label="Knowledgebase Views"
-      data-knowledge-view-tabs=""
-      // The bar's full height, the tabs standing on its foot; a phone's three tabs share the row.
-      className={`${TAB_LIST_CLASS} self-stretch phone:min-w-0 phone:flex-1 phone:shrink`}
-    >
-      {KNOWLEDGE_VIEWS.map(({ view, label, short, about }) => {
-        const open = view === current;
-        const off = offlineOff(view, offline);
-        return (
-          <HoverCard
-            key={view}
-            title={off ? `${label} Needs Syncing` : label}
-            description={off ? OFFLINE_VIEW_WHY : about}
-            {...(off ? { action: <SyncKnowledgebaseButton />, pressWithText: true } : {})}
-            className="self-end phone:min-w-0"
-          >
-            <span
-              data-knowledge-view-tab={view}
-              data-open={open ? '' : undefined}
-              data-off={off ? '' : undefined}
-              className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} phone:h-11 phone:justify-center phone:px-3`}
+    <>
+      <AskGateDialog manageAi={session?.rights.manageAi ?? false} />
+      <nav
+        aria-label="Knowledgebase Views"
+        data-knowledge-view-tabs=""
+        // The bar's full height, the tabs standing on its foot; a phone's three tabs share the row.
+        className={`${TAB_LIST_CLASS} self-stretch phone:min-w-0 phone:flex-1 phone:shrink`}
+      >
+        {KNOWLEDGE_VIEWS.map(({ view, label, short, about }) => {
+          const open = view === current;
+          const off = offlineOff(view, offline);
+          return (
+            <HoverCard
+              key={view}
+              title={off ? `${label} Needs Syncing` : label}
+              description={off ? OFFLINE_VIEW_WHY : about}
+              {...(off ? { action: <SyncKnowledgebaseButton />, pressWithText: true } : {})}
+              className="self-end phone:min-w-0"
             >
-              {/* Off, the link goes nowhere: a press opens the card that says why and holds Sync Knowledgebase. */}
-              <a
-                {...(off ? { role: 'link', 'aria-disabled': true } : { href: href(view) })}
-                tabIndex={0}
-                aria-label={label}
-                aria-current={open ? 'page' : undefined}
-                data-tab-key=""
-                data-knowledge-view-link={view}
-                onClick={(event) => (off ? event.preventDefault() : pressed(event, view, current))}
-                className={`${TAB_NAME_BUTTON_CLASS} ${off ? 'cursor-default!' : ''} phone:h-11`}
+              <span
+                data-knowledge-view-tab={view}
+                data-open={open ? '' : undefined}
+                data-off={off ? '' : undefined}
+                className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} phone:h-11 phone:justify-center phone:px-3`}
               >
-                <span aria-hidden className="flex shrink-0">
-                  {ICONS[view]}
-                </span>
-                {/* The full name, and a phone's short one; the link is named by the full name either way. */}
-                <span className={`${TAB_NAME_CLASS} phone:hidden`}>{label}</span>
-                <span className={`${TAB_NAME_CLASS} hidden phone:inline`}>{short}</span>
-              </a>
-            </span>
-          </HoverCard>
-        );
-      })}
-    </nav>
+                {/* Off, the link goes nowhere: a press opens the card that says why and holds Sync Knowledgebase. */}
+                <a
+                  {...(off ? { role: 'link', 'aria-disabled': true } : { href: href(view) })}
+                  tabIndex={0}
+                  aria-label={label}
+                  aria-current={open ? 'page' : undefined}
+                  data-tab-key=""
+                  data-knowledge-view-link={view}
+                  onClick={(event) =>
+                    off ? event.preventDefault() : pressed(event, view, current, session)
+                  }
+                  className={`${TAB_NAME_BUTTON_CLASS} ${off ? 'cursor-default!' : ''} phone:h-11`}
+                >
+                  <span aria-hidden className="flex shrink-0">
+                    {ICONS[view]}
+                  </span>
+                  {/* The full name, and a phone's short one; the link is named by the full name either way. */}
+                  <span className={`${TAB_NAME_CLASS} phone:hidden`}>{label}</span>
+                  <span className={`${TAB_NAME_CLASS} hidden phone:inline`}>{short}</span>
+                </a>
+              </span>
+            </HoverCard>
+          );
+        })}
+      </nav>
+    </>
   );
 }

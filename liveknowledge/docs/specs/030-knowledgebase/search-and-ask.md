@@ -127,6 +127,11 @@ Ask through an anonymous share link is off: it would spend the team's key for st
 - **When Ask is off:** no key (an Editor gets **Open AI Settings**; anyone else is told to ask an Editor), not
   signed in (a share link's visitor included: **Sign In**), or a knowledgebase kept Offline. Each says why, and
   each offers **Search the Pages**.
+- **The Ask gate** (owner 2026-11-21: "couldn't that have been a modal / drawer on mobile rather than another screen
+  entirely"): pressing the Ask tab when Ask is off for no key or for not being signed in stays on the knowledgebase
+  and opens those same words in a dialog over it, a sheet on a phone. Its actions close it first (Open AI Settings
+  opens over Pages). The key is read on the first press only, never on load. Ask's address followed from a link
+  still shows them in the view.
 - **Offline, in the footer** (owner 2026-11-21): a knowledgebase kept Offline keeps the Ask and AI Knowledge tabs,
   quieter and going nowhere. Hovering one (a long press on a phone, focus from the keyboard) shows "Ask Needs
   Syncing" (or "AI Knowledge Needs Syncing"), why ("This knowledgebase is kept in this browser. Ask and AI Knowledge require your content to be synced to our servers.") and **Sync

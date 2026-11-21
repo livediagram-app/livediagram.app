@@ -18,16 +18,32 @@ export function searchThePages(): void {
   knowledgeSearch.open();
 }
 
-export function SearchPagesButton({ variant = 'secondary' }: { variant?: 'secondary' | 'ghost' }) {
+export function SearchPagesButton({
+  variant = 'secondary',
+  before,
+}: {
+  variant?: 'secondary' | 'ghost';
+  /** Run first: the Ask gate closes before the search opens (AskGate). */
+  before?: () => void;
+}) {
   return (
-    <Button variant={variant} size="xs" onClick={searchThePages}>
+    <Button
+      variant={variant}
+      size="xs"
+      onClick={() => {
+        before?.();
+        searchThePages();
+      }}
+    >
       <SearchIcon />
       <span className={variant === 'ghost' ? '' : 'phone:sr-only'}>Search the Pages</span>
     </Button>
   );
 }
 
-function StateShell({ children }: { children: ReactNode }) {
+function StateShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
+  // Bare: inside the Ask gate's dialog (AskGate), which is its own frame.
+  if (bare) return <div className="pb-2">{children}</div>;
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto w-full max-w-xl px-4 py-10">{children}</div>
@@ -37,10 +53,20 @@ function StateShell({ children }: { children: ReactNode }) {
 
 const ACTIONS = 'flex flex-wrap items-center justify-center gap-2';
 
-export function AskNoKey({ manageAi }: { manageAi: boolean }) {
+export function AskNoKey({
+  manageAi,
+  bare = false,
+  before,
+}: {
+  manageAi: boolean;
+  bare?: boolean;
+  /** Run before either action: the gate's dialog closes (AskGate). */
+  before?: () => void;
+}) {
   return (
-    <StateShell>
+    <StateShell bare={bare}>
       <EmptyState
+        compact={bare}
         icon={<KeyIcon />}
         title="Ask Needs Your Team's AI Key"
         description={
@@ -51,22 +77,33 @@ export function AskNoKey({ manageAi }: { manageAi: boolean }) {
       >
         <div className={ACTIONS} data-ask-state="no-key">
           {manageAi ? (
-            <Button variant="primary" size="sm" onClick={openAiSettingsFrom}>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                before?.();
+                openAiSettingsFrom();
+              }}
+            >
               Open AI Settings
             </Button>
           ) : null}
-          <SearchPagesButton variant="ghost" />
+          <SearchPagesButton variant="ghost" {...(before ? { before } : {})} />
         </div>
       </EmptyState>
     </StateShell>
   );
 }
 
-export function AskSignedOut() {
+export function AskSignedOut({
+  bare = false,
+  before,
+}: { bare?: boolean; before?: () => void } = {}) {
   const { signInHref } = useAuthHrefs();
   return (
-    <StateShell>
+    <StateShell bare={bare}>
       <EmptyState
+        compact={bare}
         icon={<SignInIcon />}
         title="Sign In to Ask"
         description="Ask spends this team's own AI key, so it is off for anyone who is not signed in, a share link's visitor included. Search works as it is."
@@ -75,7 +112,7 @@ export function AskSignedOut() {
           <a href={signInHref} className={buttonClassName({ variant: 'primary', size: 'sm' })}>
             Sign In
           </a>
-          <SearchPagesButton variant="ghost" />
+          <SearchPagesButton variant="ghost" {...(before ? { before } : {})} />
         </div>
       </EmptyState>
     </StateShell>
