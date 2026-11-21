@@ -43,7 +43,6 @@ liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts
 liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/features.ts
 liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts
 liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts
-liveworkspace/apps/site/app/telemetry/liveknowledge/catalogue/features.ts
 liveworkspace/apps/site/app/telemetry/liveknowledge/event-explanations.ts
 liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/content.ts
 liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts

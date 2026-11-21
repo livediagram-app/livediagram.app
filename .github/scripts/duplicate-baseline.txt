@@ -13,7 +13,7 @@ livedesign/apps/live/components/tour/TourStage.tsx	livedocuments/apps/editor/com
 livedesign/apps/live/components/tour/chevrons-tour-steps.ts	livedocuments/apps/editor/components/tour/chevrons-tour-steps.ts	liveknowledge/apps/editor/components/tour/chevrons-tour-steps.ts
 livedesign/apps/live/components/tour/stack-tour-steps.ts	livedocuments/apps/editor/components/tour/stack-tour-steps.ts	liveknowledge/apps/editor/components/tour/stack-tour-steps.ts
 livedesign/apps/live/hooks/canvas/useEditorContextMenu.ts	livediagram/apps/editor/hooks/canvas/useEditorContextMenu.ts	livedocuments/apps/editor/hooks/canvas/useEditorContextMenu.ts	livehuddle/apps/editor/hooks/canvas/useEditorContextMenu.ts	liveknowledge/apps/editor/hooks/canvas/useEditorContextMenu.ts	liveplanner/apps/editor/hooks/canvas/useEditorContextMenu.ts
-livedesign/apps/live/hooks/ui/useEditorAccent.ts	livediagram/apps/editor/hooks/ui/useEditorAccent.ts	livedocuments/apps/editor/hooks/ui/useEditorAccent.ts	livehuddle/apps/editor/hooks/ui/useEditorAccent.ts	liveknowledge/apps/editor/hooks/ui/useEditorAccent.ts	liveplanner/apps/editor/hooks/ui/useEditorAccent.ts
+livedesign/apps/live/hooks/ui/useEditorAccent.ts	livediagram/apps/editor/hooks/ui/useEditorAccent.ts	livedocuments/apps/editor/hooks/ui/useEditorAccent.ts	livehuddle/apps/editor/hooks/ui/useEditorAccent.ts	liveplanner/apps/editor/hooks/ui/useEditorAccent.ts
 livedesign/apps/live/lib/contents-placement.ts	livedocuments/apps/editor/lib/contents-placement.ts	liveknowledge/apps/editor/lib/contents-placement.ts
 livedesign/apps/live/lib/guest-identity.ts	livediagram/apps/editor/lib/guest-identity.ts	livedocuments/apps/editor/lib/guest-identity.ts	livehuddle/apps/editor/lib/guest-identity.ts	liveknowledge/apps/editor/lib/guest-identity.ts	liveplanner/apps/editor/lib/guest-identity.ts
 livedesign/apps/live/lib/import-images/index.ts	livediagram/apps/editor/lib/import-images/index.ts
@@ -24,7 +24,7 @@ livedesign/packages/design/src/retired-patterns.ts	livedocuments/packages/docume
 livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-registry/src/telemetry.ts	livedocuments/packages/help-registry/src/telemetry.ts	livehuddle/packages/help-registry/src/telemetry.ts
 livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	livehuddle/packages/licences/src/product.ts	liveknowledge/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
 livedesign/packages/template-previews/src/index.ts	livedocuments/packages/template-previews/src/index.ts	liveknowledge/packages/template-previews/src/index.ts
-livedesign/packages/ui/src/Brand.tsx	livediagram/packages/ui/src/Brand.tsx	livedocuments/packages/ui/src/Brand.tsx	livehuddle/packages/ui/src/Brand.tsx	liveknowledge/packages/ui/src/Brand.tsx
+livedesign/packages/ui/src/Brand.tsx	livediagram/packages/ui/src/Brand.tsx	livedocuments/packages/ui/src/Brand.tsx	livehuddle/packages/ui/src/Brand.tsx
 livedesign/packages/ui/src/SiteSwitcher.tsx	livediagram/packages/ui/src/SiteSwitcher.tsx	livedocuments/packages/ui/src/SiteSwitcher.tsx	livehuddle/packages/ui/src/SiteSwitcher.tsx	liveknowledge/packages/ui/src/SiteSwitcher.tsx	liveplanner/packages/ui/src/SiteSwitcher.tsx
 livedesign/packages/ui/src/WebVitalsReporter.tsx	livediagram/packages/ui/src/WebVitalsReporter.tsx	livedocuments/packages/ui/src/WebVitalsReporter.tsx	livehuddle/packages/ui/src/WebVitalsReporter.tsx	liveknowledge/packages/ui/src/WebVitalsReporter.tsx	liveplanner/packages/ui/src/WebVitalsReporter.tsx
 livedesign/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livediagram/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livedocuments/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livehuddle/packages/ui/src/appearance/SiteAppearanceToggle.tsx	liveknowledge/packages/ui/src/appearance/SiteAppearanceToggle.tsx	liveplanner/packages/ui/src/appearance/SiteAppearanceToggle.tsx
@@ -45,7 +45,7 @@ livediagram/apps/editor/app/join/page.tsx	livehuddle/apps/editor/app/join/page.t
 livediagram/apps/editor/app/not-found.tsx	livedocuments/apps/editor/app/not-found.tsx	livehuddle/apps/editor/app/not-found.tsx	liveknowledge/apps/editor/app/not-found.tsx
 livediagram/apps/editor/app/page.tsx	livehuddle/apps/editor/app/page.tsx
 livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx	liveknowledge/apps/editor/app/sign-in/page.tsx
-livediagram/apps/editor/components/chrome/EllipsisMenuButton.tsx	livedocuments/apps/editor/components/chrome/EllipsisMenuButton.tsx	liveknowledge/apps/editor/components/chrome/EllipsisMenuButton.tsx
+livediagram/apps/editor/components/chrome/EllipsisMenuButton.tsx	livedocuments/apps/editor/components/chrome/EllipsisMenuButton.tsx
 livediagram/apps/editor/components/chrome/OpeningScreen.tsx	livedocuments/apps/editor/components/chrome/OpeningScreen.tsx	livehuddle/apps/editor/components/chrome/OpeningScreen.tsx	liveknowledge/apps/editor/components/chrome/OpeningScreen.tsx
 livediagram/apps/editor/components/colour/useThemeColours.ts	livehuddle/apps/editor/components/colour/useThemeColours.ts
 livediagram/apps/editor/components/dialogs/ConversionHandoff.tsx	livehuddle/apps/editor/components/dialogs/ConversionHandoff.tsx
@@ -55,7 +55,7 @@ livediagram/apps/editor/components/tour/TourStage.tsx	livehuddle/apps/editor/com
 livediagram/apps/editor/e2e/signed-in/session.ts	livehuddle/apps/editor/e2e/signed-in/session.ts
 livediagram/apps/editor/e2e/stored.ts	livedocuments/apps/editor/e2e/stored.ts	livehuddle/apps/editor/e2e/stored.ts	liveknowledge/apps/editor/e2e/stored.ts
 livediagram/apps/editor/hooks/persistence/useGuestId.ts	livehuddle/apps/editor/hooks/persistence/useGuestId.ts
-livediagram/apps/editor/hooks/ui/useColourPalette.ts	livedocuments/apps/editor/hooks/ui/useColourPalette.ts	livehuddle/apps/editor/hooks/ui/useColourPalette.ts	liveknowledge/apps/editor/hooks/ui/useColourPalette.ts
+livediagram/apps/editor/hooks/ui/useColourPalette.ts	livedocuments/apps/editor/hooks/ui/useColourPalette.ts	livehuddle/apps/editor/hooks/ui/useColourPalette.ts
 livediagram/apps/editor/hooks/ui/useDocumentColours.ts	livedocuments/apps/editor/hooks/ui/useDocumentColours.ts	livehuddle/apps/editor/hooks/ui/useDocumentColours.ts	liveknowledge/apps/editor/hooks/ui/useDocumentColours.ts
 livediagram/apps/editor/hooks/ui/useImageSearch.ts	livehuddle/apps/editor/hooks/ui/useImageSearch.ts
 livediagram/apps/editor/lib/add-to-document-targets.ts	livedocuments/apps/editor/lib/add-to-document-targets.ts	liveknowledge/apps/editor/lib/add-to-document-targets.ts
@@ -81,36 +81,34 @@ livediagram/scripts/stroke-points-bench.ts	livehuddle/scripts/stroke-points-benc
 livedocuments/apps/api/src/db/account.ts	liveknowledge/apps/api/src/db/account.ts
 livedocuments/apps/api/src/db/index.ts	liveknowledge/apps/api/src/db/index.ts
 livedocuments/apps/api/src/db/tab-save-document.ts	liveknowledge/apps/api/src/db/tab-save-document.ts
+livedocuments/apps/api/src/document-room/automations/kit-outline.ts	liveknowledge/apps/api/src/document-room/automations/kit-outline.ts
 livedocuments/apps/api/src/document-room/document-anonymise.ts	liveknowledge/apps/api/src/document-room/document-anonymise.ts
-livedocuments/apps/api/src/document-room/document-room-doors.ts	liveknowledge/apps/api/src/document-room/document-room-doors.ts
 livedocuments/apps/api/src/document-room/document-room-wiring.ts	liveknowledge/apps/api/src/document-room/document-room-wiring.ts
 livedocuments/apps/api/src/document-room/document-route.ts	liveknowledge/apps/api/src/document-room/document-route.ts
 livedocuments/apps/api/src/room-scope.ts	liveknowledge/apps/api/src/room-scope.ts
+livedocuments/apps/api/src/routes/automation-hook-route.ts	liveknowledge/apps/api/src/routes/automation-hook-route.ts
 livedocuments/apps/api/src/routes/document-shared-tabs-route.ts	liveknowledge/apps/api/src/routes/document-shared-tabs-route.ts
-livedocuments/apps/api/src/routes/images.ts	liveknowledge/apps/api/src/routes/images.ts
+livedocuments/apps/api/src/routes/email-optout-route.ts	liveknowledge/apps/api/src/routes/email-optout-route.ts
 livedocuments/apps/api/src/routes/notify-action-route.ts	liveknowledge/apps/api/src/routes/notify-action-route.ts
 livedocuments/apps/api/src/routes/preferences.ts	liveknowledge/apps/api/src/routes/preferences.ts
 livedocuments/apps/api/src/routes/share.ts	liveknowledge/apps/api/src/routes/share.ts
 livedocuments/apps/api/src/routes/tab-link-route.ts	liveknowledge/apps/api/src/routes/tab-link-route.ts
-livedocuments/apps/api/src/routes/tab-name-route.ts	liveknowledge/apps/api/src/routes/tab-name-route.ts
 livedocuments/apps/api/src/test-profiles.ts	liveknowledge/apps/api/src/test-profiles.ts
 livedocuments/apps/api/src/versions/named-store-schema.ts	liveknowledge/apps/api/src/versions/named-store-schema.ts
 livedocuments/apps/api/src/versions/telemetry.ts	liveknowledge/apps/api/src/versions/telemetry.ts
+livedocuments/apps/api/test/workerd-automations/worker.ts	liveknowledge/apps/api/test/workerd-automations/worker.ts
 livedocuments/apps/editor/app/document/[id]/deck-save.ts	liveknowledge/apps/editor/app/document/[id]/deck-save.ts
-livedocuments/apps/editor/app/document/[id]/editor-state/editor-view.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/editor-view.ts
-livedocuments/apps/editor/app/document/[id]/editor-state/useEditorInput.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorInput.ts
 livedocuments/apps/editor/app/document/[id]/editor-state/useEditorSelection.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorSelection.ts
 livedocuments/apps/editor/app/document/[id]/editor-state/useEditorTools.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorTools.ts
-livedocuments/apps/editor/app/document/[id]/editor-state/useEditorUndoState.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorUndoState.ts
 livedocuments/apps/editor/app/document/[id]/editor-state/useEditorWorkbench.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorWorkbench.ts
 livedocuments/apps/editor/app/document/[id]/editor-ui-state.ts	liveknowledge/apps/editor/app/document/[id]/editor-ui-state.ts
 livedocuments/apps/editor/app/document/[id]/room-refusal.ts	liveknowledge/apps/editor/app/document/[id]/room-refusal.ts
 livedocuments/apps/editor/app/document/[id]/save-failure.ts	liveknowledge/apps/editor/app/document/[id]/save-failure.ts
 livedocuments/apps/editor/app/document/[id]/useDocumentTrashed.ts	liveknowledge/apps/editor/app/document/[id]/useDocumentTrashed.ts
-livedocuments/apps/editor/app/document/[id]/useEditorState.ts	liveknowledge/apps/editor/app/document/[id]/useEditorState.ts
 livedocuments/apps/editor/app/document/[id]/usePanelLayout.ts	liveknowledge/apps/editor/app/document/[id]/usePanelLayout.ts
 livedocuments/apps/editor/app/new/new-document-settings.ts	liveknowledge/apps/editor/app/new/new-document-settings.ts
-livedocuments/apps/editor/app/page.tsx	liveknowledge/apps/editor/app/page.tsx
+livedocuments/apps/editor/components/automations/DocumentAutomationsGate.tsx	liveknowledge/apps/editor/components/automations/DocumentAutomationsGate.tsx
+livedocuments/apps/editor/components/automations/document-item.ts	liveknowledge/apps/editor/components/automations/document-item.ts
 livedocuments/apps/editor/components/canvas/PagesClusterStrip.tsx	liveknowledge/apps/editor/components/canvas/PagesClusterStrip.tsx
 livedocuments/apps/editor/components/canvas/PresentingContext.tsx	liveknowledge/apps/editor/components/canvas/PresentingContext.tsx
 livedocuments/apps/editor/components/canvas/QuickStyleBarSlot.tsx	liveknowledge/apps/editor/components/canvas/QuickStyleBarSlot.tsx
@@ -122,32 +120,21 @@ livedocuments/apps/editor/components/canvas/canvas-main-style.ts	liveknowledge/a
 livedocuments/apps/editor/components/canvas/collab/comment/MentionContext.tsx	liveknowledge/apps/editor/components/canvas/collab/comment/MentionContext.tsx
 livedocuments/apps/editor/components/canvas/editor-canvas-host/useEditCanvasProps.ts	liveknowledge/apps/editor/components/canvas/editor-canvas-host/useEditCanvasProps.ts
 livedocuments/apps/editor/components/canvas/editor-canvas-host/usePanelCanvasProps.ts	liveknowledge/apps/editor/components/canvas/editor-canvas-host/usePanelCanvasProps.ts
-livedocuments/apps/editor/components/canvas/page-title-bar-room.ts	liveknowledge/apps/editor/components/canvas/page-title-bar-room.ts
 livedocuments/apps/editor/components/canvas/text-hug-measure.ts	liveknowledge/apps/editor/components/canvas/text-hug-measure.ts
 livedocuments/apps/editor/components/canvas/tool-panels.ts	liveknowledge/apps/editor/components/canvas/tool-panels.ts
 livedocuments/apps/editor/components/canvas/useCanvasDrawTools.tsx	liveknowledge/apps/editor/components/canvas/useCanvasDrawTools.tsx
 livedocuments/apps/editor/components/canvas/useCanvasHostBrush.ts	liveknowledge/apps/editor/components/canvas/useCanvasHostBrush.ts
-livedocuments/apps/editor/components/canvas/useCanvasHostExplorer.ts	liveknowledge/apps/editor/components/canvas/useCanvasHostExplorer.ts
 livedocuments/apps/editor/components/canvas/useCanvasHostMenus.ts	liveknowledge/apps/editor/components/canvas/useCanvasHostMenus.ts
 livedocuments/apps/editor/components/canvas/useCanvasPointer.tsx	liveknowledge/apps/editor/components/canvas/useCanvasPointer.tsx
 livedocuments/apps/editor/components/canvas/useCanvasToolPanels.tsx	liveknowledge/apps/editor/components/canvas/useCanvasToolPanels.tsx
-livedocuments/apps/editor/components/chrome/LoadErrorCard.tsx	liveknowledge/apps/editor/components/chrome/LoadErrorCard.tsx
-livedocuments/apps/editor/components/chrome/NotFound.tsx	liveknowledge/apps/editor/components/chrome/NotFound.tsx
-livedocuments/apps/editor/components/colour/useThemeColours.ts	liveknowledge/apps/editor/components/colour/useThemeColours.ts
-livedocuments/apps/editor/components/connect/useConnectStart.tsx	liveknowledge/apps/editor/components/connect/useConnectStart.tsx
 livedocuments/apps/editor/components/dialogs/ConversionHandoff.tsx	liveknowledge/apps/editor/components/dialogs/ConversionHandoff.tsx
 livedocuments/apps/editor/components/dialogs/SharePasswordGate.tsx	liveknowledge/apps/editor/components/dialogs/SharePasswordGate.tsx
 livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveknowledge/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts
-livedocuments/apps/editor/components/dialogs/shortcut-sections.ts	liveknowledge/apps/editor/components/dialogs/shortcut-sections.ts
-livedocuments/apps/editor/components/find/FindBarLoading.tsx	liveknowledge/apps/editor/components/find/FindBarLoading.tsx
 livedocuments/apps/editor/components/find/find-bar-top.ts	liveknowledge/apps/editor/components/find/find-bar-top.ts
 livedocuments/apps/editor/components/palette/ArticleDockSlot.tsx	liveknowledge/apps/editor/components/palette/ArticleDockSlot.tsx
 livedocuments/apps/editor/components/palette/CategoryBar.tsx	liveknowledge/apps/editor/components/palette/CategoryBar.tsx
 livedocuments/apps/editor/components/palette/PaletteToolRows.tsx	liveknowledge/apps/editor/components/palette/PaletteToolRows.tsx
 livedocuments/apps/editor/components/palette/bar-categories.tsx	liveknowledge/apps/editor/components/palette/bar-categories.tsx
-livedocuments/apps/editor/components/palette/canvas-tool-options.tsx	liveknowledge/apps/editor/components/palette/canvas-tool-options.tsx
-livedocuments/apps/editor/components/palette/category-flyout-groups.ts	liveknowledge/apps/editor/components/palette/category-flyout-groups.ts
-livedocuments/apps/editor/components/palette/category-flyout-kit.tsx	liveknowledge/apps/editor/components/palette/category-flyout-kit.tsx
 livedocuments/apps/editor/components/palette/palette-add-handlers.ts	liveknowledge/apps/editor/components/palette/palette-add-handlers.ts
 livedocuments/apps/editor/components/palette/palette-category-tabs.tsx	liveknowledge/apps/editor/components/palette/palette-category-tabs.tsx
 livedocuments/apps/editor/components/palette/palette-tile-defs.tsx	liveknowledge/apps/editor/components/palette/palette-tile-defs.tsx
@@ -158,7 +145,6 @@ livedocuments/apps/editor/components/panels/Explorer.types.ts	liveknowledge/apps
 livedocuments/apps/editor/components/panels/ModePanel.tsx	liveknowledge/apps/editor/components/panels/ModePanel.tsx
 livedocuments/apps/editor/components/primitives/usePopoverTopClearance.ts	liveknowledge/apps/editor/components/primitives/usePopoverTopClearance.ts
 livedocuments/apps/editor/components/split/SplitViewFrame.tsx	liveknowledge/apps/editor/components/split/SplitViewFrame.tsx
-livedocuments/apps/editor/components/start/start-closed-key.ts	liveknowledge/apps/editor/components/start/start-closed-key.ts
 livedocuments/apps/editor/components/tour/article-tour-steps.ts	liveknowledge/apps/editor/components/tour/article-tour-steps.ts
 livedocuments/apps/editor/components/tour/cycle-tour-steps.ts	liveknowledge/apps/editor/components/tour/cycle-tour-steps.ts
 livedocuments/apps/editor/components/tour/funnel-tour-steps.ts	liveknowledge/apps/editor/components/tour/funnel-tour-steps.ts
@@ -172,10 +158,8 @@ livedocuments/apps/editor/components/tour/page-tour-parts.ts	liveknowledge/apps/
 livedocuments/apps/editor/components/tour/pyramid-tour-steps.ts	liveknowledge/apps/editor/components/tour/pyramid-tour-steps.ts
 livedocuments/apps/editor/components/tour/slide-tour-steps.ts	liveknowledge/apps/editor/components/tour/slide-tour-steps.ts
 livedocuments/apps/editor/components/tour/timeline-tour-steps.ts	liveknowledge/apps/editor/components/tour/timeline-tour-steps.ts
-livedocuments/apps/editor/components/versions/VersionHistoryHost.tsx	liveknowledge/apps/editor/components/versions/VersionHistoryHost.tsx
 livedocuments/apps/editor/e2e/signed-in/session.ts	liveknowledge/apps/editor/e2e/signed-in/session.ts
 livedocuments/apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts	liveknowledge/apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts
-livedocuments/apps/editor/hooks/canvas/useCanvasTool.ts	liveknowledge/apps/editor/hooks/canvas/useCanvasTool.ts
 livedocuments/apps/editor/hooks/canvas/useDockPopovers.ts	liveknowledge/apps/editor/hooks/canvas/useDockPopovers.ts
 livedocuments/apps/editor/hooks/collab/useFollowMe.ts	liveknowledge/apps/editor/hooks/collab/useFollowMe.ts
 livedocuments/apps/editor/hooks/collab/useReleaseSelectionLock.ts	liveknowledge/apps/editor/hooks/collab/useReleaseSelectionLock.ts
@@ -190,7 +174,6 @@ livedocuments/apps/editor/lib/article/article-dock.ts	liveknowledge/apps/editor/
 livedocuments/apps/editor/lib/article/article-find-plugin.ts	liveknowledge/apps/editor/lib/article/article-find-plugin.ts
 livedocuments/apps/editor/lib/article/article-footnote-rows.ts	liveknowledge/apps/editor/lib/article/article-footnote-rows.ts
 livedocuments/apps/editor/lib/article/article-footnote-split-look.ts	liveknowledge/apps/editor/lib/article/article-footnote-split-look.ts
-livedocuments/apps/editor/lib/article/article-footnotes.ts	liveknowledge/apps/editor/lib/article/article-footnotes.ts
 livedocuments/apps/editor/lib/article/article-grow-store.ts	liveknowledge/apps/editor/lib/article/article-grow-store.ts
 livedocuments/apps/editor/lib/article/article-hold-notice.ts	liveknowledge/apps/editor/lib/article/article-hold-notice.ts
 livedocuments/apps/editor/lib/article/article-holds.ts	liveknowledge/apps/editor/lib/article/article-holds.ts
@@ -198,7 +181,6 @@ livedocuments/apps/editor/lib/article/article-open-edit.ts	liveknowledge/apps/ed
 livedocuments/apps/editor/lib/article/article-pdf-tags.ts	liveknowledge/apps/editor/lib/article/article-pdf-tags.ts
 livedocuments/apps/editor/lib/article/article-peers.ts	liveknowledge/apps/editor/lib/article/article-peers.ts
 livedocuments/apps/editor/lib/article/article-schema-table.ts	liveknowledge/apps/editor/lib/article/article-schema-table.ts
-livedocuments/apps/editor/lib/article/article-slash.ts	liveknowledge/apps/editor/lib/article/article-slash.ts
 livedocuments/apps/editor/lib/article/article-table-editor.ts	liveknowledge/apps/editor/lib/article/article-table-editor.ts
 livedocuments/apps/editor/lib/article/article-table-repeat.ts	liveknowledge/apps/editor/lib/article/article-table-repeat.ts
 livedocuments/apps/editor/lib/article/article-telemetry.ts	liveknowledge/apps/editor/lib/article/article-telemetry.ts
@@ -226,29 +208,23 @@ livedocuments/apps/editor/lib/office-import/tally.ts	liveknowledge/apps/editor/l
 livedocuments/apps/editor/lib/office-import/test-fixtures.ts	liveknowledge/apps/editor/lib/office-import/test-fixtures.ts
 livedocuments/apps/editor/lib/office-import/text-fit.ts	liveknowledge/apps/editor/lib/office-import/text-fit.ts
 livedocuments/apps/editor/lib/office-import/xml.ts	liveknowledge/apps/editor/lib/office-import/xml.ts
-livedocuments/apps/editor/lib/office-import/zip.ts	liveknowledge/apps/editor/lib/office-import/zip.ts
 livedocuments/apps/editor/lib/own-picture.ts	liveknowledge/apps/editor/lib/own-picture.ts
 livedocuments/apps/editor/lib/page-tidy-check/page-tidy-check.worker.ts	liveknowledge/apps/editor/lib/page-tidy-check/page-tidy-check.worker.ts
 livedocuments/apps/editor/lib/page-tidy-guard.ts	liveknowledge/apps/editor/lib/page-tidy-guard.ts
 livedocuments/apps/editor/lib/page-tidy-index.ts	liveknowledge/apps/editor/lib/page-tidy-index.ts
 livedocuments/apps/editor/lib/presented-pages.ts	liveknowledge/apps/editor/lib/presented-pages.ts
 livedocuments/apps/editor/lib/quick-style-bar-slots.ts	liveknowledge/apps/editor/lib/quick-style-bar-slots.ts
-livedocuments/apps/editor/lib/side-chrome-insets.ts	liveknowledge/apps/editor/lib/side-chrome-insets.ts
 livedocuments/apps/editor/lib/tab-style-opener.ts	liveknowledge/apps/editor/lib/tab-style-opener.ts
-livedocuments/apps/editor/lib/telemetry-manifest.ts	liveknowledge/apps/editor/lib/telemetry-manifest.ts
 livedocuments/apps/editor/lib/thumbnail-cache.ts	liveknowledge/apps/editor/lib/thumbnail-cache.ts
 livedocuments/apps/editor/lib/version-history-store.ts	liveknowledge/apps/editor/lib/version-history-store.ts
 livedocuments/apps/editor/lib/workbench-bindings.ts	liveknowledge/apps/editor/lib/workbench-bindings.ts
-livedocuments/apps/editor/lib/write-failure-copy.ts	liveknowledge/apps/editor/lib/write-failure-copy.ts
 livedocuments/packages/agent-verbs/src/pages/index.ts	liveknowledge/packages/agent-verbs/src/pages/index.ts
 livedocuments/packages/api-schema/src/article-caret.ts	liveknowledge/packages/api-schema/src/article-caret.ts
 livedocuments/packages/api-schema/src/cta-sources.ts	liveknowledge/packages/api-schema/src/cta-sources.ts
 livedocuments/packages/api-schema/src/error-telemetry.ts	liveknowledge/packages/api-schema/src/error-telemetry.ts
 livedocuments/packages/api-schema/src/home.ts	liveknowledge/packages/api-schema/src/home.ts
 livedocuments/packages/api-schema/src/lint.ts	liveknowledge/packages/api-schema/src/lint.ts
-livedocuments/packages/api-schema/src/page-views.ts	liveknowledge/packages/api-schema/src/page-views.ts
 livedocuments/packages/api-schema/src/trash.ts	liveknowledge/packages/api-schema/src/trash.ts
-livedocuments/packages/api-schema/src/workbench.ts	liveknowledge/packages/api-schema/src/workbench.ts
 livedocuments/packages/diagram-lint/src/checks/flow-backwards.ts	liveknowledge/packages/diagram-lint/src/checks/flow-backwards.ts
 livedocuments/packages/diagram-lint/src/checks/index.ts	liveknowledge/packages/diagram-lint/src/checks/index.ts
 livedocuments/packages/diagram-lint/src/fixes.ts	liveknowledge/packages/diagram-lint/src/fixes.ts
@@ -261,12 +237,9 @@ livedocuments/packages/document/src/article-flow-ops.ts	liveknowledge/packages/d
 livedocuments/packages/document/src/article-footnotes.ts	liveknowledge/packages/document/src/article-footnotes.ts
 livedocuments/packages/document/src/article-intake.ts	liveknowledge/packages/document/src/article-intake.ts
 livedocuments/packages/document/src/article-layout-set.ts	liveknowledge/packages/document/src/article-layout-set.ts
-livedocuments/packages/document/src/article-markdown-export.ts	liveknowledge/packages/document/src/article-markdown-export.ts
-livedocuments/packages/document/src/article-markdown-io.ts	liveknowledge/packages/document/src/article-markdown-io.ts
 livedocuments/packages/document/src/article-markdown.ts	liveknowledge/packages/document/src/article-markdown.ts
 livedocuments/packages/document/src/article-notes.ts	liveknowledge/packages/document/src/article-notes.ts
 livedocuments/packages/document/src/article-readability.ts	liveknowledge/packages/document/src/article-readability.ts
-livedocuments/packages/document/src/article-style.ts	liveknowledge/packages/document/src/article-style.ts
 livedocuments/packages/document/src/article-table.ts	liveknowledge/packages/document/src/article-table.ts
 livedocuments/packages/document/src/article-toc.ts	liveknowledge/packages/document/src/article-toc.ts
 livedocuments/packages/document/src/article-zone-plan.ts	liveknowledge/packages/document/src/article-zone-plan.ts
@@ -316,7 +289,6 @@ livedocuments/packages/document/src/slide-deck-patch.ts	liveknowledge/packages/d
 livedocuments/packages/document/src/slide-deck.ts	liveknowledge/packages/document/src/slide-deck.ts
 livedocuments/packages/document/src/slide-notes-merge.ts	liveknowledge/packages/document/src/slide-notes-merge.ts
 livedocuments/packages/document/src/stat-count.ts	liveknowledge/packages/document/src/stat-count.ts
-livedocuments/packages/document/src/stored-tab.ts	liveknowledge/packages/document/src/stored-tab.ts
 livedocuments/packages/document/src/svg-render-body.ts	liveknowledge/packages/document/src/svg-render-body.ts
 livedocuments/packages/document/src/svg-render-boxed.ts	liveknowledge/packages/document/src/svg-render-boxed.ts
 livedocuments/packages/document/src/svg-render-describe.ts	liveknowledge/packages/document/src/svg-render-describe.ts
@@ -334,7 +306,7 @@ livedocuments/packages/document/src/table.ts	liveknowledge/packages/document/src
 livedocuments/packages/document/src/validate-shape.ts	liveknowledge/packages/document/src/validate-shape.ts
 livedocuments/packages/document/src/version-changes.ts	liveknowledge/packages/document/src/version-changes.ts
 livedocuments/packages/edit-operations/src/parse-line.ts	liveknowledge/packages/edit-operations/src/parse-line.ts
-livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveknowledge/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
+livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
 livedocuments/packages/template-previews/src/article-preview-parts.tsx	liveknowledge/packages/template-previews/src/article-preview-parts.tsx
 livedocuments/packages/templates/src/article-templates-2.ts	liveknowledge/packages/templates/src/article-templates-2.ts
 livedocuments/packages/templates/src/beside-offers.ts	liveknowledge/packages/templates/src/beside-offers.ts
@@ -348,4 +320,3 @@ livedocuments/packages/templates/src/page-layouts-set-social.ts	liveknowledge/pa
 livedocuments/packages/templates/src/template-board-update.ts	liveknowledge/packages/templates/src/template-board-update.ts
 livedocuments/packages/templates/src/template-resume-data.ts	liveknowledge/packages/templates/src/template-resume-data.ts
 livedocuments/packages/templates/src/template-year-review-data.ts	liveknowledge/packages/templates/src/template-year-review-data.ts
-livedocuments/packages/ui/src/SiteFooter.tsx	liveknowledge/packages/ui/src/SiteFooter.tsx
