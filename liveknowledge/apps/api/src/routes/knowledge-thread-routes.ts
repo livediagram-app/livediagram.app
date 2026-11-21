@@ -4,6 +4,7 @@
 // Reading is every role's; a change is a Participant's, as commenting is everywhere on the platform (an Editor, a
 // Participant, an edit link's visitor, an agent that may suggest or write). Edit and delete are the author's own.
 // Every change is told to the room as one `page-thread` op with the thread whole, so everyone on the page sees it.
+import { guestName } from '@liveknowledge/knowledge';
 import { collabKeyFor } from '@liveworkspace/api-kit/collab-key';
 import type { PageThreadChange, PageThreadOp } from '@liveknowledge/api-schema';
 import {
@@ -93,7 +94,8 @@ async function authorOf(
   return {
     id: owner,
     key: await collabKeyFor(owner),
-    name: person?.name || typed || 'Anonymous',
+    // A guest's says so after it: "Bright Marlin (Guest)" (owner 2026-11-21).
+    name: person?.name || (ctx.token ? 'Anonymous' : guestName(typed)),
     color: person?.color ?? '#94a3b8',
     ...(ctx.token ? { tokenId: ctx.token.id } : {}),
   };

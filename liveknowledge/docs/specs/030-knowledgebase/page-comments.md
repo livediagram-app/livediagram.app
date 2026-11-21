@@ -41,6 +41,8 @@ Comments are about the page as a whole.
 - **Your own comment** has **Edit** and **Delete** in a small menu on hover or focus (always shown on touch). Edit
   turns it into a composer with **Save** and **Cancel**. Delete asks first ("Delete This Comment?"); deleting a
   thread's last comment removes the thread.
+- **A guest's name:** a guest's comment is under the name on their cursor with "(Guest)" after it, "Bright Marlin
+  (Guest)" (owner 2026-11-21); an account's is its profile name.
 - **Nothing to show:** with no threads, a writer sees no empty-state box: one quiet line under the heading with the
   comments glyph, "Questions, corrections and context for this page go here.", then the composer.
   A Viewer sees nothing at all: no heading, no empty state (decided), so a page with no conversation is just a page.

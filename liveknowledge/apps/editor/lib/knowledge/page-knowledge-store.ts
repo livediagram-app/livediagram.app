@@ -9,6 +9,8 @@ import {
   type ApprovalAction,
   type KnowledgeFields,
   type ReviewEvery,
+  guestVerifierName,
+  isGuestVerifier,
 } from '@liveknowledge/knowledge';
 import type {
   PageHealthResponse,
@@ -182,7 +184,10 @@ export function createPageKnowledgeStore(
           ...withFields(was, next, reviewEveryOf(documentId), now),
           changedSinceVerified: false,
         }),
-        () => api.verify(who, documentId, page.id),
+        () =>
+          isGuestVerifier(person)
+            ? api.verify(who, documentId, page.id, guestVerifierName(person))
+            : api.verify(who, documentId, page.id),
       );
     },
     /** Owner or Always in Context. Rejects, rolled back, on a refusal. */

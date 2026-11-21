@@ -84,8 +84,31 @@ export function trustState(fields: KnowledgeFields, every: ReviewEvery, now: num
  *  guest never becomes a page's owner. */
 export const GUEST_VERIFIER = 'guest';
 
+/** The mark a guest's name carries wherever it is recorded (owner 2026-11-21: "Bright Marlin (Guest)"). */
+const GUEST_MARK = ' (Guest)';
+const GUEST_NAME_MAX = 80;
+
+/** A guest's name as recorded: their name with "(Guest)" after it, or "Guest" with none. Idempotent. */
+export function guestName(name: string | null | undefined): string {
+  const bare = (name ?? '').trim().slice(0, GUEST_NAME_MAX);
+  if (!bare || bare === 'Guest') return 'Guest';
+  return bare.endsWith(GUEST_MARK) ? bare : `${bare}${GUEST_MARK}`;
+}
+
+/** The `verifiedBy` of a guest's Verify: GUEST_VERIFIER and their name, never their own id. */
+export const guestVerifier = (name: string | null | undefined): string => {
+  const shown = guestName(name);
+  return shown === 'Guest' ? GUEST_VERIFIER : `${GUEST_VERIFIER}:${shown}`;
+};
+
+/** Whether a `verifiedBy` is a guest's, and the name it shows ("Bright Marlin (Guest)", or "Guest"). */
+export const isGuestVerifier = (id: string | undefined): boolean =>
+  id === GUEST_VERIFIER || (id?.startsWith(`${GUEST_VERIFIER}:`) ?? false);
+export const guestVerifierName = (id: string): string =>
+  id === GUEST_VERIFIER ? 'Guest' : guestName(id.slice(GUEST_VERIFIER.length + 1));
+
 export function verified(fields: KnowledgeFields, person: string, now: number): KnowledgeFields {
-  const owner = fields.owner ?? (person === GUEST_VERIFIER ? undefined : person);
+  const owner = fields.owner ?? (isGuestVerifier(person) ? undefined : person);
   return {
     ...fields,
     ...(owner === undefined ? {} : { owner }),

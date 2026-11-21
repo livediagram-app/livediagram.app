@@ -161,8 +161,15 @@ export async function apiVerifyPage(
   who: KnowledgeCaller,
   documentId: string,
   tab: string,
+  guest?: string,
 ): Promise<PageKnowledge> {
-  const res = await write(who, pageUrl(documentId, tab, 'verify'), 'POST');
+  // A guest sends their cursor's name, for "Verified by Bright Marlin (Guest)".
+  const res = await write(
+    who,
+    pageUrl(documentId, tab, 'verify'),
+    'POST',
+    guest === undefined ? undefined : { name: guest },
+  );
   return (await expectOk<PageKnowledgeResponse>(res, 'verify page', expected)).knowledge;
 }
 

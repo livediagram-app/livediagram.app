@@ -119,7 +119,7 @@ describe('pages/:tab/threads', () => {
     const kit = await knowledgeKit();
     const res = await change(kit, 'edit-link', { op: 'start', text: 'From a guest', name: 'Sam' });
     expect(res.status).toBe(201);
-    expect((await threadOf(res)).comments[0]).toMatchObject({ authorName: 'Sam' });
+    expect((await threadOf(res)).comments[0]).toMatchObject({ authorName: 'Sam (Guest)' });
   });
 
   it.each(['viewer', 'link', 'page-link', 'viewer-agent', 'agent-read-only', 'stranger'] as const)(

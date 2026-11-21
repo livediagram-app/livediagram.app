@@ -6,7 +6,12 @@
 // nothing here.
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { PageHealthResponse, PageKnowledgePatch } from '@liveknowledge/api-schema';
-import { GUEST_VERIFIER, type ReviewEvery } from '@liveknowledge/knowledge';
+import {
+  guestVerifier,
+  guestVerifierName,
+  isGuestVerifier,
+  type ReviewEvery,
+} from '@liveknowledge/knowledge';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useToast } from '@/hooks/ui/useToast';
@@ -39,7 +44,8 @@ export function useKnowledgePeople(): {
     const names = new Map(people.map((p) => [p.id, p.name]));
     return {
       people,
-      nameOf: (id) => (id === GUEST_VERIFIER ? 'Guest' : id ? names.get(id) : undefined),
+      nameOf: (id) =>
+        id && isGuestVerifier(id) ? guestVerifierName(id) : id ? names.get(id) : undefined,
     };
   }, [accountUserId, selfName, candidates]);
 }
@@ -77,8 +83,9 @@ export function useKnowledgeActions(): KnowledgeActions {
       const page = editor.tabs.find((t) => t.id === pageId);
       if (!rights.verify || !caller || !page) return;
       track('UI', 'Used', 'VerifyPage');
-      // A guest verifies too, as "Guest", never made the page's owner (verification.md; the api stamps the same).
-      const person = editor.accountUserId ?? GUEST_VERIFIER;
+      // A guest verifies too, as "Bright Marlin (Guest)", never made the page's owner (verification.md; the api
+      // stamps the same).
+      const person = editor.accountUserId ?? guestVerifier(editor.selfParticipant.name);
       pageKnowledgeStore
         .verify(caller.who, caller.documentId, page, person, Date.now())
         .catch((err: unknown) => toast.error(knowledgeFailureText(err, 'verify')));

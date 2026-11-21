@@ -4,6 +4,7 @@
 // threads (read once a page a session, after the page has drawn), whether the person here may write, their own
 // collab key (which comments are theirs) and `change`, optimistic with a toast in words on a refusal. Reads the
 // chrome store one slice at a time and the threads store by its version: typing renders nothing here.
+import { guestName } from '@liveknowledge/knowledge';
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { PageThreadChange } from '@liveknowledge/api-schema';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -88,7 +89,12 @@ export function usePageComments(): PageCommentsView {
           editor.documentId,
           editor.activeId,
           withName,
-          { by: ownKey ?? '', name: self.name || 'You', color: self.color },
+          {
+            by: ownKey ?? '',
+            // As the api records it: a guest's name says "(Guest)" after it.
+            name: editor.accountUserId ? self.name || 'You' : guestName(self.name),
+            color: self.color,
+          },
           Date.now(),
         );
         trackChange(next);

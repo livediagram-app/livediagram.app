@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { guestName } from '@liveknowledge/knowledge';
 import {
   articlesOf,
   sameArticleValue,
@@ -61,6 +62,7 @@ export function useEditorPageEditing({
     commitRealTabs,
     resetTabs,
     tabs,
+    accountUserId,
   } = documentSlice;
   const { activeId } = selectionSlice;
   const { confirm, toast, isReadOnly, participant, roomRef, selfParticipant } = sessionSlice;
@@ -85,7 +87,13 @@ export function useEditorPageEditing({
         ? null
         : {
             tabId,
-            writer: { by: selfParticipant.name.trim() || 'Guest', now: () => Date.now() },
+            writer: {
+              // A guest's stamp says so: "Bright Marlin (Guest)" (owner 2026-11-21).
+              by: accountUserId
+                ? selfParticipant.name.trim() || 'Guest'
+                : guestName(selfParticipant.name),
+              now: () => Date.now(),
+            },
           };
     sessionRef.current = tabId === null ? null : { tabId, since: Date.now() };
     setEditingTabIdState(tabId);

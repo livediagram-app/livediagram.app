@@ -4,7 +4,7 @@ Status: **the states, Verify, the meta row, the tree's tick, Page Health and the
 verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md) step 7;
 [blueprint](blueprints/knowledge-ui.md)). Not built: "Edited <when> by <name>" (no route says when a page's writing
 was last edited, or by whom). The Review Due email is built and tested over
-a fake sender, not yet sent from a deployed Worker. A guest may verify too, shown as "Verified by Guest" and never made the page's owner (owner, 2026-11-21), and a knowledgebase kept Offline has
+a fake sender, not yet sent from a deployed Worker. A guest may verify too, shown by their name with "(Guest)" after it ("Verified by Bright Marlin (Guest)", or "Guest" with no name) and never made the page's owner (owner, 2026-11-21); the same name marks a guest's Created and Updated stamps, and a knowledgebase kept Offline has
 none.
 
 A knowledgebase is only useful, to a person or to an agent, while it is right. Each page says who vouches for it and when they
@@ -98,33 +98,37 @@ own.
 
 ## The Review Period
 
-- **Knowledgebase Settings > Reviews** (the knowledgebase's menu), Editor only (never a Participant): **Review
-  Period**, a row of five choices (Every 30 Days, Every 90 Days, Every 180 Days, Every Year, Never) with one line
-  under it saying what it does: "A verified page comes due for review this long after it was last verified."
+- **Changed from Page Health**, beside the Review Period row, by an Editor of the whole knowledgebase only (never a
+  Participant, a Viewer or a link to one page): a small bordered pencil button with no label (named "Change Review
+  Period", its hover card saying it changes the period for the whole knowledgebase), so the period beside it shows
+  in full, opens a small panel, **Review Period**, that says
+  it applies to every page in this knowledgebase, then five choices (Every 30 Days, Every 90 Days, Every 180 Days,
+  Every Year, Never) with one line saying what they do: "A verified page comes due for review this long after it
+  was last verified." (owner 2026-11-21: the Review Period was the only setting, so Knowledgebase Settings is gone;
+  its dialog, its row in the knowledgebase's menu and its command palette entry with it).
 - Changing it changes when every page comes due, at once: states are worked out when read, so nothing is rewritten.
-  The dialog says how many pages the new period makes due before it is applied when that number grows ("12 pages
+  The panel says how many pages the new period makes due before it is applied when that number grows ("12 pages
   will be due for review"), and applying is one undoable edit.
 - **Never** means no page is ever Review Due: pages are Verified or Never Verified, and no review email is sent.
-- Page Health shows the page's due date and the knowledgebase's period ("Every 90 Days"), read-only for everyone
-  (owner 2026-11-21: the period is changed in Knowledgebase Settings, not the sidebar).
+- Page Health shows the page's due date and the knowledgebase's period ("Every 90 Days") to everyone; only the
+  Editor sees the pencil.
 
 ### The Review Period, as built
 
-- **Ways in.** The command palette's **Knowledgebase Settings** and the
-  knowledgebase menu's **Knowledgebase Settings** row (the menu takes it from `useKnowledgebaseSettings()`).
-- **The dialog** is titled **Knowledgebase Settings**, centred, of one height, with one section, **Reviews**. The
-  five choices are bordered single-choice rows, the chosen one ticked. A shorter period is counted first; when it
+- **The way in** is Page Health's pencil alone. No menu row and no command: the period is read where it is
+  shown, and a command would have to open a panel anchored on a rail that may be folded away.
+- **The panel** opens under the pencil (a sheet on a phone), 340 px wide and of one height whatever it shows. It is
+  headed **Review Period**, with "Applies to every page in this knowledgebase." under the heading. The five
+  choices are bordered single-choice rows, the chosen one ticked. A shorter period is counted first; when it
   would make more pages due than are due now, a strip under the rows says "12 pages will be due for review with
   Every 30 Days." with **Apply** and Cancel. A shorter period that makes no more pages due, a longer one and Never
-  apply at once.
+  apply at once. Closing the panel ends a count still running.
 - **Undo** is the **Undo** in the toast that says the period was applied ("Pages are now reviewed every 30
   days."): it applies the period that was replaced. The editor's own undo (Cmd or Ctrl Z) holds a page's writing,
-  not the knowledgebase's settings, and does not reach it.
+  not the knowledgebase's Review Period, and does not reach it.
 - **A refusal** puts the period back and says why in a toast, in words.
 - **Page Health** has two rows for it: **Review Due** (the date; "Not Verified" for a page never verified; "No
-  Review Period" under Never) and **Review Period** ("Every 90 Days", with **Change** on a line under it for an
-  Editor: at the card's width "Every 180 Days, Change" does not fit one line beside its label, and a clipped value
-  would cut the link off).
+  Review Period" under Never) and **Review Period** ("Every 90 Days", with the pencil beside it for an Editor).
 - **The api:** `PUT knowledge-settings` (Editor, in person or a token granted `write`), `GET knowledge-settings`,
   and `GET knowledge-settings/preview?reviewEvery=` for the count. `PUT pages/<tab>/knowledge` refuses a
   `reviewEvery` and says where the setting lives.
@@ -156,9 +160,9 @@ own.
 
 ## Share roles
 
-Verify and change a page's owner: an Editor or a Participant. Change the Review Period: an Editor only, as all of
-Knowledgebase Settings ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)); everyone sees the
-period in Page Health, with no Change link. Everyone sees the states.
+Verify and change a page's owner: an Editor or a Participant. Change the Review Period: an Editor only
+([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)); everyone sees the period in Page Health, and
+only an Editor sees its pencil. Everyone sees the states.
 
 A writer may also ask someone else to vouch for a page before it is trusted: [Approval](approval.md). Approving a
 page verifies it.

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  guestName,
+  guestVerifier,
+  guestVerifierName,
+  isGuestVerifier,
   DEFAULT_REVIEW_EVERY,
   GUEST_VERIFIER,
   knowledgeHealth,
@@ -141,5 +145,28 @@ describe('a guest verifies', () => {
       verifiedAt: 5,
       verifiedBy: 'guest',
     });
+  });
+});
+
+describe('a guest’s name (owner 2026-11-21: "Bright Marlin (Guest)")', () => {
+  it('marks a guest’s name once, and says Guest with none', () => {
+    expect(guestName('Bright Marlin')).toBe('Bright Marlin (Guest)');
+    expect(guestName(' Bright Marlin (Guest) ')).toBe('Bright Marlin (Guest)');
+    expect(guestName('')).toBe('Guest');
+    expect(guestName(undefined)).toBe('Guest');
+    expect(guestName('Guest')).toBe('Guest');
+  });
+
+  it('records a guest’s Verify by name, never as the page’s owner', () => {
+    const by = guestVerifier('Bright Marlin');
+    expect(by).toBe('guest:Bright Marlin (Guest)');
+    expect(isGuestVerifier(by)).toBe(true);
+    expect(isGuestVerifier(GUEST_VERIFIER)).toBe(true);
+    expect(isGuestVerifier('u1')).toBe(false);
+    expect(guestVerifierName(by)).toBe('Bright Marlin (Guest)');
+    expect(guestVerifierName(GUEST_VERIFIER)).toBe('Guest');
+    expect(guestVerifier('')).toBe(GUEST_VERIFIER);
+    expect(verified({}, by, 1).owner).toBeUndefined();
+    expect(parseKnowledgeFields({ verifiedAt: 1, verifiedBy: by }).verifiedBy).toBe(by);
   });
 });

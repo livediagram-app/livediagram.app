@@ -22,7 +22,7 @@ import {
   pageReads,
   tokensOfChars,
   verified,
-  GUEST_VERIFIER,
+  guestVerifier,
   type KnowledgeFields,
   type PageAgentReadsRow,
   type PageAnswerRow,
@@ -121,14 +121,22 @@ export async function saveFields(
   });
 }
 
-export function handleVerify(
+export async function handleVerify(
   ctx: DocumentRouteContext,
   document: DocumentDTO,
   tab: string,
-): Promise<Response> | Response {
+): Promise<Response> {
   // Verify says who vouches for the page: an account, or "Guest" for a guest writer (GUEST_VERIFIER), never a guest's
   // or a link visitor's own id.
-  const person = accountOf(ctx) ?? GUEST_VERIFIER;
+  // A guest's says their cursor's name, "Bright Marlin (Guest)" (owner 2026-11-21), from the body when sent.
+  const account = accountOf(ctx);
+  let sent: unknown;
+  if (!account)
+    sent = await ctx.request.json().then(
+      (b) => (b as { name?: unknown } | null)?.name,
+      () => undefined,
+    );
+  const person = account ?? guestVerifier(typeof sent === 'string' ? sent : undefined);
   // Now; the e2e stack alone may say earlier (verifyMoment).
   const at = verifyMoment(ctx.env, ctx.request, Date.now());
   return saveFields(ctx, document, tab, async (page) => verified(page.fields, person, at), {

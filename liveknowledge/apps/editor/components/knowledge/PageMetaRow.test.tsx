@@ -29,7 +29,7 @@ describe('the meta row’s Add Cover', () => {
     const row = container.querySelector('[data-page-meta]')!;
     // The hover card's words ride a hidden copy the button is described by, not the row's text.
     const parts = [...row.children].map((c) => c.textContent?.replace(/Add a picture.*$/, ''));
-    expect(parts).toEqual(['3 min read', '·', 'Add Cover']);
+    expect(parts).toEqual(['3 min read', '·Add Cover']);
     const button = screen.getByRole('button', { name: /Add Cover/ });
     expect(button.getAttribute('aria-describedby')).toBeTruthy();
     expect(
