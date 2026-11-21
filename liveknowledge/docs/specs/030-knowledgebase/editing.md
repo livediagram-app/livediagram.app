@@ -5,7 +5,7 @@ cancel. Anybody else on the page in edit mode changes alongside you."
 
 A knowledgebase is read far more than it is written, and what people and agents read should be what someone meant to
 publish, not a sentence half typed. So a page opens to **read**, and changes are made in a **draft** that the people
-editing share live and that nobody else sees until it is saved.
+editing share live (everyone who may edit joins them) and that no Viewer sees until it is saved.
 
 ## Read mode (the default)
 
@@ -30,14 +30,19 @@ editing share live and that nobody else sees until it is saved.
   the buttons are named Edit and Save.
 - A page made here (New Page, Add Subpage) opens straight into edit mode with the caret in its Title: it was made
   to be written.
-- While anyone is editing, readers see a quiet "Being edited by Priya" note (their discs) in the meta row. Readers keep
-  seeing the saved page: the draft never reaches them.
+- While anyone is editing, a Viewer (or someone who left with Cancel) sees a quiet "Being edited by Priya" note (their
+  discs) in the meta row, and keeps seeing the saved page: the draft never reaches them.
 
 ## Edit mode: one shared draft
 
 - **Edit** opens the page's draft: the saved writing if nobody is editing, or the draft already open if someone is.
   Everyone in edit mode on that page edits the same draft together, live, with each other's carets and selections, as
   pages are edited today. There is one draft a page, never one each.
+- **Everyone joins** (owner, 2026-11-21: "Everyone joins edit mode", "except viewers of course"): when someone starts
+  editing a page, everyone else on that page who may edit (Editor, Participant) enters edit mode with them, and sees
+  their typing live, with a note "Priya started editing. You're editing with them." Opening a page someone is editing
+  joins them the same way. A Viewer or link visitor stays reading the saved page. Only a newcomer pulls: after Cancel,
+  the people still editing never pull you back until someone else starts.
 - The page title is part of the draft: a renamed title reaches the page tree when the draft is saved.
 - The top of the page shows the draft bar: who is editing (discs), "Unsaved changes" once the draft differs from the
   saved page, then **Cancel** and **Save** (primary). `Mod-S` saves; `Escape` with the caret not in a menu asks to
@@ -64,7 +69,7 @@ editing share live and that nobody else sees until it is saved.
 
 Search and its index, Ask and its sources, every agent read (MCP, CLI, the API), page links' hover cards, backlinks,
 reading time, On This Page, exports, the Explorer preview, emails and Page Health's checks: always the saved page.
-A draft is visible only to the people in edit mode on it.
+A draft is visible only to the people in edit mode on it (everyone on the page who may edit, "Everyone joins").
 
 ## Agents
 

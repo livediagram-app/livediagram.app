@@ -17,7 +17,13 @@ import {
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { mayEditPage } from '@/lib/page-edit/page-edit-roles';
-import { onPeerSaved, pageEditorsOf, setMyEditingPage } from '@/lib/page-edit/page-edit-store';
+import {
+  onPeerSaved,
+  pageEditorsOf,
+  setMyEditingPage,
+  usePageEditors,
+} from '@/lib/page-edit/page-edit-store';
+import { newEditorOf } from '@/lib/page-edit/follow-editors';
 import { pageEditKeyAction } from '@/lib/page-edit/page-edit-keys';
 import { wantsTitleFocus } from '@/lib/page-title-focus';
 import { track } from '@/lib/telemetry';
@@ -201,6 +207,25 @@ export function useEditorPageEditing({
     }
     // oxlint-disable-next-line react/exhaustive-deps -- once the opened page may be edited
   }, [activeId, mayEdit]);
+
+  // Someone starting to edit this page (or editing it when it opens) brings this editor into edit mode with them, so
+  // their typing shows live (follow-editors.ts). A Viewer never may edit, so stays reading the saved page. Only a
+  // newcomer pulls: Cancel while others edit leaves this editor reading until someone else starts.
+  const editorsHere = usePageEditors(activeId);
+  const seenEditors = useRef<{ tabId: string; ids: string[] }>({ tabId: activeId, ids: [] });
+  useEffect(() => {
+    const seen = seenEditors.current;
+    const before = seen.tabId === activeId ? seen.ids : [];
+    const newcomer = newEditorOf(before, editorsHere);
+    seenEditors.current = { tabId: activeId, ids: editorsHere.map((p) => p.id) };
+    if (!newcomer || !mayEdit || editingTabId === activeId) return;
+    debugLog('[page-edit] joining', { tabId: activeId, with: newcomer.id });
+    track('Tab', 'Started', 'EditJoined');
+    resetHistory();
+    enter(activeId);
+    toast.info(`${newcomer.name} started editing. You're editing with them.`);
+    // oxlint-disable-next-line react/exhaustive-deps -- runs when the people editing, the page or the role change
+  }, [editorsHere, activeId, mayEdit]);
 
   // A peer's save, told to whoever is editing that page.
   const editingNow = useRef(editingTabId);
