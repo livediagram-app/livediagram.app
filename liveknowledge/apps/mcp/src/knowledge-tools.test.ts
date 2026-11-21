@@ -449,9 +449,16 @@ describe('read_page', () => {
 
   it('answers the page’s cover where it has one', async () => {
     const { call } = await connect({
-      'GET /pages/Deploys': () => Response.json({ page: { ...PAGE, cover: { gradient: 'Dusk' } } }),
+      'GET /pages/Deploys': () =>
+        Response.json({
+          page: { ...PAGE, cover: { kind: 'animated', preset: 'aurora', colouring: 'deep' } },
+        }),
     });
-    expect((await call('read_page', { page: 'Deploys' })).out.cover).toEqual({ gradient: 'Dusk' });
+    expect((await call('read_page', { page: 'Deploys' })).out.cover).toEqual({
+      kind: 'animated',
+      preset: 'aurora',
+      colouring: 'deep',
+    });
     const plain = await connect();
     expect('cover' in (await plain.call('read_page', { page: 'Deploys' })).out).toBe(false);
   });
@@ -563,16 +570,26 @@ describe('the writing tools', () => {
     const { call, sent } = await connect();
     const { out } = await call('write_page', {
       page: 'deploys',
-      cover: { imageId: 'img_1', focus: 30 },
+      cover: { kind: 'image', imageId: 'img_1', focus: 30 },
     });
-    expect(sent[0]!.body).toEqual({ cover: { imageId: 'img_1', focus: 30 } });
+    expect(sent[0]!.body).toEqual({ cover: { kind: 'image', imageId: 'img_1', focus: 30 } });
     expect(out.next).toContain('The cover changed');
-    await call('write_page', { page: 'deploys', markdown: 'New.', cover: { gradient: 'Ocean' } });
-    expect(sent[1]!.body).toEqual({ markdown: 'New.', cover: { gradient: 'Ocean' } });
+    await call('write_page', {
+      page: 'deploys',
+      markdown: 'New.',
+      cover: { kind: 'gradient', preset: 'theme-dusk' },
+    });
+    expect(sent[1]!.body).toEqual({
+      markdown: 'New.',
+      cover: { kind: 'gradient', preset: 'theme-dusk' },
+    });
     await call('write_page', { page: 'deploys', cover: null });
     expect(sent[2]!.body).toEqual({ cover: null });
     // A gradient that is not one is refused before anything is sent.
-    const bad = await call('write_page', { page: 'deploys', cover: { gradient: 'Plaid' } });
+    const bad = await call('write_page', {
+      page: 'deploys',
+      cover: { kind: 'gradient', preset: 'Plaid' },
+    });
     expect(bad.isError).toBe(true);
     expect(sent).toHaveLength(3);
   });

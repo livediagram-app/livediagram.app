@@ -69,8 +69,10 @@ the [blueprint](blueprints/knowledgebase-for-agents.md).
   Viewer. Sharing, archiving and deleting a whole knowledgebase are the index's, and take a full token as before.
 - **A person's role still bounds the agent**: creating a page needs an Editor's agent holding `suggest`;
   suggesting needs a Participant's or an Editor's; a Viewer's agent only reads, whatever is granted.
-- **`write_page`'s `cover`** ([The page surface](../030-knowledgebase/page-surface.md) "The cover") is a picture
-  (`{ imageId, focus? }`), a gradient (`{ gradient }`) or `null`, with or without `markdown`. A cover alone is
+- **`write_page`'s `cover`** ([The page surface](../030-knowledgebase/page-surface.md) "The cover") names its kind:
+  a picture (`{ kind: "image", imageId, focus? }`), a theme gradient (`{ kind: "gradient", preset }`), an animated
+  background (`{ kind: "animated", preset, colouring?, speed? }`) or `null`, with or without `markdown`; `read_page`
+  answers the same shape. A cover alone is
   taken on any page; with `markdown`, the writing's rule below holds for the whole write. A cover it cannot take is
   refused (`invalid_cover`), naming what was wrong, and nothing is written. Every write here stamps the page as an
   agent's ([Verification](../030-knowledgebase/verification.md) "Made by a person or an agent").

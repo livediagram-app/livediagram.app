@@ -194,10 +194,10 @@ Derived from [Verification](../verification.md) "The Review Period". Modules: `a
 ### Made by a person or an agent (built)
 
 - **The api.** `page_authors` gains `created_kind`, `created_agent`, `created_via`, `updated_kind`, `updated_agent`,
-  `updated_via` (schema step V18, `pageAuthorKindsSchemaStep`: each `ALTER TABLE ADD COLUMN` asked of
+  `updated_via` (schema step V18, `pageAuthorKindsSchemaStep` in `apps/api/src/knowledge/page-writer.ts`: each `ALTER TABLE ADD COLUMN` asked of
   `PRAGMA table_info` first, as V15 and V16 do; the kinds `NOT NULL DEFAULT 'human'`, since V17 noted people only).
   A write is noted as a `PageWriter` `{ by, kind, agent?, via? }`: `writerOf(ctx, by)` reads the request's token
-  (its `name`, and `frontDoorOf` for `mcp`, `cli` or `api`); a person's is `{ by, kind: 'human' }`.
+  (the `X-Liveknowledge-Agent` name the client sends, else its `name`, and `frontDoorOf` for `mcp`, `cli` or `api`); a person's is `{ by, kind: 'human' }`.
 - **Where each write is noted.** The tab PUT (a person), `POST documents` seeding pages (a person, or the token),
   `POST pages` (`create_page`, Import), the Pages route (`write_page`, a cover), a changeset and a revert, a version
   restore and copy, each after the write landed (`notePageWrite`, a failure logged and never failing the write).
@@ -205,9 +205,10 @@ Derived from [Verification](../verification.md) "The Review Period". Modules: `a
 - **The read.** Page Health answers `created` and `updated` as `{ by, at, kind, agent?, via? }`
   (`PageAuthorStamp`, `@liveknowledge/api-schema`).
 - **The editor.** `PageMakersBadges` (`components/knowledge/PageMakersBadges.tsx`), in `PageMetaRowView` after the
-  reading time: two `Pill`s of the meta row's own size, neutral (`slate`), each with a `HoverCard` from
+  reading time: two pills of the meta row's own size, neutral (`slate`), each with a `HoverCard` from
   `makerWords(stamp, which, nameOf, now)` (`lib/knowledge/page-makers.ts`). A page without a row draws neither.
-- **Tests.** `page-authors.test.ts` (V18 on a room at V17 with rows, every kind stamped, the suggestion's),
+- **Tests.** `page-writer.test.ts` (V18 on a room at V17 with rows, every kind of writer), `routes/page-cover.test.ts`
+  (every kind stamped through the routes, the suggestion's),
   `knowledge-page-routes.test.ts` (Page Health answers them; an agent's write shows as one),
   `page-makers.test.ts`, `PageMetaRow.test.tsx`, `e2e/signed-in/page-cover.spec.ts` (an agent's write shows AI Edited).
 

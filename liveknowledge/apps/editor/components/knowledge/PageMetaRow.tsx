@@ -17,6 +17,10 @@ import { savedArticleOf } from '@liveknowledge/document';
 import { usePageEditors, type PageEditor } from '@/lib/page-edit/page-edit-store';
 import { editorsPhrase } from '@/lib/page-edit/page-edit-text';
 import { EditorDiscs } from '@/components/page-edit/EditorDiscs';
+import { periodPhrase, VerifyPageButton, type VerifyPageButtonProps } from './VerifyPageButton';
+import { AddCoverButton } from '@/components/page-cover/AddCoverButton';
+import { useCoverEditable, usePageHasCover } from '@/components/page-cover/page-cover-state';
+import { PageMakersBadges, type PageMakers } from './PageMakersBadges';
 
 const NO_EDITORS: readonly PageEditor[] = [];
 
@@ -33,6 +37,14 @@ export type PageMetaRowProps = {
   // The others editing the page right now (docs/specs/030-knowledgebase/editing.md "Who is editing"): shown to
   // everyone who is not editing it.
   editors?: readonly PageEditor[];
+  // Add Cover after the reading time, for whoever may add one to a page with none (page-surface.md "The cover").
+  addCover?: boolean;
+  // Who made the page and who changed it last, a person or an agent (verification.md "Made by a person or an
+  // agent"), with the names of the people they name.
+  makers?: PageMakers;
+  nameOf?: (id: string | undefined) => string | undefined;
+  // Verify, after Add Cover, for whoever may verify (verification.md "Verify"); it asks before it verifies.
+  verify?: VerifyPageButtonProps | undefined;
 };
 
 export function PageMetaRowView({
@@ -43,6 +55,10 @@ export function PageMetaRowView({
   changedSinceVerified,
   edited,
   editors = [],
+  addCover = false,
+  makers,
+  nameOf = () => undefined,
+  verify,
 }: PageMetaRowProps) {
   const mark = trustMark(trust.state);
   const notes: { key: string; node: ReactNode }[] = [];
@@ -57,6 +73,13 @@ export function PageMetaRowView({
           {minutes} min read
         </span>
       ),
+    });
+  if (addCover) notes.push({ key: 'cover', node: <AddCoverButton /> });
+  if (verify) notes.push({ key: 'verify', node: <VerifyPageButton {...verify} /> });
+  if (makers && (makers.created || makers.updated))
+    notes.push({
+      key: 'makers',
+      node: <PageMakersBadges makers={makers} nameOf={nameOf} now={now} />,
     });
   if (trust.reviewAt !== undefined)
     notes.push({ key: 'review', node: reviewDueText(trust.reviewAt, now) });
@@ -101,6 +124,14 @@ export function PageMetaRowView({
   );
 }
 
+const makersOf = (h: {
+  created?: PageMakers['created'];
+  updated?: PageMakers['updated'];
+}): PageMakers => ({
+  ...(h.created ? { created: h.created } : {}),
+  ...(h.updated ? { updated: h.updated } : {}),
+});
+
 /** The current page's meta row, from the editor's store. */
 export function PageMetaRow() {
   const page = usePageKnowledge();
@@ -114,6 +145,12 @@ export function PageMetaRow() {
   const tabId = useEditorChrome((s) => s.pageTab.id);
   const editingHere = useEditorChrome((s) => s.pageEditing.editing);
   const editors = usePageEditors(tabId);
+  // Both hooks run every render: Edit and Save flip whether the cover may change, and a hook skipped by && would
+  // change the hook count (React #300).
+  const coverEditable = useCoverEditable();
+  const hasCover = usePageHasCover();
+  const addCover = coverEditable && !hasCover;
+  const health = page.health;
   return (
     <PageMetaRowView
       minutes={minutes}
@@ -122,6 +159,19 @@ export function PageMetaRow() {
       verifiedBy={nameOf(page.trust.fields.verifiedBy)}
       changedSinceVerified={page.health?.knowledge.changedSinceVerified === true}
       editors={editingHere ? NO_EDITORS : editors}
+      addCover={addCover}
+      {...(health ? { makers: makersOf(health) } : {})}
+      nameOf={nameOf}
+      verify={
+        page.rights.verify
+          ? {
+              again: page.trust.fields.verifiedAt !== undefined,
+              period: periodPhrase(page.reviewEvery),
+              becomesOwner: !page.trust.fields.owner,
+              onVerify: () => page.verify(page.pageId),
+            }
+          : undefined
+      }
     />
   );
 }

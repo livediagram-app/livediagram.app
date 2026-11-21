@@ -9,8 +9,12 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
+  PAGE_COVER_HEIGHT_VAR,
+  PAGE_COVER_LEFT_VAR,
+  PAGE_COVER_RIGHT_VAR,
   PAGE_FREE_HEIGHT_VAR,
   computePageLock,
+  coverHeightOf,
   worldHeight,
   pageFreeHeight,
 } from '@/lib/page-surface/page-lock';
@@ -20,6 +24,9 @@ import { sideChromeInsets } from '@/lib/side-chrome-insets';
 
 const SIDE_CHROME = '[data-contents-sidebar], [data-page-rail="docked"]';
 const noSubscribe = () => () => {};
+const setVar = (el: HTMLElement, name: string, value: string) => {
+  if (el.style.getPropertyValue(name) !== value) el.style.setProperty(name, value);
+};
 
 export type PageSurface = {
   /** The view the canvas world is drawn at: the lock, or the store's own view outside a page surface. */
@@ -32,11 +39,14 @@ export function usePageSurface({
   mainRef,
   page,
   margin,
+  hasCover = false,
 }: {
   mainRef: Ref<HTMLElement>;
   /** The open page's sheet in canvas px; absent while the tab has no page yet. */
   page: { x: number; y: number; width: number } | undefined;
   margin: number;
+  /** The open page has a cover (page-surface.md "The cover"): its band stands over the page's top room. */
+  hasCover?: boolean;
 }): PageSurface {
   const store = useViewportStore();
   const pageStore = pageViewportOf(store);
@@ -63,20 +73,29 @@ export function usePageSurface({
       if (width === 0 || height === 0) return;
       const sides = sideChromeInsets(main);
       const railRoom = main.offsetWidth - box.offsetWidth;
+      const right = Math.max(0, sides.right - railRoom);
+      const cover = coverHeightOf(hasCover, phone);
       const lock = computePageLock({
         width,
         // The world's own box (worldHeight), which its transform is about.
-        height: worldHeight(height),
-        sides: { left: sides.left, right: Math.max(0, sides.right - railRoom) },
+        height: worldHeight(height, cover),
+        sides: { left: sides.left, right },
         page: { x, y, width: pageWidth },
         margin,
         phone,
+        cover,
       });
       pageStore.lockTo(lock.view);
       // How tall the window lets a page be: the writing fills it, however short the stored page is.
-      const free = `${pageFreeHeight(height, lock.view.zoom)}px`;
-      if (scroller && scroller.style.getPropertyValue(PAGE_FREE_HEIGHT_VAR) !== free)
-        scroller.style.setProperty(PAGE_FREE_HEIGHT_VAR, free);
+      const free = `${pageFreeHeight(height, lock.view.zoom, cover)}px`;
+      if (scroller) {
+        // The band's height and edges: between the tree (or its rail) and where the scroller ends, or the rail over
+        // it. Written only when they move, so a relock that changed nothing restyles nothing.
+        setVar(scroller, PAGE_FREE_HEIGHT_VAR, free);
+        setVar(scroller, PAGE_COVER_HEIGHT_VAR, `${cover}px`);
+        setVar(scroller, PAGE_COVER_LEFT_VAR, `${sides.left}px`);
+        setVar(scroller, PAGE_COVER_RIGHT_VAR, `${right}px`);
+      }
     };
     relock();
     if (typeof ResizeObserver === 'undefined') return;
@@ -100,7 +119,7 @@ export function usePageSurface({
       sizes.disconnect();
       chrome.disconnect();
     };
-  }, [mainRef, pageStore, x, y, pageWidth, margin, phone]);
+  }, [mainRef, pageStore, x, y, pageWidth, margin, phone, hasCover]);
   // The page's own scroll keys, while the focus is on the page and not in its writing or a field.
   useEffect(() => {
     if (!pageStore) return;

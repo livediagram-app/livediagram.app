@@ -2143,6 +2143,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['label'],
     type: 'object',
   },
+  CoverGradientId: {
+    enum: [
+      'theme-dawn',
+      'theme-mist',
+      'theme-glow',
+      'theme-haze',
+      'theme-sorbet',
+      'theme-pastel',
+      'theme-bloom',
+      'theme-bright',
+      'theme-vivid',
+      'theme-aurora',
+      'theme-ember',
+      'theme-dusk',
+      'theme-twilight',
+      'theme-ink',
+    ],
+    type: 'string',
+  },
   CreatePageRequest: {
     additionalProperties: false,
     description:
@@ -4051,23 +4070,51 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               imageId: {
                 type: 'string',
               },
+              kind: {
+                const: 'image',
+                type: 'string',
+              },
             },
-            required: ['imageId'],
+            required: ['kind', 'imageId'],
             type: 'object',
           },
           {
             additionalProperties: false,
             properties: {
-              gradient: {
+              kind: {
+                const: 'gradient',
+                type: 'string',
+              },
+              preset: {
                 type: 'string',
               },
             },
-            required: ['gradient'],
+            required: ['kind', 'preset'],
+            type: 'object',
+          },
+          {
+            additionalProperties: false,
+            properties: {
+              colouring: {
+                type: 'string',
+              },
+              kind: {
+                const: 'animated',
+                type: 'string',
+              },
+              preset: {
+                type: 'string',
+              },
+              speed: {
+                type: 'number',
+              },
+            },
+            required: ['kind', 'preset'],
             type: 'object',
           },
         ],
         description:
-          'The page\'s cover (page-surface.md "The cover"): its picture and where it sits, or its gradient\'s name.',
+          'The page\'s cover (page-surface.md "The cover"): its kind, and its picture or its preset.',
       },
       headings: {
         items: {
@@ -5729,29 +5776,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     ],
   },
-  PageCover: {
-    additionalProperties: false,
-    description:
-      "`imageId` a picture of the item's, `focus` where it sits vertically (0 top to 100 bottom, 50 when absent), `credit` an Image Search pick's credit line.",
-    properties: {
-      credit: {
-        type: 'string',
-      },
-      fill: {
-        $ref: '#/components/schemas/PageColourFill',
-      },
-      focus: {
-        type: 'number',
-      },
-      imageId: {
-        type: 'string',
-      },
-      pattern: {
-        $ref: '#/components/schemas/PagePattern',
-      },
-    },
-    type: 'object',
-  },
   PageFill: {
     anyOf: [
       {
@@ -5945,6 +5969,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'confetti',
       'threads',
     ],
+    type: 'string',
+  },
+  PageMotionColouringId: {
+    enum: ['deep', 'night', 'bright', 'vivid', 'soft', 'mist'],
     type: 'string',
   },
   PageOrientation: {
@@ -6172,7 +6200,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           cover: {
             anyOf: [
               {
-                $ref: '#/components/schemas/PageCover',
+                $ref: '#/components/schemas/TabCover',
               },
               {
                 type: 'null',
@@ -6189,7 +6217,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           cover: {
             anyOf: [
               {
-                $ref: '#/components/schemas/PageCover',
+                $ref: '#/components/schemas/TabCover',
               },
               {
                 type: 'null',
@@ -7833,7 +7861,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'number',
       },
       cover: {
-        $ref: '#/components/schemas/PageCover',
+        $ref: '#/components/schemas/TabCover',
       },
       customColours: {
         items: {
@@ -7944,6 +7972,54 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['id', 'app', 'itemId'],
     type: 'object',
   },
+  TabCover: {
+    anyOf: [
+      {
+        additionalProperties: false,
+        properties: {
+          credit: {
+            type: 'string',
+          },
+          focus: {
+            type: 'number',
+          },
+          imageId: {
+            type: 'string',
+          },
+        },
+        required: ['imageId'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          gradient: {
+            $ref: '#/components/schemas/CoverGradientId',
+          },
+        },
+        required: ['gradient'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          colouring: {
+            $ref: '#/components/schemas/PageMotionColouringId',
+          },
+          motion: {
+            $ref: '#/components/schemas/PageMotion',
+          },
+          speed: {
+            type: 'number',
+          },
+        },
+        required: ['motion', 'colouring'],
+        type: 'object',
+      },
+    ],
+    description:
+      "A page's cover: a picture (with where it sits and its credit), a theme gradient, or an animated background in a theme colouring, at a speed (1, its own pace, is left off).",
+  },
   TabDraft: {
     additionalProperties: false,
     properties: {
@@ -8018,7 +8094,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         $ref: '#/components/schemas/TabConnectionWire',
       },
       cover: {
-        $ref: '#/components/schemas/PageCover',
+        $ref: '#/components/schemas/TabCover',
       },
       customColours: {
         items: {

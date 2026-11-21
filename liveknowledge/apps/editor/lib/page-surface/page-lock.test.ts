@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  COVER_HEIGHT,
+  COVER_HEIGHT_PHONE,
+  WORLD_HEIGHT_CSS,
   computePageLock,
+  coverHeightOf,
   PAGE_MIN_SCALE,
   PAGE_SIDE_ROOM,
   PAGE_SIDE_ROOM_PHONE,
@@ -148,4 +152,47 @@ describe("the world's box inside the scroll container", () => {
     expect(pageFreeHeight(624, 0.5)).toBe((624 - PAGE_TOP_ROOM - PAGE_FOOT_ROOM) * 2);
     expect(pageFreeHeight(40, 1)).toBe(0);
   });
+});
+
+// docs/specs/030-knowledgebase/page-surface.md "The cover": the band stands over the page's top room, 220 px on a
+// desktop and 140 on a phone, and moves the page down by as much, never past the container's foot.
+describe('a page with a cover', () => {
+  it('is as tall as the spec says, and nothing without one', () => {
+    expect(coverHeightOf(true, false)).toBe(COVER_HEIGHT);
+    expect(coverHeightOf(true, true)).toBe(COVER_HEIGHT_PHONE);
+    expect([COVER_HEIGHT, COVER_HEIGHT_PHONE]).toEqual([220, 140]);
+    expect(coverHeightOf(false, false)).toBe(0);
+    expect(WORLD_HEIGHT_CSS).toContain('var(--page-cover-height, 0px)');
+  });
+
+  it.each([
+    [1440, 852, false],
+    [390, 740, true],
+    [320, 500, true],
+  ])(
+    'puts the page under its band at %i x %i, its box inside the container',
+    (width, height, phone) => {
+      const cover = coverHeightOf(true, phone);
+      const size = { width, height: worldHeight(height, cover) };
+      const lock = computePageLock({
+        ...size,
+        sides: NO_SIDES,
+        page: { x: -428, y: 0, width: 856 },
+        margin: MARGIN,
+        phone,
+        cover,
+      });
+      const { zoom, offset } = lock.view;
+      expect(lock.top).toBe(PAGE_TOP_ROOM + cover);
+      expect(zoom * offset.y + (size.height / 2) * (1 - zoom)).toBeCloseTo(
+        PAGE_TOP_ROOM + cover,
+        6,
+      );
+      const foot = zoom * (size.height + offset.y) + (size.height / 2) * (1 - zoom);
+      expect(foot).toBeLessThanOrEqual(height + 1e-6);
+      expect(pageFreeHeight(height, 1, cover)).toBe(
+        Math.max(0, height - PAGE_TOP_ROOM - cover - PAGE_FOOT_ROOM),
+      );
+    },
+  );
 });

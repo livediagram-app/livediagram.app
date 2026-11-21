@@ -1,51 +1,92 @@
 import { describe, expect, it } from 'vitest';
 import {
-  PAGE_GRADIENT_PRESETS,
-  coverOfGradient,
-  gradientNameOf,
-  pageCoverOf,
+  COVER_GRADIENT_IDS,
+  coverFill,
+  coverGradientLabel,
+  coverImageId,
+  coverKindOf,
   parseTabCover,
   withSettledCover,
 } from './page-cover';
 import { migrateStoredTab } from './stored-tab';
+import { themeBackgroundPresets } from './page-theme-fills';
 
 // docs/specs/030-knowledgebase/page-surface.md "The cover".
+const OCEAN = { elementStroke: '#0369a1' };
+const EMBER = { elementStroke: '#b91c1c' };
+
 describe('a page’s cover', () => {
   it('names a picture by a gallery id or an inline raster, nothing else', () => {
-    expect(parseTabCover({ imageId: 'img_abc', focus: 30 })).toEqual({
+    expect(parseTabCover({ imageId: 'img_abc', focus: 30, credit: ' By A ' })).toEqual({
       imageId: 'img_abc',
       focus: 30,
+      credit: 'By A',
     });
-    expect(parseTabCover({ imageId: 'data:image/png;base64,AAAA' })?.imageId).toMatch(
-      /^data:image/,
-    );
+    expect(parseTabCover({ imageId: 'data:image/png;base64,AAAA' })).toMatchObject({
+      imageId: expect.stringMatching(/^data:image/),
+    });
     expect(parseTabCover({ imageId: 'javascript:alert(1)' })).toBeUndefined();
     expect(parseTabCover({ imageId: 'https://example.com/a.png' })).toBeUndefined();
   });
 
-  it('offers every gradient by its name, in any case, and reads a gradient back by name', () => {
-    for (const preset of PAGE_GRADIENT_PRESETS) {
-      const cover = coverOfGradient(preset.label.toUpperCase());
-      expect(cover?.fill).toMatchObject({ kind: 'gradient', from: preset.from, to: preset.to });
-      expect(gradientNameOf(cover)).toBe(preset.label);
-    }
-    expect(coverOfGradient('Plaid')).toBeUndefined();
+  it('keeps a theme gradient and an animated background by role, never colours', () => {
+    expect(COVER_GRADIENT_IDS).toHaveLength(14);
+    expect(parseTabCover({ gradient: 'theme-dawn' })).toEqual({ gradient: 'theme-dawn' });
+    expect(parseTabCover({ gradient: 'Sunrise' })).toBeUndefined();
     expect(
-      gradientNameOf({ fill: { kind: 'gradient', from: '#123456', to: '#654321', angle: 0 } }),
+      parseTabCover({ fill: { kind: 'gradient', from: '#fff', to: '#000', angle: 1 } }),
     ).toBeUndefined();
-    expect(gradientNameOf({ imageId: 'img_a' })).toBeUndefined();
-    expect(gradientNameOf(undefined)).toBeUndefined();
+    expect(parseTabCover({ motion: 'aurora', colouring: 'deep', speed: 2 })).toEqual({
+      motion: 'aurora',
+      colouring: 'deep',
+      speed: 2,
+    });
+    // A speed of 1, or out of range, is left off; a motion needs a colouring.
+    expect(parseTabCover({ motion: 'aurora', colouring: 'deep', speed: 1 })).toEqual({
+      motion: 'aurora',
+      colouring: 'deep',
+    });
+    expect(parseTabCover({ motion: 'aurora', colouring: 'deep', speed: 9 })).toEqual({
+      motion: 'aurora',
+      colouring: 'deep',
+    });
+    expect(parseTabCover({ motion: 'aurora' })).toBeUndefined();
+    expect(parseTabCover({ motion: 'twirl', colouring: 'deep' })).toBeUndefined();
+    // A picture wins over a gradient.
+    expect(parseTabCover({ imageId: 'img_a', gradient: 'theme-ink' })).toEqual({
+      imageId: 'img_a',
+    });
+    expect(parseTabCover('sunset')).toBeUndefined();
   });
 
-  it('shows no pattern: a pattern is a form’s', () => {
-    expect(pageCoverOf({ pattern: 'dots' })).toBeUndefined();
-    expect(pageCoverOf({ imageId: 'img_a', pattern: 'grid' })).toEqual({ imageId: 'img_a' });
+  it('says its kind', () => {
+    expect(coverKindOf({ imageId: 'img_a' })).toBe('image');
+    expect(coverKindOf({ gradient: 'theme-ink' })).toBe('gradient');
+    expect(coverKindOf({ motion: 'waves', colouring: 'soft' })).toBe('animated');
+    expect(coverImageId({ imageId: 'img_a' })).toBe('img_a');
+    expect(coverImageId({ gradient: 'theme-ink' })).toBeUndefined();
+    expect(coverImageId(undefined)).toBeUndefined();
+  });
+
+  it('paints in the knowledgebase’s theme, so a change of style recolours it', () => {
+    const cover = { gradient: 'theme-bright' } as const;
+    expect(coverFill(cover, OCEAN)).toEqual(
+      themeBackgroundPresets(OCEAN).find((p) => p.id === 'theme-bright')!.fill,
+    );
+    expect(coverFill(cover, OCEAN)).not.toEqual(coverFill(cover, EMBER));
+    const moving = coverFill({ motion: 'aurora', colouring: 'deep', speed: 2 }, OCEAN);
+    expect(moving).toMatchObject({ kind: 'gradient', motion: 'aurora', speed: 2 });
+    expect(coverFill({ motion: 'aurora', colouring: 'deep' }, EMBER)).not.toEqual(
+      coverFill({ motion: 'aurora', colouring: 'deep' }, OCEAN),
+    );
+    expect(coverFill({ imageId: 'img_a' }, OCEAN)).toBeUndefined();
+    expect(coverGradientLabel('theme-twilight')).toBe('Theme Twilight');
   });
 
   it('settles a stored tab’s cover, the same tab when there is nothing to settle', () => {
     const plain = { id: 't', name: 'P', elements: [] };
     expect(withSettledCover(plain)).toBe(plain);
-    const good = { ...plain, cover: { imageId: 'img_a' } };
+    const good = { ...plain, cover: { gradient: 'theme-ink' } };
     expect(withSettledCover(good)).toBe(good);
     expect(withSettledCover({ ...plain, cover: { imageId: 'img_a', focus: 900 } })).toEqual({
       ...plain,

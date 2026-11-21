@@ -2,52 +2,35 @@
 // knowledgebase-for-agents.md "write_page's cover"): read strictly, so a cover it cannot take is refused by name
 // and nothing is written. A person's cover is the editor's tab change and is read forgivingly
 // (@liveknowledge/document page-cover.ts); this is the wire's door alone.
-import type { PageCover } from '@liveknowledge/document';
 import {
-  PAGE_GRADIENT_PRESETS,
-  coverOfGradient,
-  gradientNameOf,
+  COVER_COLOURINGS,
+  COVER_GRADIENT_IDS,
+  COVER_MOTIONS,
+  PAGE_MOTION_SPEED_MAX,
+  PAGE_MOTION_SPEED_MIN,
   isPageImageId,
   isRecord,
+  type TabCover,
 } from '@liveknowledge/document';
 import type { AgentCover } from '@liveknowledge/api-schema';
 
 export type CoverRefusal = { code: 'invalid_cover'; message: string };
 
 const refuse = (message: string): CoverRefusal => ({ code: 'invalid_cover', message });
-const GRADIENT_NAMES = PAGE_GRADIENT_PRESETS.map((p) => p.label).join(', ');
+const SHAPE =
+  'Send cover as { "kind": "image", "imageId", "focus" }, { "kind": "gradient", "preset" }, { "kind": "animated", "preset", "colouring", "speed" } or null.';
+// What an animated cover is coloured in when no colouring is named.
+const DEFAULT_COLOURING = 'deep';
 
-/** The stored cover an agent's `cover` asks for (null: take it away), or why it cannot be taken. */
-export function parseAgentCover(
-  raw: unknown,
-): { cover: PageCover | null } | { refusal: CoverRefusal } {
-  if (raw === null) return { cover: null };
-  if (!isRecord(raw))
-    return {
-      refusal: refuse(
-        'Send cover as a picture ({ "imageId", "focus" }), a gradient ({ "gradient" }) or null.',
-      ),
-    };
-  const keys = Object.keys(raw);
-  if ('gradient' in raw) {
-    if (keys.length !== 1)
-      return {
-        refusal: refuse(
-          'A gradient cover is { "gradient": <name> } alone: a picture and a gradient are not sent together.',
-        ),
-      };
-    const cover = typeof raw.gradient === 'string' ? coverOfGradient(raw.gradient) : undefined;
-    return cover ? { cover } : { refusal: refuse(`cover.gradient is one of ${GRADIENT_NAMES}.`) };
-  }
-  if (!('imageId' in raw))
-    return {
-      refusal: refuse(
-        'Send cover as a picture ({ "imageId", "focus" }), a gradient ({ "gradient" }) or null.',
-      ),
-    };
-  const extra = keys.find((k) => k !== 'imageId' && k !== 'focus');
+type Read = { cover: TabCover | null } | { refusal: CoverRefusal };
+
+const extraKey = (raw: Record<string, unknown>, allowed: readonly string[]) =>
+  Object.keys(raw).find((k) => !allowed.includes(k));
+
+function imageCover(raw: Record<string, unknown>): Read {
+  const extra = extraKey(raw, ['kind', 'imageId', 'focus']);
   if (extra)
-    return { refusal: refuse(`cover takes no "${extra}" (a picture takes imageId and focus).`) };
+    return { refusal: refuse(`An image cover takes no "${extra}" (only imageId and focus).`) };
   // A gallery id only: an agent has no inline pictures (those are an Offline knowledgebase's, in one browser).
   if (
     typeof raw.imageId !== 'string' ||
@@ -73,11 +56,69 @@ export function parseAgentCover(
   };
 }
 
-/** A stored cover as an agent reads it back: its picture and where it sits, or its gradient's name. */
-export function agentCoverOf(cover: PageCover | undefined): Exclude<AgentCover, null> | undefined {
+function gradientCover(raw: Record<string, unknown>): Read {
+  const extra = extraKey(raw, ['kind', 'preset']);
+  if (extra) return { refusal: refuse(`A gradient cover takes no "${extra}" (only preset).`) };
+  const preset = COVER_GRADIENT_IDS.find((id) => id === raw.preset);
+  return preset
+    ? { cover: { gradient: preset } }
+    : { refusal: refuse(`cover.preset is one of ${COVER_GRADIENT_IDS.join(', ')}.`) };
+}
+
+function animatedCover(raw: Record<string, unknown>): Read {
+  const extra = extraKey(raw, ['kind', 'preset', 'colouring', 'speed']);
+  if (extra)
+    return {
+      refusal: refuse(`An animated cover takes no "${extra}" (only preset, colouring and speed).`),
+    };
+  const motion = COVER_MOTIONS.find((m) => m === raw.preset);
+  if (!motion) return { refusal: refuse(`cover.preset is one of ${COVER_MOTIONS.join(', ')}.`) };
+  const colouring = COVER_COLOURINGS.find((c) => c === (raw.colouring ?? DEFAULT_COLOURING));
+  if (!colouring)
+    return { refusal: refuse(`cover.colouring is one of ${COVER_COLOURINGS.join(', ')}.`) };
+  const speed = raw.speed;
+  if (
+    speed !== undefined &&
+    !(typeof speed === 'number' && speed >= PAGE_MOTION_SPEED_MIN && speed <= PAGE_MOTION_SPEED_MAX)
+  )
+    return {
+      refusal: refuse(
+        `cover.speed is from ${PAGE_MOTION_SPEED_MIN} to ${PAGE_MOTION_SPEED_MAX}, 1 its own pace.`,
+      ),
+    };
+  return { cover: { motion, colouring, ...(speed !== undefined && speed !== 1 ? { speed } : {}) } };
+}
+
+/** The stored cover an agent's `cover` asks for (null: take it away), or why it cannot be taken. */
+export function parseAgentCover(raw: unknown): Read {
+  if (raw === null) return { cover: null };
+  if (!isRecord(raw)) return { refusal: refuse(SHAPE) };
+  switch (raw.kind) {
+    case 'image':
+      return imageCover(raw);
+    case 'gradient':
+      return gradientCover(raw);
+    case 'animated':
+      return animatedCover(raw);
+    default:
+      return { refusal: refuse(SHAPE) };
+  }
+}
+
+/** A stored cover as an agent reads it back: its kind, and its picture and where it sits, or its preset. */
+export function agentCoverOf(cover: TabCover | undefined): Exclude<AgentCover, null> | undefined {
   if (!cover) return undefined;
-  if (cover.imageId)
-    return { imageId: cover.imageId, ...(cover.focus !== undefined ? { focus: cover.focus } : {}) };
-  const gradient = gradientNameOf(cover);
-  return gradient ? { gradient } : undefined;
+  if ('imageId' in cover)
+    return {
+      kind: 'image',
+      imageId: cover.imageId,
+      ...(cover.focus !== undefined ? { focus: cover.focus } : {}),
+    };
+  if ('gradient' in cover) return { kind: 'gradient', preset: cover.gradient };
+  return {
+    kind: 'animated',
+    preset: cover.motion,
+    colouring: cover.colouring,
+    ...(cover.speed !== undefined ? { speed: cover.speed } : {}),
+  };
 }

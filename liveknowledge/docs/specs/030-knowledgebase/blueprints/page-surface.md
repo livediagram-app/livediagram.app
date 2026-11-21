@@ -388,22 +388,22 @@ Derived from [The page surface](../page-surface.md) "The cover".
 
 ### Domain and naming
 
-| Term                    | Identifier                                                                                                      |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
-| a cover                 | `PageCover` (`@liveworkspace/page-background` `cover.ts`): `ColourBackground & { imageId?, focus?, credit? }`   |
-| reading one             | `parsePageCover(v, isImageId)`; a form's cover in liveplanner reads through it too (`FormCover = PageCover`)    |
-| laying a patch over one | `patchPageCover(cover, patch)`: none once it holds no fill, pattern or picture                                  |
-| where a picture sits    | `focus` (0 to 100, `COVER_FOCUS_CENTRE` 50 when absent), drawn by `coverObjectPosition(focus)`                  |
-| the page's cover        | `Tab.cover`, settled on every read by `withSettledCover` (`packages/document/src/page-cover.ts`)                |
-| a gradient by name      | `COVER_GRADIENTS` (the page backgrounds' `PAGE_GRADIENT_PRESETS`), `coverOfGradient(name)`, `gradientNameOf`    |
-| an agent's cover        | `parseAgentCover(raw)` (`packages/edit-operations/src/pages/cover.ts`): strict, refusing `invalid_cover`        |
-| the band                | `PageCoverBand` (`apps/editor/components/page-cover/`), with `CoverControls`, `CoverMenu`, `useCoverReposition` |
-| who may change it       | `useCoverEditable()`: an Editor (`!isReadOnly`), and in edit mode once the store says one (`editingTabId`)      |
-| the band's height       | `COVER_HEIGHT` 220, `COVER_HEIGHT_PHONE` 140 (`lib/page-surface/page-lock.ts`)                                  |
+| Term                 | Identifier                                                                                                                                                                                                                                                                                                |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| a cover              | `TabCover` (`packages/document/src/page-cover.ts`): `{ imageId, focus?, credit? }`, `{ gradient: CoverGradientId }` or `{ motion, colouring, speed? }`; `coverKindOf` says `image`, `gradient` or `animated`                                                                                              |
+| reading one          | `parseTabCover(v)`: a picture through the platform's `parsePageCover(v, isPageImageId)` (a liveplanner form's cover reads through it too), a gradient by `COVER_GRADIENT_IDS`, a motion by `PAGE_MOTIONS` and `COVER_COLOURINGS`                                                                          |
+| painting one         | `coverFill(cover, theme)`: the theme row's gradient (`themeBackgroundPresets`) or `motionFill(theme, motion, colouring, speed)`, from `coverThemeOf(style)` (`page-cover-state.ts`: the writing accent, `knowledgeWritingAccent`, and the theme's next branches), memoised per style by `useCoverTheme()` |
+| where a picture sits | `focus` (0 to 100, `COVER_FOCUS_CENTRE` 50 when absent), drawn by `coverObjectPosition(focus)`                                                                                                                                                                                                            |
+| the page's cover     | `Tab.cover`, settled on every read by `withSettledCover` (`packages/document/src/page-cover.ts`)                                                                                                                                                                                                          |
+| the choices          | `COVER_GRADIENT_IDS` (14 `theme-*`), `COVER_MOTIONS` (`PAGE_MOTIONS`), `COVER_COLOURINGS` (`PAGE_MOTION_COLOURINGS`); the menu reuses `AnimatedBackgroundChoices` (`components/canvas/page-background-animated.tsx`, `customColours={false}`), mapped back by `animatedCoverOf`                           |
+| an agent's cover     | `parseAgentCover(raw)` (`packages/edit-operations/src/pages/cover.ts`): strict, refusing `invalid_cover`                                                                                                                                                                                                  |
+| the band             | `PageCoverBand` (`apps/editor/components/page-cover/`), with `CoverControls`, `CoverMenu`, `AddCoverButton`, `useCoverReposition`, and `CoverMotion` (the slide's `PageMotionLayer`, paused by `data-cover-paused` from an IntersectionObserver and `visibilitychange`; `app/motion-page.css`)            |
+| who may change it    | `useCoverEditable()` (`page-cover-state.ts`): an Editor (not read-only, not participating), in edit mode where the store has one (`pageEditing.editing`)                                                                                                                                                  |
+| the band's height    | `COVER_HEIGHT` 220, `COVER_HEIGHT_PHONE` 140, `coverHeightOf` (`lib/page-surface/page-lock.ts`): the lock's `cover` input moves the page down, `usePageSurface` writes `--page-cover-height`, `--page-cover-left` and `--page-cover-right` on the scroller                                                |
 
 ### Behaviour and state
 
-- **Stored and synced as tab meta.** An Editor's change is the editor's own tab change (`setActiveTabCover`), so it
+- **Stored and synced as tab meta.** An Editor's change is the editor's own tab change (`useSetPageCover()`, one `commitTabs`, outside the draft lens), so it
   is sent as a `tab-meta` patch (`cover`, or `clear: ['cover']`) and saved by the whole-tab save, as a rename is.
   The room relays a `tab-meta` op only from an edit-role session (`room-op-gate.ts`) and the tab PUT is an edit
   gate's, so a Participant's or a Viewer's cover never lands. Offline, the same change is saved in this browser.
@@ -420,12 +420,13 @@ Derived from [The page surface](../page-surface.md) "The cover".
 
 ### Interfaces and contracts
 
-- `write_page` `cover`: `{ imageId: string, focus?: integer 0..100 } | { gradient: CoverGradientName } | null`.
-  Refusals: `invalid_cover` with a message naming the field ("cover.focus is a whole number from 0 to 100.",
-  "cover.gradient is one of Sunrise, ...", "cover.imageId names a picture from upload_image or list_images.",
-  "Send cover as a picture, a gradient or null."). The api answers the same codes on `POST tabs/<tab>/pages`.
-- `GET pages/<tab>` (`KnowledgePageRead`) answers `cover?: { imageId, focus? } | { gradient }` and `read_page`
-  passes it on as `cover`.
+- `write_page` `cover` (`AgentCover`): `{ kind: 'image', imageId, focus?: integer 0..100 } | { kind: 'gradient',
+preset: CoverGradientId } | { kind: 'animated', preset: PageMotion, colouring?: colouring id ('deep'), speed?:
+0.25..3 } | null`. Refusals: `invalid_cover` with a message naming the field ("cover.focus is a whole number from 0
+  ...", "cover.preset is one of theme-dawn, ...", "cover.colouring is one of deep, ...", "cover.speed is from 0.25
+  to 3", "cover.imageId names a picture from upload_image or list_images.", "Send cover as { "kind": ... } or
+  null."). The api answers the same codes on `POST tabs/<tab>/pages`.
+- `GET pages/<tab>` (`KnowledgePageRead`) answers the same `cover` (`agentCoverOf`), and `read_page` passes it on.
 
 ### Data and persistence
 
@@ -440,14 +441,18 @@ Derived from [The page surface](../page-surface.md) "The cover".
 - A stored cover that is not one (a hand-edited body, an old client) is read as what of it is valid, or none.
 - A picture that will not fetch leaves the tint; `[page] cover picture unavailable` is logged once per id.
 - A cover set while the page is unsaved (a new page) rides its first save.
-- A tab-meta patch from a peer carrying an invalid cover is drawn through `parsePageCover`, so it draws nothing.
+- A tab-meta patch from a peer carrying an invalid cover is drawn through `parseTabCover`, so it draws nothing; a cover
+  stored as colours (a gradient's `fill`) is none.
+- A Knowledgebase Style change recolours every gradient and animated cover with nothing written: the band reads the
+  style (`useOpenKnowledgeStyle`) and paints `coverFill` (`page-cover.test.tsx` "recolours an existing gradient
+  cover when the Knowledgebase Style changes").
 
 ### Performance and limits
 
 - No cover: `PageCoverBand` renders `null`; the lock's `top` is `PAGE_TOP_ROOM` as before.
-- A picture: one fetch per page open (`useImageSources`, at `COVER_IMAGE_EDGE` 2,400 px), `decoding="async"`; the
+- A picture: one fetch per page open (`useImageSources`, its display copy at `displayEdge()`: 4,096 px, 2,048 on touch), `decoding="async"`; the
   band subscribes to the tab's `cover` alone, so a keystroke or a scroll renders it 0 times
-  (`PageCoverBand.test.tsx` "renders once for a typing commit").
+  (`page-cover.test.tsx` "renders the band no more for a change that is not its cover").
 - No layout shift: the band's height comes from `Tab.cover` being set, known with the tab, not from the picture.
 
 ### Presentation and UX, Accessibility

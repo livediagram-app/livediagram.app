@@ -20,6 +20,7 @@
 // kept R2 id still renders while online; a kept data URI renders anywhere).
 
 import {
+  coverImageId,
   elementsImageIds,
   pageImageIds,
   withMappedImageId,
@@ -40,7 +41,8 @@ export function tabImageIds(tab: Tab): string[] {
   // An image's picture and a quote's photo (docs/specs/009-elements/quote.md).
   for (const id of elementsImageIds(tab.elements)) ids.add(id);
   // The page's cover (docs/specs/030-knowledgebase/page-surface.md "The cover").
-  if (tab.cover?.imageId) ids.add(tab.cover.imageId);
+  const coverId = coverImageId(tab.cover);
+  if (coverId) ids.add(coverId);
   return [...ids];
 }
 
@@ -57,7 +59,8 @@ export function rewriteImageIds(tabs: Tab[], mapping: Map<string, string>): Tab[
   if (mapping.size === 0) return tabs;
   return tabs.map((tab) => {
     const pages = withPageImageIds(tab.pages, mapping);
-    const coverTo = tab.cover?.imageId ? mapping.get(tab.cover.imageId) : undefined;
+    const coverId = coverImageId(tab.cover);
+    const coverTo = coverId ? mapping.get(coverId) : undefined;
     return {
       ...tab,
       elements: tab.elements.map((el) => withMappedImageId(el, mapping)),

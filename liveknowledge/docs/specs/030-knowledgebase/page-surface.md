@@ -61,9 +61,11 @@ replaces what the fork still shows around the writing.
 
 Owner, 2026-11-21: "Let me also add a cover to a page in a knowledgebase, a bit like how I do it on forms, fill the
 top space above the page with it between the sidebars" and "The add cover button should also be placed next to the
-1 min read bit, and make it a bit better looking."
+1 min read bit, and make it a bit better looking." Then: "The cover should also allow gradients and animated like
+forms do" and "The gradients offered should be related to the knowledgebases theme."
 
-- **What it is.** A page may have one cover: a picture, or a gradient. It is the page's own (`Tab.cover`), never the
+- **What it is.** A page may have one cover, of three kinds: a **picture**, a **gradient** or an **animated**
+  background. It is the page's own (`Tab.cover`), never the
   knowledgebase's, and it is not part of the writing: no block, no draft, no undo step of the writing.
 - **Where it stands.** A band across the top of the page area, full-bleed between the page tree and the right rail:
   its left edge where the tree (or its folded rail) ends, its right edge where the docked rail begins, or the
@@ -77,14 +79,30 @@ top space above the page with it between the sidebars" and "The add cover button
   **Search** (openly licensed pictures, credited). It is stored as the knowledgebase's pictures are, so it is
   served to everyone who can read the page, kept by the knowledgebase's reference index and copied with it. A
   Search pick's credit stands small in the band's bottom left.
-- **A gradient** is one of the page backgrounds' gradients (Sunrise, Peach, Rose, Lavender, Ocean, Meadow, Mint,
-  Sand, Steel, Dusk, Night, Forest, Ember), drawn at one angle. No pattern, no motion.
+- **A gradient** is one of the **theme's gradients**, the fourteen a page background's Theme row and a form's cover
+  offer, worked out from the knowledgebase's [Knowledgebase Style](#knowledgebase-style): its writing accent (the
+  theme's own, or the one picked) and the theme's next colours. Seven are light (Theme Dawn, Mist, Glow, Haze,
+  Sorbet, Pastel, Bloom) and seven bold and deep (Theme Bright, Vivid, Aurora, Ember, Dusk, Twilight, Ink), so a
+  cover suits a light page and a dark one. Drawn at one angle, with no pattern.
+- **An animated** cover is one of the moving backgrounds a slide and a form's cover offer (Aurora, Mesh, Waves,
+  Starfield and the rest), drawn over its gradient in one of the theme's six **colourings** (Theme Deep, Night,
+  Vivid, Bright, Soft, Mist), at a **speed** (25% to 300%, its own pace by default). Colours of one's own are not
+  offered: a cover keeps the theme's.
+- **It follows the style.** A gradient or animated cover is kept by its role (`theme-dawn`; `aurora` in `deep`),
+  never as colours, and painted as it is drawn, so changing the knowledgebase's theme or accent recolours every
+  cover at once, with nothing written to the pages.
+- **Motion and its cost.** The moving parts move by transform and opacity alone, on the compositor: no repaint and
+  no script per frame. With Reduce Motion on (the system's or the app's) they stand still where they rest, a
+  finished still frame. They pause while the band is scrolled out of sight or the browser tab is hidden, and lay
+  themselves out again only when the band's width changes by a step (160 px), not on every frame of a sliding tree.
 - **While loading**, a picture's band shows a soft tint of the knowledgebase's accent, and the picture fades in over
   it (150 ms; at once with reduced motion). A picture that cannot be fetched leaves the tint.
 - **Add Cover** sits in the meta row, after "N min read": a quiet ghost button, a picture icon and "Add Cover", the
   row's own size and colour, taking the accent on hover, with a hover card "Add a picture or a gradient across the
-  top of this page." It opens the cover menu: **Choose a Picture** (the picker) and the gradients as a grid of
-  swatches, each named in a tooltip. A page with no writing and no cover still shows the row, with Add Cover alone,
+  top of this page." It opens the cover menu: **Choose a Picture** (the picker), the theme's gradients as two rows of
+  swatches, each named in a tooltip, and **Motion**: the animated backgrounds six to a carousel page, each tile
+  playing in the theme's colours, then their Colours and Speed. A picture or a gradient sets the cover and closes
+  the menu; a motion sets it and the menu carries on from the band's Change Cover, for its colours and speed. A page with no writing and no cover still shows the row, with Add Cover alone,
   to whoever may add one.
 - **On a page with a cover**, resting the pointer on the band shows, at its bottom right, **Change Cover**,
   **Reposition** (pictures only) and **Remove** (a trash icon), each a small frosted button with a tooltip; the
@@ -102,17 +120,19 @@ top space above the page with it between the sidebars" and "The add cover button
   else.
 - **It is saved at once**, as the page's name is, whether or not the page is being edited: it is not part of the
   draft, and Save and Cancel neither keep nor drop it. Everyone with the page open sees it change.
-- **Agents.** `read_page` (and the api's page read) answers the cover (`cover`: its picture's id and focus, or its
-  gradient's name). `write_page` takes `cover`: a picture (`imageId`, from `upload_image` or `list_images`, with an
-  optional `focus` 0 to 100) or a gradient (`gradient`, one of the names above), or `null` to remove it; with or
-  without `markdown`. An agent's cover write is strict: a cover it cannot take is refused, by name, and nothing is
+- **Agents.** `read_page` (and the api's page read) answers the cover with its `kind`: `{ kind: "image", imageId,
+focus }`, `{ kind: "gradient", preset }` (`theme-dawn` to `theme-ink`) or `{ kind: "animated", preset, colouring,
+speed }` (a motion id such as `aurora`; a colouring `deep`, `night`, `vivid`, `bright`, `soft` or `mist`).
+  `write_page` takes the same `cover` (an image from `upload_image` or `list_images`; an animated cover's colouring
+  is `deep` when left out, its speed 1), or `null` to remove it; with or without `markdown`. An agent's cover write is strict: a cover it cannot take is refused, by name, and nothing is
   written. A cover alone is not a rewrite of the writing, so it is taken on a verified page too; it needs the
   `write` scope as any write does. The CLI has no cover option yet.
 - **Exports.** A copy of the knowledgebase, its Drive file and a snapshot carry the cover. The PDF, Word and Markdown
   exports of a page leave it out: they are the writing.
 - **Offline.** A knowledgebase kept Offline keeps its covers in this browser, as its other pictures are kept.
-- **Cost.** A page with no cover draws nothing for it. A picture is fetched once per page open, at most 2,400 px on
-  its longer side, and decoded off the main thread; the band never re-renders for a scroll or a keystroke.
+- **Cost.** A page with no cover draws nothing for it. A picture is fetched once per page open, its shown copy made as
+  every page picture's is (at most 4,096 px on its longer side, 2,048 on a touch screen), and decoded off the main
+  thread; the band never re-renders for a scroll or a keystroke.
 - **Telemetry:** `Element` `Added` `Cover` when a cover is set, `Element` `Deleted` `Cover` when it is removed.
 
 ## The footer

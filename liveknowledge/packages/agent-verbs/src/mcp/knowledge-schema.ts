@@ -5,8 +5,12 @@
 import { z } from 'zod';
 import {
   ARTICLE_MARKDOWN_MAX,
+  COVER_COLOURINGS,
+  COVER_GRADIENT_IDS,
+  COVER_MOTIONS,
   NAME_MAX_LENGTH,
-  PAGE_GRADIENT_PRESETS,
+  PAGE_MOTION_SPEED_MAX,
+  PAGE_MOTION_SPEED_MIN,
   truncateName,
 } from '@liveknowledge/document';
 import { REVIEW_PERIODS } from '../knowledge/trust';
@@ -192,8 +196,11 @@ export const readPageShape = {
         'left_out says how much was not sent.',
     ),
 };
-// A page's cover (docs/specs/030-knowledgebase/page-surface.md "The cover"): the band across the top of the page.
+// A page's cover (docs/specs/030-knowledgebase/page-surface.md "The cover"): the band across the top of the page, a
+// picture, a theme gradient or an animated background. The gradients and colourings are the knowledgebase style's
+// roles, so a cover follows the knowledgebase when its style changes.
 const coverPicture = z.object({
+  kind: z.literal('image'),
   imageId: z
     .string()
     .min(1)
@@ -209,15 +216,36 @@ const coverPicture = z.object({
     ),
 });
 const coverGradient = z.object({
-  gradient: z
-    .enum(PAGE_GRADIENT_PRESETS.map((p) => p.label) as [string, ...string[]])
-    .describe('A gradient by name.'),
+  kind: z.literal('gradient'),
+  preset: z
+    .enum(COVER_GRADIENT_IDS as unknown as [string, ...string[]])
+    .describe(
+      'A gradient in the knowledgebase’s theme colours: theme-dawn to theme-pastel are light, theme-bloom to theme-ink bold and deep.',
+    ),
+});
+const coverAnimated = z.object({
+  kind: z.literal('animated'),
+  preset: z
+    .enum(COVER_MOTIONS as unknown as [string, ...string[]])
+    .describe('The motion: soft lights (aurora), waves, a starfield and more.'),
+  colouring: z
+    .enum(COVER_COLOURINGS as unknown as [string, ...string[]])
+    .optional()
+    .describe(
+      'Which of the theme’s colourings it moves in (deep, the default, and night are dark).',
+    ),
+  speed: z
+    .number()
+    .min(PAGE_MOTION_SPEED_MIN)
+    .max(PAGE_MOTION_SPEED_MAX)
+    .optional()
+    .describe('How fast it moves: 1 (the default) its own pace.'),
 });
 const coverOut = z
-  .union([coverPicture, coverGradient])
+  .discriminatedUnion('kind', [coverPicture, coverGradient, coverAnimated])
   .optional()
   .describe(
-    'The page’s cover across its top: a picture and where it sits, or a gradient. Absent: none.',
+    'The page’s cover across its top: a picture and where it sits, a theme gradient, or an animated background. Absent: none.',
   );
 
 export const readPageOutput = {
@@ -319,10 +347,10 @@ export const writePageShape = {
     .optional()
     .describe('The page’s new writing as Markdown. Leave it out to change only the cover.'),
   cover: z
-    .union([coverPicture, coverGradient, z.null()])
+    .union([z.discriminatedUnion('kind', [coverPicture, coverGradient, coverAnimated]), z.null()])
     .optional()
     .describe(
-      'Sets the page’s cover (a picture or a gradient), or null removes it. Taken on any page, verified or not; ' +
+      'Sets the page’s cover (a picture, a theme gradient or an animated background), or null removes it. Taken on any page, verified or not; ' +
         'alone it changes none of the writing.',
     ),
   mode: z

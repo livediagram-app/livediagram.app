@@ -14,6 +14,8 @@ import { PageSurfaceSheet } from '@/components/page-surface/PageSurfaceSheet';
 import { useDrawingZoneEditing } from '@/lib/page-surface/drawing-zone-store';
 import { WORLD_HEIGHT_CSS } from '@/lib/page-surface/page-lock';
 import { usePageSurface } from './usePageSurface';
+import { PageCoverBand } from '@/components/page-cover/PageCoverBand';
+import { usePageHasCover } from '@/components/page-cover/page-cover-state';
 import { canvasMainStyle, canvasWorldStyle } from './canvas-main-style';
 import { imageBackingInsetAttribute } from '@liveknowledge/document';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
@@ -107,10 +109,14 @@ function CanvasView(props: CanvasProps) {
     ? props.pagesMode?.articles?.flows[leadPage.flow]?.style
     : undefined;
   const pageMargin = articleMarginPx(leadStyle);
+  // A knowledgebase page's cover band (page-surface.md "The cover") stands over its top room.
+  const continuousPage = !!leadPage && isContinuousPage(leadPage);
+  const hasCover = usePageHasCover() && continuousPage;
   const { view: lockedView, scrollerRef } = usePageSurface({
     mainRef,
     page: leadPage?.rect,
     margin: pageMargin,
+    hasCover,
   });
   const phone = useIsMobileViewport();
   const { zoom: viewportZoom, offset: viewportOffset } = lockedView;
@@ -484,6 +490,8 @@ function CanvasView(props: CanvasProps) {
                   </CanvasZoomProvider>
                 </CanvasArrivalProvider>
               </div>
+              {/* Over the world's top room, so it scrolls with the page and takes its own presses. */}
+              {hasCover ? <PageCoverBand /> : null}
             </div>
 
             {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the

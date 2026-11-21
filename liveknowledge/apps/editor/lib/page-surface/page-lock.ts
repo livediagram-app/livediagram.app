@@ -11,6 +11,17 @@ export const PAGE_SIDE_ROOM_PHONE = 20;
 export const PAGE_TOP_ROOM = 24;
 /** Screen px left under the page's foot, so its last line never sits on the window's edge. */
 export const PAGE_FOOT_ROOM = 96;
+/** A page cover's band (docs/specs/030-knowledgebase/page-surface.md "The cover"): screen px tall on a desktop and
+ *  on a phone, over the page's top room. Screen px, never scaled with the page. */
+export const COVER_HEIGHT = 220;
+export const COVER_HEIGHT_PHONE = 140;
+/** The band's height for a page with a cover or none. */
+export const coverHeightOf = (hasCover: boolean, phone: boolean): number =>
+  hasCover ? (phone ? COVER_HEIGHT_PHONE : COVER_HEIGHT) : 0;
+/** What the scroll container carries for the band: its height, and where the side chrome leaves it to stand. */
+export const PAGE_COVER_HEIGHT_VAR = '--page-cover-height';
+export const PAGE_COVER_LEFT_VAR = '--page-cover-left';
+export const PAGE_COVER_RIGHT_VAR = '--page-cover-right';
 /** The least the page is ever scaled to: a window narrower than this allows is narrower than any phone. */
 export const PAGE_MIN_SCALE = 0.25;
 
@@ -24,6 +35,8 @@ export type PageLockInput = {
   page: { x: number; y: number; width: number };
   margin: number;
   phone: boolean;
+  /** Screen px of cover band over the page's top room (coverHeightOf); none by default. */
+  cover?: number;
 };
 
 export type PageLock = {
@@ -44,7 +57,7 @@ export type PageLock = {
  * page's corner.
  */
 export function computePageLock(input: PageLockInput): PageLock {
-  const { width, height, sides, page, margin, phone } = input;
+  const { width, height, sides, page, margin, phone, cover = 0 } = input;
   const room = phone ? PAGE_SIDE_ROOM_PHONE : PAGE_SIDE_ROOM;
   const available = Math.max(1, width - sides.left - sides.right);
   const column = Math.max(1, page.width - 2 * margin);
@@ -54,7 +67,7 @@ export function computePageLock(input: PageLockInput): PageLock {
   // Whole px, so the writing's glyphs land on the pixel grid.
   const columnLeft = Math.round(sides.left + (available - columnWidth) / 2);
   const left = columnLeft - margin * zoom;
-  const top = PAGE_TOP_ROOM;
+  const top = PAGE_TOP_ROOM + cover;
   return {
     view: {
       zoom,
@@ -79,16 +92,17 @@ export function computePageLock(input: PageLockInput): PageLock {
  * a continuous page's top stands on the canvas's axis (page-layout.ts), so the box moves down by PAGE_TOP_ROOM at
  * most, and that much shorter it never reaches past the container's foot. The lock is solved for this height.
  */
-export const worldHeight = (scrollerHeight: number): number =>
-  Math.max(1, scrollerHeight - PAGE_TOP_ROOM);
-/** The same as the world element's CSS height. */
-export const WORLD_HEIGHT_CSS = `calc(100% - ${PAGE_TOP_ROOM}px)`;
+export const worldHeight = (scrollerHeight: number, cover = 0): number =>
+  Math.max(1, scrollerHeight - PAGE_TOP_ROOM - cover);
+/** The same as the world element's CSS height: a cover's band moves the page down by its height, so the box is that
+ *  much shorter again. */
+export const WORLD_HEIGHT_CSS = `calc(100% - ${PAGE_TOP_ROOM}px - var(${PAGE_COVER_HEIGHT_VAR}, 0px))`;
 
 export const PAGE_FREE_HEIGHT_VAR = '--page-free-height';
 
 /** That height for a scroll container `height` screen px tall, shown at `zoom`. */
-export function pageFreeHeight(height: number, zoom: number): number {
-  return Math.max(0, Math.floor((height - PAGE_TOP_ROOM - PAGE_FOOT_ROOM) / zoom));
+export function pageFreeHeight(height: number, zoom: number, cover = 0): number {
+  return Math.max(0, Math.floor((height - PAGE_TOP_ROOM - cover - PAGE_FOOT_ROOM) / zoom));
 }
 
 export const sameView = (a: View, b: View): boolean =>

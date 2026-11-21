@@ -309,7 +309,7 @@ export type KnowledgePageRead = KnowledgePageRef & {
   parent?: string;
   backlinks: KnowledgePageRef[];
   subpages: KnowledgePageRef[];
-  /** The page's cover (page-surface.md "The cover"): its picture and where it sits, or its gradient's name. */
+  /** The page's cover (page-surface.md "The cover"): its kind, and its picture or its preset. */
   cover?: Exclude<AgentCover, null>;
 };
 export type KnowledgePageReadResponse = { page: KnowledgePageRead };

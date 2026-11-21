@@ -48,22 +48,33 @@ describe('a page’s cover from an agent', () => {
   it('sets a picture alone, reads it back, indexes its picture, and leaves the writing as it was', async () => {
     const kit = await knowledgeKit();
     const before = stored(kit).articles;
-    const res = await write(kit, 'agent', { cover: { imageId: 'img_cover1', focus: 30 } });
+    const res = await write(kit, 'agent', {
+      cover: { kind: 'image', imageId: 'img_cover1', focus: 30 },
+    });
     expect(res.status).toBe(200);
     const { lines } = await res.json<{ lines: string[] }>();
     expect(lines.at(-1)).toBe('The page’s cover is now the picture, placed 30% down it.');
     expect(stored(kit).cover).toEqual({ imageId: 'img_cover1', focus: 30 });
     expect(stored(kit).articles).toEqual(before);
     expect(refs(kit)).toEqual(['img_cover1']);
-    expect((await readPage(kit)).cover).toEqual({ imageId: 'img_cover1', focus: 30 });
+    expect((await readPage(kit)).cover).toEqual({
+      kind: 'image',
+      imageId: 'img_cover1',
+      focus: 30,
+    });
   });
 
   it('sets a gradient with the writing, then takes the cover away', async () => {
     const kit = await knowledgeKit();
     expect(
-      (await write(kit, 'agent', { markdown: 'New words.', cover: { gradient: 'ocean' } })).status,
+      (
+        await write(kit, 'agent', {
+          markdown: 'New words.',
+          cover: { kind: 'gradient', preset: 'theme-glow' },
+        })
+      ).status,
     ).toBe(200);
-    expect((await readPage(kit)).cover).toEqual({ gradient: 'Ocean' });
+    expect((await readPage(kit)).cover).toEqual({ kind: 'gradient', preset: 'theme-glow' });
     const gone = await write(kit, 'agent', { cover: null });
     expect(gone.status).toBe(200);
     expect('cover' in stored(kit)).toBe(false);
@@ -71,12 +82,13 @@ describe('a page’s cover from an agent', () => {
   });
 
   it.each([
-    [{ gradient: 'Plaid' }, 'cover.gradient is one of'],
-    [{ imageId: 'img_a', focus: 120 }, 'cover.focus is a whole number'],
-    [{ imageId: 'data:image/png;base64,AAAA' }, 'cover.imageId names a picture'],
-    [{ imageId: 'img_a', gradient: 'Ocean' }, 'not sent together'],
-    [{ imageId: 'img_a', tint: 'red' }, 'takes no "tint"'],
-    ['sunset', 'Send cover as a picture'],
+    [{ kind: 'gradient', preset: 'Plaid' }, 'cover.preset is one of'],
+    [{ kind: 'animated', preset: 'aurora', colouring: 'plaid' }, 'cover.colouring is one of'],
+    [{ kind: 'image', imageId: 'img_a', focus: 120 }, 'cover.focus is a whole number'],
+    [{ kind: 'image', imageId: 'data:image/png;base64,AAAA' }, 'cover.imageId names a picture'],
+    [{ imageId: 'img_a' }, 'Send cover as'],
+    [{ kind: 'image', imageId: 'img_a', tint: 'red' }, 'takes no "tint"'],
+    ['sunset', 'Send cover as'],
   ])('refuses %j by name and writes nothing', async (cover, says) => {
     const kit = await knowledgeKit();
     const res = await write(kit, 'agent', { cover });
@@ -93,11 +105,26 @@ describe('a page’s cover from an agent', () => {
       (await kit.call('editor', 'POST', '/api/documents/kb/pages/deploys/verify')).status,
     ).toBe(200);
     expect(
-      (await write(kit, 'agent', { markdown: 'Rewritten.', cover: { gradient: 'Dusk' } })).status,
+      (
+        await write(kit, 'agent', {
+          markdown: 'Rewritten.',
+          cover: { kind: 'animated', preset: 'aurora', colouring: 'night' },
+        })
+      ).status,
     ).toBe(409);
     expect('cover' in stored(kit)).toBe(false);
-    expect((await write(kit, 'agent', { cover: { gradient: 'Dusk' } })).status).toBe(200);
-    expect((await readPage(kit)).cover).toEqual({ gradient: 'Dusk' });
+    expect(
+      (
+        await write(kit, 'agent', {
+          cover: { kind: 'animated', preset: 'aurora', colouring: 'night' },
+        })
+      ).status,
+    ).toBe(200);
+    expect((await readPage(kit)).cover).toEqual({
+      kind: 'animated',
+      preset: 'aurora',
+      colouring: 'night',
+    });
   });
 
   it.each<[Who, number]>([
@@ -106,7 +133,10 @@ describe('a page’s cover from an agent', () => {
     ['viewer-agent', 403],
   ])('is refused to %s', async (who, status) => {
     const kit = await knowledgeKit();
-    expect((await write(kit, who, { cover: { gradient: 'Dusk' } })).status).toBe(status);
+    expect(
+      (await write(kit, who, { cover: { kind: 'animated', preset: 'aurora', colouring: 'night' } }))
+        .status,
+    ).toBe(status);
     expect('cover' in stored(kit)).toBe(false);
   });
 
@@ -137,6 +167,14 @@ describe('a page’s cover from a person', () => {
     expect(refs(kit)).toEqual([]);
   });
 
+  it('keeps a gradient or an animated cover by its theme role, never colours', async () => {
+    const kit = await knowledgeKit();
+    await save(kit, 'editor', { motion: 'aurora', colouring: 'soft', speed: 2 });
+    expect(stored(kit).cover).toEqual({ motion: 'aurora', colouring: 'soft', speed: 2 });
+    await save(kit, 'editor', { fill: { kind: 'gradient', from: '#fff', to: '#000', angle: 160 } });
+    expect('cover' in stored(kit)).toBe(false);
+  });
+
   it.each<Who>(['participant', 'viewer', 'link'])('is refused to a %s', async (who) => {
     const kit = await knowledgeKit();
     expect((await save(kit, who, { imageId: 'img_mine' })).status).toBe(403);
@@ -162,7 +200,7 @@ describe('made by a person or an agent (verification.md)', () => {
     });
     // A cover alone is not the writing: it moves nothing.
     vi.setSystemTime(2_000_000);
-    await write(kit, 'agent', { cover: { gradient: 'Mint' } });
+    await write(kit, 'agent', { cover: { kind: 'gradient', preset: 'theme-mist' } });
     expect((await health(kit)).updated?.at).toBe(1_000_000);
   });
 

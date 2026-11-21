@@ -5,7 +5,7 @@
 import type {
   ArticleLookId,
   PageKind,
-  PageCover,
+  TabCover,
   PageOrientation,
   PagePattern,
   PageSizeId,
@@ -84,16 +84,22 @@ export type ArticleWrite = {
   // (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"), in the document's metadata.
 };
 
-// A page's cover as an agent sends it (docs/specs/030-knowledgebase/page-surface.md "The cover"): a picture of the
-// knowledgebase's, where it sits (0 the top to 100 the bottom), or a page background's gradient by name; `null`
-// takes the cover away.
-export type AgentCover = { imageId: string; focus?: number } | { gradient: string } | null;
+// A page's cover as an agent sends and reads it (docs/specs/030-knowledgebase/page-surface.md "The cover"): a
+// picture of the knowledgebase's and where it sits (0 the top to 100 the bottom); a theme gradient by its preset id
+// (`theme-dawn`); or an animated background by its motion (`aurora`), in one of the theme's colourings (`deep`)
+// at a speed. The gradients and colourings are the knowledgebase style's roles, never colours. `null` takes the
+// cover away.
+export type AgentCover =
+  | { kind: 'image'; imageId: string; focus?: number }
+  | { kind: 'gradient'; preset: string }
+  | { kind: 'animated'; preset: string; colouring?: string; speed?: number }
+  | null;
 
 // `cover` is the parsed cover (the stored shape), or null to remove it; it rides an article write or stands alone.
 export type PagesRequest =
   | { pages: PageChange[] }
-  | { article: ArticleWrite; cover?: PageCover | null }
-  | { cover: PageCover | null };
+  | { article: ArticleWrite; cover?: TabCover | null }
+  | { cover: TabCover | null };
 
 export type PageRect = { x: number; y: number; width: number; height: number };
 

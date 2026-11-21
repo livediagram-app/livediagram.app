@@ -2,7 +2,7 @@
 // "Interfaces and contracts"): strictly, so a misspelt field is refused by name rather than ignored.
 // Answers the request, or the refusal that says what was wrong and where.
 import { type ArticleWrite, type PagesRefusal, type PagesRequest } from '@liveknowledge/api-schema';
-import { isRecord, ARTICLE_MARKDOWN_MAX, type PageCover } from '@liveknowledge/document';
+import { isRecord, ARTICLE_MARKDOWN_MAX, type TabCover } from '@liveknowledge/document';
 import { parseAgentCover } from './cover';
 
 type Raw = Record<string, unknown>;
@@ -67,7 +67,7 @@ function articleWrite(v: unknown): ArticleWrite {
   };
 }
 
-function coverOf(raw: unknown): PageCover | null {
+function coverOf(raw: unknown): TabCover | null {
   const read = parseAgentCover(raw);
   if ('refusal' in read) throw new Refused(read.refusal.code, read.refusal.message);
   return read.cover;

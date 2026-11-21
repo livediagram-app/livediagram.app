@@ -5,7 +5,7 @@ import type { TagColour } from './tag-colours';
 import type { Page, PageArrangement, PageBackground, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
 import type { TabDraft } from './page-draft';
-import type { PageCover } from './page-cover';
+import type { TabCover } from './page-cover';
 import type { Layer } from './layers';
 import type { Finish } from './finish';
 import type { TabId, TextSize } from '@liveworkspace/model-core/basics';
@@ -34,9 +34,9 @@ export type Tab = {
   // handed it. Written only by the api's knowledge routes (Verify, the Page Health card), read through
   // `parseKnowledgeFields` (@liveknowledge/knowledge), and synced in a `tab-meta` patch, as the name is.
   knowledge?: TabKnowledge;
-  // The page's cover (docs/specs/030-knowledgebase/page-surface.md "The cover"): a picture or a gradient across the
+  // The page's cover (docs/specs/030-knowledgebase/page-surface.md "The cover"): a picture, a theme gradient or an animated background across the
   // top of the page. Settled on every read (`withSettledCover`), synced in a `tab-meta` patch, as the name is.
-  cover?: PageCover;
+  cover?: TabCover;
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).

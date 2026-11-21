@@ -102,8 +102,8 @@ describe('the store', () => {
   const health = (over: Partial<PageKnowledge> = {}): PageHealthResponse => ({
     knowledge: answer(over),
     reads: { people: 4, agents: 9 },
-    created: { by: 'u2', at: NOW - DAY },
-    updated: { by: 'u1', at: NOW - 60_000 },
+    created: { by: 'u2', at: NOW - DAY, kind: 'human' },
+    updated: { by: 'u1', at: NOW - 60_000, kind: 'ai', agent: 'Claude', via: 'mcp' },
   });
   function deferred<T>() {
     let resolve!: (value: T) => void;

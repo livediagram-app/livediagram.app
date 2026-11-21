@@ -14,11 +14,11 @@ import {
 } from '@liveknowledge/api-schema';
 import {
   diffToElementOps,
-  gradientNameOf,
+  coverGradientLabel,
   pageByTitleIn,
   pageStepsOf,
   plural,
-  type PageCover,
+  type TabCover,
   type Tab,
 } from '@liveknowledge/document';
 import {
@@ -89,18 +89,20 @@ export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
   return ops;
 }
 
-function withCover(tab: Tab, cover: PageCover | null): Tab {
+function withCover(tab: Tab, cover: TabCover | null): Tab {
   const { cover: _was, ...rest } = tab;
   return cover ? { ...rest, cover } : rest;
 }
 
-const coverLine = (cover: PageCover | null): string =>
+const coverLine = (cover: TabCover | null): string =>
   cover === null
     ? 'The page has no cover now.'
-    : cover.imageId
+    : 'imageId' in cover
       ? 'The page’s cover is now the picture' +
         (cover.focus !== undefined ? `, placed ${cover.focus}% down it.` : '.')
-      : `The page’s cover is now the ${gradientNameOf(cover) ?? 'chosen'} gradient.`;
+      : 'gradient' in cover
+        ? `The page’s cover is now the ${coverGradientLabel(cover.gradient)} gradient.`
+        : `The page’s cover is now the ${cover.motion} animated background, in ${cover.colouring}.`;
 
 const pageLinksOf = (document: DocumentDTO) => ({
   pageByTitle: pageByTitleIn(

@@ -328,3 +328,9 @@
   opacity: 0.6;
   transform: scale(var(--pm-rest, 1));
 }
+
+/* A page's animated cover rests while it is off screen or its browser tab is hidden (030-knowledgebase/
+   page-surface.md "The cover"): CoverMotion sets the attribute. */
+[data-cover-paused] [data-page-motion] * {
+  animation-play-state: paused !important;
+}

@@ -55,11 +55,17 @@ export function AnimatedBackgroundChoices({
   themePresets,
   onPick,
   onPreview,
+  customColours = true,
+  note = MOTION_NOTE,
 }: {
   fill: PageFill | undefined;
   themePresets: readonly ThemeBackgroundPreset[];
   onPick: (fill: PageFill) => void;
   onPreview: (fill: PageFill) => void;
+  // Offers colours of the author's own beside the theme's. A page's cover keeps the theme's alone, by role, so it
+  // follows the knowledgebase's style (030-knowledgebase/page-surface.md "The cover").
+  customColours?: boolean;
+  note?: string;
 }) {
   const theme = themeOfPresets(themePresets);
   const motion = fill?.kind === 'gradient' ? fill.motion : undefined;
@@ -178,7 +184,7 @@ export function AnimatedBackgroundChoices({
             </button>
           );
         })}
-        {motion ? (
+        {motion && customColours ? (
           <button
             type="button"
             role="radio"
@@ -196,7 +202,7 @@ export function AnimatedBackgroundChoices({
       </div>
       {/* The two colours of the author's own, as the Gradient category's custom editor sets them;
           the motion and its speed ride along. */}
-      {(customOpen || custom) && fill?.kind === 'gradient' && motion ? (
+      {customColours && (customOpen || custom) && fill?.kind === 'gradient' && motion ? (
         <div className="mt-2">
           <CustomGradientEditor
             fill={fill}
@@ -241,9 +247,7 @@ export function AnimatedBackgroundChoices({
           />
         </div>
       ) : null}
-      <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        {MOTION_NOTE}
-      </p>
+      <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">{note}</p>
     </div>
   );
 }
