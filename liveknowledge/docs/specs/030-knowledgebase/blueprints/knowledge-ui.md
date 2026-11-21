@@ -107,6 +107,9 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   heading is the last one at or above a line 160 px down the window, found from the headings' boxes when the view
   moves or the headings change, one pass a frame at most. A press brings the heading into view
   (`ArticleEditorHandle.rangeRect`, `scrollIntoView`).
+- **Reading time** (`lib/knowledge/reading-time.ts`): `pageWords` counts the committed blocks' words (kept per block
+  list, like `pageHeadings`; 100,000 words in well under 200 ms, tested), `readingMinutes` turns them into whole
+  minutes at 230 a minute. `PageRailBody` reads both with the headings and passes the minutes to `OnThisPage`.
 - **The page tree** shows the tick, or a short amber "Due" pill named "Review Due", at the row's right, and the
   state is part of the row's accessible name ("Release Process, Review Due"). The row menu gains **Verify** and
   **Always in Context** (a checkmark row) after Copy Link. Over budget, the toast says the route's reason from its

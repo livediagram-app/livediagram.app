@@ -35,6 +35,9 @@ replaces what the fork still shows around the writing.
   and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
+- **Reading time:** On This Page's heading carries how long the page takes to read ("4 min read"), at 230 words a
+  minute over its text, lists, tables and code, rounded, at least 1 minute; an empty page shows none, and a page with
+  writing but no headings shows the time alone. It follows the committed writing, never each keystroke.
 - **The formatting bar** is the left of the top row ("The footer") while writing: block style, bold,
   italic, underline, colour, link, lists, alignment, more formatting, insert, comment. It holds formatting only.
   Pictures, charts, tables, drawings and embeds are added from **Insert** and the slash menu.
