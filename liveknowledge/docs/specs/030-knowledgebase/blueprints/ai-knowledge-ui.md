@@ -121,6 +121,63 @@ each handler checks it again. Tests, a role at a time: `components/ai-knowledge/
 and one after an action, every empty state, a failed read, Offline, each section's rows, the passages and lines as
 text, the health bar's label and parts, the over-budget refusal, each action's request, and the controls per role.
 
+## AI Context on a page
+
+Derived from [AI Knowledge](../ai-knowledge.md) "AI Context on a page": a section of the page's right rail, drawn
+after Page Health in `PageRailBody` (docked and in the Page Info card alike), over Page Health's own read.
+
+| Piece                           | File                                                                              |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| the statements and their bounds | `packages/knowledge/src/sql/page-answers.ts`; `countPageAgentReads` in `reads.ts` |
+| the table (schema step V19)     | `apps/api/src/knowledge/page-answers.ts` (`pageAnswersSchemaStep`)                |
+| recording                       | `apps/api/src/routes/knowledge-ask-route.ts`                                      |
+| the read                        | `handlePageHealth`, `apps/api/src/routes/knowledge-page-routes.ts`                |
+| the section                     | `apps/editor/components/knowledge/PageAiContext.tsx`                              |
+| Ask's waiting question          | `apps/editor/lib/knowledge-ask/ask-draft.ts`                                      |
+
+- **The table.** `page_answers (tab TEXT, key TEXT, day TEXT, question TEXT, asked INTEGER, PRIMARY KEY (tab, key,
+  day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows with its tab
+  (`page_answers_tab_removed`). Schema step V19, additive, `IF NOT EXISTS`.
+- **Recording** (`recordPageAnswers(key, question, tabs, now)`): one `INSERT ... SELECT value FROM json_each(?)`
+  upsert, a row for each distinct cited tab (12 at most, the passages Ask sends), `asked + 1` on a row already there
+  and the newest words kept. The Ask route adds it to the batch that logs the answer's gaps, only when the request
+  carried no earlier turns, the answer cited at least one passage and `questionKey(question)` is not empty. The
+  words are trimmed, runs of space made one, cut to `PAGE_ANSWER_QUESTION_CHARS` (280).
+- **Pruning** (`prunePageAnswers(now)`, in `pruneKnowledge`, the daily upkeep): rows whose day is
+  `PAGE_ANSWERS_KEPT_DAYS` (30) or more back, then all but the newest `MAX_PAGE_ANSWER_ROWS` (5,000) by day.
+- **The read.** `listPageAnswers(tab, now)`: the page's rows of the last 30 days grouped by key, `SUM(asked)` most
+  first, then the latest day, then the key, `PAGE_ANSWERS_LISTED` (3); the words are those of the group's latest
+  day. `countPageAgentReads(tab, now)`: the page's agent reads of the last 7 days by agent, most first, then by
+  name, `PAGE_AGENTS_LISTED` (3). Both run beside the reads and the authors in `handlePageHealth`'s one
+  `Promise.all`; each is a range of a primary key. The answer gains `answered: { question, asked }[]` and
+  `agents: { agent, reads }[]` (`PageHealthResponse`, optional so a read held from before them is still one).
+- **The section** (`PageAiContext`): a `section` named "AI Context", its `RAIL_LABEL` heading, then three blocks
+  each under a smaller label, no card and no border:
+  - **Always in Context**: a glyph, "Always in Context" and "About 1,200 tokens" (`tokens` from the read; nothing
+    before it), and for an Editor (`rights.editFields`) a `Switch` (`sm`) labelled "Always in Context" calling
+    `setFields(pageId, { context }, 'context')`, which shows the change at once and puts it back with the route's
+    budget words in a toast on a refusal. Anyone else reads "Handed to Every Agent First" or "Not Handed to Agents
+    First". Telemetry `UI·Added·ContextPage` / `UI·Removed·ContextPage`, as AI Knowledge sends.
+  - **Answered From This Page**: up to three quotes (the question in curly quotes, two lines at most, the full
+    words in a `Tooltip` when cut) with "Asked once" or "Asked 6 times" under each; before the read, quiet
+    placeholder lines; with none, "No questions answered from this page yet."
+  - **Read by Agents**: each agent's name and its reads ("12 reads"), or "No agent has read this page this week."
+  - **Ask About This Page**: a secondary `Button`, full width. It puts "About <title>: " in `ask-draft.ts` for this
+    knowledgebase, sends `UI·Used·AskAboutPage` and shows Ask (`showKnowledgeView('ask')`). `AskReady` takes the
+    draft once when it mounts (`takeAskDraft`), starts a new conversation and hands it to `AskComposer` as its
+    `initialValue`, focused with the caret at the end. A draft is kept in memory only, for this knowledgebase, and
+    taken once.
+- **Offline**: `PageRailBody` does not draw the section.
+- **Share roles**: every role sees it; only `rights.editFields` draws the switch (an Editor on the whole
+  knowledgebase, not Offline).
+- **Performance**: no request of its own; one statement per answer; the rail renders it from the store slice Page
+  Health already reads.
+- **Tests.** `packages/knowledge/src/sql/page-answers.test.ts` (recording, grouping, the 30-day window, the cap,
+  the agents' order); `apps/api/src/routes/knowledge-ai-context.test.ts` (recorded by an answer and not by a
+  follow-up or an uncited one, every reading role, pruning, a deleted page); `PageAiContext.test.tsx` (per role,
+  empty states, the switch, Ask About This Page); `e2e/signed-in/ai-context.spec.ts` (an asked question shows under
+  Answered From This Page; Ask About This Page fills the field).
+
 ## Not built, or not known
 
 Listed in the spec's "Not built". Also: the sections' layout has not been seen in a browser, and the suggestion

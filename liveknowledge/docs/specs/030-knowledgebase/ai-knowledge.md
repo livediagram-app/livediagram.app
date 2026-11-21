@@ -67,6 +67,41 @@ Pages every agent is handed before it starts: `Tab.knowledge.context: true`, set
 or here. The list shows each page's size in tokens (characters / 4, rounded up to 10) against a budget of 8,000
 (`CONTEXT_BUDGET_TOKENS`); a page that would pass the budget cannot be added, and says so.
 
+## AI Context on a page
+
+Owner, 2026-11-21: "The designs had a section for AI Context, why do we not have that so far?" The approved page
+mockup's right rail had, under Page Health, the questions answered from the page and a way to ask about it. A page's
+right rail (and its Page Info card) holds an **AI Context** section, after Page Health and before the rail's foot:
+what agents and Ask make of this one page. It looks as the rest of the rail does ([Verification](verification.md)
+"How the rail looks"): a small-capitals heading, no card, no borders, quiet.
+
+- **Always in Context**: whether every agent is handed this page first, with its size ("About 1,200 tokens", the
+  budget's count). An Editor has a switch, the same change as the tree row menu's **Always in Context**: a page that
+  would pass the budget is not added and the refusal says so in the route's words. Anyone else reads "Handed to
+  Every Agent First" or "Not Handed to Agents First".
+- **Answered From This Page**: the questions whose Ask answer cited this page, up to 3, most asked first, over the
+  last 30 days, each quoted with "Asked 6 times" ("Asked once" for one). With none: "No questions answered from
+  this page yet."
+- **Read by Agents**: the agents that read this page in the last 7 days, the 3 that read it most, each with its
+  reads. With none: "No agent has read this page this week."
+- **Ask About This Page**: opens Ask with "About <page title>: " already in the question field, the caret at its
+  end, nothing asked until the person sends it.
+- **What is kept.** When Ask answers a first question (not a follow-up) and cites pages, the room counts it once
+  for each page cited, under the question's key (the words that carry meaning, stemmed: the same grouping as
+  questions nobody could answer), by day: `page_answers`, a row a page, key and day, holding the asker's words (at
+  most 280 characters) and the count. No asker's identity is kept. It is one statement an answer, in the
+  transaction that logs its gaps. The daily upkeep drops days older than 30 and keeps at most 5,000 rows, the
+  newest; a deleted page takes its rows with it.
+- **The read.** Page Health's read answers the questions and the agents with the rest, so opening a page costs no
+  more requests. Every role that can read the page reads them.
+- **A knowledgebase kept Offline** has no room, no Ask and no agents: the section is not drawn and nothing is kept.
+
+| Action                                           | Editor | Participant | Viewer |
+| ------------------------------------------------ | ------ | ----------- | ------ |
+| See AI Context                                   | yes    | yes         | yes    |
+| Set Always in Context from it                    | yes    | no          | no     |
+| Ask About This Page (Ask's own rules then apply) | yes    | yes         | yes    |
+
 ## Knowledge Health
 
 Counts of Verified, Review Due and Never Verified pages as one stacked bar with a legend, and **Remind the Owners**
