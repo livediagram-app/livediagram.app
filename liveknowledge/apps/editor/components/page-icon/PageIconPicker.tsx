@@ -172,6 +172,15 @@ const PickerGrid = memo(function PickerGrid({
   label: string;
 }) {
   const flat = useMemo(() => sections.flatMap((s) => s.choices), [sections]);
+  // Each section's first choice's place in `flat`, so a choice's place is worked out, never counted during render.
+  const starts = useMemo(
+    () =>
+      sections.reduce<number[]>(
+        (out, _s, i) => [...out, i === 0 ? 0 : out[i - 1]! + sections[i - 1]!.choices.length],
+        [],
+      ),
+    [sections],
+  );
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     const at = Number(target.dataset.choiceAt);
@@ -181,7 +190,6 @@ const PickerGrid = memo(function PickerGrid({
     e.preventDefault();
     e.currentTarget.querySelector<HTMLElement>(`[data-choice-at="${to}"]`)?.focus();
   };
-  let at = -1;
   return (
     <div
       data-icon-grid=""
@@ -191,14 +199,14 @@ const PickerGrid = memo(function PickerGrid({
       onPointerLeave={() => onPoint(null)}
       className="flex flex-col gap-3"
     >
-      {sections.map((section) => (
+      {sections.map((section, si) => (
         <section key={section.id} aria-label={section.label}>
           <h3 className="mb-1 px-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
             {section.label}
           </h3>
           <div className="grid grid-cols-8 gap-0.5">
-            {section.choices.map((choice) => {
-              at += 1;
+            {section.choices.map((choice, ci) => {
+              const at = starts[si]! + ci;
               const on = choice.key === current;
               return (
                 <button

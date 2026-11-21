@@ -98,7 +98,11 @@ describe('Add Icon in the meta row', () => {
     const buttons = [...row.querySelectorAll('button')].map((b) => b.textContent);
     expect(buttons).toEqual(['Add Cover', 'Add Icon']);
     // One dot: between the reading time and the pair, none inside it.
-    expect([...row.children].filter((c) => c.textContent === '·')).toHaveLength(1);
+    // Each note's dot leads it, inside the note (PageMetaRow): one, before the pair.
+    const dots = [...row.querySelectorAll('[data-meta-note] > [aria-hidden]')].filter(
+      (c) => c.textContent?.trim() === '·',
+    );
+    expect(dots).toHaveLength(1);
     const button = screen.getByRole('button', { name: /Add Icon/ });
     expect(button.className).toContain('cursor-pointer');
     const described = button.getAttribute('aria-describedby')!.split(' ').at(-1)!;
@@ -188,7 +192,10 @@ describe('the picker', () => {
     expect(track).toHaveBeenCalledWith('Element', 'Deleted', 'PageIcon');
     const [message, options] = toast.info.mock.calls[0]!;
     expect(message).toBe('Icon removed');
-    act(() => options.action.onSelect());
+    const undo = (options as { action: { onSelect: () => void } }).action;
+    act(() => {
+      undo.onSelect();
+    });
     expect(icon()).toEqual({ iconId: 'rocket' });
   });
 

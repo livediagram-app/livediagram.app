@@ -48,6 +48,12 @@ import { SetupDialog } from './SetupDialog';
 import { SetupWhenOpen, useDescribeToAddPages } from './SetupHost';
 import { useSetupOffered } from './useSetupOffered';
 
+// A structure picked releases the page's edit draft first (create-structure.ts), so the editor has page editing.
+const setupChrome = (...args: Parameters<typeof chromeValue>) => {
+  const [role, over] = args;
+  return chromeValue(role, { pageEditing: { editing: false, release: () => {} }, ...over });
+};
+
 const startPage = (): Tab =>
   ({
     id: 'start',
@@ -140,7 +146,7 @@ function liveChrome(role: Role, over: Record<string, unknown>) {
   let store!: EditorChromeStore;
   const named: string[] = [];
   const selected: string[] = [];
-  const value = chromeValue(role, {
+  const value = setupChrome(role, {
     ...over,
     commitTabs: (map: (tabs: Tab[]) => Tab[]) => {
       const tabs = map(store.get().tabs);
@@ -157,7 +163,7 @@ function liveChrome(role: Role, over: Record<string, unknown>) {
 
 describe('who is offered Describe to Set Up', () => {
   const offered = (role: Role, over: Record<string, unknown> = emptyKb()) => {
-    const { store } = renderInEditor(<></>, chromeValue(role, over));
+    const { store } = renderInEditor(<></>, setupChrome(role, over));
     const wrapper = ({ children }: { children: ReactNode }) => (
       <EditorChromeContext.Provider value={store}>{children}</EditorChromeContext.Provider>
     );
@@ -209,7 +215,7 @@ describe('who is offered Describe to Set Up', () => {
 
 describe('the host', () => {
   it('draws nothing until opened, then fetches and draws the dialog, and tells the palette what is offered', async () => {
-    const { container } = renderInEditor(<SetupWhenOpen />, chromeValue('edit', emptyKb()));
+    const { container } = renderInEditor(<SetupWhenOpen />, setupChrome('edit', emptyKb()));
     expect(container.innerHTML).toBe('');
     expect(renderHook(() => usePublishedSetupOffered()).result.current).toBe('set-up');
     act(() => openSetup('set-up'));
@@ -218,7 +224,7 @@ describe('the host', () => {
   });
 
   it.each(['view'] as const)('closes at once for a %s session', (role) => {
-    renderInEditor(<SetupWhenOpen />, chromeValue(role, emptyKb()));
+    renderInEditor(<SetupWhenOpen />, setupChrome(role, emptyKb()));
     act(() => openSetup('set-up'));
     expect(renderHook(() => useSetupOpen()).result.current).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -228,7 +234,7 @@ describe('the host', () => {
 
 describe('the sidebar button', () => {
   it('is a full-width button with no line under it, and opens the dialog', () => {
-    renderInEditor(<DescribeToSetUpButton />, chromeValue('edit', emptyKb()));
+    renderInEditor(<DescribeToSetUpButton />, setupChrome('edit', emptyKb()));
     const button = screen.getByRole('button', { name: 'Describe to Set Up' });
     expect(button.className).toContain('w-full');
     expect(button.getAttribute('title')).toBeNull();
@@ -255,7 +261,7 @@ describe('the sidebar button', () => {
         <DescribeToSetUpButton />
         <PageTreeSheet {...tree} />
       </>,
-      chromeValue('edit', emptyKb({ tabs })),
+      setupChrome('edit', emptyKb({ tabs })),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Pages' }));
     const sheet = screen.getByRole('dialog', { name: 'Pages' });
@@ -278,7 +284,7 @@ describe('the sidebar button', () => {
     const tabs = [startPage()];
     const { store } = renderInEditor(
       <DescribeToSetUpButton />,
-      chromeValue('edit', emptyKb({ tabs })),
+      setupChrome('edit', emptyKb({ tabs })),
     );
     expect(screen.getByRole('button', { name: 'Describe to Set Up' })).toBeTruthy();
     act(() =>
@@ -291,7 +297,7 @@ describe('the sidebar button', () => {
   });
 
   it.each(['view'] as const)('is not drawn for a %s session', (role) => {
-    const { container } = renderInEditor(<DescribeToSetUpButton />, chromeValue(role, emptyKb()));
+    const { container } = renderInEditor(<DescribeToSetUpButton />, setupChrome(role, emptyKb()));
     expect(container.innerHTML).toBe('');
   });
 });

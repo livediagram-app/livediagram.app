@@ -80,7 +80,7 @@ export function PageCommentComposer({
       data-open={open ? '' : undefined}
       onFocus={() => setFocused(true)}
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+        if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false);
       }}
       className={`group/composer flex gap-3 border transition-[border-color,box-shadow,background-color] duration-150 motion-reduce:transition-none ${
         inline

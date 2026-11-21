@@ -48,7 +48,9 @@ export function KnowledgeStyleDialog({
     null,
   );
   const draftRef = useRef(draft);
-  draftRef.current = draft;
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
   // Closed or unmounted with picks unapplied (a role change, a reload of the page), the saved style comes back.
   useEffect(
     () => () => {
