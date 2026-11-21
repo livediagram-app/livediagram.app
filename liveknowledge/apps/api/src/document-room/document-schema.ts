@@ -17,6 +17,7 @@ import {
   migrationSchema,
   outboxParkingStep,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
@@ -379,6 +380,11 @@ const V18 = pageAuthorKindsSchemaStep;
 // The questions Ask answered from each page, by day (knowledge/page-answers.ts). Additive, IF NOT EXISTS.
 const V19 = pageAnswersSchemaStep;
 
+// A tab folder's chosen colour (liveworkspace/docs/specs tab folders "Folder colour"), `document_tabs.folder_color`,
+// which the platform's tab reads (@liveworkspace/index-app item-tab-reads) select: a hue name, or NULL for Automatic.
+// Asks before the ALTER, so a rerun is safe.
+const V20 = tabFolderColourStep('document_tabs');
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -399,6 +405,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V17,
   V18,
   V19,
+  V20,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

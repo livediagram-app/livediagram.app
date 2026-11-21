@@ -1,44 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { canManageWebhooks as canManageWebhooksOf } from '@liveworkspace/workbench/lib/can-manage-webhooks';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { ExplorerMenuActions } from '@/components/panels/Explorer.types';
 import { track } from '@/lib/telemetry';
 
-// The Explorer menu's document actions for EditorCanvasHost, with the Webhooks dialog's open state that one of
-// them opens.
+// The Explorer menu's document actions for EditorCanvasHost. Webhooks retired for Automations
+// (liveworkspace/docs/specs/018-automations/automations.md).
 export function useCanvasHostExplorer(): {
   explorerMenuActions: ExplorerMenuActions;
-  webhooksOpen: boolean;
-  setWebhooksOpen: (open: boolean) => void;
 } {
   const {
-    accountUserId,
     canShareDocument,
     hydrated,
-    isReadOnly,
-    participating,
-    sessionTabScope,
     setExportOpen,
     setExportScope,
     setSearchOpen,
     setSettingsOpen,
     setShareDialogOpen,
   } = useEditorContext();
-  // The document's own Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): offered to a signed-in account that
-  // edits the whole document (not a Viewer, a Participant or a one-tab link); the index checks again on every call.
-  const [webhooksOpen, setWebhooksOpen] = useState(false);
-  const canManageWebhooks = canManageWebhooksOf({
-    hydrated,
-    accountUserId,
-    isReadOnly,
-    participating,
-    sessionTabScope,
-  });
   return {
-    webhooksOpen,
-    setWebhooksOpen,
     explorerMenuActions: {
       // The header's Share gate: the owner, or a joined member of the document's team
       // (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-documents.md).
@@ -53,7 +33,6 @@ export function useCanvasHostExplorer(): {
         setExportScope('tab');
         setExportOpen(true);
       },
-      onWebhooks: canManageWebhooks ? () => setWebhooksOpen(true) : undefined,
       // Loads no page: the command search reads what this editor holds (a page fetched counts as read).
       onSearch: () => setSearchOpen(true),
       onOpenSettings: () => {

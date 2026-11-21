@@ -13,7 +13,6 @@ import { createStockColourProjector, plainPaper } from '@/lib/stock-colour-proje
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 import { registerTabStyleOpen } from '@/lib/tab-style-opener';
 import { setBandDocumentName } from '@/lib/article/article-band-layout';
 import { presentedPages } from '@/lib/presented-pages';
@@ -175,7 +174,7 @@ export function EditorCanvasHost() {
     onOpenMultiContextMenu,
     onCanvasContextMenu,
   } = useCanvasHostMenus();
-  const { explorerMenuActions, webhooksOpen, setWebhooksOpen } = useCanvasHostExplorer();
+  const { explorerMenuActions } = useCanvasHostExplorer();
   const { onFormatPagePress, formatBrushSource } = useCanvasHostBrush();
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
@@ -446,16 +445,6 @@ export function EditorCanvasHost() {
                   onClose={() => setLockedMenu(null)}
                 />
               ) : null}
-              {documentId !== null && (
-                <ItemWebhooksDialog
-                  open={webhooksOpen}
-                  onClose={() => setWebhooksOpen(false)}
-                  itemId={documentId}
-                  app="liveknowledge"
-                  title={documentName}
-                  shareCode={sessionShareCode}
-                />
-              )}
             </PresentingProvider>
           </SuppressElementIndicators>
         </BuildStepsProvider>
