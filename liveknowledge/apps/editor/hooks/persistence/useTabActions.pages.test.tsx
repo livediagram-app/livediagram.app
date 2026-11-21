@@ -42,6 +42,8 @@ function setup(over: Record<string, unknown> = {}) {
   };
   const base: Record<string, unknown> = {
     activeId: 'a',
+    // No saved knowledgebase: its delete has no Trash, as an Offline one's.
+    documentId: null,
     canEditStructure: true,
     createTab: (name: string) => page('new', name),
     commitTabs: vi.fn(apply),
@@ -184,6 +186,24 @@ describe('deleting a page', () => {
     const t = setup();
     await act(() => t.actions().deleteTab('e'));
     expect(t.deps.confirm.mock.calls[0]![0]).toMatchObject({ title: 'Delete Notes?' });
+  });
+
+  it("moves a saved knowledgebase's pages to the Trash, and says they can be restored", async () => {
+    const s = setup({ documentId: 'kb' });
+    await act(() => s.actions().deleteTab('b'));
+    expect(s.deps.confirm).toHaveBeenCalledWith({
+      title: 'Move Release Process and 1 Subpage to the Trash?',
+      message:
+        'You can restore them from the Trash for 30 days. Undo (Cmd/Ctrl-Z) brings them straight back.',
+      confirmLabel: 'Move to Trash',
+    });
+    expect(shape(s.tabs())).toBe('a c<a e');
+    const t = setup({ documentId: 'kb' });
+    await act(() => t.actions().deleteTab('e'));
+    expect(t.deps.confirm.mock.calls[0]![0]).toMatchObject({
+      title: 'Move Notes to the Trash?',
+      message: expect.stringContaining('restore it from the Trash'),
+    });
   });
 
   it('removes nothing when the confirmation is declined', async () => {

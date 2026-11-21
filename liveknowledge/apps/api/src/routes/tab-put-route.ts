@@ -3,6 +3,7 @@
 // PUT"). A token is refused; the save is merged with every recorded changeset its editor had not
 // seen and with the room's collaboration ledger, then written at the revision it read.
 
+import { relinkTrashedTab } from '../document-room/page-trash';
 import { SOMEONE, asTabWriter } from '@liveworkspace/automations/room';
 import { pageCreatorOf } from '../knowledge/knowledge-caller';
 import { keepStoredKnowledge, ownerPatch } from '../knowledge/page-knowledge';
@@ -149,6 +150,9 @@ export async function writeTabSave(
       mergeUnseenChangesets(ctx, incoming, seen),
       fetchRoomLedger(env, id, tabId, request.headers.get('X-Room-Cursor')),
     ]);
+    // A page in the Trash saved again (an Undo, or a peer still writing in it): linked back first, and read again as
+    // stored (knowledgebases-and-pages.md "The page Trash").
+    if (!existingTab && !scoped && (await relinkTrashedTab(env, id, tabId))) continue;
     // The page tree's check (docs/specs/030-knowledgebase/blueprints/page-tree.md "The room's check"): a new page
     // past the limit, or a page placed where the tree does not take it, is refused before anything is merged or
     // written. A stored page saved where it already sits reads nothing more.

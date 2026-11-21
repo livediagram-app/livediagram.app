@@ -598,8 +598,10 @@ assistant to "rename that" or "delete the old one":
   There is no permanent option: an AI tool can only ever bin a document, never
   destroy it. A permanent delete stays with the person (the Explorer's Trash) or
   the REST API's `?permanent=true` ([Public API and API tokens](public-api-and-tokens.md)).
-  With `tabId` it deletes one tab (`DELETE …/tabs/<tabId>`) outright: tabs have
-  no Trash. Still destructive, so the description tells the model to confirm
+  With a page (`page`, or `tabId`) it moves that one page (`DELETE …/tabs/<tabId>`)
+  to the knowledgebase's page Trash ([The page Trash](../030-knowledgebase/knowledgebases-and-pages.md#the-page-trash)),
+  restorable for 30 days by a person in the editor, and says so (`trashed: true`,
+  `restorableForDays`); an agent never lists, restores or empties the page Trash. Still destructive, so the description tells the model to confirm
   with the user first; the api refuses deleting a document's last remaining tab,
   and a document already in the Trash answers 410, which the tool reports as
   already in the Trash, pointing at `list_trash`.

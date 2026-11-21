@@ -103,12 +103,19 @@ export const deleteDocumentOutput = {
     .describe('Whether the knowledgebase ("document") or one of its pages was deleted.'),
   documentId,
   page: pageId.optional().describe('The deleted page id (page deletes).'),
-  trashed: z.boolean().optional().describe('True when the knowledgebase went to the Trash.'),
+  trashed: z
+    .boolean()
+    .optional()
+    .describe(
+      "True when the knowledgebase went to the Trash, or the page to its knowledgebase's page Trash.",
+    ),
   restorableForDays: z
     .number()
     .int()
     .optional()
-    .describe('Days the knowledgebase can be restored with restore_document before it is purged.'),
+    .describe(
+      'Days it can be restored before it is purged: a knowledgebase with restore_document, a page by a person in the editor.',
+    ),
 };
 
 export const listTrashOutput = {

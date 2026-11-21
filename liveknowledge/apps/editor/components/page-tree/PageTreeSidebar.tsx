@@ -20,6 +20,7 @@ import { SearchField } from '@/components/knowledge/SearchField';
 import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton';
 import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
 import { useSlideOut } from '@/lib/ui/use-slide-out';
+import { PageTrashRailButton, PageTrashRow } from '@/components/page-trash/PageTrashRow';
 
 /** How long the pointer rests on the rail before the tree slides out, and lingers off it before it slides back (ms). */
 export const PEEK_OPEN_MS = 150;
@@ -47,6 +48,8 @@ export type PageTreeSidebarProps = PageTreeProps & {
   top: number;
   // Joined to the menu box above it: it rises to the canvas's top, its first `top` px the menu box's row.
   joined: boolean;
+  // The knowledgebase's page Trash row, above New Page, where this session may see the Trash.
+  trash?: boolean;
 };
 
 // The foot's Hide Pages: bordered, as livedocuments' Contents Options beside Add Page.
@@ -61,6 +64,7 @@ export function PageTreeSidebar({
   onSetCollapsed,
   top,
   joined,
+  trash = false,
   ...tree
 }: PageTreeSidebarProps) {
   const scale = useUiScale('panels');
@@ -162,6 +166,7 @@ export function PageTreeSidebar({
           </button>
         </HoverCard>
       ) : null}
+      {trash ? <PageTrashRailButton className={ICON_BUTTON} /> : null}
     </div>,
   );
   const shownName = name.trim() || 'Untitled Knowledgebase';
@@ -204,7 +209,12 @@ export function PageTreeSidebar({
       <p className="px-[18px] pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Pages
       </p>
-      <PageTree {...tree} className="flex-1 px-1.5 pb-2" />
+      {/* The pages, then the Trash as the list's last item, scrolling together (knowledgebases-and-pages.md "The page
+          Trash"); the row draws nothing while the Trash is empty. */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1.5 pb-2">
+        <PageTree {...tree} />
+        {trash ? <PageTrashRow /> : null}
+      </div>
       <div className="border-t border-slate-200 p-3 dark:border-slate-800">
         {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"). */}
         {tree.canEdit ? <DescribeToSetUpButton /> : null}

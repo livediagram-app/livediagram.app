@@ -21,6 +21,8 @@ import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import { handleKnowledgeRoutes } from './knowledge-routes';
+import { handlePageTrashRoutes } from './page-trash-routes';
+import { goesToTrash, trashPage } from '../document-room/page-trash';
 import { countRead } from '../knowledge/knowledge-reads';
 import { readsDraft } from '../knowledge/page-draft-reads';
 import { withoutDraft } from '@liveknowledge/document';
@@ -54,6 +56,9 @@ export async function handleDocumentSubresources(
   // Search, verification, Ask and AI Knowledge (docs/specs/030-knowledgebase; routes/knowledge-routes.ts).
   const knowledge = await handleKnowledgeRoutes(ctx);
   if (knowledge) return knowledge;
+  // The knowledgebase's page Trash (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page Trash").
+  const trash = await handlePageTrashRoutes(ctx);
+  if (trash) return trash;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so
@@ -190,16 +195,29 @@ export async function handleDocumentSubresources(
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
       // Read before the gates' awaits, the count is checked again in the delete itself, so two token deletes at
       // once can't take the last two tabs.
-      // Whoever removes it, for a Tab Removed rule (docs/specs/013-workspace/automations.md).
+      // Whoever removes it, for a Tab Removed rule (docs/specs/013-workspace/automations.md), and for the Trash.
+      const owner = ctx.resolveOwner();
+      const author = owner !== null ? await authorOf(ctx, owner) : SOMEONE;
+      // A page goes to the knowledgebase's Trash, an agent's delete too (knowledgebases-and-pages.md "The page
+      // Trash"); a connected file's row and a tab shared with another item are deleted as before.
+      const toTrash = await goesToTrash(env, tabId);
       const removed = await asTabWriter(
         env,
         'tab_removed',
-        async () => {
-          const owner = ctx.resolveOwner();
-          const author = owner !== null ? await authorOf(ctx, owner) : SOMEONE;
-          return writerOf(author, ctx.token ? { name: ctx.token.name ?? null } : null);
-        },
-        () => deleteTabRow(env, id, tabId, { keepLast: !!ctx.token }),
+        async () => writerOf(author, ctx.token ? { name: ctx.token.name ?? null } : null),
+        () =>
+          toTrash
+            ? trashPage(
+                env,
+                id,
+                tabId,
+                {
+                  id: owner ?? '',
+                  name: ctx.token ? (ctx.token.name ?? 'An agent') : author.name,
+                },
+                { keepLast: !!ctx.token },
+              )
+            : deleteTabRow(env, id, tabId, { keepLast: !!ctx.token }),
       );
       if (removed === 'last') return conflict('last_tab');
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.

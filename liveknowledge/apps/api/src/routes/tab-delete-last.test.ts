@@ -49,8 +49,9 @@ describe('two token deletes at once', () => {
     ]);
     expect([a.status, b.status].sort()).toEqual([204, 409]);
     expect(tabsLeft(db)).toBe(1);
-    // The refused tab keeps its body.
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM tabs').get()).toEqual({ n: 1 });
+    // The refused tab keeps its body; the deleted one waits in the page Trash with its own.
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM tabs').get()).toEqual({ n: 2 });
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM page_trash').get()).toEqual({ n: 1 });
   });
 
   it('answer a tab another delete took first as gone, not as the last tab', async () => {

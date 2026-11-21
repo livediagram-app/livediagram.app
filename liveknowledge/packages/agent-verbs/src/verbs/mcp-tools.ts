@@ -277,8 +277,9 @@ export const mcpDeleteDocument = mcpTool('delete_document', {
   description:
     'Delete a knowledgebase by moving it to the Trash, where it can be restored for ' +
     `${TRASH_RETENTION_DAYS} days (with restore_document, or from the Trash in the Explorer) before ` +
-    'it is purged. With page, delete just one of its pages, outright: pages have no ' +
-    'Trash. Confirm with the user first. A knowledgebase must keep at least one page.',
+    'it is purged. With page, move just one of its pages to the knowledgebase\'s page Trash, where a ' +
+    `person can restore it in the editor for ${TRASH_RETENTION_DAYS} days; an agent cannot list or restore ` +
+    'that Trash. Confirm with the user first. A knowledgebase must keep at least one page.',
   inputSchema: deleteDocumentShape,
   outputSchema: deleteDocumentOutput,
 });

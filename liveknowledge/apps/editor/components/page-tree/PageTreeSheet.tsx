@@ -14,13 +14,17 @@ import { type KnowledgebaseHead } from './PageTreeSidebar';
 import { AddToSidebar } from './AddToSidebar';
 import { PAGE_RENAME_FIELD } from './page-tree-row-styles';
 import { PagesIcon } from './page-tree-icons';
+import { PageTrashRow } from '@/components/page-trash/PageTrashRow';
 
 export function PageTreeSheet({
   name,
   onRenameKnowledgebase,
   menu,
+  trash = false,
   ...tree
 }: PageTreeProps & {
+  // The knowledgebase's page Trash row, above New Page, where this session may see the Trash.
+  trash?: boolean;
   name: string;
   onRenameKnowledgebase?: ((name: string) => void) | undefined;
   // The knowledgebase's menu in the sheet's head (PageTreeSidebar's `menu`); `close` closes the sheet.
@@ -140,8 +144,13 @@ export function PageTreeSheet({
             actions={sheetActions}
             connected={sheetConnected}
             touch
-            className="px-2 pb-2"
+            className="px-2"
           />
+          {/* The Trash, the list's last item, only while it holds pages; its dialog opens over the page, so the sheet
+              closes. */}
+          <div className="px-2 pb-2">
+            {trash ? <PageTrashRow touch onOpen={() => setOpen(false)} /> : null}
+          </div>
           {tree.canEdit ? (
             <div className="border-t border-slate-200 p-3 dark:border-slate-800">
               {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"): its
