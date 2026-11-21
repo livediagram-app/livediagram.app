@@ -151,6 +151,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
       ...(page.parent ? { parent: page.parent } : {}),
       backlinks: page.backlinks.map(ref),
       subpages: page.subpages.map(ref),
+      ...(page.cover ? { cover: page.cover } : {}),
       ...trustFieldsOf(page.trust),
       next:
         (page.leftOut > 0

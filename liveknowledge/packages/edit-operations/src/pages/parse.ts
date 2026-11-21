@@ -2,7 +2,8 @@
 // "Interfaces and contracts"): strictly, so a misspelt field is refused by name rather than ignored.
 // Answers the request, or the refusal that says what was wrong and where.
 import { type ArticleWrite, type PagesRefusal, type PagesRequest } from '@liveknowledge/api-schema';
-import { isRecord, ARTICLE_MARKDOWN_MAX } from '@liveknowledge/document';
+import { isRecord, ARTICLE_MARKDOWN_MAX, type PageCover } from '@liveknowledge/document';
+import { parseAgentCover } from './cover';
 
 type Raw = Record<string, unknown>;
 
@@ -66,19 +67,32 @@ function articleWrite(v: unknown): ArticleWrite {
   };
 }
 
+function coverOf(raw: unknown): PageCover | null {
+  const read = parseAgentCover(raw);
+  if ('refusal' in read) throw new Refused(read.refusal.code, read.refusal.message);
+  return read.cover;
+}
+
 /** The request, or why it was refused. */
 export function parsePagesRequest(raw: unknown): PagesRequest | { refusal: PagesRefusal } {
   try {
     if (!isRecord(raw))
       throw new Refused('invalid_body', 'The body is an object with "pages" or "article".');
+    // A cover (docs/specs/030-knowledgebase/page-surface.md "The cover") rides an article write or stands alone.
+    const cover = raw.cover === undefined ? undefined : coverOf(raw.cover);
     const has = ['pages', 'article'].filter((k) => raw[k] !== undefined);
+    if (has.length === 0 && cover !== undefined) {
+      onlyKeys(raw, ['cover'], 'The body');
+      return { cover };
+    }
     if (has.length !== 1)
       throw new Refused(
         'invalid_body',
-        'Send exactly one of "pages" (page changes) or "article" (a write).',
+        'Send exactly one of "pages" (page changes) or "article" (a write), or "cover" alone.',
       );
-    onlyKeys(raw, ['pages', 'article'], 'The body');
-    if (raw.article !== undefined) return { article: articleWrite(raw.article) };
+    onlyKeys(raw, ['pages', 'article', 'cover'], 'The body');
+    if (raw.article !== undefined)
+      return { article: articleWrite(raw.article), ...(cover !== undefined ? { cover } : {}) };
     // A knowledgebase page is one article on one continuous page (docs/specs/030-knowledgebase/
     // knowledgebases-and-pages.md "The continuous page"): no page is added, laid out, sized, turned, moved, copied or
     // deleted, so page changes are refused whole.

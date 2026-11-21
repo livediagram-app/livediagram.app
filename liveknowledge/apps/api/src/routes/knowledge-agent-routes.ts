@@ -31,7 +31,11 @@ import {
   pageTreeRows,
   withPageMoved,
 } from '@liveknowledge/document';
-import { newPageFromMarkdown, withTitleFrontMatter } from '@liveknowledge/edit-operations';
+import {
+  agentCoverOf,
+  newPageFromMarkdown,
+  withTitleFrontMatter,
+} from '@liveknowledge/edit-operations';
 import {
   CONTEXT_BUDGET_TOKENS,
   assembleContext,
@@ -50,6 +54,8 @@ import {
   writeTabParents,
 } from '../document-room/page-tree-store';
 import { isTokenId, writeScopes } from '../knowledge/agent-grants';
+import { notePageWrite } from '../knowledge/page-authors';
+import { writerOf } from '../knowledge/page-writer';
 import { readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf } from '../knowledge/knowledge-db';
 import { countRead } from '../knowledge/knowledge-reads';
@@ -162,6 +168,9 @@ async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Resp
     ).flatMap((id) => (byId.has(id) ? [refOf(byId.get(id)!)] : [])),
     subpages: document.tabs.filter((t) => t.parent === summary.id).map(refOf),
   };
+  // The page's cover, as an agent names one (page-surface.md "The cover").
+  const cover = agentCoverOf(stored.tab.cover);
+  if (cover) page.cover = cover;
   return json({ page }, { headers: { ETag: `"${stored.rev}"` } });
 }
 
@@ -223,9 +232,21 @@ async function handleWrite(route: KnowledgeRoute, tab: string): Promise<Response
   const body = (await ctx.request.json().catch(() => null)) as {
     markdown?: unknown;
     mode?: unknown;
+    cover?: unknown;
   } | null;
+  // A cover alone changes no writing (docs/specs/030-knowledgebase/page-surface.md "The cover"): it is sent on its
+  // own, and read strictly by the Pages route.
+  const cover = body && 'cover' in body ? { cover: body.cover } : {};
+  if (body && 'cover' in body && body.markdown === undefined) {
+    if (body.mode !== undefined)
+      return invalid('invalid_mode', '"mode" goes with "markdown"; a cover alone takes none.');
+    return handleTabPages({ ...ctx, request: pagesRequest(ctx.request, cover) }, document.id, tab);
+  }
   if (typeof body?.markdown !== 'string' || !body.markdown.trim())
-    return invalid('no_markdown', 'Send "markdown": the page\'s writing as Markdown.');
+    return invalid(
+      'no_markdown',
+      'Send "markdown": the page\'s writing as Markdown, or "cover" alone to set or remove the page\'s cover.',
+    );
   if (body.mode !== undefined && body.mode !== 'replace' && body.mode !== 'append')
     return invalid('invalid_mode', '"mode" is "replace" (the default) or "append".');
   // A replace that brings no title keeps the page's: the Title is the page's name (knowledgebases-and-pages.md
@@ -237,15 +258,16 @@ async function handleWrite(route: KnowledgeRoute, tab: string): Promise<Response
       : body.markdown;
   // The article write every agent's write takes (tab-pages-route.ts): its gate, its verified-page refusal, its
   // held paragraphs and its relay to open editors.
-  const request = new Request(ctx.request.url, {
-    method: 'POST',
-    headers: ctx.request.headers,
-    body: JSON.stringify({
-      article: { markdown, ...(body.mode ? { mode: body.mode } : {}) },
-    }),
+  const request = pagesRequest(ctx.request, {
+    article: { markdown, ...(body.mode ? { mode: body.mode } : {}) },
+    ...cover,
   });
   return handleTabPages({ ...ctx, request }, document.id, tab);
 }
+
+// The Pages route's request for a knowledge write: the caller's own headers (its token, its front door).
+const pagesRequest = (from: Request, body: object): Request =>
+  new Request(from.url, { method: 'POST', headers: from.headers, body: JSON.stringify(body) });
 
 // The tab list as it stands, to every open editor: the op an editor's own reorder sends, each page with its parent.
 async function relayTree(route: KnowledgeRoute): Promise<DocumentDTO | null> {
@@ -318,6 +340,8 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
     if (isTabRevStale(err)) return conflict('tab_busy');
     throw err;
   }
+  // Who made it (verification.md "Made by a person or an agent"): an agent's create_page, or a person's Import.
+  await notePageWrite(ctx.env, id, writerOf(ctx, owner));
   await relayTree(route);
   console.info('[knowledge] page created', {
     documentId: document.id,

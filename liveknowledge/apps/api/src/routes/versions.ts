@@ -29,7 +29,7 @@ import { copyVersion } from '../versions/copy';
 import { parseVersionBody } from '../versions/restore-tab';
 import { restoreVersion } from '../versions/restore';
 import { versionTelemetry } from '../versions/telemetry';
-import { authorOf, refreshAfterWrite } from './changesets';
+import { authorOf, notePageWriteAfter, refreshAfterWrite } from './changesets';
 import {
   gateEdit,
   gateRead,
@@ -101,10 +101,9 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
     });
     if (result.status === 200 && result.body.restored) {
       ctx.waitUntil?.(versionTelemetry(ctx.env, 'Restored', frontDoorOf(ctx.request)));
-      refreshAfterWrite(ctx, document.id, tabId, author, {
-        status: 200,
-        body: { changeset: result.body.restored.changesetId },
-      });
+      const after = { status: 200, body: { changeset: result.body.restored.changesetId } };
+      refreshAfterWrite(ctx, document.id, tabId, author, after);
+      await notePageWriteAfter(ctx, tabId, owner, after);
     }
     return json(result.body, { status: result.status });
   }
@@ -115,6 +114,11 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
   const result = await copyVersion({ env: ctx.env, document, version, name, author, tokenId });
   if (result.status === 201) {
     ctx.waitUntil?.(versionTelemetry(ctx.env, 'Copied', frontDoorOf(ctx.request)));
+    // The copy is a new page, made by whoever copied it.
+    await notePageWriteAfter(ctx, result.body.tab.id, owner, {
+      status: 200,
+      body: { changeset: true },
+    });
   }
   return json(result.body, { status: result.status });
 }

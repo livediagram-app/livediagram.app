@@ -447,6 +447,15 @@ describe('read_page', () => {
     expect(out.next).toContain('max_chars 9000');
   });
 
+  it('answers the page’s cover where it has one', async () => {
+    const { call } = await connect({
+      'GET /pages/Deploys': () => Response.json({ page: { ...PAGE, cover: { gradient: 'Dusk' } } }),
+    });
+    expect((await call('read_page', { page: 'Deploys' })).out.cover).toEqual({ gradient: 'Dusk' });
+    const plain = await connect();
+    expect('cover' in (await plain.call('read_page', { page: 'Deploys' })).out).toBe(false);
+  });
+
   it('passes a heading and a size on, and a page’s title encoded', async () => {
     const { call, sent } = await connect({
       'GET /pages/On%20call%2Frota': () =>
@@ -548,6 +557,24 @@ describe('the writing tools', () => {
     expect(out).toMatchObject({ page: 'deploys', rev: 8, lines: ['Wrote the article.'] });
     await call('write_page', { page: 'deploys', markdown: 'New.' });
     expect(sent[1]!.body).toEqual({ markdown: 'New.' });
+  });
+
+  it('write_page sets a cover alone, with the writing, or takes it away (page-surface.md "The cover")', async () => {
+    const { call, sent } = await connect();
+    const { out } = await call('write_page', {
+      page: 'deploys',
+      cover: { imageId: 'img_1', focus: 30 },
+    });
+    expect(sent[0]!.body).toEqual({ cover: { imageId: 'img_1', focus: 30 } });
+    expect(out.next).toContain('The cover changed');
+    await call('write_page', { page: 'deploys', markdown: 'New.', cover: { gradient: 'Ocean' } });
+    expect(sent[1]!.body).toEqual({ markdown: 'New.', cover: { gradient: 'Ocean' } });
+    await call('write_page', { page: 'deploys', cover: null });
+    expect(sent[2]!.body).toEqual({ cover: null });
+    // A gradient that is not one is refused before anything is sent.
+    const bad = await call('write_page', { page: 'deploys', cover: { gradient: 'Plaid' } });
+    expect(bad.isError).toBe(true);
+    expect(sent).toHaveLength(3);
   });
 
   it('write_page is refused on a verified page, and without the write scope, in the api’s words', async () => {

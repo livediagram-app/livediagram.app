@@ -14,9 +14,11 @@ import {
 } from '@liveknowledge/api-schema';
 import {
   diffToElementOps,
+  gradientNameOf,
   pageByTitleIn,
   pageStepsOf,
   plural,
+  type PageCover,
   type Tab,
 } from '@liveknowledge/document';
 import {
@@ -58,8 +60,8 @@ const refused = (status: number, refusal: PagesRefusal): PagesResult => {
   return { status, body: { error: code, ...rest } };
 };
 
-// The tab fields an editor's `tab-meta` patch carries for pages: absent ones are cleared.
-const PAGE_FIELDS = ['pages', 'pageOrientation'] as const;
+// The tab fields an editor's `tab-meta` patch carries for pages, and the page's cover: absent ones are cleared.
+const PAGE_FIELDS = ['pages', 'pageOrientation', 'cover'] as const;
 
 /** The ops an editor's own edit would send for the same change, minus the elements (the changeset
  *  carries those). */
@@ -86,6 +88,19 @@ export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
   ops.push(...tabArticleOps(before, after, { grow: true }));
   return ops;
 }
+
+function withCover(tab: Tab, cover: PageCover | null): Tab {
+  const { cover: _was, ...rest } = tab;
+  return cover ? { ...rest, cover } : rest;
+}
+
+const coverLine = (cover: PageCover | null): string =>
+  cover === null
+    ? 'The page has no cover now.'
+    : cover.imageId
+      ? 'The page’s cover is now the picture' +
+        (cover.focus !== undefined ? `, placed ${cover.focus}% down it.` : '.')
+      : `The page’s cover is now the ${gradientNameOf(cover) ?? 'chosen'} gradient.`;
 
 const pageLinksOf = (document: DocumentDTO) => ({
   pageByTitle: pageByTitleIn(
@@ -114,6 +129,7 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     let out: PageChangesOutcome;
     let wrote: { flow: string; created: boolean } | null = null;
     if ('pages' in request) out = applyPageChanges(stored.tab, request.pages);
+    else if (!('article' in request)) out = { tab: stored.tab, lines: [] };
     else {
       // `[[Title]]` links to the page of that title, the first in tree order (the document's tab summaries).
       const w = applyArticleWrite(stored.tab, request.article, {}, pageLinksOf(document));
@@ -128,7 +144,14 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       });
       return refused(400, out.refusal);
     }
-    const next = withServerRules(out.tab, stored, args.author);
+    // A cover rides the write, or stands alone (docs/specs/030-knowledgebase/page-surface.md "The cover").
+    const covered = 'cover' in request && request.cover !== undefined;
+    const next = withServerRules(
+      covered ? withCover(out.tab, request.cover ?? null) : out.tab,
+      stored,
+      args.author,
+    );
+    if (covered) out = { ...out, lines: [...out.lines, coverLine(request.cover ?? null)] };
     const ops = pagesRoomOps(stored.tab, next);
     const held = heldArticleTargets(ops, holds);
     if (held.length > 0) {
@@ -195,7 +218,8 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     if (next.name !== stored.tab.name) await relayDocumentTree(env, document.id, '[pages-agent]');
     console.info('[pages-agent] applied', {
       ...where,
-      kind: 'pages' in request ? 'pages' : 'article',
+      kind: 'pages' in request ? 'pages' : 'article' in request ? 'article' : 'cover',
+      cover: covered ? (request.cover ? 'set' : 'removed') : null,
       changes: 'pages' in request ? request.pages.length : 1,
       rev,
     });

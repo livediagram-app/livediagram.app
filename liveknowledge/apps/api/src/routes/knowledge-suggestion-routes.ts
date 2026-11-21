@@ -9,6 +9,8 @@
 import { levelAtLeast, type SuggestEditRequest } from '@liveknowledge/api-schema';
 import { replacePassage } from '@liveknowledge/knowledge';
 import { readStoredTab } from '../changesets/stored-tab';
+import { notePageWrite } from '../knowledge/page-authors';
+import { acceptedSuggestionWriter } from '../knowledge/page-writer';
 import { submitPages } from '../changesets/pages';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { pageFlowOf, pageMarkdownOf } from '../knowledge/page-read';
@@ -165,6 +167,8 @@ async function handleAccept(route: KnowledgeRoute, id: string): Promise<Response
   });
   if (result.status !== 200 || !('tab' in result.body))
     return json(result.body, { status: result.status });
+  // The words are the agent's, the acceptance the Editor's (verification.md "Made by a person or an agent").
+  await notePageWrite(ctx.env, suggestion.tab, acceptedSuggestionWriter(owner, suggestion.agent));
   await removeSuggestion(ctx.env, id);
   console.info('[knowledge] suggestion accepted', {
     documentId: document.id,

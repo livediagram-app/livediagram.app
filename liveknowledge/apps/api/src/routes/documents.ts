@@ -4,6 +4,7 @@
 // answered from it (document-index-routes.ts).
 
 import { notePageWrites } from '../knowledge/page-authors';
+import { writerOf } from '../knowledge/page-writer';
 import type { Tab } from '@liveknowledge/document';
 import {
   carriedKnowledgeStyle,
@@ -406,12 +407,12 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
       if (seeded) {
         try {
           await seedTabs(env, body.id, seeded, savedAt);
-          // Who made these pages (knowledge/page-authors.ts): one batch, a person's create only.
-          if (!ctx.token && seeded.length > 0)
+          // Who made these pages (knowledge/page-authors.ts): one batch, a person's or an agent's.
+          if (seeded.length > 0)
             await notePageWrites(
               env,
               seeded.map((t) => t.id),
-              owner,
+              writerOf(ctx, owner),
               savedAt,
             );
         } catch (error) {

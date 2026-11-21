@@ -74,14 +74,22 @@ export function registerKnowledgeWriteTools(server: McpServer, env: Env): void {
     const api = await knowledgeApi(server, env, extra);
     const answer = await api.json<PagesAnswer>(
       knowledgePath(args.documentId, 'pages', args.page),
-      jsonBody('PUT', { markdown: args.markdown, ...(args.mode ? { mode: args.mode } : {}) }),
+      jsonBody('PUT', {
+        ...(args.markdown !== undefined ? { markdown: args.markdown } : {}),
+        ...(args.mode ? { mode: args.mode } : {}),
+        // The page's cover (page-surface.md "The cover"): null takes it away.
+        ...(args.cover !== undefined ? { cover: args.cover } : {}),
+      }),
     );
     return textResult({
       page: answer.tab.id,
       rev: answer.tab.rev,
       lines: answer.lines,
       url: deepLink(env, args.documentId),
-      next: 'The page changed at once and is not verified by this write. read_page reads it back.',
+      next:
+        args.markdown === undefined
+          ? 'The cover changed at once. read_page reads it back.'
+          : 'The page changed at once and is not verified by this write. read_page reads it back.',
     });
   });
 

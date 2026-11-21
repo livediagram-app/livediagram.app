@@ -5,6 +5,7 @@
 import type {
   ArticleLookId,
   PageKind,
+  PageCover,
   PageOrientation,
   PagePattern,
   PageSizeId,
@@ -83,7 +84,16 @@ export type ArticleWrite = {
   // (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"), in the document's metadata.
 };
 
-export type PagesRequest = { pages: PageChange[] } | { article: ArticleWrite };
+// A page's cover as an agent sends it (docs/specs/030-knowledgebase/page-surface.md "The cover"): a picture of the
+// knowledgebase's, where it sits (0 the top to 100 the bottom), or a page background's gradient by name; `null`
+// takes the cover away.
+export type AgentCover = { imageId: string; focus?: number } | { gradient: string } | null;
+
+// `cover` is the parsed cover (the stored shape), or null to remove it; it rides an article write or stands alone.
+export type PagesRequest =
+  | { pages: PageChange[] }
+  | { article: ArticleWrite; cover?: PageCover | null }
+  | { cover: PageCover | null };
 
 export type PageRect = { x: number; y: number; width: number; height: number };
 
@@ -156,6 +166,7 @@ const PAGES_REFUSAL_CODES = [
   'article_ambiguous',
   'zone_unknown',
   'article_too_large',
+  'invalid_cover',
 ] as const;
 
 export type PagesRefusalCode = (typeof PAGES_REFUSAL_CODES)[number];

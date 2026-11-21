@@ -2,7 +2,6 @@
 // "Backgrounds"): the panel's preset catalogue, and the CSS a sheet takes from its background. The
 // export paints the same background onto its own canvas (export-page).
 import {
-  STEEL_GRADIENT,
   FALLBACK_THEME_ACCENT,
   PAGE_GRADIENT_ANGLE,
   pageImageTone,
@@ -13,6 +12,8 @@ import {
   type PageBackground,
   type PageFill,
   type ThemeBackgroundPreset,
+  PAGE_GRADIENT_PRESETS,
+  type GradientPreset,
   type PagePattern,
 } from '@liveknowledge/document';
 import type { CSSProperties } from 'react';
@@ -32,7 +33,8 @@ export {
   withBackgroundPatch,
 } from '@liveknowledge/document';
 
-type GradientPreset = { id: string; label: string; from: string; to: string };
+// The named gradients a page's background and its cover offer (packages/document page-cover.ts).
+export { PAGE_GRADIENT_PRESETS };
 
 // The plain paper as the canvas shows it (a sheet with no fill: white, or slate in dark mode), for
 // what draws a page as it looks on screen (the Map, the Contents and Slides pictures). An export
@@ -41,23 +43,6 @@ export const CANVAS_PAPER: Readonly<Record<'light' | 'dark', string>> = {
   light: '#ffffff',
   dark: '#0f172a',
 };
-
-export const PAGE_GRADIENT_PRESETS: readonly GradientPreset[] = [
-  { id: 'sunrise', label: 'Sunrise', from: '#fde68a', to: '#fca5a5' },
-  { id: 'peach', label: 'Peach', from: '#fed7aa', to: '#fecdd3' },
-  { id: 'rose', label: 'Rose', from: '#ffe4e6', to: '#fbcfe8' },
-  { id: 'lavender', label: 'Lavender', from: '#e9d5ff', to: '#fbcfe8' },
-  { id: 'ocean', label: 'Ocean', from: '#bae6fd', to: '#c7d2fe' },
-  { id: 'meadow', label: 'Meadow', from: '#bbf7d0', to: '#a5f3fc' },
-  { id: 'mint', label: 'Mint', from: '#ccfbf1', to: '#d9f99d' },
-  { id: 'sand', label: 'Sand', from: '#fef3c7', to: '#e7e5e4' },
-  // A new slide document's slide (defaultPageBackground).
-  { id: 'steel', label: 'Steel', ...STEEL_GRADIENT },
-  { id: 'dusk', label: 'Dusk', from: '#1e1b4b', to: '#4c1d95' },
-  { id: 'night', label: 'Night', from: '#0f172a', to: '#1e3a8a' },
-  { id: 'forest', label: 'Forest', from: '#052e16', to: '#115e59' },
-  { id: 'ember', label: 'Ember', from: '#7c2d12', to: '#be123c' },
-];
 
 export const PAGE_PATTERN_LABEL: Record<PagePattern | 'none', string> = {
   none: 'None',

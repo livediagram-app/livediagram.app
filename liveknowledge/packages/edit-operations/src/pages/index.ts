@@ -4,6 +4,7 @@ export { parsePagesRequest } from './parse';
 export { applyPageChanges, backgroundPatch, type PageChangesOutcome } from './page-changes';
 export { applyArticleWrite } from './article-write';
 export { enterPages, type PagesIds } from './enter';
+export { agentCoverOf, parseAgentCover, type CoverRefusal } from './cover';
 export {
   articleSummaries,
   describeBackground,

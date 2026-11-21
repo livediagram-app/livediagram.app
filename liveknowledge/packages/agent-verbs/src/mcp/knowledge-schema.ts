@@ -3,7 +3,12 @@
 // A page is named by its id or its title; every page and passage answer carries the trust fields; every answer
 // names the next tool to call.
 import { z } from 'zod';
-import { ARTICLE_MARKDOWN_MAX, NAME_MAX_LENGTH, truncateName } from '@liveknowledge/document';
+import {
+  ARTICLE_MARKDOWN_MAX,
+  NAME_MAX_LENGTH,
+  PAGE_GRADIENT_PRESETS,
+  truncateName,
+} from '@liveknowledge/document';
 import { REVIEW_PERIODS } from '../knowledge/trust';
 
 /** The most one suggestion holds (the api's SUGGESTION_MAX_CHARS). */
@@ -187,6 +192,34 @@ export const readPageShape = {
         'left_out says how much was not sent.',
     ),
 };
+// A page's cover (docs/specs/030-knowledgebase/page-surface.md "The cover"): the band across the top of the page.
+const coverPicture = z.object({
+  imageId: z
+    .string()
+    .min(1)
+    .describe('A picture of yours: an id from upload_image or list_images.'),
+  focus: z
+    .number()
+    .int()
+    .min(0)
+    .max(100)
+    .optional()
+    .describe(
+      'Which part of the picture shows: 0 its top, 100 its foot, 50 (the default) its middle.',
+    ),
+});
+const coverGradient = z.object({
+  gradient: z
+    .enum(PAGE_GRADIENT_PRESETS.map((p) => p.label) as [string, ...string[]])
+    .describe('A gradient by name.'),
+});
+const coverOut = z
+  .union([coverPicture, coverGradient])
+  .optional()
+  .describe(
+    'The page’s cover across its top: a picture and where it sits, or a gradient. Absent: none.',
+  );
+
 export const readPageOutput = {
   ...pageRef.shape,
   rev: z.number().describe('The page’s revision.'),
@@ -201,6 +234,7 @@ export const readPageOutput = {
   parent: z.string().optional().describe('The id of the page it sits under.'),
   backlinks: z.array(pageRef).describe('The pages whose writing links to this one.'),
   subpages: z.array(pageRef).describe('The pages directly under it.'),
+  cover: coverOut,
   ...trustFields,
   next,
 };
@@ -281,7 +315,16 @@ export const suggestEditOutput = {
 export const writePageShape = {
   documentId,
   page,
-  markdown: markdown('The page’s new writing'),
+  markdown: markdown('The page’s new writing')
+    .optional()
+    .describe('The page’s new writing as Markdown. Leave it out to change only the cover.'),
+  cover: z
+    .union([coverPicture, coverGradient, z.null()])
+    .optional()
+    .describe(
+      'Sets the page’s cover (a picture or a gradient), or null removes it. Taken on any page, verified or not; ' +
+        'alone it changes none of the writing.',
+    ),
   mode: z
     .enum(['replace', 'append'])
     .optional()

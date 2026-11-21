@@ -85,12 +85,16 @@ export const {
   statsOf: tabStatsOf,
   statsStatement: tabStatsStatement,
   refsOnWrite: (env, tab) =>
-    imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements, tab.pages)),
+    imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements, tab.pages, tab.cover)),
   refsOnSwap: (env, tabId, body) =>
     imageRefAddStatements(
       env,
       tabId,
-      imageRefIds(body.elements, (body as { pages?: unknown }).pages),
+      imageRefIds(
+        body.elements,
+        (body as { pages?: unknown }).pages,
+        (body as { cover?: unknown }).cover,
+      ),
     ),
 });
 

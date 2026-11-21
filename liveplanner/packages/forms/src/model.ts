@@ -1,5 +1,5 @@
 // A form (docs/specs/030-forms/forms.md): what a Form tab holds, stored on the tab as `tab.form`.
-import type { ColourBackground } from '@liveworkspace/page-background';
+import type { PageCover } from '@liveworkspace/page-background/cover';
 
 export const QUESTION_TYPES = [
   'short',
@@ -195,11 +195,8 @@ export interface FormDestination {
 // A cover may instead (or as well, a pattern over it) hold a picture from the plan's images (forms.md "Cover"):
 // `imageId` the picture, `focus` where it sits vertically (0 top to 100 bottom, 50 when absent), `credit` an Image
 // Search pick's credit line.
-export type FormCover = ColourBackground & {
-  imageId?: string;
-  focus?: number;
-  credit?: string;
-};
+// One shape with a liveknowledge page's cover (@liveworkspace/page-background/cover).
+export type FormCover = PageCover;
 
 // How wide the form's column is (forms.md "Width"): Narrow (640 px, the default) or Wide.
 export type FormWidth = 'narrow' | 'wide';

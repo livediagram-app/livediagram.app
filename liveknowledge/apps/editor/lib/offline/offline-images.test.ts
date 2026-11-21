@@ -60,6 +60,17 @@ describe('rewriteImageIds', () => {
     expect(fill.tone).toBe('#000000');
   });
 
+  it("re-homes the page's cover picture, keeping where it sits", () => {
+    const covered = { ...tab([]), cover: { imageId: 'img_cov', focus: 20 } } as Tab;
+    expect(tabImageIds(covered)).toEqual(['img_cov']);
+    const out = rewriteImageIds([covered], new Map([['img_cov', PNG_DATA_URL]]));
+    expect(out[0]!.cover).toEqual({ imageId: PNG_DATA_URL, focus: 20 });
+    // A cover the mapping does not name is kept as it was.
+    expect(rewriteImageIds([covered], new Map([['other', PNG_DATA_URL]]))[0]!.cover).toBe(
+      covered.cover,
+    );
+  });
+
   it('returns the input array untouched for an empty mapping', () => {
     const tabs = [tab([imageEl('a', 'img_1')])];
     expect(rewriteImageIds(tabs, new Map())).toBe(tabs);

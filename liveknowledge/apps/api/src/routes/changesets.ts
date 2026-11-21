@@ -5,6 +5,8 @@
 //   GET  /api/documents/<id>/changesets/<changesetId>         one, with its result lines
 //   POST /api/documents/<id>/changesets/<changesetId>/revert  its inverse, as a new changeset
 
+import { notePageWrite } from '../knowledge/page-authors';
+import { writerOf } from '../knowledge/page-writer';
 import {
   CHANGESET_LIST_DEFAULT,
   CHANGESET_LIST_MAX,
@@ -99,6 +101,7 @@ async function handleSubmit(
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
   refreshAfterWrite(ctx, document.id, tabId, author, result);
+  await notePageWriteAfter(ctx, tabId, owner, result);
   return respond(redactConflicts(result, document, owner));
 }
 
@@ -165,6 +168,7 @@ async function handleRevert(
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
   refreshAfterWrite(ctx, document.id, record.tabId, author, result);
+  await notePageWriteAfter(ctx, record.tabId, owner, result);
   return respond(result);
 }
 
@@ -197,6 +201,19 @@ export function refreshAfterWrite(
       }),
     ),
   );
+}
+
+// A written change moves the page's Updated stamp, a person's or an agent's (docs/specs/030-knowledgebase/
+// verification.md "Made by a person or an agent"); a dry run and a refusal move nothing.
+export async function notePageWriteAfter(
+  ctx: DocumentRouteContext,
+  tabId: string,
+  owner: string,
+  result: { status: number; body: unknown },
+): Promise<void> {
+  const written = (result.body as { changeset?: unknown } | null)?.changeset;
+  if (result.status !== 200 || !written) return;
+  await notePageWrite(ctx.env, tabId, writerOf(ctx, owner));
 }
 
 // A token's read of a tab keeps its presence there too (docs/specs/024-agents/agent-presence.md "Presence"): at most

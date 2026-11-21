@@ -23,6 +23,7 @@ import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SCHEMA } from '../versions/version-schema';
 import { knowledgeSchemaStep } from '../knowledge/knowledge-schema';
 import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
+import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
 import { agentSeenSchemaStep } from '../knowledge/agent-seen';
 import { emailMarksSchemaStep } from '../knowledge/email-marks';
 
@@ -370,6 +371,10 @@ const V16 = (exec: Exec) => {
 // Who made each page and who last changed it (knowledge/page-authors.ts). Additive, IF NOT EXISTS.
 const V17 = pageAuthorsSchemaStep;
 
+// Whether a person or an agent made each stamp, and an agent's name and door (knowledge/page-writer.ts). Asks
+// before each ALTER, as V15 does; a row V17 wrote reads as a person's.
+const V18 = pageAuthorKindsSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -388,6 +393,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V15,
   V16,
   V17,
+  V18,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

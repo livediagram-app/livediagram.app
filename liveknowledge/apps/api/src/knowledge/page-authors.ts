@@ -1,9 +1,12 @@
 // Who made a page and who last changed it (docs/specs/030-knowledgebase/verification.md "Created and Updated"): one
 // row a page in the knowledgebase's own SQLite, `page_authors`. The first person whose write makes the page is its
 // creator for good; every later write by a person moves "updated". A page that predates the table has no row until
-// its next write, and then that writer counts as both (the rail shows what it knows, nothing it guesses).
+// its next write, and then that writer counts as both (the rail shows what it knows, nothing it guesses). Each stamp
+// also says whether a person or an agent made it (page-writer.ts, schema step V18).
 import { holdsDraft, sameArticleValue, savedArticlesOf } from '@liveknowledge/document';
 import type { DocumentEnv } from '../types';
+import type { PageAuthorStamp } from '@liveknowledge/api-schema';
+import { personWriter, stampOf, type PageWriter } from './page-writer';
 
 type Exec = (query: string) => unknown;
 
@@ -17,17 +20,23 @@ export function pageAuthorsSchemaStep(exec: Exec): void {
     BEGIN DELETE FROM page_authors WHERE tab = OLD.id; END`);
 }
 
-/** The upsert for one person's write of a page: made by them when it is new to the table, updated by them always. */
+/** The upsert for one write of a page, by a person (a bare id) or a writer: made by them when it is new to the
+ *  table, updated by them always. */
 export function pageAuthorStatement(
   env: DocumentEnv,
   tab: string,
-  by: string,
+  by: string | PageWriter,
   at: number,
 ): D1PreparedStatement {
+  const w = typeof by === 'string' ? personWriter(by) : by;
   return env.DOCUMENT_DB.prepare(
-    `INSERT INTO page_authors (tab, created_by, created_at, updated_by, updated_at) VALUES (?1, ?2, ?3, ?2, ?3)
-     ON CONFLICT (tab) DO UPDATE SET updated_by = excluded.updated_by, updated_at = excluded.updated_at`,
-  ).bind(tab, by, at);
+    `INSERT INTO page_authors (tab, created_by, created_at, created_kind, created_agent, created_via,
+                               updated_by, updated_at, updated_kind, updated_agent, updated_via)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?2, ?3, ?4, ?5, ?6)
+     ON CONFLICT (tab) DO UPDATE SET updated_by = excluded.updated_by, updated_at = excluded.updated_at,
+       updated_kind = excluded.updated_kind, updated_agent = excluded.updated_agent,
+       updated_via = excluded.updated_via`,
+  ).bind(tab, w.by, at, w.kind, w.agent ?? null, w.via ?? null);
 }
 
 /**
@@ -49,7 +58,7 @@ export function savedPageChanged(
 export async function notePageWrite(
   env: DocumentEnv,
   tab: string,
-  by: string,
+  by: string | PageWriter,
   at = Date.now(),
 ): Promise<void> {
   try {
@@ -59,11 +68,11 @@ export async function notePageWrite(
   }
 }
 
-/** Note one person's making of many pages at once (a create that seeds them), in one batch. */
+/** Note one writer's making of many pages at once (a create that seeds them), in one batch. */
 export async function notePageWrites(
   env: DocumentEnv,
   tabs: readonly string[],
-  by: string,
+  by: string | PageWriter,
   at: number,
 ): Promise<void> {
   try {
@@ -73,20 +82,36 @@ export async function notePageWrites(
   }
 }
 
-export type PageAuthors = {
-  created: { by: string; at: number };
-  updated: { by: string; at: number };
-};
+export type PageAuthors = { created: PageAuthorStamp; updated: PageAuthorStamp };
+
+type AuthorsRow = Record<
+  'created_by' | 'updated_by' | `${'created' | 'updated'}_${'kind' | 'agent' | 'via'}`,
+  string | null
+> & { created_at: number; updated_at: number };
 
 export async function readPageAuthors(env: DocumentEnv, tab: string): Promise<PageAuthors | null> {
   const row = await env.DOCUMENT_DB.prepare(
-    'SELECT created_by, created_at, updated_by, updated_at FROM page_authors WHERE tab = ?',
+    `SELECT created_by, created_at, created_kind, created_agent, created_via,
+            updated_by, updated_at, updated_kind, updated_agent, updated_via
+       FROM page_authors WHERE tab = ?`,
   )
     .bind(tab)
-    .first<{ created_by: string; created_at: number; updated_by: string; updated_at: number }>();
+    .first<AuthorsRow>();
   if (!row) return null;
   return {
-    created: { by: row.created_by, at: row.created_at },
-    updated: { by: row.updated_by, at: row.updated_at },
+    created: stampOf(
+      String(row.created_by),
+      row.created_at,
+      row.created_kind,
+      row.created_agent,
+      row.created_via,
+    ),
+    updated: stampOf(
+      String(row.updated_by),
+      row.updated_at,
+      row.updated_kind,
+      row.updated_agent,
+      row.updated_via,
+    ),
   };
 }

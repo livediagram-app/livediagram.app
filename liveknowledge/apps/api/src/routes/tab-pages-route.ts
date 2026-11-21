@@ -8,7 +8,7 @@ import { afterChangeset } from '../changesets/after';
 import { frontDoorOf } from '../changesets/front-door';
 import { submitPages } from '../changesets/pages';
 import { forbidden, json } from '../responses';
-import { authorOf, refreshAfterWrite } from './changesets';
+import { authorOf, notePageWriteAfter, refreshAfterWrite } from './changesets';
 import { gateEdit, missingDocument, requireOwner, type DocumentRouteContext } from './context';
 
 export async function handleTabPages(
@@ -75,5 +75,11 @@ export async function handleTabPages(
     status: result.status,
     body: result.status === 200 ? { changeset: true } : null,
   });
+  // The writing's change moves Updated, an agent's or a person's; a cover alone is not the writing.
+  if (!('cover' in parsed && !('article' in parsed)))
+    await notePageWriteAfter(ctx, tabId, owner, {
+      status: result.status,
+      body: result.status === 200 ? { changeset: true } : null,
+    });
   return json(result.body, { status: result.status });
 }

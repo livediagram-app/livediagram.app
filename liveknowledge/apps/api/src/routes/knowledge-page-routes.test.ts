@@ -28,8 +28,8 @@ type Health = {
     tokens: number;
   };
   reads?: { people: number; agents: number };
-  created?: { by: string; at: number };
-  updated?: { by: string; at: number };
+  created?: { by: string; at: number; kind: string };
+  updated?: { by: string; at: number; kind: string };
 };
 const read = async (kit: Kit, who: Who = 'viewer', tab = 'deploys') =>
   await (await kit.call(who, 'GET', `/api/documents/kb/pages/${tab}/health`)).json<Health>();
@@ -287,14 +287,14 @@ describe('Created and Updated (verification.md)', () => {
     expect((await save('fresh', 'One')).status).toBeLessThan(300);
     const made = await read(kit, 'viewer', 'fresh');
     expect(made.knowledge.owner).toBe(OWNER);
-    expect(made.created).toEqual({ by: OWNER, at: 1_000_000 });
-    expect(made.updated).toEqual({ by: OWNER, at: 1_000_000 });
+    expect(made.created).toEqual({ by: OWNER, at: 1_000_000, kind: 'human' });
+    expect(made.updated).toEqual({ by: OWNER, at: 1_000_000, kind: 'human' });
 
     vi.setSystemTime(2_000_000);
     expect((await save('fresh', 'One and two')).status).toBeLessThan(300);
     const later = await read(kit, 'viewer', 'fresh');
-    expect(later.created).toEqual({ by: OWNER, at: 1_000_000 });
-    expect(later.updated).toEqual({ by: OWNER, at: 2_000_000 });
+    expect(later.created).toEqual({ by: OWNER, at: 1_000_000, kind: 'human' });
+    expect(later.updated).toEqual({ by: OWNER, at: 2_000_000, kind: 'human' });
 
     // A deleted page takes its row with it.
     await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/fresh');

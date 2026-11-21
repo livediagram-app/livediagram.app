@@ -5,6 +5,7 @@ import { settleStoredArticles } from './article-flow';
 import { withArticleContinuous } from './continuous-article';
 import { withKnowledgebasePage } from './knowledgebase-page';
 import { withoutPageLooks } from './page-looks';
+import { withSettledCover } from './page-cover';
 import { migrateRetiredPattern } from './retired-patterns';
 import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
@@ -23,9 +24,12 @@ export function migrateStoredTab<
   // suggestion"), here so the plain tab JSON a Community visitor or an agent reads never carries one.
   // A page's own background, style and lock are not in liveknowledge (./page-looks): read without them.
   // An article that arrives on paper sheets reads as one continuous page (./continuous-article).
-  const settled = withArticleContinuous(
-    withoutPageLooks(
-      settleStoredArticles(migrateRetiredPattern(migrateRetiredTheme(settleTabFields(tab)))),
+  // A page's cover keeps what of it is valid (./page-cover).
+  const settled = withSettledCover(
+    withArticleContinuous(
+      withoutPageLooks(
+        settleStoredArticles(migrateRetiredPattern(migrateRetiredTheme(settleTabFields(tab)))),
+      ),
     ),
   );
   if (!Array.isArray(settled.elements)) return settled;

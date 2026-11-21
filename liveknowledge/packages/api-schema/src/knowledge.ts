@@ -3,6 +3,7 @@
 // only: the engine and its limits are `@liveknowledge/knowledge`.
 
 import type { KnowledgeStyle } from '@liveknowledge/document';
+import type { AgentCover } from './pages';
 
 /** The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): the one look every
  *  page is drawn in. In a document read (always whole), the `document-meta` op when it changed, and the metadata
@@ -80,8 +81,21 @@ export type PageHealthResponse = PageKnowledgeResponse & {
   reads: { people: number; agents: number };
   /** Who made the page and who last saved it (verification.md "Created and Updated"), by account id; absent for a
    *  page not saved since the server began keeping them. */
-  created?: { by: string; at: number };
-  updated?: { by: string; at: number };
+  created?: PageAuthorStamp;
+  updated?: PageAuthorStamp;
+};
+/** What kind of writer made a stamp (verification.md "Made by a person or an agent"). */
+export type PageAuthorKind = 'human' | 'ai';
+/** The door an agent's write came through; `suggestion` is an agent's suggestion a person accepted. */
+export type PageAuthorVia = 'mcp' | 'cli' | 'api' | 'suggestion';
+/** One stamp: the person (an agent's is its token's maker, or the Editor who accepted its suggestion), when, the
+ *  kind, and an agent's name and door where they are known. */
+export type PageAuthorStamp = {
+  by: string;
+  at: number;
+  kind: PageAuthorKind;
+  agent?: string;
+  via?: PageAuthorVia;
 };
 /** `PUT .../pages/<tab>/knowledge`: each field optional; `owner: null` clears it. The Review Period is the
  *  knowledgebase's (`PUT .../knowledge-settings`): a `reviewEvery` here is refused. */
@@ -295,6 +309,8 @@ export type KnowledgePageRead = KnowledgePageRef & {
   parent?: string;
   backlinks: KnowledgePageRef[];
   subpages: KnowledgePageRef[];
+  /** The page's cover (page-surface.md "The cover"): its picture and where it sits, or its gradient's name. */
+  cover?: Exclude<AgentCover, null>;
 };
 export type KnowledgePageReadResponse = { page: KnowledgePageRead };
 /** `GET .../context`: the Always in Context pages as Markdown in tree order, within the budget, with what the
