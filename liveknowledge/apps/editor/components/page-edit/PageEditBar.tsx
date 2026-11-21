@@ -1,6 +1,7 @@
 'use client';
 
 import { useVersionHistoryState } from '@/lib/version-history-store';
+import { useKnowledgeView } from '@/lib/knowledge-ask/useKnowledgeView';
 import { lucideCheck, lucideX } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph, Portal, Tooltip } from '@liveknowledge/ui';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -189,7 +190,9 @@ export function PageEditBar() {
   const others = usePageEditors(tabId);
   // Version History covers the page: no Edit floating over it, nor double-click to edit beneath it.
   const inHistory = useVersionHistoryState() !== null;
-  if (inHistory) return null;
+  // Ask and AI Knowledge are not a page: no Edit there either (owner 2026-11-21).
+  const onPages = useKnowledgeView() === 'pages';
+  if (inHistory || !onPages) return null;
   return (
     <>
       <DoubleClickToEdit
