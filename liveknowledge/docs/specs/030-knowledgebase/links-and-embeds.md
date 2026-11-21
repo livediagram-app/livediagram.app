@@ -13,7 +13,10 @@ embed, placed from the slash menu, which is not the card described below: the bl
 - A page link is a run with `page: <tab id>`, so it follows the page through renames and moves. It always shows the
   page's current title. Pressing it opens the page; hovering shows a card with the title, its verified state and its
   first lines.
-- A link to a deleted page stays in the writing, struck through, labelled "Deleted Page", and goes nowhere.
+- A link to a deleted page stays in the writing, struck through, labelled "Deleted Page", and goes nowhere. A link
+  to a page in the knowledgebase's Trash ([The page Trash](knowledgebases-and-pages.md#the-page-trash)) reads "In the
+  Trash", struck through; pressing it opens the Trash at that page for a person who may restore it, and for anyone
+  else it reads as "Deleted Page". Restored, the link is live again.
 - Markdown in and out: `[[Title]]` on import resolves to a page of that title in the knowledgebase (first match in tree order;
   no match stays plain text), and export writes `[Title](relative/path.md)`.
 
@@ -28,7 +31,7 @@ embed, placed from the slash menu, which is not the card described below: the bl
 
 - The slash menu's **Embed** takes a link to a livediagram, liveplanner, livedocuments, livedesign or livehuddle item
   (or a tab of one) the person can open, and adds an embed zone: a framed card with the app's logo mark and wordmark,
-  the item's name, its current preview picture and **Open**. A new embed sits aligned left, level with the text
+  the item's name, its current preview picture and **Open**. A new embed (as any new object) sits aligned left, level with the text
   (owner, 2026-11-21: "left align the embeds by default"); the zone bar's Align Centre and Align Right still move it.
 - The picture is the platform's preview of that item (`/api/previews`), so it follows the item as it changes; the card
   re-reads it when the page opens and every five minutes while it is visible. A reader who cannot open the item sees

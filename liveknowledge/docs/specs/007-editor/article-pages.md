@@ -333,7 +333,8 @@ laid out with it, holding ordinary canvas elements that move with it.
 - **An object in the writing connects to nothing**: no quick-connect pluses show on an element of
   an article page that is not a drawing element.
 - **Wrap**: **In Line** (default; on its own line between blocks, aligned left, centre (default)
-  or right; an embed's zone, a live file or a web embed, is made aligned left, level with the text), **Wrap Left** (at the left of the text, the text running down its right) or **Wrap
+  or right; every new object's zone, whether added from the / menu, the palette or pasted (a picture, chart, table,
+  embed ...), is made aligned left, level with the text (owner 2026-11-21); zones stored before keep theirs), **Wrap Left** (at the left of the text, the text running down its right) or **Wrap
   Right**. A wrapped zone is at most two thirds of the text width; it keeps 14 px clear of the
   text beside it.
 - **Elements belong to a zone** while their centre (an arrow: the midpoint of its ends) is inside
