@@ -40,17 +40,17 @@
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261110.1",
+    "@cloudflare/workers-types": "^5.20261118.1",
     "@liveworkspace/community-service": "workspace:^",
     "@liveworkspace/media-service": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.6",
-    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/coverage-v8": "^5.1.1",
     "oxlint": "^1.93.0",
     "ts-json-schema-generator": "^2.9.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.0",
-    "wrangler": "^4.160.0"
+    "vitest": "^5.1.1",
+    "wrangler": "^4.164.0"
   }
 }
