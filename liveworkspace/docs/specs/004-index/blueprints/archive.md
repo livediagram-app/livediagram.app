@@ -109,6 +109,17 @@ event. Naming neither keeps `a:<owner>` whatever the title. A move out tells the
   room stream asks for a ticket again at once, saying nothing, and ends on the api's `409 archived` refusal (a ticket
   means the item is back, and the stream goes on).
 
+- A token's cached grant (Work Tracker 1323, [one-explorer-contracts.md](../one-explorer-contracts.md) "Where an
+  item stands"): each app's room keeps `{putAway, trashed, at}` from the standing call
+  (`ItemStandingKeeper` in `@liveworkspace/automations/room`, liveplanner's `PlanStanding`), and its `route` door
+  asks `refusal(grant)` (`putAwayRefusal` in `@liveworkspace/index-client` `standing.ts`) before it answers: a grant
+  signed before `at` while the item is put away is answered `409 archived` (or, trashed, the request goes on with the
+  grant marked `trashed`, so the app's own trashed answer is given), with `X-Item-Put-Away` (`ITEM_PUT_AWAY_HEADER`)
+  set by `putAwayAnswer` (`@liveworkspace/index-app`). Each api's worker passes the room's answer to
+  `forgetPutAwayGrant`, which drops the caller's cached grant (`IndexService.forgetGrant`) when the header is there.
+  The room-ticket door asks the room the same (`standingRefusal` RPC) for a grant the worker fetched (no
+  `X-Index-Grant` sent), so a CLI stream that asks for a ticket after 4010 meets `409 archived` and ends.
+
 ## Interfaces and contracts
 
 - `Item.archivedAt: number | null` (optional on the type, always sent by the index); `ITEM_VIEWS` gains `archived`;
@@ -155,18 +166,21 @@ one `items_live` range: pinned by `lists.test.ts` "query plans".
 
 ## Testing
 
-| Test                                               | Pins                                                                                                 |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/archive.test.ts`     | the archive, its deletions, the refusals, previews, lists, move out, Trash, team, roles, guest merge |
-| `liveworkspace/apps/index/src/lists.test.ts`       | the Archived, Search and Trash plans                                                                 |
-| `liveworkspace/apps/index/src/standing.test.ts`    | the app told on archive and move out, once, a failed call retried once, then dropped                 |
-| `packages/explorer/src/explorer/archived.test.tsx` | the sidebar row, the view and empty state, the menu, the dialog, Change Folder's space, `?move=`     |
-| `packages/api-kit/src/room-access.test.ts`         | `archived` matches every session, and its close code is 4010, no other match's                       |
-| `packages/workbench/src/lib/archived.test.ts`      | `leaveArchivedElsewhere`: the owner's handoff and toast address, anyone else's `?ended=archived`     |
-| each app's `routes/internal-items.test.ts`         | archived closes with 4010; trashed, a move and a restore never do                                    |
-| each editor's room client test                     | 4010 stops the connector, calls `onItemArchived` once, never reconnects                              |
-| each CLI's `room/room-stream.test.ts`              | 4010 asks for a ticket at once, saying nothing; the archived refusal ends it, a ticket goes on       |
-| `packages/mcp-kit/src/app-viewer-live.test.ts`     | 4010 stops the live view for good: "This document was archived."                                     |
+| Test                                                            | Pins                                                                                                     |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/archive.test.ts`                  | the archive, its deletions, the refusals, previews, lists, move out, Trash, team, roles, guest merge     |
+| `liveworkspace/apps/index/src/lists.test.ts`                    | the Archived, Search and Trash plans                                                                     |
+| `liveworkspace/apps/index/src/standing.test.ts`                 | the app told on archive and move out, once, a failed call retried once, then dropped                     |
+| `packages/explorer/src/explorer/archived.test.tsx`              | the sidebar row, the view and empty state, the menu, the dialog, Change Folder's space, `?move=`         |
+| `packages/api-kit/src/room-access.test.ts`                      | `archived` matches every session, and its close code is 4010, no other match's                           |
+| `packages/workbench/src/lib/archived.test.ts`                   | `leaveArchivedElsewhere`: the owner's handoff and toast address, anyone else's `?ended=archived`         |
+| each app's `routes/internal-items.test.ts`                      | archived closes with 4010; trashed, a move and a restore never do                                        |
+| each editor's room client test                                  | 4010 stops the connector, calls `onItemArchived` once, never reconnects                                  |
+| each CLI's `room/room-stream.test.ts`                           | 4010 asks for a ticket at once, saying nothing; the archived refusal ends it, a ticket goes on           |
+| `packages/mcp-kit/src/app-viewer-live.test.ts`                  | 4010 stops the live view for good: "This document was archived."                                         |
+| `packages/index-client/src/standing.test.ts`                    | `putAwayRefusal`: only a grant signed before a put-away standing, archived or trashed                    |
+| `packages/index-app/src/request.test.ts`                        | `forgetPutAwayGrant` drops the cached grant on the room's put-away answer, and only then                 |
+| `livediagram/apps/api/src/routes/archived-token-access.test.ts` | a token archives through the api, its next read and write are 409, a move out reads again, the Trash 410 |
 
 ## Constants and configuration
 

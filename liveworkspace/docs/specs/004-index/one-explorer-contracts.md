@@ -315,8 +315,23 @@ index nothing while it runs).
   standing too: a restore lost twice mends itself the next time anyone opens the item or renews a grant on it.
 - Every app's door is `@liveworkspace/index-app` `handleInternalItems` (the `standing` handler); the body's type and
   parser are `@liveworkspace/index-client` `standing.ts`. An app without the handler answers `200 {ok: true}` and does
-  nothing: livediagram, livedocuments, livedesign and livehuddle keep no clock of their own for an item today, so only
-  liveplanner acts on it ([automations.md](../../../../liveplanner/docs/specs/026-plan/automations.md) "Put away").
+  nothing. Every app's item room keeps the standing (liveplanner's `plan-standing.ts`, the others'
+  `@liveworkspace/automations/room` `ItemStandingKeeper`): its rules, time rules and Waits stop while it is put away
+  ([automations.md](../../../../liveplanner/docs/specs/026-plan/automations.md) "Put away"), and it keeps whether the
+  item was archived or trashed, for the refusal below.
+- **A grant from before it was put away is refused** (Work Tracker 1323). An app's worker keeps a grant it fetched
+  for an API token or a workbench session until a minute before it lapses ("Carrying a grant to the app"), and nothing
+  at the index can reach every isolate's copy. So the item's room, the one place every request about the item meets
+  whichever isolate it came through, checks each grant it is handed against its standing: while the item is put away,
+  a grant signed before the stored `at` (its `iatMs`, else `iat`) is refused, `409 archived` for an archived item and
+  the app's trashed answer (`410 <noun>_trashed`) for one in the Trash, on every REST and MCP call and on a room
+  ticket the worker mints from a grant it fetched. A grant signed after `at` is never refused (none is signed for an
+  archived item, and a trashed one carries `trashed`), and a standing that is not put away refuses nothing, so a move
+  out or a restore opens the item again on the next call. The refusal carries `X-Item-Put-Away: archived|trashed`;
+  the worker then drops the grant it holds for that caller and item, so the next call asks the index again, which
+  answers the refusal itself, or a fresh grant that mends a move out lost twice. A room that never heard the standing
+  refuses nothing (fails open), as before. The check is a comparison in the room's memory: no storage read and no
+  call to the index.
 - **Open sessions end.** Every app's handler also ends the item's live sessions when the standing puts it away: on
   `trashed: true` its room sends the product's trashed op and closes each socket with 4004; on `archived: true` (and
   not trashed) it closes each with **4010** (`ITEM_ARCHIVED_CLOSE`, reason `item-archived`) through the room's
@@ -615,7 +630,9 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   which still says who is asking). The api checks it offline with `createGrantVerifier` (`aud` the app),
   that `item` is the plan in the path, and the level the route needs (`view` < `participate` < `edit`, a
   `tab` confining it to one tab). A caller without one, such as an API token from the CLI or an AI tool,
-  gets one from the index as a delegated caller (above), cached until a minute before it lapses.
+  gets one from the index as a delegated caller (above), cached until a minute before it lapses. The item's room
+  refuses a cached grant from before the item was archived or trashed ("Where an item stands"), and the worker then
+  drops it.
 - **WebSocket**: a socket cannot send headers, so the grant rides the upgrade as `?t=<grant>`. A session
   the app opens for a paired tool gets no grant it could read: its ticket is `rt2~<sealed>`, the grant, the pairing
   and the cap encrypted together (AES-GCM, key derived from INDEX_KEY), so the session can neither raise its limits
