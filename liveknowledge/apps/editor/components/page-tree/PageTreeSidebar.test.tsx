@@ -157,24 +157,34 @@ describe('PageTreeSidebar', () => {
       const rail = document.querySelector<HTMLElement>('[data-page-tree="rail"]')!;
       // Touch has no hover: a tap on the rail is not a peek.
       fireEvent.pointerEnter(rail, { pointerType: 'touch' });
-      act(() => vi.advanceTimersByTime(PEEK_OPEN_MS));
+      act(() => {
+        vi.advanceTimersByTime(PEEK_OPEN_MS);
+      });
       expect(document.querySelector('[data-page-tree-over="peek"]')).toBeNull();
       fireEvent.pointerEnter(rail, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(PEEK_OPEN_MS));
+      act(() => {
+        vi.advanceTimersByTime(PEEK_OPEN_MS);
+      });
       const peek = document.querySelector<HTMLElement>('[data-page-tree-over="peek"]')!;
       expect(peek.style.width).toBe(`${PAGE_TREE_WIDTH}px`);
       // Over the page: the framing still measures the rail.
       expect(document.querySelectorAll('[data-contents-sidebar]')).toHaveLength(1);
       expect(within(peek).getByRole('tree')).toBeTruthy();
       fireEvent.pointerLeave(peek, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(PEEK_CLOSE_MS));
+      act(() => {
+        vi.advanceTimersByTime(PEEK_CLOSE_MS);
+      });
       // Sliding out, then gone.
       expect(peek.className.split(' ')).toContain('-translate-x-full');
-      act(() => vi.advanceTimersByTime(SLIDE_MS));
+      act(() => {
+        vi.advanceTimersByTime(SLIDE_MS);
+      });
       expect(document.querySelector('[data-page-tree-over="peek"]')).toBeNull();
       // Keep Pages Open opens the tree for good.
       fireEvent.pointerEnter(rail, { pointerType: 'mouse' });
-      act(() => vi.advanceTimersByTime(PEEK_OPEN_MS));
+      act(() => {
+        vi.advanceTimersByTime(PEEK_OPEN_MS);
+      });
       fireEvent.click(screen.getByRole('button', { name: 'Keep Pages Open' }));
       expect(p.onSetCollapsed).toHaveBeenCalledWith(false);
     } finally {

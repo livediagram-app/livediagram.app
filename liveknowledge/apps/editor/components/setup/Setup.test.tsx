@@ -221,18 +221,19 @@ describe('the host', () => {
 });
 
 describe('the sidebar button', () => {
-  it('is a full-width button with the one line under it, and opens the dialog', () => {
+  it('is a full-width button with no line under it, and opens the dialog', () => {
     renderInEditor(<DescribeToSetUpButton />, chromeValue('edit', emptyKb()));
     const button = screen.getByRole('button', { name: 'Describe to Set Up' });
     expect(button.className).toContain('w-full');
     expect(button.getAttribute('title')).toBeNull();
-    expect(screen.getByText('Tell AI what this is for and get a page structure.')).toBeTruthy();
+    // Its line is the hover card's, never drawn under the button.
+    expect(document.querySelector('[data-describe-to-set-up] > p')).toBeNull();
     fireEvent.click(button);
     expect(renderHook(() => useSetupOpen()).result.current).toBe('set-up');
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'DescribeToSetUp');
   });
 
-  it('is in a phone’s Pages sheet too, which closes as the dialog opens, and describes itself by its own line', () => {
+  it('is in a phone’s Pages sheet too, which closes as the dialog opens, with no line under it', () => {
     const tabs = [startPage()];
     const tree = {
       name: 'Handbook',
@@ -260,14 +261,7 @@ describe('the sidebar button', () => {
       expect.stringContaining('New Page'),
     ]);
     expect(inSheet.className).toContain('pointer-coarse:min-h-11');
-    // Two buttons on the page, each described by its own line.
-    const both = screen.getAllByRole('button', { name: 'Describe to Set Up' });
-    const lines = both.map((b) => b.getAttribute('aria-describedby'));
-    expect(new Set(lines).size).toBe(2);
-    for (const id of lines)
-      expect(document.getElementById(id!)!.textContent).toBe(
-        'Tell AI what this is for and get a page structure.',
-      );
+    expect(screen.getAllByRole('button', { name: 'Describe to Set Up' })).toHaveLength(2);
     fireEvent.click(inSheet);
     expect(screen.queryByRole('dialog', { name: 'Pages' })).toBeNull();
     expect(renderHook(() => useSetupOpen()).result.current).toBe('set-up');

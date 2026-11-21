@@ -52,7 +52,8 @@ test('a new knowledgebase opens on its start screen, whose Describe to Set Up tu
     .getByRole('complementary', { name: 'Pages' })
     .getByRole('button', { name: 'Describe to Set Up', exact: true });
   await expect(button).toBeVisible();
-  await expect(page.getByText('Tell AI what this is for and get a page structure.')).toBeVisible();
+  // No line under it: what it does is its hover card's.
+  await expect(page.getByText('Tell AI what this is for and get a page structure.')).toHaveCount(0);
   const newPage = page.getByRole('button', { name: 'New Page', exact: true });
   expect((await button.boundingBox())!.y).toBeLessThan((await newPage.boundingBox())!.y);
 
