@@ -70,10 +70,12 @@ export function openKnowledgebaseLayer(deps: OpenKnowledgebaseDeps): ImportSaveL
         const swapped = replacement
           ? tabs.map((tab) => {
               if (tab.id !== replacement.id) return tab;
-              // Where the page sits is the tree's, not the new writing's.
+              // Where the page sits is the tree's, not the new writing's, and so is who owns it (its creator, from
+              // the create: verification.md "The owner").
               const { parent: _parent, ...rest } = replacement;
               void _parent;
-              return tab.parent ? { ...rest, parent: tab.parent } : rest;
+              const kept = tab.knowledge ? { ...rest, knowledge: tab.knowledge } : rest;
+              return tab.parent ? { ...kept, parent: tab.parent } : kept;
             })
           : tabs;
         return addPages(swapped, added).list;

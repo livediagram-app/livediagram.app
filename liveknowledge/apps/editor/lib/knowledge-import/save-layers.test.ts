@@ -54,7 +54,7 @@ describe('openKnowledgebaseLayer', () => {
 
   it('puts a page of the same id in an existing page place, in the same edit as its batch', async () => {
     const open = openLayer(
-      [tab('home'), { ...tab('start', 'home'), name: 'Start Here' }],
+      [tab('home'), { ...tab('start', 'home'), name: 'Start Here', knowledge: { owner: 'u1' } }],
       undefined,
       'start',
     );
@@ -70,6 +70,9 @@ describe('openKnowledgebaseLayer', () => {
       ['a', 'a', 'start'],
       ['b', 'b', undefined],
     ]);
+    // Its owner, the knowledgebase's creator, stays.
+    expect(open.tabs()[1]!.knowledge).toEqual({ owner: 'u1' });
+    expect(open.tabs()[2]!.knowledge).toBeUndefined();
     expect(open.loaded).toEqual(['start', 'a', 'b']);
     expect(open.settled).toEqual(['start', 'a', 'b']);
   });

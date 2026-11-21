@@ -27,9 +27,7 @@ import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { ensureGuestToken } from '@/lib/guest-token';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
-import { handTemplatePick } from '@liveworkspace/explorer';
 import {
-  isBlankTemplate,
   untitledNameForTemplate,
   type TemplateKind,
 } from '@liveknowledge/templates';
@@ -48,6 +46,8 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { offerKnowledgebaseStart } from '@/components/start/knowledgebase-start';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
+import { withCreatorOwner } from '@/lib/new-page-owner';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { newKnowledgebaseTakesCaret, wantTitleFocus } from '@/lib/page-title-focus';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
@@ -176,6 +176,8 @@ export default function NewDocumentPage() {
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
   // 5 s auth timeout at the latest), then fall back to the guest id.
   const { resolveSelf } = useResolveSelf(self, setSelf, ensureGuestIdentity);
+  // The signed-in account as the create runs (identity may settle after this render): its pages' owner.
+  const accountRef = useLatest(accountUserId);
 
   // Single commit point, shared by the create on mount and Retry. Every new document starts on the Default theme; we
   // persist the document so the editor route lands on a real row.
@@ -197,13 +199,6 @@ export default function NewDocumentPage() {
     // A knowledgebase made with nothing asked opens on its start screen (docs/specs/030-knowledgebase/
     // describe-to-set-up.md "The start screen"); a blank asked for (`?blank=1`, `?start=blank`) or a template does not.
     if (!startsBlank && !templateKind) offerKnowledgebaseStart(tabId);
-    // A blank in the cloud: the template picked later on its start may move it to that template's default folder
-    // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
-    handTemplatePick(
-      !offline && (!templateKind || isBlankTemplate(templateKind))
-        ? { itemId: documentId, tabId, placementChosen: settings.placementChosen === true }
-        : null,
-    );
     // A Retry re-runs the create, not the preference write below.
     lastCreateArgs.current = { kind: templateKind, settings, ids: { documentId, tabId } };
     // Named after its template ("Untitled Diagram"); renamed in the editor.
@@ -247,10 +242,12 @@ export default function NewDocumentPage() {
         // Placement rides the create (docs/specs/007-editor/new-document-route.md): a /new?folder= / ?team=
         // context is filed by the same write, or the create is refused by name and nothing is written.
         const owner = cloudOwner ?? (await settleIdentity());
+        // Its pages' owner is their creator, when signed in (lib/new-page-owner.ts); a guest's carry none.
+        const creator = accountRef.current && owner.id === accountRef.current ? owner.id : null;
         await apiCreateDocument(owner.id, {
           id: documentId,
           name: documentName,
-          tabs: tabs ?? [tab],
+          tabs: withCreatorOwner(tabs ?? [tab], creator),
           // Passed through as given: absent is no choice (a default folder may answer), a null
           // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
           teamId: settings.teamId,
