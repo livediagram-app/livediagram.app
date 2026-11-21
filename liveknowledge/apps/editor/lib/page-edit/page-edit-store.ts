@@ -119,3 +119,20 @@ export function useMyEditingPage(): string | null {
 }
 
 const EMPTY: PageEditor[] = [];
+
+// Leaving a page being edited (docs/specs/030-knowledgebase/editing.md "Leaving with unsaved changes"): the editing
+// hook registers what to ask; every way to another page goes through leavePageThen.
+type LeaveGuard = (to: string, go: () => void) => void;
+let leaveGuard: LeaveGuard | null = null;
+
+/** The editing hook's question before leaving, or null when it unmounts. */
+export function setLeaveGuard(guard: LeaveGuard | null): void {
+  leaveGuard = guard;
+}
+
+/** Runs `go` (opening page `to`) once this editor may leave the page it is editing: at once when it is editing
+ *  nothing, or nothing unsaved; else after the person saves. */
+export function leavePageThen(to: string, go: () => void): void {
+  if (leaveGuard && mine !== null && mine !== to) leaveGuard(to, go);
+  else go();
+}

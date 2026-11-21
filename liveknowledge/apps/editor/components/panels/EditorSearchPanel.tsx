@@ -1,5 +1,6 @@
 'use client';
 
+import { leavePageThen } from '@/lib/page-edit/page-edit-store';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { useThisKnowledgebaseSearch } from '@/components/knowledge/useThisKnowledgebaseSearch';
@@ -108,12 +109,16 @@ export function EditorSearchPanel() {
         );
       }}
       onSelectTab={(tabId) => {
-        setActiveId(tabId);
-        setSelectedId(null);
+        leavePageThen(tabId, () => {
+          setActiveId(tabId);
+          setSelectedId(null);
+        });
       }}
       onSelectElement={(tabId, elementId) => {
-        setActiveId(tabId);
-        setSelectedId(elementId);
+        leavePageThen(tabId, () => {
+          setActiveId(tabId);
+          setSelectedId(elementId);
+        });
       }}
       paletteItems={
         isReadOnly

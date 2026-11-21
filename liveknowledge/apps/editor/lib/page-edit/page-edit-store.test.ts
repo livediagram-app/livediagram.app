@@ -3,6 +3,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import {
+  leavePageThen,
+  setLeaveGuard,
   clearPageEditors,
   myEditingPage,
   notePageEditors,
@@ -73,5 +75,34 @@ describe('who is editing', () => {
       ['t1', 'Priya'],
       ['t1', 'Guest'],
     ]);
+  });
+});
+
+describe('leavePageThen', () => {
+  afterEach(() => {
+    setLeaveGuard(null);
+    setMyEditingPage(null);
+  });
+
+  it('goes at once when this editor edits nothing, or opens the page it edits', () => {
+    const guard = vi.fn();
+    setLeaveGuard(guard);
+    const go = vi.fn();
+    leavePageThen('p2', go);
+    expect(go).toHaveBeenCalledTimes(1);
+    setMyEditingPage('p1');
+    leavePageThen('p1', go);
+    expect(go).toHaveBeenCalledTimes(2);
+    expect(guard).not.toHaveBeenCalled();
+  });
+
+  it('asks the editing hook before leaving the page being edited', () => {
+    const guard = vi.fn();
+    setLeaveGuard(guard);
+    setMyEditingPage('p1');
+    const go = vi.fn();
+    leavePageThen('p2', go);
+    expect(go).not.toHaveBeenCalled();
+    expect(guard).toHaveBeenCalledWith('p2', go);
   });
 });

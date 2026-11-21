@@ -63,7 +63,13 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **Cancel** leaves edit mode. If others are still editing, the draft stays theirs and nothing is lost. If you are the
   last one editing and the draft has unsaved changes, Cancel asks first: "Discard your changes to this page?" with
   **Discard Changes** (destructive) and **Keep Editing**. Discarding throws the draft away.
-- Leaving the page, closing the tab or losing the connection is not Cancel: the draft is kept (stored in the
+- **Leaving with unsaved changes** (owner 2026-11-21: "require me to cancel or save it before navigating"): opening
+  another page (the tree, a breadcrumb, a page link, Linked From, search) while the page you edit has unsaved changes,
+  and nobody else is editing it, asks first: "Save Your Changes First?" with **Save and Leave** (saves, then opens
+  it) and **Keep Editing** (stays; Cancel on the bar is the way to discard). Closing or reloading the browser tab
+  then gets the browser's own leave question. With nothing unsaved, or others still in the draft, leaving just leaves
+  edit mode.
+- Otherwise leaving the page, closing the tab or losing the connection is not Cancel: the draft is kept (stored in the
   knowledgebase), and the next Edit opens it with "Unsaved changes from Priya, 2 hours ago" and Save / Discard. A draft
   untouched for 30 days is thrown away by the room's daily upkeep.
 - Undo and redo work within the draft: Edit starts the undo history and Save or Discard ends it, so undo never
@@ -85,7 +91,7 @@ stay).
 ## Share roles
 
 - **Editor, Participant:** Edit, co-edit the draft, Save, Cancel, Discard. A Participant is an Editor minus the
-  Knowledgebase Settings, the Knowledgebase Style and automations
+  Review Period, the Knowledgebase Style and automations
   ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)), none of which is in the draft.
 - **Viewer, link visitor:** read mode only; never sees the draft or who is editing beyond the "Being edited" note.
   A view link's visitor reads the saved page.

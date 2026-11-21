@@ -22,6 +22,8 @@ import {
   onPeerSaved,
   pageEditorsOf,
   setMyEditingPage,
+  setLeaveGuard,
+  myEditingPage,
   usePageEditors,
 } from '@/lib/page-edit/page-edit-store';
 import { newEditorOf } from '@/lib/page-edit/follow-editors';
@@ -210,6 +212,51 @@ export function useEditorPageEditing({
     enter(null);
     // oxlint-disable-next-line react/exhaustive-deps -- runs when the page or the role moves away, not per render
   }, [editingAway]);
+  // Leaving with unsaved changes (owner 2026-11-21: "require me to cancel or save it before navigating"): another
+  // page asks to save first, Keep Editing stays; Cancel on the bar is the way to throw the changes away. A page with
+  // nothing unsaved, or others still editing the draft, just leaves edit mode as before. Read through a ref, so the
+  // question always sees this render's draft.
+  const unsavedNow = (): boolean => {
+    const tabId = editingTabId;
+    if (!tabId || pageEditorsOf(tabId).length > 0) return false;
+    const real = realOf(tabId);
+    if (!real) return false;
+    const typed = flushWriting(real);
+    const saved = savedArticleOf(real);
+    return (
+      draftDiffers(real) || (typed !== null && (!saved || !sameArticleValue(typed, saved.blocks)))
+    );
+  };
+  const leaveRef = useRef({ unsavedNow, save });
+  leaveRef.current = { unsavedNow, save };
+  useEffect(() => {
+    setLeaveGuard((_to, go) => {
+      if (!leaveRef.current.unsavedNow()) {
+        go();
+        return;
+      }
+      void confirm({
+        title: 'Save Your Changes First?',
+        message:
+          'This page has unsaved changes. Save them to leave, or keep editing and Cancel to discard them.',
+        confirmLabel: 'Save and Leave',
+        cancelLabel: 'Keep Editing',
+      }).then((ok) => {
+        if (!ok) return;
+        leaveRef.current.save();
+        go();
+      });
+    });
+    // A tab closed or reloaded with unsaved changes: the browser's own question (the draft is kept either way).
+    const onUnload = (e: BeforeUnloadEvent) => {
+      if (myEditingPage() !== null && leaveRef.current.unsavedNow()) e.preventDefault();
+    };
+    window.addEventListener('beforeunload', onUnload);
+    return () => {
+      setLeaveGuard(null);
+      window.removeEventListener('beforeunload', onUnload);
+    };
+  }, [confirm]);
   // The editor closing tells the room nothing more: its socket goes with it. This browser forgets the mode.
   useEffect(() => () => setMyEditingPage(null), []);
 
