@@ -67,7 +67,12 @@ const openMenu = (name: string) => {
   hover(name);
   fireEvent.click(within(row(name)).getByRole('button', { name: `Page Options for ${name}` }));
 };
-const menuItems = () => screen.getAllByRole('menuitem').map((el) => el.textContent?.trim() ?? '');
+// A toolbar button is named by its label alone; a row by its words.
+const menuItems = () =>
+  screen
+    .getAllByRole('menuitem')
+    .map((el) => el.getAttribute('aria-label') ?? el.textContent?.trim() ?? '');
+const openMove = () => fireEvent.click(screen.getByRole('menuitem', { name: 'Move' }));
 
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -197,20 +202,19 @@ describe('the keyboard', () => {
 });
 
 describe('the row menu', () => {
-  it('lists the verbs in order, Delete last', () => {
+  it('puts Rename, Duplicate, Copy Link and Delete in a toolbar, then the rows, then a closed Move section', () => {
     mount();
     openMenu('Onboarding');
     expect(menuItems()).toEqual([
       'Rename',
-      'Add Subpage',
       'Duplicate',
       'Copy Link',
-      'Move Up',
-      'Move Down',
-      'Indent',
-      'Outdent',
       'Delete',
+      'Add Subpage',
+      'Move',
     ]);
+    openMove();
+    expect(menuItems().slice(-4)).toEqual(['Move Up', 'Move Down', 'Indent', 'Outdent']);
   });
 
   it('runs each verb on its page', () => {
@@ -226,6 +230,7 @@ describe('the row menu', () => {
     for (const [label, action, args] of verbs) {
       const { actions: a } = mount();
       openMenu('Onboarding');
+      if (['Move Up', 'Indent', 'Outdent'].includes(label)) openMove();
       fireEvent.click(screen.getByRole('menuitem', { name: label }));
       expect(a[action], label).toHaveBeenCalledWith(...args);
       expect(screen.queryByRole('menuitem')).toBeNull();
@@ -392,16 +397,7 @@ describe.each(['edit', 'participate', 'view'] as AccessLevel[])('share roles: %s
   it(`${offered ? 'lists' : 'withholds'} rename, add, duplicate, move, indent, outdent and delete; Copy Link stays`, () => {
     mount({ canEdit: may });
     openMenu('Onboarding');
-    const changing = [
-      'Rename',
-      'Add Subpage',
-      'Duplicate',
-      'Move Up',
-      'Move Down',
-      'Indent',
-      'Outdent',
-      'Delete',
-    ];
+    const changing = ['Rename', 'Add Subpage', 'Duplicate', 'Move', 'Delete'];
     const items = menuItems();
     for (const verb of changing) expect(items.includes(verb), verb).toBe(offered);
     expect(items).toContain('Copy Link');

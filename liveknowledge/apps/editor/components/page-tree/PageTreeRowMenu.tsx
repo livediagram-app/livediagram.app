@@ -1,10 +1,11 @@
 'use client';
 
-// A page's menu in the tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Row menu"): icon-left verb
-// rows under the page's name. Rename, Add Subpage, Duplicate, Copy Link, Verify, Always in Context (a checkmark
-// row), Move Up, Move Down, Indent, Outdent, then Delete last. A verb that cannot run stays, greyed, and says why in its hover card. A Viewer or a Participant has
-// Copy Link alone.
-import type { ReactNode } from 'react';
+// A page's menu in the tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Row menu"; owner 2026-11-21:
+// "some items should be a toolbar, some should be sub items of a category"): a toolbar of Rename, Duplicate, Copy Link
+// and Delete under the page's name, then rows: Add Subpage, Connect File Here, Verify, Request Approval, Always in
+// Context (a checkmark row), and a closed Move section (Move Up, Move Down, Indent, Outdent). A verb that cannot run
+// stays, greyed, and says why in its hover card. A Viewer or a Participant has Copy Link alone.
+import { useState, type ReactNode } from 'react';
 import {
   pageAddRefusal,
   pageCount,
@@ -18,11 +19,17 @@ import {
 } from '@liveknowledge/document';
 import { HoverCard } from '@liveknowledge/ui';
 import {
+  MenuAccordionSection,
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import {
+  MenuToolButton,
+  MenuToolbar,
+} from '@liveworkspace/workbench/components/primitives/MenuTiles';
+import { RequestIcon } from '@/components/knowledge/approval/feedback-icons';
 import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
 import {
   AddIcon,
@@ -34,6 +41,7 @@ import {
   MoveDownIcon,
   MoveUpIcon,
   OutdentIcon,
+  MoveIcon,
   RenameIcon,
 } from './page-tree-icons';
 import { CheckIcon, ContextIcon, TickIcon } from '@/components/knowledge/knowledge-icons';
@@ -46,6 +54,7 @@ export type PageMenuVerb =
   | 'duplicate'
   | 'copy-link'
   | 'verify'
+  | 'approval'
   | 'context'
   | 'up'
   | 'down'
@@ -102,12 +111,15 @@ export function PageTreeRowMenu({
   id: string;
   canEdit: boolean;
   // Verify and Always in Context (docs/specs/030-knowledgebase/verification.md, ai-knowledge.md): an Editor's.
-  knowledge?: Pick<PageTreeKnowledge, 'canVerify' | 'canEditFields' | 'inContext'> | undefined;
+  knowledge?:
+    | Pick<PageTreeKnowledge, 'canVerify' | 'canEditFields' | 'inContext' | 'canRequestApproval'>
+    | undefined;
   // Connect File Here is offered (signed in, on the server, a session that may change the tree).
   canConnect?: boolean;
   onVerb: (verb: PageMenuVerb, id: string) => void;
   onClose: () => void;
 }) {
+  const [moveOpen, setMoveOpen] = useState(false);
   const page = tabs.find((t) => t.id === id);
   if (!page || pageDepth(tabs, id) === 0) return null;
   const refusals = canEdit ? pageMenuRefusals(tabs, id) : {};
@@ -135,15 +147,42 @@ export function PageTreeRowMenu({
       <div key={verb}>{item}</div>
     );
   };
+  const tool = (verb: PageMenuVerb, label: string, icon: ReactNode, description: string) => {
+    const why = refusals[verb];
+    return (
+      <MenuToolButton
+        key={verb}
+        icon={icon}
+        label={label}
+        description={why ?? description}
+        disabled={why !== undefined}
+        onClick={() => {
+          onClose();
+          onVerb(verb, id);
+        }}
+      />
+    );
+  };
   return (
     <PortalMenu anchor={anchor} placement="below" onClose={onClose} label="Page Options">
       <MenuHeader title={page.name || 'Untitled Page'} />
-      {canEdit ? row('rename', 'Rename', <RenameIcon />) : null}
+      <MenuToolbar>
+        {canEdit ? tool('rename', 'Rename', <RenameIcon />, 'Rename this page.') : null}
+        {canEdit
+          ? tool('duplicate', 'Duplicate', <DuplicateIcon />, 'A copy of this page below it.')
+          : null}
+        {tool('copy-link', 'Copy Link', <LinkIcon />, 'Copy a link to this page.')}
+        {canEdit
+          ? tool('delete', 'Delete', <DeleteIcon />, 'Delete this page and its subpages.')
+          : null}
+      </MenuToolbar>
+      {canEdit || knowledge?.canVerify || knowledge?.canEditFields ? <MenuGroupSeparator /> : null}
       {canEdit ? row('add', 'Add Subpage', <AddIcon />) : null}
       {canEdit && canConnect ? row('connect-here', 'Connect File Here', <ConnectFileIcon />) : null}
-      {canEdit ? row('duplicate', 'Duplicate', <DuplicateIcon />) : null}
-      {row('copy-link', 'Copy Link', <LinkIcon />)}
       {knowledge?.canVerify ? row('verify', 'Verify', <TickIcon />) : null}
+      {knowledge?.canRequestApproval?.(id)
+        ? row('approval', 'Request Approval', <RequestIcon />)
+        : null}
       {knowledge?.canEditFields
         ? row(
             'context',
@@ -154,14 +193,17 @@ export function PageTreeRowMenu({
           )
         : null}
       {canEdit ? (
-        <>
+        <MenuAccordionSection
+          title="Move"
+          icon={<MoveIcon />}
+          open={moveOpen}
+          onToggle={() => setMoveOpen((o) => !o)}
+        >
           {row('up', 'Move Up', <MoveUpIcon />)}
           {row('down', 'Move Down', <MoveDownIcon />)}
           {row('indent', 'Indent', <IndentIcon />)}
           {row('outdent', 'Outdent', <OutdentIcon />)}
-          <MenuGroupSeparator />
-          {row('delete', 'Delete', <DeleteIcon />)}
-        </>
+        </MenuAccordionSection>
       ) : null}
     </PortalMenu>
   );

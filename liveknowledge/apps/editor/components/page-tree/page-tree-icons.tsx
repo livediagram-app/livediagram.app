@@ -9,6 +9,7 @@ import {
   lucideRefreshCw,
   lucideUnlink,
   lucideArrowUp,
+  lucideArrowUpDown,
   lucideChevronRight,
   lucideCopy,
   lucideEllipsis,
@@ -31,6 +32,7 @@ export const RenameIcon = lucideGlyph(lucidePencil, 16);
 export const DuplicateIcon = lucideGlyph(lucideCopy, 16);
 export const LinkIcon = lucideGlyph(lucideLink, 16);
 export const MoveUpIcon = lucideGlyph(lucideArrowUp, 16);
+export const MoveIcon = lucideGlyph(lucideArrowUpDown, 14);
 export const MoveDownIcon = lucideGlyph(lucideArrowDown, 16);
 export const IndentIcon = lucideGlyph(lucideIndentIncrease, 16);
 export const OutdentIcon = lucideGlyph(lucideIndentDecrease, 16);

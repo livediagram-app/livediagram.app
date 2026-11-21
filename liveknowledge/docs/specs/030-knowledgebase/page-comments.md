@@ -40,7 +40,7 @@ Comments are about the page as a whole.
 - **Reply** (owner 2026-11-21: the old Reply button was ugly and led people to start threads rather than reply):
   every open thread ends in its own reply line, the writer's small disc beside a soft filled "Reply…" field inside
   the thread's card; focused, it takes the accent ring and opens **Reply** (a send pill) and the Cmd Enter hint.
-  **Resolve** is an icon button in the thread's top-right corner, with a "Resolve Thread" tooltip.
+  **Resolve** is an icon button on the first comment's row, after Edit and Delete, the same size and look.
 - **A new thread is the second choice:** while a page has threads, the foot's composer folds into a quiet **Start a
   New Thread** button; pressing it opens the composer ("Start a new thread…", focused, with Cancel). With no
   threads the composer shows at once.

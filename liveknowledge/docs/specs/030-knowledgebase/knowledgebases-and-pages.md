@@ -96,9 +96,10 @@ Public) already own the word.
 - **Move:** drag a row to reorder it among siblings or drop it on a page to make it a subpage; the row menu has Move
   Up, Move Down, Indent and Outdent for keyboards and touch. A page moves with its subpages. A page is never dropped
   inside its own subtree.
-- **Row menu** (icon-left verb rows under the page's name): Rename, Add Subpage, Duplicate, Copy Link, Verify,
-  Always in Context (a checkmark row), Move Up, Move Down, Indent, Outdent, then Delete last, under a separator. A
-  verb that cannot run stays, greyed, and says why. Delete is not red: the shared menu row never colours a verb.
+- **Row menu** (owner 2026-11-21: a toolbar and categories, not one long list): under the page's name, a toolbar
+  of icon buttons, Rename, Duplicate, Copy Link and Delete, each named in its hover card; then icon-left rows, Add
+  Subpage, Connect File Here, Verify, Request Approval, Always in Context (a checkmark row); then a closed **Move**
+  section holding Move Up, Move Down, Indent and Outdent. A verb that cannot run stays, greyed, and says why. Delete is not red: the shared menu row never colours a verb.
   Verify and Always in Context are [Verification](verification.md)'s and [AI Knowledge](ai-knowledge.md)'s, and an
   Editor's.
 - A row shows its page's verified state at its right: a tick, or a Review Due pill; nothing for a page never

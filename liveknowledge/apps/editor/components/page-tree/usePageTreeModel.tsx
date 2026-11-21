@@ -17,7 +17,9 @@ import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
 import { useKnowledgeActions } from '@/components/knowledge/usePageKnowledge';
 import { pageKnowledgeStore } from '@/lib/knowledge/page-knowledge-store';
 import { pageTrust, trustMarks } from '@/lib/knowledge/page-trust';
-import { approvalMarks } from '@/lib/knowledge/approval-view';
+import { approvalActionsOf, approvalMarks, approvalOfFields } from '@/lib/knowledge/approval-view';
+import { useApprovalDoor } from '@/components/knowledge/approval/usePageApproval';
+import { askApproval } from '@/lib/knowledge/approval-asked';
 import { useRelativeNow } from '@/lib/relative-time';
 import type { PageTreeActions, PageTreeKnowledge, PageTreeProps } from './PageTree';
 import { selectPage } from './select-page';
@@ -142,6 +144,7 @@ export function usePageTreeModel(): PageTreeModel {
   const now = useRelativeNow();
   // The knowledgebase's Review Period: a change of it moves every row's tick or Due pill at once.
   const reviewEvery = useReviewEvery(documentId);
+  const approvalCaller = useApprovalDoor().caller;
   const knowledge = useMemo<PageTreeKnowledge>(() => {
     // Read for the memo's sake: a field set here moves the version, not the tab list.
     void knowledgeVersion;
@@ -158,8 +161,20 @@ export function usePageTreeModel(): PageTreeModel {
       canEditFields: knowledgeActions.rights.editFields,
       onVerify: knowledgeActions.verify,
       onSetContext: (id, on) => knowledgeActions.setFields(id, { context: on }, 'context'),
+      // Request Approval starts here, in the page's menu (owner 2026-11-21): the page opens with Page Health's
+      // request form showing.
+      canRequestApproval: (id) => {
+        const tab = tabs.find((t) => t.id === id);
+        if (!tab) return false;
+        const fields = pageKnowledgeStore.fieldsOf(tab) as { approval?: unknown } | undefined;
+        return approvalActionsOf(approvalOfFields(fields), approvalCaller).includes('request');
+      },
+      onRequestApproval: (id) => {
+        selectPage(chrome.get(), id);
+        askApproval(id);
+      },
     };
-  }, [tabs, now, reviewEvery, knowledgeVersion, knowledgeActions]);
+  }, [tabs, now, reviewEvery, knowledgeVersion, knowledgeActions, approvalCaller, chrome]);
 
   const onRenameKnowledgebase = useCallback(
     (next: string) => {

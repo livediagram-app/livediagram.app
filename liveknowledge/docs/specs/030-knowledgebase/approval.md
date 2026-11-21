@@ -46,11 +46,13 @@ every page. The route writes the field and the row in one transaction; a deleted
 
 ## Asking for approval
 
-- **Request Approval** is in the meta row after Verify, a quiet button the row's size (person icon with a tick), for
-  an Editor or a Participant with an account, on a page that is not Pending Approval. It asks first, in a popover:
-  "Request Approval?", "Signed-in members of this knowledgebase can approve or reject it. Approving also verifies
-  it.", then **Cancel** and **Request Approval**.
-- Page Health's Approval panel offers the same, one press.
+- **Request Approval** starts only from the page's menu in the sidebar (owner 2026-11-21), for an Editor or a
+  Participant with an account, on a page that is not Pending Approval. It opens the page with Page Health's Approval
+  section showing the ask: "Request Approval?", "Signed-in members of this knowledgebase can approve or reject it.
+  Approving also verifies it.", then **Cancel** and **Request Approval**.
+- **Until then nothing shows:** a page with no approval has no Approval section in Page Health and nothing in the
+  meta row.
+- **The panel's heading** carries its state glyph at its left; the lines under it take the panel's full width.
 - A page Rejected or Approved may be asked about again: the request replaces the record (**Request Again**).
 - **An agent** may ask too (decided): a token that may suggest or write, through the MCP's `request_approval`, the
   CLI's `liveknowledge approval <kb> <page>` (`--withdraw` takes it back) and `POST .../pages/<tab>/approval`. The pill and Page Health say "Requested
@@ -79,7 +81,7 @@ every page. The route writes the field and the row in one transaction; a deleted
 
 ## Where it shows
 
-- **The meta row:** the pill, before Request Approval. Its popover: who asked and when ("Requested by Priya Shah,
+- **The meta row:** the Pending or Rejected pill, nothing else. Its popover: who asked and when ("Requested by Priya Shah,
   3 hours ago"), and for a Rejected page who rejected it, when, and the note in a quote; then the actions the person
   may take.
 - **The page tree row:** a 6 px dot after the title, violet for Pending Approval and rose for Rejected, named

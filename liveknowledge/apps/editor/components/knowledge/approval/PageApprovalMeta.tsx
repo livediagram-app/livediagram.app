@@ -24,11 +24,12 @@ export type PageApprovalMetaProps = {
   onAct: (action: ApprovalAction, note?: string) => Promise<boolean>;
 };
 
-/** Whether the meta row draws anything for this approval. */
+/** Whether the meta row draws anything for this approval: a Pending or Rejected pill only. Asking starts from the
+ *  page's menu (owner 2026-11-21), so a page with none shows nothing here. */
 export const showsApprovalMeta = (
   approval: PageApproval | undefined,
-  actions: readonly ApprovalAction[],
-) => approvalMark(approval) !== undefined || actions.includes('request');
+  _actions: readonly ApprovalAction[],
+) => approvalMark(approval) !== undefined;
 
 export function PageApprovalMeta(props: PageApprovalMetaProps) {
   const { approval, actions } = props;

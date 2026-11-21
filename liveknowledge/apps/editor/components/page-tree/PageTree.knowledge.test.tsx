@@ -65,7 +65,11 @@ const openMenu = (name: string, title: string) => {
   fireEvent.pointerOver(row(name));
   fireEvent.click(within(row(name)).getByRole('button', { name: `Page Options for ${title}` }));
 };
-const menuItems = () => screen.getAllByRole('menuitem').map((el) => el.textContent?.trim() ?? '');
+// A toolbar button is named by its label alone; a row by its words.
+const menuItems = () =>
+  screen
+    .getAllByRole('menuitem')
+    .map((el) => el.getAttribute('aria-label') ?? el.textContent?.trim() ?? '');
 
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});

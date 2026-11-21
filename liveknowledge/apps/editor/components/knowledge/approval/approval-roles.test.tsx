@@ -68,7 +68,7 @@ describe('who may do what with a page’s approval', () => {
 describe('the meta row', () => {
   const draw = (approval: PageApproval | undefined, who: Who, onAct = vi.fn(async () => true)) => {
     const actions = approvalActionsOf(approval, callerOf(who));
-    render(
+    const drawn = render(
       <PageApprovalMeta
         approval={approval}
         actions={actions}
@@ -78,21 +78,34 @@ describe('the meta row', () => {
         onAct={onAct}
       />,
     );
-    return onAct;
+    return Object.assign(onAct, { container: drawn.container });
   };
 
-  it('asks before requesting approval, then requests it', async () => {
-    const onAct = draw(undefined, 'participant');
-    fireEvent.click(screen.getByRole('button', { name: 'Request Approval' }));
-    const pop = document.querySelector('[data-approval-popover]')!;
-    expect(pop.textContent).toContain('Request Approval?');
-    expect(pop.textContent).toContain('Approving also verifies it.');
-    const confirm = [...pop.querySelectorAll('button')].find(
+  it('draws nothing in the meta row nor the rail until asked from the page menu, then asks before requesting', async () => {
+    const { container } = draw(undefined, 'participant');
+    expect(container.innerHTML).toBe('');
+    const onAct = vi.fn(async () => true);
+    const view = (asked: boolean) => (
+      <PageHealthApprovalView
+        asked={asked}
+        approval={undefined}
+        actions={approvalActionsOf(undefined, callerOf('participant'))}
+        nameOf={nameOf}
+        self="user_asker"
+        now={NOW}
+        onAct={onAct}
+      />
+    );
+    const rail = render(view(false));
+    expect(rail.container.innerHTML).toBe('');
+    rail.rerender(view(true));
+    const panel = rail.container.querySelector('[data-health-approval]')!;
+    expect(panel.textContent).toContain('Request Approval?');
+    const confirm = [...panel.querySelectorAll('button')].find(
       (b) => b.textContent === 'Request Approval',
     )!;
     fireEvent.click(confirm);
     await waitFor(() => expect(onAct).toHaveBeenCalledWith('request', undefined));
-    await waitFor(() => expect(document.querySelector('[data-approval-popover]')).toBeNull());
   });
 
   it('shows the pending pill to a Viewer, with who asked and nothing to press', () => {

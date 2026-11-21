@@ -82,6 +82,9 @@ export type PageTreeKnowledge = {
   canEditFields: boolean;
   onVerify: (id: string) => void;
   onSetContext: (id: string, on: boolean) => void;
+  // Request Approval, from the page's menu (approval.md "Asking").
+  canRequestApproval?: (id: string) => boolean;
+  onRequestApproval?: (id: string) => void;
 };
 
 const rowOf = (target: EventTarget | null): HTMLElement | null =>
@@ -183,6 +186,8 @@ export function PageTree({
         return link?.onConnect(id);
       case 'verify':
         return know?.onVerify(id);
+      case 'approval':
+        return know?.onRequestApproval?.(id);
       case 'context':
         return know?.onSetContext(id, !know.inContext.has(id));
       case 'rename':

@@ -95,20 +95,24 @@ export function ApprovalPanel({
   const tooLong = note.trim().length > APPROVAL_NOTE_MAX;
   return (
     <div data-approval-panel={state} className="flex flex-col gap-3">
-      <div className="flex items-start gap-3">
-        <span
-          aria-hidden
-          className={`flex size-9 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ${RING[state]}`}
-        >
-          <StateGlyph approval={approval} />
-        </span>
-        <div className="min-w-0">
+      {/* The glyph beside the heading only, so the lines under it take the panel's whole width (owner 2026-11-21:
+          the Pending Approval panel took too much room). */}
+      <div>
+        <div className="flex items-center gap-2.5">
+          <span
+            aria-hidden
+            className={`flex size-8 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ${RING[state]}`}
+          >
+            <StateGlyph approval={approval} />
+          </span>
           <Heading
             id={titleId}
-            className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+            className="min-w-0 text-sm font-semibold text-slate-900 dark:text-slate-100"
           >
             {approvalHeading(approval)}
           </Heading>
+        </div>
+        <div className="mt-2 min-w-0">
           {approval ? (
             <p className="mt-0.5 text-[13px] leading-5 text-slate-600 dark:text-slate-400">
               {requestedLine(approval, nameOf, self, now)}
