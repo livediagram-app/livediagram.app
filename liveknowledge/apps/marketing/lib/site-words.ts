@@ -3,8 +3,7 @@
 // card and the share images' alt text build on, and the hero's headline. Kept in one place so they cannot drift
 // between the page, its metadata and its card.
 //
-// @liveknowledge/ui still carries the fork's words (SITE_TITLE, SITE_DESCRIPTION, SITE_PITCH), which the help
-// centre and the editor's share rail read; these belong there once that package is free to change.
+// @liveknowledge/ui/site carries the same title, description and pitch for the editor and its share rail.
 
 export const PITCH_LINE = 'A team knowledgebase, for people and for AI.';
 

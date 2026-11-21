@@ -19,14 +19,13 @@ export const SITE_ID = 'liveknowledge.app' as const;
 export const SITE_NAME = 'liveknowledge';
 
 // What liveknowledge is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
-// "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
-// (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
-// and the share rail build on. It names every kind of page a document is made of.
-export const SITE_TITLE = 'liveknowledge: Write, present and design on pages together, live';
+// "SEO and metadata"), kept here so they can't drift: the editor's title and description, and the one-line pitch the
+// share rail builds on. The same words as the marketing site's (apps/marketing/lib/site-words.ts).
+export const SITE_TITLE = 'liveknowledge: A team knowledgebase, for people and for AI';
 export const SITE_DESCRIPTION =
-  'A free, real-time editor for documents made of pages: articles, slide decks and infographics. Built for teams who write and present together.';
+  'An open-source team knowledgebase. Pages with owners and verified dates, cited answers on your own Claude or OpenAI key, and an MCP server your agents read.';
 // Lower case: it follows "liveknowledge: " or starts a sentence through sentencePitch.
-export const SITE_PITCH = 'a real-time editor for articles, slide decks and infographics';
+export const SITE_PITCH = 'a team knowledgebase, for people and for AI';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
 
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked

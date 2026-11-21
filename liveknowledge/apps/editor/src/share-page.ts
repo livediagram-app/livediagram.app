@@ -7,7 +7,7 @@ import { createSharePage } from '@liveworkspace/media';
 
 // What a named preview says under the document's name.
 export const SHARE_PITCH =
-  'Open it in liveknowledge: articles, slide decks and infographics, made together.';
+  'Open it in liveknowledge: a team knowledgebase, for people and for AI.';
 
 export const { isSharePagePath, sharePage } = createSharePage({
   app: 'liveknowledge',

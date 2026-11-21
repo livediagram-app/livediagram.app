@@ -9,7 +9,7 @@ export function SiteFooter() {
   return (
     <SharedFooter
       app={BRAND_APP}
-      tagline="Free articles, slide decks and infographics for teams who make them together."
+      tagline="A free, open-source team knowledgebase, for people and for AI."
       newLabel="New Knowledgebase"
       community={<CommunityFooterLink className={SITE_FOOTER_LINK} />}
       repoUrl={REPO_URL}
