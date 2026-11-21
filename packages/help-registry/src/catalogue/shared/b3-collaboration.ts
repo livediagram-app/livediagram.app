@@ -22,7 +22,7 @@ export const articles: Article[] = [
       'thread feedback reply resolve discussion note annotate mention reaction reactions react emoji thumbs up like heart hooray eyes laugh threads comment and',
     category: 'Collaboration',
     categorySlug: 'collaboration',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
+    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'liveknowledge'],
   },
   {
     slug: 'facilitator',
@@ -43,7 +43,20 @@ export const articles: Article[] = [
       'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus sound chime join leave arrive nudge poke ping attention desktop notification',
     category: 'Collaboration',
     categorySlug: 'collaboration',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
+    byApp: {
+      liveknowledge: {
+        description:
+          'See who is here in real time: who is on which page, what each person is working on, and agents at work.',
+      },
+    },
   },
   {
     slug: 'session-tools',
@@ -131,7 +144,14 @@ export const articles: Article[] = [
       'share link collaborate invite embed read only publish url send viewer participant editor create and copy turn off pass role legacy',
     category: 'Collaboration',
     categorySlug: 'collaboration',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'community',
@@ -142,7 +162,14 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'embeds',
@@ -153,7 +180,14 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'finding-community-documents',
@@ -165,8 +199,16 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
     byApp: {
+      liveknowledge: { title: 'Finding Knowledgebases in the Community' },
       livediagram: { title: 'Finding Canvases in the Community' },
       liveplanner: { title: 'Finding Plans in the Community' },
       livedocuments: { title: 'Finding Documents in the Community' },
@@ -192,7 +234,20 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
+    byApp: {
+      liveknowledge: {
+        title: 'Sharing One Page',
+        description: 'Scope a share link to one page; the rest stays private.',
+      },
+    },
   },
   {
     slug: 'request-approval',
@@ -203,7 +258,7 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
+    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'liveknowledge'],
   },
   {
     slug: 'share-link-expiry',
@@ -214,7 +269,14 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'share-passwords',
@@ -224,7 +286,14 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'snapshots',
@@ -234,7 +303,14 @@ export const articles: Article[] = [
       'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy history tools timeline take',
     category: 'Collaboration',
     categorySlug: 'collaboration',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'teams',
@@ -244,7 +320,14 @@ export const articles: Article[] = [
       'workspace organisation organization members invite group company document manage teams liveworkspace project',
     category: 'Collaboration',
     categorySlug: 'collaboration',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'audit-log',
@@ -256,7 +339,14 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'roles-and-invites',
@@ -267,7 +357,14 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'team-shared-documents',
@@ -277,8 +374,9 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
-    apps: ['livediagram', 'livedocuments', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livehuddle', 'liveknowledge'],
     byApp: {
+      liveknowledge: { title: 'Team Shared Knowledgebases' },
       livediagram: { title: 'Team Shared Canvases' },
       livedocuments: { title: 'Team Shared Documents' },
       livehuddle: { title: 'Team Shared Spaces' },

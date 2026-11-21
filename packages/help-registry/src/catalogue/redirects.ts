@@ -59,6 +59,17 @@ export const HELP_REDIRECTS: readonly HelpRedirect[] = [
   { from: 'canvas/links', to: 'canvas', apps: ['livedocuments'] },
   { from: 'canvas/notes', to: 'canvas', apps: ['livedocuments'] },
   { from: 'tabs/linking-tabs', to: 'tabs', apps: ['livedocuments'] },
+  // liveknowledge connects agents from its own article (knowledgebase/connecting-an-agent), its tools a Knowledgebase's.
+  {
+    from: 'account-and-data/connect-ai-mcp',
+    to: 'knowledgebase/connecting-an-agent',
+    apps: ['liveknowledge'],
+  },
+  {
+    from: 'account-and-data/connect-ai-mcp/ai-clients',
+    to: 'knowledgebase/connecting-an-agent',
+    apps: ['liveknowledge'],
+  },
   // liveworkspace.app's own help pages, which the one help centre replaced (liveworkspace/docs/specs/010-site/site.md
   // "Help"): the Explorer's guide (its landing, /help/explorer, and /help/explorer/folders keep their paths here) and
   // the Google Drive article.
