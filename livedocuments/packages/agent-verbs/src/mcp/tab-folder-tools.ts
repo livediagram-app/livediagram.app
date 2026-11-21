@@ -1,5 +1,5 @@
 // change_tabs, add_tab's `folder` and read_document's tab folders (docs/specs/015-api/mcp-server.md "Tab folders"):
-// the shared tool (@liveworkspace/agent-verbs/mcp/tab-folder-tools) in this product's words, and the shared run its
+// the shared tool (@liveworkspace/agent-verbs/mcp/tab-folder-tools) in livedocuments's words, and the shared run its
 // MCP calls (@liveworkspace/agent-verbs/tab-folders).
 import { createTabFolderTools } from '@liveworkspace/agent-verbs/mcp/tab-folder-tools';
 import type { ApiClient } from '@liveworkspace/api-client';
