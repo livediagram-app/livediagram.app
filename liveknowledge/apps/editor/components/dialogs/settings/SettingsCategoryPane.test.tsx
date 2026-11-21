@@ -29,29 +29,31 @@ function show(onChange = vi.fn(), category = PANELS) {
   return onChange;
 }
 
-// A whole desktop-only row (the Mouse section's Quick-Add on Hover): a phone has no hover, so the row is greyed and
-// inert there, with a note, rather than flipping to no visible effect.
+// A whole desktop-only row (Appearance's Button Labels): a phone always draws those buttons as icons, so the row is
+// greyed and inert there, with a note, rather than flipping to no visible effect.
 describe('SettingsCategoryPane desktop-only rows', () => {
-  const EDITOR = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
-  const hover = () => screen.getByRole<HTMLButtonElement>('switch', { name: /Quick-Add on Hover/ });
+  const APPEARANCE = SETTINGS_CATEGORIES.find((c) => c.id === 'appearance')!;
+  const labels = () => screen.getByRole<HTMLButtonElement>('switch', { name: /Button Labels/ });
 
-  it('greys out Quick-Add on Hover on a phone, says why, and ignores a tap', () => {
+  it('greys out Button Labels on a phone, says why, and ignores a tap', () => {
     mobile.value = true;
-    const onChange = show(vi.fn(), EDITOR);
-    expect(hover().disabled).toBe(true);
+    const onChange = show(vi.fn(), APPEARANCE);
+    expect(labels().disabled).toBe(true);
     expect(
-      screen.getAllByRole('note').some((n) => /A mouse setting/.test(n.textContent ?? '')),
+      screen
+        .getAllByRole('note')
+        .some((n) => /Phones always show these buttons as icons/.test(n.textContent ?? '')),
     ).toBe(true);
-    fireEvent.click(hover());
+    fireEvent.click(labels());
     expect(onChange).not.toHaveBeenCalled();
   });
 
   it('leaves it working on desktop, with no note', () => {
-    const onChange = show(vi.fn(), EDITOR);
-    expect(hover().disabled).toBe(false);
-    const was = hover().getAttribute('aria-checked') === 'true';
-    fireEvent.click(hover());
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ quickAddOnHover: !was }));
+    const onChange = show(vi.fn(), APPEARANCE);
+    expect(labels().disabled).toBe(false);
+    const was = labels().getAttribute('aria-checked') === 'true';
+    fireEvent.click(labels());
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ dockButtonNames: !was }));
   });
 });
 

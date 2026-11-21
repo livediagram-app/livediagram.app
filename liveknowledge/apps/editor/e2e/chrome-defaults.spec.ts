@@ -72,7 +72,9 @@ test.describe('Retired power user keys', () => {
     pageErrors,
   }) => {
     // What a person who had Power user mode on carries: the mode, its baseline, Minimal chrome, the offer's latch,
-    // and the preset's values (alignment guides, auto-attach arrows, tours seen).
+    // and the preset's values (alignment guides, auto-attach arrows, button labels, tours seen). liveknowledge shows
+    // no canvas rows (docs/specs/007-editor/user-preferences.md "What liveknowledge offers"), so Button Labels
+    // stands in for them.
     await page.addInitScript((key) => {
       if (sessionStorage.getItem('seeded')) return;
       sessionStorage.setItem('seeded', '1');
@@ -90,6 +92,7 @@ test.describe('Retired power user keys', () => {
           },
           alignmentGuides: true,
           autoRebindArrows: false,
+          dockButtonNames: false,
           pagesTourSeen: true,
           elementToursSeen: true,
         }),
@@ -105,14 +108,10 @@ test.describe('Retired power user keys', () => {
 
     // Settings: no Power User heading or rows; the preset's values stand.
     await page.getByRole('button', { name: 'Application settings' }).click();
-    await dialog(page).getByRole('button', { name: 'Editor', exact: true }).click();
+    await dialog(page).getByRole('button', { name: 'Appearance', exact: true }).click();
     await expect(dialog(page).getByText('Power User', { exact: true })).toHaveCount(0);
     await expect(dialog(page).getByRole('switch', { name: 'Power User Mode' })).toHaveCount(0);
-    await expect(dialog(page).getByRole('switch', { name: 'Alignment Guides' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
-    await expect(dialog(page).getByRole('switch', { name: 'Auto-Attach Arrows' })).toHaveAttribute(
+    await expect(dialog(page).getByRole('switch', { name: 'Button Labels' })).toHaveAttribute(
       'aria-checked',
       'false',
     );

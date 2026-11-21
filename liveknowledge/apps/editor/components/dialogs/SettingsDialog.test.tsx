@@ -63,15 +63,15 @@ describe('SettingsDialog', () => {
     renderDialog({
       powerUserMode: true,
       minimalChrome: true,
-      alignmentGuides: false,
+      dockButtonNames: false,
     } as UserPreferences);
-    fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
     expect(screen.queryByText('Power User')).toBeNull();
     expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
     expect(screen.queryByRole('switch', { name: 'Minimal Chrome' })).toBeNull();
-    expect(
-      screen.getByRole('switch', { name: /Alignment Guides/ }).getAttribute('aria-checked'),
-    ).toBe('false');
+    expect(screen.getByRole('switch', { name: /Button Labels/ }).getAttribute('aria-checked')).toBe(
+      'false',
+    );
   });
 
   it('opens on desktop with the rail and the first category already showing', () => {
@@ -104,15 +104,15 @@ describe('SettingsDialog', () => {
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
     expect(screen.getByRole('switch', { name: 'Send Anonymous Usage Events' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Editor' })).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: 'Button Labels' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Appearance' })).toBeTruthy();
   });
 
   it('opens on a phone at the root list, with no pane showing', () => {
     setViewport(true);
     renderDialog();
-    expect(screen.getByRole('button', { name: 'Editor' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Appearance' })).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: 'Button Labels' })).toBeNull();
   });
 
   it('opens on a named category when one is asked for', () => {
@@ -132,14 +132,14 @@ describe('SettingsDialog', () => {
   it('pushes a pane on a phone and comes back to the root list', () => {
     setViewport(true);
     renderDialog();
-    fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    expect(screen.getByRole('switch', { name: 'Quick-Add on Hover' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
+    expect(screen.getByRole('switch', { name: 'Button Labels' })).toBeTruthy();
     // The rail is gone: a phone shows one screen at a time.
     expect(screen.queryByRole('button', { name: 'Privacy' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /^Settings./ }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Button Labels' })).toBeNull();
   });
 
   it('shows each panel as a section of the Panels pane on a phone, with no way down', () => {
@@ -147,9 +147,9 @@ describe('SettingsDialog', () => {
     setViewport(true);
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
-    for (const name of ['Quick Style', 'Collaborate']) {
-      expect(screen.getByRole('heading', { name })).toBeTruthy();
-    }
+    expect(screen.getByRole('heading', { name: 'Collaborate' })).toBeTruthy();
+    // A knowledgebase page has no Quick Style bar to switch (docs/specs/007-editor/user-preferences.md).
+    expect(screen.queryByRole('heading', { name: 'Quick Style' })).toBeNull();
     // The Layers panel retired (docs/specs/006-document/layers.md "Retired: the Layers panel"), and its section with it.
     expect(screen.queryByRole('heading', { name: 'Layers' })).toBeNull();
     expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
@@ -160,9 +160,9 @@ describe('SettingsDialog', () => {
   it('writes the flipped preference through the catalogue', () => {
     setViewport(false);
     const { onChange } = renderDialog();
-    fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    fireEvent.click(screen.getByRole('switch', { name: 'Quick-Add on Hover' }));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ quickAddOnHover: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Button Labels' }));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ dockButtonNames: false }));
   });
 
   describe('reopening where it was left', () => {
@@ -185,10 +185,10 @@ describe('SettingsDialog', () => {
           settings={{}}
           onChange={() => {}}
           onClose={() => {}}
-          initialCategoryId="editor"
+          initialCategoryId="appearance"
         />,
       );
-      expect(screen.getByRole('switch', { name: 'Quick-Add on Hover' })).toBeTruthy();
+      expect(screen.getByRole('switch', { name: 'Button Labels' })).toBeTruthy();
     });
 
     it('reopens a phone on the pushed pane it was closed on', () => {
@@ -259,11 +259,11 @@ describe('SettingsDialog', () => {
   it('describes each switch with its own footnote, for screen readers too', () => {
     setViewport(false);
     renderDialog();
-    fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    const sw = screen.getByRole('switch', { name: 'Alignment Guides' });
+    fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
+    const sw = screen.getByRole('switch', { name: 'Button Labels' });
     const describedBy = sw.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    expect(document.getElementById(describedBy!)?.textContent).toMatch(/snap lines/i);
+    expect(document.getElementById(describedBy!)?.textContent).toMatch(/names the buttons/i);
   });
 });
 

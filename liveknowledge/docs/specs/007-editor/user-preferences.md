@@ -589,11 +589,9 @@ and the dialog stays as the one complete, browsable index of them.
   only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec). **Editor** keeps Pages mode's own setting (Contents) in a **Pages** section of its own rather than a
-  sub-category, after the settings that act on the whole canvas (quick-add on hover, alignment guides, auto-attach
-  arrows, middle-mouse pan). (Pages was once the sub-category Editor › Pages; its old ids, `pages` and
-  `liveknowledge.app:pages`, are aliases of Editor, so a remembered category or a `?settings=pages` link lands on
-  Editor.) **Presenting** is a top-level category with its own tile (a white screen with a play mark on rose), not a
+  spec). liveknowledge has **no Editor category** (see **What liveknowledge offers** below): every row it held acted on
+  a free canvas. Its old ids, `editor` and `pages` (and `liveknowledge.app:pages`), are aliases of **Appearance**, the
+  first category, so a remembered category or a `?settings=editor` link still opens a pane. **Presenting** is a top-level category with its own tile (a white screen with a play mark on rose), not a
   sub-category: presenting is its own activity, not a mode's tweak. A category with no rows is never shown. **Panels** has none either: each panel is a section of it, and the old sub-category ids (`layers`, `quickStyle`, `map`, `collaborate`) are aliases of
   Panels, so `?settings=map` still lands there (and `?settings=layers`, though Layers has no section since its panel
   retired). Only **Account** holds **Notifications** and
@@ -614,11 +612,10 @@ and the dialog stays as the one complete, browsable index of them.
   under Account (id `data`) holding one stand-in row, "Sign in to download your data." with the **Sign In** link, as
   for API Tokens. A workbench has neither.
 
-  Panels holds Panel Opacity, then a section per panel,
-  Quick Style, Map, then Collaborate. Each section opens with that panel's **Enable
-  switch** ("Enable Map",
-  "Enable Collaborate Panel", "Enable Quick Style Bar"; see the panel
-  switches in the data model). The panel's other rows nest beneath the
+  Panels holds Panel Opacity, then the **Collaborate** section with Hide Cursors alone. In the other editors each
+  panel's section opens with that panel's **Enable switch** ("Enable Map", "Enable Collaborate Panel", "Enable Quick
+  Style Bar"); liveknowledge offers none of them (see **What liveknowledge offers** below), and both panels stay on,
+  their default. The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on: a setting for a
   panel you have turned off has nothing to act on. The Map's switch keeps its stored key
   (`showMinimap`) and its telemetry tokens, only its label changed. A parent's sub-categories follow it directly in the catalogue. In the
@@ -709,8 +706,8 @@ and the dialog stays as the one complete, browsable index of them.
   applies on a desktop. The Map's rows (Enable Map, Dim Outside the View,
   Map Size) are desktop only: a phone never draws the Map
   ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
-  and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
-  Pan): a phone has no hover and no middle button.
+  and read as broken. So is Appearance's Button Labels: a phone always draws those buttons as icons. (liveknowledge has
+  no Mouse section: Quick-Add on Hover and Middle-Mouse Pan are not offered.)
 
   **Getting Started** is a category of its own: **Pages Tours** (over **Slides Tour**, **Infographic Tour** and **Article
   Tour**), with a line saying where it runs and a **Learn More** to its article, under
@@ -863,6 +860,33 @@ and the dialog stays as the one complete, browsable index of them.
   always respected and this only adds a user-forced override.
 
 - **Per-tool surfaces**: none.
+
+### What liveknowledge offers
+
+A knowledgebase page is writing, not a free canvas ([The page surface](../030-knowledgebase/page-surface.md)), so
+liveknowledge's Settings (`apps/editor/components/dialogs/settings/settings-catalogue.ts`, and its copy on
+liveworkspace.app, `packages/settings/src/catalogues/liveknowledge.ts`) offer only what acts on its pages, the page
+tree, comments, Ask, AI Knowledge and the account:
+
+- **Appearance:** Theme, Button Labels, UI Scale and its Panel, Toolbar and Corner Buttons parts.
+- **Keyboard:** Keyboard Shortcuts and All Shortcuts.
+- **Panels:** Panel Opacity, and Collaborate's Hide Cursors.
+- **Accessibility:** Reduce Motion.
+- **Getting Started:** Show Me, the element tours. They stay: a drawing zone's Concepts and charts offer them from the
+  footer's Get Started button.
+- **Explorer**, **Account** (with Notifications, API Tokens and Your Data) and **Privacy**.
+
+**Not offered** (owner, 2026-11-21: canvas-only rows "do nothing visible on a knowledgebase page"):
+
+- The whole **Editor** category: **Alignment Guides**, **Auto-Attach Arrows**, **Element Indicators**, **Quick-Add on
+  Hover** (and Middle-Mouse Pan, cut earlier). They act on shapes and arrows moved about a free canvas.
+- **Panels › Quick Style › Enable Quick Style Bar** and **Panels › Collaborate › Enable Collaborate Panel**: switches for
+  canvas panels a page does not lean on.
+- The Map's rows, Presenting and the Pages tours ([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md)).
+
+Their preference keys stay in `UserPreferences` and the code that reads them is unchanged: a stored value is kept,
+and with no row to change it each one keeps its default (alignment guides and auto-attach arrows on, quick-add on
+click, both panels on), which is what a drawing zone uses. Their help article links went with the rows.
 
 ## Read / write helpers
 

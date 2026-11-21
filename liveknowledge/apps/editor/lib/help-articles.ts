@@ -26,13 +26,10 @@ export const HELP_ARTICLES = {
   // The Community's own help map holds the path (the public sites link it too).
   community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
-  autoAttachArrows: 'knowledgebase/writing-on-a-page',
   // The embed's article is linked from the link picker, when it is restricted to a URL
   // (docs/specs/009-elements/embed-providers.md).
   embedElements: 'knowledgebase/embedding-from-other-apps',
-  alignmentGuides: 'knowledgebase/writing-on-a-page',
   panelOpacity: 'knowledgebase/writing-on-a-page',
-  quickAddOnHover: 'knowledgebase/writing-on-a-page',
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
@@ -137,25 +134,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Sharing a knowledgebase publicly, and how people find and copy it.',
   },
 
-  autoAttachArrows: {
-    title: 'Learn about auto-attach arrows',
-    description: 'How arrows re-pin to shapes as they move.',
-  },
   embedElements: {
     title: 'Learn about embeds',
     description: 'Which services can be embedded, and how they load.',
   },
-  alignmentGuides: {
-    title: 'Learn about alignment guides',
-    description: 'How snap lines help you line elements up.',
-  },
   panelOpacity: {
     title: 'Learn about panel opacity',
     description: 'Make the panels translucent so the canvas shows through.',
-  },
-  quickAddOnHover: {
-    title: 'Learn about quick-add on hover',
-    description: 'Open the element + menu by hovering instead of clicking.',
   },
   laser: {
     title: 'Learn about the Laser',

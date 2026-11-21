@@ -10,12 +10,7 @@ import type {
   SettingsIconId,
 } from '@liveworkspace/workbench/components/dialogs/settings/settings-icons';
 import type { TelemetryCategory } from '@liveknowledge/api-schema';
-import {
-  autoRebindArrowsEnabled,
-  panelEnabled,
-  type PanelSwitch,
-  type UserPreferences,
-} from '@/lib/user-preferences';
+import type { UserPreferences } from '@/lib/user-preferences';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -23,11 +18,6 @@ import {
   offerElementTourAgain,
   type ElementTourKind,
 } from '@/lib/element-tours';
-import {
-  readElementIndicatorStyle,
-  withElementIndicatorStyle,
-  type ElementIndicatorStyle,
-} from '@liveworkspace/workbench/lib/element-indicator-style';
 import {
   UI_SCALE_MAX,
   UI_SCALE_MIN,
@@ -322,27 +312,6 @@ function uiScalePartRow(
   };
 }
 
-// The Mouse section's row answers a hover, which a phone has none of, so it is inert there and says so.
-const MOUSE_DESKTOP_ONLY =
-  'A mouse setting, so it has no effect on a phone. Your choice still applies on a larger screen.';
-
-// The panel switches (docs/specs/007-editor/user-preferences.md), each on
-// unless stored `false`. One row per Panels sub-category, first in its pane,
-// with that panel's other rows nested beneath it (`parent`), so they are
-// offered only while it is on (see `visibleCategories`).
-function panelSwitch(
-  key: PanelSwitch,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'keywords' | 'description' | 'event' | 'section'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key,
-    ...row,
-    read: (p) => panelEnabled(p, key),
-    write: (p, v) => ({ ...p, [key]: v }),
-  };
-}
-
 // A tour's switch (docs/specs/007-editor/user-preferences.md "Getting Started"). INVERTED against its stored
 // preference: the switch asks "offer me this tour?", the preference records "already seen". The
 // telemetry tokens still track the PREFERENCE, not the switch, so each dashboard series keeps
@@ -406,85 +375,17 @@ function tourTracksSwitch(
 type TourSeenKey = 'pagesTourSeen' | 'elementToursSeen';
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
-  {
-    id: 'editor',
-    label: 'Editor',
-    // Pages was its own sub-category (Editor › Pages) until its row became Editor's Pages section: its old id still
-    // lands here (docs/specs/007-editor/user-preferences.md).
-    aliases: ['pages'],
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'alignmentGuides',
-        keywords: 'snap lines smart guides align',
-        section: 'Canvas',
-        illustration: 'alignmentGuides',
-        label: 'Alignment Guides',
-        description:
-          'Snap lines while you move or resize, so elements line up with their neighbours.',
-        helpArticle: 'alignmentGuides',
-        read: (p) => p.alignmentGuides !== false,
-        write: (p, v) => ({ ...p, alignmentGuides: v }),
-        event: { category: 'UI', on: 'AlignmentGuidesOn', off: 'AlignmentGuidesOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'autoRebindArrows',
-        keywords: 'connector reattach sticky arrows connections',
-        section: 'Canvas',
-        label: 'Auto-Attach Arrows',
-        description:
-          'After a move, an arrow that cuts through its shape reattaches to the side facing its other end.',
-        helpArticle: 'autoAttachArrows',
-        // On by default (docs/specs/007-editor/user-preferences.md); the editor gates the rebind on this
-        // same helper, so the switch and the behaviour cannot disagree.
-        read: autoRebindArrowsEnabled,
-        write: (p, v) => ({ ...p, autoRebindArrows: v }),
-        event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
-      },
-      {
-        // docs/specs/008-canvas/element-indicators.md: how an element shows its action and
-        // comments (links and notes are retired).
-        kind: 'choice',
-        key: 'elementIndicatorStyle',
-        keywords:
-          'badges icons note action comment link markers indicators top corner footer metadata chip hide off',
-        section: 'Canvas',
-        label: 'Element Indicators',
-        description:
-          'How an element shows it has comments, an action or other markers: quiet icons at its top, a labelled footer, or nothing.',
-        options: [
-          { id: 'top', label: 'Top' },
-          { id: 'footer', label: 'Footer' },
-          { id: 'off', label: 'Off' },
-        ],
-        read: readElementIndicatorStyle,
-        write: (p, v) => withElementIndicatorStyle(p, v as ElementIndicatorStyle),
-        event: { category: 'UI', changed: 'ElementIndicators' },
-      },
-      {
-        kind: 'toggle',
-        key: 'quickAddOnHover',
-        keywords: 'plus menu hover add shortcut',
-        section: 'Mouse',
-        desktopOnly: MOUSE_DESKTOP_ONLY,
-        label: 'Quick-Add on Hover',
-        description:
-          "Opens the selected element's “+” menu as soon as you hover it, instead of on click.",
-        helpArticle: 'quickAddOnHover',
-        read: (p) => p.quickAddOnHover === true,
-        write: (p, v) => ({ ...p, quickAddOnHover: v }),
-        event: { category: 'UI', on: 'QuickAddHoverOn', off: 'QuickAddHoverOff' },
-      },
-      // No Middle-Mouse Pan row: a knowledgebase page does not pan (docs/specs/030-knowledgebase/page-surface.md
-      // "No zoom and no panning"); the middle button is the browser's.
-    ],
-  },
+  // No Editor category: its rows (Alignment Guides, Auto-Attach Arrows, Element Indicators, Quick-Add on Hover,
+  // Middle-Mouse Pan) act on a free canvas's shapes and arrows, and a knowledgebase page is writing
+  // (docs/specs/007-editor/user-preferences.md "What liveknowledge offers"). Their preferences keep their defaults.
   // No Presenting category and no Contents row: liveknowledge has no slides and no row of paper pages
   // (docs/specs/002-project-scope/not-in-liveknowledge.md).
   {
     id: 'appearance',
     label: 'Appearance',
+    // The retired Editor category's ids (and Pages', folded into it before) land here, the first category, so a
+    // remembered category or a `?settings=editor` link still opens a pane.
+    aliases: ['editor', 'pages'],
     rows: [
       {
         kind: 'appearance',
@@ -601,24 +502,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, panelOpacity: v }),
         event: { category: 'UI', changed: 'PanelOpacity' },
       },
-      panelSwitch('quickStylePanelEnabled', {
-        section: 'Quick Style',
-        label: 'Enable Quick Style Bar',
-        keywords:
-          'quick style bar colour color stroke fill width panel toolbar selection enable hide show turn off',
-        description:
-          "The most-used colours, widths and alignments beside the page of a selected shape or arrow. Off, they are all in the element's menu.",
-        event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
-      }),
-      // No Map rows: liveknowledge has no Map (page-surface.md "No zoom and no panning").
-      panelSwitch('collaboratePanelEnabled', {
-        section: 'Collaborate',
-        label: 'Enable Collaborate Panel',
-        keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
-        description:
-          "Lists the page's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
-        event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
-      }),
+      // No Quick Style or Collaborate panel switches, and no Map rows: a knowledgebase page has no free canvas for
+      // those panels to serve (user-preferences.md "What liveknowledge offers"); both panels stay on, their default.
       {
         section: 'Collaborate',
         kind: 'hideCursors',

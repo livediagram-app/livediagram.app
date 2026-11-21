@@ -3,7 +3,7 @@ import { HELP_ARTICLES } from '@/lib/help-articles';
 import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
 import { TELEMETRY_TYPE_PATTERN } from '@liveknowledge/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
-import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
+import type { UserPreferences } from '@/lib/user-preferences';
 
 const ALL_ROWS = SETTINGS_CATEGORIES.flatMap((c) => c.rows);
 const TOGGLES = ALL_ROWS.filter((r) => r.kind === 'toggle');
@@ -28,13 +28,21 @@ function tokensOf(row: SettingsRowSpec): string[] {
 }
 
 describe('settings catalogue', () => {
-  it('shows Auto-Attach Arrows in the state the editor actually runs', () => {
-    // A fresh profile has the feature OFF; the switch has to say so, or the
-    // first click flips a switch that looked on to the off it already was.
-    const row = TOGGLES.find((r) => r.key === 'autoRebindArrows')!;
-    for (const prefs of [{}, { autoRebindArrows: true }, { autoRebindArrows: false }]) {
-      expect(row.read(prefs as UserPreferences)).toBe(autoRebindArrowsEnabled(prefs));
+  // A knowledgebase page is writing, so Settings offers none of a free canvas's rows
+  // (docs/specs/007-editor/user-preferences.md "What liveknowledge offers").
+  it('offers no canvas-only row or category', () => {
+    const keys = ALL_ROWS.map((r) => r.key);
+    for (const key of [
+      'alignmentGuides',
+      'autoRebindArrows',
+      'elementIndicatorStyle',
+      'quickAddOnHover',
+      'quickStylePanelEnabled',
+      'collaboratePanelEnabled',
+    ]) {
+      expect(keys, key).not.toContain(key);
     }
+    expect(SETTINGS_CATEGORIES.map((c) => c.id)).not.toContain('editor');
   });
 
   it('round-trips every toggle through read/write in both directions', () => {
@@ -132,15 +140,6 @@ describe('settings catalogue', () => {
     );
   });
 
-  // A phone has no hover: the Mouse section's row is inert there.
-  it('makes the Mouse section desktop only', () => {
-    const rows = SETTINGS_CATEGORIES.flatMap((c) => c.rows).filter(
-      (r) => 'section' in r && r.section === 'Mouse',
-    );
-    expect(rows.map((r) => r.key)).toEqual(['quickAddOnHover']);
-    for (const row of rows) expect(row.desktopOnly).toMatch(/A mouse setting/);
-  });
-
   it('offers Button Labels in Appearance, on by default and desktop only', () => {
     const appearance = SETTINGS_CATEGORIES.find((c) => c.id === 'appearance')!;
     const row = appearance.rows.find((r) => r.key === 'dockButtonNames');
@@ -179,7 +178,7 @@ describe('settings catalogue', () => {
   });
 
   it('writes only its own key, so one switch never moves another', () => {
-    const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
+    const before: UserPreferences = { reduceMotion: true, telemetryEnabled: false };
     // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
     const own: Record<string, string[]> = {
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
@@ -254,7 +253,7 @@ describe('settings catalogue', () => {
     for (const hidden of ['account', 'notifications', 'tokens']) {
       expect(ids).not.toContain(hidden);
     }
-    expect(ids).toContain('editor');
+    expect(ids).toContain('appearance');
     const appearance = categories.find((c) => c.id === 'appearance')!;
     expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(false);
     expect(appearance.rows.length).toBeGreaterThan(0);
@@ -336,34 +335,18 @@ describe('settings catalogue', () => {
   });
 });
 
-// Panels and Account hold sub-categories; Editor holds none (docs/specs/007-editor/user-preferences.md).
+// Account holds sub-categories; Panels holds sections (docs/specs/007-editor/user-preferences.md).
 describe('settings sub-categories', () => {
-  it('files each panel as a section of Panels, after Panel Opacity', () => {
+  it('keeps Panel Opacity, then Collaborate with Hide Cursors alone, in Panels', () => {
     expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels')).toEqual([]);
     const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
-    expect(panels.rows[0]!.key).toBe('panelOpacity');
-    expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual([
-      'Quick Style',
-      'Collaborate',
+    expect(panels.rows.map((r) => [r.key, r.section ?? null])).toEqual([
+      ['panelOpacity', null],
+      ['hideCursors', 'Collaborate'],
     ]);
     // Their old sub-category ids still land on Panels, the retired Layers panel's too
     // (docs/specs/006-document/layers.md "Retired: the Layers panel").
     expect(panels.aliases).toEqual(['layers', 'quickStyle', 'map', 'collaborate']);
-  });
-
-  it('opens every panel section with its Enable switch, on by default', () => {
-    const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
-    const switches: Record<string, [string, string]> = {
-      'Quick Style': ['quickStylePanelEnabled', 'Enable Quick Style Bar'],
-      Collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
-    };
-    for (const [section, [key, label]] of Object.entries(switches)) {
-      const row = panels.rows.find((r) => r.section === section)!;
-      expect([row.key, row.label]).toEqual([key, label]);
-      if (row.kind !== 'toggle') throw new Error(`${key} is not a toggle`);
-      expect(row.read({})).toBe(true);
-      expect(row.write({}, false)).toEqual({ [key]: false });
-    }
   });
 
   // A row nested under a switch (`parent`) is offered only while that switch is on: Show Me's rows under theirs.

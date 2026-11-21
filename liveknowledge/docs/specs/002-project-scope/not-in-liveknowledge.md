@@ -90,8 +90,10 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
   `NewPageBackgroundPanel.tsx`, `TabStylePreview.tsx`, `ArticleStyleRow.tsx`, `lib/tab-style-opener.ts`,
   `lib/tab-looks.ts`, `lib/new-page-background.ts`, `components/canvas/ThemeStrip.tsx`,
   `components/tour/TabStyleTour.tsx`), the Pages tours (`components/tour/PageTour.tsx`, `article-tour-steps.ts`,
-  `lib/pages-tour.ts`), and in Settings the Map rows (`showMinimap`, `mapDimOutside`, `mapSize`), Middle-Mouse Pan
-  and the Pages tours' rows, with their copy on liveworkspace.app's settings page and their help articles.
+  `lib/pages-tour.ts`), and in Settings the Map rows (`showMinimap`, `mapDimOutside`, `mapSize`), Middle-Mouse Pan,
+  the Pages tours' rows, the Editor category's canvas rows (Alignment Guides, Auto-Attach Arrows, Element Indicators,
+  Quick-Add on Hover) and the Quick Style and Collaborate panel switches
+  ([User preferences](../007-editor/user-preferences.md) "What liveknowledge offers"), with their copy on liveworkspace.app's settings page and their help articles.
 - **Editor, the knowledgebase's own search dialog:** deleted (`components/knowledge/SearchDialog.tsx`); the
   universal search panel's first group is This Knowledgebase ([Search and Ask](../030-knowledgebase/search-and-ask.md)
   "Search"). Still offered by the panel and not a knowledgebase's: its Pages and Elements groups over the open

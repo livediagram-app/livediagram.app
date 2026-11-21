@@ -80,7 +80,7 @@ test('Settings reopens on the last category and row, across a resize', async ({
   await dismissQuickTour(page);
 
   await openSettings(page);
-  await dialog(page).getByRole('button', { name: 'Editor', exact: true }).click();
+  await dialog(page).getByRole('button', { name: 'Appearance', exact: true }).click();
   const scroller = dialog(page)
     .locator('[data-settings-row]')
     .first()
@@ -107,7 +107,7 @@ test('Settings reopens on the last category and row, across a resize', async ({
   // range to put the row back where it was rather than clamping at the end.
   await page.setViewportSize({ width: 390, height: 560 });
   await openSettings(page);
-  await expect(dialog(page).getByRole('switch', { name: 'Quick-Add on Hover' })).toBeVisible();
+  await expect(dialog(page).getByRole('switch', { name: 'Button Labels' })).toBeVisible();
   await expect(async () => {
     const back = await topRow(scroller);
     expect(back.key).toBe(leftAt.key);
@@ -124,9 +124,9 @@ test('Settings reopens on the last category and row, across a resize', async ({
 // anchor on the first frames of that (a ResizeObserver fires on observe).
 // Rects are shrunk by the scale but scrollTop is not, so an unscaled measure
 // lands short by 4% of how far the row's top sits above the pane: several
-// pixels deep inside a tall row, such as Editor's Alignment Guides row (with its drawing), 160px
+// pixels deep inside a tall row, such as Appearance's Theme row (with its drawings), 160px
 // into it: deep, yet still the top row (it is about 200px tall). A window short enough that the
-// pane holds more below the row than that: Editor's last rows, not the window, set how far it scrolls.
+// pane holds more below the row than that: Appearance's last rows, not the window, set how far it scrolls.
 test('Settings reopens deep inside a tall row without drifting', async ({ page, pageErrors }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 1280, height: 640 });

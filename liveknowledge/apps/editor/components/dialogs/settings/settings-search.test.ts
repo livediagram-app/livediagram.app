@@ -22,7 +22,7 @@ describe('settings search', () => {
   });
 
   it('finds a setting by its label', () => {
-    expect(keysFor('alignment guides')).toContain('alignmentGuides');
+    expect(keysFor('button labels')).toContain('dockButtonNames');
   });
 
   it('finds a setting by a synonym it never displays', () => {
@@ -37,7 +37,7 @@ describe('settings search', () => {
   it('finds a setting by its category or section name', () => {
     // "panels" appears in no Collaborate row's own label: the category name finds them.
     const panelKeys = keysFor('panels');
-    expect(panelKeys).toContain('collaboratePanelEnabled');
+    expect(panelKeys).toContain('hideCursors');
     expect(panelKeys).toContain('panelOpacity');
   });
 
