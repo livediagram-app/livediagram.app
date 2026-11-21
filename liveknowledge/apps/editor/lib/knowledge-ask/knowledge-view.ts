@@ -61,9 +61,11 @@ export function currentKnowledgeView(): KnowledgeView {
 export function showKnowledgeView(view: KnowledgeView, opts: { replace?: boolean } = {}): void {
   if (typeof window === 'undefined' || view === currentKnowledgeView()) return;
   const href = knowledgeViewHref(window.location.href, view);
-  // The router's own state is kept, so its Back and Forward still know the page.
-  if (opts.replace) window.history.replaceState(window.history.state, '', href);
-  else window.history.pushState(window.history.state, '', href);
+  // Null, never history.state: Next skips its own state handed back (so useSearchParams keeps the old address),
+  // and given null it copies that state across itself, so its Back and Forward still know the page
+  // (packages/next-config history-state.test.js).
+  if (opts.replace) window.history.replaceState(null, '', href);
+  else window.history.pushState(null, '', href);
   notify();
 }
 
