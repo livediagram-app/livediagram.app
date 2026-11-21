@@ -37,14 +37,21 @@ import {
   type QuestionRow,
 } from './questions';
 import {
+  MOST_READ_PAGES,
+  READS_TREND_DAYS,
   agentName,
   agentReads,
   countAgentReads,
+  countDailyReads,
+  countMostRead,
   countPageReads,
+  dailyReads,
   pageReads,
   pruneReads,
   recordRead,
   type AgentReadsRow,
+  type DailyReadsRow,
+  type MostReadRow,
   type PageReadsRow,
 } from './reads';
 import {
@@ -111,6 +118,68 @@ describe('page reads', () => {
       { agent: 'CLI', readsThisWeek: 11, topPages: ['tab-2', 'tab-4', 'tab-1'] },
       { agent: 'Coding Agent', readsThisWeek: 0, topPages: [] },
     ]);
+  });
+
+  it('answers the last 14 days by day, people and agents apart, a quiet day at nought', () => {
+    const db = knowledgeDb();
+    const agent = { kind: 'agent', name: 'CLI' } as const;
+    db.run([
+      recordRead('tab-1', { kind: 'person' }, NOW),
+      recordRead('tab-2', { kind: 'person' }, NOW),
+      recordRead('tab-1', agent, NOW),
+      recordRead('tab-1', agent, NOW - 2 * DAY),
+      recordRead('tab-1', { kind: 'person' }, NOW - 13 * DAY),
+      // Outside the window.
+      recordRead('tab-1', { kind: 'person' }, NOW - 14 * DAY),
+    ]);
+    const days = dailyReads(db.all<DailyReadsRow>(countDailyReads(NOW)), NOW);
+    expect(days).toHaveLength(READS_TREND_DAYS);
+    expect(days[0]).toEqual({ day: dayOf(NOW - 13 * DAY), people: 1, agents: 0 });
+    expect(days[11]).toEqual({ day: dayOf(NOW - 2 * DAY), people: 0, agents: 1 });
+    expect(days[12]).toEqual({ day: dayOf(NOW - DAY), people: 0, agents: 0 });
+    expect(days[13]).toEqual({ day: dayOf(NOW), people: 2, agents: 1 });
+    // A row of a day outside the window, or of a reader kind not known, is left out.
+    expect(
+      dailyReads(
+        [
+          { day: '2020-01-01', readerKind: 'person', reads: 4 },
+          { day: dayOf(NOW), readerKind: 'robot', reads: 4 },
+        ],
+        NOW,
+      ).every((d) => d.people === 0 && d.agents === 0),
+    ).toBe(true);
+  });
+
+  it('names the pages read most this week, most first, people and agents apart', () => {
+    const db = knowledgeDb();
+    const read = (tab: string, times: number, kind: 'person' | 'agent', at = NOW) =>
+      db.run(
+        Array.from({ length: times }, () =>
+          recordRead(tab, kind === 'person' ? { kind } : { kind, name: 'CLI' }, at),
+        ),
+      );
+    read('tab-1', 2, 'person');
+    read('tab-1', 3, 'agent');
+    read('tab-2', 6, 'person');
+    read('tab-3', 1, 'agent');
+    read('tab-4', 9, 'person', NOW - 8 * DAY);
+    expect(db.all<MostReadRow>(countMostRead(NOW))).toEqual([
+      { tab: 'tab-2', people: 6, agents: 0 },
+      { tab: 'tab-1', people: 2, agents: 3 },
+      { tab: 'tab-3', people: 0, agents: 1 },
+    ]);
+    for (let at = 0; at < 15; at++) read(`many-${String(at).padStart(2, '0')}`, 1, 'person');
+    expect(db.all<MostReadRow>(countMostRead(NOW))).toHaveLength(MOST_READ_PAGES * 2);
+  });
+
+  it('reads both as a range of the week, never a scan of every day kept', () => {
+    const db = knowledgeDb();
+    for (const statement of [countDailyReads(NOW), countMostRead(NOW)]) {
+      const plan = db
+        .all<{ detail: string }>({ ...statement, sql: `EXPLAIN QUERY PLAN ${statement.sql}` })
+        .map((row) => row.detail);
+      expect(plan.some((detail) => /^SEARCH page_reads .*\(day>\?\)/.test(detail))).toBe(true);
+    }
   });
 
   it('keeps 90 days', () => {

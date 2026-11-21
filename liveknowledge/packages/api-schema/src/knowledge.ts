@@ -415,6 +415,10 @@ export type MovePageResponse = { page: KnowledgePageRef & { parent?: string; dep
 export type AgentScopesRequest = { scopes: AgentScope[] };
 export type AgentScopesResponse = { tokenId: string; scopes: AgentScope[] };
 export type KnowledgeContextPage = { tab: string; title: string; tokens: number };
+/** One day of AI Knowledge's reads (ai-knowledge.md "Reads"): `day` is the UTC day, `YYYY-MM-DD`. */
+export type KnowledgeReadsDay = { day: string; people: number; agents: number };
+/** A page of Most Read: its reads in the last 7 days, by people and by agents. */
+export type KnowledgeMostRead = { tab: string; title: string; people: number; agents: number };
 /** `GET .../knowledge`: the AI Knowledge tab (ai-knowledge.md). */
 export type KnowledgeOverviewResponse = {
   agents: KnowledgeAgent[];
@@ -429,6 +433,8 @@ export type KnowledgeOverviewResponse = {
   /** The Knowledgebase Reviews emails: whether this deployment sends email, and when the owners were last
    *  reminded (Remind the Owners is once a week). */
   reviewEmails: { available: boolean; remindedAt?: number };
+  /** The last 14 days' reads by day, oldest first, and the pages read most in the last 7 (at most 5). */
+  reads: { days: KnowledgeReadsDay[]; mostRead: KnowledgeMostRead[] };
 };
 /** `POST .../questions`: an agent's `report_gap`. */
 export type ReportGapRequest = { question: string };

@@ -9,9 +9,13 @@ import { newQuestions, queueNewQuestions } from '../document-room/automations/qu
 import {
   ASK_MAX_QUESTION_CHARS,
   CONTEXT_BUDGET_TOKENS,
+  MOST_READ_PAGES,
   agentReads,
   conflictOfRow,
   countAgentReads,
+  countDailyReads,
+  countMostRead,
+  dailyReads,
   dismissConflict,
   dismissQuestion,
   listConflicts,
@@ -24,6 +28,8 @@ import {
   type AgentReadsRow,
   type ConflictRow,
   type ConflictSide,
+  type DailyReadsRow,
+  type MostReadRow,
   type QuestionAgentRow,
   type QuestionRow,
   type ReviewEvery,
@@ -127,6 +133,8 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     suggestions,
     asked,
     reminded,
+    daily,
+    mostRead,
   ] = await Promise.all([
     rowsOf<AgentReadsRow>(env, countAgentReads(now)),
     seenAgents(env, now),
@@ -140,6 +148,9 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     // What the review emails remember (knowledge/email-marks.ts): a row a conflict asked about, one for the week.
     marksOf(env, 'ask'),
     marksOf(env, 'remind'),
+    // The figures band's sparkline and Most Read (ai-knowledge.md "Reads"): two ranges of page_reads.
+    rowsOf<DailyReadsRow>(env, countDailyReads(now)),
+    rowsOf<MostReadRow>(env, countMostRead(now)),
   ]);
   const lastAt = new Map(questions.map((q) => [q.key, q.lastAt]));
   const overview: KnowledgeOverviewResponse = {
@@ -175,6 +186,18 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     reviewEmails: {
       available: emailEnabled(env),
       ...(reminded.has('owners') ? { remindedAt: reminded.get('owners') } : {}),
+    },
+    reads: {
+      days: dailyReads(daily, now),
+      // A page no longer in the knowledgebase is left out.
+      mostRead: mostRead
+        .flatMap((row) => {
+          const title = titles.get(row.tab);
+          return title === undefined
+            ? []
+            : [{ tab: row.tab, title, people: row.people, agents: row.agents }];
+        })
+        .slice(0, MOST_READ_PAGES),
     },
   };
   return json(overview);

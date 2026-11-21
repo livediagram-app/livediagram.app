@@ -95,3 +95,51 @@ export function agentReads(rows: readonly AgentReadsRow[]): AgentReads[] {
   }
   return [...agents.values()];
 }
+
+/** How many days of reads AI Knowledge's sparkline shows, today among them. */
+export const READS_TREND_DAYS = 14;
+
+export type DailyReadsRow = { day: string; readerKind: string; reads: number };
+
+/** Every reader's reads by day and reader kind over the last READS_TREND_DAYS days (ai-knowledge.md "Reads"): a range
+ *  of the table's key, which leads with the day, at most two rows a day. */
+export const countDailyReads = (now: number): SqlStatement => ({
+  sql: `SELECT day, reader_kind AS readerKind, SUM(reads) AS reads FROM page_reads
+    WHERE day > ? GROUP BY day, reader_kind`,
+  params: [daysBefore(now, READS_TREND_DAYS)],
+});
+
+export type DailyReads = { day: string; people: number; agents: number };
+
+/** READS_TREND_DAYS days ending today, oldest first, a day with no reads at nought, from `countDailyReads`' rows. */
+export function dailyReads(rows: readonly DailyReadsRow[], now: number): DailyReads[] {
+  const days: DailyReads[] = [];
+  const byDay = new Map<string, DailyReads>();
+  for (let back = READS_TREND_DAYS - 1; back >= 0; back--) {
+    const day = { day: daysBefore(now, back), people: 0, agents: 0 };
+    days.push(day);
+    byDay.set(day.day, day);
+  }
+  for (const row of rows) {
+    const day = byDay.get(row.day);
+    if (!day) continue;
+    if (row.readerKind === 'person') day.people += row.reads;
+    else if (row.readerKind === 'agent') day.agents += row.reads;
+  }
+  return days;
+}
+
+/** How many pages AI Knowledge's Most Read names. */
+export const MOST_READ_PAGES = 5;
+
+export type MostReadRow = { tab: string; people: number; agents: number };
+
+/** The pages read most in the last 7 days, people and agents apart, most first then by tab. Twice MOST_READ_PAGES,
+ *  so the route still has enough when it leaves out a page that is gone. `+tab` keeps SQLite from grouping by the
+ *  tab index, which scans all 90 days: it takes the week as a range of the key (day first) instead. */
+export const countMostRead = (now: number): SqlStatement => ({
+  sql: `SELECT tab, SUM(CASE WHEN reader_kind = 'person' THEN reads ELSE 0 END) AS people,
+      SUM(CASE WHEN reader_kind = 'agent' THEN reads ELSE 0 END) AS agents
+    FROM page_reads WHERE day > ? GROUP BY +tab ORDER BY SUM(reads) DESC, tab LIMIT ?`,
+  params: [daysBefore(now, 7), MOST_READ_PAGES * 2],
+});

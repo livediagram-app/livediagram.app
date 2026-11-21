@@ -5804,6 +5804,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "KnowledgeMostRead": {
+    "additionalProperties": false,
+    "description": "A page of Most Read: its reads in the last 7 days, by people and by agents.",
+    "properties": {
+      "agents": {
+        "type": "number"
+      },
+      "people": {
+        "type": "number"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tab",
+      "title",
+      "people",
+      "agents"
+    ],
+    "type": "object"
+  },
   "KnowledgeOverviewResponse": {
     "additionalProperties": false,
     "description": "`GET .../knowledge`: the AI Knowledge tab (ai-knowledge.md).",
@@ -5855,6 +5880,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "reads": {
+        "additionalProperties": false,
+        "description": "The last 14 days' reads by day, oldest first, and the pages read most in the last 7 (at most 5).",
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeReadsDay"
+            },
+            "type": "array"
+          },
+          "mostRead": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeMostRead"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "days",
+          "mostRead"
+        ],
+        "type": "object"
+      },
       "reviewEmails": {
         "additionalProperties": false,
         "description": "The Knowledgebase Reviews emails: whether this deployment sends email, and when the owners were last reminded (Remind the Owners is once a week).",
@@ -5891,7 +5939,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "health",
       "reviewEvery",
       "hasKey",
-      "reviewEmails"
+      "reviewEmails",
+      "reads"
     ],
     "type": "object"
   },
@@ -6198,6 +6247,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "byPeople",
       "agents",
       "lastAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeReadsDay": {
+    "additionalProperties": false,
+    "description": "One day of AI Knowledge's reads (ai-knowledge.md \"Reads\"): `day` is the UTC day, `YYYY-MM-DD`.",
+    "properties": {
+      "agents": {
+        "type": "number"
+      },
+      "day": {
+        "type": "string"
+      },
+      "people": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "day",
+      "people",
+      "agents"
     ],
     "type": "object"
   },

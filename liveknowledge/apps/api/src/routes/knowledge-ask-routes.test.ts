@@ -548,6 +548,11 @@ describe('AI Knowledge', () => {
         hasKey: false,
         // This deployment sends no email, and nobody was reminded.
         reviewEmails: { available: false },
+        // The agent's two reads of Deploys, today (knowledge-overview-reads.test.ts has the rest).
+        reads: {
+          days: expect.any(Array),
+          mostRead: [{ tab: 'deploys', title: 'Deploys', people: 0, agents: 2 }],
+        },
       });
     },
   );
