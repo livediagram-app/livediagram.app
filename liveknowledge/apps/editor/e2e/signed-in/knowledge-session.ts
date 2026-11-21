@@ -56,16 +56,16 @@ export const savedWith = (page: Page, text: string) =>
       (r.request().postData() ?? '').includes(text),
   );
 
-/** A share link of the knowledgebase at a role, made as its owner: its code. */
+/** A share link of the knowledgebase at a role, made as its owner through the index, as Share makes one: its code. */
 export async function shareCode(
   page: Page,
   who: Person,
   id: string,
   role: 'view' | 'participate' | 'edit',
 ): Promise<string> {
-  const res = await page.request.post(`/api/documents/${id}/share`, {
+  const res = await page.request.post(`/api/index/items/${encodeURIComponent(id)}/share`, {
     headers: await asPerson(page, who, id),
-    data: { role },
+    data: { level: role },
   });
   expect(res.ok(), `share link: ${res.status()}`).toBe(true);
   return ((await res.json()) as { link: { code: string } }).link.code;

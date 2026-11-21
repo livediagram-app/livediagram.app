@@ -92,7 +92,7 @@ settings)` takes a write's answer. It has no field a key could be put in.
   (`aiSettingsFailureText`): `invalid_key`, `invalid_model`, `ask_unavailable` (the server keeps no key), 403, 429,
   else the action's own fallback.
 - **States.** Loading: the dialog's body keeps its height (`min-h-[23rem]`) and the state line is empty. Failed
-  read: an error callout with **Try Again**. No key: "No Key Yet", the field labelled "Add a Key", **Save Key**.
+  read: an error callout with **Try Again**. No key: "No Key Yet", the field labelled for the provider ("Add a Claude Key", "Add an OpenAI Key"), **Save Key**.
   A key: "Key Ending 4f2a" (or "Key Added" when the route sends no ending), **Remove**, the field labelled
   "Replace the Key", **Replace**. Remove asks in a `ConfirmDialog` ("Remove the Key?").
 - **Roles.** Without `manageAi` the field, Remove and the model's select are not drawn; the model shows as text and
@@ -102,7 +102,7 @@ settings)` takes a write's answer. It has no field a key could be put in.
   focus ring), a generic mark (`ProviderSparkIcon`, `ProviderRingIcon`: Lucide's sparkle and circle-dot, never a
   company's logo) and the provider's name with one line under it. `picked` is the provider chosen here and not yet
   saved; the stored provider changes only when a key for the new one is saved (`apiSetKnowledgeAiKey(who, id,
-  provider, key)`).
+provider, key)`).
   - No key saved: choosing the other row is at once.
   - A key saved: a `ConfirmDialog`, `replaceProviderTitle` ("Replace the Claude Key With an OpenAI Key?"), confirm
     **Choose Provider**. Then the state line reads "Claude Key Ending 4f2a, in Use Until This One Is Saved", the
@@ -204,14 +204,14 @@ draft. Telemetry: `Tab·Created·FromAnswer` and `FromGap`.
 
 ### States, in the conversation's place
 
-| State             | When                                       | Shows                                                                                                                              |
-| ----------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| loading           | the settings are being read                | the room held, a `status` named "Loading Ask"                                                                                      |
-| could not be read | `GET ai` failed                            | an error callout, **Try Again**                                                                                                    |
-| Offline           | `askOff === 'offline'`; no request is made | "No Ask in an Offline Knowledgebase", **Search the Pages**                                                                         |
-| signed out        | `askOff === 'signed-out'`                  | "Sign In to Ask", **Sign In**, **Search the Pages**                                                                                |
+| State             | When                                       | Shows                                                                                                                          |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| loading           | the settings are being read                | the room held, a `status` named "Loading Ask"                                                                                  |
+| could not be read | `GET ai` failed                            | an error callout, **Try Again**                                                                                                |
+| Offline           | `askOff === 'offline'`; no request is made | "No Ask in an Offline Knowledgebase", **Search the Pages**                                                                     |
+| signed out        | `askOff === 'signed-out'`                  | "Sign In to Ask", **Sign In**, **Search the Pages**                                                                            |
 | no key            | `hasKey` false                             | "Ask Needs Your Team's AI Key"; **Open AI Settings** for an Editor, "Ask an Editor to add one" otherwise; **Search the Pages** |
-| ready, no turns   |                                            | "No Questions Yet"                                                                                                                 |
+| ready, no turns   |                                            | "No Questions Yet"                                                                                                             |
 
 `askFailureWords(kind, { manageAi })` maps `bad-key`, `no-credit`, `rate-limited`, `overloaded`,
 `model-unavailable`, `refused`, `person-limit`, `knowledgebase-limit`, `question-too-long`, `no-question`,

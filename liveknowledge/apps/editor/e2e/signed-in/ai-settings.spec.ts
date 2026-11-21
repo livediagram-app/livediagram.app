@@ -41,7 +41,7 @@ test('a saved key shows only its last four characters, is kept nowhere on the pa
   const keyRegion = dialog.getByRole('region', { name: 'Claude API Key' });
   await expect(keyRegion.getByRole('status')).toHaveText('No Key Yet');
 
-  const field = keyRegion.getByRole('textbox', { name: 'Add a Key' });
+  const field = keyRegion.getByRole('textbox', { name: 'Add a Claude Key' });
   await expect(field).toHaveAttribute('type', 'password');
   await field.fill(KEY);
   const stored = page.waitForResponse(
@@ -77,9 +77,7 @@ test('a saved key shows only its last four characters, is kept nowhere on the pa
     again.getByRole('region', { name: 'Claude API Key' }).getByRole('status'),
   ).toHaveText('No Key Yet');
   await again.getByRole('button', { name: 'Done' }).click();
-  await expect(
-    page.getByRole('heading', { name: "Ask Needs Your Team's AI Key" }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: "Ask Needs Your Team's AI Key" })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
