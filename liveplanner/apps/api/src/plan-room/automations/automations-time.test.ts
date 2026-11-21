@@ -210,7 +210,8 @@ describe('a Scheduled rule', () => {
       throw new Error('boom');
     });
     await wake(rule);
-    expect(room().automations.schedule.timeAt).toBeGreaterThan(Date.now() + 30_000);
+    expect(room().automations.schedule.retryAt).toBeGreaterThan(Date.now() + 30_000);
+    expect(room().automations.schedule.timeDue(Date.now())).toBe(false);
   });
 });
 

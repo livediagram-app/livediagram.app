@@ -25,6 +25,6 @@
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.6",
     "oxlint": "^1.93.0",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   }
 }

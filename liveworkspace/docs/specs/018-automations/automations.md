@@ -224,6 +224,7 @@ As liveplanner's, the same numbers everywhere:
 | Triggers waiting                            | 500 (a burst past it is dropped, said once on the Audit Trail) |
 | Rules one change may chain through          | 5                                                              |
 | Failures in a row before a rule pauses      | 10                                                             |
+| Failed wakes in a row before they give up   | 12 (tried again after 1, 2, 4 … minutes, an hour at most)      |
 | Audit Trail                                 | 2,000 runs and 500 No Matches, 30 days                         |
 | Messages through connections per rule       | 5                                                              |
 | AI asks per item a day                      | 100                                                            |
@@ -243,6 +244,14 @@ As liveplanner's, the same numbers everywhere:
   again tomorrow", Skipped), never once per trigger.
 - A missed time (the room could not wake) runs late when it is under 24 hours late, once; older is skipped and said
   on the Audit Trail.
+- **A wake that keeps failing backs off, then gives up.** When the item's wake fails as a whole (not one run: a
+  bug, or stored data it cannot read), it tries again after 1 minute, then 2, 4, 8 … minutes, an hour at most. The
+  count and the next try are kept in the item's own storage, so a restart neither counts afresh nor tries at once,
+  and nothing runs before the next try. A wake that does its work clears the count. The **12th failure in a row
+  gives up**: the triggers waiting are dropped, runs a Wait held whose time is up and settles that came due are let
+  go (a held run is **Skipped** with the same reason), each time rule moves on to its next moment, and one Skipped
+  line on the Audit Trail says "Automations stopped after repeated errors; they start again on the next change". The
+  rules stay on: the next change or the next time moment starts afresh, with the count at nothing.
 
 ## Test Rule and Run Rule
 
@@ -348,8 +357,8 @@ livedocuments and livedesign share one set, built once over the item engine's ro
 
 As liveplanner's scheme, under the app's item category (`Plan` in liveplanner, `Document` in the other four): the screen
 opened, a rule made, toggled, deleted, tested or run by hand, a template opened, a draft asked for; and from the
-room, one batch a wake: each run's result and trigger kind, pauses, a full queue, missed times, Incoming Webhook
-answers and AI asks. Never a name, an id, a message or an address.
+room, one batch a wake: each run's result and trigger kind, pauses, a full queue, missed times, a failed wake
+(`AutomationWakeFailed`) and one that gave up (`AutomationWakeGaveUp`), Incoming Webhook answers and AI asks. Never a name, an id, a message or an address.
 
 ## Not in scope
 

@@ -278,8 +278,9 @@ of the route table, generic over the rule, run and need an app's engine has, and
 
 ### Tables (schema.ts)
 
-`itemAutomationSchemaSteps({ tabs?, links, tabKey? })` answers stage 1's steps and one more, `item`, for the app to
-append to its schema's steps. The table names are the app's (`tabs`, and `document_tabs` or `design_tabs`; the link's
+`itemAutomationSchemaSteps({ tabs?, links, tabKey? })` answers stage 1's steps that shipped before it and one more,
+`item`, for the app to append to its schema's steps; stage 1's later steps (`wake`) the app appends by name after its
+own (`automationSchemaStep('wake')`). The table names are the app's (`tabs`, and `document_tabs` or `design_tabs`; the link's
 tab column is `tab_id`), checked against `[a-z_]+`.
 
 | Table                | Holds                                                                               |
@@ -378,7 +379,10 @@ queue has room) when a rule hears it straight.
 so only a later starting event fires it again), due times queue theirs (a moment under 24 hours late runs once; an
 older one is skipped and said on the Audit Trail; a kind with `due` runs once per key through `automation_fired`),
 then `runItemWake` runs up to `ITEM_EVENTS_PER_WAKE` (25) events against the rules that hear them, for at most
-`ITEM_WAKE_MS` (60 s). A wake never throws; a failed one tries again in a minute. One `AutomationTally` batch a wake.
+`ITEM_WAKE_MS` (60 s). A wake never throws. A failed one (`AutomationWakeFailed`) is held off 1, 2, 4 … minutes, an
+hour at most, through `automation_wake` (engine.md "Behaviour kept from liveplanner"), and nothing runs before the
+hold-off; a wake that does its work clears the count; the 12th in a row gives up (`giveUpWake`, settles included,
+`AutomationWakeGaveUp`). One `AutomationTally` batch a wake.
 
 `runItemRule(deps, state, rule, event, { dry? })`, as liveplanner's `runRule`: never its own change; the run id
 (`sha256(event.id:rule.id)`) claimed before anything; the day's 1,000 (past it the run never starts, `state.spent`
@@ -440,7 +444,7 @@ settle hears touches `automation_settles` and queues nothing.
 1. **Kinds.** One `KINDS = defineItemKinds({ itemWord, collab, tabTemplates, ownRefs?, triggers, conditions,
 actions, values })` in the app's model package, which the editor and the api share.
 2. **Schema.** Append each `itemAutomationSchemaSteps({ links: '<link table>' })` step's `run` to the room schema,
-   then `COLLAB_SEEN_SCHEMA_STEP` for a collab app.
+   then `COLLAB_SEEN_SCHEMA_STEP` for a collab app, then `automationSchemaStep('wake')`.
 3. **The room.** An `ItemEngine`, an `ItemStandingKeeper` and (collab) a `CollabWatch` as members; `AUTOMATIONS` and
    `COLLAB` on the room's env (`ItemHost`); restore the standing before the content and the engine after it; add
    `schedule.wakeAt` and `collab.at` to the alarm's due list, `collab.baseline(now)` before the outbox drain and

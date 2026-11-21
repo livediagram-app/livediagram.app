@@ -39,7 +39,9 @@ export function isTurbopack(env = process.env) {
  * throws under webpack) runs only for an app that asks for it (`reactCompiler`): the editor, whose surfaces re-render
  * constantly; on mostly static pages it costs first-load JavaScript and buys little.
  *
- * @param {{ env?: NodeJS.ProcessEnv, exportInDev?: boolean, reactCompiler?: boolean, now?: Date }} [options]
+ * An app's own build-time values go in `inlineEnv`, merged after the shared ones, so no app replaces the shared `env`.
+ *
+ * @param {{ env?: NodeJS.ProcessEnv, exportInDev?: boolean, reactCompiler?: boolean, now?: Date, inlineEnv?: Record<string, string> }} [options]
  * @returns {import('next').NextConfig}
  */
 // The hosts the routers forward as in local dev (each product's wrangler.toml routes), and their subdomains.
@@ -60,6 +62,7 @@ export function liveworkspaceNextConfig({
   exportInDev = true,
   reactCompiler = false,
   now = new Date(),
+  inlineEnv = {},
 } = {}) {
   const exporting = exportInDev || env.NODE_ENV === 'production';
   const turbopack = isTurbopack(env);
@@ -80,7 +83,7 @@ export function liveworkspaceNextConfig({
     // Dev only: production builds ignore it.
     allowedDevOrigins: DEV_ORIGINS,
     // The footer's year, inlined at build so the prerender and the browser render the same text.
-    env: { NEXT_PUBLIC_BUILD_YEAR: String(now.getFullYear()) },
+    env: { NEXT_PUBLIC_BUILD_YEAR: String(now.getFullYear()), ...inlineEnv },
     // The repository's agent files are written by hand: `next dev` must not generate an AGENTS.md.
     agentRules: false,
     ...(compiler ? { reactCompiler: true } : {}),

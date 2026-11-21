@@ -2,9 +2,11 @@
 // the WOFF2 files Google Fonts serves a browser. A variable face is set to the weight the browser drew it at and to
 // the font size on its optical-size axis (browsers size optically by default); every other axis stays at its default.
 //
-// fontkit 2.0.4 cannot vary a WOFF2 face itself (its WOFF2 glyphs skip the variation step, and a composite glyph
-// throws), so a varied face is built here from two copies of the file: one whose decoded glyphs are moved by the
-// other's glyph variation processor before any outline is read. The version is pinned in package.json for it.
+// fontkit 2 could not vary a WOFF2 face itself (its WOFF2 glyphs skipped the variation step, and a composite glyph
+// threw), so a varied face is built here from two copies of the file: one whose decoded glyphs are moved by the
+// other's glyph variation processor before any outline is read. fontkit 3.0.0 varies WOFF2 glyphs itself and draws
+// the same outlines as this path; the unvaried copy has no processor of its own, so nothing is moved twice. The
+// version is pinned in package.json because this reaches into fontkit's internals.
 import type { OutlineFont } from './glyph-paths';
 
 /** The settings a face is drawn at. */

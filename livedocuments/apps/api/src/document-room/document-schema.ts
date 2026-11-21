@@ -22,6 +22,7 @@ import {
 } from '@liveworkspace/index-app';
 import {
   COLLAB_SEEN_SCHEMA_STEP,
+  automationSchemaStep,
   itemAutomationSchemaSteps,
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
@@ -346,6 +347,11 @@ const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).m
 // watch), kept only while a rule that is on hears one.
 const V22 = COLLAB_SEEN_SCHEMA_STEP;
 
+// Step 23: the engine's failed wakes (@liveworkspace/automations/room automation-wake.ts), how many in a row and
+// when the next may try, so a wake that keeps failing backs off and gives up, over a restart too. Appended after
+// the steps before it, never among the engine's own.
+const V23 = automationSchemaStep('wake');
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -361,6 +367,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V12,
   ...AUTOMATION_STEPS,
   V22,
+  V23,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

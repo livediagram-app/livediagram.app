@@ -143,12 +143,13 @@ describe('the wake', () => {
     schedule.timeAt = 2000;
     expect(schedule.wakeAt).toBe(2000);
     // A failed wake's hold-off pushes every settle back.
-    schedule.settleHold = 7000;
+    schedule.retryAt = 7000;
     schedule.timeAt = null;
     expect(schedule.wakeAt).toBe(7000);
+    expect(schedule.settleDue(6999)).toBe(false);
+    expect(schedule.settleDue(7000)).toBe(true);
     schedule.clear();
     expect(schedule.settleAt).toBeNull();
-    expect(schedule.settleHold).toBe(0);
   });
 
   it('asks nothing of an item that is not awake', () => {

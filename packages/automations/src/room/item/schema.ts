@@ -111,13 +111,18 @@ export type ItemAutomationSchemaStep = {
   run: AutomationSchemaStep['run'];
 };
 
+// Stage 1's steps that came after the item step shipped. An app appends each, by name (automationSchemaStep), after
+// its own later steps (the collab watch's), so no step an item already ran moves.
+const LATER: ReadonlySet<AutomationSchemaStep['name']> = new Set(['wake']);
+
 /** Every step an app with no cards appends to its room's schema, in order: stage 1's tables, then the item
- *  engine's tables and its triggers over the app's own tab tables. A step, once shipped, is never edited. */
+ *  engine's tables and its triggers over the app's own tab tables. A step, once shipped, is never edited. Stage 1's
+ *  later steps (`wake`) are not here: the app appends them after its own. */
 export function itemAutomationSchemaSteps(
   tables: ItemTabTables,
 ): readonly ItemAutomationSchemaStep[] {
   return [
-    ...AUTOMATION_SCHEMA_STEPS,
+    ...AUTOMATION_SCHEMA_STEPS.filter((s) => !LATER.has(s.name)),
     { name: 'item', run: `${ITEM_AUTOMATION_TABLES}${itemAutomationTriggers(tables)}` },
   ];
 }

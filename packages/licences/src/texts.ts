@@ -51,23 +51,21 @@ export const TEXT_SOURCES: readonly TextSource[] = [
   },
   {
     // brotli.js ships no licence file: its readme's MIT, then its decoder's Google header and Apache 2.0.
-    file: 'brotli-1.3.3-LICENSE.txt',
+    // 2.1.0 has no tag; this commit's readme.md and dec/ match the npm package byte for byte.
+    file: 'brotli-2.1.0-LICENSE.txt',
     sources: [
-      'https://raw.githubusercontent.com/devongovett/brotli.js/v1.3.3/readme.md',
-      'https://raw.githubusercontent.com/devongovett/brotli.js/v1.3.3/dec/decode.js',
+      'https://raw.githubusercontent.com/foliojs/brotli.js/4011e59a5c35bb602f3e97f114727aa662f795f7/readme.md',
+      'https://raw.githubusercontent.com/foliojs/brotli.js/4011e59a5c35bb602f3e97f114727aa662f795f7/dec/decode.js',
       'https://www.apache.org/licenses/LICENSE-2.0.txt',
     ],
     sha256: '1188bf6a4e3fd54b83815a569eac3ccd23e67db31558933671d4c49c316ab32b',
   },
   {
-    // fontkit and its dfa ship no licence file; their READMEs state MIT.
-    file: 'fontkit-2.0.4-LICENSE.txt',
-    sources: ['https://raw.githubusercontent.com/foliojs/fontkit/v2.0.4/README.md'],
-    sha256: 'f07f601242577ef9d93d52c23d7aaa41db661cb0e47fd107fd7cdf2d8df2b1bd',
-  },
-  {
-    file: 'dfa-1.2.0-LICENSE.txt',
-    sources: ['https://raw.githubusercontent.com/devongovett/dfa/v1.2.0/README.md'],
+    // dfa ships no licence file; its README states MIT. 2.0.0 has no tag; this is its version commit.
+    file: 'dfa-2.0.0-LICENSE.txt',
+    sources: [
+      'https://raw.githubusercontent.com/foliojs/dfa/0205982a2a4fff76a43ca0b678460925b409e1e9/README.md',
+    ],
     sha256: '1c67df5e5f8984ae8e70d545a2afee51c4be1d24c6d23d349724060111177fb1',
   },
   {

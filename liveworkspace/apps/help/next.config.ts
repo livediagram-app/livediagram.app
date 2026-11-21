@@ -7,10 +7,9 @@ import { SCOPE } from './lib/scope.generated';
 // articles in MDX, built once per scope by scripts/build-scopes.mjs (the scope is lib/scope.generated.ts). basePath,
 // trailing slashes and MDX come from @liveworkspace/help-site, the rest from the shared config.
 // HELP_ART_APP tells the shared art kit which app's canvas to draw (livehuddle's tiled floor and sticky notes); All
-// Apps leaves it empty.
+// Apps leaves it empty. It goes through the shared config's inlineEnv, so the shared env (the footer's year) stays.
 const config: NextConfig = withHelpSite({
-  ...liveworkspaceNextConfig(),
-  env: { HELP_ART_APP: SCOPE === 'all' ? '' : SCOPE },
+  ...liveworkspaceNextConfig({ inlineEnv: { HELP_ART_APP: SCOPE === 'all' ? '' : SCOPE } }),
   transpilePackages: [
     '@livediagram/ui',
     '@liveplanner/ui',

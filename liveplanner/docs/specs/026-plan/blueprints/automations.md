@@ -81,7 +81,7 @@ packages/api-schema/src/automations.ts
 
 packages/automations/src/room/
   automation-schema.ts   the tables (below), as named steps: the plan schema registers each at the version it
-                         shipped under (plan-schema.ts V18, V19, V20, V22, V24, V26, V28, V42)
+                         shipped under (plan-schema.ts V18, V19, V20, V22, V24, V26, V28, V42, V43)
   automation-fired.ts    the event ids a time rule has run on
 
 apps/api/src/plan-room/automations/

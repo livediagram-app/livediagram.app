@@ -886,7 +886,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Ran|AutomationTimeMissed':
     "A time rule's moment was found too late to run, so it waits for the next one.",
   'Plan|Ran|AutomationWakeFailed':
-    "A plan's automations failed to run as a whole and tried again a minute later.",
+    "A plan's automations failed to run as a whole and will try again, waiting longer each time.",
+  'Plan|Ran|AutomationWakeGaveUp':
+    "A plan's automations failed 12 times in a row and stopped until the next change.",
   'Plan|Ran|AutomationHookAccepted':
     "A call to a rule's Incoming Webhook address was accepted and queued its runs.",
   'Plan|Ran|AutomationHookUnauthorized':

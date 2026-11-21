@@ -55,8 +55,6 @@ export function itemStoreKit(kinds: ItemKinds): AutomationStoreKit<ItemRule, str
 /** The queue's wake, the time triggers' and the settles'. */
 export class ItemSchedule extends AutomationSchedule<ItemEvent> {
   settleAt: number | null = null;
-  // A failed wake's hold-off: no settle is due before it, so the retry waits its minute.
-  settleHold = 0;
 
   private readonly itemSql: () => Sql;
   private readonly awake: () => boolean;
@@ -84,7 +82,7 @@ export class ItemSchedule extends AutomationSchedule<ItemEvent> {
       )
       .toArray()[0]!;
     this.settleAt =
-      typeof row['settle'] === 'number' ? Math.max(row['settle'], this.settleHold) : null;
+      typeof row['settle'] === 'number' ? Math.max(row['settle'], this.retryAt) : null;
     if (row['queued'] && this.at === null) this.at = now;
   }
 
@@ -112,7 +110,6 @@ export class ItemSchedule extends AutomationSchedule<ItemEvent> {
   override clear(): void {
     super.clear();
     this.settleAt = null;
-    this.settleHold = 0;
   }
 }
 

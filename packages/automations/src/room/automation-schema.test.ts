@@ -29,6 +29,7 @@ describe('the Automations tables', () => {
       'automation_runs',
       'automation_schedule',
       'automation_waiting',
+      'automation_wake',
     ]);
     const turn = rowsOf(sql, 'PRAGMA table_info(automation_rules)').filter(
       (c) => c['name'] === 'turn',
@@ -46,6 +47,7 @@ describe('the Automations tables', () => {
       'fired',
       'addresses',
       'counts',
+      'wake',
     ]);
     expect(automationSchemaStep('rules')).toBe(AUTOMATIONS_SCHEMA);
     expect(automationSchemaStep('schedule')).toBe(automationsScheduleStep);

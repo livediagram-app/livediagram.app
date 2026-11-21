@@ -25,10 +25,10 @@
     "esbuild": "^0.28.2",
     "oxlint": "^1.93.0",
     "oxlint-tsgolint": "^7.0.2007",
-    "prettier": "^3.10.0",
-    "turbo": "^2.11.7",
+    "prettier": "^3.10.1",
+    "turbo": "^2.11.12",
     "typescript": "^7.0.2",
-    "wrangler": "^4.160.0"
+    "wrangler": "^4.164.0"
   },
   "engines": {
     "node": ">=22",

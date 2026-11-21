@@ -43,7 +43,7 @@ packages/api-schema/src/automations.ts        the wire types, filled in with the
 packages/api-schema/src/telemetry-schema.ts   the `Ran` action
 
 apps/api/src/document-room/
-  document-schema.ts                          steps 10 to 18
+  document-schema.ts                          steps 10 to 19
   document-room.ts                            `standing`, `automations`; the doors' RPC methods
   room-content-state.ts                       restoreAutomations on wake
   room-lifecycle.ts                           the alarm's due list and run; the purge
@@ -112,7 +112,7 @@ own package entry so nothing that only reads a Space pulls the engine in. livehu
 Appended to `document-schema.ts` `STEPS` after step 9 (the tab folder colour, which shipped first), never edited once shipped: steps 10 to 18 are
 `itemAutomationSchemaSteps({ links: 'document_tabs' })`, one entry each (the engine's rules, schedule, hooks, waiting,
 drafts, fired, addresses, counts, then its `item` step: five tables and the three SQL triggers on `tabs` and `document_tabs`).
-`DOCUMENT_SCHEMA_VERSION` is 18. No collab step.
+Step 19 is `automationSchemaStep('wake')`: `automation_wake`, the engine's failed wakes in a row and the next try's hold-off. `DOCUMENT_SCHEMA_VERSION` is 19. No collab step.
 
 ## The engine in the room
 
