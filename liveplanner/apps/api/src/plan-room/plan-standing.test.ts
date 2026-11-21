@@ -502,9 +502,7 @@ describe('failing open', () => {
     expect(await read.json()).toEqual({ error: 'archived' });
     expect(read.headers.get(ITEM_PUT_AWAY_HEADER)).toBe('archived');
     expect((await asToken('PUT', { name: 'Changed' })).status).toBe(409);
-    expect(await room().standingRefusal('A', { iat: Math.floor(signedAt / 1000) })).toBe(
-      'archived',
-    );
+    expect(await room().takeGrantStanding({ iat: Math.floor(signedAt / 1000) })).toBe('archived');
     await tell(false, true, signedAt + 2_000);
     const trashed = await asToken('GET');
     expect(trashed.status).toBe(410);

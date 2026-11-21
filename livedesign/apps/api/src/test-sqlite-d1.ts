@@ -265,7 +265,7 @@ function testDesignRooms(
     },
     revokeCodes: async () => 0,
     // A room that never heard where the item stands refuses no grant (Work Tracker 1323).
-    standingRefusal: async () => null,
+    takeGrantStanding: async () => null,
   }));
 }
 

@@ -112,12 +112,12 @@ event. Naming neither keeps `a:<owner>` whatever the title. A move out tells the
 - A token's cached grant (Work Tracker 1323, [one-explorer-contracts.md](../one-explorer-contracts.md) "Where an
   item stands"): each app's room keeps `{putAway, trashed, at}` from the standing call
   (`ItemStandingKeeper` in `@liveworkspace/automations/room`, liveplanner's `PlanStanding`), and its `route` door
-  asks `refusal(grant)` (`putAwayRefusal` in `@liveworkspace/index-client` `standing.ts`) before it answers: a grant
+  takes the grant (`takeGrantStanding`) and asks `refusal(grant)` (`putAwayRefusal` in `@liveworkspace/index-client` `standing.ts`) before it answers: a grant
   signed before `at` while the item is put away is answered `409 archived` (or, trashed, the request goes on with the
   grant marked `trashed`, so the app's own trashed answer is given), with `X-Item-Put-Away` (`ITEM_PUT_AWAY_HEADER`)
   set by `putAwayAnswer` (`@liveworkspace/index-app`). Each api's worker passes the room's answer to
   `forgetPutAwayGrant`, which drops the caller's cached grant (`IndexService.forgetGrant`) when the header is there.
-  The room-ticket door asks the room the same (`standingRefusal` RPC) for a grant the worker fetched (no
+  The room-ticket door asks the room the same (the room's `takeGrantStanding` RPC, which takes the grant first and answers the refusal; `standingRefusal` in each api's room client) for a grant the worker fetched (no
   `X-Index-Grant` sent), so a CLI stream that asks for a ticket after 4010 meets `409 archived` and ends.
 
 ## Interfaces and contracts

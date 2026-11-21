@@ -116,15 +116,18 @@ export class ItemStandingKeeper {
     });
   }
 
-  /** A grant handed to the room (an API request's). A failure is logged, never the caller's. */
-  async takeGrant(grant: StandingGrant): Promise<void> {
+  /** A grant handed to the room (an API request's, the room-ticket door's): taken when it says something newer (a
+   *  failure is logged, never the caller's), then answered with whether the room refuses it as put away. */
+  async takeGrant(grant: StandingGrant): Promise<PutAwayRefusal | null> {
     const next = this.fromGrant(grant);
-    if (!next) return;
-    try {
-      await this.apply(next);
-    } catch (err) {
-      console.warn('[standing] not taken from the grant', { error: String(err) });
+    if (next) {
+      try {
+        await this.apply(next);
+      } catch (err) {
+        console.warn('[standing] not taken from the grant', { error: String(err) });
+      }
     }
+    return this.refusal(grant);
   }
 
   /** Back from Archived or the Trash: a held run more than a day past its time is Skipped, the rules are heard again

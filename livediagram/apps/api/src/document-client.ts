@@ -147,7 +147,7 @@ export function documentRoom(
     incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
     emailOptOut: (token) => room.emailOptOut(documentId, token),
     takeStanding: (standing) => room.takeStanding(documentId, standing),
-    standingRefusal: (grant) => room.standingRefusal(documentId, grant),
+    standingRefusal: (grant) => room.takeGrantStanding(grant),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
     anonymise: (personId, guestIds = []) => room.anonymise(documentId, personId, guestIds),
     notifyAction: (input) => room.notifyAction(documentId, input),
@@ -195,7 +195,7 @@ export type DocumentRoomRpc = {
   incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
   emailOptOut(documentId: string, token: string): Promise<boolean>;
   takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
-  standingRefusal(documentId: string, grant: StandingGrant): Promise<PutAwayRefusal | null>;
+  takeGrantStanding(grant: StandingGrant): Promise<PutAwayRefusal | null>;
   sourceChanged(documentId: string, change: SourceChange): Promise<void>;
   anonymise(documentId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   notifyAction(documentId: string, input: ActionNotice): Promise<boolean>;

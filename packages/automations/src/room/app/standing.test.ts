@@ -112,6 +112,8 @@ describe('where an item stands', () => {
     await keeper.take({ archived: true, trashed: false, at: 10_000 });
     expect(keeper.refusal({ iat: 9 })).toBe('archived');
     expect(keeper.refusal({ iat: 10 })).toBeNull();
+    // A grant handed to the room is answered the same once taken: the request's, the room-ticket door's.
+    expect(await keeper.takeGrant({ iat: 9 })).toBe('archived');
     await keeper.take({ archived: true, trashed: true, at: 20_000 });
     expect(keeper.refusal({ iatMs: 19_999 })).toBe('trashed');
     // A trashed standing read back from storage keeps saying so; one stored before it was kept reads as archived.

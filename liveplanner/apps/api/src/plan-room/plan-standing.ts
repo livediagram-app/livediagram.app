@@ -108,18 +108,22 @@ export async function takeStanding(room: PlanRoom, standing: ItemStanding): Prom
   console.info('[standing] trashed', { closed });
 }
 
-// A grant handed to the room (an API request's, a session's renewal). A failure is logged, never the caller's.
+// A grant handed to the room (an API request's, a session's renewal, the room-ticket door's): taken when it says
+// something newer (a failure is logged, never the caller's), then answered with whether the room refuses it as put
+// away (Work Tracker 1323).
 export async function takeGrantStanding(
   room: PlanRoom,
-  grant: { iat?: number; trashed?: boolean },
-): Promise<void> {
+  grant: StandingGrant,
+): Promise<PutAwayRefusal | null> {
   const next = room.standing.fromGrant(grant);
-  if (!next) return;
-  try {
-    await applyStanding(room, next);
-  } catch (err) {
-    console.warn('[standing] not taken from the grant', { error: String(err) });
+  if (next) {
+    try {
+      await applyStanding(room, next);
+    } catch (err) {
+      console.warn('[standing] not taken from the grant', { error: String(err) });
+    }
   }
+  return room.standing.refusal(grant);
 }
 
 // Back from Archived or the Trash: each repeating card settles afresh (yesterday at the latest, so at most today's

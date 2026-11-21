@@ -53,10 +53,9 @@ export async function route(
   if (identity.grant?.item === documentId) {
     await room.takeHead(identity.grant);
     // A grant signed since the canvas was last put away says it is back (@liveworkspace/automations/room standing.ts).
-    await room.takeGrantStanding(identity.grant);
     // A grant from before the canvas was archived or trashed (an API token's, kept by its worker until it
     // lapses) is refused here, where every isolate's requests meet (Work Tracker 1323).
-    const away = putAwayGate(room.standing.refusal(identity.grant), PUT_AWAY_ANSWERS);
+    const away = putAwayGate(await room.takeGrantStanding(identity.grant), PUT_AWAY_ANSWERS);
     if (away) return away;
   }
   const community = await communityOf(room, documentId);

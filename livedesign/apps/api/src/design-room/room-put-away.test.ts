@@ -41,9 +41,8 @@ describe('a grant from before the design was put away', () => {
     expect(await read.json()).toEqual({ error: 'archived' });
     expect(read.headers.get(ITEM_PUT_AWAY_HEADER)).toBe('archived');
     expect((await asToken(w, 'PUT', { name: 'Changed' })).status).toBe(409);
-    // The room-ticket door's question: the same grant, and one signed since.
-    expect(await w.room.standingRefusal(DOC, { iatMs: signedAt })).toBe('archived');
-    expect(await w.room.standingRefusal(DOC, { iatMs: signedAt + 2_000 })).toBeNull();
+    // The room-ticket door asks the same.
+    expect(await w.room.takeGrantStanding({ iatMs: signedAt })).toBe('archived');
 
     await w.room.takeStanding(DOC, { archived: false, trashed: true, at: signedAt + 3_000 });
     const trashed = await asToken(w, 'GET');
@@ -53,6 +52,6 @@ describe('a grant from before the design was put away', () => {
 
     await w.room.takeStanding(DOC, { archived: false, trashed: false, at: signedAt + 4_000 });
     expect((await asToken(w, 'GET')).status).toBe(200);
-    expect(await w.room.standingRefusal(DOC, { iatMs: signedAt })).toBeNull();
+    expect(await w.room.takeGrantStanding({ iatMs: signedAt })).toBeNull();
   });
 });

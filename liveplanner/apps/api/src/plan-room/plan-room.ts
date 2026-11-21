@@ -509,14 +509,8 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // What a grant handed to the room says of where the plan stands, when it is newer than the last word.
-  takeGrantStanding(grant: { iat?: number; trashed?: boolean }): Promise<void> {
+  takeGrantStanding(grant: StandingGrant): Promise<PutAwayRefusal | null> {
     return takeGrantStanding(this, grant);
-  }
-
-  // Whether the room refuses a grant as put away: the room-ticket door's question (Work Tracker 1323).
-  standingRefusal(planId: string, grant: StandingGrant): Promise<PutAwayRefusal | null> {
-    this.bindPlan(planId);
-    return Promise.resolve(this.standing.refusal(grant));
   }
 
   anonymise(planId: string, personId: string, guestIds: readonly string[] = []): Promise<number> {

@@ -169,7 +169,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     purge: () => room.purge(planId),
     revokeCodes: (codes, reason) => room.revokeCodes(planId, codes, reason),
     takeStanding: (standing) => room.takeStanding(planId, standing),
-    standingRefusal: (grant) => room.standingRefusal(planId, grant),
+    standingRefusal: (grant) => room.takeGrantStanding(grant),
     community: () => room.community(planId),
     communityPostTitle: (code) => room.communityPostTitle(planId, code),
     communityListing: (code) => room.communityListing(planId, code),
@@ -227,7 +227,7 @@ export type PlanRoomRpc = {
   purge(planId: string): Promise<void>;
   revokeCodes(planId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
   takeStanding(planId: string, standing: ItemStanding): Promise<void>;
-  standingRefusal(planId: string, grant: StandingGrant): Promise<PutAwayRefusal | null>;
+  takeGrantStanding(grant: StandingGrant): Promise<PutAwayRefusal | null>;
   community(planId: string): Promise<CommunityLink | null>;
   communityPostTitle(planId: string, code: string): Promise<string | null>;
   communityListing(planId: string, code: string): Promise<CommunityListing | null>;

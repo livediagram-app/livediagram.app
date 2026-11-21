@@ -137,7 +137,7 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
     incomingHook: (ruleId, call) => room.incomingHook(designId, ruleId, call),
     emailOptOut: (token) => room.emailOptOut(designId, token),
     takeStanding: (standing) => room.takeStanding(designId, standing),
-    standingRefusal: (grant) => room.standingRefusal(designId, grant),
+    standingRefusal: (grant) => room.takeGrantStanding(grant),
     sourceChanged: (change) => room.sourceChanged(designId, change),
     anonymise: (personId, guestIds = []) => room.anonymise(designId, personId, guestIds),
     sharedTabCopy: (tabId) => room.sharedTabCopy(designId, tabId),
@@ -176,7 +176,7 @@ export type DesignRoomRpc = {
   incomingHook(designId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
   emailOptOut(designId: string, token: string): Promise<boolean>;
   takeStanding(designId: string, standing: ItemStanding): Promise<void>;
-  standingRefusal(designId: string, grant: StandingGrant): Promise<PutAwayRefusal | null>;
+  takeGrantStanding(grant: StandingGrant): Promise<PutAwayRefusal | null>;
   sourceChanged(designId: string, change: SourceChange): Promise<void>;
   anonymise(designId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   sharedTabCopy(designId: string, tabId: string): Promise<SharedTabCopy | null>;
