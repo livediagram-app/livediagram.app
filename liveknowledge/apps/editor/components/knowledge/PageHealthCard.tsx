@@ -482,16 +482,16 @@ export function PageHealthCard({
                 : shortDate(trust.reviewAt, now)}
           </span>
         </Row>
-        {/* The knowledgebase's Review Period; an Editor changes it from the pencil beside the value. */}
+        {/* The knowledgebase's Review Period; an Editor changes it from the pencil before the value (owner 2026-11-21). */}
         <Row icon={<PeriodIcon />} label="Review Period" whole={!!periodControl}>
           {periodControl ? (
             // Tight enough that "Every 90 Days" and its pencil keep the label's line in the docked rail, a scrollbar
             // beside it included.
-            <span className="flex items-center justify-end gap-[3px]">
+            <span className="flex items-center justify-end gap-1">
+              {periodControl}
               <span data-review-period="" className="tracking-tight">
                 {reviewPeriodLabel(reviewEvery)}
               </span>
-              {periodControl}
             </span>
           ) : (
             <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>

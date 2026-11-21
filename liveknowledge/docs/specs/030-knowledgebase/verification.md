@@ -134,7 +134,7 @@ own.
   not the knowledgebase's Review Period, and does not reach it.
 - **A refusal** puts the period back and says why in a toast, in words.
 - **Page Health** has two rows for it: **Review Due** (the date; "Not Verified" for a page never verified; "No
-  Review Period" under Never) and **Review Period** ("Every 90 Days", with the pencil beside it for an Editor).
+  Review Period" under Never) and **Review Period** ("Every 90 Days", with the pencil before it for an Editor).
 - **The api:** `PUT knowledge-settings` (Editor, in person or a token granted `write`), `GET knowledge-settings`,
   and `GET knowledge-settings/preview?reviewEvery=` for the count. `PUT pages/<tab>/knowledge` refuses a
   `reviewEvery` and says where the setting lives.
