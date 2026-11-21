@@ -11,6 +11,7 @@ import { createContext, use, useCallback, useMemo, useRef, useState, type ReactN
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { readEmailIntakes } from '../email-intake/email-intake-client';
 import type { AutomationsScope } from './automations-client';
+import type { EmailIntakeScope } from '../email-intake/email-intake-gate';
 
 // The dialog's code loads the first time Turn On Email to Board is pressed.
 const EmailIntakeDialog = dynamic(
@@ -42,23 +43,24 @@ export function useEmailAddresses(): EmailAddresses | null {
   return use(EmailAddressesContext);
 }
 
-type Scope = Pick<AutomationsScope, 'projectId' | 'shareCode'> & { ownerId?: string | undefined };
+type Scope = Pick<AutomationsScope, 'itemId' | 'shareCode'> & { ownerId?: string | undefined };
 
 /** The addresses' state for one builder, its reads, and the boards Email to Board is open on (null: closed). */
 export function useEmailAddressesState(scope: Scope): {
   value: EmailAddresses;
-  dialog: { scope: AutomationsScope; boardIds: readonly string[]; onClose: () => void } | null;
+  dialog: { scope: EmailIntakeScope; boardIds: readonly string[]; onClose: () => void } | null;
 } {
-  const { ownerId, projectId, shareCode } = scope;
+  const { ownerId, itemId, shareCode } = scope;
   const [status, setStatus] = useState<EmailAddressesStatus>(ownerId ? 'idle' : 'none');
   const [available, setAvailable] = useState(false);
   const [known, setKnown] = useState<ReadonlySet<string>>(NO_BOARDS);
   const [addressed, setAddressed] = useState<ReadonlySet<string>>(NO_BOARDS);
   const [openOn, setOpenOn] = useState<readonly string[] | null>(null);
   const asked = useRef(false);
-  const full = useMemo<AutomationsScope | null>(
-    () => (ownerId ? { ownerId, projectId, shareCode } : null),
-    [ownerId, projectId, shareCode],
+  const full = useMemo<EmailIntakeScope | null>(
+    // Email to Board's routes name the plan as their project.
+    () => (ownerId ? { ownerId, projectId: itemId, shareCode } : null),
+    [ownerId, itemId, shareCode],
   );
 
   const read = useCallback(() => {

@@ -163,7 +163,7 @@ export function applyMeta(
   rec: OfflineProjectRecord,
   patch: {
     name?: string;
-    tabs?: { id: string; folder?: string }[];
+    tabs?: { id: string; folder?: string; folderColor?: string | null }[];
   },
   at: number,
 ): OfflineProjectRecord {
@@ -294,7 +294,7 @@ export async function offlineCreateProject(
 
 export async function offlineSaveProjectMeta(
   id: string,
-  patch: { name?: string; tabs?: { id: string; folder?: string }[] },
+  patch: { name?: string; tabs?: { id: string; folder?: string; folderColor?: string | null }[] },
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => applyMeta(rec, patch, now));

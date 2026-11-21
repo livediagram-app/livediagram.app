@@ -16,7 +16,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
 export const PREVIEW_NO_DESTINATION =
-  'Preview can’t add its card until Responses Go To names a board and column.';
+  'Preview can’t add its card until Responses Go To names a card type and column.';
 export const PREVIEW_FAILED = 'Preview couldn’t be sent. Try again.';
 // A plan kept only in this browser: the api writes a Sheet form's rows, and it has no copy of the plan to write to.
 export const PREVIEW_SHEET_OFFLINE =

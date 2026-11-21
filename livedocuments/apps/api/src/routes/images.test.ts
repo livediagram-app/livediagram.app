@@ -46,12 +46,19 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-type Opts = { owner?: string | null; workbench?: unknown; token?: { id: string }; env?: Env };
+type Opts = {
+  owner?: string | null;
+  accountUserId?: string | null;
+  workbench?: unknown;
+  token?: { id: string };
+  env?: Env;
+};
 
 const call = (method: string, path: string, opts: Opts = {}, request?: RequestInit) => {
   const ctx = makeTestRouteContext(method, path, {
     owner: opts.owner === undefined ? 'user_ada' : opts.owner,
     env: opts.env ?? db.env,
+    ...(opts.accountUserId !== undefined ? { accountUserId: opts.accountUserId } : {}),
     ...(opts.workbench ? { workbench: opts.workbench as never } : {}),
     ...(opts.token ? { token: opts.token } : {}),
   });
@@ -516,6 +523,46 @@ describe('handleImages', () => {
         unchecked: [],
         library: [],
       });
+    });
+  });
+
+  // docs/specs/009-elements/images.md "Deleting an unused picture".
+  describe('GET /api/images/unused', () => {
+    const signedIn = { accountUserId: 'user_ada' };
+    const unused = (query: string, opts: Opts = signedIn) =>
+      call('GET', `/api/images/unused?${query}`, opts);
+
+    it("answers the caller's own pictures nothing but the asking document uses, in any app", async () => {
+      mediaImages(media, 'user_ada', ['own', 'free', 'elsewhere', 'held']);
+      mediaImages(media, 'user_bob', ['theirs']);
+      const refs = media.sql.prepare('INSERT INTO refs (app, document, image_id) VALUES (?, ?, ?)');
+      refs.run('livedocuments.app', 'd1', 'own');
+      refs.run('livedesign.app', 'p1', 'elsewhere');
+      refs.run('library', 'item-1', 'held');
+      const res = await unused('d=d1&ids=own,free,elsewhere,held,theirs,missing');
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ unused: ['free', 'own'] });
+    });
+
+    it('refuses a guest, an API token, a workbench session and no caller', async () => {
+      mediaImages(media, 'user_ada', ['a']);
+      expect((await unused('d=d1&ids=a', { accountUserId: null })).status).toBe(403);
+      expect((await unused('d=d1&ids=a', { ...signedIn, token: { id: 't1' } })).status).toBe(403);
+      const workbench = { scope: 'workspace', ownerId: 'user_ada' };
+      expect((await unused('d=d1&ids=a', { ...signedIn, workbench })).status).toBe(403);
+      expect((await unused('d=d1&ids=a', { owner: null, accountUserId: null })).status).toBe(400);
+    });
+
+    it('refuses a missing document or a malformed list', async () => {
+      expect((await unused('ids=a')).status).toBe(400);
+      expect((await unused(`d=${'d'.repeat(201)}&ids=a`)).status).toBe(400);
+      expect((await unused('d=d1')).status).toBe(400);
+      expect((await unused('d=d1&ids=a,,b')).status).toBe(400);
+    });
+
+    it('passes on a service that cannot answer', async () => {
+      const env = { ...db.env, MEDIA_KEY: 'wrong' } as Env;
+      expect((await unused('d=d1&ids=a', { ...signedIn, env })).status).toBe(503);
     });
   });
 

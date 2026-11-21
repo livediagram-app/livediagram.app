@@ -1,0 +1,20 @@
+# The test Worker of automations.workerd.test.ts, run locally by wrangler's unstable_dev and never deployed: it has
+# no route and no deploy script. The account is pinned all the same, as in every wrangler.toml here, so nothing could
+# ever land on another one. SQLite-backed Durable Objects, as the api's own classes are.
+name = "livediagram-api-automations-test"
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "worker.ts"
+compatibility_date = "2026-05-29"
+workers_dev = false
+
+[[durable_objects.bindings]]
+name = "DOCUMENT_ROOM"
+class_name = "TestRoom"
+
+[[durable_objects.bindings]]
+name = "BENCH"
+class_name = "Bench"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TestRoom", "Bench"]

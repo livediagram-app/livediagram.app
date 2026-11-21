@@ -37,3 +37,4 @@ export * from './feature-art/article-looks';
 // Tables, contents, headers and footers in an article's writing; Find and Replace; Word and PowerPoint import.
 export * from './feature-art/article-blocks';
 export * from './feature-art/writing-tools';
+export * from './feature-art/automations';

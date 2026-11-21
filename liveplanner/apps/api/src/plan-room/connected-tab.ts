@@ -42,6 +42,7 @@ export async function connectedTabArrival(env: PlanEnv, planId: string): Promise
       name: t.name,
       orderIndex: t.orderIndex,
       ...(t.folder ? { folder: t.folder } : {}),
+      ...(t.folderColor ? { folderColor: t.folderColor } : {}),
       ...(t.connection ? { connection: t.connection } : {}),
     })),
   };

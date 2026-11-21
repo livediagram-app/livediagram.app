@@ -179,20 +179,26 @@ the app's to report, so each change is counted once.
 `?app=liveplanner.app`, `?app=livedocuments.app`, `?app=livedesign.app`, `?app=livehuddle.app` or `?app=liveknowledge.app` opens one app's own dashboard, with all of
 its tabs, catalogues and explanations. Picking an app on the page updates the link.
 
-- **All Apps** adds every app's events together. It shows the three windows (today, last 7 days,
-  last 30 days) and the 30-day trend line, then **Apps Compared** (its own section, below), then **Project Kits**
+- **All Apps** adds every app's events together, in the shape of an app's own dashboard: the three windows (today,
+  last 7 days, last 30 days) and the 30-day trend line, then the same tab row. Its **Dashboard** opens with **At a
+  Glance**, six cards for every app added up (Events, Avg Daily Visitors, New Visitors, Returning Visitors, Sign-Ups,
+  Sign-Ins), each the card an app's Dashboard uses (its number, its arrow against the span before, a sentence, its
+  30-day line), then **Apps**, a card an app under its logo: its events and share of them, its new and returning
+  visitors and sign-ups, its 30-day line in its accent, and **Open Dashboard**, which picks the app. Its Detail tabs
+  are **Events by App** and **Visitors & Accounts** (Apps Compared, its own section below), **Project Kits**
   (liveworkspace.app's own kit events, [../004-index/kits.md](../004-index/kits.md) "Telemetry": Started, Retried,
-  Completed and Removed a day, every kit together, with each window's totals), then **Forum Checks** (the Community
+  Completed and Removed a day, every kit together, with each window's totals), **Forum Checks** (the Community
   Forum's server check: today's checks and Neurons against the daily caps, and both a day for the last 30 days, read
   from the Community service's `GET /forum/checks`, which keeps the tally itself, [007-community](../007-community/community.md)
-  "The Forum"), then the busiest events.
+  "The Forum"; the read is made when the tab is opened, not with the page), and **Busiest Events**, the 25 sent most.
+  All Apps has no Search: each app's events read in its own vocabulary.
   The same event from two apps counts as one busiest-events row, added up.
 - **One app** shows the dashboard that app had before. Every app's dashboard is the same views, in
   `_shared/` in the dashboard's folder (a private folder, so it is no route), filled from that app's
   data in `<app>/`, which only loads when that app is picked.
 
 ```
-app/telemetry/_all        All Apps' Apps Compared: its figures (apps-compared.ts), charts and tables
+app/telemetry/_all        All Apps' tabs: its Dashboard cards (Overview), Apps Compared's figures, charts and tables
 app/telemetry/_shared     the views and their logic, once: AppDashboard, the tabs, cards, charts, rankings
 app/telemetry/<app>       the app's data: config.ts, its catalogue, event explanations, retired events, tests
 ```
@@ -200,9 +206,7 @@ app/telemetry/<app>       the app's data: config.ts, its catalogue, event explan
 `<app>/config.ts` is the whole difference between two apps' dashboards (`TelemetryAppConfig` in
 `_shared/app.ts`): its name, the noun for what it makes (document, project, design), its accent, its
 category colours, how its events read (`createEventExplanation` over its own sentences), its retired
-events, its call-to-action vocabulary, and the charts on each tab and section. A section an app has
-nothing for is left out rather than shown empty: Community is livediagram's only, and Modes is left
-out for liveplanner, which has no canvas modes. `<app>/Body.tsx` hands the config to `AppDashboard`,
+events, its call-to-action vocabulary, and the charts on each tab (The tabs, below). `<app>/Body.tsx` hands the config to `AppDashboard`,
 which gives it to every view through context. The accent itself is CSS: the page wraps the dashboard in
 `data-app="<app>"` and `telemetry.css` sets that app's brand scale under it. Anything portalled out to
 `<body>` (a stack's modal) copies the `data-app` of the card that opened it, so it wears the same accent
@@ -212,6 +216,26 @@ rather than falling back to the default sky (Work Tracker #588). The views draw 
 through `@livediagram/ui`. The shared views are tested against
 every app's config (`_shared/test-apps.ts`).
 
+**The tabs.** Under the window panel sits one tab row, the same on All Apps and on every app. **Dashboard** (and,
+for an app, **Search**) stand on their own at the left; every other view is a closer look at one area, in a bar
+titled **Detail**. **A tab an area**: an area is found by its name in the row, never by scrolling a longer page.
+(Until November 2026 four tabs gathered the areas as sections: Features, Pages & Help, Community and Health; Pages &
+Help alone held three.) An app's Detail tabs, in order: **Editing**, **Palette**, **Modes**, **Look & Feel**,
+**Settings**, its people tab (**Facilitation**, or **Discussion & Teams**: the config's `teamwork`), **Explorer**,
+**Community**, **Connections**, **Pages**, **Help**, **Tours & Prompts**, **Exceptions**, **Timings** (the editor's)
+and **Web Vitals** (each site's page loads). A tab an app has nothing for is left out rather than shown empty: Modes
+for liveplanner, which has no canvas modes, and Explorer for every app but liveplanner, whose Explorer charts sit on
+its Dashboard. Every app has Community, the same view over its own categories. The keys, their order and which an
+app shows are `DETAIL_KEYS` and `detailTabs` (`_shared/view-keys.ts`, `_shared/detail-tabs.tsx`). From a tablet up the
+Detail bar **wraps** onto further rows, so no tab hides behind a chevron; on a phone it is one row that scrolls
+sideways, with chevrons. A stack's **See also** names a tab: following it opens that tab at its top. Only the
+Dashboard's code ships with the page; each other tab's loads on its own, fetched while the browser is idle.
+
+**Naming an app.** Wherever the dashboard names an app (the chips, a legend entry, a scope picker, a table row, a
+card) it shows the app's logo: its prism and its wordmark with "live" in its accent (`AppBrand`), and liveworkspace.app
+its own slate wordmark. Never the bare address. A chart's tooltip, which is plain text, spells the name as the logo
+does (`livediagram`).
+
 **The window.** Today, Last 7 days and Last 30 days are the three windows, picked on the panel at the top, and
 every number under it follows the one picked. The page holds the window, not each dashboard, so picking another
 app (or All Apps) keeps it: a switch never starts again at Last 7 days. A reload does, since the window is in
@@ -220,9 +244,8 @@ neither the URL nor storage. There is no 90-day window: the events are kept 60 d
 **Loading.** The page never goes blank while numbers load: on the first visit, on picking an app
 whose summary hasn't come yet, and while that app's own dashboard code downloads. The header, the
 app chips and the closing note stay put, and where the numbers go a skeleton holds their shapes in
-the layout they will take: the three window tiles and the trend chart, then for All Apps Apps
-Compared's charts, tiles and table rows and the busiest-event rows under their real titles, and for one app the tab row and a
-grid of metric cards. The skeleton reserves the heights of the panel and tabs above the fold, so
+the layout they will take: the three window tiles and the trend chart, then the tab row and the Dashboard tab's
+grid of metric cards (for All Apps, At a Glance's six and a card an app). The skeleton reserves the heights of the panel and tabs above the fold, so
 nothing above the cards moves when the data lands. It is static markup with a gentle pulse that
 stops under reduced motion, and it is marked busy for assistive tech. An app's earlier numbers are
 not kept on screen dimmed in the meantime: the two dashboards are different shapes, and another

@@ -5,6 +5,7 @@
 // Each empty slot is a pick, named by the path the builder and the api use (`trigger`, `conditions.0`, `steps.1`,
 // `steps.0.then.0`); `picksLeft` answers those still empty, so the builder marks them until they are filled. Pure.
 
+import { picksLeft as picksStillEmpty } from '@liveworkspace/automations';
 import type {
   AutomationAction,
   AutomationCondition,
@@ -642,19 +643,8 @@ export const automationTemplate = (id: string): AutomationTemplate | undefined =
 
 // ---- What is left to pick -----------------------------------------------------------------------------------------
 
-function partAt(body: AutomationRuleBody, path: string): unknown {
-  const [head, a, b, c] = path.split('.');
-  if (head === 'trigger') return body.trigger;
-  if (head === 'conditions') return body.conditions[Number(a)];
-  const step = body.steps[Number(a)];
-  if (b === undefined || !step) return step;
-  if (step.kind === 'for' && b === 'then') return step.then[Number(c)];
-  return undefined;
-}
-
 // Whether a pick's slot is still empty: a column, a type, a field, a label, the people in turn, a webhook.
 function stillEmpty(part: unknown, pick: AutomationPick): boolean {
-  if (part === undefined) return false;
   const p = part as AutomationTrigger | AutomationCondition | AutomationAction | AutomationOutgoing;
   switch (pick) {
     case 'column':
@@ -686,5 +676,8 @@ export function picksLeft(
   body: AutomationRuleBody,
   picks: readonly AutomationTemplatePickAt[],
 ): AutomationTemplatePickAt[] {
-  return picks.filter((p) => stillEmpty(partAt(body, p.path), p.pick));
+  // A path walks into a branch's actions alone (`steps.0.then.0`).
+  return picksStillEmpty(body, picks, stillEmpty, (step, list) =>
+    step.kind === 'for' && list === 'then' ? step.then : undefined,
+  );
 }

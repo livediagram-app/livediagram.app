@@ -123,14 +123,23 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       return op.tabs.map((summary) => {
         const local = localById.get(summary.id);
         if (local) {
-          const folder = summary.folder;
+          const { folder, folderColor } = summary;
           return carryConnection(
-            (local.folder ?? undefined) === (folder ?? undefined) ? local : { ...local, folder },
+            (local.folder ?? undefined) === (folder ?? undefined) &&
+              (local.folderColor ?? undefined) === (folderColor ?? undefined)
+              ? local
+              : { ...local, folder, folderColor },
             summary,
           );
         }
         return carryConnection(
-          { id: summary.id, name: summary.name, elements: [], folder: summary.folder },
+          {
+            id: summary.id,
+            name: summary.name,
+            elements: [],
+            folder: summary.folder,
+            folderColor: summary.folderColor,
+          },
           summary,
         );
       });

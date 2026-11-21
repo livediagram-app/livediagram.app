@@ -17,7 +17,6 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVideo,
-  lucideWebhook,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livehuddle/ui';
 import type { ReactNode } from 'react';
@@ -663,10 +662,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideTimer} />
     </Glyph>
   ),
-  // A Space's events leaving for another service.
-  webhooks: (
+  // A lightning bolt inside a turning loop: a rule that runs on its own, again and again.
+  automations: (
     <Glyph>
-      <Prims prims={lucideWebhook} />
+      <path d="M4.5 12a7.5 7.5 0 0112.9-5.2" />
+      <path d="M17.8 3.6v3.4h-3.4" />
+      <path d="M19.5 12a7.5 7.5 0 01-12.9 5.2" />
+      <path d="M6.2 20.4V17h3.4" />
+      <path d="M12.8 7.8l-3.3 4.9h3l-.8 3.5 3.3-4.9h-3z" />
     </Glyph>
   ),
   'layout-cleanup': (

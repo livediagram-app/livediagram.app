@@ -43,6 +43,12 @@ const TELEMETRY_SITE = `${ROOT}/../liveworkspace/apps/site/app/telemetry`;
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
 // Snapshots (@liveworkspace/snapshots), drawn inside History in every editor's footer Tools.
 const SNAPSHOTS_PACKAGE = `${ROOT}/../packages/snapshots/src`;
+// Automations (@liveworkspace/automations-ui, the screen; @liveworkspace/automations, the kinds' names), opened from
+// Tools in every editor.
+const AUTOMATIONS_PACKAGES = [
+  `${ROOT}/../packages/automations-ui/src`,
+  `${ROOT}/../packages/automations/src`,
+];
 // The Walkthroughs menu, recording dock and player (@liveworkspace/walkthrough), with its device picker
 // (@liveworkspace/capture), drawn over every canvas editor.
 const WALKTHROUGH_PACKAGES = [
@@ -123,6 +129,7 @@ function editorSource(): string {
   walk(TELEMETRY_SITE);
   walk(WORKBENCH_PACKAGE);
   walk(SNAPSHOTS_PACKAGE);
+  for (const dir of AUTOMATIONS_PACKAGES) walk(dir);
   for (const dir of WALKTHROUGH_PACKAGES) walk(dir);
   return all.toLowerCase();
 }

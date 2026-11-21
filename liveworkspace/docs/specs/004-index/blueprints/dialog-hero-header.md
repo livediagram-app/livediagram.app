@@ -19,7 +19,7 @@ precision, read from the code. Paths are relative to the repository root.
 | `liveplanner/apps/editor/components/automations/AddActionHeroArt.tsx`                      | `addActionHeroArt` (Add an Action, through `StepPicker`'s `art`)                                                                              |
 | `livedocuments/apps/editor/app/globals.css`, `liveworkspace/apps/site/app/app-colours.css` | the heading face's custom properties                                                                                                          |
 | `packages/oxlint-config/raw-svg.ts`                                                        | `**/dialog/hero/**` and `**/*HeroArt.tsx` on the icon-art allowlist                                                                           |
-| `packages/ui/src/dialog/hero/art/webhooks.tsx`                                             | `webhooksHeroArt` (`DocumentWebhooksDialog`)                                                                                                  |
+| `packages/ui/src/dialog/hero/art/webhooks.tsx`                                             | `webhooksHeroArt` (`ConnectionsDialog`)                                                                                                       |
 | `packages/ui/src/dialog/hero/art/team.tsx`, `team-invite.tsx`                              | `teamHeroArt` (Members, New Team, Edit Team) and `teamInviteHeroArt` (Invite by Link), one drawing                                            |
 | `liveplanner/apps/editor/components/plan/configure/BoardConfigureHeroArt.tsx`              | `boardConfigureHeroArt` (Configure Board, through `ClusterPanel`'s `hero`)                                                                    |
 | `liveplanner/apps/editor/components/plan/SetupHeroArt.tsx`                                 | `setupBoardHeroArt`, `setupSheetHeroArt` (`SetupDialog`'s `art`)                                                                              |
@@ -42,7 +42,7 @@ const titleId = useId();
     art={shareHeroArt} // HeroArt, a module constant
     titleId={titleId} // the <h2>'s id
     title="Share This Plan"
-    subtitle={<ShareStatus />} // optional: one line from sm, up to two on a phone
+    subtitle={<ShareStatus />} // optional: up to two lines at every width
     actions={<>…</>} // optional: before the close
     onClose={close} // optional: renders DialogCloseButton last
     underHandle // optional: a phoneSheet dialog
@@ -136,7 +136,7 @@ the kit's close as its actions, and `[--hero-centre-end:17rem]` while the switch
 Measured minified (esbuild, React external): the frame, tokens and helpers are 5.6 KB, 2.4 KB gzipped, beyond the
 `DialogCloseButton` and `SheetHandle` every dialog already loads; Share's art 2.1 KB (1.0 KB gzipped), Automations'
 2.3 KB (1.0 KB gzipped); the shared art: Export's 2.9 KB (1.0 KB), Import's 2.1 KB (1.0 KB), History's 2.4 KB
-(0.9 KB), Share to Community's 1.8 KB (0.9 KB), Webhooks' 2.7 KB (1.0 KB), Team's 2.2 KB (1.0 KB) and Team Invite's
+(0.9 KB), Share to Community's 1.8 KB (0.9 KB), Connections' 2.7 KB (1.0 KB), Team's 2.2 KB (1.0 KB) and Team Invite's
 0.4 KB over it (0.3 KB); the product art: Configure Board's 2.0 KB (0.7 KB), Setup's two 4.2 KB (1.4 KB), Share
 Form's 2.3 KB (1.0 KB) and Choose a Layout's 2.9 KB (1.2 KB gzipped); Settings' 2.7 KB (1.0 KB), Collaborators' 1.7 KB (0.8 KB), Tab Style's 1.8 KB (0.8 KB) and liveworkspace.app's Settings 2.1 KB (0.9 KB, beside the shared Settings art `SettingsView` imports as its default). Art loads only with its dialog's chunk; the
 band paints once.

@@ -9,6 +9,7 @@ import {
   TAB_SAVE_CAS_ATTEMPTS,
   parseChangesetSeen,
 } from '@livehuddle/api-schema';
+import { SOMEONE, asTabWriter } from '@liveworkspace/automations/room';
 import { isValidTab, migrateIncomingTab, type Tab } from '@livehuddle/document';
 import {
   confirmTabConnection,
@@ -167,16 +168,33 @@ export async function writeTabSave(
     try {
       // The merged tab may outgrow the request: the storage layer measures what it stores
       // (docs/specs/015-api/api.md "Tab size").
-      const written = await storeTab(async () => {
-        rev = await upsertTabAtRev(
-          env,
-          id,
-          sanitised,
-          orderIndex,
-          existingTab?.rev ?? 0,
-          connection,
-        );
-      });
+      const store = () =>
+        storeTab(async () => {
+          rev = await upsertTabAtRev(
+            env,
+            id,
+            sanitised,
+            orderIndex,
+            existingTab?.rev ?? 0,
+            connection,
+          );
+        });
+      // A save that makes its tab says who made it, for a Tab Added rule (docs/specs/013-workspace/automations.md).
+      const written = await (existingTab
+        ? store()
+        : asTabWriter(
+            env,
+            'tab_added',
+            async () => ({
+              by: {
+                id: owner,
+                name: writerParticipant?.name ?? SOMEONE.name,
+                color: writerParticipant?.color ?? SOMEONE.color,
+              },
+              role: 'editor' as const,
+            }),
+            store,
+          ));
       if (!written) return payloadTooLarge();
     } catch (err) {
       if (!isTabRevStale(err)) throw err;

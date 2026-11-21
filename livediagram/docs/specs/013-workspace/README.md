@@ -32,4 +32,5 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./snapshots.md - when working on Snapshots: manual save points of the whole document, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
 - ./approvals.md - when working on Approvals: asking named people to approve the canvas, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
 - ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livediagram supplies (the platform's `004-index/inbox-notices.md`)
+- ./automations.md - when working on Automations: rules a document runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (shape libraries, share roles, workbench embeds)

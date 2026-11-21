@@ -745,6 +745,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Form|Toggled|Open': 'Someone switched Accepting Responses on for a published form.',
   'Form|Toggled|Closed':
     'Someone switched Accepting Responses off: the link stays, showing the closed message.',
+  'Form|Opened|Summary':
+    "Someone opened a form's Summary: its responses summed up question by question.",
   'Form|Opened|NotTakingSuspended':
     "Someone pressed a form's Not Taking Responses warning: its link was suspended after reports.",
   'Form|Opened|NotTakingPaused':

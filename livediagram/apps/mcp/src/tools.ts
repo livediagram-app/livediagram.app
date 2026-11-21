@@ -40,6 +40,7 @@ import {
   type TrashedDocument,
 } from '@livediagram/api-schema';
 import { createdFolderLabel } from '@liveworkspace/mcp-kit/created-folder';
+import { createdTabRev } from '@liveworkspace/mcp-kit/app-view-step';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from '@liveworkspace/mcp-kit/env';
@@ -75,9 +76,11 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
+import { fileAddedTab, registerTabFolderTools } from './tab-folder-tools';
 import { appendTemplateDeck, deckNote, slidesForTemplateTab } from './template-deck';
 import { registerArchiveTools } from './archive-tools';
 import { registerThreadTools } from './thread-tools';
+import { registerRuleTools } from './rule-tools';
 import { registerViewTool, VIEW_TOOL_META } from './view-tab';
 import {
   createDocumentTab,
@@ -288,6 +291,7 @@ export function registerTools(server: McpServer, env: Env): void {
           name: args.name,
           tabCount: tabs.length,
           tabIds,
+          ...(await createdTabRev(shown, () => getTab(env, token, id, shown.id))),
           folder: await createdFolderLabel(clientFor(env, token), created, 'create_document'),
           url: deepLink(env, id),
           lint,
@@ -406,15 +410,18 @@ export function registerTools(server: McpServer, env: Env): void {
         ...(linkedNote ? [linkedNote] : []),
         ...(deck ? [deck] : []),
       ];
+      // A tab folder files the new tab (docs/specs/006-document/tab-folders.md "Agents").
+      const filed = await fileAddedTab(env, token, args.documentId, tabId, args.folder);
       return imageResult(
         {
           documentId: args.documentId,
           tabId,
           name: tab.name,
+          ...(filed.folder ? { folder: filed.folder } : {}),
           url: deepLink(env, args.documentId),
           changesetId: answer.changeset?.id ?? null,
           rev: tab.rev,
-          text: mcpResultText(answer.text),
+          text: [mcpResultText(answer.text), filed.refused].filter(Boolean).join('\n'),
           lint: lintLineOf(answer.lint),
           ...(notes.length ? { notes } : {}),
         },
@@ -561,6 +568,8 @@ export function registerTools(server: McpServer, env: Env): void {
     });
   });
 
+  registerTabFolderTools(server, env);
+
   registerTool(server, env, mcpDeleteDocument, async (args, extra) => {
     const token = requireToken(extra);
     // A whole document only ever goes to the Trash (docs/specs/013-workspace/trash.md):
@@ -638,6 +647,9 @@ export function registerTools(server: McpServer, env: Env): void {
 
   // Comment threads (docs/specs/015-api/mcp-server.md "Comment threads"): list_threads and change_threads.
   registerThreadTools(server, env);
+
+  // Automations rules (docs/specs/013-workspace/automations.md "Agents"): list_rules and change_rules.
+  registerRuleTools(server, env);
 
   // The interactive view's own call.
   registerViewTool(server, env);

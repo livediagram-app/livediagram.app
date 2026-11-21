@@ -11,10 +11,12 @@
 // Made on first use, never on construction (@liveworkspace/index-app item-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
+import { itemAutomationSchemaSteps } from '@liveworkspace/automations/room';
 import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 
@@ -321,11 +323,35 @@ CREATE TABLE IF NOT EXISTS visitor_names (
 );
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8];
+type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
+
+// A tab folder's chosen colour (docs/specs/006-document/tab-folders.md "Folder colour"), `document_tabs.folder_color`: a hue
+// name beside the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as
+// Automatic.
+const V9 = tabFolderColourStep('document_tabs');
+
+// Automations (docs/specs/013-workspace/automations.md; blueprint automations.md "Schema"): the engine's own steps,
+// in its order, one entry each. Steps 10 to 17 are its rules, schedule, Incoming Webhook secrets, held runs, Describe a
+// Rule's count, the once-per-stretch marks, the typed-in addresses and the replay and AI counts; step 18 is the item
+// engine's tables and its three SQL triggers on `tabs` and `document_tabs` (@liveworkspace/automations/room
+// itemAutomationSchemaSteps). They follow the folder colour step, which shipped first.
+// livehuddle has no comment threads, so no collab step follows.
+const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  V8,
+  V9,
+  ...AUTOMATION_STEPS,
+];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
-
-type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
 
 // Bring the document's SQLite up to DOCUMENT_SCHEMA_VERSION. Idempotent: every statement is IF NOT EXISTS, and the
 // version row skips what already ran. Runs inside the caller's transaction when it has one.
@@ -334,7 +360,11 @@ export function migrateDocumentSchema(exec: Exec): void {
   const row = exec('SELECT version FROM _document_schema LIMIT 1').toArray()[0];
   const at = typeof row?.version === 'number' ? row.version : 0;
   if (at >= STEPS.length) return;
-  for (let step = at; step < STEPS.length; step++) exec(STEPS[step]!);
+  for (let step = at; step < STEPS.length; step++) {
+    const run = STEPS[step]!;
+    if (typeof run === 'string') exec(run);
+    else run(exec);
+  }
   exec('DELETE FROM _document_schema');
   exec(`INSERT INTO _document_schema (version) VALUES (${STEPS.length})`);
 }

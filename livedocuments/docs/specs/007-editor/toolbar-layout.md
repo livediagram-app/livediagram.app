@@ -19,7 +19,8 @@ someone is on, each opening a flyout of its tiles:
   ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Format / Laser / Spotlight / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
-  as a compact icon trigger, opening the banded tile grid.
+  as a compact icon trigger, opening the banded tile grid. No divider follows it: the category bar starts
+  right after, and the Library and Search at the end need none either, since their tint sets them apart.
 - **Then the category bar** ("The category bar"). Its tiles are the Palette's tiles (`palette-tile-defs`, arranged
   by the page kind's palette layout, [Pages](pages-mode.md) "The palette's kind"), rendered by the shared
   `PaletteTile`, so the strip and its popovers stay alike. On an article page the strip holds the article's
@@ -163,7 +164,7 @@ height, so switching group never moves the flyout. Each reopens on the group it 
 A strip shows one category at a time, so finding an element means knowing which category holds it.
 **Search** finds it by name instead, across every category.
 
-- **Where:** the last control on the strip, behind a divider, with a hover card ("Search Elements"). On a phone it
+- **Where:** the last control on the strip, with no divider before it or the Library (their tint sets them apart from the other controls), and a hover card ("Search Elements"). On a phone it
   stays put while the bar swipes.
 - **Opening it clears the way**: a tile armed to place is let go (its "Click to drop" banner goes), since it sits
   where the panel hangs.
@@ -246,10 +247,8 @@ button's left edge (`computeDockAnchor(..., 'button')`). The button has no hover
 got in the way of the Explorer's app switcher, and the icon is plain. Its `aria-label` ("Explorer") names it.
 
 The Explorer's header has its own **⋯** menu: New Document and Open Explorer, then the open document's own verbs
-(**Share**, **Export**, and the open document's own **Webhooks**), then the app's rows (Search, Settings and the like). Webhooks is
-offered to a signed-in account who can edit the whole document (not a Viewer, a Participant or a one-tab link) and opens
-the same Webhooks dialog as an item's ⋯ menu in the Explorer, for this document alone
-([webhooks.md](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)).
+(**Share** and **Export**), then the app's rows (Search, Settings and the like). It has no Webhooks row: what is left
+of a webhook is a connection, on the Connections tab inside [Automations](../013-workspace/automations.md).
 
 Collaborate, Slides and Contents open as **popovers over their bottom-row
 buttons** ([Editor app](editor-app.md)): they are not corner panels. Every

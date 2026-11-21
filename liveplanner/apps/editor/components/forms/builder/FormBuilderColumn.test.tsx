@@ -58,7 +58,6 @@ function Harness({ canEdit, start = START }: { canEdit: boolean; start?: FormDef
     newFormFor: vi.fn(),
     changeFormQuietly: vi.fn(),
     setDestinationType: vi.fn(),
-    setDestinationBoard: vi.fn(),
     addTypeQuestions: vi.fn(),
     addQuestionFields: vi.fn(),
     setResponsesTo: vi.fn(),
@@ -304,5 +303,42 @@ describe('a Default Answer the question would refuse', () => {
     fireEvent.blur(box);
     expect(questionsOf(latest)[0]!.fallback).toBeUndefined();
     expect(screen.getByText('That isn’t an answer this question accepts.')).toBeTruthy();
+  });
+});
+
+// A list pasted into an empty wording (docs/specs/030-forms/forms.md "The form card, top to bottom").
+describe('pasting a list of questions', () => {
+  const paste = (text: string) =>
+    fireEvent.paste(screen.getByRole('textbox', { name: 'Question' }), {
+      clipboardData: { getData: () => text },
+    });
+  const EMPTY: FormDefinition = {
+    ...START,
+    sections: [{ id: 's-1', title: '', questions: [{ id: 'q-1', type: 'paragraph', prompt: '' }] }],
+  };
+
+  it('makes a question a line, of the same type, and opens the last', () => {
+    render(<Harness canEdit start={EMPTY} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit question: Untitled Question' }));
+    expect(paste('1. What went well?\n2. What did not?\n3. What next?')).toBe(false);
+    expect(questionsOf(latest).map((q) => [q.prompt, q.type])).toEqual([
+      ['What went well?', 'paragraph'],
+      ['What did not?', 'paragraph'],
+      ['What next?', 'paragraph'],
+    ]);
+    expect(screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Question' }).value).toBe(
+      'What next?',
+    );
+  });
+
+  it('leaves a single line, and a paste into wording already typed, to the field', () => {
+    render(<Harness canEdit start={EMPTY} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit question: Untitled Question' }));
+    expect(paste('Only one line')).toBe(true);
+    fireEvent.change(screen.getByRole('textbox', { name: 'Question' }), {
+      target: { value: 'Typed' },
+    });
+    expect(paste('A\nB')).toBe(true);
+    expect(questionsOf(latest)).toHaveLength(1);
   });
 });

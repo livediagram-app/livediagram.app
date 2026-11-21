@@ -6,6 +6,8 @@ export * from './pages-schema';
 export * from './components-schema';
 export * from '@liveworkspace/agent-verbs/mcp/image-schema';
 export * from './archive-tools';
+export * from './tab-folder-tools';
 export * from './thread-tools';
+export * from './rule-tools';
 export * from './view-tool';
 export * from '../verbs/mcp-tools';

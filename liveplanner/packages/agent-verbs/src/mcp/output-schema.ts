@@ -6,6 +6,7 @@
 import { EMPTY_PROJECT_STALE_DAYS, TRASH_REASONS } from '@liveplanner/api-schema';
 import { z } from 'zod';
 import { foundArchived } from './archive-tools';
+import { addedTabFolder, listedTab } from './tab-folder-tools';
 
 const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
 const projectId = z.string().describe('The plan id.');
@@ -48,7 +49,7 @@ export const readProjectOutput = {
     })
     .describe('The tab that was read.'),
   tabs: z
-    .array(z.object({ id: tabId, name: z.string().describe('The tab name.') }))
+    .array(listedTab)
     .describe('Every tab of the plan, in order: pass one as tabId to read it.'),
   url,
 };
@@ -106,6 +107,7 @@ export const addTabOutput = {
   projectId,
   tabId: tabId.describe('The new tab id.'),
   name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
+  folder: addedTabFolder,
   url,
   note: z
     .string()

@@ -18,7 +18,6 @@ import { handleAppPeople } from './notices';
 import { pushAppEvents } from './event-push';
 import { FUTURE_SLACK_MS } from './events';
 import { pushAutomationSends } from './webhooks/automation-sends';
-import { pushCardMoves } from './webhooks/routes';
 
 const isTime = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -62,7 +61,7 @@ export async function handleApp(
     segments[5] === 'seen' &&
     isPartId(segments[4]) &&
     isId(segments[6]);
-  // /app/items/:id/automation-sends: an automation rule's messages through the plan's own webhooks (a POST).
+  // /app/items/:id/automation-sends: an automation rule's messages through the item's own connections (a POST).
   const automationSends =
     request.method === 'POST' && segments.length === 4 && segments[3] === 'automation-sends';
   // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events, /app/items/:id/card-moves,
@@ -127,9 +126,9 @@ export async function handleApp(
     return pushAppEvents(env, itemId, body);
   }
 
-  // A plan's cards that changed status, for its own webhooks only (webhooks/routes.ts).
-  if (segments.length === 4 && segments[3] === 'card-moves')
-    return pushCardMoves(env, itemId, request);
+  // A plan's card moves, once sent to its webhooks: connections hear no events (webhooks.md "No event
+  // subscriptions"), so the push is taken and dropped until liveplanner stops sending it.
+  if (segments.length === 4 && segments[3] === 'card-moves') return noContent();
 
   if (segments.length === 5 && segments[3] === 'collab' && isPartId(segments[4])) {
     return pushCollab(request, env, app, itemId, segments[4]);

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AutomationSecretResponse } from '@liveplanner/api-schema';
 import { endRepeatWorld } from '../test-repeat-world';
 import type { Env } from '../../types';
-import { AutomationTally, tallyRun } from './automation-telemetry';
+import { AutomationTally, flushTally, tallyRun } from './automation-telemetry';
 import { automationWorld, type AutomationWorld } from './test-automation-world';
 
 // What a plan's Automations do on their own, counted from the api (docs/specs/026-plan/automations.md "Telemetry"):
@@ -146,13 +146,13 @@ describe('the tally', () => {
     tally.track('Plan', 'Ran', 'AutomationCrashed');
     expect(tally.size).toBe(121);
     posts = [];
-    await tally.flush(w.env);
+    await flushTally(tally, w.env);
     expect(posts[0]).toHaveLength(100);
     expect(posts[0]!.slice(0, 61).every((r) => !r[2]!.startsWith('AutomationTrigger.'))).toBe(true);
     expect(posts[0]![60]).toEqual(['Plan', 'Ran', 'AutomationCrashed']);
     expect(posts[0]![61]).toEqual(['Plan', 'Ran', 'AutomationTrigger.Scheduled']);
     expect(tally.size).toBe(0);
-    await tally.flush(w.env);
+    await flushTally(tally, w.env);
     expect(posts).toHaveLength(1);
   });
 

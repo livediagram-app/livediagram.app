@@ -10,6 +10,7 @@ import {
   ArticleWrapArt,
   ApprovalArt,
   AssignedActionsArt,
+  AutomationsArt,
   CommentsArt,
   ContentsSidebarArt,
   ExpiryArt,
@@ -520,6 +521,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Stop sharing on demand',
         description:
           'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The document is yours again.',
+      },
+      {
+        art: <AutomationsArt />,
+        href: '/help/tools/automations/',
+        group: 'AI & your tools',
+        title: 'Automations that keep it current',
+        description:
+          'Give a document rules of its own: name a version every Friday, tell Slack or Microsoft Teams about new comments and versions, or email you when nobody has touched it in 90 days. Rules run on our servers, even with nobody in the document.',
       },
       {
         art: <McpArt />,

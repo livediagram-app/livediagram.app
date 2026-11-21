@@ -18,6 +18,7 @@ import { NAME_MAX_LENGTH } from '@livehuddle/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livehuddle/document-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
 import { TAB_DELTA_OPENAPI } from '@liveworkspace/api-kit/tab-delta-door';
+import { itemAutomationOperations } from '@liveworkspace/automations/room';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
@@ -996,6 +997,30 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/images/unused',
+    segment: 'images',
+    tag: 'Images',
+    summary:
+      "Which of the caller's own images nothing but one document uses, in any app: no other item, Library item or unconfirmed reference.",
+    auth: 'clerk',
+    tokenUsable: false,
+    query: [
+      {
+        name: 'd',
+        required: true,
+        description: 'The document asking (its own reference is left out).',
+      },
+      { name: 'ids', required: true, description: 'Up to 50 image ids, comma-separated.' },
+    ],
+    responseSchema: {
+      type: 'object',
+      properties: { unused: { type: 'array', items: { type: 'string' } } },
+      required: ['unused'],
+    },
+    statuses: [200, 400, 403, 503],
+  },
+  {
+    method: 'GET',
     path: '/images/{id}',
     segment: 'images',
     tag: 'Images',
@@ -1449,4 +1474,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     },
     statuses: [204],
   },
+  // A Space's Automations (docs/specs/013-workspace/automations.md): the platform's operations
+  // (@liveworkspace/automations/room openapi.ts) under this api's collection.
+  ...itemAutomationOperations({ collection: 'documents', itemWord: 'Space' }),
 ];

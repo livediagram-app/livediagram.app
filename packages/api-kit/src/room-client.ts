@@ -276,7 +276,13 @@ export function createRoomClient<
     env: Env,
     roomId: string,
     name: string,
-    tabs: readonly { id: string; name: string; orderIndex: number; folder?: string }[],
+    tabs: readonly {
+      id: string;
+      name: string;
+      orderIndex: number;
+      folder?: string;
+      folderColor?: string;
+    }[],
   ): Promise<boolean> {
     const op = {
       kind: metaKind,
@@ -286,6 +292,7 @@ export function createRoomClient<
         name: t.name,
         orderIndex: t.orderIndex,
         ...(t.folder ? { folder: t.folder } : {}),
+        ...(t.folder && t.folderColor ? { folderColor: t.folderColor } : {}),
       })),
     };
     return relayMutation(env, roomId, op, (error) =>

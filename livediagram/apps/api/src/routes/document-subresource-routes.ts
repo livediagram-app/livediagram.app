@@ -14,7 +14,9 @@ import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabDelta } from './tab-delta-route';
 import { TAB_DELTA_SEGMENT } from '@liveworkspace/api-schema/tab-delta';
 import { handleTabRename } from './tab-name-route';
-import { handleChangesetRoutes, refreshAfterRead } from './changesets';
+import { authorOf, handleChangesetRoutes, refreshAfterRead } from './changesets';
+import { asTabWriter } from '@liveworkspace/automations/room';
+import { handleAutomationRoutes } from './automation-routes';
 import { handleCommentRoutes } from './comment-routes';
 import { handleActionRoutes } from './action-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
@@ -41,6 +43,9 @@ export async function handleDocumentSubresources(
   ctx: DocumentRouteContext,
 ): Promise<Response | null> {
   const { request, env, segments } = ctx;
+  // The canvas's Automations (docs/specs/013-workspace/automations.md).
+  const automations = await handleAutomationRoutes(ctx);
+  if (automations) return automations;
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
@@ -181,7 +186,16 @@ export async function handleDocumentSubresources(
       // Read before the gates' awaits, the count is checked again in the delete itself, so two token deletes at
       // once can't take a document's last two tabs.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      const removed = await deleteTabRow(env, id, tabId, { keepLast: !!ctx.token });
+      // Whoever removes it, for a Tab Removed rule (docs/specs/013-workspace/automations.md).
+      const removed = await asTabWriter(
+        env,
+        'tab_removed',
+        async () => ({
+          by: await authorOf(ctx, owner),
+          role: ctx.token ? ('agent' as const) : ('editor' as const),
+        }),
+        () => deleteTabRow(env, id, tabId, { keepLast: !!ctx.token }),
+      );
       if (removed === 'last') return conflict('last_tab');
       // The links scoped to it go with it (docs/specs/013-workspace/tab-scoped-share-links.md): the index revokes
       // them and their holders leave the editor as on a revoke. Asked as the caller, off the response path; a link

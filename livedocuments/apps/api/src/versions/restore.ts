@@ -24,6 +24,11 @@ import { heldTargets } from '../changesets/held-check';
 import { readStoredTab, type StoredTab } from '../changesets/stored-tab';
 import { SUBMIT_ATTEMPTS } from '../changesets/submit';
 import { writeChangeset, type Author } from '../changesets/write';
+import {
+  personWho,
+  queueVersionEvent,
+  type VersionWho,
+} from '../document-room/automations/version-events';
 import { parseVersionBody, restoredTab, restoreRoomOps, sameContent } from './restore-tab';
 
 export type RestoreResult =
@@ -40,6 +45,10 @@ type RestoreArgs = {
   version: StoredVersion;
   author: Author;
   tokenId: string | null;
+  tokenName?: string | null;
+  // Who the document's rules hear restored it: a rule's own step names itself; by default the author (an agent by
+  // its token's name).
+  who?: VersionWho;
 };
 
 const notFound = (message: string): RestoreResult => ({
@@ -102,6 +111,13 @@ export async function restoreVersion(args: RestoreArgs): Promise<RestoreResult> 
         body: { error: 'tab_too_large', message: 'That version no longer fits a tab.' },
       };
     }
+    // Version Restored, for the document's rules (docs/specs/013-workspace/automations.md).
+    queueVersionEvent(env, 'restored', {
+      tab: tabId,
+      version: version.summary.id,
+      name: version.summary.name,
+      who: args.who ?? personWho(args.author, args.tokenId ? { name: args.tokenName } : null),
+    });
     // Awaited, bounded per op; a room that misses one is logged and never fails the restore.
     await relayPages(env, document.id, restoreRoomOps(stored.tab, next), '[versions]');
     console.info('[versions] restored', {
@@ -156,6 +172,7 @@ async function write(
       orderIndex: stored.orderIndex,
       author: args.author,
       tokenId: args.tokenId,
+      tokenName: args.tokenName ?? null,
       summary: restoreSummary(args.version.summary.name),
       baseRev: stored.rev,
       rebasedOver: 0,

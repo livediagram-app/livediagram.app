@@ -7,12 +7,7 @@ import {
   TAB_RENAME_FIELD_CLASS,
 } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import { TabStrip } from '@liveworkspace/workbench/components/chrome/TabStrip';
-import {
-  folderNamesInDesign,
-  groupTabsIntoRuns,
-  tabFolderName,
-  type Tab,
-} from '@livedesign/design';
+import { tabFolderSummaries, groupTabsIntoRuns, tabFolderName, type Tab } from '@livedesign/design';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { Participant } from '@/lib/identity';
 import { safeInlinePadding, safeInset } from '@livedesign/ui';
@@ -70,8 +65,11 @@ type TabBarProps = {
   // Folder membership actions (docs/specs/006-design/tab-folders.md), menu-only. Move the active tab
   // into a folder by name (new or existing), make it loose again, or
   // rename a folder (rewrites every member).
-  onMoveTabToFolder: (tabId: string, folderName: string) => void;
+  // A brand-new folder takes `colour` (null or left out: Automatic).
+  onMoveTabToFolder: (tabId: string, folderName: string, colour?: string | null) => void;
   onRemoveTabFromFolder: (tabId: string) => void;
+  // Set a folder's colour on every member (null: Automatic), from the Organise dialog's colour button.
+  onSetFolderColour: (folderName: string, colour: string | null) => void;
   onRenameFolder: (oldName: string, newName: string) => void;
   // True when the active tab has at least one element. Used to enable
   // / disable the "Clear content" menu item — disabled on empty tabs
@@ -150,6 +148,7 @@ export function TabBar({
   activeId,
   onMoveTabToFolder,
   onRemoveTabFromFolder,
+  onSetFolderColour,
   onRenameFolder,
   activeTabHasContent,
   onSelect,
@@ -205,7 +204,7 @@ export function TabBar({
 
   // Distinct folder names in this design, for the "Organise in Tab Folder"
   // menu's pick list (docs/specs/006-design/tab-folders.md).
-  const folderNames = folderNamesInDesign(tabs);
+  const folders = tabFolderSummaries(tabs);
 
   // The tab-menu callbacks for a given tab, shared by the per-tab ellipsis
   // menu and the canvas right-click menu so both drive the exact same
@@ -226,12 +225,14 @@ export function TabBar({
     locked: tab.locked === true,
     selfId,
     otherDesigns,
-    folderNames,
+    folders,
     currentFolder: tabFolderName(tab),
-    onMoveToFolder: (name: string) => {
-      onMoveTabToFolder(tab.id, name);
+    onMoveToFolder: (name: string, colour?: string | null) => {
+      onMoveTabToFolder(tab.id, name, colour);
       close();
     },
+    // The dialog stays open: a colour never moves the tab.
+    onSetFolderColour,
     onRemoveFromFolder: () => {
       onRemoveTabFromFolder(tab.id);
       close();

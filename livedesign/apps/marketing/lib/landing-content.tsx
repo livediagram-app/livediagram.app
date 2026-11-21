@@ -3,6 +3,7 @@ import {
   ApiArt,
   ApprovalArt,
   AssignedActionsArt,
+  AutomationsArt,
   CommentsArt,
   ComponentsArt,
   ContentsSidebarArt,
@@ -337,6 +338,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Snapshots and History',
         description:
           'Open History in Tools to see who changed what. Take a named snapshot before a big change, and revert the whole design to it in one step if the change goes wrong. The latest five are kept, pinned on the timeline.',
+      },
+      {
+        art: <AutomationsArt />,
+        href: '/help/tools/automations/',
+        group: 'Work together live',
+        title: 'Automations for the handoff',
+        description:
+          'Give a design rules of its own: post feedback and library changes to Slack or Microsoft Teams, email you once every thread is resolved, or take a snapshot every Friday. Rules run on our servers, even with nobody in the design.',
       },
       {
         art: <WalkthroughArt />,

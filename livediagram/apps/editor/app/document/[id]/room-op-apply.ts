@@ -106,7 +106,13 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
         const patch = Object.fromEntries(
           Object.entries(op.patch ?? {}).filter(([key]) => !META_SKIP.has(key)),
         ) as Partial<Omit<Tab, 'elements'>>;
-        const merged: Tab = { ...tab, ...patch, id: tab.id, folder: tab.folder };
+        const merged: Tab = {
+          ...tab,
+          ...patch,
+          id: tab.id,
+          folder: tab.folder,
+          folderColor: tab.folderColor,
+        };
         if ('vote' in patch) {
           const vote = mergeRemoteVote(tab.vote, patch.vote);
           if (vote === undefined) delete merged.vote;
@@ -129,14 +135,23 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
       return op.tabs.map((summary) => {
         const local = localById.get(summary.id);
         if (local) {
-          const folder = summary.folder;
+          const { folder, folderColor } = summary;
           return carryConnection(
-            (local.folder ?? undefined) === (folder ?? undefined) ? local : { ...local, folder },
+            (local.folder ?? undefined) === (folder ?? undefined) &&
+              (local.folderColor ?? undefined) === (folderColor ?? undefined)
+              ? local
+              : { ...local, folder, folderColor },
             summary,
           );
         }
         return carryConnection(
-          { id: summary.id, name: summary.name, elements: [], folder: summary.folder },
+          {
+            id: summary.id,
+            name: summary.name,
+            elements: [],
+            folder: summary.folder,
+            folderColor: summary.folderColor,
+          },
           summary,
         );
       });

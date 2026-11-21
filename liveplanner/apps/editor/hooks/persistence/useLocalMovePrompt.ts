@@ -8,6 +8,7 @@ import {
   dismissLocalMove,
   shouldOfferLocalMove,
 } from '@liveworkspace/workbench/lib/offline/local-move-dismissal';
+import { usePublishLocalMoveShowing } from '@liveworkspace/workbench/lib/offline/local-move-showing';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { ImportChecklistRow } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
@@ -31,6 +32,8 @@ export function useLocalMovePrompt(opts: {
 }) {
   const { enabled, authLoaded, accountUserId } = opts;
   const [phase, setPhase] = useState<LocalMovePhase>({ kind: 'idle' });
+  // Up, other arrivals' dialogs (the Automations gate) wait for it.
+  usePublishLocalMoveShowing(phase.kind !== 'idle');
   const [rows, setRows] = useState<ImportChecklistRow[]>([]);
   const [checked, setChecked] = useState<ReadonlySet<string>>(new Set());
 

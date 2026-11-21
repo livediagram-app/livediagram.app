@@ -36,6 +36,9 @@ type EmailMessage = {
   // a native unsubscribe affordance (we point it at the profile page rather than
   // a one-click POST endpoint, by design — docs/specs/014-identity/transactional-email.md).
   unsubscribeUrl?: string;
+  // `unsubscribeUrl` is a one-click POST door (RFC 8058), sent with List-Unsubscribe-Post: a rule's email to a
+  // typed-in address (@liveworkspace/automations/room email.ts).
+  oneClick?: boolean;
 };
 
 // The longest a send may wait is @liveworkspace/email's (10 s): sends run in the daily email cron and in
@@ -57,6 +60,7 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
       subject: msg.subject,
       html: msg.html,
       ...(msg.unsubscribeUrl && { unsubscribeUrl: msg.unsubscribeUrl }),
+      ...(msg.unsubscribeUrl && msg.oneClick && { oneClick: true }),
     });
   } catch (err) {
     // Email Service's refusal code (such as E_RECIPIENT_SUPPRESSED) when it gave one; anything else, a timeout

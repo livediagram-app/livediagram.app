@@ -11,6 +11,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'design',
   // The guest handoff's way back, /auth/guest (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests").
   'auth',
+  // A rule email's unsubscribe page, /email-optout (docs/specs/013-workspace/automations.md "Unsubscribing").
+  'email-optout',
   'embed',
   'explorer',
   'get-started',

@@ -428,8 +428,6 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
                           onChange={onCanvasToolChange}
                           options={canvasToolOptions}
                         />
-                        {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
-                        {swipe ? null : <Divider />}
                       </>
                       {photoInPlace ? (
                         // Glyphs alone while the strip has no room for the names (useBarLabels).
@@ -446,14 +444,7 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
                           labels={fittedLabels || swipe}
                           shown={swipe ? null : barShown}
                           scrollable={swipe}
-                          trailing={
-                            libraryInBar ? (
-                              <>
-                                <Divider />
-                                {libraryButton}
-                              </>
-                            ) : null
-                          }
+                          trailing={libraryInBar ? libraryButton : null}
                         />
                       ) : (
                         <>
@@ -486,7 +477,7 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
                           </SnapWidth>
                         </>
                       )}
-                      {/* The bar ends on its last category; Search brings its own divider. */}
+                      {/* The bar ends on its last category: no divider before the Library and Search, whose colour sets them apart. */}
                       {categoryBar || photoInPlace ? null : <Divider />}
                     </>
                   }
@@ -543,7 +534,6 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
                   "Search: every element type"). */}
                   {participant ? null : (
                     <>
-                      <Divider />
                       {libraryInBar ? null : libraryButton}
                       <div ref={searchButtonRef} className="flex">
                         <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />

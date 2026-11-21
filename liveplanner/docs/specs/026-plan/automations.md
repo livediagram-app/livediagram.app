@@ -5,6 +5,17 @@ checks the card (its **conditions**) and then does the routine steps people woul
 **actions**): move it, assign it, label it, comment on it, tell someone. It is the planner's take on Jira's project
 automation, sized to one plan. The engineering detail is [blueprints/automations.md](blueprints/automations.md).
 
+Automations are the **platform's**: every app has them, built once
+([the platform spec](../../../../liveworkspace/docs/specs/018-automations/automations.md)). What every app shares is
+said there and is its to decide: what a rule, a run and the Audit Trail are, who may do what, the limits, Wait, If /
+Else, the message steps and their connections, Scheduled, Run by Hand, Incoming Webhook, the screen (its tabs, the
+builder, the pickers, Insert a Value, Describe a Rule, Test Rule) and the engine and builder packages behind them
+(`@liveworkspace/automations`, `@liveworkspace/automations-ui`). This spec stays the authority for what is
+liveplanner's own: its card, form, email, time and GitHub triggers, its conditions, its card actions and For Related
+Cards, its AI steps, its values, its templates and how rules show on cards. Where a section below describes
+behaviour the platform spec does not repeat (the screen's states, the builder on a phone, motion), it is still the
+description of record, for every app's screen.
+
 This spec covers **Phase 1** (Work Item #711: card triggers and actions, the Automations screen and its footer
 button) and **Phase 2** (#712: the Scheduled, Due In and Overdue triggers, For Related Cards, Assign in Turn, the
 Send to Webhook, Post to Slack and Post to Teams actions, and the Templates gallery) and, of **Phase 3** (#713), the
@@ -60,10 +71,10 @@ work. A rule does it every time, at once, and says that it did.
   only an Editor may set, because an Editor wrote that rule. That is the point of a rule, and only Editors write them.
 - **Run Rule** (a manual trigger) is an Editor's, from the card's ⋯ menu.
 - **Outgoing actions** (Send to Webhook, Post to Slack, Post to Teams) name one of the plan's
-  [webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md), so only someone who can list them (a
-  signed-in Editor of the whole plan) can pick one. The webhook must exist first, made in the plan's **Webhooks**
-  dialog; a rule never holds an address. An Editor through a share link can already make a webhook of the plan, so
-  a rule that posts to one shows them nothing new.
+  [connections](../../../../liveworkspace/docs/specs/004-index/webhooks.md), so only someone who can list them (a
+  signed-in Editor of the whole plan) can pick one. The connection must exist first, made on the screen's
+  **Connections** tab; a rule never holds an address. An Editor through a share link can already make a connection
+  of the plan, so a rule that posts to one shows them nothing new.
 - A plan kept **Offline** has no Automations: rules run on the plan's server-side alarm (as [Repeating
   cards](items.md#repeating-cards)), even while nobody has the plan open, and a plan kept Offline has none. Its
   footer still shows **Automations** to whoever can edit it, and it opens the same gate the Share dialog does for a
@@ -234,12 +245,16 @@ plan.
   shows it with Copy whether a secret is made or not (it says nothing without the secret).
 - **Proving it holds the secret**, by a header, never in the address:
   - `Authorization: Bearer lwh_…`, or
-  - a signature of the raw body: `X-Liveplanner-Signature: sha256=<hex>`, the HMAC-SHA256 of the exact bytes sent,
-    keyed with the secret (as GitHub signs its webhooks). The secret itself never travels.
+  - a signature: `X-Liveworkspace-Timestamp: <unix seconds>` and `X-Liveplanner-Signature: sha256=<hex>`, the
+    HMAC-SHA256 of `<timestamp>.<body>` (the timestamp, a full stop, then the exact bytes sent), keyed with the
+    secret, as every app's Incoming Webhook signs
+    ([the platform's spec](../../../../liveworkspace/docs/specs/018-automations/automations.md#an-incoming-webhook-call)).
+    The secret itself never travels. A signed call whose timestamp is more than 5 minutes off, either way, or whose
+    signature the rule already took in the last 10 minutes (a replay) is refused.
     Both are checked in constant time. A call with neither, a wrong secret, a bad signature, a signature over other
-    bytes, an old secret after Regenerate, or for a rule that is off, deleted, not an Incoming Webhook rule or never
-    given a secret is answered **401** `webhook_unauthorized` with nothing more, the same answer every time, so a
-    caller can't tell whether the rule exists.
+    bytes, a missing or stale timestamp, a replay, an old secret after Regenerate, or for a rule that is off,
+    deleted, not an Incoming Webhook rule or never given a secret is answered **401** `webhook_unauthorized` with
+    nothing more, the same answer every time, so a caller can't tell whether the rule exists.
 - **The call** is JSON (`Content-Type: application/json`, any other is **415** `webhook_json_only`), at most
   **16 KB** (**413** past it). Its body is an object. It may name cards by number: `{"cards": [12, 14]}`, up to
   **10**, each a whole number from 1; a `cards` that isn't such a list is **400** `webhook_body_invalid`, as is a body
@@ -262,7 +277,7 @@ plan.
   1,000 a day; with the day's budget spent a call is **429** `automation_budget_spent`, `Retry-After` until UTC
   midnight. The queue's cap holds as for other triggers: a burst past it drops the newest and logs one Skipped line,
   and `queued` says how many went in. Calls from one network are also bound by the api's write limit, before the
-  plan is asked anything.
+  call's body is read or the plan is asked anything.
 - **No person behind it.** Its runs are by **Automation** (the card's History and comments as for any rule), the
   Audit Trail's first line reads "Webhook received: 2 cards" ("1 card", "no card"), and `{{person}}` (Who Did It)
   reads "Incoming webhook". **Who Did It** conditions, **Assign whoever triggered** and **Send Email to whoever
@@ -610,16 +625,23 @@ the rule at once (two Run Rules) take the next two people, never one twice.
 
 ### Outgoing actions
 
-- They post through the plan's [webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md#automation-sends),
-  built once on the platform: the webhook keeps the address, the secret, the retries, the pausing and Recent
-  Deliveries. The action's panel picks one of the plan's webhooks of its kind (Your Own Service, Slack, Teams) by
-  name, with **Add a Webhook…** opening the plan's Webhooks dialog. A message is 1 to 2,000 characters with values.
+- They post through the plan's
+  [connections](../../../../liveworkspace/docs/specs/004-index/webhooks.md#automation-sends), built once on the
+  platform: the connection keeps the address, the secret, the retries, the pausing and Recent Deliveries. The
+  action's panel picks one of the plan's connections of its kind (Your Own Service, Slack, Teams) by name, with
+  **Add a Connection…** switching the screen to its **Connections** tab. The rule being built is kept as it stands
+  meanwhile, its unsaved changes too: the tab says so with **Back to Rule**, which opens the builder again on the
+  same step, and leaving for anywhere else asks Discard Changes? first. A message is 1 to 2,000 characters with
+  values.
 - The step is **done** when the platform has queued the message, and the Audit Trail says "Queued for Launch Channel".
-  It fails when the platform refuses it: the webhook is paused ("Launch Channel is paused: the address said it’s
+  It fails when the platform refuses it: the connection is paused ("Launch Channel is paused: the address said it’s
   gone"), deleted, or the platform can't be reached. Ten such failures pause the rule like any other, and a rule
-  paused on a webhook shows **Fix Webhook** (the Webhooks dialog) beside **Resume**.
-- The webhooks are an account's: a guest's panel says only someone signed in can pick one, with **Sign In**, and
-  asks the index nothing. A paused webhook is listed "(Paused)"; one the rule names that is gone, "(No Longer Here)".
+  paused on a connection shows **Fix Connection** (the Connections tab) beside **Resume**.
+- The connections are an account's: a guest's panel says only someone signed in can pick one, with **Sign In**, and
+  asks the index nothing. A paused connection is listed "(Paused)"; one the rule names that is gone, "(No Longer
+  Here)".
+- There is no separate Webhooks dialog: the plan's connections are listed, added, tested, paused and deleted on the
+  Connections tab alone.
 - A rule holds at most **5** outgoing actions, at its top level (never inside a branch or an If / Else), so one run
   posts at most 5 messages.
 - **Test on a Card** sends nothing and says "Would post to Launch Channel: …" with the message filled in.
@@ -814,7 +836,7 @@ the same model as the AI actions, asked a different question: never a rule that 
 - A draft opens the **builder**, filled in, unsaved and off, as a template does, with a violet note under its header:
   the sparkle, **Drafted by AI** and "Check each step, then Test on a Card. Nothing is saved or turned on until you
   save it." What the rule names that the plan lacks is marked as any rule's is, and an outgoing step is left to **Pick
-  a webhook** (the model never sees the plan's webhooks). Leaving it unsaved asks Discard Changes? as any draft does.
+  a connection** (the model never sees the plan's connections). Leaving it unsaved asks Discard Changes? as any draft does.
 - What can't be drafted is said in the dialog, under the box, the text kept so it can be changed:
   - a request that is not a rule for this plan (a question, a story, anything off the subject): "That doesn't read as
     a rule for this plan. Say when it should run and what it should do, like the examples.";
@@ -1011,7 +1033,10 @@ looping arrow rising from the bottom right (at every size; the title's side stay
 action's check joined by a line, a dashed arrow looping back over them. The bolt's ring spreads twice, motion
 allowing. On a phone the header keeps its desktop look (100px, the mark, the title and its line).
 
-- Three tabs: **Rules · n**, **Audit Trail** and **Templates**. On a phone the bar is 48 px tall, each tab a 44 px
+- Four tabs: **Rules · n**, **Audit Trail**, **Templates** and **Connections**. Connections lists the plan's
+  [connections](../../../../liveworkspace/docs/specs/004-index/webhooks.md) (Send Test, Pause or Resume, Delete,
+  Recent Deliveries) under the same header and tabs, its list scrolling in the tab's panel with **Add Connection**
+  pinned at the panel's foot. On a phone the bar is 48 px tall, each tab a 44 px
   target with its label centred in it, the active tab's underline along the bar's foot. The bar is one Tab stop, the
   open tab: Left and Right move to the next tab and open it (wrapping), Home and End to the first and last, and the
   open tab names its panel.
@@ -1086,8 +1111,8 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
 
   Picking one opens the builder filled in, unsaved and off, named after it (made unique). What the plan has is
   filled in by its role (its done columns, its In Progress column, a column named like Review, a date field named like
-  Completed On, a Bug type, its first to-do column); what it lacks or the template leaves to you (a label, the people in turn, a Slack webhook) is left empty,
-  its step marked "Pick a field" (or a label, people, a webhook) until picked. Nothing is saved until **Save Rule**.
+  Completed On, a Bug type, its first to-do column); what it lacks or the template leaves to you (a label, the people in turn, a Slack connection) is left empty,
+  its step marked "Pick a field" (or a label, people, a connection) until picked. Nothing is saved until **Save Rule**.
   The **GitHub** templates start from a [GitHub trigger](#github-triggers), so they hear a linked pull request, by
   GitHub with nobody behind it (no Who Did It, nobody assigned or emailed as whoever triggered it). Done When the Pull
   Request Merges moves to the plan's first done column; Back to In Progress When Closed acts only on a card outside
@@ -1222,6 +1247,7 @@ place and the focus with it).
   changes anyone with edit or participate access makes."
 - **Test on a Card** picks a card (the card finder) and runs the rule as it stands in the builder, unsaved, without
   changing anything: the result shows as an Audit Trail row with its steps, each action saying what it would do.
+  It is liveplanner's name for the platform's **Test Rule**: a plan's rules run on cards, so its button says so.
 - Leaving with unsaved changes asks **Discard Changes?**. A **New Rule** left as it opened (nothing changed) has
   nothing to lose and leaves without asking; a template's start or Describe a Rule's draft asks even untouched, as
   it holds work that would be lost. A save the api refuses keeps the builder open and marks

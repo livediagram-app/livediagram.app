@@ -1,7 +1,11 @@
 // Image gallery calls (docs/specs/009-elements/images.md): list, upload, delete, usage index, and
 // the authenticated blob-URL fetch for rendering.
 import type { ImageSummary } from '@livediagram/api-schema';
-import { createImageClaims } from '@liveworkspace/media';
+import {
+  createImageClaims,
+  unusedImageIdsParam,
+  type MediaUnusedResponse,
+} from '@liveworkspace/media';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   API_BASE,
@@ -135,6 +139,27 @@ export async function apiDeleteImage(ownerId: string, imageId: string): Promise<
     action: 'delete image',
     allow404: false,
   });
+}
+
+// Which of the caller's own pictures of `ids` nothing but this document uses, in any app
+// (docs/specs/009-elements/images.md "Deleting an unused picture"): one request for a whole delete. Anything but an
+// answer (offline, a refusal, the service down) is `[]`, so nothing is offered that could be in use.
+export async function apiUnusedImages(
+  ownerId: string,
+  documentId: string,
+  ids: readonly string[],
+): Promise<string[]> {
+  try {
+    const query = new URLSearchParams({ d: documentId, ids: unusedImageIdsParam(ids) });
+    const res = await apiFetch(`${API_BASE}/images/unused?${query}`, {
+      headers: await apiHeaders(ownerId),
+    });
+    if (!res.ok) return [];
+    const body = (await res.json()) as Partial<MediaUnusedResponse>;
+    return Array.isArray(body.unused) ? body.unused.filter((id) => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
 }
 
 // Fetch the bytes of one image (authenticated) and return a blob

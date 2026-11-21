@@ -19,9 +19,9 @@ import { useItemSnapshotsDoor } from '@liveworkspace/snapshots/ui';
 import { API_BASE } from '@/lib/api-client';
 import { apiFetch, apiHeaders } from '@/lib/api/core';
 import type { resolveViewBackdrop } from '@/lib/view-backdrop';
-import { automationsScopeFor } from '@/components/automations/automations-gate';
-import { useAutomationsGate } from '@/components/automations/use-automations-gate';
-import { useToolGate } from '@/components/dialogs/tool-gate';
+import { automationsScopeFor } from '@liveworkspace/automations-ui/automations-gate';
+import { useAutomationsGate } from '@liveworkspace/automations-ui/use-automations-gate';
+import { toolBadges, useToolGate } from '@/components/dialogs/tool-gate';
 import {
   calendarFeedGateFor,
   calendarFeedScopeFor,
@@ -158,6 +158,23 @@ export function useEditorAutomations(ctx: EditorContextValue, isOffline: boolean
   const { isStructureReadOnly, hydrated, embedMode, accountUserId } = ctx;
   // Automations (docs/specs/026-plan/automations.md "Who may do what"): a signed-in Editor of the whole plan saved to
   // an account opens the screen; one who could edit it but for a plan kept Offline or no account opens the gate.
+  // The plan as the platform's Automations names it: the project is its item.
+  const itemsScope = ctx.plan.context?.itemsScope;
+  const automationsItem = useMemo(
+    () =>
+      itemsScope
+        ? {
+            ownerId: itemsScope.ownerId,
+            itemId: itemsScope.projectId,
+            shareCode: itemsScope.shareCode,
+            tabId: itemsScope.tabId,
+          }
+        : null,
+    [itemsScope],
+  );
+  // What the Tools row wears while a gate stands before the screen (Sign In, Sync Plan).
+  const signedIn = !!accountUserId;
+  const badges = useMemo(() => toolBadges({ signedIn, offline: isOffline }), [signedIn, isOffline]);
   const automationsGateInput = {
     level: ctx.can.level,
     structureReadOnly: isStructureReadOnly,
@@ -167,13 +184,16 @@ export function useEditorAutomations(ctx: EditorContextValue, isOffline: boolean
     embed: embedMode || ctx.workbenchMode,
     signedIn: !!accountUserId,
     authLoaded: ctx.authLoaded,
-    scope: ctx.plan.context?.itemsScope ?? null,
+    // Who the list is asked as: a list refused for one account is read again for another.
+    viewer: accountUserId ?? null,
+    scope: automationsItem,
   };
   const automationsScope = automationsScopeFor(automationsGateInput);
   const automationsGate = useAutomationsGate({
     ...automationsGateInput,
     ready: ctx.selfParticipant.id !== 'self',
     sync: ctx.syncToCloud,
+    badges,
   });
   return { automationsScope, automationsGate };
 }

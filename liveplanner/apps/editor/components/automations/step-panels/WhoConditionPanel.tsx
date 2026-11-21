@@ -5,7 +5,7 @@
 
 import type { AutomationCondition, AutomationWho } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
-import { ChipToggles, IsNotPicker } from './panel-parts';
+import { ChipToggles, IsNotPicker } from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 type WhoCondition = AutomationCondition & { kind: 'who' };
 

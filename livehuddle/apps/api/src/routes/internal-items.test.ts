@@ -22,6 +22,20 @@ vi.mock('../room-access-client', async (importOriginal) => ({
   tellTrashed,
   closeArchivedSessions,
 }));
+// Where each item stands, as its room is told it for its rules (@liveworkspace/automations/room standing.ts).
+const stoodRooms = vi.hoisted(() => [] as string[]);
+vi.mock('../document-client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../document-client')>();
+  return {
+    ...actual,
+    documentRoom: (...args: Parameters<typeof actual.documentRoom>) => ({
+      ...actual.documentRoom(...args),
+      takeStanding: async (standing: { archived: boolean; trashed: boolean }) => {
+        stoodRooms.push(`${args[1]}:${standing.archived || standing.trashed ? 'away' : 'live'}`);
+      },
+    }),
+  };
+});
 vi.mock('../email/notifications', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../email/notifications')>()),
   notifyFirstShare,
@@ -393,6 +407,7 @@ describe('POST /api/internal/items/:id/standing', () => {
   it("tells a trashed document's room, and closes an archived one's sessions", async () => {
     tellTrashed.mockClear();
     closeArchivedSessions.mockClear();
+    stoodRooms.length = 0;
     const stand = (id: string, archived: boolean, trashed: boolean) =>
       handleInternalItems(
         new Request(`https://api.test/api/internal/items/${id}/standing`, {
@@ -414,6 +429,8 @@ describe('POST /api/internal/items/:id/standing', () => {
     // An archived item sent to the Trash is trashed: its room hears the trash, not the archive.
     expect((await stand('D', true, true))?.status).toBe(200);
     expect(closeArchivedSessions).toHaveBeenCalledTimes(1);
+    // Every standing reaches the room, which keeps it: put away, its rules run nothing; back, they take up again.
+    expect(stoodRooms).toEqual(['A:away', 'B:away', 'C:live', 'D:away']);
   });
 });
 

@@ -135,11 +135,13 @@ Every list of items (My Work, a folder, a team, Recent and search results) can b
 
 ## An item's menu
 
-Each row and card has a **⋯** button (or right-click it) with what you can do to that item: **Open**, **Rename**, **Duplicate**, **Change Folder**, **Move to Archived**, **Share**, **History**, **Webhooks**, **Hide from Recent**, **Open Team** for a team's item, **Take Offline**, and **Delete <Noun capital />** to move it to the Trash. What appears depends on your access: someone who reaches an item through a link cannot move, share, archive or delete it (an Editor link still lets them rename it), and its menu offers **Remove from Shared With Me** instead.
+Each row and card has a **⋯** button (or right-click it) with what you can do to that item: **Open**, **Rename**, **Duplicate**, **Change Folder**, **Move to Archived**, **Share**, **History**, **Hide from Recent**, **Open Team** for a team's item, **Take Offline**, and **Delete <Noun capital />** to move it to the Trash. What appears depends on your access: someone who reaches an item through a link cannot move, share, archive or delete it (an Editor link still lets them rename it), and its menu offers **Remove from Shared With Me** instead.
 
-**Webhooks** posts what happens to this <Noun /> to a Slack or Microsoft Teams channel, or to a service you run. It is the <Noun />'s own: what you set up there applies to this <Noun /> only, and each of your other <Noun plural /> has its own, up to 10 each. Choose **Add Webhook**, pick where it posts, paste the address (the dialog shows how to get one), name it, then tick what it should send (none are ticked at first) and **Who Did It**: **Anyone**, or **Only Me** for just your own changes. Each webhook has **Send Test**, **Pause**, **Delete**, **Edit Events** and its **Recent Deliveries**. You need to be signed in and able to edit the whole <Noun />: its owner, someone in its team, or someone with an Editor link to every tab.
+The Slack, Microsoft Teams and other addresses a <Noun /> posts to are its **connections**, kept with its automation rules rather than on this menu: open the <Noun />, then **Tools**, then **Automations…**, and its **Connections** tab.
 
-<AppNote app="livediagram,livedesign">See [Webhooks](/help/collaboration/webhooks/).</AppNote>
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">See [Automations](/help/tools/automations/#connections).</AppNote>
+
+<AppNote app="liveplanner">See [Automations](/help/plan/automations/).</AppNote>
 
 **Duplicate** makes a copy named after the original with "(copy)" on the end, every tab included, and puts it in your library.
 

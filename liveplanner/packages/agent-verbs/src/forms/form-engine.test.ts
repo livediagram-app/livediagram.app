@@ -119,6 +119,7 @@ describe('addForm', () => {
       board: 'Lunch Order Responses',
       cardType: 'Lunch Order',
       column: 'New',
+      showsOn: 'Lunch Order Responses',
     });
   });
 

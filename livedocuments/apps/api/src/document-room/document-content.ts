@@ -21,6 +21,13 @@ import { rowToTabSummary, type TabRow } from '../tab-row';
 import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
 import type { TabConnection } from '@liveworkspace/index-client';
 import type { DocumentEnv, TabSummaryDTO } from '../types';
+import { KINDS } from '@livedocuments/document/automations';
+import {
+  copiedRulesOf,
+  landedRuleStatements,
+  type CopiedRules,
+} from '@liveworkspace/automations/room';
+import { tabFolderColourOf } from '@liveworkspace/api-schema/tab-folder-colour';
 
 // What the document knows of itself (document-schema.ts): its name, owner, team and provenance. Null until the
 // document is started, by a create or by its first open with a grant (initDocument).
@@ -71,7 +78,7 @@ export async function readDocumentOutline(
 ): Promise<DocumentOutline> {
   const [tabs, document] = await env.DOCUMENT_DB.batch([
     env.DOCUMENT_DB.prepare(
-      `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, t.connection
+      `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, dt.folder_color, t.connection
          FROM document_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.document_id = ?
@@ -302,6 +309,8 @@ export type DocumentCopy = {
     name: string;
     orderIndex: number;
     folder: string | null;
+    // The folder's colour, a hue name; absent from a copy an older object sends.
+    folderColor?: string | null;
     data: string;
     elementCount: number;
     // A connected tab's connection, carried as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry
@@ -311,6 +320,10 @@ export type DocumentCopy = {
   // The images its bodies place that the source may serve (db/image-grants.ts): the copy is granted each, so an
   // image a teammate placed in the source still shows in a copy its new owner makes.
   images: string[];
+  // The source's Automations rules (docs/specs/013-workspace/automations.md), for a copy its own people make and a
+  // file's import: they land turned off, their tabs at the copy's ids. Absent from a copy made through a share link
+  // or a Community post, whose maker never saw the rules.
+  automations?: CopiedRules;
 };
 
 // Every tab of the document (or one) with its body, in order: the read a copy makes, and the Drive file's
@@ -320,6 +333,7 @@ export type ContentTabRow = {
   name: string;
   order_index: number;
   folder: string | null;
+  folder_color: string | null;
   data: string;
   element_count: number;
   connection: string | null;
@@ -331,7 +345,7 @@ export async function readContentTabRows(
   onlyTabId: string | null,
 ): Promise<ContentTabRow[]> {
   const tabRows = await env.DOCUMENT_DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count, t.connection
+    `SELECT t.id, t.name, dt.order_index, dt.folder, dt.folder_color, t.data, t.element_count, t.connection
        FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.document_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
@@ -352,6 +366,8 @@ export async function exportDocumentCopy(
   onlyTabId: string | null,
   redactAuthorsFor: string | null,
   redactForCommunity = false,
+  // The copy carries the document's Automations rules (document-room-doors.ts exportCopy decides).
+  withRules = false,
 ): Promise<DocumentCopy | null> {
   const rows = await readContentTabRows(env, documentId, onlyTabId);
   // Every fresh tab id minted up front, so a tab or element link on one tab can be re-pointed at its sibling's copy.
@@ -367,6 +383,7 @@ export async function exportDocumentCopy(
         name: row.name,
         orderIndex: row.order_index,
         folder: row.folder,
+        folderColor: row.folder ? row.folder_color : null,
         data: redactForCommunity
           ? redactTabDataForCommunity(remapped).data
           : redactAuthorsFor !== null
@@ -381,6 +398,8 @@ export async function exportDocumentCopy(
   };
   const placed = copyImageIds(copy);
   if (placed.length > 0) copy.images = [...(await servableImageIds(env, documentId, placed))];
+  const rules = withRules && !redactForCommunity ? copiedRulesOf(env, tabIdMap) : null;
+  if (rules) copy.automations = rules;
   return copy;
 }
 
@@ -393,11 +412,12 @@ export async function exportDocumentCopyFor(
   onlyTabId: string | null,
   copiedBy: string | null,
   community = false,
+  withRules = false,
 ): Promise<DocumentCopy | null> {
   const ownerId =
     copiedBy === null ? null : ((await readDocumentMeta(env, documentId))?.ownerId ?? null);
   const redact = copiedBy !== null && copiedBy !== ownerId ? copiedBy : null;
-  return exportDocumentCopy(env, documentId, onlyTabId, redact, community);
+  return exportDocumentCopy(env, documentId, onlyTabId, redact, community, withRules);
 }
 
 // The images a copy's bodies place, for the placement grants the copy carries (db/image-grants.ts).
@@ -458,9 +478,16 @@ export async function importDocumentCopy(
         .bind(tab.id, tab.name, tab.data, now, tab.elementCount),
       db
         .prepare(
-          'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at, folder) VALUES (?, ?, ?, ?, ?)',
+          'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at, folder, folder_color) VALUES (?, ?, ?, ?, ?, ?)',
         )
-        .bind(documentId, tab.id, tab.orderIndex, now, tab.folder),
+        .bind(
+          documentId,
+          tab.id,
+          tab.orderIndex,
+          now,
+          tab.folder,
+          tab.folder ? (tabFolderColourOf(tab.folderColor) ?? null) : null,
+        ),
       // From the copied body itself (docs/specs/013-workspace/explorer-details-view.md).
       tabStatsStatement(env, tab.id, tabStatsOfData(tab.data).stats, now),
     );
@@ -488,5 +515,8 @@ export async function importDocumentCopy(
         .bind(now, JSON.stringify(granted)),
     );
   }
+  // Its rules, turned off, in the same transaction (@liveworkspace/automations/room rules-file.ts). All off, so
+  // nothing is heard or scheduled until someone turns one on.
+  stmts.push(...landedRuleStatements(env.DOCUMENT_DB, KINDS, copy.automations, now));
   await db.batch(stmts);
 }

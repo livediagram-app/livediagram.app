@@ -72,6 +72,7 @@ time; a key speaks only for its own app. Answers are JSON except the bytes; erro
 | `DELETE /images/<id>?owner=`          | Its owner deletes it, row then bytes. Documents that place it show a broken picture |
 | `POST /images/<id>/release?document=` | A document no longer places it: deleted at once when nothing else could (below)     |
 | `GET /usage?owner=`                   | Which documents, in which apps, place each of the owner's images: `{ usage }`       |
+| `GET /unused?owner=&document=&ids=`   | Which of those images nothing but that document places (below): `{ unused }`        |
 | `POST /refs`                          | `{ documents: [{ document, images }], pending?, complete? }`, at most 500 (below)   |
 | `POST /owners/merge`                  | `{ from, to }`: a guest signed up. `{ moved, kept }`                                |
 | `DELETE /owners/<owner>`              | An account deleted: every image it uploaded goes. `{ deleted }`                     |
@@ -238,6 +239,29 @@ pictures are embedded in it, not placed from the gallery, so it never makes a ga
 
 A document reports its set from its outbox on idle, at most once a minute, so an image placed a moment
 ago can read "Not used" until that push lands. The Gallery reads the usage each time it opens.
+
+### Unused after a delete
+
+When a person deletes an image element in an editor and nothing else uses its picture, the editor offers to delete
+the picture from storage too (each product's `docs/specs/009-elements/images.md` "Deleting an unused picture"). The
+offer may only be made when nothing could break, so the service answers it from its own tables, at that instant,
+by the rule a release keeps (above): `GET /app/unused?owner=&document=&ids=a,b`, at most 50 ids
+(`UNUSED_IMAGE_IDS_MAX`), answers `200 { unused: [ids] }`, the ids that are **all** of:
+
+- **the owner's**: an id another person uploaded, or one that is not there, is never in it;
+- **named by no reference but that document's own** in the calling app: not another document's in any app (one in
+  the Trash keeps its references, so it counts), not the Library's (libraries.md "Pictures"). The document's own is
+  left out because its report trails its edits by up to a minute: the editor that asks reads the document itself,
+  every tab of it, for that;
+- **named by no unconfirmed reference** but that document's own (a copy whose own report hasn't landed holds what its
+  source vouched for).
+
+One indexed read, whatever the count, and no index lookup: it never needs to name a document, only to know there is
+one. A malformed id list or a missing owner or document answers `400`. Each app's api opens it to the image's owner
+as `GET /api/images/unused?d=<document>&ids=a,b` (owner only, never a document-scope workbench session, never a
+guest's), passing the answer on; without the service it answers `503`, and an editor that gets anything but `200`
+makes no offer. The person still deletes through `DELETE /images/<id>?owner=`, so the offer never deletes anything
+the person did not choose to.
 
 ## Retention
 

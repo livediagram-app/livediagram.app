@@ -6,8 +6,11 @@
 
 import { useMemo } from 'react';
 import { CONTENT_BLOCK_NAMES, QUESTION_TYPE_NAMES } from '@liveplanner/forms';
-import { TilePicker, type PickerSection } from '@/components/tile-picker/TilePicker';
-import { TONES, type SceneTone } from '@/components/tile-picker/tile-scene';
+import {
+  TilePicker,
+  type PickerSection,
+} from '@liveworkspace/automations-ui/tile-picker/TilePicker';
+import { TONES, type SceneTone } from '@liveworkspace/automations-ui/tile-picker/tile-scene';
 import { addQuestionHeroArt } from './AddQuestionHeroArt';
 import { CONTENT_BLOCK_ICONS, QUESTION_TYPE_ICONS } from './question-icons';
 import { QUESTION_GROUPS, QUESTION_LINES, contentKind, type AddKind } from './question-groups';

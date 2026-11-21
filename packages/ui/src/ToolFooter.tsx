@@ -3,7 +3,7 @@
 // A tool's main actions, pinned at the foot of its view (liveworkspace/docs/specs/004-index/footer-tools-menu.md "The
 // main button stays at the foot"): a white strip with a hairline above it, sticky to the bottom of whichever box
 // scrolls, holding full-width buttons in Walkthroughs' look (owner, 2026-11-17: one look across every tool). Record
-// Walkthrough, Add Webhook, and Slide Deck's New Slide and Present all wear it.
+// Walkthrough, Add Connection, and Slide Deck's New Slide and Present all wear it.
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Spinner } from './Spinner';

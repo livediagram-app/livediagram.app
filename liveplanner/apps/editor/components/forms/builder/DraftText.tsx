@@ -31,7 +31,8 @@ export const DraftText = forwardRef<
     className?: string;
     label: string;
     onKeyDown?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>, text: string) => void;
-    onPaste?: (text: string) => boolean;
+    // What is pasted, and what the field holds as it lands. True: the paste was taken, so the field does not take it.
+    onPaste?: (text: string, draft: string) => boolean;
     autoFocus?: boolean;
     selectOnFocus?: boolean;
   }
@@ -108,7 +109,7 @@ export const DraftText = forwardRef<
     },
     onPaste: onPaste
       ? (e: React.ClipboardEvent) => {
-          if (onPaste(e.clipboardData.getData('text'))) e.preventDefault();
+          if (onPaste(e.clipboardData.getData('text'), draft)) e.preventDefault();
         }
       : undefined,
   };

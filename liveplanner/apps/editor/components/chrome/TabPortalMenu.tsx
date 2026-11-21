@@ -17,7 +17,6 @@ import {
   MenuToolButton,
 } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
-import { AddTabToFolderDialog } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
 import {
   DuplicateIcon,
@@ -30,6 +29,8 @@ import {
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { lucideLink } from '@liveworkspace/icons/lucide';
 import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
+import { AddTabToFolderDialog } from '@liveworkspace/workbench/components/chrome/TabFolderDialog';
+import type { TabFolderListProps } from '@liveworkspace/workbench/components/chrome/TabFolderList';
 
 const ConnectAgainIcon = lucideGlyph(lucideLink, 16);
 
@@ -49,10 +50,11 @@ export function PortalMenu({
   onExport,
   onToggleLock,
   locked,
-  folderNames,
+  folders,
   currentFolder,
   onMoveToFolder,
   onRemoveFromFolder,
+  onSetFolderColour,
   onDelete,
   canClearContent,
   canDelete,
@@ -79,10 +81,11 @@ export function PortalMenu({
   onExport: () => void;
   onToggleLock: () => void;
   locked: boolean;
-  folderNames: string[];
+  folders: TabFolderListProps['folders'];
   currentFolder: string | null;
-  onMoveToFolder: (folderName: string) => void;
+  onMoveToFolder: TabFolderListProps['onMoveToFolder'];
   onRemoveFromFolder: () => void;
+  onSetFolderColour: TabFolderListProps['onSetFolderColour'];
   onDelete: () => void;
   canDelete: boolean;
   // Delete's warning (deleteTabWarning): the forms sending their responses to this tab are unpublished.
@@ -189,10 +192,11 @@ export function PortalMenu({
   if (view === 'folder') {
     return (
       <AddTabToFolderDialog
-        folderNames={folderNames}
+        folders={folders}
         currentFolder={currentFolder}
         onMoveToFolder={onMoveToFolder}
         onRemoveFromFolder={onRemoveFromFolder}
+        onSetFolderColour={onSetFolderColour}
         onClose={closePicker}
       />
     );

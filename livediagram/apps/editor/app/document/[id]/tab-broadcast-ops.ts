@@ -25,7 +25,7 @@ export const EL_OP_BROADCAST_LIMIT = 20;
 // Tab keys that never ride a `tab-meta` patch: `id` is immutable, `elements`
 // travels as `el` ops, and `folder` is owned by the document-meta op (docs/specs/006-document/tab-folders.md)
 // so a content/meta edit can't clobber a concurrent folder move.
-export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder']);
+export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder', 'folderColor']);
 
 // A whole tab as one op.
 function wholeTabOp(tab: Tab): RoomOp {
@@ -158,6 +158,7 @@ export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
     ...rest,
     elements,
     folder: local.folder,
+    folderColor: local.folderColor,
     ...(vote !== undefined ? { vote } : {}),
   };
 }

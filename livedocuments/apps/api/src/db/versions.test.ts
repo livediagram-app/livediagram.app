@@ -15,6 +15,7 @@ import {
   namedVersionCount,
   setVersionName,
   versionAtRev,
+  versionAuthorOf,
   versionId,
 } from './versions';
 
@@ -266,5 +267,18 @@ describe('the upkeep', () => {
     const cutoff = 1000 + 2 * VERSION_IDLE_MS;
     expect(await deleteOldVersions(db.env, cutoff)).toBe(1);
     expect(rows(db).map((r) => r.name)).toEqual(['Kept']);
+  });
+});
+
+describe('the by line', () => {
+  it("reads a rule's version as Automation, never as a person", () => {
+    const row = { author_id: 'automation', author_name: 'Nightly', author_color: '#7c3aed' };
+    expect(versionAuthorOf(row)).toEqual({ name: 'Automation · Nightly', color: '#7c3aed' });
+    expect(versionAuthorOf({ ...row, author_name: '' })?.name).toBe('Automation');
+    expect(versionAuthorOf({ ...row, author_id: 'user_a', author_color: null })).toEqual({
+      name: 'Nightly',
+      color: '',
+    });
+    expect(versionAuthorOf({ ...row, author_name: null })).toBeNull();
   });
 });

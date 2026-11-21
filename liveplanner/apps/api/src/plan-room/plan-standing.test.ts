@@ -268,12 +268,14 @@ describe('a plan put away', () => {
       await w.call('POST', `/${hookRule.id}/secret`)
     ).json<AutomationSecretResponse>();
     const body = '{}';
+    const ts = String(Math.floor(Date.now() / 1000));
     const res = await w.raw(
       new Request(`https://api.test/api/hooks/automations/A/${hookRule.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Liveplanner-Signature': `sha256=${createHmac('sha256', made.secret).update(body).digest('hex')}`,
+          'X-Liveplanner-Signature': `sha256=${createHmac('sha256', made.secret).update(`${ts}.${body}`).digest('hex')}`,
+          'X-Liveworkspace-Timestamp': ts,
         },
         body,
       }),

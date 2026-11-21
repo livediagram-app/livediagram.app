@@ -5,7 +5,7 @@
 
 import { appSamples } from '../app-samples';
 import { Scene, Shape, Arrow, Label, Dialog, Cursor } from '../primitives';
-import { TabPill, AddTabButton, FolderIcon, FolderGroup, TabBar, PickTile } from './tabs-parts';
+import { TabPill, AddTabButton, FolderGroup, FolderRow, TabBar } from './tabs-parts';
 import { Glyph } from './element-indicators';
 
 /** The tab bar: several tabs, the active one raised with its ⋯ button, then the + button. */
@@ -105,40 +105,25 @@ export function TabFolderStates() {
   );
 }
 
-/** The Organise in Tab Folder dialog: a No Folder tile, a tile per folder, and a New Folder
- *  tile. */
+/** Organise in Tab Folder: a full-width row per folder, each in its colour with its tab count and a colour
+ *  button, the tab's own folder marked Current, then New Folder. */
 export function AddToFolderMenu() {
   const W = 420;
-  const H = 210;
+  const H = 272;
   const dx = 20;
-  const dy = 18;
+  const dy = 14;
+  const rx = dx + 16;
+  const rw = 348;
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={174} title="Organise in Tab Folder" sceneW={W} sceneH={H}>
-        <Label x={dx + 16} y={dy + 48} size={10} tone="muted">
-          File this tab into a folder on the tab bar.
+      <Dialog x={dx} y={dy} w={380} h={244} title="Organise in Tab Folder" sceneW={W} sceneH={H}>
+        <Label x={rx} y={dy + 48} size={10} tone="muted">
+          File this tab into a folder on the tab bar. Same name means same folder.
         </Label>
-        <Label x={dx + 16} y={dy + 61} size={10} tone="muted">
-          Same name means same folder.
-        </Label>
-        <PickTile x={dx + 16} y={dy + 78} w={84} label="No Folder" sub="Loose on the bar">
-          <FolderIcon />
-          <path d="M-3 -2 l6 6 M3 -2 l-6 6" className="stroke-slate-500" strokeWidth={1.3} />
-        </PickTile>
-        <PickTile x={dx + 104} y={dy + 78} w={84} label="Plans" sub="Current" selected>
-          <FolderIcon />
-        </PickTile>
-        <PickTile x={dx + 192} y={dy + 78} w={84} label="Back office" sub="Folder">
-          <FolderIcon />
-        </PickTile>
-        <PickTile x={dx + 280} y={dy + 78} w={84} label="New Folder" sub="Create here" dashed>
-          <path
-            d="M-6 0 h12 M0 -6 v12"
-            className="stroke-slate-500"
-            strokeWidth={1.6}
-            strokeLinecap="round"
-          />
-        </PickTile>
+        <FolderRow x={rx} y={dy + 60} w={rw} name="No Folder" sub="Loose on the bar" tone={null} />
+        <FolderRow x={rx} y={dy + 98} w={rw} name="Plans" sub="3 tabs" tone="rose" current />
+        <FolderRow x={rx} y={dy + 136} w={rw} name="Back office" sub="2 tabs" tone="violet" />
+        <FolderRow x={rx} y={dy + 174} w={rw} name="New Folder" tone={null} dashed />
       </Dialog>
     </Scene>
   );

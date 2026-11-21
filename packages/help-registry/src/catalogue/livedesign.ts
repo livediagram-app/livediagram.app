@@ -141,7 +141,7 @@ export const categories: Category[] = [
     slug: 'collaboration',
     title: 'Collaboration',
     description:
-      'Work together in real time: comments, assigned actions, live presence, teams, sharing, walkthroughs, history and webhooks.',
+      'Work together in real time: comments, assigned actions, live presence, teams, sharing, walkthroughs and history.',
     articleCount: 9,
     kind: 'feature',
   },
@@ -149,7 +149,7 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: zen mode, light and dark mode, and cleanup.',
+      'Do more with less effort using the editor helpers: automations, zen mode, light and dark mode, and cleanup.',
     articleCount: 3,
     kind: 'feature',
   },

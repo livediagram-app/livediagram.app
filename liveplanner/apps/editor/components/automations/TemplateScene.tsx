@@ -7,7 +7,8 @@
 
 import type { ReactNode } from 'react';
 import type { AutomationTemplateId } from '@liveplanner/items';
-import { TONES, type SceneTone, type ToneClasses } from './scene-parts';
+import type { SceneTone, ToneClasses } from '@liveworkspace/automations-ui/scene-parts';
+import { TemplateScene as SceneFrame } from '@liveworkspace/automations-ui/TemplateScene';
 import {
   StampFinish,
   AssignOnStart,
@@ -46,7 +47,7 @@ import {
   MergedToSlack,
 } from './template-scenes/github';
 
-export type { SceneTone } from './scene-parts';
+export type { SceneTone } from '@liveworkspace/automations-ui/scene-parts';
 
 const SCENES: Readonly<Record<AutomationTemplateId, (p: { tone: ToneClasses }) => ReactNode>> = {
   'stamp-finish': StampFinish,
@@ -81,25 +82,41 @@ const SCENES: Readonly<Record<AutomationTemplateId, (p: { tone: ToneClasses }) =
   'merged-to-slack': MergedToSlack,
 };
 
-/** The scene at the top of a template tile, in the template's colour. */
-export function TemplateScene({ id, tone }: { id: AutomationTemplateId; tone: SceneTone }) {
-  const t = TONES[tone];
-  const Scene = SCENES[id];
-  return (
-    <span
-      aria-hidden
-      className={`relative flex h-[116px] shrink-0 gap-2 overflow-hidden border-b border-slate-100 bg-gradient-to-br p-3 dark:border-slate-800 ${t.wash}`}
-    >
-      <span
-        className={`pointer-events-none absolute inset-0 ${t.dots}`}
-        style={{
-          backgroundImage: 'radial-gradient(currentColor 1px, transparent 1.2px)',
-          backgroundSize: '10px 10px',
-          maskImage: 'linear-gradient(115deg, transparent 20%, #000 95%)',
-          WebkitMaskImage: 'linear-gradient(115deg, transparent 20%, #000 95%)',
-        }}
-      />
-      <Scene tone={t} />
-    </span>
-  );
+// Each template's colour.
+const TONE: Readonly<Record<AutomationTemplateId, SceneTone>> = {
+  'stamp-finish': 'emerald',
+  'assign-on-start': 'blue',
+  'overdue-nudge': 'red',
+  'form-responses': 'orange',
+  'shipped-to-slack': 'violet',
+  'triage-bugs': 'red',
+  'unblock-next': 'blue',
+  'due-soon': 'emerald',
+  'clean-up-done': 'emerald',
+  'escalate-urgent': 'red',
+  'reopen-on-comment': 'blue',
+  'route-reviews': 'violet',
+  'due-on-start': 'orange',
+  'flag-blocked': 'red',
+  'verify-fix': 'emerald',
+  'back-to-backlog': 'blue',
+  'sort-incoming': 'violet',
+  'summarise-requests': 'orange',
+  'close-parent': 'emerald',
+  'tell-unblocked': 'blue',
+  'nudge-stuck': 'orange',
+  'done-when-resolved': 'violet',
+  'flag-due-soon': 'red',
+  'done-on-checklist': 'emerald',
+  'review-on-open': 'emerald',
+  'done-on-merge': 'violet',
+  'flag-failing-checks': 'red',
+  'tell-checks-pass': 'emerald',
+  'back-on-close': 'orange',
+  'merged-to-slack': 'violet',
+};
+
+/** The scene at the top of a template tile, in the template's colour (`tone`: another colour). */
+export function TemplateScene({ id, tone }: { id: AutomationTemplateId; tone?: SceneTone }) {
+  return <SceneFrame tone={tone ?? TONE[id]} Scene={SCENES[id]} />;
 }

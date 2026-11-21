@@ -17,6 +17,7 @@ import { LINT_VIEW_NAME, TAB_VIEW_NAMES, VERSION_NAMED_MAX } from '@livedocument
 import { NAME_MAX_LENGTH } from '@livedocuments/document';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedocuments/document-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
+import { itemAutomationOperations } from '@liveworkspace/automations/room';
 import { TAB_DELTA_OPENAPI } from '@liveworkspace/api-kit/tab-delta-door';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
@@ -1104,6 +1105,30 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/images/unused',
+    segment: 'images',
+    tag: 'Images',
+    summary:
+      "Which of the caller's own images nothing but one document uses, in any app: no other item, Library item or unconfirmed reference.",
+    auth: 'clerk',
+    tokenUsable: false,
+    query: [
+      {
+        name: 'd',
+        required: true,
+        description: 'The document asking (its own reference is left out).',
+      },
+      { name: 'ids', required: true, description: 'Up to 50 image ids, comma-separated.' },
+    ],
+    responseSchema: {
+      type: 'object',
+      properties: { unused: { type: 'array', items: { type: 'string' } } },
+      required: ['unused'],
+    },
+    statuses: [200, 400, 403, 503],
+  },
+  {
+    method: 'GET',
     path: '/images/{id}',
     segment: 'images',
     tag: 'Images',
@@ -1691,4 +1716,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     statuses: [204, 401, 404],
   },
+  // A document's Automations (docs/specs/013-workspace/automations.md): the platform's operations
+  // (@liveworkspace/automations/room openapi.ts) under this api's collection.
+  ...itemAutomationOperations({ collection: 'documents', itemWord: 'document' }),
 ];

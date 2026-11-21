@@ -2,13 +2,14 @@
 // docs/specs/026-plan/automations.md "The rule builder", "For Related Cards", "Outgoing actions" and "Audit Trail": a
 // branch's card with its own steps inset under it and its own add buttons, an outgoing action's card and its place in
 // Add Action, a time rule's When card, the marks a template leaves, and a branch's lines in a run.
+import './test-kit';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AutomationOutgoing, AutomationRuleBody } from '@liveplanner/items';
 import { newRuleBody } from './rule-draft';
-import { RuleSteps, type StepsActions } from './RuleSteps';
-import { RunSteps } from './RunSteps';
-import { nextRunWords } from './run-words';
+import { RuleSteps, type StepsActions } from '@liveworkspace/automations-ui/RuleSteps';
+import { RunSteps } from '@liveworkspace/automations-ui/RunSteps';
+import { nextRunWords } from '@liveworkspace/automations-ui/run-words';
 import { outline, pickable, pickerTile } from './test-fixtures';
 
 afterEach(cleanup);
@@ -126,10 +127,10 @@ describe('the steps, in Phase 2', () => {
     steps(
       body({ steps: [{ ...slack, webhook: '' }] }),
       actions(),
-      new Map([['steps.0', 'Pick a webhook']]),
+      new Map([['steps.0', 'Pick a connection']]),
     );
     const marked = document.querySelector('[data-pick]')!;
-    expect(marked.textContent).toContain('Pick a webhook');
+    expect(marked.textContent).toContain('Pick a connection');
   });
 });
 

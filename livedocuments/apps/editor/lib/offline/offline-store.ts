@@ -133,7 +133,7 @@ export function applyMeta(
   rec: OfflineDocumentRecord,
   patch: {
     name?: string;
-    tabs?: { id: string; folder?: string }[];
+    tabs?: { id: string; folder?: string; folderColor?: string | null }[];
     // Absent leaves the stored deck alone; null clears it. Same contract as
     // the server's PUT, so an offline document behaves identically.
     presentation?: string | null;
@@ -255,7 +255,11 @@ export async function offlineCreateDocument(
 
 export async function offlineSaveDocumentMeta(
   id: string,
-  patch: { name?: string; tabs?: { id: string; folder?: string }[]; presentation?: string | null },
+  patch: {
+    name?: string;
+    tabs?: { id: string; folder?: string; folderColor?: string | null }[];
+    presentation?: string | null;
+  },
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => applyMeta(rec, patch, now));

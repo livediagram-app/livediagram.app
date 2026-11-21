@@ -1,7 +1,8 @@
 'use client';
 
-// Add a Comment, Send an Email and Mention Someone (docs/specs/026-plan/automations.md "Actions"): the text written
-// with its values, and for an email or a mention who it goes to (and an email's subject). The Preview under it fills the values from a real card.
+// The actions that write text (docs/specs/026-plan/automations.md "Actions"): Add Comment (the comment, posted as
+// Automation), @Mention Someone (who, and the message) and Send Email (To, Subject and Message, on the platform's
+// EmailPanel). Every text field has Insert a Value.
 
 import {
   AUTOMATION_TEXT_MAX,
@@ -9,13 +10,14 @@ import {
   type AutomationEmailRecipient,
   type AutomationRecipient,
 } from '@liveplanner/items';
-import { outlineFields, type AutomationOutline } from '../automation-outline';
-import { ValueTextField } from '../ValueInsert';
-import { EmailAddressesField } from './EmailAddressesField';
+import { ValueTextField } from '@liveworkspace/automations-ui/ValueInsert';
+import { EmailPanel } from '@liveworkspace/automations-ui/step-panels/EmailPanel';
+import type { AutomationOutline } from '../automation-outline';
 import { PersonPicker } from './PeopleActionPanel';
 
 type TextAction = AutomationAction & { kind: 'comment' | 'email' | 'mention' };
 
+// Who beside a chosen person: the card's assignee, or whoever triggered the rule (no one, for a time rule).
 const RECIPIENTS: readonly {
   key: 'assignee' | 'trigger';
   label: string;
@@ -25,7 +27,7 @@ const RECIPIENTS: readonly {
   { key: 'trigger', label: 'The Person Who Triggered It', value: { trigger: true } },
 ];
 
-// Send Email's last fixed choice: addresses typed in (spec "Typed-in addresses").
+// Send Email's own: addresses typed in, for people who are not in the plan.
 const ADDRESSES: { key: 'addresses'; label: string; value: AutomationEmailRecipient } = {
   key: 'addresses',
   label: 'Email Addresses',
@@ -43,14 +45,13 @@ export function TextActionPanel({
   action: TextAction;
   onChange: (next: AutomationAction) => void;
   outline: AutomationOutline;
-  // The refusal's last segment within this step ('text', 'subject', 'body'), if any.
+  // The refusal's path within this action ('' for the action itself, 'subject' for an email's subject), or null.
   invalidPath: string | null;
-  // Inside a branch: the triggering card's values join Insert a Value.
+  // Inside a For Related Cards branch: Insert a Value offers the triggering card's values too.
   branch?: boolean;
-  // A time trigger has nobody behind it, so an email never goes to whoever triggered it.
+  // The rule's trigger has nobody behind it: "the person who triggered it" is not offered.
   timeRule?: boolean;
 }) {
-  const fields = outlineFields(outline.types);
   const recipients = timeRule ? RECIPIENTS.filter((r) => r.key !== 'trigger') : RECIPIENTS;
   if (action.kind === 'comment')
     return (
@@ -58,7 +59,6 @@ export function TextActionPanel({
         label="Comment"
         maxLength={AUTOMATION_TEXT_MAX}
         value={action.text}
-        fields={fields}
         invalid={invalidPath !== null}
         branch={branch}
         hint="Posted as Automation, in violet, so everyone can tell it from a person’s."
@@ -79,7 +79,6 @@ export function TextActionPanel({
           label="Message"
           maxLength={AUTOMATION_TEXT_MAX}
           value={action.text}
-          fields={fields}
           invalid={invalidPath !== null}
           branch={branch}
           hint="Starts a thread on the card that @mentions them. It reaches their Inbox, and their email unless they turned mention emails off."
@@ -89,45 +88,29 @@ export function TextActionPanel({
     );
   const to = action.to;
   return (
-    <div className="flex flex-col gap-4">
-      <PersonPicker<AutomationEmailRecipient>
-        label="To"
-        value={to}
-        outline={outline}
-        extra={[...recipients, ADDRESSES]}
-        onChange={(next) => onChange({ ...action, to: next })}
-      />
-      {'addresses' in to ? (
-        <EmailAddressesField
-          addresses={to.addresses}
-          invalid={invalidPath?.startsWith('to.addresses') ?? false}
-          onChange={(addresses) => onChange({ ...action, to: { addresses } })}
+    <EmailPanel
+      recipient={
+        <PersonPicker<AutomationEmailRecipient>
+          label="To"
+          value={to}
+          outline={outline}
+          extra={[...recipients, ADDRESSES]}
+          onChange={(next) => onChange({ ...action, to: next })}
         />
-      ) : null}
-      <ValueTextField
-        label="Subject"
-        multiline={false}
-        maxLength={200}
-        value={action.subject}
-        fields={fields}
-        invalid={invalidPath === 'subject'}
-        branch={branch}
-        onChange={(subject) => onChange({ ...action, subject })}
-      />
-      <ValueTextField
-        label="Message"
-        maxLength={AUTOMATION_TEXT_MAX}
-        value={action.body}
-        fields={fields}
-        invalid={invalidPath === 'body' || invalidPath === 'text'}
-        branch={branch}
-        hint={
-          'addresses' in to
-            ? 'Sent from liveplanner with a link to the card.'
-            : 'Sent from liveplanner with a link to the card. Only to people in this plan.'
-        }
-        onChange={(body) => onChange({ ...action, body })}
-      />
-    </div>
+      }
+      addresses={'addresses' in to ? to.addresses : null}
+      onAddresses={(addresses) => onChange({ ...action, to: { addresses } })}
+      subject={action.subject}
+      onSubject={(subject) => onChange({ ...action, subject })}
+      body={action.body}
+      onBody={(body) => onChange({ ...action, body })}
+      invalidPath={invalidPath}
+      branch={branch}
+      hint={
+        'addresses' in to
+          ? 'Sent from liveplanner with a link to the card.'
+          : 'Sent from liveplanner with a link to the card. Only to people in this plan.'
+      }
+    />
   );
 }

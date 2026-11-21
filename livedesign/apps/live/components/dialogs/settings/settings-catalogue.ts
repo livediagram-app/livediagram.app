@@ -1,4 +1,9 @@
 import { DATA_EXPORT_CATEGORY } from '@liveworkspace/settings/account';
+import {
+  readUnusedImageChoice,
+  withUnusedImageChoice,
+  type UnusedImageChoice,
+} from '@liveworkspace/workbench/lib/unused-image-choice';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import {
@@ -521,6 +526,26 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: readElementIndicatorStyle,
         write: (p, v) => withElementIndicatorStyle(p, v as ElementIndicatorStyle),
         event: { category: 'UI', changed: 'ElementIndicators' },
+      },
+      {
+        // docs/specs/009-elements/images.md "Deleting an unused picture": one setting in every app, also set by the
+        // offer's Remember My Choice.
+        kind: 'choice',
+        key: 'unusedImageChoice',
+        keywords:
+          'image picture photo delete remove storage gallery unused remember ask keep prompt',
+        section: 'Canvas',
+        label: 'When I Delete an Unused Image',
+        description:
+          'After you delete an image nothing else uses: ask whether to delete it from storage too, always delete it from storage, or always keep it.',
+        options: [
+          { id: 'ask', label: 'Ask Every Time' },
+          { id: 'delete', label: 'Always Delete' },
+          { id: 'keep', label: 'Always Keep' },
+        ],
+        read: readUnusedImageChoice,
+        write: (p, v) => withUnusedImageChoice(p, v as UnusedImageChoice),
+        event: { category: 'UI', changed: 'UnusedImages' },
       },
       {
         kind: 'toggle',
@@ -1076,7 +1101,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Reset All Settings',
         keywords: 'reset restore default defaults factory clear settings preferences start over',
         description:
-          'Puts every setting back to its default, in every liveworkspace app. Your profile, API tokens, webhooks and sign-ins stay as they are.',
+          'Puts every setting back to its default, in every liveworkspace app. Your profile, API tokens, connections and sign-ins stay as they are.',
       },
       {
         kind: 'deleteAccount',

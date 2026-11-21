@@ -183,6 +183,11 @@ const TAGS = [
       "A tab's earlier versions: list and open them, name one, restore one as a changeset, or copy one to a new tab.",
   },
   { name: 'Sharing', description: 'Share links, passwords, and the documents shared with you.' },
+  {
+    name: 'Automations',
+    description:
+      'Rules a document runs on its own: when something happens, if some conditions hold, then do these steps.',
+  },
   { name: 'Folders', description: 'Organise documents into a personal or team folder tree.' },
   {
     name: 'Trash',

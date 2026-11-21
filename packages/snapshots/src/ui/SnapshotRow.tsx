@@ -3,16 +3,21 @@
 // One snapshot in the dialog (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"; blueprint SN24): its
 // name or time, who took it, how long ago and its size, a `Before revert` badge on an automatic one, and Revert and
 // Delete. Delete goes at once (owner, 2026-11-17: no question for it); Revert asks first in the shared ConfirmPopover
-// beside its button, as every other confirm in the apps does.
+// beside its button, as every other confirm in the apps does. One a rule names ("Revert to Snapshot") wears a
+// `Kept by a Rule` badge that says why, and has no Delete: the rule lets it go, not the row.
 
 import { useState } from 'react';
-import { Button, ConfirmPopover } from '@liveworkspace/ui';
+import { Button, ConfirmPopover, HoverCard } from '@liveworkspace/ui';
 import type { SnapshotSummary } from '../wire';
 import { BinGlyph } from './glyphs';
 import { snapshotMeta, snapshotTitle } from './snapshot-words';
 import type { SnapshotBusy } from './useSnapshots';
 
 export type RowConfirm = { id: string; kind: 'revert' | 'delete' } | null;
+
+// The row's small badges: Before revert, Kept by a Rule.
+const BADGE =
+  'shrink-0 rounded-[5px] bg-slate-900/[0.06] px-1.5 py-0.5 text-[11px] font-medium leading-none text-slate-600 dark:bg-white/10 dark:text-slate-300';
 
 export function SnapshotRow({
   snapshot,
@@ -64,9 +69,18 @@ export function SnapshotRow({
               {title}
             </span>
             {snapshot.kind === 'before-revert' ? (
-              <span className="shrink-0 rounded-[5px] bg-slate-900/[0.06] px-1.5 py-0.5 text-[11px] font-medium leading-none text-slate-600 dark:bg-white/10 dark:text-slate-300">
-                Before revert
-              </span>
+              <span className={BADGE}>Before revert</span>
+            ) : null}
+            {snapshot.kept ? (
+              <HoverCard
+                title="Kept by a Rule"
+                description="A rule reverts to this snapshot. Change or delete the rule to let it go."
+              >
+                {/* In the tab order, so the keyboard reaches why there is no Delete. */}
+                <span tabIndex={0} data-snapshot-kept="" className={`${BADGE} cursor-default`}>
+                  Kept by a Rule
+                </span>
+              </HoverCard>
             ) : null}
           </div>
           <p className="mt-0.5 truncate text-xs text-slate-600 dark:text-slate-300">
@@ -87,18 +101,20 @@ export function SnapshotRow({
           >
             {reverting ? 'Reverting…' : 'Revert'}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={locked && !deleting}
-            busy={deleting}
-            onClick={onDelete}
-            aria-label="Delete snapshot"
-            title="Delete snapshot"
-            className="relative touch-target text-slate-500 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-300"
-          >
-            <BinGlyph />
-          </Button>
+          {snapshot.kept ? null : (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={locked && !deleting}
+              busy={deleting}
+              onClick={onDelete}
+              aria-label="Delete snapshot"
+              title="Delete snapshot"
+              className="relative touch-target text-slate-500 hover:text-red-700 dark:text-slate-400 dark:hover:text-red-300"
+            >
+              <BinGlyph />
+            </Button>
+          )}
         </div>
       </div>
       {confirm === 'revert' && revertAt ? (

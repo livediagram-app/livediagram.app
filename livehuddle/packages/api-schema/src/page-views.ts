@@ -11,6 +11,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   // The guest handoff's way back, /auth/guest (docs/specs/014-identity/auth-and-guest-access.md).
   'auth',
   'document',
+  // A rule email's unsubscribe page, /email-optout (docs/specs/013-workspace/automations.md "Unsubscribing").
+  'email-optout',
   'embed',
   'explorer',
   // A form link, /form/<code>, from livediagram's code this was forked from: forms are liveplanner's. The segment

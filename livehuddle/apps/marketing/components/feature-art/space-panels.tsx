@@ -1,9 +1,11 @@
-// Feature illustrations for a Space's History and its Webhooks, each the editor's own panel with its labels and its
-// look: History with its Snapshots (packages/snapshots/src/ui/history-snapshots.tsx, SnapshotRow.tsx) and the Webhooks
-// dialog (packages/settings-ui/src/webhooks/). The games are in ./space-games and the Mini View in ./space-mini-view.
+// Feature illustrations for a Space's History and its Automations, each the editor's own panel with its labels and its
+// look: History with its Snapshots (packages/snapshots/src/ui/history-snapshots.tsx, SnapshotRow.tsx) and the
+// Automations screen's Rules tab (packages/automations-ui/src/AutomationsDialog.tsx), drawn by the shared card art.
+// The games are in ./space-games and the Mini View in ./space-mini-view.
 // The motion is the shared card keyframes (app/feature-art/canvas.css), which settle under reduced motion.
 
-import { Frame, MONO } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import { AutomationsArt as SharedAutomationsArt } from '@liveworkspace/marketing-site/components/feature-art/automations-screen';
+import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import { PANEL, RULE, STRONG, BODY, SUBTLE, Close, Button } from './space-panel-parts';
 import { at } from './space-shot';
 
@@ -173,144 +175,32 @@ export function SnapshotsArt() {
   );
 }
 
-// ── Webhooks ──────────────────────────────────────────────────────────────────────────────────────────────────────
-
-// Each destination's tile (packages/settings-ui/src/webhooks/marks.tsx): Slack's hash on its aubergine, Teams' people
-// on its indigo, a service's braces on slate.
-// `chip` is where the state chip starts, just past the name (the row's gap-x-2).
-const HOOKS = [
-  {
-    name: '#team-office',
-    kind: 'Slack',
-    tile: '#4a154b',
-    glyph: 'hash',
-    host: 'hooks.slack.com',
-    chip: 85.6,
-    last: 'Delivered 2 mins ago',
-  },
-  {
-    name: 'Design channel',
-    kind: 'Microsoft Teams',
-    tile: '#5059c9',
-    glyph: 'people',
-    host: 'acme.webhook.office.com',
-    chip: 92.4,
-    last: 'Delivered 1 hour ago',
-  },
-  {
-    name: 'Ops dashboard',
-    kind: 'Your Own Service',
-    tile: '#475569',
-    glyph: 'braces',
-    host: 'ops.example.com',
-    chip: 92,
-    last: 'Delivered yesterday',
-  },
-] as const;
-
-function TileGlyph({
-  x,
-  y,
-  glyph,
-}: {
-  x: number;
-  y: number;
-  glyph: (typeof HOOKS)[number]['glyph'];
-}) {
-  const d =
-    glyph === 'hash'
-      ? `M${x - 1} ${y - 2.6} L${x - 1.6} ${y + 2.6} M${x + 1.6} ${y - 2.6} L${x + 1} ${y + 2.6} M${x - 2.6} ${y - 1} H${x + 2.8} M${x - 2.8} ${y + 1} H${x + 2.6}`
-      : glyph === 'people'
-        ? `M${x - 3} ${y + 2.6} C${x - 3} ${y + 0.6} ${x + 1} ${y + 0.6} ${x + 1} ${y + 2.6} M${x + 1.6} ${y + 0.4} C${x + 2.8} ${y + 0.6} ${x + 3.2} ${y + 1.4} ${x + 3.2} ${y + 2.6}`
-        : `M${x - 1.2} ${y - 2.8} C${x - 2.4} ${y - 2.8} ${x - 2} ${y - 0.6} ${x - 3} ${y} C${x - 2} ${y + 0.6} ${x - 2.4} ${y + 2.8} ${x - 1.2} ${y + 2.8} M${x + 1.2} ${y - 2.8} C${x + 2.4} ${y - 2.8} ${x + 2} ${y - 0.6} ${x + 3} ${y} C${x + 2} ${y + 0.6} ${x + 2.4} ${y + 2.8} ${x + 1.2} ${y + 2.8}`;
-  return (
-    <g fill="none" stroke="#fff" strokeWidth={0.8} strokeLinecap="round">
-      <path d={d} />
-      {glyph === 'people' ? (
-        <g>
-          <circle cx={x - 1} cy={y - 1.4} r={1.4} />
-          <path d={`M${x + 1.4} ${y - 2.8} A1.4 1.4 0 0 1 ${x + 1.4} ${y}`} />
-        </g>
-      ) : null}
-    </g>
-  );
-}
+// ── Automations ───────────────────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * Webhooks to Slack and Teams: the Space's Webhooks dialog with one to a Slack channel, one to a Teams channel and
- * one to a service of your own, each Active with its last delivery, Send Test, Pause and Delete.
+ * Automations: the Space's Automations screen (the shared card art), its Rules tab open on three of livehuddle's own
+ * templates (livehuddle/docs/specs/013-workspace/automations.md "Templates") that keep the office running.
  */
-export function WebhooksArt() {
+export function AutomationsArt() {
   return (
-    <Frame canvas>
-      <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">
-        <rect x={14} y={3} width={272} height={90} rx={6} strokeWidth={0.8} className={PANEL} />
-        <text x={24} y={13.6} fontSize={7} fontWeight={700} className={STRONG}>
-          Webhooks for “Team Office”
-        </text>
-        <Close x={276} y={11} />
-        {HOOKS.map((h, i) => {
-          const y = 19 + i * 24.4;
-          return (
-            <g key={h.name} className="fa-a-in" style={at(0.2 + i * 0.25)}>
-              <path d={`M14 ${y} H286`} strokeWidth={0.8} className={RULE} />
-              <rect x={24} y={y + 4.4} width={14} height={14} rx={4} fill={h.tile} />
-              <TileGlyph x={31} y={y + 11.4} glyph={h.glyph} />
-              <text x={44} y={y + 9.4} fontSize={6.2} fontWeight={700} className={STRONG}>
-                {h.name}
-              </text>
-              <g transform={`translate(${h.chip} ${y + 4.6})`}>
-                <rect
-                  width={22}
-                  height={6.4}
-                  rx={3.2}
-                  strokeWidth={0.5}
-                  className="fill-emerald-50 stroke-emerald-200 dark:fill-emerald-500/15 dark:stroke-emerald-500/30"
-                />
-                <circle cx={4} cy={3.2} r={1} className="fill-emerald-500" />
-                <text
-                  x={6.6}
-                  y={5}
-                  fontSize={4.4}
-                  fontWeight={600}
-                  className="fill-emerald-700 dark:fill-emerald-300"
-                >
-                  Active
-                </text>
-              </g>
-              <text x={44} y={y + 15.6} fontSize={4.8} className={BODY}>
-                {h.kind} · Added by you
-              </text>
-              <text x={44} y={y + 21.2} fontSize={4.4} fontFamily={MONO} className={SUBTLE}>
-                {h.host}
-              </text>
-              <text
-                x={50 + h.host.length * 2.65}
-                y={y + 21.2}
-                fontSize={4.4}
-                className="fill-emerald-700 dark:fill-emerald-400"
-              >
-                ✓ {h.last}
-              </text>
-              <Button x={210} y={y + 7} w={30} h={9} text="Send Test" />
-              {/* Pause and Delete Webhook. */}
-              <path
-                d={`M248 ${y + 9.6} V${y + 13.4} M250.4 ${y + 9.6} V${y + 13.4}`}
-                strokeWidth={0.9}
-                strokeLinecap="round"
-                className="stroke-slate-500 dark:stroke-slate-400"
-              />
-              <path
-                d={`M259.6 ${y + 9.8} H265.4 M261 ${y + 9.8} V${y + 14.4} H264 V${y + 9.8} M261.6 ${y + 9.8} V${y + 8.8} H263.4 V${y + 9.8}`}
-                fill="none"
-                strokeWidth={0.7}
-                strokeLinejoin="round"
-                className="stroke-slate-500 dark:stroke-slate-400"
-              />
-            </g>
-          );
-        })}
-      </svg>
-    </Frame>
+    <SharedAutomationsArt
+      rules={[
+        {
+          name: 'Tidy Up When Everyone Leaves',
+          sentence: 'When Everyone Left then Revert to Snapshot',
+          last: '1h ago',
+        },
+        {
+          name: 'The Office Is Open',
+          sentence: 'When Someone Arrived then Post to Slack',
+          last: 'Today',
+        },
+        {
+          name: 'Stand-Up in Five',
+          sentence: 'When Every Weekday at 9:25 then Post to Slack',
+          last: 'Today',
+        },
+      ]}
+    />
   );
 }

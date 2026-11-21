@@ -23,7 +23,8 @@ Excalidraw's tool bar works. In Diagram and Workshop the strip is the **category
   ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
-  as a compact icon trigger, opening the banded tile grid.
+  as a compact icon trigger, opening the banded tile grid. No divider follows it: the category bar starts
+  right after, and the Library and Search at the end need none either, since their tint sets them apart.
 - **Then, in Diagram and Workshop, the category bar** ("The category bar").
 - **Far right: Search** (a magnifier), in every mode's strip but an event-storming board's (see
   "Search: every element type"). Draw mode shows its dock instead of the strip, so it has none.
@@ -186,7 +187,7 @@ height, so switching group never moves the flyout. Each reopens on the group it 
 A strip shows one category at a time, so finding an element means knowing which category holds it.
 **Search** finds it by name instead, across every category, and across the other modes too.
 
-- **Where:** the last control on the strip, behind a divider, with a hover card ("Search Elements"). On a phone it
+- **Where:** the last control on the strip, with no divider before it or the Library (their tint sets them apart from the other controls), and a hover card ("Search Elements"). On a phone it
   stays put at the end of the strip.
 - **Not on an event-storming board:** the notation is the palette there, as the board hides the
   pickers. Draw mode has no strip, so no Search.
@@ -380,10 +381,8 @@ button's left edge (`computeDockAnchor(..., 'button')`). The button has no hover
 got in the way of the Explorer's app switcher, and the icon is plain. Its `aria-label` ("Explorer") names it.
 
 The Explorer's header has its own **⋯** menu: New Canvas and Open Explorer, then the open canvas's own verbs
-(**Share**, **Export**, and the open canvas's own **Webhooks**), then the app's rows (Search, Settings and the like). Webhooks is
-offered to a signed-in account who can edit the whole canvas (not a Viewer, a Participant or a one-tab link) and opens
-the same Webhooks dialog as an item's ⋯ menu in the Explorer, for this canvas alone
-([webhooks.md](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)).
+(**Share** and **Export**), then the app's rows (Search, Settings and the like). It has no Webhooks row: what is left
+of a webhook is a connection, on the Connections tab inside [Automations](../013-workspace/automations.md).
 
 Layers and Collaborate open as **popovers over their bottom-row
 buttons** ([Editor app](editor-app.md)): they are not corner panels. Every

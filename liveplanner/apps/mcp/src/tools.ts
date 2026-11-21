@@ -48,6 +48,7 @@ import {
 import { elementsIssue } from './element-values';
 import { imageResult } from './image-result';
 import { registerTool } from './tool-annotations';
+import { registerTabFolderTools } from './tab-folder-tools';
 import { registerArchiveTools } from './archive-tools';
 import { registerPlanTools } from './plan-tools';
 import { registerSheetTools } from './sheet-tools';
@@ -324,6 +325,8 @@ export function registerTools(server: McpServer, env: Env): void {
       url: deepLink(env, liveDoc.id),
     });
   });
+
+  registerTabFolderTools(server, env);
 
   registerTool(server, env, mcpDeleteProject, async (args, extra) => {
     const token = requireToken(extra);

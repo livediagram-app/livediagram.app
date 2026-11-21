@@ -26,17 +26,15 @@ export type {
 };
 
 // An Incoming Webhook rule's address, and its secret as an Editor sees it once made: its last 4 characters, when it
-// was made and last used (null before Make Secret). Never the secret or its hash.
-export interface AutomationHookInfo {
-  url: string;
-  secret: AutomationHookSecret | null;
-}
+// was made and last used (null before Make Secret). Never the secret or its hash. The shapes, and the Audit Trail's
+// filters, are every app's (@liveworkspace/automations).
+import type { AutomationHookInfo } from '@liveworkspace/automations';
 
-export interface AutomationHookSecret {
-  last4: string;
-  madeAt: number;
-  usedAt: number | null;
-}
+export type {
+  AutomationHookInfo,
+  AutomationHookSecret,
+  AutomationRunsQuery,
+} from '@liveworkspace/automations';
 
 // A rule as the Rules list shows it: its figures, and what it names that the plan lacks (Needs Attention): `needs` a
 // line each by stored id, for agents, and `attention` the same as data (kind and id), which the editor words without
@@ -141,13 +139,6 @@ export interface AutomationDraftPick {
 export interface AutomationDraftResponse {
   rule: AutomationRuleBody;
   picks: AutomationDraftPick[];
-}
-
-export interface AutomationRunsQuery {
-  rule?: string;
-  result?: AutomationResult;
-  since?: number;
-  limit?: number;
 }
 
 export interface AutomationRunsResponse {

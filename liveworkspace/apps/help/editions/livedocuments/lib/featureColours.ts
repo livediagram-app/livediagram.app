@@ -33,6 +33,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   sharing: '#0284c7',
   'zen-mode': '#475569',
   'markdown-import': '#0d9488',
+  automations: '#7c3aed',
   'find-and-replace': '#ca8a04',
   // The last cards
   'building-a-deck': '#0ea5e9',

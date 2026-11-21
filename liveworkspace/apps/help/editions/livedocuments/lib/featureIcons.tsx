@@ -322,6 +322,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A magnifier over a word, with the arrow that swaps it for another.
+  // A lightning bolt inside a turning loop: a rule that runs on its own, again and again.
+  automations: (
+    <Glyph>
+      <path d="M4.5 12a7.5 7.5 0 0112.9-5.2" />
+      <path d="M17.8 3.6v3.4h-3.4" />
+      <path d="M19.5 12a7.5 7.5 0 01-12.9 5.2" />
+      <path d="M6.2 20.4V17h3.4" />
+      <path d="M12.8 7.8l-3.3 4.9h3l-.8 3.5 3.3-4.9h-3z" />
+    </Glyph>
+  ),
   'find-and-replace': (
     <Glyph>
       <circle cx="9.5" cy="9.5" r="5.5" />

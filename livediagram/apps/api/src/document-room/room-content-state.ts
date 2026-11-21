@@ -14,6 +14,7 @@ import { COMMUNITY_CHECK_MS as COMMUNITY_CHECK_EVERY_MS } from './community-post
 import { drainOutbox } from './document-outbox';
 import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
 import { documentShares } from './tab-shares';
+import { restoreAutomations } from './automations/document-automations';
 import type { DocumentRoom } from './document-room';
 
 // The document room's content state (document-room.ts): its schema and row, the outbox's and the shared tabs'
@@ -75,6 +76,8 @@ export function restoreContentState(room: DocumentRoom, maintenanceAt: number | 
     .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
     .toArray()[0];
   room.communityAt = post ? post.checked_at + COMMUNITY_CHECK_EVERY_MS : null;
+  // The document's rules: what they hear, and what waits to run (automations/document-automations.ts).
+  restoreAutomations(room, Date.now());
 }
 
 // A tab's stored name, or null when the store holds no such tab (or no document yet). One primary-key read.

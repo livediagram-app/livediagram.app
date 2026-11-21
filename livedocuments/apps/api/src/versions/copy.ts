@@ -30,6 +30,7 @@ export async function copyVersion(args: {
   name: string | null;
   author: Author;
   tokenId: string | null;
+  tokenName?: string | null;
 }): Promise<CopyResult> {
   const { env, document, version } = args;
   const body = parseVersionBody(version.data);
@@ -62,6 +63,7 @@ export async function copyVersion(args: {
     orderIndex: nextOrderIndex(document.tabs),
     author: args.author,
     tokenId: args.tokenId,
+    tokenName: args.tokenName ?? null,
     summary: COPY_SUMMARY,
     baseRev: null,
     rebasedOver: 0,

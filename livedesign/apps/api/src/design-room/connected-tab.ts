@@ -45,6 +45,7 @@ export async function connectedTabArrival(
       name: t.name,
       orderIndex: t.orderIndex,
       ...(t.folder ? { folder: t.folder } : {}),
+      ...(t.folderColor ? { folderColor: t.folderColor } : {}),
       ...(t.connection ? { connection: t.connection } : {}),
     })),
   };

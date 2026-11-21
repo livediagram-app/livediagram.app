@@ -53,4 +53,8 @@ export const ICON_ART_ALLOWLIST = [
   '**/components/automations/template-scenes/**',
   '**/components/automations/ActionScene.tsx',
   '**/components/automations/TriggerScene.tsx',
+  // The same, built once for every app (packages/automations-ui, whose own config these resolve from, so they
+  // start at its `src`): the shared parts, and the pictures of the kinds every item has.
+  '**/src/scene-parts.tsx',
+  '**/src/item/scenes/**',
 ];

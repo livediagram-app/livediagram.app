@@ -347,7 +347,7 @@ describe('settings catalogue', () => {
     expect(ids).toContain('tokens');
   });
 
-  it('has no Webhooks category, for a guest or an account: webhooks are set per document now', () => {
+  it('has no Webhooks category, for a guest or an account: connections are inside each design’s Automations', () => {
     for (const signedIn of [false, true]) {
       const ids = visibleCategories({ emailEnabled: false, signedIn }).map((c) => c.id);
       expect(ids).not.toContain('webhooks');
@@ -422,6 +422,7 @@ describe('settings sub-categories', () => {
       ['alignmentGuides', 'Canvas'],
       ['autoRebindArrows', 'Canvas'],
       ['elementIndicatorStyle', 'Canvas'],
+      ['unusedImageChoice', 'Canvas'],
       ['quickAddOnHover', 'Mouse'],
       ['middleMousePan', 'Mouse'],
       ['contentsPlacement', 'Pages'],

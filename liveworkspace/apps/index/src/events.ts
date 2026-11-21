@@ -1,18 +1,15 @@
 // The event log (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "The event log"): a short-lived record of
-// what happened to items, feeding each item's History (history.ts), its webhooks (webhooks/outbox.ts) and its team's
-// audit log (team-audit.ts). Kept EVENT_RETENTION_MS; the daily run sweeps older ones (sweepEvents).
+// what happened to items, feeding each item's History (history.ts) and its team's audit log (team-audit.ts). Kept EVENT_RETENTION_MS; the daily run sweeps older ones (sweepEvents).
 //
 // Recording. The index writes its own events (created, renamed, moved, trashed, restored, shared, unshared,
 // synced) in the same batch as the change, each statement reading the item's app and name from its row.
 // From an item's collab push it writes commented, comment_resolved, action_assigned and action_done (collab-push.ts);
 // from who comes in through a share link, opened_by_visitor and copied_by_visitor (visitors.ts). An app reports
-// `edited` from its server, and liveworkspace accounts its team events (event-push.ts). Every event a webhook can
-// listen for adds one statement queuing its deliveries, and a team-level one one statement copying it into the team's
-// audit log, both in the same batch.
+// `edited` from its server, and liveworkspace accounts its team events (event-push.ts). A team-level event adds one
+// statement copying it into the team's audit log, in the same batch.
 import { EVENT_RETENTION_MS, type EventApp, type EventType } from '@liveworkspace/index-client';
 import type { Env } from './env';
 import { useDayOf } from './items';
-import { isListened, webhookOutboxStatement } from './webhooks/outbox';
 import { accountAuditStatement, isAuditedItemEvent, itemAuditStatement } from './team-audit';
 
 type Db = D1Database;
@@ -83,8 +80,6 @@ export function eventStatements(db: Db, event: EventInput): D1PreparedStatement[
         ...(event.when?.args ?? []),
       ),
   ];
-  // Handed to the item's webhooks that listen for it (webhooks/outbox.ts), in the same batch.
-  if (isListened(event.type)) statements.push(webhookOutboxStatement(db, [id]));
   // Copied into its team's audit log, in the same batch (team-audit.ts).
   const audit = isAuditedItemEvent(event.type)
     ? itemAuditStatement(db, id, event.auditTeams)
@@ -108,7 +103,7 @@ export type BulkEvent = {
 };
 
 /**
- * Any number of events in one statement, whatever the count, then their webhooks' and audit log's. Sending one
+ * Any number of events in one statement, whatever the count, then their audit log's. Sending one
  * again (same id) moves its time on and takes its newest title and detail, so a retry never makes a second event.
  */
 export function bulkEventStatements(db: Db, events: readonly BulkEvent[]): D1PreparedStatement[] {
@@ -124,7 +119,6 @@ export function bulkEventStatements(db: Db, events: readonly BulkEvent[]): D1Pre
     detail: e.detail ? JSON.stringify(e.detail) : null,
     at: e.at,
   }));
-  const listened = events.filter((e) => e.itemId !== null && isListened(e.type)).map((e) => e.id);
   // A team's own events go in its audit log too (team-audit.ts), in the same batch.
   const audit = accountAuditStatement(db, events);
   return [
@@ -142,8 +136,6 @@ export function bulkEventStatements(db: Db, events: readonly BulkEvent[]): D1Pre
            actor_name = COALESCE(excluded.actor_name, events.actor_name)`,
       )
       .bind(JSON.stringify(rows)),
-    // Handed to their items' webhooks that listen (webhooks/outbox.ts), in the same batch.
-    ...(listened.length > 0 ? [webhookOutboxStatement(db, listened)] : []),
     ...(audit ? [audit] : []),
   ];
 }

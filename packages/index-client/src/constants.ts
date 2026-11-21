@@ -238,7 +238,7 @@ export const TEAM_AUDIT_ITEM_TYPES = [
   'approval_changes_requested',
   'approval_cancelled',
 ] as const satisfies readonly EventType[];
-// Kinds with no event of their own: a team item deleted for good, a team webhook added or removed.
+// Kinds with no event of their own: a team item deleted for good, a team item's connection (once a webhook) added or removed.
 export const TEAM_AUDIT_OWN_TYPES = ['deleted', 'webhook_added', 'webhook_removed'] as const;
 export const TEAM_AUDIT_EVENT_TYPES = [
   ...TEAM_AUDIT_ACCOUNT_TYPES,
@@ -273,8 +273,8 @@ export const TEAM_AUDIT_EVENT_LABELS: Record<TeamAuditEventType, string> = {
   approval_changes_requested: 'Changes Requested',
   approval_cancelled: 'Approval Cancelled',
   deleted: 'Deleted for Good',
-  webhook_added: 'Webhook Added',
-  webhook_removed: 'Webhook Removed',
+  webhook_added: 'Connection Added',
+  webhook_removed: 'Connection Removed',
 };
 
 export const isTeamAuditEventType = (value: unknown): value is TeamAuditEventType =>

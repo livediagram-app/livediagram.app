@@ -345,7 +345,7 @@ export const CONCEPT_CHECKS: readonly FieldCheck[] = [
   {
     field: 'conceptRows',
     valid: rowsOf(8, (r) => isRecord(r) && isStrUpTo(60)(r.label) && isOptionalStrUpTo(r.note, 40)),
-    rule: 'an array of at most 8 { label, note? } rows (60 and 40 characters)',
+    rule: 'an array of at most 8 rows, each { label, note? }: a label of up to 60 characters and a note of up to 40',
   },
   {
     field: 'pyramidVariant',

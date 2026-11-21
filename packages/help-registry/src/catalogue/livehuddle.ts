@@ -141,7 +141,7 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: light and dark mode, cleanup, and webhooks.',
+      'Do more with less effort using the editor helpers: automations, light and dark mode, and cleanup.',
     articleCount: 3,
     kind: 'feature',
   },
@@ -388,17 +388,6 @@ export const articles: Article[] = [
       "camera video webcam face screen share sharing present presenting window tab bubble maximise maximize restore stop sharing stop someone's share preview only you video paused call calls mini view",
     category: 'Collaboration',
     categorySlug: 'collaboration',
-    apps: ['livehuddle'],
-  },
-  {
-    slug: 'webhooks',
-    title: 'Webhooks',
-    description:
-      "Post a Space's events to a Slack or Microsoft Teams channel, or as signed JSON to your own service.",
-    keywords:
-      'webhook webhooks slack microsoft teams channel notify notification integration automate automation json signed secret hmac events deliveries send test pause tools api',
-    category: 'Tools',
-    categorySlug: 'tools',
     apps: ['livehuddle'],
   },
   // ---- Sub-articles: Virtual Office ----

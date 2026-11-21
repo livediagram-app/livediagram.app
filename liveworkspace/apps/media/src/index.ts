@@ -29,6 +29,7 @@ const routeLabel = createApiRouteLabel(
     'bytes',
     'previews',
     'usage',
+    'unused',
     'refs',
     'owners',
     'merge',

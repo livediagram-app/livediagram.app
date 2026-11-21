@@ -25,7 +25,8 @@ export function FormConnectCard({
   problem = null,
 }: {
   hasExisting: boolean;
-  // Why the board or sheet it named no longer takes responses (its tab deleted, its column gone): the box comes back.
+  // Why its responses have nowhere to go (no board shows its cards, its column gone, its sheet removed): the box
+  // comes back.
   problem?: DestinationProblem | null;
 }) {
   const b = useFormBuilder();
@@ -100,7 +101,7 @@ export function FormConnectCard({
           }}
           className="mt-3 cursor-pointer text-[13px] font-medium text-slate-600 underline-offset-2 hover:text-slate-900 hover:underline dark:text-slate-300 dark:hover:text-slate-50"
         >
-          Or use a board or sheet you already have
+          Or use a card type or sheet you already have
         </button>
       ) : null}
       {nowhere && questionsOf(b.form).length === 0 ? (

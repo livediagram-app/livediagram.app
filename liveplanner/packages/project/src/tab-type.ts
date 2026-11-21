@@ -87,6 +87,9 @@ export type Tab = {
   // loose in another. Unset / empty = loose. See tab-folders.ts for
   // the normalize + grouping helpers.
   folder?: string;
+  // The folder's colour (tab-folders.md "Folder colour"): a hue name, carried on the same link row as `folder`
+  // and on every member alike; none is Automatic, the hue its name picks.
+  folderColor?: string;
   // Live session tools (docs/specs/012-collaboration/session-tools.md), facilitator-run + synced to every
   // participant via the normal tab sync. `timer` is a countdown /
   // stopwatch; `vote` is a dot-voting session. Both are edit-role

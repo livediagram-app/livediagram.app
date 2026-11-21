@@ -79,8 +79,10 @@ function hook(ruleId: string, init: CallInit = {}): Promise<Response> {
   );
 }
 const bearer = (secret: string) => ({ Authorization: `Bearer ${secret}` });
-const signed = (secret: string, body: string) => ({
-  'X-Liveplanner-Signature': `sha256=${createHmac('sha256', secret).update(body).digest('hex')}`,
+// Signed as a sender signs: the timestamp, a dot and the exact body, with the timestamp beside it.
+const signed = (secret: string, body: string, ts = String(Math.floor(Date.now() / 1000))) => ({
+  'X-Liveplanner-Signature': `sha256=${createHmac('sha256', secret).update(`${ts}.${body}`).digest('hex')}`,
+  'X-Liveworkspace-Timestamp': ts,
 });
 const drain = () => room().alarm();
 
@@ -188,8 +190,26 @@ describe('a call', () => {
     const rule = await incoming();
     const { secret } = await secretOf(rule.id);
     const body = JSON.stringify({ cards: [a.key] });
-    expect((await hook(rule.id, { headers: signed(secret, body), body })).status).toBe(202);
+    const headers = signed(secret, body);
+    expect((await hook(rule.id, { headers, body })).status).toBe(202);
     expect(vi.mocked(timingSafeEqual)).toHaveBeenCalled();
+    // The same call again is a replay; one stale, one with no timestamp, or one signed over the body alone is refused.
+    expect((await hook(rule.id, { headers, body })).status).toBe(401);
+    const stale = String(Math.floor(Date.now() / 1000) - 301);
+    expect((await hook(rule.id, { headers: signed(secret, body, stale), body })).status).toBe(401);
+    const bare = createHmac('sha256', secret).update(body).digest('hex');
+    const unproved: Record<string, string>[] = [
+      { 'X-Liveplanner-Signature': headers['X-Liveplanner-Signature'] },
+      {
+        'X-Liveplanner-Signature': `sha256=${bare}`,
+        'X-Liveworkspace-Timestamp': headers['X-Liveworkspace-Timestamp'],
+      },
+    ];
+    for (const only of unproved)
+      expect((await hook(rule.id, { headers: only, body: `${body} ` })).status).toBe(401);
+    // Bearer is no signature: the same call twice runs twice.
+    for (let i = 0; i < 2; i += 1)
+      expect((await hook(rule.id, { headers: bearer(secret), body })).status).toBe(202);
   });
 
   it('is refused 401, the same every time, for every wrong proof and every rule it can’t start', async () => {

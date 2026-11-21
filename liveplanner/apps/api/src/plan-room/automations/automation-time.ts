@@ -22,7 +22,7 @@ import {
 import { listItems } from '../../db/items';
 import { readAutomationPlan, type AutomationPlan } from './automation-plan';
 import { settleRun, timeLineId } from './automation-log';
-import { firedIds, keepFired, trimFired } from './automation-fired';
+import { firedIds, keepFired, trimFired } from '@liveworkspace/automations/room';
 import type { AutomationSchedule } from './automation-queue';
 import type { RunnerDeps } from './automation-runner';
 import type { AutomationTally } from './automation-telemetry';

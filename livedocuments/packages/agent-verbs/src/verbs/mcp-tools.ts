@@ -6,8 +6,10 @@
 import { TRASH_RETENTION_DAYS } from '@livedocuments/api-schema';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
 import { mcpChangeThreads, mcpListThreads } from '../mcp/thread-tools';
+import { mcpChangeRules, mcpListRules } from '../mcp/rule-tools';
 import { mcpViewLive, mcpViewTab } from '../mcp/view-tool';
 import { mcpArchiveDocument, mcpUnarchiveDocument } from '../mcp/archive-tools';
+import { mcpChangeTabs } from '../mcp/tab-folder-tools';
 import { mcpListVersions, mcpRestoreVersion } from '../mcp/version-tools';
 import {
   changePagesOutput,
@@ -256,6 +258,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpUpdateDocument,
   mcpShareDocument,
   mcpRenameDocument,
+  mcpChangeTabs,
   mcpDeleteDocument,
   mcpListTrash,
   mcpArchiveDocument,
@@ -263,6 +266,8 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpRestoreDocument,
   mcpListThreads,
   mcpChangeThreads,
+  mcpListRules,
+  mcpChangeRules,
   mcpListVersions,
   mcpRestoreVersion,
   mcpViewTab,

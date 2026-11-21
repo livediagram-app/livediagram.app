@@ -1,8 +1,9 @@
 'use client';
 
-// The Automations glyphs (docs/specs/026-plan/automations.md "Where it shows"): the lightning bolt that stands for
-// Automation everywhere (the footer button, the screen's badge, a card's history and comments), and each step's icon
-// on its tinted tile: the trigger in the brand violet, conditions in orange, actions in blue, as the design draws them.
+// liveplanner's Automations glyphs (docs/specs/026-plan/automations.md "Where it shows"): each card action's icon,
+// beside the bolt, the tiles and Automation's disc, which are the platform's
+// (@liveworkspace/automations-ui/glyphs). The kit hands each action its icon from here (plan-kit.tsx), and StepTile
+// keeps the form this editor's own parts draw it in: by a step's kind, a message step by where it posts.
 
 import type { AutomationActionKind, AutomationStep, AutomationVia } from '@liveplanner/items';
 import { SparkleIcon, lucideGlyph } from '@liveplanner/ui';
@@ -10,19 +11,12 @@ import {
   lucideAtSign,
   lucideCircleCheck,
   lucideCopyPlus,
-  lucideHourglass,
   lucideLink,
   lucideListChecks,
   lucidePalette,
   lucideShapes,
   lucideUndo2,
-  lucideClock,
-  lucideFunnel,
-  lucideHash,
   lucideListTree,
-  lucideUsers,
-  lucideWebhook,
-  lucideGitFork,
   lucideFlag,
   lucideMail,
   lucideMessageSquare,
@@ -33,17 +27,30 @@ import {
   lucideSquarePlus,
   lucideTag,
   lucideUser,
-  lucideZap,
 } from '@liveworkspace/icons/lucide';
+import {
+  IfGlyph,
+  NOTIFY_GLYPHS,
+  StepTile as SharedStepTile,
+  WaitGlyph,
+  type StepTone,
+} from '@liveworkspace/automations-ui/glyphs';
+import type { GlyphType } from '@liveworkspace/automations-ui/kit';
 
-export const BoltIcon = lucideGlyph(lucideZap, 16);
-export const ConditionIcon = lucideGlyph(lucideFunnel, 16);
-// A time trigger's own: the clock, where a card trigger has the bolt.
-export const ClockIcon = lucideGlyph(lucideClock, 16);
+export {
+  AutomationDisc,
+  BoltIcon,
+  ClockIcon,
+  ConditionIcon,
+  NOTIFY_GLYPHS,
+  STEP_KIND_TEXT,
+  STEP_TILE,
+  type StepTone,
+} from '@liveworkspace/automations-ui/glyphs';
 
-type Glyph = ReturnType<typeof lucideGlyph>;
+export const BranchGlyph = lucideGlyph(lucideListTree, 16);
 
-const ACTION_GLYPHS: Record<AutomationActionKind | 'if' | 'for' | 'wait', Glyph> = {
+export const ACTION_GLYPHS: Record<AutomationActionKind | 'if' | 'for' | 'wait', GlyphType> = {
   move: lucideGlyph(lucideMoveRight, 16),
   set_field: lucideGlyph(lucidePencil, 16),
   clear_field: lucideGlyph(lucideEraser, 16),
@@ -64,31 +71,21 @@ const ACTION_GLYPHS: Record<AutomationActionKind | 'if' | 'for' | 'wait', Glyph>
   link_card: lucideGlyph(lucideLink, 16),
   mention: lucideGlyph(lucideAtSign, 16),
   resolve_threads: lucideGlyph(lucideCircleCheck, 16),
-  wait: lucideGlyph(lucideHourglass, 16),
-  if: lucideGlyph(lucideGitFork, 16),
-  for: lucideGlyph(lucideListTree, 16),
+  wait: WaitGlyph,
+  if: IfGlyph,
+  for: BranchGlyph,
 };
 
-// An outgoing action by where it posts: your own service, a Slack channel, a Teams channel.
-export const NOTIFY_GLYPHS: Record<AutomationVia, Glyph> = {
-  webhook: lucideGlyph(lucideWebhook, 16),
-  slack: lucideGlyph(lucideHash, 16),
-  teams: lucideGlyph(lucideUsers, 16),
-};
-
-export type StepTone = 'trigger' | 'condition' | 'action';
-
-// The tile behind a step's icon, and the colour of its kind label ("When", "If all of these", "Then").
-export const STEP_TILE: Record<StepTone, string> = {
-  trigger: 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300',
-  condition: 'bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
-  action: 'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
-};
-export const STEP_KIND_TEXT: Record<StepTone, string> = {
-  trigger: 'text-brand-700 dark:text-brand-300',
-  condition: 'text-orange-700 dark:text-orange-300',
-  action: 'text-blue-700 dark:text-blue-300',
-};
+/** A step's icon by its kind: an outgoing action's by where it posts, the sparkle for an AI action. */
+export const glyphOf = (
+  kind: AutomationStep['kind'] | undefined,
+  via?: AutomationVia,
+): GlyphType =>
+  kind === 'notify'
+    ? NOTIFY_GLYPHS[via ?? 'webhook']
+    : kind === 'ai'
+      ? SparkleIcon
+      : ACTION_GLYPHS[kind ?? 'move'];
 
 /** A step's icon on its tile: the bolt for the trigger (a clock for a time), the funnel for conditions, the action's
  *  own, an outgoing action's by where it posts, and the sparkle for an AI action. */
@@ -105,43 +102,12 @@ export function StepTile({
   time?: boolean;
   size?: 24 | 32;
 }) {
-  const Icon =
-    tone === 'trigger'
-      ? time
-        ? ClockIcon
-        : BoltIcon
-      : tone === 'condition'
-        ? ConditionIcon
-        : kind === 'notify'
-          ? NOTIFY_GLYPHS[via ?? 'webhook']
-          : kind === 'ai'
-            ? SparkleIcon
-            : ACTION_GLYPHS[kind ?? 'move'];
   return (
-    <span
-      aria-hidden
-      className={`inline-flex shrink-0 items-center justify-center ${size === 32 ? 'size-8 rounded-lg' : 'size-6 rounded-md'} ${STEP_TILE[tone]}`}
-    >
-      <Icon size={size === 32 ? 16 : 13} aria-hidden />
-    </span>
-  );
-}
-
-/** Automation's own disc: the bolt on violet, where a person's initials would be (history, comments, previews). */
-export function AutomationDisc({
-  size = 24,
-  ringed = false,
-}: {
-  size?: 24 | 28;
-  ringed?: boolean;
-}) {
-  return (
-    <span
-      aria-hidden
-      data-automation-disc=""
-      className={`relative z-[1] inline-flex shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200 ${size === 24 ? 'size-6' : 'size-7'} ${ringed ? 'ring-[3px] ring-white dark:ring-slate-900' : ''}`}
-    >
-      <BoltIcon size={size === 24 ? 12 : 14} aria-hidden />
-    </span>
+    <SharedStepTile
+      tone={tone}
+      glyph={tone === 'action' ? glyphOf(kind, via) : undefined}
+      time={time}
+      size={size}
+    />
   );
 }

@@ -138,7 +138,7 @@ export function applyMeta(
   rec: OfflineDesignRecord,
   patch: {
     name?: string;
-    tabs?: { id: string; folder?: string }[];
+    tabs?: { id: string; folder?: string; folderColor?: string | null }[];
   },
   at: number,
 ): OfflineDesignRecord {
@@ -273,7 +273,7 @@ export async function offlineCreateDesign(
 
 export async function offlineSaveDesignMeta(
   id: string,
-  patch: { name?: string; tabs?: { id: string; folder?: string }[] },
+  patch: { name?: string; tabs?: { id: string; folder?: string; folderColor?: string | null }[] },
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => applyMeta(rec, patch, now));

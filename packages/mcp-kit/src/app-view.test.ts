@@ -18,7 +18,13 @@ import { VIEWER_SCRIPT, compactScript, viewerScript } from './app-viewer-script'
 
 type View = { scale: number; x: number; y: number };
 type Ldv = {
-  subjectOf: (r: unknown) => { documentId: string; tabId: string | null } | null;
+  subjectOf: (r: unknown) => {
+    documentId: string;
+    tabId: string | null;
+    rev: number | null;
+    picture: string | null;
+  } | null;
+  pictureOf: (r: unknown) => string | null;
   fitOf: (w: number, h: number, bw: number, bh: number) => View;
   zoomAt: (v: View, f: number, px: number, py: number) => View;
   hitTest: (
@@ -34,7 +40,11 @@ type Ldv = {
     pages: unknown,
     pageId: string | null,
   ) => { at: number; label: string; name: string; prev: string | null; next: string | null } | null;
-  changeOf: (frame: unknown, tabId: string | null, own?: string[]) => 'redraw' | 'trashed' | null;
+  changeOf: (
+    frame: unknown,
+    tabId: string | null,
+    own?: string[],
+  ) => 'redraw' | 'trashed' | 'later' | null;
   retryAfter: (tries: number) => number;
   stopWords: (why: string, word?: string) => string;
 };
@@ -165,24 +175,57 @@ describe('the view resource and the tool meta', () => {
 
 describe('the viewer’s pure parts', () => {
   it('reads the document and tab from each tool’s structured result', () => {
+    const none = { rev: null, picture: null };
     expect(LDV.subjectOf({ structuredContent: { documentId: 'd', tabIds: ['t1', 't2'] } })).toEqual(
-      { documentId: 'd', tabId: 't1' },
+      { documentId: 'd', tabId: 't1', ...none },
     );
     expect(LDV.subjectOf({ structuredContent: { documentId: 'd', tabId: 't' } })).toEqual({
       documentId: 'd',
       tabId: 't',
+      ...none,
     });
     expect(LDV.subjectOf({ structuredContent: { id: 'd', tab: { id: 't' } } })).toEqual({
       documentId: 'd',
       tabId: 't',
+      ...none,
     });
     expect(LDV.subjectOf({ structuredContent: { id: 'd' } })).toEqual({
       documentId: 'd',
       tabId: null,
+      ...none,
     });
     expect(LDV.subjectOf({ structuredContent: { name: 'x' } })).toBeNull();
     expect(LDV.subjectOf({ structuredContent: 'x' })).toBeNull();
     expect(LDV.subjectOf(null)).toBeNull();
+  });
+
+  // "One live view": the step a view was opened by.
+  it('reads the step a result left: the tab’s revision and the result’s picture', () => {
+    const png = { type: 'image', data: 'AAAA', mimeType: 'image/png' };
+    // create (rev beside tabIds), update and add_tab (rev), a read (tab.rev); a revision of 0 is one.
+    expect(
+      LDV.subjectOf({ structuredContent: { documentId: 'd', tabIds: ['t'], rev: 0 } })!.rev,
+    ).toBe(0);
+    expect(LDV.subjectOf({ structuredContent: { documentId: 'd', tabId: 't', rev: 4 } })!.rev).toBe(
+      4,
+    );
+    expect(LDV.subjectOf({ structuredContent: { id: 'd', tab: { id: 't', rev: 7 } } })!.rev).toBe(
+      7,
+    );
+    expect(LDV.subjectOf({ structuredContent: { id: 'd', rev: 'x' } })!.rev).toBeNull();
+    expect(
+      LDV.subjectOf({
+        content: [{ type: 'text', text: 'Done.' }, png],
+        structuredContent: { id: 'd' },
+      })!.picture,
+    ).toBe('data:image/png;base64,AAAA');
+    expect(LDV.pictureOf({ content: [{ type: 'text', text: 'x' }] })).toBeNull();
+    expect(
+      LDV.pictureOf({ content: [{ type: 'image', data: '', mimeType: 'image/png' }] }),
+    ).toBeNull();
+    expect(LDV.pictureOf({ content: [{ type: 'image', data: 'AAAA' }, null] })).toBeNull();
+    expect(LDV.pictureOf({ content: 'x' })).toBeNull();
+    expect(LDV.pictureOf(null)).toBeNull();
   });
 
   it('fits a picture into the frame with a margin, never past twice its size', () => {
@@ -211,11 +254,11 @@ describe('the viewer’s pure parts', () => {
   });
 
   it('reads designs and plans by their own id keys', () => {
-    expect(LDV.subjectOf({ structuredContent: { designId: 'g', tabId: 't' } })).toEqual({
+    expect(LDV.subjectOf({ structuredContent: { designId: 'g', tabId: 't' } })).toMatchObject({
       documentId: 'g',
       tabId: 't',
     });
-    expect(LDV.subjectOf({ structuredContent: { projectId: 'p', boards: [] } })).toEqual({
+    expect(LDV.subjectOf({ structuredContent: { projectId: 'p', boards: [] } })).toMatchObject({
       documentId: 'p',
       tabId: null,
     });
@@ -271,6 +314,13 @@ describe('the viewer’s pure parts', () => {
       expect(LDV.changeOf(op({ kind, tabId: 't2' }), 't1'), kind).toBeNull();
     }
     expect(LDV.changeOf(op({ kind: 'document-meta', tabs: [] }), 't1')).toBe('redraw');
+    // "One live view": an agent's changeset on the shown tab is a later step; a person's, or the view's own, is not.
+    const agent = { kind: 'changeset', id: 'c1', agentKey: 'k' };
+    expect(LDV.changeOf(op({ ...agent, tabId: 't1' }), 't1')).toBe('later');
+    expect(LDV.changeOf(op({ ...agent, tabId: 't2' }), 't1')).toBeNull();
+    expect(LDV.changeOf(op({ ...agent, tabId: 't1' }), 't1', ['c1'])).toBeNull();
+    expect(LDV.changeOf(op({ kind: 'changeset', id: 'c2', tabId: 't1' }), 't1')).toBe('redraw');
+    expect(LDV.stopWords('later', 'design')).toBe('A later step changed this design.');
     expect(LDV.changeOf(op({ kind: 'document-trashed' }), 't1')).toBe('trashed');
     // The other products' rooms: a design's and a plan's own meta and Trash ops, a design's photo layers and
     // component mains, a plan's cards and card types (which name no tab); their presence draws nothing.

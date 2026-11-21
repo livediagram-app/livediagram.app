@@ -3,13 +3,16 @@
 // Editor of the whole plan's (a Participant, a Viewer, a tab link and an embed see none), its amber dot says a rule
 // paused, and it opens the screen. On a plan kept Offline it opens Share's sync gate with the Automations copy,
 // and once synced goes on to the screen. The host reads the list once the plan settles.
+import './test-kit';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
-import { AutomationsHost, AUTOMATIONS_FIRST_READ_MS } from './AutomationsHost';
-import { automationsScopeFor } from './automations-gate';
-import { useAutomationsGate } from './use-automations-gate';
+import { AUTOMATIONS_FIRST_READ_MS } from '@liveworkspace/automations-ui/AutomationsHost';
+import { toolBadges } from '@/components/dialogs/tool-gate';
+import { PlanAutomationsHost } from './PlanAutomationsHost';
+import { automationsScopeFor } from '@liveworkspace/automations-ui/automations-gate';
+import { useAutomationsGate } from '@liveworkspace/automations-ui/use-automations-gate';
 import { forgetAutomations } from './use-automations';
 import { rule } from './test-fixtures';
 
@@ -20,16 +23,17 @@ vi.mock('./automations-client', async (importOriginal) => ({
 }));
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
-vi.mock('./AutomationsDialog', () => ({
-  AutomationsDialog: () => <div role="dialog" aria-label="Automations" />,
+vi.mock('./PlanAutomationsScreen', () => ({
+  PlanAutomationsScreen: () => <div role="dialog" aria-label="Automations" />,
 }));
 const toast = vi.hoisted(() => ({ info: vi.fn(), success: vi.fn(), error: vi.fn() }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 // The gate is its own chunk: load it once up front, so a test's first open doesn't wait on the import.
-await import('./AutomationsSyncGate');
+await import('./PlanAutomationsGate');
+await import('./PlanAutomationsScreen');
 
-const ITEMS = { ownerId: 'o1', projectId: 'p1', shareCode: null, tabId: null };
+const ITEMS = { ownerId: 'o1', itemId: 'p1', shareCode: null, tabId: null };
 const EDITOR = {
   level: 'edit' as const,
   structureReadOnly: false,
@@ -52,11 +56,13 @@ function Footer({
     await sync();
     setGate((g) => ({ ...g, offline: false }));
   };
-  const door = useAutomationsGate({ ...gate, ready, sync: syncs });
+  const { signedIn, offline } = gate;
+  const badges = useMemo(() => toolBadges({ signedIn, offline }), [signedIn, offline]);
+  const door = useAutomationsGate({ ...gate, ready, sync: syncs, badges });
   return (
-    <AutomationsHost scope={automationsScopeFor(gate)} plan={undefined} gate={door}>
+    <PlanAutomationsHost scope={automationsScopeFor(gate)} plan={undefined} gate={door}>
       <ChromeControls onOpenSearch={() => {}} onOpenSettings={() => {}} />
-    </AutomationsHost>
+    </PlanAutomationsHost>
   );
 }
 

@@ -247,6 +247,8 @@ component library rather than a tab), `budget` (8,000 tokens unless
 given), `only`, `ref`, `q`, `coarse`, `all` and `style`; a ref that names nothing or several comes back as a
 correctable result naming the candidates.
 
+Its `tabs` list gives each tab in a [tab folder](../006-design/tab-folders.md#agents) its `folder` name.
+
 ### 4.3 `create_design`
 
 Create a new design from elements the model produced. Input: `name`, `tabs:
@@ -302,6 +304,9 @@ exactly like a `create_design` tab, then submits a [changeset](../024-agents/age
 that creates the tab, so anyone with the design open sees it arrive. Returns the new `tabId`, `url`,
 and the rendered PNG. (Pair with `read_design`, which lists the design's
 existing tabs, to decide where a new one fits.)
+
+An optional `folder` puts the new tab in a [tab folder](../006-design/tab-folders.md#agents): an existing name adds it as
+that folder's last tab, a new name starts one. The answer's `folder` names it.
 
 ### 4.4 `update_design`
 
@@ -432,7 +437,7 @@ element's `imageId` takes. The shared code is `@liveworkspace/agent-verbs`'s `pa
 - **Fetching a URL.** `@liveworkspace/api-kit`'s `fetchPublicBytes` (`public-fetch.ts`), the server-side fetch of a
   URL someone else chose: https on port 443 only, with no user name or password; a literal address is judged as it
   stands and a name is resolved (DNS over HTTPS, A and AAAA) and refused when any answer is private, loopback,
-  link-local, carrier NAT, multicast, reserved or a cloud metadata address (`public-address.ts`, the index's webhook
+  link-local, carrier NAT, multicast, reserved or a cloud metadata address (`public-address.ts`, the index's connection
   checks), or an internal name (`localhost`, `.local`, `.internal`, a single label). Redirects are followed by hand,
   at most 3, each target checked the same way; the whole exchange, body included, has 10 seconds; the body is read
   through a byte counter that stops one chunk past 10 MB, so a huge or endless answer is cut off there. The answer's
@@ -718,6 +723,35 @@ comment, text }` and `delete { ref, comment }`, each with an optional `tabId`. A
   `thread_full`. Bursts meet the per-token write limiter, and the owner's new-comment email goes at most once per
   design per 15 minutes.
 
+### 4.9e Automations rules: `list_rules` and `change_rules`
+
+An assistant works a design's [Automations](../013-workspace/automations.md#agents) rules as an Editor does in the
+Rules list, over the same routes (`/api/designs/<id>/automations[/…]`), with exactly their authority. Both are declared
+once for every product with item rules (`@liveworkspace/agent-verbs/mcp/rule-tools`, run by
+`@liveworkspace/agent-verbs/rules`) with this product's kinds, so the rule format in the tool is this product's
+triggers, conditions, steps and values.
+
+- **`list_rules`**: `{ designId, rule?, runs?, limit? }`. Read. Every rule in order with its sentence, on or off,
+  paused, needs attention, last run, runs this week and next run, and the design's tabs and people; `rule` (an id or
+  exact name) adds its whole body, `runs: true` the recent Audit Trail (20, up to 50). A read-only token may call it.
+- **`change_rules`**: `{ designId, changes }`. Destructive (it deletes rules). Up to 20 changes in order: `add {rule}`,
+  `set {rule, …}`, `on`, `off`, `duplicate` and `delete {rule}`, `test {rule, tab?}` and `run {rule, tab?}`. Tabs and
+  people may be named by id or name. A refusal is a tool error in words, naming what was applied before it: an
+  Editor of the whole design only (`automations_need_editor`), a read-only token (`read_only_token`), Revert to Snapshot
+  saved only by a person (`automation_needs_a_person`), a rule that does not read (the engine's path and reason), the
+  limits, and a rule or tab it cannot name. It never makes or reads an Incoming Webhook's secret.
+
+### 4.9f Tab folders: `change_tabs`
+
+`{ designId, changes }`. Write. Puts the design's tabs in [tab folders](../006-design/tab-folders.md#agents), as the editor's
+Organise in Tab Folder does: up to 50 changes in order, `move { tab, folder }` (`null` takes it out), `rename_folder {
+folder, to }` and `ungroup { folder }`. A tab is named by its id or a name one tab alone has. Reads `GET /api/designs/:id`,
+then writes the whole order once with `PUT /api/designs/:id` `{ tabs: [{ id, folder }] }`, which reaches everyone with the
+design open. Answers `{ applied, tabs, url }`: one line per change, and every tab after them, in order, with its folder. An
+unknown tab or folder answers an error naming the tabs or folders, before anything is written; a Participant's or a
+Viewer's grant answers "Only an Editor can change tab folders". Declared once for every product
+(`@liveworkspace/agent-verbs/mcp/tab-folder-tools`).
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts**: pre-canned templates a client surfaces as slash
@@ -795,11 +829,11 @@ which is how the gap was found.
 Three behaviours cover the nineteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                             |
-| --------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`                      |
-| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `share_design`, `rename_design`, `restore_design`, `unarchive_design`, `upload_image` |
-| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`, `delete_image`           |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                            |
+| --------------- | -------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_designs`, `read_design`, `list_templates`, `search_icons`, `list_trash`, `list_images`                                     |
+| **write**       | `false`        | `false`           | `create_design`, `add_tab`, `change_tabs`, `share_design`, `rename_design`, `restore_design`, `unarchive_design`, `upload_image` |
+| **destructive** | `false`        | `true`            | `update_design`, `delete_design`, `archive_design`, `change_pages`, `change_components`, `delete_image`                          |
 
 Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on
 `mcpTool`) and `@liveworkspace/mcp-kit`'s `toolAnnotations`: `delete_image` is `idempotentHint: true` (removing
@@ -990,22 +1024,23 @@ code or status: a design in the Trash, a view-only grant, an id that names nothi
 (a tab id the design lacks names its tabs, `rename_design` and `change_pages` included, whose tab routes answer a bare 404 that would otherwise read as "no such design"); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
-| Tool                | Result object                                                                                                                                             |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `find_designs`      | `count`, `designs[]` of `{ id, name, updatedAt, library, url, archived? }`                                                                                |
-| `read_design`       | `id`, `name`, `tab { id, name, rev, ... }` (for `view: "components"`, `components` text instead), `tabs[]` of `{ id, name }` (every tab, in order), `url` |
-| `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                 |
-| `create_design`     | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                           |
-| `add_tab`           | `designId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                    |
-| `update_design`     | `id` and `designId` (the same), `tabId`, `url`                                                                                                            |
-| `share_design`      | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                                                                     |
-| `rename_design`     | `renamed` (`design` or `tab`), `name`, then `id` + `url` for a design or `tabId` for a tab                                                                |
-| `delete_design`     | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`                                                                |
-| `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                         |
-| `restore_design`    | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                              |
-| `archive_design`    | `archived`, `id`, `name`                                                                                                                                  |
-| `unarchive_design`  | `unarchived`, `id`, `name`, `library`, `url`                                                                                                              |
-| `change_components` | `designId`, `component` (null for a `detach`), `lines[]`, `rev` (null for a `patch`), `url`                                                               |
+| Tool                | Result object                                                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `find_designs`      | `count`, `designs[]` of `{ id, name, updatedAt, library, url, archived? }`                                                                                         |
+| `read_design`       | `id`, `name`, `tab { id, name, rev, ... }` (for `view: "components"`, `components` text instead), `tabs[]` of `{ id, name, folder? }` (every tab, in order), `url` |
+| `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                          |
+| `create_design`     | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `rev` (the first tab's), `folder`, `url`                                                           |
+| `add_tab`           | `designId`, `tabId`, `name`, `folder` when given, `url`, `note` when a template has more tabs than it added                                                        |
+| `change_tabs`       | `applied[]` (one line per change), `tabs[]` of `{ id, name, folder? }` (every tab, in order), `url`                                                                |
+| `update_design`     | `id` and `designId` (the same), `tabId`, `url`                                                                                                                     |
+| `share_design`      | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                                                                              |
+| `rename_design`     | `renamed` (`design` or `tab`), `name`, then `id` + `url` for a design or `tabId` for a tab                                                                         |
+| `delete_design`     | `deleted` (`design` or `tab`), `designId`, then `trashed` + `restorableForDays` or `tabId`                                                                         |
+| `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                                  |
+| `restore_design`    | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                       |
+| `archive_design`    | `archived`, `id`, `name`                                                                                                                                           |
+| `unarchive_design`  | `unarchived`, `id`, `name`, `library`, `url`                                                                                                                       |
+| `change_components` | `designId`, `component` (null for a `detach`), `lines[]`, `rev` (null for a `patch`), `url`                                                                        |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its
@@ -1046,9 +1081,13 @@ as they can be without saying less.
 
 - **Tool list size.** A schema built from shared parts repeats their descriptions wherever the part is used. In the
   `tools/list` answer each description of 200 characters or more is said once per tool: a repeat reads
-  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). Only the
+  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). A shorter
+  description said again of a property of the same name (`tabId` under each of a tool's ops, in the same words) is
+  left out of the repeats, since the first already said what that property is and a pointer would be longer than
+  the words; other words for the same name, and the same words for another name, are kept. Only the
   listing changes; a call is validated against the tool's own schema
-  (`../packages/mcp-kit/src/tool-list-compact.ts`).
+  (`../packages/mcp-kit/src/tool-list-compact.ts`). Nothing points from one tool to another: a host that loads
+  tools one at a time would be left with a pointer to a schema it never read.
 - **An answer's text** is its structured result as one-line JSON (§4.17).
 - **A tab by its name.** Where a tool reads a tab (`read_design`, `update_design` and the tools that load a tab the same
   way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
@@ -1060,6 +1099,11 @@ as they can be without saying less.
   read-only: its token can find and read, never create or change ...", on every tool
   (`READ_ONLY_TOKEN_WORDS`, `../packages/api-client/src/client.ts`). It used to read "you may view this ... but not
   change it", which names a share role the caller does not have (and no file at all on a create), or the bare code.
+
+- **A picture's place.** An image element that names no picture (`imageId` left out) is a placeholder the person
+  fills in the editor, stored with `imageId: null` (`withPicturePlace`, the model's `element-normalise`). The element
+  format always said so, but a call that left the field out had its whole tab refused ("imageId: a string or
+  null"): found by the benchmark, where a model built a poster round an empty picture frame.
 
 ## 5. Visualise: inline image render
 
@@ -1179,7 +1223,7 @@ one page at a time.
   pages, and a strip of the design's tabs switches tab, each another `view_tab`. Clicking an element opens the editor
   at it (`ui/open-link` to `/design/<id>#t=<tab>&el=<element>`, the Inbox's element deep link), and **Open in editor**
   opens the tab. A tab that cannot be read says so in the frame; nothing is cached between results.
-- **`view_tab`**: `{ designId, tabId?, pageId? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a
+- **`view_tab`**: `{ designId, tabId?, pageId?, rev?, held? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a
   host with MCP Apps keeps it from the model): one page's SVG (the first page when `pageId` is absent or names no
   page), its view box, the box of every element drawn on that page with its ref and label (for the click), the tab's
   pages (`{ id, name }`, a page with no name named by its place, "Page 2") and the shown one's id, the design's tabs
@@ -1217,6 +1261,21 @@ one page at a time.
     why and when.
   - **Cost.** A design with no open view gets no ticket and no socket. An open view is one idle socket on the room, one
     mint every 10 minutes, and at most one `view_tab` per `LIVE_REDRAW_MS` while people edit.
+- **One live view.** A chat holds one view for every tool call that draws or reads a tab, and each used to follow
+  the design, so a build of ten steps ended as ten identical pictures redrawing together. A view now follows only
+  until **an agent's later change lands on its tab**, then keeps its own step, as livediagram's does (its
+  mcp-server.md "One live view", the same shared viewer and `@liveworkspace/mcp-kit/app-view-step`):
+  - The step is the tab revision the view's result left: `rev` on `create_design` (its first tab's), `add_tab`,
+    `update_design` and `change_pages`, `tab.rev` on `read_design`.
+  - While it listens, an agent's `changeset` op on the shown tab (one with an `agentKey`) stops it: it keeps its
+    picture and its mark reads **Earlier step**. A person's edits draw the page again as before.
+  - Opening again or catching up, it sends `rev` on `view_tab`, which reads the tab's newest 5 changesets
+    (`GET /api/designs/:id/changesets?tab=&limit=5`) and answers `superseded` when an agent's is past it. The view
+    then shows the picture its own result came with (it says `held`, and gets no drawing back), or with none, the
+    page as it is now as a **Snapshot**. A redraw for a change it heard sends no `rev`.
+  - Cost: one more api read on a view's first draw and each catch-up, none on a live redraw (13 to 15 ms either
+    way, measured locally); a superseded view builds no SVG and holds no socket. The page grew by 1.3 KB (21.1 to
+    22.4 KB). `create_design` reads its first tab once more for `rev` when it has not already.
 - **`view_live`**: `{ designId }`. Read. The view's own tool, kept from the model like `view_tab`: the socket's
   address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms). Its text block is one line without the
   ticket. Edits in the view stay livediagram's: this view is read-only for every token.

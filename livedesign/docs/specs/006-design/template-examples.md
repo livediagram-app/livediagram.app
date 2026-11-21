@@ -50,7 +50,7 @@ covers the page's name or its bar. When the tray goes (Clear Example Content, Ke
 next Fit takes back the room.
 
 It sends `Template · Changed · ExampleCleared` or `Template · Changed · ExampleKept`, charted as Template Examples in
-the telemetry site's Features › Look & Feel stack. The help centre's Templates article explains both buttons
+the telemetry site's Look & Feel stack. The help centre's Templates article explains both buttons
 ("Clearing the Example Content").
 
 ## Who sees it

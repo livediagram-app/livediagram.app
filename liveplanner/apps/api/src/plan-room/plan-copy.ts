@@ -1,5 +1,6 @@
 // A plan's copies (./plan-content): what a copy carries out of a plan (its tabs, items and threads, chunked) and
 // how it lands in a new one, its tab and item ids remapped. Re-exported from ./plan-content.
+import { tabFolderColourOf } from '@liveworkspace/api-schema/tab-folder-colour';
 import { itemIdsShownOnTab, readItemTypeCatalogue, typesOf } from '@liveplanner/items';
 import type { TabItemElement } from '@liveplanner/items';
 import { remapTabLinks, type Element } from '@liveplanner/project';
@@ -43,6 +44,8 @@ export type PlanCopy = {
     name: string;
     orderIndex: number;
     folder: string | null;
+    // The folder's colour, a hue name; absent from a copy an older object sends.
+    folderColor?: string | null;
     data: string;
     elementCount: number | null;
     // A connected tab's connection, carried as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry
@@ -120,6 +123,7 @@ export type ContentTabRow = {
   name: string;
   order_index: number;
   folder: string | null;
+  folder_color: string | null;
   data: string;
   element_count: number | null;
   connection: string | null;
@@ -131,7 +135,7 @@ export async function readContentTabRows(
   onlyTabId: string | null,
 ): Promise<ContentTabRow[]> {
   const tabRows = await env.PLAN_DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count, t.connection
+    `SELECT t.id, t.name, dt.order_index, dt.folder, dt.folder_color, t.data, t.element_count, t.connection
        FROM plan_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.plan_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
@@ -170,6 +174,7 @@ export async function exportPlanCopy(
       name: row.name,
       orderIndex: row.order_index,
       folder: row.folder,
+      folderColor: row.folder ? row.folder_color : null,
       data: community
         ? redactPlanTabDataForCommunity(remapped)
         : redactAuthorsFor !== null
@@ -362,9 +367,16 @@ export async function importPlanCopy(
         .bind(tab.id, tab.name, tab.data, now, tab.elementCount ?? null),
       db
         .prepare(
-          'INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at, folder) VALUES (?, ?, ?, ?, ?)',
+          'INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at, folder, folder_color) VALUES (?, ?, ?, ?, ?, ?)',
         )
-        .bind(planId, tab.id, tab.orderIndex, now, tab.folder),
+        .bind(
+          planId,
+          tab.id,
+          tab.orderIndex,
+          now,
+          tab.folder,
+          tab.folder ? (tabFolderColourOf(tab.folderColor) ?? null) : null,
+        ),
       // From the copied body itself (docs/specs/013-workspace/explorer-details-view.md).
       tabStatsStatement(env, tab.id, tabStatsOfData(tab.data).stats, now),
     );

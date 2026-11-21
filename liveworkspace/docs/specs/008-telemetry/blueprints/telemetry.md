@@ -119,6 +119,20 @@ ON CONFLICT (app, day, category, action, type) DO UPDATE SET count = count + exc
 - `app/telemetry/page.tsx` holds the window (`useState<TelemetryWindowKey>('last7')`) and hands `active` /
   `onSelect` to `AllApps` and to each app's `Body` (`AppBodyProps`), which hands them to `AppDashboard`. Neither
   holds a window of its own, so an app switch (which swaps the component) keeps it; a reload starts at `last7`.
+- **The tabs.** `_shared/view-keys.ts` lists the Detail tabs in row order (`DETAIL_KEYS`, `DetailKey`, `ViewKey`);
+  `_shared/detail-tabs.tsx` gives each its label and glyph and says which an app has (`hasDetailTab`, `detailTabs`:
+  the people tab by `teamwork.key`, Modes and Explorer only with their config). `_shared/ActiveView.tsx` renders the
+  picked one: a `dynamic` import a view (`VIEW_LOADERS`, all fetched on idle by `prefetchViews`), and `GroupsView` for
+  the tabs that are chart groups under one line (people, Explorer, Connections, Tours & Prompts), which is the
+  Dashboard's own cards and ships with it. `CommunityView` is shared: its charts come from
+  `communityGroups(<the app's catalogue>)` and its category labels from the app's `COMMUNITY_CATEGORIES`. A stack's
+  `seeAlso.tab` calls `AppDashboard`'s `openTab`, which switches the view and scrolls the tab's top under the sticky
+  bar. `ViewTabs` wraps its Detail bar from `sm` up and scrolls it on a phone.
+- **All Apps** (`AllApps.tsx`) uses the same `ViewTabs` and `StickyWindowBar` over its own views: `_all/Overview.tsx`
+  (the Dashboard: `StatCard`s, the frame `MetricCard` is built on), then `EventsByApp`, `VisitorsAndAccounts`,
+  `ProjectKits`, `ForumChecks` (mounted, and so fetched, only on its tab) and the busiest events. Those four are
+  `dynamic` imports fetched on idle, as an app's tabs are, so the page ships the Dashboard alone. `AppBrand.tsx` is
+  the one way an app is named.
 - `_all/apps-compared.ts` (pure): `compareApps(summary, active)` gives one `ComparedRow` per `TELEMETRY_APPS` app,
   the platform's when it has events in the window or the span before, and the Total (the window's `total`; the
   audience added over the apps). Ratios are `null` when the whole is 0 and show as `–`. `audienceSeries` adds an

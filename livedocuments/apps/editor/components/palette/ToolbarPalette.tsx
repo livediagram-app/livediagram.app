@@ -23,7 +23,6 @@ import {
   StripPopover,
   useStripPopover,
 } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
-import { Divider } from './strip-rail-items';
 import {
   TOOLBAR_LIBRARY_SELECTOR,
   ToolbarLibraryButton,
@@ -339,8 +338,6 @@ export function ToolbarPalette(props: Props) {
                     onChange={onCanvasToolChange}
                     options={canvasToolOptions}
                   />
-                  {/* A phone's strip runs the selection mode and the bar together, sparing the room. */}
-                  {swipe ? null : <Divider />}
                   {articleDock ? (
                     // The article's formatting, docked (lib/article/article-dock.ts).
                     <ArticleDockSlot />
@@ -351,22 +348,14 @@ export function ToolbarPalette(props: Props) {
                       labels={fittedLabels || swipe}
                       shown={barShown}
                       scrollable={swipe}
-                      trailing={
-                        libraryInBar ? (
-                          <>
-                            <Divider />
-                            {libraryButton}
-                          </>
-                        ) : null
-                      }
+                      trailing={libraryInBar ? libraryButton : null}
                     />
                   )}
                   {/* Search, last: any element type (docs/specs/007-editor/toolbar-layout.md
-                      "Search: every element type"). The bar ends on its last category; Search brings its own
-                      divider. */}
+                      "Search: every element type"). The bar ends on its last category: no divider before the
+                      Library and Search, whose colour sets them apart. */}
                   {textOnly ? null : (
                     <>
-                      <Divider />
                       {libraryInBar ? null : libraryButton}
                       <div ref={searchButtonRef} className="flex">
                         <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />

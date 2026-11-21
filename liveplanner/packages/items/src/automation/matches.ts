@@ -12,8 +12,7 @@ import {
   type GithubHeard,
   type PullRequestValues,
 } from './github-triggers';
-import type { WebhookValues } from './webhook-paths';
-import { senderHeard } from './email-trigger';
+import { senderHeard, type WebhookValues } from '@liveworkspace/automations';
 import type { AutomationRole } from './conditions';
 
 export type AutomationEventKind =

@@ -7,7 +7,12 @@
 
 import type { AutomationTrigger, GithubTriggerKind } from '@liveplanner/items';
 import { Button } from '@liveplanner/ui';
-import { ChipToggles, PanelField, PanelNote, PanelSelect } from '../step-panels/panel-parts';
+import {
+  ChipToggles,
+  PanelField,
+  PanelNote,
+  PanelSelect,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
 import { useGithubAutomations } from './github-automations';
 import { GithubConnectCard } from './GithubConnectCard';
 import { useGithubConnection } from './use-github-connection';

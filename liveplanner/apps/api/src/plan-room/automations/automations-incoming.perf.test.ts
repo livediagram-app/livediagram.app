@@ -68,14 +68,19 @@ describe('an Incoming Webhook call at its limits', () => {
     const body = JSON.stringify(payload);
     expect(body.length).toBeLessThanOrEqual(WEBHOOK_BODY_MAX);
     expect(body.length).toBeGreaterThan(WEBHOOK_BODY_MAX - 64);
-    const signature = `sha256=${createHmac('sha256', secret).update(body).digest('hex')}`;
+    const ts = String(Math.floor(Date.now() / 1000));
+    const signature = `sha256=${createHmac('sha256', secret).update(`${ts}.${body}`).digest('hex')}`;
 
     let status = 0;
     const call = await cpuMsOfAsync(async () => {
       const res = await w.raw(
         new Request(`https://api.test/api/hooks/automations/A/${rule.id}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Liveplanner-Signature': signature },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Liveplanner-Signature': signature,
+            'X-Liveworkspace-Timestamp': ts,
+          },
           body,
         }),
       );

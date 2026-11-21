@@ -11,10 +11,13 @@ import {
   AUTOMATION_AI_SUMMARY_MAX,
   type AutomationAi,
 } from '@liveplanner/items';
-import type { ReactNode } from 'react';
-import { SparkleIcon } from '@liveplanner/ui';
+import { AiNote } from '@liveworkspace/automations-ui/AiNote';
 import { outlineFields, type AutomationOutline } from '../automation-outline';
-import { ChipToggles, PanelField, PanelSelect } from './panel-parts';
+import {
+  ChipToggles,
+  PanelField,
+  PanelSelect,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 const COMMENT = '';
 
@@ -28,19 +31,8 @@ export function summaryFields(outline: Pick<AutomationOutline, 'types'>) {
   return outlineFields(outline.types).filter((f) => text.has(f.id));
 }
 
-/** "Uses AI": what the step counts toward, and how its writes are marked. */
-/** A note about AI, with the sparkle: the AI steps' cost line, Describe a Rule's, the drafted rule's. */
-export function AiNote({ children, id }: { children: ReactNode; id?: string }) {
-  return (
-    <p
-      id={id}
-      className="flex items-start gap-2 rounded-lg bg-brand-50 px-3 py-2.5 text-[13px] text-brand-900 dark:bg-brand-500/15 dark:text-brand-100"
-    >
-      <SparkleIcon size={14} aria-hidden className="mt-0.5 shrink-0" />
-      <span>{children}</span>
-    </p>
-  );
-}
+// A note about AI, with the sparkle: the platform's (the AI steps' cost line, here, uses it).
+export { AiNote };
 
 export function AiCostNote() {
   return (

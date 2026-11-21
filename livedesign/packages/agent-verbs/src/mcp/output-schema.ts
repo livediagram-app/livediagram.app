@@ -6,6 +6,7 @@
 import { EMPTY_DESIGN_STALE_DAYS, TRASH_REASONS } from '@livedesign/api-schema';
 import { z } from 'zod';
 import { foundArchived } from './archive-tools';
+import { addedTabFolder, listedTab } from './tab-folder-tools';
 
 const url = z.string().describe('Link that opens the design in the livedesign editor.');
 const designId = z.string().describe('The design id.');
@@ -53,7 +54,7 @@ export const readDesignOutput = {
     .optional()
     .describe('The components view text (view "components"): every main, not one tab.'),
   tabs: z
-    .array(z.object({ id: tabId, name: z.string().describe('The tab name.') }))
+    .array(listedTab)
     .describe('Every tab of the design, in order: pass one as tabId to read it.'),
   url,
 };
@@ -105,6 +106,10 @@ export const createDesignOutput = {
       'The Explorer folder it appears in: "My Work" for the root, or the name of the user\'s ' +
         'default folder it was filed in.',
     ),
+  rev: z
+    .number()
+    .optional()
+    .describe('The first tab’s revision now, to pass as rev on the next update_design.'),
   url,
   lint: z
     .array(z.string())
@@ -125,6 +130,7 @@ export const addTabOutput = {
   designId,
   tabId: tabId.describe('The new tab id.'),
   name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
+  folder: addedTabFolder,
   url,
   ...changesetAnswer,
 };

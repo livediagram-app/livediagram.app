@@ -28,7 +28,7 @@ import {
   SparklesGlyph,
   ZapGlyph,
   type ToneClasses,
-} from '../scene-parts';
+} from '@liveworkspace/automations-ui/scene-parts';
 
 /** A small chip set inline in a row (Pill is placed absolutely). */
 function Chip({

@@ -2,10 +2,11 @@
 // docs/specs/026-plan/automations.md "Values": Insert a Value is a button inside the field, never a list under it. Its
 // popover (a sheet on a phone) searches the values in groups, Up and Down walk them, Enter inserts at the caret, and
 // focus goes back to the field.
+import './test-kit';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
-import { ValueTextField } from './ValueInsert';
+import { ValueTextField } from '@liveworkspace/automations-ui/ValueInsert';
 import { filterValueGroups, valueInsertGroups } from './value-insert-options';
 
 let wide = true;
@@ -46,7 +47,7 @@ function Field({
         text = next;
         setValue(next);
       }}
-      fields={[{ id: 'f1', name: 'Completed On' }]}
+      narrow={[{ id: 'f1', name: 'Completed On' }]}
       branch={branch}
       maxLength={maxLength}
     />

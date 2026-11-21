@@ -3,7 +3,7 @@
 // written through the item store's routes, in order, each seeing the ones before it. A refusal stops the batch and
 // says what was applied before it. Shared by the MCP's change_items and the CLI's item verbs.
 import { ApiError, type ApiClient } from '@liveworkspace/api-client';
-import type { ItemResponse } from '@liveplanner/api-schema';
+import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import {
   assignedPeople,
   boardShowsType,
@@ -38,6 +38,8 @@ import {
   doneStatusesOf,
   followingShifts,
   withTypeChangeFields,
+  withDefaultStatuses,
+  ITEM_BULK_MAX,
   type BlockingChange,
   type CardTemplate,
   type Item,
@@ -370,6 +372,93 @@ export async function applyItemChanges(
     );
     return key === undefined ? fields : { ...fields, [key]: await me() };
   };
+  // A new card read and checked, ready to write: everything the single write did before its request.
+  type PreparedAdd = {
+    type: ItemTypeDef;
+    fields: Record<string, unknown>;
+    body: { type: string; fields: Record<string, unknown>; place?: { status: string } };
+  };
+  const prepareAdd = async (c: Extract<ItemChange, { op: 'add' }>): Promise<PreparedAdd> => {
+    const type = typeOfAdd(c);
+    if (typeof type === 'string') throw new Stop('type_unknown', type);
+    writing = type;
+    const template = c.template ? must(templateOf(type, c.template, types)).template : null;
+    if (!c.title && !template)
+      throw new Stop('value_invalid', 'A new card needs a title, or a template to take one from.');
+    const pictures = must(splitPictureFields(await withMe(c.fields, type), type));
+    // A new card has nothing to clear: an empty value leaves the field unset.
+    const given = {
+      ...markdownFields(fieldsFor(pictures.rest, type).fields, type).set,
+      ...(await placePictures(pictures.pictures, type, {})).set,
+    };
+    // The template's values under the change's own, field by field (plan-agents.md "Card templates").
+    const fields = template ? { ...startValues(type, template, given), ...given } : given;
+    const title =
+      c.title ??
+      (typeof fields['title'] === 'string' && fields['title'] ? fields['title'] : type.newTitle);
+    const status = c.status ? must(resolveStatus(c.status, state.plan.statuses)).status : undefined;
+    const missing = missingRequiredFields(type, fields as ItemFields);
+    if (missing.length) throw requiredStop(type, missing);
+    loopStop(items, types, {
+      next: { id: '', type: type.id, fields: { ...fields, title } },
+    });
+    return {
+      type,
+      fields,
+      body: {
+        type: type.id,
+        fields: { ...fields, title },
+        ...(status ? { place: { status } } : {}),
+      },
+    };
+  };
+  const landed = (add: PreparedAdd, item: Item) => {
+    const notes = personNote(add.fields, items);
+    keep(item);
+    applied.push(line('+', item, state, notes));
+  };
+  // The new cards waiting, written (plan-agents.md "Adding many cards"): one alone by the card route, as ever; a run
+  // in one request to /items/bulk, ITEM_BULK_MAX at a time, so fifty cards are one write and one op in the room, not
+  // fifty. The bulk route is an Editor's on the whole plan and answers a refusal without saying which card, so when
+  // it refuses, the run is written a card at a time instead: a Participant's token still adds its cards, and a
+  // refusal still names its card after the ones before it landed.
+  let waiting: PreparedAdd[] = [];
+  const landAdds = async () => {
+    const run = waiting;
+    waiting = [];
+    for (let at = 0; at < run.length; at += ITEM_BULK_MAX) {
+      const part = run.slice(at, at + ITEM_BULK_MAX);
+      let made: Item[] | null = null;
+      if (part.length > 1) {
+        try {
+          // A card naming no status takes its type's Default State, as the card route gives it.
+          const bodies = withDefaultStatuses(
+            part.map((add) => add.body),
+            types,
+          );
+          const answer = await api.json<ItemsResponse>(`${base}/bulk`, {
+            method: 'POST',
+            body: JSON.stringify({ items: bodies }),
+          });
+          made = answer.items;
+        } catch (err) {
+          if (!(err instanceof ApiError) || err.status >= 500) throw err;
+        }
+      }
+      if (made) {
+        // The cards are written: an answer that does not hold one for each is a fault, never a reason to write again.
+        if (made.length !== part.length)
+          throw new Error(`The api answered ${made.length} cards for ${part.length} added.`);
+        made.forEach((item, i) => landed(part[i]!, item));
+        continue;
+      }
+      for (const add of part) {
+        writing = add.type;
+        const { item } = await post(base, add.body);
+        landed(add, item);
+      }
+    }
+  };
   try {
     // Every picture the call adds is checked in one request before any card is written; a change whose card is made
     // earlier in the call is checked when it comes.
@@ -383,45 +472,22 @@ export async function applyItemChanges(
     if (early.length) must(await checkPictureGrants(api, projectId, early, granted));
     for (const c of changes) {
       if (c.op === 'add') {
-        const type = typeOfAdd(c);
-        if (typeof type === 'string') throw new Stop('type_unknown', type);
-        writing = type;
-        const template = c.template ? must(templateOf(type, c.template, types)).template : null;
-        if (!c.title && !template)
-          throw new Stop(
-            'value_invalid',
-            'A new card needs a title, or a template to take one from.',
-          );
-        const pictures = must(splitPictureFields(await withMe(c.fields, type), type));
-        // A new card has nothing to clear: an empty value leaves the field unset.
-        const given = {
-          ...markdownFields(fieldsFor(pictures.rest, type).fields, type).set,
-          ...(await placePictures(pictures.pictures, type, {})).set,
-        };
-        // The template's values under the change's own, field by field (plan-agents.md "Card templates").
-        const fields = template ? { ...startValues(type, template, given), ...given } : given;
-        const title =
-          c.title ??
-          (typeof fields['title'] === 'string' && fields['title']
-            ? fields['title']
-            : type.newTitle);
-        const status = c.status
-          ? must(resolveStatus(c.status, state.plan.statuses)).status
-          : undefined;
-        const missing = missingRequiredFields(type, fields as ItemFields);
-        if (missing.length) throw requiredStop(type, missing);
-        loopStop(items, types, {
-          next: { id: '', type: type.id, fields: { ...fields, title } },
-        });
-        const { item } = await post(base, {
-          type: type.id,
-          fields: { ...fields, title },
-          ...(status ? { place: { status } } : {}),
-        });
-        const notes = personNote(fields, items);
-        keep(item);
-        applied.push(line('+', item, state, notes));
-      } else if (c.op === 'set') {
+        // A new card waits for the cards added beside it, so a run of them lands in one write. A card that names one
+        // of those (a Parent, a blocker) cannot be read before they exist: they are written first, and it is read
+        // again.
+        let ready: PreparedAdd;
+        try {
+          ready = await prepareAdd(c);
+        } catch (err) {
+          if (!(err instanceof Stop) || waiting.length === 0) throw err;
+          await landAdds();
+          ready = await prepareAdd(c);
+        }
+        waiting.push(ready);
+        continue;
+      }
+      await landAdds();
+      if (c.op === 'set') {
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
         writing = type;
@@ -514,6 +580,7 @@ export async function applyItemChanges(
         applied.push(`- ${itemSummary(target, types)}`);
       }
     }
+    await landAdds();
   } catch (err) {
     const refusal =
       err instanceof Stop

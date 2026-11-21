@@ -5,13 +5,13 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Audit Log',
   description:
-    'What a team admin can look back on: who joined, left or changed role, who shared, moved or deleted the team’s work, and its webhooks.',
+    'What a team admin can look back on: who joined, left or changed role, who shared, moved or deleted the team’s work, and its connections.',
   path: '/help/collaboration/teams/audit-log/',
 });
 
-<ArticleLayout path="collaboration/teams/audit-log" title="Audit Log" description="Who did what in your team, for its admins: members, shares, moves, deletes and webhooks, kept for a year." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "audit-log")}>
+<ArticleLayout path="collaboration/teams/audit-log" title="Audit Log" description="Who did what in your team, for its admins: members, shares, moves, deletes and connections, kept for a year." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "audit-log")}>
 
-A team's **Audit Log** answers the questions an admin gets asked: who shared this, who joined, who removed that member, who added that webhook. It is the same log in every liveworkspace app, <AppName /> included, and only the team's Admins can see it.
+A team's **Audit Log** answers the questions an admin gets asked: who shared this, who joined, who removed that member, who added that Slack connection. It is the same log in every liveworkspace app, <AppName /> included, and only the team's Admins can see it.
 
 ## Where to Find It
 
@@ -25,7 +25,7 @@ The **Audit Log** is for Admins and holds only team-level events, never what hap
 
 - **People:** an invitation sent, someone joining (by email or the invite link), an invitation declined, a role changed between Admin and Member, someone removed or leaving, and the team renamed.
 - **Work:** a share link made (and its level, or a public link for a Community post) or removed, a <Noun /> moved into or out of the team, sent to the Trash, restored, or deleted for good (including an owner's Take Offline).
-- **Webhooks:** a webhook added to or removed from one of the team's <Noun plural />, with the address it sends to and its kind (Slack, Microsoft Teams or signed JSON).
+- **Connections:** a connection added to or removed from one of the team's <Noun plural /> (the addresses its automation rules post to), with the address it sends to and its kind (Slack, Microsoft Teams or Signed JSON).
 
 <AppNote app="livediagram">
   Work events include its [approvals](/help/collaboration/sharing/request-approval/): an approval
@@ -45,7 +45,7 @@ Each row says who did it and what, the <Noun /> or person it was about, which ap
 Above the list are four filters, and you can combine them:
 
 - **Person:** who did it. The team's members are listed by name, and anyone else the log names (someone who has since left) is marked "not in the team".
-- **Event:** one kind of event, grouped into People, Work and Webhooks.
+- **Event:** one kind of event, grouped into People, Work and Connections.
 - **From** and **To:** whole days, both included.
 
 **Clear Filters** puts everything back. The list shows 50 events at a time; **Show More** reads the next 50.

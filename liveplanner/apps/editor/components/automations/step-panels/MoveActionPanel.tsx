@@ -4,7 +4,7 @@
 
 import type { AutomationAction } from '@liveplanner/items';
 import type { AutomationOutline } from '../automation-outline';
-import { PanelField, PanelSelect } from './panel-parts';
+import { PanelField, PanelSelect } from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 export function MoveActionPanel({
   action,

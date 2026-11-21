@@ -12,7 +12,11 @@ import { emailSenderFilter, type AutomationTrigger } from '@liveplanner/items';
 import { Button, TextInput } from '@liveplanner/ui';
 import type { OutlineBoard } from '../automation-outline';
 import { useEmailAddresses } from '../email-addresses';
-import { PanelField, PanelNote, PanelSelect } from './panel-parts';
+import {
+  PanelField,
+  PanelNote,
+  PanelSelect,
+} from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 type EmailTrigger = Extract<AutomationTrigger, { kind: 'email_received' }>;
 

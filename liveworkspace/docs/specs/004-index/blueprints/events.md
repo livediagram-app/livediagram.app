@@ -6,16 +6,15 @@ relative to the repository root.
 
 Scope, by file:
 
-| File                                              | Role                                                                                                            |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/events.ts`          | `eventStatements`, `bulkEventStatements`, `editedEventId`, `sweepEvents`                                        |
-| `liveworkspace/apps/index/src/history.ts`         | `buildHistoryQuery`, `itemHistory`: `GET /items/:id/history`                                                    |
-| `liveworkspace/apps/index/src/event-push.ts`      | `pushAppEvents` (an app's `edited`), `parseAccountEvent`, `handleAccountEvents` (accounts' team events)         |
-| `liveworkspace/apps/index/src/event-key.ts`       | `personEventKey(s)`: the one-way key of a person in `ed:` and `aa:` event ids                                   |
-| `liveworkspace/apps/index/src/collab-push.ts`     | `collabEvents`, `retractedComments`: collaboration events from a tab's push                                     |
-| `liveworkspace/apps/index/src/visitors.ts`        | Opened and Copied by a Visitor                                                                                  |
-| `liveworkspace/apps/index/src/team-audit.ts`      | The team audit log's statement each team-level event adds to its batch ([team-audit-log.md](team-audit-log.md)) |
-| `liveworkspace/apps/index/src/webhooks/outbox.ts` | The webhook deliveries an item event queues in its batch ([webhooks.md](webhooks.md))                           |
+| File                                          | Role                                                                                                            |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/events.ts`      | `eventStatements`, `bulkEventStatements`, `editedEventId`, `sweepEvents`                                        |
+| `liveworkspace/apps/index/src/history.ts`     | `buildHistoryQuery`, `itemHistory`: `GET /items/:id/history`                                                    |
+| `liveworkspace/apps/index/src/event-push.ts`  | `pushAppEvents` (an app's `edited`), `parseAccountEvent`, `handleAccountEvents` (accounts' team events)         |
+| `liveworkspace/apps/index/src/event-key.ts`   | `personEventKey(s)`: the one-way key of a person in `ed:` and `aa:` event ids                                   |
+| `liveworkspace/apps/index/src/collab-push.ts` | `collabEvents`, `retractedComments`: collaboration events from a tab's push                                     |
+| `liveworkspace/apps/index/src/visitors.ts`    | Opened and Copied by a Visitor                                                                                  |
+| `liveworkspace/apps/index/src/team-audit.ts`  | The team audit log's statement each team-level event adds to its batch ([team-audit-log.md](team-audit-log.md)) |
 
 ## Domain and naming
 
@@ -44,10 +43,10 @@ Timeline (0017 deletes their rows): `share_link_expiring`, `image_uploaded`, `ta
 
 - `eventStatements` (in the batch of the change): `INSERT … SELECT … FROM items WHERE id = ?` (so the app and title
   come from the row, and an optional `when` clause gates it), `ON CONFLICT (id) DO UPDATE` for events that extend
-  themselves (time, title, actor name move on). One statement, plus one queuing its webhook deliveries when it is a
-  kind a webhook listens for, plus one copying it into its team's audit log when it is a kind the log keeps.
+  themselves (time, title, actor name move on). One statement, plus one copying it into its team's audit log when it is a kind the log keeps (none for the
+  item's connections, which hear no events: [webhooks.md](webhooks.md)).
 - `bulkEventStatements`: any number of events in one statement through `json_each`; the same id again moves its time
-  and takes the newest title and detail. Then its webhooks' statement and its audit log's, as above.
+  and takes the newest title and detail. Then its audit log's statement, as above.
 - A push from further ahead than 5 minutes is dated now (`FUTURE_SLACK_MS`).
 - Team audit ([team-audit-log.md](team-audit-log.md)): `eventStatements` adds one `itemAuditStatement` for a
   `shared`, `unshared`, `moved`, `trashed` or `restored` (the item's team, or a move's `auditTeams`), and
@@ -94,13 +93,13 @@ Answer: `{ events: ItemEvent[], nextCursor }`. Binds are numbered (`?1` to `?6`,
 `DELETE FROM events WHERE rowid IN (SELECT rowid FROM events WHERE occurred_at < ? ORDER BY occurred_at LIMIT ?)`,
 through `events_occurred`, `EVENT_SWEEP_CHUNK` (500) a statement, repeated while a statement takes a full chunk, at
 most `EVENT_SWEEP_ROUNDS` (40) a run: 20,000 events a day at most. A backlog past that waits for the next day (the
-step logs `more`). Deleting an event deletes nothing else: webhook deliveries and audit rows hold their own copy.
+step logs `more`). Deleting an event deletes nothing else: audit rows hold their own copy.
 
 ## Data and persistence
 
-| Table    | Key  | Indexes                                                                                                        | Written by                          | Read by                           |
-| -------- | ---- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------- | --------------------------------- |
-| `events` | `id` | `events_item (item_id, occurred_at DESC, id DESC)`; `events_actor (actor_id)`; `events_occurred (occurred_at)` | every recorder; merge; purge; sweep | History; webhooks; audit; notices |
+| Table    | Key  | Indexes                                                                                                        | Written by                          | Read by                 |
+| -------- | ---- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ----------------------- |
+| `events` | `id` | `events_item (item_id, occurred_at DESC, id DESC)`; `events_actor (actor_id)`; `events_occurred (occurred_at)` | every recorder; merge; purge; sweep | History; audit; notices |
 
 `item_id` cascades from `items` (a purged item takes its events). `actor_id` becomes `deleted` when an account
 closes, and that person's old `favourited` events go. Made by `0017_events.sql` from `timeline_events`, after dropping

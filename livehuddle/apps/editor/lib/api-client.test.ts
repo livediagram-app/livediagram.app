@@ -5,6 +5,7 @@ import { IndexError } from '@liveworkspace/index-client';
 import {
   apiCreateDocument,
   apiDeleteImage,
+  apiUnusedImages,
   apiDeleteTab,
   apiFetchImageBlobUrl,
   releaseImageBlobUrl,
@@ -868,5 +869,29 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     const spy = stub404();
     await apiFetchImageBlobUrl('owner', 'img1');
     expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1$/);
+  });
+});
+
+// docs/specs/009-elements/images.md "Deleting an unused picture".
+describe('apiUnusedImages', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('asks once for the whole delete, and answers the unused ids', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(Response.json({ unused: ['a', 7] }));
+    vi.stubGlobal('fetch', fetchSpy);
+    await expect(apiUnusedImages('owner', 'd1', ['a', 'b'])).resolves.toEqual(['a']);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0]![0])).toContain('/images/unused?d=d1&ids=a%2Cb');
+  });
+
+  it('answers nothing for a refusal, a malformed body or no network', async () => {
+    stubFetch(503, { error: 'images_unavailable' });
+    await expect(apiUnusedImages('owner', 'd1', ['a'])).resolves.toEqual([]);
+    stubFetch(200, { unused: 'a' });
+    await expect(apiUnusedImages('owner', 'd1', ['a'])).resolves.toEqual([]);
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')));
+    await expect(apiUnusedImages('owner', 'd1', ['a'])).resolves.toEqual([]);
   });
 });

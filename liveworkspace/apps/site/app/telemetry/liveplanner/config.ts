@@ -3,6 +3,7 @@
 // charts on each tab, and its name, noun and accent.
 
 import {
+  COMMUNITY_CATEGORIES,
   ctaSurfaceOf,
   ctaSurfaceOfPath,
   CTA_SOURCES,
@@ -15,6 +16,7 @@ import {
   type TelemetryCategory,
 } from '@liveplanner/api-schema';
 import { noun, type TelemetryAppConfig } from '../_shared/app';
+import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
@@ -32,10 +34,18 @@ import {
   CALLS_TO_ACTION,
   CLIENT_EXCEPTIONS,
   CLI_COMMANDS_STACK,
+  COMMUNITY_COPIES,
   COMMUNITY_DISCOVERY,
   COMMUNITY_ENGAGEMENT,
+  COMMUNITY_FILTERS,
+  COMMUNITY_LIKES,
   COMMUNITY_MODERATION,
+  COMMUNITY_POSTS_OPENED,
+  COMMUNITY_POSTS_SHARED,
   COMMUNITY_PUBLISHING,
+  COMMUNITY_REPORTS,
+  COMMUNITY_SEARCHES,
+  CONNECTED_TABS,
   COUNTDOWNS,
   DISCUSSION,
   DRY_HELP_SEARCHES,
@@ -55,6 +65,7 @@ import {
   HELP_CENTRE,
   HELP_SCOPE_SWITCHES,
   HELP_SEARCHES,
+  HOME,
   INBOX,
   JOINING,
   LAYERS_FEATURE,
@@ -88,7 +99,6 @@ import {
   SHEETS,
   SHOW_ME_TOURS,
   SIDE_BY_SIDE,
-  CONNECTED_TABS,
   SIGN_IN_PROMPTS,
   SIGN_UPS,
   STALE_CHUNK_RELOADS,
@@ -96,7 +106,6 @@ import {
   TABLES,
   TAB_ACTIONS,
   TEAM_ACTIVITY,
-  HOME,
   TRASH,
   UNDO_AND_REDO,
   VOTING,
@@ -200,6 +209,22 @@ export const LIVEPLANNER: TelemetryAppConfig = {
   isRetired: isRetiredEvent,
   funnel: FUNNEL,
   pageViews: { apps: PAGE_VIEW_APPS, appOf: pageViewApp },
+  community: {
+    groups: communityGroups({
+      COMMUNITY_POSTS_SHARED,
+      COMMUNITY_POSTS_OPENED,
+      COMMUNITY_LIKES,
+      COMMUNITY_COPIES,
+      COMMUNITY_SEARCHES,
+      COMMUNITY_FILTERS,
+      COMMUNITY_REPORTS,
+      COMMUNITY_PUBLISHING,
+      COMMUNITY_ENGAGEMENT,
+      COMMUNITY_DISCOVERY,
+      COMMUNITY_MODERATION,
+    }),
+    categories: COMMUNITY_CATEGORIES,
+  },
   dashboard: [
     {
       title: 'At a glance',
@@ -307,18 +332,14 @@ export const LIVEPLANNER: TelemetryAppConfig = {
         title: 'Facilitation tools',
         metrics: [DISCUSSION, TEAM_ACTIVITY, COUNTDOWNS, STOPWATCHES],
       },
+    ],
+  },
+  explorer: {
+    intro: 'Home, the filters, share links and passes, and the Inbox',
+    groups: [
       {
         title: 'Explorer',
         metrics: [HOME, EXPLORER_FILTERS_PICKED, SHARE_LINKS_MADE, SHARE_PASSES, INBOX],
-      },
-      {
-        title: 'Community',
-        metrics: [
-          COMMUNITY_PUBLISHING,
-          COMMUNITY_ENGAGEMENT,
-          COMMUNITY_DISCOVERY,
-          COMMUNITY_MODERATION,
-        ],
       },
     ],
   },
@@ -342,13 +363,16 @@ export const LIVEPLANNER: TelemetryAppConfig = {
       },
     ],
   },
-  tours: [
-    {
-      title: 'Tours',
-      metrics: [WELCOME_DIALOG_CLOSED, PLAN_TOUR, FORM_TOUR, SHOW_ME_TOURS],
-    },
-    { title: 'Prompts', metrics: [NEW_VERSION_PROMPT] },
-  ],
+  tours: {
+    intro: 'Each guided tour from offer to finish, then the one-off prompts',
+    groups: [
+      {
+        title: 'Tours',
+        metrics: [WELCOME_DIALOG_CLOSED, PLAN_TOUR, FORM_TOUR, SHOW_ME_TOURS],
+      },
+      { title: 'Prompts', metrics: [NEW_VERSION_PROMPT] },
+    ],
+  },
   exceptions: {
     groups: [
       {

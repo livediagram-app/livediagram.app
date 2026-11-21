@@ -1,13 +1,16 @@
 'use client';
 
 // Email to Board (docs/specs/026-plan/email-to-board.md "The dialog"): a board of the tab's own address, read fresh when
-// it opens, in one of two states. Off: what an email becomes, Who Can Send and Turn On. On: the address with Copy
-// Address, a quiet line of what it has done, Who Can Send saving as it changes, and New Address and Turn Off behind
-// confirms. A tab with several boards gets a board picker at the top.
+// it opens, in one of two states. Off: what an email becomes, Each Email Becomes (the card type and column, a card
+// target: the boards that show it are read back, never chosen), Who Can Send and Turn On. On: the address with Copy
+// Address, a quiet line of what it has done, Each Email Becomes and Who Can Send saving as they change, and New
+// Address and Turn Off behind confirms. A tab with several boards gets a board picker at the top.
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type {
   EmailIntake,
   EmailIntakeSenders as Senders,
+  EmailIntakeTarget,
+  EmailIntakeType,
   EmailIntakesResponse,
 } from '@liveplanner/api-schema';
 import {
@@ -34,6 +37,7 @@ import {
 } from './email-intake-client';
 import type { EmailIntakeScope } from './email-intake-gate';
 import { emailIntakeHeroArt } from './EmailIntakeHeroArt';
+import { EmailIntakeMakes } from './EmailIntakeMakes';
 import { EmailIntakeSenders } from './EmailIntakeSenders';
 
 const MailIcon = lucideGlyph(lucideMail, 14);
@@ -55,6 +59,28 @@ export function intakeCountsLine(intake: EmailIntake, now: number): string {
 
 type Confirming = { kind: 'new' | 'off'; anchor: HTMLElement };
 
+// "a Bug card in New": what a message becomes, in words ("a card in New" when only the board's column is known).
+const cardWords = (target: EmailIntakeTarget | null, column: string | null): string =>
+  target
+    ? `${withArticle(target.cardType)} card in ${target.column}`
+    : column
+      ? `a card in ${column}`
+      : 'a card';
+const withArticle = (word: string): string => `${/^[aeiou]/i.test(word) ? 'an' : 'a'} ${word}`;
+
+// A chosen type and column by the names the api listed them under; its boards are the api's to work out, so none
+// are claimed until it answers.
+function targetNamed(
+  types: readonly EmailIntakeType[],
+  target: { typeId: string; status: string },
+): EmailIntakeTarget | null {
+  const type = types.find((t) => t.id === target.typeId);
+  const column = type?.columns.find((c) => c.status === target.status);
+  return type && column
+    ? { ...target, cardType: type.label, column: column.name, showsOn: [] }
+    : null;
+}
+
 export function EmailIntakeDialog({
   scope,
   boardIds,
@@ -74,6 +100,8 @@ export function EmailIntakeDialog({
   const [boardId, setBoardId] = useState<string | null>(null);
   // Who Can Send for a board whose address is off (an address's own is its row's).
   const [draft, setDraft] = useState<Senders>('members');
+  // What an address not yet on would make, once chosen here (the board's own first type and column until then).
+  const [draftMakes, setDraftMakes] = useState<{ typeId: string; status: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
   const [confirming, setConfirming] = useState<Confirming | null>(null);
@@ -98,6 +126,13 @@ export function EmailIntakeDialog({
   );
   const board = boards.find((b) => b.id === boardId) ?? boards[0] ?? null;
   const intake = board ? (data?.intakes.find((i) => i.boardId === board.id) ?? null) : null;
+  // What its mail becomes: the address's own card, or, off, the one chosen here over the board's first.
+  // An api from before addresses kept a card of their own sends neither `types` nor a `target` (the editor and the
+  // api deploy apart): the dialog then reads as it did, with no card to choose, never as an address refusing mail.
+  const types = data?.types ?? [];
+  const chosen = draftMakes ? targetNamed(types, draftMakes) : null;
+  const makes: EmailIntakeTarget | null =
+    (intake ? intake.target : (chosen ?? board?.target)) ?? null;
 
   const putIntake = (next: EmailIntake) =>
     setData((d) =>
@@ -118,10 +153,32 @@ export function EmailIntakeDialog({
   const turnOn = () =>
     run(async () => {
       if (!board) return;
-      const { intake: made } = await saveEmailIntake(scope, board.id, draft);
+      const { intake: made } = await saveEmailIntake(scope, board.id, draft, draftMakes);
       track('Plan', 'Created', 'EmailIntake');
       putIntake(made);
+      setDraftMakes(null);
     });
+
+  // Off, a choice only moves the draft; on, it saves at once (the address kept) and goes back if the save fails.
+  async function changeMakes(next: { typeId: string; status: string }) {
+    if (!board) return;
+    setSaveFailed(false);
+    if (!intake) {
+      setDraftMakes(next);
+      return;
+    }
+    const before = intake;
+    // Its names now, its boards once the api has worked them out.
+    putIntake({ ...intake, target: targetNamed(types, next) });
+    try {
+      const { intake: saved } = await saveEmailIntake(scope, board.id, intake.senders, next);
+      track('Plan', 'Changed', 'EmailIntakeTarget');
+      putIntake(saved);
+    } catch {
+      putIntake(before);
+      setSaveFailed(true);
+    }
+  }
 
   // Off, a choice only moves the draft; on, it saves at once (the address kept) and goes back if the save fails.
   async function changeSenders(next: Senders) {
@@ -184,7 +241,7 @@ export function EmailIntakeDialog({
       ? 'unavailable'
       : !board
         ? 'no-board'
-        : board.column === null
+        : board.column === null || (!intake && board.target === null)
           ? 'no-column'
           : intake
             ? 'on'
@@ -245,6 +302,8 @@ export function EmailIntakeDialog({
               disabled={busy}
               onChange={(e) => {
                 setBoardId(e.target.value);
+                // What a new address would make was chosen for the other board: this one starts on its own.
+                setDraftMakes(null);
                 setSaveFailed(false);
               }}
               className="min-w-0 max-w-[65%]"
@@ -269,7 +328,7 @@ export function EmailIntakeDialog({
           <ToolExplainer
             art={emailToBoardArt}
             title="Mail In, Cards Out"
-            description={`Forward an email to this board’s own address and it becomes a card in ${board.column}.`}
+            description={`Forward an email to this board’s own address and it becomes ${cardWords(makes, board.column)}.`}
             steps={[
               'Turn it on to get the board’s own address.',
               'Forward or send an email to it.',
@@ -280,9 +339,17 @@ export function EmailIntakeDialog({
         ) : null}
         {state === 'on' && intake ? (
           <div className="flex flex-col gap-2" data-email-intake-address="">
-            <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+            <p
+              className={`flex items-center gap-1.5 text-sm font-medium ${
+                intake.target === null
+                  ? 'text-amber-800 dark:text-amber-200'
+                  : 'text-emerald-700 dark:text-emerald-300'
+              }`}
+            >
               <MailIcon />
-              Mail to this address becomes a card in {board?.column}.
+              {intake.target === null
+                ? 'No board shows its cards now, so its mail is refused. Choose what each email becomes.'
+                : `Mail to this address becomes ${cardWords(makes, board?.column ?? null)}.`}
             </p>
             <div className="flex items-center gap-2">
               <input
@@ -305,6 +372,15 @@ export function EmailIntakeDialog({
               {intakeCountsLine(intake, now)}
             </p>
           </div>
+        ) : null}
+        {(state === 'off' || state === 'on') && types.length ? (
+          <EmailIntakeMakes
+            types={types}
+            value={makes}
+            showsOn={makes?.showsOn ?? []}
+            disabled={busy}
+            onChange={(next) => void changeMakes(next)}
+          />
         ) : null}
         {state === 'off' || state === 'on' ? (
           <EmailIntakeSenders

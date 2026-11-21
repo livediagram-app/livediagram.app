@@ -109,7 +109,7 @@ function WalkthroughsView({
           walkthroughs.menu.record();
         }}
       />
-      {/* The set-up opens beside Tools (a drawer on a phone), as Add Webhook does (owner, 2026-11-17). A press outside
+      {/* The set-up opens beside Tools (a drawer on a phone), as Add Connection does (owner, 2026-11-17). A press outside
           closes it. While picking what to hide it gives way to the picking bar, the devices staying open (they live in
           the recorder), and comes back on Done. */}
       <ResponsivePopover
@@ -135,7 +135,7 @@ export function WalkthroughsTools({ walkthroughs }: { walkthroughs: Walkthroughs
   const { available, canRecord } = menu;
   const count = menu.list.length;
   const picking = walkthroughs.hiding.picking;
-  // Signed out, or the item kept Offline (owner, 2026-11-17): still there, badged as Webhooks is ("Sign In",
+  // Signed out, or the item kept Offline (owner, 2026-11-17): still there, badged as History is ("Sign In",
   // "Sync Canvas"), and a press opens the same gate.
   const gate = useToolGate();
   const rows = useMemo<ChromeToolsItem[]>(

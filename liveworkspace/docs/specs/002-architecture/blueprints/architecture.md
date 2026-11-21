@@ -185,7 +185,7 @@ with no secret set trusts the named address as before, so the code deploys safel
 the routers first, then on the receivers (on a receiver first, every app's visitors would count as their router's one
 address until the routers have it too).
 
-A server request to a URL someone gave (webhooks, live status, `upload_image` by URL, link unfurls) holds its host
+A server request to a URL someone gave (connections, live status, `upload_image` by URL, link unfurls) holds its host
 to `@liveworkspace/model-core/private-host` (architecture.md "Fetching a URL someone gave"): `classifyHost(hostname)`
 lower-cases it, drops IPv6 brackets and one trailing dot, reads it left to right as an IPv4 address (four decimal
 parts of 0 to 255, no leading zeros), an IPv6 address (eight hextets, one `::`, an optional IPv4 tail) or a name, and

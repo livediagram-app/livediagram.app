@@ -123,7 +123,7 @@ the visit counts as an ordinary `/new`.
 
 ### The Pages section's funnel
 
-The Pages section of the Pages & Help tab ([Page view telemetry](../017-telemetry/page-view-telemetry.md)) opens with a **Landing Funnel** section above the top
+The Pages tab ([Page view telemetry](../017-telemetry/page-view-telemetry.md)) opens with a **Landing Funnel** section above the top
 pages, for the selected window:
 
 - **A headline strip** across the whole public site: page views of the

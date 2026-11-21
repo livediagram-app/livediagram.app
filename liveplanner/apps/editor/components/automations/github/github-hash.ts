@@ -90,3 +90,18 @@ export function trackGithubResult(result: GithubResult): void {
   else
     track('Plan', 'Ended', result === 'failed' ? 'GithubConnectFailed' : 'GithubConnectRequested');
 }
+
+/** What the GitHub view says about a return. */
+export const GITHUB_RESULT_WORDS: Readonly<Record<GithubResult, string>> = {
+  connected: 'GitHub is connected. The repositories this plan hears are below.',
+  failed: 'GitHub didn’t connect. Try again, or check the App is installed on that account.',
+  requested:
+    'An owner of that organisation must approve the install on GitHub. Connect again once they have.',
+};
+
+/** The same, for the rule the person came back to. */
+export const GITHUB_RULE_WORDS: Readonly<Record<GithubResult, string>> = {
+  connected: 'GitHub is connected. Finish the rule and save it.',
+  failed: GITHUB_RESULT_WORDS.failed,
+  requested: GITHUB_RESULT_WORDS.requested,
+};

@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "The Automations screen": on a phone the Rules filters are a full-width search,
 // then the trigger select beside an All / On / Off segmented control, all 40 px; a wide screen keeps one compact row.
+import './test-kit';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AUTOMATION_TRIGGER_KINDS } from '@liveplanner/items';
-import { RuleFilters } from './RuleFilters';
+import { RuleFilters } from '@liveworkspace/automations-ui/RuleFilters';
 import { filterTriggerKinds } from './trigger-groups';
 
 afterEach(cleanup);

@@ -5,17 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TelemetrySummary } from '@liveworkspace/telemetry';
 import { ActiveView, prefetchViews } from './ActiveView';
 import { TelemetryAppProvider, type TelemetryAppConfig } from './app';
-import { FeaturesView } from './FeaturesView';
-import { HealthView } from './HealthView';
+import { AppDashboard } from './AppDashboard';
+import { detailTabs, hasDetailTab } from './detail-tabs';
 import { isStack, type MetricStack } from './metric-series';
-import { PagesHelpView } from './PagesHelpView';
 import { LIVEDIAGRAM, TEST_APPS } from './test-apps';
-import type { SectionFocus } from './SectionedView';
-import { SECTION_TAB, sectionId, type SectionKey, type ViewKey } from './view-keys';
+import { DETAIL_KEYS } from './view-keys';
 
-// Six tabs, not twelve (docs/specs/017-telemetry/telemetry.md): the Dashboard leads with the key
-// metrics, the four Detail tabs gather what were separate tabs as sections, and a stack's See also
-// lands on the section it names.
+// The tabs (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard", The tabs): the Dashboard leads
+// with the key metrics, each area has a Detail tab of its own, and a stack's See also opens the tab it names.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const empty = { total: 0, rows: [] };
@@ -36,6 +33,12 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn(function (this: Element) {
     scrolled.push(this.id);
   });
+  // The sticky timeframe bar watches the panel scroll away.
+  globalThis.IntersectionObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof IntersectionObserver;
   globalThis.ResizeObserver ??= class {
     observe() {}
     unobserve() {}
@@ -62,68 +65,53 @@ function render(el: ReactElement): HTMLElement {
 let app: TelemetryAppConfig = LIVEDIAGRAM;
 const inApp = (el: ReactElement) => <TelemetryAppProvider value={app}>{el}</TelemetryAppProvider>;
 
-const SECTIONED: Partial<Record<ViewKey, (focus: SectionFocus | null) => ReactElement>> = {
-  features: (focus) => <FeaturesView summary={SUMMARY} active="last7" focus={focus} />,
-  pages: (focus) => <PagesHelpView summary={SUMMARY} active="last7" focus={focus} />,
-  health: (focus) => <HealthView summary={SUMMARY} active="last7" focus={focus} />,
-};
-
-const ALL_SECTIONS = Object.keys(SECTION_TAB) as SectionKey[];
-// The sections an app's dashboard has: its own people section, and Modes and Community only if it has them.
-const sectionsOf = (a: TelemetryAppConfig): SectionKey[] =>
-  ALL_SECTIONS.filter(
-    (s) =>
-      (s !== 'facilitation' && s !== 'teamwork' ? true : s === a.teamwork.key) &&
-      (s !== 'modes' || !!a.modes) &&
-      (s !== 'community' || !!a.community),
-  );
-
 describe.each(TEST_APPS)('$name', ({ config, catalogue }) => {
-  const SECTIONS = sectionsOf(config);
+  const TABS = detailTabs(config);
   const DASHBOARD = config.dashboard;
   beforeEach(() => {
     app = config;
   });
 
   describe('the Detail tabs', () => {
-    it.each(SECTIONS.filter((s) => SECTIONED[SECTION_TAB[s]]))(
-      'render the %s section on the tab it maps to, with a link to it',
-      (section) => {
-        const el = render(SECTIONED[SECTION_TAB[section]]!(null));
-        expect(el.querySelector(`#${sectionId(section)}`)).not.toBeNull();
-        expect(el.querySelector(`nav a[href="#${sectionId(section)}"]`)).not.toBeNull();
-      },
-    );
-
-    it('keep a single-area tab for its own key only', () => {
-      const single = ALL_SECTIONS.filter((s) => !SECTIONED[SECTION_TAB[s]]);
-      expect(single).toEqual(['community']);
-      expect(SECTION_TAB.community).toBe('community');
+    it('give each area the app has a tab of its own, in the row order, each named once', () => {
+      expect(TABS.map((t) => t.key)).toEqual(DETAIL_KEYS.filter((k) => hasDetailTab(config, k)));
+      expect(new Set(TABS.map((t) => t.label)).size).toBe(TABS.length);
+      // One people tab, under the app's own name for it.
+      expect(TABS.filter((t) => t.key === 'facilitation' || t.key === 'teamwork')).toEqual([
+        expect.objectContaining({ key: config.teamwork.key, label: config.teamwork.title }),
+      ]);
     });
 
-    it('scroll an asked-for section in once, and again only when asked again', () => {
-      const at = (focus: SectionFocus | null) =>
-        act(() => root!.render(inApp(SECTIONED.features!(focus))));
-      render(SECTIONED.features!({ section: 'settings', n: 1 }));
-      expect(scrolled).toEqual([sectionId('settings')]);
-      at({ section: 'settings', n: 1 });
-      expect(scrolled).toHaveLength(1);
-      at({ section: 'settings', n: 2 });
-      expect(scrolled).toEqual([sectionId('settings'), sectionId('settings')]);
+    it('leave out a tab the app has nothing for', () => {
+      expect(TABS.some((t) => t.key === 'modes')).toBe(config.modes !== undefined);
+      expect(TABS.some((t) => t.key === 'explorer')).toBe(config.explorer !== undefined);
     });
 
-    it('scroll to a section from its link, without leaving a hash on the page', () => {
-      const el = render(SECTIONED.health!(null));
-      act(() =>
-        el.querySelector<HTMLAnchorElement>(`nav a[href="#${sectionId('timings')}"]`)!.click(),
+    it('keep no area under another tab: the old gathered tabs are gone', () => {
+      const labels = TABS.map((t) => t.label);
+      for (const gone of ['Features', 'Pages & Help', 'Health']) expect(labels).not.toContain(gone);
+      for (const split of [
+        'Pages',
+        'Help',
+        'Tours & Prompts',
+        'Exceptions',
+        'Timings',
+        'Web Vitals',
+      ])
+        expect(labels).toContain(split);
+    });
+
+    it('show in the tab row, and a click opens the tab', () => {
+      const el = render(
+        <AppDashboard app={config} summary={SUMMARY} active="last7" onSelect={() => {}} />,
       );
-      expect(scrolled).toEqual([sectionId('timings')]);
-      expect(window.location.hash).toBe('');
-    });
-
-    it('never scroll for a section that lives on another tab', () => {
-      render(SECTIONED.features!({ section: 'timings', n: 1 }));
-      expect(scrolled).toEqual([]);
+      const tab = (name: string) =>
+        [...el.querySelectorAll<HTMLElement>('[role="tab"]')].find((t) => t.textContent === name)!;
+      for (const t of TABS) expect(tab(t.label)).toBeDefined();
+      expect(tab('Dashboard').getAttribute('aria-selected')).toBe('true');
+      act(() => tab('Tours & Prompts').click());
+      expect(tab('Tours & Prompts').getAttribute('aria-selected')).toBe('true');
+      expect(el.textContent).toContain('Each guided tour from offer to finish');
     });
   });
 
@@ -141,7 +129,26 @@ describe.each(TEST_APPS)('$name', ({ config, catalogue }) => {
       expect(stacks.length).toBeLessThanOrEqual(32);
     });
 
-    it('links every See also to a section that exists', () => {
+    it('opens the tab a See also names, at its top', () => {
+      const el = render(
+        <AppDashboard app={config} summary={SUMMARY} active="last7" onSelect={() => {}} />,
+      );
+      const head = [...el.querySelectorAll<HTMLElement>('[aria-expanded]')].find((b) =>
+        b.textContent?.includes('Onboarding Tours'),
+      )!;
+      act(() => head.click());
+      const link = [...document.querySelectorAll<HTMLElement>('button')].find((b) =>
+        b.textContent?.includes('on the Tours & Prompts Tab'),
+      )!;
+      scrolled.length = 0;
+      act(() => link.click());
+      const selected = el.querySelector('[role="tab"][aria-selected="true"]')!;
+      expect(selected.textContent).toBe('Tours & Prompts');
+      // The tab's own container, once, after the switch.
+      expect(scrolled.filter((id) => id === 'telemetry-tab')).toHaveLength(1);
+    });
+
+    it('links every See also to a tab the app has', () => {
       const stacks = Object.values(catalogue)
         .flat()
         .filter(
@@ -149,13 +156,13 @@ describe.each(TEST_APPS)('$name', ({ config, catalogue }) => {
             typeof item === 'object' && item !== null && isStack(item as MetricStack),
         );
       for (const s of stacks.filter((s) => s.seeAlso)) {
-        expect(SECTIONS).toContain(s.seeAlso!.section);
+        expect(TABS.map((t) => t.key)).toContain(s.seeAlso!.tab);
       }
     });
   });
 
   // A window click hands the tab a deferred window (page.tsx). Without the memo the click redraws the
-  // whole tab before it paints: ~190 ms on Features, ~390 ms on the old Dashboard, against ~20 ms.
+  // whole tab before it paints: ~190 ms on a busy tab, ~390 ms on the old Dashboard, against ~20 ms.
   describe('the active tab', () => {
     it('is memoised, so a window click paints before the tab redraws', () => {
       expect((ActiveView as unknown as { $$typeof: symbol }).$$typeof).toBe(
@@ -167,8 +174,7 @@ describe.each(TEST_APPS)('$name', ({ config, catalogue }) => {
       const props = {
         summary: SUMMARY,
         active: 'last7' as const,
-        focus: null,
-        onOpenSection: () => {},
+        onOpenTab: () => {},
       };
       expect(render(<ActiveView view="dashboard" {...props} />).textContent).toContain(
         'At a glance',
@@ -181,14 +187,13 @@ describe.each(TEST_APPS)('$name', ({ config, catalogue }) => {
       expect(host!.textContent).toContain('Per-metric trends aren’t available');
     });
 
-    it.each(['features', 'pages', 'community', 'health', 'search'] as const)(
+    it.each([...DETAIL_KEYS, 'search'] as const)(
       'mounts the %s tab, whose code loads on its own',
       (view) => {
         const props = {
           summary: SUMMARY,
           active: 'last7' as const,
-          focus: null,
-          onOpenSection: () => {},
+          onOpenTab: () => {},
         };
         expect(() => render(<ActiveView view={view} {...props} />)).not.toThrow();
       },
@@ -200,7 +205,7 @@ describe.each(TEST_APPS)('$name', ({ config, catalogue }) => {
         const idle = window.requestIdleCallback;
         // jsdom has no requestIdleCallback: the timeout path.
         (window as { requestIdleCallback?: unknown }).requestIdleCallback = undefined;
-        const cancel = prefetchViews(config);
+        const cancel = prefetchViews();
         cancel();
         vi.runAllTimers();
         const ran = vi.fn((cb: () => void) => {
@@ -209,7 +214,7 @@ describe.each(TEST_APPS)('$name', ({ config, catalogue }) => {
         });
         window.requestIdleCallback = ran as unknown as typeof window.requestIdleCallback;
         window.cancelIdleCallback = vi.fn();
-        prefetchViews(config)();
+        prefetchViews()();
         expect(ran).toHaveBeenCalledTimes(1);
         expect(window.cancelIdleCallback).toHaveBeenCalledWith(1);
         window.requestIdleCallback = idle;

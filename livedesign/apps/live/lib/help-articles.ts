@@ -87,6 +87,8 @@ export const HELP_ARTICLES = {
   // Settings
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
+  // The Automations screen's How Rules Work and its gate (docs/specs/013-workspace/automations.md "The screen").
+  automations: 'tools/automations',
   // Onboarding / empty states
   templates: 'canvas/templates',
   logoPages: 'pages/logo-pages',
@@ -110,6 +112,10 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn More" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
+  automations: {
+    title: 'Learn about Automations',
+    description: 'Rules a design runs on its own: triggers, steps, templates and the Audit Trail.',
+  },
   pagesTour: {
     title: 'Learn about the Pages Tour',
     description: 'What the tour shows you and how replaying works.',

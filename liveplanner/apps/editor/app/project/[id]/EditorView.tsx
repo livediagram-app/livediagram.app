@@ -55,7 +55,7 @@ import {
 } from '@liveworkspace/explorer/approvals';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { apiTeamMembers } from '@/lib/api/team-people';
-import { AutomationsHost } from '@/components/automations/AutomationsHost';
+import { PlanAutomationsHost } from '@/components/automations/PlanAutomationsHost';
 import { PendingStarterRules } from '@/components/automations/PendingStarterRules';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -307,11 +307,10 @@ export function EditorView() {
     // a Default tab's paper is the viewer's, not the tab's.
     // Only a Dashboard draws participant cursors (plan-cursors.ts), so only there do Settings, the Collaborators
     // modal and search offer Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md).
-    <AutomationsHost
+    <PlanAutomationsHost
       scope={automationsScope}
       plan={ctx.plan.context}
       gate={automationsGate}
-      planName={projectName}
       signedIn={!!accountUserId}
     >
       {/* A template's starter rules, once the plan it made can hold them (plan-templates.md "Starter rules"). */}
@@ -519,7 +518,7 @@ export function EditorView() {
           </RoadmapHost>
         </CalendarFeedHost>
       </SnapshotsDoorProvider>
-    </AutomationsHost>
+    </PlanAutomationsHost>
   );
   // The approvals door around the whole view: the corner card's badge, the banner and the Share dialog read it.
   return <ApprovalDoorProvider door={approvalDoor}>{view}</ApprovalDoorProvider>;

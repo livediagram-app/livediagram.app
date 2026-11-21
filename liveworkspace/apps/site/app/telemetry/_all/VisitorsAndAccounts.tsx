@@ -30,6 +30,7 @@ import { SeriesChart } from './SeriesChart';
 import { Swatch } from '../_shared/chart-hover/Swatch';
 import { emphasisProps, useEmphasisStore } from '../_shared/chart-hover/emphasis';
 import { CARD, TABLE_CELL, TABLE_HEAD, TOTAL_ROW } from './styles';
+import { AppBrand, appName } from '../AppBrand';
 
 // The second line of each chart: neutral slate, dashed, so the two read apart by shape as well as colour.
 export const SECOND: Pick<StackSeries, 'className' | 'dashed'> = {
@@ -210,7 +211,7 @@ function ScopePicker({
 }) {
   const choices: { key: AudienceScope; label: string }[] = [
     { key: TOTAL, label: 'All Apps' },
-    ...TELEMETRY_APPS.map((app) => ({ key: app, label: app })),
+    ...TELEMETRY_APPS.map((app) => ({ key: app, label: appName(app) })),
   ];
   return (
     <div
@@ -224,6 +225,7 @@ function ScopePicker({
           type="button"
           role="radio"
           aria-checked={value === c.key}
+          aria-label={c.label}
           onClick={() => onChange(c.key)}
           data-app={c.key === TOTAL ? undefined : c.key}
           className={
@@ -233,10 +235,7 @@ function ScopePicker({
               : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100')
           }
         >
-          {c.key === TOTAL ? null : (
-            <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
-          )}
-          {c.label}
+          {c.key === TOTAL ? c.label : <AppBrand app={c.key} size="xs" />}
         </button>
       ))}
     </div>
@@ -384,15 +383,8 @@ function AudienceRow({ row, total = false }: { row: ComparedRow; total?: boolean
   const n = row.now;
   return (
     <tr className={total ? TOTAL_ROW : undefined}>
-      <th scope="row" className={`${TABLE_CELL} text-left font-normal`}>
-        {total ? (
-          'Total'
-        ) : (
-          <span data-app={row.key} className="flex items-center gap-2">
-            <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-brand-500" />
-            {row.key}
-          </span>
-        )}
+      <th scope="row" className={`${TABLE_CELL} font-normal`}>
+        <span className="flex">{total ? 'Total' : <AppBrand app={row.key} />}</span>
       </th>
       <td className={TABLE_CELL}>{formatAverage(row.avgDailyVisitors)}</td>
       <td className={TABLE_CELL}>{n.newVisitors.toLocaleString('en-GB')}</td>

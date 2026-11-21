@@ -1020,7 +1020,7 @@ const listedItem = z.object({
   fields: z
     .record(z.string(), z.unknown())
     .describe(
-      'Every field, title and status included; custom fields by their names, as change_items takes them. A ' +
+      'Every other field (the title and status stand beside it); custom fields by their names, as change_items takes them. A ' +
         'calculated field’s value is worked out (a count, a whole percentage, a formula’s number, text, ' +
         'true or false or ISO date, or null) and read-only. A duration reads as text ("2h 30m"). A flagged ' +
         'card has flagged: true. A card handed to an AI assistant has assignee { id, name, color, assistant: ' +

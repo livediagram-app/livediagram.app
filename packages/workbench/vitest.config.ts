@@ -10,6 +10,12 @@ import { defineProject } from '@liveworkspace/vitest-config';
 const HELD_AT_100 = [
   // The chosen rail row's label in a start panel, read at AA on its tint (each product's start spec, "Rail").
   'src/components/start/start-chosen-ink.ts',
+  // Organise in Tab Folder, the list and the folder colour (each product's 006 tab-folders.md, Work Tracker 1328).
+  'src/components/chrome/TabFolderDialog.tsx',
+  'src/components/chrome/TabFolderList.tsx',
+  'src/components/chrome/FolderColourButton.tsx',
+  'src/components/chrome/folder-colour.ts',
+  'src/components/dialogs/OrganiseDialogFrame.tsx',
   // Request Access, the requester's side (liveworkspace/docs/specs/004-index/request-access.md "On screen"; Work
   // Tracker 1137 and 1308).
   'src/components/request-access/**',
@@ -22,6 +28,10 @@ const HELD_AT_100 = [
   'src/components/sheet-links/SheetLinkSection.tsx',
   'src/components/sheet-links/LinkSheetDialog.tsx',
   'src/lib/relative-now.ts',
+  // Deleting an unused picture (each canvas product's 009-elements images.md).
+  'src/lib/unused-image-choice.ts',
+  'src/lib/unused-image-prompt.ts',
+  'src/hooks/editor/useUnusedImagePrompt.ts',
   // Which side a menu flyout opens on (each product's 008-canvas canvas-and-palette.md, Work Tracker 961).
   'src/components/primitives/menu-flyout-side.ts',
   // A live embed's rules (liveworkspace/docs/specs/004-index/live-embeds.md, Work Tracker 930).
@@ -174,6 +184,9 @@ const HELD_AT_100 = [
   // The label toolbar kept inside the screen at every edge (label-editor.md "The toolbar", Work Tracker 1313).
   'src/components/label-editor/useLabelToolbarPlacement.ts',
   'src/lib/clamp-to-viewport.ts',
+  // The Sync gate a tool opens on an item kept Offline, every editor's one copy (each app's offline-mode.md, the
+  // platform's automations.md "Who may do what").
+  'src/components/dialogs/SyncGateDialog.tsx',
 ];
 
 export default defineProject({

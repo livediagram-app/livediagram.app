@@ -17,6 +17,7 @@ import { writeUserPreferences } from '@/lib/user-preferences';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementSelectionActions } from '@/hooks/canvas/useElementSelectionActions';
+import { useUnusedImageOffer } from '@/hooks/canvas/useUnusedImageOffer';
 import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
 import { useElementCreation } from '../useElementCreation';
 import { useMindGrowth } from '../useMindGrowth';
@@ -37,6 +38,7 @@ import type { EditorPresenceSlice } from './useEditorPresence';
 import type { EditorEditingSlice } from './useEditorEditing';
 import type { EditorLayersSlice } from './useEditorLayers';
 import type { EditorTabsSlice } from './useEditorTabs';
+import type { EditorRoomSlice } from './useEditorRoom';
 
 // Making things: images, notes, drawing, paths, mind-map and flowchart growth, palette creation, inline icons,
 // cell links, selection actions, the whiteboard dock, Fill and the Eraser. A slice of useEditorState
@@ -56,6 +58,7 @@ export function useEditorCreation({
   fromEditing,
   fromLayers,
   fromTabs,
+  fromRoom,
 }: {
   fromDocument: EditorDocumentSlice;
   fromHistory: EditorHistorySlice;
@@ -70,6 +73,7 @@ export function useEditorCreation({
   fromEditing: EditorEditingSlice;
   fromLayers: EditorLayersSlice;
   fromTabs: EditorTabsSlice;
+  fromRoom: EditorRoomSlice;
 }) {
   const { documentId, embedMode, selfParticipant, toast, workbenchMode } = fromDocument;
   const { commitTabs, markCheckpoint } = fromHistory;
@@ -283,6 +287,23 @@ export function useEditorCreation({
   const { cellLinkPickerOpenFor, setCellLinkPickerOpenFor, openCellLinkPicker, applyCellLink } =
     useCellLinkPicker({ editsBlocked, commit });
 
+  // The offer to delete from storage the pictures a delete left unused (docs/specs/009-elements/images.md "Deleting an
+  // unused picture"); nothing runs until a delete removes an image element.
+  const offerUnusedImages = useUnusedImageOffer({
+    ownerId: selfParticipant.id,
+    documentId,
+    accountUserId: fromDocument.accountUserId,
+    embedMode,
+    workbenchMode,
+    isStructureReadOnly: fromCollaboration.isStructureReadOnly,
+    participating: participant.participating,
+    tabsRef: fromPersistence.tabsRef,
+    loadedTabIdsRef: fromDocument.loadedTabIdsRef,
+    loadAllTabs: fromRoom.loadAllTabs,
+    userPreferences,
+    setUserPreferences,
+  });
+
   // Structural element operations (delete, marquee commit, lock, and the
   // duplicate family). They change the element set
   // and/or the selection rather than element fields; see
@@ -303,6 +324,7 @@ export function useEditorCreation({
     readSelection,
     activeTab,
     commit,
+    onElementsRemoved: offerUnusedImages,
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,

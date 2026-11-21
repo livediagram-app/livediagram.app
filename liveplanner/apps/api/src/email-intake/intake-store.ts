@@ -31,6 +31,20 @@ CREATE TABLE IF NOT EXISTS email_intake_senders (
 );
 `;
 
+// What an address makes (email-to-board.md "What a message makes"): a card type and a status of its own, added after
+// the table. Null on an address from before: it makes its board's first card type in its first column, as it did.
+export function addIntakeTarget(
+  exec: (sql: string) => { toArray: () => Record<string, unknown>[] },
+): void {
+  const have = new Set(
+    exec('PRAGMA table_info(email_intakes)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('type_id')) exec('ALTER TABLE email_intakes ADD COLUMN type_id TEXT NULL');
+  if (!have.has('status')) exec('ALTER TABLE email_intakes ADD COLUMN status TEXT NULL');
+}
+
 // Cards one address makes an hour, and one sender to one address.
 export const INTAKE_CARDS_PER_HOUR = 100;
 export const INTAKE_SENDER_PER_HOUR = 20;
@@ -41,6 +55,8 @@ export type IntakeRow = {
   boardId: string;
   tabId: string;
   code: string;
+  // The card it makes; null for an address from before, which follows its board's first type and column.
+  target: { typeId: string; status: string } | null;
   senders: EmailIntakeSenders;
   createdAt: number;
   made: number;
@@ -53,6 +69,8 @@ type Row = {
   board_id: string;
   tab_id: string;
   code: string;
+  type_id: string | null;
+  status: string | null;
   senders: string;
   created_at: number;
   made: number;
@@ -61,12 +79,14 @@ type Row = {
   last_at: number | null;
 };
 
-const COLS = 'board_id, tab_id, code, senders, created_at, made, refused, dropped, last_at';
+const COLS =
+  'board_id, tab_id, code, type_id, status, senders, created_at, made, refused, dropped, last_at';
 
 const fromRow = (r: Row): IntakeRow => ({
   boardId: r.board_id,
   tabId: r.tab_id,
   code: r.code,
+  target: r.type_id && r.status ? { typeId: r.type_id, status: r.status } : null,
   senders: r.senders === 'anyone' ? 'anyone' : 'members',
   createdAt: r.created_at,
   made: r.made,
@@ -117,28 +137,50 @@ export async function intakeByCode(
 export async function turnOnIntake(
   env: PlanEnv,
   planId: string,
-  at: { boardId: string; tabId: string; code: string; senders: EmailIntakeSenders },
+  at: {
+    boardId: string;
+    tabId: string;
+    code: string;
+    target: { typeId: string; status: string } | null;
+    senders: EmailIntakeSenders;
+  },
   now: number,
 ): Promise<IntakeRow> {
   await env.PLAN_DB.prepare(
-    'INSERT INTO email_intakes (plan_id, board_id, tab_id, code, senders, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO email_intakes (plan_id, board_id, tab_id, code, type_id, status, senders, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
   )
-    .bind(planId, at.boardId, at.tabId, at.code, at.senders, now)
+    .bind(
+      planId,
+      at.boardId,
+      at.tabId,
+      at.code,
+      at.target?.typeId ?? null,
+      at.target?.status ?? null,
+      at.senders,
+      now,
+    )
     .run();
   return { ...at, createdAt: now, made: 0, refused: 0, dropped: 0, lastAt: null };
 }
 
-/** Who Can Send changed (and the board's tab kept current). */
+/** Who Can Send and what it makes changed (and the board's tab kept current). */
 export async function setIntakeSenders(
   env: PlanEnv,
   planId: string,
-  at: { boardId: string; tabId: string },
+  at: { boardId: string; tabId: string; target: { typeId: string; status: string } | null },
   senders: EmailIntakeSenders,
 ): Promise<void> {
   await env.PLAN_DB.prepare(
-    'UPDATE email_intakes SET senders = ?, tab_id = ? WHERE plan_id = ? AND board_id = ?',
+    'UPDATE email_intakes SET senders = ?, tab_id = ?, type_id = ?, status = ? WHERE plan_id = ? AND board_id = ?',
   )
-    .bind(senders, at.tabId, planId, at.boardId)
+    .bind(
+      senders,
+      at.tabId,
+      at.target?.typeId ?? null,
+      at.target?.status ?? null,
+      planId,
+      at.boardId,
+    )
     .run();
 }
 

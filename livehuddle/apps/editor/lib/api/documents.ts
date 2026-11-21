@@ -130,7 +130,7 @@ export async function apiSaveDocumentMeta(
   d: {
     id: string;
     name?: string;
-    tabs?: { id: string; folder?: string }[];
+    tabs?: { id: string; folder?: string; folderColor?: string | null }[];
     tabIds?: string[];
     // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised. livehuddle's editor never sends it
     // since Work Tracker #423 part 2, so a stored deck is kept. Absent leaves the stored deck alone,

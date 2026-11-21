@@ -124,7 +124,7 @@ export async function apiSaveProjectMeta(
   d: {
     id: string;
     name?: string;
-    tabs?: { id: string; folder?: string }[];
+    tabs?: { id: string; folder?: string; folderColor?: string | null }[];
     tabIds?: string[];
   },
   shareCode: string | null = null,

@@ -1,0 +1,473 @@
+import { createHmac } from 'node:crypto';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SNAPSHOT_REVERTED_CLOSE } from '@livehuddle/api-schema';
+import { readGeneration } from '@liveworkspace/snapshots/server';
+import type { Env } from '../../types';
+import { RULE_TABS_MAX, TEMPLATE_GONE, tabLimitWords } from '@liveworkspace/automations/room';
+import { box, suggestionBox, DOC, roomWorld, type RoomWorld } from './test-automation-world';
+
+// A Space's rules run end to end in its real room, on its alarm (docs/specs/013-workspace/automations.md; blueprint
+// automations.md "The engine in the room", "The kit"): the time and visit triggers, the shared steps through this
+// app's kit (snapshots, tabs, Suggestion Boxes, email, AI), and the Incoming Webhook door. On node:sqlite here; the same paths run on workerd in
+// test/workerd-automations.
+
+const BASE = `/api/documents/${DOC}`;
+const DAY = 24 * 60 * 60_000;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
+
+async function started(extra: Partial<Env> = {}): Promise<RoomWorld> {
+  vi.spyOn(console, 'info').mockImplementation(() => undefined);
+  vi.spyOn(console, 'debug').mockImplementation(() => undefined);
+  const w = roomWorld(extra);
+  await w.create([
+    { id: 't1', name: 'Lobby', elements: [box('a', 'Checkout'), suggestionBox('s')] },
+    { id: 't2', name: 'Garden', elements: [box('n', 'Remember')] },
+  ]);
+  return w;
+}
+
+const later = (ms: number) => vi.useFakeTimers({ now: Date.now() + ms, toFake: ['Date'] });
+
+// Run Rule, answered as how it ended and what each line of its run says.
+async function runNow(w: RoomWorld, ruleId: string) {
+  const res = await w.send('POST', `${BASE}/automations/${ruleId}/run`, {});
+  const { run } = await res.json<{ run: { result: string; steps: { text: string }[] } }>();
+  return { result: run.result, said: run.steps.map((s) => s.text) };
+}
+
+describe('a Scheduled rule', () => {
+  it('wakes the Space at its time with nobody in it, and runs once', async () => {
+    const w = await started();
+    const rule = await w.rule({
+      trigger: { kind: 'scheduled', every: 'day', at: '09:00' },
+      steps: [{ kind: 'take_snapshot', name: 'Daily {{item.name}}' }],
+    });
+    const due = w.room.automations.schedule.wakeAt!;
+    expect(due).toBeGreaterThan(Date.now());
+    expect(due - Date.now()).toBeLessThanOrEqual(DAY);
+    // Not yet: an early alarm runs nothing.
+    await w.alarm();
+    expect(w.runs()).toEqual([]);
+    later(due - Date.now() + 1000);
+    await w.alarm();
+    expect(w.runs()).toMatchObject([{ ruleId: rule.id, result: 'done' }]);
+    expect(w.rows('SELECT name, author_name FROM snapshots WHERE item_id = ?', DOC)).toEqual([
+      { name: 'Daily Studio', author_name: rule.name },
+    ]);
+    // The next day's moment is set, and the same alarm again runs nothing more.
+    expect(w.room.automations.schedule.wakeAt!).toBeGreaterThan(due);
+    await w.alarm();
+    expect(w.runs()).toHaveLength(1);
+  });
+});
+
+describe('Revert to Snapshot', () => {
+  it('is the ordinary revert: a safety snapshot, the content back, every session ended, the generation advanced', async () => {
+    const w = await started();
+    const snap = await w.send('POST', `${BASE}/snapshots`, { name: 'Clean board' });
+    const { snapshot } = await snap.json<{ snapshot: { id: string } }>();
+    const rule = await w.rule({
+      name: 'Reset Every Night',
+      trigger: { kind: 'manual' },
+      steps: [{ kind: 'revert_snapshot', snapshot: snapshot.id, name: 'Clean board' }],
+    });
+    // The Space moves on: a tab changed, a tab added.
+    await w.saveTab('t1', [box('a', 'Scribbled over'), box('extra')]);
+    await w.send('PUT', `${BASE}/tabs/t3`, { id: 't3', name: 'Scratch', elements: [] });
+    // Rules that would hear the revert's rewrites, were they not silent.
+    await w.rule({ trigger: { kind: 'tab_removed' } });
+    await w.rule({ trigger: { kind: 'edited', minutes: 5 } });
+    const before = await readGeneration(w.room.requireEnv().DOCUMENT_DB, DOC);
+    const open = [
+      await w.visit('k-ana', 't1', { name: 'Ana' }),
+      await w.visit('k-ben', 't1', { name: 'Ben', level: 'view' }),
+    ];
+
+    const ran = await runNow(w, rule.id);
+    expect(ran.result).toBe('done');
+    expect(ran.said).toContain('Reverted to “Clean board”');
+    expect(w.rows('SELECT tab_id FROM document_tabs ORDER BY order_index')).toEqual([
+      { tab_id: 't1' },
+      { tab_id: 't2' },
+    ]);
+    expect(String(w.rows("SELECT data FROM tabs WHERE id = 't1'")[0]!['data'])).toContain(
+      'Checkout',
+    );
+    // The safety snapshot, by Automation with the rule's name.
+    expect(w.rows("SELECT name, author_name FROM snapshots WHERE kind = 'before-revert'")).toEqual([
+      { name: 'Before reverting to "Clean board"', author_name: 'Reset Every Night' },
+    ]);
+    expect(await readGeneration(w.room.requireEnv().DOCUMENT_DB, DOC)).toBe(before + 1);
+    for (const ws of open)
+      expect(ws.closed).toEqual([SNAPSHOT_REVERTED_CLOSE, 'snapshot-reverted']);
+    // Nothing of the revert reached the other rules.
+    expect(w.queued()).toEqual([]);
+    expect(w.rows('SELECT * FROM automation_settles')).toEqual([]);
+  });
+
+  it('fails the run when the snapshot is gone, and says so on the rule', async () => {
+    const w = await started();
+    const rule = await w.rule({
+      steps: [{ kind: 'revert_snapshot', snapshot: 'gone', name: 'Old' }],
+    });
+    const ran = await runNow(w, rule.id);
+    expect(ran.result).toBe('failed');
+    expect(ran.said).toContain('The snapshot is gone');
+  });
+});
+
+describe('Someone Arrived', () => {
+  it('runs once for a burst of arrivals into an empty tab, naming who came', async () => {
+    const w = await started();
+    const rule = await w.rule({
+      trigger: { kind: 'someone_arrived', tab: 't1' },
+      steps: [{ kind: 'take_snapshot', name: '{{person}} opened {{tab.name}}' }],
+    });
+    await w.visit('k-ana', 't1', { name: 'Ana' });
+    await w.visit('k-ben', 't1', { name: 'Ben' });
+    // Another tab is no arrival here.
+    await w.visit('k-cy', 't2', { name: 'Cy' });
+    await w.alarm();
+    expect(w.runs().filter((r) => r['result'] === 'done')).toMatchObject([{ ruleId: rule.id }]);
+    expect(w.rows('SELECT name FROM snapshots WHERE item_id = ?', DOC)).toEqual([
+      { name: 'Ana opened Lobby' },
+    ]);
+  });
+});
+
+describe('Everyone Left', () => {
+  it('runs once its window has passed with nobody back, reading who was there', async () => {
+    const w = await started();
+    const rule = await w.rule({
+      trigger: { kind: 'everyone_left', minutes: 10 },
+      steps: [
+        {
+          kind: 'take_snapshot',
+          name: '{{visit.people}} ({{visit.count}}) for {{visit.minutes}} min in {{tab.name}}',
+        },
+      ],
+    });
+    const ana = await w.visit('k-ana', 't1', { name: 'Ana' });
+    later(30 * 60_000);
+    const ben = await w.visit('k-ben', 't1', { name: 'Ben' });
+    w.leave(ana);
+    w.leave(ben);
+    // The quiet stretch arms the alarm, and inside it nothing runs.
+    expect(w.room.automations.schedule.wakeAt).not.toBeNull();
+    later(5 * 60_000);
+    await w.alarm();
+    expect(w.runs()).toEqual([]);
+    later(6 * 60_000);
+    await w.alarm();
+    expect(w.runs()).toMatchObject([{ ruleId: rule.id, result: 'done' }]);
+    expect(w.rows('SELECT name FROM snapshots WHERE item_id = ?', DOC)).toEqual([
+      { name: 'Ana, Ben (2) for 30 min in Lobby' },
+    ]);
+    // Once per emptying.
+    later(20 * 60_000);
+    await w.alarm();
+    expect(w.runs()).toHaveLength(1);
+  });
+
+  it('runs nothing when someone comes back inside the window', async () => {
+    const w = await started();
+    await w.rule({ trigger: { kind: 'everyone_left', minutes: 10 } });
+    w.leave(await w.visit('k-ana', 't1', { name: 'Ana' }));
+    later(5 * 60_000);
+    await w.visit('k-ben', 't1', { name: 'Ben' });
+    later(15 * 60_000);
+    await w.alarm();
+    expect(w.runs()).toEqual([]);
+    expect(w.rows('SELECT * FROM automation_settles')).toEqual([]);
+  });
+});
+
+describe('Clear the Suggestion Box', () => {
+  it('clears every note in every box of the Space, and says so when there were none', async () => {
+    const w = await started();
+    for (const text of ['More plants', 'Quieter music']) {
+      expect((await w.drop('t1', 's', text)).status).toBe(201);
+    }
+    const rule = await w.rule({ steps: [{ kind: 'clear_suggestions' }] });
+    const ran = await runNow(w, rule.id);
+    expect(ran).toMatchObject({ result: 'done' });
+    expect(ran.said).toContain('Cleared 2 notes from the Suggestion Box');
+    expect(w.rows('SELECT * FROM suggestions')).toEqual([]);
+    expect((await runNow(w, rule.id)).said).toContain('The Suggestion Box was already empty');
+  });
+
+  it('runs on a dropped note, which reads as {{suggestion}}', async () => {
+    const w = await started();
+    await w.rule({
+      trigger: { kind: 'suggestion_dropped' },
+      steps: [{ kind: 'take_snapshot', name: 'Note: {{suggestion}}' }],
+    });
+    await w.drop('t1', 's', 'More plants');
+    await w.alarm();
+    expect(w.rows('SELECT name FROM snapshots WHERE item_id = ?', DOC)).toEqual([
+      { name: 'Note: More plants' },
+    ]);
+  });
+});
+
+describe('Add a Tab from a Template', () => {
+  it('adds the tab as New Tab makes it, last in order, named by the rule, and tells the room', async () => {
+    const w = await started();
+    const rule = await w.rule({
+      steps: [{ kind: 'add_tab', template: 'blank-session', name: 'Retro {{now.date}}' }],
+    });
+    const watcher = await w.visit('k-ana', 't1', { name: 'Ana' });
+    watcher.sent.length = 0;
+    expect((await runNow(w, rule.id)).result).toBe('done');
+    const tabs = w.rows(
+      'SELECT t.id, t.name, t.element_count, dt.order_index FROM tabs t JOIN document_tabs dt ON dt.tab_id = t.id ORDER BY dt.order_index',
+    );
+    expect(tabs).toHaveLength(3);
+    expect(String(tabs[2]!['name'])).toMatch(/^Retro \d{1,2} \w{3} \d{4}$/);
+    // Everyone with the Space open sees it arrive.
+    expect(watcher.sent.join('\n')).toContain('document-meta');
+  });
+
+  it('starts a Tab Added rule by Automation only when the rule lets its changes start others', async () => {
+    const w = await started();
+    await w.rule({ name: 'Hears tabs', trigger: { kind: 'tab_added' } });
+    const quiet = await w.rule({
+      steps: [{ kind: 'add_tab', template: 'blank-session', name: 'Quiet' }],
+    });
+    await w.send('POST', `${BASE}/automations/${quiet.id}/run`, {});
+    await w.alarm();
+    // The rule keeps its changes to itself: the other rule's run is Skipped, and says why.
+    expect(w.runs().filter((r) => r['ruleName'] === 'Hears tabs')).toMatchObject([
+      { result: 'skipped' },
+    ]);
+    const loud = await w.rule({
+      chain: true,
+      steps: [{ kind: 'add_tab', template: 'blank-session', name: 'Loud' }],
+    });
+    await w.send('POST', `${BASE}/automations/${loud.id}/run`, {});
+    await w.alarm();
+    expect(
+      w
+        .runs()
+        .filter((r) => r['ruleName'] === 'Hears tabs')
+        .map((r) => r['result'])
+        .sort(),
+    ).toEqual(['done', 'skipped']);
+  });
+
+  it('fails the step at the tab limit, and for a template that is gone', async () => {
+    const w = await started();
+    const gone = await w.rule({ steps: [{ kind: 'add_tab', template: 'no-such', name: 'X' }] });
+    expect(await runNow(w, gone.id)).toMatchObject({ result: 'failed' });
+    expect((await runNow(w, gone.id)).said).toContain(TEMPLATE_GONE);
+    const now = Date.now();
+    for (let i = 0; i < RULE_TABS_MAX; i += 1) {
+      w.db
+        .prepare(
+          'INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, ?, ?, ?, 0, 1)',
+        )
+        .run(`x${i}`, `X ${i}`, '{"elements":[]}', now);
+      w.db
+        .prepare(
+          'INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES (?, ?, ?, ?)',
+        )
+        .run(DOC, `x${i}`, 10 + i, now);
+    }
+    const full = await w.rule({
+      steps: [{ kind: 'add_tab', template: 'blank-session', name: 'One more' }],
+    });
+    const refused = await runNow(w, full.id);
+    expect(refused.result).toBe('failed');
+    expect(refused.said).toContain(tabLimitWords('Space'));
+    expect(w.rows('SELECT COUNT(*) AS n FROM document_tabs')[0]!['n']).toBe(RULE_TABS_MAX + 2);
+  });
+});
+
+describe('Incoming Webhook', () => {
+  async function hooked(w: RoomWorld) {
+    const rule = await w.rule({
+      trigger: { kind: 'incoming_webhook' },
+      steps: [{ kind: 'take_snapshot', name: 'Before {{webhook.version}}' }],
+    });
+    const made = await w.send('POST', `${BASE}/automations/${rule.id}/secret`);
+    const { secret } = await made.json<{ secret: string }>();
+    return { rule, secret };
+  }
+  const bytes = (body: unknown) => new TextEncoder().encode(JSON.stringify(body));
+
+  it('takes a call that proves the secret, by Bearer or by signature, and runs the rule', async () => {
+    const w = await started();
+    const { rule, secret } = await hooked(w);
+    const body = bytes({ version: '2.4', tab: 'Lobby' });
+    // Signed as a sender signs: the timestamp, a dot and the exact body.
+    const ts = String(Math.floor(Date.now() / 1000));
+    const signed = await w.room.incomingHook(DOC, rule.id, {
+      body,
+      authorization: null,
+      signature: `sha256=${createHmac('sha256', secret).update(`${ts}.`).update(body).digest('hex')}`,
+      timestamp: ts,
+    });
+    expect(signed).toMatchObject({ status: 202, body: { queued: 1 } });
+    const bearer = await w.room.incomingHook(DOC, rule.id, {
+      body: bytes({ version: '2.5' }),
+      authorization: `Bearer ${secret}`,
+      signature: null,
+    });
+    expect(bearer).toMatchObject({ status: 202, body: { queued: 1 } });
+    await w.alarm();
+    expect(w.runs()).toMatchObject([{ result: 'done' }, { result: 'done' }]);
+    expect(w.rows('SELECT name FROM snapshots WHERE item_id = ? ORDER BY name', DOC)).toEqual([
+      { name: 'Before 2.4' },
+      { name: 'Before 2.5' },
+    ]);
+  });
+
+  it('answers every wrong proof the same 401, and queues nothing', async () => {
+    const w = await started();
+    const { rule, secret } = await hooked(w);
+    const body = bytes({ version: '1' });
+    const wrong = [
+      { body, authorization: 'Bearer lwh_wrong', signature: null },
+      { body, authorization: null, signature: 'sha256=00ff' },
+      // A good signature of another body.
+      {
+        body,
+        authorization: null,
+        signature: `sha256=${createHmac('sha256', secret).update('{}').digest('hex')}`,
+      },
+      { body, authorization: null, signature: null },
+    ];
+    for (const call of wrong)
+      expect(await w.room.incomingHook(DOC, rule.id, call)).toMatchObject({
+        status: 401,
+        body: { error: 'webhook_unauthorized' },
+      });
+    // An unknown rule, and a Space never started, answer as a wrong secret does.
+    const good = { body, authorization: `Bearer ${secret}`, signature: null };
+    expect(await w.room.incomingHook(DOC, 'nope', good)).toMatchObject({ status: 401 });
+    const empty = roomWorld({}, 'doc-2');
+    expect(await empty.room.incomingHook('doc-2', rule.id, good)).toMatchObject({ status: 401 });
+    expect(empty.rows("SELECT name FROM sqlite_master WHERE type = 'table'")).toEqual([]);
+    expect(w.queued()).toEqual([]);
+  });
+
+  it('takes the call and runs nothing while the Space is put away', async () => {
+    const w = await started();
+    const { rule, secret } = await hooked(w);
+    await w.room.takeStanding(DOC, { archived: true, trashed: false, at: Date.now() });
+    const answer = await w.room.incomingHook(DOC, rule.id, {
+      body: bytes({}),
+      authorization: `Bearer ${secret}`,
+      signature: null,
+    });
+    expect(answer).toMatchObject({ status: 202, body: { queued: 0 } });
+    expect(w.queued()).toEqual([]);
+  });
+});
+
+describe('Send Email', () => {
+  const mailbox = () => {
+    const sent: { to: string; subject: string; html: string; headers?: Record<string, string> }[] =
+      [];
+    const EMAIL = {
+      send: async (message: { to: string; subject: string; html: string }) => {
+        sent.push(message);
+        return { messageId: 'm' };
+      },
+    };
+    return { sent, env: { EMAIL } as unknown as Partial<Env> };
+  };
+
+  it('says email is not set up without the binding', async () => {
+    const w = await started();
+    const rule = await w.rule({
+      steps: [{ kind: 'email', to: { owner: true }, subject: 'Hi', body: 'There' }],
+    });
+    const ran = await runNow(w, rule.id);
+    expect(ran.result).toBe('failed');
+    expect(ran.said).toContain("Email isn't set up here");
+  });
+
+  it('emails a typed-in address with the rule’s words, the fixed words and its own unsubscribe link, which works once', async () => {
+    const { sent, env } = mailbox();
+    const w = await started(env);
+    const rule = await w.rule({
+      name: 'Weekly Note',
+      steps: [
+        {
+          kind: 'email',
+          to: { addresses: ['pat@example.com'] },
+          subject: 'News from {{item.name}}',
+          body: 'Line one\n<b>Line two</b>',
+        },
+      ],
+    });
+    expect((await runNow(w, rule.id)).result).toBe('done');
+    await w.settled();
+    expect(sent).toHaveLength(1);
+    const mail = sent[0]!;
+    expect(mail.to).toBe('pat@example.com');
+    expect(mail.subject).toBe('News from Studio');
+    expect(mail.html).toContain('Line one<br>&lt;b&gt;Line two&lt;/b&gt;');
+    expect(mail.html).toContain('Weekly Note');
+    const page = /email-optout\?d=doc-1&amp;t=([A-Za-z0-9_-]+)/.exec(mail.html);
+    expect(page).not.toBeNull();
+    // The door unsubscribes the address; the next run emails nobody.
+    expect(await w.room.emailOptOut(DOC, page![1]!)).toBe(true);
+    expect(await w.room.emailOptOut(DOC, 'not-a-token')).toBe(false);
+    expect((await runNow(w, rule.id)).said.join('\n')).toContain('unsubscribed');
+    await w.settled();
+    expect(sent).toHaveLength(1);
+  });
+
+  it('emails no person without a verified address to send to', async () => {
+    const { sent, env } = mailbox();
+    const w = await started(env);
+    const rule = await w.rule({
+      steps: [{ kind: 'email', to: { owner: true }, subject: 'Hi', body: 'There' }],
+    });
+    // No accounts Worker here, so nobody's address is known.
+    expect((await runNow(w, rule.id)).result).toBe('failed');
+    expect(sent).toEqual([]);
+  });
+});
+
+describe('Summarise with AI', () => {
+  it('says AI is not set up without the binding', async () => {
+    const w = await started();
+    const rule = await w.rule({ steps: [{ kind: 'ai', task: 'summarise' }] });
+    expect((await runNow(w, rule.id)).said.join('\n')).toContain("AI isn't set up here");
+  });
+
+  it('sends the Space’s outline, each tab under its name, never a note in a box, and keeps the summary', async () => {
+    const asked: string[] = [];
+    const AI = {
+      run: async (_model: string, input: { messages: { content: string }[] }) => {
+        asked.push(input.messages.map((m) => m.content).join('\n'));
+        return { response: JSON.stringify({ summary: 'Checkout and notes.' }) };
+      },
+    };
+    const w = await started({ AI });
+    await w.drop('t1', 's', 'A private note');
+    const rule = await w.rule({
+      steps: [
+        { kind: 'ai', task: 'summarise' },
+        { kind: 'take_snapshot', name: '{{summary}}' },
+      ],
+    });
+    const ran = await runNow(w, rule.id);
+    expect(ran, ran.said.join(' | ')).toMatchObject({ result: 'done' });
+    expect(asked).toHaveLength(1);
+    for (const said of ['# Lobby', 'Checkout', '# Garden', 'Remember'])
+      expect(asked[0], asked[0]).toContain(said);
+    expect(asked[0]).not.toContain('A private note');
+    expect(w.rows('SELECT name FROM snapshots WHERE item_id = ?', DOC)).toEqual([
+      { name: 'Checkout and notes.' },
+    ]);
+  });
+});

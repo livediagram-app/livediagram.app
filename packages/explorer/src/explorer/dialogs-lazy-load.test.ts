@@ -17,7 +17,6 @@ const LAZY = [
   '../defaults/DefaultFolders',
   '../defaults/UseAsDefaultDialog',
   '../library/HistoryDialog',
-  '../library/WebhooksDialog',
 ];
 
 describe('the Explorer’s first load', () => {

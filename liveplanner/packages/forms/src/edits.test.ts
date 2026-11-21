@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { QUESTIONS_MAX, SECTIONS_MAX, questionsOf, type FormDefinition } from './index';
+import { PROMPT_MAX, QUESTIONS_MAX, SECTIONS_MAX, questionsOf, type FormDefinition } from './index';
 import {
   addQuestion,
   addSection,
@@ -12,6 +12,7 @@ import {
   neighbourOf,
   nextOptionName,
   pastedOptions,
+  pastedQuestions,
   patchForm,
   placeQuestion,
   questionById,
@@ -268,5 +269,62 @@ describe('the form', () => {
     const f = patchForm(form(), { limit: 10, confirmation: 'Ta' });
     expect(f).toMatchObject({ limit: 10, confirmation: 'Ta' });
     expect(patchForm(f, { limit: undefined })).not.toHaveProperty('limit');
+  });
+});
+
+describe('pastedQuestions', () => {
+  const base = (): FormDefinition => ({
+    v: 1,
+    heading: 'F',
+    sections: [
+      {
+        id: 's-1',
+        title: '',
+        questions: [
+          { id: 'q-1', type: 'paragraph', prompt: '' },
+          { id: 'q-2', type: 'short', prompt: 'Last' },
+        ],
+      },
+    ],
+  });
+  let n = 0;
+  const newId = () => `q-new-${++n}`;
+
+  it('words the question with the first line and adds one of its type for each line after, in order', () => {
+    const out = pastedQuestions(
+      base(),
+      'q-1',
+      '1. Name\r\n\n- Why us?\n  2) When?  \n• Where',
+      newId,
+    )!;
+    const qs = out.form.sections[0]!.questions;
+    expect(qs.map((q) => [q.prompt, q.type])).toEqual([
+      ['Name', 'paragraph'],
+      ['Why us?', 'paragraph'],
+      ['When?', 'paragraph'],
+      ['Where', 'paragraph'],
+      ['Last', 'short'],
+    ]);
+    expect(out.ids).toEqual(qs.slice(1, 4).map((q) => q.id));
+  });
+
+  it('leaves an ordinary paste alone: one line, or a question that is not there', () => {
+    expect(pastedQuestions(base(), 'q-1', 'Just one line\n\n', newId)).toBeNull();
+    expect(pastedQuestions(base(), 'q-9', 'A\nB', newId)).toBeNull();
+  });
+
+  it('stops at the most questions a form holds, and cuts a wording at its limit', () => {
+    const full = base();
+    full.sections[0]!.questions = Array.from({ length: QUESTIONS_MAX - 1 }, (_, i) => ({
+      id: `q-${i + 1}`,
+      type: 'short' as const,
+      prompt: '',
+    }));
+    const out = pastedQuestions(full, 'q-1', `${'x'.repeat(PROMPT_MAX + 50)}\nB\nC\nD`, newId)!;
+    const qs = out.form.sections[0]!.questions;
+    expect(qs).toHaveLength(QUESTIONS_MAX);
+    expect(qs[0]!.prompt).toHaveLength(PROMPT_MAX);
+    expect(out.ids).toHaveLength(1);
+    expect(qs[1]!.prompt).toBe('B');
   });
 });

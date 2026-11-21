@@ -2,9 +2,8 @@
 // view is shared (../_shared); this is what makes it this app's. Its events and how they read, its
 // charts on each tab, and its name, noun and accent.
 
-import dynamic from 'next/dynamic';
-import { COMMUNITY_GROUPS } from './community-groups';
 import {
+  COMMUNITY_CATEGORIES,
   ctaSurfaceOf,
   ctaSurfaceOfPath,
   CTA_SOURCES,
@@ -17,6 +16,7 @@ import {
   type TelemetryCategory,
 } from '@livediagram/api-schema';
 import { noun, type TelemetryAppConfig } from '../_shared/app';
+import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
 import { LIBRARY } from '../_shared/library-metrics';
@@ -29,7 +29,6 @@ import {
   AGENT_CHANGESETS,
   AGENT_VIEWED,
   ALL_VISITORS,
-  OLD_SITE_GUESTS,
   API_TOKEN_ACTIVITY,
   ARTICLE_VIEWS,
   ASSIGNED_ACTIONS,
@@ -37,12 +36,24 @@ import {
   CANVAS_MODES,
   CLIENT_EXCEPTIONS,
   CLI_COMMANDS_STACK,
+  COMMUNITY_COPIES,
+  COMMUNITY_DISCOVERY,
   COMMUNITY_ENGAGEMENT,
+  COMMUNITY_FILTERS,
+  COMMUNITY_LIKES,
+  COMMUNITY_MODERATION,
+  COMMUNITY_POSTS_OPENED,
+  COMMUNITY_POSTS_SHARED,
+  COMMUNITY_PUBLISHING,
+  COMMUNITY_REPORTS,
+  COMMUNITY_SEARCHES,
+  CONNECTED_TABS,
   COUNTDOWNS,
   DATA_MODELS,
   DISCUSSION,
   DOCUMENTS_CREATED,
   DOCUMENT_ACTIONS,
+  DOCUMENT_AUTOMATIONS,
   DRAW_TOUR,
   DRY_HELP_SEARCHES,
   EDITOR_CHROME,
@@ -58,8 +69,10 @@ import {
   HELP_CENTRE,
   HELP_SCOPE_SWITCHES,
   HELP_SEARCHES,
+  HOME_AND_ACTIVITY,
   JOINING,
   LAYERS_FEATURE,
+  LIVE_EMBEDS_SHOWN,
   LIVE_TOGETHER,
   LOAD_RECOVERY,
   LOOK_AND_FEEL,
@@ -71,6 +84,7 @@ import {
   NEW_VISITORS,
   NOTES,
   OFFLINE_MODE,
+  OLD_SITE_GUESTS,
   ONBOARDING_TOURS,
   ORGANISATION,
   PAGE_VIEWS_BY_APP,
@@ -87,8 +101,6 @@ import {
   SHARING_AND_JOINING,
   SHOW_ME_TOURS,
   SIDE_BY_SIDE,
-  CONNECTED_TABS,
-  LIVE_EMBEDS_SHOWN,
   SIGN_IN_PROMPTS,
   SIGN_UPS,
   STALE_CHUNK_RELOADS,
@@ -96,7 +108,6 @@ import {
   TABLES,
   TAB_ACTIONS,
   TEAM_ACTIVITY,
-  HOME_AND_ACTIVITY,
   TRASH,
   UNDO_AND_REDO,
   VOTING,
@@ -108,9 +119,6 @@ import {
 import { isNonThemePick, PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
 import { isRetiredEvent } from './retired-events';
 import { tourStepLabel, tourStepRows } from './tour-steps';
-
-// The Community tab's code loads on its own, like every view but the Dashboard.
-const loadCommunity = () => import('./CommunityView').then((m) => m.CommunityView);
 
 const NOUN = noun('document');
 
@@ -206,9 +214,20 @@ export const LIVEDIAGRAM: TelemetryAppConfig = {
   funnel: FUNNEL,
   pageViews: { apps: PAGE_VIEW_APPS, appOf: pageViewApp },
   community: {
-    load: loadCommunity,
-    View: dynamic(loadCommunity, { ssr: false }),
-    groups: COMMUNITY_GROUPS,
+    groups: communityGroups({
+      COMMUNITY_POSTS_SHARED,
+      COMMUNITY_POSTS_OPENED,
+      COMMUNITY_LIKES,
+      COMMUNITY_COPIES,
+      COMMUNITY_SEARCHES,
+      COMMUNITY_FILTERS,
+      COMMUNITY_REPORTS,
+      COMMUNITY_PUBLISHING,
+      COMMUNITY_ENGAGEMENT,
+      COMMUNITY_DISCOVERY,
+      COMMUNITY_MODERATION,
+    }),
+    categories: COMMUNITY_CATEGORIES,
   },
   dashboard: [
     {
@@ -239,7 +258,15 @@ export const LIVEDIAGRAM: TelemetryAppConfig = {
     },
     {
       title: 'Features',
-      metrics: [WHITEBOARDS, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+      metrics: [
+        WHITEBOARDS,
+        PALETTE_USE,
+        CANVAS_MODES,
+        LOOK_AND_FEEL,
+        PANELS_OPENED,
+        OFFLINE_MODE,
+        DOCUMENT_AUTOMATIONS,
+      ],
     },
     // Live Together is the only stack that counts two people on one canvas at
     // the same moment; the rest of Collaboration counts invitations to be there,
@@ -354,13 +381,16 @@ export const LIVEDIAGRAM: TelemetryAppConfig = {
     ],
     tourSteps: { rows: tourStepRows, label: tourStepLabel },
   },
-  tours: [
-    {
-      title: 'Tours',
-      metrics: [WELCOME_TOUR, WORKSHOP_TOUR, DRAW_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
-    },
-    { title: 'Prompts', metrics: [NEW_VERSION_PROMPT] },
-  ],
+  tours: {
+    intro: 'Each guided tour from offer to finish, then the one-off prompts',
+    groups: [
+      {
+        title: 'Tours',
+        metrics: [WELCOME_TOUR, WORKSHOP_TOUR, DRAW_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
+      },
+      { title: 'Prompts', metrics: [NEW_VERSION_PROMPT] },
+    ],
+  },
   exceptions: {
     groups: [
       {

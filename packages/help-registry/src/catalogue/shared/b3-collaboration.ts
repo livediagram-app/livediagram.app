@@ -333,9 +333,9 @@ export const articles: Article[] = [
     slug: 'audit-log',
     title: 'Audit Log',
     description:
-      'Who did what in a team, for its admins: members, shares, moves, deletes and webhooks.',
+      'Who did what in a team, for its admins: members, shares, moves, deletes and connections.',
     keywords:
-      'audit log history who shared joined removed role changed webhook export csv admin activity record compliance approval approved changes requested',
+      'audit log history who shared joined removed role changed connection connections webhook export csv admin activity record compliance approval approved changes requested',
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
@@ -391,15 +391,5 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
-  },
-  {
-    slug: 'webhooks',
-    title: 'Webhooks',
-    description: 'Post what happens to your work to Slack, Microsoft Teams or your own service.',
-    keywords:
-      'webhook webhooks slack microsoft teams channel integration notify notification post http https endpoint json signed hmac automation zapier events send test pause resume deliveries tools',
-    category: 'Collaboration',
-    categorySlug: 'collaboration',
-    apps: ['livediagram', 'livedesign'],
   },
 ];

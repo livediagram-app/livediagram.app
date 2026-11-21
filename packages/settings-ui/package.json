@@ -7,7 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./profile-events": "./src/profile/profile-events.ts",
-    "./webhooks": "./src/webhooks/index.ts"
+    "./connections": "./src/connections/index.ts"
   },
   "scripts": {
     "lint": "oxlint",

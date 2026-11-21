@@ -11,7 +11,7 @@ import { CardPickerDialog } from '@/components/plan/CardPickerDialog';
 import { byNewestChange, pickCardOf, useCardPickerSearch } from '@/components/plan/card-picker';
 import type { AutomationOutline } from '../automation-outline';
 import { cardRefIn } from '@/components/plan/card-ref';
-import { PanelField, PanelSelect } from './panel-parts';
+import { PanelField, PanelSelect } from '@liveworkspace/automations-ui/step-panels/panel-parts';
 
 type LinkAction = AutomationAction & { kind: 'link_card' };
 

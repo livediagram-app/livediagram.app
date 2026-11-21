@@ -36,6 +36,7 @@ describe('the MCP tool verbs', () => {
       'update_project',
       'share_project',
       'rename_project',
+      'change_tabs',
       'delete_project',
       'list_trash',
       'archive_project',

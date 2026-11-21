@@ -16,7 +16,7 @@ import {
   type PlanDraftRule,
 } from '@liveplanner/items';
 import { Button, Switch, TextInput, TrashIcon } from '@liveplanner/ui';
-import { SentenceChips } from '@/components/automations/SentenceChips';
+import { SentenceChips } from '@liveworkspace/automations-ui/SentenceChips';
 import { ProblemText } from './NameChips';
 
 export const STARTER_RULES_LINE =

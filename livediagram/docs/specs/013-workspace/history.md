@@ -90,13 +90,13 @@ at a time with `itemHistory(itemId, { limit, cursor })`.
   them ("4 events · 1 snapshot"); a filter chip leaves them out, **All** brings them back; snapshots on an item with no
   events yet show in place of the empty state.
 
-## 4. Webhooks and the Audit Log
+## 4. Connections and the Audit Log
 
-**Webhooks** sits on the same menu, after History, for a signed-in account who can edit the whole canvas (its owner,
-its team's people, or an Editor link to every tab; never a guest, a Viewer, a Participant or a one-tab Editor). It
-opens the shared Webhooks dialog, "Webhooks for “<canvas>”", whose webhooks report on this canvas alone and say so;
-each of the person's other canvases has its own (up to 10). Each one picks where it posts, what it sends in the
-canvas's own words, and Who Did It (Anyone or Only Me). The index checks the role on every call
+There is no **Webhooks** on that menu or in Tools. What is left of a webhook is a **connection**, an address this
+canvas's rules send messages through, managed on the Connections tab inside [Automations](automations.md) by a
+signed-in account who can edit the whole canvas (its owner, its team's people, or an Editor link to every tab; never a
+guest, a Viewer, a Participant or a one-tab Editor). A connection hears nothing by itself: a rule says what is sent.
+The index checks the role on every call
 ([webhooks.md](../../../../liveworkspace/docs/specs/004-index/webhooks.md)).
 
 A team's view carries, for the team's admins alone, the team's **Audit Log** under its library, closed until

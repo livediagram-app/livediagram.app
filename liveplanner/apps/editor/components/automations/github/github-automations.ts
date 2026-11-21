@@ -16,7 +16,6 @@ export type GithubAutomations = {
   // The builder's new rule as it stands, with a template's picks (null outside one), and the builder's way to keep
   // it current.
   draft: () => KeptRule | null;
-  keepDraft: (kept: KeptRule | null) => void;
 };
 
 export const GithubAutomationsContext = createContext<GithubAutomations | null>(null);

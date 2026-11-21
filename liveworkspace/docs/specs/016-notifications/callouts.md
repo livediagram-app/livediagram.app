@@ -51,7 +51,7 @@ and take the callout's look, on an opaque surface with a shadow so they read ove
 
 - Errors and notes in dialogs, panels, popovers and forms in every editor (image search, import and export, AI
   panels, calendar feeds, votes, form builders and the rest).
-- Settings rows and panels (ErrorNote, webhooks, your data, API tokens).
+- Settings rows and panels (ErrorNote, connections, your data, API tokens).
 - The Explorer (list failures, the Trash note, shared lists, approvals).
 - The site's account pages.
 - A page's locked note in livedocuments' page cog.

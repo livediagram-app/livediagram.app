@@ -6,6 +6,7 @@
 
 export * from './catalogue/collaboration';
 export * from './catalogue/community';
+export * from './catalogue/automations';
 export * from './catalogue/cli-commands';
 export * from './catalogue/connections';
 export * from './catalogue/content';

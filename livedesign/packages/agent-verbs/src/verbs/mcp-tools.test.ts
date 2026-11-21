@@ -22,6 +22,7 @@ describe('the MCP tool verbs', () => {
       'update_design',
       'share_design',
       'rename_design',
+      'change_tabs',
       'delete_design',
       'list_trash',
       'archive_design',
@@ -29,6 +30,8 @@ describe('the MCP tool verbs', () => {
       'restore_design',
       'list_threads',
       'change_threads',
+      'list_rules',
+      'change_rules',
       'view_tab',
       'view_live',
     ]);
@@ -59,6 +62,7 @@ describe('the MCP tool verbs', () => {
       'search_icons',
       'list_trash',
       'list_threads',
+      'list_rules',
       'view_tab',
       'view_live',
     ]);

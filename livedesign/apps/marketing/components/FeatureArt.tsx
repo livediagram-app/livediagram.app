@@ -31,3 +31,4 @@ export * from './feature-art/photo-sizes';
 // Keeping and handing over the work, and what travels between apps.
 export * from './feature-art/history';
 export * from './feature-art/library';
+export * from './feature-art/automations';

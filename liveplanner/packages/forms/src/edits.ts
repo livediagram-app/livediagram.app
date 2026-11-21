@@ -1,7 +1,13 @@
 // The Form tab builder's edits (docs/specs/030-forms/forms.md "Building a form", blueprint §12, §15), shared by the
 // editor and agents: pure functions from a form to the next form, so each is one undo step when committed and each is
 // tested apart from the page. Ids come from `newId` (newFormPartId).
-import { OPTIONS_MAX, QUESTIONS_MAX, RATING_SCALE_DEFAULT, SECTIONS_MAX } from './limits';
+import {
+  OPTIONS_MAX,
+  PROMPT_MAX,
+  QUESTIONS_MAX,
+  RATING_SCALE_DEFAULT,
+  SECTIONS_MAX,
+} from './limits';
 import { TITLE_TYPES } from './mapping';
 import {
   questionsOf,
@@ -264,6 +270,39 @@ export function nextOptionName(options: readonly string[]): string {
     const name = `Option ${n}`;
     if (!taken.has(name.toLowerCase())) return name;
   }
+}
+
+// A list's own mark at the start of a line ("1.", "2)", "-", "•"), which is not part of the question.
+const LIST_MARK = /^(?:[-*•–]|\d{1,3}[.)])\s+/;
+
+// Lines pasted into a question's empty wording (forms.md "The form card, top to bottom", pasting a list): the first
+// words this question, each line after it a new question of the same type under it, in order, until the form holds
+// as many as it can. Blank lines and list marks are dropped; a wording is cut at its limit. Null for fewer than two
+// lines (an ordinary paste) or a question that is not there. `ids`: the questions added, the last the one to select.
+export function pastedQuestions(
+  form: FormDefinition,
+  id: string,
+  text: string,
+  newId: NewId,
+): { form: FormDefinition; ids: string[] } | null {
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim().replace(LIST_MARK, '').trim().slice(0, PROMPT_MAX))
+    .filter(Boolean);
+  const at = findQuestion(form, id);
+  if (lines.length < 2 || !at) return null;
+  const type = form.sections[at.section]!.questions[at.index]!.type;
+  let next = updateQuestion(form, id, { prompt: lines[0]! });
+  const ids: string[] = [];
+  let after = id;
+  for (const line of lines.slice(1)) {
+    const added = addQuestion(next, type, after, newId);
+    if (!added.id) break;
+    next = updateQuestion(added.form, added.id, { prompt: line });
+    after = added.id;
+    ids.push(added.id);
+  }
+  return { form: next, ids };
 }
 
 // Lines pasted into an option: each a new option after it, blanks and repeats dropped.

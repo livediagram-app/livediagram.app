@@ -2,6 +2,7 @@
 // docs/specs/026-plan/describe-a-plan.md: Describe a Plan's call (a refusal in the api's words, anything else a
 // failure), the preview's edit parts, and the host: who is asking, the plan the draft joins, Make Plan adding the types
 // the plan lacks before placing the board as Start Planning does, and the telemetry.
+import { PLAN_AUTOMATIONS_PLUMBING } from '@/components/automations/plan-plumbing';
 import { render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -45,14 +46,14 @@ vi.mock('@/components/automations/automations-client', () => rulesApi);
 const readAutomations = vi.hoisted(() => vi.fn(async () => true));
 vi.mock('@/components/automations/use-automations', () => ({ readAutomations }));
 const toast = vi.hoisted(() => ({ error: vi.fn() }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const { draftPlan, PlanDraftRefusal } = await import('./plan-draft-client');
 const { DescribePlanHost, DESCRIBE_PLAN_NOT_READY } = await import('./DescribePlanHost');
 const { makeStarterRules, STARTER_RULES_FAILED } = await import('./starter-rules-client');
-const { AutomationsContext } = await import('@/components/automations/AutomationsContext');
+const { AutomationsContext } = await import('@liveworkspace/automations-ui/AutomationsContext');
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const RULE: PlanDraftRule = {
   name: 'Stamp Offer Date',
   on: true,
@@ -190,7 +191,9 @@ describe('DescribePlanHost', () => {
     const onClose = vi.fn();
     render(
       opts.automations ? (
-        <AutomationsContext.Provider value={{ scope: SCOPE, open: () => {} }}>
+        <AutomationsContext.Provider
+          value={{ scope: SCOPE, plumbing: PLAN_AUTOMATIONS_PLUMBING, open: () => {} }}
+        >
           <DescribePlanHost onClose={onClose} />
         </AutomationsContext.Provider>
       ) : (

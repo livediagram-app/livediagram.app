@@ -11,9 +11,6 @@
 // anything dated before the item was made (a copy's threads) is not news. A deleted comment's words leave the
 // event log with it (retractedComments): a thread with fewer comments than it held drops the `commented` events past
 // its count, and one that is gone drops its `commented` and `comment_resolved` events too.
-//
-// A form push that raises its response count queues a `form_response` for the plan's own webhooks, in the batch that
-// stores the count (webhooks/outbox.ts formResponseStatement).
 import { personEventKeys } from './event-key';
 import {
   COLLAB_EVENTS_MAX,

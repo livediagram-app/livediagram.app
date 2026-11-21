@@ -7,6 +7,7 @@ import {
   ApprovalArt,
   ArrowsArt,
   AssignedActionsArt,
+  AutomationsArt,
   BoardImportArt,
   BpmnArt,
   BorderStyleArt,
@@ -207,6 +208,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Snapshots and history',
         description:
           'Take a snapshot before a big change and revert to it in one step if the change goes wrong. Reverting first saves a Before revert snapshot, so even that can be undone. Snapshots sit in History, under Tools, on a timeline of who changed what and when.',
+      },
+      {
+        art: <AutomationsArt />,
+        href: '/help/tools/automations/',
+        group: 'Work together live',
+        title: 'Automations that run the board',
+        description:
+          'Give a canvas rules of its own: put a workshop board back to a clean snapshot every night, post new comments and poll results to Slack or Microsoft Teams, or take a snapshot every Friday. Rules run on our servers, even with nobody in the canvas.',
       },
       {
         art: <WalkthroughArt />,

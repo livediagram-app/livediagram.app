@@ -27,7 +27,10 @@ import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDesignComments } from './design-comments';
 import { answerDesignRequest, isDesignCreate, type RouteIdentity } from './design-route';
 import type { DesignRoom } from './design-room';
-import { noteWrite } from './design-room-content';
+import { ensureSchema, noteWrite } from './design-room-content';
+import type { AccessLevel } from '@livedesign/api-schema';
+import { getParticipant } from '../accounts/profiles';
+import { SOMEONE, hearsEvent, queueEvent, roleOfLevel } from '@liveworkspace/automations/room';
 import { closeSessionsOfChangedLink, sequenceMutation } from './design-room-sockets';
 import { clearAgentsFor } from './design-room-presence';
 
@@ -43,7 +46,12 @@ export async function route(
   room.bindDesign(designId);
   const env = room.requireEnv();
   // Before the write counter is read: taking the owner and team is no edit.
-  if (identity.grant?.item === designId) await room.takeHead(identity.grant);
+  if (identity.grant?.item === designId) {
+    await room.takeHead(identity.grant);
+    // A grant signed since the design was last put away says it is back (@liveworkspace/automations/room
+    // standing.ts).
+    await room.takeGrantStanding(identity.grant);
+  }
   const community = await communityOf(room, designId);
   const writesBefore = room.writes;
   const response = await answerDesignRequest(
@@ -233,7 +241,18 @@ export async function exportCopy(
   const env = room.requireEnv();
   const post = copier?.code ? await communityOf(room, designId) : null;
   const community = post !== null && post.open && post.code === copier?.code;
-  const copy = await exportDesignCopy(env, designId, onlyTabId, copier?.by ?? null, community);
+  // The rules go with a copy the design's own people make, never one made through a share link or a Community
+  // post: the rules are an Editor's of the whole design, and may name addresses
+  // (docs/specs/013-workspace/automations.md).
+  const withRules = !community && !copier?.code;
+  const copy = await exportDesignCopy(
+    env,
+    designId,
+    onlyTabId,
+    copier?.by ?? null,
+    community,
+    withRules,
+  );
   return copy ? { copy, community } : null;
 }
 
@@ -259,7 +278,12 @@ export async function revokeCodes(
 
 // Someone opened the design through a share link for the first time: the owner hears of it (email/notifications.ts
 // notifyDesignJoin), off the caller's path. A design never started has no owner to tell.
-export async function joined(room: DesignRoom, designId: string, personId: string): Promise<void> {
+export async function joined(
+  room: DesignRoom,
+  designId: string,
+  personId: string,
+  level?: AccessLevel,
+): Promise<void> {
   room.bindDesign(designId);
   const env = room.requireEnv();
   const meta = await readDesignMeta(env, designId);
@@ -267,6 +291,35 @@ export async function joined(room: DesignRoom, designId: string, personId: strin
   room.state.waitUntil(
     notifyDesignJoin(env, { id: designId, ownerId: meta.ownerId, name: meta.name }, personId),
   );
+  // Someone Joined (docs/specs/013-workspace/automations.md): the same first time in through a link.
+  if (hearsEvent(env, 'joined')) {
+    const who = await getParticipant(env, personId);
+    queueEvent(env, {
+      id: `joined:${personId}`,
+      kind: 'joined',
+      at: Date.now(),
+      by: { id: personId, name: who?.name ?? SOMEONE.name, color: who?.color ?? SOMEONE.color },
+      role: roleOfLevel(level),
+    });
+  }
+}
+
+// Someone asked for access to the design (the index's `access_requested` notice): Access Requested, for the rules
+// that hear it. A design never started has none, and is not started to say so.
+export function accessRequested(
+  room: DesignRoom,
+  designId: string,
+  requester: { id: string; name: string | null; requestId?: string },
+): void {
+  room.bindDesign(designId);
+  if (!room.storedSchema()) return;
+  ensureSchema(room);
+  queueEvent(room.requireEnv(), {
+    id: `access:${requester.requestId ?? requester.id}`,
+    kind: 'access_requested',
+    at: Date.now(),
+    by: { id: requester.id, name: requester.name?.trim() || SOMEONE.name, color: SOMEONE.color },
+  });
 }
 
 // A closed account's name off this design (design-anonymise.ts): the index's person purge, through the api.

@@ -179,9 +179,8 @@ function ExplorerImpl({
         dismissOnOutside
       >
         <ExplorerPanel
-          // History and Webhooks live in the footer's Tools, for the open item (footer-tools-menu.md).
+          // History lives in the footer's Tools, for the open item (footer-tools-menu.md).
           history={false}
-          webhooks={false}
           renderAppLogo={renderAppLogo}
           app="livedocuments"
           onOrganise={trackOrganise}

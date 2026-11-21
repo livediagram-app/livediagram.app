@@ -1,5 +1,5 @@
 // What the webhook tests share: the key, a stand-in for accounts' teams and for DNS, and a way to add a document's
-// webhook. Not a `.test.ts` file, so vitest doesn't collect it.
+// webhook and send a message through it. Not a `.test.ts` file, so vitest doesn't collect it.
 
 import type { Webhook } from '@liveworkspace/index-client';
 import { body, call, h, type AppCall } from '../test-support';
@@ -61,12 +61,42 @@ export async function addWebhook(
       name: 'Hook',
       kind: 'json',
       url: 'https://hooks.example.com/in',
-      events: ['renamed', 'commented', 'card_moved'],
       ...input,
     },
   });
   if (res.status !== 201) throw new Error(`add failed: ${res.status} ${await res.text()}`);
   return body(res);
+}
+
+/** Queues one message through a webhook as a rule of the item's app would (`POST /app/items/:id/automation-sends`):
+ *  the way a test makes a delivery, now that no event does. A new key each call unless `over` gives one. */
+let sends = 0;
+export async function sendThrough(
+  itemId: string,
+  webhookId: string,
+  text = 'Hello',
+  over: Record<string, unknown> = {},
+  app: { name: string; key: string } = { name: 'liveplanner', key: 'lp-key' },
+): Promise<Response> {
+  sends += 1;
+  return call(`/app/items/${itemId}/automation-sends`, {
+    method: 'POST',
+    auth: app.key,
+    headers: { 'X-Index-App': app.name },
+    body: {
+      sends: [
+        {
+          key: `send-${sends}`,
+          webhookId,
+          rule: 'Tell the channel',
+          subject: null,
+          text,
+          at: Date.now(),
+          ...over,
+        },
+      ],
+    },
+  });
 }
 
 /** Every delivery row, oldest first. */

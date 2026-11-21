@@ -199,6 +199,9 @@ export type Tab = {
   // loose in another. Unset / empty = loose. See tab-folders.ts for
   // the normalize + grouping helpers.
   folder?: string;
+  // The folder's colour (tab-folders.md "Folder colour"): a hue name, carried on the same link row as `folder`
+  // and on every member alike; none is Automatic, the hue its name picks.
+  folderColor?: string;
   // (A stored `vote` is the retired Vote's, dropped on read: ./retired-vote; a stored `timer` the retired Session
   // strip's, dropped on read: ./retired-timer. A meeting's clock is a Timer piece now: ./timer-pieces.)
 };

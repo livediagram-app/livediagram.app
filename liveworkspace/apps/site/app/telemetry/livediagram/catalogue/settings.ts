@@ -56,6 +56,11 @@ export const EDITOR_SETTINGS = settingsStack(
       'Hover handles that add a connected shape.',
     ),
     changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
+    changed(
+      'UnusedImages',
+      'When I Delete an Unused Image',
+      'Ask Every Time, Always Delete or Always Keep.',
+    ),
     toggle(
       'UI',
       'AlignmentGuidesOn',
@@ -378,5 +383,5 @@ export const SETTINGS_CHANGED: MetricStack = {
     'Settings changed, by Settings category. The theme counts the header toggle as well as the dialog.',
   members: SETTINGS_STACKS.map(categoryChart),
   rising: 'neutral',
-  seeAlso: { section: 'settings', label: 'See Each Setting in Features › Settings' },
+  seeAlso: { tab: 'settings', label: 'See Each Setting on the Settings Tab' },
 };

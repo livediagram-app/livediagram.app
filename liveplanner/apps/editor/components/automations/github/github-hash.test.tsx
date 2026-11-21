@@ -2,12 +2,13 @@
 // docs/specs/026-plan/automations.md "The GitHub view" (Coming back from GitHub): the `#github=` result read once and
 // dropped from the address, its telemetry, the rule kept for the round trip (taken once, never a broken one), and the
 // Automations host opening at the GitHub view or the kept rule, only for an Editor's scope.
+import '../test-kit';
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import type { AutomationsScope } from '../automations-client';
-import { AutomationsHost } from '../AutomationsHost';
+import { PlanAutomationsHost } from '../PlanAutomationsHost';
 import {
   dropGithubHash,
   githubResultOf,
@@ -18,15 +19,16 @@ import {
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
-vi.mock('../use-automations', () => ({ readAutomations: vi.fn() }));
-vi.mock('../AutomationsDialog', () => ({
-  AutomationsDialog: ({ target }: { target: unknown }) => (
+const toast = vi.hoisted(() => ({ info: vi.fn(), success: vi.fn(), error: vi.fn() }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('../PlanAutomationsScreen', () => ({
+  PlanAutomationsScreen: ({ target }: { target: unknown }) => (
     <pre data-testid="target">{JSON.stringify(target)}</pre>
   ),
 }));
-await import('../AutomationsDialog');
+await import('../PlanAutomationsScreen');
 
-const SCOPE: AutomationsScope = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE: AutomationsScope = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const DRAFT = {
   name: 'Done on Merge',
   trigger: { kind: 'pull_request_merged' },
@@ -119,11 +121,11 @@ describe('github-hash', () => {
   });
 });
 
-describe('AutomationsHost: back from GitHub', () => {
+describe('the Automations host: back from GitHub', () => {
   const host = (scope: AutomationsScope | null) => (
-    <AutomationsHost scope={scope} plan={undefined}>
+    <PlanAutomationsHost scope={scope} plan={undefined}>
       <span />
-    </AutomationsHost>
+    </PlanAutomationsHost>
   );
 
   it('opens the GitHub view with how it went, once the Editor scope is known', async () => {
@@ -134,8 +136,9 @@ describe('AutomationsHost: back from GitHub', () => {
     rerender(host(SCOPE));
     await act(async () => {});
     expect(JSON.parse(screen.getByTestId('target').textContent)).toEqual({
-      view: 'github',
-      result: 'connected',
+      view: 'view',
+      id: 'github',
+      arrival: 'connected',
     });
     expect(track).toHaveBeenCalledWith('Plan', 'Linked', 'Github');
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'Automations');
@@ -149,9 +152,10 @@ describe('AutomationsHost: back from GitHub', () => {
     expect(JSON.parse(screen.getByTestId('target').textContent)).toEqual({
       view: 'rule',
       ruleId: null,
-      kept: KEPT,
-      github: 'requested',
+      kept: { ruleId: null, ...KEPT, part: null },
     });
+    // Back at the rule kept for the round trip: it says how it went, once.
+    expect(toast.error).toHaveBeenCalledTimes(1);
     expect(takeGithubDraft('p1')).toBeNull();
   });
 
@@ -163,9 +167,17 @@ describe('AutomationsHost: back from GitHub', () => {
     expect(JSON.parse(screen.getByTestId('target').textContent)).toEqual({
       view: 'rule',
       ruleId: null,
-      kept: KEPT,
-      github: 'connected',
+      kept: { ruleId: null, ...KEPT, part: null },
     });
+    expect(toast.success).toHaveBeenCalledWith('GitHub is connected. Finish the rule and save it.');
+  });
+
+  it('says a connection that failed, back at the rule kept', async () => {
+    keepGithubDraft('p1', KEPT);
+    window.history.replaceState(null, '', '/project/p1#github=failed');
+    render(host(SCOPE));
+    await act(async () => {});
+    expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/didn’t connect/));
   });
 
   it('opens nothing for someone with no Editor scope, and clears the address', async () => {

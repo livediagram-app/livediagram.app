@@ -13,6 +13,7 @@ import { componentInsertStatements } from '../db/components';
 import { replaceTabs } from '../db/tabs';
 import { authorOf } from '../routes/changesets';
 import { gateEdit, type DesignRouteContext } from '../routes/context';
+import { hearsEvent, keptSnapshots, queueEvent, silently } from '@liveworkspace/automations/room';
 import type { DesignEnv } from '../types';
 import { exportDesignFile, readDesignFile } from './design-file';
 
@@ -27,29 +28,38 @@ export function designSnapshotDoor(env: DesignEnv, designId: string): SnapshotDo
       const read = readDesignFile(text, { keepIds: true });
       if (!read.ok) return read.failure === 'too_large' ? 'too_large' : 'invalid';
       const { tabs, components = [] } = read.content.copy;
-      // The library first: a main made since goes, the snapshot's come back as they were. Each tab write after
-      // replaces that tab's component references.
-      await env.DESIGN_DB.batch([
-        env.DESIGN_DB.prepare(
-          `DELETE FROM components WHERE id NOT IN (SELECT value ->> '$.id' FROM json_each(?1))`,
-        ).bind(JSON.stringify(components)),
-        ...componentInsertStatements(env, components),
-      ]);
-      await replaceTabs(
-        env,
-        designId,
-        tabs.map((t) => ({
-          tab: {
-            ...(JSON.parse(t.data) as Omit<Tab, 'id' | 'name'>),
-            id: t.id,
-            name: t.name,
-          },
-          folder: t.folder,
-        })),
-      );
+      // Nothing a revert rewrites is an edit, a tab added or a tab removed to the design's rules, whoever reverts
+      // (docs/specs/013-workspace/automations.md; liveworkspace 018-automations "Revert to Snapshot"), and its
+      // library coming back is no Component Changed. Its rules stay as they are: a snapshot puts back content,
+      // never a rule.
+      await silently(env, async () => {
+        // The library first: a main made since goes, the snapshot's come back as they were. Each tab write after
+        // replaces that tab's component references.
+        await env.DESIGN_DB.batch([
+          env.DESIGN_DB.prepare(
+            `DELETE FROM components WHERE id NOT IN (SELECT value ->> '$.id' FROM json_each(?1))`,
+          ).bind(JSON.stringify(components)),
+          ...componentInsertStatements(env, components),
+        ]);
+        await replaceTabs(
+          env,
+          designId,
+          tabs.map((t) => ({
+            tab: {
+              ...(JSON.parse(t.data) as Omit<Tab, 'id' | 'name'>),
+              id: t.id,
+              name: t.name,
+            },
+            folder: t.folder,
+            folderColor: t.folderColor ?? null,
+          })),
+        );
+      });
       return 'ok';
     },
     afterRevert: (generation) => env.SNAPSHOT_REVERTED?.(generation),
+    // The snapshots the design's rules revert to: kept beside the latest five, and not deletable.
+    kept: () => keptSnapshots(env),
   };
 }
 
@@ -67,13 +77,13 @@ async function snapshotCaller(ctx: DesignRouteContext, designId: string): Promis
 
 // Every request the room answers passes here: `/api/designs/<id>/snapshots...` is answered, a write on the design
 // from before a revert is fenced, and the rest go on to `handle`.
-export function serveDesignSnapshots(
+export async function serveDesignSnapshots(
   ctx: DesignRouteContext,
   handle: () => Promise<Response>,
 ): Promise<Response> {
   const [api, collection, designId, ...rest] = ctx.segments;
   if (api !== 'api' || collection !== 'designs' || !designId) return handle();
-  return serveSnapshots({
+  const answer = await serveSnapshots({
     db: ctx.env.DESIGN_DB,
     itemId: designId,
     request: ctx.request,
@@ -82,4 +92,21 @@ export function serveDesignSnapshots(
     door: () => designSnapshotDoor(ctx.env, designId),
     handle,
   });
+  // Snapshot Taken (docs/specs/013-workspace/automations.md): a person's take, never a rule's own or a revert's
+  // safety snapshot.
+  const taken =
+    rest.length === 1 &&
+    rest[0] === 'snapshots' &&
+    ctx.request.method.toUpperCase() === 'POST' &&
+    answer.status === 201;
+  if (taken && hearsEvent(ctx.env, 'snapshot_taken')) {
+    const owner = ctx.resolveOwner();
+    queueEvent(ctx.env, {
+      id: `snapshot:${crypto.randomUUID()}`,
+      kind: 'snapshot_taken',
+      at: Date.now(),
+      ...(owner !== null ? { by: await authorOf(ctx, owner), role: 'editor' as const } : {}),
+    });
+  }
+  return answer;
 }

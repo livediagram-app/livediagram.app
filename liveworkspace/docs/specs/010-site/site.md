@@ -210,7 +210,7 @@ feature only some apps have (livediagram's sticky-note reader, liveplanner's liv
 the MCP servers every app but livehuddle has) says which; Google Drive sync and Offline Mode are every app's. The
 privacy policy covers each platform feature that keeps or sends personal data: the account and its Google picture
 ([accounts.md "Profile pictures"](../003-accounts/accounts.md#profile-pictures)), teams and their invitations' 28-day
-expiry, phone notifications ([push.md](../003-accounts/push.md)), webhooks
+expiry, phone notifications ([push.md](../003-accounts/push.md)), connections
 ([webhooks.md](../004-index/webhooks.md)), Download Your Data ([data-export.md](../003-accounts/data-export.md)), the
 Community, telemetry and Drive. livehuddle's part says what its calls do: microphone, camera and screen only on the
 person's own press, relayed by Cloudflare Realtime and never recorded, who hears and sees whom, and that avatar
@@ -860,9 +860,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     rebuilt only when what it reads changes, the same build for both sides (the app's side passes `only`, which
     keeps a row after it is merged, so a merged row keeps every app's logo there too); its growth in categories and in
     rows a category, its budget on 20,000 rows and the five apps' catalogues are timed in `merge-categories.test.tsx`.
-- **Webhooks** are not in Settings (since 8 November 2026): they are set per document, from a document's ⋯ menu in
-  the Explorer (**Webhooks**), see [webhooks.md](../004-index/webhooks.md). The old id `webhooks` is an alias of
-  Profile, so an old `?settings=webhooks` link opens Profile.
+- **Webhooks** are not in Settings (since 8 November 2026), nor a tool anywhere (since 20 November 2026): what is
+  left of one is a connection, set per item on the Connections tab inside its Automations, see
+  [webhooks.md](../004-index/webhooks.md). The old id `webhooks` is an alias of Profile, so an old
+  `?settings=webhooks` link opens Profile.
 - **Your Data** is one card in the same frame ([data-export.md](../003-accounts/data-export.md#settings)):
   - **The top** says in a line what a download holds and names the apps it covers by their logos (each app's Living
     Prism and wordmark).

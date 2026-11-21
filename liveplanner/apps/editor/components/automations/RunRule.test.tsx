@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "On cards": Run Rule in a card's ⋯ menu is an Editor's while a Run from a Card
 // rule is on; it lists them under Rules You Can Run Here, then Manage Automations, and says "Ran <rule>" or why not.
+import { PLAN_AUTOMATIONS_PLUMBING } from '@/components/automations/plan-plumbing';
+import './test-kit';
 import {
   act,
   cleanup,
@@ -13,7 +15,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { ItemPanelMenu } from '@/components/plan/ItemPanelMenu';
-import { AutomationsContext } from './AutomationsContext';
+import { AutomationsContext } from '@liveworkspace/automations-ui/AutomationsContext';
 import { forgetAutomations } from './use-automations';
 import { useRunRule } from './use-run-rule';
 import { rule, run } from './test-fixtures';
@@ -26,13 +28,13 @@ vi.mock('./automations-client', async (importOriginal) => ({
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 const toast = vi.hoisted(() => ({ info: vi.fn(), success: vi.fn(), error: vi.fn() }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 const { AutomationRefusal } = await import('./automations-client');
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const open = vi.fn();
 const withAccess = ({ children }: { children: ReactNode }) => (
-  <AutomationsContext.Provider value={{ scope: SCOPE, open }}>
+  <AutomationsContext.Provider value={{ scope: SCOPE, plumbing: PLAN_AUTOMATIONS_PLUMBING, open }}>
     {children}
   </AutomationsContext.Provider>
 );

@@ -204,6 +204,39 @@ export const CATALOGUE: AppCatalogue = {
           },
         },
         {
+          kind: 'choice',
+          id: 'unusedImageChoice',
+          label: 'When I Delete an Unused Image',
+          description:
+            'After you delete an image nothing else uses: ask whether to delete it from storage too, always delete it from storage, or always keep it.',
+          keywords:
+            'image picture photo delete remove storage gallery unused remember ask keep prompt',
+          section: 'Canvas',
+          key: 'unusedImageChoice',
+          options: [
+            {
+              id: 'ask',
+              label: 'Ask Every Time',
+              value: 'ask',
+            },
+            {
+              id: 'delete',
+              label: 'Always Delete',
+              value: 'delete',
+            },
+            {
+              id: 'keep',
+              label: 'Always Keep',
+              value: 'keep',
+            },
+          ],
+          fallback: 'ask',
+          event: {
+            category: 'UI',
+            changed: 'UnusedImages',
+          },
+        },
+        {
           kind: 'toggle',
           id: 'quickAddOnHover',
           label: 'Quick-Add on Hover',

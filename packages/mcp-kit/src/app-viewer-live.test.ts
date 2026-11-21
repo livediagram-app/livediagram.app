@@ -399,3 +399,131 @@ describe('a page view following a design live', () => {
     );
   });
 });
+
+// docs/specs/015-api/mcp-server.md "One live view": a chat holds a view per tool call, and only the ones no agent
+// has changed the tab after keep following it.
+describe('a view keeping its own step once an agent changes the tab after it', () => {
+  const PNG = { type: 'image', data: 'AAAA', mimeType: 'image/png' };
+  // A frame opened by an update that left tab t1 at revision 4, its result's picture with it or not.
+  async function opened(content: unknown[] = [PNG]) {
+    const f = frame();
+    f.answer('ui/initialize', { hostContext: {} });
+    f.deliver({
+      jsonrpc: '2.0',
+      method: 'ui/notifications/tool-result',
+      params: { content, structuredContent: { documentId: 'd1', tabId: 't1', rev: 4 } },
+    });
+    await f.flush();
+    return f;
+  }
+  async function followingStep() {
+    const f = await opened();
+    f.answer('view_tab', { structuredContent: { ...TAB, rev: 4 } });
+    await f.flush();
+    f.answer('view_live', LIVE());
+    await f.flush();
+    FakeSocket.all[0]!.onopen!();
+    return f;
+  }
+  const art = (f: { el: (id: string) => unknown }) => f.el('art') as { src?: string };
+
+  it('says which step it was opened by on its first draw, and that it holds the picture', async () => {
+    const f = await opened();
+    expect(f.calls('view_tab')[0]!.params!.arguments).toEqual({
+      documentId: 'd1',
+      tabId: 't1',
+      rev: 4,
+      held: true,
+    });
+    const bare = await opened([{ type: 'text', text: 'Updated.' }]);
+    expect(bare.calls('view_tab')[0]!.params!.arguments).toEqual({
+      documentId: 'd1',
+      tabId: 't1',
+      rev: 4,
+    });
+  });
+
+  it('shows its own picture, not the tab as it is now, when a later step landed before it opened', async () => {
+    const f = await opened();
+    f.answer('view_tab', {
+      structuredContent: { ...TAB, tabs: [], svg: '', rev: 9, superseded: true },
+    });
+    await f.flush();
+    expect(art(f).src).toBe('data:image/png;base64,AAAA');
+    expect(f.live()).toMatchObject({ hidden: false, textContent: 'Earlier step' });
+    expect(f.live().dataset.state).toBe('step');
+    expect(f.live().title).toBe(
+      'A later step changed this document. Showing the tab as this step left it.',
+    );
+    expect(f.calls('view_live')).toHaveLength(0);
+    expect(FakeSocket.all).toHaveLength(0);
+  });
+
+  it('with no picture of its own, shows the tab as it is as a snapshot, and does not follow', async () => {
+    const f = await opened([]);
+    f.answer('view_tab', { structuredContent: { ...TAB, rev: 9, superseded: true } });
+    await f.flush();
+    expect(art(f).src).toContain('data:image/svg+xml');
+    expect(f.live().textContent).toBe('Snapshot');
+    expect(f.live().title).toContain(
+      'A later step changed this document. Showing the tab as drawn at',
+    );
+    expect(f.calls('view_live')).toHaveLength(0);
+  });
+
+  it('stops following, keeping its picture, when an agent’s changeset lands on its tab', async () => {
+    const f = await followingStep();
+    const drawn = art(f).src;
+    FakeSocket.all[0]!.frame(op({ kind: 'changeset', tabId: 't1', id: 'c9', agentKey: 'k' }));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(f.calls('view_tab')).toHaveLength(1);
+    expect(art(f).src).toBe(drawn);
+    expect(FakeSocket.all[0]!.closed).toBe(1000);
+    expect(f.live().textContent).toBe('Earlier step');
+    expect(f.live().title).toContain(
+      'A later step changed this document. Showing the tab as drawn at',
+    );
+    // It stays stopped: shown again after being hidden, it opens no room.
+    f.setHidden(true);
+    f.setHidden(false);
+    await f.flush();
+    expect(f.calls('view_live')).toHaveLength(1);
+  });
+
+  it('keeps following through a person’s changeset and an agent’s on another tab', async () => {
+    const f = await followingStep();
+    FakeSocket.all[0]!.frame(op({ kind: 'changeset', tabId: 't2', id: 'c8', agentKey: 'k' }));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(f.calls('view_tab')).toHaveLength(1);
+    FakeSocket.all[0]!.frame(op({ kind: 'changeset', tabId: 't1', id: 'c7' }));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(f.calls('view_tab')).toHaveLength(2);
+    // A redraw for a change it heard asks nothing more: the room would have said.
+    expect(f.calls('view_tab')[1]!.params!.arguments).toEqual({ documentId: 'd1', tabId: 't1' });
+    expect(f.live().textContent).toBe('Live');
+  });
+
+  it('asks again when it catches up after time away, and keeps its picture if a later step landed', async () => {
+    const f = await followingStep();
+    const drawn = art(f).src;
+    f.setHidden(true);
+    f.setHidden(false);
+    await f.flush();
+    f.answer('view_live', LIVE());
+    await f.flush();
+    FakeSocket.all[1]!.onopen!();
+    await f.flush();
+    expect(f.calls('view_tab')[1]!.params!.arguments).toEqual({
+      documentId: 'd1',
+      tabId: 't1',
+      rev: 4,
+    });
+    f.answer('view_tab', {
+      structuredContent: { ...TAB, svg: '<svg viewBox="0 0 9 9"></svg>', rev: 9, superseded: true },
+    });
+    await f.flush();
+    expect(art(f).src).toBe(drawn);
+    expect(f.live().textContent).toBe('Earlier step');
+    expect(FakeSocket.all[1]!.closed).toBe(1000);
+  });
+});

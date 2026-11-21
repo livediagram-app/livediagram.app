@@ -2,13 +2,14 @@
 // docs/specs/026-plan/automations.md "The GitHub view": the screen's header GitHub button only where the deployment has
 // GitHub, the view in the tab's place with its way back, a rule kept for the round trip opened in the builder with
 // how it went, and a new GitHub rule's save sending AutomationRuleGithub beside AutomationRule.
+import '../test-kit';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
-import { AutomationsDialog } from '../AutomationsDialog';
-import type { AutomationsTarget } from '../AutomationsContext';
+import { AutomationsDialog } from '@liveworkspace/automations-ui/AutomationsDialog';
+import type { AutomationsTarget } from '@liveworkspace/automations-ui/AutomationsContext';
 import { forgetAutomations } from '../use-automations';
 import { ANA, outline, rule } from '../test-fixtures';
 import { resetGithubForTests } from './use-github-connection';
@@ -35,9 +36,9 @@ const toast = vi.hoisted(() => ({
   error: vi.fn(),
   warn: vi.fn(),
 }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const o = outline();
 const plan = {
   types: o.types,
@@ -78,7 +79,7 @@ describe('the Automations screen and GitHub', () => {
     render(<Harness />);
     await screen.findByText('Done Means Wrapped Up');
     fireEvent.click(screen.getByRole('button', { name: 'GitHub Connection' }));
-    expect(shown).toEqual({ view: 'github' });
+    expect(shown).toEqual({ view: 'view', id: 'github' });
     await screen.findByRole('heading', { name: 'Connect GitHub' });
     expect(screen.queryByRole('tab', { name: /Rules/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Automations' }));
@@ -110,8 +111,7 @@ describe('the Automations screen and GitHub', () => {
         initial={{
           view: 'rule',
           ruleId: null,
-          kept: { body: draft, picks: [] },
-          github: 'connected',
+          kept: { ruleId: null, body: draft, picks: [], part: null },
         }}
       />,
     );
@@ -119,7 +119,6 @@ describe('the Automations screen and GitHub', () => {
       'value',
       'Done on Merge',
     );
-    expect(toast.success).toHaveBeenCalledWith('GitHub is connected. Finish the rule and save it.');
     fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
     await waitFor(() => expect(client.createRule).toHaveBeenCalled());
     expect(client.createRule.mock.calls[0]![1]).toMatchObject({
@@ -142,11 +141,14 @@ describe('the Automations screen and GitHub', () => {
     );
     render(
       <Harness
-        initial={{ view: 'rule', ruleId: null, kept: { body: draft, picks: [] }, github: 'failed' }}
+        initial={{
+          view: 'rule',
+          ruleId: null,
+          kept: { ruleId: null, body: draft, picks: [], part: null },
+        }}
       />,
     );
     await screen.findByRole('textbox', { name: 'Rule name' });
-    expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/didn’t connect/));
     fireEvent.click(screen.getByRole('button', { name: 'Save Rule' }));
     await waitFor(() => expect(client.createRule).toHaveBeenCalled());
     expect(track).not.toHaveBeenCalledWith('Plan', 'Created', 'AutomationRuleGithub');
@@ -169,6 +171,6 @@ describe('the Automations screen and GitHub', () => {
     // On a phone the When step opens in its drawer.
     fireEvent.click(await screen.findByRole('button', { name: 'When' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Manage' }));
-    expect(shown).toEqual({ view: 'github' });
+    expect(shown).toEqual({ view: 'view', id: 'github' });
   });
 });

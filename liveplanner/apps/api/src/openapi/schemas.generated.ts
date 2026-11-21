@@ -2678,14 +2678,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "at",
+      "card",
       "id",
+      "result",
       "ruleId",
       "ruleName",
-      "card",
-      "at",
-      "result",
-      "tookMs",
-      "steps"
+      "steps",
+      "tookMs"
     ],
     "type": "object"
   },
@@ -7346,7 +7346,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
-      "tabId",
       "typeId",
       "status"
     ],
@@ -15260,6 +15259,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "folder": {
         "type": "string"
       },
+      "folderColor": {
+        "type": "string"
+      },
       "font": {
         "type": "string"
       },
@@ -15402,6 +15404,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "folder": {
         "type": "string"
       },
+      "folderColor": {
+        "type": "string"
+      },
       "font": {
         "type": "string"
       },
@@ -15478,6 +15483,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/TabConnectionWire"
       },
       "folder": {
+        "type": "string"
+      },
+      "folderColor": {
         "type": "string"
       },
       "id": {

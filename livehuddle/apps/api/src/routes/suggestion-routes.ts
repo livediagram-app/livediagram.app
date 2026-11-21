@@ -6,6 +6,8 @@
 import { logRefusal } from '@liveworkspace/api-kit/refusal-log';
 import type { SuggestionsResponse } from '@livehuddle/api-schema';
 import { SUGGESTION_TEXT_MAX, SUGGESTIONS_MAX } from '@livehuddle/document';
+import { SUGGESTION_DATA, SUGGESTION_DROPPED_EVENT } from '@livehuddle/document/automations';
+import { queueEvent } from '@liveworkspace/automations/room';
 import { deleteSuggestion, getDocument, getTab, insertSuggestion, listSuggestions } from '../db';
 import { badRequest, conflict, json, methodNotAllowed, noContent, notFound } from '../responses';
 import {
@@ -62,6 +64,15 @@ async function drop(ctx: DocumentRouteContext, id: string, tabId: string): Promi
   const where = { documentId: id, tabId, elementId };
   const note = { id: crypto.randomUUID(), text, day: utcDay(Date.now()) };
   if (!(await insertSuggestion(ctx.env, where, note, SUGGESTIONS_MAX))) return conflict('box_full');
+  // Suggestion Dropped (docs/specs/013-workspace/automations.md): the note's text (at most SUGGESTION_TEXT_MAX) and
+  // its tab, nobody behind it. One Set lookup unless a rule that is on hears it.
+  queueEvent(ctx.env, {
+    id: `suggestion:${note.id}`,
+    kind: SUGGESTION_DROPPED_EVENT,
+    at: Date.now(),
+    tab: tabId,
+    data: { [SUGGESTION_DATA]: text },
+  });
   // Neither the caller nor the text: the log is read by people too.
   console.info('[suggestions] dropped', { documentId: id, tabId });
   return json({}, { status: 201 });

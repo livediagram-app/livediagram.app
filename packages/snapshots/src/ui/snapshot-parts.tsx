@@ -25,9 +25,10 @@ export function TakeSnapshotForm({
   onTaken?: () => void;
 }) {
   const [name, setName] = useState('');
-  const list = state.snapshots;
-  const full = list !== null && list.length >= state.kept;
-  const oldest: SnapshotSummary | undefined = full ? list[list.length - 1] : undefined;
+  // One a rule keeps is beside the latest five: never counted, never the one the next take removes.
+  const counted = (state.snapshots ?? []).filter((s) => !s.kept);
+  const full = counted.length >= state.kept;
+  const oldest: SnapshotSummary | undefined = full ? counted[counted.length - 1] : undefined;
   const working = state.busy !== null || state.reverted;
   const submit = async (event: FormEvent) => {
     event.preventDefault();

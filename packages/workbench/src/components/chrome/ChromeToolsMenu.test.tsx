@@ -24,7 +24,7 @@ afterEach(() => {
 
 const glyph = <svg />;
 
-// A tool that opens a dialog, as History, Webhooks and Automations do: drawn inside Tools by the dialog slot.
+// A tool that opens a dialog, as History and Automations do: drawn inside Tools by the dialog slot.
 function DialogTool({
   size = 'md',
   onLeave,

@@ -16,7 +16,7 @@ the tables, configuration, logs and tests. Each feature has its own file:
 | The event log and History    | [events.md](events.md)                   |
 | The team audit log           | [team-audit-log.md](team-audit-log.md)   |
 | The Trash, purges, closing   | [trash.md](trash.md)                     |
-| Webhooks                     | [webhooks.md](webhooks.md)               |
+| Connections (once Webhooks)  | [webhooks.md](webhooks.md)               |
 | Default folders              | [default-folders.md](default-folders.md) |
 | Guest merge and the handoff  | [guest-merge.md](guest-merge.md)         |
 

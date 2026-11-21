@@ -88,7 +88,7 @@ export const EXCEPTIONS: MetricStack = {
     WARNINGS,
   ],
   headline: [FAILED_REQUESTS, CLIENT_EXCEPTIONS],
-  seeAlso: { section: 'exceptions', label: 'See Each Error in Health' },
+  seeAlso: { tab: 'exceptions', label: 'See Each Error on the Exceptions Tab' },
 };
 
 // Load recovery (docs/specs/007-editor/load-recovery.md): what people did on the load-error screen
@@ -180,5 +180,5 @@ export const HELP_CENTRE: MetricStack = {
     HELP_SCOPE_SWITCHES,
   ],
   headline: ARTICLE_VIEWS,
-  seeAlso: { section: 'help', label: 'See Each Article in Pages & Help' },
+  seeAlso: { tab: 'help', label: 'See Each Article on the Help Tab' },
 };

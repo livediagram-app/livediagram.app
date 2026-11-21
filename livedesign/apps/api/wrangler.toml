@@ -147,6 +147,15 @@ simple = { limit = 120, period = 60 }
 # APP_BASE_URL (optional, from hosted-vars.json) is the public origin for links in emails. Defaults to
 # "https://www.livedesign.app".
 
+# Workers AI for Automations' Summarise with AI and Describe a Rule (docs/specs/013-workspace/automations.md;
+# liveworkspace/docs/specs/018-automations/automations.md "AI"): no key, no secret, the binding is the credential,
+# billed in Neurons on this account (10,000 a day free). Optional: without it both answer "AI isn't set up here" and
+# nothing else changes. It sets no `remote`, so `wrangler dev` needs no login: it warns, and a step run locally fails
+# "The AI couldn't answer". AI_GATEWAY (a var, unset here) routes the calls through an AI Gateway of that id, where
+# the account's spend limit caps every design together.
+[ai]
+binding = "AI"
+
 # Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
 # liveworkspace accounts Worker. Four values, provisioned out-of-band so none
 # lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
@@ -324,6 +333,10 @@ name = "API_TOKEN_READ_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
+
+# And the Workers AI binding (above).
+[env.staging.ai]
+binding = "AI"
 
 # A different script is a different Durable Object namespace, so staging's
 # DESIGN_ROOM instances are separate from production's for free. The class

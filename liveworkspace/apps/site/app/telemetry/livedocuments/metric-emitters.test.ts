@@ -36,7 +36,7 @@ const TIMINGS = [
 const PAGES = APP.pages;
 const CONNECTIONS_GROUPS = APP.connections.groups;
 const TEAMWORK_GROUPS = APP.teamwork.groups;
-const TOURS_GROUPS = APP.tours;
+const TOURS_GROUPS = APP.tours.groups;
 const SELECTION_MODES = APP.modes!.selection;
 
 // Every card and every hard-coded ranking type on the dashboard must be an
@@ -117,6 +117,7 @@ const ALL: MetricGroup[] = [
   ...HELP,
   ...TOURS_GROUPS,
   ...TEAMWORK_GROUPS,
+  ...APP.community.groups,
   ...CONNECTIONS_GROUPS,
   ...TIMINGS,
 ];

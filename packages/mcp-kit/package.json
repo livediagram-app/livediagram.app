@@ -9,6 +9,7 @@
     "./app-view": "./src/app-view.ts",
     "./app-view-tab": "./src/app-view-tab.ts",
     "./app-view-live": "./src/app-view-live.ts",
+    "./app-view-step": "./src/app-view-step.ts",
     "./created-folder": "./src/created-folder.ts",
     "./directory": "./src/directory.ts",
     "./env": "./src/env.ts",

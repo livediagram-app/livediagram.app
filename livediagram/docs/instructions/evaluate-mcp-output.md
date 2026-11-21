@@ -105,6 +105,11 @@ The kit lives in `apps/mcp/eval/`:
 
 ## Gotchas
 
+- Pass rates alone can hide a change: when every task passes on both rounds, count what the snapshots hold (picture
+  frames left empty, calls to the image tools) and read the transcripts' tool errors. Two faults no check covered
+  were found that way (an image with no `imageId` refused a whole page; a step's note over 40 characters).
+- A round whose tasks have no `gallery` needs no media service: `seedGalleries` answers at once.
+
 - A run started inside the repo loads the project's auto-memory and CLAUDE.md into the assistant under test (the
   init line's `memory_paths` names it). Runs start in a temp directory outside the repo for that reason; keep it so.
 - `--bare` would strip that context too, but it needs an API key and never reads the CLI's sign-in: use the flags in

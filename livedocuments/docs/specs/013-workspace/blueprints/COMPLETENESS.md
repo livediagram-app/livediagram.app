@@ -1,5 +1,21 @@
 # Workspace blueprint completeness
 
+## automations
+
+The api's wiring; the screen is the platform's (`@liveworkspace/automations-ui`) and mounted by a later stage.
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Errors and edge cases
+- [x] Security and trust
+- [x] Performance and limits
+- [x] Observability
+- [x] Testing
+- [x] Constants and configuration
+- [x] Defaults ledger
+
 ## share-roles
 
 - [x] Domain and naming

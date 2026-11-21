@@ -60,6 +60,7 @@ const intakes = (
   intakes: addressed.map((boardId) => ({
     boardId,
     address: `board+${boardId}@mail.example.com`,
+    target: null,
     senders: 'members',
     createdAt: 0,
     made: 0,
@@ -74,7 +75,9 @@ const intakes = (
     tabId: 't1',
     tabName: 'Support',
     column: 'To Do',
+    target: null,
   })),
+  types: [],
   ...over,
 });
 
@@ -88,7 +91,7 @@ function Fields({
   ownerId?: string;
   boards?: OutlineBoard[];
 }) {
-  const state = useEmailAddressesState({ ownerId, projectId: 'p1', shareCode: null });
+  const state = useEmailAddressesState({ ownerId, itemId: 'p1', shareCode: null });
   const [t, setT] = useState(trigger);
   const [shown, setShown] = useState(true);
   return (

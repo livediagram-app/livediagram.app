@@ -37,7 +37,9 @@ const asForm = (form: unknown): FormTargets | undefined =>
   typeof form === 'object' && form !== null ? form : undefined;
 
 // One of a form's targets moved somewhere other than the scoped tab: set (or changed) to point at another tab. A
-// target left exactly as stored (an owner's choice) and a target on the tab itself are both fine.
+// target left exactly as stored (an owner's choice) and a sheet on the tab itself are both fine. A board destination
+// names a card type and a status, whose cards show on every board that takes them, so it never stays on one tab: any
+// change to it leaves (the tab it was last seen on is a hint, and proves nothing).
 function targetLeaves(
   key: 'destination' | 'sheet',
   stored: FormTargets | undefined,
@@ -46,7 +48,7 @@ function targetLeaves(
 ): boolean {
   const target = next?.[key];
   if (target === undefined || target === null) return false;
-  if (target.tabId === scope) return false;
+  if (key === 'sheet' && target.tabId === scope) return false;
   return JSON.stringify(target) !== JSON.stringify(stored?.[key]);
 }
 

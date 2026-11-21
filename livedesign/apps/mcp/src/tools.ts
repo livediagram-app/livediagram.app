@@ -22,6 +22,7 @@ import {
   type TrashedDesign,
 } from '@livedesign/api-schema';
 import { createdFolderLabel } from '@liveworkspace/mcp-kit/created-folder';
+import { createdTabRev } from '@liveworkspace/mcp-kit/app-view-step';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDesign } from './read-design';
 import type { Env } from '@liveworkspace/mcp-kit/env';
@@ -43,8 +44,10 @@ import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
 import { imageIdIssue, registerImageTools } from './image-tools';
 import { registerTool } from './tool-annotations';
+import { registerTabFolderTools } from './tab-folder-tools';
 import { registerArchiveTools } from './archive-tools';
 import { registerThreadTools } from './thread-tools';
+import { registerRuleTools } from './rule-tools';
 import { registerPagesTools } from './pages-tools';
 import { registerComponentsTools } from './components-tools';
 import {
@@ -225,6 +228,7 @@ export function registerTools(server: McpServer, env: Env): void {
           name: args.name,
           tabCount: tabs.length,
           tabIds,
+          ...(await createdTabRev(shown, () => getTab(env, token, id, shown.id))),
           folder: await createdFolderLabel(clientFor(env, token), created, 'create_design'),
           url: deepLink(env, id),
           lint,
@@ -293,6 +297,8 @@ export function registerTools(server: McpServer, env: Env): void {
       url: deepLink(env, liveDoc.id),
     });
   });
+
+  registerTabFolderTools(server, env);
 
   registerTool(server, env, mcpDeleteDesign, async (args, extra) => {
     const token = requireToken(extra);
@@ -371,6 +377,9 @@ export function registerTools(server: McpServer, env: Env): void {
 
   // Comment threads (docs/specs/015-api/mcp-server.md "Comment threads"): list_threads and change_threads.
   registerThreadTools(server, env);
+
+  // Automations rules (docs/specs/013-workspace/automations.md "Agents"): list_rules and change_rules.
+  registerRuleTools(server, env);
 
   // The interactive view's own call (docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)").
   registerViewTool(server, env);

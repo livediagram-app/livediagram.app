@@ -375,6 +375,17 @@ export const articles: Article[] = [
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
   },
   {
+    slug: 'automations',
+    title: 'Automations',
+    description:
+      'Rules your work runs on its own: when something happens, if conditions hold, then do the steps.',
+    keywords:
+      'automation automations automate rule rules trigger condition step workflow schedule scheduled recurring nightly reset revert snapshot slack microsoft teams connection connections webhook incoming signed hmac email notify audit trail template templates ai summarise describe zapier',
+    category: 'Tools',
+    categorySlug: 'tools',
+    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+  },
+  {
     slug: 'browser-compatibility',
     title: 'Browser Compatibility',
     description: 'Which browsers work best, and a checklist for fixing browser-related glitches.',

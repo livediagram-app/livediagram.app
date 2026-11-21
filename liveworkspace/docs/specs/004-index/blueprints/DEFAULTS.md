@@ -23,7 +23,7 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX16 | webhooks        | only port 443 is taken; another port is refused as `webhook_url_invalid`.                                                          |
 | IDX17 | webhooks        | a redirect (3xx) gives the delivery up without retrying; other 4xx but 408, 410 and 429 give up too.                               |
 | IDX18 | webhooks        | accounts unreachable holds a team document's webhook deliveries a minute, counting no try.                                         |
-| IDX19 | webhooks        | a card move dated more than 5 minutes ahead is dated now + 5 minutes; its texts are cut to 200.                                    |
+| IDX19 | webhooks        | retired with event subscriptions: a card move's push is answered 204 and dropped.                                                  |
 | IDX20 | webhooks        | a webhook's deliveries list answers at most 40, newest first.                                                                      |
 | IDX21 | webhooks        | retired with the Mentioned event (migration 0014).                                                                                 |
 | IDX22 | connected-tabs  | a connection id is `cn_` and 24 random letters and digits.                                                                         |
@@ -40,21 +40,23 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX33 | team-audit-log  | when accounts can't name people, the read falls back to the names the events carried rather than failing.                          |
 | IDX34 | team-audit-log  | Export CSV joins at most 20 files (200,000 rows), newest first, and says so when more matched.                                     |
 | IDX35 | connected-tabs  | the Connect list shows the 40 most recent items across every app (`CONNECT_RECENT_LIMIT`), without paging.                         |
-| IDX36 | webhooks        | an event the document's app never sends (a canvas's card moves) is refused.                                                        |
-| IDX37 | webhooks        | a test delivery's app is `liveworkspace`; the Webhooks dialog names it Test.                                                       |
-| IDX40 | webhooks        | an Editor link limited to one tab can't manage the document's webhooks: they would carry the other tabs' comments and actions.     |
-| IDX41 | webhooks        | a card move or form response with no account behind it never reaches an Only Me webhook.                                           |
+| IDX36 | webhooks        | retired with event subscriptions: `events` and `who` in a body are ignored, never refused.                                         |
+| IDX37 | webhooks        | a test delivery's app is `liveworkspace`; Recent Deliveries names it Test.                                                         |
+| IDX40 | webhooks        | an Editor link limited to one tab can't manage the item's connections: a rule's message can be about any tab.                      |
+| IDX41 | webhooks        | retired with Who Did It.                                                                                                           |
 | IDX42 | archive         | Shared with me rows go with the share links an archive deletes: they reach nothing once the link is gone.                          |
 | IDX43 | archive         | the daily empty clean-up passes archived items by.                                                                                 |
 | IDX44 | archive         | the Drive mirror leaves archived documents out; Download Your Data keeps them.                                                     |
 | IDX45 | archive         | an archived item sent to the Trash is restored to Archived.                                                                        |
 | IDX46 | archive         | the Archived view takes no lens; Search finds archived documents, with an Archived badge.                                          |
 | IDX47 | archive         | Duplicate, Share and Hide from Recent are refused while archived; Rename and Delete are not.                                       |
-| IDX48 | webhooks        | an automation send's card link is kept only on the app's own origin, else dropped (the chat opens the plan).                       |
-| IDX49 | webhooks        | an automation send with a blank message refuses the push (`invalid_sends`); a blank rule name or card title reads `Untitled`.      |
+| IDX48 | webhooks        | an automation send's subject link is kept only on the app's own origin, else dropped (the chat opens the item).                    |
+| IDX49 | webhooks        | an automation send with a blank message refuses the push (`invalid_sends`); a blank rule name or subject title reads `Untitled`.   |
 | IDX50 | webhooks        | an automation send dated ahead is dated now; one sent again after its delivery was trimmed (20 finished kept) queues again.        |
 | IDX51 | approvals       | a closed account's approval rows are anonymised (`deleted`), not deleted, so a request's count of approvers stays true.            |
 | IDX52 | approvals       | an approval request's email follows the approver's Actions Assigned to Me switch; approvals have no switch of their own.           |
 | IDX53 | request-access  | a closed account's access requests and tries are deleted, not anonymised: a request from no one asks nothing.                      |
 | IDX54 | request-access  | a grant defaults to `view` (or the app's default level where it offers no Viewer); the ask names no level.                         |
 | IDX55 | request-access  | a team item's request email goes to its maker while they are in the team; the whole team sees it in the Inbox.                     |
+| IDX56 | webhooks        | an automation send with neither `subject` nor `card` is about the item alone, not refused.                                         |
+| IDX57 | webhooks        | a liveplanner subject is also written as `card` only when its reference ends in a number (a card's); a tab's is not.               |

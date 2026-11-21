@@ -157,8 +157,9 @@ const SECTIONS: LegalSection[] = [
           or AI tool, you authorise it to act for you with that access, until you revoke its token.
         </p>
         <p>
-          If you add a webhook, you choose where news of your items (or, as a team&rsquo;s admin,
-          the team&rsquo;s) is sent, and the service at that address handles it under its own terms.
+          If you add a connection, you choose where the messages your items&rsquo; automation rules
+          post (or, as a team&rsquo;s admin, the team&rsquo;s) are sent, and the service at that
+          address handles them under its own terms.
         </p>
       </>
     ),

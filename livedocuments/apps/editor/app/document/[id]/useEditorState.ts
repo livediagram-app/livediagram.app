@@ -119,6 +119,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     historySlice,
     articlesSlice,
     tabsSlice,
+    persistenceSlice,
   });
   const styleSlice = useEditorStyle({
     documentSlice,

@@ -47,6 +47,7 @@ type SubmitArgs = {
   dryRun: boolean;
   author: Author;
   tokenId: string | null;
+  tokenName?: string | null;
   frontDoor: FrontDoor;
   // False for a tab-scoped grant, which writes its own tab and never makes one
   // (docs/specs/013-workspace/tab-scoped-share-links.md): its tab gone, a `replace` reads as missing.
@@ -124,6 +125,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       orderIndex: stored?.orderIndex ?? nextOrderIndex(document.tabs),
       author: args.author,
       tokenId: args.tokenId,
+      tokenName: args.tokenName ?? null,
       summary: request.summary,
       baseRev: request.base?.rev ?? null,
       rebasedOver: base.rebasedOver,

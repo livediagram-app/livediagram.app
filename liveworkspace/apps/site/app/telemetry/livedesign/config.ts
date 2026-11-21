@@ -3,6 +3,7 @@
 // charts on each tab, and its name, noun and accent.
 
 import {
+  COMMUNITY_CATEGORIES,
   ctaSurfaceOf,
   ctaSurfaceOfPath,
   CTA_SOURCES,
@@ -15,6 +16,7 @@ import {
   type TelemetryCategory,
 } from '@livedesign/api-schema';
 import { noun, type TelemetryAppConfig } from '../_shared/app';
+import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
 import { LIBRARY } from '../_shared/library-metrics';
@@ -24,10 +26,6 @@ import { cliCommandSentence } from './cli-commands';
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
 import {
   ACCOUNT_ACTIVITY,
-  COMMUNITY_DISCOVERY,
-  COMMUNITY_ENGAGEMENT,
-  COMMUNITY_MODERATION,
-  COMMUNITY_PUBLISHING,
   AGENT_CHANGESETS,
   AGENT_VIEWED,
   ALL_VISITORS,
@@ -38,8 +36,21 @@ import {
   CANVAS_MODES,
   CLIENT_EXCEPTIONS,
   CLI_COMMANDS_STACK,
+  COMMUNITY_COPIES,
+  COMMUNITY_DISCOVERY,
+  COMMUNITY_ENGAGEMENT,
+  COMMUNITY_FILTERS,
+  COMMUNITY_LIKES,
+  COMMUNITY_MODERATION,
+  COMMUNITY_POSTS_OPENED,
+  COMMUNITY_POSTS_SHARED,
+  COMMUNITY_PUBLISHING,
+  COMMUNITY_REPORTS,
+  COMMUNITY_SEARCHES,
+  CONNECTED_TABS,
   DESIGNS_CREATED,
   DESIGN_ACTIONS,
+  DESIGN_AUTOMATIONS,
   DISCUSSION,
   DRY_HELP_SEARCHES,
   EDITOR_CHROME,
@@ -55,6 +66,7 @@ import {
   HELP_CENTRE,
   HELP_SCOPE_SWITCHES,
   HELP_SEARCHES,
+  HOME_AND_ACTIVITY,
   JOINING,
   LIVE_TOGETHER,
   LOAD_RECOVERY,
@@ -83,14 +95,12 @@ import {
   SHARING_AND_JOINING,
   SHOW_ME_TOURS,
   SIDE_BY_SIDE,
-  CONNECTED_TABS,
   SIGN_IN_PROMPTS,
   SIGN_UPS,
   STALE_CHUNK_RELOADS,
   TABLES,
   TAB_ACTIONS,
   TEAM_ACTIVITY,
-  HOME_AND_ACTIVITY,
   TRASH,
   UNDO_AND_REDO,
   WEB_VITAL_CHARTS,
@@ -187,6 +197,22 @@ export const LIVEDESIGN: TelemetryAppConfig = {
   isRetired: isRetiredEvent,
   funnel: FUNNEL,
   pageViews: { apps: PAGE_VIEW_APPS, appOf: pageViewApp },
+  community: {
+    groups: communityGroups({
+      COMMUNITY_POSTS_SHARED,
+      COMMUNITY_POSTS_OPENED,
+      COMMUNITY_LIKES,
+      COMMUNITY_COPIES,
+      COMMUNITY_SEARCHES,
+      COMMUNITY_FILTERS,
+      COMMUNITY_REPORTS,
+      COMMUNITY_PUBLISHING,
+      COMMUNITY_ENGAGEMENT,
+      COMMUNITY_DISCOVERY,
+      COMMUNITY_MODERATION,
+    }),
+    categories: COMMUNITY_CATEGORIES,
+  },
   dashboard: [
     {
       title: 'At a glance',
@@ -215,7 +241,15 @@ export const LIVEDESIGN: TelemetryAppConfig = {
     },
     {
       title: 'Features',
-      metrics: [PAGE_WORK, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+      metrics: [
+        PAGE_WORK,
+        PALETTE_USE,
+        CANVAS_MODES,
+        LOOK_AND_FEEL,
+        PANELS_OPENED,
+        OFFLINE_MODE,
+        DESIGN_AUTOMATIONS,
+      ],
     },
     // Live Together is the only stack that counts two people on one canvas at
     // the same moment; the rest of Collaboration counts invitations to be there,
@@ -292,15 +326,6 @@ export const LIVEDESIGN: TelemetryAppConfig = {
         title: 'Discussion and teams',
         metrics: [DISCUSSION, TEAM_ACTIVITY],
       },
-      {
-        title: 'Community',
-        metrics: [
-          COMMUNITY_PUBLISHING,
-          COMMUNITY_ENGAGEMENT,
-          COMMUNITY_DISCOVERY,
-          COMMUNITY_MODERATION,
-        ],
-      },
     ],
   },
   connections: {
@@ -323,13 +348,16 @@ export const LIVEDESIGN: TelemetryAppConfig = {
       },
     ],
   },
-  tours: [
-    {
-      title: 'Tours',
-      metrics: [PAGES_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
-    },
-    { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
-  ],
+  tours: {
+    intro: 'Each guided tour from offer to finish, then the one-off prompts',
+    groups: [
+      {
+        title: 'Tours',
+        metrics: [PAGES_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
+      },
+      { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
+    ],
+  },
   exceptions: {
     groups: [
       {

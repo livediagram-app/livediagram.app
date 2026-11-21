@@ -20,12 +20,25 @@ tools, AI actions and Incoming Webhook trigger (#713).
 
 ## Files
 
+Everything in the engine that is not about cards is `@liveworkspace/automations` (`packages/automations`), which
+every app's rules share ([its blueprint](../../../../../liveworkspace/docs/specs/018-automations/blueprints/engine.md)):
+the rule shell and its limits, the check's shell and reading primitives, values' scanner and one-pass fill, the
+schedule's sums, Incoming Webhook's secret and paths, typed-in addresses, the AI helpers, and, under
+`packages/automations/src/room/`, the tables, the store, the queue's wake, the Audit Trail, Waits, sends and the
+day's counts. The files below hold a plan's own kinds (its card triggers, conditions and actions) and bind the shared
+parts to a plan: where one is marked **shared**, the logic is the package's and the file re-exports it, typed for a
+plan.
+
 ```
 packages/items/src/automation/
-  types.ts            the shapes and limits (written first; the contract both sides build on)
-  validate.ts         readRuleBody(v) → { body } | { error, path, message }: every limit, every kind, values known;
-                      ruleNameTaken / freeRuleName for names (what the plan lacks is attention.ts's, never a refusal)
-  validate-read.ts    the reading primitives (id, ids, text, day, clock, whole) and the Refused they throw
+  types.ts            the card shapes and limits (written first; the contract both sides build on); the rule shell,
+                      stamps, runs and shared limits are the package's types.ts and limits.ts, instantiated here
+  validate.ts         readRuleBody(v) → { body } | { error, path, message }: every limit, every kind, values known,
+                      on the package's readRuleShell (validate.ts: name, time zone, chain, the shared caps, Wait, a
+                      message step, If / Else); ruleNameTaken / freeRuleName for names are the package's (what the
+                      plan lacks is attention.ts's, never a refusal)
+  validate-read.ts    shared: the reading primitives (id, ids, text, day, clock, whole) and the Refused they throw,
+                      `text` bound to the card value names and `day` to a card's day
   validate-conditions.ts
                       readTrigger / readConditions: a rule's trigger and its conditions, read the same way
   outline.ts          AutomationOutline { types, statuses, people, savedFilters, formTabs }: the plan as rules read it
@@ -40,7 +53,8 @@ packages/items/src/automation/
                       ruleSetsFields(rule), so the create and save routes (and Test on a Card, its path under
                       `rule.`) read the plan's types only then
   values.ts           VALUE_NAMES, valuesIn(text), fillValues(text, ctx) and the {{now ± Nd}} day maths, in the
-                      rule's time zone; a filled text past its limit is cut by the
+                      rule's time zone (the scanner, the fill and the names every app shares are the package's
+                      values.ts; the card names are here); a filled text past its limit is cut by the
                       shared cutText (@liveworkspace/model-core/text-cut), never through an emoji
                       (text-cuts.test.ts)
   conditions.ts       holds(condition, ctx) → { ok, text }: one condition, with the line the Audit Trail shows
@@ -65,13 +79,19 @@ packages/api-schema/src/automations.ts
                       AutomationRunsResponse { runs: AutomationRun[] }, AutomationRunResponse { run: AutomationRun },
                       AutomationRunResponse { run: AutomationRun }, error codes below
 
+packages/automations/src/room/
+  automation-schema.ts   the tables (below), as named steps: the plan schema registers each at the version it
+                         shipped under (plan-schema.ts V18, V19, V20, V22, V24, V26, V28, V42)
+  automation-fired.ts    the event ids a time rule has run on
+
 apps/api/src/plan-room/automations/
-  automation-schema.ts   the tables (below): the plan schema's step V18 (plan-schema.ts)
-  automation-store.ts    rules CRUD on the room's SQL; an in-memory `kinds: Set<kind>` of the kinds some rule that is
-                         on listens for, rebuilt on every rule write and on wake (the hot-path check)
+  automation-store.ts    shared: rules CRUD on the room's SQL; an in-memory `kinds: Set<kind>` of the kinds some rule
+                         that is on listens for, rebuilt on every rule write and on wake (the hot-path check); here,
+                         PLAN_RULES tells it what a plan's triggers hear and when a time rule next runs
   automation-queue.ts    eventsOfWrites + enqueueStatement (appendItemHistory adds it to its own batch),
                          enqueueComment (the thread routes); AutomationSchedule (at / queued / due / restore / next /
-                         done) as RepeatSchedule; PlanAutomations, the room's `automations` and its env's AUTOMATIONS
+                         done) as RepeatSchedule, and PlanAutomations, the room's `automations` and its env's
+                         AUTOMATIONS, both over the package's automation-queue.ts
   automation-plan.ts     readAutomationPlan: the AutomationOutline, the plan's name and the account ids behind its
                          people's hashed ids (owner, joined team members, known_people), once per wake or request
   plan-room-automations.ts  the room's alarm step (runAutomations) and what a run needs from the room
@@ -83,7 +103,8 @@ apps/api/src/plan-room/automations/
                          loop with `by: automationPerson(name)` and tag 'automation'; a thread via the card-thread
                          store with Automation as author; Create Card via makeItem + insertItems; emails via the
                          notifier's send (opt-outs honoured, account people only)
-  automation-log.ts      Audit Trail insert and trim (2,000 runs and 500 No Matches, 30 days), the stats query, today's count
+  automation-log.ts      shared: Audit Trail insert and trim (2,000 runs and 500 No Matches, 30 days), the stats
+                         query, today's count; here, the list read as a plan's runs
 
 apps/api/src/routes/automation-routes.ts   the routes below, dispatched from project-subresource-routes.ts
 apps/api/src/routes/automation-source.ts   writeSource(ctx) (who made a route's write, worked out only when a rule
@@ -481,7 +502,7 @@ types, outline)` sets the types and drops each From or To pick that the plan sti
   `stats.nextAt` while the rule is on.
 - **Webhooks.** The list is read once per builder, the first time an outgoing panel opens, and again when the
   Webhooks dialog it opened closes; Try Again after a failed read. A guest asks nothing (webhooks need an account).
-  The dialog holds one `ItemWebhooksDialog`, for **Add a Webhook…** and **Fix Webhook** (shown when `paused.webhook`
+  (Superseded: Connections is now a tab of the screen, see "The screen is the platform's".) The dialog held one Webhooks dialog, for **Add a Webhook…** and **Fix Webhook** (shown when `paused.webhook`
   is set), titled with the plan's name. The step's Preview header names the webhook ("To Launch Channel").
 - **Templates.** The gallery's chips are the screen's own (not saved). A template opens as the target
   `{ view: 'rule', ruleId: null, template }`, built by `templateStart` with the outline's phases
@@ -525,7 +546,7 @@ gone)`, the run's first related failure giving its own, and `store.settle(..., {
   `AutomationsSignIn`.
 - **Header band.** `HeroDialogHeader` from `@liveworkspace/ui/dialog-hero` (the platform's [dialog hero
   header](../../../../../liveworkspace/docs/specs/004-index/blueprints/dialog-hero-header.md)) with
-  `automationsHeroArt` (`apps/editor/components/automations/AutomationsHeroArt.tsx`: the dot grid fading toward the
+  `automationsHeroArt` (`../packages/automations-ui/src/AutomationsHeroArt.tsx`: the dot grid fading toward the
   title, the cog and looping arrow in the bottom corners, the flow as its centre piece, the bolt as its glyph). The
   art is a module constant in the dialog's own chunk, so no other bundle carries it. While the builder replaces the
   header, a visually hidden `<h2>` keeps the dialog's name.
@@ -856,18 +877,22 @@ rule's trigger is not `incoming_webhook`. Copies and the plan's file never read 
   is made.
 - **The worker side** (`routes/automation-hook-routes.ts`), answered in index.ts before identity (as `internal`), so a
   `Bearer lwh_…` is never read as a person: path matching `/api/hooks/automations/<plan>/<rule>` exactly, ids of 1 to 200
-  characters (`[A-Za-z0-9_-]`, one anchored regex, so the dispatch probe's vocabulary stays the projects'), else 404; POST, else 405; `Content-Type` `application/json` (parameters allowed), else 415; a
-  declared length past 16 KB, or a body that reads past it through the capped reader, 413; then
-  `WRITE_RATE_LIMITER` keyed `hook:<network>` (429). Then the plan's room: `PlanRoomRpc.incomingHook(planId, ruleId,
-{ body, authorization, signature })` answers `{ status, body, retryAfter? }`, made into the response.
+  characters (`[A-Za-z0-9_-]`, one anchored regex, so the dispatch probe's vocabulary stays the projects'), else 404;
+  then `WRITE_RATE_LIMITER` keyed `hook:<network>` (429), before anything else of the call is read; POST, else 405;
+  `Content-Type` `application/json` (parameters allowed), else 415; a declared length past 16 KB, or a body that reads
+  past it through the capped reader, 413. Then the plan's room: `PlanRoomRpc.incomingHook(planId, ruleId,
+{ body, authorization, signature, timestamp })` (`timestamp` from `X-Liveworkspace-Timestamp`) answers `{ status,
+body, retryAfter? }`, made into the response.
 - **The room side** (`plan-room/automations/automation-incoming.ts`, `verifyHookCall` then `acceptHookCall`): a room
   with no stored schema answers 401 without making one. Otherwise, in order: the rule (on, `incoming_webhook`) and its
   hook row, else 401; the proof: Bearer → `timingSafeEqual(sha256hex(sent), hash)`; else signature →
-  `timingSafeEqual(hmacHex(hashBytes, body), sent)` (`@liveworkspace/index-app/timing-safe`); a missing row still
-  hashes the sent value against a fixed dummy so the work is the same; else 401. Then the minute window
+  `timingSafeEqual(hmacHex(hashBytes, "<timestamp>." + body), sent)` (`@liveworkspace/index-app/timing-safe`), then
+  the timestamp within 5 minutes of now; a missing row still hashes the sent value against a fixed dummy so the work
+  is the same; a signature the rule took in the last 10 minutes (`hookReplayed`, `automation_hook_seen`, V42) is a
+  replay; else 401. Then the minute window
   (`window_at + 60 s > now` and `window_calls >= 60` → 429 with `Retry-After`), in ONE `UPDATE … RETURNING` that also
   stamps `used_at`; then the day's budget (`runsToday >= 1000` → 429 until UTC midnight); then `readHookBody` (400);
-  the named numbers to cards (`SELECT id, item_key FROM items WHERE plan_id = ? AND item_key IN (json_each)`, then
+  then the signature kept (`takeHookSignature`), with no await since the replay read; the named numbers to cards (`SELECT id, item_key FROM items WHERE plan_id = ? AND item_key IN (json_each)`, then
   the Trash left out); the events, id `w:<call uuid>:<card id | ->`, `kind: 'incoming'`, `by:
 INCOMING_WEBHOOK_PERSON`, `role: 'system'`, `ruleId`, `webhook: webhookValues(payload, webhookPathsIn(rule.steps))`,
   `cards: named count`; `enqueueStatement` (the queue's cap) and `hook.queued(dropped)`; 202 with the inserted count.
@@ -887,7 +912,7 @@ queued }`, never a secret, a signature, a hash or the body.
 ### Editor
 
 - `TriggerPanel` groups its kinds under "Something Happens to a Card", "A Time Comes Round" and "Another Tool Sends
-  It" (Incoming Webhook), and draws `components/automations/step-panels/IncomingWebhookPanel.tsx` for it: **Address** (the URL in a
+  It" (Incoming Webhook), and draws `../packages/automations-ui/src/step-panels/IncomingWebhookPanel.tsx` for it: **Address** (the URL in a
   monospace field with Copy; before the first save, "Save the rule to get its address."), **Secret** (Make Secret, or
   "Ends in …Xf3k · Made 2 days ago · Last used 3 min ago" with Regenerate behind `ConfirmPopover`), the once-shown
   secret (a monospace field, Copy, "You won't see it again. Keep it where the other tool keeps its passwords.",
@@ -917,6 +942,36 @@ queued }`, never a secret, a signature, a hash or the body.
   it, inside `cpuBudgetMs` (`@liveworkspace/vitest-config/cpu-time`).
 - editor: the panel's states (unsaved, no secret, made, revealed, regenerate confirm), Copy, Webhook Field….
 - help: "Start a Rule from Another Tool" in plan/automations/page.mdx.
+
+## The screen is the platform's (stage 3 of Automations everywhere)
+
+The Automations screen, the builder, the pickers, Insert a Value, the Templates gallery, Describe a Rule, the Audit
+Trail, the reader's sheet, the client and the list are `@liveworkspace/automations-ui` (`../packages/automations-ui`),
+built once for every app: [the platform's blueprint](../../../../../liveworkspace/docs/specs/018-automations/blueprints/ui.md)
+names its files and its seam (`AutomationsKit`). Where a section of this blueprint names one of those files, it is
+that package's (`../packages/automations-ui/src/…`); what the section says it does still holds, for every app.
+
+What stays in `apps/editor/components/automations/` is the plan's own:
+
+| File                                                                                                                                                             | Holds                                                                                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `plan-kit.tsx`                                                                                                                                                   | `PLAN_AUTOMATIONS_KIT`: the plan's kinds, panels, pictures, sentence, values, templates, Test on a Card, the Audit Trail's card, the GitHub view                                                                                        |
+| `plan-plumbing.ts`, `plan-client.ts`, `plan-words.ts`                                                                                                            | the words, the routes as the screen calls them, each telemetry event written out; pick and refusal words, Describe a Rule's examples                                                                                                    |
+| `PlanAutomationsHost.tsx`                                                                                                                                        | the platform's host with the plan's plumbing, its lazy screen and gate, and `apps/editor/components/automations/github/GithubReturn.tsx`                                                                                                |
+| `PlanAutomationsScreen.tsx`, `PlanAutomationsGate.tsx`, `PlanRuleSummarySheet.tsx`                                                                               | the lazy chunks: the dialog with the kit, the sync gate, the reader's sheet                                                                                                                                                             |
+| `plan-screen-parts.tsx`                                                                                                                                          | the GitHub seam's provider, the boards' email addresses, the Preview, the GitHub fix after Needs Attention                                                                                                                              |
+| `automations-client.ts`, `use-automations.ts`, `rule-draft.ts`, `automation-glyphs.tsx`                                                                          | the platform's client, list, edit ops and glyphs, bound and typed for a plan                                                                                                                                                            |
+| `trigger-groups.ts`, `action-groups.ts`, `step-defaults.ts`, `TriggerScene.tsx`, `ActionScene.tsx`, `TemplateScene.tsx`, `template-scenes/`                      | the plan's kinds, their lines, first forms and pictures                                                                                                                                                                                 |
+| `step-panels/`                                                                                                                                                   | the plan's own panels: the trigger's fields, conditions, card actions, AI steps, the branch, Due In, Overdue and Card Stuck (Scheduled's fields, Wait, a message step, Incoming Webhook and the email panel's frame are the platform's) |
+| `TestOnCard.tsx`, `use-run-rule.ts`, `RunRuleMenu.tsx`, `run-lines.tsx`, `StepPreview.tsx`, `needs-words.ts`, `value-insert-options.ts`, `automation-outline.ts` | Test on a Card, a card's Run Rule, a branch's inset lines, the Preview, Needs Attention's words, the values, the outline                                                                                                                |
+| `github/`, `email-addresses.tsx`, `AutomationAuthor.tsx`, `PendingStarterRules.tsx`, `set-by-automation.ts`                                                      | GitHub, Email Received's addresses, a rule's name on a card, starter rules                                                                                                                                                              |
+| `test-kit.ts`, `test-fixtures.ts`                                                                                                                                | tests only: the kit where no provider stands, the fixtures                                                                                                                                                                              |
+
+Changed with the move, in every app: **Connections** is a tab of the screen (the Webhooks dialog is gone, with the
+workbench's `ItemWebhooksDialog` and its gate); a message step's panel picks a **connection** and **Add a
+Connection…** opens that tab with the rule kept (Back to Rule); a rule paused on one offers **Fix Connection**.
+Test on a Card keeps its name here; the platform's is Test Rule. `plan-automations-lazy.test.ts` holds the editor's
+first load to the door.
 
 ## Editor
 
@@ -976,8 +1031,8 @@ The spec's "The rule builder" (Add an Action) and "Motion".
   paints over that column's translucent surface. What a moving card gains stays inside the column it lands in: a
   Today pill sits inside the card's right edge (`right-1`), and a corner badge reaches at most `-right-1` past it,
   within the column's 6px padding.
-- The motion is CSS only, in `apps/editor/app/automation-scenes.css` (a content illustration under motion.md, so its
-  durations live there): `.ats-in` parts appear, `.ats-out` parts leave and `.ats-mv` parts move, on
+- The motion is CSS only, in `../packages/automations-ui/src/automation-scenes.css` (the platform's, which every
+  editor imports; a content illustration under motion.md, so its durations live there): `.ats-in` parts appear, `.ats-out` parts leave and `.ats-mv` parts move, on
   `[data-template]:hover` and `:focus-visible`, staggered by `--ats-d`. `(hover: none)` and reduced motion show the
   end state with no transition.
 - `TemplatesGallery`: each tile is the scene over the body; the grid is `lvd-cascade`, keyed on the chip, so a chip
@@ -1049,12 +1104,12 @@ Threads and Wait (spec "Actions", "Wait").
 
 ## The Pick a Trigger picker
 
-- `components/tile-picker/TilePicker.tsx` is the pickers' one shell (the forms builder's Add a Question gallery
+- `../packages/automations-ui/src/tile-picker/TilePicker.tsx` is the pickers' one shell (the forms builder's Add a Question gallery
   uses it too): `HeroDialogHeader` with the art passed in (`addActionHeroArt` from
   `AddActionHeroArt.tsx` for Add an Action, `automationsHeroArt` for Pick a Trigger; the centre piece at 4.5rem, as
   only the close stands beside the title), the search, the rail or
   chips, the grouped tile grid with its arrow keys, the empty state and the Current badge. Tiles carry
-  `data-picker-tile`, which `automation-scenes.css` plays on hover. `components/tile-picker/tile-scene.tsx` holds the tiles'
+  `data-picker-tile`, which `automation-scenes.css` plays on hover. `../packages/automations-ui/src/tile-picker/tile-scene.tsx` holds the tiles'
   stage (`TileStage`: the tone's wash and fading dots), the tones and the moving-part helpers (`at`, `after`),
   which `scene-parts.tsx` re-exports. `AddActionDialog` and `ChangeTriggerField` map
   their groups into it.
@@ -1369,7 +1424,7 @@ unsubscribe": the emails go out at once, each with a one-click unsubscribe, with
 - **Shape** (`packages/items/src/automation/types.ts`): `AutomationEmailRecipient = AutomationRecipient | {
 addresses: string[] }`, Send Email's `to` only (Mention Someone keeps `AutomationRecipient`).
   `AUTOMATION_EMAIL_ADDRESSES_MAX` (10) and `AUTOMATION_ADDRESS_EMAILS_PER_DAY` (50, the owner's figure).
-- **Pure parts** (`email-addresses.ts`): `automationAddress` (the Email field's `isEmailAddress`, trimmed, lower case,
+- **Pure parts** (`packages/automations/src/email-addresses.ts`): `automationAddress` (the Email field's `isEmailAddress`, trimmed, lower case,
   refusing `<>,;:"()[]\`), `addressWords` ("ana@example.com and 2 more"), `splitAddresses` (commas, semicolons,
   white space). `validate.ts` `readAddresses` refuses an empty list, an 11th and a bad one at
   `steps.N.to.addresses[.i]`, and keeps each once. `planActions` plans `{ to: null, addresses, subject, body }` with
@@ -1380,7 +1435,7 @@ addresses: string[] }`, Send Email's `to` only (Mention Someone keeps `Automatio
   plan, in person or through their token; no other door saves a rule. Tests: `automations-addresses.test.ts` (owner,
   team, token allowed; Participant, Viewer, guest, tab Editor link, Participant's token, read-only token, workbench
   and link visitor refused).
-- **Storage, plan schema V28** (`automation-schema.ts` `AUTOMATION_ADDRESSES_SCHEMA`):
+- **Storage, plan schema V28** (`packages/automations/src/room/automation-schema.ts` `AUTOMATION_ADDRESSES_SCHEMA`):
   `automation_email_addresses (address PK, token UNIQUE, unsubscribed_at)` and `automation_email_days (day PK, sent)`.
 - **The run** (`plan-room/automations/automation-addresses.ts`, `automation-writes.ts` `applyPlannedRun`): after the
   card writes, an addresses email is claimed synchronously on the room's SQLite (`claimAddresses`: unsubscribed ones
@@ -1543,8 +1598,8 @@ interface AutomationOutline { …; boards?: readonly { id: string; name: string 
 const AUTOMATION_EMAIL_VALUE_NAMES = ['from'] as const;            // types.ts, label 'From Email'
 ```
 
-- `email-trigger.ts` (pure): `EMAIL_SENDER_MAX = 254`; `emailSenderFilter(raw)` → the kept form or null: trimmed,
-  lower case; an address passing `automationAddress` (email-addresses.ts) is kept as it is; else a domain, with or
+- `packages/automations/src/email-trigger.ts` (pure): `EMAIL_SENDER_MAX = 254`; `emailSenderFilter(raw)` → the kept form or null: trimmed,
+  lower case; an address passing `automationAddress` (the same package's email-addresses.ts) is kept as it is; else a domain, with or
   without one leading `@`, kept as `@domain`: 1 to 253 characters, at least two labels split at `.`, each 1 to 63
   of `a-z`, `0-9`, `-`, never starting or ending with `-` (a split and a per-character check, never a backtracking
   pattern). `senderHeard(filter, sender)`: no filter hears every sender; `@domain` hears a sender whose part after its
@@ -1602,7 +1657,7 @@ board'`.
 
 ### Tests
 
-- items: `email-trigger.test.ts` (address, domain both ways, case and spaces, refusals, subdomain not heard, a long
+- `packages/automations/src/email-trigger.test.ts` (address, domain both ways, case and spaces, refusals, subdomain not heard, a long
   hostile input in a CPU budget); matches (heard, board, sender, a form card not heard, Card Created hears the same
   event: one event, two rules, one run each); validate (who refused, trigger assign refused, `{{from}}` known only
   here); values; sentence; attention; named; rule-format.

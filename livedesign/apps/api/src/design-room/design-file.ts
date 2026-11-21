@@ -26,6 +26,7 @@ import { MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
 import { readComponents } from '../db/components';
 import type { DesignEnv } from '../types';
+import { hostRulesForFile, type CopiedRules } from '@liveworkspace/automations/room';
 import {
   importDesignCopy,
   initDesign,
@@ -34,6 +35,7 @@ import {
   type ContentTabRow,
   type DesignCopy,
 } from './design-content';
+import { tabFolderColourOf } from '@liveworkspace/api-schema/tab-folder-colour';
 
 export const DESIGN_FILE_FORMAT = APP_FILE_FORMATS.livedesign;
 
@@ -45,8 +47,8 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
   const body = migrateStoredTab(JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>) as Omit<
     Tab,
     'id' | 'name'
-  > & { folder?: unknown };
-  const { folder: _stale, ...rest } = body;
+  > & { folder?: unknown; folderColor?: unknown };
+  const { folder: _stale, folderColor: _staleColour, ...rest } = body;
   // A chart linked to a liveplanner sheet travels with its last values and no link (docs/specs/009-elements/
   // pie-chart.md "Charts linked to a liveplanner sheet"): the file freezes them, and names no plan.
   if (Array.isArray(rest.elements)) rest.elements = withoutSheetSources(rest.elements);
@@ -57,6 +59,9 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
     id: row.id,
     name: row.name,
     ...(row.folder ? { folder: row.folder } : {}),
+    ...(row.folder && tabFolderColourOf(row.folder_color)
+      ? { folderColor: tabFolderColourOf(row.folder_color) }
+      : {}),
     ...(connection ? { connection } : {}),
   };
 }
@@ -75,7 +80,14 @@ export async function exportDesignFile(
   const components = await readComponents(env);
   return {
     status: 'ok',
-    body: designToEnvelopeText({ id: designId, name: meta.name }, tabs, savedAt, components),
+    body: designToEnvelopeText(
+      // The design's rules ride its file (@liveworkspace/automations/room rules-file.ts): each one's body and
+      // whether it was on.
+      { id: designId, name: meta.name, automations: hostRulesForFile(env) },
+      tabs,
+      savedAt,
+      components,
+    ),
     contentType: DESIGN_FILE_FORMAT.mimeType,
     version: savedAt,
   };
@@ -93,7 +105,15 @@ export type DesignFileRead =
 // The fields a tab read adds beside the body (tab-row.ts rowToTab), which a file the CLI wrote carries; the body is
 // stored without them.
 // A connected tab's `connection` is its own column, read with tabConnectionOf, never stored in the body.
-const ROW_FIELDS = ['designId', 'orderIndex', 'updatedAt', 'rev', 'folder', 'connection'] as const;
+const ROW_FIELDS = [
+  'designId',
+  'orderIndex',
+  'updatedAt',
+  'rev',
+  'folder',
+  'folderColor',
+  'connection',
+] as const;
 
 // Read a file's text as a new design's content: another kind, an unreadable envelope or a malformed tab is
 // `invalid_file`; a tab past the tab cap `too_large` (docs/specs/015-api/api.md "Tab size").
@@ -102,14 +122,24 @@ const ROW_FIELDS = ['designId', 'orderIndex', 'updatedAt', 'rev', 'folder', 'con
 export function readDesignFile(text: string, opts: { keepIds?: boolean } = {}): DesignFileRead {
   const parsed = parseDesignEnvelope(text);
   if (!parsed.ok) return { ok: false, failure: 'invalid_file' };
-  const { tabs, components } = opts.keepIds
-    ? { tabs: parsed.envelope.design.tabs, components: parsed.envelope.design.components ?? [] }
+  // A revert (`keepIds`) puts back content only: the design's rules stay as they are, so the file's are not read.
+  const { tabs, components, tabIds } = opts.keepIds
+    ? {
+        tabs: parsed.envelope.design.tabs,
+        components: parsed.envelope.design.components ?? [],
+        tabIds: null,
+      }
     : copyDesignEnvelope(parsed.envelope);
+  const filed = parsed.envelope.design.automations;
+  const automations: CopiedRules | null =
+    tabIds && filed && filed.length > 0 ? { rules: filed, tabs: [...tabIds] } : null;
   const copied: DesignCopy['tabs'] = [];
   for (const [index, incoming] of tabs.entries()) {
     const tab = migrateIncomingTab(incoming);
     if (!isValidTab(tab)) return { ok: false, failure: 'invalid_file' };
     const folder = typeof incoming.folder === 'string' ? incoming.folder.trim() || null : null;
+    // A hue name for a tab in a folder; anything else in a file is dropped (Automatic).
+    const folderColor = folder ? (tabFolderColourOf(incoming.folderColor) ?? null) : null;
     const body: Record<string, unknown> = { ...tab, elements: capElementActions(tab.elements) };
     const { id, name } = tab;
     delete body.id;
@@ -126,6 +156,7 @@ export function readDesignFile(text: string, opts: { keepIds?: boolean } = {}): 
       name: capStoredName(name, null, 'tab') || 'Untitled',
       orderIndex: index,
       folder,
+      folderColor,
       data,
       elementCount: drawnCount(tab),
       connection: tabConnectionOf(incoming) ?? null,
@@ -142,6 +173,7 @@ export function readDesignFile(text: string, opts: { keepIds?: boolean } = {}): 
         owners: [],
         blobs: [],
         ...(components.length > 0 ? { components } : {}),
+        ...(automations ? { automations } : {}),
       },
     },
   };

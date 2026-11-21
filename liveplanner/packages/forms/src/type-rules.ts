@@ -2,7 +2,12 @@
 // §6d): which rules a board destination offers, whether each still holds, which one a response's answers pick, and
 // where an answer goes on that rule's card type. Pure: the builder, its preview, the agents and the api's response
 // write all ask here, so they agree.
-import { boardAddTypes, type ItemTypeDef, type PlanBoardSetup } from '@liveplanner/items';
+import {
+  boardsTaking,
+  targetColumns,
+  type ItemTypeDef,
+  type TargetBoard,
+} from '@liveplanner/items';
 import type { AnswerValue } from './answers';
 import { ruleChoices, ruleHolds, ruleQuestions, shownQuestions } from './branching';
 import { columnForType, typeColumns } from './destination';
@@ -11,11 +16,9 @@ import { effectiveTarget, fieldTakes, type ResolvedTarget } from './mapping';
 import type { CardTypeRule, FormDefinition, FormDestination, FormQuestion } from './model';
 
 // A board as the rules read it: the types it takes, whether it is an Archive, its columns.
-export type RuleBoard = Pick<PlanBoardSetup, 'addTypes' | 'archive'> & {
-  columns: readonly { status: string }[];
-};
+export type RuleBoard = TargetBoard;
 
-// What a rule is checked against: the project's card types and the destination tab's boards.
+// What a rule is checked against: the project's card types and every board of the plan.
 export interface RulePlace {
   types: readonly ItemTypeDef[];
   boards: readonly RuleBoard[];
@@ -31,24 +34,16 @@ export const TYPE_RULE_PROBLEM_TEXT: Readonly<Record<TypeRuleProblem, string>> =
     'A card type rule’s answers are no longer offered: responses use the default card type.',
   type_missing: 'A card type rule’s card type was removed: responses use the default card type.',
   type_not_on_board:
-    'A card type rule’s card type is no longer on the board: responses use the default card type.',
+    'No board shows a card type rule’s cards in its column: responses use the default card type.',
   status_missing: 'A card type rule’s column was removed: responses use the default card type.',
 };
-
-// The destination's board: the live one holding its status (destinationProblem's).
-export function destinationBoard(
-  destination: Pick<FormDestination, 'status'>,
-  boards: readonly RuleBoard[],
-): RuleBoard | undefined {
-  return boards.find((b) => !b.archive && b.columns.some((c) => c.status === destination.status));
-}
 
 // The questions a card type rule may read: every Single Choice, Multiple Choice and Checkbox question with answers,
 // in any section, in form order.
 export const typeRuleQuestions = (form: Pick<FormDefinition, 'sections'>): FormQuestion[] =>
   ruleQuestions(form, form.sections.length);
 
-// Whether Choose the Card Type by an Answer is offered: the board takes more than one type and the form has a
+// Whether Choose the Card Type by an Answer is offered: the plan's boards show more than one type and the form has a
 // question a rule may read (forms.md: progressive disclosure).
 export function typeRulesOffered(
   form: Pick<FormDefinition, 'sections'>,
@@ -68,10 +63,9 @@ export function typeRuleProblem(
   const offered = ruleChoices(q);
   if (!rule.anyOf.some((a) => offered.includes(a))) return 'answer_missing';
   if (!place.types.some((t) => t.id === rule.typeId)) return 'type_missing';
-  const board = form.destination ? destinationBoard(form.destination, place.boards) : undefined;
-  if (!board || !boardAddTypes(board, place.types).some((t) => t.id === rule.typeId))
-    return 'type_not_on_board';
-  if (!board.columns.some((c) => c.status === rule.status)) return 'status_missing';
+  const taking = boardsTaking(place.boards, place.types, rule.typeId);
+  if (taking.length === 0) return 'type_not_on_board';
+  if (!taking.some((b) => b.columns.some((c) => c.status === rule.status))) return 'status_missing';
   return null;
 }
 
@@ -122,36 +116,38 @@ export function chooseCardType(
         ? Object.fromEntries(answers as ReadonlyMap<string, unknown>)
         : { ...answers };
     const shown = new Map(shownQuestions(form, raw).map((q) => [q.id, q]));
-    const board = destinationBoard(dest, place.boards);
     for (const rule of rules) {
       const q = shown.get(rule.questionId);
-      if (!q || !board || typeRuleProblem(rule, form, place)) continue;
+      if (!q || typeRuleProblem(rule, form, place)) continue;
       // An unanswered choice matches none; a Checkbox left alone reads as Not Ticked.
       if (!ruleHolds(q, rule, raw[q.id])) continue;
       const type = place.types.find((t) => t.id === rule.typeId)!;
-      // The rule's own status is on the board (typeRuleProblem), so a column is always found.
-      return { type, status: columnForType(board.columns, type, rule.status)!, rule };
+      // The rule's own status is on a board taking its type (typeRuleProblem), so a column is always found.
+      const columns = targetColumns(place.boards, place.types, type.id);
+      return { type, status: columnForType(columns, type, rule.status)!, rule };
     }
   }
   return { type: fallback, status: dest.status };
 }
 
-// A new rule: the first question a rule may read and its first answer, the first type the board takes that neither the
-// default nor another rule has, its first column that type uses. Null when there is no room or nothing left to pick.
+// A new rule: the first question a rule may read and its first answer, the first type a board shows that neither the
+// default nor another rule has, the first column of its boards that type uses. Null when there is no room or nothing
+// left to pick.
 export function newTypeRule(
   form: Pick<FormDefinition, 'sections'> & { destination?: FormDestination | undefined },
   takes: readonly ItemTypeDef[],
-  board: RuleBoard | undefined,
+  place: RulePlace,
   id: string,
 ): CardTypeRule | null {
   const dest = form.destination;
   const rules = dest?.typeRules ?? [];
-  if (!dest || !board || rules.length >= TYPE_RULES_MAX) return null;
+  if (!dest || rules.length >= TYPE_RULES_MAX) return null;
   const q = typeRuleQuestions(form)[0];
   const used = new Set([dest.typeId, ...rules.map((r) => r.typeId)]);
   const type = takes.find((t) => !used.has(t.id));
   if (!q || !type) return null;
-  const status = typeColumns(board.columns, type)[0]?.status ?? dest.status;
+  const columns = targetColumns(place.boards, place.types, type.id);
+  const status = typeColumns(columns, type)[0]?.status ?? dest.status;
   return { id, questionId: q.id, anyOf: [ruleChoices(q)[0]!], typeId: type.id, status };
 }
 

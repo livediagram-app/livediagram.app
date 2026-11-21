@@ -10,6 +10,7 @@
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { z } from 'zod';
+import { addTabFolder } from './tab-folder-tools';
 import { findArchived } from './archive-tools';
 import {
   FIND_QUERY_MAX_LENGTH,
@@ -224,6 +225,7 @@ export const createDesignShape = {
 export const addTabShape = {
   designId: z.string().describe('The design to add a tab to (from find_designs / read_design).'),
   name: nameField('Name of the new tab.'),
+  folder: addTabFolder,
   elements: elementArray.optional(),
   template: templateField,
   layout: layoutField,

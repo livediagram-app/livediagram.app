@@ -2,9 +2,8 @@
 // view is shared (../_shared); this is what makes it this app's. Its events and how they read, its
 // charts on each tab, and its name, noun and accent.
 
-import dynamic from 'next/dynamic';
-import { COMMUNITY_GROUPS } from './community-groups';
 import {
+  COMMUNITY_CATEGORIES,
   ctaSurfaceOf,
   ctaSurfaceOfPath,
   CTA_SOURCES,
@@ -17,6 +16,7 @@ import {
   type TelemetryCategory,
 } from '@livehuddle/api-schema';
 import { noun, type TelemetryAppConfig } from '../_shared/app';
+import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SNAPSHOTS } from '../_shared/snapshot-walkthrough-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
@@ -29,12 +29,22 @@ import {
   ALL_VISITORS,
   API_TOKEN_ACTIVITY,
   ARTICLE_VIEWS,
-  RECEPTIONIST,
+  CALLS,
   CALLS_TO_ACTION,
   CANVAS_MODES,
   CLIENT_EXCEPTIONS,
+  COMMUNITY_COPIES,
+  COMMUNITY_DISCOVERY,
   COMMUNITY_ENGAGEMENT,
-  CALLS,
+  COMMUNITY_FILTERS,
+  COMMUNITY_LIKES,
+  COMMUNITY_MODERATION,
+  COMMUNITY_POSTS_OPENED,
+  COMMUNITY_POSTS_SHARED,
+  COMMUNITY_PUBLISHING,
+  COMMUNITY_REPORTS,
+  COMMUNITY_SEARCHES,
+  CONNECTED_TABS,
   DOCUMENTS_CREATED,
   DOCUMENT_ACTIONS,
   DRY_HELP_SEARCHES,
@@ -42,7 +52,6 @@ import {
   EDITOR_SEARCH,
   EDITOR_TIMING_CHARTS,
   ELEMENTS_ADDED,
-  IN_THE_SPACE,
   ELEMENT_EDITING,
   ELEMENT_TOURS,
   EMAILS_SENT,
@@ -52,6 +61,8 @@ import {
   HELP_CENTRE,
   HELP_SCOPE_SWITCHES,
   HELP_SEARCHES,
+  HOME_AND_ACTIVITY,
+  IN_THE_SPACE,
   JOINING,
   KNOCKING,
   LIVE_TOGETHER,
@@ -63,12 +74,14 @@ import {
   NEW_VERSION_PROMPT,
   NEW_VISITORS,
   OFFLINE_MODE,
+  SPACE_AUTOMATIONS,
   ONBOARDING_TOURS,
   ORGANISATION,
   PAGE_VIEWS_BY_APP,
   PALETTE_USE,
   PANELS_OPENED,
   REALTIME_RESYNCS,
+  RECEPTIONIST,
   RETURNING_VISITORS,
   SERVER_CRASHES,
   SETTINGS_CHANGED,
@@ -76,15 +89,13 @@ import {
   SHARING_AND_JOINING,
   SHOW_ME_TOURS,
   SIDE_BY_SIDE,
-  CONNECTED_TABS,
   SIGN_IN_PROMPTS,
   SIGN_UPS,
-  STOPWATCHES,
   STALE_CHUNK_RELOADS,
+  STOPWATCHES,
   TAB_ACTIONS,
   TEAM_ACTIVITY,
   TIMERS,
-  HOME_AND_ACTIVITY,
   TRASH,
   UNDO_AND_REDO,
   WEB_VITAL_CHARTS,
@@ -92,9 +103,6 @@ import {
 } from './metric-catalogue';
 import { isNonThemePick, PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
 import { isRetiredEvent } from './retired-events';
-
-// The Community tab's code loads on its own, like every view but the Dashboard.
-const loadCommunity = () => import('./CommunityView').then((m) => m.CommunityView);
 
 const NOUN = noun('document');
 
@@ -190,9 +198,20 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
   funnel: FUNNEL,
   pageViews: { apps: PAGE_VIEW_APPS, appOf: pageViewApp },
   community: {
-    load: loadCommunity,
-    View: dynamic(loadCommunity, { ssr: false }),
-    groups: COMMUNITY_GROUPS,
+    groups: communityGroups({
+      COMMUNITY_POSTS_SHARED,
+      COMMUNITY_POSTS_OPENED,
+      COMMUNITY_LIKES,
+      COMMUNITY_COPIES,
+      COMMUNITY_SEARCHES,
+      COMMUNITY_FILTERS,
+      COMMUNITY_REPORTS,
+      COMMUNITY_PUBLISHING,
+      COMMUNITY_ENGAGEMENT,
+      COMMUNITY_DISCOVERY,
+      COMMUNITY_MODERATION,
+    }),
+    categories: COMMUNITY_CATEGORIES,
   },
   dashboard: [
     {
@@ -229,6 +248,7 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
         LOOK_AND_FEEL,
         PANELS_OPENED,
         OFFLINE_MODE,
+        SPACE_AUTOMATIONS,
       ],
     },
     // Live Together is the only stack that counts two people on one canvas at
@@ -380,13 +400,16 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
       },
     ],
   },
-  tours: [
-    {
-      title: 'Tours',
-      metrics: [RECEPTIONIST, ELEMENT_TOURS, SHOW_ME_TOURS],
-    },
-    { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
-  ],
+  tours: {
+    intro: 'Each guided tour from offer to finish, then the one-off prompts',
+    groups: [
+      {
+        title: 'Tours',
+        metrics: [RECEPTIONIST, ELEMENT_TOURS, SHOW_ME_TOURS],
+      },
+      { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
+    ],
+  },
   exceptions: {
     groups: [
       {

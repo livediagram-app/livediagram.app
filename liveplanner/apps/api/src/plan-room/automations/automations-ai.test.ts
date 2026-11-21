@@ -498,20 +498,11 @@ describe('when the AI can’t answer', () => {
 });
 
 describe('the daily cap', () => {
-  // `n` AI calls the plan made today, on one old run's lines.
-  const used = (n: number) => {
-    const steps = Array.from({ length: n }, () => ({
-      kind: 'action',
-      ok: true,
-      text: 'x',
-      ai: true,
-    }));
+  // `n` AI calls the plan made today, as each was counted when asked.
+  const used = (n: number) =>
     plan()
-      .db.prepare(
-        'INSERT INTO automation_runs (id, rule_id, at, result, body) VALUES (?, ?, ?, ?, ?)',
-      )
-      .run('old', 'r0', Date.now(), 'done', JSON.stringify({ steps }));
-  };
+      .db.prepare('INSERT INTO automation_ai_days (day, asks) VALUES (?, ?)')
+      .run(Math.floor(Date.now() / 86_400_000) * 86_400_000, n);
   it('skips a step once the plan has made its 100 calls today, asking nothing', async () => {
     used(100);
     const { run } = await ran([{ kind: 'flag' }, { kind: 'ai', task: 'summarise' }]);

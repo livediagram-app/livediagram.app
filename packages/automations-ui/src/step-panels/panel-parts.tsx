@@ -1,0 +1,223 @@
+'use client';
+
+// The step panels' shared parts (liveplanner/docs/specs/026-plan/automations.md "The rule builder": the step panel): a labelled
+// field, a set of toggle chips for picking several of the item's own names, the is / is not
+// choice, and the select every single pick uses. Real labels and buttons throughout, so each is keyboard reachable.
+
+import { useId, type ReactNode } from 'react';
+import { Button, CheckIcon, Select, TextInput, type SelectProps } from '@liveworkspace/ui';
+import { Callout } from '@liveworkspace/ui/callout';
+import { useAutomationsKit } from '../kit-context';
+
+export const PANEL_SELECT = 'h-9 rounded-lg pl-2.5 pr-7 text-[13px]';
+
+// The Trigger and Action fields' row: the step's tile and name, and Change, which opens its picker. Change is named
+// "Change Trigger" (or Action) and described by the name beside it, never by the field's label, so a screen reader
+// hears the word on the button and what it changes ("Change Trigger, button, Card Moved").
+export function ChangeRow({
+  id,
+  noun,
+  icon,
+  name,
+  open,
+  onOpen,
+}: {
+  // The field's control id (PanelField's), so its label still points at the button.
+  id: string;
+  noun: 'Trigger' | 'Action';
+  icon: ReactNode;
+  name: string;
+  open: boolean;
+  onOpen: () => void;
+}) {
+  const nameId = useId();
+  return (
+    <div className="flex h-11 items-center gap-2.5 rounded-lg border border-slate-200 bg-white pl-2 pr-1.5 dark:border-slate-700 dark:bg-slate-900">
+      {icon}
+      <span
+        id={nameId}
+        className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-900 dark:text-slate-50"
+      >
+        {name}
+      </span>
+      <Button
+        id={id}
+        variant="secondary"
+        size="xs"
+        data-change-step=""
+        aria-label={`Change ${noun}`}
+        aria-describedby={nameId}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={onOpen}
+      >
+        Change
+      </Button>
+    </div>
+  );
+}
+
+export function PanelField({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: ReactNode;
+  // Handed the id its control should carry, so the label names it, and the hint's id (when there is a hint) for the
+  // control's `aria-describedby` (a TextInput's `hintId`), so a screen reader hears it too.
+  children: (id: string, hintId: string | undefined) => ReactNode;
+}) {
+  const id = useId();
+  const hintId = useId();
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
+        {label}
+      </label>
+      {children(id, hint ? hintId : undefined)}
+      {hint ? (
+        <p id={hintId} className="text-[12px] text-slate-500 dark:text-slate-400">
+          {hint}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function PanelSelect(props: SelectProps) {
+  return <Select {...props} className="w-full" selectClassName={PANEL_SELECT} />;
+}
+
+/** A group of toggle chips: several of the item's names picked at once. A pick the item no longer has (a deleted
+ *  column, field or person) stays as a pressed chip named `gone`, so the panel shows what the rule holds and it can
+ *  be unpicked. */
+export function ChipToggles({
+  label,
+  options,
+  value,
+  onChange,
+  hint,
+  empty,
+  gone = 'No longer here',
+  note,
+}: {
+  label: string;
+  options: readonly { value: string; label: string }[];
+  value: readonly string[];
+  onChange: (next: string[]) => void;
+  hint?: ReactNode;
+  empty?: string;
+  gone?: string;
+  // A line under the chips about what is picked (Card Moved's columns the picked types don't use).
+  note?: ReactNode;
+}) {
+  const id = useId();
+  const { item } = useAutomationsKit().plumbing.words;
+  const picked = new Set(value);
+  const known = new Set(options.map((o) => o.value));
+  const shown = [
+    ...options,
+    ...value.filter((v) => !known.has(v)).map((v) => ({ value: v, label: gone })),
+  ];
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span id={id} className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
+        {label}
+      </span>
+      {shown.length === 0 ? (
+        <p className="text-[12px] text-slate-500 dark:text-slate-400">
+          {empty ?? `Nothing to pick in this ${item} yet.`}
+        </p>
+      ) : (
+        <div role="group" aria-labelledby={id} className="flex flex-wrap gap-1.5">
+          {shown.map((o) => {
+            const on = picked.has(o.value);
+            return (
+              <button
+                key={o.value}
+                type="button"
+                aria-pressed={on}
+                onClick={() =>
+                  onChange(on ? value.filter((v) => v !== o.value) : [...value, o.value])
+                }
+                className={`touch-target-y relative inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium transition motion-reduce:transition-none ${
+                  on
+                    ? 'bg-brand-100 text-brand-800 ring-1 ring-inset ring-brand-300 hover:bg-brand-200 dark:bg-brand-500/25 dark:text-brand-100 dark:ring-brand-500/50 dark:hover:bg-brand-500/35'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                {on ? <CheckIcon size={10} /> : null}
+                {o.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {/* The hint says what an empty pick means, so it shows only while nothing is picked. */}
+      {hint && value.length === 0 ? (
+        <p className="text-[12px] text-slate-500 dark:text-slate-400">{hint}</p>
+      ) : null}
+      {note ? <p className="text-[12px] text-amber-800 dark:text-amber-300">{note}</p> : null}
+    </div>
+  );
+}
+
+/** Is or Is Not, for a condition that names some of the item's things. */
+export function IsNotPicker({ not, onChange }: { not: boolean; onChange: (not: boolean) => void }) {
+  return (
+    <PanelField label="Match">
+      {(id) => (
+        <PanelSelect
+          id={id}
+          value={not ? 'not' : 'is'}
+          onChange={(e) => onChange(e.target.value === 'not')}
+        >
+          <option value="is">Is one of</option>
+          <option value="not">Is not one of</option>
+        </PanelSelect>
+      )}
+    </PanelField>
+  );
+}
+
+/** A day a date names: Today, shifted by whole days. */
+export function TodayShift({
+  label,
+  days,
+  onChange,
+}: {
+  label: string;
+  days: number;
+  onChange: (days: number) => void;
+}) {
+  return (
+    <PanelField
+      label={label}
+      hint="Days from the day the rule runs: 0 is today, -1 yesterday, 7 a week on."
+    >
+      {(id) => (
+        <TextInput
+          compact
+          id={id}
+          type="number"
+          step={1}
+          min={-365}
+          max={365}
+          value={days}
+          onChange={(e) => onChange(Math.trunc(Number(e.target.value) || 0))}
+          className="w-28"
+        />
+      )}
+    </PanelField>
+  );
+}
+
+/** A quiet sentence for a step with nothing to set. */
+export function PanelNote({ children }: { children: ReactNode }) {
+  return (
+    <Callout tone="info" size="md">
+      {children}
+    </Callout>
+  );
+}

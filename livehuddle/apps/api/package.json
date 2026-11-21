@@ -24,6 +24,7 @@
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/automations": "workspace:^",
     "@liveworkspace/community": "workspace:^",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/email": "workspace:*",

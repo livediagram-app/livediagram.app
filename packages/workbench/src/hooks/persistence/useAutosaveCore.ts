@@ -19,7 +19,7 @@ import { noteSaveFailing, noteTabTooLarge } from '../../lib/save-health';
 // app/<item>/[id]/useAutosave.ts calls this with its own calls and the few places its copy had drifted
 // (AutosaveDeps), under its own names for the item.
 
-type TabBase = { id: string; name: string; folder?: string };
+type TabBase = { id: string; name: string; folder?: string; folderColor?: string };
 // What `metaTabFields` adds to a tab's entry in the metadata save.
 type MetaTabFields = Record<string, unknown>;
 
@@ -80,7 +80,11 @@ export type AutosaveDeps<Tab, Prepared, R, J extends Journal, Writes, S> = {
   ) => Promise<void>;
   apiSaveMeta: (
     selfId: string,
-    meta: { id: string; name: string; tabs: ({ id: string; folder?: string } & MetaTabFields)[] },
+    meta: {
+      id: string;
+      name: string;
+      tabs: ({ id: string; folder?: string; folderColor?: string | null } & MetaTabFields)[];
+    },
     shareCode: string | null,
   ) => Promise<unknown>;
   // The op an editor's own rename sends: `document-meta`, `design-meta`, `project-meta`.
@@ -493,10 +497,13 @@ export function useAutosaveCore<
                 {
                   id: itemId,
                   name: itemName,
+                  // A foldered tab's colour too, null for Automatic (tab-folders.md "Persistence & realtime"); a loose
+                  // tab has none to send.
                   tabs: tabs.map((t) => ({
                     ...deps.metaTabFields?.(t),
                     id: t.id,
                     folder: t.folder,
+                    ...(t.folder ? { folderColor: t.folderColor ?? null } : {}),
                   })),
                 },
                 sessionShareCode,
@@ -514,6 +521,7 @@ export function useAutosaveCore<
                     name: t.name,
                     orderIndex: i,
                     folder: t.folder,
+                    folderColor: t.folderColor,
                   })),
                 },
               } as never);

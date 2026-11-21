@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EmailIntakeResponse } from '@liveplanner/api-schema';
+import type { EmailIntakeResponse, EmailIntakesResponse } from '@liveplanner/api-schema';
 import {
   FROM_EMAIL_FIELD,
   defaultCatalogue,
@@ -100,6 +100,45 @@ describe('what a message makes', () => {
     const [row] = await intakesOf(planEnv(), 'A');
     expect(row).toMatchObject({ made: 1, refused: 0, dropped: 0 });
     expect(row!.lastAt).toBeGreaterThan(0);
+  });
+
+  // An address makes a card of a type in a column, its own (docs/specs/026-plan/email-to-board.md "What a message
+  // makes"): chosen, the card lands there, on whichever boards show it.
+  it('makes the card type and column the address was given', async () => {
+    const listed = await (await w.as('owner', 'GET', '/email-intake')).json<EmailIntakesResponse>();
+    const type = listed.types.find((t) => t.columns.length > 1)!;
+    const column = type.columns[1]!;
+    const put = await w.as('owner', 'PUT', '/email-intake/b1', {
+      senders: 'members',
+      typeId: type.id,
+      status: column.status,
+    });
+    expect(put.status).toBe(200);
+    await deliver(message(plain(['x'])));
+    expect((await cards())[0]).toMatchObject({ type: type.id, fields: { status: column.status } });
+  });
+
+  // An address from before it kept a card of its own follows its board's first type and column, as it did.
+  it('reads an address with no card of its own as its board’s first type and column', async () => {
+    await planEnv().PLAN_DB.prepare('UPDATE email_intakes SET type_id = NULL, status = NULL').run();
+    expect((await intakesOf(planEnv(), 'A'))[0]!.target).toBeNull();
+    const m = message(plain(['x']));
+    await deliver(m);
+    expect(m.rejected).toBeNull();
+    expect((await cards())[0]).toMatchObject({ type: 'task', fields: { status: 'backlog' } });
+  });
+
+  // No board shows its card any more: refused, never made where nobody sees it.
+  it('refuses mail once no board shows its card', async () => {
+    await planEnv()
+      .PLAN_DB.prepare("UPDATE email_intakes SET type_id = 'task', status = 'nowhere'")
+      .run();
+    const listed = await (await w.as('owner', 'GET', '/email-intake')).json<EmailIntakesResponse>();
+    expect(listed.intakes[0]!.target).toBeNull();
+    const m = message(plain(['x']));
+    await deliver(m);
+    expect(m.rejected).toBe(REJECTIONS.no_address);
+    expect(await cards()).toEqual([]);
   });
 
   it('takes anyone with the address when the board allows it', async () => {

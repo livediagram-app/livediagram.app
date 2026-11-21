@@ -4,7 +4,7 @@
 // actions, close, on one row. The message keeps its buttons beside it, wrapping onto a second line itself, while it
 // has 10rem to wrap in; only then do the buttons drop to a row of their own at its end (a phone's sign-in toast had
 // Sign In stranded under a one-line message, the owner, 2026-11-20). The close stays in the top row's corner. Presentational: the stack owns timing and leaving.
-import type { HTMLAttributes, ReactNode, Ref } from 'react';
+import { useState, type HTMLAttributes, type ReactNode, type Ref } from 'react';
 import {
   lucideCircleAlert,
   lucideCircleCheck,
@@ -14,7 +14,8 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { CloseIcon } from '../icons/actions';
 import { lucideGlyph } from '../icons/lucide-glyph';
-import type { ToastTone } from './toast-queue';
+import { SwitchRow } from '../Switch';
+import type { ToastTone, ToastToggle } from './toast-queue';
 
 /** The toast's card look, shared with the notices that are not in the stack (the new-version prompt). */
 export const TOAST_SURFACE =
@@ -53,6 +54,10 @@ const ACTION_BASE =
   'touch-target relative inline-flex h-8 shrink-0 items-center rounded-lg px-2.5 text-sm font-semibold whitespace-nowrap transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:cursor-not-allowed disabled:opacity-50';
 const ACTION_PRIMARY =
   'text-brand-700 enabled:hover:bg-brand-50 dark:text-brand-300 dark:enabled:hover:bg-brand-500/15';
+// A destructive answer (toasts.md "A destructive answer"): rose-700 reads at over 6:1 on white, rose-300 at over 9:1 on
+// slate-900.
+const ACTION_DESTRUCTIVE =
+  'text-rose-700 enabled:hover:bg-rose-50 focus-visible:outline-rose-700 dark:text-rose-300 dark:enabled:hover:bg-rose-500/15 dark:focus-visible:outline-rose-300';
 const ACTION_HIGHLIGHT_PRIMARY =
   'bg-white px-3 text-emerald-800 shadow-sm enabled:hover:bg-emerald-50 focus-visible:outline-white';
 const ACTION_HIGHLIGHT_SECONDARY =
@@ -66,12 +71,41 @@ export type ToastCardAction = {
   onSelect: () => void;
   disabled?: boolean;
   primary?: boolean;
+  destructive?: boolean;
 };
+
+function actionLook(action: ToastCardAction, highlight: boolean): string {
+  if (highlight) return action.primary ? ACTION_HIGHLIGHT_PRIMARY : ACTION_HIGHLIGHT_SECONDARY;
+  if (action.destructive) return ACTION_DESTRUCTIVE;
+  return action.primary ? ACTION_PRIMARY : ACTION_SECONDARY;
+}
+
+// The toast's switch (toasts.md "A switch on a toast"), on a row of its own under the message: the house SwitchRow, its
+// words and track one button. It holds its own state, started again for each new toggle a newer upsert brings.
+function ToastSwitch({ toggle, highlight }: { toggle: ToastToggle; highlight: boolean }) {
+  const [state, setState] = useState({ of: toggle, on: toggle.checked === true });
+  const on = state.of === toggle ? state.on : toggle.checked === true;
+  return (
+    <SwitchRow
+      checked={on}
+      track="start"
+      layout="flex items-center gap-2 rounded-md text-left"
+      className={`touch-target relative -ml-0.5 mb-1 py-1 text-sm font-medium ${highlight ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}
+      onChange={(next) => {
+        setState({ of: toggle, on: next });
+        toggle.onChange(next);
+      }}
+    >
+      {toggle.label}
+    </SwitchRow>
+  );
+}
 
 export function ToastCard({
   tone,
   message,
   actions = [],
+  toggle,
   onClose,
   leaving = false,
   full = false,
@@ -84,6 +118,7 @@ export function ToastCard({
   tone: ToastTone;
   message: ReactNode;
   actions?: readonly ToastCardAction[];
+  toggle?: ToastToggle;
   onClose: () => void;
   leaving?: boolean;
   // Arrived on a full stack: the bolder entrance (toast-in-full), so a new toast on a busy stack is seen.
@@ -118,11 +153,17 @@ export function ToastCard({
                 onClick={action.onSelect}
                 disabled={action.disabled}
                 aria-label={action.ariaLabel}
-                className={`${ACTION_BASE} ${highlight ? (action.primary ? ACTION_HIGHLIGHT_PRIMARY : ACTION_HIGHLIGHT_SECONDARY) : action.primary ? ACTION_PRIMARY : ACTION_SECONDARY}`}
+                data-toast-destructive={action.destructive ? '' : undefined}
+                className={`${ACTION_BASE} ${actionLook(action, highlight)}`}
               >
                 {action.label}
               </button>
             ))}
+          </div>
+        ) : null}
+        {toggle ? (
+          <div className="basis-full" data-toast-toggle="">
+            <ToastSwitch toggle={toggle} highlight={highlight} />
           </div>
         ) : null}
       </div>

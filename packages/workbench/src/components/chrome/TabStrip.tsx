@@ -37,7 +37,7 @@ import { foldersOpenOnLoad } from './tab-folder-start';
 
 export type TabRun<T> = { kind: 'loose'; tab: T } | { kind: 'folder'; name: string; tabs: T[] };
 
-export type TabStripProps<T extends { id: string }> = {
+export type TabStripProps<T extends { id: string; folderColor?: string }> = {
   runs: TabRun<T>[];
   activeId: string;
   readOnly: boolean;
@@ -59,7 +59,7 @@ const still = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matc
 // eye can follow (dragover fires every ~50ms).
 const DRAG_PAGE_MS = 450;
 
-export function TabStrip<T extends { id: string }>({
+export function TabStrip<T extends { id: string; folderColor?: string }>({
   runs,
   activeId,
   readOnly,

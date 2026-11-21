@@ -1,7 +1,11 @@
 // Image gallery calls (docs/specs/009-elements/images.md): list, upload, delete, usage index, and
 // the authenticated blob-URL fetch for rendering.
 import type { ImageSummary } from '@livedesign/api-schema';
-import { createImageClaims } from '@liveworkspace/media';
+import {
+  createImageClaims,
+  unusedImageIdsParam,
+  type MediaUnusedResponse,
+} from '@liveworkspace/media';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   API_BASE,
@@ -129,6 +133,27 @@ export function claimPlacedImagesOnUnload(
     );
     await expectOk<{ granted: number }>(res, 'claim images');
   });
+}
+
+// Which of the caller's own pictures of `ids` nothing but this design uses, in any app
+// (docs/specs/009-elements/images.md "Deleting an unused picture"): one request for a whole delete. Anything but an
+// answer (offline, a refusal, the service down) is `[]`, so nothing is offered that could be in use.
+export async function apiUnusedImages(
+  ownerId: string,
+  designId: string,
+  ids: readonly string[],
+): Promise<string[]> {
+  try {
+    const query = new URLSearchParams({ d: designId, ids: unusedImageIdsParam(ids) });
+    const res = await apiFetch(`${API_BASE}/images/unused?${query}`, {
+      headers: await apiHeaders(ownerId),
+    });
+    if (!res.ok) return [];
+    const body = (await res.json()) as Partial<MediaUnusedResponse>;
+    return Array.isArray(body.unused) ? body.unused.filter((id) => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function apiDeleteImage(ownerId: string, imageId: string): Promise<void> {

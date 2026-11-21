@@ -58,7 +58,7 @@ import {
 import { fieldText, fillValues } from './values';
 import { relatedCards } from './related';
 import { branchWords, notifyChip, waitWords } from './sentence';
-import { addressWords } from './email-addresses';
+import { addressWords } from '@liveworkspace/automations';
 import { Failed, fail, failGone, fieldKind, setValueOf } from './set-value';
 import { planAi } from './ai-steps';
 import {

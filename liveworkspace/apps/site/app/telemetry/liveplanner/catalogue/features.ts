@@ -413,7 +413,7 @@ export const PALETTE_USE: MetricStack = {
   title: 'Palette Use',
   blurb: 'How the palette gets used beyond adding elements: its groups and the toolbar.',
   members: [PALETTE_GROUPS_OPENED],
-  seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
+  seeAlso: { tab: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 
 // Editor chrome: layout and navigation.
@@ -673,7 +673,7 @@ export const PANELS_OPENED: MetricStack = {
     PLAN_DESCRIBE_OPENED,
     OTHER_OPENED,
   ],
-  seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },
+  seeAlso: { tab: 'editing', label: 'See Each Dialog on the Editing Tab' },
 };
 
 // Look and feel (Look & Feel tab has the rankings).
@@ -742,5 +742,5 @@ export const LOOK_AND_FEEL: MetricStack = {
     LOOKS_FILTERED,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
-  seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },
+  seeAlso: { tab: 'lookfeel', label: 'See Each Preset on the Look & Feel Tab' },
 };

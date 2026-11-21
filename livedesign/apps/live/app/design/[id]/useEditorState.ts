@@ -113,6 +113,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     layersSlice,
     historySlice,
     tabsSlice,
+    persistenceSlice,
   });
   const styleSlice = useEditorStyle({
     designSlice,

@@ -147,3 +147,39 @@ describe('FormStatusBar, the count', () => {
     );
   });
 });
+
+// docs/specs/030-forms/forms.md "The Summary": its switch sits after the count, for whoever reaches the responses.
+describe('FormStatusBar, Summary', () => {
+  it('shows the switch only where there is a Summary, pressed while it shows', () => {
+    const toggle = vi.fn();
+    const { rerender } = render(
+      <FormStatusBar link={state({})} problem={null} canEdit={false} onFix={() => {}} />,
+    );
+    expect(screen.queryByRole('button', { name: 'Summary' })).toBeNull();
+    rerender(
+      <FormStatusBar
+        link={state({})}
+        problem={null}
+        canEdit={false}
+        onFix={() => {}}
+        summary={{ on: false, toggle }}
+      />,
+    );
+    const button = screen.getByRole('button', { name: 'Summary' });
+    expect(button.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(button);
+    expect(toggle).toHaveBeenCalledTimes(1);
+    rerender(
+      <FormStatusBar
+        link={state({})}
+        problem={null}
+        canEdit={false}
+        onFix={() => {}}
+        summary={{ on: true, toggle }}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Summary' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+  });
+});

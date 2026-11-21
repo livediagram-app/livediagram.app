@@ -25,6 +25,12 @@ function dispatchedSegments(): Set<string> {
   // this api's published surface.
   if (/segments\[1\] === 'workbench'[\s\S]{0,400}routeToWorkspace/.test(source))
     segments.add('workbench');
+  // An Incoming Webhook call, answered ahead of identity (docs/specs/013-workspace/automations.md).
+  if (/segments\[1\] === 'hooks'\) return handleAutomationHook\(/.test(source))
+    segments.add('hooks');
+  // A rule email's unsubscribe door, answered ahead of identity too.
+  if (/segments\[1\] === 'email-optout'\) return handleEmailOptOut\(/.test(source))
+    segments.add('email-optout');
   return segments;
 }
 

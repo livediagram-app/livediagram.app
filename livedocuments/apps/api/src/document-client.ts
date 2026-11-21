@@ -5,8 +5,9 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
-import type { SourceChange } from '@liveworkspace/index-client';
-import type { CommunityShareInfo } from '@livedocuments/api-schema';
+import type { ItemStanding, SourceChange } from '@liveworkspace/index-client';
+import type { HookAnswer, HookCall } from '@liveworkspace/automations/room';
+import type { AccessLevel, CommunityShareInfo } from '@livedocuments/api-schema';
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
 import type { DocumentFileImport } from './document-room/document-file';
 import type { RouteIdentity } from './document-room/document-route';
@@ -29,6 +30,9 @@ export type CopySource = { copy: DocumentCopy; community: boolean };
 
 // The Community post a visitor through its open link is told of: its id at the service and who it shows as author.
 export type CommunityListing = CommunityShareInfo;
+
+// Whoever asked for access, as the index's notice names them.
+export type AccessRequester = { id: string; name: string | null; requestId?: string };
 
 export type DocumentRoomClient = {
   // The tabs (no bodies) and slide deck a document read carries.
@@ -71,7 +75,16 @@ export type DocumentRoomClient = {
   communityListing(code: string): Promise<CommunityListing | null>;
   // Someone opened the document through a share link for the first time (the index's notice): the owner's
   // "someone joined" email, sent from the room, which keeps its once-per-window claim.
-  joined(personId: string): Promise<void>;
+  joined(personId: string, level?: AccessLevel): Promise<void>;
+  // Someone asked for access to the document (the index's notice): Access Requested, for the rules that hear it.
+  accessRequested(requester: AccessRequester): Promise<void>;
+  // Automations' doors (@liveworkspace/automations/room doors.ts): an Incoming Webhook call to one rule, and a
+  // rule email's unsubscribe (false for a token the document never made).
+  incomingHook(ruleId: string, call: HookCall): Promise<HookAnswer>;
+  emailOptOut(token: string): Promise<boolean>;
+  // Where the document stands at the index (@liveworkspace/automations/room standing.ts): put away, its rules run
+  // nothing.
+  takeStanding(standing: ItemStanding): Promise<void>;
   // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
   sourceChanged(change: SourceChange): Promise<void>;
   // A closed account's name off the document (document-anonymise.ts), and the guests merged into it (`guestIds`) as its
@@ -110,7 +123,11 @@ export function documentRoom(
     community: () => room.community(documentId),
     communityPostTitle: (code) => room.communityPostTitle(documentId, code),
     communityListing: (code) => room.communityListing(documentId, code),
-    joined: (personId) => room.joined(documentId, personId),
+    joined: (personId, level) => room.joined(documentId, personId, level),
+    accessRequested: (requester) => room.accessRequested(documentId, requester),
+    incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
+    emailOptOut: (token) => room.emailOptOut(documentId, token),
+    takeStanding: (standing) => room.takeStanding(documentId, standing),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
     anonymise: (personId, guestIds = []) => room.anonymise(documentId, personId, guestIds),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
@@ -146,7 +163,11 @@ export type DocumentRoomRpc = {
   community(documentId: string): Promise<{ code: string; open: boolean } | null>;
   communityPostTitle(documentId: string, code: string): Promise<string | null>;
   communityListing(documentId: string, code: string): Promise<CommunityListing | null>;
-  joined(documentId: string, personId: string): Promise<void>;
+  joined(documentId: string, personId: string, level?: AccessLevel): Promise<void>;
+  accessRequested(documentId: string, requester: AccessRequester): Promise<void>;
+  incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
+  emailOptOut(documentId: string, token: string): Promise<boolean>;
+  takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
   sourceChanged(documentId: string, change: SourceChange): Promise<void>;
   anonymise(documentId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;

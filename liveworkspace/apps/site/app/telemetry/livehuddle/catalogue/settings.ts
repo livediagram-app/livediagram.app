@@ -62,6 +62,11 @@ export const EDITOR_SETTINGS = settingsStack(
       'Rotate in 3D View',
       'Turn the camera in the 3D view.',
     ),
+    changed(
+      'UnusedImages',
+      'When I Delete an Unused Image',
+      'Ask Every Time, Always Delete or Always Keep.',
+    ),
   ],
 );
 
@@ -303,5 +308,5 @@ export const SETTINGS_CHANGED: MetricStack = {
     'Settings changed, by Settings category. The theme counts the header toggle as well as the dialog.',
   members: SETTINGS_STACKS.map(categoryChart),
   rising: 'neutral',
-  seeAlso: { section: 'settings', label: 'See Each Setting in Features › Settings' },
+  seeAlso: { tab: 'settings', label: 'See Each Setting on the Settings Tab' },
 };

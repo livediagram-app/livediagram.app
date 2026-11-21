@@ -8,6 +8,7 @@ import { checkCommunity, leaveCommunity } from './room-community';
 import { checkGrants, nextGrantDue } from './room-grants';
 import { closeSockets } from './room-sockets';
 import { documentShares } from './tab-shares';
+import { forgetAutomations, runSpaceAutomations } from './automations/space-automations';
 import type { DocumentRoom } from './document-room';
 
 // The room's alarm and its end (document-room.ts): what is due when, and the purge that drops it all. Each function
@@ -33,6 +34,8 @@ export async function purge(room: DocumentRoom, documentId?: string): Promise<vo
   room.maintenanceAt = null;
   room.communityAt = null;
   room.head.forget();
+  // Its rules went with its SQLite: nothing is heard and nothing of theirs wakes it.
+  forgetAutomations(room);
   console.info('[room] purged');
 }
 
@@ -51,7 +54,8 @@ async function leaveShares(room: DocumentRoom): Promise<void> {
 
 // The room's one alarm, at the earliest of: the facilitator grace deadline, an agent presence expiry
 // (agent-presence I5, PR29), a session's grant to ask for or lapse, the outbox's next push, the next send to a
-// shared tab's holders, the Community post's next check, the document's next upkeep. None when nothing is due.
+// shared tab's holders, the Community post's next check, the document's next upkeep, and its Automations (a waiting
+// trigger, a time rule's moment, a Wait's end, a quiet stretch's end). None when nothing is due.
 export function armAlarm(room: DocumentRoom): void {
   const due = [
     room.baton.deadline() ?? null,
@@ -61,6 +65,7 @@ export function armAlarm(room: DocumentRoom): void {
     room.shares.at,
     room.communityAt,
     room.maintenanceAt,
+    room.automations.schedule.wakeAt,
   ];
   // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
   armRoomAlarm(room.state.storage, due, Date.now());
@@ -83,5 +88,7 @@ export async function alarm(room: DocumentRoom): Promise<void> {
   if (room.shares.due(now)) await drainShares(room);
   if (room.communityAt !== null && room.communityAt <= now) await checkCommunity(room, now);
   if (room.maintenanceAt !== null && room.maintenanceAt <= now) await maintain(room, now);
+  // The Space's rules, last of the duties. Never throws.
+  await runSpaceAutomations(room, Date.now());
   armAlarm(room);
 }

@@ -8,6 +8,8 @@ import { handleTokens } from './routes/tokens';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
+import { handleAutomationHook } from './routes/automation-hook-route';
+import { handleEmailOptOut } from './routes/email-optout-route';
 import { handleInternalShapeLibraries } from './routes/internal-shape-libraries';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { reportServerEvent } from './server-telemetry';
@@ -79,6 +81,14 @@ async function routeApiRequest(
     return handleInternalShapeLibraries(request, env);
   if (segments[1] === 'internal')
     return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
+
+  // An Incoming Webhook call to a Space's rule (docs/specs/013-workspace/automations.md): its rule's secret, never a
+  // person, so answered before identity, with its own body, type and network checks (routes/automation-hook-route.ts).
+  if (segments[1] === 'hooks') return handleAutomationHook(request, env);
+
+  // A rule email's unsubscribe (routes/email-optout-route.ts): its token, never a person, so answered before
+  // identity, limited per network.
+  if (segments[1] === 'email-optout') return handleEmailOptOut(request, env);
 
   // Who is calling (docs/specs/014-identity/auth-and-guest-access.md): a liveworkspace access token or guest token,
   // verified once here against the accounts Worker's keys. Null when sign-in isn't configured, no Bearer was sent

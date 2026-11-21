@@ -17,7 +17,7 @@ import type { ConditionContext } from './conditions';
 import type { ValueContext } from './values';
 import type { PullRequestValues } from './github-triggers';
 import type { PlannedAi } from './ai-steps';
-import type { WebhookValues } from './webhook-paths';
+import type { WebhookValues } from '@liveworkspace/automations';
 
 export interface PlanActionsContext extends ConditionContext {
   rule: { name: string };

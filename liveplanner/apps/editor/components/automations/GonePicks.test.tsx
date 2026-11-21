@@ -2,6 +2,7 @@
 // docs/specs/026-plan/automations.md "The rule builder": a step panel shows what the rule holds even when the plan no
 // longer has it (a deleted column, Form tab, field, card type or person), so it can be seen and unpicked, rather than
 // hiding the pick or showing the select's first choice.
+import './test-kit';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { useState } from 'react';
@@ -11,7 +12,7 @@ import type {
   AutomationTrigger,
 } from '@liveplanner/items';
 import { newRuleBody, type RulePart } from './rule-draft';
-import { StepPanel } from './StepPanel';
+import { StepPanel } from '@liveworkspace/automations-ui/StepPanel';
 import { outline } from './test-fixtures';
 
 afterEach(cleanup);
@@ -29,7 +30,6 @@ function Panel({ body, part }: { body: AutomationRuleBody; part: RulePart }) {
       }}
       outline={outline()}
       faultPath={null}
-      person="Ana Costa"
       now={Date.UTC(2026, 10, 11)}
       timeZone="Europe/London"
     />

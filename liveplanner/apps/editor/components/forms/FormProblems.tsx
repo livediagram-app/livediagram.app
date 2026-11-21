@@ -45,7 +45,7 @@ export function FormProblems({
           <li className="flex items-baseline justify-between gap-3">
             <span>
               {problem === 'no_destination'
-                ? 'Responses have nowhere to go yet: choose a board or a sheet.'
+                ? 'Responses have nowhere to go yet: choose a card type or a sheet.'
                 : DESTINATION_PROBLEM_TEXT[problem]}
             </span>
             {onFixDestination ? (

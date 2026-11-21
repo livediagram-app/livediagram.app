@@ -2,12 +2,13 @@
 // docs/specs/026-plan/automations.md "The rule builder on a phone": the rule drawer over the rules, its header, its
 // pinned foot with Rule Details, the step drawer a pick opens and Done closes, and Discard Changes? before any way out
 // of a changed rule. A wide screen keeps the builder in place of the list, no drawers.
+import './test-kit';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
-import { AutomationsDialog } from './AutomationsDialog';
-import type { AutomationsTarget } from './AutomationsContext';
+import { AutomationsDialog } from '@liveworkspace/automations-ui/AutomationsDialog';
+import type { AutomationsTarget } from '@liveworkspace/automations-ui/AutomationsContext';
 import { forgetAutomations } from './use-automations';
 import { ANA, outline, rule, run } from './test-fixtures';
 
@@ -27,11 +28,11 @@ vi.mock('./automations-client', async (importOriginal) => ({
   ...client,
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/hooks/ui/useToast', () => ({
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({
   useToast: () => ({ info: vi.fn(), success: vi.fn(), error: vi.fn(), warn: vi.fn() }),
 }));
 
-const SCOPE = { ownerId: 'o1', projectId: 'p1', shareCode: null };
+const SCOPE = { ownerId: 'o1', itemId: 'p1', shareCode: null };
 const o = outline();
 const plan = {
   types: o.types,

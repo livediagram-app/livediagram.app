@@ -192,7 +192,7 @@ export const PALETTE_USE: MetricStack = {
   title: 'Palette Use',
   blurb: 'How the palette gets used beyond adding elements: searches, groups, and the toolbar.',
   members: [PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
-  seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
+  seeAlso: { tab: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 
 // The canvas selection modes, one chart per mode, and the options set inside
@@ -364,7 +364,7 @@ export const CANVAS_MODES: MetricStack = {
   members: [...MODE_METRICS, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
-  seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
+  seeAlso: { tab: 'modes', label: 'See Each Mode on the Modes Tab' },
 };
 
 // Editor chrome: layout and navigation.
@@ -495,6 +495,14 @@ export const LOCAL_MOVE_OFFERED = opened(
   (t) => t === 'LocalMovePrompt',
 );
 
+// The Automations screen (docs/specs/013-workspace/automations.md "Telemetry"): the screen itself, its Sign In and Sync
+// gates, Describe a Rule and each template, by its id.
+export const AUTOMATIONS_OPENED = opened(
+  'Automations Opened',
+  'The Automations screen opened from Tools, or its Sign In or Sync gate, Describe a Rule or a template.',
+  (t) => (t ?? '').startsWith('Automation'),
+);
+
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 
 export const PANELS_OPENED: MetricStack = {
@@ -508,8 +516,9 @@ export const PANELS_OPENED: MetricStack = {
     PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
+    AUTOMATIONS_OPENED,
   ],
-  seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },
+  seeAlso: { tab: 'editing', label: 'See Each Dialog on the Editing Tab' },
 };
 
 // Look and feel (Look & Feel tab has the rankings).
@@ -578,5 +587,5 @@ export const LOOK_AND_FEEL: MetricStack = {
     LOOKS_FILTERED,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
-  seeAlso: { section: 'lookfeel', label: 'See Each Preset in Features › Look & Feel' },
+  seeAlso: { tab: 'lookfeel', label: 'See Each Preset on the Look & Feel Tab' },
 };

@@ -215,7 +215,7 @@ describe('settings catalogue', () => {
     expect(ids).toContain('tokens');
   });
 
-  it('has no Webhooks category, for a guest or an account: webhooks are set per document now', () => {
+  it('has no Webhooks category, for a guest or an account: connections are inside each Space’s Automations', () => {
     for (const signedIn of [false, true]) {
       const ids = visibleCategories({ emailEnabled: false, signedIn }).map((c) => c.id);
       expect(ids).not.toContain('webhooks');
@@ -286,7 +286,7 @@ describe('settings sub-categories', () => {
 
   it('keeps every setting that acts in both modes on Editor itself', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
-    expect(keys).toEqual(['alignmentGuides', 'rotateIn3D', 'middleMousePan']);
+    expect(keys).toEqual(['alignmentGuides', 'rotateIn3D', 'unusedImageChoice', 'middleMousePan']);
   });
 
   it('files each panel as a section of Panels, after Panel Opacity', () => {

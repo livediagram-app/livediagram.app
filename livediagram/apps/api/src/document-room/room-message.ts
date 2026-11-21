@@ -9,7 +9,7 @@ import { selectionFromOp } from '../room-selections';
 import type { SessionAttachment } from '../room-session';
 import type { ClientMessage, ParticipantPresence, ServerMessage } from '../types';
 import { storedTabName } from './room-content-state';
-import { relayPollAnswer } from './room-qa-poll';
+import { notePollEnded, relayPollAnswer } from './room-qa-poll';
 import { relaySessionOf, scopeOf } from './room-sockets';
 import type { DocumentRoom } from './document-room';
 
@@ -242,6 +242,8 @@ export function roomMessage(
       // ledger has it (docs/specs/012-collaboration/collab-race-hardening.md phase 6).
       const ref = isRoomOpRef(msg.ref) ? { ref: msg.ref } : {};
       room.sendTo(ws, { kind: 'cursor', epoch: room.epoch, seq, ...ref });
+      // Poll Ended (docs/specs/013-workspace/automations.md): the tally, read before the room lets the poll go.
+      if (opKind === 'poll-end') notePollEnded(room, op, session, sender);
       if (opKind === 'poll-start' || opKind === 'poll-end') room.poll.noteLifecycle(op);
     }
   }

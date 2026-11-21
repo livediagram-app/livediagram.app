@@ -17,7 +17,7 @@ Follow the references below only as needed; never upfront.
 - ./team-audit-log.md - when working on the team audit log: its table, the write path beside each event, the sweep, anonymising and the admins' read and CSV, and the Audit Log on a team's view
 - ./approvals.md - when working on approvals: the tables, the routes and their checks, the revision, the notice and email, the editor kit
 - ./request-access.md - when working on Request Access: the build order, the two tables, the ask off the response's path, grant and decline, the Inbox read, the notices
-- ./webhooks.md - when working on webhooks: the tables, the outbox statement, the dispatcher, the address check, the messages
+- ./webhooks.md - when working on connections (what webhooks became): the tables, the outbox statement, the dispatcher, the address check, the messages
 - ./archive.md - when working on Archived: the archive, the archive scope, the move out, the refusals and the
   Explorer's Archived view
 - ./this-browser.md - when working Offline as a Space: its folders, its store, Sync keeping its place, its

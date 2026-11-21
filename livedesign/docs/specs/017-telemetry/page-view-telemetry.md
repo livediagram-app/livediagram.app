@@ -104,7 +104,7 @@ whether or not the design exists.
   StrictMode's dev-only double effect; in production a path can't repeat
   without a navigation in between, and a real reload starts a fresh page.
 - `Help·View·<article id>` ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)) counts help articles too, keyed by article id,
-  and drives the Pages & Help tab's Help section; the two overlap for articles by design.
+  and drives the Help tab; the two overlap for articles by design.
 
 ## Who emits
 
@@ -128,7 +128,7 @@ article say so.
 
 ## Dashboard
 
-The dashboard is liveworkspace's ([Telemetry + public transparency dashboard](telemetry.md) "Dashboard"). Its **Pages** section (Pages & Help) reads page views **by app**: Marketing, Live (the editor app), Help and Dashboard. The app is derived from the path's first segment using the same live route-segment list the router routes by (`LIVE_ROUTE_SEGMENTS` and `pageViewApp` in `packages/api-schema/src/page-views.ts`), so the dashboard and router can't disagree about which app serves a path.
+The dashboard is liveworkspace's ([Telemetry + public transparency dashboard](telemetry.md) "Dashboard"). Its **Pages** tab reads page views **by app**: Marketing, Live (the editor app), Help and Dashboard. The app is derived from the path's first segment using the same live route-segment list the router routes by (`LIVE_ROUTE_SEGMENTS` and `pageViewApp` in `packages/api-schema/src/page-views.ts`), so the dashboard and router can't disagree about which app serves a path.
 
 - **Page Views by App** is a chart stack on the Dashboard: a head plotting each app's line with the combined count, opening into one card per app (a set of paths rather than one type).
 - **Top pages.** The ten most-viewed pages across every app, then each app's own top ten, as ranking cards, each row labelled with the raw path (not title-cased) with its share bar and 30-day sparkline.

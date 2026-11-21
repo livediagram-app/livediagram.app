@@ -2,7 +2,14 @@ import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import { TAB_CONNECTION_SCHEMA } from './connected-tabs';
 import { ItemDb } from './item-db';
-import { itemTabOrder, normalizeReorderEntry, readReorderEntries } from './item-tab-order';
+import {
+  itemTabOrder,
+  normalizeReorderEntry,
+  readReorderEntries,
+  resolveFolderColours,
+  tabFolderColourSchema,
+  tabFolderColourStep,
+} from './item-tab-order';
 import { itemTabReads } from './item-tab-reads';
 import { checkItemTabTables } from './item-tab-tables';
 import {
@@ -30,6 +37,7 @@ function item() {
       BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
     CREATE TABLE item_tabs (item_id TEXT NOT NULL, tab_id TEXT NOT NULL, order_index INTEGER NOT NULL,
       added_at INTEGER NOT NULL, folder TEXT NULL, PRIMARY KEY (item_id, tab_id));
+    ${tabFolderColourSchema('item_tabs')}
     CREATE TABLE stats (tab_id TEXT PRIMARY KEY REFERENCES tabs (id) ON DELETE CASCADE, element_count INTEGER,
       written_at INTEGER, rev INTEGER);
     CREATE TABLE refs (tab_id TEXT NOT NULL, ref TEXT NOT NULL, PRIMARY KEY (tab_id, ref));
@@ -415,6 +423,128 @@ describe('itemTabOrder', () => {
     expect(normalizeReorderEntry({ id: 'a', folder: ' Org ' })).toEqual({ id: 'a', folder: 'Org' });
     expect(normalizeReorderEntry({ id: 'a', folder: '  ' })).toEqual({ id: 'a', folder: null });
     expect(normalizeReorderEntry({ id: 'a' })).toEqual({ id: 'a', folder: null });
+  });
+
+  it('reads a folder colour as a hue name or null, and keeps it apart from one left out', () => {
+    expect(readReorderEntries([{ id: 'a', folder: 'F', folderColor: 'rose' }])).toHaveLength(1);
+    expect(readReorderEntries([{ id: 'a', folder: 'F', folderColor: null }])).toHaveLength(1);
+    expect(readReorderEntries([{ id: 'a', folder: 'F', folderColor: '#ff0000' }])).toBeNull();
+    expect(readReorderEntries([{ id: 'a', folderColor: 3 }])).toBeNull();
+    expect(normalizeReorderEntry({ id: 'a', folder: 'F', folderColor: 'rose' })).toEqual({
+      id: 'a',
+      folder: 'F',
+      folderColor: 'rose',
+    });
+    expect(normalizeReorderEntry({ id: 'a', folder: 'F', folderColor: null })).toEqual({
+      id: 'a',
+      folder: 'F',
+      folderColor: null,
+    });
+    expect('folderColor' in normalizeReorderEntry({ id: 'a', folder: 'F' })).toBe(false);
+  });
+
+  it('refuses a link table name that is not a bare identifier', () => {
+    expect(tabFolderColourSchema('document_tabs')).toBe(
+      'ALTER TABLE document_tabs ADD COLUMN folder_color TEXT NULL;',
+    );
+    expect(() => tabFolderColourSchema('x; DROP TABLE y')).toThrow();
+  });
+
+  it('adds the colour column once, however often the step runs', () => {
+    const raw = new DatabaseSync(':memory:');
+    raw.exec('CREATE TABLE links (tab_id TEXT, folder TEXT)');
+    const sql = nodeItemSql(raw);
+    const step = tabFolderColourStep('links');
+    step((q) => sql.exec(q));
+    step((q) => sql.exec(q));
+    const columns = raw
+      .prepare('PRAGMA table_info(links)')
+      .all()
+      .map((c) => c.name);
+    expect(columns).toEqual(['tab_id', 'folder', 'folder_color']);
+  });
+
+  it('resolves the colours a request leaves out', () => {
+    const stored = new Map([
+      ['a', { folder: 'F', colour: 'rose' }],
+      ['b', { folder: 'F', colour: 'rose' }],
+      ['c', { folder: null, colour: null }],
+      ['d', { folder: 'G', colour: 'cyan' }],
+      ['e', { folder: 'H', colour: null }],
+    ]);
+    const colours = resolveFolderColours(
+      new Map([
+        // Kept: same folder, nothing sent.
+        ['a', { idx: 0, folder: 'F' }],
+        // Sent: written as sent, and the folder's other joiners take it.
+        ['b', { idx: 1, folder: 'F', folderColor: 'amber' as const }],
+        // Joins F: takes the first settled member's colour in order (a's rose).
+        ['c', { idx: 2, folder: 'F' }],
+        // Leaves its folder: none.
+        ['d', { idx: 3, folder: null, folderColor: 'cyan' as const }],
+        // Joins a folder nobody else holds a colour for: Automatic.
+        ['e', { idx: 4, folder: 'New' }],
+      ]),
+      stored,
+    );
+    expect(Object.fromEntries(colours)).toEqual({
+      a: 'rose',
+      b: 'amber',
+      c: 'rose',
+      d: null,
+      e: null,
+    });
+  });
+
+  it('reverts tabs with their folders and colours, a loose tab with none', async () => {
+    const { raw, env } = item();
+    const writes = itemTabWrites(writesConfig());
+    await writes.seedTabs(env, 'A', [tab('t1'), tab('t2')]);
+    await writes.replaceTabs(env, 'A', [
+      { tab: tab('t1'), folder: 'F', folderColor: 'rose' },
+      { tab: tab('t2'), folder: null, folderColor: 'rose' },
+    ]);
+    expect(
+      raw.prepare('SELECT tab_id, folder, folder_color FROM item_tabs ORDER BY tab_id').all(),
+    ).toEqual([
+      { tab_id: 't1', folder: 'F', folder_color: 'rose' },
+      { tab_id: 't2', folder: null, folder_color: null },
+    ]);
+  });
+
+  it('keeps, adopts and clears colours through a write', async () => {
+    const { raw, env } = item();
+    await itemTabWrites(writesConfig()).seedTabs(env, 'A', [tab('t1'), tab('t2'), tab('t3')]);
+    const order = itemTabOrder({ db: (e: Env) => e.DB, tables, savedAt: 'in-batch' });
+    const colours = () =>
+      raw.prepare('SELECT tab_id, folder, folder_color FROM item_tabs ORDER BY order_index').all();
+    await order.reorderTabs(env, 'A', [
+      { id: 't1', folder: 'F', folderColor: 'violet' },
+      { id: 't2', folder: 'F', folderColor: 'violet' },
+      't3',
+    ]);
+    // A write that knows nothing of colour (an older client, an agent's move): F keeps violet, t3 joins it in violet.
+    await order.reorderTabs(env, 'A', [
+      { id: 't1', folder: 'F' },
+      { id: 't2', folder: 'F' },
+      { id: 't3', folder: 'F' },
+    ]);
+    expect(colours()).toEqual([
+      { tab_id: 't1', folder: 'F', folder_color: 'violet' },
+      { tab_id: 't2', folder: 'F', folder_color: 'violet' },
+      { tab_id: 't3', folder: 'F', folder_color: 'violet' },
+    ]);
+    // Back to Automatic, and a tab leaving drops it.
+    await order.reorderTabs(env, 'A', [
+      { id: 't1', folder: 'F', folderColor: null },
+      { id: 't2', folder: 'F', folderColor: null },
+      't3',
+    ]);
+    expect(colours()).toEqual([
+      { tab_id: 't1', folder: 'F', folder_color: null },
+      { tab_id: 't2', folder: 'F', folder_color: null },
+      { tab_id: 't3', folder: null, folder_color: null },
+    ]);
   });
 
   for (const savedAt of ['in-batch', 'after'] as const) {

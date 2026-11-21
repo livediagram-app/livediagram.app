@@ -89,6 +89,7 @@ function okResponse(request: Request): Response {
   if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
+  if (path.endsWith('/automations')) return json({ rules: [], runsToday: 0, runsPerDay: 1000 });
   if (path.endsWith('/room-ticket')) return json({ ticket: 'rt2~sealed', expiresAt: 1 });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ document: LIVE_DOC });
@@ -190,18 +191,21 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty-two documented tools, each with a description', () => {
+  it('registers the twenty-five documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
       'add_tab',
       'archive_document',
+      'change_rules',
+      'change_tabs',
       'change_threads',
       'create_document',
       'delete_document',
       'delete_image',
       'find_documents',
       'list_images',
+      'list_rules',
       'list_templates',
       'list_threads',
       'list_trash',
@@ -309,12 +313,15 @@ describe('tool annotations', () => {
   const BEHAVIOURS: Record<string, ToolBehaviour> = {
     // docs/specs/015-api/mcp-server.md "Comment threads": change_threads deletes the agent's own comments.
     list_threads: 'read',
+    // docs/specs/013-workspace/automations.md "Agents": change_rules deletes rules.
+    list_rules: 'read',
     // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the view's own read.
     view_tab: 'read',
     view_live: 'read',
     // "Edits in the view": a rename or a move, changing nothing else.
     view_edit: 'write',
     change_threads: 'destructive',
+    change_rules: 'destructive',
     find_documents: 'read',
     read_document: 'read',
     list_templates: 'read',
@@ -323,6 +330,7 @@ describe('tool annotations', () => {
     add_tab: 'write',
     share_document: 'write',
     rename_document: 'write',
+    change_tabs: 'write',
     list_trash: 'read',
     restore_document: 'write',
     archive_document: 'destructive',
@@ -387,6 +395,7 @@ describe('tool annotations', () => {
     expect(readOnly).toEqual([
       'find_documents',
       'list_images',
+      'list_rules',
       'list_templates',
       'list_threads',
       'list_trash',
@@ -413,6 +422,7 @@ describe('tool annotations', () => {
       .sort();
     expect(destructive).toEqual([
       'archive_document',
+      'change_rules',
       'change_threads',
       'delete_document',
       'delete_image',

@@ -246,6 +246,8 @@ It also takes `view` (`outline`, `graph`, `layout`, `comments`, `show`, `find`),
 given), `only`, `ref`, `q`, `coarse`, `all` and `style`; a ref that names nothing or several comes back as a
 correctable result naming the candidates.
 
+Its `tabs` list gives each tab in a [tab folder](../006-document/tab-folders.md#agents) its `folder` name.
+
 ### 4.3 `create_document`
 
 Create a new document from elements the model produced. Input: `name`, `tabs:
@@ -328,6 +330,9 @@ the tab was made without them when the deck could not be written. A C4 `template
 could not be, the tab kept). Returns the new `tabId`, `url`,
 and the rendered PNG. (Pair with `read_document`, which lists the document's
 existing tabs, to decide where a new one fits.)
+
+An optional `folder` puts the new tab in a [tab folder](../006-document/tab-folders.md#agents): an existing name adds it as
+that folder's last tab, a new name starts one. The answer's `folder` names it.
 
 ### 4.4 `update_document`
 
@@ -458,7 +463,7 @@ element's `imageId` takes. The shared code is `@liveworkspace/agent-verbs`'s `pa
 - **Fetching a URL.** `@liveworkspace/api-kit`'s `fetchPublicBytes` (`public-fetch.ts`), the server-side fetch of a
   URL someone else chose: https on port 443 only, with no user name or password; a literal address is judged as it
   stands and a name is resolved (DNS over HTTPS, A and AAAA) and refused when any answer is private, loopback,
-  link-local, carrier NAT, multicast, reserved or a cloud metadata address (`public-address.ts`, the index's webhook
+  link-local, carrier NAT, multicast, reserved or a cloud metadata address (`public-address.ts`, the index's connection
   checks), or an internal name (`localhost`, `.local`, `.internal`, a single label). Redirects are followed by hand,
   at most 3, each target checked the same way; the whole exchange, body included, has 10 seconds; the body is read
   through a byte counter that stops one chunk past 10 MB, so a huge or endless answer is cut off there. The answer's
@@ -1032,6 +1037,35 @@ comment, text }` and `delete { ref, comment }`, each with an optional `tabId`. A
   `thread_full`. Bursts meet the per-token write limiter, and the owner's new-comment email goes at most once per
   document per 15 minutes.
 
+### 4.9d Tab folders: `change_tabs`
+
+`{ documentId, changes }`. Write. Puts the document's tabs in [tab folders](../006-document/tab-folders.md#agents), as the editor's
+Organise in Tab Folder does: up to 50 changes in order, `move { tab, folder }` (`null` takes it out), `rename_folder {
+folder, to }` and `ungroup { folder }`. A tab is named by its id or a name one tab alone has. Reads `GET /api/documents/:id`,
+then writes the whole order once with `PUT /api/documents/:id` `{ tabs: [{ id, folder }] }`, which reaches everyone with the
+document open. Answers `{ applied, tabs, url }`: one line per change, and every tab after them, in order, with its folder. An
+unknown tab or folder answers an error naming the tabs or folders, before anything is written; a Participant's or a
+Viewer's grant answers "Only an Editor can change tab folders". Declared once for every product
+(`@liveworkspace/agent-verbs/mcp/tab-folder-tools`).
+
+### 4.9e Automations rules: `list_rules` and `change_rules`
+
+An assistant works a document's [Automations](../013-workspace/automations.md#agents) rules as an Editor does in the
+Rules list, over the same routes (`/api/documents/<id>/automations[/…]`), with exactly their authority. Both are declared
+once for every product with item rules (`@liveworkspace/agent-verbs/mcp/rule-tools`, run by
+`@liveworkspace/agent-verbs/rules`) with this product's kinds, so the rule format in the tool is this product's
+triggers, conditions, steps and values.
+
+- **`list_rules`**: `{ documentId, rule?, runs?, limit? }`. Read. Every rule in order with its sentence, on or off,
+  paused, needs attention, last run, runs this week and next run, and the document's tabs and people; `rule` (an id or
+  exact name) adds its whole body, `runs: true` the recent Audit Trail (20, up to 50). A read-only token may call it.
+- **`change_rules`**: `{ documentId, changes }`. Destructive (it deletes rules). Up to 20 changes in order: `add {rule}`,
+  `set {rule, …}`, `on`, `off`, `duplicate` and `delete {rule}`, `test {rule, tab?}` and `run {rule, tab?}`. Tabs and
+  people may be named by id or name. A refusal is a tool error in words, naming what was applied before it: an
+  Editor of the whole document only (`automations_need_editor`), a read-only token (`read_only_token`), Revert to Snapshot
+  saved only by a person (`automation_needs_a_person`), a rule that does not read (the engine's path and reason), the
+  limits, and a rule or tab it cannot name. It never makes or reads an Incoming Webhook's secret.
+
 ### 4.10 Prompts (discoverability)
 
 Registered MCP **prompts**: pre-canned templates a client surfaces as slash
@@ -1115,11 +1149,11 @@ which is how the gap was found.
 Three behaviours cover the fifteen tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                       |
-| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`                                           |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `unarchive_document`, `upload_image` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `archive_document`, `delete_image`                                                    |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                      |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`                                                          |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `change_tabs`, `share_document`, `rename_document`, `restore_document`, `unarchive_document`, `upload_image` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `archive_document`, `delete_image`                                                                   |
 
 Two tools state one hint more than their behaviour's preset, through the verb (`idempotent`, `openWorld` on
 `mcpTool`) and `@liveworkspace/mcp-kit`'s `toolAnnotations`: `delete_image` is `idempotentHint: true` (removing
@@ -1310,21 +1344,22 @@ code or status: a document in the Trash, a view-only grant, an id that names not
 (a tab id the document lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
 says why by its status (no such tab, view only, the last tab).
 
-| Tool                 | Result object                                                                                                                |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `find_documents`     | `count`, `documents[]` of `{ id, name, updatedAt, library, url, archived? }`                                                 |
-| `read_document`      | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                          |
-| `list_templates`     | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                    |
-| `create_document`    | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                            |
-| `add_tab`            | `documentId`, `tabId`, `name`, `url`, `changesetId`, `rev`, `text`, `lint`, `notes` when the graph or Mermaid lost something |
-| `update_document`    | `id` and `documentId` (the same), `tabId`, `url`                                                                             |
-| `share_document`     | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                                      |
-| `rename_document`    | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab                               |
-| `delete_document`    | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`                               |
-| `list_trash`         | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                            |
-| `restore_document`   | `restored`, `id`, `name` (null when the api omits it), `url`                                                                 |
-| `archive_document`   | `archived`, `id`, `name`                                                                                                     |
-| `unarchive_document` | `unarchived`, `id`, `name`, `library`, `url`                                                                                 |
+| Tool                 | Result object                                                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `find_documents`     | `count`, `documents[]` of `{ id, name, updatedAt, library, url, archived? }`                                                                      |
+| `read_document`      | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name, folder? }` (every tab, in order), `url`                                      |
+| `list_templates`     | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                         |
+| `create_document`    | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `rev` (the first tab's), `folder`, `url`                                        |
+| `add_tab`            | `documentId`, `tabId`, `name`, `folder` when given, `url`, `changesetId`, `rev`, `text`, `lint`, `notes` when the graph or Mermaid lost something |
+| `change_tabs`        | `applied[]` (one line per change), `tabs[]` of `{ id, name, folder? }` (every tab, in order), `url`                                               |
+| `update_document`    | `id` and `documentId` (the same), `tabId`, `url`                                                                                                  |
+| `share_document`     | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                                                           |
+| `rename_document`    | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab                                                    |
+| `delete_document`    | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`                                                    |
+| `list_trash`         | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                 |
+| `restore_document`   | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                      |
+| `archive_document`   | `archived`, `id`, `name`                                                                                                                          |
+| `unarchive_document` | `unarchived`, `id`, `name`, `library`, `url`                                                                                                      |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its
@@ -1386,9 +1421,13 @@ as they can be without saying less.
 
 - **Tool list size.** A schema built from shared parts repeats their descriptions wherever the part is used. In the
   `tools/list` answer each description of 200 characters or more is said once per tool: a repeat reads
-  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). Only the
+  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). A shorter
+  description said again of a property of the same name (`tabId` under each of a tool's ops, in the same words) is
+  left out of the repeats, since the first already said what that property is and a pointer would be longer than
+  the words; other words for the same name, and the same words for another name, are kept. Only the
   listing changes; a call is validated against the tool's own schema
-  (`../packages/mcp-kit/src/tool-list-compact.ts`).
+  (`../packages/mcp-kit/src/tool-list-compact.ts`). Nothing points from one tool to another: a host that loads
+  tools one at a time would be left with a pointer to a schema it never read.
 - **An answer's text** is its structured result as one-line JSON (§4.17).
 - **A tab by its name.** Where a tool reads a tab (`read_document`, `update_document` and the tools that load a tab the same
   way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
@@ -1400,6 +1439,11 @@ as they can be without saying less.
   read-only: its token can find and read, never create or change ...", on every tool
   (`READ_ONLY_TOKEN_WORDS`, `../packages/api-client/src/client.ts`). It used to read "you may view this ... but not
   change it", which names a share role the caller does not have (and no file at all on a create), or the bare code.
+
+- **A picture's place.** An image element that names no picture (`imageId` left out) is a placeholder the person
+  fills in the editor, stored with `imageId: null` (`withPicturePlace`, the model's `element-normalise`). The element
+  format always said so, but a call that left the field out had its whole tab refused ("imageId: a string or
+  null"): found by the benchmark, where a model built a poster round an empty picture frame.
 
 ## 5. Visualise: inline image render
 
@@ -1500,8 +1544,8 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
 
 - **The view resource.** The server lists `ui://livediagram/view.html` (`text/html;profile=mcp-app`), one
   self-contained page with its script and styles inline: the shared viewer (`@liveworkspace/mcp-kit/app-view`,
-  `viewerHtml(app, { edits: true })`, about 29 KB with live updates and in-view edits), its size held under
-  `VIEWER_EDIT_HTML_BUDGET_BYTES` (32 KB) by a test; a page without edits (the other products', about 20 KB) stays
+  `viewerHtml(app, { edits: true })`, about 32 KB with live updates and in-view edits), its size held under
+  `VIEWER_EDIT_HTML_BUDGET_BYTES` (34 KB) by a test; a page without edits (the other products', about 22 KB) stays
   under `VIEWER_HTML_BUDGET_BYTES` (24 KB), the edit parts left out of it. The script ships without indentation,
   blank lines or comment lines (`compactScript`). The SVG is
   drawn as an image, so nothing in it fetches: its `_meta.ui.csp` allows one connection only, the WebSocket to
@@ -1518,10 +1562,10 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
   (another `view_tab`); clicking an element opens the editor at it (`ui/open-link` to
   `/document/<id>#t=<tab>&el=<element>`, the Inbox's element deep link), and **Open in editor** opens the tab.
   A tab that cannot be read says so in the frame; nothing is cached between results.
-- **`view_tab`**: `{ documentId, tabId? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a host
+- **`view_tab`**: `{ documentId, tabId?, rev?, held? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a host
   with MCP Apps keeps it from the model): the tab's SVG, its view box, every element's box with its ref and label
   (for the click) and what an edit may do to it (`canRename`, `canMove`, "Edits in the view"), the document's tabs
-  and links. Its text block is one short line, not the SVG, so a host without
+  and links, the revision drawn (`rev`) and `superseded` ("One live view"). Its text block is one short line, not the SVG, so a host without
   MCP Apps that shows it to the model spends few tokens on it; `read_document` stays the model's read.
 - **Authority.** The view holds no lasting credential. It reads only through the host's own connection to this
   server, so every `view_tab` is the user's token, through the api's ordinary read gate, and a read-only token
@@ -1561,6 +1605,37 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
   - **Cost.** A document with no open view gets no ticket and no socket: `view_live` runs only when a view asks.
     An open view is one idle socket on the room, one mint every 10 minutes, and at most one `view_tab` per
     `LIVE_REDRAW_MS` while people edit.
+- **One live view.** A chat holds one view for every tool call that draws or reads a tab, and each used to follow
+  the document, so a build of ten steps ended as ten identical pictures redrawing together, each holding a socket. A
+  view now follows only until **an agent's later change lands on its tab**; from then it keeps its own step, so the
+  chat reads as the history of the build and the newest view is the live one.
+  - **The step.** A view is opened by a result that says where it left the tab: `rev` on `create_document` (its first tab's),
+    `add_tab`, `update_document`, and `tab.rev` on `read_document`. The view keeps it with the result's PNG.
+  - **While it listens.** A `changeset` op on the shown tab that carries an `agentKey` (a token wrote it: the MCP,
+    the CLI, another view's edit), and is not the view's own edit, stops the view: it closes its socket, keeps the
+    picture it has and its live mark reads **Earlier step**. A person's edits, and a changeset without an
+    `agentKey` (a revert from the editor), draw the tab again as before. Two views opened with no agent change
+    between them (a read after an update) both stay live: they show the same step.
+  - **When it opens again or catches up.** A view the room cannot have told (the chat reloaded, the frame was
+    hidden, the socket dropped, the ticket was renewed) sends `rev` on that `view_tab`, and the server reads the
+    tab's newest `LATER_STEP_LOOK` (5) changesets (`GET /api/documents/:id/changesets?tab=&limit=5`): `superseded` is
+    true when one of them is an agent's and past `rev`. A redraw for a change the view heard sends no `rev`, so
+    the busy path costs nothing more. A view that sends none (an older page, a result without one) is not asked,
+    and a list that cannot be read answers no: the view follows as it always did.
+  - **What it shows then.** A view already drawn keeps its picture. One opening again shows **the picture its own
+    result came with** (it says `held`, and the server answers the tab's name and link with no drawing): it pans
+    and zooms, **Open in editor** still opens the tab, and there are no boxes to click, no tab strip and no pager,
+    since the picture is the step's and not the tab's. With no picture of its own (a host that hands the view no
+    content, an empty tab) it draws the tab as it is now, once, and its mark reads **Snapshot**. Either way its
+    title says a later step changed the document. A view that stopped offers no
+    Edit toggle; the view's own edit moves its step on to the revision it wrote (`view_edit`'s `rev`).
+  - **Cost.** One more api read on a view's first draw and on each catch-up, none on a live redraw; measured
+    locally `view_tab` took 13 to 15 ms with and without it. A superseded view that holds its picture costs no SVG
+    build and holds no socket, where it used to redraw with every change. The page grew by 1.3 KB (31.5 to 32.8 KB).
+    `create` reads its first tab once more for `rev` when it has not already (one api read); a read that fails leaves
+    `rev` out and never fails the create. The **Earlier step** mark keeps its words at every width, where the
+    live mark shrinks to its dot in a narrow frame: the dot alone would not say why the view stopped.
+    (`../packages/mcp-kit/src/app-view-step.ts`, `app-viewer-script.ts`.)
 - **`view_live`**: `{ documentId }`. Read. The view's own tool, kept from the model like `view_tab`: the socket's
   address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms, read from the grant inside), and whether
   the token may edit through the view (`canEdit`, below). Its text block is one line without the ticket.

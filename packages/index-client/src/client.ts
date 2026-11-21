@@ -387,7 +387,7 @@ export function createIndexClient({
     approvalPeople: (itemId: string, share?: ShareAccess | null) =>
       call<{ people: ApprovalCandidate[] }>(`/items/${enc(itemId)}/approval/people`, { share }),
 
-    // Webhooks (webhooks.md): one document's, for someone who can edit all of it. `share`: the link the person
+    // Connections, once webhooks (webhooks.md): one document's, for someone who can edit all of it. `share`: the link the person
     // reaches it through, when it is not one they opened before (the index also finds those under Shared).
     listWebhooks: (itemId: string, share?: ShareAccess | null) =>
       call<{ webhooks: Webhook[] }>(`/items/${enc(itemId)}/webhooks`, { share }),

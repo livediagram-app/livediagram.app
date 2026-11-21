@@ -42,8 +42,8 @@ export function viewResult(
     id: string;
     name: string;
     tab: { id: string; name: string; rev: number; view: string };
-    // Every tab, in order.
-    tabs: { id: string; name: string }[];
+    // Every tab, in order, with its tab folder when it has one.
+    tabs: { id: string; name: string; folder?: string }[];
     url: string;
   },
 ): ToolResult {

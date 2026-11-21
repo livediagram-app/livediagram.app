@@ -44,14 +44,18 @@ describe('structureFirst', () => {
     expect(structureFirst(el({ kind: 'patch', id: 's1', set: { x: 4 } }), 't1')).toBe('relay');
   });
 
-  it('relays a form kept on its tab and asks the store about one pointed elsewhere', () => {
-    const meta = (tabId: string) => ({
-      kind: 'tab-meta',
-      tabId: 't1',
-      patch: { form: { destination: { tabId, typeId: 'task', status: 'todo' } } },
-    });
-    expect(structureFirst(meta('t1'), 't1')).toBe('relay');
-    expect(structureFirst(meta('t2'), 't1')).toBe('stored');
+  // A board destination names a card type and a status, whose cards show on every board that takes them: it never
+  // stays on one tab, so any form carrying one is checked against the stored form (kept as stored, it passes).
+  it('relays a form with no target and asks the store about one that names where responses go', () => {
+    const meta = (form: object) => ({ kind: 'tab-meta', tabId: 't1', patch: { form } });
+    const dest = (tabId: string) => ({ destination: { tabId, typeId: 'task', status: 'todo' } });
+    expect(structureFirst(meta({ heading: 'Bugs' }), 't1')).toBe('relay');
+    expect(structureFirst(meta({ sheet: { tabId: 't1', sheetId: 's' } }), 't1')).toBe('relay');
+    expect(structureFirst(meta(dest('t1')), 't1')).toBe('stored');
+    expect(structureFirst(meta(dest('t2')), 't1')).toBe('stored');
+    expect(structureFirst(meta({ destination: { typeId: 'task', status: 'todo' } }), 't1')).toBe(
+      'stored',
+    );
     expect(structureFirst({ kind: 'tab-meta', tabId: 't1', patch: { theme: 'x' } }, 't1')).toBe(
       'relay',
     );
@@ -110,6 +114,13 @@ describe('structureAgainst', () => {
     ).toBe(true);
     expect(
       structureAgainst(meta({ tabId: 't3', typeId: 'task', status: 'todo' }), stored, 't1'),
+    ).toBe(false);
+    // Another card type or column sends its cards to other boards, whatever tab it claims.
+    expect(
+      structureAgainst(meta({ tabId: 't2', typeId: 'bug', status: 'todo' }), stored, 't1'),
+    ).toBe(false);
+    expect(
+      structureAgainst(meta({ tabId: 't1', typeId: 'task', status: 'done' }), stored, 't1'),
     ).toBe(false);
   });
 });

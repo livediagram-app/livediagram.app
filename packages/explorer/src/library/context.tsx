@@ -6,9 +6,9 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { LibraryHostProps } from './types';
 
-export type LibraryHost = LibraryHostProps & { history: boolean; webhooks: boolean };
+export type LibraryHost = LibraryHostProps & { history: boolean };
 
-const NONE: LibraryHost = { history: true, webhooks: true };
+const NONE: LibraryHost = { history: true };
 const Ctx = createContext<LibraryHost>(NONE);
 
 export function useLibraryHost(): LibraryHost {
@@ -22,12 +22,11 @@ export function LibraryHostProvider({
   imports,
   itemMenu,
   history = true,
-  webhooks = true,
   children,
 }: LibraryHostProps & { children: ReactNode }) {
   const value = useMemo<LibraryHost>(
-    () => ({ gallery, shapeLibraries, walkthroughs, imports, itemMenu, history, webhooks }),
-    [gallery, shapeLibraries, walkthroughs, imports, itemMenu, history, webhooks],
+    () => ({ gallery, shapeLibraries, walkthroughs, imports, itemMenu, history }),
+    [gallery, shapeLibraries, walkthroughs, imports, itemMenu, history],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

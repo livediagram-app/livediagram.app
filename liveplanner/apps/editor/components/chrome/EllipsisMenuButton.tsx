@@ -5,6 +5,7 @@ import { EllipsisGlyph } from '@liveworkspace/workbench/components/primitives/El
 import { MenuErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
 import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
+import type { TabFolderListProps } from '@liveworkspace/workbench/components/chrome/TabFolderList';
 
 // The tab-bar ⋯ button: toggles the unified tab / canvas PortalMenu anchored
 // to itself. Extracted from TabBar.tsx. Pure prop-based component.
@@ -17,10 +18,11 @@ export function EllipsisMenuButton({
   deleteWarning,
   canClearContent,
   locked,
-  folderNames,
+  folders,
   currentFolder,
   onMoveToFolder,
   onRemoveFromFolder,
+  onSetFolderColour,
   onRename,
   onDuplicate,
   onClearContent,
@@ -43,10 +45,11 @@ export function EllipsisMenuButton({
   deleteWarning?: string | undefined;
   canClearContent: boolean;
   locked: boolean;
-  folderNames: string[];
+  folders: TabFolderListProps['folders'];
   currentFolder: string | null;
-  onMoveToFolder: (folderName: string) => void;
+  onMoveToFolder: TabFolderListProps['onMoveToFolder'];
   onRemoveFromFolder: () => void;
+  onSetFolderColour: TabFolderListProps['onSetFolderColour'];
   onRename: () => void;
   onDuplicate: () => void;
   onClearContent: () => void;
@@ -89,10 +92,11 @@ export function EllipsisMenuButton({
             onExport={onExport}
             onToggleLock={onToggleLock}
             locked={locked}
-            folderNames={folderNames}
+            folders={folders}
             currentFolder={currentFolder}
             onMoveToFolder={onMoveToFolder}
             onRemoveFromFolder={onRemoveFromFolder}
+            onSetFolderColour={onSetFolderColour}
             onDelete={onDelete}
             canDelete={canDelete}
             deleteWarning={deleteWarning}

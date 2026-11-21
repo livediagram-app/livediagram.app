@@ -39,7 +39,7 @@ preference, so the email switches are found where every other setting is.
 `/explorer/profile` is one of the shared Explorer's retired addresses: liveworkspace's Explorer opens Settings on
 Notifications in its place (`RETIRED_TARGETS.profile`). It must keep doing so: every notification email carries a
 "Manage your notifications" link and a `List-Unsubscribe` header, and those messages sit in inboxes indefinitely.
-New mail links at `/explorer?settings=notifications` directly (`apps/api/src/email/templates.ts`).
+New mail links at `/explorer?settings=notifications` directly (`apps/api/src/email/email-shell.ts`).
 
 ### Reaching it
 

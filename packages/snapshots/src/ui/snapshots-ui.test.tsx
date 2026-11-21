@@ -204,6 +204,56 @@ describe('Snapshots alone, in History', () => {
     expect(await screen.findByText('Taking another removes the oldest, “Snap 4”.')).toBeTruthy();
   });
 
+  // A snapshot a rule names (Revert to Snapshot) is beside the five: badged, with no Delete, and never the one the
+  // next take removes.
+  it('badges a snapshot kept by a rule, says why, offers it no Delete, and never counts it', async () => {
+    const api = fakeApi([
+      ...[0, 1, 2, 3].map((i) => snap(i, { kept: false })),
+      snap(4, { name: 'Clean board', kept: true }),
+    ]);
+    mount({ api, noun: 'canvas', viewerId: null });
+    await open();
+    const badge = await screen.findByText('Kept by a Rule');
+    const row = badge.closest<HTMLElement>('[data-snapshot-row]')!;
+    expect(row.getAttribute('data-snapshot-row')).toBe('s_4');
+    // The Before revert badge's own look, and why it is kept for hover, keyboard and assistive technology.
+    expect(badge.className).toContain('rounded-[5px]');
+    expect(badge.tabIndex).toBe(0);
+    const described = document.getElementById(badge.getAttribute('aria-describedby')!);
+    expect(described?.textContent).toBe(
+      'A rule reverts to this snapshot. Change or delete the rule to let it go.',
+    );
+    expect(within(row).queryByRole('button', { name: 'Delete snapshot' })).toBeNull();
+    expect(within(row).getByRole('button', { name: 'Revert to Clean board' })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: 'Delete snapshot' })).toHaveLength(4);
+    // Four of the five counted: the next take removes nothing.
+    openTake();
+    await screen.findByLabelText('Snapshot name');
+    expect(document.querySelector('[data-snapshots-full]')).toBeNull();
+  });
+
+  it('says nothing of the oldest while the list is still on its way', async () => {
+    const api = fakeApi([]);
+    api.list.mockImplementation(() => new Promise(() => {}));
+    mount({ api, noun: 'canvas', viewerId: null });
+    await open();
+    openTake();
+    await screen.findByLabelText('Snapshot name');
+    expect(document.querySelector('[data-snapshots-full]')).toBeNull();
+  });
+
+  it('names the oldest that no rule keeps as the one the next take removes', async () => {
+    const api = fakeApi([
+      ...[0, 1, 2, 3, 4].map((i) => snap(i)),
+      snap(5, { name: 'Clean board', kept: true }),
+    ]);
+    mount({ api, noun: 'canvas', viewerId: null });
+    await open();
+    await screen.findByText('Clean board');
+    openTake();
+    expect(await screen.findByText('Taking another removes the oldest, “Snap 4”.')).toBeTruthy();
+  });
+
   it('puts the Before revert badge on its own line below sm, and keeps the bin pad off Revert', async () => {
     const api = fakeApi([snap(1, { kind: 'before-revert', name: 'A long snapshot name' })]);
     mount({ api, noun: 'plan', viewerId: null });
@@ -519,6 +569,9 @@ describe('snapshot words', () => {
     );
     expect(snapshotAuthor(snap(1), 'user_a')).toBe('You');
     expect(snapshotAuthor(snap(1), 'user_b')).toBe('Ada');
+    const byRule = { id: 'automation', name: 'Nightly', color: '#7c3aed' };
+    expect(snapshotAuthor(snap(1, { author: byRule }), 'automation')).toBe('Automation · Nightly');
+    expect(snapshotAuthor(snap(1, { author: { ...byRule, name: '' } }), null)).toBe('Automation');
     expect(snapshotMeta(snap(0, { createdAt: NOW + 5 }), null, NOW)).toBe(
       'Ada · just now · 2.0 KB',
     );

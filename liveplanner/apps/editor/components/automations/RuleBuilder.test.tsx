@@ -1,14 +1,25 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "The rule builder": the On / Off chip, a save that fails or names a taken name,
 // Rule Details, Test on a Card's failures, Any Field…, and each kind's first form.
+import './test-kit';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ACTION_KINDS, CONDITION_KINDS, defaultAction, defaultCondition } from './step-defaults';
-import { RuleBuilder } from './RuleBuilder';
+import { RuleBuilder } from '@liveworkspace/automations-ui/RuleBuilder';
 import { AutomationRefusal } from './automations-client';
-import { ValueTextField, ValueChipsText, insertValue } from './ValueInsert';
-import { lastRunWords, meterWords, runWhen, runsWords, tookWords } from './run-words';
-import { RunsMeter } from './RunsMeter';
+import {
+  ValueTextField,
+  ValueChipsText,
+  insertValue,
+} from '@liveworkspace/automations-ui/ValueInsert';
+import {
+  lastRunWords,
+  meterWords,
+  runWhen,
+  runsWords,
+  tookWords,
+} from '@liveworkspace/automations-ui/run-words';
+import { RunsMeter } from '@liveworkspace/automations-ui/RunsMeter';
 import type { CustomFieldDef } from '@liveplanner/items';
 import { standardColours } from '@liveplanner/project';
 import { ANA, NOW, outline, rule, run } from './test-fixtures';
@@ -16,7 +27,7 @@ import { ANA, NOW, outline, rule, run } from './test-fixtures';
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 const toast = vi.hoisted(() => ({ info: vi.fn(), success: vi.fn(), error: vi.fn() }));
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const api = { save: vi.fn(), toggle: vi.fn(), test: vi.fn() };
 type Saved = ReturnType<typeof rule>;
@@ -35,14 +46,13 @@ function Builder({
       initial={initial}
       outline={outline()}
       api={api}
-      person="Ana Costa"
       now={NOW}
       phone={phone}
       onBack={() => {}}
       onSaved={() => {}}
       onDirty={() => {}}
       timeZone="Europe/London"
-      scope={{ projectId: 'p1', shareCode: null }}
+      scope={{ ownerId: 'o1', itemId: 'p1', shareCode: null }}
     />
   );
 }
@@ -195,7 +205,7 @@ describe('ValueTextField', () => {
         value="Hi "
         multiline={false}
         onChange={onChange}
-        fields={[{ id: 'f1', name: 'Completed On' }]}
+        narrow={[{ id: 'f1', name: 'Completed On' }]}
       />,
     );
     (

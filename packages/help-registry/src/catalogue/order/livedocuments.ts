@@ -151,6 +151,7 @@ export const ORDER: readonly string[] = [
   'tools/dark-mode',
   'tools/find-and-replace',
   'tools/markdown-import',
+  'tools/automations',
   'palette/shapes/style-presets',
   'tools/layout-cleanup',
   'canvas/layer-order',

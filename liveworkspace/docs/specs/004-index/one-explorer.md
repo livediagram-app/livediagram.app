@@ -535,7 +535,7 @@ liveworkspace.app.
   dialog, "“<title>” is archived", saying archived documents can't be opened or edited until they are moved out of
   Archived, with **Cancel** and **Change Folder** (which opens Change Folder on it). Its menu offers **Open** (the
   same dialog), **Rename**, **Change Folder**, and **Delete <Kind>** (to the Trash, from where a restore puts it back
-  in Archived); never Duplicate, Share, Hide from Recent, History, Webhooks, an app's own verbs or Move
+  in Archived); never Duplicate, Share, Hide from Recent, History, an app's own verbs or Move
   to Archived. An editor address reached directly shows the editor's archived card (the contract's "Grants") with
   Change Folder, which comes back here as `/explorer/archived?move=<id>` and opens Change Folder on it.
 - **Moving one out.** Change Folder, or a drag onto My Work, a folder or a team in the sidebar: it lands there,
@@ -1063,7 +1063,7 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   rename blocked for 190 to 1,150 ms and each reveal for 250 to 330 ms; windowed, it holds 30 cards and
   neither blocks a frame for 50 ms (measured 2026-11-08).
 - **The Explorer's dialogs load when first opened.** Share, Change Folder (an item's or a folder's), Use as Default,
-  Default Folders, History, Webhooks and Share's Community tab are each fetched the first time one opens, never with
+  Default Folders, History and Share's Community tab are each fetched the first time one opens, never with
   the Explorer (`packages/explorer/src/explorer/Dialogs.tsx`; Share, Change Folder and the two defaults dialogs
   were about 28 KiB gzipped of `/explorer`'s first load). An item's or folder's ⋯ menu fetches the dialogs it
   offers as it opens, so a press on one of its rows finds the code in and the dialog opens in that press's own

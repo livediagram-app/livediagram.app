@@ -1,11 +1,11 @@
-// Automation sends (liveworkspace/docs/specs/004-index/webhooks.md "Automation sends"): a liveplanner plan's room posts
-// what its automation rules send through the plan's own webhooks, as a rule runs.
+// Automation sends (liveworkspace/docs/specs/004-index/webhooks.md "Automation sends"): an item's room posts what its
+// automation rules send through the item's own connections, as a rule runs. Every app's rules send this way.
 //
 //   POST /app/items/:id/automation-sends  {sends} (at most AUTOMATION_SENDS_MAX) → 200 {results}, in the order sent
 //
-// One read settles every send (the webhook is this plan's, live, under its pending cap; the delivery not already
-// written), then one insert queues the queued ones. A send's delivery id is made from the item, the webhook and the
-// send's key, so a retried run's send writes nothing new and answers queued.
+// One read settles every send (the connection is this item's, live, under its pending cap; the delivery not already
+// written), then one insert queues the queued ones. A send's delivery id is made from the item, the connection and
+// the send's key, so a retried run's send writes nothing new and answers queued.
 
 import { sha256Hex } from '@liveworkspace/api-schema/sha256';
 import {
@@ -20,23 +20,30 @@ import {
   type WebhookPauseReason,
 } from '@liveworkspace/index-client';
 import { appOrigin, type Env } from '../env';
-import { badRequest, fail, json, readObject } from '../http';
-import type { AutomationDetail } from './messages';
+import { badRequest, json, readObject } from '../http';
+import type { AutomationDetail, AutomationSubject } from './messages';
 import { automationSendStatement, automationTargets, type QueuedAutomationSend } from './outbox';
 
-// A key's and a webhook id's longest, and a card's title (cut to it). A card's link longer than WEBHOOK_URL_MAX is
-// dropped.
+// A key's and a connection id's longest, a subject's title and reference (each cut to it). A subject's link longer
+// than WEBHOOK_URL_MAX is dropped.
 const KEY_MAX = 200;
-const CARD_TITLE_MAX = 200;
+const SUBJECT_TITLE_MAX = 200;
+const SUBJECT_REF_MAX = 40;
 
-// The words a rule's Audit Trail shows for a refused send.
-const NOT_FOUND = 'This webhook isn’t on this plan any more';
-const FULL = 'Too many messages waiting for this webhook';
-const PAUSED: Record<WebhookPauseReason, string> = {
-  paused: 'an editor paused it',
-  creator_left: 'the person who added it can no longer edit this plan',
-  failing: 'its last 20 messages failed',
-  gone: 'the address said it’s gone',
+// What each app calls its item, in the words a rule's Audit Trail shows for a refused send.
+const ITEM_WORD: Record<App, string> = {
+  livediagram: 'document',
+  liveplanner: 'plan',
+  livedocuments: 'document',
+  livedesign: 'design',
+  livehuddle: 'Space',
+};
+const FULL = 'Too many messages waiting for this connection';
+const PAUSED: Record<WebhookPauseReason, (item: string) => string> = {
+  paused: () => 'an editor paused it',
+  creator_left: (item) => `the person who added it can no longer edit this ${item}`,
+  failing: () => 'its last 20 messages failed',
+  gone: () => 'the address said it’s gone',
 };
 
 type Parsed = { key: string; webhookId: string; at: number; detail: AutomationDetail };
@@ -49,9 +56,12 @@ const cut = (text: string, max: number) => (text.length > max ? text.slice(0, ma
 const idText = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0 && value.length <= KEY_MAX;
 
-// A card's link, kept only when it is on the app's own origin (so a chat's Open in liveplanner can't point elsewhere),
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
+
+// A subject's link, kept only when it is on the app's own origin (so a chat's Open in <app> can't point elsewhere),
 // and with `|` encoded, which would end a Slack link's address.
-function cardUrl(env: Env, app: App, value: string): string | null {
+function subjectUrl(env: Env, app: App, value: string): string | null {
   const origin = appOrigin(env, app);
   if (!origin || value.length > WEBHOOK_URL_MAX || !URL.canParse(value)) return null;
   const url = new URL(value);
@@ -59,33 +69,59 @@ function cardUrl(env: Env, app: App, value: string): string | null {
   return url.href.replace(/\|/g, '%7C');
 }
 
+// What a send is about: `subject`, else `card`, the field's name while only liveplanner sent (kept one release).
+// Null for none; undefined for a shape that refuses the push. A reference that is not text is dropped, never refused.
+function parseSubject(
+  env: Env,
+  app: App,
+  s: Record<string, unknown>,
+): AutomationSubject | null | undefined {
+  const aliased = s.subject === undefined;
+  const raw = aliased ? s.card : s.subject;
+  if (raw === undefined || raw === null) return null;
+  if (!isRecord(raw) || typeof raw.title !== 'string' || typeof raw.url !== 'string') {
+    return undefined;
+  }
+  let ref: string | undefined;
+  if (aliased) {
+    if (!Number.isInteger(raw.key)) return undefined;
+    ref = cardRefFor(raw.ref, raw.key as number) ?? `#${raw.key as number}`;
+  } else if (typeof raw.ref === 'string') {
+    ref = cut(raw.ref.trim(), SUBJECT_REF_MAX) || undefined;
+  }
+  return {
+    ...(ref ? { ref } : {}),
+    title: cut(raw.title.trim(), SUBJECT_TITLE_MAX) || 'Untitled',
+    url: subjectUrl(env, app, raw.url),
+  };
+}
+
+// The card a plain endpoint read before subjects (`{key, ref?, title, url}`), for a liveplanner subject whose
+// reference ends in the card's number ("WI-48", "#48"); undefined for a subject that is not a card.
+function cardOf(subject: AutomationSubject): AutomationDetail['card'] {
+  const number = /(\d{1,15})$/.exec(subject.ref ?? '');
+  if (!number) return undefined;
+  const key = Number(number[1]);
+  const ref = cardRefFor(subject.ref, key);
+  return { key, ...(ref ? { ref } : {}), title: subject.title, url: subject.url };
+}
+
 function parseSend(env: Env, app: App, value: unknown, now: number): Parsed | null {
-  const s = value as Record<string, unknown> | null;
-  if (!s || typeof s !== 'object' || Array.isArray(s)) return null;
+  if (!isRecord(value)) return null;
+  const s = value;
   if (!idText(s.key) || !idText(s.webhookId) || !isTime(s.at)) return null;
   if (typeof s.rule !== 'string' || typeof s.text !== 'string' || s.text.trim() === '') return null;
-  let card: AutomationDetail['card'] = null;
-  if (s.card !== null) {
-    const c = s.card as Record<string, unknown> | undefined;
-    if (!c || typeof c !== 'object' || Array.isArray(c)) return null;
-    if (!Number.isInteger(c.key) || typeof c.title !== 'string' || typeof c.url !== 'string') {
-      return null;
-    }
-    const ref = cardRefFor(c.ref, c.key as number);
-    card = {
-      key: c.key as number,
-      ...(ref ? { ref } : {}),
-      title: cut(c.title.trim(), CARD_TITLE_MAX) || 'Untitled',
-      url: cardUrl(env, app, c.url),
-    };
-  }
+  const subject = parseSubject(env, app, s);
+  if (subject === undefined) return null;
+  const card = app === 'liveplanner' && subject ? cardOf(subject) : undefined;
   return {
     key: s.key,
     webhookId: s.webhookId,
     at: Math.min(Math.floor(s.at), now),
     detail: {
       rule: cut(s.rule.trim(), AUTOMATION_RULE_MAX) || 'Untitled',
-      card,
+      subject,
+      ...(card ? { card } : {}),
       text: cut(s.text, AUTOMATION_TEXT_MAX),
     },
   };
@@ -95,7 +131,7 @@ function parseSend(env: Env, app: App, value: unknown, now: number): Parsed | nu
 const sendId = async (itemId: string, webhookId: string, key: string) =>
   `aut:${await sha256Hex(new TextEncoder().encode(`${itemId}\n${webhookId}\n${key}`))}`;
 
-/** POST /app/items/:id/automation-sends, from the item's own app, which is liveplanner. */
+/** POST /app/items/:id/automation-sends, from the item's own app (app-routes.ts refuses any other). */
 export async function pushAutomationSends(
   env: Env,
   itemId: string,
@@ -103,7 +139,6 @@ export async function pushAutomationSends(
   request: Request,
   now = Date.now(),
 ): Promise<Response> {
-  if (app !== 'liveplanner') return fail(403, 'wrong_app');
   const body = await readObject(request);
   const list = body?.sends;
   if (!Array.isArray(list) || list.length > AUTOMATION_SENDS_MAX) {
@@ -124,6 +159,7 @@ export async function pushAutomationSends(
     sends.map((s, i) => ({ webhookId: s.webhookId, id: ids[i]! })),
   );
   const byId = new Map(webhooks.map((w) => [w.id, w]));
+  const item = ITEM_WORD[app];
   // Each webhook's sends queued so far in this push, and the delivery ids among them (a key sent twice in one push).
   const ahead = new Map<string, number>();
   const queuedIds = new Set<string>();
@@ -134,14 +170,19 @@ export async function pushAutomationSends(
     if (written.has(pair) || queuedIds.has(pair)) return { key: send.key, queued: true };
     const webhook = byId.get(send.webhookId);
     if (!webhook) {
-      return { key: send.key, queued: false, reason: NOT_FOUND, code: 'webhook_not_found' };
-    }
-    if (webhook.paused_at !== null) {
-      const why = PAUSED[webhook.paused_reason ?? 'paused'] ?? PAUSED.paused;
       return {
         key: send.key,
         queued: false,
-        reason: `This webhook is paused: ${why}`,
+        reason: `This connection isn’t on this ${item} any more`,
+        code: 'webhook_not_found',
+      };
+    }
+    if (webhook.paused_at !== null) {
+      const why = (PAUSED[webhook.paused_reason ?? 'paused'] ?? PAUSED.paused)(item);
+      return {
+        key: send.key,
+        queued: false,
+        reason: `This connection is paused: ${why}`,
         code: 'webhook_paused',
       };
     }
