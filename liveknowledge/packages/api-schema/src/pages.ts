@@ -79,8 +79,8 @@ export type ArticleWrite = {
   article?: string;
   markdown: string;
   mode?: ArticleWriteMode;
-  look?: ArticleLookId;
-  accent?: string;
+  // No `look` and no `accent`: a page has no style of its own. The look is the knowledgebase's
+  // (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"), in the document's metadata.
 };
 
 export type PagesRequest = { pages: PageChange[] } | { article: ArticleWrite };

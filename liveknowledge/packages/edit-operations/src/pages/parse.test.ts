@@ -46,8 +46,6 @@ describe('an article write', () => {
           markdown: '# Hi',
           article: 'Brief',
           mode: 'append',
-          look: 'report',
-          accent: '#ff0066',
         },
       }),
     ).toEqual({
@@ -55,8 +53,6 @@ describe('an article write', () => {
         markdown: '# Hi',
         article: 'Brief',
         mode: 'append',
-        look: 'report',
-        accent: '#ff0066',
       },
     });
     expect(parsePagesRequest({ article: { markdown: '' } })).toEqual({ article: { markdown: '' } });
@@ -72,8 +68,17 @@ describe('an article write', () => {
     // A page holds one article on the continuous page: no new article, paper size, turn or page numbers.
     for (const field of ['new', 'size', 'orientation', 'pageNumbers'])
       expect(at({ markdown: 'x', [field]: true }).message).toContain(`takes no "${field}"`);
-    expect(at({ markdown: 'x', accent: 'pink' }).message).toContain('hex');
-    expect(at({ markdown: 'x', look: 'fancy' }).message).toContain('"look"');
+    // No look of its own (page-surface.md "Knowledgebase Style"): refused by name, saying where the style lives.
+    for (const [field, value] of [
+      ['look', 'report'],
+      ['accent', '#ff0066'],
+    ] as const) {
+      const refused = at({ markdown: 'x', [field]: value });
+      expect(refused.code).toBe('invalid_value');
+      expect(refused.message).toContain(`takes no "${field}"`);
+      expect(refused.message).toContain('knowledgebase setting');
+      expect(refused.message).toContain('"knowledgeStyle"');
+    }
     expect(at({ markdown: 'x', title: 'T' }).message).toContain('takes no "title"');
   });
 

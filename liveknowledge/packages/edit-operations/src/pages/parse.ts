@@ -2,12 +2,7 @@
 // "Interfaces and contracts"): strictly, so a misspelt field is refused by name rather than ignored.
 // Answers the request, or the refusal that says what was wrong and where.
 import { type ArticleWrite, type PagesRefusal, type PagesRequest } from '@liveknowledge/api-schema';
-import {
-  isRecord,
-  ARTICLE_LOOK_IDS,
-  ARTICLE_MARKDOWN_MAX,
-  isArticleHex,
-} from '@liveknowledge/document';
+import { isRecord, ARTICLE_MARKDOWN_MAX } from '@liveknowledge/document';
 
 type Raw = Record<string, unknown>;
 
@@ -39,17 +34,21 @@ const text = (v: unknown, field: string, max: number): string => {
   return v as string;
 };
 
-const hex = (v: unknown, field: string): string => {
-  if (isArticleHex(v)) return v;
-  return bad(`"${field}" is a hex colour such as #0f172a.`);
-};
+// What an article write once took and no longer does (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase
+// Style"): a page has no look of its own. Named, so the refusal says where the setting lives now.
+const RETIRED_STYLE_FIELDS = ['look', 'accent'] as const;
+/** The refusal for a write that names a page's look: fixable, it says what to send instead. */
+export const STYLE_IS_THE_KNOWLEDGEBASES = (field: string): string =>
+  `"article" takes no "${field}": a page has no style of its own. The look is a knowledgebase setting, the same for every page. Leave "${field}" out, and set the style once with PUT /api/documents/<id> { "knowledgeStyle": { "theme", "headingFont", "bodyFont", "textSize", "lineSpacing", "headingStyle", "accent" } } (an Editor's token with the write scope), or in Knowledgebase Style in the editor.`;
 
 function articleWrite(v: unknown): ArticleWrite {
   if (!isRecord(v)) return bad('"article" is an object with "markdown".');
+  for (const field of RETIRED_STYLE_FIELDS)
+    if (v[field] !== undefined) bad(STYLE_IS_THE_KNOWLEDGEBASES(field));
   onlyKeys(
     v,
     // No "new", "size", "orientation" or "pageNumbers": a page holds one article, on the continuous page.
-    ['article', 'markdown', 'mode', 'look', 'accent', 'as'],
+    ['article', 'markdown', 'mode', 'as'],
     '"article"',
   );
   if (typeof v.markdown !== 'string') bad('"markdown" is the article\'s text, in Markdown.');
@@ -64,8 +63,6 @@ function articleWrite(v: unknown): ArticleWrite {
     ...(v.mode === undefined
       ? {}
       : { mode: oneOf(['replace', 'append'] as const, v.mode, 'mode') }),
-    ...(v.look === undefined ? {} : { look: oneOf(ARTICLE_LOOK_IDS, v.look, 'look') }),
-    ...(v.accent === undefined ? {} : { accent: hex(v.accent, 'accent') }),
   };
 }
 

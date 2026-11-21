@@ -255,14 +255,13 @@ describe('the writing', () => {
     expect(write(tab, { markdown: 'More', mode: 'append' }).tab.elements).toHaveLength(1);
   });
 
-  it('sets the look and accent, keeping the rest of the style', () => {
+  it('sets no look: the style is the knowledgebase’s, and what the flow holds is kept as it was', () => {
     const tab = withArticle('f', { blocks: [para('1', 'x')], style: { margins: 'wide' } });
-    const out = write(tab, { markdown: 'y', look: 'report', accent: '#ff0066' });
-    expect(articlesOf(out.tab).f!.style).toEqual({
-      margins: 'wide',
-      look: 'report',
-      accent: '#ff0066',
-    });
+    const out = write(tab, { markdown: 'y' });
+    expect(articlesOf(out.tab).f!.style).toEqual({ margins: 'wide' });
+    expect(
+      articlesOf(write(withArticle('g', { blocks: [para('1', 'x')] }), { markdown: 'y' }).tab).g,
+    ).not.toHaveProperty('style');
   });
 
   it('refuses a locked article and writing past the limits', () => {

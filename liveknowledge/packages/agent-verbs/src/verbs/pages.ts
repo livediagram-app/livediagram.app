@@ -2,7 +2,6 @@
 // view), `article get` (one article as Markdown) and `article set` (write_article), over the calls the MCP's
 // write_article shares. Articles are named by id or title.
 import { z } from 'zod';
-import { ARTICLE_LOOK_IDS, type ArticleLookId } from '@liveknowledge/document';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import {
   pagesTabOf,
@@ -140,11 +139,8 @@ export const articleSet = defineVerb({
     file: z.string().describe('The Markdown file, or - for stdin'),
     article: z.string().optional().describe('The article by id or title'),
     append: z.boolean().optional().describe('Add after the last block instead of replacing'),
-    look: z
-      .enum(ARTICLE_LOOK_IDS as [ArticleLookId, ...ArticleLookId[]])
-      .optional()
-      .describe('clean, classic, report, notebook or bold'),
-    accent: z.string().optional().describe('The accent colour, a hex'),
+    // No look and no accent: a page has no style of its own; the look is the knowledgebase's, set once for every
+    // page (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style").
     // A paragraph a person is typing in holds the write back (docs/specs/024-agents/pages-for-agents.md "Held
     // paragraphs"): retried every HELD_RETRY_INTERVAL_MS while the next try fits in the seconds given.
     waitHeld: writeFlags.waitHeld.describe(
@@ -164,8 +160,6 @@ export const articleSet = defineVerb({
           markdown,
           ...(input.article ? { article: input.article } : {}),
           ...(input.append ? { mode: 'append' as const } : {}),
-          ...(input.look ? { look: input.look } : {}),
-          ...(input.accent ? { accent: input.accent } : {}),
         },
         'cli',
       );

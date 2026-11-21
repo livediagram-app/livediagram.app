@@ -267,8 +267,6 @@ describe('article get and article set', () => {
         file: 'a.md',
         article: 'Brief',
         append: true,
-        look: 'report',
-        accent: '#ff0066',
       }),
     );
     expect(sent).toEqual([
@@ -277,8 +275,6 @@ describe('article get and article set', () => {
           markdown: '# Hello',
           article: 'Brief',
           mode: 'append',
-          look: 'report',
-          accent: '#ff0066',
         },
       },
     ]);

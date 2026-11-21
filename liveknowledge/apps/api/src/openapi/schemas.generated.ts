@@ -929,14 +929,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   ArticleWrite: {
     additionalProperties: false,
     properties: {
-      accent: {
-        type: 'string',
-      },
       article: {
         type: 'string',
-      },
-      look: {
-        $ref: '#/components/schemas/ArticleLookId',
       },
       markdown: {
         type: 'string',
@@ -2305,6 +2299,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       knowledgeSettings: {
         $ref: '#/components/schemas/KnowledgeSettingsWire',
       },
+      knowledgeStyle: {
+        $ref: '#/components/schemas/KnowledgeStyleWire',
+      },
       name: {
         type: 'string',
       },
@@ -2361,6 +2358,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'source',
       'presentation',
       'knowledgeSettings',
+      'knowledgeStyle',
       'savedAt',
       'createdAt',
       'ownerName',
@@ -3915,6 +3913,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     description:
       "What `POST conflicts/<id>/ask-owners` and `POST knowledge/remind-owners` answer: what was sent, or why nothing was. `sent` counts the owners emailed of `owners` named; `no_recipients` is owners who turned the emails off, have no verified address or can no longer open the knowledgebase; `daily_limit` the knowledgebase's ceiling of emails a day; `unavailable` a deployment that sends no email.",
   },
+  KnowledgeHeadingStyle: {
+    enum: ['plain', 'ruled'],
+    type: 'string',
+  },
   KnowledgeHealthCounts: {
     additionalProperties: false,
     properties: {
@@ -3933,6 +3935,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     required: ['verified', 'reviewDue', 'neverVerified', 'total'],
     type: 'object',
+  },
+  KnowledgeLineSpacing: {
+    enum: ['compact', 'comfortable', 'relaxed'],
+    type: 'string',
   },
   KnowledgeOverviewResponse: {
     additionalProperties: false,
@@ -4461,6 +4467,39 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['name', 'pages'],
     type: 'object',
   },
+  KnowledgeStyle: {
+    additionalProperties: false,
+    properties: {
+      accent: {
+        type: 'string',
+      },
+      bodyFont: {
+        type: 'string',
+      },
+      headingFont: {
+        type: 'string',
+      },
+      headingStyle: {
+        $ref: '#/components/schemas/KnowledgeHeadingStyle',
+      },
+      lineSpacing: {
+        $ref: '#/components/schemas/KnowledgeLineSpacing',
+      },
+      textSize: {
+        $ref: '#/components/schemas/KnowledgeTextSize',
+      },
+      theme: {
+        type: 'string',
+      },
+    },
+    required: ['theme', 'headingFont', 'bodyFont', 'textSize', 'lineSpacing', 'headingStyle'],
+    type: 'object',
+  },
+  KnowledgeStyleWire: {
+    $ref: '#/components/schemas/KnowledgeStyle',
+    description:
+      'The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): the one look every page is drawn in. In a document read (always whole), the `document-meta` op when it changed, and the metadata write (`PUT /api/documents/<id>`), which takes any of its fields and `accent: null` to clear a picked accent.',
+  },
   KnowledgeSuggestion: {
     additionalProperties: false,
     description:
@@ -4558,6 +4597,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     required: ['pages', 'reviewEvery', 'health', 'recent', 'yoursToReview'],
     type: 'object',
+  },
+  KnowledgeTextSize: {
+    enum: ['small', 'medium', 'large'],
+    type: 'string',
   },
   KnowledgeTrustState: {
     description: 'A page\'s verified state, worked out when read (verification.md "States").',

@@ -3,7 +3,6 @@
 // look. The pages its writing reaches are the editor's to count ("Pages for the writing").
 import type { ArticleWrite, PagesRefusal } from '@liveknowledge/api-schema';
 import {
-  ARTICLE_LOOK_IDS,
   articleFromMarkdown,
   articleNoteIds,
   articlesOf,
@@ -157,10 +156,8 @@ export function applyArticleWrite(
       'article_too_large',
       `That makes ${blocks.length.toLocaleString('en')} blocks; an article holds at most ${MAX_ARTICLE_BLOCKS.toLocaleString('en')}.`,
     );
-  // The look.
+  // No look of its own: the style is the knowledgebase's. What the flow holds (nothing, once read) is kept.
   const style: ArticleStyle = { ...doc.style };
-  if (write.look && ARTICLE_LOOK_IDS.includes(write.look)) style.look = write.look;
-  if (write.accent) style.accent = write.accent;
   const next: ArticleFlow = Object.keys(style).length ? { blocks, style } : { blocks };
 
   // Zones left out go with their elements; margin notes whose text is gone lose their markers.
