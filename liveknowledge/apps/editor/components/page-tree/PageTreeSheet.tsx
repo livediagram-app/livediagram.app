@@ -3,17 +3,31 @@
 // The page tree on a phone (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "On a phone the tree is a sheet
 // opened from the top bar"): a Pages button in the top row, and the same tree in the shared bottom sheet, its rows 44px tall.
 // Choosing a page closes the sheet.
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
+import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { HoverCard } from '@liveknowledge/ui';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { SearchField } from '@/components/knowledge/SearchField';
 import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton';
 import { PageTree, type PageTreeProps } from './PageTree';
-import { NewPageButton } from './PageTreeSidebar';
+import { NewPageButton, type KnowledgebaseHead } from './PageTreeSidebar';
+import { PAGE_RENAME_FIELD } from './PageTreeRow';
 import { PagesIcon } from './page-tree-icons';
 
-export function PageTreeSheet({ name, ...tree }: PageTreeProps & { name: string }) {
+export function PageTreeSheet({
+  name,
+  onRenameKnowledgebase,
+  menu,
+  ...tree
+}: PageTreeProps & {
+  name: string;
+  onRenameKnowledgebase?: ((name: string) => void) | undefined;
+  // The knowledgebase's menu in the sheet's head (PageTreeSidebar's `menu`); `close` closes the sheet.
+  menu?: ((head: KnowledgebaseHead & { close: () => void }) => ReactNode) | undefined;
+}) {
   const [open, setOpen] = useState(false);
+  const [renaming, setRenaming] = useState(false);
+  const shownName = name.trim() || 'Untitled Knowledgebase';
   const { actions } = tree;
   // Opening a page, or adding one, is what the sheet was for: it closes.
   const sheetActions = useMemo(
@@ -55,9 +69,33 @@ export function PageTreeSheet({ name, ...tree }: PageTreeProps & { name: string 
           zClassName="z-[var(--z-modal)]"
           flush
         >
-          <p className="truncate px-4 pb-1 pt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
-            {name.trim() || 'Untitled Knowledgebase'}
-          </p>
+          {renaming && onRenameKnowledgebase ? (
+            <div className="px-4 pb-1 pt-1">
+              <NameEditor
+                label="Knowledgebase name"
+                initial={name}
+                onCommit={(next) => {
+                  onRenameKnowledgebase(next);
+                  setRenaming(false);
+                }}
+                onCancel={() => setRenaming(false)}
+                className={`${PAGE_RENAME_FIELD} h-11 text-base`}
+              />
+            </div>
+          ) : menu ? (
+            // The same menu as the sidebar's head, its button 44 px tall.
+            <div className="flex px-2.5 pb-1 pt-1">
+              {menu({
+                name: shownName,
+                onRename: onRenameKnowledgebase ? () => setRenaming(true) : undefined,
+                close: () => setOpen(false),
+              })}
+            </div>
+          ) : (
+            <p className="truncate px-4 pb-1 pt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+              {shownName}
+            </p>
+          )}
           <div className="px-4 pb-1 pt-2">
             <SearchField />
           </div>

@@ -16,6 +16,7 @@ import { PageTreeSheet } from './PageTreeSheet';
 import { PageTreeSidebar } from './PageTreeSidebar';
 import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
 import { usePageTreeModel } from './usePageTreeModel';
+import { KnowledgebaseMenu } from '@/components/knowledge-menu/KnowledgebaseMenu';
 
 const noSubscribe = () => () => {};
 
@@ -25,11 +26,32 @@ function PageTreeSidebarHost(props: {
   top: number;
   joined: boolean;
 }) {
-  return <PageTreeSidebar {...usePageTreeModel()} {...props} />;
+  return (
+    <PageTreeSidebar
+      {...usePageTreeModel()}
+      {...props}
+      menu={(head) => <KnowledgebaseMenu name={head.name} onRename={head.onRename} />}
+    />
+  );
 }
 
 function PageTreeSheetHost() {
-  return <PageTreeSheet {...usePageTreeModel()} />;
+  return (
+    <PageTreeSheet
+      {...usePageTreeModel()}
+      menu={(head) => (
+        <KnowledgebaseMenu
+          touch
+          name={head.name}
+          onRename={head.onRename}
+          // Every row but Rename opens something over the page: the sheet steps aside for it.
+          onChosen={(verb) => {
+            if (verb !== 'rename') head.close();
+          }}
+        />
+      )}
+    />
+  );
 }
 
 export type PageTreeChrome = {

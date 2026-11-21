@@ -53,8 +53,8 @@ Public) already own the word.
 - A tree is never a cycle: one read from storage is cut at its first page, which keeps the rest of it as its
   subpages. Reading is forgiving and every edit is checked: a move, an indent or an add that would break a limit
   is refused and changes nothing.
-- The tree is the left sidebar, replacing the tab bar: 264 px wide, the knowledgebase's name at its head (renamed in
-  place), then the pages. Rows indent 20 px a level, a page with subpages has a chevron, and open or closed is kept
+- The tree is the left sidebar, replacing the tab bar: 264 px wide, the knowledgebase's name at its head (its menu's
+  button, "The knowledgebase's menu"), then the pages. Rows indent 20 px a level, a page with subpages has a chevron, and open or closed is kept
   per browser, per knowledgebase. The current page's ancestors are always open, so a page opened by its link shows
   where it is. The current page wears the brand tint. A button at the sidebar's head collapses it to a narrow rail
   and back, kept per browser.
@@ -93,6 +93,34 @@ Public) already own the word.
 - On a phone the tree is a sheet opened from a Pages button in the top bar, its rows 44 px tall.
 - Whoever is on a page shows in its row, as they showed on its tab.
 
+## The knowledgebase's menu
+
+The knowledgebase's name in the sidebar's head is a button with a chevron beside it, and it opens the knowledgebase's
+menu: the name is the thing the menu is about, so the name is what is pressed, and no second button stands beside
+it. The menu is icon-left verb rows under the knowledgebase's name:
+
+| Row                    | Does                                                                                      | Who                      |
+| ---------------------- | ----------------------------------------------------------------------------------------- | ------------------------ |
+| Rename                 | The name becomes a field where it stands; Enter keeps it, Escape leaves it                | Editor                   |
+| Knowledgebase Style    | Opens [Knowledgebase Style](page-surface.md#knowledgebase-style)                          | Editor                   |
+| Knowledgebase Settings | Opens the settings ([Verification](verification.md) "The Review Period")                  | Editor                   |
+| Describe to Add Pages  | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                  | Editor, signed in        |
+| Import                 | Opens Import                                                                              | Editor                   |
+| Export                 | Opens Export                                                                              | everyone                 |
+| AI Settings            | Opens AI Settings ([Search and Ask](search-and-ask.md))                                   | Editor, not kept Offline |
+| Delete                 | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator | Editor                   |
+
+- "Editor" is an Editor of the whole knowledgebase: never a Participant, a Viewer, a link confined to one page or a
+  Community visitor, who have Export alone. An embed has no menu, and shows the name as text.
+- A row a session is not offered is absent, not greyed: each is decided by the feature it opens, so the menu never
+  offers what the feature would refuse.
+- **Keyboard and screen readers:** the button says it has a menu and whether it is open, and is named with the
+  knowledgebase's name. Enter, Space or a press opens the menu with the first row focused; the arrow keys, Home and
+  End move through the rows, a letter jumps to the row that starts with it, Enter chooses, and Escape closes it with
+  the focus back on the button. Each row is a menu item.
+- **On a phone** the same menu opens from the head of the Pages sheet, its button 44 px tall. Rename renames in the
+  sheet; every other row closes the sheet, since what it opens stands over the page.
+
 ## The continuous page
 
 A page is one article that never breaks onto paper pages while it is being written.
@@ -123,6 +151,8 @@ A page is one article that never breaks onto paper pages while it is being writt
 | Write on a page                            | yes    | no          | no     |
 | Comment (margin notes, threads)            | yes    | yes         | no     |
 | Add, rename, move, duplicate, delete pages | yes    | no          | no     |
+| The knowledgebase's menu, but Export       | yes    | no          | no     |
+| Export, from the knowledgebase's menu      | yes    | yes         | yes    |
 | Copy a page's link, fold the tree          | yes    | yes         | yes    |
 
 Every gate reads `can`, on the client and again in the room, and ships a test per role.

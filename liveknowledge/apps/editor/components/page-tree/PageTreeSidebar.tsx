@@ -1,7 +1,7 @@
 'use client';
 
 // The page tree as the editor's left sidebar (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page
-// tree"): the knowledgebase's name, the pages, and New Page at its foot. It takes the docked sidebar's place in the
+// tree"): the knowledgebase's name (its menu's button), the pages, and New Page at its foot. It takes the docked sidebar's place in the
 // canvas chrome (it is what the page framing and Zoom to Fit measure, `data-contents-sidebar`), joined to the menu box
 // above it. Collapsed, it is a narrow rail with the way back.
 import { useState, type ReactNode } from 'react';
@@ -54,10 +54,16 @@ export function NewPageButton({ tabs, onAdd }: { tabs: PageTreeProps['tabs']; on
   );
 }
 
+/** What the head hands the knowledgebase's menu: the name as shown, and how a rename starts in place. */
+export type KnowledgebaseHead = { name: string; onRename: (() => void) | undefined };
+
 export type PageTreeSidebarProps = PageTreeProps & {
   // The knowledgebase's name, and its rename where the session may rename it.
   name: string;
   onRenameKnowledgebase?: ((name: string) => void) | undefined;
+  // The knowledgebase's menu in the head, where the editor's store is there to decide its rows (the host,
+  // usePageTreeChrome); without one the head is the name alone.
+  menu?: ((head: KnowledgebaseHead) => ReactNode) | undefined;
   collapsed: boolean;
   onSetCollapsed: (collapsed: boolean) => void;
   // Where it starts, in screen px from the canvas's top: the menu box's row open, the top row as a rail.
@@ -69,6 +75,7 @@ export type PageTreeSidebarProps = PageTreeProps & {
 export function PageTreeSidebar({
   name,
   onRenameKnowledgebase,
+  menu,
   collapsed,
   onSetCollapsed,
   top,
@@ -150,22 +157,12 @@ export function PageTreeSidebar({
             onCancel={() => setRenaming(false)}
             className={`${PAGE_RENAME_FIELD} h-8 text-sm`}
           />
-        ) : onRenameKnowledgebase ? (
-          <HoverCard
-            block
-            className="min-w-0 flex-1"
-            title={shownName}
-            description="Rename this knowledgebase."
-          >
-            <button
-              type="button"
-              data-knowledgebase-name=""
-              onClick={() => setRenaming(true)}
-              className="min-w-0 flex-1 cursor-text truncate rounded-md px-1.5 py-1 text-left text-sm font-semibold text-slate-900 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-200/70 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-100 dark:hover:bg-slate-800"
-            >
-              {shownName}
-            </button>
-          </HoverCard>
+        ) : menu ? (
+          // The name is its menu's button (knowledgebases-and-pages.md "The knowledgebase's menu"): Rename is a row.
+          menu({
+            name: shownName,
+            onRename: onRenameKnowledgebase ? () => setRenaming(true) : undefined,
+          })
         ) : (
           <p
             data-knowledgebase-name=""

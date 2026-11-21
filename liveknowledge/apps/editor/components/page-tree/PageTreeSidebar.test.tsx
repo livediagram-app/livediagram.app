@@ -34,6 +34,18 @@ function actions(): PageTreeActions {
   };
 }
 
+// The head's menu, as the tree's host hands it (usePageTreeChrome): here a button that starts the rename, so the
+// sidebar's own part (the name, and the field it becomes) is tested without the editor's store. The menu itself is
+// components/knowledge-menu/KnowledgebaseMenu.test.tsx.
+const menu: NonNullable<PageTreeSidebarProps['menu']> = (head) =>
+  head.onRename ? (
+    <button type="button" onClick={head.onRename}>
+      {head.name}
+    </button>
+  ) : (
+    <p>{head.name}</p>
+  );
+
 function props(over: Partial<PageTreeSidebarProps> = {}): PageTreeSidebarProps {
   return {
     tabs: TABS,
@@ -44,6 +56,7 @@ function props(over: Partial<PageTreeSidebarProps> = {}): PageTreeSidebarProps {
     actions: actions(),
     name: 'Engineering',
     onRenameKnowledgebase: vi.fn(),
+    menu,
     collapsed: false,
     onSetCollapsed: vi.fn(),
     top: 64,
@@ -71,6 +84,12 @@ describe('PageTreeSidebar', () => {
     expect(aside.style.top).toBe('0px');
     expect(within(aside).getByText('Pages')).toBeTruthy();
     expect(within(aside).getByRole('tree', { name: 'Pages' })).toBeTruthy();
+  });
+
+  it('shows the name alone, as text, with no menu to host (an embed, a preview)', () => {
+    render(<PageTreeSidebar {...props({ menu: undefined })} />);
+    expect(screen.getByText('Engineering').tagName).toBe('P');
+    expect(screen.queryByRole('button', { name: 'Engineering' })).toBeNull();
   });
 
   it('shows the knowledgebase’s name and renames it in place', () => {
