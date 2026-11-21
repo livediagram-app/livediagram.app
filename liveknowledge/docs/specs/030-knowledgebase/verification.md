@@ -49,8 +49,9 @@ own.
 - Writing on a verified page does not clear the tick. A large change (more than a fifth of the writing's characters
   since `verifiedAt`) adds "Changed since verified" beside it, until someone verifies again.
 - **Page Health** (right rail): owner (changeable), last verified, when the review is due, reads by people and
-  by agents this week, and Verify Again; at its foot, "Created by <name>" and "Updated by <name>", each with the
-  person's initials disc and how long ago, as a liveplanner card's footer.
+  by agents this week, and Verify Again; at its foot, who created the page and who last updated it, each the
+  person's initials disc, their whole name, and under it "Created 3 days ago" or "Updated 7 mins ago", as a liveplanner
+  card's footer.
 - **How the rail looks** (owner, 2026-11-21: "really amazing, but also not distracting; at the moment it's boxy and
   boring"): no card and no borders, the page's own ground under it, sections headed by small capitals as On This
   Page is. Page Health leads with the page's state beside a thin **freshness ring**, the share of the Review Period

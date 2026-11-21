@@ -161,25 +161,28 @@ function initials(name: string): string {
 }
 
 function StampRow({ what, stamp, now }: { what: string; stamp: PageStamp; now: number }) {
+  // Two lines, so a whole name fits the rail: who, then what they did and when.
   return (
-    <div data-page-stamp="" className="flex min-h-7 items-center gap-2">
+    <div data-page-stamp="" className="flex min-h-9 items-center gap-2.5">
       <span
         aria-hidden
-        className="flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[9px] font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+        className="flex size-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200"
       >
         {stamp.by ? initials(stamp.by) : '?'}
       </span>
-      <span className="min-w-0 flex-1 truncate">
-        {what} by {stamp.by ?? 'Someone'}
+      <span className="min-w-0 flex-1 leading-4">
+        <span className="block truncate text-[13px] text-slate-800 dark:text-slate-200">
+          {stamp.by ?? 'Someone'}
+        </span>
+        <span className="block text-[11px]">
+          {what}{' '}
+          <Tooltip label={new Date(stamp.at).toLocaleString('en-GB')}>
+            <time dateTime={new Date(stamp.at).toISOString()} className="tabular-nums">
+              {relativeSince(stamp.at, now)}
+            </time>
+          </Tooltip>
+        </span>
       </span>
-      <Tooltip label={new Date(stamp.at).toLocaleString('en-GB')}>
-        <time
-          dateTime={new Date(stamp.at).toISOString()}
-          className="shrink-0 whitespace-nowrap text-[11px] tabular-nums"
-        >
-          {relativeSince(stamp.at, now)}
-        </time>
-      </Tooltip>
     </div>
   );
 }
@@ -343,7 +346,7 @@ export function PageHealthCard({
         </Button>
       ) : null}
       {created || updated ? (
-        <div className="mt-5 flex flex-col border-t border-slate-200/70 pt-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+        <div className="mt-5 flex flex-col gap-1 border-t border-slate-200/70 pt-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
           {created ? <StampRow what="Created" stamp={created} now={now} /> : null}
           {updated ? <StampRow what="Updated" stamp={updated} now={now} /> : null}
         </div>
