@@ -14,6 +14,16 @@ last did.
 
 On the page (`Tab.knowledge`): `owner` (a person with access to the knowledgebase), `verifiedAt` and `verifiedBy`.
 
+**The owner** of a new page is the person who created it (owner, 2026-11-21): the save that makes a page sets
+`owner` to its writer, and an Editor changes it in Page Health. A page made before this, or by an agent or an import,
+has no owner until someone picks one or verifies it.
+
+**Created and Updated** (owner, 2026-11-21, "like we do on cards in liveplanner"): the knowledgebase keeps who
+created each page and who last saved it, with when (`page_authors` in its Durable Object, schema step V17). The first
+person whose save makes the page is its creator for good; each later save by a person moves "updated". A page not
+saved since the table began has no row and shows neither: nothing is guessed. Page Health's read answers them as
+`created` and `updated`.
+
 On the knowledgebase (`knowledgeSettings.reviewEvery` in the document's metadata): the **Review Period**, one for
 every page (owner, 2026-11-20: "Review Period should be a knowledgebase setting, not per page"): 30, 90, 180 or 365
 days, 90 by default, or **Never** for a knowledgebase whose pages do not age. A page has no review period of its
@@ -39,7 +49,17 @@ own.
 - Writing on a verified page does not clear the tick. A large change (more than a fifth of the writing's characters
   since `verifiedAt`) adds "Changed since verified" beside it, until someone verifies again.
 - **Page Health** (right rail): owner (changeable), last verified, when the review is due, reads by people and
-  by agents this week, and Verify Again.
+  by agents this week, and Verify Again; at its foot, "Created by <name>" and "Updated by <name>", each with the
+  person's initials disc and how long ago, as a liveplanner card's footer.
+- **How the rail looks** (owner, 2026-11-21: "really amazing, but also not distracting; at the moment it's boxy and
+  boring"): no card and no borders, the page's own ground under it, sections headed by small capitals as On This
+  Page is. Page Health leads with the page's state beside a thin **freshness ring**, the share of the Review Period
+  left, in the state's colour (green verified, amber due, an empty dashed ring for a page never verified), with one
+  line under it: "Fresh for 80 more days", "Was due 14 Jan", "Verify it once it is right." The week's reads are two
+  quiet figures (people, agents) under "Read This Week". The ring fills over half a second when it changes, and not
+  at all with reduced motion.
+- **The meta row** under the title is drawn only when it has something to say (a tick or pill, a due date, an edit):
+  a page never verified and never edited has no row, so the writing starts right under the title.
 
 ## The Review Period
 

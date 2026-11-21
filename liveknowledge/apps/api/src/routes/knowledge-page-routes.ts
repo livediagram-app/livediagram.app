@@ -6,6 +6,7 @@
 //   PUT   /api/documents/<id>/pages/<tab>/knowledge   owner, Always in Context (each optional)
 // Reading is every role's; Verify and the fields are an Editor's (verification.md "Share roles"). When a page's
 // review comes due is the knowledgebase's Review Period (knowledge-settings-routes.ts), never the page's.
+import { readPageAuthors } from '../knowledge/page-authors';
 import { verifyMoment } from '../knowledge/model-door';
 import { pageTreeRows } from '@liveknowledge/document';
 import {
@@ -67,10 +68,14 @@ export async function handlePageHealth(
   const now = Date.now();
   const page = await readPageKnowledge(ctx.env, document.id, tab);
   if (!page) return notFound();
-  const reads = pageReads(await rowsOf<PageReadsRow>(ctx.env, countPageReads(tab, now)));
+  const [readRows, authors] = await Promise.all([
+    rowsOf<PageReadsRow>(ctx.env, countPageReads(tab, now)),
+    readPageAuthors(ctx.env, tab),
+  ]);
   return json({
     knowledge: pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now),
-    reads,
+    reads: pageReads(readRows),
+    ...(authors ?? {}),
   });
 }
 

@@ -5678,6 +5678,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     additionalProperties: false,
     description: 'Page Health (verification.md): the fields, and the reads of the last seven days.',
     properties: {
+      created: {
+        additionalProperties: false,
+        description:
+          'Who made the page and who last saved it (verification.md "Created and Updated"), by account id; absent for a page not saved since the server began keeping them.',
+        properties: {
+          at: {
+            type: 'number',
+          },
+          by: {
+            type: 'string',
+          },
+        },
+        required: ['by', 'at'],
+        type: 'object',
+      },
       knowledge: {
         $ref: '#/components/schemas/PageKnowledge',
       },
@@ -5692,6 +5707,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
         },
         required: ['people', 'agents'],
+        type: 'object',
+      },
+      updated: {
+        additionalProperties: false,
+        properties: {
+          at: {
+            type: 'number',
+          },
+          by: {
+            type: 'string',
+          },
+        },
+        required: ['by', 'at'],
         type: 'object',
       },
     },

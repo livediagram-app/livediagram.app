@@ -9,7 +9,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { contrastRatio } from '@liveknowledge/document';
 import { pageTrust } from '@/lib/knowledge/page-trust';
 import { OnThisPage } from './OnThisPage';
-import { PageHealthCard, type PageHealthCardProps } from './PageHealthCard';
+import {
+  PageHealthCard,
+  freshness,
+  healthHeadline,
+  type PageHealthCardProps,
+} from './PageHealthCard';
 import { PageMetaRowView } from './PageMetaRow';
 import { REVIEW_DUE_PILL, TrustBadge, VERIFIED_PILL } from './TrustBadge';
 
@@ -63,7 +68,8 @@ describe('the meta row', () => {
     );
     const row = container.querySelector('[data-page-meta]')!;
     expect(row.textContent).toBe('');
-    expect(row.className).toContain('min-h-7');
+    // Nothing to say: no row, so the writing sits right under the title.
+    expect(row.className.split(' ')).toContain('hidden');
   });
 
   it("holds no Verify button: verifying is the right rail's", () => {
@@ -201,6 +207,37 @@ describe('Page Health', () => {
     render(<PageHealthCard {...props({ trust: pageTrust({ owner: 'u9' }, 90, NOW) })} />);
     expect(screen.getByLabelText<HTMLSelectElement>('Owner').value).toBe('u9');
     expect(screen.getByRole('option', { name: 'Someone Else' })).toBeTruthy();
+  });
+
+  it('leads with the state and how long the page stays fresh, its ring filled by the share of the period left', () => {
+    const { container } = render(<PageHealthCard {...props()} />);
+    const state = container.querySelector('[data-page-state]')!;
+    expect(state.getAttribute('data-page-state')).toBe('verified');
+    expect(state.textContent).toBe('VerifiedFresh for 80 more days');
+    expect(freshness(verified, 90, NOW)).toBeCloseTo(80 / 90);
+    expect(container.querySelector('[data-freshness-arc]')).toBeTruthy();
+    expect(healthHeadline(pageTrust({}, 90, NOW), 90, NOW).title).toBe('Not Verified Yet');
+    expect(freshness(pageTrust({}, 90, NOW), 90, NOW)).toBeUndefined();
+    const due = pageTrust({ verifiedAt: NOW - 100 * DAY, verifiedBy: 'u1' }, 90, NOW);
+    expect(healthHeadline(due, 90, NOW).title).toBe('Review Due');
+    expect(freshness(due, 90, NOW)).toBe(0);
+    expect(healthHeadline(verified, 'never', NOW).line).toBe('No review needed');
+  });
+
+  it('says who created the page and who last updated it, at its foot, and nothing when unknown', () => {
+    const { container, rerender } = render(
+      <PageHealthCard
+        {...props({
+          created: { at: NOW - 3 * DAY, by: 'Priya Nair' },
+          updated: { at: NOW - 3 * 60_000, by: undefined },
+        })}
+      />,
+    );
+    const rows = [...container.querySelectorAll('[data-page-stamp]')].map((r) => r.textContent);
+    expect(rows[0]).toMatch(/^PNCreated by Priya Nair/);
+    expect(rows[1]).toMatch(/^\?Updated by Someone/);
+    rerender(<PageHealthCard {...props()} />);
+    expect(container.querySelectorAll('[data-page-stamp]')).toHaveLength(0);
   });
 });
 

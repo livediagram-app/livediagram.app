@@ -3,7 +3,7 @@
 // The meta row under a page's title (docs/specs/030-knowledgebase/verification.md "States"): the verified state,
 // when the review is due, when it was last edited (where that is known) and "Changed since verified". Verifying is
 // the right rail's (Page Health), never the page's own. Its height is kept whatever it holds, so nothing in the writing moves when the page's
-// health arrives or its state changes.
+// health arrives or its state changes, except that a row with nothing in it is not drawn at all.
 import { Fragment, type ReactNode } from 'react';
 import { reviewDueText, trustMark, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
@@ -44,7 +44,8 @@ export function PageMetaRowView({
   return (
     <div
       data-page-meta=""
-      className="flex min-h-7 flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-600 dark:text-slate-400"
+      // Nothing to say (a page never verified, no edit known): no row, so the writing sits right under the title.
+      className={`${mark || notes.length ? 'flex min-h-7' : 'hidden'} flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-600 dark:text-slate-400`}
     >
       {mark ? (
         <TrustBadge mark={mark} {...(verifiedBy ? { label: `Verified by ${verifiedBy}` } : {})} />

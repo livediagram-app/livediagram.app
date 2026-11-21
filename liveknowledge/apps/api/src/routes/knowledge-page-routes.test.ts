@@ -28,6 +28,8 @@ type Health = {
     tokens: number;
   };
   reads?: { people: number; agents: number };
+  created?: { by: string; at: number };
+  updated?: { by: string; at: number };
 };
 const read = async (kit: Kit, who: Who = 'viewer', tab = 'deploys') =>
   await (await kit.call(who, 'GET', `/api/documents/kb/pages/${tab}/health`)).json<Health>();
@@ -243,7 +245,8 @@ describe('PUT pages/:tab/knowledge', () => {
     const over = await mark('second');
     expect(over.status).toBe(409);
     expect(await over.json()).toMatchObject({ error: 'context_budget', budget: 8000 });
-    expect(stored(kit, 'second').knowledge).toBeUndefined();
+    // Refused: Always in Context is not set; the page keeps only the owner its save gave it.
+    expect(stored(kit, 'second').knowledge).toEqual({ owner: OWNER });
     // A small page still fits what is left.
     expect((await mark('holidays')).status).toBe(200);
   });
@@ -261,5 +264,39 @@ describe('GET pages/:tab/health', () => {
     expect(
       (await kit.call('stranger', 'GET', '/api/documents/kb/pages/deploys/health')).status,
     ).toBe(403);
+  });
+});
+
+describe('Created and Updated (verification.md)', () => {
+  it("makes a new page's creator its owner, and says who created and last updated each page", async () => {
+    const kit = await knowledgeKit();
+    const save = (id: string, text: string) =>
+      kit.call('editor', 'PUT', `/api/documents/kb/tabs/${id}`, {
+        ...page(id, 'Fresh', [{ id: 'p1', type: 'paragraph', runs: [{ text }] }]),
+      });
+    // A page stored before anyone saved it here: nothing guessed.
+    const seeded = await read(kit);
+    expect(seeded.created).toBeUndefined();
+    expect(seeded.updated).toBeUndefined();
+
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(1_000_000);
+    expect((await save('fresh', 'One')).status).toBeLessThan(300);
+    const made = await read(kit, 'viewer', 'fresh');
+    expect(made.knowledge.owner).toBe(OWNER);
+    expect(made.created).toEqual({ by: OWNER, at: 1_000_000 });
+    expect(made.updated).toEqual({ by: OWNER, at: 1_000_000 });
+
+    vi.setSystemTime(2_000_000);
+    expect((await save('fresh', 'One and two')).status).toBeLessThan(300);
+    const later = await read(kit, 'viewer', 'fresh');
+    expect(later.created).toEqual({ by: OWNER, at: 1_000_000 });
+    expect(later.updated).toEqual({ by: OWNER, at: 2_000_000 });
+
+    // A deleted page takes its row with it.
+    await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/fresh');
+    expect(
+      kit.db.sql.prepare("SELECT tab FROM page_authors WHERE tab = 'fresh'").get(),
+    ).toBeUndefined();
   });
 });

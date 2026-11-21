@@ -78,6 +78,10 @@ export type PageKnowledgeResponse = { knowledge: PageKnowledge };
 /** Page Health (verification.md): the fields, and the reads of the last seven days. */
 export type PageHealthResponse = PageKnowledgeResponse & {
   reads: { people: number; agents: number };
+  /** Who made the page and who last saved it (verification.md "Created and Updated"), by account id; absent for a
+   *  page not saved since the server began keeping them. */
+  created?: { by: string; at: number };
+  updated?: { by: string; at: number };
 };
 /** `PUT .../pages/<tab>/knowledge`: each field optional; `owner: null` clears it. The Review Period is the
  *  knowledgebase's (`PUT .../knowledge-settings`): a `reviewEvery` here is refused. */

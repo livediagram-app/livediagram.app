@@ -4,6 +4,7 @@
 // seen and with the room's collaboration ledger, then written at the revision it read.
 
 import { keepStoredKnowledge } from '../knowledge/page-knowledge';
+import { notePageWrite } from '../knowledge/page-authors';
 import {
   CHANGESET_MERGE_WINDOW_MS,
   CHANGESET_SEEN_HEADER,
@@ -161,7 +162,7 @@ export async function writeTabSave(
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');
     // A page's knowledge fields are the knowledge routes' to write (knowledge/page-knowledge.ts): a whole-tab save
     // keeps what is stored, so an editor that has not heard of a Verify cannot undo it.
-    keepStoredKnowledge(body, existingTab);
+    keepStoredKnowledge(body, existingTab, owner);
     // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a tab-scoped
     // editor's save stores its content under the name the tab already has, and never makes a tab: its
     // tab gone (deleted while its editor was open) reads as missing rather than coming back.
@@ -220,6 +221,8 @@ export async function writeTabSave(
       continue;
     }
     logMerge(id, tabId, merge);
+    // Who made the page and who last changed it (knowledge/page-authors.ts), for Page Health.
+    await notePageWrite(env, tabId, owner);
     // The tab holding a new connection is in: the index confirms it, or its sweep takes it back within the hour.
     const kept = connection ?? existingTab?.connection;
     if (connection && !sameConnection(connection, existingTab?.connection)) {

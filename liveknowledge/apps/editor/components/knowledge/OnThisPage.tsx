@@ -4,6 +4,7 @@
 // read marked as the page scrolls, each a press that brings its heading into view. Absent for an empty page; a page
 // with writing and no headings shows its reading time alone.
 import type { PageHeading } from '@/lib/knowledge/page-headings';
+import { RAIL_LABEL } from './PageHealthCard';
 
 const INDENT: Record<PageHeading['level'], string> = { 1: 'pl-3', 2: 'pl-6', 3: 'pl-9' };
 
@@ -32,9 +33,7 @@ export function OnThisPage({
   return (
     <nav aria-label="On This Page" data-on-this-page="">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          On This Page
-        </p>
+        <p className={RAIL_LABEL}>On This Page</p>
         {readTime}
       </div>
       <ul className="mt-2 border-l-2 border-slate-200 dark:border-slate-800">

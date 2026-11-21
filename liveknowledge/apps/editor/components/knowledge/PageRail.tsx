@@ -21,7 +21,7 @@ import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
 import { useKnowledgebaseSettings } from '@/components/knowledge-settings/KnowledgeSettingsHost';
-import { PageHealthCard } from './PageHealthCard';
+import { PageHealthCard, type PageStamp } from './PageHealthCard';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 
 /** The rail's width, in px. */
@@ -32,6 +32,12 @@ export const PAGE_RAIL_ATTR = 'data-page-rail';
 const READING_LINE_PX = 160;
 
 const NO_HEADINGS: readonly PageHeading[] = [];
+
+/** A created or updated stamp, its person named where the editor can. */
+const stampOf = (
+  stamp: { by: string; at: number } | undefined,
+  nameOf: (id: string | undefined) => string | undefined,
+): PageStamp | undefined => (stamp ? { at: stamp.at, by: nameOf(stamp.by) } : undefined);
 
 type Writing = { flow: string; headings: readonly PageHeading[]; minutes: number };
 
@@ -106,7 +112,7 @@ export function PageRailBody() {
   // Knowledgebase Settings, for an Editor: where the Review Period is changed (the card has no control of its own).
   const changeReviewPeriod = useKnowledgebaseSettings();
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <OnThisPage
         headings={writing.headings}
         current={current}
@@ -125,6 +131,8 @@ export function PageRailBody() {
         }
         onChangeReviewPeriod={changeReviewPeriod?.onSelect}
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
+        created={stampOf(page.health?.created, nameOf)}
+        updated={stampOf(page.health?.updated, nameOf)}
       />
     </div>
   );
@@ -139,7 +147,7 @@ export function PageRailDocked() {
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.stopPropagation()}
       style={{ top: TOP_ROW_HEIGHT_VAR, width: PAGE_RAIL_WIDTH }}
-      className="pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] cursor-default overflow-y-auto border-l border-slate-200 bg-slate-50 px-5 pb-24 pt-5 text-slate-900 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+      className="pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] cursor-default overflow-y-auto border-l border-slate-200/70 px-6 pb-24 pt-6 text-slate-900 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800/70 dark:text-slate-100"
     >
       <PageRailBody />
     </aside>
@@ -198,7 +206,7 @@ export function PageRailButton({ sheet }: { sheet: boolean }) {
           aria-label="Page Info"
           {...{ [PAGE_RAIL_ATTR]: 'card' }}
           style={{ width: PAGE_RAIL_WIDTH }}
-          className="absolute right-0 top-full z-[var(--z-toolbar)] mt-2 max-h-[70vh] overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-lg motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-y-1 motion-safe:starting:opacity-0 dark:border-slate-800 dark:bg-slate-900"
+          className="absolute right-0 top-full z-[var(--z-toolbar)] mt-2 max-h-[70vh] overflow-y-auto rounded-xl border border-slate-200 bg-white p-5 shadow-lg motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-y-1 motion-safe:starting:opacity-0 dark:border-slate-800 dark:bg-slate-900"
         >
           <div className="mb-2 flex justify-end">
             <button

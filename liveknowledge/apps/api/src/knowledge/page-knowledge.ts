@@ -132,12 +132,15 @@ export async function writePageKnowledge(
   return typeof rev === 'number' ? rev : null;
 }
 
-/** A whole-tab save never changes the page's knowledge fields: what is stored stays, and a save of a tab that has
- *  none (a new page, too) carries none in. Verify and the Page Health card write them (routes/knowledge-page-routes). */
+/** A whole-tab save never changes the page's knowledge fields: what is stored stays, and a save of a stored tab
+ *  that has none carries none in. Verify and the Page Health card write them (routes/knowledge-page-routes). The one
+ *  exception is a new page (verification.md "The owner"): the person whose save makes it is its owner. */
 export function keepStoredKnowledge(
   body: { knowledge?: unknown },
   stored: { knowledge?: unknown } | null,
+  creator?: string,
 ): void {
   if (stored && stored.knowledge !== undefined) body.knowledge = stored.knowledge;
+  else if (!stored && creator) body.knowledge = { owner: creator };
   else delete body.knowledge;
 }

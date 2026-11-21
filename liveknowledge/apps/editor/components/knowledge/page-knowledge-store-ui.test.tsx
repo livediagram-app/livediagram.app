@@ -191,8 +191,9 @@ describe('a page’s knowledge in the editor', () => {
       rail().querySelector('[data-review-period]')!.textContent,
     ];
     expect(shown()[1]).toBe('Every 90 Days');
-    // The amber pill, apart from the card's own "Review Due" row label.
-    const pill = () => screen.queryAllByText('Review Due').filter((el) => el.tagName !== 'DT');
+    // The amber pill, apart from Page Health's own "Review Due" label and headline.
+    const pill = () =>
+      screen.queryAllByText('Review Due').filter((el) => !el.closest('[data-page-health]'));
     expect(screen.getByText(/^Review due /)).toBeTruthy();
     expect(pill()).toHaveLength(0);
     // The room's op (or this editor's own change): one store, every reader follows.
