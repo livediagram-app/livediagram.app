@@ -457,8 +457,9 @@ function CanvasChromeView(props: CanvasChromeProps) {
           <>
             {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own writing too
                 (docs/specs/013-workspace/share-roles.md); a Viewer has nothing to undo. */}
-            {/* An Editor's Undo and Redo are in the formatting bar; here on a phone, and for a Participant. */}
-            {!zenMode && (!readOnly || !!props.takePart) && (isMobile || readOnly) ? (
+            {/* An Editor's Undo and Redo are in the formatting bar; here for a Participant, never on a phone, where the
+                edit bar stands over them (owner 2026-11-21). */}
+            {!zenMode && !isMobile && readOnly && !!props.takePart ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}

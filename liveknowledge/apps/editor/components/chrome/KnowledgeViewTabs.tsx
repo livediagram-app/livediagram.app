@@ -89,13 +89,13 @@ export function KnowledgeViewTabs() {
             title={off ? `${label} Needs Syncing` : label}
             description={off ? OFFLINE_VIEW_WHY : about}
             {...(off ? { action: <SyncKnowledgebaseButton />, pressWithText: true } : {})}
-            className="self-end phone:min-w-0 phone:flex-1"
+            className="self-end phone:min-w-0"
           >
             <span
               data-knowledge-view-tab={view}
               data-open={open ? '' : undefined}
               data-off={off ? '' : undefined}
-              className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} phone:h-11 phone:w-full phone:justify-center phone:px-2`}
+              className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} phone:h-11 phone:justify-center phone:px-3`}
             >
               {/* Off, the link goes nowhere: a press opens the card that says why and holds Sync Knowledgebase. */}
               <a

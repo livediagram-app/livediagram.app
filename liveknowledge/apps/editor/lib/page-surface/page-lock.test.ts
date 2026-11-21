@@ -7,6 +7,7 @@ import {
   coverHeightOf,
   COVER_TITLE_GAP,
   PAGE_MIN_SCALE,
+  PAGE_PHONE_READ_SCALE,
   PAGE_SIDE_ROOM,
   PAGE_SIDE_ROOM_PHONE,
   PAGE_FOOT_ROOM,
@@ -78,21 +79,43 @@ describe('computePageLock', () => {
     expect(lock.view.zoom).toBe(1);
   });
 
-  it.each([320, 360, 390, 430, 600, 768, 819])(
+  it.each([768, 819])(
     'keeps the column inside a %i px window with its side room, nothing off the side',
     (width) => {
-      const phone = width <= 640;
-      const room = phone ? PAGE_SIDE_ROOM_PHONE : PAGE_SIDE_ROOM;
       const size = { width, height: 700 };
-      const lock = computePageLock({ ...size, sides: NO_SIDES, page: PAGE, margin: MARGIN, phone });
+      const lock = computePageLock({
+        ...size,
+        sides: NO_SIDES,
+        page: PAGE,
+        margin: MARGIN,
+        phone: false,
+      });
       expect(lock.view.zoom).toBeLessThan(1);
       expect(lock.view.zoom).toBeGreaterThanOrEqual(PAGE_MIN_SCALE);
-      expect(lock.columnLeft).toBeGreaterThanOrEqual(room - 1);
-      expect(lock.columnLeft + lock.columnWidth).toBeLessThanOrEqual(width - room + 1);
+      expect(lock.columnLeft).toBeGreaterThanOrEqual(PAGE_SIDE_ROOM - 1);
+      expect(lock.columnLeft + lock.columnWidth).toBeLessThanOrEqual(width - PAGE_SIDE_ROOM + 1);
       // The column's left edge is where the page's corner plus its margin lands.
       const column = onScreen(lock, size, { x: PAGE.x + MARGIN, y: PAGE.y });
       expect(column.x).toBeCloseTo(lock.columnLeft, 5);
       expect(column.y).toBeCloseTo(PAGE_TOP_ROOM, 5);
+    },
+  );
+
+  it.each([320, 360, 390, 430, 600])(
+    'shows a phone the page at its reading scale in a %i px window, the column from the left room, wider scrolling sideways',
+    (width) => {
+      const size = { width, height: 700 };
+      const lock = computePageLock({
+        ...size,
+        sides: NO_SIDES,
+        page: PAGE,
+        margin: MARGIN,
+        phone: true,
+      });
+      expect(lock.view.zoom).toBeGreaterThanOrEqual(PAGE_PHONE_READ_SCALE);
+      expect(lock.columnLeft).toBe(PAGE_SIDE_ROOM_PHONE);
+      const column = onScreen(lock, size, { x: PAGE.x + MARGIN, y: PAGE.y });
+      expect(column.x).toBeCloseTo(lock.columnLeft, 5);
     },
   );
 
@@ -103,7 +126,7 @@ describe('computePageLock', () => {
       sides: NO_SIDES,
       page: PAGE,
       margin: MARGIN,
-      phone: true,
+      phone: false,
     });
     expect(lock.view.zoom).toBe(PAGE_MIN_SCALE);
   });

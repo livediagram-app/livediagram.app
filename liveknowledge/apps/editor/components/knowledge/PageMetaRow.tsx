@@ -157,7 +157,10 @@ export function PageMetaRowView({
       {notes.map((note, i) => (
         <span key={note.key} data-meta-note="" className="relative">
           {i > 0 ? (
-            <span aria-hidden className="absolute -left-[0.4rem] top-0 -translate-x-1/2">
+            <span
+              aria-hidden
+              className="absolute inset-y-0 -left-[0.4rem] flex -translate-x-1/2 items-center"
+            >
               ·
             </span>
           ) : null}

@@ -19,7 +19,10 @@ replaces what the fork still shows around the writing.
 - **A reading column.** The writing is one centred column, 760 px wide at most (the stored page is 856 px wide
   and keeps 48 px either side), with 48 px of room either side on a desktop and 20 px on a phone. It
   scrolls with the window as any web page does: the wheel, the scrollbar, Page Up and Down, Home and End, and the
-  browser's find all behave as on a web page.
+  browser's find all behave as on a web page. **A phone never shrinks the page to fit** (owner 2026-11-21): it shows the
+  page at 75% at least, so the writing reads; the column starts 20 px from the left and what is wider scrolls
+  sideways. A phone has no Undo and Redo buttons (the edit bar stood over them), and its Pages, Ask and AI tabs are
+  as wide as their names.
 - **A narrow window.** Where the window has no room for the column and its side room, the whole page is shown
   smaller to fit, and nothing scrolls sideways. The column does not re-wrap: what is placed in the writing (a
   picture, a chart, a drawing) is stored against the page's width

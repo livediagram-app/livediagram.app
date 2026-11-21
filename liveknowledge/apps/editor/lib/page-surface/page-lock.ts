@@ -27,6 +27,9 @@ export const PAGE_COVER_LEFT_VAR = '--page-cover-left';
 export const PAGE_COVER_RIGHT_VAR = '--page-cover-right';
 /** The least the page is ever scaled to: a window narrower than this allows is narrower than any phone. */
 export const PAGE_MIN_SCALE = 0.25;
+/** The least a phone shows a page at, so its writing reads (owner 2026-11-21: "don't try to fit the whole page in
+ *  view"): a column wider than the screen at this scale scrolls sideways, from its left edge. */
+export const PAGE_PHONE_READ_SCALE = 0.75;
 
 export type PageLockInput = {
   /** The surface's size on screen (the canvas element's layout box). */
@@ -65,10 +68,16 @@ export function computePageLock(input: PageLockInput): PageLock {
   const available = Math.max(1, width - sides.left - sides.right);
   const column = Math.max(1, page.width - 2 * margin);
   const fit = (available - 2 * room) / column;
-  const zoom = Math.max(PAGE_MIN_SCALE, Math.min(1, Number.isFinite(fit) ? fit : 1));
+  const floor = phone ? PAGE_PHONE_READ_SCALE : PAGE_MIN_SCALE;
+  const zoom = Math.max(floor, Math.min(1, Number.isFinite(fit) ? fit : 1));
   const columnWidth = column * zoom;
-  // Whole px, so the writing's glyphs land on the pixel grid.
-  const columnLeft = Math.round(sides.left + (available - columnWidth) / 2);
+  // Whole px, so the writing's glyphs land on the pixel grid. A column wider than the room (a phone at its reading
+  // scale) starts at the room's left, the rest a sideways scroll away.
+  const columnLeft = Math.round(
+    columnWidth > available - 2 * room
+      ? sides.left + room
+      : sides.left + (available - columnWidth) / 2,
+  );
   const left = columnLeft - margin * zoom;
   // Under a cover, the page's blank top room and margin tuck under the band (which stands over the world), leaving
   // COVER_TITLE_GAP between the band and the first line.
