@@ -39,7 +39,8 @@ export const caretBlock = (page: Page): Promise<string | null> =>
     const active = document.activeElement;
     if (!active?.classList.contains('article-flow')) return null;
     const anchor = getSelection()?.anchorNode;
-    const el = anchor?.nodeType === Node.TEXT_NODE ? anchor.parentElement : (anchor as Element | null);
+    const el =
+      anchor?.nodeType === Node.TEXT_NODE ? anchor.parentElement : (anchor as Element | null);
     return el?.closest?.('[data-block-id]')?.getAttribute('data-article-style') ?? null;
   });
 
@@ -95,7 +96,10 @@ export async function writeLines(page: Page, ...lines: string[]): Promise<void> 
 
 /** New Page at the foot of the tree, named: the new page takes the caret in its Title. */
 export async function addPage(page: Page, name: string): Promise<void> {
-  await page.getByRole('complementary', { name: 'Pages' }).getByRole('button', { name: 'New Page' }).click();
+  await page
+    .getByRole('complementary', { name: 'Pages' })
+    .getByRole('button', { name: 'New Page' })
+    .click();
   await expect(pageRow(page, 'Untitled Page')).toBeVisible();
   await nameOpenPage(page, name);
 }
@@ -154,13 +158,26 @@ export const shownLinkText = (link: Locator): Promise<string> =>
 export const linkPicker = (page: Page): Locator =>
   page.getByRole('listbox', { name: 'Link to a page' });
 
-/** The knowledgebase's search dialog, opened with Cmd or Ctrl K. */
+/**
+ * The editor's search panel, opened with Cmd or Ctrl K (docs/specs/030-knowledgebase/search-and-ask.md "Search"): the
+ * universal search, whose first group is This Knowledgebase.
+ */
 export async function openSearch(page: Page): Promise<Locator> {
   await page.keyboard.press('ControlOrMeta+k');
-  const dialog = page.getByRole('dialog', { name: 'Search This Knowledgebase' });
-  await expect(dialog.getByRole('combobox', { name: 'Search This Knowledgebase' })).toBeFocused();
-  return dialog;
+  const panel = searchPanel(page);
+  await expect(panel.getByRole('combobox', { name: 'Search' })).toBeFocused();
+  return panel;
 }
+
+/** The search panel, however it was opened. */
+export const searchPanel = (page: Page): Locator =>
+  page.getByRole('dialog', { name: 'Search', exact: true });
+
+/** The panel's This Knowledgebase group: this knowledgebase's pages and passages, always first. */
+export const knowledgeResults = (panel: Locator): Locator =>
+  panel
+    .getByRole('listbox', { name: 'Results' })
+    .getByRole('group', { name: 'This Knowledgebase' });
 
 /**
  * Waits until this browser's Offline store holds a page of this name whose writing holds `text`
@@ -176,7 +193,8 @@ export async function expectKeptOffline(page: Page, name: string, text = ''): Pr
             const db = await new Promise<IDBDatabase>((resolve, reject) => {
               const open = indexedDB.open('liveknowledge-offline');
               open.onsuccess = () => resolve(open.result);
-              open.onerror = () => reject(open.error ?? new Error('the Offline store did not open'));
+              open.onerror = () =>
+                reject(open.error ?? new Error('the Offline store did not open'));
             });
             try {
               const rows = await new Promise<{ tabs?: { name: string }[] }[]>((resolve) => {

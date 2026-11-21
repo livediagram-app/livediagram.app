@@ -2,16 +2,24 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';
 import {
   addPage,
+  knowledgeResults,
   nameOpenPage,
   openRowMenu,
   pageRow,
   paragraphs,
+  searchPanel,
   titleOf,
   treeShape,
   writeLines,
   writing,
 } from '../knowledgebase';
-import { person, savedWith, secondPerson, shareCode, signedInKnowledgebase } from './knowledge-session';
+import {
+  person,
+  savedWith,
+  secondPerson,
+  shareCode,
+  signedInKnowledgebase,
+} from './knowledge-session';
 
 // Share roles in a knowledgebase (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"): a second
 // person arrives through a share link at each role. A Viewer and a Participant read every page, follow the tree and
@@ -60,12 +68,18 @@ async function expectReadOnly(visitor: Page): Promise<void> {
   await expect(menu.getByRole('menuitem')).toHaveText(['Copy Link']);
   await visitor.keyboard.press('Escape');
 
-  // Search is every role's.
-  await visitor.getByRole('complementary', { name: 'Pages' }).getByRole('button', { name: 'Search' }).click();
-  const dialog = visitor.getByRole('dialog', { name: 'Search This Knowledgebase' });
-  await dialog.getByRole('combobox').fill('welcome team');
-  await expect(dialog.getByRole('option').filter({ hasText: 'Welcome to the' })).toBeVisible();
-  await visitor.keyboard.press('Escape');
+  // Search is every role's: the sidebar's field opens the search panel, this knowledgebase's results first.
+  await visitor
+    .getByRole('complementary', { name: 'Pages' })
+    .getByRole('button', { name: 'Search' })
+    .click();
+  const panel = searchPanel(visitor);
+  await panel.getByRole('combobox', { name: 'Search' }).fill('welcome team');
+  const hit = knowledgeResults(panel).getByRole('option').filter({ hasText: 'Welcome to the' });
+  await expect(hit).toBeVisible();
+  await hit.click();
+  await expect(panel).toBeHidden();
+  await expect(titleOf(visitor)).toHaveText('Handbook');
 }
 
 test('a Viewer reads, follows the tree and searches, and cannot write or change the tree', async ({
@@ -74,7 +88,12 @@ test('a Viewer reads, follows the tree and searches, and cannot write or change 
   baseURL,
 }) => {
   const { id, code } = await sharedKnowledgebase(page, 'view');
-  const visitor = await secondPerson(browser, baseURL!, `/document/${id}?s=${code}`, person('Grace', 'Hopper'));
+  const visitor = await secondPerson(
+    browser,
+    baseURL!,
+    `/document/${id}?s=${code}`,
+    person('Grace', 'Hopper'),
+  );
   await expectReadOnly(visitor);
   // A Viewer does not comment: the writing's Comment control is not offered.
   await expect(visitor.getByRole('button', { name: /^Comment/ })).toHaveCount(0);
@@ -84,9 +103,18 @@ test('a Viewer reads, follows the tree and searches, and cannot write or change 
   await visitor.context().close();
 });
 
-test('a Participant reads and cannot write or change the tree', async ({ page, browser, baseURL }) => {
+test('a Participant reads and cannot write or change the tree', async ({
+  page,
+  browser,
+  baseURL,
+}) => {
   const { id, code } = await sharedKnowledgebase(page, 'participate');
-  const visitor = await secondPerson(browser, baseURL!, `/document/${id}?s=${code}`, person('Grace', 'Hopper'));
+  const visitor = await secondPerson(
+    browser,
+    baseURL!,
+    `/document/${id}?s=${code}`,
+    person('Grace', 'Hopper'),
+  );
   await expectReadOnly(visitor);
   await pageRow(page, 'Handbook').click();
   await expect(writing(page)).not.toContainText('XYZ');

@@ -436,9 +436,8 @@ See "Narrow windows" below: investigated, not built.
   `chrome-drift` is deleted (no corner chrome), `knowledge-audit` has no known failures, and `knowledge-session.ts`
   opens a view from the footer's `nav` "Knowledgebase Views". The perf probe reaches the foot of the writing by its
   key and needs no change. `appearance` reads the page's ground as it is now (white, and the theme's slate-900 in
-  dark) and `settings-memory` opens Settings from the phone footer's More. `search.spec.ts` still waits for the
-  deleted Search This Knowledgebase dialog (the search moved to the editor's search panel) and fails: it belongs to
-  the search work, not this surface.
+  dark) and `settings-memory` opens Settings from the phone footer's More. `search.spec.ts` drives the editor's search
+  panel (its This Knowledgebase group).
 
 ## Narrow windows
 
