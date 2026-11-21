@@ -224,7 +224,7 @@ strangers.
   category of the Settings panel: Settings holds a person's own preferences on a device and an account, and has a
   copy on liveworkspace.app where no knowledgebase is open; the key and the model belong to one knowledgebase and
   are the same for everyone in it.
-- It opens with **Which AI**: two bordered rows, **Built-In AI** ("Included. No key needed.", an "Included" pill)
+- It opens with **Which AI**: two bordered rows, **Built-In AI** ("No key to add. Daily limits apply.", an "Included" pill)
   and **Your Own Key** ("Anthropic or OpenAI, billed to your team"). With no key saved Built-In AI is chosen;
   with one, Your Own Key. Choosing Your Own Key shows the **Provider** ([Providers](#providers)), the key and the
   **Model**; until a key is saved built-in AI stays in use. Choosing Built-In AI with a key saved asks first

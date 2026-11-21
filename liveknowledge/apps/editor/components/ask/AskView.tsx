@@ -109,7 +109,8 @@ function AskReady({ session }: { session: AskSession }) {
     if (question) conversation.ask(question);
     else focusField();
   };
-  const currentId = conversation.chatId();
+  // The open chat, read as a store: the React Compiler would keep a plain `chatId()` call's first answer.
+  const currentId = useSyncExternalStore(conversation.subscribe, conversation.chatId, () => null);
   const current = currentId ? recent.find((row) => chatIdOf(row) === currentId) : undefined;
   const completed = current?.completedAt !== undefined;
   // A kept chat opens with its answers; a question kept before chats were is asked again.

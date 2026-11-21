@@ -161,7 +161,7 @@ export function AiSourcePicker({
         {
           id: 'built-in',
           label: 'Built-In AI',
-          about: builtIn ? 'Included. No key needed.' : 'Not set up on this server.',
+          about: builtIn ? 'No key to add. Daily limits apply.' : 'Not set up on this server.',
           icon: <BuiltInAiIcon />,
           ...(builtIn ? { pill: 'Included' } : { unavailable: true }),
         },
