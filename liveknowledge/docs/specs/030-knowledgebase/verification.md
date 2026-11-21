@@ -20,7 +20,7 @@ has no owner until someone picks one or verifies it.
 
 **Created and Updated** (owner, 2026-11-21, "like we do on cards in liveplanner"): the knowledgebase keeps who
 created each page and who last saved it, with when (`page_authors` in its Durable Object, schema step V17). The first
-person whose save makes the page is its creator for good; each later save by a person moves "updated". A page not
+person whose save makes the page is its creator for good; each later save by a person that changes the page moves "updated" (an editor saving back what it already holds changes nothing, so an agent's edit stays the agent's). A page not
 saved since the table began has no row and shows neither: nothing is guessed. Page Health's read answers them as
 `created` and `updated`.
 

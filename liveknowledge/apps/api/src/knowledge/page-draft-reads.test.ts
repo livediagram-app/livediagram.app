@@ -28,8 +28,11 @@ describe('a save that changes the page', () => {
     ...extra,
   });
 
-  it('counts every write with no draft either side, and a first write', () => {
-    expect(savedPageChanged(page, page)).toBe(true);
+  it('counts a first write and a real change, never an echo of the page as it is', () => {
+    // An open editor saving back what it holds, right after an agent's write, must not stamp the page a person's.
+    expect(savedPageChanged(page, page)).toBe(false);
+    expect(savedPageChanged(page, { ...page, articles: writing('changed') })).toBe(true);
+    expect(savedPageChanged(page, { ...page, name: 'Renamed' })).toBe(true);
     expect(savedPageChanged(null, drafted('x'))).toBe(true);
   });
 

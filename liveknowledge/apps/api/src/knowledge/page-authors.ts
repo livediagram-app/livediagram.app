@@ -3,7 +3,7 @@
 // creator for good; every later write by a person moves "updated". A page that predates the table has no row until
 // its next write, and then that writer counts as both (the rail shows what it knows, nothing it guesses). Each stamp
 // also says whether a person or an agent made it (page-writer.ts, schema step V18).
-import { holdsDraft, sameArticleValue, savedArticlesOf } from '@liveknowledge/document';
+import { sameArticleValue, savedArticlesOf } from '@liveknowledge/document';
 import type { DocumentEnv } from '../types';
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
 import { personWriter, stampOf, type PageWriter } from './page-writer';
@@ -41,14 +41,15 @@ export function pageAuthorStatement(
 
 /**
  * Whether a save changed the page a reader reads (docs/specs/030-knowledgebase/editing.md "Save"): a draft's
- * autosave is nobody's update until Save puts it in the saved writing. With no draft either side, every write
- * counts, as it always did; with one, the name, the saved writing or the objects must have moved.
+ * autosave is nobody's update until Save puts it in the saved writing, and an open editor's echo of what it
+ * already holds (right after an agent's write, say) is nobody's either, or it would stamp the agent's edit as a
+ * person's. Only a moved name, saved writing or objects counts; a page new to the knowledgebase always does.
  */
 export function savedPageChanged(
   before: { name: string; elements: unknown; articles?: unknown; draft?: unknown } | null,
   after: { name: string; elements: unknown; articles?: unknown; draft?: unknown },
 ): boolean {
-  if (!before || (!holdsDraft(before) && !holdsDraft(after))) return true;
+  if (!before) return true;
   if (before.name !== after.name) return true;
   if (!sameArticleValue(savedArticlesOf(before), savedArticlesOf(after))) return true;
   return !sameArticleValue(before.elements, after.elements);
