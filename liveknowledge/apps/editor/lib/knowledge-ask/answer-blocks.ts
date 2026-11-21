@@ -2,8 +2,10 @@
 // The model writes Markdown; drawn as characters it read as "**Thursdays**" and "- one". It is read by the article's
 // own Markdown reader (`parseMarkdownBlocks`, the one a pasted or imported page goes through) into blocks, and those
 // are cut down here to what an answer may show: paragraphs, headings, quotes, lists, code, rules and tables, with
-// bold, italic, struck and code text. Nothing is ever HTML: a tag the model wrote stays the characters it was, and a
-// link keeps its address only when that is `http` or `https` (anything else is its words alone). Citation markers
+// bold, italic, struck and code text. Nothing is ever HTML: a tag the model wrote stays the characters it was, and no
+// link the model writes is pressable (search-and-ask.md "No outside links in an answer": a page could carry a prompt
+// injection that writes a phishing link). An `http` or `https` link is drawn as its words and then its address in
+// brackets, as text; any other is its words alone. Citation markers
 // become chips as before (`answerParts`). Pure, and linear in the answer.
 import {
   parseMarkdownBlocks,
@@ -14,7 +16,7 @@ import {
 import { answerParts } from './answer-parts';
 
 export type AnswerInline =
-  | { kind: 'text'; text: string; b?: true; i?: true; s?: true; code?: true; href?: string }
+  | { kind: 'text'; text: string; b?: true; i?: true; s?: true; code?: true }
   | { kind: 'cite'; number: number };
 
 export type AnswerListItem = {
@@ -34,8 +36,8 @@ export type AnswerBlock =
   | { kind: 'rule' }
   | { kind: 'table'; header: boolean; rows: AnswerInline[][][] };
 
-/** The address a link may open: `http` or `https`, whole. Undefined for anything else (`javascript:`, `data:`, a
- *  relative path, `mailto:`), whose words are then drawn as text. */
+/** The address a link names, shown as text after its words: `http` or `https`, whole. Undefined for anything else
+ *  (`javascript:`, `data:`, a relative path, `mailto:`), whose words are then drawn alone. */
 export function safeHref(href: string | undefined): string | undefined {
   if (!href || !/^https?:\/\//i.test(href)) return undefined;
   try {
@@ -48,14 +50,13 @@ export function safeHref(href: string | undefined): string | undefined {
 
 function inlineOf(runs: readonly ArticleRun[], cited: ReadonlySet<number>): AnswerInline[] {
   const inline: AnswerInline[] = [];
-  for (const run of runs) {
+  runs.forEach((run, at) => {
     const href = safeHref(run.href);
     const marks = {
       ...(run.b ? { b: true as const } : {}),
       ...(run.i ? { i: true as const } : {}),
       ...(run.s ? { s: true as const } : {}),
       ...(run.code ? { code: true as const } : {}),
-      ...(href ? { href } : {}),
     };
     // Code is the characters it is: `[1]` inside it names no passage.
     const parts = run.code
@@ -63,7 +64,10 @@ function inlineOf(runs: readonly ArticleRun[], cited: ReadonlySet<number>): Answ
       : answerParts(run.text, cited);
     for (const part of parts)
       inline.push(part.kind === 'cite' ? part : { kind: 'text', text: part.text, ...marks });
-  }
+    // A link's address, once after its last run, as plain text; not again when its words are the address.
+    if (href && runs[at + 1]?.href !== run.href && run.text.trim() !== run.href)
+      inline.push({ kind: 'text', text: ` (${href})` });
+  });
   return inline;
 }
 

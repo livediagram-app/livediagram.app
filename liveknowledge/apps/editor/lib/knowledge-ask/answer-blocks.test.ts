@@ -93,15 +93,14 @@ describe('what an answer can never do', () => {
       expect(['paragraph', 'heading', 'quote', 'list', 'code', 'rule', 'table']).toContain(kind);
   });
 
-  it('opens http and https addresses only; any other link is its words', () => {
+  it('makes no link pressable: an http or https address is text after its words, any other is its words', () => {
     const blocks = answerBlocks(
-      '[docs](https://example.com/a?b=1) [run](javascript:alert(1)) [data](data:text/html,x) [mail](mailto:a@b.c) [rel](/document/x)',
+      '[docs](https://example.com/a?b=1) [run](javascript:alert(1)) [data](data:text/html,x) [mail](mailto:a@b.c) [rel](/document/x) [https://example.com/x](https://example.com/x)',
       NONE,
     );
     const inline = (blocks[0] as Extract<AnswerBlock, { kind: 'paragraph' }>).inline;
-    const links = inline.flatMap((part) => (part.kind === 'text' && part.href ? [part.href] : []));
-    expect(links).toEqual(['https://example.com/a?b=1']);
-    expect(text(inline)).toContain('run');
+    expect(inline.some((part) => 'href' in part)).toBe(false);
+    expect(text(inline)).toBe('docs (https://example.com/a?b=1) run data mail rel https://example.com/x');
     expect(text(inline)).not.toContain('javascript:');
   });
 

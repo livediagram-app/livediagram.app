@@ -14,8 +14,6 @@ import {
 } from '@/lib/knowledge-ask/answer-blocks';
 import { CitationChip } from './CitationChip';
 
-const LINK =
-  'cursor-pointer rounded-sm text-brand-700 underline underline-offset-2 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-300 dark:hover:text-brand-200';
 const CODE =
   'rounded bg-slate-100 px-1 py-0.5 font-mono text-[0.9em] text-slate-900 dark:bg-slate-800 dark:text-slate-100';
 const HEADING = {
@@ -45,13 +43,6 @@ function Inline({ parts, cite }: { parts: readonly AnswerInline[]; cite: Cite })
         if (part.b) node = <strong className="font-semibold">{node}</strong>;
         if (part.i) node = <em>{node}</em>;
         if (part.s) node = <s>{node}</s>;
-        if (part.href)
-          node = (
-            // An address the model wrote: a new tab, with no way back to this one.
-            <a href={part.href} target="_blank" rel="noopener noreferrer nofollow" className={LINK}>
-              {node}
-            </a>
-          );
         return <Fragment key={at}>{node}</Fragment>;
       })}
     </>

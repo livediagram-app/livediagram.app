@@ -65,16 +65,12 @@ describe('AnswerBody', () => {
     expect((window as { pwned?: number }).pwned).toBeUndefined();
   });
 
-  it('links to an http or https address in a new tab with no way back, and to nothing else', () => {
+  it('draws a link the model wrote as plain text, never as a link (a page could carry a phishing link)', () => {
     const { answer } = draw(
-      '[the docs](https://example.com/docs) and [a trap](javascript:alert(1)) and [mail](mailto:a@b.c)',
+      '[click here](https://evil.example) and [a trap](javascript:alert(1)) and [mail](mailto:a@b.c)',
     );
-    const links = [...answer.querySelectorAll('a')];
-    expect(links).toHaveLength(1);
-    expect(links[0]!.getAttribute('href')).toBe('https://example.com/docs');
-    expect(links[0]!.getAttribute('target')).toBe('_blank');
-    expect(links[0]!.getAttribute('rel')).toBe('noopener noreferrer nofollow');
-    expect(answer.textContent).toContain('a trap');
+    expect(answer.querySelector('a')).toBeNull();
+    expect(answer.textContent).toBe('click here (https://evil.example/) and a trap and mail');
     expect(answer.innerHTML).not.toContain('javascript:');
   });
 
