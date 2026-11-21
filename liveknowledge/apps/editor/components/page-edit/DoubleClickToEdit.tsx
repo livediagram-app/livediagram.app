@@ -7,6 +7,7 @@
 // over links and controls, while a mouse button is down, off the page, and for touch. With reduced motion it appears without its fade.
 import { useEffect, useRef } from 'react';
 import { Portal } from '@liveknowledge/ui';
+import { ringAt } from './mode-flash';
 import { PencilIcon } from '@/components/primitives/explorer-icons';
 
 /** How long the pointer rests on the writing before the label shows (ms). */
@@ -77,6 +78,7 @@ export function DoubleClickToEdit({ active, onEdit }: { active: boolean; onEdit:
     const onDouble = (e: MouseEvent) => {
       if (!overWriting(e.target)) return;
       hide();
+      ringAt(e.clientX, e.clientY);
       edit.current();
     };
     document.addEventListener('pointermove', onMove, { passive: true });

@@ -76,16 +76,17 @@ export function PageEditBarView({
           style={{ right: corner.right, bottom: corner.bottom }}
           className="fixed z-[var(--z-toolbar)]"
         >
-          <HoverCard
-            title="Edit"
-            description="Change this page with anyone else editing it. Press E."
+          {/* No tooltip (owner 2026-11-21): the label and the key say it. */}
+          <button
+            type="button"
+            onClick={onEdit}
+            data-page-edit=""
+            className={`${PILL} ${BRAND} lk-pop-in`}
           >
-            <button type="button" onClick={onEdit} data-page-edit="" className={`${PILL} ${BRAND}`}>
-              <PencilIcon size={14} />
-              Edit
-              <Kbd tone="onBrand">E</Kbd>
-            </button>
-          </HoverCard>
+            <PencilIcon size={14} />
+            Edit
+            <Kbd tone="onBrand">E</Kbd>
+          </button>
         </div>
       </Portal>
     );
@@ -147,26 +148,21 @@ export function PageEditBarView({
           type="button"
           onClick={onCancel}
           data-page-edit-cancel=""
-          className={`${PILL} bg-white pl-3 pr-3.5 text-slate-700 shadow-slate-900/10 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-slate-400 dark:bg-slate-800 dark:text-slate-200 dark:shadow-black/40 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-white`}
+          className={`${PILL} lk-pop-in bg-white pl-3 pr-3.5 text-slate-700 shadow-slate-900/10 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-slate-400 dark:bg-slate-800 dark:text-slate-200 dark:shadow-black/40 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-white`}
         >
           <XIcon />
           Cancel
         </button>
-        <HoverCard
-          title="Save"
-          description={`Publish this draft for everyone. Press ${modifier()}+S.`}
+        <button
+          type="button"
+          onClick={onSave}
+          data-page-edit-save=""
+          className={`${PILL} ${BRAND} lk-pop-in`}
         >
-          <button
-            type="button"
-            onClick={onSave}
-            data-page-edit-save=""
-            className={`${PILL} ${BRAND}`}
-          >
-            <CheckIcon />
-            Save
-            <Kbd tone="onBrand">{modifier() === 'Cmd' ? '⌘S' : 'Ctrl S'}</Kbd>
-          </button>
-        </HoverCard>
+          <CheckIcon />
+          Save
+          <Kbd tone="onBrand">{modifier() === 'Cmd' ? '⌘S' : 'Ctrl S'}</Kbd>
+        </button>
       </div>
     </Portal>
   );

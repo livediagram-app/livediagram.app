@@ -24,6 +24,7 @@ import {
   usePageEditors,
 } from '@/lib/page-edit/page-edit-store';
 import { newEditorOf } from '@/lib/page-edit/follow-editors';
+import { flashMode } from '@/components/page-edit/mode-flash';
 import { pageEditKeyAction } from '@/lib/page-edit/page-edit-keys';
 import { wantsTitleFocus } from '@/lib/page-title-focus';
 import { track } from '@/lib/telemetry';
@@ -100,6 +101,7 @@ export function useEditorPageEditing({
     track('Tab', 'Started', 'Edit');
     resetHistory();
     enter(pageTab.id);
+    flashMode('edit');
   };
 
   // The writing still waiting on its idle commit lands first, through the lens, into the draft: all of it as typed,
@@ -133,6 +135,7 @@ export function useEditorPageEditing({
     );
     resetHistory();
     enter(null);
+    flashMode('save');
     roomRef.current?.send({ kind: 'op', op: { kind: 'page-saved', tabId } });
     debugLog('[page-edit] saved', { tabId, changed });
     track('Tab', 'Ended', 'Save');
@@ -145,6 +148,7 @@ export function useEditorPageEditing({
     );
     resetHistory();
     enter(null);
+    flashMode('cancel');
     // The tree named the page from the draft's Title: it goes back to the saved name.
     clearLivePageTitle();
     debugLog('[page-edit] discarded', { tabId });
@@ -161,6 +165,7 @@ export function useEditorPageEditing({
       debugLog('[page-edit] cancelled, others editing', { tabId });
       resetHistory();
       enter(null);
+      flashMode('cancel');
       clearLivePageTitle();
       return;
     }
@@ -182,6 +187,7 @@ export function useEditorPageEditing({
     if (pageEditorsOf(tabId).length > 0) {
       resetHistory();
       enter(null);
+      flashMode('cancel');
       clearLivePageTitle();
       return;
     }
@@ -223,6 +229,7 @@ export function useEditorPageEditing({
     track('Tab', 'Started', 'EditJoined');
     resetHistory();
     enter(activeId);
+    flashMode('edit');
     toast.info(`${newcomer.name} started editing. You're editing with them.`);
     // oxlint-disable-next-line react/exhaustive-deps -- runs when the people editing, the page or the role change
   }, [editorsHere, activeId, mayEdit]);
