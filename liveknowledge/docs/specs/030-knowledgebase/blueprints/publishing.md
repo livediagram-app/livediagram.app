@@ -26,7 +26,7 @@ an identifier of this feature.
 | Addresses: shape, reserved, from titles | `packages/knowledge/src/publish/publish-address.ts`                       |
 | Which pages go public                   | `packages/knowledge/src/publish/publish-scope.ts`                         |
 | Writing to safe HTML                    | `packages/knowledge/src/publish/publish-writing.ts`                       |
-| The site's pages (HTML, CSS, sitemap, card) | `packages/knowledge/src/publish/publish-site.ts`, `publish-site-css.ts`, `publish-sitemap.ts`, `publish-card.ts` |
+| The site's pages (HTML, CSS, sitemap) | `packages/knowledge/src/publish/publish-site.ts`, `publish-site-css.ts`, `publish-sitemap.ts` |
 | The theme's accent (moved from the editor) | `packages/document/src/knowledge-accent.ts`                             |
 | Wire types                              | `packages/api-schema/src/publishing.ts`                                    |
 | The snapshot's tables                   | `apps/api/src/publishing/published-schema.ts`                              |
@@ -119,9 +119,8 @@ an identifier of this feature.
   - `/kb/<site>` and `/kb/<site>/<page>` → `text/html`; a moved site or page → `301`; none → `404` page.
   - `/kb/<site>/search?q=` → `text/html`, results or none.
   - `/kb/<site>/sitemap.xml` → `application/xml`.
-  - `/kb/<site>/og/<page>.png` (the front page is `og/index.png`) → `image/png`.
 - The room's RPC `publishedRead(documentId, read)`, `read` one of `{ kind: 'page', address: string | null }`,
-  `{ kind: 'search', query }`, `{ kind: 'sitemap' }`, `{ kind: 'card', address }`, answers `PublishedAnswer`:
+  `{ kind: 'search', query }`, `{ kind: 'sitemap' }`, answers `PublishedAnswer`:
   `{ status: 'none' }`, `{ status: 'moved', address }` or `{ status: 'ok', site, page?, results?, pages? }` with
   only published fields. `site` is `{ address, name, style, noindex, showWriters, tree: { address, title, icon,
   parent }[] }`.
@@ -166,7 +165,7 @@ Schema step after the existing ones (`document-schema.ts`), additive, `IF NOT EX
   `default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;
   img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'`, with `X-Content-Type-Options:
   nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
-- **P23** Search and the card are limited per visitor's network on `SEARCH_RATE_LIMITER` (`kb:<network>`); over it
+- **P23** Search is limited per visitor's network on `SEARCH_RATE_LIMITER` (`kb:<network>`); over it
   `429` with `Retry-After: 60`. A query is cut to `SEARCH_MAX_QUERY_CHARS` and made safe by `searchTerms` and
   `ftsExpression`, so nothing typed is read as an FTS operator.
 - The router forwards `/kb/*` to the api as it is; no cookie or Authorization header is read by the public site.
@@ -177,7 +176,8 @@ Schema step after the existing ones (`document-schema.ts`), additive, `IF NOT EX
   storage read, then the knowledgebase's) and, when a page changed, one body read and render for that page.
 - A Publish renders every page in scope: at most 500 bodies, read 50 at a time. The render is linear in the
   writing's blocks and runs (P27 holds a 5,000 block page under a CPU budget).
-- The card is one SVG drawn to PNG (resvg) per page per minute per edge at most, never on a page read.
+- No image is drawn: `og:image` is liveknowledge's own social image (`<origin>/opengraph-image`). A card per page
+  (resvg in the api) is a follow-up, held back for its bundle cost (about 2.5 MB of wasm and fonts).
 
 ## Presentation and UX
 
@@ -234,7 +234,6 @@ Schema step after the existing ones (`document-schema.ts`), additive, `IF NOT EX
 | `PUBLISHED_DESCRIPTION_MAX`  | 160   | What search engines show                                     |
 | `PREVIEW_PAGES_SHOWN`        | 8     | The dialog's list before "and N more"                        |
 | `PUBLISH_RENDER_BATCH`       | 50    | Bodies read at once during a Publish                          |
-| `CARD_WIDTH`, `CARD_HEIGHT`  | 1200, 630 | The Open Graph size                                      |
 
 ## Defaults ledger
 

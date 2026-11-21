@@ -102,8 +102,8 @@ reach them").
 ## The public site
 
 - **Addresses:** `/kb/<site>` is the front page (the section's first page, or the knowledgebase's first top-level
-  page); `/kb/<site>/<page>` each page; `/kb/<site>/search?q=` the search; `/kb/<site>/sitemap.xml` the sitemap;
-  `/kb/<site>/og/<page>.png` a page's social image. A page's address is made from its title ("Release Process"
+  page); `/kb/<site>/<page>` each page; `/kb/<site>/search?q=` the search; `/kb/<site>/sitemap.xml` the sitemap.
+  A page's address is made from its title ("Release Process"
   is `release-process`), made unique in the site with `-2`, `-3`. **Renaming a page keeps it stable**: the old
   address answers a permanent redirect to the new one, and so does a site address an Editor changed, until the site
   is unpublished.
@@ -119,8 +119,8 @@ reach them").
 - **Search** finds words in the published pages only (their titles first), from the field at the head; with no
   JavaScript it is a plain form. No result says so and offers the front page.
 - **SEO:** each page has its title ("Release Process · Acme Help"), a meta description from its first words (160
-  characters), a canonical address, Open Graph and Twitter tags with the page's social image (the page's title and
-  the knowledgebase's name on the theme's accent, 1200 by 630), and the sitemap lists every published page with its
+  characters), a canonical address, Open Graph and Twitter tags (the page's title and description, with liveknowledge's
+  own social image; a card drawn for each page is a later step), and the sitemap lists every published page with its
   last save. **Hide From Search Engines** adds `noindex` to every page (and the `X-Robots-Tag` header) and empties
   the sitemap.
 - **Not found:** an address no site holds, a page not in the site and an unpublished site answer 404 with a plain
@@ -132,7 +132,7 @@ reach them").
   publishing, an update and Unpublish clear the copies the Editor's own edge holds at once, and every other edge's
   copy has gone within the 60 seconds. So a save, and an Unpublish, reach every reader within a minute.
 - **Rate limits:** search is limited per visitor's network (it is the one public read the edge cannot keep); a
-  publish is limited as every write is. Pages, the sitemap and the social images are cached reads.
+  publish is limited as every write is. Pages and the sitemap are cached reads.
 - **Limits:** a site holds every page of the knowledgebase at most (500). A search query is 200 characters and 12
   words at most and answers 20 results.
 - **No new infrastructure:** the public site is served by the api Worker (the router sends `/kb/` there) from the
