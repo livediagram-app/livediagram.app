@@ -61,7 +61,8 @@ own.
 
 - States are worked out when read, from the fields and the clock; nothing is written when a review comes due.
 - The tick or pill sits in the page's meta row under the title, in the page tree row and on every page link's hover
-  card. The meta row also says "Review due <date>" and "Edited <when> by <name>".
+  card. The meta row also says "Edited <when> by <name>"; "Review due <date>" rides the badge's hover (and a screen
+  reader's reading of it), so the row stays one line (owner 2026-11-21).
 - **Verify** (the Page Health card in the right rail, or behind Page Info on a narrower window, the tree row menu,
   and a quiet **Verify** in the meta row after Add Cover, owner 2026-11-21) sets `verifiedAt` to now and `verifiedBy`
   to the person. The meta row's asks first, in a popover under it: "Verify This Page?" (or "Verify This Page Again?"),
@@ -120,8 +121,9 @@ own.
 
 - **The way in** is Page Health's pencil alone. No menu row and no command: the period is read where it is
   shown, and a command would have to open a panel anchored on a rail that may be folded away.
-- **The panel** opens under the pencil (a sheet on a phone), 340 px wide and of one height whatever it shows. It is
-  headed **Review Period**, with "Applies to every page in this knowledgebase." under the heading. The five
+- **The panel** opens under the pencil (a sheet on a phone), 360 px wide and of one height whatever it shows. It is
+  headed **Review Period** with the line that says what the period does, then a tinted line, "Applies to every
+  page in this knowledgebase.", before the choices. The five
   choices are bordered single-choice rows, the chosen one ticked. A shorter period is counted first; when it
   would make more pages due than are due now, a strip under the rows says "12 pages will be due for review with
   Every 30 Days." with **Apply** and Cancel. A shorter period that makes no more pages due, a longer one and Never

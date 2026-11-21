@@ -5,6 +5,7 @@
 // when the review is due, when it was last edited (where that is known) and "Changed since verified". Verifying is
 // the right rail's (Page Health), never the page's own. Its height is kept whatever it holds, so nothing in the writing moves when the page's
 // health arrives or its state changes, except that a row with nothing in it is not drawn at all.
+import { Tooltip } from '@liveknowledge/ui';
 import type { ReactNode } from 'react';
 import { reviewDueText, trustMark, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
@@ -101,8 +102,6 @@ export function PageMetaRowView({
       key: 'makers',
       node: <PageMakersBadges makers={makers} nameOf={nameOf} now={now} />,
     });
-  if (trust.reviewAt !== undefined)
-    notes.push({ key: 'review', node: reviewDueText(trust.reviewAt, now) });
   if (edited)
     notes.push({
       key: 'edited',
@@ -131,8 +130,27 @@ export function PageMetaRowView({
       // Nothing to say (a page never verified, no edit known): no row, so the writing sits right under the title.
       className={`${mark || notes.length ? 'flex min-h-7' : 'hidden'} flex-wrap items-center gap-x-[0.8rem] gap-y-1 [clip-path:inset(-1rem_-1rem_-1rem_0)] font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-600 dark:text-slate-400`}
     >
+      {/* When the review is due rides the badge's hover, so the row stays one line (owner 2026-11-21: "why is the bar
+          under the title wrapping?"); Page Health says it too. */}
       {mark ? (
-        <TrustBadge mark={mark} {...(verifiedBy ? { label: `Verified by ${verifiedBy}` } : {})} />
+        trust.reviewAt !== undefined ? (
+          <Tooltip label={reviewDueText(trust.reviewAt, now)}>
+            <span
+              tabIndex={0}
+              data-review-due-hover=""
+              className="inline-flex cursor-default rounded-full focus-visible:outline-2 focus-visible:outline-brand-600"
+            >
+              <TrustBadge
+                mark={mark}
+                {...(verifiedBy ? { label: `Verified by ${verifiedBy}` } : {})}
+              />
+              {/* Said to a screen reader too, as the hover shows it. */}
+              <span className="sr-only">{reviewDueText(trust.reviewAt, now)}</span>
+            </span>
+          </Tooltip>
+        ) : (
+          <TrustBadge mark={mark} {...(verifiedBy ? { label: `Verified by ${verifiedBy}` } : {})} />
+        )
       ) : null}
       {/* Each note's dot leads it, in the gap before it: a note that wraps to start a line has its dot clipped by the
           row's left edge, so no line ends or starts on a stray dot (owner 2026-11-21). */}
