@@ -18,10 +18,10 @@
   "devDependencies": {
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.6",
-    "jsdom": "^31.0.0",
+    "jsdom": "^31.0.1",
     "oxlint": "^1.93.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   },
   "dependencies": {
     "dompurify": "^3.4.17"
