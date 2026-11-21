@@ -64,7 +64,7 @@ a:focus-visible,.pages-toggle:focus-visible~.head .pages-button,input[type=searc
 .head{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;height:64px;padding:0 16px;border-bottom:1px solid var(--line);background:var(--bg)}
 .brand{font-family:${look.headingFont};font-weight:700;font-size:17px;color:var(--ink);text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .search{margin-left:auto;display:flex;min-width:0}
-.search input{width:min(280px,44vw);height:36px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:15px}
+.search input{box-sizing:border-box;width:min(280px,44vw);height:36px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:15px}
 .pages-toggle{position:absolute;opacity:0;width:1px;height:1px}
 .pages-button{display:none;cursor:pointer;align-items:center;height:36px;padding:0 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-weight:500;white-space:nowrap}
 .layout{display:flex;max-width:1180px;margin:0 auto}
@@ -111,6 +111,6 @@ ul.todo{list-style:none;padding-left:4px}ul.todo input{margin-right:6px}
 .pages-toggle:checked~.layout .side{display:block}
 .side a{padding:11px 8px}
 main{padding:24px 16px 48px}
-.search input{width:min(220px,38vw)}
+.search{flex:0 1 220px}.search input{width:100%;min-width:96px}
 }`;
 }

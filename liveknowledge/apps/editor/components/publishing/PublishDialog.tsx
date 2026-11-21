@@ -207,7 +207,10 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
         >
           <DialogCloseButton onClick={onClose} />
         </DialogHeader>
-        <div className="flex min-h-[30rem] flex-col gap-5 px-6 py-5" data-publish-dialog="">
+        <div
+          className="min-h-[min(30rem,60dvh)] flex-1 space-y-5 overflow-y-auto px-6 py-5"
+          data-publish-dialog=""
+        >
           {failure?.action === 'read' && !state ? (
             <Callout
               tone="error"
@@ -227,7 +230,7 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
           {/* Where it stands: live at its address, or private. */}
           <div
             data-publish-status={published ? 'published' : 'private'}
-            className={`flex min-h-[4.5rem] items-center gap-3 rounded-lg border px-3 py-3 ${
+            className={`grid min-h-[4.5rem] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-3 max-sm:grid-cols-[auto_minmax(0,1fr)] ${
               published
                 ? 'border-brand-200 bg-brand-50 dark:border-brand-500/30 dark:bg-brand-500/10'
                 : 'border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50'
@@ -243,7 +246,7 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
             >
               {published ? <GlobeIcon /> : <LockIcon />}
             </span>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0">
               <p role="status" className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {state ? (published ? 'Live on the Web' : 'Not Published') : ''}
               </p>
@@ -269,7 +272,8 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
               )}
             </div>
             {site ? (
-              <div className="flex shrink-0 items-center gap-1">
+              // On a phone the actions take a row of their own under the address, so it is not cut short.
+              <div className="flex shrink-0 items-center gap-1 max-sm:col-start-2">
                 <Button
                   variant="secondary"
                   size="xs"
