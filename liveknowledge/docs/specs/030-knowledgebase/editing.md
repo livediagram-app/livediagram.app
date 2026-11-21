@@ -15,7 +15,8 @@ editing share live and that nobody else sees until it is saved.
   the `E` key while reading). A Viewer, a link visitor and an agent never see it.
 - **Double-click to edit** (owner, 2026-11-21): while an Editor reads, a small quiet label rides just under the
   pointer over the writing, "Double-click to Edit" (a dark pill, 11 px, shown after the pointer rests a moment, never
-  over a link or a control, never for touch), and a double-click on the writing opens edit mode.
+  over a link or a control, never for touch). It stays with the pointer anywhere over the page being read, margins and
+  gaps included, and through a scroll; a double-click there opens edit mode.
 - **An empty page** (owner, 2026-11-21), read: a page with nothing under its title shows a drawing of a blank page,
   "Nothing Written Yet", and for whoever may edit **Start Writing** (opens edit mode); a reader is told it has no
   writing yet. Never while editing.

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DoubleClickToEdit, HINT_DELAY_MS, overWriting } from './DoubleClickToEdit';
 
 const page = () => {
-  document.body.innerHTML = `<div class="article-flow" data-readonly><p id="words">Some words <a id="link" href="#x">a link</a></p></div><p id="outside">Elsewhere</p>`;
+  document.body.innerHTML = `<div data-canvas-root><div id="margin">margin</div><div class="article-flow" data-readonly><p id="words">Some words <a id="link" href="#x">a link</a></p></div></div><p id="outside">Elsewhere</p>`;
   return {
     words: document.getElementById('words')!,
     link: document.getElementById('link')!,
@@ -22,6 +22,8 @@ describe('Double-click to Edit', () => {
   it('counts the writing, never a link, a control or outside the page', () => {
     const { words, link, outside } = page();
     expect(overWriting(words)).toBe(true);
+    // Anywhere over the page being read, its margins too.
+    expect(overWriting(document.getElementById('margin'))).toBe(true);
     expect(overWriting(link)).toBe(false);
     expect(overWriting(outside)).toBe(false);
     expect(overWriting(null)).toBe(false);

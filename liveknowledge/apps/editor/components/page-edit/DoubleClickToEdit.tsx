@@ -3,8 +3,8 @@
 // Double-click to edit (docs/specs/030-knowledgebase/editing.md "Read mode"): while an Editor reads a page, a small
 // quiet label rides just under the pointer over the writing, "Double-click to Edit", and a double-click on the
 // writing opens edit mode. It follows the pointer by transform only (no render per move), waits a moment before it
-// shows so a passing pointer never flashes it, and hides over links and controls, while a mouse button is down, on
-// scroll, and for touch. With reduced motion it appears without its fade.
+// shows so a passing pointer never flashes it, stays with the pointer anywhere over the page being read, and hides
+// over links and controls, while a mouse button is down, off the page, and for touch. With reduced motion it appears without its fade.
 import { useEffect, useRef } from 'react';
 import { Portal } from '@liveknowledge/ui';
 import { PencilIcon } from '@/components/primitives/explorer-icons';
@@ -16,14 +16,20 @@ const OFFSET_X = 14;
 const OFFSET_Y = 20;
 
 const WRITING = '.article-flow[data-readonly]';
+// The document area the label rides over (owner, 2026-11-21: "keep it on screen while I hover over the document and
+// move around"): the whole reading area, its margins and the gaps between blocks included, while the page is read.
+const DOCUMENT = '[data-canvas-root]';
 // Over these a click does its own thing, so the label stands aside.
 const INTERACTIVE =
   'a, button, input, textarea, select, [role="button"], [data-page-link], summary';
 
-/** Whether a pointer over `target` is over the page's writing, away from anything clickable. */
+/** Whether a pointer over `target` is over the page being read, away from anything clickable. */
 export function overWriting(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
-  return target.closest(WRITING) !== null && target.closest(INTERACTIVE) === null;
+  const area = target.closest(DOCUMENT);
+  return (
+    area !== null && area.querySelector(WRITING) !== null && target.closest(INTERACTIVE) === null
+  );
 }
 
 export function DoubleClickToEdit({ active, onEdit }: { active: boolean; onEdit: () => void }) {
@@ -75,7 +81,7 @@ export function DoubleClickToEdit({ active, onEdit }: { active: boolean; onEdit:
     document.addEventListener('pointermove', onMove, { passive: true });
     document.addEventListener('pointerdown', hide, { passive: true });
     document.addEventListener('dblclick', onDouble);
-    window.addEventListener('scroll', hide, { capture: true, passive: true });
+    // A scroll moves the page under a still pointer: the label stays where the pointer is.
     window.addEventListener('blur', hide);
     return () => {
       hide();
@@ -83,7 +89,6 @@ export function DoubleClickToEdit({ active, onEdit }: { active: boolean; onEdit:
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerdown', hide);
       document.removeEventListener('dblclick', onDouble);
-      window.removeEventListener('scroll', hide, { capture: true });
       window.removeEventListener('blur', hide);
     };
   }, [active]);
