@@ -6093,6 +6093,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Abandoned",
       "Refused",
       "Played",
+      "Tested",
       "Ran"
     ],
     "type": "string"
