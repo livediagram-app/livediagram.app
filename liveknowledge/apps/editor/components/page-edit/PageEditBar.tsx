@@ -64,22 +64,32 @@ export function PageEditBarView({
   onSave,
   onCancel,
 }: PageEditBarViewProps) {
-  const corner = useArticleZoneCorner(mayEdit && editing);
+  const corner = useArticleZoneCorner(mayEdit, `${editing}`);
   if (!mayEdit) return null;
   if (!editing)
     return (
-      <HoverCard title="Edit" description="Change this page with anyone else editing it. Press E.">
-        <button
-          type="button"
-          onClick={onEdit}
-          data-page-edit=""
-          className={`${PILL} mr-1 gap-1.5 bg-brand-700 pl-2.5 pr-1.5 text-white shadow-sm shadow-brand-900/20 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500`}
+      <Portal>
+        <div
+          style={{ right: corner.right, bottom: corner.bottom }}
+          className="fixed z-[var(--z-toolbar)]"
         >
-          <PencilIcon size={14} />
-          Edit
-          <Kbd tone="onBrand">E</Kbd>
-        </button>
-      </HoverCard>
+          <HoverCard
+            title="Edit"
+            description="Change this page with anyone else editing it. Press E."
+          >
+            <button
+              type="button"
+              onClick={onEdit}
+              data-page-edit=""
+              className={`${PILL} h-10 gap-1.5 rounded-xl bg-brand-700 pl-3 pr-2 text-white shadow-lg shadow-brand-900/25 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500`}
+            >
+              <PencilIcon size={14} />
+              Edit
+              <Kbd tone="onBrand">E</Kbd>
+            </button>
+          </HoverCard>
+        </div>
+      </Portal>
     );
   const names = editorsPhrase(others.map((o) => o.name));
   const unsaved = status !== '';
