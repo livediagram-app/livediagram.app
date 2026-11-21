@@ -653,12 +653,19 @@ html[data-presenting] .article-flow .article-note {
 .article-flow .article-page-slot-foot:not(:empty) {
   margin-top: 3rem;
 }
-/* The page's icon over its Title (page-surface.md "The page icon"): 48 px of the page's, a little room under it. A
-   page with none has an empty slot, which takes no room. */
+/* The page's icon to the left of its Title (page-surface.md "The page icon"): 48 px of the page's, floated so the
+   Title starts beside it on its first line and a long one wraps beside it; the meta row clears it. A page with none
+   has an empty slot, which takes no room. */
 .article-flow .article-page-slot-head:not(:empty) {
   display: flex;
-  margin: 0 0 0.75rem;
+  float: left;
+  align-items: center;
+  margin: 0 0.75rem 0 0;
+  min-height: 1lh;
   line-height: 1;
+}
+.article-flow .article-page-slot-meta {
+  clear: left;
 }
 
 /* A page link (docs/specs/030-knowledgebase/links-and-embeds.md "Page links"). Its stored words take no room: what

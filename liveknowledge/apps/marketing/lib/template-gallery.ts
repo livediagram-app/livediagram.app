@@ -1,7 +1,6 @@
 import { seededRandom } from '@liveknowledge/document';
 import {
   BLANK_TEMPLATE,
-  EXTRA_BLANK_TEMPLATES,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
@@ -16,8 +15,8 @@ import {
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships, each a link that creates that document straight away (/new?template=<kind>,
 // docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
-// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and nothing else:
-// one empty page, then a blank of each page kind), then one shelf per category. The data half lives here
+// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): one shelf per category, with Blank Knowledgebase
+// leading the category tiles as a link that makes one (no shelf of its own). The data half lives here
 // so the lists and the filters can be tested without rendering the section.
 
 export type GalleryTemplate = TemplateDescriptor & {
@@ -28,14 +27,10 @@ export type GalleryTemplate = TemplateDescriptor & {
   categoryLabel: string;
 };
 
-// The open shelf: Blank Slate (its id `popular`, the shelf it replaced), or a category.
-export type ShelfId = 'popular' | TemplateCategory;
+// The open shelf: a category.
+export type ShelfId = TemplateCategory;
 
 export type GalleryShelf = { id: ShelfId; label: string; templates: GalleryTemplate[] };
-
-const POPULAR_LABEL = 'Blank Slate';
-
-const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));
 
 export function toGallery(t: TemplateDescriptor): GalleryTemplate {
   const categories = templateCategories(t.kind);
@@ -49,27 +44,9 @@ export function toGallery(t: TemplateDescriptor): GalleryTemplate {
 }
 
 // Every listed template on a category shelf: hidden templates never appear in a listing, and the
-// blanks are only ever on Blank Slate, never on a category shelf.
+// blank is never on a category shelf.
 export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
-}
-
-// Blanks the row already shows by another name: Blank Infographic is Blank Illustration's own
-// empty infographic page, so it is left off rather than shown twice.
-const SHOWN_AS_ANOTHER_BLANK: readonly string[] = ['blank-infographic'];
-
-// Blank Slate's blanks: the empty page that asks what it is for, then a blank of each page kind.
-const BLANK_SLATE_KINDS = [
-  BLANK_TEMPLATE,
-  ...EXTRA_BLANK_TEMPLATES.filter((k) => !SHOWN_AS_ANOTHER_BLANK.includes(k)),
-];
-
-// Blank Slate: every blank and nothing else, in its fixed order.
-export function popularTemplates(): GalleryTemplate[] {
-  return BLANK_SLATE_KINDS.flatMap((kind) => {
-    const t = BY_KIND.get(kind);
-    return t && !t.hidden ? [toGallery(t)] : [];
-  });
 }
 
 // The editor's own search (templateMatchesQuery): every typed word has to hit the title, the description, the
@@ -108,11 +85,16 @@ export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
   })).filter((g) => g.templates.length > 0);
 }
 
-// Blank Slate, then every category. Searching lives in the hero (lib/hero-starts.ts), so the gallery
-// only browses.
+// Every category. The blank is not a shelf (owner 2026-11-21): Blank Knowledgebase leads the category tiles as a
+// link that makes one at once (BLANK_START). Searching lives in the hero (lib/hero-starts.ts), so the gallery only
+// browses.
 export function galleryShelves(): GalleryShelf[] {
-  return [
-    { id: 'popular' as const, label: POPULAR_LABEL, templates: popularTemplates() },
-    ...groupGallery(galleryTemplates()),
-  ];
+  return groupGallery(galleryTemplates());
 }
+
+// The tile that leads the categories and creates a blank knowledgebase straight away.
+export const BLANK_START = {
+  label: 'Blank Knowledgebase',
+  kind: BLANK_TEMPLATE,
+  note: 'Start empty',
+} as const;

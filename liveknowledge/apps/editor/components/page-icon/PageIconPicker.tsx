@@ -1,7 +1,7 @@
 'use client';
 
 // The page icon picker (docs/specs/030-knowledgebase/page-surface.md "The page icon"), opened from Add Icon in the
-// meta row and from the icon above the Title: a popover (a sheet on a phone) with Remove at its top right when the
+// meta row and from the icon left of the Title: a popover (a sheet on a phone) with Remove at its top right when the
 // page has an icon, the Emoji and Icons tabs, a search field that takes the focus, and the grid, Recent first. A pick
 // sets the icon and closes it. The emoji list is its own chunk, fetched when the picker first opens; the Icons tab
 // uses the line-art catalogue's chunk (lib/icon-registry.ts), fetched when that tab is shown.

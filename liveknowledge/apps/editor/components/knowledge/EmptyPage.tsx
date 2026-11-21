@@ -4,6 +4,7 @@
 // a quiet drawing of a blank page and a line saying so, instead of a white sheet. Whoever may edit gets Start Writing,
 // which opens edit mode as Edit and a double-click do; a reader is told the page has nothing yet. It never shows while
 // the page is being edited, so the writing starts on a clean page.
+import { DRAFT_FLOW } from '@liveknowledge/document';
 import { Button } from '@liveknowledge/ui';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { PencilIcon } from '@/components/primitives/explorer-icons';
@@ -12,11 +13,14 @@ import { wantTitleFocus } from '@/lib/page-title-focus';
 type Run = { text?: string };
 type Block = { type?: string; style?: string; runs?: readonly Run[] };
 
-/** Whether a page's writing has nothing under its title: only empty paragraphs (and the title) in every article. */
+/** Whether a page's saved writing has nothing under its title: only empty paragraphs (and the title) in every article.
+ *  The unsaved draft never counts: words typed in edit mode make the page written once they are saved. */
 export function isEmptyPage(
   articles: Record<string, { blocks: readonly unknown[] }> | undefined,
 ): boolean {
-  const all = Object.values(articles ?? {});
+  const all = Object.entries(articles ?? {})
+    .filter(([flow]) => flow !== DRAFT_FLOW)
+    .map(([, flow]) => flow);
   return all.every(({ blocks }) =>
     (blocks as readonly Block[]).every(
       (b) =>

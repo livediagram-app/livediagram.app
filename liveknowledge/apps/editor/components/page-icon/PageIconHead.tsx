@@ -1,6 +1,6 @@
 'use client';
 
-// The page's icon above its Title (docs/specs/030-knowledgebase/page-surface.md "The page icon"), drawn into the
+// The page's icon to the left of its Title (docs/specs/030-knowledgebase/page-surface.md "The page icon"), drawn into the
 // writing's head slot (lib/knowledge/page-slots-plugin.ts). For whoever may change it a button that opens the picker
 // (a soft ground on hover, "Change Icon"); for anyone else a picture. Nothing at all for a page with none, and its
 // slot then takes no room.

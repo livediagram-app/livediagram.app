@@ -28,7 +28,7 @@ The landing page (`app/page.tsx`), top to bottom:
 
 1. **Header**: the shared `SiteHeader` (Build with AI, Explorer, the account menu when signed in).
 2. **Hero** (below).
-3. **Templates** (`#templates`): "Browse every template", the shared template band over the catalogue, Blank Slate open, then the five categories. Every card creates that page straight away (`/new?template=<kind>`). It comes right after the hero (owner, 2026-11-21), so the first scroll shows what a page can start as.
+3. **Templates** (`#templates`): "Browse every template", the shared template band over the catalogue, the five categories, Blank Knowledgebase leading their tiles as a link that makes a blank knowledgebase (no category of its own; owner 2026-11-21). Every card creates that page straight away (`/new?template=<kind>`). It comes right after the hero (owner, 2026-11-21), so the first scroll shows what a page can start as.
 4. **Promises** (`PromisePrism`): "Built With Your Values in Mind", four promises on the deep band, the prism's light landing on each, each with its title and one line and, set large in its hue, a short value where one helps: No Account Needed (no value: its title says it all, as in every app since #2091), **MIT** Open Source, **0 trackers** Private by Design, **Live** Real-Time Collaboration.
 5. **Six feature sections** (below), alternating which side the art sits and the tinted ground, each with a link to its own page (`/features/<id>`, "Feature pages").
 6. **Build With AI** (`BuildWithAiBand`): the MCP server and the CLI, beside a drawn transcript of an agent's three calls, linking to `/ai`.

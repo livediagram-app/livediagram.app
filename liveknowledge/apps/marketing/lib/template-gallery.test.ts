@@ -5,7 +5,7 @@ import {
   galleryShelves,
   galleryTemplates,
   groupGallery,
-  popularTemplates,
+  BLANK_START,
 } from './template-gallery';
 
 describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => {
@@ -59,10 +59,10 @@ describe('groupGallery', () => {
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['meeting-notes']);
   });
 
-  it('runs the categories alphabetically by name, Blank Slate first', () => {
+  it('runs the categories alphabetically by name, with no Blank Slate shelf', () => {
     const shelves = galleryShelves();
-    expect(shelves[0]!.label).toBe('Blank Slate');
-    const names = shelves.slice(1).map((g) => g.label);
+    expect(shelves.map((g) => g.label)).not.toContain('Blank Slate');
+    const names = shelves.map((g) => g.label);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
   });
 
@@ -84,48 +84,14 @@ describe('groupGallery', () => {
   });
 });
 
-// docs/specs/019-marketing/marketing-site.md "Template gallery": the editor's template step's
-// structure, Popular first.
-describe('the shelves, as the template step lays them out', () => {
-  it('opens on Blank Slate, only the blanks, then every category in catalogue order', () => {
+// docs/specs/019-marketing/marketing-site.md "Templates": Blank Knowledgebase leads the category tiles but is no
+// category (owner 2026-11-21): a link that makes a blank knowledgebase.
+describe('the shelves and the blank', () => {
+  it('opens on the first category; the blank is the start tile, on no shelf', () => {
     const shelves = galleryShelves();
-    expect(shelves[0]?.id).toBe('popular');
-    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual(['blank-article']);
-    for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
-    expect(shelves.slice(1).map((s) => s.id)).toEqual(
-      groupGallery(galleryTemplates()).map((g) => g.id),
-    );
-  });
-});
-
-describe('the shelf order', () => {
-  it('mixes each category once, the same way every time', () => {
-    const first = groupGallery(galleryTemplates());
-    const again = groupGallery(galleryTemplates());
-    expect(again.map((g) => g.templates.map((t) => t.kind))).toEqual(
-      first.map((g) => g.templates.map((t) => t.kind)),
-    );
-    // Every category keeps exactly its own templates, cross-listed ones included...
-    for (const g of first) {
-      const catalogue = galleryTemplates().filter((t) => t.categories.includes(g.id as never));
-      expect(new Set(g.templates.map((t) => t.kind))).toEqual(
-        new Set(catalogue.map((t) => t.kind)),
-      );
-    }
-    // ...but not in the order they were added.
-    const shuffled = first.filter((g) => {
-      const catalogue = galleryTemplates()
-        .filter((t) => t.categories.includes(g.id as never))
-        .map((t) => t.kind);
-      return g.templates.map((t) => t.kind).join() !== catalogue.join();
-    });
-    // (A shelf of one template has no order to mix: liveknowledge's catalogue has several.)
-    expect(shuffled.length).toBeGreaterThan(0);
-    // Every shelf of four or more comes out mixed (a seeded mix of two or three may land as it was: Onboarding's
-    // three do, one chance in six).
-    const unmixed = first
-      .filter((g) => g.templates.length > 3 && !shuffled.includes(g))
-      .map((g) => g.id);
-    expect(unmixed).toEqual([]);
+    expect(shelves.map((s) => s.id)).toEqual(groupGallery(galleryTemplates()).map((g) => g.id));
+    for (const shelf of shelves)
+      for (const t of shelf.templates) expect(isBlankTemplate(t.kind), t.kind).toBe(false);
+    expect(BLANK_START).toMatchObject({ label: 'Blank Knowledgebase', kind: 'blank-article' });
   });
 });

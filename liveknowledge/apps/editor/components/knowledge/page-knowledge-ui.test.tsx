@@ -265,7 +265,8 @@ describe('Page Health', () => {
     );
     const rows = [...container.querySelectorAll('[data-page-stamp]')].map((r) => r.textContent);
     expect(rows[0]).toMatch(/^PNPriya NairCreated 3 days ago/);
-    expect(rows[1]).toMatch(/^GGuestUpdated 3 mins ago/);
+    // A guest's disc is the theme's person glyph, never a "G".
+    expect(rows[1]).toMatch(/^GuestUpdated 3 mins ago/);
     rerender(<Rail {...props()} />);
     expect(container.querySelectorAll('[data-page-stamp]')).toHaveLength(0);
   });

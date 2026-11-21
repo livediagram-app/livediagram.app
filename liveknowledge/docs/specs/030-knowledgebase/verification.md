@@ -84,7 +84,9 @@ own.
   quiet figures (people, agents) under "Read This Week". The ring fills over 200 ms when it changes (the chrome motion budget), and not
   at all with reduced motion. (Redesigned 2026-11-21, "it's rubbish": the state, its line and Verify sit in a soft
   panel washed in the state's colour; the facts below each have a glyph; **Read This Week** (a panel on the theme's tint, a quiet open book drawn behind its two counts) and Created / Updated
-  are the rail's foot, held at its bottom while the rest scrolls, the Page Info card showing them last.) **AI
+  are the rail's foot, held at its bottom while the rest scrolls, the Page Info card showing them last; Created /
+  Updated sit above Read This Week (owner 2026-11-21).) **Order** (owner 2026-11-21): Page Health first, On This Page
+  under it. **AI
   Context** follows Page Health, before the foot, in the same quiet style ([AI Knowledge](ai-knowledge.md) "AI
   Context on a page").
 - **The meta row** under the title is drawn only when it has something to say (a tick or pill, a due date, an edit,

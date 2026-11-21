@@ -124,7 +124,6 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
   );
   const sections = (
     <div className="flex flex-col gap-8">
-      <OnThisPage headings={writing.headings} current={current} onGo={go} />
       <PageHealthCard
         trust={page.trust}
         reviewEvery={page.reviewEvery}
@@ -136,6 +135,8 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         }
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
       />
+      {/* Page Health leads, On This Page under it (owner 2026-11-21). */}
+      <OnThisPage headings={writing.headings} current={current} onGo={go} />
       <PageHealthApproval />
       <PageRailAiContext page={page} />
       {docked ? null : activity}

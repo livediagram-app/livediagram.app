@@ -1,6 +1,6 @@
 // A page's icon drawn at one size (docs/specs/030-knowledgebase/page-surface.md "The page icon"): an emoji as the
 // system's colour emoji font draws it, or a line-art catalogue icon in the text colour around it. Shared by the head
-// above the Title, the page tree's rows, the breadcrumb and the picker. Decorative: whoever shows it names the page.
+// left of the Title, the page tree's rows, the breadcrumb and the picker. Decorative: whoever shows it names the page.
 import { memo } from 'react';
 import type { TabIcon } from '@liveknowledge/document';
 import { Glyph } from '@liveknowledge/ui';

@@ -60,7 +60,7 @@ const OFF_INK = 'text-slate-400 dark:text-slate-400/60';
 
 // Why Ask and AI Knowledge are off in a knowledgebase kept Offline: both answer on the server, from the team's key.
 export const OFFLINE_VIEW_WHY =
-  'This knowledgebase is kept in this browser. Ask and AI Knowledge work on liveknowledge, so sync it to turn them on.';
+  'This knowledgebase is kept in this browser. Ask and AI Knowledge require your content to be synced to our servers.';
 
 // A view this knowledgebase can't open while it is kept Offline: everything but Pages.
 export const offlineOff = (view: KnowledgeView, offline: boolean): boolean =>

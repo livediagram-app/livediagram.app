@@ -6,6 +6,7 @@
 // updated the page are PageActivity, held at the rail's foot (as a liveplanner card's footer is). An Editor changes the owner in
 // place; the Review Period is the knowledgebase's, so the rail only links to the setting. Every row keeps its height
 // while the reads load and when the period changes, so nothing moves under the pointer.
+import { GUEST_DISC_TINT, isGuestName } from './guest-disc';
 import type { ReactNode } from 'react';
 import { reviewDays, type ReviewEvery } from '@liveknowledge/knowledge';
 import { Button, Select, Tooltip } from '@liveknowledge/ui';
@@ -23,6 +24,7 @@ import {
   UnverifiedIcon,
   VerifiedIcon,
   VerifiedRowIcon,
+  MakerPersonIcon,
 } from './knowledge-icons';
 import type { KnowledgePerson } from './usePageKnowledge';
 
@@ -206,9 +208,13 @@ function Disc({ name, size = 'size-6' }: { name: string | undefined; size?: stri
   return (
     <span
       aria-hidden
-      className={`flex ${size} shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-white dark:ring-slate-950 ${tintOf(name)}`}
+      className={`flex ${size} shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-white dark:ring-slate-950 ${isGuestName(name) ? GUEST_DISC_TINT : tintOf(name)}`}
     >
-      <span className="text-optical-centre">{name ? initials(name) : '?'}</span>
+      {isGuestName(name) ? (
+        <MakerPersonIcon />
+      ) : (
+        <span className="text-optical-centre">{name ? initials(name) : '?'}</span>
+      )}
     </span>
   );
 }
@@ -308,6 +314,13 @@ export function PageActivity({ now, reads, created, updated }: PageActivityProps
       data-page-activity=""
       className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
     >
+      {/* Who created and last updated the page, above the week's reads (owner 2026-11-21). */}
+      {created || updated ? (
+        <div className="mb-3 flex flex-col gap-0.5">
+          {created ? <StampRow what="Created" stamp={created} now={now} /> : null}
+          {updated ? <StampRow what="Updated" stamp={updated} now={now} /> : null}
+        </div>
+      ) : null}
       {/* The week's reads on the theme's tint, with a quiet open book and its reading lines drawn behind. */}
       <div
         data-read-week=""
@@ -330,12 +343,6 @@ export function PageActivity({ now, reads, created, updated }: PageActivityProps
           />
         </dl>
       </div>
-      {created || updated ? (
-        <div className="mt-3 flex flex-col gap-0.5">
-          {created ? <StampRow what="Created" stamp={created} now={now} /> : null}
-          {updated ? <StampRow what="Updated" stamp={updated} now={now} /> : null}
-        </div>
-      ) : null}
     </section>
   );
 }

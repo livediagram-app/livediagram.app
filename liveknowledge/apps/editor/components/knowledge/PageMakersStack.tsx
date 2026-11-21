@@ -5,10 +5,11 @@
 // the editors, hovering the avatar shows their name"): overlapping discs in Page Health's order (the first writer
 // first), an agent as a sparkle, a person by their initials in a colour of their name. Hovering or focusing one
 // names them. Edit mode gives the row to the formatting controls, so it shows only while reading.
+import { GUEST_DISC_TINT, GUEST_NAME, isGuestName } from './guest-disc';
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
 import { Tooltip } from '@liveknowledge/ui';
 import { initialsOf } from '@/lib/identity';
-import { AgentsIcon } from './knowledge-icons';
+import { AgentsIcon, MakerPersonIcon } from './knowledge-icons';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 
 /** How many discs stand in the row; the rest are counted in a last "+N" disc. */
@@ -37,7 +38,7 @@ export function makersOf(
 ): Maker[] {
   return editors.map((s, i) => {
     const ai = s.kind === 'ai';
-    const name = ai ? (s.agent ?? 'An Agent') : (nameOf(s.by) ?? 'Guest');
+    const name = ai ? (s.agent ?? 'An Agent') : (nameOf(s.by) ?? GUEST_NAME);
     return {
       key: `${ai ? 'ai' : 'p'}:${ai ? s.agent : s.by}`,
       name,
@@ -63,10 +64,12 @@ export function PageMakersStackView({ makers }: { makers: readonly Maker[] }) {
               tabIndex={0}
               role="img"
               aria-label={`${m.name}, ${m.role}`}
-              className={`${DISC} ${m.ai ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : tintOf(m.name)}`}
+              className={`${DISC} ${m.ai ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/60 dark:text-brand-200' : isGuestName(m.name) ? GUEST_DISC_TINT : tintOf(m.name)}`}
             >
               {m.ai ? (
                 <AgentsIcon />
+              ) : isGuestName(m.name) ? (
+                <MakerPersonIcon />
               ) : (
                 <span className="text-optical-centre">{initialsOf(m.name)}</span>
               )}

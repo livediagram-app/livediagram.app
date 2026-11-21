@@ -75,10 +75,12 @@ export function useKnowledgeActions(): KnowledgeActions {
       const editor = chrome.get();
       const caller = callerOf();
       const page = editor.tabs.find((t) => t.id === pageId);
-      if (!rights.verify || !caller || !page || !editor.accountUserId) return;
+      if (!rights.verify || !caller || !page) return;
       track('UI', 'Used', 'VerifyPage');
+      // A guest verifies too, as "Guest", never made the page's owner (verification.md; the api stamps the same).
+      const person = editor.accountUserId ?? GUEST_VERIFIER;
       pageKnowledgeStore
-        .verify(caller.who, caller.documentId, page, editor.accountUserId, Date.now())
+        .verify(caller.who, caller.documentId, page, person, Date.now())
         .catch((err: unknown) => toast.error(knowledgeFailureText(err, 'verify')));
     },
     [chrome, callerOf, rights.verify, toast],

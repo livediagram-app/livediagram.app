@@ -34,8 +34,8 @@ replaces what the fork still shows around the writing.
   button is the browser's, a drag on the ground draws no marquee (selecting text is the browser's own), the ground's
   cursor is the plain one, and a letter typed outside the writing adds no shape.
 - **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
-  has one ("The page icon"), then the Title (40 px,
-  bold, tight tracking), then the meta row ([Verification](verification.md)). **Beside it** on a wide window, the right rail (On This Page, Page Health): docked from 1,280 px,
+  has one ("The page icon") to the left of the Title, the Title (40 px,
+  bold, tight tracking), then the meta row ([Verification](verification.md)). **Beside it** on a wide window, the right rail (Page Health, then On This Page): docked from 1,280 px,
   and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
@@ -168,14 +168,15 @@ should be to the right of Add Cover under the title."
   **icon** from the line-art catalogue the drawings use (`{ iconId: "rocket" }`). It is the page's own
   (`Tab.icon`), never the knowledgebase's, and it is not part of the writing: no block, no draft, no undo step of
   the writing.
-- **Where it shows.** Large above the Title, under the breadcrumb (and under the cover when there is one): an emoji
-  at 48 px (36 px on a phone), an icon at the same size in the writing's accent. In the **page tree**, the row's
+- **Where it shows.** Large to the left of the Title, on its first line (owner 2026-11-21: "left of the title, not
+  above it"), under the breadcrumb (and under the cover when there is one): an emoji at 48 px (36 px on a phone),
+  an icon at the same size in the writing's accent. A long Title wraps beside it; the meta row starts under both. In the **page tree**, the row's
   icon stands before its title at 16 px; a page with none shows its title alone, as today. The **breadcrumb** names
   each ancestor with its icon too.
 - **Add Icon** sits in the meta row, right after Add Cover (or where Add Cover would be, on a page with a cover):
   the same quiet ghost button, a smile icon and "Add Icon", with a hover card "Add an emoji or an icon beside this
   page's title, shown in the page tree too." It opens the icon picker.
-- **On a page with an icon**, the icon above the Title is a button, for whoever may change it: it takes a soft
+- **On a page with an icon**, the icon left of the Title is a button, for whoever may change it: it takes a soft
   ground on hover, a tooltip "Change Icon", and opens the picker. For anyone else it is a picture and nothing more.
 - **The picker** is a popover (a sheet on a phone) titled "Change Icon" or "Add Icon", with **Remove** at its top
   right when the page has an icon, then two tabs, **Emoji** and **Icons**, a search field ("Search Emoji", "Search
