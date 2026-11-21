@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ArticleBlock } from '@liveknowledge/document';
 import { WORDS_PER_MINUTE, pageWords, readingMinutes } from './reading-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const words = (n: number) => Array.from({ length: n }, () => 'word').join(' ');
 
@@ -43,8 +44,11 @@ describe('readingMinutes', () => {
       type: 'paragraph' as const,
       runs: [{ text: words(50) }],
     }));
-    const start = performance.now();
-    expect(pageWords(blocks)).toBe(100_000);
-    expect(performance.now() - start).toBeLessThan(200);
+    let count = 0;
+    const ms = cpuMsOf(() => {
+      count = pageWords(blocks);
+    });
+    expect(count).toBe(100_000);
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
   });
 });

@@ -7,6 +7,7 @@ import {
   treeOpRefusal,
   type StoredPage,
 } from './page-tree-store';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // The page tree's checks on a write (docs/specs/030-knowledgebase/blueprints/page-tree.md "The room's check"): what
 // the room, the whole-tab save and the metadata save each ask before they take a change to the tree.
@@ -130,9 +131,12 @@ describe('tabListRefusal', () => {
     const entries = stored.map((p) => ({ id: p.id, parent: p.parent ?? null }));
     const last = MAX_KNOWLEDGEBASE_PAGES - 1;
     entries[last] = { id: `t${last}`, parent: 't0' };
-    const started = performance.now();
-    expect(tabListRefusal(stored, entries)).toBeNull();
-    expect(performance.now() - started).toBeLessThan(150);
+    let refusal: unknown;
+    const ms = cpuMsOf(() => {
+      refusal = tabListRefusal(stored, entries);
+    });
+    expect(refusal).toBeNull();
+    expect(ms).toBeLessThan(cpuBudgetMs(150));
   });
 });
 

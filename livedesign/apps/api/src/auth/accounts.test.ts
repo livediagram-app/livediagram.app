@@ -198,6 +198,7 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
       'https://livedocuments.app/api',
       'https://livedesign.app/api',
       'https://livehuddle.app/api',
+      'https://liveknowledge.app/api',
     ]);
   });
 
