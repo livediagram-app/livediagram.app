@@ -16,10 +16,10 @@ words). The page tools replace livedocuments' element and page-layout tools:
 | `get_context`  | The knowledgebase's Always in Context pages as Markdown, in tree order, within the budget, with its Review Period (`review_period`). Call it first.     |
 | `list_pages`   | The page tree: ids, titles, depth, verified state, owner, review date, and once for them all the knowledgebase's Review Period (`review_period`).       |
 | `search_pages` | Passages matching a query, each with its page, heading, verified state and date, `stale` and any `conflicts_with`.                                      |
-| `read_page`    | One page as Markdown with the same trust fields, its backlinks and its subpages.                                                                        |
+| `read_page`    | One page as Markdown with the same trust fields, its backlinks, its subpages and its cover.                                                             |
 | `create_page`  | A new page from Markdown under a parent. Never Verified.                                                                                                |
 | `suggest_edit` | A change to a page (replace a passage, or append) with a reason. Lands as a suggestion for a person to accept.                                          |
-| `write_page`   | Replaces a page's writing directly. Only with the `write` scope, and never on a page that is Verified or Review Due (there it must use `suggest_edit`). |
+| `write_page`   | Replaces a page's writing directly, and sets or removes its cover. Only with the `write` scope; never rewrites a Verified or Review Due page's writing. |
 | `report_gap`   | Records a question the knowledgebase could not answer.                                                                                                  |
 | `move_page`    | Moves a page in the tree.                                                                                                                               |
 
@@ -69,6 +69,11 @@ the [blueprint](blueprints/knowledgebase-for-agents.md).
   Viewer. Sharing, archiving and deleting a whole knowledgebase are the index's, and take a full token as before.
 - **A person's role still bounds the agent**: creating a page needs an Editor's agent holding `suggest`;
   suggesting needs a Participant's or an Editor's; a Viewer's agent only reads, whatever is granted.
+- **`write_page`'s `cover`** ([The page surface](../030-knowledgebase/page-surface.md) "The cover") is a picture
+  (`{ imageId, focus? }`), a gradient (`{ gradient }`) or `null`, with or without `markdown`. A cover alone is
+  taken on any page; with `markdown`, the writing's rule below holds for the whole write. A cover it cannot take is
+  refused (`invalid_cover`), naming what was wrong, and nothing is written. Every write here stamps the page as an
+  agent's ([Verification](../030-knowledgebase/verification.md) "Made by a person or an agent").
 - **`write_page` is refused on a page whose state is Verified** (`page_verified`) **or Review Due**
   (`page_review_due`), whatever the connection holds. A page whose review is due is the one most likely to need a
   person's eye, and an agent's rewrite would bury what the review was for: the agent suggests the edit

@@ -30,8 +30,8 @@ replaces what the fork still shows around the writing.
   box. On the page itself the canvas's bare-ground gestures do not exist: held Space scrolls the page, the middle
   button is the browser's, a drag on the ground draws no marquee (selecting text is the browser's own), the ground's
   cursor is the plain one, and a letter typed outside the writing adds no shape.
-- **Above the writing:** the breadcrumb, then the Title (40 px, bold, tight tracking), then the meta row
-  ([Verification](verification.md)). **Beside it** on a wide window, the right rail (On This Page, Page Health): docked from 1,280 px,
+- **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, then the Title (40 px,
+  bold, tight tracking), then the meta row ([Verification](verification.md)). **Beside it** on a wide window, the right rail (On This Page, Page Health): docked from 1,280 px,
   and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
@@ -56,6 +56,64 @@ replaces what the fork still shows around the writing.
   Spotlight tool, key or command. The pointer always selects; the Format Painter stays, from an element's menu and
   the command search. No Library.
 - **Undo and Redo** stay, in the formatting bar.
+
+## The cover
+
+Owner, 2026-11-21: "Let me also add a cover to a page in a knowledgebase, a bit like how I do it on forms, fill the
+top space above the page with it between the sidebars" and "The add cover button should also be placed next to the
+1 min read bit, and make it a bit better looking."
+
+- **What it is.** A page may have one cover: a picture, or a gradient. It is the page's own (`Tab.cover`), never the
+  knowledgebase's, and it is not part of the writing: no block, no draft, no undo step of the writing.
+- **Where it stands.** A band across the top of the page area, full-bleed between the page tree and the right rail:
+  its left edge where the tree (or its folded rail) ends, its right edge where the docked rail begins, or the
+  window's edge when the rail is not docked. It follows the tree opening and folding as the column does; the tree
+  sliding out over the page on hover covers the band as it covers the page, and moves nothing. Under it, the
+  breadcrumb, the Title and the writing, as on a page with none. It scrolls with the page.
+- **Its height** is 220 px on a desktop and 140 px on a phone (a window under 640 px wide), whatever the picture's
+  shape: a picture fills the band, cropped, never stretched. The band's height is kept from the moment the page is
+  shown, before its picture arrives, so nothing under it moves when the picture lands (no layout shift).
+- **A picture** comes from the image picker every picture in a page uses: **Upload**, **Your Images** and
+  **Search** (openly licensed pictures, credited). It is stored as the knowledgebase's pictures are, so it is
+  served to everyone who can read the page, kept by the knowledgebase's reference index and copied with it. A
+  Search pick's credit stands small in the band's bottom left.
+- **A gradient** is one of the page backgrounds' gradients (Sunrise, Peach, Rose, Lavender, Ocean, Meadow, Mint,
+  Sand, Steel, Dusk, Night, Forest, Ember), drawn at one angle. No pattern, no motion.
+- **While loading**, a picture's band shows a soft tint of the knowledgebase's accent, and the picture fades in over
+  it (150 ms; at once with reduced motion). A picture that cannot be fetched leaves the tint.
+- **Add Cover** sits in the meta row, after "N min read": a quiet ghost button, a picture icon and "Add Cover", the
+  row's own size and colour, taking the accent on hover, with a hover card "Add a picture or a gradient across the
+  top of this page." It opens the cover menu: **Choose a Picture** (the picker) and the gradients as a grid of
+  swatches, each named in a tooltip. A page with no writing and no cover still shows the row, with Add Cover alone,
+  to whoever may add one.
+- **On a page with a cover**, resting the pointer on the band shows, at its bottom right, **Change Cover**,
+  **Reposition** (pictures only) and **Remove** (a trash icon), each a small frosted button with a tooltip; the
+  keyboard reaches them too. Change Cover opens the cover menu; Remove takes the cover away at once, with an Undo in
+  the toast that says so ("Cover removed").
+- **Reposition** puts the band in a reposition state: the picture can be dragged up and down to choose which part
+  shows (its focus, 0 the top and 100 the bottom of the picture, 50 when unset), the cursor a grab hand, a line
+  "Drag the picture to reposition" across the band, and **Save Position** and **Cancel** in place of the hover
+  buttons. The arrow keys move it by 5 while the band has the focus; Enter saves and Escape cancels. Nothing is
+  stored until Save Position.
+- **Who changes it.** An Editor, and only where the page can be edited: whenever the page is editable today, and
+  only in edit mode once [read and edit modes](editing.md) land. A Participant, a Viewer and a link visitor see the
+  cover and none of its controls: a cover is part of the page as published, and a Participant writes nothing on a
+  page ([Share roles](knowledgebases-and-pages.md#share-roles)). The room and the api refuse a cover from anyone
+  else.
+- **It is saved at once**, as the page's name is, whether or not the page is being edited: it is not part of the
+  draft, and Save and Cancel neither keep nor drop it. Everyone with the page open sees it change.
+- **Agents.** `read_page` (and the api's page read) answers the cover (`cover`: its picture's id and focus, or its
+  gradient's name). `write_page` takes `cover`: a picture (`imageId`, from `upload_image` or `list_images`, with an
+  optional `focus` 0 to 100) or a gradient (`gradient`, one of the names above), or `null` to remove it; with or
+  without `markdown`. An agent's cover write is strict: a cover it cannot take is refused, by name, and nothing is
+  written. A cover alone is not a rewrite of the writing, so it is taken on a verified page too; it needs the
+  `write` scope as any write does. The CLI has no cover option yet.
+- **Exports.** A copy of the knowledgebase, its Drive file and a snapshot carry the cover. The PDF, Word and Markdown
+  exports of a page leave it out: they are the writing.
+- **Offline.** A knowledgebase kept Offline keeps its covers in this browser, as its other pictures are kept.
+- **Cost.** A page with no cover draws nothing for it. A picture is fetched once per page open, at most 2,400 px on
+  its longer side, and decoded off the main thread; the band never re-renders for a scroll or a keystroke.
+- **Telemetry:** `Element` `Added` `Cover` when a cover is set, `Element` `Deleted` `Cover` when it is removed.
 
 ## The footer
 
@@ -212,7 +270,8 @@ per-page and no per-tab style.
 
 ## Share roles
 
-Changing the Knowledgebase Style is Editor only. Everyone sees the same look.
+Changing the Knowledgebase Style is Editor only. Everyone sees the same look. A page's cover is changed by an Editor
+only, and seen by everyone.
 
 ## Performance
 

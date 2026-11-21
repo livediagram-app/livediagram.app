@@ -382,6 +382,95 @@ Spec [Knowledgebases and pages](../knowledgebases-and-pages.md) "The knowledgeba
 starts in place, from their hosts in `usePageTreeChrome`, where the editor's store is. Tests:
 `KnowledgebaseMenu.test.tsx` (the rows in order, each row's action, the keys, every role), `PageTreeSidebar.test.tsx`.
 
+## The cover
+
+Derived from [The page surface](../page-surface.md) "The cover".
+
+### Domain and naming
+
+| Term                    | Identifier                                                                                                      |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| a cover                 | `PageCover` (`@liveworkspace/page-background` `cover.ts`): `ColourBackground & { imageId?, focus?, credit? }`   |
+| reading one             | `parsePageCover(v, isImageId)`; a form's cover in liveplanner reads through it too (`FormCover = PageCover`)    |
+| laying a patch over one | `patchPageCover(cover, patch)`: none once it holds no fill, pattern or picture                                  |
+| where a picture sits    | `focus` (0 to 100, `COVER_FOCUS_CENTRE` 50 when absent), drawn by `coverObjectPosition(focus)`                  |
+| the page's cover        | `Tab.cover`, settled on every read by `withSettledCover` (`packages/document/src/page-cover.ts`)                |
+| a gradient by name      | `COVER_GRADIENTS` (the page backgrounds' `PAGE_GRADIENT_PRESETS`), `coverOfGradient(name)`, `gradientNameOf`    |
+| an agent's cover        | `parseAgentCover(raw)` (`packages/edit-operations/src/pages/cover.ts`): strict, refusing `invalid_cover`        |
+| the band                | `PageCoverBand` (`apps/editor/components/page-cover/`), with `CoverControls`, `CoverMenu`, `useCoverReposition` |
+| who may change it       | `useCoverEditable()`: an Editor (`!isReadOnly`), and in edit mode once the store says one (`editingTabId`)      |
+| the band's height       | `COVER_HEIGHT` 220, `COVER_HEIGHT_PHONE` 140 (`lib/page-surface/page-lock.ts`)                                  |
+
+### Behaviour and state
+
+- **Stored and synced as tab meta.** An Editor's change is the editor's own tab change (`setActiveTabCover`), so it
+  is sent as a `tab-meta` patch (`cover`, or `clear: ['cover']`) and saved by the whole-tab save, as a rename is.
+  The room relays a `tab-meta` op only from an edit-role session (`room-op-gate.ts`) and the tab PUT is an edit
+  gate's, so a Participant's or a Viewer's cover never lands. Offline, the same change is saved in this browser.
+- **An agent's cover** rides the Pages route (`POST tabs/<tab>/pages`, and `PUT pages/<tab>` behind `write_page`):
+  `PagesRequest` takes `cover` beside `article`, or alone. `submitPages` sets or removes `next.cover` and
+  `pagesRoomOps` sends it as `tab-meta`, so open editors follow. A cover alone skips the verified-page refusal.
+- **The lock** takes the band: `computePageLock({ ..., top })` puts the page's top `PAGE_TOP_ROOM + coverHeight`
+  under the top of what scrolls, and `pageFreeHeight` takes the band off, so a short page's paper does not grow.
+  `usePageSurface` writes `--page-cover-left` (the tree's inset) on the scroll container with the lock, so the band
+  starts where the column's room starts and follows the tree without a render.
+- **States of the band:** `idle` (hover or focus shows the controls), `menu` (the cover menu open), `reposition`
+  (dragging; `focus` held in the hook, not stored), and back to `idle` on Save Position (one tab change) or Cancel.
+- **Remove** is one tab change; the toast's Undo puts the cover that was removed back (another tab change).
+
+### Interfaces and contracts
+
+- `write_page` `cover`: `{ imageId: string, focus?: integer 0..100 } | { gradient: CoverGradientName } | null`.
+  Refusals: `invalid_cover` with a message naming the field ("cover.focus is a whole number from 0 to 100.",
+  "cover.gradient is one of Sunrise, ...", "cover.imageId names a picture from upload_image or list_images.",
+  "Send cover as a picture, a gradient or null."). The api answers the same codes on `POST tabs/<tab>/pages`.
+- `GET pages/<tab>` (`KnowledgePageRead`) answers `cover?: { imageId, focus? } | { gradient }` and `read_page`
+  passes it on as `cover`.
+
+### Data and persistence
+
+- `Tab.cover` is in the tab's JSON body; no schema step. A cover's picture is an image reference:
+  `imageRefIds(elements, pages, cover)` (`@liveworkspace/api-kit/image-refs`, and its JSON twin
+  `imageRefIdsFromData`) counts it, so the reference index, the media service's grants and a copy keep it. The
+  editor's Offline conversion (`offline-images.ts` `tabImageIds`, `rewriteImageIds`) embeds and re-homes it.
+- The editor's export image list (`export-tab-images.ts`) leaves it out (the exports are the writing).
+
+### Errors and edge cases
+
+- A stored cover that is not one (a hand-edited body, an old client) is read as what of it is valid, or none.
+- A picture that will not fetch leaves the tint; `[page] cover picture unavailable` is logged once per id.
+- A cover set while the page is unsaved (a new page) rides its first save.
+- A tab-meta patch from a peer carrying an invalid cover is drawn through `parsePageCover`, so it draws nothing.
+
+### Performance and limits
+
+- No cover: `PageCoverBand` renders `null`; the lock's `top` is `PAGE_TOP_ROOM` as before.
+- A picture: one fetch per page open (`useImageSources`, at `COVER_IMAGE_EDGE` 2,400 px), `decoding="async"`; the
+  band subscribes to the tab's `cover` alone, so a keystroke or a scroll renders it 0 times
+  (`PageCoverBand.test.tsx` "renders once for a typing commit").
+- No layout shift: the band's height comes from `Tab.cover` being set, known with the tab, not from the picture.
+
+### Presentation and UX, Accessibility
+
+- The band: `role="img"` with `aria-label="Page cover"` (the credit read when there is one). The controls are
+  buttons in a group shown on hover and on `:focus-within`, each with a `Tooltip`. Reposition: the band takes
+  `tabIndex=0`, `aria-roledescription="Cover position"`, `aria-valuenow`, arrows by 5, Enter, Escape.
+- Motion: the picture's fade and the controls' fade are 150 ms (`motion-budget.test.ts`), none with reduced motion.
+
+### Testing
+
+| Rule                                                      | Test                                                                                         |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| A cover read forgivingly, patched, positioned             | `../packages/page-background/src/cover.test.ts`                                              |
+| A tab's cover settled on read                             | `packages/document/src/page-cover.test.ts`                                                   |
+| A cover's picture is a reference                          | `../packages/api-kit/src/image-refs.test.ts`                                                 |
+| An agent's cover: set, clear, refused; a Viewer's refused | `packages/edit-operations/src/pages/cover.test.ts`, `apps/api/src/routes/page-cover.test.ts` |
+| `read_page` and `write_page` carry it                     | `apps/mcp/src/knowledge-tools.test.ts`                                                       |
+| The lock with a band                                      | `lib/page-surface/page-lock.test.ts`                                                         |
+| The band, its controls by role, reposition, Remove's Undo | `components/page-cover/*.test.tsx`                                                           |
+| Add Cover in the meta row, by role                        | `components/knowledge/PageMetaRow.test.tsx`                                                  |
+| Add a cover, reposition it, remove it                     | `e2e/signed-in/page-cover.spec.ts`                                                           |
+
 ## Performance and limits
 
 - **A scroll:** one passive listener that reads `scrollTop` and writes two numbers. No React render, no layout pass

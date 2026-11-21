@@ -24,6 +24,26 @@ person whose save makes the page is its creator for good; each later save by a p
 saved since the table began has no row and shows neither: nothing is guessed. Page Health's read answers them as
 `created` and `updated`.
 
+**Made by a person or an agent** (owner, 2026-11-21: badges under the title, "AI Generated" or "Human Generated" and
+"AI Edited" or "Human Edited"). Each of the two stamps also says what kind of writer made it (schema step V18):
+
+- **An agent** is any write made with an API token: the MCP server's tools, the CLI and the api called with a token
+  (`create_page`, `write_page`, a changeset, a version restore or copy, and an import run by a token). The stamp
+  keeps the token's name ("Claude", "Release bot") where the platform told the api it, and the door it came through
+  (MCP, CLI or the API). The person who made the token is the stamp's `by`.
+- **An agent's suggestion, accepted** by an Editor, is an agent's edit too: its words are the agent's. The stamp
+  names the suggesting agent and is `by` the Editor who accepted it.
+- **A person** is every other save: the editor's saves, an Import run in the editor, Describe to Set Up's pages.
+- A stamp from before V18 was always a person's (V17 noted people's saves only), and reads as one.
+- The meta row shows two small quiet pills for a page that has a row, after the reading time: **AI Generated** or
+  **Human Generated** (who made the page), then **AI Edited** or **Human Edited** (who changed it last). A page whose
+  last change is its making shows the second too, from the same stamp. A sparkle icon marks an agent's, a person
+  icon a person's. Each opens a hover card: "Created by an agent through MCP", "Created by Claude through MCP on
+  12 Nov", "Last edited by Priya Shah, 3 hours ago", "Last edited by Claude, from a suggestion Priya Shah
+  accepted". A page with no row shows neither pill. The pills are neutral grey, never the accent or a state colour,
+  so they never read as a warning.
+- Every role sees them, as Page Health's foot.
+
 On the knowledgebase (`knowledgeSettings.reviewEvery` in the document's metadata): the **Review Period**, one for
 every page (owner, 2026-11-20: "Review Period should be a knowledgebase setting, not per page"): 30, 90, 180 or 365
 days, 90 by default, or **Never** for a knowledgebase whose pages do not age. A page has no review period of its
@@ -60,10 +80,11 @@ own.
   quiet figures (people, agents) under "Read This Week". The ring fills over 200 ms when it changes (the chrome motion budget), and not
   at all with reduced motion.
 - **The meta row** under the title is drawn only when it has something to say (a tick or pill, a due date, an edit,
-  how long it takes to read): an empty page never verified has no row, so the writing starts right under the title.
+  how long it takes to read, who made and edited it, Add Cover): an empty page never verified has no row, so the writing starts right under the title.
 - **Reading time** sits in the meta row (owner, 2026-11-21: "1 min read should go under the page title, not the
   sidebar"), a small clock then "4 min read", counted at 230 words a minute from the committed writing; none for an
-  empty page. The right rail no longer shows it. The page's Add Cover control joins this row when covers land.
+  empty page. The right rail no longer shows it. **Add Cover** follows it, for whoever may change the page's cover
+  ([The page surface](page-surface.md) "The cover").
 
 ## The Review Period
 
