@@ -215,7 +215,10 @@ export function PageRailButton({ sheet }: { sheet: boolean }) {
           onClose={close}
           zClassName="z-[var(--z-modal)]"
         >
-          <PageRailBody />
+          {/* The sheet runs edge to edge: the sections keep the rail's inset. */}
+          <div className="px-5 pb-6 pt-2">
+            <PageRailBody />
+          </div>
         </BottomSheet>
       ) : null}
       {open && !sheet ? (

@@ -45,8 +45,8 @@ export function AskNoKey({ manageAi }: { manageAi: boolean }) {
         title="Ask Needs Your Team's AI Key"
         description={
           manageAi
-            ? "liveknowledge pays for no model: your team pays its provider for what it uses. Add your team's AI key, from Anthropic or OpenAI, and Ask answers from these pages. Search works without one."
-            : "liveknowledge pays for no model, so Ask runs on your team's AI key, which an Editor adds. Ask an Editor to add one. Search works without it."
+            ? "Ask runs on your team's own key: your team pays its provider for what it uses. Add your team's AI key, from Anthropic or OpenAI, and Ask answers from these pages. Search works without one."
+            : "Ask runs on your team's own AI key, which an Editor adds. Ask an Editor to add one. Search works without it."
         }
       >
         <div className={ACTIONS} data-ask-state="no-key">

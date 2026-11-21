@@ -94,7 +94,7 @@ describe('the key state', () => {
     expect(screen.getByText(/encrypted when it is saved and is never shown again/)).toBeTruthy();
     expect(
       screen.getByText(
-        /liveknowledge pays for no model: your team pays Anthropic for what it uses/,
+        /Ask runs on your team's own key: your team pays Anthropic for what it uses/,
       ),
     ).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/is free|paid tier/i);

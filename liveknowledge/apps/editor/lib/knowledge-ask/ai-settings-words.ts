@@ -12,12 +12,12 @@ export function keyStateText(settings: Pick<KnowledgeAiSettings, 'hasKey' | 'key
 
 export const KEY_ENCRYPTED_NOTE =
   'The key is encrypted when it is saved and is never shown again, here or anywhere else.';
-/** Who pays: liveknowledge for no model, the team its provider for what it uses. */
+/** Who pays for Ask: the team, its provider, for what it uses (Describe to Set Up has built-in AI too). */
 export const teamPaysNote = (provider: KnowledgeAiProvider): string =>
-  `liveknowledge pays for no model: your team pays ${providerWords(provider).company} for what it uses.`;
+  `Ask runs on your team's own key: your team pays ${providerWords(provider).company} for what it uses.`;
 /** The same where no provider is chosen yet, or it does not matter which. */
 export const TEAM_PAYS_ANY_NOTE =
-  'liveknowledge pays for no model: your team pays its provider for what it uses.';
+  'Ask runs on your team's own key: your team pays its provider for what it uses.';
 
 export type AiSettingsAction = 'save-key' | 'remove-key' | 'set-model';
 
