@@ -17,7 +17,7 @@ describe('the promises', () => {
     render(<PromisePrism />);
     for (const p of PROMISES) {
       expect(screen.getByText(p.title)).toBeTruthy();
-      expect(screen.getByText(p.value)).toBeTruthy();
+      if (p.value) expect(screen.getByText(p.value)).toBeTruthy();
     }
     expect(screen.getByRole('link', { name: /Read the Source/ }).getAttribute('href')).toBe(
       REPO_URL,

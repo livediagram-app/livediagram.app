@@ -3,7 +3,7 @@
 import { Brand } from '@liveworkspace/brand';
 import type { BrandApp } from '@liveworkspace/brand';
 
-import { ArtPanel } from './kit';
+import { ArtPanel, at } from './kit';
 
 // The five other apps whose items a page can embed (docs/specs/030-knowledgebase/links-and-embeds.md).
 const APPS: readonly BrandApp[] = [
@@ -78,10 +78,11 @@ export function WorkspaceArt() {
 
         {/* Every app it sits beside, each under its own logo. */}
         <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
-          {APPS.map((app) => (
+          {APPS.map((app, i) => (
             <li
               key={app}
-              className="rounded-full border border-slate-200 bg-white px-2.5 py-1 dark:border-slate-700 dark:bg-slate-800"
+              style={at(0.4 + i * 0.15)}
+              className="kb-pop rounded-full border border-slate-200 bg-white px-2.5 py-1 dark:border-slate-700 dark:bg-slate-800"
             >
               <Brand app={app} size="xs" />
             </li>
@@ -90,10 +91,11 @@ export function WorkspaceArt() {
 
         {/* What one account and one way of sharing give every app. */}
         <ul className="flex flex-wrap items-center justify-center gap-1.5">
-          {SHARED.map((word) => (
+          {SHARED.map((word, i) => (
             <li
               key={word}
-              className="rounded-full bg-brand-100 px-2.5 py-0.5 text-[11px] font-semibold text-brand-800 dark:bg-brand-900 dark:text-brand-100"
+              style={at(1.3 + i * 0.12)}
+              className="kb-in rounded-full bg-brand-100 px-2.5 py-0.5 text-[11px] font-semibold text-brand-800 dark:bg-brand-900 dark:text-brand-100"
             >
               {word}
             </li>

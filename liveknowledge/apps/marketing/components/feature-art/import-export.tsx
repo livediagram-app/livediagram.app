@@ -1,7 +1,7 @@
 // Bring Everything With You: three ways in (a Markdown folder, a Notion export, a Confluence export), the
 // knowledgebase they become, and three ways out (Markdown, PDF, Word).
 import { Cube, LIME } from '../iso-cube';
-import { ArtPanel, Board, Card, INK, Label, T } from './kit';
+import { ArtPanel, Board, Card, INK, Label, T, at } from './kit';
 
 type Tile = { title: string; detail: string; glyph: 'folder' | 'archive' | 'file'; tag?: string };
 
@@ -104,7 +104,7 @@ export function ImportExportArt() {
 
         {/* In from the left, out to the right, each line meeting the knowledgebase at its middle. */}
         {TILE_TOPS.map((top) => (
-          <g key={top}>
+          <g key={top} className="kb-in" style={at(0.3 + TILE_TOPS.indexOf(top) * 0.3)}>
             <Flow d={`M${14 + TILE.w + 5} ${top + 31} C 198 ${top + 31}, 190 197, 204 197`} />
             <Flow d={`M316 197 C 330 197, 322 ${top + 31}, 333 ${top + 31}`} />
           </g>

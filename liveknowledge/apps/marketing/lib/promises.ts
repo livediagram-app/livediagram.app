@@ -9,7 +9,8 @@ export type PromiseId = 'no-account' | 'open-source' | 'private' | 'live';
 
 export type Promise = {
   id: PromiseId;
-  value: string;
+  // Set large in the card's hue. No Account Needed has none: its title says it all.
+  value?: string;
   title: string;
   line: string;
   link?: { href: string; label: string; external?: boolean };
@@ -18,7 +19,6 @@ export type Promise = {
 export const PROMISES: readonly Promise[] = [
   {
     id: 'no-account',
-    value: '0 forms',
     title: 'No Account Needed',
     line: 'Open the editor and write. Sign in when you want to verify, share or ask.',
   },

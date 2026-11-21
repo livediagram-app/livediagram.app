@@ -10,7 +10,7 @@ import { StartDrawingCta } from '@/components/StartDrawingCta';
 import { StoryBeat } from '@/components/StoryBeat';
 import { LANDING_SECTIONS } from '@/lib/landing-content';
 // Lazy-load TemplateGallery: the `'use client'` gallery (its open shelf's state and the template previews) sits
-// far below the first screen. The static-export HTML still inlines its markup (next/dynamic defaults to
+// under the hero, out of the first screen. The static-export HTML still inlines its markup (next/dynamic defaults to
 // ssr: true), so SEO and first scroll are unchanged; what is deferred is the hydration JS chunk.
 const TemplateGallery = dynamic(() =>
   import('@/components/TemplateGallery').then((m) => m.TemplateGallery),
@@ -21,21 +21,22 @@ const CommunityShowcase = dynamic(() =>
   import('@/components/CommunityShowcase').then((m) => m.CommunityShowcase),
 );
 
-// The page tells one story (docs/specs/019-marketing/marketing-site.md "Structure"): what liveknowledge is, its
-// promises, a beat per thing it does (each with its own art), how agents connect, the templates and the
-// Community, privacy, the honest answers, and the way in.
+// The page tells one story (docs/specs/019-marketing/marketing-site.md "Structure"): what liveknowledge is, the
+// templates, its promises, a beat per thing it does (each with its own art and its own page), how agents connect,
+// the Community, privacy, the honest answers, and the way in.
 export default function LandingPage() {
   return (
     <>
       <Header surface="Home" />
       <main>
         <Hero />
+        {/* "Browse every template" right after the hero (owner, 2026-11-21). */}
+        <TemplateGallery />
         <PromisePrism />
         {LANDING_SECTIONS.map((section, index) => (
           <StoryBeat key={section.id} section={section} index={index} />
         ))}
         <BuildWithAiBand />
-        <TemplateGallery />
         <CommunityShowcase />
         <PrivacySection />
         <LandingFaq />

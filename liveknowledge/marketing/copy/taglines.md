@@ -32,6 +32,7 @@ Classic "tagline" slot on most directories.
 Listing headlines, Open Graph titles, search-result titles.
 
 - A team knowledgebase, for people and for AI. [44]
+- Knowledge your team and its AI can trust. [41] (the hero's headline)
 - The knowledgebase your team and its AI both trust. [50]
 - Verified pages, cited answers, and agents that read them. [57]
 - Team knowledge with owners, reviews and an MCP server. [54]

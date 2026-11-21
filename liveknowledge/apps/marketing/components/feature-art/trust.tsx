@@ -1,6 +1,6 @@
 // Trust Built Into Every Page: a page's owner and verified tick, Page Health beside it, a page whose review has
 // come due, and the knowledgebase's health as one bar.
-import { ArtPanel, Avatar, Bars, Board, Button, Card, Label, T, Tick } from './kit';
+import { ArtPanel, Avatar, Bars, Board, Button, Card, Label, T, Tick, at } from './kit';
 
 // Page Health's rows: what it is, then its value.
 const HEALTH: readonly [string, string][] = [
@@ -67,7 +67,7 @@ export function TrustArt() {
             PAGE HEALTH
           </Label>
           {HEALTH.map(([name, value], i) => (
-            <g key={name}>
+            <g key={name} className="kb-in" style={at(0.5 + i * 0.2)}>
               <T x={354} y={68 + i * 34} size={10.5} tone="quiet">
                 {name}
               </T>
@@ -118,7 +118,7 @@ export function TrustArt() {
             KNOWLEDGE HEALTH
           </Label>
           {STATES.map((state, i) => (
-            <g key={state.label}>
+            <g key={state.label} className="kb-in" style={at(0.8 + i * 0.25)}>
               <rect
                 x={state.x}
                 y={266}

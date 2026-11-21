@@ -15,7 +15,7 @@
 3. **Pick your tool** (`#connect`): a tab list of clients, grouped Chat apps, Coding agents, Editors, Anything else. Selecting one shows its steps. The choice is mirrored into the URL hash (`/ai#cursor`) with `history.replaceState`, and a hash on arrival selects that client, so a link can open straight onto one tool. Every panel is in the HTML (inactive ones `hidden`), so the instructions are indexable and work before hydration (the first client shows until then).
 4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
 5. **What it can do**: a grid of the MCP's capabilities in plain words, each a shipped tool ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md)): Always in Context pages first (`get_context`), search in passages (`search_pages`), read a page with its trust fields (`read_page`), suggest an edit a person accepts (`suggest_edit`), report what is missing (`report_gap`), and new pages from Markdown (`create_page`).
-6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › API Tokens, six-month tokens, liveknowledge runs no AI model of its own.
+6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › API Tokens, six-month tokens, and the MCP server runs no AI model of its own (the thinking is your tool's).
 7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in) and a link to the full help article.
 
 ## The clients

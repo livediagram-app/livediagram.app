@@ -294,9 +294,11 @@ function PromiseCard({
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-baseline gap-x-3">
-          <span className="text-xl font-semibold tracking-tight" style={{ color: hue }}>
-            {p.value}
-          </span>
+          {p.value ? (
+            <span className="text-xl font-semibold tracking-tight" style={{ color: hue }}>
+              {p.value}
+            </span>
+          ) : null}
           <span className="font-semibold text-white">{p.title}</span>
         </span>
         <span className="mt-0.5 block text-sm leading-relaxed text-slate-300">{p.line}</span>

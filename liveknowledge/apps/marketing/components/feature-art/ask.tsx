@@ -1,6 +1,6 @@
 // Ask, With Sources: a question, the answer with a citation on each claim, the passages it came from and who
 // verified them, and the part the pages do not cover, said plainly.
-import { ArtPanel, Board, Button, Card, Label, Rule, T, Tick } from './kit';
+import { ArtPanel, Board, Button, Card, Label, Rule, T, Tick, at } from './kit';
 
 const CITE = 'fill-brand-700 dark:fill-brand-300';
 
@@ -60,7 +60,7 @@ export function AskArt() {
           {SOURCES.map((source, i) => {
             const y = 124 + i * 66;
             return (
-              <g key={source.n}>
+              <g key={source.n} className="kb-in" style={at(0.9 + i * 0.3)}>
                 {i > 0 ? <Rule x={370} y={y - 6} w={120} /> : null}
                 <T x={370} y={y + 17} size={11.5} weight={700} className={CITE}>
                   [{source.n}]

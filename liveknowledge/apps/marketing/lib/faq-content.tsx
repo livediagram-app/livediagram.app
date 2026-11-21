@@ -49,18 +49,35 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             </a>
             . Writing, linking, verifying, searching and connecting an agent cost nothing. Ask runs
             on your team’s own AI key, so that usage is paid to your provider, not to us.
+            Describe to Set Up runs on built-in AI when your team has no key.
           </>
         ),
         aText:
-          'It is free to start, with no card and no trial clock, and it is open source under the MIT licence: the code is on GitHub. Writing, linking, verifying, searching and connecting an agent cost nothing. Ask runs on your team’s own AI key, so that usage is paid to your provider, not to us.',
+          'It is free to start, with no card and no trial clock, and it is open source under the MIT licence: the code is on GitHub. Writing, linking, verifying, searching and connecting an agent cost nothing. Ask runs on your team’s own AI key, so that usage is paid to your provider, not to us. Describe to Set Up runs on built-in AI when your team has no key.',
+      },
+      {
+        q: 'Is there a paid tier?',
+        a: 'Not at launch. Everything this site describes is free to use, and the one AI cost a team carries is Ask, which runs on its own Claude or OpenAI key.',
+      },
+      {
+        q: 'How do I start a knowledgebase?',
+        a: 'Open the editor and a new knowledgebase starts on a screen of choices. Start blank, pick a structure such as Team Handbook or Runbooks and On-Call with its pages already in place, import from Notion, Confluence or a folder of Markdown, or describe what it is for and AI proposes the pages for you to accept. Describe to Set Up runs on built-in AI when your team has no key, and on your team’s key once it has one.',
       },
       {
         q: 'Do I need an account?',
-        a: 'Not to write. Open the editor and start a knowledgebase, and it is kept Offline in your browser. Verifying pages, Ask, AI Knowledge, sharing and connecting an agent need a free account, because each of them has to know who you are.',
+        a: 'Not to write. Open the editor and start a knowledgebase, and it is kept Offline in your browser. Verifying pages, Ask, Describe to Set Up, AI Knowledge, sharing and connecting an agent need a free account, because each of them has to know who you are.',
       },
       {
         q: 'What is liveknowledge not?',
         a: 'It is not a slide or page layout tool: for slide decks, infographics and documents laid out on paper pages, use livedocuments. It is not a chat or a project tracker either. A knowledgebase page is writing, with tables, pictures, charts and drawings in the text.',
+      },
+      {
+        q: 'How do I edit a page?',
+        a: 'A page opens to read. Press Edit, or double-click the writing, and you are in a draft that everyone editing the page shares live, each with their own caret. Readers, search, Ask and agents keep seeing the saved page until someone presses Save. Cancel leaves the draft to anyone still editing; if you are the last, it asks before throwing your changes away.',
+      },
+      {
+        q: 'Can a page have a cover?',
+        a: 'Yes. Add Cover, beside the reading time under a page’s title, sets a picture, one of the theme’s gradients or an animated background across the top of the page. Knowledgebase Style sets the look of every page at once: its theme and its fonts.',
       },
       {
         q: 'How big can a knowledgebase be?',
@@ -80,15 +97,19 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How does verification work?',
-        a: 'Each page has an owner. An Editor presses Verify, and the page shows a green tick with who verified it and when. The knowledgebase has one Review Period (30, 90, 180 or 365 days, or never), and once it has passed a page reads Review Due until someone verifies it again. Nothing is verified automatically, and a large change made after verifying is marked Changed Since Verified.',
+        a: 'Each page has an owner. An Editor or a Participant presses Verify, and the page shows a green tick with who verified it and when. The knowledgebase has one Review Period (30, 90, 180 or 365 days, or never), and once it has passed a page reads Review Due until someone verifies it again. Nothing is verified automatically, and a large change made after verifying is marked Changed Since Verified.',
       },
       {
         q: 'Who can verify a page?',
-        a: 'Editors. Participants and Viewers see every page’s state but cannot change it. Verifying needs an account, so a knowledgebase kept Offline has no verified pages.',
+        a: 'Editors and Participants. Viewers see every page’s state but cannot change it. Only an Editor sets the Review Period, in Knowledgebase Settings. Verifying needs an account, so a knowledgebase kept Offline has no verified pages.',
       },
       {
         q: 'How do owners know a review is due?',
-        a: 'The Knowledgebase Home lists Yours to Review: the pages you own whose review is due, oldest first, each with a Still Right button that verifies it. Reminder emails are not built yet.',
+        a: 'The Knowledgebase Home lists Yours to Review: the pages you own whose review is due, oldest first, each with a Still Right button that verifies it. Each owner also gets one email, Pages Due for Review, at most once a day, while their Knowledgebase Reviews notification is on.',
+      },
+      {
+        q: 'What is AI Context?',
+        a: 'A section in every page’s right rail: whether the page is Always in Context (handed to every agent first, with its size in tokens), the questions Ask answered from it, which agents read it this week, and Ask About This Page. Always in Context pages share a budget of 8,000 tokens, and a page that would pass it says so.',
       },
       {
         q: 'What does AI Knowledge show?',
@@ -108,7 +129,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Who pays for Ask?',
-        a: 'Your team does, on its own Claude or OpenAI key. liveknowledge pays for no model, so Ask appears once an Editor adds the knowledgebase’s key in AI Settings. Search, verification, import, export and the agent connection need no key.',
+        a: 'Your team does, on its own Claude or OpenAI key, so Ask appears once an Editor adds the knowledgebase’s key in AI Settings. Search, verification, import, export and the agent connection need no key.',
+      },
+      {
+        q: 'Does anything use AI without our key?',
+        a: 'One thing: Describe to Set Up. With no key it asks built-in AI, Cloudflare Workers AI paid for by liveknowledge, up to 10 suggestions a person a day; once your team adds a key, it uses that instead. Ask, finding pages that disagree and drafting a page from a question always use your team’s key.',
       },
       {
         q: 'Is my API key safe?',
@@ -152,7 +177,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can an agent change a page?',
-        a: 'By default an agent’s edit arrives as a suggestion with its reason, and a person accepts or dismisses it. Accepting applies it as one undo step and does not verify the page. A verified page can only be changed by suggestion.',
+        a: 'By default an agent’s edit arrives as a suggestion with its reason, and a person accepts or dismisses it. Accepting applies it as one undo step and does not verify the page. An Editor can allow one connection to write, but a page that is Verified or Review Due is only ever changed by suggestion.',
       },
       {
         q: 'What does an agent get with a passage?',
@@ -160,7 +185,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Does liveknowledge train a model on my pages?',
-        a: 'No. liveknowledge runs no model of its own. Ask sends your question and the passages it found to Claude or OpenAI, whichever your team chose, under its own API key, and an agent you connect reads only what you let it.',
+        a: 'No. Ask sends your question and the passages it found to Claude or OpenAI, whichever your team chose, under your team’s own API key. With no key, Describe to Set Up sends only what you describe, and the titles of pages already there, to built-in AI. An agent you connect reads only what you let it.',
       },
     ],
   },
@@ -196,7 +221,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How is a knowledgebase shared?',
-        a: 'Like every liveworkspace item: by link or with named people, as Editor, Participant or Viewer. An Editor writes, verifies and manages the key; a Participant reads, comments, asks and can have an agent suggest edits; a Viewer reads, searches and asks.',
+        a: 'Like every liveworkspace item: by link or with named people, as Editor, Participant or Viewer. A Participant does everything an Editor does except Knowledgebase Settings, Knowledgebase Style, AI Settings and who has access: it edits pages, changes the page tree, sets covers, verifies and imports. A Viewer reads, searches, asks and exports.',
       },
       {
         q: 'Can I restrict a single page?',
@@ -204,7 +229,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Does liveknowledge work offline?',
-        a: 'Yes. A knowledgebase kept Offline lives only in your browser, where it is written, searched and exported without an account. Verification, Ask, AI Knowledge and sharing need the server, so they are not available for an Offline knowledgebase.',
+        a: 'Yes. A knowledgebase kept Offline lives only in your browser, where it is written, searched and exported without an account. Verification, Ask, Describe to Set Up, AI Knowledge and sharing need the server, so they are not available for an Offline knowledgebase.',
       },
       {
         q: 'Can I publish a knowledgebase as a public website?',
@@ -230,7 +255,7 @@ const LANDING_QUESTIONS = [
   'What can an agent see?',
   'How does verification work?',
   'Can I import from Notion and Confluence?',
-  'Is my API key safe?',
+  'How do I edit a page?',
   'Does liveknowledge work offline?',
   'What is liveknowledge not?',
 ];

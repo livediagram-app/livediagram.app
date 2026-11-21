@@ -372,7 +372,7 @@ export function AiSettingsScene() {
           The key is encrypted when it is saved and is never shown again.
         </Label>
         <Label x={84} y={176} size={6.2} tone="muted">
-          liveknowledge pays for no model: your team pays Anthropic for what it uses.
+          Ask runs on this key: your team pays Anthropic for what it uses.
         </Label>
 
         <Label x={84} y={194} size={6.5} weight={700} tone="muted">

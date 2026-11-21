@@ -16,7 +16,7 @@ desktop/web, Claude Code, any MCP client) and, from inside that tool:
 3. **Edit** an existing document: a full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
-load-bearing decision. liveknowledge runs no model of its own. The user already has a capable model in front of them; the
+load-bearing decision. The MCP server runs no model of its own (liveknowledge's one built-in AI is Describe to Set Up's, in the editor, [Describe to Set Up](../030-knowledgebase/describe-to-set-up.md) "The model"; Ask runs on the team's own key). The user already has a capable model in front of them; the
 MCP's job is to (a) hand that model the element **schema** so it can emit
 well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no

@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./marketing-site.md - when working on Marketing site: the landing page at `/` (hero, six illustrated feature sections, Build With AI, FAQ), its SEO and metadata; claims must map to shipped features
+- ./marketing-site.md - when working on Marketing site: the landing page at `/` (hero, templates, six illustrated feature sections each with its `/features/<id>` drill-in page, Build With AI, FAQ), its SEO and metadata; claims must map to shipped features
 - ./build-with-ai.md - when working on Build with AI: the `/ai` page that connects an AI tool to the MCP server, per client, and the header's Build with AI link
 - ../../../../packages/comparisons/README.md - when working on Comparison / "alternative" pages: this site's `/alternatives` hub and `/alternatives/<tool>` SEO pages (Notion, Confluence, Slite, Guru, GitBook, Outline), built from `lib/alternatives.ts` by the shared `@liveworkspace/comparisons`
 - ./marketing-assets.md - when working on Marketing assets: `marketing/` folder: off-site copy + media for listings/promotion

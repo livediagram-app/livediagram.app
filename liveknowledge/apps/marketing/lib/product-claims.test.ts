@@ -67,8 +67,8 @@ const NOT_BUILT: { pattern: RegExp; why: string }[] = [
     why: 'Google Docs import is not built (not-in-liveknowledge.md "Not in v1")',
   },
   {
-    pattern: /reminder emails?\b(?! are not built)|emails? (?:you|owners?|them) when/i,
-    why: 'review reminder emails are not built (verification.md)',
+    pattern: /runs no (?:AI )?model|pays for no model|no model of its own/i,
+    why: 'Describe to Set Up runs on built-in AI when a team has no key (describe-to-set-up.md "The model")',
   },
   {
     pattern: /(?<!No )semantic search\b(?! is not built)|understands meaning/i,

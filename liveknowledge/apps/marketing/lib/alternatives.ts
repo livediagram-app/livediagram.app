@@ -232,7 +232,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Who pays for the AI',
         paragraphs: [
-          'liveknowledge pays for no model. An Editor adds the knowledgebase’s Claude or OpenAI key once; it is encrypted, never shown again, and Ask uses it for that knowledgebase alone. Everything else, search included, needs no key.',
+          'Ask runs on your team’s own key, never on a model liveknowledge pays for. An Editor adds the knowledgebase’s Claude or OpenAI key once; it is encrypted, never shown again, and Ask uses it for that knowledgebase alone. Search needs no key, and Describe to Set Up runs on built-in AI when there is none.',
           'That is a trade. It is one more thing to set up, and your team carries the cost. In return there is no plan to choose and no seat to pay for.',
         ],
       },

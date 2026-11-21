@@ -16,4 +16,8 @@ export const SITE_TITLE = 'liveknowledge: A team knowledgebase, for people and f
 export const SITE_DESCRIPTION =
   'An open-source team knowledgebase. Pages with owners and verified dates, cited answers on your own Claude or OpenAI key, and an MCP server your agents read.';
 
-export const HERO_HEADLINE = 'The knowledgebase your team and its AI both trust.';
+export const HERO_HEADLINE = 'Knowledge your team and its AI can trust.';
+
+// The hero's lead: one sentence (owner, 2026-11-21: "the description is too long").
+export const HERO_LEAD =
+  'A team knowledgebase where every page has an owner and a verified date, and every answer names its source.';

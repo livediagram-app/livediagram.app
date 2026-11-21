@@ -30,7 +30,7 @@ const PROMISES: PrivacyPromise[] = [
   {
     title: 'Never Sold, Never Traded',
     description:
-      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. liveknowledge runs no model of its own: Ask sends passages to Claude or OpenAI, whichever your team chose, only under your team's own key. There is no paid tier and no plan to add one.",
+      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. Ask sends passages to Claude or OpenAI, whichever your team chose, only under your team's own key. With no key, Describe to Set Up sends only what you describe, and the titles of pages already there, to Cloudflare Workers AI.",
     art: <NoSaleArt />,
   },
   {

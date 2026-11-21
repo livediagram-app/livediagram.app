@@ -1,35 +1,45 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { HERO_HEADLINE, PITCH_LINE } from '@/lib/site-words';
+import { HERO_HEADLINE, HERO_LEAD } from '@/lib/site-words';
 import { Hero } from './Hero';
 import { HeroIllustration } from './HeroIllustration';
 
 // docs/specs/019-marketing/marketing-site.md "Hero".
 describe('the hero', () => {
   const html = renderToStaticMarkup(<Hero />);
+  const text = (fragment: string) => fragment.replace(/<[^>]+>/g, '');
 
-  it('says what liveknowledge is, in one h1 and the pitch line', () => {
+  it('says what liveknowledge is, in one h1 and one lead sentence', () => {
+    const h1 = html.match(/<h1[^>]*>(.*?)<\/h1>/s);
     expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html).toContain(HERO_HEADLINE);
-    expect(html).toContain(PITCH_LINE);
+    expect(text(h1![1]!)).toBe(HERO_HEADLINE);
+    expect(html).toContain(HERO_LEAD);
   });
 
-  it('offers the two ways in: start (the funnel’s Home.Hero slot) and import', () => {
+  it('offers the two ways in: start (the funnel’s Home.Hero slot) and import, by logo alone', () => {
     expect(html).toContain('href="/new?via=Home.Hero"');
     expect(html).toContain('Start a Knowledgebase');
-    expect(html).toMatch(/href="#import"[^>]*>.*Import From Notion or Confluence/s);
+    expect(html).toMatch(/role="group" aria-label="Import From"/);
+    expect(html).toMatch(
+      /<a [^>]*href="\/features\/import#from-notion"[^>]*aria-label="Notion"|<a [^>]*aria-label="Notion"[^>]*href="\/features\/import#from-notion"/,
+    );
+    expect(html).toMatch(
+      /<a [^>]*href="\/features\/import#from-confluence"[^>]*aria-label="Confluence"|<a [^>]*aria-label="Confluence"[^>]*href="\/features\/import#from-confluence"/,
+    );
   });
 
-  it('fills the first screen as every product’s hero does (hero-tall.css)', () => {
+  it('fills the first screen as every product’s hero does (hero-tall.css), under its own cap', () => {
     expect(html).toMatch(/<section class="[^"]*\bhero-tall\b/);
     expect(html).toMatch(/class="[^"]*\bhero-tall-copy\b/);
+    expect(html).toContain('[--hero-tall-cap:46rem]');
   });
 
-  it('keeps both buttons 48px tall, a whole touch target on a phone', () => {
-    const buttons = [...html.matchAll(/<a [^>]*class="([^"]*)"/g)].map((m) => m[1]!.split(' '));
-    expect(buttons).toHaveLength(2);
-    for (const classes of buttons) expect(classes).toContain('h-12');
+  it('keeps every control a whole touch target: the button 48px, the logo links 44px', () => {
+    const links = [...html.matchAll(/<a [^>]*class="([^"]*)"/g)].map((m) => m[1]!.split(' '));
+    expect(links).toHaveLength(3);
+    expect(links[0]).toContain('h-12');
+    for (const classes of links.slice(1)) expect(classes).toContain('h-11');
   });
 
   it('is illustrated: the drawing is in the static HTML, once, with one label', () => {
@@ -37,6 +47,13 @@ describe('the hero', () => {
     expect(html).toMatch(/aria-label="Five small cubes[^"]*knowledge[^"]*"/);
     // Its box holds its shape before paint and rests while off screen.
     expect(html).toMatch(/class="[^"]*aspect-\[6\/5\][^"]*\[content-visibility:auto\]/);
+  });
+
+  it('draws its backdrop for the eye alone, resting off screen', () => {
+    const sides = html.match(
+      /<div aria-hidden="true" class="pointer-events-none[^"]*\[content-visibility:auto\][^"]*"/g,
+    );
+    expect(sides).toHaveLength(2);
   });
 });
 

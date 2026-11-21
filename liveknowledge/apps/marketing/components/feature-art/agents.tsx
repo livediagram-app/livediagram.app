@@ -1,6 +1,6 @@
 // The Knowledgebase Your Agents Read: a passage as an agent receives it, with its trust fields; the agents that
 // are connected; an edit an agent suggests for a person to accept; and a question nobody could answer.
-import { ArtPanel, AgentGlyph, Board, Button, Card, Label, T } from './kit';
+import { ArtPanel, AgentGlyph, Board, Button, Card, Label, T, at } from './kit';
 
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 
@@ -58,7 +58,7 @@ export function AgentsArt() {
           {'search_pages("when do we deploy")'}
         </Mono>
         {FIELDS.map(([key, value, trust], i) => (
-          <g key={key}>
+          <g key={key} className="kb-in" style={at(0.4 + i * 0.25)}>
             <Mono x={30} y={72 + i * 20} className="fill-slate-400">
               {key}
             </Mono>
@@ -80,7 +80,7 @@ export function AgentsArt() {
           {AGENTS.map(([name, how], i) => {
             const y = 62 + i * 46;
             return (
-              <g key={name}>
+              <g key={name} className="kb-in" style={at(0.6 + i * 0.25)}>
                 <AgentGlyph x={354} y={y + 4} s={22} />
                 <T x={386} y={y + 13} size={11.5} weight={600}>
                   {name}

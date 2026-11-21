@@ -10,7 +10,7 @@ import { CheckIcon, ChevronRightIcon } from '@liveknowledge/ui';
 // Three things true today, each a promise the page has already made.
 const CHECKS = ['Free to Start', 'Open Source', 'Works Offline'];
 
-export function StartDrawingCta({ surface }: { surface: 'Home' }) {
+export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
   const source = `${surface}.Closing` as const;
   return (
     <section

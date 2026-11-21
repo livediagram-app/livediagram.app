@@ -3,9 +3,14 @@
 // with a dark outline and a lime shadow set off down and right, slate ink, the brand ramp for what is the
 // knowledgebase's own. Everything follows light and dark through utilities. Each drawing is one SVG on a
 // 520 by 380 board, decorative (the section's words say what it shows).
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 export const BOARD = '0 0 520 380';
+
+// A delay on the kb-* timeline (app/feature-art/knowledge.css): lines of writing type in, ticks and pills pop, each
+// at its own moment, so a drawing assembles, holds, and starts again. Still under reduced motion; the panel is
+// content-visibility: auto, so a drawing off screen rests.
+export const at = (seconds: number) => ({ '--d': `${seconds}s` }) as CSSProperties;
 
 export const INK = 'stroke-slate-900 dark:stroke-slate-200';
 export const PAPER = 'fill-white dark:fill-slate-800';
@@ -124,11 +129,14 @@ export function Bars({
   y,
   widths,
   gap = 16,
+  delay = 0.3,
 }: {
   x: number;
   y: number;
   widths: readonly number[];
   gap?: number;
+  /** When its first line starts typing; each line after it follows a beat later. */
+  delay?: number;
 }) {
   return (
     <>
@@ -140,9 +148,10 @@ export function Bars({
           width={w}
           height={7}
           rx={3.5}
-          className={
+          style={at(delay + i * 0.12)}
+          className={`kb-type ${
             i % 2 ? 'fill-slate-200 dark:fill-slate-700' : 'fill-slate-300 dark:fill-slate-600'
-          }
+          }`}
         />
       ))}
     </>
@@ -150,10 +159,20 @@ export function Bars({
 }
 
 // The verified tick: a green disc with a white tick, centred on (cx, cy).
-export function Tick({ cx, cy, r = 9 }: { cx: number; cy: number; r?: number }) {
+export function Tick({
+  cx,
+  cy,
+  r = 9,
+  delay = 1,
+}: {
+  cx: number;
+  cy: number;
+  r?: number;
+  delay?: number;
+}) {
   const k = r / 9;
   return (
-    <>
+    <g className="kb-pop" style={at(delay)}>
       <circle cx={cx} cy={cy} r={r} className="fill-emerald-500" />
       <path
         d={`M${cx - 4.2 * k} ${cy + 0.4 * k} l${3 * k} ${3 * k} l${5.6 * k} ${-6.4 * k}`}
@@ -163,7 +182,7 @@ export function Tick({ cx, cy, r = 9 }: { cx: number; cy: number; r?: number }) 
         strokeLinejoin="round"
         className="stroke-white"
       />
-    </>
+    </g>
   );
 }
 
@@ -195,6 +214,7 @@ export function Pill({
   w,
   h = 22,
   tone = 'plain',
+  delay = 0.7,
   children,
 }: {
   x: number;
@@ -202,11 +222,12 @@ export function Pill({
   w: number;
   h?: number;
   tone?: PillTone;
+  delay?: number;
   children: ReactNode;
 }) {
   const look = PILLS[tone];
   return (
-    <>
+    <g className="kb-pop" style={at(delay)}>
       <rect x={x} y={y} width={w} height={h} rx={h / 2} className={look.ground} />
       <text
         x={x + w / 2}
@@ -218,7 +239,7 @@ export function Pill({
       >
         {children}
       </text>
-    </>
+    </g>
   );
 }
 

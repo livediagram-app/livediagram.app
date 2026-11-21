@@ -1,4 +1,5 @@
-import { CheckIcon, GlyphDisc, RAIL_CLEAR_PADDING } from '@liveknowledge/ui';
+import { CheckIcon, ChevronRightIcon, GlyphDisc, RAIL_CLEAR_PADDING } from '@liveknowledge/ui';
+import { CtaLink } from '@liveworkspace/marketing-site/components/CtaLink';
 import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 
 import { CATEGORY_ICONS } from '@/components/category-icons';
@@ -6,7 +7,7 @@ import type { LandingSection } from '@/lib/landing-content';
 
 // One beat of the landing page's story (docs/specs/019-marketing/marketing-site.md "Feature sections"): one
 // thing liveknowledge does. Its glyph in a disc and its plain name above the headline, two or three sentences,
-// three ticked points, and its art beside it. The art's side and the tinted ground alternate by index so the run
+// three ticked points, a link to its own page (/features/<id>), and its art beside it. The art's side and the tinted ground alternate by index so the run
 // reads as a composed page. Below lg the beat is one column, the art under the words: it is the section's
 // picture at every width, never hidden on a phone.
 
@@ -61,6 +62,14 @@ export function StoryBeat({ section, index }: { section: LandingSection; index: 
               </li>
             ))}
           </ul>
+          {/* Its own page (marketing-site.md "Feature pages"): the section broken into illustrated cards. */}
+          <CtaLink href={`/features/${section.id}`} className="group mt-8">
+            See Everything in {section.label}
+            <ChevronRightIcon
+              size={16}
+              className="transition-transform group-hover:translate-x-0.5"
+            />
+          </CtaLink>
         </div>
 
         {/* The art is capped below lg so it stays a picture beside a short column of words, not a wall. */}

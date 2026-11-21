@@ -1,6 +1,6 @@
 // Pages That Stay Organised: the page tree beside one continuous page, with a page link in the writing and the
 // pages that link back at its foot.
-import { ArtPanel, Bars, Board, Card, Label, PageGlyph, Pill, Rule, T, Tick } from './kit';
+import { ArtPanel, Bars, Board, Card, Label, PageGlyph, Pill, Rule, T, Tick, at } from './kit';
 
 // The tree's rows, top to bottom: `depth` indents a subpage, `open` turns a parent's chevron down.
 const ROWS: readonly { title: string; depth: 0 | 1; open?: boolean; parent?: boolean }[] = [
@@ -44,7 +44,7 @@ export function PagesArt() {
             const x = 34 + row.depth * 16;
             const selected = row.title === SELECTED;
             return (
-              <g key={row.title}>
+              <g key={row.title} className="kb-in" style={at(0.2 + i * 0.12)}>
                 {selected ? (
                   <rect
                     x={22}
@@ -111,13 +111,13 @@ export function PagesArt() {
           <Label x={230} y={276}>
             LINKED FROM
           </Label>
-          <Pill x={230} y={288} w={68} tone="brand">
+          <Pill x={230} y={288} w={68} tone="brand" delay={1.3}>
             On Call
           </Pill>
-          <Pill x={304} y={288} w={110} tone="brand">
+          <Pill x={304} y={288} w={110} tone="brand" delay={1.5}>
             Incident Review
           </Pill>
-          <Pill x={420} y={288} w={66} tone="plain">
+          <Pill x={420} y={288} w={66} tone="plain" delay={1.7}>
             2 More
           </Pill>
           <T x={230} y={334} size={10.5} tone="quiet">

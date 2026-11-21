@@ -26,8 +26,8 @@ export function BuildWithAiBand() {
             Connect the Agents You Already Use
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-pretty text-slate-600 dark:text-slate-300">
-            liveknowledge runs no model of its own. Its MCP server and command line hand your agents
-            the knowledgebase in pages and passages: the pages you marked Always in Context first,
+            Your agent does the thinking, on the model you already use. liveknowledge's MCP server
+            and command line hand it the knowledgebase in pages and passages: the pages you marked Always in Context first,
             then whatever a search finds, each with who verified it and when. An agent sees only
             what the person or token it acts for can open.
           </p>
