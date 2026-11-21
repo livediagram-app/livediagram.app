@@ -15,4 +15,6 @@ export declare function liveworkspaceNextConfig(options?: {
   /** Run the React Compiler (Rust port, under Turbopack only). The editor alone sets it. */
   reactCompiler?: boolean;
   now?: Date;
+  /** The app's own build-time values, inlined beside the shared ones (the help centre's HELP_ART_APP). */
+  inlineEnv?: Record<string, string>;
 }): import('next').NextConfig;
