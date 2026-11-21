@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ReviewPeriodSettings } from '@/editions/liveknowledge/components/illustrations/trust';
+import { ReviewPeriodPopover } from '@/editions/liveknowledge/components/illustrations/trust';
 
 export const metadata = helpMetadata({
   title: 'Review Due and the Review Period',
@@ -39,13 +39,13 @@ Under **Never**, no page is ever Review Due: pages are Verified or Never Verifie
 ## Change the Review Period
 
 <Step n={1}>
-  Open **Knowledgebase Settings**. On a page, press **Change** under **Review Period** on the
-  [Page Health](/help/knowledgebase/page-health/) card. From anywhere, open the command palette
-  and choose **Knowledgebase Settings**.
+  On any page, press **Change** beside **Review Period** on the
+  [Page Health](/help/knowledgebase/page-health/) card. It opens under the button (as a sheet on
+  a phone) and says it applies to every page in this Knowledgebase.
 </Step>
 
 <Step n={2}>
-  Under **Reviews**, choose one of the five rows of **Review Period**.
+  Choose one of the five rows. Use the arrow keys to move between them.
 </Step>
 
 <Step n={3}>
@@ -55,8 +55,8 @@ Under **Never**, no page is ever Review Due: pages are Verified or Never Verifie
   had.
 </Step>
 
-<Figure caption="Knowledgebase Settings, Reviews: Every 90 Days is the period in force, and Every 30 Days is asking before it is applied.">
-  <ReviewPeriodSettings />
+<Figure caption="The Review Period: Every 90 Days is the period in force, and Every 30 Days is asking before it is applied.">
+  <ReviewPeriodPopover />
 </Figure>
 
 A toast confirms the change ("Pages are now reviewed every 30 days.") with **Undo**, which puts back the period you replaced.
@@ -77,7 +77,7 @@ Many pages turned Review Due at once and you did not mean it? See [Review Due on
 | See Review Due and the dates  | Yes    | Yes         | Yes    |
 | Change the Review Period      | Yes    | No          | No     |
 
-Only an Editor of the whole Knowledgebase is offered Knowledgebase Settings. Someone who opened a link to one page is not.
+Only an Editor of the whole Knowledgebase sees **Change**. A Participant, a Viewer and someone who opened a link to one page see the period with no **Change** beside it.
 
 ## Good to Know
 

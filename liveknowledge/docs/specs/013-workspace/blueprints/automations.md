@@ -371,7 +371,7 @@ As livediagram's: `useDocumentItemView` memoised on the tabs' ids and names and 
 ### The door
 
 As livediagram's, with `badges` `Sign In`, `Sync Knowledgebase`, and the gate's `item` "Knowledgebase". A
-Participant (an Editor minus Knowledgebase Settings, Style and Automations) has no row.
+Participant (an Editor minus the Review Period, Style and Automations) has no row.
 
 | Who                                             | Row                               | Opens                        |
 | ----------------------------------------------- | --------------------------------- | ---------------------------- |

@@ -21,13 +21,11 @@ import {
   ImportIcon,
   MenuChevronIcon,
   RenameIcon,
-  SettingsIcon,
 } from './knowledge-menu-icons';
 import { useKnowledgebaseMenu, type KnowledgeMenuVerb } from './useKnowledgebaseMenu';
 
 const ICONS: Record<KnowledgeMenuVerb, ReactNode> = {
   rename: <RenameIcon />,
-  settings: <SettingsIcon />,
   describe: <DescribeIcon />,
   import: <ImportIcon />,
   export: <ExportIcon />,

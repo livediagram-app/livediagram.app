@@ -122,16 +122,15 @@ The knowledgebase's name in the sidebar's head is a button with a chevron beside
 menu: the name is the thing the menu is about, so the name is what is pressed, and no second button stands beside
 it. The menu is icon-left verb rows under the knowledgebase's name:
 
-| Row                    | Does                                                                                      | Who                      |
-| ---------------------- | ----------------------------------------------------------------------------------------- | ------------------------ |
-| Rename                 | The name becomes a field where it stands; Enter keeps it, Escape leaves it                | Editor                   |
-| Knowledgebase Style    | Opens [Knowledgebase Style](page-surface.md#knowledgebase-style)                          | Editor                   |
-| Knowledgebase Settings | Opens the settings ([Verification](verification.md) "The Review Period")                  | Editor                   |
-| Describe to Add Pages  | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                  | Writer, signed in        |
-| Import                 | Opens Import                                                                              | Writer                   |
-| Export                 | Opens Export                                                                              | everyone                 |
-| AI Settings            | Opens AI Settings ([Search and Ask](search-and-ask.md))                                   | Editor, not kept Offline |
-| Delete                 | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator | Editor                   |
+| Row                   | Does                                                                                      | Who                      |
+| --------------------- | ----------------------------------------------------------------------------------------- | ------------------------ |
+| Rename                | The name becomes a field where it stands; Enter keeps it, Escape leaves it                | Editor                   |
+| Knowledgebase Style   | Opens [Knowledgebase Style](page-surface.md#knowledgebase-style)                          | Editor                   |
+| Describe to Add Pages | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                  | Writer, signed in        |
+| Import                | Opens Import                                                                              | Writer                   |
+| Export                | Opens Export                                                                              | everyone                 |
+| AI Settings           | Opens AI Settings ([Search and Ask](search-and-ask.md))                                   | Editor, not kept Offline |
+| Delete                | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator | Editor                   |
 
 - "Editor" is an Editor of the whole knowledgebase; "Writer" is an Editor or a Participant of the whole
   knowledgebase ([Share roles](#share-roles)). A Participant's menu is Describe to Add Pages, Import and Export; a
@@ -171,8 +170,8 @@ A page is one article that never breaks onto paper pages while it is being writt
 
 ## Share roles
 
-A Participant is an Editor minus three things (owner, 2026-11-21): **Knowledgebase Settings** (the Review Period
-with it), **Knowledgebase Style** and **automations**. Sharing and roles stay as the platform has them: a
+A Participant is an Editor minus three things (owner, 2026-11-21): **the Review Period** (changed from Page
+Health), **Knowledgebase Style** and **automations**. Sharing and roles stay as the platform has them: a
 Participant never manages who has access.
 
 | Action                                                          | Editor | Participant | Viewer |
@@ -186,7 +185,7 @@ Participant never manages who has access.
 | Request Approval; Approve or Reject another's request           | yes    | yes         | no     |
 | Describe to Add Pages, Import                                   | yes    | yes         | no     |
 | Accept or dismiss an agent's suggestion                         | yes    | yes         | no     |
-| Knowledgebase Settings, the Review Period                       | yes    | no          | no     |
+| Change the Review Period                                        | yes    | no          | no     |
 | Knowledgebase Style                                             | yes    | no          | no     |
 | Automations (none built yet; the rule stands for when they are) | yes    | no          | no     |
 | AI Settings (the key and the model), allow an agent to write    | yes    | no          | no     |
@@ -199,7 +198,7 @@ Participant never manages who has access.
 Participant did before this rule (it suggests, it never writes), and only an Editor's token writes.
 
 Every gate reads `can`, on the client and again in the api and the room, and ships a test per role. The room relays a
-Participant's page changes as it does an Editor's; it strips the Knowledgebase Settings and Style from every
+Participant's page changes as it does an Editor's; it strips the knowledgebase's settings (its Review Period) and Style from every
 socket's metadata, whoever sent it, and the api refuses a Participant's settings and style writes.
 
 A Participant starts margin notes too: the mark it puts in the writing is writing, which is now a Participant's.

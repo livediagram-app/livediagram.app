@@ -287,7 +287,7 @@ export function useEditorSession({
   // editor read-only (the autosave stands down with it).
   const level = workbench?.ended ? 'view' : embedSessionRole(sessionRole, readOnlyEmbed);
   // An Editor and a Participant both write the knowledgebase (docs/specs/030-knowledgebase/knowledgebases-and-pages.md
-  // "Share roles"): a Participant is an Editor minus the Knowledgebase Settings, the Knowledgebase Style and
+  // "Share roles"): a Participant is an Editor minus the Review Period, the Knowledgebase Style and
   // automations, which `participant.can.manageKnowledgebase` gates.
   const canEdit = writesKnowledgebase(level);
   const isReadOnly = !canEdit;

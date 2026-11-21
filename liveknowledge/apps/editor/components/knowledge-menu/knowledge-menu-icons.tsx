@@ -6,7 +6,6 @@ import {
   lucideFileUp,
   lucidePalette,
   lucidePencil,
-  lucideSettings,
   lucideSparkles,
   lucideTrash2,
   lucideWandSparkles,
@@ -16,7 +15,6 @@ import { lucideGlyph } from '@liveknowledge/ui';
 export const MenuChevronIcon = lucideGlyph(lucideChevronDown, 14);
 export const RenameIcon = lucideGlyph(lucidePencil, 16);
 export const StyleIcon = lucideGlyph(lucidePalette, 16);
-export const SettingsIcon = lucideGlyph(lucideSettings, 16);
 export const DescribeIcon = lucideGlyph(lucideWandSparkles, 16);
 export const ImportIcon = lucideGlyph(lucideFileUp, 16);
 export const ExportIcon = lucideGlyph(lucideFileDown, 16);

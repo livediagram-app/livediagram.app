@@ -9,7 +9,7 @@ import type { ReviewEvery } from '@liveknowledge/knowledge';
 import { REVIEW_PERIOD_OPTIONS } from '@/lib/knowledge-settings/review-period-words';
 
 const ROW =
-  'flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg border px-3.5 py-2 text-left text-sm font-medium motion-safe:transition-colors motion-safe:duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-60';
+  'flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg border px-3.5 py-1.5 sm:min-h-9 text-left text-sm font-medium motion-safe:transition-colors motion-safe:duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-60';
 const CHOSEN =
   'border-brand-600 bg-brand-50 text-slate-900 dark:border-brand-400 dark:bg-brand-500/15 dark:text-slate-100';
 const ASKED =
@@ -78,7 +78,7 @@ export function ReviewPeriodRows({
       aria-labelledby={labelledBy}
       aria-describedby={describedBy}
       onKeyDown={onKeyDown}
-      className="flex flex-col gap-2"
+      className="flex flex-col gap-1.5"
       data-review-period={String(value)}
     >
       {REVIEW_PERIOD_OPTIONS.map((option) => {

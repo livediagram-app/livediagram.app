@@ -84,7 +84,7 @@ export const trustFields = {
 export const reviewPeriod = z
   .enum(REVIEW_PERIODS)
   .describe(
-    'The knowledgebase’s Review Period: how long after it was last verified a page comes due for review. One period for every page, set by an Editor in Knowledgebase Settings; "never" means no page comes due. No tool sets it, and no page has a period of its own.',
+    'The knowledgebase’s Review Period: how long after it was last verified a page comes due for review. One period for every page, set by an Editor from Page Health; "never" means no page comes due. No tool sets it, and no page has a period of its own.',
   );
 
 export const getContextShape = { documentId };

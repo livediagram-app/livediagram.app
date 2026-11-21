@@ -5,7 +5,7 @@ import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 
 // A session's rights in the editor (docs/specs/013-workspace/share-roles.md; blueprint "Editor state"): what it may
 // do (`can`), and the commit guard the platform keeps for a text-only Participant. liveknowledge has no text-only
-// Participant: its Participant is an Editor minus the Knowledgebase Settings, the Knowledgebase Style and automations
+// Participant: its Participant is an Editor minus the Review Period, the Knowledgebase Style and automations
 // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"), so its commits pass as an Editor's.
 // `participating` is false for every level and `guardCommit` passes every commit; the room relays a Participant's
 // changes as an Editor's (apps/api/src/room-op-gate.ts).

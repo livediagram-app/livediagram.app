@@ -17,7 +17,6 @@ import { documentHandOver, shareHelpHref, trackShare } from '@/lib/explorer-shar
 import { randomName } from '@/lib/identity';
 import { useToast } from '@/hooks/ui/useToast';
 import { useKnowledgeImportProps } from '@/components/dialogs/knowledge-import/useKnowledgeImportProps';
-import { KnowledgeSettingsWhenOpen } from '@/components/knowledge-settings/KnowledgeSettingsHost';
 import { SetupWhenOpen } from '@/components/setup/SetupHost';
 
 const ExportTabDialog = dynamic(
@@ -58,8 +57,6 @@ export function EditorTabDialogs() {
       {/* Describe to Set Up (describe-to-set-up.md): it reads its own open state, and its code is fetched when it
           is first opened. */}
       <SetupWhenOpen />
-      {/* Knowledgebase Settings (verification.md "The Review Period"): the same, its own open state and chunk. */}
-      <KnowledgeSettingsWhenOpen />
     </>
   );
 }

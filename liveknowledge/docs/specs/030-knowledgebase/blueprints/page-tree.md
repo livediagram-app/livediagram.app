@@ -123,7 +123,7 @@ subpage still arrive first it is refused `unknown_page`, and the autosave writes
 | Comment                                               | yes    | yes         | no     |
 
 - **In the editor:** `resolveEditorCapabilities` (`apps/editor/lib/editor-capabilities.ts`) gives a Participant
-  every flag an Editor holds but `manageKnowledgebase` (Knowledgebase Settings, Knowledgebase Style, AI Settings,
+  every flag an Editor holds but `manageKnowledgebase` (the Review Period, Knowledgebase Style, AI Settings,
   agents' scopes, renaming and deleting the knowledgebase); `writesKnowledgebase` makes `isReadOnly` false for both.
 - **In the room:** `gateClientOp` (`apps/api/src/room-op-gate.ts`) relays a Participant's `article`, `el`, `tab`,
   `tab-meta` and `document-meta` as an Editor's (`writerLevel`); the room strips `knowledgeSettings` and

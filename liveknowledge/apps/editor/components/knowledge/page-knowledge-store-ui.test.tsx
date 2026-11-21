@@ -210,11 +210,18 @@ describe('a page’s knowledge in the editor', () => {
     expect(pageId).toBeTruthy();
   });
 
-  it("Page Health shows the Review Period to everyone and changes it for nobody (it is the settings')", async () => {
-    for (const level of ['edit', 'participate', 'view'] as const) {
+  it('Page Health shows the Review Period to everyone, and the pencil beside it to an Editor alone', async () => {
+    for (const [level, offered] of [
+      ['edit', true],
+      ['participate', false],
+      ['view', false],
+    ] as const) {
       mount(level);
       await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-      expect(screen.queryByRole('button', { name: 'Change the Review Period' })).toBeNull();
+      const change = screen.queryByRole('button', { name: 'Change Review Period' });
+      expect(!!change).toBe(offered);
+      // Beside the value, in the Review Period's own row.
+      if (change) expect(change.closest('dd')!.querySelector('[data-review-period]')).toBeTruthy();
       expect(screen.getByText('Every 90 Days')).toBeTruthy();
       cleanup();
     }
@@ -235,7 +242,8 @@ describe('a page’s knowledge in the editor', () => {
     mount('edit', null);
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
     expect(within(rail()).getByRole('button', { name: 'Verify' })).toBeTruthy();
-    // The owner is theirs to set, and so is the knowledgebase's Review Period, through its settings.
+    // The owner is theirs to set, and so is the knowledgebase's Review Period.
     expect(screen.getByLabelText('Owner')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Change Review Period' })).toBeTruthy();
   });
 });

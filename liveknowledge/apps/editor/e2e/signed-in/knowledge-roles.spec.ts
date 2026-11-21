@@ -23,10 +23,10 @@ import {
 
 // Share roles in a knowledgebase (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"): a second
 // person arrives through a share link at each role. A Viewer reads every page, follows the tree and searches, and
-// neither writes on a page nor changes the tree. A Participant is an Editor minus the Knowledgebase Settings, the
+// neither writes on a page nor changes the tree. A Participant is an Editor minus the Review Period, the
 // Knowledgebase Style and automations: it edits and saves a page, sets a cover and verifies, and is offered neither
-// the settings nor the style. The room's and the api's own rules are held by the api's role tests; this is what the
-// editor offers them, and that what a Participant writes reaches the owner.
+// the Review Period's pencil nor the style. The room's and the api's own rules are held by the api's role tests;
+// this is what the editor offers them, and that what a Participant writes reaches the owner.
 
 test.use({ viewport: { width: 1440, height: 860 } });
 
@@ -153,29 +153,20 @@ test('a Participant edits and saves a page, sets a cover and verifies, with no S
   // Verify, in Page Health: the page is vouched for by the Participant.
   await health(visitor).getByRole('button', { name: 'Verify', exact: true }).click();
   await expect(visitor.locator('[data-page-meta]')).toContainText('Verified by Grace Hopper');
-  // The Review Period is shown, with no Change link (it is Knowledgebase Settings', for an Editor).
-  await expect(
-    health(visitor).getByRole('button', { name: 'Change the Review Period' }),
-  ).toHaveCount(0);
+  // The Review Period is shown, with no pencil beside it (an Editor's alone).
+  await expect(health(visitor).getByRole('button', { name: 'Change Review Period' })).toHaveCount(
+    0,
+  );
 
-  // The knowledgebase's menu: no Rename, Knowledgebase Style, Knowledgebase Settings, AI Settings or Delete.
+  // The knowledgebase's menu: no Rename, AI Settings or Delete.
   await visitor.locator('[data-knowledgebase-menu]').click();
   const rows = visitor.getByRole('menuitem');
   await expect(rows.filter({ hasText: 'Export' })).toHaveCount(1);
-  for (const name of [
-    'Rename',
-    'Knowledgebase Style',
-    'Knowledgebase Settings',
-    'AI Settings',
-    'Delete',
-  ])
+  for (const name of ['Rename', 'AI Settings', 'Delete'])
     await expect(visitor.getByRole('menuitem', { name })).toHaveCount(0);
   await visitor.keyboard.press('Escape');
 
-  // The owner keeps both.
-  await page.locator('[data-knowledgebase-menu]').click();
-  await expect(page.getByRole('menuitem', { name: 'Knowledgebase Style' })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: 'Knowledgebase Settings' })).toBeVisible();
-  await page.keyboard.press('Escape');
+  // The owner keeps the Review Period's pencil.
+  await expect(health(page).getByRole('button', { name: 'Change Review Period' })).toBeVisible();
   await visitor.context().close();
 });

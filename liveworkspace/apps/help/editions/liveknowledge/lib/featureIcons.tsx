@@ -18,7 +18,6 @@ import {
   lucidePencilLine,
   lucidePictureInPicture2,
   lucideSearch,
-  lucideSettings,
   lucideShieldCheck,
   lucideSparkles,
   lucideTable,
@@ -93,7 +92,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // ---- Style and Settings ----
   'knowledgebase-style': lucide(lucidePaintbrush),
-  'knowledgebase-settings': lucide(lucideSettings),
   // ---- Import and Export ----
   'import-a-markdown-folder': lucide(lucideFolder),
   'import-from-notion': lucide(lucideBookOpenText),

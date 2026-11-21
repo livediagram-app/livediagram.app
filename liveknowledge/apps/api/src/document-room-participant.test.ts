@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // A Participant in the room (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"): an Editor minus
-// the Knowledgebase Settings, the Knowledgebase Style and automations. Its element ops, article frames and page tree
+// the Review Period, the Knowledgebase Style and automations. Its element ops, article frames and page tree
 // changes relay as an Editor's, with no write by the room (its editor saves, as an Editor's does); the settings and the
 // style never ride its metadata. A Viewer's changes are dropped.
 

@@ -5,7 +5,7 @@ import type { Tab } from '@liveknowledge/document';
 import { useParticipantSession } from './useParticipantSession';
 
 // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant is an Editor minus the
-// Knowledgebase Settings, the Knowledgebase Style and automations, so no commit of its is held back.
+// Review Period, the Knowledgebase Style and automations, so no commit of its is held back.
 const box = { x: 0, y: 0, width: 10, height: 10 };
 const tab = (elements: unknown[]): Tab => ({ id: 't', name: 'T', elements }) as Tab;
 const note = { id: 'a', type: 'sticky', ...box, label: 'Hi' };

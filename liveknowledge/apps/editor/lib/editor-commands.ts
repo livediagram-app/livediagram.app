@@ -19,8 +19,6 @@ import { selectionCommands } from './editor-commands-selection';
 import { openSetup } from '@/lib/knowledge-setup/setup-open';
 import { ADD_PAGES_BUTTON } from '@/lib/knowledge-setup/setup-words';
 import { STYLE_TITLE } from '@/lib/knowledge-style/knowledge-style-words';
-import { openKnowledgeSettings } from '@/lib/knowledge-settings/settings-open';
-import { SETTINGS_TITLE } from '@/lib/knowledge-settings/review-period-words';
 
 // A runnable command: the searchable shape (id / name / keywords) plus the
 // thunk the editor runs when it's picked.
@@ -70,9 +68,6 @@ export type CommandContext = {
   // An Editor of the whole knowledgebase (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"):
   // Knowledgebase Style is offered.
   canStyleKnowledgebase?: boolean;
-  // An Editor of the whole knowledgebase (docs/specs/030-knowledgebase/verification.md "The Review Period"):
-  // Knowledgebase Settings is offered.
-  canOpenKnowledgeSettings?: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
   // (offering "Hand tool" while holding the hand does nothing).
   canvasTool: string;
@@ -346,14 +341,6 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       name: ADD_PAGES_BUTTON,
       keywords: 'describe add pages ai structure suggest set up outline generate',
       run: () => openSetup('add'),
-    });
-  }
-  if (ctx.canOpenKnowledgeSettings) {
-    out.push({
-      id: 'knowledgebase-settings',
-      name: SETTINGS_TITLE,
-      keywords: 'knowledgebase settings review period reviews due verify interval every days never',
-      run: openKnowledgeSettings,
     });
   }
   out.push({

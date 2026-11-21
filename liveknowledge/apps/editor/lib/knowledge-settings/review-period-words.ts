@@ -1,10 +1,13 @@
 // The Review Period's words (docs/specs/030-knowledgebase/verification.md "The Review Period"), in one place so
-// the dialog, Page Health, the toasts and their tests say the same thing. Pure.
+// the popover, Page Health, the toasts and their tests say the same thing. Pure.
 import { REVIEW_INTERVALS, reviewDays, type ReviewEvery } from '@liveknowledge/knowledge';
 
-export const SETTINGS_TITLE = 'Knowledgebase Settings';
-export const REVIEWS_SECTION = 'Reviews';
 export const REVIEW_PERIOD = 'Review Period';
+/** The name of Page Health's pencil beside the period (it has no visible label), and what its hover card says. */
+export const CHANGE_PERIOD_NAME = 'Change Review Period';
+export const CHANGE_PERIOD_HINT = 'Changes it for the whole knowledgebase: every page at once.';
+/** The popover's line under its heading: the period is the whole knowledgebase's, never one page's. */
+export const REVIEW_PERIOD_SCOPE = 'Applies to every page in this knowledgebase.';
 export const REVIEW_PERIOD_LINE =
   'A verified page comes due for review this long after it was last verified.';
 export const NO_REVIEW_PERIOD = 'No Review Period';
@@ -24,7 +27,7 @@ export const reviewPeriodLabel = (every: ReviewEvery): string => LABELS[every];
 export const REVIEW_PERIOD_OPTIONS: readonly { value: ReviewEvery; label: string }[] =
   REVIEW_INTERVALS.map((value) => ({ value, label: LABELS[value] }));
 
-/** Whether `next` brings reviews forward: only then can more pages come due, and the dialog asks first. */
+/** Whether `next` brings reviews forward: only then can more pages come due, and the popover asks first. */
 export function isShorterPeriod(next: ReviewEvery, than: ReviewEvery): boolean {
   const days = reviewDays(next);
   if (days === undefined) return false;

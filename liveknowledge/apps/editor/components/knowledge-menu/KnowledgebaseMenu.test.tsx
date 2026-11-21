@@ -11,17 +11,10 @@ import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { KnowledgebaseMenu } from './KnowledgebaseMenu';
 
 // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The knowledgebase's menu".
-const track = vi.fn<(...a: unknown[]) => void>();
-vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
 // The rows other features decide are theirs to test; here each is offered as its feature would offer an Editor.
-const offered = { settings: true, describe: true, ai: true };
-const openSettings = vi.fn();
+const offered = { describe: true, ai: true };
 const openDescribe = vi.fn();
 const openAi = vi.fn<() => void>();
-vi.mock('@/components/knowledge-settings/KnowledgeSettingsHost', () => ({
-  useKnowledgebaseSettings: () =>
-    offered.settings ? { label: 'Knowledgebase Settings', onSelect: openSettings } : null,
-}));
 vi.mock('@/components/setup/SetupHost', () => ({
   useDescribeToAddPages: () =>
     offered.describe ? { label: 'Describe to Add Pages', onSelect: openDescribe } : null,
@@ -34,7 +27,7 @@ vi.mock('@/lib/knowledge-ask/ai-settings-open', () => ({ openAiSettings: () => o
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  Object.assign(offered, { settings: true, describe: true, ai: true });
+  Object.assign(offered, { describe: true, ai: true });
   document.body.innerHTML = '';
 });
 
@@ -44,7 +37,6 @@ type Session = Partial<
 
 function storeFor({ level = 'edit', ...over }: Session = {}) {
   const handlers = {
-    setCanvasThemeTab: vi.fn(),
     setImportOpen: vi.fn(),
     setExportOpen: vi.fn(),
     setExportScope: vi.fn(),
@@ -100,8 +92,6 @@ describe('the knowledgebase’s menu', () => {
     fireEvent.click(button());
     expect(rows()).toEqual([
       'Rename',
-      'Knowledgebase Style',
-      'Knowledgebase Settings',
       'Describe to Add Pages',
       'Import',
       'Export',
@@ -123,11 +113,6 @@ describe('the knowledgebase’s menu', () => {
     };
     choose('Rename');
     expect(onRename).toHaveBeenCalledTimes(1);
-    choose('Knowledgebase Style');
-    expect(handlers.setCanvasThemeTab).toHaveBeenCalledWith('looks');
-    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'ThemePicker');
-    choose('Knowledgebase Settings');
-    expect(openSettings).toHaveBeenCalledTimes(1);
     choose('Describe to Add Pages');
     expect(openDescribe).toHaveBeenCalledTimes(1);
     choose('Import');
@@ -164,44 +149,42 @@ describe('the knowledgebase’s menu', () => {
   });
 
   it('leaves out a row its feature does not offer', () => {
-    Object.assign(offered, { settings: false, describe: false, ai: false });
+    Object.assign(offered, { describe: false, ai: false });
     open();
     fireEvent.click(button());
-    expect(rows()).toEqual(['Rename', 'Knowledgebase Style', 'Import', 'Export', 'Delete']);
+    expect(rows()).toEqual(['Rename', 'Import', 'Export', 'Delete']);
   });
 
   // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant is an Editor minus the
-  // settings, the style and automations; renaming and deleting the knowledgebase stay an Editor's.
-  it('participate: Describe to Add Pages, Import and Export, never Rename, the Style, the Settings or Delete', () => {
-    Object.assign(offered, { settings: false, ai: false });
+  // Review Period, the style and automations; renaming and deleting the knowledgebase stay an Editor's.
+  it('participate: Describe to Add Pages, Import and Export, never Rename, AI Settings or Delete', () => {
+    Object.assign(offered, { ai: false });
     const { handlers } = open({ level: 'participate' });
     fireEvent.click(button());
     expect(rows()).toEqual(['Describe to Add Pages', 'Import', 'Export']);
     fireEvent.click(screen.getByRole('menuitem', { name: 'Import' }));
     expect(handlers.setImportOpen).toHaveBeenCalledWith(true);
-    expect(handlers.setCanvasThemeTab).not.toHaveBeenCalled();
   });
 
   it.each(['view'] as AccessLevel[])('%s: Export alone', (level) => {
-    Object.assign(offered, { settings: false, describe: false, ai: false });
+    Object.assign(offered, { describe: false, ai: false });
     const { handlers } = open({ level }, { onRename: undefined });
     fireEvent.click(button());
     expect(rows()).toEqual(['Export']);
     expect(screen.queryByRole('separator')).toBeNull();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Export' }));
     expect(handlers.setExportOpen).toHaveBeenCalledWith(true);
-    expect(handlers.setCanvasThemeTab).not.toHaveBeenCalled();
   });
 
   it('an Editor confined to one page has Export alone too', () => {
-    Object.assign(offered, { settings: false, describe: false, ai: false });
+    Object.assign(offered, { describe: false, ai: false });
     open({ isStructureReadOnly: true });
     fireEvent.click(button());
     expect(rows()).toEqual(['Export']);
   });
 
   it('an embed has no menu: the name alone, as text', () => {
-    Object.assign(offered, { settings: false, describe: false, ai: false });
+    Object.assign(offered, { describe: false, ai: false });
     open({ embedMode: true });
     expect(screen.queryByRole('button')).toBeNull();
     expect(screen.getByText('Engineering').tagName).toBe('P');

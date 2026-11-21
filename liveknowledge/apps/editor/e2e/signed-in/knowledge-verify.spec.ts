@@ -11,8 +11,7 @@ import { asPerson, savedWith, signedInKnowledgebase } from './knowledge-session'
 
 // Verification (docs/specs/030-knowledgebase/verification.md; blueprints/knowledge-ui.md "Verification"), signed in:
 // a new knowledgebase is saved to the account, Verify says who vouches for a page in its meta row and its tree row,
-// Page Health changes the owner and links to the knowledgebase's Review Period, Knowledgebase Settings changes that
-// period for every page at once, and the row menu puts a page Always in Context. Each is kept by the room, so each
+// Page Health changes the owner, and its pencil beside the Review Period changes that period for every page at once, and the row menu puts a page Always in Context. Each is kept by the room, so each
 // is read again after a reload.
 
 test.use({ viewport: { width: 1440, height: 860 } });
@@ -123,7 +122,7 @@ test('Page Health changes the owner and says the Review Period, and Always in Co
   expectNoPageErrors(pageErrors);
 });
 
-test('Knowledgebase Settings changes the Review Period, and a page comes due at once', async ({
+test('Page Health’s pencil changes the Review Period, and a page comes due at once', async ({
   page,
   pageErrors,
 }) => {
@@ -145,15 +144,12 @@ test('Knowledgebase Settings changes the Review Period, and a page comes due at 
   await expect(meta(page)).toContainText(/Review due /);
   await expect(health(page).locator('[data-review-period]')).toHaveText('Every 90 Days');
 
-  // Page Health only shows the period; Knowledgebase Settings changes it: one dialog, five choices, the current one
-  // chosen.
-  await expect(health(page).getByRole('button', { name: 'Change the Review Period' })).toHaveCount(
-    0,
-  );
-  await page.locator('[data-knowledgebase-menu]').click();
-  await page.getByRole('menuitem', { name: 'Knowledgebase Settings' }).click();
-  const settings = page.getByRole('dialog', { name: 'Knowledgebase Settings' });
-  await expect(settings.getByRole('heading', { name: 'Reviews' })).toBeVisible();
+  // The pencil, beside the period in Page Health, opens it under the button: it says it applies to every page, with five
+  // choices, the current one chosen.
+  const change = health(page).getByRole('button', { name: 'Change Review Period' });
+  await change.click();
+  const settings = page.getByRole('dialog', { name: 'Review Period' });
+  await expect(settings).toContainText('Applies to every page in this knowledgebase.');
   const period = (name: string) => settings.getByRole('radio', { name });
   await expect(settings.getByRole('radio')).toHaveText([
     'Every 30 Days',
@@ -165,8 +161,8 @@ test('Knowledgebase Settings changes the Review Period, and a page comes due at 
   await expect(period('Every 90 Days')).toHaveAttribute('aria-checked', 'true');
 
   // A shorter period says how many pages it makes due before anything changes; Cancel leaves it be.
-  const body = settings.locator('[data-knowledge-settings]');
-  // Measured once the dialog's entrance has finished: mid-animation its box is still scaled.
+  const body = settings;
+  // Measured once the popover's entrance has finished: mid-animation its box is still faded and moving.
   await page.evaluate(() =>
     Promise.all(
       document
@@ -178,7 +174,7 @@ test('Knowledgebase Settings changes the Review Period, and a page comes due at 
   const height = (await body.boundingBox())!.height;
   await period('Every 30 Days').click();
   await expect(settings).toContainText('1 page will be due for review');
-  expect((await body.boundingBox())!.height, 'the dialog keeps its height').toBe(height);
+  expect((await body.boundingBox())!.height, 'the popover keeps its height').toBe(height);
   await expect(period('Every 90 Days')).toHaveAttribute('aria-checked', 'true');
   await expect(pageRow(page, 'Runbook, Verified')).toBeVisible();
   await settings.getByRole('button', { name: 'Cancel' }).click();
@@ -196,7 +192,7 @@ test('Knowledgebase Settings changes the Review Period, and a page comes due at 
   expect((await done).ok()).toBe(true);
   await expect(period('Every 30 Days')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByText('Pages are now reviewed every 30 days.')).toBeVisible();
-  await settings.getByRole('button', { name: 'Done' }).click();
+  await page.keyboard.press('Escape');
   await expect(settings).toHaveCount(0);
   await expect(pageRow(page, 'Runbook, Review Due')).toBeVisible();
   await expect(meta(page)).toContainText('Review Due');
@@ -210,12 +206,12 @@ test('Knowledgebase Settings changes the Review Period, and a page comes due at 
   await expect(health(page).locator('[data-review-period]')).toHaveText('Every 30 Days');
 
   // Never applies at once, with no question: no page is due, and the page says it has no review period.
-  await page.locator('[data-knowledgebase-menu]').click();
-  await page.getByRole('menuitem', { name: 'Knowledgebase Settings' }).click();
+  await change.click();
   done = stored();
   await period('Never').click();
   expect((await done).ok()).toBe(true);
-  await settings.getByRole('button', { name: 'Done' }).click();
+  await page.keyboard.press('Escape');
+  await expect(settings).toHaveCount(0);
   await expect(pageRow(page, 'Runbook, Verified')).toBeVisible();
   await expect(health(page).locator('[data-review-due]')).toHaveText('No Review Period');
   await expect(meta(page)).not.toContainText(/Review (was )?due/);

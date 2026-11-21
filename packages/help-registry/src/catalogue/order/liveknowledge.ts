@@ -30,7 +30,6 @@ export const ORDER: readonly string[] = [
   'knowledgebase/pages-that-disagree',
   'knowledgebase/always-in-context',
   'knowledgebase/knowledgebase-style',
-  'knowledgebase/knowledgebase-settings',
   'knowledgebase/import-a-markdown-folder',
   'knowledgebase/import-from-notion',
   'knowledgebase/import-from-confluence',

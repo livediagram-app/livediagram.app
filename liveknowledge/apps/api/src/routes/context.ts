@@ -215,7 +215,7 @@ export async function gateParticipate(
 }
 
 /** Whether a grant writes a knowledgebase's pages (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share
- *  roles"): an Editor, or a Participant in person, who is an Editor minus the Knowledgebase Settings, the Knowledgebase
+ *  roles"): an Editor, or a Participant in person, who is an Editor minus the Review Period, the Knowledgebase
  *  Style and automations. A token keeps its scopes' bound (docs/specs/024-agents/knowledgebase-for-agents.md): one
  *  below `write` acts at `participate` and writes nothing, as before. */
 export function writesPages(grant: Pick<DocumentAccess, 'role' | 'scopes'>): boolean {

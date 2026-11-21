@@ -190,7 +190,7 @@ Search, verification, Ask and the AI Knowledge tab ([Knowledgebase](../030-knowl
 The caller's grant is the gate: reading is every role's, a share link's visitor included; a write is a Writer's: an
 Editor, or a Participant in person ([Knowledgebases and pages](../030-knowledgebase/knowledgebases-and-pages.md#share-roles)),
 the gate `writesPages` in `routes/context.ts`. The tab, tab name, delta, pages, changeset and version writes above
-take a Writer too (`gateWrite`); the Knowledgebase Settings, the Knowledgebase Style, AI Settings, agents' scopes
+take a Writer too (`gateWrite`); the Review Period (`knowledge-settings`), the Knowledgebase Style, AI Settings, agents' scopes
 and a rename of the knowledgebase stay an Editor's. A token keeps its scopes' bound: below `write` it writes nothing.
 A link confined to one page reaches that page's own routes and search over that page, nothing else.
 

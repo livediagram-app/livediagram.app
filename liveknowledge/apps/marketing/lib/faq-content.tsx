@@ -102,7 +102,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Who can verify a page?',
-        a: 'Editors and Participants. Viewers see every page’s state but cannot change it. Only an Editor sets the Review Period, in Knowledgebase Settings. Verifying needs an account, so a knowledgebase kept Offline has no verified pages.',
+        a: 'Editors and Participants. Viewers see every page’s state but cannot change it. Only an Editor sets the Review Period, from Page Health beside any page, and it applies to every page. Verifying needs an account, so a knowledgebase kept Offline has no verified pages.',
       },
       {
         q: 'How do owners know a review is due?',
@@ -222,7 +222,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How is a knowledgebase shared?',
-        a: 'Like every liveworkspace item: by link or with named people, as Editor, Participant or Viewer. A Participant does everything an Editor does except Knowledgebase Settings, Knowledgebase Style, AI Settings and who has access: it edits pages, changes the page tree, sets covers, verifies and imports. A Viewer reads, searches, asks and exports.',
+        a: 'Like every liveworkspace item: by link or with named people, as Editor, Participant or Viewer. A Participant does everything an Editor does except the Review Period, Knowledgebase Style, AI Settings and who has access: it edits pages, changes the page tree, sets covers, verifies and imports. A Viewer reads, searches, asks and exports.',
       },
       {
         q: 'Can I restrict a single page?',

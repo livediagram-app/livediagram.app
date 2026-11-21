@@ -19,8 +19,8 @@ Participant level is the middle: edit the text and comment, never reshape the do
 | **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; edit the text of what is already on the pages and write in an article (see [What a Participant changes](#what-a-participant-changes)).                                |
 | **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                        |
 
-- **In liveknowledge a Participant is an Editor minus three things** (owner, 2026-11-21): Knowledgebase Settings
-  (the Review Period with it), Knowledgebase Style and automations. It edits pages, changes the page tree, sets
+- **In liveknowledge a Participant is an Editor minus three things** (owner, 2026-11-21): the Review Period,
+  Knowledgebase Style and automations. It edits pages, changes the page tree, sets
   covers, verifies, imports and accepts agents' suggestions as an Editor does, and the room and the api take its
   changes as an Editor's; sharing and roles stay an Editor's. The table in
   [Knowledgebases and pages](../030-knowledgebase/knowledgebases-and-pages.md#share-roles) is the rule, and the

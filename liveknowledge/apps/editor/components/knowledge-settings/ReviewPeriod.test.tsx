@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 
-// Knowledgebase Settings in the editor (docs/specs/030-knowledgebase/verification.md "The Review Period"): who is
-// offered it, the five rows, what a shorter period asks before it applies, and the one optimistic change with its
-// undo and its rollback.
+// The Review Period in the editor (docs/specs/030-knowledgebase/verification.md "The Review Period"): Page Health's
+// pencil, who is offered it, the popover that says it applies to every page, the five rows, what a shorter period
+// asks before it applies, and the one optimistic change with its undo and its rollback.
 import { act, cleanup, fireEvent, renderHook, screen, waitFor } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { contrastRatio } from '@liveknowledge/document';
-import { EditorChromeContext, type EditorChromeStore } from '@/app/document/[id]/EditorContext';
+import { EditorChromeContext } from '@/app/document/[id]/EditorContext';
 
 const api = vi.hoisted(() => ({ apiSetReviewPeriod: vi.fn(), apiPreviewReviewPeriod: vi.fn() }));
 vi.mock('@/lib/api/knowledge', async (actual) => ({
@@ -30,19 +30,8 @@ import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 import { chromeValue, page, renderInEditor, type Role } from '@/components/ask/test-chrome';
 import { buildEditorCommands } from '@/lib/editor-commands';
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
-import {
-  closeKnowledgeSettings,
-  isKnowledgeSettingsOpen,
-  openKnowledgeSettings,
-  usePublishedKnowledgeSettingsOffered,
-} from '@/lib/knowledge-settings/settings-open';
 import { track } from '@/lib/telemetry';
-import { KnowledgeSettingsDialog } from './KnowledgeSettingsDialog';
-import {
-  KnowledgeSettingsWhenOpen,
-  openKnowledgebaseSettings,
-  useKnowledgebaseSettings,
-} from './KnowledgeSettingsHost';
+import { ReviewPeriodButton } from './ReviewPeriodButton';
 import { settingsOfferedOf, useSettingsOffered } from './useSettingsOffered';
 
 const DAY = 86_400_000;
@@ -57,12 +46,21 @@ function kb(role: Role = 'edit', over: Record<string, unknown> = {}) {
   ];
   return { documentId, value: chromeValue(role, { documentId, tabs, ...over }) };
 }
+const change = () => screen.getByRole('button', { name: 'Change Review Period' });
 const rows = () => screen.getAllByRole('radio');
 const row = (name: string) => screen.getByRole('radio', { name });
 const chosen = () => rows().find((r) => r.getAttribute('aria-checked') === 'true')?.textContent;
 const ask = () => document.querySelector('[data-review-period-ask]')!;
 const preview = (reviewDue: number, reviewDueNow: number) =>
   api.apiPreviewReviewPeriod.mockResolvedValue({ reviewEvery: 30, reviewDue, reviewDueNow });
+
+/** Page Health's Change, pressed: the popover open once its code is in. */
+async function openPopover(value = kb().value) {
+  const utils = renderInEditor(<ReviewPeriodButton />, value);
+  fireEvent.click(change());
+  await screen.findByRole('dialog', { name: 'Review Period' });
+  return utils;
+}
 
 beforeEach(() => {
   offline.value = false;
@@ -71,34 +69,20 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
-  closeKnowledgeSettings();
   vi.clearAllMocks();
 });
 
-describe('who is offered Knowledgebase Settings', () => {
+describe('who is offered the pencil', () => {
   it.each([
     ['edit', true],
     ['participate', false],
     ['view', false],
   ] as const)('a %s session: %s', (role, offered) => {
-    const wrapper = (store: EditorChromeStore) =>
-      function Wrapper({ children }: { children: ReactNode }) {
-        return (
-          <EditorChromeContext.Provider value={store}>{children}</EditorChromeContext.Provider>
-        );
-      };
-    const { store } = renderInEditor(<KnowledgeSettingsWhenOpen />, kb(role).value);
-    expect(renderHook(() => useSettingsOffered(), { wrapper: wrapper(store) }).result.current).toBe(
-      offered,
+    const { store } = renderInEditor(<span />, kb(role).value);
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <EditorChromeContext.Provider value={store}>{children}</EditorChromeContext.Provider>
     );
-    const menu = renderHook(() => useKnowledgebaseSettings(), { wrapper: wrapper(store) }).result
-      .current;
-    expect(menu?.label ?? null).toBe(offered ? 'Knowledgebase Settings' : null);
-    // The palette lists the command from what the host publishes.
-    expect(renderHook(() => usePublishedKnowledgeSettingsOffered()).result.current).toBe(offered);
-    // Opened anyway (a stale shortcut), it is drawn for an Editor only.
-    act(() => openKnowledgeSettings());
-    expect(isKnowledgeSettingsOpen()).toBe(offered);
+    expect(renderHook(() => useSettingsOffered(), { wrapper }).result.current).toBe(offered);
   });
 
   it('is not offered in an embed, a workbench, a Community visit, a locked structure or before a knowledgebase is open', () => {
@@ -115,42 +99,52 @@ describe('who is offered Knowledgebase Settings', () => {
       expect(settingsOfferedOf({ ...base, ...over } as never)).toBe(false);
   });
 
-  it('has no opener without an editor around it', () => {
-    expect(renderHook(() => useKnowledgebaseSettings()).result.current).toBeNull();
+  it('is offered for a knowledgebase kept Offline: it is its one person’s to set', () => {
+    offline.value = true;
+    expect(settingsOfferedOf(kb().value)).toBe(true);
   });
 
-  it('is a command of the palette for an Editor, and opens the dialog', () => {
-    const context = { isReadOnly: false, canvasTool: 'select' } as never;
+  it('has no offer without an editor around it', () => {
+    expect(renderHook(() => useSettingsOffered()).result.current).toBe(false);
+  });
+
+  it('has no command of the palette any more: the period is changed where it is shown', () => {
     const handlers = new Proxy({}, { get: () => () => {} }) as never;
-    const names = (over: object) =>
-      buildEditorCommands({ ...(context as object), ...over } as never, handlers).map(
-        (c) => c.name,
-      );
-    expect(names({})).not.toContain('Knowledgebase Settings');
     const commands = buildEditorCommands(
-      { ...(context as object), canOpenKnowledgeSettings: true } as never,
+      { isReadOnly: false, canvasTool: 'select' } as never,
       handlers,
     );
-    const command = commands.find((c) => c.name === 'Knowledgebase Settings')!;
-    expect(command.keywords).toContain('review period');
-    command.run();
-    expect(isKnowledgeSettingsOpen()).toBe(true);
-  });
-
-  it('counts an open from Page Health or the menu', () => {
-    openKnowledgebaseSettings();
-    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'KnowledgebaseSettings');
-    expect(isKnowledgeSettingsOpen()).toBe(true);
+    expect(commands.map((c) => c.id)).not.toContain('knowledgebase-settings');
+    expect(commands.map((c) => c.name)).not.toContain('Knowledgebase Settings');
   });
 });
 
-describe('the dialog', () => {
-  it('is titled Knowledgebase Settings, with Reviews, the five rows and the line that says what they do', () => {
-    renderInEditor(<KnowledgeSettingsDialog onClose={() => {}} />, kb().value);
-    expect(screen.getByRole('dialog', { name: 'Knowledgebase Settings' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Reviews' })).toBeTruthy();
+describe('the button and its popover', () => {
+  it('is a small bordered pencil with no label, that says it opens a popover, counted when it opens', async () => {
+    renderInEditor(<ReviewPeriodButton />, kb().value);
+    expect(change().textContent).toBe('');
+    expect(change().querySelector('svg')).toBeTruthy();
+    expect(change().className).toContain('border-slate-200');
+    expect(change().getAttribute('aria-haspopup')).toBe('dialog');
+    expect(change().getAttribute('aria-expanded')).toBe('false');
+    expect(change().className).toContain('cursor-pointer');
+    expect(change().className).toContain('phone:size-11');
+    fireEvent.click(change());
+    await screen.findByRole('dialog', { name: 'Review Period' });
+    expect(change().getAttribute('aria-expanded')).toBe('true');
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'ReviewPeriod');
+    // Pressed again, it closes.
+    fireEvent.click(change());
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('says it applies to every page, with the five rows and the line that says what they do', async () => {
+    await openPopover();
+    expect(screen.getByRole('heading', { name: 'Review Period' })).toBeTruthy();
+    expect(document.querySelector('[data-review-period-scope]')!.textContent).toBe(
+      'Applies to every page in this knowledgebase.',
+    );
     const group = screen.getByRole('radiogroup', { name: 'Review Period' });
-    expect(group.getAttribute('aria-describedby')).toBeTruthy();
     expect(
       screen.getByText('A verified page comes due for review this long after it was last verified.')
         .id,
@@ -185,7 +179,7 @@ describe('the dialog', () => {
 
   it('applies a longer period at once: shown, stored, said in a toast that can undo it', async () => {
     const { documentId, value } = kb();
-    renderInEditor(<KnowledgeSettingsDialog onClose={() => {}} />, value);
+    await openPopover(value);
     fireEvent.click(row('Every Year'));
     // At once, before the server answers, with no question.
     expect(chosen()).toBe('Every Year');
@@ -212,8 +206,8 @@ describe('the dialog', () => {
     expect(toast.info.mock.calls[1]).toEqual(['Pages are now reviewed every 90 days.', undefined]);
   });
 
-  it('does nothing for the period already chosen', () => {
-    renderInEditor(<KnowledgeSettingsDialog onClose={() => {}} />, kb().value);
+  it('does nothing for the period already chosen', async () => {
+    await openPopover();
     fireEvent.click(row('Every 90 Days'));
     expect(api.apiSetReviewPeriod).not.toHaveBeenCalled();
     expect(api.apiPreviewReviewPeriod).not.toHaveBeenCalled();
@@ -222,7 +216,7 @@ describe('the dialog', () => {
 
   it('says how many pages a shorter period makes due before it applies, with Apply and Cancel', async () => {
     const { documentId, value } = kb();
-    renderInEditor(<KnowledgeSettingsDialog onClose={() => {}} />, value);
+    await openPopover(value);
     fireEvent.click(row('Every 30 Days'));
     // Counting: nothing is applied, the chosen period stands, and Apply waits for the count.
     expect(chosen()).toBe('Every 90 Days');
@@ -237,7 +231,7 @@ describe('the dialog', () => {
     );
     expect(api.apiSetReviewPeriod).not.toHaveBeenCalled();
     expect(knowledgeSettingsStore.reviewEveryOf(documentId)).toBe(90);
-    // Cancel leaves everything as it was.
+    // Cancel leaves everything as it was, and the popover open.
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(ask().getAttribute('data-review-period-ask')).toBe('');
     expect(chosen()).toBe('Every 90 Days');
@@ -261,7 +255,7 @@ describe('the dialog', () => {
 
   it('applies a shorter period at once when it makes no more pages due', async () => {
     preview(3, 3);
-    renderInEditor(<KnowledgeSettingsDialog onClose={() => {}} />, kb().value);
+    await openPopover();
     fireEvent.click(row('Every 30 Days'));
     await waitFor(() => expect(chosen()).toBe('Every 30 Days'));
     expect(screen.queryByRole('button', { name: 'Apply' })).toBeNull();
@@ -273,12 +267,28 @@ describe('the dialog', () => {
     api.apiPreviewReviewPeriod.mockImplementationOnce(
       () => new Promise((resolve) => (answer = resolve)),
     );
-    renderInEditor(<KnowledgeSettingsDialog onClose={() => {}} />, kb().value);
+    await openPopover();
     fireEvent.click(row('Every 30 Days'));
     fireEvent.click(row('Every Year'));
     await act(async () => answer({ reviewEvery: 30, reviewDue: 40, reviewDueNow: 1 }));
     expect(chosen()).toBe('Every Year');
     expect(screen.queryByRole('button', { name: 'Apply' })).toBeNull();
+  });
+
+  it('ends a count still running when the popover closes', async () => {
+    let signal: AbortSignal | undefined;
+    api.apiPreviewReviewPeriod.mockImplementationOnce(
+      (_who: unknown, _id: unknown, _every: unknown, s: AbortSignal) => {
+        signal = s;
+        return new Promise(() => {});
+      },
+    );
+    await openPopover();
+    fireEvent.click(row('Every 30 Days'));
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(signal?.aborted).toBe(true);
+    expect(api.apiSetReviewPeriod).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -289,7 +299,7 @@ describe('the dialog', () => {
     async (err, words) => {
       api.apiSetReviewPeriod.mockRejectedValue(err);
       const { documentId, value } = kb();
-      renderInEditor(<KnowledgeSettingsDialog onClose={() => {}} />, value);
+      await openPopover(value);
       fireEvent.click(row('Never'));
       expect(chosen()).toBe('Never');
       await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
@@ -301,9 +311,9 @@ describe('the dialog', () => {
     },
   );
 
-  it('follows a change made by someone else while it is open', () => {
+  it('follows a change made by someone else while it is open', async () => {
     const { documentId, value } = kb();
-    renderInEditor(<KnowledgeSettingsDialog onClose={() => {}} />, value);
+    await openPopover(value);
     act(() => void knowledgeSettingsStore.take(documentId, { reviewEvery: 180 }));
     expect(chosen()).toBe('Every 180 Days');
   });
@@ -311,7 +321,7 @@ describe('the dialog', () => {
   it('counts from the pages it holds and writes the record, for a knowledgebase kept Offline', async () => {
     offline.value = true;
     const { documentId, value } = kb();
-    renderInEditor(<KnowledgeSettingsDialog onClose={() => {}} />, value);
+    await openPopover(value);
     fireEvent.click(row('Every 30 Days'));
     // Two of its pages are past 30 days, one past 90.
     await waitFor(() => expect(screen.getByText('2 pages will be due for review')).toBeTruthy());
@@ -326,12 +336,9 @@ describe('the dialog', () => {
     expect(api.apiSetReviewPeriod).not.toHaveBeenCalled();
   });
 
-  it('keeps one height, with room for the question always there, and closes from Done', () => {
-    const onClose = vi.fn();
-    renderInEditor(<KnowledgeSettingsDialog onClose={onClose} />, kb().value);
-    const body = document.querySelector('[data-knowledge-settings]')!;
-    expect(body.className).toContain('h-[29rem]');
-    expect(ask().className).toContain('min-h-14');
+  it('keeps room for the question always there, so the popover never changes height', async () => {
+    await openPopover();
+    expect(ask().className).toContain('min-h-[6.5rem]');
     expect(ask().getAttribute('aria-live')).toBe('polite');
     expect(ask().textContent).toContain('No page is rewritten.');
     for (const r of rows()) {
@@ -339,8 +346,6 @@ describe('the dialog', () => {
       expect(r.className).toContain('cursor-pointer');
       expect(r.className).toContain('focus-visible:outline-2');
     }
-    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
-    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('is over 4.5:1 where it sets text on a colour, in light and in dark', () => {
@@ -359,8 +364,12 @@ describe('the dialog', () => {
     expect(contrastRatio(slate[900], '#fffbeb')).toBeGreaterThan(4.5);
     expect(contrastRatio(slate[600], '#ffffff')).toBeGreaterThan(4.5);
     expect(contrastRatio(slate[400], slate[900])).toBeGreaterThan(4.5);
-    // Page Health's Change link: brand-700 on white, brand-300 on slate-900.
-    expect(contrastRatio(brand(700), '#ffffff')).toBeGreaterThan(4.5);
-    expect(contrastRatio(brand(300), slate[900])).toBeGreaterThan(4.5);
+    // The "every page" line: brand-800 on white, brand-200 on slate-900.
+    expect(contrastRatio(brand(800), '#ffffff')).toBeGreaterThan(4.5);
+    expect(contrastRatio(brand(200), slate[900])).toBeGreaterThan(4.5);
+    // The pencil (a glyph, 3:1 is its bar): slate-600 on white, brand-700 on brand-50 hovered, slate-300 on slate-900.
+    expect(contrastRatio(slate[600], '#ffffff')).toBeGreaterThan(3);
+    expect(contrastRatio(brand(700), brand(50))).toBeGreaterThan(3);
+    expect(contrastRatio('#cbd5e1', slate[900])).toBeGreaterThan(3);
   });
 });

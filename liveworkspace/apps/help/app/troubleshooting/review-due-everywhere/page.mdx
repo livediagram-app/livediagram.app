@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ReviewPeriodSettings } from '@/editions/liveknowledge/components/illustrations/trust';
+import { ReviewPeriodPopover } from '@/editions/liveknowledge/components/illustrations/trust';
 
 export const metadata = helpMetadata({
   title: 'Review Due on Every Page',
@@ -18,7 +18,7 @@ Yesterday the tree was full of ticks. Today most rows read **Due** and the pages
 A page is Review Due when the Review Period has passed since it was verified, and that is worked out each time the page is shown. Shorten the period from **Every 180 Days** to **Every 30 Days** and every page verified more than 30 days ago is due at once. No page was changed, and no verification was lost.
 
 <Figure caption="A shorter period says how many pages it will make due before it is applied." width="narrow">
-  <ReviewPeriodSettings />
+  <ReviewPeriodPopover />
 </Figure>
 
 ## Check the Period
@@ -28,8 +28,7 @@ Open any page's [Page Health](/help/knowledgebase/page-health/) card and read **
 ## Put It Back
 
 <Step n={1}>
-  As an Editor, press **Change** under **Review Period** on the Page Health card to open
-  **Knowledgebase Settings**.
+  As an Editor, press **Change** beside **Review Period** on the Page Health card.
 </Step>
 
 <Step n={2}>

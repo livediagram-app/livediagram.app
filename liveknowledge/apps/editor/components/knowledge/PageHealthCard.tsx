@@ -167,7 +167,7 @@ function Row({
 }) {
   if (whole)
     return (
-      <div className="flex min-h-9 flex-wrap items-center justify-between gap-x-1.5 py-1">
+      <div className="flex min-h-9 flex-wrap items-center justify-between gap-x-1 py-1">
         <dt className="flex shrink-0 items-center gap-2 text-slate-500 dark:text-slate-400">
           <span className="flex text-slate-400 dark:text-slate-400/60">{icon}</span>
           {label}
@@ -484,8 +484,12 @@ export function PageHealthCard({
         {/* The knowledgebase's Review Period; an Editor changes it from the pencil beside the value. */}
         <Row icon={<PeriodIcon />} label="Review Period" whole={!!periodControl}>
           {periodControl ? (
-            <span className="flex items-center justify-end gap-1">
-              <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
+            // Tight enough that "Every 90 Days" and its pencil keep the label's line in the docked rail, a scrollbar
+            // beside it included.
+            <span className="flex items-center justify-end gap-[3px]">
+              <span data-review-period="" className="tracking-tight">
+                {reviewPeriodLabel(reviewEvery)}
+              </span>
               {periodControl}
             </span>
           ) : (

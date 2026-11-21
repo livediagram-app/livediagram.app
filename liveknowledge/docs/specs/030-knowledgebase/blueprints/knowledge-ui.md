@@ -85,12 +85,11 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   here shows until the tab's own `knowledge` changes (the room's patch, or a peer's later change).
 - **Page Health** is read (`GET pages/<tab>/health`) once per page for the session, when the page opens; concurrent
   asks share one request. A failed read leaves the fields showing from the tab and the reads as a dash.
-- **Page Health has no control for the review.** Its rows are Owner, Last Verified, **Review Due** (the date under
-  the knowledgebase's period, "Not Verified" for a page never verified, "No Review Period" under Never), **Review
-  Period** ("Every 90 Days", and for an Editor **Change** on a line of its own under it: a link button named
-  "Change the Review Period" that opens Knowledgebase Settings; the row wraps like Last Verified, because the
-  period and the link do not fit one line beside the label at the card's width and a truncated value would clip
-  the link, which the e2e spec caught), and the two reads. Six rows whatever the period, each of a fixed least height, so
+- **Page Health's rows** are Owner, Last Verified, **Review Due** (the date under the knowledgebase's period, "Not
+  Verified" for a page never verified, "No Review Period" under Never), **Review Period** ("Every 90 Days", and for
+  an Editor of the whole knowledgebase a pencil beside it: `ReviewPeriodButton`, named "Change Review
+  Period", passed to the card as its `periodControl` by `PageRailBody` when `useSettingsOffered()` holds), and the
+  two reads. Six rows whatever the period, each of a fixed least height, so
   nothing in the card moves when the period changes.
 - **Last Verified** shows the date and who verified, each whole: the value is two blocks (`data-verified-date`,
   `data-verified-by`) in a row that wraps (`Row`'s `wrap`), so at the card's width the name takes a line of its own
@@ -129,7 +128,7 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
 | See the states, the meta row, Page Health, the rail | yes                  | yes                  | yes    |
 | Verify, Verify Again                                | yes, with an account | yes, with an account | no     |
 | Owner, Always in Context                            | yes                  | yes                  | no     |
-| Knowledgebase Settings: the Review Period           | yes                  | no                   | no     |
+| Change the Review Period                            | yes                  | no                   | no     |
 
 `knowledgeRights({ can, isStructureReadOnly, accountUserId, offline })`: `editFields` is `can.editPages` on the
 whole knowledgebase (never a link confined to one page) that is not kept Offline; `verify` also needs an account,
@@ -139,32 +138,43 @@ fields", `page-knowledge-ui.test.tsx`, `page-knowledge-store-ui.test.tsx`, `Page
 ### The Review Period (built)
 
 Derived from [Verification](../verification.md) "The Review Period". Modules: `apps/editor/lib/knowledge-settings/`
-(pure, the store, the open state) and `apps/editor/components/knowledge-settings/`.
+(pure: the store, the words, the change) and `apps/editor/components/knowledge-settings/`.
 
 | Piece                                                     | File                                                                            |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | the period a knowledgebase, taken from reads and the room | `lib/knowledge-settings/knowledge-settings-store.ts`                            |
 | the words (labels, the count, the toasts)                 | `lib/knowledge-settings/review-period-words.ts`                                 |
 | the count without a server, the preview, the one write    | `lib/knowledge-settings/review-period-change.ts`                                |
-| whether the dialog is open; the offer the palette reads   | `lib/knowledge-settings/settings-open.ts`                                       |
 | who is offered it                                         | `components/knowledge-settings/useSettingsOffered.ts`                           |
-| the host, the opener (`useKnowledgebaseSettings()`)       | `components/knowledge-settings/KnowledgeSettingsHost.tsx`                       |
-| the dialog, its rows, its flow                            | `KnowledgeSettingsDialog.tsx`, `ReviewPeriodRows.tsx`, `useReviewPeriodFlow.ts` |
+| Page Health's Change, and its popover                     | `components/knowledge-settings/ReviewPeriodButton.tsx`, `ReviewPeriodPanel.tsx` |
+| the rows, the question, the flow                          | `ReviewPeriodRows.tsx`, `PeriodAskStrip.tsx`, `useReviewPeriodFlow.ts`          |
 | the period for a component                                | `components/knowledge-settings/useReviewEvery.ts`                               |
 
 - **Where the period comes from.** `knowledgeSettingsStore.take(documentId, settings)` is called with the document
   read's `knowledgeSettings` (`seed-fetched-document.ts`, cloud or Offline), with the `document-meta` op's when the
   api stored a new one (`room-op-receive.ts`), and with the stored list's on a resync (`useRoomResync.ts`,
   `tabListOf`), so an op lost in a reconnect gap is recovered. Anything unknown reads as every 90 days.
-- **The dialog.** `Dialog` size `md` (a sheet on a phone), titled **Knowledgebase Settings**, body one height
-  (`h-[29rem]`, less on a short window). One section, **Reviews**: **Review Period**, the line "A verified page
-  comes due for review this long after it was last verified.", and five bordered rows (`role="radiogroup"` named by
-  the label and described by the line; each row `role="radio"`, 44 px at least, one tab stop on the chosen row,
-  arrows move between rows, a press picks). The chosen row carries a filled tick as well as its tint. Under the
-  rows a strip of fixed least height (`min-h-14`, `aria-live="polite"`) holds one quiet line, or the question.
+- **The button.** An icon-only pencil, 18 px, in the sidebar foot's bordered look (slate-200 border, white or
+  slate-900 ground, the brand wash on hover and while open), named "Change Review Period", beside the period in the
+  Review Period row; pointer cursor; a hover card ("Changes it for the whole knowledgebase: every page at once.");
+  44 px on a phone. No label, so the period shows in full beside it (owner 2026-11-21): the row (`Row`'s `whole`)
+  never truncates its value, the value is set `tracking-tight` with a 3 px gap so "Every 90 Days" keeps the label's
+  line in the docked rail even beside its thin scrollbar (220 px), and a longer value ("Every 180 Days") takes a line
+  of its own at the right. The panel's code (`ReviewPeriodPanel.tsx`, its rows, the flow and the change) is its own
+  chunk: fetched when the pointer or focus reaches the button, and the popover opens once it is in, so its first
+  control takes focus.
+- **The popover.** `ResponsivePopover`, 360 px, its right edge on the button's (a sheet on a phone). The panel: a
+  glyph disc beside the heading **Review Period** (the popover's name) and the line "A verified page comes due for
+  review this long after it was last verified."; then a brand-tinted line with the layers glyph, "Applies to every
+  page in this knowledgebase."; then five bordered rows (`role="radiogroup"` named by the heading and described by
+  the line; each row `role="radio"`, 36 px from `sm` up and 44 px on a phone, one tab stop on the chosen row, arrows
+  move between rows, a press picks). The chosen row carries a filled tick as well as its tint. Under the rows a
+  strip of fixed least height (`min-h-[6.5rem]`, the question's own height; `aria-live="polite"`,
+  `PeriodAskStrip.tsx`) holds one quiet line ("Every page's due date moves at once. No page is rewritten.") or the
+  question, its text over Cancel and Apply, so the popover is 480 px tall either way (measured at 1440 by 900).
 - **Picking.** The same period: nothing. A longer one, or Never: applied at once. A shorter one
   (`isShorterPeriod`): the strip says it is counting, `GET knowledge-settings/preview` is asked (the request ends
-  when another row is picked, on Cancel and when the dialog closes), and when the count is more than what is due
+  when another row is picked, on Cancel and when the popover closes), and when the count is more than what is due
   now the strip says "**12 pages will be due for review** with Every 30 Days." with **Apply** and Cancel; when it
   is not more, the period applies at once. A preview that fails, and a knowledgebase kept Offline, count from the
   fields the editor holds of every page (`countDuePages`: one pass, no request).
@@ -174,19 +184,19 @@ Derived from [Verification](../verification.md) "The Review Period". Modules: `a
   Nothing was changed."); success is a toast ("Pages are now reviewed every 30 days.") with **Undo**, which applies
   the period it replaced. Home's kept summary of the knowledgebase is marked stale (`markSummaryStale`), so its
   next visit reads the counts and Yours to Review again, past both kept copies.
-- **Ways in.** Page Health's link, the command palette's **Knowledgebase Settings** (listed from the offer the host
-  publishes), and `useKnowledgebaseSettings()`: `{ label, onSelect } | null`, which the knowledgebase menu
-  (`components/knowledge-menu/useKnowledgebaseMenu.ts`) takes its **Knowledgebase Settings** row from.
+- **The one way in** is Page Health's pencil. Knowledgebase Settings (a dialog with only this in it), its row in
+  the knowledgebase's menu and its command palette entry were removed (owner 2026-11-21). No command replaces it:
+  the popover is anchored on the rail's row, which below 1,280 px is folded into Page Info.
 - **Who.** `settingsOfferedOf`: `can.editPages` on the whole knowledgebase, not an embed, a workbench or a
-  Community visit. A Participant and a Viewer are offered nothing and the host draws nothing for them; the api
+  Community visit. A Participant and a Viewer see the period with no pencil; the api
   refuses them too. A knowledgebase kept Offline is its one person's to set.
 - **Kept Offline.** `OfflineDocumentRecord.knowledgeSettings`; the sync's create carries it; a cloud knowledgebase
   moved to this browser keeps its period.
-- **Telemetry.** `UI·Opened·KnowledgebaseSettings`, `UI·Used·ReviewPeriodChanged` (before the write).
+- **Telemetry.** `UI·Opened·ReviewPeriod`, `UI·Used·ReviewPeriodChanged` (before the write).
 - **Tests.** `lib/knowledge-settings/knowledge-settings.test.ts` (the store, the words, the count, the write and
-  its rollback, Home's reread); `components/knowledge-settings/KnowledgeSettings.test.tsx` (each role, the rows and
-  their keys, at once or asked, Apply and Cancel, Undo, the refusal, a peer's change, Offline, one height, 4.5:1 in
-  light and dark); `page-knowledge-ui.test.tsx` and `page-knowledge-store-ui.test.tsx` (Page Health's rows and
+  its rollback, Home's reread); `components/knowledge-settings/ReviewPeriod.test.tsx` (who sees the pencil, the popover and
+  its "every page" line, the rows and their keys, at once or asked, Apply and Cancel, Undo, the refusal, a peer's
+  change, Offline, one height, 4.5:1 in light and dark); `page-knowledge-ui.test.tsx` and `page-knowledge-store-ui.test.tsx` (Page Health's rows and
   link, every reader following the store).
 - **Not as the spec says.** "One undoable edit" is the toast's Undo: the editor's undo stack holds a page's
   elements and writing, and the period is the document's, so Cmd+Z does not reach it.

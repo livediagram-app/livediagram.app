@@ -1,6 +1,6 @@
 'use client';
 
-// The Review Period's flow in the dialog (docs/specs/030-knowledgebase/verification.md "The Review Period"): a
+// The Review Period's flow in its popover (docs/specs/030-knowledgebase/verification.md "The Review Period"): a
 // longer period, or the same, applies at once; a shorter one is first counted, and asks before it applies when it
 // would make more pages due than are due now. Applying is optimistic, undoable from its toast, and put back with a
 // toast in words when the server refuses.
@@ -46,7 +46,7 @@ export function useReviewPeriodFlow(
   const offline = useIsOfflineDocument(documentId);
   const value = useReviewEvery(documentId);
   const [asked, setAsked] = useState<PeriodAsk | null>(null);
-  // The count in flight: a newer pick, a cancel or the dialog closing ends it.
+  // The count in flight: a newer pick, a cancel or the popover closing ends it.
   const counting = useRef<AbortController | null>(null);
   const stopCounting = useCallback(() => {
     counting.current?.abort();

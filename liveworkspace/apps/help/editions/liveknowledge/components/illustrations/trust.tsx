@@ -15,7 +15,7 @@ import {
 } from './kit';
 
 // The Trust figures (liveworkspace/docs/specs/017-help/help-centre.md "Figures and card icons"): a page before and
-// after Verify, the three states, the Review Period in Knowledgebase Settings, the Page Health card, and Knowledge
+// after Verify, the three states, the Review Period's popover, the Page Health card, and Knowledge
 // Health with its reminder.
 
 const W = 420;
@@ -121,25 +121,20 @@ const PERIODS = [
   'Never',
 ] as const;
 
-/** Knowledgebase Settings: the Review Period's five choices, with a shorter period asking before it is applied. */
-export function ReviewPeriodSettings({ asking = true }: { asking?: boolean }) {
+/** The Review Period's popover, opened from Page Health's Change: its five choices, for every page of the
+ *  knowledgebase, with a shorter period asking before it is applied. */
+export function ReviewPeriodPopover({ asking = true }: { asking?: boolean }) {
   return (
-    <Scene w={W} h={248} bg="plain">
+    <Scene w={W} h={214} bg="plain">
       <DialogCard
         x={80}
         y={10}
         w={260}
-        h={228}
-        title="Knowledgebase Settings"
-        line="What every page of this knowledgebase follows."
+        h={194}
+        title="Review Period"
+        line="Applies to every page in this knowledgebase."
       >
-        <Label x={94} y={54} size={6.5} weight={700} tone="muted">
-          REVIEWS
-        </Label>
-        <Label x={94} y={67} size={8.5} weight={700} tone="strong">
-          Review Period
-        </Label>
-        <Label x={94} y={79} size={6.6} tone="muted">
+        <Label x={94} y={56} size={6.6} tone="muted">
           A verified page comes due for review this long after it was last verified.
         </Label>
         {PERIODS.map((label, i) =>
@@ -147,44 +142,43 @@ export function ReviewPeriodSettings({ asking = true }: { asking?: boolean }) {
             <g key={label}>
               <rect
                 x={94}
-                y={88}
+                y={65}
                 width={232}
                 height={16}
                 rx={5}
                 className="fill-amber-50 stroke-amber-400"
                 strokeWidth={1.1}
               />
-              <Label x={103} y={96.4} size={8} weight={600} tone="strong">
+              <Label x={103} y={73.4} size={8} weight={600} tone="strong">
                 {label}
               </Label>
             </g>
           ) : (
-            <ChoiceRow key={label} x={94} y={88 + i * 19} w={232} label={label} chosen={i === 1} />
+            <ChoiceRow key={label} x={94} y={65 + i * 19} w={232} label={label} chosen={i === 1} />
           ),
         )}
         {asking ? (
           <g>
             <rect
               x={94}
-              y={186}
+              y={164}
               width={232}
               height={20}
               rx={5}
               className="fill-amber-50 stroke-amber-200"
               strokeWidth={HAIR}
             />
-            <Label x={102} y={196.4} size={6.6} weight={600} className="fill-amber-800">
+            <Label x={102} y={174.4} size={6.6} weight={600} className="fill-amber-800">
               12 pages will be due for review with Every 30 Days.
             </Label>
-            <Btn x={258} y={189} w={30} h={14} label="Cancel" size={6.6} />
-            <Btn x={291} y={189} w={30} h={14} label="Apply" variant="primary" size={6.6} />
+            <Btn x={258} y={167} w={30} h={14} label="Cancel" size={6.6} />
+            <Btn x={291} y={167} w={30} h={14} label="Apply" variant="primary" size={6.6} />
           </g>
         ) : (
-          <Label x={94} y={196} size={6.8} tone="muted">
-            A change applies to every page at once. No page is rewritten.
+          <Label x={94} y={176} size={6.8} tone="muted">
+            Every page&apos;s due date moves at once. No page is rewritten.
           </Label>
         )}
-        <Btn x={286} y={214} w={40} h={15} label="Done" variant="primary" />
       </DialogCard>
     </Scene>
   );

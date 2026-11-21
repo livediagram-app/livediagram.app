@@ -31,7 +31,7 @@ describe('resolveEditorCapabilities', () => {
   });
 
   // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant is an Editor minus the
-  // Knowledgebase Settings, the Knowledgebase Style and automations.
+  // Review Period, the Knowledgebase Style and automations.
   it('lets a Participant do all an Editor does but manage the knowledgebase', () => {
     const editor = resolveEditorCapabilities('edit');
     const can = resolveEditorCapabilities('participate');

@@ -66,7 +66,7 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (!keepsToItsTab(op)) return DROP;
   const presence = isPresenceOpKind(opKind);
   // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; every change needs a page
-  // writer. In liveknowledge a Participant is an Editor minus the Knowledgebase Settings, the Knowledgebase Style and
+  // writer. In liveknowledge a Participant is an Editor minus the Review Period, the Knowledgebase Style and
   // automations (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"), so its writing, its page
   // tree changes and its elements relay as an Editor's. Neither the settings nor the style ever rides a socket's
   // `document-meta` (document-room-frames.ts strips both, whoever sent it): the api alone sends them.

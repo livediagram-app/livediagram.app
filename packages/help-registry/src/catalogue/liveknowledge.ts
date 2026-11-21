@@ -378,17 +378,6 @@ export const articles: Article[] = [
     group: 'Style and Settings',
     ...APPS,
   },
-  {
-    slug: 'knowledgebase-settings',
-    title: 'Knowledgebase Settings',
-    description:
-      'The settings that belong to one Knowledgebase and are the same for everyone in it: today, the Review Period.',
-    keywords:
-      'knowledgebase settings reviews review period every 30 days 90 days 180 days every year never apply undo change',
-    ...KNOWLEDGEBASE,
-    group: 'Style and Settings',
-    ...APPS,
-  },
   // ---- Knowledgebase: Import and Export ----
   {
     slug: 'import-a-markdown-folder',

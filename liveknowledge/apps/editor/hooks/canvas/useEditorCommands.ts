@@ -27,7 +27,6 @@ import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { usePublishedSetupOffered } from '@/lib/knowledge-setup/setup-open';
 import { useStyleChangeBound } from '@/lib/knowledge-style/style-change';
-import { usePublishedKnowledgeSettingsOffered } from '@/lib/knowledge-settings/settings-open';
 
 // What the catalogue is built with: which commands exist, and their words, depend on the context
 // alone, never on the handlers, so the searchable list needs none.
@@ -130,8 +129,6 @@ export function useEditorCommands(open: boolean): {
   const canDescribePages = usePublishedSetupOffered() === 'add';
   // Knowledgebase Style, for an Editor of the whole knowledgebase.
   const canStyleKnowledgebase = useStyleChangeBound();
-  // Knowledgebase Settings, for an Editor of the whole knowledgebase.
-  const canOpenKnowledgeSettings = usePublishedKnowledgeSettingsOffered();
   // Spotlight is desktop-only, so the tool commands need the same viewport
   // answer the palette's tool dropdown uses.
   const isMobile = useIsMobileViewport();
@@ -176,7 +173,6 @@ export function useEditorCommands(open: boolean): {
       workbench: workbenchMode,
       canDescribePages,
       canStyleKnowledgebase,
-      canOpenKnowledgeSettings,
       canvasTool,
       // Same emptiness test the palette's tool dropdown uses to disable the
       // content-dependent tools, so search can never offer a tool the palette
@@ -203,7 +199,6 @@ export function useEditorCommands(open: boolean): {
       workbenchMode,
       canDescribePages,
       canStyleKnowledgebase,
-      canOpenKnowledgeSettings,
       canvasTool,
       canvasEmpty,
       isMobile,

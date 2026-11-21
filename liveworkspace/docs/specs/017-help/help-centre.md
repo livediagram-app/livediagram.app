@@ -407,7 +407,7 @@ and scope module, and the seventh static build. Its noun is **Knowledgebase** (o
 holds is a **page**, never a tab.
 
 - **Its own categories**: Knowledgebase (the page tree, writing and linking, owners and verifying, the Review Period,
-  Page Health and Knowledge Health, search, Ask and AI Settings, Knowledgebase Settings and Knowledgebase Style,
+  Page Health and Knowledge Health, search, Ask and AI Settings, Knowledgebase Style,
   AI Knowledge and connecting agents, import from a Markdown folder, Notion and Confluence, export, and roles), then
   the shared Collaboration, Explorer, User Interface, Tools and Search Panel. Getting Started, About, Developers (the
   MCP tools, the CLI and the Knowledge API) and Troubleshooting each carry its own articles too. Every own article

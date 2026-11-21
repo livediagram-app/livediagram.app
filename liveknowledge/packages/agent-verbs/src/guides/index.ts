@@ -14,8 +14,8 @@ export const GUIDE_TOPICS = {
 A knowledgebase is a tree of pages. Each page says how far it can be trusted: verified (a person
 vouched for it), review due (verified once, its review is due) or never verified (a draft).
 When a review comes due is the knowledgebase's one Review Period (every 30, 90 or 180 days, every
-year, or never), the same for every page: context and pages say it once. An Editor sets it in
-Knowledgebase Settings; no command sets it, and no page has a period of its own.
+year, or never), the same for every page: context and pages say it once. An Editor sets it from
+Page Health, beside any page; no command sets it, and no page has a period of its own.
 
 Start with the pages the team wants every agent to read, and what this credential may do:
 

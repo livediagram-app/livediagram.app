@@ -20,6 +20,8 @@ import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
 import { PageActivity, PageHealthCard, type PageStamp } from './PageHealthCard';
+import { ReviewPeriodButton } from '@/components/knowledge-settings/ReviewPeriodButton';
+import { useSettingsOffered } from '@/components/knowledge-settings/useSettingsOffered';
 import { PageHealthApproval } from './approval/PageHealthApproval';
 import { PageRailAiContext } from './PageAiContext';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
@@ -113,7 +115,8 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
     [chrome, writing.flow],
   );
   const { rights, pageId } = page;
-  // Knowledgebase Settings, for an Editor: where the Review Period is changed (the card has no control of its own).
+  // The pencil beside the Review Period: an Editor of the whole knowledgebase's alone.
+  const changesPeriod = useSettingsOffered();
   const activity = (
     <PageActivity
       now={page.now}
@@ -143,6 +146,7 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
           rights.editFields ? (owner) => page.setFields(pageId, { owner }, 'owner') : undefined
         }
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
+        periodControl={changesPeriod ? <ReviewPeriodButton /> : undefined}
       />
       {/* Page Health leads, On This Page under it (owner 2026-11-21). */}
       <OnThisPage headings={writing.headings} current={current} onGo={go} />

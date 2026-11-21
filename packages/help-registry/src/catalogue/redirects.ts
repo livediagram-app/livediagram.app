@@ -59,6 +59,12 @@ export const HELP_REDIRECTS: readonly HelpRedirect[] = [
   { from: 'canvas/links', to: 'canvas', apps: ['livedocuments'] },
   { from: 'canvas/notes', to: 'canvas', apps: ['livedocuments'] },
   { from: 'tabs/linking-tabs', to: 'tabs', apps: ['livedocuments'] },
+  // liveknowledge's Knowledgebase Settings held only the Review Period, now changed from Page Health (owner 2026-11-21).
+  {
+    from: 'knowledgebase/knowledgebase-settings',
+    to: 'knowledgebase/review-due-and-the-review-period',
+    apps: ['liveknowledge'],
+  },
   // liveknowledge connects agents from its own article (knowledgebase/connecting-an-agent), its tools a Knowledgebase's.
   {
     from: 'account-and-data/connect-ai-mcp',

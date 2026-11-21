@@ -26,7 +26,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'always-in-context': '#84cc16',
   // ---- Style and Settings ----
   'knowledgebase-style': '#db2777',
-  'knowledgebase-settings': '#475569',
   // ---- Import and Export ----
   'import-a-markdown-folder': '#ca8a04',
   'import-from-notion': '#57534e',

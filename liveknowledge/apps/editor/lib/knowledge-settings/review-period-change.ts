@@ -12,7 +12,7 @@ import { offlineSaveDocumentMeta } from '@/lib/offline/offline-store';
 import { knowledgeSettingsStore, type KnowledgeSettingsStore } from './knowledge-settings-store';
 
 /** The pages Review Due under a period, counted from the fields the editor already holds of every page: what the
- *  dialog says for a knowledgebase kept Offline, and when the preview cannot be read. One pass, no request. */
+ *  popover says for a knowledgebase kept Offline, and when the preview cannot be read. One pass, no request. */
 export function countDuePages(
   pages: readonly { knowledge?: unknown }[],
   every: ReviewEvery,

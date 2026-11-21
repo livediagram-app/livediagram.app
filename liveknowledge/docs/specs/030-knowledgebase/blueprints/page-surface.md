@@ -376,7 +376,7 @@ saved or laid out; one undo step; a Participant and a Viewer never change it), `
 
 Spec [Knowledgebases and pages](../knowledgebases-and-pages.md) "The knowledgebase's menu".
 `components/knowledge-menu/`: `useKnowledgebaseMenu` builds the rows from the hooks that decide each feature
-(`useStyleOffered`, `useKnowledgebaseSettings`, `useDescribeToAddPages`, `useAskSession().rights.manageAi`);
+(`useStyleOffered`, `useDescribeToAddPages`, `useAskSession().rights.manageAi`);
 `KnowledgebaseMenu` is the name's button and the shared `PortalMenu` with `MenuHeader` and `MenuActionRow`.
 `PageTreeSidebar` and `PageTreeSheet` take it as `menu`, a render prop handed the shown name and how a rename
 starts in place, from their hosts in `usePageTreeChrome`, where the editor's store is. Tests:
