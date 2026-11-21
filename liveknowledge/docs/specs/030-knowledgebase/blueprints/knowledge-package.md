@@ -530,6 +530,37 @@ description, a title or the key.
 from a model that thinks at length can be cut off. The prompt asks for a compact reply and effort is `low`; a cut
 reply still yields its whole pages (step 4). Raise `SETUP_MAX_TOKENS` (and the spec's bound) if real replies are cut.
 
+## Describe Structure
+
+Derived from [Describe to set up](../describe-to-set-up.md) "Describe Structure on a page" (`page-structure.ts`,
+`page-structure-blocks.ts`).
+
+1. `structureRefusal({ title, purpose }, used)`: `purpose-too-long` (over 500 after trimming), `no-purpose` (no
+   words and no title), `person-limit` (10 an hour), `knowledgebase-limit` (50 a day), or `undefined`.
+   `structureCounters(person, now)` count in scopes of their own (`structure:person:<id>`, `structure:knowledgebase`).
+2. `pageStructureRequest(input)`: one `ModelRequest`, `maxTokens` 2,000, effort `low`. `STRUCTURE_SYSTEM` asks for
+   headings and a line under each, lists, tables and callouts only where they help, never content, as one JSON object
+   `{ blocks: [{ kind, level, text, items }] }`. The user message is `<knowledgebase>`, `<page_tree>` (at most 200
+   `<page depth="n">title</page>`, titles cut at 80), `<page_title>` and `<purpose>`, every piece through `fenced`.
+   No page's writing is in it. `pageStructureBuiltInInput(input, refused?)` is the same in Workers AI's chat shape in
+   JSON mode (`STRUCTURE_REPLY_SCHEMA`), the second ask carrying fixed words for why, never the reply.
+3. `parsePageStructure(reply)`: the reply read up to 40,000 characters, from its first `{` to its last `}`, or (cut
+   off) each complete brace-free object on its own. Each block's kind is one of seven; text is one plain line
+   (`plainLine`, with a leading `#`, list marker or bold wrapping taken off), headings cut at 80, lines and callouts
+   at 240, up to 8 list items of 120, a table 2 to 5 columns of 40. At most 48 blocks, 12 headings and 4,000
+   characters: past a bound the rest is left out. No heading that reads: `undefined`.
+4. `pageStructureArticleBlocks(blocks, newId)`: Heading 2 or 3 paragraphs, an italic body line, a quote for a callout,
+   one list block per item (`bullet`, `numbered`, `todo`), a table of a header row and one empty row
+   (`tableFromGrid`). Text only.
+
+**The route** (`routes/knowledge-structure-route.ts`): `POST pages/<tab>/describe-structure` inside the page routes,
+so a link to one page reaches only its own page and sees the tree's other pages nameless (left out of `<page_tree>`).
+An API token: 403 `needs_a_person`; not `writesPages`: 403; no account: 403 `sign_in_required`. `ai: "built-in"` or no
+key: built-in AI, `spendSetupDraft(..., 'structure')` (its own DOCUMENT_ROOM instance per account,
+`~page-structure:<id>`, 10 a day; a fault refuses with `built-in-failed`), asked through `askBuiltInOnce` at most
+twice. Otherwise `callModel` on the team's key through `modelDoorFor`. Answers `{ blocks, provider }`; writes
+nothing; logs only counts, the provider and the kind.
+
 ## Conflicts
 
 1. `conflictCheckRefusal({ hasAi, checksToday, perDay?, lastCheckedAt, now })`: `no-ai` (no key and no built-in

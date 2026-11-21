@@ -19,6 +19,10 @@ import { EditorDiscs } from './EditorDiscs';
 import { useArticleZoneCorner } from './useArticleZoneCorner';
 import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
 import { useKnowledgebaseStartOffered } from '@/components/start/knowledgebase-start';
+import { DescribeStructureButton } from '@/components/describe-structure/DescribeStructureButton';
+import { useDescribeStructureOffered } from '@/components/describe-structure/useDescribeStructureOffered';
+import { openDescribeStructure } from '@/lib/describe-structure/structure-open';
+import { track } from '@/lib/telemetry';
 
 // Edit, in the top row before Page Info and Share, and while editing the draft bar, floating at the bottom right of the
 // article zone (docs/specs/030-knowledgebase/editing.md; blueprint "Presentation and UX"). Reads the chrome store a slice at a time, so typing renders it
@@ -58,6 +62,8 @@ export type PageEditBarViewProps = {
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
+  /** Describe Structure, to the left of Edit or of Cancel, while the page has nothing written; absent: not offered. */
+  onDescribe?: (() => void) | undefined;
 };
 
 /** The bar itself, from plain props (tests, and the store-reading wrapper below). */
@@ -70,6 +76,7 @@ export function PageEditBarView({
   onEdit,
   onSave,
   onCancel,
+  onDescribe,
 }: PageEditBarViewProps) {
   const corner = useArticleZoneCorner(mayEdit);
   if (!mayEdit) return null;
@@ -80,8 +87,9 @@ export function PageEditBarView({
           style={{ right: corner.right, bottom: corner.bottom }}
           // Toasts stand on this button's line, beside it (liveworkspace toasts.md "Placement").
           data-toast-side=""
-          className="fixed z-[var(--z-toolbar)]"
+          className="fixed z-[var(--z-toolbar)] flex items-center gap-2 phone:gap-1.5"
         >
+          {onDescribe ? <DescribeStructureButton onPress={onDescribe} /> : null}
           {/* No tooltip (owner 2026-11-21): the label and the key say it. */}
           <button
             type="button"
@@ -151,6 +159,7 @@ export function PageEditBarView({
             </>
           ) : null}
         </span>
+        {onDescribe ? <DescribeStructureButton onPress={onDescribe} /> : null}
         <button
           type="button"
           onClick={onCancel}
@@ -197,6 +206,15 @@ export function PageEditBar() {
   // A new knowledgebase's start screen covers its first page: no Cancel and Save floating beside it.
   const startMayShow = useEditorChrome(templateStartShownOf);
   const startOffered = useKnowledgebaseStartOffered(tabId);
+  // Describe Structure on a page with nothing written (describe-to-set-up.md "Describe Structure on a page"): from
+  // reading it opens edit mode first, so the structure lands in the draft.
+  const describe = useDescribeStructureOffered();
+  const onDescribe = () => {
+    const s = store.get();
+    track('UI', 'Opened', 'DescribeStructure');
+    if (!s.pageEditing.editing) s.pageEditing.start();
+    openDescribeStructure(s.pageTab.id);
+  };
   if (inHistory || !onPages || (startMayShow && startOffered)) return null;
   return (
     <>
@@ -213,6 +231,7 @@ export function PageEditBar() {
         onEdit={() => store.get().pageEditing.start()}
         onSave={() => store.get().pageEditing.save()}
         onCancel={() => void store.get().pageEditing.cancel()}
+        onDescribe={describe === (editing ? 'edit' : 'read') ? onDescribe : undefined}
       />
     </>
   );

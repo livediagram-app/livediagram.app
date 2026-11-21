@@ -8536,6 +8536,154 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PageStructureBlock": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "heading",
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              2,
+              3
+            ],
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "level",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "text",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "callout",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "enum": [
+              "bullets",
+              "numbered",
+              "checklist"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "const": "table",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "columns"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "One block of a drafted page structure. Plain text throughout."
+  },
+  "PageStructureRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../pages/<tab>/describe-structure` (describe-to-set-up.md \"Describe Structure on a page\"): what the page is for, in the person's words (may be empty when the page has a title), the draft's Title, and `ai: \"built-in\"` when the person chose built-in AI over the team's key.",
+    "properties": {
+      "ai": {
+        "$ref": "#/components/schemas/AskAiChoice"
+      },
+      "purpose": {
+        "type": "string"
+      },
+      "title": {
+        "description": "The draft's Title, when it is not yet the saved name; absent: the saved name.",
+        "type": "string"
+      }
+    },
+    "required": [
+      "purpose"
+    ],
+    "type": "object"
+  },
+  "PageStructureResponse": {
+    "additionalProperties": false,
+    "description": "A drafted structure for one empty page, and which AI answered. Nothing is written by the route.",
+    "properties": {
+      "blocks": {
+        "items": {
+          "$ref": "#/components/schemas/PageStructureBlock"
+        },
+        "type": "array"
+      },
+      "provider": {
+        "$ref": "#/components/schemas/KnowledgeSetupProvider"
+      }
+    },
+    "required": [
+      "blocks",
+      "provider"
+    ],
+    "type": "object"
+  },
   "PageSummary": {
     "additionalProperties": false,
     "properties": {

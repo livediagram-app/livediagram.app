@@ -13,6 +13,7 @@
 //   GET    ai, PUT ai/key, DELETE ai/key, PUT ai/model      knowledge-ai-routes.ts
 //   POST   ask                                              knowledge-ask-route.ts
 //   POST   setup/suggest                                    knowledge-setup-route.ts
+//   POST   pages/<tab>/describe-structure                   knowledge-structure-route.ts
 //   GET    knowledge, POST questions, DELETE questions/<key>, POST conflicts/<id>/dismiss
 //                                                           knowledge-overview-routes.ts
 //   POST   conflicts/<id>/ask-owners, POST knowledge/remind-owners
@@ -56,6 +57,7 @@ import {
 import { handleKnowledgeSearch } from './knowledge-search-route';
 import { handleSettingsRoutes } from './knowledge-settings-routes';
 import { handleSetupSuggest } from './knowledge-setup-route';
+import { handleDescribeStructure } from './knowledge-structure-route';
 import { handleSuggest, handleSuggestionRoutes } from './knowledge-suggestion-routes';
 
 /** How long a client may keep the summary (knowledgebase-home.md: "cached for a minute"). */
@@ -137,6 +139,9 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
   if (segments[5] === 'health')
     return method === 'GET' ? handlePageHealth(ctx, seen.document, tab, grant) : methodNotAllowed();
   if (segments[5] === 'threads') return handlePageThreads(ctx, document, grant, tab);
+  // Drafted from the page's own place: a link to one page sees its tree's other pages nameless.
+  if (segments[5] === 'describe-structure')
+    return method === 'POST' ? handleDescribeStructure(seen, tab) : methodNotAllowed();
   if (segments[5] === 'approval')
     return method === 'POST' ? handleApproval(ctx, document, grant, tab) : methodNotAllowed();
   if (segments[5] !== 'verify' && segments[5] !== 'knowledge') return notFound();
@@ -198,6 +203,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
           segments[5] === 'approval' ||
           segments[5] === 'threads' ||
           segments[5] === 'suggestions' ||
+          segments[5] === 'describe-structure' ||
           segments[5] === 'move')) ||
       (segments[3] === 'conflicts' &&
         (segments[5] === 'dismiss' || segments[5] === 'ask-owners')) ||
