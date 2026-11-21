@@ -26,44 +26,44 @@ export const HELP_ARTICLES = {
   // The Community's own help map holds the path (the public sites link it too).
   community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
-  autoAttachArrows: 'palette/auto-attach-arrows',
+  autoAttachArrows: 'knowledgebase/writing-on-a-page',
   // The embed's article is linked from the link picker, when it is restricted to a URL
   // (docs/specs/009-elements/embed-providers.md).
-  embedElements: 'palette/embed-elements',
-  alignmentGuides: 'palette/alignment-guides',
-  panelOpacity: 'palette/panel-opacity',
-  quickAddOnHover: 'palette/quick-add-on-hover',
+  embedElements: 'knowledgebase/embedding-from-other-apps',
+  alignmentGuides: 'knowledgebase/writing-on-a-page',
+  panelOpacity: 'knowledgebase/writing-on-a-page',
+  quickAddOnHover: 'knowledgebase/writing-on-a-page',
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
-  laser: 'selection-modes/laser',
-  spotlight: 'selection-modes/spotlight',
-  formatPainter: 'selection-modes/format-painter',
+  laser: 'knowledgebase/writing-on-a-page',
+  spotlight: 'knowledgebase/writing-on-a-page',
+  formatPainter: 'knowledgebase/writing-on-a-page',
   // AI
-  connectAiTool: 'account-and-data/connect-ai-mcp',
+  connectAiTool: 'knowledgebase/connecting-an-agent',
   // Tabs / import-export
-  exportingDiagrams: 'account-and-data/exporting-documents',
+  exportingDiagrams: 'knowledgebase/exporting-a-knowledgebase',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
-  importTabs: 'tabs/import-tabs',
-  markdownImport: 'tools/markdown-import',
+  importTabs: 'knowledgebase/import-a-markdown-folder',
+  markdownImport: 'knowledgebase/import-a-markdown-folder',
   // The Find bar's `?` (docs/specs/007-editor/find-and-replace.md "The bar").
-  findAndReplace: 'tools/find-and-replace',
+  findAndReplace: 'knowledgebase/writing-on-a-page',
   // Teams
   // Canvas / themes
-  changingTheBackground: 'canvas/the-canvas/changing-the-background',
-  changingTheme: 'canvas/themes/changing-theme',
-  choosingAFinish: 'canvas/finish',
-  choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
+  changingTheBackground: 'knowledgebase/knowledgebase-style',
+  changingTheme: 'knowledgebase/knowledgebase-style',
+  choosingAFinish: 'knowledgebase/knowledgebase-style',
+  choosingFonts: 'knowledgebase/knowledgebase-style',
   // Activity / comments
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
-  assignedActions: 'collaboration/assigned-actions',
+  assignedActions: 'collaboration/comments',
   // Explorer / data
   // Standing panels.
-  explorerPanel: 'explorer/explorer-panel',
-  layers: 'canvas/layers',
-  minimap: 'user-interface/minimap',
+  explorerPanel: 'explorer/home',
+  layers: 'knowledgebase/writing-on-a-page',
+  minimap: 'knowledgebase/writing-on-a-page',
   home: 'explorer/home',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
@@ -74,26 +74,26 @@ export const HELP_ARTICLES = {
   inbox: 'explorer/activity',
   teamSpaces: 'explorer/team-spaces',
   explorerFilters: 'explorer/filters',
-  dataElements: 'palette/tools/data-elements',
-  sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
-  maps: 'palette/tools/maps',
+  dataElements: 'knowledgebase/writing-on-a-page',
+  sankeyDiagram: 'knowledgebase/writing-on-a-page',
+  maps: 'knowledgebase/writing-on-a-page',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
-  stacks: 'palette/stacks',
-  conceptGraphics: 'palette/concept-graphics',
-  palette: 'palette',
+  stacks: 'knowledgebase/writing-on-a-page',
+  conceptGraphics: 'knowledgebase/writing-on-a-page',
+  palette: 'knowledgebase',
   // Settings
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  templates: 'canvas/templates',
+  templates: 'getting-started/your-first-knowledgebase',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
-  slidePages: 'pages/slide-pages',
-  infographicLayouts: 'pages/infographic-layouts',
-  articlePages: 'pages/articles',
-  keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
+  slidePages: 'knowledgebase/writing-on-a-page',
+  infographicLayouts: 'knowledgebase/writing-on-a-page',
+  articlePages: 'knowledgebase/writing-on-a-page',
+  keyboardShortcuts: 'knowledgebase/writing-on-a-page',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
-  documentNotLoading: 'troubleshooting/document-not-loading',
+  documentNotLoading: 'troubleshooting',
 } as const;
 
 export type HelpArticleKey = keyof typeof HELP_ARTICLES;
