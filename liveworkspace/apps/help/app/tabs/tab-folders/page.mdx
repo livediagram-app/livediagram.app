@@ -34,7 +34,7 @@ A folder takes up one chip on the bar, however many tabs it holds:
 
 - **Click the chip** to open the folder in place: its tabs slide out on the bar right after the chip, in order, and the tabs after the folder slide along to make room. Click the chip again to tuck them away, unless you are on one of them (below). Nothing pops up over the <Noun />.
 - **The folder you are in stays open.** Open a tab that lives in a folder, from the Tabs list, search or a link, and the folder opens round it so you see every tab it holds. While you are on one of its tabs the folder can't be shut: clicking the chip just brings your tab back into view. Move to a tab outside the folder and it goes back to how you left it, shut again if it was shut.
-- **Each folder has its own colour**, picked from its name, so "Plans" looks the same every time you come back. The chip shows a folder icon and the name, open or shut. The icon stacks to show how full the folder is: one folder for one tab, two for two, three for three or more. Open the folder to see every tab it holds.
+- **Each folder has its own colour.** Until you choose one, the folder's name picks it, so "Plans" looks the same every time you come back. Choose one yourself and it sticks (below). The chip shows a folder icon and the name, open or shut. The icon stacks to show how full the folder is: one folder for one tab, two for two, three for three or more. Open the folder to see every tab it holds.
 - **A folder opens for this visit.** On a computer, a small <Noun /> opens with its folders open: up to 3 folders, none holding more than 3 tabs, and 9 tabs in all. A small <Noun /> shows every tab at once; a busy one starts tidy with its folders shut, and so does a phone. On a phone, opening a folder scrolls the bar so its tabs are in view.
 - **Presence comes along.** If collaborators are on tabs tucked inside a shut folder, their avatars show beside the chip.
 - **From the keyboard**, the arrow keys move between the tabs and chips on the bar, and Enter or Space opens or shuts the folder you are on.
@@ -55,49 +55,59 @@ There are two ways to change which folder a tab belongs to.
 </Step>
 
 <Step n={2}>
-  The tab menu. Open the tab's **⋯** or right-click menu and choose **Organise in Tab Folder**. In
-  the dialog, pick an existing folder's tile to file the tab there, the **No Folder** tile to make
-  it loose on the bar, or the **New Folder** tile to type a fresh name in place. Typing an existing
-  folder's name simply files the tab into that folder, since same name means same folder.
+  The tab menu. Open the tab's **⋯** or right-click menu and choose **Organise in Tab Folder**. The
+  dialog lists every folder as a full-width row, with its colour, how many tabs it holds and a
+  **Current** mark on the tab's own folder. Click a folder's row to file the tab there, or **No
+  Folder** to make it loose on the bar. To start a folder, click **New Folder**, type a name and
+  press Enter. Typing an existing folder's name simply files the tab into that folder, since same
+  name means same folder.
 </Step>
 
 <AppNote app="livediagram">
-  <Figure caption="Organise in Tab Folder opens a dialog with a No Folder tile, a tile per folder (the current one marked), and a New Folder tile.">
+  <Figure caption="Organise in Tab Folder lists No Folder, a row per folder in its colour with its tab count (the current one marked), and New Folder.">
     <LivediagramFolderMenu />
   </Figure>
 </AppNote>
 
 <AppNote app="liveplanner">
-  <Figure caption="Organise in Tab Folder opens a dialog with a No Folder tile, a tile per folder (the current one marked), and a New Folder tile.">
+  <Figure caption="Organise in Tab Folder lists No Folder, a row per folder in its colour with its tab count (the current one marked), and New Folder.">
     <LiveplannerFolderMenu />
   </Figure>
 </AppNote>
 
 <AppNote app="livedocuments">
-  <Figure caption="Organise in Tab Folder opens a dialog with a No Folder tile, a tile per folder (the current one marked), and a New Folder tile.">
+  <Figure caption="Organise in Tab Folder lists No Folder, a row per folder in its colour with its tab count (the current one marked), and New Folder.">
     <LivedocumentsFolderMenu />
   </Figure>
 </AppNote>
 
 <AppNote app="livedesign">
-  <Figure caption="Organise in Tab Folder opens a dialog with a No Folder tile, a tile per folder (the current one marked), and a New Folder tile.">
+  <Figure caption="Organise in Tab Folder lists No Folder, a row per folder in its colour with its tab count (the current one marked), and New Folder.">
     <LivedesignFolderMenu />
   </Figure>
 </AppNote>
 
 <AppNote app="livehuddle">
-  <Figure caption="Organise in Tab Folder opens a dialog with a No Folder tile, a tile per folder (the current one marked), and a New Folder tile.">
+  <Figure caption="Organise in Tab Folder lists No Folder, a row per folder in its colour with its tab count (the current one marked), and New Folder.">
     <LivehuddleFolderMenu />
   </Figure>
 </AppNote>
 
+## Choosing a folder's colour
+
+Every folder row in **Organise in Tab Folder** ends with a colour button. Click it and pick one of eight colours, or **Automatic** to go back to the colour the name picks. The tab stays where it is and the dialog stays open, so you can colour several folders in one go. The chip, its open shelf and the row all change at once, for everyone in the <Noun />.
+
+You don't need a colour to make a folder. While typing a New Folder's name you can click the colour button beside it to start it in a colour of your own, or leave it and change it later from the folder's row. A tab you move into a folder takes on that folder's colour.
+
+From the keyboard, Tab reaches the colour button, Enter or Space opens it, the arrow keys move between the colours, Enter or Space picks one, and Escape closes the colours before it closes the dialog.
+
 ## Renaming a folder
 
-**Double-click the chip** to rename the folder. Renaming rewrites the name on every tab in it, so the folder keeps all its tabs. Renaming it to another folder's name merges the two.
+**Double-click the chip** to rename the folder. Renaming rewrites the name on every tab in it, so the folder keeps all its tabs. It keeps its colour. Renaming it to another folder's name merges the two, in that folder's colour.
 
 To get rid of a folder, move its tabs out (drag them to the loose tabs, or choose **No Folder**): the folder disappears with its last tab. Its tabs are never deleted.
 
-On a share link for a Viewer or a Participant, or a link scoped to one tab, you can open folders and switch tabs, but you can't drag tabs between folders or rename them.
+On a share link for a Viewer or a Participant, or a link scoped to one tab, you can open folders and switch tabs, but you can't drag tabs between folders, rename them or change their colours.
 
 <Tip>
   Give folders short names like "Plans" or "Back office". The name shows on the chip beside its

@@ -132,6 +132,8 @@ export type TabSummary = {
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
+  // The folder's colour (tab-folders.md "Folder colour"), a hue name; omitted = Automatic.
+  folderColor?: string;
   // Set for a tab outside a tab-scoped visitor's scope (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its name is blanked, its folder dropped, and its content never served.
   outOfScope?: true;

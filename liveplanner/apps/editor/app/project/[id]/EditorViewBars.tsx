@@ -108,6 +108,7 @@ export function renderEditorTabBar(
     openCollaborators,
     moveTabToFolder,
     removeTabFromFolder,
+    setFolderColour,
     renameTabFolder,
     addTab,
     renameTab,
@@ -168,6 +169,7 @@ export function renderEditorTabBar(
           onOpenCollaborators={openCollaborators}
           onMoveTabToFolder={moveTabToFolder}
           onRemoveTabFromFolder={removeTabFromFolder}
+          onSetFolderColour={setFolderColour}
           onRenameFolder={renameTabFolder}
           activeTabHasContent={activeTab.elements.length > 0}
           onSelect={selectTab}

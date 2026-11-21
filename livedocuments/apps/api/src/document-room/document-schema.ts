@@ -17,6 +17,7 @@ import {
   migrationSchema,
   outboxParkingStep,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
@@ -326,6 +327,10 @@ const V10 = CANVAS_SUGGESTIONS_SCHEMA;
 // Additive, every statement IF NOT EXISTS: `tab_versions` is untouched.
 const V11 = NAMED_STORE_STEP;
 
+// A tab folder's chosen colour (docs/specs/006-document/tab-folders.md "Folder colour"), `document_tabs.folder_color`: a hue name beside
+// the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as Automatic.
+const V12 = tabFolderColourStep('document_tabs');
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -338,6 +343,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V9,
   V10,
   V11,
+  V12,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

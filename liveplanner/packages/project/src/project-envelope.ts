@@ -21,7 +21,7 @@ export const PROJECT_SCHEMA_VERSION = 1;
 // lands inside the plan's Durable Object's 128 MB (blueprint plan-file.md "Performance and limits").
 export const PROJECT_FILE_MAX_BYTES = 20 * 1024 * 1024;
 
-export type EnvelopeTab = Tab & { folder?: string };
+export type EnvelopeTab = Tab & { folder?: string; folderColor?: string };
 
 export type ProjectEnvelope = {
   kind: typeof PROJECT_ENVELOPE_KIND;

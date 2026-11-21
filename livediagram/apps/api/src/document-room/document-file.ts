@@ -31,6 +31,7 @@ import {
   type ContentTabRow,
   type DocumentCopy,
 } from './document-content';
+import { tabFolderColourOf } from '@liveworkspace/api-schema/tab-folder-colour';
 
 export const DOCUMENT_FILE_FORMAT = APP_FILE_FORMATS.livediagram;
 
@@ -42,8 +43,8 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
   const body = migrateStoredTab(JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>) as Omit<
     Tab,
     'id' | 'name'
-  > & { folder?: unknown };
-  const { folder: _stale, ...rest } = body;
+  > & { folder?: unknown; folderColor?: unknown };
+  const { folder: _stale, folderColor: _staleColour, ...rest } = body;
   // A chart linked to a liveplanner sheet travels with its last values and no link (docs/specs/009-elements/
   // pie-chart.md "Charts linked to a liveplanner sheet"): the file freezes them, and names no plan.
   if (Array.isArray(rest.elements)) rest.elements = withoutSheetSources(rest.elements);
@@ -54,6 +55,9 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
     id: row.id,
     name: row.name,
     ...(row.folder ? { folder: row.folder } : {}),
+    ...(row.folder && tabFolderColourOf(row.folder_color)
+      ? { folderColor: tabFolderColourOf(row.folder_color) }
+      : {}),
     ...(connection ? { connection } : {}),
   };
 }
@@ -94,6 +98,7 @@ const ROW_FIELDS = [
   'updatedAt',
   'rev',
   'folder',
+  'folderColor',
   'connection',
 ] as const;
 
@@ -118,6 +123,8 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
     const tab = migrateIncomingTab(incoming);
     if (!isValidTab(tab)) return { ok: false, failure: 'invalid_file' };
     const folder = typeof incoming.folder === 'string' ? incoming.folder.trim() || null : null;
+    // A hue name for a tab in a folder; anything else in a file is dropped (Automatic).
+    const folderColor = folder ? (tabFolderColourOf(incoming.folderColor) ?? null) : null;
     const body: Record<string, unknown> = { ...tab, elements: capElementActions(tab.elements) };
     const { id, name } = tab;
     delete body.id;
@@ -134,6 +141,7 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
       name: capStoredName(name, null, 'tab') || 'Untitled',
       orderIndex: index,
       folder,
+      folderColor,
       data,
       elementCount: drawnCount(tab),
       connection: tabConnectionOf(incoming) ?? null,

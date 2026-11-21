@@ -22,7 +22,13 @@ export function createTab(name: string): Tab {
 // first `activeTab.elements` read. The seeded tab autosaves back to the
 // API on the next save cycle, healing the project.
 export function placeholdersFromSummaries(
-  summaries: { id: string; name: string; folder?: string; connection?: unknown }[],
+  summaries: {
+    id: string;
+    name: string;
+    folder?: string;
+    folderColor?: string;
+    connection?: unknown;
+  }[],
 ): Tab[] {
   if (summaries.length === 0) return [createTab('Tab 1')];
   // Carry `folder` (docs/specs/006-project/tab-folders.md) so the tab bar renders folders from the
@@ -31,7 +37,13 @@ export function placeholdersFromSummaries(
   // A connected tab's connection too (liveworkspace/docs/specs/004-index/connected-tabs.md), so it shows as one at once.
   return summaries.map((summary) =>
     carryConnection(
-      { id: summary.id, name: summary.name, elements: [], folder: summary.folder },
+      {
+        id: summary.id,
+        name: summary.name,
+        elements: [],
+        folder: summary.folder,
+        folderColor: summary.folderColor,
+      },
       summary,
     ),
   );
@@ -148,7 +160,9 @@ function sameTabContent(prev: Tab | undefined, current: Tab): boolean {
   const prevMeta = prev as unknown as Record<string, unknown>;
   const currentMeta = current as unknown as Record<string, unknown>;
   for (const key of new Set([...Object.keys(prevMeta), ...Object.keys(currentMeta)])) {
-    if (key === 'elements') continue;
+    // Folder and its colour are link metadata the meta save writes (orderChanged), never body content: a folder
+    // move or a colour change writes no tab body.
+    if (key === 'elements' || key === 'folder' || key === 'folderColor') continue;
     const a = prevMeta[key];
     const b = currentMeta[key];
     if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
@@ -186,7 +200,8 @@ export function computeTabSaveDiff(
         prevTabs[i]?.id !== t.id ||
         // Coalesce '' / whitespace to undefined so a loose tab never
         // looks "changed" against another loose representation.
-        (prevTabs[i]?.folder?.trim() || undefined) !== (t.folder?.trim() || undefined),
+        (prevTabs[i]?.folder?.trim() || undefined) !== (t.folder?.trim() || undefined) ||
+        (prevTabs[i]?.folderColor || undefined) !== (t.folderColor || undefined),
     );
   const nameChanged = currentName !== prevName;
   const deletedIds = prevTabs

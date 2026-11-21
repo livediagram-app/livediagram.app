@@ -126,6 +126,7 @@ export function editorViewFooter(
     openCollaborators,
     moveTabToFolder,
     removeTabFromFolder,
+    setFolderColour,
     renameTabFolder,
     activeTab,
     addTab,
@@ -179,6 +180,7 @@ export function editorViewFooter(
           onOpenCollaborators={openCollaborators}
           onMoveTabToFolder={moveTabToFolder}
           onRemoveTabFromFolder={removeTabFromFolder}
+          onSetFolderColour={setFolderColour}
           onRenameFolder={renameTabFolder}
           activeTabHasContent={activeTab.elements.length > 0}
           onSelect={selectTab}

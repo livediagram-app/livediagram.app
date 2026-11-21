@@ -100,7 +100,7 @@ export function useRoomResync(opts: {
           const next = byId.get(t.id);
           // Keep the local folder: per-project link metadata (docs/specs/006-project/tab-folders.md) owned
           // by the meta path, not the content fetch.
-          return next ? { ...next, folder: t.folder } : t;
+          return next ? { ...next, folder: t.folder, folderColor: t.folderColor } : t;
         });
       // The list first, as a peer's `project-meta` op is applied (useRoomConnection): a tab added or deleted here
       // and not saved yet stays as it is here.
@@ -108,7 +108,11 @@ export function useRoomResync(opts: {
         (list ? applyTabListOnScreen(prev, list, loaded, savedTabs) : prev).map((t) => {
           const next = byId.get(t.id);
           if (!next) return t;
-          return { ...rebaseLocalEdits(next, t, savedBefore.get(t.id)), folder: t.folder };
+          return {
+            ...rebaseLocalEdits(next, t, savedBefore.get(t.id)),
+            folder: t.folder,
+            folderColor: t.folderColor,
+          };
         }),
       );
       // In the same batch as the content it describes (useChangesetSeen).

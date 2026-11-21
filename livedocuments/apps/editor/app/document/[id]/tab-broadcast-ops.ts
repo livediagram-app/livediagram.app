@@ -29,7 +29,13 @@ export const EL_OP_BROADCAST_LIMIT = 20;
 // travels as `el` ops, `articles` as `article` ops (docs/specs/007-editor/article-pages.md
 // "Collaboration"), and `folder` is owned by the document-meta op (docs/specs/006-document/tab-folders.md)
 // so a content/meta edit can't clobber a concurrent folder move.
-export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'articles', 'folder']);
+export const META_SKIP: ReadonlySet<string> = new Set([
+  'id',
+  'elements',
+  'articles',
+  'folder',
+  'folderColor',
+]);
 
 // A whole tab as one op, without its articles' writing: that always travels as `article` ops, so a
 // long document never makes a whole-tab op too big for the room to carry, and a receiver keeps its
@@ -138,6 +144,7 @@ export function mergeRemoteTab(local: Tab, incoming: Tab, pageSteps?: unknown): 
     elements,
     ...(pages ? { pages } : {}),
     folder: local.folder,
+    folderColor: local.folderColor,
     // The writing is the `article` ops' alone (wholeTabOp): ours stays through a whole-tab merge.
     ...(local.articles !== undefined ? { articles: local.articles } : {}),
   };

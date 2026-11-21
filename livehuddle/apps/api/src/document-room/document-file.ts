@@ -30,6 +30,7 @@ import {
   type ContentTabRow,
   type DocumentCopy,
 } from './document-content';
+import { tabFolderColourOf } from '@liveworkspace/api-schema/tab-folder-colour';
 
 // A Space's Drive file: `.livehuddle`, `application/vnd.livehuddle+json`, the `livehuddle.document` envelope.
 export const DOCUMENT_FILE_FORMAT = APP_FILE_FORMATS.livehuddle;
@@ -42,8 +43,8 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
   const body = migrateStoredTab(JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>) as Omit<
     Tab,
     'id' | 'name'
-  > & { folder?: unknown };
-  const { folder: _stale, ...rest } = body;
+  > & { folder?: unknown; folderColor?: unknown };
+  const { folder: _stale, folderColor: _staleColour, ...rest } = body;
   // A connected tab's connection travels as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry nothing").
   const connection = storedTabConnection(row.connection);
   return {
@@ -51,6 +52,9 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
     id: row.id,
     name: row.name,
     ...(row.folder ? { folder: row.folder } : {}),
+    ...(row.folder && tabFolderColourOf(row.folder_color)
+      ? { folderColor: tabFolderColourOf(row.folder_color) }
+      : {}),
     ...(connection ? { connection } : {}),
   };
 }
@@ -91,6 +95,7 @@ const ROW_FIELDS = [
   'updatedAt',
   'rev',
   'folder',
+  'folderColor',
   'connection',
 ] as const;
 
@@ -115,6 +120,8 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
     const tab = migrateIncomingTab(incoming);
     if (!isValidTab(tab)) return { ok: false, failure: 'invalid_file' };
     const folder = typeof incoming.folder === 'string' ? incoming.folder.trim() || null : null;
+    // A hue name for a tab in a folder; anything else in a file is dropped (Automatic).
+    const folderColor = folder ? (tabFolderColourOf(incoming.folderColor) ?? null) : null;
     const body: Record<string, unknown> = { ...tab, elements: capElementActions(tab.elements) };
     const { id, name } = tab;
     delete body.id;
@@ -131,6 +138,7 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
       name: capStoredName(name, null, 'tab') || 'Untitled',
       orderIndex: index,
       folder,
+      folderColor,
       data,
       elementCount: drawnCount(tab),
       connection: tabConnectionOf(incoming) ?? null,

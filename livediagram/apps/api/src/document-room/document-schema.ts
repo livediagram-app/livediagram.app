@@ -16,6 +16,7 @@ import {
   migrationSchema,
   outboxParkingStep,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 
@@ -330,7 +331,11 @@ const V7 = (exec: Exec) => {
   if (!have.has('review')) exec('ALTER TABLE document ADD COLUMN review TEXT NULL');
 };
 
-const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7];
+// A tab folder's chosen colour (docs/specs/006-document/tab-folders.md "Folder colour"), `document_tabs.folder_color`: a hue name beside
+// the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as Automatic.
+const V8 = tabFolderColourStep('document_tabs');
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7, V8];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

@@ -109,3 +109,15 @@ export function folderNamesInDesign(tabs: Pick<Tab, 'folder'>[]): string[] {
   }
   return names;
 }
+
+// A folder's colour and the membership moves that carry it (tab-folders.md "Folder colour"): the one copy every
+// product shares.
+export {
+  folderColourIn,
+  tabFolderSummaries,
+  tabInFolder,
+  withFolderColour,
+  withFolderRenamed,
+  withTabInFolder,
+  type TabFolderSummary,
+} from '@liveworkspace/element-model/tab-folders';

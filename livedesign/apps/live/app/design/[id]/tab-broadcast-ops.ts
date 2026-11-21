@@ -31,6 +31,7 @@ export const META_SKIP: ReadonlySet<string> = new Set([
   // Photos travel as `photo` ops, layer by layer (docs/specs/031-photo/photo-store.md "Live sync").
   'photos',
   'folder',
+  'folderColor',
 ]);
 
 // A whole tab as one op, without its photos: those always travel as `photo` ops, and a receiver
@@ -138,6 +139,7 @@ export function mergeRemoteTab(local: Tab, incoming: Tab, pageSteps?: unknown): 
     elements,
     ...(pages ? { pages } : {}),
     folder: local.folder,
+    folderColor: local.folderColor,
     // Photos are the `photo` ops' alone (wholeTabOp): ours stay through a whole-tab merge.
     ...(local.photos !== undefined ? { photos: local.photos } : {}),
   };

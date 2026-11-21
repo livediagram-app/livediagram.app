@@ -52,7 +52,7 @@ export type OfflineStoreConfig<Rec, Tab, Item, Summary> = {
 // A tab's summary row, under the product's name for the item's id (`documentId`, `designId`, `projectId`).
 export function tabToSummaryFor<IdKey extends string>(idKey: IdKey) {
   return <Summary>(
-    tab: { id: string; name: string; folder?: string },
+    tab: { id: string; name: string; folder?: string; folderColor?: string },
     itemId: string,
     orderIndex: number,
     at: number,
@@ -65,21 +65,22 @@ export function tabToSummaryFor<IdKey extends string>(idKey: IdKey) {
       updatedAt: at,
     } as Record<string, unknown>;
     if (tab.folder !== undefined) summary.folder = tab.folder;
+    if (tab.folderColor !== undefined) summary.folderColor = tab.folderColor;
     return summary as Summary;
   };
 }
 
 // Apply a meta change (rename + tab order/folder, and a deck where the product keeps one) to a record, returning a
 // new record. Mirrors the api's meta save: `tabs` (when given) reorders the existing tab bodies by id and refreshes
-// each tab's folder. A deck absent leaves the stored one alone; null clears it, the server PUT's contract.
+// each tab's folder and its colour (one left out keeps the stored one). A deck absent leaves the stored one alone; null clears it, the server PUT's contract.
 export function applyMeta<
-  Tab extends { id: string; folder?: string },
+  Tab extends { id: string; folder?: string; folderColor?: string },
   Rec extends OfflineRecordBase<Tab> & { name: string },
 >(
   rec: Rec,
   patch: {
     name?: string;
-    tabs?: { id: string; folder?: string }[];
+    tabs?: { id: string; folder?: string; folderColor?: string | null }[];
     presentation?: string | null;
   },
   at: number,
@@ -91,7 +92,11 @@ export function applyMeta<
       .map((entry) => {
         const tab = byId.get(entry.id);
         if (!tab) return null;
-        return entry.folder === (tab.folder ?? undefined) ? tab : { ...tab, folder: entry.folder };
+        const folderColor =
+          entry.folderColor === undefined ? tab.folderColor : entry.folderColor || undefined;
+        return entry.folder === (tab.folder ?? undefined) && folderColor === tab.folderColor
+          ? tab
+          : { ...tab, folder: entry.folder, folderColor };
       })
       .filter((t): t is Tab => t !== null);
   }

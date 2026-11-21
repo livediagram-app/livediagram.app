@@ -15,6 +15,7 @@ import {
   migrationSchema,
   outboxParkingStep,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
@@ -593,6 +594,10 @@ const V39 = KNOWN_ASSISTANTS_SCHEMA;
 // message makes"): a card type and a status of its own.
 const V40 = addIntakeTarget;
 
+// A tab folder's chosen colour (docs/specs/006-project/tab-folders.md "Folder colour"), `plan_tabs.folder_color`: a hue name beside
+// the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as Automatic.
+const V41 = tabFolderColourStep('plan_tabs');
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -634,6 +639,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V38,
   V39,
   V40,
+  V41,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

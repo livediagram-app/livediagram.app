@@ -31,6 +31,7 @@ export function documentSnapshotDoor(
       const tabs = read.content.copy.tabs.map((t) => ({
         tab: { ...(JSON.parse(t.data) as Omit<Tab, 'id' | 'name'>), id: t.id, name: t.name },
         folder: t.folder,
+        folderColor: t.folderColor ?? null,
       }));
       await replaceTabs(env, documentId, tabs);
       await setDocumentPresentation(env, documentId, read.content.presentation);

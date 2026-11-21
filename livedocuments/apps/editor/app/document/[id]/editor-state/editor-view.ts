@@ -293,6 +293,7 @@ export function editorView({
     renameTab: tabsSlice.renameTab,
     renameTabFolder: tabsSlice.renameTabFolder,
     moveTabToFolder: tabsSlice.moveTabToFolder,
+    setFolderColour: tabsSlice.setFolderColour,
     removeTabFromFolder: tabsSlice.removeTabFromFolder,
     reorderTabs: tabsSlice.reorderTabs,
     resetColorsSelected: styleSlice.resetColorsSelected,
