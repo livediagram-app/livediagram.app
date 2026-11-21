@@ -42,6 +42,8 @@ const PLACEHOLDER: Record<string, string> = {
   list: 'List',
   todo: 'To-do',
 };
+// What an empty Title reads as while reading.
+const UNTITLED_PAGE = 'Untitled Page';
 const FIRST_BODY_PLACEHOLDER = 'Start writing, or press / for blocks';
 
 const HEADING_STYLES = new Set(['title', 'h1', 'h2', 'h3']);
@@ -140,6 +142,21 @@ function decorations(state: EditorState, editable: boolean): DecorationSet {
         }),
       );
     });
+  } else {
+    // Reading: an empty Title says Untitled Page, as the page tree does, never a blank where the name goes.
+    const first = state.doc.firstChild;
+    if (
+      first &&
+      first.type === articleSchema.nodes.paragraph &&
+      first.attrs.style === 'title' &&
+      first.content.size === 0
+    )
+      decos.push(
+        Decoration.node(0, first.nodeSize, {
+          class: 'article-empty',
+          'data-placeholder': UNTITLED_PAGE,
+        }),
+      );
   }
   decos.push(...emptyNameDecorations(state.doc, editable));
   return DecorationSet.create(state.doc, decos);

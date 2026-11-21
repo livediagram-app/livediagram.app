@@ -156,4 +156,12 @@ describe('rowToTabSummary', () => {
     expect(rowToTabSummary(baseRow({ folder: 'Org' })).folder).toBe('Org');
     expect(rowToTabSummary(baseRow({ folder: null })).folder).toBeUndefined();
   });
+
+  it("carries the page's icon read out of the body, and drops one that is not an icon (page-surface.md)", () => {
+    const icon = { emoji: '💻' };
+    expect(rowToTabSummary(baseRow({ icon: JSON.stringify(icon) })).icon).toEqual(icon);
+    expect(rowToTabSummary(baseRow({ icon: null })).icon).toBeUndefined();
+    expect(rowToTabSummary(baseRow({ icon: '{"emoji":"not one"}' })).icon).toBeUndefined();
+    expect(rowToTabSummary(baseRow({ icon: '{broken' })).icon).toBeUndefined();
+  });
 });

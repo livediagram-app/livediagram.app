@@ -132,6 +132,21 @@ describe('decorationsPlugin', () => {
     expect(decosOf(shown(back, plugin))).toEqual(decosOf(fresh(back)));
   });
 
+  it('says Untitled Page for an empty Title while reading, and Title while writing', () => {
+    const blocks: ArticleBlock[] = [
+      { id: 'title', type: 'paragraph', style: 'title', runs: [] },
+      { id: 'b1', type: 'paragraph', runs: [{ text: TEXT }] },
+    ];
+    const placeholders = (editable: boolean) =>
+      decosOf(fresh(start(blocks, () => editable).state, editable)).filter((d) =>
+        d.includes('data-placeholder'),
+      );
+    expect(placeholders(false).join()).toContain('Untitled Page');
+    expect(placeholders(true).join()).toContain('"data-placeholder":"Title"');
+    const named = start([{ ...blocks[0]!, runs: [{ text: 'Named' }] }, blocks[1]!], () => false);
+    expect(decosOf(fresh(named.state, false)).join()).not.toContain('Untitled Page');
+  });
+
   it('hands the same set on for a change that touches neither the writing nor the caret', () => {
     const { plugin, state } = start(article(40));
     const next = state.apply(state.tr.setMeta('anything', true));

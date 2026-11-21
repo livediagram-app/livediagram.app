@@ -171,6 +171,9 @@ export type TabSummary = {
   // The page's knowledge fields (docs/specs/030-knowledgebase/verification.md "The fields"), read out of the body as
   // the parent is, so the page tree shows every page's verified state before any body loads; absent for none.
   knowledge?: Tab['knowledge'];
+  // The page's icon (docs/specs/030-knowledgebase/page-surface.md "The page icon"), read out of the body as the parent
+  // is, so the page tree shows every page's icon before any body loads; absent for none.
+  icon?: Tab['icon'];
   // Set for a tab outside a tab-scoped visitor's scope (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its name is blanked, its folder dropped, and its content never served.
   outOfScope?: true;

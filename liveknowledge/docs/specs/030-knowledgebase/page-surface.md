@@ -181,7 +181,9 @@ should be to the right of Add Cover under the title."
 - **Where it shows.** Large to the left of the Title, on its first line (owner 2026-11-21: "left of the title, not
   above it"), under the breadcrumb (and under the cover when there is one): an emoji at 48 px (36 px on a phone),
   an icon at the same size in the writing's accent. A long Title wraps beside it; the meta row starts under both. In the **page tree**, the row's
-  icon stands before its title at 16 px; a page with none shows its title alone, as today. The **breadcrumb** names
+  icon stands before its title at 16 px, from the first paint (the knowledgebase's page summaries carry each page's
+  icon, as they carry its parent, so a page not yet opened shows its icon too); a page with none shows its title
+  alone, as today. The **breadcrumb** names
   each ancestor with its icon too.
 - **Add Icon** sits in the meta row, right after Add Cover (or where Add Cover would be, on a page with a cover):
   the same quiet ghost button, a smile icon and "Add Icon", with a hover card "Add an emoji or an icon beside this

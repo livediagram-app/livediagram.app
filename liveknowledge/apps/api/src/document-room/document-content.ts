@@ -94,7 +94,8 @@ export async function readDocumentOutline(
     env.DOCUMENT_DB.prepare(
       `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, t.connection,
               CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.parent') END AS parent,
-              CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.knowledge') END AS knowledge
+              CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.knowledge') END AS knowledge,
+              CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.icon') END AS icon
          FROM document_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.document_id = ?

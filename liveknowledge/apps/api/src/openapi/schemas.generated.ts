@@ -11279,6 +11279,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "folder": {
         "type": "string"
       },
+      "icon": {
+        "$ref": "#/components/schemas/TabIcon"
+      },
       "id": {
         "type": "string"
       },

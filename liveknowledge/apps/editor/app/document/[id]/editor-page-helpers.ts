@@ -37,6 +37,7 @@ export function placeholdersFromSummaries(
     folder?: string;
     parent?: string;
     knowledge?: Tab['knowledge'];
+    icon?: Tab['icon'];
     connection?: unknown;
   }[],
 ): Tab[] {
@@ -56,6 +57,8 @@ export function placeholdersFromSummaries(
         ...(summary.parent !== undefined ? { parent: summary.parent } : {}),
         // And each page's verified state (docs/specs/030-knowledgebase/verification.md): one read, no fetch a row.
         ...(summary.knowledge !== undefined ? { knowledge: summary.knowledge } : {}),
+        // And its icon (page-surface.md "The page icon"), beside its name in the tree before its body loads.
+        ...(summary.icon !== undefined ? { icon: summary.icon } : {}),
       },
       summary,
     ),
