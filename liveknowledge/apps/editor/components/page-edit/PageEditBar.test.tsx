@@ -37,7 +37,7 @@ describe('the draft bar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(p.onSave).toHaveBeenCalled();
     expect(p.onCancel).toHaveBeenCalled();
-    expect(document.querySelector('[data-page-edit-status]')!.textContent).toBe('');
+    expect(document.querySelector('[data-page-edit-status]')!.textContent).toBe('Editing'); // The mode, and no status while the draft is the saved page.
   });
 
   it("says the status, who else is editing, and an agent's change", () => {

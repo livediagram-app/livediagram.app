@@ -57,6 +57,11 @@ replaces what the fork still shows around the writing.
   the command search. No Library.
 - **Undo and Redo** stay, in the formatting bar.
 
+
+**Size and spacing** (owner, 2026-11-21: "a bit bigger, hard to see, space them out nicely"): in the top row the
+controls are 40 px targets with 18 px glyphs in slate-700 at rest, and the gap between them grows with the room the
+row has (up to 12 px), so a wide window spreads them across the top. Undo and Redo match.
+
 ## The cover
 
 Owner, 2026-11-21: "Let me also add a cover to a page in a knowledgebase, a bit like how I do it on forms, fill the

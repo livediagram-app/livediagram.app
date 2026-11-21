@@ -32,7 +32,7 @@ function HistoryButton({
         aria-label={label}
         disabled={disabled}
         onClick={onPress}
-        className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-600 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 dark:disabled:text-slate-600"
+        className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-700 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 dark:disabled:text-slate-600"
       >
         {children}
       </button>

@@ -1,6 +1,7 @@
 'use client';
 
-import { Button, HoverCard, Tooltip } from '@liveknowledge/ui';
+import { lucideCheck } from '@liveworkspace/icons/lucide';
+import { HoverCard, lucideGlyph, Tooltip } from '@liveknowledge/ui';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { PencilIcon } from '@/components/primitives/explorer-icons';
 import { usePageEditors, type PageEditor } from '@/lib/page-edit/page-edit-store';
@@ -11,11 +12,31 @@ import {
   modifierName,
 } from '@/lib/page-edit/page-edit-text';
 import { useRelativeNow } from '@/lib/relative-time';
+import { DoubleClickToEdit } from './DoubleClickToEdit';
 import { EditorDiscs } from './EditorDiscs';
 
 // Edit, and the draft bar in its place while editing (docs/specs/030-knowledgebase/editing.md; blueprint "Presentation
 // and UX"), in the top row before Page Info and Share. Reads the chrome store a slice at a time, so typing renders it
 // only when what it says changes; its buttons call the newest handlers when pressed.
+
+// The bar's buttons: one height and shape, a little taller than the row's icon buttons so they read as the page's
+// actions.
+const PILL =
+  'inline-flex h-8 shrink-0 cursor-pointer items-center rounded-lg text-[13px] font-semibold motion-safe:transition-colors motion-safe:duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 phone:h-11';
+
+const CheckIcon = lucideGlyph(lucideCheck, 14);
+
+// A key's hint inside a button, quieter than the label.
+function Kbd({ children }: { tone: 'onBrand'; children: string }) {
+  return (
+    <kbd
+      aria-hidden
+      className="rounded-md bg-white/15 px-1.5 py-px font-sans text-[11px] font-medium text-white/85 phone:hidden"
+    >
+      {children}
+    </kbd>
+  );
+}
 
 const modifier = () =>
   modifierName(typeof navigator === 'undefined' ? undefined : navigator.platform);
@@ -46,19 +67,20 @@ export function PageEditBarView({
   if (!editing)
     return (
       <HoverCard title="Edit" description="Change this page with anyone else editing it. Press E.">
-        <Button
-          variant="primary"
-          size="xs"
+        <button
+          type="button"
           onClick={onEdit}
           data-page-edit=""
-          className="mr-1 shrink-0"
+          className={`${PILL} mr-1 gap-1.5 bg-brand-700 pl-2.5 pr-1.5 text-white shadow-sm shadow-brand-900/20 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500`}
         >
-          <PencilIcon size={13} />
+          <PencilIcon size={14} />
           Edit
-        </Button>
+          <Kbd tone="onBrand">E</Kbd>
+        </button>
       </HoverCard>
     );
   const names = editorsPhrase(others.map((o) => o.name));
+  const unsaved = status !== '';
   return (
     <div
       data-page-edit-bar=""
@@ -70,52 +92,73 @@ export function PageEditBarView({
       <span className="contents phone:hidden">
         <EditorDiscs editors={others} label={`Also editing: ${names}`} />
       </span>
-      <span
-        aria-live="polite"
-        data-page-edit-status=""
-        className="flex min-w-0 items-center gap-2 text-xs text-slate-500 dark:text-slate-400"
-      >
-        {agentChanges > 0 ? (
-          <HoverCard
-            title="An Agent Changed the Saved Page"
-            description={agentChangeDetail(agentChanges)}
-          >
-            <span
-              tabIndex={0}
-              data-page-edit-agent=""
-              className="truncate text-amber-700 phone:hidden dark:text-amber-300"
+      {/* One capsule: the mode and its state, then Cancel and Save, so editing reads as a place you are in. */}
+      <div className="flex min-w-0 items-center gap-1 rounded-xl bg-slate-100/80 p-1 ring-1 ring-inset ring-slate-200/80 dark:bg-slate-800/60 dark:ring-slate-700/80">
+        <span
+          aria-live="polite"
+          data-page-edit-status=""
+          className="flex min-w-0 items-center gap-1.5 pl-2 pr-1 text-xs text-slate-600 dark:text-slate-300"
+        >
+          <span
+            aria-hidden
+            className={`size-1.5 shrink-0 rounded-full ${
+              unsaved ? 'bg-amber-500' : 'bg-brand-600 dark:bg-brand-400'
+            }`}
+          />
+          <span className="font-semibold text-slate-800 phone:hidden dark:text-slate-100">
+            Editing
+          </span>
+          {agentChanges > 0 ? (
+            <HoverCard
+              title="An Agent Changed the Saved Page"
+              description={agentChangeDetail(agentChanges)}
             >
-              An agent changed the saved page
-            </span>
-          </HoverCard>
-        ) : null}
-        {status ? (
-          <>
-            <span className="max-w-[22rem] truncate phone:hidden">{status}</span>
-            <span className="hidden phone:inline-flex">
-              <Tooltip label={status}>
-                <span
-                  tabIndex={0}
-                  role="img"
-                  aria-label={status}
-                  className="inline-block size-1.5 rounded-full bg-amber-500"
-                />
-              </Tooltip>
-            </span>
-          </>
-        ) : null}
-      </span>
-      <Button variant="ghost" size="xs" onClick={onCancel} data-page-edit-cancel="">
-        Cancel
-      </Button>
-      <HoverCard
-        title="Save"
-        description={`Publish this draft for everyone. Press ${modifier()}+S.`}
-      >
-        <Button variant="primary" size="xs" onClick={onSave} data-page-edit-save="">
-          Save
-        </Button>
-      </HoverCard>
+              <span
+                tabIndex={0}
+                data-page-edit-agent=""
+                className="truncate text-amber-700 phone:hidden dark:text-amber-300"
+              >
+                An agent changed the saved page
+              </span>
+            </HoverCard>
+          ) : null}
+          {unsaved ? (
+            <>
+              <span className="max-w-[18rem] truncate phone:hidden">{status}</span>
+              <span className="hidden phone:inline-flex">
+                <Tooltip label={status}>
+                  <span tabIndex={0} role="img" aria-label={status} className="text-[11px]">
+                    Unsaved
+                  </span>
+                </Tooltip>
+              </span>
+            </>
+          ) : null}
+        </span>
+        <button
+          type="button"
+          onClick={onCancel}
+          data-page-edit-cancel=""
+          className={`${PILL} px-2.5 text-slate-600 hover:bg-white hover:text-slate-900 focus-visible:outline-slate-400 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white`}
+        >
+          Cancel
+        </button>
+        <HoverCard
+          title="Save"
+          description={`Publish this draft for everyone. Press ${modifier()}+S.`}
+        >
+          <button
+            type="button"
+            onClick={onSave}
+            data-page-edit-save=""
+            className={`${PILL} gap-1.5 bg-brand-700 pl-2.5 pr-1.5 text-white shadow-sm shadow-brand-900/20 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500`}
+          >
+            <CheckIcon />
+            Save
+            <Kbd tone="onBrand">{modifier() === 'Cmd' ? '⌘S' : 'Ctrl S'}</Kbd>
+          </button>
+        </HoverCard>
+      </div>
     </div>
   );
 }
@@ -136,15 +179,21 @@ export function PageEditBar() {
   );
   const others = usePageEditors(tabId);
   return (
-    <PageEditBarView
-      editing={editing}
-      mayEdit={mayEdit}
-      status={status}
-      agentChanges={agentChanges}
-      others={others}
-      onEdit={() => store.get().pageEditing.start()}
-      onSave={() => store.get().pageEditing.save()}
-      onCancel={() => void store.get().pageEditing.cancel()}
-    />
+    <>
+      <DoubleClickToEdit
+        active={mayEdit && !editing}
+        onEdit={() => store.get().pageEditing.start()}
+      />
+      <PageEditBarView
+        editing={editing}
+        mayEdit={mayEdit}
+        status={status}
+        agentChanges={agentChanges}
+        others={others}
+        onEdit={() => store.get().pageEditing.start()}
+        onSave={() => store.get().pageEditing.save()}
+        onCancel={() => void store.get().pageEditing.cancel()}
+      />
+    </>
   );
 }
