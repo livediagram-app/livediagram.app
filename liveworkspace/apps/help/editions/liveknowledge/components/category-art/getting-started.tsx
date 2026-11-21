@@ -1,4 +1,4 @@
-import { Label } from '@liveworkspace/help-site/art/primitives';
+import { DiscText, Label } from '@liveworkspace/help-site/art/primitives';
 import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 import { Btn, Lines, Pill, TreeRows, VerifiedBadge } from '../illustrations/kit';
 
@@ -8,9 +8,10 @@ function Step({ x, n, title }: { x: number; n: number; title: string }) {
     <g>
       <Card x={x} y={40} w={116} h={150} r={10}>
         <circle cx={x + 16} cy={58} r={8} className="fill-brand-600" />
-        <Label x={x + 16} y={58.5} anchor="middle" size={8} weight={700} tone="onAccent">
+        {/* Centred on its cap band, not its em box (optical-alignment.md), as every edition's numbered disc is. */}
+        <DiscText cx={x + 16} cy={58} size={8} weight={700}>
           {n}
-        </Label>
+        </DiscText>
         <Label x={x + 30} y={58.5} size={9} weight={700} tone="strong">
           {title}
         </Label>
