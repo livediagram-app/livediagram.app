@@ -56,9 +56,13 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
 };
 
 // An app's own words for a level's blurb, where the shared one would mislead (liveworkspace/docs/specs/004-index/
-// one-explorer-contracts.md): livehuddle's Participant walks and adds nothing.
+// one-explorer-contracts.md): livehuddle's Participant walks and adds nothing; liveknowledge's writes and verifies.
 export const APP_LEVEL_BLURBS: Partial<Record<App, Partial<Record<Level, string>>>> = {
   livehuddle: { participate: 'Walks, talks and uses the pieces; adds nothing.' },
+  // liveknowledge's Participant is an Editor less three things (its share-roles.md): nothing there to vote on.
+  liveknowledge: {
+    participate: 'Writes and verifies pages. Can’t change the style or review period.',
+  },
 };
 
 /** A level's blurb for an app: its own words, or the shared one. */

@@ -501,7 +501,9 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   Each level's card carries a one-line blurb, the same for every app (`LEVEL_PASS` in
   `packages/explorer/src/dialogs/share/parts.tsx`) unless the app words it its own way (`APP_LEVEL_BLURBS`, keyed
   by app and level, read for the item's app): livehuddle's Participant reads "Walks, talks and uses the pieces; adds
-  nothing." ([livehuddle Share roles](../../../../livehuddle/docs/specs/013-workspace/share-roles.md#a-participant-walks)).
+  nothing." ([livehuddle Share roles](../../../../livehuddle/docs/specs/013-workspace/share-roles.md#a-participant-walks)),
+  and liveknowledge's "Writes and verifies pages. Can't change the style or review period." (an Editor less three
+  things, [liveknowledge Share roles](../../../../liveknowledge/docs/specs/013-workspace/share-roles.md)).
 - `GET /share/:code`: public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
   opens it, except through a public link (no Shared entry, no "joined" notice, no visit in its History); 401
   `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right
