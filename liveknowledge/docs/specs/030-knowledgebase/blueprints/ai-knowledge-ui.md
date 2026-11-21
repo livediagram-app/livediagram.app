@@ -3,19 +3,23 @@
 Derived from [AI Knowledge](../ai-knowledge.md): the knowledgebase's third view, over `GET knowledge` and the routes
 its actions call ([api.md](../../015-api/api.md) "Knowledge"). It is drawn on the surface the
 [Ask UI blueprint](ask-ui.md) "The three views" describes and shares its session, rights, page picker, Draft a Page
-and AI Settings. **Nothing here is verified in a browser.**
+and AI Settings. The dashboard was seen in a browser on 2026-11-21; a conflict's row only through a stubbed read.
 
-| Piece                                     | File                                                                                                                  |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| the read and the actions' runner          | `components/ai-knowledge/useKnowledgeOverview.ts`                                                                     |
-| the view                                  | `components/ai-knowledge/AiKnowledgeView.tsx`                                                                         |
-| a section's card                          | `components/ai-knowledge/AiSection.tsx`                                                                               |
-| the sections                              | `AgentsSection.tsx`, `ConflictsSection.tsx`, `QuestionsSection.tsx`, `SuggestionsSection.tsx`, `HealthAndContext.tsx` |
-| an agent's card, its menu and its change  | `AgentCard.tsx`, `useAgentWrite.ts`, `AgentWriteDialog.tsx`; `lib/api/knowledge-agents.ts`                            |
-| Connect an Agent                          | `ConnectAgentDialog.tsx`                                                                                              |
-| the owner emails' requests and words      | `lib/api/knowledge-emails.ts`, `lib/knowledge-ask/email-words.ts`                                                     |
-| the words                                 | `lib/knowledge-ask/overview-words.ts`                                                                                 |
-| accept and dismiss a suggestion, refusals | `lib/knowledge-ask/suggestions-api.ts`                                                                                |
+| Piece                                     | File                                                                                                         |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| the read and the actions' runner          | `components/ai-knowledge/useKnowledgeOverview.ts`                                                            |
+| the view: its states, actions and dialogs | `components/ai-knowledge/AiKnowledgeView.tsx`                                                                |
+| the dashboard's layout and its loading    | `components/ai-knowledge/AiDashboard.tsx`, `DashboardLoading.tsx`                                            |
+| the figures band and its sparkline        | `components/ai-knowledge/FigureTiles.tsx`, `ReadsSparkline.tsx`                                              |
+| Needs Attention and its rows              | `NeedsAttention.tsx`, `ConflictRow.tsx`, `QuestionRow.tsx`, `SuggestionRow.tsx`                              |
+| a card, its cap and Show All              | `components/ai-knowledge/AiSection.tsx`, `useShowAll.tsx`                                                    |
+| the other cards                           | `AgentsSection.tsx`, `HealthAndContext.tsx`, `MostReadCard.tsx`                                              |
+| an agent's card, its menu and its change  | `AgentCard.tsx`, `useAgentWrite.ts`, `AgentWriteDialog.tsx`; `lib/api/knowledge-agents.ts`                   |
+| Connect an Agent                          | `ConnectAgentDialog.tsx`                                                                                     |
+| the owner emails' requests and words      | `lib/api/knowledge-emails.ts`, `lib/knowledge-ask/email-words.ts`                                            |
+| the words and the figures                 | `lib/knowledge-ask/overview-words.ts`, `lib/knowledge-ask/dashboard-figures.ts`                              |
+| accept and dismiss a suggestion, refusals | `lib/knowledge-ask/suggestions-api.ts`                                                                       |
+| the reads by day and Most Read (api)      | `countDailyReads` + `dailyReads`, `countMostRead` in `packages/knowledge/src/sql/reads.ts`; `handleOverview` |
 
 ## The read
 
@@ -24,25 +28,73 @@ when the view mounts and each time `refresh()` is called; the effect's `AbortSig
 wants. A re-read that fails keeps what is on show. `enabled` is false for a knowledgebase kept Offline: no request.
 There is no timer.
 
+The figures band and Most Read ask nothing of their own: `handleOverview` runs two more statements in its one
+`Promise.all`. `countDailyReads(now)`: `SUM(reads)` by `day` and `reader_kind` over the last `READS_TREND_DAYS` (14)
+days, a range of `page_reads`' primary key (day first), at most 28 rows; `dailyReads(rows, now)` fills the days with
+none, oldest first. `countMostRead(now)`: the last 7 days' reads by `tab`, people and agents apart, most first then
+by tab, `LIMIT 10`; the route drops a tab no longer in the document and keeps `MOST_READ_PAGES` (5). The answer gains
+`reads: { days, mostRead }`.
+
 `run(id, action, failureText)` runs one action: a second with the same `id` while the first is out does nothing; the
 ids running are `busy` (a button's busy look); a refusal becomes `failure`, said in an error callout above the
 sections and cleared when the next action starts; a success calls `refresh()`. So an action costs its own request
 and one read.
 
-## The sections
+## The dashboard
 
-Each is `AiSection`: a `section` named by its heading's words (the count sits beside them in a `CountBadge`, outside
-the name), one line about it, an optional action at the right, then its rows or a `CompactEmptyState`.
+`AiDashboard` lays the ready view out (ai-knowledge.md "The view, as built"): the figures band, then a grid,
+`lg:grid-cols-3`, of two stacks: the wide one (`lg:col-span-2`) Needs Attention then Connected Agents, the narrow one
+Knowledge Health, Always in Context, Most Read and What an Agent Sees. Below `lg` the stacks follow each other in one
+column. The content is at most `max-w-7xl`, centred, `px-4 sm:px-6`.
 
-| Section                       | Rows from             | Empty state                                                   | Editor's actions                                                     |
-| ----------------------------- | --------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Connected Agents              | `agents`              | "No Agents Yet", Connect an Agent                             | Allow Writing; Stop Writing                                          |
-| Pages That Disagree           | `conflicts`, `hasKey` | "No Disagreements Yet"; with no key, a note that it needs one | each side's Is Right, Fix the Other; Ask Both Owners; Not a Conflict |
-| Questions Nobody Could Answer | `questions`           | "No Unanswered Questions Yet"                                 | Draft a Page; Dismiss                                                |
-| Edits Suggested by Agents     | `suggestions`         | "No Suggested Edits Yet"                                      | Accept; Dismiss (Open the Page is everyone's)                        |
-| Knowledge Health              | `health`              | "No Pages Yet"                                                | Remind the Owners                                                    |
-| Always in Context             | `context`             | "No Pages in Context Yet"                                     | Add a Page; remove                                                   |
-| What an Agent Sees            | the read, or nothing  | a made-up page                                                | none                                                                 |
+- **The figures** (`dashboardFigures(overview)`, pure, in `dashboard-figures.ts`): `readsWeek` (people, agents,
+  total, from the last 7 of `reads.days`), `agents` and `writers` (agents whose scopes hold `write`), `questions`
+  and `asks` (the sum of `asked`), `conflicts`, `suggestions`, `verifiedShare` (`verified / total`, rounded down to a
+  whole percent so a knowledgebase with one page unverified never says 100%) and `reviewDue`.
+- **A tile** (`FigureTile`): a `button` (`min-h-[104px]`, the card's border and surface, a brand focus ring, a
+  pointer), its words (`text-xs` medium) over its figure (`text-2xl` semibold, tabular) and a line under it; the Reads
+  tile adds `ReadsSparkline`. The button's `aria-label` is its words and its figure ("Open Questions: 3", with ",
+  needs attention" when it carries the amber dot); its line is its description (`aria-describedby`); its hover
+  card (`HoverCard`, `block`) says what pressing it does. A filtering tile is `aria-pressed`.
+- **Pressing a tile:** a filter tile sets the Needs Attention filter (or back to `all` when it is on) and scrolls
+  Needs Attention into view (`scrollIntoView({ block: 'start', behavior })`, `auto` under reduced motion) and
+  focuses its heading's section; any other scrolls its card into view and focuses it (`tabIndex={-1}` on the
+  `section`).
+- **The sparkline** (`ReadsSparkline`): an `svg` a bar a day, each day a people bar (`fill-brand-700`,
+  `dark:fill-brand-300`) under an agents bar (`fill-brand-400`, `dark:fill-brand-600`), heights scaled to the busiest
+  day, a 1px hairline for a day with none, `preserveAspectRatio="none"`, 28px high, the tile's width. Inside the
+  tile's button it is hidden from screen readers; its words (`readsSparkLabel(days)`) are part of the tile's
+  description instead, since a button's content is not read as its own image.
+- **Needs Attention** (`NeedsAttention`): an `AiSection` "Needs Attention" with a `SegmentedToggle` ("Show": All,
+  Questions, Disagreements, Edits) as its action (under its heading on a phone). `attentionItems(overview,
+filter)` orders the rows: conflicts by `foundAt` newest first, suggestions by `createdAt` newest first, questions
+  by `asked` most first then `lastAt`. Each row is an `li` with an eyebrow (the kind's icon and word: "Pages
+  Disagree", "Suggested Edit", "Unanswered Question") over the row the kind draws (`ConflictRow`, `SuggestionRow`,
+  `QuestionRow`), rows divided by a hairline.
+- **Caps** (`useShowAll(rows, cap)`): the rows past `cap` are not drawn until **Show All N** (a `ghost` `xs`
+  button, `aria-expanded`) is pressed; **Show Fewer** folds them. Caps: Needs Attention 4, Connected Agents 4,
+  Always in Context 5. Changing the Needs Attention filter folds it again.
+- **Most Read** (`MostReadCard`): an `ol`, a row a page: its title (a button that opens the page, truncated), its
+  figures ("12 people, 4 agents" in words for a screen reader, `12 · 4` with two swatches on screen) and a 6px bar
+  whose length is the page's reads against the most read, split people and agents in the sparkline's tones.
+
+| Card               | Rows from                               | Empty state                                                                                                           | Writer's actions                                                                                            |
+| ------------------ | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Needs Attention    | `conflicts`, `suggestions`, `questions` | "Nothing Needs Attention"; per filter "No Unanswered Questions Yet", "No Disagreements Yet", "No Suggested Edits Yet" | Is Right, Fix the Other; Ask Both Owners; Not a Conflict; Accept; Dismiss; Draft a Page; dismiss a question |
+| Connected Agents   | `agents`                                | "No Agents Yet", Connect an Agent                                                                                     | Allow Writing; Stop Writing (an Editor's)                                                                   |
+| Knowledge Health   | `health`                                | "No Pages Yet"                                                                                                        | Remind the Owners                                                                                           |
+| Always in Context  | `context`                               | "No Pages in Context Yet"                                                                                             | Add a Page; remove                                                                                          |
+| Most Read          | `reads.mostRead`                        | "No Reads Yet"                                                                                                        | none (a row opens its page)                                                                                 |
+| What an Agent Sees | the read, or nothing                    | a made-up page                                                                                                        | none                                                                                                        |
+
+The key: the Disagreements filter alone carries a small `role="note"` line, "Finding pages that disagree uses your
+team's AI key." with **Open AI Settings** (a link-styled button) for `manageAi`, and "Ask an Editor to add one." for
+anyone else. Nothing else on the dashboard mentions a key.
+
+## The rows
+
+Each card is `AiSection`: a `section` named by its heading's words (the count sits beside them in a `CountBadge`,
+outside the name), one line about it, an optional action at the right, then its rows or a `CompactEmptyState`.
 
 - **Agents.** `agentDoor(agent)`: the row's `door` when the room noted its token; else, from the name, "MCP", "CLI"
   and "API Token" (what the api counts a client under when it sends none), any other name being the client's own.
@@ -91,8 +143,8 @@ kind, now))` and the overview read again; a thrown request is `emailFailureText`
 
 ## States
 
-Loading: three 160px placeholder cards in a `status` named "Loading AI Knowledge". Failed: an error callout, **Try
-Again**. Offline: one `EmptyState` for the view. Ready: the sections, in the order above.
+Loading: the dashboard's shape in placeholders (six tiles, a wide and a narrow card) in a `status` named "Loading AI
+Knowledge". Failed: an error callout, **Try Again**. Offline: one `EmptyState` for the view. Ready: the dashboard.
 
 ## Share roles
 
@@ -117,9 +169,14 @@ each handler checks it again. Tests, a role at a time: `components/ai-knowledge/
 
 ## Tests
 
-`lib/knowledge-ask/overview-words.test.ts` and `components/ai-knowledge/AiKnowledgeView.test.tsx`: one read on open
-and one after an action, every empty state, a failed read, Offline, each section's rows, the passages and lines as
-text, the health bar's label and parts, the over-budget refusal, each action's request, and the controls per role.
+`lib/knowledge-ask/overview-words.test.ts`, `lib/knowledge-ask/dashboard-figures.test.ts` and
+`components/ai-knowledge/AiKnowledgeView.test.tsx`: one read on open and one after an action, every empty state, a
+failed read, Offline, each card's rows, the passages and lines as text, the health bar's label and parts, the
+over-budget refusal, each action's request, and the controls per role. `components/ai-knowledge/AiDashboard.test.tsx`:
+each tile's figure and name, the amber mark, a filter tile pressing and unpressing, a tile scrolling to its card, the
+sparkline's label, the caps and Show All, Most Read's rows and empty state. The api's `knowledge-ask-routes.test.ts`
+"AI Knowledge" and `knowledge-overview-reads.test.ts`: the days filled with zeros, people and agents apart, the
+14-day window, Most Read's order, its cap and a deleted page left out.
 
 ## AI Context on a page
 
@@ -176,5 +233,4 @@ day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows wi
 
 ## Not built, or not known
 
-Listed in the spec's "Not built". Also: the sections' layout has not been seen in a browser, and the suggestion
-routes have been called only through a fake.
+Listed in the spec's "Not built". Also: the suggestion routes have been called only through a fake.

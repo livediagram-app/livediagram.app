@@ -1,6 +1,8 @@
 # AI Knowledge
 
-Status: **the view is built, not yet verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md)
+Status: **the view is built as a dashboard and was seen in a browser on 2026-11-21** (every tile and card action
+pressed, light and dark, 1440 to 390 wide; a conflict only through a stubbed read, since none can be found without a
+key) ([Build plan](../005-project-roadmap/build-plan.md)
 step 10). What is not built is under "Not built"; the [AI Knowledge UI blueprint](blueprints/ai-knowledge-ui.md) has
 the detail.
 
@@ -26,6 +28,9 @@ people.
 The room counts page reads by day, by reader kind (`person` or `agent`) and by agent, in its Durable Object
 (`page_reads`), kept 90 days. A read is one open of a page in the editor, or one `read_page` or search result served
 to an agent. No reader's identity is kept beyond the agent's name.
+
+The view's read answers the last 14 days' reads by day, people and agents apart (the sparkline and Reads This Week),
+and the 5 pages read most in the last 7 days with each one's reads by people and by agents (Most Read).
 
 ## Questions nobody could answer
 
@@ -115,41 +120,91 @@ every page is verified when there is nothing to remind anyone of.
 
 ## The view, as built
 
+Owner, 2026-11-21: "Can you improve the UX of that page, its just a long page with stacked items, could be more of a
+dashboard". The view is a dashboard: a band of headline figures, then cards in a grid, each card holding its own
+rows and actions, long lists capped so the page never grows with the data.
+
 - One read of `GET .../knowledge` each time the view opens and one after each action taken in it. Nothing is polled.
+  Every figure below comes from that one read.
 - **Header:** "AI Knowledge", one line, **Connect an Agent** and **AI Settings**.
+- **The figures band:** six tiles, each a button named by its words and its figure. Six across on a wide screen,
+  three across from a tablet's width, two across on a phone.
+
+  | Tile                | Figure                                                                     | Pressed                                  |
+  | ------------------- | -------------------------------------------------------------------------- | ---------------------------------------- |
+  | Reads This Week     | page reads in the last 7 days; people and agents apart; a 14-day sparkline | brings Most Read into view               |
+  | Connected Agents    | agents seen in 30 days; how many may write                                 | brings Connected Agents into view        |
+  | Open Questions      | questions nobody could answer; how many asks in all                        | shows Needs Attention at Questions       |
+  | Pages That Disagree | open conflicts                                                             | shows Needs Attention at Disagreements   |
+  | Suggested Edits     | agents' edits waiting                                                      | shows Needs Attention at Suggested Edits |
+  | Verified            | the verified share of the pages, as a percentage; how many are Review Due  | brings Knowledge Health into view        |
+
+  A tile whose figure asks for someone (an open question, a conflict, an edit waiting, a page Review Due) carries a
+  small amber mark; a tile that filters Needs Attention shows pressed while its filter is on, and pressing it again
+  shows All. The sparkline is the last 14 days' reads, a bar a day, people and agents stacked in two tones, with
+  its words said as the tile's description ("Reads by day over the last 14 days: 60 by people, 24 by agents.").
+
+- **Needs Attention** (the widest card, first): the work waiting for someone, in one list, most urgent first: pages
+  that disagree (a wrong answer is being given now), then edits agents suggested (an agent is waiting), then
+  questions nobody could answer, the most asked first. A switch above it shows **All**, **Questions**,
+  **Disagreements** or **Edits** (an agent's suggested edits). Each row says what kind it is with an icon and a word, and keeps its
+  actions as below. At most 4 rows show; **Show All 9** opens the rest in place and **Show Fewer** folds them.
+- **Knowledge Health:** the verified share as a large figure, the stacked bar and its legend, and **Remind the
+  Owners**.
+- **Connected Agents:** compact cards, two across in the wide column, at most 4 before **Show All**; **Connect an
+  Agent** at the card's top right.
+- **Always in Context:** the budget meter, each page with its size and a remove button, at most 5 before **Show All**,
+  and **Add a Page**.
+- **Most Read:** the 5 pages read most in the last 7 days, each with a bar of its reads, people and agents in the
+  same two tones as the sparkline, and its figures. A row opens its page. A deleted page is left out.
+- **What an Agent Sees:** the dark sample card, last in the narrow column.
+- On a wide screen the cards sit in two columns: Needs Attention and Connected Agents in the wide one (two thirds),
+  Knowledge Health, Always in Context, Most Read and What an Agent Sees in the narrow one. Below a laptop's width
+  (1024px) the cards are one column in that order. Nothing scrolls sideways at any width.
+- **Empty states** teach how each card fills:
+  - Needs Attention with nothing waiting: "Nothing Needs Attention", saying what lands here and how (an
+    unanswered Ask, an agent's empty search or `report_gap`, a page that disagrees with another, an agent's
+    suggested edit). Each filter with nothing has its own: "No Unanswered Questions Yet" (Ask, an agent's search
+    or its `report_gap` logs one), "No Disagreements Yet" (checked when a page is verified or saved), "No
+    Suggested Edits Yet" (an agent with Suggests Edits sends one).
+  - Connected Agents: "No Agents Yet" with **Connect an Agent**.
+  - Most Read: "No Reads Yet": opening a page counts a read, as does an agent's `read_page` or search result.
+  - Knowledge Health: "No Pages Yet". Always in Context: "No Pages in Context Yet" (an Editor's line says how to add
+    one; anyone else's who can).
+- **The AI key** is never a blocker on the dashboard (owner, 2026-11-21: built-in AI is coming for when there is no
+  key). While the conflict check needs one, the Disagreements filter carries one small note, with **Open AI
+  Settings** for an Editor; the All list, the tiles and the empty states say nothing of a key.
 - **Connect an Agent** is a dialog: a new connection can read, search and suggest; how an Editor allows writing
   (anyone else reads that an Editor can); then the MCP server's address and its first tools (`get_context`,
   `search_pages`, `read_page`, `suggest_edit`), the command line (`liveknowledge auth login`, `context`, `search`)
   and **Open API Tokens** (Settings' Tokens page).
-- **Connected Agents:** a card each: an icon, the name, how it connects and when it was last seen (what the room
-  noted of its token), a "Connected" dot, what it may do as chips from its scopes (**Reads**, **Suggests Edits**,
-  **Writes**), pages read this week and the three it read most, each opening its page. An agent known only by its
-  reads, counted before the room kept tokens, shows **Reads** and how its name says it connects. For an Editor a
-  card has a More menu with **Allow Writing** or **Stop Writing**, behind a confirm dialog; the chips change at
-  once and go back, with a toast saying why, when the change is refused. A connection that cannot write whatever
-  is granted (a read-only token, or one acting for someone who is not an Editor) has no menu and says why.
-- **Pages That Disagree:** the question, the two passages side by side (stacked on a phone) each with its page's
+- **An agent's card:** an icon, the name, how it connects and when it was last seen (what the room noted of its
+  token), a "Connected" dot, what it may do as chips from its scopes (**Reads**, **Suggests Edits**, **Writes**),
+  pages read this week and the three it read most, each opening its page. An agent known only by its reads, counted
+  before the room kept tokens, shows **Reads** and how its name says it connects. For an Editor a card has a More
+  menu with **Allow Writing** or **Stop Writing**, behind a confirm dialog; the chips change at once and go back,
+  with a toast saying why, when the change is refused. A connection that cannot write whatever is granted (a
+  read-only token, or one acting for someone who is not an Editor) has no menu and says why.
+- **A conflict's row:** the question, the two passages side by side (stacked on a phone) each with its page's
   trust, **<Page> Is Right, Fix the Other** for each side (it opens the other page), **Ask Both Owners** and **Not
-  a Conflict**. Once the owners were asked, "Owners asked 14 Nov" stands in the button's place. Without a key the
-  section says it needs one.
-- **Questions Nobody Could Answer:** rows of the question, "Asked 4 times by people and the Coding Agent", **Draft a
-  Page** and a dismiss button.
-- **Edits Suggested by Agents:** a card each: the page, the agent, the reason's first line, the lines taken out and
-  put in (a sign and a strike as well as a colour), **Accept**, **Open the Page**, **Dismiss**. A suggestion that no
-  longer fits its page says so in words.
-- **Knowledge Health:** one stacked bar, Verified, Review Due and Never Verified, dark, mid and light so they differ
-  in lightness as well as hue, with one spoken label and a legend of the three counts. **Remind the Owners** sits
-  at the section's right while a page is Review Due or Never Verified; for a week after a reminder "Owners reminded
-  14 Nov" stands in its place.
+  a Conflict**. Once the owners were asked, "Owners asked 14 Nov" stands in the button's place.
+- **A question's row:** the question, "Asked 4 times by people and the Coding Agent", **Draft a Page** and a dismiss
+  button.
+- **A suggestion's row:** the page, the agent, the reason's first line, the lines taken out and put in (a sign and a
+  strike as well as a colour), **Accept**, **Open the Page**, **Dismiss**. A suggestion that no longer fits its page
+  says so in words.
+- **Knowledge Health's bar:** Verified, Review Due and Never Verified, dark, mid and light so they differ in lightness
+  as well as hue, with one spoken label and a legend of the three counts. **Remind the Owners** sits at the card's
+  right while a page is Review Due or Never Verified; for a week after a reminder "Owners reminded 14 Nov" stands in
+  its place.
 - **The two email buttons** are a signed-in Editor's and are drawn only where the deployment sends email (the read
   says so). Each shows what happened in a toast, in words ("Sent to 2 owners.", "The owners were already reminded
-  this week. They can be reminded again on 25 Nov."); a request that fails outright is said above the sections.
-- **Always in Context:** the budget bar ("4,410 of 8,000 tokens"), each page with its size and a remove button, and
-  **Add a Page**, which opens a page picker. A page that would pass the budget is refused in the route's own words.
+  this week. They can be reminded again on 25 Nov."); a request that fails outright is said above the cards.
+- **Always in Context's meter** reads "4,410 of 8,000 tokens"; **Add a Page** opens a page picker. A page that would
+  pass the budget is refused in the route's own words.
 - **What an Agent Sees:** a dark card with a short sample of how one search result reads to an agent, built from a
   real passage of this knowledgebase when the read holds one.
-- Every section with nothing to show has an empty state. A knowledgebase kept Offline shows one empty state for the
-  whole view and reads nothing.
+- A knowledgebase kept Offline shows one empty state for the whole view and reads nothing.
 - Passages, questions, reasons and suggested lines are other people's text: drawn as text, never as HTML.
 
 ## Not built
