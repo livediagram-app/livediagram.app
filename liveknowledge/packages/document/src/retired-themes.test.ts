@@ -35,9 +35,11 @@ describe('the retired UML theme', () => {
         box({ id: 'b', fillColor: '#123456', strokeColor: '#334155' }),
       ],
     });
-    expect(out.theme).toBe('mono');
-    expect(out.backgroundColor).toBe(mono.backgroundColor);
-    expect(out.patternColor).toBe(mono.patternColor);
+    // The elements move to Mono's colours; the tab itself then keeps no theme or surround of its own
+    // (docs/specs/030-knowledgebase/page-surface.md "No tab has a style"): the look is the knowledgebase's.
+    expect(out).not.toHaveProperty('theme');
+    expect(out).not.toHaveProperty('backgroundColor');
+    expect(out).not.toHaveProperty('patternColor');
     expect(out.elements[0]).toMatchObject({
       fillColor: mono.elementFill,
       strokeColor: mono.elementStroke,
@@ -48,5 +50,6 @@ describe('the retired UML theme', () => {
       strokeColor: mono.elementStroke,
     });
     expect(migrateRetiredTheme(out)).toBe(out);
+    expect(migrateStoredTab(out)).toEqual(out);
   });
 });

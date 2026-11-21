@@ -353,6 +353,19 @@ const V15 = (exec: Exec) => {
     exec('ALTER TABLE document ADD COLUMN knowledge_settings TEXT NULL');
 };
 
+// The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"),
+// `document.knowledge_style`: JSON of the style, NULL for the default (the Everyday look, the product's theme). Asks
+// before the ALTER, as V15 does; every knowledgebase already there reads as the default.
+const V16 = (exec: Exec) => {
+  const have = new Set(
+    exec('PRAGMA table_info(document)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('knowledge_style'))
+    exec('ALTER TABLE document ADD COLUMN knowledge_style TEXT NULL');
+};
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -369,6 +382,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V13,
   V14,
   V15,
+  V16,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

@@ -18,6 +18,7 @@ import {
   type EnvelopeTab,
   type Tab,
   type KnowledgeSettings,
+  type KnowledgeStyle,
 } from '@liveknowledge/document';
 import { APP_FILE_FORMATS } from '@liveworkspace/drive/formats';
 import { storedTabConnection, tabConnectionOf, type ExportResult } from '@liveworkspace/index-app';
@@ -73,7 +74,13 @@ export async function exportDocumentFile(
   return {
     status: 'ok',
     body: documentToEnvelopeText(
-      { id: documentId, name: meta.name, presentation, knowledgeSettings },
+      {
+        id: documentId,
+        name: meta.name,
+        presentation,
+        knowledgeSettings,
+        knowledgeStyle: meta.knowledgeStyle,
+      },
       tabs,
       savedAt,
     ),
@@ -90,6 +97,8 @@ export type DocumentFileContent = {
   presentation: string | null;
   // The file's Review Period when it names one that is not the default.
   knowledgeSettings?: KnowledgeSettings;
+  // The file's Knowledgebase Style when it names one that is not the default.
+  knowledgeStyle?: KnowledgeStyle;
   copy: DocumentCopy;
 };
 
@@ -122,6 +131,7 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
       }
     : copyDocumentEnvelope(parsed.envelope);
   const knowledgeSettings = parsed.envelope.document.knowledgeSettings;
+  const knowledgeStyle = parsed.envelope.document.knowledgeStyle;
   if (presentation !== null && presentation.length > MAX_DECK_LEN) {
     return { ok: false, failure: 'too_large' };
   }
@@ -156,6 +166,7 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
     content: {
       presentation,
       ...(knowledgeSettings ? { knowledgeSettings } : {}),
+      ...(knowledgeStyle ? { knowledgeStyle } : {}),
       copy: { tabs: copied, images: [] },
     },
   };
@@ -181,5 +192,6 @@ export async function importDocumentFile(
     createdAt: now,
     presentation: file.presentation,
     knowledgeSettings: file.knowledgeSettings,
+    knowledgeStyle: file.knowledgeStyle,
   });
 }

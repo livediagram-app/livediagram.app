@@ -48,19 +48,25 @@ describe('rowToTab', () => {
   });
 
   it('carries any per-tab settings serialised in the data blob through to the DTO', () => {
-    // The data blob is the round-trip channel for things like theme,
-    // background, locked, etc. that don't have their own row columns.
-    // The spread MUST land them on the result unchanged.
+    // The data blob is the round-trip channel for what has no row column of its own (a page's knowledge fields,
+    // its mode). The spread MUST land them on the result unchanged.
     const dto = rowToTab(
       baseRow({
         data: bodyJson({
           theme: 'cobalt',
+          knowledge: { owner: 'user_o', context: true },
           background: { pattern: 'grid', color: '#ffffff', patternColor: '#cbd5e1' },
           locked: true,
         }),
       }),
     );
-    expect((dto as unknown as { theme: string }).theme).toBe('cobalt');
+    expect((dto as unknown as { knowledge: unknown }).knowledge).toEqual({
+      owner: 'user_o',
+      context: true,
+    });
+    // A tab has no style of its own (docs/specs/030-knowledgebase/page-surface.md "No tab has a style"): a stored
+    // theme is dropped as the tab is read.
+    expect(dto).not.toHaveProperty('theme');
     // A lock is not in liveknowledge: a stored one reads as unlocked (docs/specs/030-knowledgebase/page-surface.md
     // "What a page no longer has").
     expect(dto).not.toHaveProperty('locked');

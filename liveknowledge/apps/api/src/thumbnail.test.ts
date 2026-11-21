@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PEN_INK, penColourHex } from '@liveknowledge/document';
+import { DEFAULT_KNOWLEDGE_STYLE, PEN_INK, penColourHex } from '@liveknowledge/document';
 import type { DocumentDTO, DocumentEnv, Env } from './types';
 
 // A document drawn for liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): the platform stores and serves it,
@@ -57,6 +57,7 @@ function liveDoc(over: Partial<DocumentDTO> = {}): DocumentDTO {
     folderId: null,
     presentation: null,
     knowledgeSettings: { reviewEvery: 90 },
+    knowledgeStyle: DEFAULT_KNOWLEDGE_STYLE,
     teamId: null,
     source: null,
     savedAt: 1000,

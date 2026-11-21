@@ -29,6 +29,7 @@ function documentOf(
     source: isDocumentSource(meta.source) ? meta.source : null,
     presentation: outline.presentation,
     knowledgeSettings: meta.knowledgeSettings,
+    knowledgeStyle: meta.knowledgeStyle,
     savedAt: outline.savedAt,
     createdAt: meta.createdAt,
     ownerName: owner?.name ?? null,

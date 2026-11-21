@@ -150,6 +150,9 @@ export function webSocketMessage(
     // them): a session's own `document-meta` never carries them, so no peer hears a period that was not saved.
     if (opKind === 'document-meta')
       delete (msg.op as { knowledgeSettings?: unknown }).knowledgeSettings;
+    // Nor the Knowledgebase Style, which the api sends after an Editor's metadata write stored it
+    // (routes/documents.ts): a Participant's or a Viewer's socket can never restyle the knowledgebase.
+    if (opKind === 'document-meta') delete (msg.op as { knowledgeStyle?: unknown }).knowledgeStyle;
     const isPresenceOp = gate.presence;
     // A paragraph hold is the room's to give, never relayed as sent (docs/specs/007-editor/article-pages.md
     // "Holding a paragraph").

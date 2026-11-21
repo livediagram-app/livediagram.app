@@ -17,7 +17,7 @@ import type { Team } from '@liveworkspace/api-schema/teams';
 import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { Tab } from '@liveknowledge/document';
-import type { KnowledgeSettingsWire } from './knowledge';
+import type { KnowledgeSettingsWire, KnowledgeStyleWire } from './knowledge';
 
 // ---------------------------------------------------------------------
 // Documents
@@ -61,6 +61,9 @@ export type LiveDoc = {
   // The knowledgebase's settings (docs/specs/030-knowledgebase/verification.md "The Review Period"): always
   // present, every 90 days for a knowledgebase that never chose.
   knowledgeSettings: KnowledgeSettingsWire;
+  // The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): always present,
+  // the Everyday look in the product's own theme for a knowledgebase that never chose.
+  knowledgeStyle: KnowledgeStyleWire;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the

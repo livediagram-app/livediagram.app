@@ -6,13 +6,16 @@ import {
   applyDeckSlidePatch,
   mergePresentationNoteCards,
   parseKnowledgeSettings,
+  parseKnowledgeStyle,
   parseStoredPresentation,
   remapTabLinks,
   settleStoredArticlesData,
   storedKnowledgeSettings,
+  storedKnowledgeStyle,
   type DeckSlidePatch,
   type Element,
   type KnowledgeSettings,
+  type KnowledgeStyle,
 } from '@liveknowledge/document';
 import { MAX_DECK_LEN } from '../limits';
 import { redactTabDataForCommunity } from '@liveworkspace/community/app';
@@ -35,6 +38,8 @@ export type DocumentMeta = {
   createdAt: number;
   // The knowledgebase's settings (the Review Period), read with the row: every 90 days when none is stored.
   knowledgeSettings: KnowledgeSettings;
+  // The Knowledgebase Style, read with the row: the Everyday look in the product's theme when none is stored.
+  knowledgeStyle: KnowledgeStyle;
 };
 
 // What a document read takes from the document: its tabs in order (no body), its slide deck, and what it knows of
@@ -56,10 +61,11 @@ type DocumentHeadRow = {
   team_id: string | null;
   source: string | null;
   knowledge_settings: string | null;
+  knowledge_style: string | null;
 };
 
 const DOCUMENT_HEAD_COLS =
-  'presentation, saved_at, created_at, name, owner_id, team_id, source, knowledge_settings';
+  'presentation, saved_at, created_at, name, owner_id, team_id, source, knowledge_settings, knowledge_style';
 
 function metaOf(head: DocumentHeadRow | null): DocumentMeta | null {
   if (!head || !head.created_at) return null;
@@ -70,6 +76,7 @@ function metaOf(head: DocumentHeadRow | null): DocumentMeta | null {
     source: head.source,
     createdAt: head.created_at,
     knowledgeSettings: parseKnowledgeSettings(head.knowledge_settings),
+    knowledgeStyle: parseKnowledgeStyle(head.knowledge_style),
   };
 }
 
@@ -159,6 +166,8 @@ export type DocumentStart = {
   // The knowledgebase's settings a create carries (an Offline sync's, a Drive file's). A started document, and a
   // copy that landed with its source's, keeps its own.
   knowledgeSettings?: KnowledgeSettings;
+  // The Knowledgebase Style a create carries, on the same terms.
+  knowledgeStyle?: KnowledgeStyle;
 };
 
 // Start the document (docs/specs/015-api/api.md "Storage"), or on a document already started rename it and move
@@ -170,11 +179,12 @@ export async function initDocument(
 ): Promise<void> {
   await env.DOCUMENT_DB.prepare(
     `INSERT INTO document (id, presentation, saved_at, created_at, name, owner_id, team_id, source,
-                           knowledge_settings)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+                           knowledge_settings, knowledge_style)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
      ON CONFLICT (id) DO UPDATE SET
        presentation = COALESCE(document.presentation, excluded.presentation),
        knowledge_settings = COALESCE(document.knowledge_settings, excluded.knowledge_settings),
+       knowledge_style = COALESCE(document.knowledge_style, excluded.knowledge_style),
        saved_at = excluded.saved_at,
        -- A copy lands unstarted with the index's title for it (its import): starting it keeps that name.
        name = CASE WHEN document.created_at = 0 AND document.name <> '' THEN document.name ELSE excluded.name END,
@@ -193,8 +203,27 @@ export async function initDocument(
       d.teamId,
       d.source,
       d.knowledgeSettings ? storedKnowledgeSettings(d.knowledgeSettings) : null,
+      d.knowledgeStyle ? storedKnowledgeStyle(d.knowledgeStyle) : null,
     )
     .run();
+}
+
+// The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style") on a started
+// document: one row written, whatever the knowledgebase holds, since every page is drawn with it when shown and
+// none stores it. False when the document is not started. It is an edit: the last save moves, so the Drive file
+// follows.
+export async function setKnowledgeStyle(
+  env: DocumentEnv,
+  documentId: string,
+  style: KnowledgeStyle,
+  savedAt: number,
+): Promise<boolean> {
+  const res = await env.DOCUMENT_DB.prepare(
+    'UPDATE document SET knowledge_style = ?, saved_at = ? WHERE id = ? AND created_at > 0',
+  )
+    .bind(storedKnowledgeStyle(style), savedAt, documentId)
+    .run();
+  return (res.meta.changes ?? 0) > 0;
 }
 
 // The knowledgebase's settings (docs/specs/030-knowledgebase/verification.md "The Review Period") on a started
@@ -335,6 +364,8 @@ export type DocumentCopy = {
   name?: string;
   // The source's settings (its Review Period) when they are not the default; a copy of one tab carries none.
   knowledgeSettings?: KnowledgeSettings;
+  // The source's Knowledgebase Style when it is not the default; a copy of one tab carries none.
+  knowledgeStyle?: KnowledgeStyle;
   tabs: {
     id: string;
     name: string;
@@ -420,8 +451,11 @@ export async function exportDocumentCopy(
   const placed = copyImageIds(copy);
   if (placed.length > 0) copy.images = [...(await servableImageIds(env, documentId, placed))];
   if (onlyTabId === null) {
-    const settings = (await readDocumentMeta(env, documentId))?.knowledgeSettings;
+    const meta = await readDocumentMeta(env, documentId);
+    const settings = meta?.knowledgeSettings;
     if (settings && storedKnowledgeSettings(settings) !== null) copy.knowledgeSettings = settings;
+    if (meta && storedKnowledgeStyle(meta.knowledgeStyle) !== null)
+      copy.knowledgeStyle = meta.knowledgeStyle;
   }
   return copy;
 }
@@ -494,9 +528,11 @@ export async function importDocumentCopy(
       .prepare(
         // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initDocument).
         // Its name is the index's title for it, which that start keeps (initDocument).
-        `INSERT INTO document (id, saved_at, created_at, name, knowledge_settings) VALUES (?1, ?2, 0, ?3, ?4)
+        `INSERT INTO document (id, saved_at, created_at, name, knowledge_settings, knowledge_style)
+         VALUES (?1, ?2, 0, ?3, ?4, ?5)
          ON CONFLICT (id) DO UPDATE SET saved_at = excluded.saved_at,
            knowledge_settings = COALESCE(excluded.knowledge_settings, document.knowledge_settings),
+           knowledge_style = COALESCE(excluded.knowledge_style, document.knowledge_style),
            name = CASE WHEN document.created_at = 0 AND excluded.name <> '' THEN excluded.name
                        ELSE document.name END`,
       )
@@ -505,6 +541,7 @@ export async function importDocumentCopy(
         now,
         copy.name ?? '',
         copy.knowledgeSettings ? storedKnowledgeSettings(copy.knowledgeSettings) : null,
+        copy.knowledgeStyle ? storedKnowledgeStyle(copy.knowledgeStyle) : null,
       ),
   ];
   for (const tab of copy.tabs) {

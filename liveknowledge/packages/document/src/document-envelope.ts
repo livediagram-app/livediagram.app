@@ -7,6 +7,7 @@
 import { remapTabLinks } from './duplicate';
 import type { Tab } from './index';
 import { DEFAULT_REVIEW_EVERY, isReviewEvery, type KnowledgeSettings } from './knowledge-settings';
+import { carriedKnowledgeStyle, type KnowledgeStyle } from './knowledge-style';
 import type { StoredPresentation } from './slide-deck';
 
 export const DOCUMENT_ENVELOPE_KIND = 'liveknowledge.document';
@@ -24,6 +25,8 @@ export type DocumentEnvelope = {
     presentation: string | null;
     /** The knowledgebase's settings (the Review Period); absent is the default, every 90 days. */
     knowledgeSettings?: KnowledgeSettings;
+    /** The Knowledgebase Style; absent is the default (the Everyday look, the product's own theme). */
+    knowledgeStyle?: KnowledgeStyle;
     tabs: EnvelopeTab[];
   };
 };
@@ -44,6 +47,7 @@ export function documentToEnvelopeText(
     name: string;
     presentation: string | null;
     knowledgeSettings?: KnowledgeSettings;
+    knowledgeStyle?: KnowledgeStyle;
   },
   tabs: EnvelopeTab[],
   exportedAt: number,
@@ -57,6 +61,7 @@ export function documentToEnvelopeText(
       name: liveDoc.name,
       presentation: liveDoc.presentation,
       ...fileSettings(liveDoc.knowledgeSettings),
+      ...carriedKnowledgeStyle(liveDoc.knowledgeStyle),
       tabs,
     },
   };
@@ -114,6 +119,7 @@ export function parseDocumentEnvelope(
         name: d.name,
         presentation: d.presentation ?? null,
         ...fileSettings(d.knowledgeSettings),
+        ...carriedKnowledgeStyle(d.knowledgeStyle),
         tabs: d.tabs,
       },
     },
@@ -127,6 +133,7 @@ export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
   tabs: EnvelopeTab[];
   presentation: string | null;
   knowledgeSettings?: KnowledgeSettings;
+  knowledgeStyle?: KnowledgeStyle;
 } {
   const idMap = new Map(envelope.document.tabs.map((t) => [t.id, crypto.randomUUID()] as const));
   const tabs = envelope.document.tabs.map((t) => ({
@@ -146,5 +153,10 @@ export function copyDocumentEnvelope(envelope: DocumentEnvelope): {
       presentation = null;
     }
   }
-  return { tabs, presentation, ...fileSettings(envelope.document.knowledgeSettings) };
+  return {
+    tabs,
+    presentation,
+    ...fileSettings(envelope.document.knowledgeSettings),
+    ...carriedKnowledgeStyle(envelope.document.knowledgeStyle),
+  };
 }

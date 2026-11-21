@@ -5,6 +5,7 @@
 
 import type { Tab } from '@liveknowledge/document';
 import {
+  carriedKnowledgeStyle,
   isReviewEvery,
   isValidTab,
   migrateIncomingTab,
@@ -66,6 +67,7 @@ import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
 import { compileSeededTabs, seedIntentOf } from './document-seed';
 import { readDeckWrite } from './deck-write';
+import { readStyleWrite, relayStyle, writeStyle } from './knowledge-style-write';
 import type { DocumentDTO } from '../types';
 import { notifyMilestone } from '../email/notifications';
 import { reportOwnerActivity } from '../person/account-app';
@@ -392,6 +394,9 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
         ...(!clash && isReviewEvery(body.knowledgeSettings?.reviewEvery)
           ? { knowledgeSettings: parseKnowledgeSettings(body.knowledgeSettings) }
           : {}),
+        // Its Knowledgebase Style, on the same terms (page-surface.md "Knowledgebase Style"): read forgivingly,
+        // the default left out.
+        ...(!clash ? carriedKnowledgeStyle(body.knowledgeStyle) : {}),
       });
       // Seed tabs if the caller provided them. The editor app's
       // welcome flow uses this when it commits a fresh document
@@ -470,6 +475,8 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
         // Only the slides the editor changed, in place of `presentation` (speaker-note-cards.md "Saving"): the
         // unload save of a deck too large to outlive the page.
         presentationPatch?: unknown;
+        // The Knowledgebase Style (page-surface.md "Knowledgebase Style"): any of its fields. Absent leaves it.
+        knowledgeStyle?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -504,6 +511,9 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
       }
       const deck = readDeckWrite(body);
       if (deck instanceof Response) return deck;
+      // A style the write names wrongly refuses it whole, before anything is written.
+      const style = readStyleWrite(existing.knowledgeStyle, body);
+      if (style instanceof Response) return style;
       // The deck first: one refused (past the deck cap, as sent or as merged) changes nothing, not even the name.
       // Only when the caller actually sent the field: `undefined` means "not my business", which is what every
       // existing client sends. A deck sent with what it was built on is merged card by card; without, as sent.
@@ -519,7 +529,11 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
       await renameDocument(env, id, name, Date.now());
       if (order) await reorderTabs(env, id, order);
       if (places) await writeTabParents(env, storedPages, placed);
+      const restyled = await writeStyle(env, existing, style);
       const liveDoc = await getDocument(env, id);
+      // The style reaches every open editor from here, the one who set it included: awaited, as the Review
+      // Period's is, so the save's answer means the room has it.
+      if (restyled) await relayStyle(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab
       // renames"); an editor sends its own rename to the room itself.
       if (ctx.token && liveDoc && name !== existing.name)

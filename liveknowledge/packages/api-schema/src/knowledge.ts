@@ -2,6 +2,16 @@
 // backlinks, a page's verification, the knowledgebase's summary, Ask, its settings and the AI Knowledge tab. Types
 // only: the engine and its limits are `@liveknowledge/knowledge`.
 
+import type { KnowledgeStyle } from '@liveknowledge/document';
+
+/** The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): the one look every
+ *  page is drawn in. In a document read (always whole), the `document-meta` op when it changed, and the metadata
+ *  write (`PUT /api/documents/<id>`), which takes any of its fields and `accent: null` to clear a picked accent. */
+export type KnowledgeStyleWire = KnowledgeStyle;
+export type KnowledgeStyleWrite = Partial<Omit<KnowledgeStyle, 'accent'>> & {
+  accent?: string | null;
+};
+
 /** A page's verified state, worked out when read (verification.md "States"). */
 export type KnowledgeTrustState = 'verified' | 'review-due' | 'never-verified';
 export type KnowledgeReviewEvery = 30 | 90 | 180 | 365 | 'never';

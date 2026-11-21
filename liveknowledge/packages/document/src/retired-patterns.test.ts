@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { RETIRED_PATTERNS, isBackgroundPattern } from './retired-patterns';
+import { RETIRED_PATTERNS, isBackgroundPattern, migrateRetiredPattern } from './retired-patterns';
 import { migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import type { Tab } from './index';
 
@@ -24,20 +24,23 @@ describe('the retired Isometric pattern', () => {
     expect(RETIRED_PATTERNS.isometric).toBe('crosshatch');
   });
 
-  it('opens a stored tab that wore it as Crosshatch, its colour kept', () => {
+  it('reads a tab that wore it as Crosshatch, its colour kept', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
-    const tab = migrateStoredTab(saved());
+    const tab = migrateRetiredPattern(saved());
     expect(tab.backgroundPattern).toBe('crosshatch');
     expect(tab.patternColor).toBe('#cbd5e1');
+    const graph = { id: 't', name: 'T', backgroundPattern: 'graph', elements: [] } as Tab;
+    expect(migrateRetiredPattern(graph)).toBe(graph);
   });
 
-  it('moves a tab that arrives wearing it (an api write, a file) before validation', () => {
+  // docs/specs/030-knowledgebase/page-surface.md "No tab has a style": a knowledgebase's tab keeps no surround at
+  // all, so a stored or arriving tab opens without one, and still opens (it is never refused for the retired name).
+  it('opens a stored or arriving tab that wore it with no pattern of its own', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
-    expect((migrateIncomingTab(saved()) as Tab).backgroundPattern).toBe('crosshatch');
-  });
-
-  it('leaves a tab on any other pattern as it is', () => {
-    const tab = { id: 't', name: 'T', backgroundPattern: 'graph', elements: [] } as Tab;
-    expect(migrateStoredTab(tab).backgroundPattern).toBe('graph');
+    for (const tab of [migrateStoredTab(saved()), migrateIncomingTab(saved()) as Tab]) {
+      expect(tab).not.toHaveProperty('backgroundPattern');
+      expect(tab).not.toHaveProperty('patternColor');
+      expect(tab.id).toBe('t');
+    }
   });
 });
