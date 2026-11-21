@@ -109,7 +109,10 @@ const LIST_TAG: Readonly<Record<ArticleListBlock['list'], 'ul' | 'ol'>> = {
 };
 
 /** The writing of one page, from its blocks (the saved writing), as the public site draws it. */
-export function publishedWriting(blocks: readonly ArticleBlock[], href: PageHref): PublishedWriting {
+export function publishedWriting(
+  blocks: readonly ArticleBlock[],
+  href: PageHref,
+): PublishedWriting {
   // The first Title block is the page's title, drawn by the page itself.
   const titleAt = blocks.findIndex((b) => b.type === 'paragraph' && b.style === 'title');
   const body = titleAt === -1 ? blocks : blocks.filter((_, i) => i !== titleAt);
@@ -187,7 +190,8 @@ export function publishedWriting(blocks: readonly ArticleBlock[], href: PageHref
         const head = b.header && first ? first : null;
         const rows = head ? rest : b.rows;
         html += '<div class="table"><table>';
-        if (head) html += `<thead><tr>${head.cells.map((c) => cell('th', c)).join('')}</tr></thead>`;
+        if (head)
+          html += `<thead><tr>${head.cells.map((c) => cell('th', c)).join('')}</tr></thead>`;
         html += `<tbody>${rows.map((r) => `<tr>${r.cells.map((c) => cell('td', c)).join('')}</tr>`).join('')}</tbody>`;
         html += '</table></div>';
         break;
@@ -203,7 +207,10 @@ export function publishedWriting(blocks: readonly ArticleBlock[], href: PageHref
   closeLists(-1);
   if (footnotes.notes.length)
     html += `<ol class="footnotes">${footnotes.notes
-      .map((note, i) => `<li id="fn-${i + 1}">${escapeHtml(note)} <a href="#fnref-${i + 1}" aria-label="Back to the text">↩</a></li>`)
+      .map(
+        (note, i) =>
+          `<li id="fn-${i + 1}">${escapeHtml(note)} <a href="#fnref-${i + 1}" aria-label="Back to the text">↩</a></li>`,
+      )
       .join('')}</ol>`;
 
   const lines: string[] = [];

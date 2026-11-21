@@ -42,7 +42,7 @@ describe('the publishing client', () => {
     await apiPublish(who, 'd1', body);
     await apiUnpublish(who, 'd1');
     expect(calls.map((c) => c.init.method)).toEqual(['PUT', 'DELETE']);
-    expect(JSON.parse(String(calls[0]!.init.body))).toEqual(body);
+    expect(JSON.parse(calls[0]!.init.body as string)).toEqual(body);
   });
 
   it('throws the refusal with its code', async () => {

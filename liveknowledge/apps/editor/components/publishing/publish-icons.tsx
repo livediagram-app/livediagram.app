@@ -1,6 +1,11 @@
 // Publish to the Web's icons (docs/specs/004-interface-design/iconography.md): vendored Lucide glyphs at the
 // chrome's sizes.
-import { lucideCopy, lucideExternalLink, lucideGlobe, lucideLock } from '@liveworkspace/icons/lucide';
+import {
+  lucideCopy,
+  lucideExternalLink,
+  lucideGlobe,
+  lucideLock,
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveknowledge/ui';
 
 export const GlobeIcon = lucideGlyph(lucideGlobe, 16);

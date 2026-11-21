@@ -11,7 +11,8 @@ export function publishFailureText(err: unknown, action: PublishAction): string 
   if (err instanceof ApiError) {
     if (err.code === 'address_taken')
       return 'Another knowledgebase has that address. Choose another.';
-    if (err.code === 'address_reserved') return 'That address is kept for liveknowledge. Choose another.';
+    if (err.code === 'address_reserved')
+      return 'That address is kept for liveknowledge. Choose another.';
     if (err.code === 'invalid_address') return addressHint('');
     if (err.code === 'nothing_to_publish')
       return 'No page here can go public yet: each one is waiting for approval, rejected, or has no writing.';

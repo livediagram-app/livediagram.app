@@ -123,15 +123,15 @@ The knowledgebase's name in the sidebar's head is a button with a chevron beside
 menu: the name is the thing the menu is about, so the name is what is pressed, and no second button stands beside
 it. The menu is icon-left verb rows under the knowledgebase's name:
 
-| Row                   | Does                                                                                      | Who                      |
-| --------------------- | ----------------------------------------------------------------------------------------- | ------------------------ |
-| Rename                | The name becomes a field where it stands; Enter keeps it, Escape leaves it                | Editor                   |
-| Describe to Add Pages | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                  | Writer, signed in        |
-| Import                | Opens Import                                                                              | Writer                   |
-| Export                | Opens Export                                                                              | everyone                 |
+| Row                   | Does                                                                                         | Who                                 |
+| --------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Rename                | The name becomes a field where it stands; Enter keeps it, Escape leaves it                   | Editor                              |
+| Describe to Add Pages | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                     | Writer, signed in                   |
+| Import                | Opens Import                                                                                 | Writer                              |
+| Export                | Opens Export                                                                                 | everyone                            |
 | Publish to the Web    | Opens [Publish to the Web](publishing.md): the knowledgebase, or a section, as a public site | Editor, signed in, not kept Offline |
-| AI Settings           | Opens AI Settings ([Search and Ask](search-and-ask.md))                                   | Editor, not kept Offline |
-| Delete                | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator | Editor                   |
+| AI Settings           | Opens AI Settings ([Search and Ask](search-and-ask.md))                                      | Editor, not kept Offline            |
+| Delete                | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator    | Editor                              |
 
 - Knowledgebase Style is not a row: it opens from the footer's Style ([Knowledgebase Style](page-surface.md#knowledgebase-style)).
 - "Editor" is an Editor of the whole knowledgebase; "Writer" is an Editor or a Participant of the whole

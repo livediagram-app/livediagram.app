@@ -142,7 +142,7 @@ export function renderSitePage(view: SiteView, page: SitePage): string {
   const path = pagePath(view, page.address);
   const byAddress = new Map(view.tree.map((t) => [t.address, t]));
   const crumbs: SiteTreeEntry[] = [];
-  for (let at = byAddress.get(page.address)?.parent ?? null; at !== null; ) {
+  for (let at = byAddress.get(page.address)?.parent ?? null; at !== null;) {
     const entry = byAddress.get(at);
     if (!entry || crumbs.includes(entry)) break;
     crumbs.unshift(entry);

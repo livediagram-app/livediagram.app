@@ -14,12 +14,18 @@ const refused = (code: string | null, status = 409) => new ApiError('publish', s
 
 describe('publish words', () => {
   it('words every refusal, and a fault by what was asked', () => {
-    expect(publishFailureText(refused('address_taken'), 'publish')).toContain('Another knowledgebase');
-    expect(publishFailureText(refused('address_reserved', 400), 'publish')).toContain('kept for liveknowledge');
+    expect(publishFailureText(refused('address_taken'), 'publish')).toContain(
+      'Another knowledgebase',
+    );
+    expect(publishFailureText(refused('address_reserved', 400), 'publish')).toContain(
+      'kept for liveknowledge',
+    );
     expect(publishFailureText(refused('invalid_address', 400), 'publish')).toContain('Use 3 to 48');
     expect(publishFailureText(refused('nothing_to_publish'), 'publish')).toContain('No page here');
     expect(publishFailureText(refused('invalid_root', 400), 'publish')).toContain('no longer');
-    expect(publishFailureText(refused('publishing_unavailable', 403), 'publish')).toContain("isn't available");
+    expect(publishFailureText(refused('publishing_unavailable', 403), 'publish')).toContain(
+      "isn't available",
+    );
     expect(publishFailureText(refused('sign_in_required', 403), 'publish')).toBe(
       'Sign in to publish this knowledgebase.',
     );

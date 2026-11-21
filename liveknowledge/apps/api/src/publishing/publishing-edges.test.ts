@@ -90,7 +90,11 @@ describe('failures', () => {
     const kit = await knowledgeKit();
     await publish(kit);
     const waits: Promise<unknown>[] = [];
-    const res = await handlePublicSite(new Request(`${ORIGIN}/kb/handbook`), kit.db.env, (p) => void waits.push(p));
+    const res = await handlePublicSite(
+      new Request(`${ORIGIN}/kb/handbook`),
+      kit.db.env,
+      (p) => void waits.push(p),
+    );
     expect(res.status).toBe(200);
     await expect(Promise.all(waits)).resolves.toBeDefined();
     const { purgePublished } = await import('./public-site');

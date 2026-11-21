@@ -17,7 +17,12 @@ vi.mock('../index-service', async (original) => {
 vi.mock('../person/profiles', async (original) => ({
   ...(await original<typeof import('../person/profiles')>()),
   getParticipants: async (_env: unknown, ids: readonly string[]) =>
-    new Map(ids.map((id) => [id, { ownerId: id, name: 'Olive Owner', email: 'SECRET-EMAIL@example.com' }])),
+    new Map(
+      ids.map((id) => [
+        id,
+        { ownerId: id, name: 'Olive Owner', email: 'SECRET-EMAIL@example.com' },
+      ]),
+    ),
 }));
 
 afterEach(() => vi.restoreAllMocks());
@@ -67,7 +72,9 @@ const PAGES = [
       },
     ],
     {
-      elements: [{ id: 'e1', type: 'text', text: 'SECRET-ELEMENT', x: 0, y: 0, width: 10, height: 10 }],
+      elements: [
+        { id: 'e1', type: 'text', text: 'SECRET-ELEMENT', x: 0, y: 0, width: 10, height: 10 },
+      ],
     },
   ),
   page('tab-pending', 'SECRET-PENDING title', [para('p1', 'SECRET-PENDING body words')]),
@@ -80,8 +87,16 @@ async function privateKnowledgebase() {
     kit.db.sql
       .prepare(`UPDATE tabs SET data = json_set(data, ?, json(?)), rev = rev + 1 WHERE id = ?`)
       .run(path, json, tab);
-  set('tab-pending', '$.knowledge.approval', '{"state":"pending","requestedBy":"user_secret","requestedAt":1}');
-  set('tab-rejected', '$.knowledge.approval', '{"state":"rejected","requestedBy":"user_secret","requestedAt":1}');
+  set(
+    'tab-pending',
+    '$.knowledge.approval',
+    '{"state":"pending","requestedBy":"user_secret","requestedAt":1}',
+  );
+  set(
+    'tab-rejected',
+    '$.knowledge.approval',
+    '{"state":"rejected","requestedBy":"user_secret","requestedAt":1}',
+  );
   // Page Health: an owner, a verification, a review the room keeps on the page.
   set('tab-guide', '$.knowledge.owner', '"user_secret"');
   set('tab-guide', '$.knowledge.verified', '{"by":"user_secret","at":1,"note":"SECRET-HEALTH"}');
@@ -114,26 +129,32 @@ const PATHS = [
 ];
 
 describe('what is never published', () => {
-  it.each([false, true])('keeps every private thing off every public answer (writers shown: %s)', async (showWriters) => {
-    const kit = await privateKnowledgebase();
-    const res = await kit.call('editor', 'PUT', '/api/documents/kb/publishing', {
-      address: 'guide',
-      root: null,
-      noindex: false,
-      showWriters,
-    });
-    expect(res.status).toBe(200);
-    const front = await handlePublicSite(new Request(`${ORIGIN}/kb/guide`), kit.db.env, () => {});
-    const html = await front.text();
-    expect(html).toContain('Visible words, with a note.');
-    // A link to a page that is not published is its text alone.
-    expect(html).toContain('<p>A link to a private page</p>');
-    expect(html.includes('Written by Olive Owner')).toBe(showWriters);
-    for (const path of PATHS) {
-      const body = await (await handlePublicSite(new Request(`${ORIGIN}${path}`), kit.db.env, () => {})).text();
-      for (const secret of SECRETS) expect(body.includes(secret), `${path} holds ${secret}`).toBe(false);
-    }
-  });
+  it.each([false, true])(
+    'keeps every private thing off every public answer (writers shown: %s)',
+    async (showWriters) => {
+      const kit = await privateKnowledgebase();
+      const res = await kit.call('editor', 'PUT', '/api/documents/kb/publishing', {
+        address: 'guide',
+        root: null,
+        noindex: false,
+        showWriters,
+      });
+      expect(res.status).toBe(200);
+      const front = await handlePublicSite(new Request(`${ORIGIN}/kb/guide`), kit.db.env, () => {});
+      const html = await front.text();
+      expect(html).toContain('Visible words, with a note.');
+      // A link to a page that is not published is its text alone.
+      expect(html).toContain('<p>A link to a private page</p>');
+      expect(html.includes('Written by Olive Owner')).toBe(showWriters);
+      for (const path of PATHS) {
+        const body = await (
+          await handlePublicSite(new Request(`${ORIGIN}${path}`), kit.db.env, () => {})
+        ).text();
+        for (const secret of SECRETS)
+          expect(body.includes(secret), `${path} holds ${secret}`).toBe(false);
+      }
+    },
+  );
 
   it('answers the public site with public fields alone, field by field', async () => {
     const kit = await privateKnowledgebase();
@@ -152,10 +173,14 @@ describe('what is never published', () => {
     for (const answer of answers) {
       expect(answer.status).toBe('ok');
       if (answer.status !== 'ok') continue;
-      expect(Object.keys(answer).sort()).toEqual(
-        expect.arrayContaining(['site', 'status']),
-      );
-      expect(Object.keys(answer.site).sort()).toEqual(['address', 'name', 'noindex', 'style', 'tree']);
+      expect(Object.keys(answer).sort()).toEqual(expect.arrayContaining(['site', 'status']));
+      expect(Object.keys(answer.site).sort()).toEqual([
+        'address',
+        'name',
+        'noindex',
+        'style',
+        'tree',
+      ]);
       for (const entry of answer.site.tree)
         expect(Object.keys(entry).sort()).toEqual(['address', 'icon', 'parent', 'title']);
       if (answer.page)
@@ -175,6 +200,8 @@ describe('what is never published', () => {
     }
     expect(answers[0]).toMatchObject({ page: { writers: ['Olive Owner'] } });
     // The snapshot itself holds no private page.
-    expect(kit.db.sql.prepare('SELECT tab FROM published_pages').all()).toEqual([{ tab: 'tab-guide' }]);
+    expect(kit.db.sql.prepare('SELECT tab FROM published_pages').all()).toEqual([
+      { tab: 'tab-guide' },
+    ]);
   });
 });

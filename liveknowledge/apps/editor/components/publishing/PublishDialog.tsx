@@ -4,10 +4,19 @@
 // one section of it, on a public site at /kb/<address>, sees what goes public and what stays private before it does,
 // and can take it down. Opened from the knowledgebase's menu. One steady height whatever shows, so nothing jumps when
 // the state arrives or a preview changes.
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { PublishingState } from '@liveknowledge/api-schema';
 import { pageTreeRows, isConnectedRow } from '@liveknowledge/document';
-import { Button, DialogCloseButton, DialogFooter, DialogHeader, Select, SwitchRow, TextInput } from '@liveknowledge/ui';
+import {
+  Button,
+  DialogCloseButton,
+  DialogFooter,
+  DialogHeader,
+  Select,
+  SwitchRow,
+  TextInput,
+  Tooltip,
+} from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/ConfirmDialog';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -69,45 +78,54 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
     const pages = tabs.filter((t) => !isConnectedRow(t));
     return pageTreeRows(pages)
       .filter((row) => row.subpages > 0)
-      .map((row) => ({ id: row.page.id, title: row.page.name.trim() || 'Untitled Page', depth: row.depth }));
+      .map((row) => ({
+        id: row.page.id,
+        title: row.page.name.trim() || 'Untitled Page',
+        depth: row.depth,
+      }));
   }, [tabs]);
 
-  const load = (root?: string | null) => {
-    const controller = new AbortController();
-    setBusy('read');
-    apiPublishingState(who, documentId, root, controller.signal)
-      .then((next) => {
-        setState(next);
-        setFailure(null);
-        setSettings(
-          (was) =>
-            was ?? {
-              root: next.site?.root ?? WHOLE,
-              address: next.defaultAddress,
-              noindex: next.site?.noindex ?? false,
-              showWriters: next.site?.showWriters ?? false,
-            },
-        );
-      })
-      .catch((err) => {
-        if (!controller.signal.aborted) setFailure({ action: 'read', text: publishFailureText(err, 'read') });
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setBusy(null);
-      });
-    return controller;
-  };
+  // The section the state last previewed: a section chosen again reads nothing.
+  const previewed = useRef<string | null | undefined>(undefined);
+  const load = useCallback(
+    (root?: string | null) => {
+      const controller = new AbortController();
+      setBusy('read');
+      apiPublishingState(who, documentId, root, controller.signal)
+        .then((next) => {
+          previewed.current = next.preview.root;
+          setState(next);
+          setFailure(null);
+          setSettings(
+            (was) =>
+              was ?? {
+                root: next.site?.root ?? WHOLE,
+                address: next.defaultAddress,
+                noindex: next.site?.noindex ?? false,
+                showWriters: next.site?.showWriters ?? false,
+              },
+          );
+        })
+        .catch((err) => {
+          if (!controller.signal.aborted)
+            setFailure({ action: 'read', text: publishFailureText(err, 'read') });
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setBusy(null);
+        });
+      return controller;
+    },
+    [who, documentId],
+  );
 
   // The state when opened, and the preview again whenever the section changes.
   const root = settings?.root;
   useEffect(() => {
-    // The state already previews this section (the first read's own).
-    if (state && root !== undefined && state.preview.root === (root || null)) return;
-    const controller = load(root === undefined ? undefined : root || null);
+    const asked = root === undefined ? undefined : root || null;
+    if (asked !== undefined && previewed.current === asked) return;
+    const controller = load(asked);
     return () => controller.abort();
-    // `load` is this render's; the call is keyed on what it reads.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [who.ownerId, who.shareCode, documentId, root]);
+  }, [load, root]);
 
   const site = state?.site ?? null;
   const published = state?.published === true;
@@ -127,7 +145,8 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
     busy === null &&
     (preview?.pages.length ?? 0) > 0;
 
-  const change = (next: Partial<Settings>) => setSettings((was) => (was ? { ...was, ...next } : was));
+  const change = (next: Partial<Settings>) =>
+    setSettings((was) => (was ? { ...was, ...next } : was));
 
   const publish = async () => {
     if (!settings || !canPublish) return;
@@ -251,20 +270,26 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
             </div>
             {site ? (
               <div className="flex shrink-0 items-center gap-1">
-                <Button variant="secondary" size="xs" onClick={copy} aria-label="Copy the site's link">
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={copy}
+                  aria-label="Copy the site's link"
+                >
                   <CopyIcon />
                   {copied ? 'Copied' : 'Copy Link'}
                 </Button>
-                <a
-                  href={site.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Open the site in a new tab"
-                  title="Open the site in a new tab"
-                  className="touch-target inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-white hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-                >
-                  <OpenIcon />
-                </a>
+                <Tooltip label="Open the Site">
+                  <a
+                    href={site.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Open the site in a new tab"
+                    className="touch-target inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-white hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                  >
+                    <OpenIcon />
+                  </a>
+                </Tooltip>
               </div>
             ) : null}
           </div>
@@ -294,7 +319,11 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
               </section>
 
               <section aria-labelledby={`${titleId}-address`} className="flex flex-col gap-2">
-                <label htmlFor={`${titleId}-address-field`} id={`${titleId}-address`} className={SECTION_TITLE}>
+                <label
+                  htmlFor={`${titleId}-address-field`}
+                  id={`${titleId}-address`}
+                  className={SECTION_TITLE}
+                >
                   Address
                 </label>
                 <div
@@ -349,7 +378,9 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
                     <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                       Hide From Search Engines
                     </span>
-                    <span className={NOTE}>Anyone with the link can read it; search engines are asked not to list it.</span>
+                    <span className={NOTE}>
+                      Anyone with the link can read it; search engines are asked not to list it.
+                    </span>
                   </span>
                 </SwitchRow>
                 <SwitchRow
@@ -363,23 +394,34 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
                     <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                       Show Who Wrote Each Page
                     </span>
-                    <span className={NOTE}>Each page names the people who wrote it. Off, no name goes public.</span>
+                    <span className={NOTE}>
+                      Each page names the people who wrote it. Off, no name goes public.
+                    </span>
                   </span>
                 </SwitchRow>
               </section>
 
-              <section aria-labelledby={`${titleId}-preview`} className="flex flex-col gap-2" data-publish-preview="">
+              <section
+                aria-labelledby={`${titleId}-preview`}
+                className="flex flex-col gap-2"
+                data-publish-preview=""
+              >
                 <h3 id={`${titleId}-preview`} className={SECTION_TITLE}>
                   What Goes Public
                 </h3>
                 <div className="rounded-lg border border-slate-200 dark:border-slate-700">
                   <p className="border-b border-slate-100 px-3 py-2 text-xs font-medium text-slate-700 dark:border-slate-800 dark:text-slate-300">
                     {preview ? publicCountText(preview.pages.length) : 'Reading the pages…'}
-                    {preview && preview.leftOut.length > 0 ? ` · ${privateCountText(preview.leftOut.length)}` : ''}
+                    {preview && preview.leftOut.length > 0
+                      ? ` · ${privateCountText(preview.leftOut.length)}`
+                      : ''}
                   </p>
                   <ul className="max-h-48 overflow-y-auto py-1">
                     {shownPages.map((p) => (
-                      <li key={p.id} className="flex items-center gap-2 px-3 py-1 text-sm text-slate-800 dark:text-slate-200">
+                      <li
+                        key={p.id}
+                        className="flex items-center gap-2 px-3 py-1 text-sm text-slate-800 dark:text-slate-200"
+                      >
                         <span aria-hidden className="text-brand-700 dark:text-brand-300">
                           <GlobeIcon />
                         </span>
@@ -409,7 +451,8 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
                   </ul>
                 </div>
                 <p className={NOTE}>
-                  Only saved writing goes public: never drafts, comments, Page Health or pages waiting for approval. Pictures and drawings stay private for now.
+                  Only saved writing goes public: never drafts, comments, Page Health or pages
+                  waiting for approval. Pictures and drawings stay private for now.
                 </p>
               </section>
             </>
@@ -437,8 +480,19 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
             {published && unchanged ? 'Done' : 'Cancel'}
           </Button>
           {!(published && unchanged) ? (
-            <Button variant="primary" disabled={!canPublish} onClick={() => void publish()} data-publish-go="">
-              {busy === 'publish' ? (published ? 'Updating…' : 'Publishing…') : published ? 'Update Site' : 'Publish'}
+            <Button
+              variant="primary"
+              disabled={!canPublish}
+              onClick={() => void publish()}
+              data-publish-go=""
+            >
+              {busy === 'publish'
+                ? published
+                  ? 'Updating…'
+                  : 'Publishing…'
+                : published
+                  ? 'Update Site'
+                  : 'Publish'}
             </Button>
           ) : null}
         </DialogFooter>

@@ -107,8 +107,7 @@ function parseRequest(body: unknown): PublishingRequest | null {
 async function handlePublish(route: KnowledgeRoute): Promise<Response> {
   const { ctx, document } = route;
   const body = parseRequest(await ctx.request.json().catch(() => null));
-  if (!body)
-    return refuse(400, 'invalid_body', 'Send address, root, noindex and showWriters.');
+  if (!body) return refuse(400, 'invalid_body', 'Send address, root, noindex and showWriters.');
   const bad = siteAddressRefusal(body.address);
   if (bad)
     return refuse(
@@ -158,10 +157,7 @@ async function handleUnpublish(route: KnowledgeRoute): Promise<Response> {
   const { ctx, document } = route;
   const site = await readSite(ctx.env);
   if (!site) return json(await stateOf(route, null));
-  const [paths, held] = await Promise.all([
-    publishedPaths(ctx.env),
-    heldSiteAddresses(ctx.env),
-  ]);
+  const [paths, held] = await Promise.all([publishedPaths(ctx.env), heldSiteAddresses(ctx.env)]);
   // The registry first: once an address is let go, no reader reaches this knowledgebase through it.
   await Promise.all(
     held.map((a) => siteAddress(ctx.env, a, { kind: 'release', documentId: document.id })),

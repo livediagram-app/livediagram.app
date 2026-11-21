@@ -2,13 +2,25 @@
 // P13, P22): safe HTML from the blocks, and nothing private.
 import { describe, expect, it } from 'vitest';
 import type { ArticleBlock, ArticleRun } from '@liveknowledge/document';
-import { describe as describeText, escapeHtml, publishedWriting, PUBLISHED_DESCRIPTION_MAX } from './publish-writing';
+import {
+  describe as describeText,
+  escapeHtml,
+  publishedWriting,
+  PUBLISHED_DESCRIPTION_MAX,
+} from './publish-writing';
 
-const p = (runs: ArticleRun[], extra: Record<string, unknown> = {}): ArticleBlock =>
-  ({ id: `b${Math.random()}`, type: 'paragraph', runs, ...extra }) as ArticleBlock;
+const p = (runs: ArticleRun[], extra: Record<string, unknown> = {}): ArticleBlock => ({
+  id: `b${Math.random()}`,
+  type: 'paragraph',
+  runs,
+  ...extra,
+});
 const t = (text: string): ArticleRun => ({ text });
-const li = (list: 'bullet' | 'numbered' | 'todo', text: string, extra: Record<string, unknown> = {}) =>
-  ({ id: `l${Math.random()}`, type: 'list', list, runs: [t(text)], ...extra }) as ArticleBlock;
+const li = (
+  list: 'bullet' | 'numbered' | 'todo',
+  text: string,
+  extra: Record<string, unknown> = {},
+) => ({ id: `l${Math.random()}`, type: 'list', list, runs: [t(text)], ...extra }) as ArticleBlock;
 const none = () => null;
 
 describe('publishedWriting', () => {
@@ -61,7 +73,9 @@ describe('publishedWriting', () => {
     expect(html).toContain('<span style="color:#ff0000;background-color:#ffff00">red</span>');
     expect(html).toContain('bad');
     expect(html).not.toContain('url(x)');
-    expect(html).toContain('<a href="https://example.com/a?b=&quot;c&quot;" rel="noopener">web</a>');
+    expect(html).toContain(
+      '<a href="https://example.com/a?b=&quot;c&quot;" rel="noopener">web</a>',
+    );
     expect(html).not.toContain('javascript');
     expect(html).toContain('noted');
     expect(html).not.toContain('margin-1');
@@ -77,7 +91,9 @@ describe('publishedWriting', () => {
     );
     expect(html).toContain('<sup class="fn"><a href="#fn-1" id="fnref-1">1</a></sup>');
     expect(html).toContain('<a href="#fn-2" id="fnref-2">2</a>');
-    expect(html).toContain('<ol class="footnotes"><li id="fn-1">Source &lt;1&gt; <a href="#fnref-1"');
+    expect(html).toContain(
+      '<ol class="footnotes"><li id="fn-1">Source &lt;1&gt; <a href="#fnref-1"',
+    );
   });
 
   it('nests lists by level, switches kinds and ticks todos', () => {
@@ -143,11 +159,13 @@ describe('publishedWriting', () => {
     expect(html).toContain('<li class="toc-2"><a href="#sub">Sub</a></li>');
     expect(html).not.toContain('zone');
     // A contents block with no heading to list draws nothing.
-    expect(publishedWriting([{ id: 'x', type: 'toc' } as ArticleBlock], none).html).toBe('');
+    expect(publishedWriting([{ id: 'x', type: 'toc' }], none).html).toBe('');
   });
 
   it('finds no words in an empty page', () => {
-    expect(publishedWriting([p([t('Only a title')], { style: 'title' }), p([t('  ')])], none)).toEqual({
+    expect(
+      publishedWriting([p([t('Only a title')], { style: 'title' }), p([t('  ')])], none),
+    ).toEqual({
       html: '<p>  </p>',
       text: '',
       description: '',

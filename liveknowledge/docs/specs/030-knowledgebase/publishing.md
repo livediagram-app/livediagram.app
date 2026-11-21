@@ -13,12 +13,12 @@ with no account and no editor.
 
 ## Domain language
 
-| Term                | Means                                                                                                       |
-| ------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **public site**     | What publishing makes: the published pages at `/kb/<site>/`, read by anyone, written by no one.            |
-| **site address**    | The `<site>` part of the address, the knowledgebase's own, chosen by its Editor.                            |
-| **page address**    | The `<page>` part (`/kb/<site>/<page>`), made from the page's title, kept when the page is renamed.        |
-| **section**         | One page and its subpages, published on their own instead of the whole knowledgebase.                       |
+| Term                   | Means                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **public site**        | What publishing makes: the published pages at `/kb/<site>/`, read by anyone, written by no one.                     |
+| **site address**       | The `<site>` part of the address, the knowledgebase's own, chosen by its Editor.                                    |
+| **page address**       | The `<page>` part (`/kb/<site>/<page>`), made from the page's title, kept when the page is renamed.                 |
+| **section**            | One page and its subpages, published on their own instead of the whole knowledgebase.                               |
 | **published snapshot** | What the public site reads: the published pages as the publish wrote them, kept in the knowledgebase's own storage. |
 
 "Public" stays the Explorer's Space word ([Knowledgebases and pages](knowledgebases-and-pages.md#domain-language)):
@@ -26,11 +26,11 @@ the interface says "Publish to the Web", "public site" and "Published", never "P
 
 ## Who may publish
 
-| Action                                                    | Editor | Participant | Viewer | Agent | Anyone |
-| --------------------------------------------------------- | ------ | ----------- | ------ | ----- | ------ |
+| Action                                                   | Editor | Participant | Viewer | Agent | Anyone |
+| -------------------------------------------------------- | ------ | ----------- | ------ | ----- | ------ |
 | See whether the knowledgebase is published, and its link | yes    | no          | no     | no    | no     |
-| Publish, change what is published, Unpublish              | yes    | no          | no     | no    | no     |
-| Read the public site, search it                           | yes    | yes         | yes    | yes   | yes    |
+| Publish, change what is published, Unpublish             | yes    | no          | no     | no    | no     |
+| Read the public site, search it                          | yes    | yes         | yes    | yes   | yes    |
 
 - An Editor of the whole knowledgebase, in person, signed in, on a knowledgebase saved to the server. A
   knowledgebase kept Offline has no server to publish from; a guest has no account to publish as; an agent's token

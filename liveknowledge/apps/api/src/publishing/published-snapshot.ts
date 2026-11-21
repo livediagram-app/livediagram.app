@@ -50,7 +50,10 @@ export type PublishedSiteRow = {
   stale: boolean;
 };
 
-export type PublishSettings = Pick<PublishedSiteRow, 'address' | 'root' | 'noindex' | 'showWriters'>;
+export type PublishSettings = Pick<
+  PublishedSiteRow,
+  'address' | 'root' | 'noindex' | 'showWriters'
+>;
 
 type SiteDbRow = {
   address: string;
@@ -251,7 +254,7 @@ export async function refreshPublished(env: DocumentEnv, documentId: string): Pr
   if (!site) return;
   const db = knowledgeDb(env);
   const dirty = new Set(
-    ((await db.prepare('SELECT tab FROM published_dirty').all<{ tab: string }>()).results).map(
+    (await db.prepare('SELECT tab FROM published_dirty').all<{ tab: string }>()).results.map(
       (r) => r.tab,
     ),
   );
@@ -424,10 +427,7 @@ async function nameWriters(env: DocumentEnv, pages: Drawn[]): Promise<void> {
     .bind(JSON.stringify(pages.map((p) => p.tab)))
     .all<{ tab: string; by: string }>();
   const rows = results;
-  const people = await getParticipants(
-    env,
-    [...new Set(rows.map((r) => r.by))],
-  );
+  const people = await getParticipants(env, [...new Set(rows.map((r) => r.by))]);
   const byTab = new Map(pages.map((p) => [p.tab, p]));
   for (const row of rows) {
     const name = people.get(row.by)?.name?.trim();

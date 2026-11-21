@@ -20,7 +20,9 @@ vi.mock('../index-service', async (original) => {
 vi.mock('../person/profiles', async (original) => ({
   ...(await original<typeof import('../person/profiles')>()),
   getParticipants: async (_env: unknown, ids: readonly string[]) =>
-    new Map(ids.filter((id) => id === OWNER).map((id) => [id, { ownerId: id, name: 'Olive Owner' }])),
+    new Map(
+      ids.filter((id) => id === OWNER).map((id) => [id, { ownerId: id, name: 'Olive Owner' }]),
+    ),
 }));
 let offered = true;
 vi.mock('@liveknowledge/knowledge', async (original) => ({
@@ -75,7 +77,9 @@ describe('who may publish', () => {
     expect(section.preview.pages.map((p) => p.id)).toEqual(['deploys', 'rollbacks']);
     const whole = await stateOf(await kit.call('editor', 'GET', `${PUBLISHING}?root=`));
     expect(whole.preview.root).toBeNull();
-    expect((await stateOf(await kit.call('editor', 'GET', `${PUBLISHING}?root=nope`))).preview.pages).toEqual([]);
+    expect(
+      (await stateOf(await kit.call('editor', 'GET', `${PUBLISHING}?root=nope`))).preview.pages,
+    ).toEqual([]);
   });
 
   it.each<[Who, string]>([
@@ -102,7 +106,11 @@ describe('who may publish', () => {
     const kit = await knowledgeKit();
     expect((await kit.call('stranger', 'GET', PUBLISHING)).status).toBe(403);
     const guest = await handleDocuments(
-      makeTestRouteContext('GET', PUBLISHING, { env: kit.db.env, owner: OWNER, accountUserId: null }),
+      makeTestRouteContext('GET', PUBLISHING, {
+        env: kit.db.env,
+        owner: OWNER,
+        accountUserId: null,
+      }),
     );
     expect(guest.status).toBe(403);
     expect(await guest.json()).toMatchObject({ error: 'sign_in_required' });
@@ -122,7 +130,13 @@ describe('who may publish', () => {
   it('refuses another method and a body that does not read', async () => {
     const kit = await knowledgeKit();
     expect((await kit.call('editor', 'POST', PUBLISHING, {})).status).toBe(405);
-    for (const body of [null, [], { address: 1 }, { address: 'abc', root: 2 }, { address: 'abc', root: null }])
+    for (const body of [
+      null,
+      [],
+      { address: 1 },
+      { address: 'abc', root: 2 },
+      { address: 'abc', root: null },
+    ])
       expect(await (await kit.call('editor', 'PUT', PUBLISHING, body)).json()).toMatchObject({
         error: 'invalid_body',
       });
@@ -144,7 +158,12 @@ describe('the public site', () => {
     const res = await publish(kit);
     const state = await stateOf(res);
     expect(state.published).toBe(true);
-    expect(state.site).toMatchObject({ address: 'handbook', root: null, noindex: false, showWriters: false });
+    expect(state.site).toMatchObject({
+      address: 'handbook',
+      root: null,
+      noindex: false,
+      showWriters: false,
+    });
     expect(state.site!.url).toMatch(/\/kb\/handbook$/);
     expect(JSON.parse(res.headers.get(PUBLISH_PURGE_HEADER)!)).toContain('/kb/handbook/rollbacks');
 
@@ -171,7 +190,9 @@ describe('the public site', () => {
     expect(search.text).toContain('<a href="/kb/handbook">Deploys</a><p>');
     expect(search.text).toContain('<mark>Tuesdays</mark>');
     expect(search.res.headers.get('X-Robots-Tag')).toBe('noindex, follow');
-    expect((await read(kit, '/kb/handbook/search?q=%22%20OR%20*')).text).toContain('No page matches');
+    expect((await read(kit, '/kb/handbook/search?q=%22%20OR%20*')).text).toContain(
+      'No page matches',
+    );
     expect((await read(kit, '/kb/handbook/search')).text).toContain('Type a word');
 
     const sitemap = await read(kit, '/kb/handbook/sitemap.xml');
@@ -186,7 +207,15 @@ describe('the public site', () => {
     const kit = await knowledgeKit();
     expect((await read(kit, '/kb/handbook')).res.status).toBe(404);
     await publish(kit);
-    for (const path of ['/kb', '/kb/', '/kb/A', '/kb/handbook/nope', '/kb/handbook/a/b', '/kb/handbook/Bad_Page', '/kb/other'])
+    for (const path of [
+      '/kb',
+      '/kb/',
+      '/kb/A',
+      '/kb/handbook/nope',
+      '/kb/handbook/a/b',
+      '/kb/handbook/Bad_Page',
+      '/kb/other',
+    ])
       expect((await read(kit, path)).res.status, path).toBe(404);
     expect((await read(kit, '/kb/handbook/nope')).text).toContain('Page Not Found');
     expect((await read(kit, '/kb/handbook', { method: 'POST' })).res.status).toBe(405);
@@ -219,7 +248,9 @@ describe('the public site', () => {
     expect(res.res.status).toBe(429);
     expect(res.res.headers.get('Retry-After')).toBe('60');
     expect((await read(kit, '/kb/handbook')).res.status).toBe(200);
-    const open = await knowledgeKit({ SEARCH_RATE_LIMITER: { limit: async () => ({ success: true }) } });
+    const open = await knowledgeKit({
+      SEARCH_RATE_LIMITER: { limit: async () => ({ success: true }) },
+    });
     await publish(open);
     expect((await read(open, '/kb/handbook/search?q=x')).res.status).toBe(200);
   });
@@ -234,7 +265,8 @@ describe('the site follows the knowledgebase', () => {
     await publish(kit);
     const para = (text: string) => ({ id: 'p', type: 'paragraph', runs: [{ text }] });
     expect(
-      (await savePage(kit, page('holidays', 'Time Off', [para('Take the whole of August off.')]))).status,
+      (await savePage(kit, page('holidays', 'Time Off', [para('Take the whole of August off.')])))
+        .status,
     ).toBeLessThan(300);
     const moved = await read(kit, '/kb/handbook/holidays');
     expect(moved.res.status).toBe(301);
@@ -253,12 +285,19 @@ describe('the site follows the knowledgebase', () => {
     expect(front.text).not.toContain('href="/kb/handbook/rollbacks"');
     expect(front.text).toContain('See Rollbacks when one fails.');
     const state = await stateOf(await kit.call('editor', 'GET', PUBLISHING));
-    expect(state.preview.leftOut).toEqual([{ id: 'rollbacks', title: 'Rollbacks', reason: 'empty' }]);
+    expect(state.preview.leftOut).toEqual([
+      { id: 'rollbacks', title: 'Rollbacks', reason: 'empty' },
+    ]);
     // Written again, it comes back.
-    await savePage(kit, page('rollbacks', 'Rollbacks', [para('Roll back with one command.')], { parent: 'deploys' }));
+    await savePage(
+      kit,
+      page('rollbacks', 'Rollbacks', [para('Roll back with one command.')], { parent: 'deploys' }),
+    );
     expect((await read(kit, '/kb/handbook')).text).toContain('href="/kb/handbook/rollbacks"');
     // Deleted, it is gone.
-    expect((await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/holidays')).status).toBe(204);
+    expect((await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/holidays')).status).toBe(
+      204,
+    );
     expect((await read(kit, '/kb/handbook/holidays')).res.status).toBe(404);
   });
 
@@ -281,8 +320,9 @@ describe('the site follows the knowledgebase', () => {
 
   it('refuses an address another knowledgebase holds, and a site with no page to show', async () => {
     const kit = await knowledgeKit();
-    await kit.db.env.DOCUMENT_ROOM.get(kit.db.env.DOCUMENT_ROOM.idFromName('~kb-site:taken'))
-      .siteAddress({ kind: 'claim', documentId: 'other-kb' });
+    await kit.db.env.DOCUMENT_ROOM.get(
+      kit.db.env.DOCUMENT_ROOM.idFromName('~kb-site:taken'),
+    ).siteAddress({ kind: 'claim', documentId: 'other-kb' });
     const res = await publish(kit, { address: 'taken' });
     expect(res.status).toBe(409);
     expect(await res.json()).toMatchObject({ error: 'address_taken' });
@@ -307,12 +347,26 @@ describe('the site follows the knowledgebase', () => {
     expect(JSON.parse(res.headers.get(PUBLISH_PURGE_HEADER)!)).toEqual(
       expect.arrayContaining(['/kb/handbook', '/kb/acme-help', '/kb/acme-help/sitemap.xml']),
     );
-    for (const path of ['/kb/handbook', '/kb/acme-help', '/kb/acme-help/rollbacks', '/kb/handbook/sitemap.xml'])
+    for (const path of [
+      '/kb/handbook',
+      '/kb/acme-help',
+      '/kb/acme-help/rollbacks',
+      '/kb/handbook/sitemap.xml',
+    ])
       expect((await read(kit, path)).res.status, path).toBe(404);
-    for (const table of ['published_site', 'published_pages', 'published_addresses', 'published_fts'])
-      expect(kit.db.sql.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get(), table).toEqual({ n: 0 });
+    for (const table of [
+      'published_site',
+      'published_pages',
+      'published_addresses',
+      'published_fts',
+    ])
+      expect(kit.db.sql.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get(), table).toEqual({
+        n: 0,
+      });
     // Another knowledgebase may take the address now.
-    const room = kit.db.env.DOCUMENT_ROOM.get(kit.db.env.DOCUMENT_ROOM.idFromName('~kb-site:handbook'));
+    const room = kit.db.env.DOCUMENT_ROOM.get(
+      kit.db.env.DOCUMENT_ROOM.idFromName('~kb-site:handbook'),
+    );
     expect(await room.siteAddress({ kind: 'claim', documentId: 'other-kb' })).toBe('held');
   });
 });

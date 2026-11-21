@@ -5,39 +5,39 @@ Rules are numbered P1 to P30 and each maps to a test (Testing).
 
 ## Domain and naming
 
-| Spec term          | Identifier                                                           |
-| ------------------ | -------------------------------------------------------------------- |
-| public site        | `PublishedSite` (the `published_site` row)                          |
-| site address       | `address` on the site; `SiteAddressRecord` at the registry          |
-| page address       | `address` on a `published_pages` row; `published_addresses` history |
+| Spec term          | Identifier                                                                        |
+| ------------------ | --------------------------------------------------------------------------------- |
+| public site        | `PublishedSite` (the `published_site` row)                                        |
+| site address       | `address` on the site; `SiteAddressRecord` at the registry                        |
+| page address       | `address` on a `published_pages` row; `published_addresses` history               |
 | section            | `root`: the tab id of the section's first page; `null` is the whole knowledgebase |
-| published snapshot | the `published_*` tables of the knowledgebase's Durable Object      |
-| Show Who Wrote     | `showWriters`                                                        |
-| Hide From Search   | `noindex`                                                            |
+| published snapshot | the `published_*` tables of the knowledgebase's Durable Object                    |
+| Show Who Wrote     | `showWriters`                                                                     |
+| Hide From Search   | `noindex`                                                                         |
 
 The wire, the code and the routes say `publishing` for the feature and `site` for what it makes. "Public" is never
 an identifier of this feature.
 
 ## Where the code is
 
-| Piece                                   | File                                                                       |
-| --------------------------------------- | -------------------------------------------------------------------------- |
-| The capability check (P1)               | `packages/knowledge/src/publish/publish-capability.ts`                     |
-| Addresses: shape, reserved, from titles | `packages/knowledge/src/publish/publish-address.ts`                       |
-| Which pages go public                   | `packages/knowledge/src/publish/publish-scope.ts`                         |
-| Writing to safe HTML                    | `packages/knowledge/src/publish/publish-writing.ts`                       |
-| The site's pages (HTML, CSS, sitemap) | `packages/knowledge/src/publish/publish-site.ts`, `publish-site-css.ts`, `publish-sitemap.ts` |
-| The theme's accent (moved from the editor) | `packages/document/src/knowledge-accent.ts`                             |
-| Wire types                              | `packages/api-schema/src/publishing.ts`                                    |
-| The snapshot's tables                   | `apps/api/src/publishing/published-schema.ts`                              |
-| Writing and refreshing the snapshot     | `apps/api/src/publishing/published-snapshot.ts`                            |
-| The public reads, in the room           | `apps/api/src/publishing/published-reads.ts`                               |
-| The site address registry               | `apps/api/src/publishing/site-addresses.ts`                                |
-| The Editor's routes                     | `apps/api/src/publishing/publishing-routes.ts`                             |
-| The public site, in the worker          | `apps/api/src/publishing/public-site.ts`                                   |
-| The router's `/kb` line                 | `apps/router/src/index.ts`                                                  |
-| The dialog                              | `apps/editor/components/publishing/`                                       |
-| The client                              | `apps/editor/lib/api/publishing.ts`                                        |
+| Piece                                      | File                                                                                          |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| The capability check (P1)                  | `packages/knowledge/src/publish/publish-capability.ts`                                        |
+| Addresses: shape, reserved, from titles    | `packages/knowledge/src/publish/publish-address.ts`                                           |
+| Which pages go public                      | `packages/knowledge/src/publish/publish-scope.ts`                                             |
+| Writing to safe HTML                       | `packages/knowledge/src/publish/publish-writing.ts`                                           |
+| The site's pages (HTML, CSS, sitemap)      | `packages/knowledge/src/publish/publish-site.ts`, `publish-site-css.ts`, `publish-sitemap.ts` |
+| The theme's accent (moved from the editor) | `packages/document/src/knowledge-accent.ts`                                                   |
+| Wire types                                 | `packages/api-schema/src/publishing.ts`                                                       |
+| The snapshot's tables                      | `apps/api/src/publishing/published-schema.ts`                                                 |
+| Writing and refreshing the snapshot        | `apps/api/src/publishing/published-snapshot.ts`                                               |
+| The public reads, in the room              | `apps/api/src/publishing/published-reads.ts`                                                  |
+| The site address registry                  | `apps/api/src/publishing/site-addresses.ts`                                                   |
+| The Editor's routes                        | `apps/api/src/publishing/publishing-routes.ts`                                                |
+| The public site, in the worker             | `apps/api/src/publishing/public-site.ts`                                                      |
+| The router's `/kb` line                    | `apps/router/src/index.ts`                                                                    |
+| The dialog                                 | `apps/editor/components/publishing/`                                                          |
+| The client                                 | `apps/editor/lib/api/publishing.ts`                                                           |
 
 ## Behaviour and state
 
@@ -106,14 +106,14 @@ an identifier of this feature.
 
 - `GET /api/documents/<id>/publishing[?root=<tab>|all]` → `PublishingState`:
   `{ offered, published, site: { address, url, root, noindex, showWriters, publishedAt } | null, defaultAddress,
-  preview: { root, pages: { id, title }[], leftOut: { id, title, reason }[] } }`. The preview is for `root` when
+preview: { root, pages: { id, title }[], leftOut: { id, title, reason }[] } }`. The preview is for `root` when
   given, else the site's own (or the whole knowledgebase when not published). `empty` pages are found from the
   page_trust / passages index without reading bodies: a page whose index holds no passage is `empty`.
 - `PUT` body: `{ address: string, root: string | null, noindex: boolean, showWriters: boolean }`, every field
   required; a missing or wrong one is `400 invalid_body` naming it.
 - Refusals: `400 invalid_body`, `invalid_address`, `address_reserved`, `unknown_root`, `nothing_to_publish`;
   `403 forbidden`, `needs_a_person`, `publishing_unavailable`; `404` for an unknown knowledgebase; `409
-  address_taken`; `429 rate_limited` (the write limiter).
+address_taken`; `429 rate_limited` (the write limiter).
 - Public routes (`apps/api/src/publishing/public-site.ts`, GET and HEAD only, `405` otherwise; no Authorization or
   cookie is read):
   - `/kb/<site>` and `/kb/<site>/<page>` → `text/html`; a moved site or page → `301`; none → `404` page.
@@ -123,20 +123,20 @@ an identifier of this feature.
   `{ kind: 'search', query }`, `{ kind: 'sitemap' }`, answers `PublishedAnswer`:
   `{ status: 'none' }`, `{ status: 'moved', address }` or `{ status: 'ok', site, page?, results?, pages? }` with
   only published fields. `site` is `{ address, name, style, noindex, showWriters, tree: { address, title, icon,
-  parent }[] }`.
+parent }[] }`.
 
 ## Data and persistence
 
 Schema step after the existing ones (`document-schema.ts`), additive, `IF NOT EXISTS`:
 
-| Table                       | Columns                                                                                                   |
-| --------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `published_site`            | `id` (1), `address`, `root`, `noindex`, `show_writers`, `published_by`, `published_at`, `stale`           |
-| `published_pages`           | `tab` PK, `address` UNIQUE, `parent`, `position`, `title`, `icon`, `description`, `html`, `text`, `writers` (JSON names), `saved_at` |
-| `published_addresses`       | `address` PK, `tab`: every address a page of the site has had                                             |
-| `published_site_addresses`  | `address` PK, `held_at`: every site address this knowledgebase holds at the registry                      |
-| `published_dirty`           | `tab` PK                                                                                                  |
-| `published_fts`             | FTS5 (`tab` UNINDEXED, `title`, `text`), the search tokenizer the knowledge index uses                     |
+| Table                      | Columns                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `published_site`           | `id` (1), `address`, `root`, `noindex`, `show_writers`, `published_by`, `published_at`, `stale`                                      |
+| `published_pages`          | `tab` PK, `address` UNIQUE, `parent`, `position`, `title`, `icon`, `description`, `html`, `text`, `writers` (JSON names), `saved_at` |
+| `published_addresses`      | `address` PK, `tab`: every address a page of the site has had                                                                        |
+| `published_site_addresses` | `address` PK, `held_at`: every site address this knowledgebase holds at the registry                                                 |
+| `published_dirty`          | `tab` PK                                                                                                                             |
+| `published_fts`            | FTS5 (`tab` UNINDEXED, `title`, `text`), the search tokenizer the knowledge index uses                                               |
 
 - Every column is classified **public** (it is what the site shows) except `published_by` and `held_at`, which no
   public read selects. A test (P26) holds the public reads to these columns.
@@ -163,8 +163,8 @@ Schema step after the existing ones (`document-schema.ts`), additive, `IF NOT EX
 - **P22** Every text is HTML-escaped (`& < > " '`); attribute values too; hrefs are only `/kb/...` paths the
   renderer built or `isSafeArticleHref` addresses. No script is ever sent: the answer's CSP is
   `default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;
-  img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'`, with `X-Content-Type-Options:
-  nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
+img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'`, with `X-Content-Type-Options:
+nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
 - **P23** Search is limited per visitor's network on `SEARCH_RATE_LIMITER` (`kb:<network>`); over it
   `429` with `Retry-After: 60`. A query is cut to `SEARCH_MAX_QUERY_CHARS` and made safe by `searchTerms` and
   `ftsExpression`, so nothing typed is read as an FTS operator.
@@ -209,31 +209,31 @@ Schema step after the existing ones (`document-schema.ts`), additive, `IF NOT EX
 
 ## Testing
 
-| Rule                    | Test                                                                                   |
-| ----------------------- | -------------------------------------------------------------------------------------- |
-| P1                      | `publish-capability.test.ts`; `publishing-routes.test.ts` "is refused when not offered" |
-| P2                      | `publishing-routes.test.ts` "role gating" (Editor, Participant, Viewer, link, page link, agent, stranger) |
-| P3, P8, P9              | `publishing-routes.test.ts` "publish, update, unpublish"                               |
-| P4, P18                 | `publish-scope.test.ts`                                                                |
-| P5, P6                  | `publish-address.test.ts`                                                              |
-| P7                      | `site-addresses.test.ts`                                                               |
-| P10, P17, P19           | `published-snapshot.test.ts`                                                           |
-| P11, P12, P13, P22      | `publish-writing.test.ts`                                                              |
-| P14                     | `published-snapshot.test.ts` "writers"                                                 |
-| P15, P16, P20, P21, P23 | `public-site.test.ts`                                                                  |
+| Rule                      | Test                                                                                                                                                                                                                         |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1                        | `publish-capability.test.ts`; `publishing-routes.test.ts` "is refused when not offered"                                                                                                                                      |
+| P2                        | `publishing-routes.test.ts` "role gating" (Editor, Participant, Viewer, link, page link, agent, stranger)                                                                                                                    |
+| P3, P8, P9                | `publishing-routes.test.ts` "publish, update, unpublish"                                                                                                                                                                     |
+| P4, P18                   | `publish-scope.test.ts`                                                                                                                                                                                                      |
+| P5, P6                    | `publish-address.test.ts`                                                                                                                                                                                                    |
+| P7                        | `site-addresses.test.ts`                                                                                                                                                                                                     |
+| P10, P17, P19             | `published-snapshot.test.ts`                                                                                                                                                                                                 |
+| P11, P12, P13, P22        | `publish-writing.test.ts`                                                                                                                                                                                                    |
+| P14                       | `published-snapshot.test.ts` "writers"                                                                                                                                                                                       |
+| P15, P16, P20, P21, P23   | `public-site.test.ts`                                                                                                                                                                                                        |
 | P26 nothing private leaks | `published-leaks.test.ts`: a knowledgebase with a draft, margin notes, threads, a pending and a rejected page, an owner, verification, an approval and named editors; every public answer is searched for each private value |
-| P27                     | `publish-writing.test.ts` CPU budget                                                   |
+| P27                       | `publish-writing.test.ts` CPU budget                                                                                                                                                                                         |
 
 ## Constants and configuration
 
-| Constant                     | Value | Why                                                          |
-| ---------------------------- | ----- | ------------------------------------------------------------ |
-| `SITE_ADDRESS_MIN`, `_MAX`   | 3, 48 | Short enough to type, long enough for a product name         |
-| `PAGE_ADDRESS_MAX`           | 80    | A readable address; titles past it are cut at a hyphen       |
-| `PUBLISHED_EDGE_SECONDS`     | 60    | The spec's "within a minute"                                 |
-| `PUBLISHED_DESCRIPTION_MAX`  | 160   | What search engines show                                     |
-| `PREVIEW_PAGES_SHOWN`        | 8     | The dialog's list before "and N more"                        |
-| `PUBLISH_RENDER_BATCH`       | 50    | Bodies read at once during a Publish                          |
+| Constant                    | Value | Why                                                    |
+| --------------------------- | ----- | ------------------------------------------------------ |
+| `SITE_ADDRESS_MIN`, `_MAX`  | 3, 48 | Short enough to type, long enough for a product name   |
+| `PAGE_ADDRESS_MAX`          | 80    | A readable address; titles past it are cut at a hyphen |
+| `PUBLISHED_EDGE_SECONDS`    | 60    | The spec's "within a minute"                           |
+| `PUBLISHED_DESCRIPTION_MAX` | 160   | What search engines show                               |
+| `PREVIEW_PAGES_SHOWN`       | 8     | The dialog's list before "and N more"                  |
+| `PUBLISH_RENDER_BATCH`      | 50    | Bodies read at once during a Publish                   |
 
 ## Defaults ledger
 

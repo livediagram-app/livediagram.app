@@ -29,7 +29,16 @@ describe('site addresses', () => {
   it('takes lowercase letters, numbers and single hyphens, 3 to 48 long', () => {
     expect(siteAddressRefusal('acme-help')).toBeNull();
     expect(siteAddressRefusal('a1b')).toBeNull();
-    for (const bad of ['ab', 'a'.repeat(49), 'Acme', 'acme--help', '-acme', 'acme-', 'acme help', 'acmé'])
+    for (const bad of [
+      'ab',
+      'a'.repeat(49),
+      'Acme',
+      'acme--help',
+      '-acme',
+      'acme-',
+      'acme help',
+      'acmé',
+    ])
       expect(siteAddressRefusal(bad)).toBe('invalid_address');
     expect(siteAddressRefusal('api')).toBe('address_reserved');
     expect(RESERVED_SITE_ADDRESSES.has('kb')).toBe(true);
@@ -137,7 +146,9 @@ describe('the look', () => {
   });
 
   it('takes the theme accent when none is picked, and one face once', () => {
-    const look = siteLook(style({ textSize: 'large', lineSpacing: 'relaxed', headingStyle: 'ruled' }));
+    const look = siteLook(
+      style({ textSize: 'large', lineSpacing: 'relaxed', headingStyle: 'ruled' }),
+    );
     expect(look.fontsHref.match(/family=/g)).toHaveLength(1);
     expect(look).toMatchObject({ textPx: 19, lineHeight: 1.85, ruled: true });
     expect(siteCss(look)).toContain('border-bottom:1px solid var(--line)');
@@ -190,11 +201,19 @@ describe('a page', () => {
   it('draws a subpage with its breadcrumb, tree, Previous and its SEO', () => {
     const html = renderSitePage(view(), page());
     expect(html).toContain('<title>Untitled Page · Acme &lt;Help&gt;</title>');
-    expect(html).toContain('<link rel="canonical" href="https://www.liveknowledge.app/kb/acme/setup">');
-    expect(html).toContain('<meta property="og:image" content="https://www.liveknowledge.app/opengraph-image">');
+    expect(html).toContain(
+      '<link rel="canonical" href="https://www.liveknowledge.app/kb/acme/setup">',
+    );
+    expect(html).toContain(
+      '<meta property="og:image" content="https://www.liveknowledge.app/opengraph-image">',
+    );
     expect(html).not.toContain('noindex');
-    expect(html).toContain('<ol class="crumbs" aria-label="Breadcrumb"><li><a href="/kb/acme/guides">Guides</a></li></ol>');
-    expect(html).toContain('<details open><summary><a href="/kb/acme/guides">📘 Guides</a></summary>');
+    expect(html).toContain(
+      '<ol class="crumbs" aria-label="Breadcrumb"><li><a href="/kb/acme/guides">Guides</a></li></ol>',
+    );
+    expect(html).toContain(
+      '<details open><summary><a href="/kb/acme/guides">📘 Guides</a></summary>',
+    );
     expect(html).toContain('aria-current="page"');
     expect(html).toContain('<span>Previous</span>Guides');
     expect(html).not.toContain('<span>Next</span>');
@@ -206,7 +225,13 @@ describe('a page', () => {
   it('draws the front page with Next, its icon, writers and noindex', () => {
     const html = renderSitePage(
       view({ noindex: true, name: 'Start Here' }),
-      page({ address: 'start-here', title: 'Start Here', icon: '👋', writers: ['Ana', 'Ben'], description: '' }),
+      page({
+        address: 'start-here',
+        title: 'Start Here',
+        icon: '👋',
+        writers: ['Ana', 'Ben'],
+        description: '',
+      }),
     );
     expect(html).toContain('<title>Start Here</title>');
     expect(html).toContain('<meta name="robots" content="noindex, nofollow">');
@@ -254,7 +279,9 @@ describe('a page', () => {
 describe('search and the not found page', () => {
   it('asks for a word, says when nothing matches, and marks what does', () => {
     expect(renderSiteSearch(view(), '  ', [])).toContain('Type a word to search these pages.');
-    expect(renderSiteSearch(view(), '  ', [])).toContain('<title>Search · Acme &lt;Help&gt;</title>');
+    expect(renderSiteSearch(view(), '  ', [])).toContain(
+      '<title>Search · Acme &lt;Help&gt;</title>',
+    );
     const none = renderSiteSearch(view(), '<b>x', []);
     expect(none).toContain('No page matches “&lt;b&gt;x”.');
     expect(none).toContain('value="&lt;b&gt;x"');
@@ -262,13 +289,17 @@ describe('search and the not found page', () => {
       { address: 'setup', title: '', snippet: 'Run \u0002setup\u0003 <now>' },
       { address: 'start-here', title: 'Start Here', snippet: '' },
     ]);
-    expect(found).toContain('<a href="/kb/acme/setup">Untitled Page</a><p>Run <mark>setup</mark> &lt;now&gt;</p>');
+    expect(found).toContain(
+      '<a href="/kb/acme/setup">Untitled Page</a><p>Run <mark>setup</mark> &lt;now&gt;</p>',
+    );
     expect(found).toContain('<a href="/kb/acme">Start Here</a></li>');
     expect(found).toContain('<title>Search: setup · Acme &lt;Help&gt;</title>');
   });
 
   it('draws an empty tree as an empty list', () => {
-    expect(renderSiteSearch(view({ tree: [] }), '', [])).toContain('<nav class="side" aria-label="Pages"><ul></ul></nav>');
+    expect(renderSiteSearch(view({ tree: [] }), '', [])).toContain(
+      '<nav class="side" aria-label="Pages"><ul></ul></nav>',
+    );
   });
 
   it('draws a not found page that names nothing', () => {

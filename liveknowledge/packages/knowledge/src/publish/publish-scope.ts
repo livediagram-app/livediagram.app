@@ -45,7 +45,11 @@ export function publishableScope(
     }
     // The nearest ancestor that is published, inside the section.
     let parent: string | null = null;
-    for (let at = parents.get(page.id); at !== undefined && page.id !== root; at = parents.get(at)) {
+    for (
+      let at = parents.get(page.id);
+      at !== undefined && page.id !== root;
+      at = parents.get(at)
+    ) {
       if (included.has(at)) {
         parent = at;
         break;
@@ -68,7 +72,9 @@ export function withoutEmptyPages(scope: PublishScope, empty: ReadonlySet<string
     return at;
   };
   return {
-    pages: scope.pages.filter((p) => !empty.has(p.id)).map((p) => ({ ...p, parent: kept(p.parent) })),
+    pages: scope.pages
+      .filter((p) => !empty.has(p.id))
+      .map((p) => ({ ...p, parent: kept(p.parent) })),
     leftOut: [
       ...scope.leftOut,
       ...scope.pages

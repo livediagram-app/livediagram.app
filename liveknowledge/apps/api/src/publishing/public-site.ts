@@ -94,7 +94,9 @@ function rendered(url: URL, asked: Asked, published: PublishedAnswer): Response 
     look: siteLook(site.style),
     tree: site.tree,
   };
-  const robots: Record<string, string> = site.noindex ? { 'X-Robots-Tag': 'noindex, nofollow' } : {};
+  const robots: Record<string, string> = site.noindex
+    ? { 'X-Robots-Tag': 'noindex, nofollow' }
+    : {};
   if (asked.read.kind === 'sitemap')
     return answer(
       renderSitemap(view, new Map(Object.entries(published.savedAt!))),

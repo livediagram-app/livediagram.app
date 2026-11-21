@@ -50,7 +50,8 @@ const isLowerAlnum = (c: string) => (c >= 'a' && c <= 'z') || (c >= '0' && c <= 
 
 /** Why a site address cannot be used, or null when it can. */
 export function siteAddressRefusal(address: string): 'invalid_address' | 'address_reserved' | null {
-  if (address.length < SITE_ADDRESS_MIN || address.length > SITE_ADDRESS_MAX) return 'invalid_address';
+  if (address.length < SITE_ADDRESS_MIN || address.length > SITE_ADDRESS_MAX)
+    return 'invalid_address';
   let previous = '-';
   for (const c of address) {
     if (c === '-') {

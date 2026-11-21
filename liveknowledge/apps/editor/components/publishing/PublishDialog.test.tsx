@@ -113,7 +113,9 @@ describe('Publish to the Web', () => {
     expect(address().value).toBe('acme-help');
     fireEvent.click(within(dialog).getByRole('switch', { name: /Hide From Search Engines/ }));
     fireEvent.click(button('Publish'));
-    await waitFor(() => expect(within(dialog).getByRole('status').textContent).toBe('Live on the Web'));
+    await waitFor(() =>
+      expect(within(dialog).getByRole('status').textContent).toBe('Live on the Web'),
+    );
     expect(api.apiPublish).toHaveBeenCalledWith({ ownerId: 'me', shareCode: null }, 'd1', {
       address: 'acme-help',
       root: null,
@@ -130,7 +132,9 @@ describe('Publish to the Web', () => {
   it('previews a section when one is chosen', async () => {
     const { dialog } = await open();
     api.apiPublishingState.mockResolvedValue(
-      state({ preview: { root: 'p1', pages: [{ id: 'p1', title: 'Release Process' }], leftOut: [] } }),
+      state({
+        preview: { root: 'p1', pages: [{ id: 'p1', title: 'Release Process' }], leftOut: [] },
+      }),
     );
     fireEvent.change(dialog.querySelector('select')!, { target: { value: 'p1' } });
     await waitFor(() =>
@@ -142,7 +146,9 @@ describe('Publish to the Web', () => {
       ),
     );
     await waitFor(() =>
-      expect(dialog.querySelector('[data-publish-preview]')!.textContent).toContain('1 page goes public'),
+      expect(dialog.querySelector('[data-publish-preview]')!.textContent).toContain(
+        '1 page goes public',
+      ),
     );
   });
 
@@ -152,7 +158,9 @@ describe('Publish to the Web', () => {
     expect(screen.getByText('An address is at least 3 characters.')).toBeTruthy();
     expect((button('Publish') as HTMLButtonElement).disabled).toBe(true);
     fireEvent.change(address(), { target: { value: 'search' } });
-    expect(screen.getByText('That address is kept for liveknowledge. Choose another.')).toBeTruthy();
+    expect(
+      screen.getByText('That address is kept for liveknowledge. Choose another.'),
+    ).toBeTruthy();
     fireEvent.change(address(), { target: { value: 'a--b' } });
     expect(screen.getByText(/Use 3 to 48 lowercase letters/)).toBeTruthy();
     fireEvent.change(address(), { target: { value: 'fine-name' } });
@@ -170,8 +178,13 @@ describe('Publish to the Web', () => {
   });
 
   it('counts the pages past the first few', async () => {
-    const pages = Array.from({ length: PREVIEW_PAGES_SHOWN + 3 }, (_, i) => ({ id: `x${i}`, title: `Page ${i}` }));
-    api.apiPublishingState.mockResolvedValue(state({ preview: { root: null, pages, leftOut: [] } }));
+    const pages = Array.from({ length: PREVIEW_PAGES_SHOWN + 3 }, (_, i) => ({
+      id: `x${i}`,
+      title: `Page ${i}`,
+    }));
+    api.apiPublishingState.mockResolvedValue(
+      state({ preview: { root: null, pages, leftOut: [] } }),
+    );
     const { dialog } = await open();
     const preview = dialog.querySelector('[data-publish-preview]')!;
     expect(preview.textContent).toContain('11 pages go public');
@@ -213,7 +226,10 @@ describe('a published site', () => {
     fireEvent.change(address(), { target: { value: 'handbook' } });
     fireEvent.click(button('Update Site'));
     await waitFor(() => expect(api.apiPublish).toHaveBeenCalledTimes(1));
-    expect(api.apiPublish.mock.calls[0]![2]).toMatchObject({ showWriters: true, address: 'handbook' });
+    expect(api.apiPublish.mock.calls[0]![2]).toMatchObject({
+      showWriters: true,
+      address: 'handbook',
+    });
     await waitFor(() => expect(button('Done')).toBeTruthy());
   });
 
@@ -240,13 +256,17 @@ describe('a published site', () => {
       "The site couldn't be unpublished. Check your connection.",
     );
     unpublish();
-    await waitFor(() => expect(within(dialog).getByRole('status').textContent).toBe('Not Published'));
+    await waitFor(() =>
+      expect(within(dialog).getByRole('status').textContent).toBe('Not Published'),
+    );
     expect(track).toHaveBeenCalledWith('UI', 'Removed', 'PublishSite');
   });
 
   it('closes when another knowledgebase opens', async () => {
     const { store } = await open();
     act(() => store.set({ ...store.get(), documentId: 'd2' }));
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Publish to the Web' })).toBeNull());
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Publish to the Web' })).toBeNull(),
+    );
   });
 });

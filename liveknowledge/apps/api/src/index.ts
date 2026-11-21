@@ -80,7 +80,8 @@ async function routeApiRequest(
   const url = new URL(request.url);
   const segments = url.pathname.replace(/^\//, '').split('/');
   // A knowledgebase's public site (publishing/public-site.ts): no identity is read for it.
-  if (segments[0] === 'kb') return handlePublicSite(request, env, (p) => executionCtx?.waitUntil(p));
+  if (segments[0] === 'kb')
+    return handlePublicSite(request, env, (p) => executionCtx?.waitUntil(p));
   if (segments[0] !== 'api') return notFound();
 
   // Signing in (routes/auth.ts) carries no Bearer, so it is answered before identity and the

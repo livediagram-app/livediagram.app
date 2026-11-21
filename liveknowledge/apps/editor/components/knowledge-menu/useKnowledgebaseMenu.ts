@@ -17,13 +17,7 @@ import { openAiSettings } from '@/lib/knowledge-ask/ai-settings-open';
 import { openPublishing } from '@/lib/publishing/publish-open';
 
 export type KnowledgeMenuVerb =
-  | 'rename'
-  | 'describe'
-  | 'import'
-  | 'export'
-  | 'publish'
-  | 'ai'
-  | 'delete';
+  'rename' | 'describe' | 'import' | 'export' | 'publish' | 'ai' | 'delete';
 
 export type KnowledgeMenuRow = { verb: KnowledgeMenuVerb; label: string; run: () => void };
 

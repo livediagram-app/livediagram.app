@@ -40,7 +40,8 @@ export async function siteAddressIn(
     return 'held';
   }
   if (!ours) return 'taken';
-  if (op.kind === 'move') await storage.put(SITE_ADDRESS_KEY, { documentId: op.documentId, movedTo: op.to });
+  if (op.kind === 'move')
+    await storage.put(SITE_ADDRESS_KEY, { documentId: op.documentId, movedTo: op.to });
   else await storage.delete(SITE_ADDRESS_KEY);
   return 'held';
 }
