@@ -5,22 +5,30 @@ import { AiSettingsScene } from '@/editions/liveknowledge/components/illustratio
 export const metadata = helpMetadata({
   title: 'Ask Is Not Answering',
   description:
-    'What each Ask message means and how to fix it: the key was not accepted, the account is out of credit or at its rate limit, or a question limit was reached.',
+    'What each Ask message means and how to fix it: a built-in AI limit, a key not accepted, an account out of credit or rate limited, or a question limit.',
   path: '/help/troubleshooting/ask-is-not-answering/',
 });
 
-<ArticleLayout path="troubleshooting/ask-is-not-answering" title="Ask Is Not Answering" description="What to do when Ask says the key was not accepted, there is no credit, or it is rate limited." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+<ArticleLayout path="troubleshooting/ask-is-not-answering" title="Ask Is Not Answering" description="What to do when Ask reaches a built-in AI limit, the key was not accepted, or the account is out of credit." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-When Ask cannot answer, it says why in the answer's place, in words, with the next step. Find the message below. The messages name the provider your Knowledgebase uses: "Claude" here reads "OpenAI" if that is yours. [Describe to Set Up](/help/getting-started/describe-to-set-up/) shows the same messages.
+When Ask cannot answer, it says why in the answer's place, in words, with the next step. Find the message below. Ask runs on built-in AI unless your team added its own key; the key messages name the provider your Knowledgebase uses: "Claude" here reads "OpenAI" if that is yours. [Describe to Set Up](/help/getting-started/describe-to-set-up/) shows the same messages.
 
-## The Key
+## Built-In AI
+
+| Message                                                    | What it means                                           | What to do                                                    |
+| ---------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------- |
+| **You Have Used Today's 30 Built-In Questions**            | One person asks built-in AI at most 30 questions a day  | Ask again tomorrow, or an Editor adds your team's own key     |
+| **This Knowledgebase Has Used Today's Built-In Questions** | Built-in AI answers 100 questions a Knowledgebase a day | Ask again tomorrow, or an Editor adds your team's own key     |
+| **The Built-In AI Could Not Answer**                       | Nothing is wrong with the question                      | Press **Ask Again** in a moment                               |
+| **Built-In AI Is Not Set Up Here**                         | This server has no built-in AI, and no key is saved     | An Editor adds your team's key; anyone else asks an Editor to |
+
+## Your Own Key
 
 | Message                                  | What it means                                                  | What to do                                                                 |
 | ---------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | **Claude Did Not Accept the Key**        | The key was revoked, has expired, or was mistyped              | An Editor replaces it in AI Settings                                       |
 | **This Key Cannot Use the Chosen Model** | The provider account has no access to that model               | An Editor chooses another model in AI Settings                             |
 | **Ask Is Not Available Right Now**       | The key is missing or could not be read                        | An Editor adds it again in AI Settings                                     |
-| **Ask Needs Your Team's AI Key**         | No key has been added yet                                      | An Editor adds one; anyone else asks an Editor to                          |
 
 <Figure caption="AI Settings, where an Editor replaces the key or chooses another model." width="narrow">
   <AiSettingsScene />
@@ -47,7 +55,7 @@ Credit and rate limits are set by your provider for your team's account, not by 
 | **This Knowledgebase Has Had Its 200 Questions Today** | One Knowledgebase answers 200 questions a day        | Ask again tomorrow                 |
 | **That Question Is Too Long**                         | A question is at most 1,000 characters                | Shorten it and ask again           |
 
-Search works in the meantime, and needs no key.
+Search works in the meantime, and needs no AI.
 
 ## The Connection
 
@@ -62,7 +70,7 @@ An answer that stopped part way reads "The answer stopped before it finished. As
 ## Ask Is Off Altogether
 
 - **Sign In to Ask:** Ask answers only people who are signed in, a share link's visitor included.
-- **No Ask in an Offline Knowledgebase:** a Knowledgebase kept in this browser has no server to hold a key. See [Offline](/help/privacy-and-security/offline-mode/).
+- **No Ask in an Offline Knowledgebase:** a Knowledgebase kept in this browser has no server to ask, built-in AI or a key. See [Offline](/help/privacy-and-security/offline-mode/).
 - **There is no Ask tab:** the three tabs are not shown in an embed, in zen mode, or to someone who opened a link to one page.
 
 ## Ask Answers, but Badly

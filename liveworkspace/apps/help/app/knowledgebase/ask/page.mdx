@@ -22,8 +22,8 @@ export const metadata = helpMetadata({
 
 ## Before You Can Ask
 
-- The Knowledgebase needs your team's own AI key, from Anthropic (Claude) or OpenAI. An Editor adds it once in [AI Settings](/help/knowledgebase/ai-settings/). Until then the Ask view says "Ask Needs Your Team's AI Key".
-- You need to be signed in. Ask is off for anyone who is not, including a visitor through a share link: it would spend the team's key for strangers.
+- Nothing to set up: Ask runs on **built-in AI**, included with liveknowledge, with [daily limits](/help/knowledgebase/ai-settings/#built-in-ai-limits). A team may add its own Claude or OpenAI key in [AI Settings](/help/knowledgebase/ai-settings/) instead. On a server with no built-in AI, the Ask view says "Built-In AI Is Not Set Up Here" until an Editor adds a key.
+- You need to be signed in. Ask is off for anyone who is not, including a visitor through a share link: it would spend the team's AI for strangers.
 - A Knowledgebase kept Offline has no Ask.
 
 In each of these cases the view says why, and offers **Search the Pages**.
@@ -51,12 +51,12 @@ In each of these cases the view says why, and offers **Search the Pages**.
 
 ## What an Answer Shows
 
-- **Numbered citations.** Each claim ends in a numbered chip. Press one and its source lights up under **Sources**.
+- **Numbered citations.** Each claim ends in a numbered chip, numbered 1 to n in the order the answer first cites them. Press one and its source card, with the same number, lights up under **Sources**.
 - **Sources.** Each passage the answer used: its number, its page, the headings above the passage, the passage itself with your question's words softly marked, and who verified the page and when ("Verified 12 Mar by Maya"), or "Review Due, Last Verified" and the date, or "Never Verified". Press a source to open that page at the passage.
 - **A trust line,** such as "Answered From 2 Verified Pages". It tells you at a glance how much of the answer rests on verified pages.
 - **Found but Not Used.** A passage Ask found but set aside because its page is out of date and disagrees with a newer verified one. It is shown amber, with a **Stale** pill and the reason, so you can fix or delete the old page.
 
-Under the answer: **Helpful** and **Not Helpful** (counted, with no words attached), **Copy Answer**, and **Save as Page**.
+Under the latest answer: **Accept Answer**, **Helpful** and **Not Helpful** (counted, with no words attached), **Copy Answer**, and **Save as Page**.
 
 ## What It Answers From
 
@@ -80,10 +80,11 @@ Press **Save as Page** under an answer, choose the page it should sit under, and
 
 ## Your Questions
 
-The left column lists your recent questions under **Today**, **This Week** and **Earlier**. Press one to ask it again.
+The left column lists your chats under **Today**, **This Week** and **Earlier**, then **Completed Questions**. A chat is one conversation, named by its first question. Press one to open it with its answers as they were, to read or to continue.
 
-- Recent questions are kept in this browser, for you alone, 50 at most. Only the question and when you asked it are kept, never the answer.
-- The conversation lasts as long as the browser tab. Leave Ask to read a cited page and come back, and it is still there. Reload the page and a new one starts.
+- **Accept Answer** moves the chat into **Completed Questions**, a group closed by default that shows its count, and the conversation starts a fresh question. Open a completed chat to read it, and press **Reopen** to move it back and keep asking.
+- **Delete**, at the end of a chat's row, removes that chat from this browser after you confirm **Delete This Question?** It cannot be undone.
+- Chats are kept in this browser, for you alone, per Knowledgebase: each with its answers and sources, 50 at most, the oldest going first. They are still there after a reload, but not in another browser.
 
 On a window narrower than 1,024 pixels the three columns stack, and your recent questions fold under a **Recent** button.
 
@@ -93,6 +94,8 @@ On a window narrower than 1,024 pixels the three columns stack, and your recent 
 | ------------------------------ | --------------------- |
 | Questions one person may ask   | 20 an hour            |
 | Questions one Knowledgebase answers | 200 a day        |
+| On built-in AI, questions one person may ask | 30 a day, across every Knowledgebase |
+| On built-in AI, questions one Knowledgebase answers | 100 a day |
 | Length of a question           | 1,000 characters      |
 | Turns in one conversation      | 10                    |
 | Passages read for one answer   | 12                    |
@@ -103,19 +106,20 @@ Past a limit the answer's place says which one, and Search keeps working. **Draf
 
 - It never answers from outside this Knowledgebase.
 - It never changes, creates or verifies a page on its own. Only **Save as Page** and **Draft a Page From What We Know** make a page, and only when you press them.
-- It never shows the team's key to anyone.
+- It never shows the team's key, if it added one, to anyone.
 - It never shows a raw error. A failure is said in words with what to do next. See [Ask Is Not Answering](/help/troubleshooting/ask-is-not-answering/).
 
-Answers are drawn as plain text, with their citation chips. An answer can still be wrong where a page is wrong, which is what the citations are for: check the sources before you rely on one.
+Answers are drawn as plain text, with their citation chips. A link the model writes is shown as plain text too (its words, then the address in brackets), never as a link you can press; only the citation chips open pages. An answer can still be wrong where a page is wrong, which is what the citations are for: check the sources before you rely on one.
 
 ## Who Can Do What
 
 | Action                                   | Editor | Participant | Viewer |
 | ---------------------------------------- | ------ | ----------- | ------ |
 | Ask, copy an answer, mark it helpful or not | Yes | Yes         | Yes    |
+| Accept an answer, reopen or delete a chat | Yes  | Yes         | Yes    |
 | Save an answer as a page                 | Yes    | No          | No     |
 | Draft a page from a gap                  | Yes    | No          | No     |
-| Add, replace or remove the key           | Yes    | No          | No     |
+| Choose built-in AI or add, replace or remove a key | Yes | No   | No     |
 
 Everyone in the table needs to be signed in.
 

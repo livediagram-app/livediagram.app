@@ -1,5 +1,5 @@
 // The Ask page's card drawings (docs/specs/019-marketing/marketing-site.md "Feature pages", `ask`): citations, the
-// Sources rail, a Knowledge Gap, the team's own key, search with no key, and Save as Page.
+// Sources rail, a Knowledge Gap, built-in AI or the team's own key, search with no AI, and Save as Page.
 import { Bars, Button, PageGlyph, Pill, Scene, Sheet, Tick, Txt, at } from './kit';
 
 /** A citation number, in a small lime box. */
@@ -112,7 +112,7 @@ export function GapArt() {
   );
 }
 
-/** AI Settings: the provider, the key's last four characters with Replace and Remove, and the model. */
+/** AI Settings: Built-In AI or Your Own Key, the key's last four characters with Replace and Remove. */
 export function OwnKeyArt() {
   return (
     <Scene>
@@ -120,11 +120,11 @@ export function OwnKeyArt() {
         <Txt x={50} y={19} size={5.8} weight={700} tone="quiet">
           AI SETTINGS
         </Txt>
-        <Pill x={50} y={25} w={40} tone="brand">
-          Claude
+        <Pill x={50} y={25} w={50}>
+          Built-In AI
         </Pill>
-        <Pill x={94} y={25} w={40}>
-          OpenAI
+        <Pill x={104} y={25} w={54} tone="brand">
+          Your Own Key
         </Pill>
         <rect
           x={50}
@@ -145,10 +145,10 @@ export function OwnKeyArt() {
           Remove
         </Button>
         <Txt x={50} y={72} size={5.8} weight={500} tone="quiet">
-          Encrypted when saved, never shown again.
+          Built-in AI is included. A key is optional.
         </Txt>
         <Txt x={50} y={82} size={5.8} weight={500} tone="quiet">
-          Your team pays its provider for what it uses.
+          On a key, your team pays its provider.
         </Txt>
       </Sheet>
     </Scene>
@@ -181,7 +181,7 @@ export function SearchArt() {
           rollback
         </Txt>
         <Pill x={218} y={13.5} w={40} tone="plain">
-          No Key
+          No AI
         </Pill>
         <PageGlyph x={40} y={33} />
         <Txt x={50} y={39.5} size={6.6} weight={700}>

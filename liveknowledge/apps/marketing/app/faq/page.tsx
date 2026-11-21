@@ -12,7 +12,7 @@ import { pageMetadata } from '@/lib/seo';
 
 const FAQ_TITLE = 'FAQ · liveknowledge';
 const FAQ_DESCRIPTION =
-  'Answers about liveknowledge: what it costs, verification, Ask and your own AI key, agents and MCP, importing from Notion and Confluence, and sharing.';
+  'Answers about liveknowledge: what it costs, verification, Ask and built-in AI, agents and MCP, importing from Notion and Confluence, and sharing.';
 
 export const metadata = pageMetadata({
   title: FAQ_TITLE,

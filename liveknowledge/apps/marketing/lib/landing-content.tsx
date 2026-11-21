@@ -103,7 +103,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         title: 'Start From a Structure',
         description:
-          'Start a knowledgebase from a structure such as Team Handbook or Runbooks and On-Call, or describe it and AI proposes the pages. Describe to Set Up runs on built-in AI when your team has no key.',
+          'Start a knowledgebase from a structure such as Team Handbook or Runbooks and On-Call, or describe it and AI proposes the pages. Describe to Set Up runs on built-in AI, included.',
         art: <PagesCardArt.DescribeArt />,
         href: '/help/knowledgebase/the-page-tree/',
       },
@@ -173,15 +173,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Ask',
     title: 'Ask, With Sources',
     description:
-      'Ask a question in plain words and get an answer written only from your pages, each claim numbered to the passage it came from and to the person who verified it. When the pages do not cover something, Ask says so and offers to start that page: it does not guess. Ask runs on your team’s own Claude or OpenAI key, and search needs no key at all.',
+      'Ask a question in plain words and get an answer written only from your pages, each claim numbered to the passage it came from and to the person who verified it. When the pages do not cover something, Ask says so and offers to start that page: it does not guess. Ask runs on built-in AI, included, or your own Claude or OpenAI key, and search needs no AI at all.',
     points: [
       'A citation on every claim',
       'It says what the pages do not cover',
-      'Your own Claude or OpenAI key',
+      'Built-in AI, or your own key',
     ],
     art: <AskArt />,
     metaDescription:
-      'Ask answers from your own pages with a citation on every claim, a Sources rail, Knowledge Gaps and your team’s own Claude or OpenAI key.',
+      'Ask answers from your own pages with a citation on every claim, a Sources rail, Knowledge Gaps, and built-in AI or your own Claude or OpenAI key.',
     items: [
       {
         title: 'Every Claim Cited',
@@ -205,14 +205,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/knowledgebase/questions-nobody-could-answer/',
       },
       {
-        title: 'Your Own Claude or OpenAI Key',
+        title: 'Built-In AI, or Your Own Key',
         description:
-          'An Editor adds the knowledgebase’s key in AI Settings. It is encrypted, never sent back to a browser, and your team pays its provider for what it uses.',
+          'Built-in AI is included, with daily limits. An Editor may add a Claude or OpenAI key in AI Settings instead: it is encrypted, never sent back to a browser.',
         art: <AskCardArt.OwnKeyArt />,
         href: '/help/knowledgebase/ai-settings/',
       },
       {
-        title: 'Search Needs No Key',
+        title: 'Search Needs No AI',
         description:
           'Keyword search over titles and passages, verified pages first. It works for every role, through a share link and in an Offline knowledgebase.',
         art: <AskCardArt.SearchArt />,
@@ -280,7 +280,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         title: 'AI Knowledge',
         description:
-          'One tab shows which agents read what, the questions nobody could answer and the pages that disagree. Finding those uses your team’s key.',
+          'One tab shows which agents read what, the questions nobody could answer and the pages that disagree. Finding those runs on built-in AI or your own key.',
         art: <AgentsCardArt.AiKnowledgeArt />,
         href: '/help/knowledgebase/pages-that-disagree/',
       },

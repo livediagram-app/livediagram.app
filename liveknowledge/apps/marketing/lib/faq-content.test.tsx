@@ -82,9 +82,10 @@ describe('the landing FAQ', () => {
     expect(answer('Is liveknowledge free?')).not.toMatch(/no paid tier|forever/i);
   });
 
-  it('says the team pays for Ask on its own key, and that the rest needs none', () => {
-    expect(answer('Who pays for Ask?')).toMatch(/own Claude or OpenAI key/);
-    expect(answer('Who pays for Ask?')).toMatch(/need no key/);
+  it('says Ask runs on built-in AI, a key is optional, and the rest needs no AI', () => {
+    expect(answer('Who pays for Ask?')).toMatch(/built-in AI, included/);
+    expect(answer('Who pays for Ask?')).toMatch(/may add the team’s own Claude or OpenAI key/);
+    expect(answer('Who pays for Ask?')).toMatch(/need no AI/);
   });
 
   it('says an agent sees only what its person or token can open', () => {

@@ -13,7 +13,7 @@ export const SITE_PITCH = 'a team knowledgebase, for people and for AI';
 export const SITE_TITLE = 'liveknowledge: A team knowledgebase, for people and for AI';
 
 export const SITE_DESCRIPTION =
-  'An open-source team knowledgebase. Pages with owners and verified dates, cited answers on your own Claude or OpenAI key, and an MCP server your agents read.';
+  'An open-source team knowledgebase. Pages with owners and verified dates, cited answers on built-in AI or your own key, and an MCP server your agents read.';
 
 export const HERO_HEADLINE = 'Knowledge your team and its AI can trust.';
 

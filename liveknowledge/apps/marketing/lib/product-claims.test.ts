@@ -68,7 +68,12 @@ const NOT_BUILT: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /runs no (?:AI )?model|pays for no model|no model of its own/i,
-    why: 'Describe to Set Up runs on built-in AI when a team has no key (describe-to-set-up.md "The model")',
+    why: 'Ask, conflict checks, drafts and Describe to Set Up run on built-in AI when a team has no key (search-and-ask.md "Built-in AI")',
+  },
+  {
+    pattern:
+      /needs? (?:your |the )?(?:team[’']s )?(?:own )?(?:AI |API |Claude or OpenAI )?key\b(?! at all)|always uses? (?:your |the )?team[’']s key|one AI cost|runs on your (?:team[’']s )?own (?:AI |Claude or OpenAI )?key/i,
+    why: 'built-in AI is included and a team’s own key is optional (search-and-ask.md "Built-in AI", "Providers")',
   },
   {
     pattern: /(?<!No )semantic search\b(?! is not built)|understands meaning/i,

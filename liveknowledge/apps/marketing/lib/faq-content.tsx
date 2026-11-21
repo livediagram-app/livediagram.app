@@ -53,20 +53,20 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
               GitHub
             </a>
             . Writing, linking, verifying, searching and connecting an agent cost nothing. Ask runs
-            on your team’s own AI key, so that usage is paid to your provider, not to us. Describe
-            to Set Up runs on built-in AI when your team has no key.
+            on built-in AI, included with daily limits. A team may add its own Claude or OpenAI key
+            instead, and that usage is paid to the provider, not to us.
           </>
         ),
         aText:
-          'It is free to start, with no card and no trial clock, and it is open source under the MIT licence: the code is on GitHub. Writing, linking, verifying, searching and connecting an agent cost nothing. Ask runs on your team’s own AI key, so that usage is paid to your provider, not to us. Describe to Set Up runs on built-in AI when your team has no key.',
+          'It is free to start, with no card and no trial clock, and it is open source under the MIT licence: the code is on GitHub. Writing, linking, verifying, searching and connecting an agent cost nothing. Ask runs on built-in AI, included with daily limits. A team may add its own Claude or OpenAI key instead, and that usage is paid to the provider, not to us.',
       },
       {
         q: 'Is there a paid tier?',
-        a: 'Not at launch. Everything this site describes is free to use, and the one AI cost a team carries is Ask, which runs on its own Claude or OpenAI key.',
+        a: 'Not at launch. Everything this site describes is free to use, built-in AI included. The only AI cost a team can carry is its own Claude or OpenAI key, if it adds one.',
       },
       {
         q: 'How do I start a knowledgebase?',
-        a: 'Open the editor and a new knowledgebase starts on a screen of choices. Start blank, pick a structure such as Team Handbook or Runbooks and On-Call with its pages already in place, import from Notion, Confluence or a folder of Markdown, or describe what it is for and AI proposes the pages for you to accept. Describe to Set Up runs on built-in AI when your team has no key, and on your team’s key once it has one.',
+        a: 'Open the editor and a new knowledgebase starts on a screen of choices. Start blank, pick a structure such as Team Handbook or Runbooks and On-Call with its pages already in place, import from Notion, Confluence or a folder of Markdown, or describe what it is for and AI proposes the pages for you to accept. Describe to Set Up runs on built-in AI, or on your team’s own key if it adds one.',
       },
       {
         q: 'Do I need an account?',
@@ -118,14 +118,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What does AI Knowledge show?',
-        a: 'Which agents read your knowledgebase and what they read most, the questions nobody could answer, pages that disagree with each other, the edits agents have suggested, and the pages you marked Always in Context. Finding pages that disagree uses a model, so it needs your own Claude or OpenAI key; the rest needs none.',
+        a: 'Which agents read your knowledgebase and what they read most, the questions nobody could answer, pages that disagree with each other, the edits agents have suggested, and the pages you marked Always in Context. Finding pages that disagree uses a model, built-in AI or your own key; the rest needs none.',
       },
     ],
   },
   {
     id: 'ask',
     title: 'Ask and AI',
-    blurb: 'Cited answers, your own key and what search needs.',
+    blurb: 'Cited answers, built-in AI, your own key and search.',
     icon: lucideGlyph(lucideSparkles, ICON),
     items: [
       {
@@ -134,11 +134,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Who pays for Ask?',
-        a: 'Your team does, on its own Claude or OpenAI key, so Ask appears once an Editor adds the knowledgebase’s key in AI Settings. Search, verification, import, export and the agent connection need no key.',
+        a: 'liveknowledge does: Ask runs on built-in AI, included, with daily limits. An Editor may add the team’s own Claude or OpenAI key in AI Settings, paid to that provider. Search, verification, import, export and the agent connection need no AI.',
       },
       {
-        q: 'Does anything use AI without our key?',
-        a: 'One thing: Describe to Set Up. With no key it asks built-in AI, Cloudflare Workers AI paid for by liveknowledge, up to 10 suggestions a person a day; once your team adds a key, it uses that instead. Ask, finding pages that disagree and drafting a page from a question always use your team’s key.',
+        q: 'What are the built-in AI limits?',
+        a: 'Built-in AI is Cloudflare Workers AI, paid for by liveknowledge: 30 questions a person a day, 100 a knowledgebase a day and 20 conflict checks a knowledgebase a day, with a drafted page counted as a question, and 10 Describe to Set Up suggestions a person a day. Once your team adds its own key, everything uses that instead. A server you run yourself has built-in AI only if it is set up with it.',
       },
       {
         q: 'Is my API key safe?',
@@ -149,12 +149,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Ask says so instead of guessing. The part it could not answer is shown as a Knowledge Gap, recorded in AI Knowledge with how often it was asked, and an Editor can start a page from it.',
       },
       {
-        q: 'Does search need a key?',
+        q: 'Does search need AI?',
         a: 'No. Search is keyword search over your pages, split into passages, and it works for every role and in an Offline knowledgebase. Semantic search is not built.',
       },
       {
         q: 'Can someone with a share link use Ask?',
-        a: 'Not anonymously. Ask is off for anonymous share links, because it would spend your team’s key for strangers. People you share the knowledgebase with by name can ask, at any role.',
+        a: 'Not anonymously. Ask is off for anonymous share links, because strangers would spend your team’s AI. People you share the knowledgebase with by name can ask, at any role.',
       },
     ],
   },
@@ -190,7 +190,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Does liveknowledge train a model on my pages?',
-        a: 'No. Ask sends your question and the passages it found to Claude or OpenAI, whichever your team chose, under your team’s own API key. With no key, Describe to Set Up sends only what you describe, and the titles of pages already there, to built-in AI. An agent you connect reads only what you let it.',
+        a: 'No. Ask sends your question and the passages it found to built-in AI (Cloudflare Workers AI, run by liveknowledge), or to Claude or OpenAI under your team’s own key if it added one. Describe to Set Up sends only what you describe, and the titles of pages already there. An agent you connect reads only what you let it.',
       },
     ],
   },

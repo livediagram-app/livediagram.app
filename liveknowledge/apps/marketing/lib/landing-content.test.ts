@@ -34,8 +34,10 @@ describe('the landing sections', () => {
     }
   });
 
-  it('say who pays for Ask wherever Ask is sold', () => {
-    expect(getLandingSection('ask')!.description).toMatch(/own Claude or OpenAI key/);
+  it('say what Ask runs on wherever Ask is sold', () => {
+    expect(getLandingSection('ask')!.description).toMatch(
+      /built-in AI, included, or your own Claude or OpenAI key/,
+    );
     expect(getLandingSection('ask')!.description).toMatch(/does not guess/);
   });
 

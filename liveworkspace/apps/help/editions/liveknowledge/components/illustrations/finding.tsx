@@ -333,7 +333,7 @@ export function AiSettingsScene() {
         w={280}
         h={228}
         title="AI Settings"
-        line="Ask, AI Knowledge and Describe to Set Up run on your team's own AI key."
+        line="Ask, AI Knowledge and Describe to Set Up run on built-in AI, or your own key."
       >
         <Label x={84} y={52} size={6.5} weight={700} tone="muted">
           PROVIDER

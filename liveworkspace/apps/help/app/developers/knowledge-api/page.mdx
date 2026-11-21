@@ -72,6 +72,6 @@ Every route is under `/api/documents/{id}`, where `{id}` is the Knowledgebase's 
 - Every page and passage answer carries the trust fields described in [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/#the-trust-fields).
 - Roles are checked on the server for every route. A token acts with its person's role, narrowed by its scopes: without `write` it acts as a Participant at most, and a read-only token as a Viewer.
 - Some actions take an Editor in person, never a token: emailing the owners, and allowing a connection to write.
-- Ask, AI Knowledge's model calls and Describe to Set Up run on the team's own AI key, never on liveknowledge's.
+- Ask, AI Knowledge's model calls and Describe to Set Up run on built-in AI (Cloudflare Workers AI, with daily limits), or on the team's own AI key once one is saved. `GET ai` answers `builtIn`: whether this server has built-in AI.
 
 </ArticleLayout>
