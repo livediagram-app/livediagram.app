@@ -441,6 +441,7 @@ export function ChromeToolsMenu({
                     sheet={sheet}
                     tall={claimed?.size === '3xl'}
                     floorPx={listPx}
+                    minPx={minPx}
                     waiting={waiting}
                     slotRef={view.slot != null ? slotRef : undefined}
                   >
