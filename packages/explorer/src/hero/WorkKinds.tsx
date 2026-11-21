@@ -11,7 +11,7 @@ import { siteOf } from '../words';
 import { workTiles, type WorkTile } from './work-kinds';
 
 /** Where a tile starts its kind: the app's New route with the template, or null for no link. */
-export type TemplateHref = (app: App, template: string) => string | null;
+export type TemplateHref = (app: App, template: string, param?: 'structure') => string | null;
 
 export const WORK_KINDS_COPY = { heading: 'What you can make', kits: 'Start a Project' } as const;
 
@@ -44,8 +44,8 @@ function rampOf(app: App): CSSProperties {
  *  editor opens another app's items there). */
 export const defaultTemplateHref =
   (host: App): TemplateHref =>
-  (app, template) =>
-    `${app === host ? '' : siteOf(app).url}${APP_ITEMS[app].newPath}?template=${encodeURIComponent(template)}`;
+  (app, template, param = undefined) =>
+    `${app === host ? '' : siteOf(app).url}${APP_ITEMS[app].newPath}?${param ?? 'template'}=${encodeURIComponent(template)}`;
 
 const TILE =
   'flex h-full min-w-0 flex-col gap-1.5 rounded-xl border border-slate-200 bg-white/90 p-1 pb-2 sm:gap-2 sm:rounded-2xl sm:p-1.5 sm:pb-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-800/80';
@@ -138,7 +138,11 @@ export function WorkKinds({
       <ul className={`grid ${all ? GRID.all : GRID.app} sm:gap-3`}>
         {tiles.map((tile) => (
           <li key={`${tile.app}:${tile.kind.id}`} className="min-w-0">
-            <Tile tile={tile} all={all} href={hrefOf(tile.app, tile.kind.template)} />
+            <Tile
+              tile={tile}
+              all={all}
+              href={hrefOf(tile.app, tile.kind.template, tile.kind.param)}
+            />
           </li>
         ))}
       </ul>

@@ -163,7 +163,7 @@ All Apps.
 | livedocuments | Article (`blank-article`), Slide Deck (`blank-slide-deck`), Infographic (`blank-infographic`), Poster (`event-poster`)           |
 | livedesign    | Logo (`blank-logo`), App Wireframe (`blank-wireframe-phone`), Web Wireframe (`blank-wireframe-browser`), Photo (`photo-edit`)    |
 | livehuddle    | Virtual Office (`virtual-office`), Team Pod (`team-pod`), Coworking Space (`coworking-space`), All-Hands Hall (`all-hands-hall`) |
-| liveknowledge | Page (`blank-article`), Handbook (`onboarding-handbook`), Design Doc (`design-doc`), Meeting Notes (`meeting-notes`)             |
+| liveknowledge | Company Wiki, Team Handbook, Engineering Handbook, Runbooks: knowledgebase structures (`/new?structure=<id>`, 2026-11-21)        |
 
 liveknowledge's kinds are pages a knowledgebase is often started from, each a template the fork carries from
 livedocuments and each drawn as the article miniature until it has pictures of its own. Under All Apps the set is one

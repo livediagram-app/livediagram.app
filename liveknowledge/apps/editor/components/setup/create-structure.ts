@@ -32,6 +32,9 @@ export type CreateStructureArgs = {
 
 export async function createStructure(args: CreateStructureArgs): Promise<ImportWriteResult> {
   const { chrome } = args;
+  // The untouched Start Here a new knowledgebase opens in edit mode on: left first, so the structure's first page is
+  // written as saved, not into its draft (lost on a reload).
+  if (args.replaceId) chrome.get().pageEditing.release(args.replaceId);
   const made = await runSetup({
     pages: args.pages,
     host: {

@@ -167,6 +167,19 @@ export function useEditorPageEditing({
     track('Tab', 'Ended', 'Discard');
   };
 
+  // Out of edit mode at once, its draft dropped, with no flash and no toast: for a writer that replaces the page whole
+  // (a structure picked, a Describe to Set Up suggestion, on the untouched Start Here a new knowledgebase opens in
+  // edit mode on), so what it writes is the saved page, never a draft lost on a reload.
+  const release = (tabId: string) => {
+    if (pageEditRef.current?.tabId !== tabId) return;
+    commitRealTabs((ts) =>
+      ts.map((t) => (t.id === tabId && holdsDraft(t) ? withDraftDiscarded(t) : t)),
+    );
+    resetHistory();
+    enter(null);
+    debugLog('[page-edit] released', { tabId });
+  };
+
   const cancel = async () => {
     const tabId = editingTabId;
     if (!tabId) return;
@@ -331,6 +344,7 @@ export function useEditorPageEditing({
       start,
       save,
       cancel,
+      release,
     },
   };
 }

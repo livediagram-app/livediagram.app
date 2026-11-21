@@ -35,8 +35,8 @@ const EXPECTED: Record<App, { labels: string[]; templates: string[] }> = {
     templates: ['virtual-office', 'team-pod', 'coworking-space', 'all-hands-hall'],
   },
   liveknowledge: {
-    labels: ['Page', 'Handbook', 'Design Doc', 'Meeting Notes'],
-    templates: ['blank-article', 'onboarding-handbook', 'design-doc', 'meeting-notes'],
+    labels: ['Company Wiki', 'Team Handbook', 'Engineering Handbook', 'Runbooks'],
+    templates: ['company-knowledgebase', 'team-handbook', 'engineering-handbook', 'runbooks'],
   },
 };
 
@@ -56,7 +56,8 @@ function shape(root: HTMLElement): string {
   return clone.outerHTML;
 }
 
-const href = (app: App, template: string) => `https://${app}.test/new?template=${template}`;
+const href = (app: App, template: string, param: 'structure' | undefined = undefined) =>
+  `https://${app}.test/new?${param ?? (app === 'liveknowledge' ? 'structure' : 'template')}=${template}`;
 
 describe('WorkKinds', () => {
   it.each(APPS)('shows %s’s own kinds, each starting its template in its app', (app) => {
