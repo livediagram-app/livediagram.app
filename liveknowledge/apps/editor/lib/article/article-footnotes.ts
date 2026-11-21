@@ -7,6 +7,7 @@ import {
   PluginKey,
   TextSelection,
   type Command,
+  type EditorState,
   type Transaction,
 } from 'prosemirror-state';
 import {
@@ -290,6 +291,34 @@ export const insertFootnote: Command = (state, dispatch) => {
   }
   return true;
 };
+
+/** Backspace with the caret just after a reference: the reference goes, its note with it (spec "Removing one"). The
+ *  editor's own, never the browser's, which treats an uneditable box beside the caret differently in each. */
+export const deleteFootnoteBackward: Command = (state, dispatch) => {
+  const { $from, empty } = state.selection;
+  if (!empty || !$from.nodeBefore || !isRef($from.nodeBefore)) return false;
+  if (dispatch) dispatch(state.tr.delete($from.pos - 1, $from.pos).scrollIntoView());
+  return true;
+};
+
+/** Delete with the caret just before a reference: the reference goes, its note with it. */
+export const deleteFootnoteForward: Command = (state, dispatch) => {
+  const { $from, empty } = state.selection;
+  if (!empty || !$from.nodeAfter || !isRef($from.nodeAfter)) return false;
+  if (dispatch) dispatch(state.tr.delete($from.pos, $from.pos + 1).scrollIntoView());
+  return true;
+};
+
+/** Footnote `n` (its number) removed from its note: the reference goes and the caret stands where it stood. Null
+ *  when there is no such footnote. */
+export function removeFootnoteTr(state: EditorState, n: number): Transaction | null {
+  const pos = footnoteKey.getState(state)?.refs[n - 1];
+  const node = pos === undefined ? null : state.doc.nodeAt(pos);
+  if (pos === undefined || !node || !isRef(node)) return null;
+  const tr = state.tr.delete(pos, pos + 1);
+  tr.setSelection(TextSelection.create(tr.doc, pos));
+  return tr.scrollIntoView();
+}
 
 // A reference as drawn: its number, raised, read out as "Footnote 3". The number is a text node, so an export draws
 // it as written; the words for a screen reader are chrome an export leaves out.

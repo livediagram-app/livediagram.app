@@ -45,6 +45,7 @@ import {
   footnoteNodeView,
   footnotesPlugin,
   insertFootnote,
+  removeFootnoteTr,
 } from '@/lib/article/article-footnotes';
 import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
 import { commitWritingOnLeave } from '@/lib/article/article-open-edit';
@@ -368,6 +369,16 @@ export function mountArticleView({
     },
     resize: () => scheduleMeasure(),
     press: () => latest.current.onWritingPress(),
+    // Removed from its note: the reference goes (one edit), the caret where it stood.
+    remove: (n) => {
+      const v = viewRef.current;
+      if (!v || !latest.current.editable) return;
+      const tr = removeFootnoteTr(v.state, n);
+      if (!tr) return;
+      v.focus();
+      v.dispatch(tr);
+      flush();
+    },
   });
   // A handle for driving the writing in development (browser checks); never in production.
   if (process.env.NODE_ENV !== 'production') Reflect.set(window, '__articleView', view);

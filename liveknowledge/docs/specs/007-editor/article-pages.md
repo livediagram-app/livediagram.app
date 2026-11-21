@@ -504,8 +504,21 @@ undoes and copies with the text it sits in.
   caret there; Enter or Escape, or a press elsewhere, leaves it (the change is one edit), Enter
   and Escape putting the caret back after its reference. An empty note says "Footnote" to someone writing.
   A press on a reference puts the caret in its note.
-- **Removing one**: deleting its reference (Backspace after it, Delete before it, or a selection
-  holding it) removes the note with it. Emptying the note keeps an empty note.
+- **Removing one** (owner, 2026-11-21: "I can't seem to delete a footnote by being on the line and deleting it"):
+  a footnote goes, reference and note together, in every way a person reaches for, by anyone who may write (a
+  Participant included, as removing text is writing). Each is one edit, and Undo brings the footnote back whole,
+  its note's text and its number in place.
+  - **In the writing**: Backspace with the caret just after its reference, Delete just before it, or a selection
+    holding it. The editor does this itself, never leaving it to the browser, so it works the same in every browser.
+  - **On its note**, at the page's foot: Backspace or Delete in an empty note; Backspace at the start of a note
+    with text, which first selects the whole note (so a long note is never lost to one stray key) and a second
+    Backspace or Delete removes it; and Backspace or Delete with the whole note's text selected (a triple-click,
+    ⌘A in the note). Typing over a selected note replaces its text and keeps it. Emptying a note by deleting its
+    characters one at a time keeps an empty note, which says "Footnote"; one more Backspace removes it.
+  - **Its Remove button**: resting the pointer on a note, or the caret in it, shows a small Remove Footnote button
+    (an ×, with its tooltip) at the line's end; a press removes it.
+  - Removed from its note, the caret goes back into the writing where the reference stood. The footnotes after it
+    renumber at once.
 - **For a screen reader** a reference reads "Footnote 3", and each note's region "Footnotes" with
   the notes as a list.
 - **Paste and Markdown**: a copy of writing holding references pastes them with their notes, within

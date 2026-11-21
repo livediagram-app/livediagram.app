@@ -26,6 +26,9 @@ export type NotesHost = {
   resize: () => void;
   // A press on a note: the canvas's selection goes, as for a press on the writing.
   press: () => void;
+  // The footnote removed from its note (Backspace or Delete, its Remove button): its reference goes with it and the
+  // caret goes back into the writing where it stood.
+  remove: (n: number) => void;
 };
 
 // `plaintext-only` keeps a paste plain; a browser without it takes `true`, its paste read as text all the same.
@@ -43,6 +46,28 @@ function plainEditable(): string {
 }
 
 const TEXT = 'article-footnote-text';
+const REMOVE = 'article-footnote-remove';
+// The Remove button's ×: the icon set's x, made node by node (the notes are drawn imperatively, outside React, and
+// the page's Trusted Types take no markup).
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function crossIcon(): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  const attrs: Record<string, string> = {
+    viewBox: '0 0 24 24',
+    width: '100%',
+    height: '100%',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2.25',
+    'stroke-linecap': 'round',
+    'aria-hidden': 'true',
+  };
+  for (const [k, v] of Object.entries(attrs)) svg.setAttribute(k, v);
+  const path = document.createElementNS(SVG_NS, 'path');
+  path.setAttribute('d', 'M18 6 6 18M6 6l12 12');
+  svg.append(path);
+  return svg;
+}
 const noteOf = (target: EventTarget | null): HTMLElement | null =>
   target instanceof Element ? target.closest<HTMLElement>(`.${TEXT}`) : null;
 const numberOf = (text: HTMLElement): number => Number(text.closest<HTMLElement>('li')?.dataset.n);
@@ -68,8 +93,47 @@ function itemOf(): HTMLLIElement {
   const text = document.createElement('span');
   text.className = TEXT;
   text.dataset.placeholder = 'Footnote';
-  li.append(n, text);
+  // Chrome, never drawn in an export (article-snapshot.ts skips `.article-chrome`); shown to a writer on hover or
+  // with the caret in the note, always holding its place so a note's height never changes with it.
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = `${REMOVE} article-chrome`;
+  remove.tabIndex = -1;
+  remove.setAttribute('contenteditable', 'false');
+  remove.setAttribute('aria-label', 'Remove Footnote');
+  remove.title = 'Remove Footnote';
+  remove.append(crossIcon());
+  li.append(n, text, remove);
   return li;
+}
+
+/** Whether the caret stands at the very start of `text`, nothing selected. */
+function caretAtStart(text: HTMLElement, sel: Selection): boolean {
+  if (!sel.isCollapsed || sel.rangeCount === 0) return false;
+  const range = sel.getRangeAt(0);
+  if (!text.contains(range.startContainer)) return false;
+  const before = document.createRange();
+  before.selectNodeContents(text);
+  before.setEnd(range.startContainer, range.startOffset);
+  return before.toString() === '';
+}
+
+/** Whether the whole of `text`'s (non-empty) text is selected. */
+function wholeSelected(text: HTMLElement, sel: Selection): boolean {
+  const all = text.textContent ?? '';
+  if (all === '' || sel.isCollapsed || sel.rangeCount === 0) return false;
+  const range = sel.getRangeAt(0);
+  if (!text.contains(range.commonAncestorContainer) && range.commonAncestorContainer !== text)
+    return false;
+  return range.toString() === all;
+}
+
+/** Selects the whole of `text`'s text. */
+function selectWhole(text: HTMLElement, sel: Selection): void {
+  const range = document.createRange();
+  range.selectNodeContents(text);
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
 
 export class FootnoteNotes {
@@ -81,6 +145,8 @@ export class FootnoteNotes {
   private sig = '';
   private vars = '';
   private readonly on: NotesHost;
+  // A note being removed: the focus leaving it commits nothing.
+  private removing = false;
 
   constructor(parent: HTMLElement, on: NotesHost) {
     this.on = on;
@@ -126,7 +192,7 @@ export class FootnoteNotes {
     if (fresh.length > 0 || this.head < 0) {
       const items = fresh.map((t) => {
         const li = itemOf();
-        li.lastElementChild!.textContent = t;
+        li.querySelector(`.${TEXT}`)!.textContent = t;
         li.firstElementChild!.textContent = '99';
         return li;
       });
@@ -162,13 +228,14 @@ export class FootnoteNotes {
       box.style.top = `${page.bottom}px`;
       box.style.width = `${page.width}px`;
       box.style.maxHeight = `${page.maxHeight}px`;
+      box.toggleAttribute('data-editable', editable);
       const list = box.querySelector('ol')!;
       while (list.children.length > page.notes.length) list.lastElementChild!.remove();
       while (list.children.length < page.notes.length) list.append(itemOf());
       page.notes.forEach((note, k) => {
         const li = list.children[k] as HTMLLIElement;
         const label = li.firstElementChild!;
-        const text = li.lastElementChild as HTMLElement;
+        const text = li.querySelector<HTMLElement>(`.${TEXT}`)!;
         const typing = document.activeElement === text;
         if (li.dataset.n !== String(note.n)) li.dataset.n = String(note.n);
         if (label.textContent !== String(note.n)) label.textContent = String(note.n);
@@ -221,17 +288,59 @@ export class FootnoteNotes {
     this.host.remove();
   }
 
-  // A press on a note is the note's: never the canvas's (a marquee, a pan, an element beneath).
+  // A press on a note is the note's: never the canvas's (a marquee, a pan, an element beneath). A press on a note's
+  // Remove button removes it, the focus never moving into the note first.
   private onPress = (e: PointerEvent) => {
     e.stopPropagation();
+    const remove = e.target instanceof Element ? e.target.closest<HTMLElement>(`.${REMOVE}`) : null;
+    if (remove) {
+      e.preventDefault();
+      const n = Number(remove.closest<HTMLElement>('li')?.dataset.n);
+      if (this.on.editable() && n > 0) this.removeNote(n);
+      return;
+    }
     this.on.press();
   };
+
+  // Footnote `n` removed from its note: its own focus-out commit is skipped (the number is about to name the next
+  // footnote), then the host removes its reference.
+  private removeNote(n: number): void {
+    this.removing = true;
+    try {
+      this.on.remove(n);
+    } finally {
+      this.removing = false;
+    }
+  }
+
+  // Backspace or Delete on a note (spec "Removing one"): an empty note, or one whose whole text is selected, goes;
+  // Backspace at the start of a note with text selects it first, so one stray key never loses a long note.
+  private deleteKey(e: KeyboardEvent, text: HTMLElement): boolean {
+    if (e.key !== 'Backspace' && e.key !== 'Delete') return false;
+    const sel = window.getSelection();
+    if (!sel) return false;
+    const n = numberOf(text);
+    if ((text.textContent ?? '') === '' || wholeSelected(text, sel)) {
+      e.preventDefault();
+      // Whatever was typed is kept first, so Undo brings the note back as it stood.
+      this.on.commit(n, cleanFootnoteText(text.textContent ?? ''));
+      this.removeNote(n);
+      return true;
+    }
+    if (e.key === 'Backspace' && caretAtStart(text, sel)) {
+      e.preventDefault();
+      selectWhole(text, sel);
+      return true;
+    }
+    return false;
+  }
 
   private onKey = (e: KeyboardEvent) => {
     const text = noteOf(e.target);
     if (!text) return;
     // The canvas's shortcuts never see a key typed into a note.
     e.stopPropagation();
+    if (this.deleteKey(e, text)) return;
     // Enter or Escape: done with the note, the writing goes on after its reference (a blur alone
     // left the focus on the page, where the next letters typed ran the canvas's shortcuts).
     if (e.key === 'Enter' || e.key === 'Escape') {
@@ -260,6 +369,7 @@ export class FootnoteNotes {
 
   private onLeave = (e: FocusEvent) => {
     const text = noteOf(e.target);
-    if (text) this.on.commit(numberOf(text), cleanFootnoteText(text.textContent ?? ''));
+    if (text && !this.removing)
+      this.on.commit(numberOf(text), cleanFootnoteText(text.textContent ?? ''));
   };
 }

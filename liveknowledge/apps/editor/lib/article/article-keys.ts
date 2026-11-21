@@ -8,6 +8,7 @@ import { NodeSelection, TextSelection, type Command, type Plugin } from 'prosemi
 import type { MarkType } from 'prosemirror-model';
 import type { ArticleParagraphStyle } from '@liveknowledge/document';
 import { articleSchema } from './article-schema';
+import { deleteFootnoteBackward, deleteFootnoteForward } from './article-footnotes';
 import {
   backspaceAtStart,
   clearFormatting,
@@ -142,8 +143,8 @@ export function articleKeymap(host: {
     keymap({
       Enter: enter,
       'Shift-Enter': lineBreak,
-      Backspace: chainCommands(undoInputRule, backspaceAtStart),
-      Delete: deleteAtEnd,
+      Backspace: chainCommands(undoInputRule, deleteFootnoteBackward, backspaceAtStart),
+      Delete: chainCommands(deleteFootnoteForward, deleteAtEnd),
       Tab: tab,
       'Shift-Tab': shiftTab,
       'Mod-b': toggleBold,

@@ -10,12 +10,15 @@ import { articleSchema as S } from './article-schema';
 import {
   changedRanges,
   clearPendingNote,
+  deleteFootnoteBackward,
+  deleteFootnoteForward,
   footnoteKey,
   footnoteNodeView,
   footnoteRefs,
   footnotesPlugin,
   insertFootnote,
   mapBreaks,
+  removeFootnoteTr,
   sameFootBreaks,
   setFootBreaks,
   touchesRefs,
@@ -241,5 +244,59 @@ describe("the breaks above a page's notes", () => {
     expect(sameFootBreaks(a, [{ page: 0, pos: 4, block: false }])).toBe(true);
     expect(sameFootBreaks(a, [{ page: 0, pos: 4, block: true }])).toBe(false);
     expect(sameFootBreaks(a, [])).toBe(false);
+  });
+});
+
+describe('removing a footnote (spec "Removing one")', () => {
+  const caret = (view: EditorView, pos: number) =>
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, pos)));
+
+  it('takes Backspace just after a reference: the reference goes, its note with it', () => {
+    const { view } = viewOf(BLOCKS);
+    caret(view, 6);
+    expect(deleteFootnoteBackward(view.state, undefined, view)).toBe(true);
+    expect(deleteFootnoteBackward(view.state, view.dispatch, view)).toBe(true);
+    expect(stateOf(view).refs).toEqual([4, 16]);
+    expect(view.state.selection.from).toBe(5);
+    expect(view.state.doc.textBetween(1, 9)).toBe('One two');
+  });
+
+  it('takes Delete just before a reference', () => {
+    const { view } = viewOf(BLOCKS);
+    caret(view, 17);
+    expect(deleteFootnoteForward(view.state, view.dispatch, view)).toBe(true);
+    expect(stateOf(view).refs).toEqual([4, 5]);
+    expect(docToBlocks(view.state.doc)[1]).toEqual(para('b', [{ text: 'Three' }]));
+  });
+
+  it('leaves every other Backspace and Delete to the writing', () => {
+    const { view } = viewOf(BLOCKS);
+    caret(view, 3);
+    expect(deleteFootnoteBackward(view.state, view.dispatch, view)).toBe(false);
+    expect(deleteFootnoteForward(view.state, view.dispatch, view)).toBe(false);
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 5, 6)));
+    expect(deleteFootnoteBackward(view.state, view.dispatch, view)).toBe(false);
+    expect(deleteFootnoteForward(view.state, view.dispatch, view)).toBe(false);
+    expect(stateOf(view).refs).toEqual([4, 5, 17]);
+  });
+
+  it('removes footnote n from its note, the caret where its reference stood, and undoes whole', () => {
+    const { view } = viewOf(BLOCKS);
+    expect(removeFootnoteTr(view.state, 9)).toBeNull();
+    expect(removeFootnoteTr(view.state, 0)).toBeNull();
+    const before = view.state.doc;
+    const tr = removeFootnoteTr(view.state, 3)!;
+    view.dispatch(tr);
+    expect(stateOf(view).refs).toEqual([4, 5]);
+    expect(view.state.selection.from).toBe(17);
+    // Undo is the inverse of the one step: the reference back with its note's text and number.
+    const undone = tr.steps[0]!.invert(before).apply(view.state.doc).doc!;
+    expect(undone.eq(before)).toBe(true);
+    expect(footnoteRefs(undone)).toEqual([4, 5, 17]);
+    expect(undone.nodeAt(17)!.attrs.text).toBe('Last note');
+    // The second of two references renumbers the third.
+    const first = viewOf(BLOCKS).view;
+    first.dispatch(removeFootnoteTr(first.state, 1)!);
+    expect(footnoteKey.getState(first.state)!.refs).toEqual([4, 16]);
   });
 });

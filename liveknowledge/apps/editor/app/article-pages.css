@@ -600,6 +600,39 @@ html[data-presenting] .article-flow .article-note {
   background: color-mix(in srgb, var(--article-accent) 8%, transparent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--article-accent) 8%, transparent);
 }
+/* A note's Remove button (article-footnote-notes.ts): holds its place always, so a note's height never changes with
+   it, and is seen by a writer on hover or with the caret in the note. */
+.article-footnote-remove {
+  flex: none;
+  align-self: flex-start;
+  box-sizing: border-box;
+  width: 1.35em;
+  height: 1.35em;
+  margin-top: calc((var(--article-leading) - 1.35) * 0.5em);
+  padding: 0.22em;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--article-muted);
+  cursor: pointer;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.article-footnotes[data-editable] .article-footnote:hover .article-footnote-remove,
+.article-footnotes[data-editable] .article-footnote:focus-within .article-footnote-remove {
+  visibility: visible;
+  opacity: 1;
+}
+.article-footnote-remove:hover {
+  background: color-mix(in srgb, var(--article-ink) 8%, transparent);
+  color: var(--article-ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .article-footnote-remove {
+    transition: none;
+  }
+}
 
 /* A knowledgebase page's slots in its writing (lib/knowledge/page-slots-plugin.ts): the meta row under the title
    and Linked From at the foot. Their own type, whatever the article's look; never selected with the writing. */
@@ -610,6 +643,12 @@ html[data-presenting] .article-flow .article-note {
 .article-flow .article-page-slot-meta {
   margin: 0.5rem 0 1.25rem;
   min-height: 1.75rem;
+}
+/* A meta row with nothing to say is not drawn (verification.md "The meta row"), and its slot takes no room either, so
+   a page never verified has its writing right under the title. */
+.article-flow .article-page-slot-meta:not(:has([data-page-meta]:not(.hidden))) {
+  margin: 0;
+  min-height: 0;
 }
 .article-flow .article-page-slot-foot:not(:empty) {
   margin-top: 3rem;

@@ -573,6 +573,21 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
   typed in is never rewritten. Focus leaving commits (`setNodeAttribute(pos, 'text')` then a flush); Enter or Escape
   commits and puts the caret after the reference; a line break is never typed; input past the cap is cut; a key or
   press in a note never reaches the canvas.
+- **Removing** (spec "Removing one"). In the writing: `deleteFootnoteBackward` (Backspace, empty selection,
+  `nodeBefore` a reference) and `deleteFootnoteForward` (Delete, `nodeAfter` a reference) in `articleKeymap`, ahead of
+  `backspaceAtStart` / `deleteAtEnd`, each one `tr.delete` of the atom, so no browser's own deletion beside an
+  uneditable box decides it. On a note: `FootnoteNotes.deleteKey` takes Backspace or Delete when the note is empty or
+  its whole text is selected (`wholeSelected`: the range's text is the note's), committing what was typed first (so
+  Undo restores it), then `NotesHost.remove(n)`; Backspace with the caret at the note's start and text in it selects
+  the whole note (`caretAtStart`, `selectWhole`), the next press removing it; any other key is the browser's. Each
+  `li` carries a `button.article-footnote-remove.article-chrome` (an × made node by node, Trusted Types allowing no
+  markup; `tabIndex` -1, `aria-label` and `title` "Remove Footnote"), kept in the line's layout but hidden (by
+  `visibility`) until the line is hovered or holds the focus in a box with `data-editable`; its `pointerdown` (default
+  prevented, so the focus never enters the note) calls `remove(n)` for a writer. `removing` stops the focus-out
+  commit while the host removes (the number is about to name the next note). The host (`article-view-mount.ts`)
+  takes `removeFootnoteTr(state, n)` (the reference at `refs[n - 1]` deleted, the caret at its place), focuses the
+  writing, dispatches and flushes: one commit, one undo step. Every role that may write removes (a Participant
+  included: removing is writing).
 - **Exports**: `handle.snapshot` adds each box's `snapshotWriting` (text cut at the box's foot), so PDF, PNG and SVG
   draw the notes; Word writes `w:footnoteReference` and `word/footnotes.xml` (office-export blueprint); Markdown
   writes `[^n]` and the notes after the last block (pages-for-agents blueprint).
