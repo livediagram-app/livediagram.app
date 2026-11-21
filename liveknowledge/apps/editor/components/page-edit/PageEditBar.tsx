@@ -1,5 +1,6 @@
 'use client';
 
+import { useVersionHistoryState } from '@/lib/version-history-store';
 import { lucideCheck, lucideX } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph, Portal, Tooltip } from '@liveknowledge/ui';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -186,6 +187,9 @@ export function PageEditBar() {
     s.pageEditing.editing ? draftStatus(s.pageTab, { me, since, now }) : '',
   );
   const others = usePageEditors(tabId);
+  // Version History covers the page: no Edit floating over it, nor double-click to edit beneath it.
+  const inHistory = useVersionHistoryState() !== null;
+  if (inHistory) return null;
   return (
     <>
       <DoubleClickToEdit

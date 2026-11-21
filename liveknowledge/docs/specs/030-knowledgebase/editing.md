@@ -63,6 +63,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **Cancel** leaves edit mode. If others are still editing, the draft stays theirs and nothing is lost. If you are the
   last one editing and the draft has unsaved changes, Cancel asks first: "Discard your changes to this page?" with
   **Discard Changes** (destructive) and **Keep Editing**. Discarding throws the draft away.
+- **Version History covers the page:** while it is open the floating Edit button and double-click to edit are gone
+  (owner 2026-11-21).
 - **Leaving with unsaved changes** (owner 2026-11-21: "require me to cancel or save it before navigating"): opening
   another page (the tree, a breadcrumb, a page link, Linked From, search) while the page you edit has unsaved changes,
   and nobody else is editing it, asks first: "Save Your Changes First?" with **Save and Leave** (saves, then opens
