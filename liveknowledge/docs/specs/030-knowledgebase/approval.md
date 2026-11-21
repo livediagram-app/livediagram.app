@@ -87,6 +87,10 @@ every page. The route writes the field and the row in one transaction; a deleted
   3 hours ago"), and for a Rejected page who rejected it, when, and the note in a quote; then the actions the person
   may take.
 - **The page tree row:** nothing (owner 2026-11-21: no approval mark in the sidebar).
+- **Page Health's Approval row** (owner 2026-11-21): under Review Period, for a page never sent for approval, an
+  **Approval** row whose value is a **Request Approval** button for whoever may ask (it opens the request form in
+  the Approval section below), and "Not Requested" for the rest. Once a request exists, or while its form is open,
+  the row is gone: the Approval section holds it, never both.
 - **Page Health:** an **Approval** section after Page Health in the Page Info rail, shown when the page has an
   approval or the person may ask for one: the state with its glyph in a ring, who asked and when, who decided and
   when, the note, and the actions (the meta row popover's own body, so the two never differ).
