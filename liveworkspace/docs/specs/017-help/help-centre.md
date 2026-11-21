@@ -378,7 +378,7 @@ One rule for every public page, shared with the marketing sites' SEO rules; an a
   `/privacy` stay as thin `noindex` redirects to them.
 - **Troubleshooting has one working tool**: Repair This Browser renders the shared browser-repair panel, so a person
   whose editor will not start can clear its stuck settings from the help centre, which shares the editor's origin
-  (livediagram, liveplanner, livedocuments, livedesign).
+  (livediagram, liveplanner, livedocuments, livedesign, liveknowledge).
 - **Help never leaves a visible control undocumented**: an article stays while an editor offers what it documents
   (reachable from the palette, the search panel, a menu, a dialog or the Explorer), and leaves with the code that
   cuts it. A shared article drops an app from its `apps` when that app cuts the feature.
@@ -401,19 +401,24 @@ One rule for every public page, shared with the marketing sites' SEO rules; an a
 
 ### liveknowledge
 
-liveknowledge is not a help scope yet: it has no `AppId`, no edition, no articles and no build of its own. Until it
-does:
+liveknowledge is the sixth app scope: its own edition (`editions/liveknowledge/`, lime), catalogue and reading order,
+its slice (`packages/help-registry/src/slice/liveknowledge.ts`, the same `createSlice` as every app's), its bindings
+and scope module, and the seventh static build. Its noun is **Knowledgebase** (one word), and what a Knowledgebase
+holds is a **page**, never a tab.
 
-- **Its editor, CLI and MCP** read an interim slice (`packages/help-registry/src/slice/liveknowledge.ts`):
-  livedocuments' articles and categories, at the same paths and in the same order, with the product's name swapped in
-  the titles, descriptions, keywords and category names. It was forked from livedocuments with the same features, so
-  the list is true of it today.
-- **`liveknowledge.app/help`** is answered from All Apps: its router names an app the Worker does not know, and the
-  Worker falls back to All Apps for it, so every path the slice links exists. Those pages name livedocuments, and All
-  Apps' switch does not list liveknowledge.
-- **Becoming a scope** is the usual list (`APP_ORDER` and `SCOPE_WORDS` with **Knowledgebase**, its catalogue, reading
-  order and slice, its edition under `liveworkspace/apps/help/editions/`, its bindings and scope module, the Worker's
-  `HELP_SCOPES`, and its name in each shared article's `apps` and notes), a seventh build.
+- **Its own categories**: Knowledgebase (the page tree, writing and linking, owners and verifying, the Review Period,
+  Page Health and Knowledge Health, search, Ask and AI Settings, Knowledgebase Settings and Knowledgebase Style,
+  AI Knowledge and connecting agents, import from a Markdown folder, Notion and Confluence, export, and roles), then
+  the shared Collaboration, Explorer, User Interface, Tools and Search Panel. Getting Started, About, Developers (the
+  MCP tools, the CLI and the Knowledge API) and Troubleshooting each carry its own articles too. Every own article
+  has at least one drawn figure.
+- **Shared articles** list liveknowledge in `apps` only where what they say is true of a Knowledgebase, with an app
+  note where it differs (a page where the article says tab, its API's base URL and examples). Articles about a canvas,
+  slides, the palette, selection modes, tabs as a surface, the app's own theme per tab, Markdown-to-diagram import,
+  live images or the generic AI-tool connection (`account-and-data/connect-ai-mcp` and its client list, which redirect
+  for liveknowledge to `knowledgebase/connecting-an-agent`) leave it out.
+- **`liveknowledge.app/help`** is served from the liveknowledge build: its router sends `x-help-app: liveknowledge`,
+  and its bare help paths (`/knowledgebase/...` among them) redirect under `/help` like every app's.
 
 ## Retired and renamed articles
 

@@ -15,6 +15,7 @@ export const HELP_SCOPES = [
   'livedocuments',
   'livedesign',
   'livehuddle',
+  'liveknowledge',
   'all',
 ] as const;
 export type Scope = (typeof HELP_SCOPES)[number];

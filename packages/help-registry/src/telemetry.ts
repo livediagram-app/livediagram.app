@@ -87,4 +87,6 @@ export const HELP_TELEMETRY_OVERRIDES: Readonly<Record<AppId, Readonly<Record<st
     'tips-and-tricks/format-painter': 'tips-format-painter',
     'tips-and-tricks/command-palette': 'tips-command-palette',
   },
+  // liveknowledge shows neither Tips copy, so no two of its articles share a slug.
+  liveknowledge: {},
 };

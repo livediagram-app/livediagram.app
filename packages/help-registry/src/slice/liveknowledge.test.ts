@@ -1,48 +1,39 @@
 import { describe, expect, it } from 'vitest';
-import * as documents from './livedocuments';
 import * as knowledge from './liveknowledge';
 
 const pathOf = (a: { categorySlug: string; slug: string }) => `${a.categorySlug}/${a.slug}`;
 
-// liveknowledge's interim slice (liveknowledge/docs/specs/016-platform/platform-registration.md "Help centre"):
-// livedocuments' help under liveknowledge's name, until liveknowledge is a help scope of its own.
+// liveknowledge's slice of the one help catalogue (liveworkspace/docs/specs/017-help/help-centre.md "liveknowledge"):
+// its own articles and the shared ones that name it, in its reading order and its own wording.
 describe('liveknowledge’s help slice', () => {
-  it('holds livedocuments’ articles and categories, at the same paths and in the same order', () => {
-    expect(knowledge.articles.map(pathOf)).toEqual(documents.articles.map(pathOf));
-    expect(knowledge.categories.map((c) => [c.slug, c.articleCount])).toEqual(
-      documents.categories.map((c) => [c.slug, c.articleCount]),
-    );
-    expect(knowledge.featureCategories.map((c) => c.slug)).toEqual(
-      documents.featureCategories.map((c) => c.slug),
-    );
+  it('holds only articles that apply to liveknowledge', () => {
+    expect(knowledge.articles.length).toBeGreaterThan(50);
+    expect(knowledge.articles.filter((a) => !a.apps.includes('liveknowledge'))).toEqual([]);
   });
 
-  it('never names livedocuments in what people read', () => {
-    const words = [
-      ...knowledge.articles.flatMap((a) => [a.title, a.description, a.category, a.group ?? '']),
-      ...knowledge.categories.flatMap((c) => [c.title, c.description]),
-    ].join('\n');
-    expect(words).not.toContain('livedocuments');
-    expect(words).toContain('liveknowledge');
+  it('lists nothing of what a Knowledgebase does not have', () => {
+    const paths = knowledge.articles.map(pathOf);
+    for (const gone of ['canvas/', 'palette/', 'selection-modes/', 'tabs/', 'pages/'])
+      expect(paths.filter((p) => p.startsWith(gone))).toEqual([]);
+    const words = knowledge.articles.map((a) => `${a.title} ${a.description}`).join('\n');
+    expect(words).not.toMatch(/\b(slides?|infographics?|flashcards?|PowerPoint|presenting)\b/i);
+  });
+
+  it('words its shared articles as a Knowledgebase', () => {
+    const byPath = new Map(knowledge.articles.map((a) => [pathOf(a), a]));
+    expect(byPath.get('getting-started/sharing-your-document')!.title).toBe(
+      'Sharing Your Knowledgebase',
+    );
+    expect(byPath.get('collaboration/sharing/one-tab')!.title).toBe('Sharing One Page');
     expect(knowledge.categories.find((c) => c.slug === 'about')!.title).toBe('About liveknowledge');
   });
 
-  it('gives the possessive its s', () => {
-    expect(knowledge.renamed("livedocuments’ pages and livedocuments' API")).toBe(
-      "liveknowledge’s pages and liveknowledge's API",
-    );
-    expect(knowledge.renamed('livedocuments’s')).toBe('liveknowledge’s');
-  });
-
-  it('looks articles up and searches them under the new name', () => {
+  it('looks articles up and searches them', () => {
     const first = knowledge.articles[0]!;
     expect(knowledge.getArticlesByCategory(first.categorySlug)).toContain(first);
-    expect(knowledge.searchArticles('liveknowledge').length).toBeGreaterThan(0);
-    expect(knowledge.searchArticles('livedocuments')).toEqual([]);
+    expect(knowledge.searchArticles('knowledgebase').length).toBeGreaterThan(0);
     expect(knowledge.getSubArticles('no-such-article')).toEqual([]);
-    expect(knowledge.getCategoryGroups(first.categorySlug).flatMap((g) => g.articles)).toContain(
-      first,
-    );
-    expect(knowledge.articleTelemetryId(first)).toBe(documents.articleTelemetryId(first));
+    expect(knowledge.getCategoryGroups('knowledgebase').map((g) => g.group)).toContain('Trust');
+    expect(knowledge.articleTelemetryId(first)).toBe(first.slug);
   });
 });

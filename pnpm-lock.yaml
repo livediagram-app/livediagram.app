@@ -6873,6 +6873,12 @@ importers:
       '@livehuddle/ui':
         specifier: workspace:*
         version: link:../../../livehuddle/packages/ui
+      '@liveknowledge/telemetry-client':
+        specifier: workspace:*
+        version: link:../../../liveknowledge/packages/telemetry-client
+      '@liveknowledge/ui':
+        specifier: workspace:*
+        version: link:../../../liveknowledge/packages/ui
       '@liveplanner/sheets':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/sheets
@@ -6952,6 +6958,12 @@ importers:
       '@livehuddle/tailwind-config':
         specifier: workspace:*
         version: link:../../../livehuddle/packages/tailwind-config
+      '@liveknowledge/help-registry':
+        specifier: workspace:*
+        version: link:../../../liveknowledge/packages/help-registry
+      '@liveknowledge/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../liveknowledge/packages/tailwind-config
       '@liveplanner/help-registry':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/help-registry

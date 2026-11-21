@@ -121,6 +121,7 @@ const HELP_CATEGORY_SEGMENTS = new Set([
   'contact',
   'developers',
   'getting-started',
+  'knowledgebase',
   'pages',
   'palette',
   'policies',

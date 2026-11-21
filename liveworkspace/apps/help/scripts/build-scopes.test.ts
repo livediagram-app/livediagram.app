@@ -34,6 +34,7 @@ describe('build-scopes', () => {
       'livedocuments',
       'livedesign',
       'livehuddle',
+      'liveknowledge',
       'all',
     ]) {
       for (const source of Object.values(iconSources(scope) as Record<string, string>)) {

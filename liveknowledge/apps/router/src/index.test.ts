@@ -298,7 +298,7 @@ describe('bare help-article paths', () => {
     // the help centre grows a category. `explorer` is the one exclusion: the
     // editor app owns that segment.
     const { categories } = await import('@liveknowledge/help-registry');
-    expect(categories.length).toBeGreaterThan(15);
+    expect(categories.length).toBeGreaterThan(10);
     const missed: string[] = [];
     for (const category of categories) {
       if (category.slug === 'explorer') continue;

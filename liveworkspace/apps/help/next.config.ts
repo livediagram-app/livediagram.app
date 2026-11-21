@@ -17,6 +17,7 @@ const config: NextConfig = withHelpSite({
     '@livedocuments/ui',
     '@livedesign/ui',
     '@livehuddle/ui',
+    '@liveknowledge/ui',
     '@liveworkspace/ui',
   ],
 });

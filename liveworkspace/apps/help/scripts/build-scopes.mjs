@@ -24,7 +24,14 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const APP = join(dirname(fileURLToPath(import.meta.url)), '..');
-const APPS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'];
+const APPS = [
+  'livediagram',
+  'liveplanner',
+  'livedocuments',
+  'livedesign',
+  'livehuddle',
+  'liveknowledge',
+];
 const SCOPES = ['all', ...APPS];
 const DEFAULT_SCOPE = 'livediagram';
 
@@ -35,6 +42,7 @@ const THEMES = {
   livedocuments: { theme: '@livedocuments/tailwind-config', print: ['#a34a0c', '#a34a0c'] },
   livedesign: { theme: '@livedesign/tailwind-config', print: ['#be123c', '#be123c'] },
   livehuddle: { theme: '@livehuddle/tailwind-config', print: ['#047857', '#10b981'] },
+  liveknowledge: { theme: '@liveknowledge/tailwind-config', print: ['#3f6212', '#4d7c0f'] },
   all: { theme: '@liveworkspace/tailwind-config', print: ['#334155', '#64748b'] },
 };
 

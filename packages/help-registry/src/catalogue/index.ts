@@ -25,11 +25,13 @@ import * as livedesign from './livedesign';
 import * as livediagram from './livediagram';
 import * as livedocuments from './livedocuments';
 import * as livehuddle from './livehuddle';
+import * as liveknowledge from './liveknowledge';
 import * as liveplanner from './liveplanner';
 import { ORDER as livedesignOrder } from './order/livedesign';
 import { ORDER as livediagramOrder } from './order/livediagram';
 import { ORDER as livedocumentsOrder } from './order/livedocuments';
 import { ORDER as livehuddleOrder } from './order/livehuddle';
+import { ORDER as liveknowledgeOrder } from './order/liveknowledge';
 import { ORDER as liveplannerOrder } from './order/liveplanner';
 import { sharedArticles } from './shared';
 
@@ -42,6 +44,7 @@ export const APP_CATALOGUES: Record<AppId, AppCatalogue> = {
   livedocuments,
   livedesign,
   livehuddle,
+  liveknowledge,
 };
 
 /** Each app's reading order, by article path. */
@@ -51,6 +54,7 @@ export const APP_READING_ORDERS: Record<AppId, readonly string[]> = {
   livedocuments: livedocumentsOrder,
   livedesign: livedesignOrder,
   livehuddle: livehuddleOrder,
+  liveknowledge: liveknowledgeOrder,
 };
 
 /** Every article, each path once, in All Apps' reading order (the apps' orders merged in registry order). */
