@@ -70,9 +70,24 @@ Public) already own the word.
 - A key typed outside the writing opens nothing: the editor has no element search (the fork's Search Elements, on
   S and at the end of the palette). Cmd or Ctrl K, the page search, is the knowledgebase's search, and the command
   search (Cmd or Ctrl `.`) reads the pages already open in this browser and loads no other.
-- **Name:** a page's name and its Title are one thing. Typing in the Title renames the page, once, when the typing
-  stops. Renaming the page in the tree (F2, a double click, Rename) rewrites its Title; a page whose writing has not
-  loaded yet is opened first, and renamed as soon as it has.
+- **Name:** a page's name and its Title are one thing: the Title is what the page is called, and its name (what the
+  tree, the breadcrumb, page links and backlinks, search, Home and AI Knowledge show) follows it. The name is kept
+  beside the writing only so a page can be listed without loading its writing; every way in keeps the two the same.
+  - Typing in the Title renames the page in the tree as each key lands; the stored name follows when the writing
+    commits (the typing pauses), so the breadcrumb, links, search, Home and AI Knowledge follow then, one write with
+    the Title.
+  - Renaming the page in the tree (F2, a double click, Rename) rewrites its Title; a page whose writing has not
+    loaded yet is opened first, and renamed as soon as it has.
+  - A Title emptied leaves the page unnamed, shown as "Untitled Page" everywhere a name shows. A page whose Title
+    was never written keeps the name it was made with (Start Here, "Untitled Page").
+  - The rename is no undo step of its own: undoing the typing takes the Title back, and the tree with it while the
+    page is open. Not built: the stored name follows only the next time the Title is typed in.
+  - With two people writing, each one's own Title edits rename the page; a Title that changes under someone (a
+    peer's typing arriving, the writing loading) renames nothing in their editor, so the rename is made once.
+  - An agent, the MCP server and the CLI (`create_page`, `write_page`) name a page by its title: a new page's Title
+    is the title it is given, with or without writing, and a `write_page` whose Markdown sets the Title (its front
+    matter's `title`) renames the page with it, in every open editor. The importers (Markdown, Notion, Confluence)
+    and Describe to Set Up give each page they make one title, as its Title and its name.
 - **Move:** drag a row to reorder it among siblings or drop it on a page to make it a subpage; the row menu has Move
   Up, Move Down, Indent and Outdent for keyboards and touch. A page moves with its subpages. A page is never dropped
   inside its own subtree.

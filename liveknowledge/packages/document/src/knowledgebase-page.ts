@@ -91,5 +91,18 @@ export function withKnowledgebasePage<T extends Pick<Tab, 'elements' | 'pages' |
   if (tab.elements.length > 0 || Object.keys(articlesOf(tab)).length > 0) return tab;
   const pages = pagesOf(tab);
   if (pages.length !== 1 || pages[0]!.kind) return tab;
-  return { ...tab, ...newKnowledgebasePageContent() };
+  // Fixed block ids: this runs on every read of a stored tab (migrateStoredTab), so the same tab reads the same
+  // until it is saved.
+  return {
+    ...tab,
+    pages: [knowledgebasePage()],
+    articles: {
+      [KNOWLEDGEBASE_FLOW]: {
+        blocks: [
+          { id: 'b-title', type: 'paragraph', style: 'title', runs: [] },
+          { id: 'b-first', type: 'paragraph', runs: [] },
+        ],
+      },
+    },
+  };
 }

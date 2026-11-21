@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { newKnowledgebasePageContent, type Tab } from '@liveknowledge/document';
-import { withPageTitle } from '@/lib/article/page-title';
+import { withPageTitle } from '@liveknowledge/document';
 import { PAGE_NAME_SETTLE_MS, usePageNameFromTitle } from './usePageNameFromTitle';
 
 // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree": typing the Title renames the page, one

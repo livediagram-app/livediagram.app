@@ -229,7 +229,22 @@ Title last changed, only for a title this editor typed (the local edit counter m
 typing writes nothing here; a rename still waiting when the person opens another page is made at once. The wait is
 short because the Title only changes when the writing commits, which already waits for the typing to pause: inside
 the autosave's own 600 ms the name rides the same save as the Title, so a page closed just after its Title was
-typed never keeps the Title and loses the name (it did at 600, found by the end-to-end suite under load).
+typed never keeps the Title and loses the name (it did at 600, found by the end-to-end suite under load). An emptied
+Title leaves the name empty, which every surface shows as "Untitled Page".
+
+**The tree follows each key.** Before the commit, the open page's row reads `useLivePageTitle(current)`
+(`lib/article/live-page-title.ts`): the writing's dispatch (`article-view-mount.ts`) sets it when an Editor's own
+transaction changed the Title (`titleTextOf`, the first top-level Title paragraph, so a keystroke costs a look at
+the first block), and keeps a set value current through any other change (a peer, an undo, a rename from the tree).
+`usePageNameFromTitle` clears it in a layout effect when another page opens, so a row never shows the last page's
+title. Rows that are not the open page read null and never render for it.
+
+**One model, every way in.** The Title is the page's name; `Tab.name` is the copy kept so a page lists without its
+writing. `pageFlowOf`, `pageTitleOf`, `withPageTitle` and `withNameFromTitle` live in `@liveknowledge/document`
+(`page-title.ts`) for the editor and the api alike. The api's `withServerRules` keeps a stored page's name unless
+the write changed its Title, which it follows (`withNameFromTitle`), and `submitPages` relays the tree
+(`relayDocumentTree`, `room-tree.ts`) when it did. `write_page` with no front matter keeps the page's title (the
+route adds it), and `create_page` with no Markdown writes the title into the Title (`newPageFromMarkdown`).
 
 Share roles in the editor: the tree is handed `canEdit = can.editPages && !isStructureReadOnly`
 (`usePageTreeModel`). Without it a row has no Add Subpage, no drag and no rename, the menu holds Copy Link alone, and
@@ -292,7 +307,9 @@ diff, a peer's list and a resync. The sidebar: `page-tree-view.test.ts` (rows, k
 `PageTree.test.tsx` (the tree's roles and attributes, the keyboard, the menu, the drag, a role at a time),
 `PageTree.perf.test.tsx` (500 rows), `PageTreeSidebar.test.tsx` (the shell, the rail, the sheet, the tint's
 contrast), `PageBreadcrumb.test.tsx`, `page-tree-open.test.ts`; the actions: `page-tree-edits.test.ts`,
-`useTabActions.pages.test.tsx`, `page-title.test.ts`, `usePageNameFromTitle.test.tsx`; the caret:
+`useTabActions.pages.test.tsx`, `page-title.test.ts` (document), `live-page-title.test.ts`,
+`usePageNameFromTitle.test.tsx`, the api's `knowledge-agent-routes.test.ts` and `tab-pages-route.test.ts`, the
+end-to-end `page-title-name.spec.ts`; the caret:
 `usePageTitleFocus.test.tsx`, `article-focus-selection.test.ts`; the row: `page-title-bar-room.test.ts`,
 `CanvasPages.phone.test.tsx`; the name: `knowledgebase-name.test.ts`. The owner drove the built app in a browser on
 2026-11-20 and found the caret, the name and the label card wrong; their fixes are tested as above and have not been

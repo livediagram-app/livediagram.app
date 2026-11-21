@@ -1,10 +1,11 @@
-// The page's name follows its Title (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree"):
-// typing in the Title renames the page, once, when the typing stops. Only a title this editor wrote renames it: a
+// The page's name follows its Title (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Name"): typing in the
+// Title renames the page, once, when the typing stops (the tree shows each key at once, live-page-title.ts). Only a title this editor wrote renames it: a
 // title that changes with no local edit (a peer typing, the page's writing loading) is that peer's to follow, so
 // opening a page never writes. A rename still waiting when the person moves to another page is made at once.
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { Tab } from '@liveknowledge/document';
-import { pageTitleOf } from '@/lib/article/page-title';
+import { pageTitleOf } from '@liveknowledge/document';
+import { clearLivePageTitle } from '@/lib/article/live-page-title';
 
 /**
  * How long a new Title rests before the page takes its name. Short on purpose: the Title only changes when the
@@ -60,6 +61,13 @@ export function usePageNameFromTitle({
     if (pending.current) clearTimeout(pending.current.timer);
     pending.current = { tabId, title, timer: setTimeout(flush, PAGE_NAME_SETTLE_MS) };
   }, [tabId, title, canEdit, localEditSeq]);
+
+  // Another page opened, or the editor closed: the tree's live title was the last page's (live-page-title.ts). Before
+  // paint, so the new page's row never shows the last one's title.
+  useLayoutEffect(() => {
+    clearLivePageTitle();
+    return clearLivePageTitle;
+  }, [tabId]);
 
   // Leaving the editor with a rename still waiting: nothing is left to save it, so it is dropped.
   useEffect(

@@ -7,7 +7,7 @@ import type {
   LintReport,
 } from '@liveknowledge/api-schema';
 import { lintFooterPart } from '@liveknowledge/diagram-lint';
-import { migrateIncomingTab, type Tab } from '@liveknowledge/document';
+import { migrateIncomingTab, withNameFromTitle, type Tab } from '@liveknowledge/document';
 import {
   applyEditOperations,
   applyReplace,
@@ -267,8 +267,10 @@ export function withServerRules(tab: Tab, stored: StoredTab | null, author: Auth
     color: author.color,
     createdAt: 0,
   });
-  const name = stored ? stored.tab.name : capStoredName(migrated.name, null, 'tab');
-  return { ...migrated, name, elements };
+  // An existing page keeps its name unless its Title changed, which it follows (docs/specs/030-knowledgebase/
+  // knowledgebases-and-pages.md "Name"): an agent's write_page that retitles a page renames it.
+  if (!stored) return { ...migrated, name: capStoredName(migrated.name, null, 'tab'), elements };
+  return withNameFromTitle(stored.tab, { ...migrated, name: stored.tab.name, elements });
 }
 
 function baseRefusal(

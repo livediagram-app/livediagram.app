@@ -25,6 +25,7 @@ import { articlePeersPlugin, onlyPeers } from '@/lib/article/article-peers';
 import { articleHoldsPlugin, holdSpotOf, onlyHolds } from '@/lib/article/article-holds';
 import { noteArticleTyping, releaseArticleHold } from '@/lib/article/article-holds-store';
 import { announceArticleHeld } from '@/lib/article/article-hold-notice';
+import { followLivePageTitle, noteLivePageTitle, titleTextOf } from '@/lib/article/live-page-title';
 import { SLASH_MENU_ID, slashOptionId } from './SlashMenu';
 import { createArticleHandle, writingScale } from './article-editor-handle';
 import { articlePasteIsCanvas } from '@/lib/clipboard-payload';
@@ -283,6 +284,13 @@ export function mountArticleView({
       // Collaborators' carets and holds arriving change nothing of ours: no commit, no toolbar update.
       if (onlyPeers(tr) || onlyHolds(tr)) return;
       if (tr.docChanged) {
+        // The page tree names the page from its Title as it is typed (knowledgebases-and-pages.md "Name"): an
+        // Editor's own Title edit sets it; any other change keeps a live title current.
+        const title = titleTextOf(v.state.doc);
+        const own = !tr.getMeta('article-remote') && latest.current.editable;
+        if (own && latest.current.reshape !== false && title !== titleTextOf(tr.before))
+          noteLivePageTitle(title ?? '');
+        else followLivePageTitle(title);
         if (!tr.getMeta('article-remote')) {
           lastLocal.current = Date.now();
           // Typing holds the block (or cell) it is in (docs/specs/007-editor/article-pages.md "Holding a

@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { articlesOf } from './article-flow';
+import { KNOWLEDGEBASE_FLOW, newKnowledgebasePageContent } from './knowledgebase-page';
+import type { Tab } from './tab-type';
 import {
-  articlesOf,
-  KNOWLEDGEBASE_FLOW,
-  newKnowledgebasePageContent,
-  type Tab,
-} from '@liveknowledge/document';
-import { pageFlowOf, pageTitleOf, titleNameOf, withPageTitle } from './page-title';
+  pageFlowOf,
+  pageTitleOf,
+  titleNameOf,
+  withNameFromTitle,
+  withPageTitle,
+} from './page-title';
 
 const page = (): Tab => ({
   id: 't',
@@ -56,5 +59,41 @@ describe('a page’s title', () => {
   it('clears the Title for an empty name', () => {
     const cleared = withPageTitle(withPageTitle(page(), 'Release Process'), '');
     expect(articlesOf(cleared)[KNOWLEDGEBASE_FLOW]!.blocks[0]).toMatchObject({ runs: [] });
+  });
+});
+
+// A page stored before its pages were: its one article is its writing.
+it('takes a tab\'s one article where no page names it', () => {
+  const old: Tab = {
+    id: 'o',
+    name: 'Old',
+    elements: [],
+    articles: { f1: { blocks: [{ id: 'b1', type: 'paragraph', style: 'title', runs: [{ text: 'Old' }] }] } },
+  } as Tab;
+  expect(pageFlowOf(old)).toBe('f1');
+  expect(pageTitleOf(old)).toBe('Old');
+});
+
+// docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Name"
+describe('withNameFromTitle', () => {
+  it('names the page after a Title that changed, empty when it was emptied', () => {
+    const before = withPageTitle(page(), 'Notes');
+    const typed = withPageTitle(before, 'Release Notes');
+    expect(withNameFromTitle(before, typed).name).toBe('Release Notes');
+    expect(withNameFromTitle(typed, withPageTitle(typed, '')).name).toBe('');
+  });
+
+  it('keeps the name where the Title did not change, or was never written', () => {
+    const made = { ...page(), name: 'Start Here' };
+    expect(withNameFromTitle(made, made)).toBe(made);
+    const elsewhere = { ...made, elements: [] };
+    expect(withNameFromTitle(made, elsewhere)).toBe(elsewhere);
+  });
+
+  it('leaves a tab whose writing is not held, or that already has the name', () => {
+    const bare: Tab = { id: 't', name: 'Kept', elements: [] };
+    expect(withNameFromTitle(page(), bare)).toBe(bare);
+    const named = { ...withPageTitle(page(), 'Same'), name: 'Same' };
+    expect(withNameFromTitle(page(), named)).toBe(named);
   });
 });

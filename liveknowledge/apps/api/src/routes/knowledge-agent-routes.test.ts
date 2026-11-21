@@ -300,11 +300,11 @@ describe('POST pages', () => {
       expect((await create('editor', { title: 'T', ...bad })).status).toBe(400);
   });
 
-  it('makes an empty page when no Markdown is sent', async () => {
+  it('makes a page holding only its title when no Markdown is sent', async () => {
     const res = await create('editor', { title: 'Later' });
     expect(res.status).toBe(201);
     const { page } = await res.json<CreatePageResponse>();
-    expect((await read(page.tab)).markdown.trim()).toBe('');
+    expect((await read(page.tab)).markdown.trim()).toBe('---\ntitle: Later\n---');
   });
 
   it.each<[Who, number]>([
@@ -343,13 +343,32 @@ describe('PUT pages/<tab>', () => {
     const res = await put('agent', { markdown: 'Offices close on 24 December.' });
     expect(res.status).toBe(200);
     expect((await res.json<{ tab: { id: string } }>()).tab.id).toBe('holidays');
-    expect((await read('holidays')).markdown.trim()).toBe('Offices close on 24 December.');
+    // The body alone keeps the page's title.
+    expect((await read('holidays')).markdown.trim()).toBe(
+      '---\ntitle: Holidays\n---\n\nOffices close on 24 December.',
+    );
     expect(
       (await put('editor', { markdown: 'And reopen in January.', mode: 'append' })).status,
     ).toBe(200);
     const text = (await read('holidays')).markdown;
     expect(text).toContain('24 December');
     expect(text).toContain('reopen in January');
+  });
+
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Name": the Title is the page's name.
+  it('renames the page when the write retitles it, and keeps the name when it does not', async () => {
+    expect(
+      (await put('agent', { markdown: 'Run the rollback command.' }, 'rollbacks')).status,
+    ).toBe(200);
+    expect((await pagesOf()).find((p) => p.tab === 'rollbacks')?.title).toBe('Rollbacks');
+    const retitled = await put(
+      'agent',
+      { markdown: '---\ntitle: Rolling Back\n---\n\nRun the rollback command.' },
+      'rollbacks',
+    );
+    expect(retitled.status).toBe(200);
+    expect((await pagesOf()).find((p) => p.tab === 'rollbacks')?.title).toBe('Rolling Back');
+    expect((await read('rollbacks')).title).toBe('Rolling Back');
   });
 
   it('refuses no Markdown and an unknown mode in words', async () => {

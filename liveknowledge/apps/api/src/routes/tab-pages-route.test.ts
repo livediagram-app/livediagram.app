@@ -89,6 +89,7 @@ describe('page changes', () => {
   it('are refused whole, writing and relaying nothing', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp();
+    const before = stored(db);
     for (const pages of [
       [{ op: 'add', kind: 'slide' }],
       [{ op: 'add', kind: 'infographic' }],
@@ -99,7 +100,7 @@ describe('page changes', () => {
       expect(res.status).toBe(400);
       expect(await res.json()).toMatchObject({ error: 'kind_not_offered' });
     }
-    expect(stored(db).pages).toBeUndefined();
+    expect(stored(db)).toEqual(before);
     expect(room.bodies).toHaveLength(0);
   });
 });
@@ -124,26 +125,32 @@ describe('the route', () => {
     expect(stored(db).pages).toHaveLength(1);
     expect(warn).toHaveBeenCalledWith(
       '[pages-agent] relay-missed',
-      expect.objectContaining({ op: 'tab-meta' }),
+      expect.objectContaining({ op: 'article' }),
     );
   });
 });
 
 describe('an article write', () => {
-  it('starts an article and relays its writing as grow-marked frames', async () => {
+  // A tab of no page kind reads as an empty article page (describe-to-set-up.md "The start screen"): the write fills
+  // that page's article.
+  it("writes the page's article and relays its writing", async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp();
     const res = await call(db, { article: { markdown: '---\ntitle: Brief\n---\n# Goals\n- One' } });
     expect(res.status).toBe(200);
     const body = await res.json<PagesAnswer>();
-    expect(body.article).toMatchObject({ title: 'Brief', pages: [1], blocks: 3, created: true });
+    expect(body.article).toMatchObject({ title: 'Brief', pages: [1], blocks: 3, created: false });
     // The answer says how many pages the writing takes, as estimated.
     expect(body.lines.at(-1)).toMatch(/^It takes about 1 page once laid out \(estimated/);
     const tab = stored(db);
     expect(Object.values(tab.articles)).toHaveLength(1);
     const kinds = room.bodies.map((b) => b.op.kind);
-    expect(kinds).toEqual(['tab-meta', 'article']);
-    expect(room.bodies[1]!.op).toMatchObject({ created: true, grow: true });
+    // The page as now stored, its writing, and the tree: the Title named the page (knowledgebases-and-pages.md
+    // "Name").
+    expect(kinds).toEqual(['tab-meta', 'article', 'document-meta']);
+    expect(
+      (db.sql.prepare("SELECT name FROM tabs WHERE id = 't1'").get() as { name: string }).name,
+    ).toBe('Brief');
   });
 
   it('refuses an ambiguous write with 400', async () => {

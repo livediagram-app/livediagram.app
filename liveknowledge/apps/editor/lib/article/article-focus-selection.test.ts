@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { newKnowledgebasePageContent, articlesOf } from '@liveknowledge/document';
+import { newKnowledgebasePageContent, articlesOf, withPageTitle } from '@liveknowledge/document';
 import { blocksToDoc } from './article-convert';
 import { focusSelection } from './article-focus-selection';
-import { withPageTitle } from './page-title';
 
 // Where a request for the caret lands (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Add": a new page
 // opens with the caret in its title).

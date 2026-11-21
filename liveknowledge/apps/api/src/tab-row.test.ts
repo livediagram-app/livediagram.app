@@ -1,3 +1,4 @@
+import { isKnowledgebasePage } from '@liveknowledge/document';
 import { describe, expect, it } from 'vitest';
 import { rowToTab, rowToTabSummary, type TabRow } from './tab-row';
 
@@ -36,7 +37,7 @@ describe('rowToTab', () => {
 
   it('reassembles the canonical TabDTO from row columns + parsed data', () => {
     const dto = rowToTab(baseRow());
-    expect(dto).toEqual({
+    expect(dto).toMatchObject({
       id: 'tab-1',
       documentId: 'diag-1',
       name: 'Untitled',
@@ -45,6 +46,8 @@ describe('rowToTab', () => {
       rev: 4,
       elements: [],
     });
+    // A tab of no page kind reads as an empty article page (describe-to-set-up.md "The start screen").
+    expect(isKnowledgebasePage(dto)).toBe(true);
   });
 
   it('carries any per-tab settings serialised in the data blob through to the DTO', () => {

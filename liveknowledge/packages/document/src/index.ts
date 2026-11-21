@@ -144,6 +144,7 @@ export * from './article-bands';
 export * from './article-flow-ops';
 export * from './article-pages';
 export * from './knowledgebase-page';
+export * from './page-title';
 export * from './page-tree';
 export * from './article-page-links';
 export * from './continuous-page-estimate';

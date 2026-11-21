@@ -1,14 +1,19 @@
 // A new knowledgebase page from Markdown (docs/specs/024-agents/knowledgebase-for-agents.md `create_page`): one
 // continuous page whose writing opens with its title, built without a store so the api (a page added to a
 // knowledgebase) and the MCP server (the pages a new knowledgebase starts with) make the same tab.
-import { buildTab, newKnowledgebasePageContent, type Tab } from '@liveknowledge/document';
+import {
+  buildTab,
+  newKnowledgebasePageContent,
+  withPageTitle,
+  type Tab,
+} from '@liveknowledge/document';
 import type { PagesRefusal } from '@liveknowledge/api-schema';
 import { applyArticleWrite } from './article-write';
 
 export type NewPage = {
   id: string;
   title: string;
-  /** The page's writing; empty leaves the new page's empty title and first paragraph. */
+  /** The page's writing; empty leaves the new page its Title (the title) and an empty first paragraph. */
   markdown?: string;
   /** The id of the page it sits under; absent at the top level. */
   parent?: string;
@@ -35,7 +40,8 @@ export function newPageFromMarkdown(
     ...newKnowledgebasePageContent(),
     ...(page.parent ? { parent: page.parent } : {}),
   };
-  if (!page.markdown?.trim()) return { tab: blank };
+  // The page's name is its Title (knowledgebases-and-pages.md "Name"), with or without writing.
+  if (!page.markdown?.trim()) return { tab: withPageTitle(blank, blank.name) };
   const written = applyArticleWrite(
     blank,
     { markdown: withTitleFrontMatter(page.title, page.markdown), mode: 'replace' },

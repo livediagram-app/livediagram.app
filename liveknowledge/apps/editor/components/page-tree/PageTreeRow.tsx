@@ -12,6 +12,7 @@ import { TrustBadge } from '@/components/knowledge/TrustBadge';
 import type { TrustMark } from '@/lib/knowledge/page-trust';
 import { AddIcon, ChevronIcon, MoreIcon } from './page-tree-icons';
 import { useRowMark, type PageTreeUi } from './page-tree-ui';
+import { useLivePageTitle } from '@/lib/article/live-page-title';
 import {
   PAGE_TREE_INDENT,
   PAGE_TREE_ROW,
@@ -86,7 +87,9 @@ function PageTreeRowView({
         : null;
   // Under the pointer, holding focus, or its menu open: the row's controls are there.
   const active = menuOpen || mark.startsWith('h') || mark.includes('f');
-  const name = outOfScope ? 'Not Shared' : row.name || 'Untitled Page';
+  // The open page is named from its Title as it is typed (knowledgebases-and-pages.md "Name").
+  const live = useLivePageTitle(current);
+  const name = outOfScope ? 'Not Shared' : (live ?? row.name) || 'Untitled Page';
   const indent = ROW_INSET + (row.level - 1) * PAGE_TREE_INDENT;
   const hasSubpages = row.subpages > 0;
   const control = touch ? 'h-11 w-9' : 'h-6 w-6';

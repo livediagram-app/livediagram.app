@@ -7,7 +7,7 @@ import {
   newKnowledgebasePageContent,
   type Tab,
 } from '@liveknowledge/document';
-import { pageTitleOf } from '@/lib/article/page-title';
+import { pageTitleOf } from '@liveknowledge/document';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { takeTitleFocus } from '@/lib/page-title-focus';
 import { useTabActions } from './useTabActions';
@@ -274,11 +274,13 @@ describe('a page’s name and its Title', () => {
     expect(s.tabs().find((t) => t.id === 'e')!.name).toBe('Typed Title');
     expect(s.deps.tickTabs).toHaveBeenCalledTimes(1);
     expect(s.deps.commitTabs).not.toHaveBeenCalled();
-    // The same title again writes nothing; an empty one keeps the name.
+    // The same title again writes nothing; an emptied one leaves the page unnamed ("Untitled Page").
     s.rerender();
     s.actions().renameTabFromTitle('e', 'Typed Title');
-    s.actions().renameTabFromTitle('e', '  ');
     expect(s.deps.tickTabs).toHaveBeenCalledTimes(1);
+    s.actions().renameTabFromTitle('e', '  ');
+    expect(s.tabs().find((t) => t.id === 'e')!.name).toBe('');
+    expect(s.deps.tickTabs).toHaveBeenCalledTimes(2);
   });
 
   it('opens a page whose writing is not loaded, and renames it once it has', () => {

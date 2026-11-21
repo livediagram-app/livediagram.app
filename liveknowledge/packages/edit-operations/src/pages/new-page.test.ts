@@ -57,12 +57,16 @@ describe('newPageFromMarkdown', () => {
     expect(runs.some((r) => 'page' in r && r.text.includes('Nowhere'))).toBe(false);
   });
 
-  it('leaves a page with no Markdown as a new page is: an empty title and a first paragraph', () => {
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Name": the Title is the page's name, with or without
+  // writing.
+  it('gives a page with no Markdown its title as its Title, and an empty first paragraph', () => {
     const made = newPageFromMarkdown({ id: 'p1', title: 'Later', markdown: '  ' });
     if ('refusal' in made) throw new Error(made.refusal.message);
     expect(made.tab.parent).toBeUndefined();
     expect(isKnowledgebasePage(made.tab)).toBe(true);
-    expect(articleToMarkdown(flowOf(made.tab)).trim()).toBe('');
+    expect(articleTitleOf(flowOf(made.tab))).toBe('Later');
+    expect(made.tab.name).toBe('Later');
+    expect(flowOf(made.tab).blocks.at(-1)).toMatchObject({ type: 'paragraph', runs: [] });
     expect('refusal' in newPageFromMarkdown({ id: 'p2', title: 'Later' })).toBe(false);
   });
 

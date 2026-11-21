@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { Tab } from '@liveknowledge/document';
-import { pageFlowOf } from '@/lib/article/page-title';
+import { pageFlowOf } from '@liveknowledge/document';
 import { takeTitleFocus } from '@/lib/page-title-focus';
 import { useKnowledgebaseStartOffered } from '@/components/start/knowledgebase-start';
 

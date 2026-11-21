@@ -31,7 +31,7 @@ import {
   pageTreeRows,
   withPageMoved,
 } from '@liveknowledge/document';
-import { newPageFromMarkdown } from '@liveknowledge/edit-operations';
+import { newPageFromMarkdown, withTitleFrontMatter } from '@liveknowledge/edit-operations';
 import {
   CONTEXT_BUDGET_TOKENS,
   assembleContext,
@@ -43,7 +43,7 @@ import {
   parseKnowledgeFields,
 } from '@liveknowledge/knowledge';
 import { readStoredTab } from '../changesets/stored-tab';
-import { getDocument, isTabRevStale, reorderTabs, upsertTabAtRev } from '../db';
+import { isTabRevStale, reorderTabs, upsertTabAtRev } from '../db';
 import {
   readStoredPages,
   tabParentRefusal,
@@ -71,7 +71,7 @@ import {
   notFound,
   payloadTooLarge,
 } from '../responses';
-import { relayPages } from '../room-client';
+import { relayDocumentTree } from '../room-tree';
 import type { DocumentDTO } from '../types';
 import { refreshAfterRead } from './changesets';
 import { handleTabPages } from './tab-pages-route';
@@ -228,13 +228,20 @@ async function handleWrite(route: KnowledgeRoute, tab: string): Promise<Response
     return invalid('no_markdown', 'Send "markdown": the page\'s writing as Markdown.');
   if (body.mode !== undefined && body.mode !== 'replace' && body.mode !== 'append')
     return invalid('invalid_mode', '"mode" is "replace" (the default) or "append".');
+  // A replace that brings no title keeps the page's: the Title is the page's name (knowledgebases-and-pages.md
+  // "Name"), so writing the body alone never leaves the page untitled. Front matter's `title` retitles it.
+  const page = pageNamed(document.tabs, tab);
+  const markdown =
+    body.mode !== 'append' && page && page !== 'ambiguous'
+      ? withTitleFrontMatter(page.name, body.markdown)
+      : body.markdown;
   // The article write every agent's write takes (tab-pages-route.ts): its gate, its verified-page refusal, its
   // held paragraphs and its relay to open editors.
   const request = new Request(ctx.request.url, {
     method: 'POST',
     headers: ctx.request.headers,
     body: JSON.stringify({
-      article: { markdown: body.markdown, ...(body.mode ? { mode: body.mode } : {}) },
+      article: { markdown, ...(body.mode ? { mode: body.mode } : {}) },
     }),
   });
   return handleTabPages({ ...ctx, request }, document.id, tab);
@@ -242,28 +249,7 @@ async function handleWrite(route: KnowledgeRoute, tab: string): Promise<Response
 
 // The tab list as it stands, to every open editor: the op an editor's own reorder sends, each page with its parent.
 async function relayTree(route: KnowledgeRoute): Promise<DocumentDTO | null> {
-  const { ctx, document } = route;
-  const after = await getDocument(ctx.env, document.id);
-  if (!after) return null;
-  await relayPages(
-    ctx.env,
-    document.id,
-    [
-      {
-        kind: 'document-meta',
-        name: after.name,
-        tabs: after.tabs.map((t) => ({
-          id: t.id,
-          name: t.name,
-          orderIndex: t.orderIndex,
-          ...(t.folder ? { folder: t.folder } : {}),
-          parent: t.parent ?? null,
-        })),
-      },
-    ],
-    '[knowledge]',
-  );
-  return after;
+  return relayDocumentTree(route.ctx.env, route.document.id, '[knowledge]');
 }
 
 const PAGE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

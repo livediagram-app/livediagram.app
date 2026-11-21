@@ -29,6 +29,7 @@ import {
 import { agentVersionStatement, isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { readRoomHolds, relayPages } from '../room-client';
+import { relayDocumentTree } from '../room-tree';
 import type { DocumentDTO, DocumentEnv } from '../types';
 import { heldArticleTargets, heldMessage } from './held-paragraphs';
 import { readStoredTab } from './stored-tab';
@@ -190,6 +191,8 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     // Awaited, bounded per op by ROOM_RELAY_TIMEOUT_MS; a room that misses one is logged and never
     // fails the write.
     await relayPages(env, document.id, ops);
+    // A write that retitled the page renamed it (withServerRules): the tree follows in every open editor.
+    if (next.name !== stored.tab.name) await relayDocumentTree(env, document.id, '[pages-agent]');
     console.info('[pages-agent] applied', {
       ...where,
       kind: 'pages' in request ? 'pages' : 'article',

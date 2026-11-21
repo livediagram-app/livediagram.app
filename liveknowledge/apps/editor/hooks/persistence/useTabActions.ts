@@ -35,7 +35,7 @@ import {
   type PageMove,
   type Tab,
 } from '@liveknowledge/document';
-import { withPageTitle } from '@/lib/article/page-title';
+import { withPageTitle } from '@liveknowledge/document';
 import { wantTitleFocus } from '@/lib/page-title-focus';
 import {
   deletePageTitle,
@@ -246,12 +246,13 @@ export function useTabActions(deps: TabActionsDeps) {
   });
 
   // The page's name following its Title as it is typed (the caller debounces: one write when typing stops). No
-  // undo step of its own, so undoing the typing is one step.
+  // undo step of its own, so undoing the typing is one step. A Title emptied leaves the page unnamed, shown as
+  // "Untitled Page" (knowledgebases-and-pages.md "Name").
   const renameTabFromTitle = (id: string, title: string) => {
     if (!deps.canEditStructure) return;
     const trimmed = truncateName(title);
     const tab = tabs.find((t) => t.id === id);
-    if (!trimmed || !tab || tab.name === trimmed || tab.locked === true) return;
+    if (!tab || tab.name === trimmed || tab.locked === true) return;
     tickTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
     track('Tab', 'Renamed');
   };
