@@ -63,26 +63,18 @@ describe('Page Verified and Page Owner Changed', () => {
     expect(w.rows('SELECT * FROM automation_edits')).toEqual([]);
   });
 
-  it('names an agent by its token', async () => {
+  it('starts nothing for an agent, which may not change an owner (a person sets it)', async () => {
     const w = await started();
     await w.rule({ trigger: { kind: 'owner_changed' } });
-    await w.send(
-      'PUT',
-      `${BASE}/pages/t2/knowledge`,
-      { owner: null },
-      { token: { name: 'Claude' } },
-    );
-    await w.send(
+    const before = w.queued().length;
+    const res = await w.send(
       'PUT',
       `${BASE}/pages/t2/knowledge`,
       { owner: ANA },
       { token: { name: 'Claude' } },
     );
-    expect(w.queued().at(-1)).toMatchObject({
-      kind: 'owner_changed',
-      role: 'agent',
-      by: { name: 'Claude' },
-    });
+    expect(res.status).toBe(403);
+    expect(w.queued()).toHaveLength(before);
   });
 });
 
