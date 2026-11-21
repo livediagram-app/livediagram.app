@@ -650,8 +650,13 @@ html[data-presenting] .article-flow .article-note {
   margin: 0;
   min-height: 0;
 }
+/* A continuous page's notes sit after the writing (lib/article/article-footnote-layout.ts continuousNotes): the foot
+   keeps their room above it, so Linked From and the comments start under the notes, never over them. */
+.article-flow .article-page-slot-foot {
+  margin-top: var(--article-notes-room, 0px);
+}
 .article-flow .article-page-slot-foot:not(:empty) {
-  margin-top: 3rem;
+  margin-top: calc(3rem + var(--article-notes-room, 0px));
 }
 /* The page's icon to the left of its Title (page-surface.md "The page icon"): 48 px of the page's, floated so the
    Title starts beside it on its first line and a long one wraps beside it; the meta row clears it. A page with none

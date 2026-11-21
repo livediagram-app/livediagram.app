@@ -6,6 +6,7 @@ import {
   toastFloor,
   toastPlacement,
   TOAST_PHONE_FLOOR_SELECTOR,
+  TOAST_SIDE_SELECTOR,
   type FloorRect,
 } from './toast-floor';
 
@@ -74,9 +75,12 @@ describe('toastFloor', () => {
       'data-editor-tabbar',
       'data-zoom-cluster',
       'data-whiteboard-dock',
+      'data-toast-side',
     ]) {
       expect(TOAST_FLOOR_SELECTOR).toContain(`[${hook}]`);
     }
+    // A product's own bottom-right controls opt into the cluster's line.
+    expect(TOAST_SIDE_SELECTOR).toBe('[data-zoom-cluster], [data-toast-side]');
     expect(TOAST_PHONE_FLOOR_SELECTOR).toBe('[data-start-footer]');
   });
 });

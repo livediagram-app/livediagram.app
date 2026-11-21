@@ -8,7 +8,7 @@ import { Selection } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 import type { Node as PMNode } from 'prosemirror-model';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import type { LaidOutPage } from '@liveknowledge/document';
+import { isContinuousPage, type LaidOutPage } from '@liveknowledge/document';
 import { columnAt, type flowFrame } from './article-flow-geometry';
 import {
   footnoteKey,
@@ -209,12 +209,15 @@ export function layoutFootnotes(
   const initial = footnoteKey.getState(view.state);
   const limits = new Map<number, number>();
   if (!initial || initial.refs.length === 0) {
+    view.dom.style.removeProperty(NOTES_ROOM);
     notes.render([]);
     if (!initial || initial.breaks.length === 0) return { changed: false, limits, splits: [] };
     setFootBreaks(view, []);
     return { changed: true, limits, splits: [] };
   }
   notes.setVars(view.dom);
+  if (pages.length === 1 && isContinuousPage(pages[0]!))
+    return continuousNotes(view, ctx, initial.breaks);
   const columnHeight = frame.height;
   const typing = notes.editing();
   const refsNow = () => footnoteKey.getState(view.state)!.refs;
@@ -342,4 +345,54 @@ export function layoutFootnotes(
     if (bottom !== null) splits.push({ row: row.pos, page: b.page, bottom, limit });
   }
   return { changed: !sameFootBreaks(initial.breaks, breaks), limits, splits };
+}
+
+// The room a continuous page keeps for its notes between the writing and its foot (Linked From, comments), as a CSS
+// variable on the writing (app/article-pages.css): the foot moves down by it, so the page's measured height takes it.
+const NOTES_ROOM = '--article-notes-room';
+const CONTINUOUS_NOTES_GAP = 24;
+
+/**
+ * A continuous page's notes (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"): it has
+ * no foot to end its text above, and its stored height can lag its writing, so the notes follow the writing's last
+ * block, all of them, never a page's foot, and the page breaks nothing for them. O(blocks) to find the last block.
+ */
+function continuousNotes(
+  view: EditorView,
+  ctx: {
+    frame: Frame;
+    root: DOMRect;
+    z: number;
+    pages: readonly LaidOutPage[];
+    notes: FootnoteNotes;
+  },
+  breaks: readonly FootBreak[],
+): FootLayout {
+  const { frame, root, z, pages, notes } = ctx;
+  const changed = breaks.length > 0;
+  if (changed) setFootBreaks(view, []);
+  const refs = footnoteKey.getState(view.state)!.refs;
+  const texts = refs.map((pos) => {
+    const node = view.state.doc.nodeAt(pos);
+    return typeof node?.attrs.text === 'string' ? node.attrs.text : '';
+  });
+  const { head, notes: each } = notes.heightsOf(texts, frame.columnWidth);
+  const height = head + each.reduce((a, b) => a + b, 0);
+  // The writing's last block, not a page slot drawn beside it.
+  let last: Element | null = view.dom.lastElementChild;
+  while (last && last.classList.contains('article-page-slot')) last = last.previousElementSibling;
+  const textBottom = last ? (last.getBoundingClientRect().bottom - root.top) / z : 0;
+  const room = CONTINUOUS_NOTES_GAP + height;
+  view.dom.style.setProperty(NOTES_ROOM, `${Math.ceil(room)}px`);
+  notes.render([
+    {
+      index: 0,
+      x: pages[0]!.rect.x + frame.margin,
+      bottom: pages[0]!.rect.y + frame.top + textBottom + room,
+      width: frame.columnWidth,
+      maxHeight: Math.ceil(height) + 1,
+      notes: texts.map((text, i) => ({ n: i + 1, text })),
+    },
+  ]);
+  return { changed, limits: new Map(), splits: [] };
 }

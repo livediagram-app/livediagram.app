@@ -74,6 +74,8 @@ export function PageEditBarView({
       <Portal>
         <div
           style={{ right: corner.right, bottom: corner.bottom }}
+          // Toasts stand on this button's line, beside it (liveworkspace toasts.md "Placement").
+          data-toast-side=""
           className="fixed z-[var(--z-toolbar)]"
         >
           {/* No tooltip (owner 2026-11-21): the label and the key say it. */}
@@ -96,6 +98,7 @@ export function PageEditBarView({
     <Portal>
       <div
         data-page-edit-bar=""
+        data-toast-side=""
         role="group"
         aria-label="Editing This Page"
         style={{ right: corner.right, bottom: corner.bottom }}
