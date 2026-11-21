@@ -7,6 +7,7 @@
 import { Button } from '@liveknowledge/ui';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { PencilIcon } from '@/components/primitives/explorer-icons';
+import { wantTitleFocus } from '@/lib/page-title-focus';
 
 type Run = { text?: string };
 type Block = { type?: string; style?: string; runs?: readonly Run[] };
@@ -53,7 +54,13 @@ export function EmptyPage() {
           variant="primary"
           size="sm"
           className="mt-1 cursor-pointer"
-          onClick={() => store.get().pageEditing.start()}
+          onClick={() => {
+            // On a desktop the caret lands in the Title, ready to type (editing.md "An empty page"); a phone keeps
+            // its keyboard down until a press in the writing.
+            if (window.matchMedia('(pointer: fine)').matches)
+              wantTitleFocus(store.get().pageTab.id);
+            store.get().pageEditing.start();
+          }}
         >
           <PencilIcon size={13} />
           Start Writing
