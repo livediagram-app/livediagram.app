@@ -164,12 +164,9 @@ export function PageTreeSidebar({
   const body = (mode: 'open' | 'peek', withBand: boolean) => (
     <>
       {withBand ? <MenuJoinBand height={px(top)} /> : null}
-      {/* Joined under the menu box, the Hide Pages button stands in one column with the box's menu button above it
-          (owner 2026-11-21: "the hamburger and hide pages button should be in the same horizontal position"): the
-          menu button's centre is 34 px in from the sidebar's right edge, so this row keeps 17 px on its right. */}
-      <div
-        className={`flex min-h-11 items-center gap-1 pl-3 pt-2 ${withBand ? 'pr-[17px]' : 'pr-2'}`}
-      >
+      {/* The knowledgebase's name has the row to itself: Hide Pages sits at the sidebar's foot, left of New Page
+          (owner 2026-11-21: "so the knowledgebase name can stretch further"). */}
+      <div className="flex min-h-11 items-center gap-1 pl-3 pr-3 pt-2">
         {renaming && onRenameKnowledgebase ? (
           <NameEditor
             label="Knowledgebase name"
@@ -195,35 +192,6 @@ export function PageTreeSidebar({
             {shownName}
           </p>
         )}
-        {mode === 'peek' ? (
-          <HoverCard
-            title="Keep Pages Open"
-            description="Keeps the page tree open beside the page."
-          >
-            <button
-              type="button"
-              aria-label="Keep Pages Open"
-              data-page-tree-pin=""
-              onClick={() => setTreeCollapsed(false)}
-              className={ICON_BUTTON}
-            >
-              <ExpandIcon />
-            </button>
-          </HoverCard>
-        ) : (
-          <HoverCard title="Hide Pages" description="Collapses the page tree to a narrow rail.">
-            <button
-              type="button"
-              aria-label="Hide Pages"
-              aria-expanded
-              data-page-tree-collapse=""
-              onClick={() => setTreeCollapsed(true)}
-              className={ICON_BUTTON}
-            >
-              <CollapseIcon />
-            </button>
-          </HoverCard>
-        )}
       </div>
       {/* Search the knowledgebase (search-and-ask.md "Search"): the same dialog Cmd or Ctrl K opens. */}
       <div className="px-3 pt-2">
@@ -233,17 +201,53 @@ export function PageTreeSidebar({
         Pages
       </p>
       <PageTree {...tree} className="flex-1 px-1.5 pb-2" />
-      {tree.canEdit ? (
-        <div className="border-t border-slate-200 p-3 dark:border-slate-800">
-          {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"). */}
-          <DescribeToSetUpButton />
-          <AddToSidebar
-            tabs={tree.tabs}
-            onAdd={() => tree.actions.onAdd()}
-            onConnect={tree.connected?.canConnect ? () => tree.connected?.onConnect() : undefined}
-          />
+      <div className="border-t border-slate-200 p-3 dark:border-slate-800">
+        {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"). */}
+        {tree.canEdit ? <DescribeToSetUpButton /> : null}
+        {/* Hide Pages (or Keep Pages Open while it peeks) leads the foot, left of New Page; a reader has it alone. */}
+        <div data-page-tree-foot-row="" className="flex items-center gap-1.5">
+          {mode === 'peek' ? (
+            <HoverCard
+              title="Keep Pages Open"
+              description="Keeps the page tree open beside the page."
+            >
+              <button
+                type="button"
+                aria-label="Keep Pages Open"
+                data-page-tree-pin=""
+                onClick={() => setTreeCollapsed(false)}
+                className={ICON_BUTTON}
+              >
+                <ExpandIcon />
+              </button>
+            </HoverCard>
+          ) : (
+            <HoverCard title="Hide Pages" description="Collapses the page tree to a narrow rail.">
+              <button
+                type="button"
+                aria-label="Hide Pages"
+                aria-expanded
+                data-page-tree-collapse=""
+                onClick={() => setTreeCollapsed(true)}
+                className={ICON_BUTTON}
+              >
+                <CollapseIcon />
+              </button>
+            </HoverCard>
+          )}
+          {tree.canEdit ? (
+            <div className="min-w-0 flex-1">
+              <AddToSidebar
+                tabs={tree.tabs}
+                onAdd={() => tree.actions.onAdd()}
+                onConnect={
+                  tree.connected?.canConnect ? () => tree.connected?.onConnect() : undefined
+                }
+              />
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </div>
     </>
   );
   // One element for the open tree, whether it stands beside the page or is sliding out over the rail, so folding it

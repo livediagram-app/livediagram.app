@@ -98,6 +98,9 @@ const FORMAT_EVENT = {
   link: 'ArticleLink',
 } as const;
 
+// Why the formatting controls rest in the Title.
+const IN_TITLE_WHY = 'The Title keeps its own style.';
+
 type Open = 'style' | 'list' | 'align' | 'colour' | 'link' | 'table' | 'more' | null;
 
 export function PageToolbar({
@@ -202,6 +205,9 @@ export function PageToolbar({
     );
   };
 
+  // The Title keeps its own style: no formatting applies to it (owner 2026-11-21), so every control rests while the
+  // caret or selection is in it.
+  const inTitle = selection.style === 'title';
   const controls = (
     <div
       ref={dock ? undefined : bar}
@@ -224,9 +230,10 @@ export function PageToolbar({
         aria-label={`Style: ${styleLabel}`}
         aria-haspopup="menu"
         aria-expanded={open === 'style'}
+        disabled={inTitle}
         onClick={() => toggleOpen('style')}
         // As wide as its style's name needs ("Text" stays short): no fixed width leaving space after a short name.
-        className={`flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
+        className={`flex h-9 shrink-0 cursor-pointer items-center gap-1.5 disabled:cursor-default disabled:opacity-40 rounded-md px-2 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
           open === 'style' ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_TRIGGER_TONE
         }`}
       >
@@ -236,6 +243,8 @@ export function PageToolbar({
       </button>
       <Divider />
       <Button
+        disabled={inTitle}
+        why={inTitle ? IN_TITLE_WHY : undefined}
         label="Bold"
         description="Make the selected words bold."
         keys="Mod-b"
@@ -245,6 +254,8 @@ export function PageToolbar({
         <Bold />
       </Button>
       <Button
+        disabled={inTitle}
+        why={inTitle ? IN_TITLE_WHY : undefined}
         label="Italic"
         description="Set the selected words in italics."
         keys="Mod-i"
@@ -254,6 +265,8 @@ export function PageToolbar({
         <Italic />
       </Button>
       <Button
+        disabled={inTitle}
+        why={inTitle ? IN_TITLE_WHY : undefined}
         label="Underline"
         description="Underline the selected words."
         keys="Mod-u"
@@ -263,6 +276,8 @@ export function PageToolbar({
         <Underline />
       </Button>
       <Button
+        disabled={inTitle}
+        why={inTitle ? IN_TITLE_WHY : undefined}
         label="Colour"
         description="Colour the selected words, or highlight them."
         anchor="colour"
@@ -280,6 +295,8 @@ export function PageToolbar({
         </span>
       </Button>
       <Button
+        disabled={inTitle}
+        why={inTitle ? IN_TITLE_WHY : undefined}
         label="Link"
         description="Link the selected words to a web address."
         keys="Mod-k"
@@ -291,6 +308,8 @@ export function PageToolbar({
       </Button>
       <Divider />
       <Button
+        disabled={inTitle}
+        why={inTitle ? IN_TITLE_WHY : undefined}
         label="Lists"
         description="Bullets, numbers or a checklist, and their indent."
         anchor="list"
@@ -302,6 +321,8 @@ export function PageToolbar({
         {selection.list ? <ListGlyph list={selection.list} /> : <ListIcon />}
       </Button>
       <Button
+        disabled={inTitle}
+        why={inTitle ? IN_TITLE_WHY : undefined}
         label="Alignment"
         description="Line the paragraph up left, centred, right or justified."
         anchor="align"
@@ -312,6 +333,8 @@ export function PageToolbar({
         <AlignGlyph align={selection.align ?? 'left'} />
       </Button>
       <Button
+        disabled={inTitle}
+        why={inTitle ? IN_TITLE_WHY : undefined}
         label="More Formatting"
         description="Strikethrough, code, superscript, subscript and the word count."
         anchor="more"
@@ -323,6 +346,8 @@ export function PageToolbar({
       </Button>
       {selection.inTable ? (
         <Button
+          disabled={inTitle}
+          why={inTitle ? IN_TITLE_WHY : undefined}
           label="Table"
           description="Add and remove rows and columns, and set the header."
           anchor="table"
@@ -338,8 +363,8 @@ export function PageToolbar({
         label="Comment"
         description="Start a comment on the selected words."
         keys="Mod-Alt-m"
-        disabled={!selection.hasText || selection.inTable || !onNote}
-        why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
+        disabled={inTitle || !selection.hasText || selection.inTable || !onNote}
+        why={inTitle ? IN_TITLE_WHY : selection.inTable ? NO_NOTE_IN_TABLE : undefined}
         onPress={() => onNote?.(handle.flow, 'comment')}
       >
         <CommentIcon />
@@ -347,8 +372,8 @@ export function PageToolbar({
       <Button
         label="Assign Action"
         description="Give someone an action on the selected words."
-        disabled={!selection.hasText || selection.inTable || !onNote}
-        why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
+        disabled={inTitle || !selection.hasText || selection.inTable || !onNote}
+        why={inTitle ? IN_TITLE_WHY : selection.inTable ? NO_NOTE_IN_TABLE : undefined}
         onPress={() => onNote?.(handle.flow, 'action')}
       >
         <ActionIcon />

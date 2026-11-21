@@ -44,7 +44,8 @@ replaces what the fork still shows around the writing.
   the mark alone. It opens the Explorer on the place that holds the knowledgebase.
 - **Sidebars slide.** Opening or folding the page tree slides it in from, or out to, the left (200 ms; at once with
   reduced motion). Folded to its rail, resting a mouse on the rail for 150 ms slides the whole tree out over the page
-  (a shadow, the page not moving), with **Keep Pages Open** in place of Hide Pages; it slides back 300 ms after the
+  (a shadow, the page not moving), with **Keep Pages Open** in place of Hide Pages (both sit at the tree's foot, left of
+  New Page, so the knowledgebase's name has its row to itself; owner 2026-11-21); it slides back 300 ms after the
   pointer leaves it, unless a menu opened from it is still open. Touch has no hover, so a phone keeps its Pages sheet.
 - **Reading time:** On This Page's heading carries how long the page takes to read ("4 min read"), at 230 words a
   minute over its text, lists, tables and code, rounded, at least 1 minute; an empty page shows none, and a page with
@@ -52,7 +53,9 @@ replaces what the fork still shows around the writing.
 - **The formatting bar** is the left of the top row ("The footer") while writing: block style, bold,
   italic, underline, colour, link, lists, alignment, more formatting, insert, comment. It holds formatting only.
   Pictures, charts, tables, drawings and embeds are added from the slash menu (`/`). The formatting bar has no
-  Insert (+) menu (owner, 2026-11-21: "the / menu does a better job, it's just visual noise").
+  Insert (+) menu (owner, 2026-11-21: "the / menu does a better job, it's just visual noise"). **In the Title**
+  (owner, 2026-11-21) every control rests, dimmed, saying "The Title keeps its own style.": nothing on the bar
+  applies to the Title.
 - **A drawing's tools.** While a drawing zone is being edited the formatting controls give their place in the row
   to that drawing's tools, and only then: four categories (Shapes, Write, Concepts, Icons), each opening its tiles.
   They stay up while they are reached for and used, and go with the next press or typing elsewhere. The marquee,
@@ -229,7 +232,8 @@ Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs 
 
 Owner, 2026-11-21: "Make the / blocks menu look truly amazing, not just a boring list." A `/` typed at a block's
 start or after a space opens it under the caret ([Article pages](../007-editor/article-pages.md) "Writing" says when
-it opens and closes). It never takes the caret from the writing: what is typed after the `/` filters it.
+it opens and closes). It never takes the caret from the writing: what is typed after the `/` filters it. It never
+opens in the Title (owner, 2026-11-21): a `/` typed there is just a character of the page's name.
 
 - **What it offers**: only the blocks a knowledgebase page has, in five groups, in this order:
   - **Text**: Text, Heading 1, Heading 2, Heading 3, Subtitle, Quote, Code.

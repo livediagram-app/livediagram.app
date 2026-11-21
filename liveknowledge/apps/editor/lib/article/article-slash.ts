@@ -32,6 +32,8 @@ function stateAfter(prev: SlashState, state: EditorState, typed: boolean): Slash
   // A table cell holds text: no menu of blocks opens in one.
   if ($head.depth < 1 || $head.parent.type.spec.code || $head.parent.type.spec.tableRole)
     return CLOSED;
+  // The Title is only ever the page's name: no blocks menu opens in it (owner 2026-11-21).
+  if ($head.parent.attrs.style === 'title') return CLOSED;
   if (prev.active) {
     const { from } = prev;
     if (from < $head.start() || from >= $head.pos || from >= state.doc.content.size) return CLOSED;

@@ -32,6 +32,22 @@ const press = (view: EditorView, key: string, shiftKey = false) =>
   false;
 
 describe('the slash menu’s keys', () => {
+  it('never opens in the Title (owner 2026-11-21)', () => {
+    const blocks = [
+      { id: 't', type: 'paragraph', style: 'title', runs: [{ text: '' }] },
+    ] as ArticleBlock[];
+    const view = new EditorView(document.createElement('div'), {
+      state: EditorState.create({
+        doc: blocksToDoc(blocks),
+        plugins: [slashPlugin({ onChange: vi.fn(), onKey: vi.fn(() => true) })],
+      }),
+    });
+    views.push(view);
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 1)));
+    view.dispatch(view.state.tr.insertText('/'));
+    expect(slashKey.getState(view.state)?.active).toBe(false);
+  });
+
   it('opens on a typed `/` with what follows as its query', () => {
     const { view, bridge } = open();
     expect(slashKey.getState(view.state)).toEqual({ active: true, from: 1, query: 'ta' });
