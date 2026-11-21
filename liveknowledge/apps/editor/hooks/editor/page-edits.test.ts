@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { pagesOf, layOutPages, type Element, type Tab } from '@liveknowledge/document';
+import {
+  isKnowledgebasePage,
+  pagesOf,
+  layOutPages,
+  type Element,
+  type Tab,
+} from '@liveknowledge/document';
 import { pageEdits } from './page-edits';
 
 // The row of pages is closed in liveknowledge (docs/specs/002-project-scope/not-in-liveknowledge.md "Unreachable, to
@@ -84,10 +90,8 @@ describe('Page edits', () => {
   });
 
   // docs/specs/007-editor/start-diagramming.md "Start Making Pages": the last page can go too.
-  it('deletes the last page with everything on the tab, and brings Start Making Pages back', async () => {
-    const { dismissEmptyCard, emptyCardDismissed } =
-      await import('@liveworkspace/workbench/components/canvas/empty-card-dismissed');
-    dismissEmptyCard('t:pages');
+  // docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen": the last page leaves a page to write on.
+  it('deletes the last page with everything on the tab, leaving an empty page to write on', () => {
     const h = harness({
       id: 't',
       name: 'T',
@@ -97,8 +101,7 @@ describe('Page edits', () => {
     h.edits().removePage!('page-1');
     expect(h.tab().elements).toEqual([]);
     expect(pagesOf(h.tab())).toHaveLength(1);
-    expect(pagesOf(h.tab())[0]!.kind).toBeUndefined();
-    expect(emptyCardDismissed('t:pages')).toBe(false);
+    expect(isKnowledgebasePage(h.tab())).toBe(true);
   });
 
   it('deletes a page with its content, and the next page closes the gap', () => {

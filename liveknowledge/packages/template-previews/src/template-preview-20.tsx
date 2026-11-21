@@ -47,6 +47,9 @@ export function templatePreviewGroup20(kind: TemplateKind): ReactElement | null 
           <Plus cx={40} cy={33.5} />
         </svg>
       );
+    // Blank Knowledgebase (`blank`, docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen") opens on
+    // the same empty page of writing.
+    case 'blank':
     case 'blank-article':
       // One empty A4 page of writing: a title, then lines of text. Hover story: the writing lights up.
       return (

@@ -146,8 +146,14 @@ describe('a tab’s own style is retired', () => {
     const read = withoutPageLooks(styled()) as Record<string, unknown>;
     for (const key of RETIRED_TAB_STYLE_KEYS) expect(read).not.toHaveProperty(key);
     expect(read).toEqual({ id: 't1', name: 'Release Process', elements: [] });
-    expect(migrateStoredTab(styled() as never)).toEqual(read);
-    expect(migrateIncomingTab(styled())).toEqual(read);
+    // Read whole, the empty tab is also made a page to write on (withKnowledgebasePage); none of its style comes back.
+    for (const migrated of [
+      migrateStoredTab(styled() as never) as Record<string, unknown>,
+      migrateIncomingTab(styled()) as Record<string, unknown>,
+    ]) {
+      for (const key of RETIRED_TAB_STYLE_KEYS) expect(migrated).not.toHaveProperty(key);
+      expect(migrated).toMatchObject({ id: 't1', name: 'Release Process', elements: [] });
+    }
   });
 
   it('answers the same tab when it holds none of it', () => {

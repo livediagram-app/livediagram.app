@@ -7,20 +7,43 @@ browser against a stand-in; no real model has answered it. What is not built is 
 A new knowledgebase is empty, and an empty page tree is the hardest part of starting one. The person describes what
 the knowledgebase is for, and AI proposes a sensible structure of pages for them to accept.
 
-## No start screen
+## The start screen
 
-liveknowledge has no start screen: no template picker, no theme step, no "What Is This For?" panel.
+Owner, 2026-11-21: "When creating a new knowledgebase, show a start screen like the other apps." (This reverses
+the earlier "no start screen".)
 
-- `/new` makes a knowledgebase straight away and opens it on its one page, **Start Here**, with the caret in the
-  Title: saved to the account for a signed-in person, Offline for a guest, as
-  [Knowledgebases and pages](knowledgebases-and-pages.md) says.
-- The Explorer's New button and Home's **Make Your First Knowledgebase** do the same.
-- The writing templates stay reachable from Home's **Start a Page From** tiles and the slash menu; they make a page,
-  never a screen to pass through.
-- `/new?template=<kind>` still makes a knowledgebase whose first page is that template (links from the marketing
-  site and the Community use it).
-- This is how `/new` already behaved when Describe to Set Up was built. The fork's template start is still in the
-  code for a tab stored without a page of its own; nothing liveknowledge makes opens on it.
+- `/new`, the Explorer's New button and Home's **Make Your First Knowledgebase** make the knowledgebase straight
+  away (its one page, **Start Here**, saved to the account for a signed-in person, Offline for a guest, as
+  [Knowledgebases and pages](knowledgebases-and-pages.md) says) and open it on the **start screen**, the shared
+  start panel every liveworkspace editor shows on a new item: titled **Start Your Knowledgebase**, with the line
+  "Start blank, from a template, from a description, or from what you already have."
+- **Its choices**, in the rail:
+  - **Start**, first: **Blank Knowledgebase** (the first card): the start closes onto Start Here, the caret in its
+    Title.
+  - Then the template categories (Engineering, Handbooks, Onboarding, Product, Support), each with its writing
+    templates and the Community's tiles for that category. A template lands on Start Here, which takes its writing
+    and its name, and the start closes onto it. Templates of writing only: no slide, infographic or canvas choice.
+  - At the rail's foot, as liveplanner's Describe a Plan and Import: **Describe to Set Up**, which opens this
+    feature's dialog over the empty knowledgebase (offered where the sidebar's control is: a signed-in Editor, not
+    Offline), and **Import**, which opens the knowledgebase's Import dialog (Markdown folder, Notion or Confluence
+    archive). Then Connect File where connecting works.
+  - Under the choices, the **Sync Knowledgebase to Server** switch ([Save locations](../006-document/save-locations.md)).
+- The start cannot be closed by itself: Blank Knowledgebase is the way past it. Choosing any foot entry closes it
+  first, so cancelling that dialog leaves the person on the empty Start Here page.
+- **Only for a knowledgebase just made here.** The start shows on the knowledgebase `/new` made, in the browser tab
+  that made it (kept for that tab's session, so a reload keeps it), while Start Here is untouched (nothing written
+  beyond its Title) and the person may edit it. Nobody else, and no other knowledgebase, ever sees it: a collaborator
+  who opens the knowledgebase meanwhile sees the empty page.
+- `/new?blank=1` (Start Blank) and `/new?template=<kind>` (links from the marketing site, the Community and Home's
+  **Start a Page From** tiles) skip it: they already say what to start with.
+- **A tab with no page kind** (made by an agent, a script or an older client, with nothing on it) is read as an
+  empty knowledgebase page as it is loaded, everywhere a stored tab is read (`withKnowledgebasePage` in
+  `migrateStoredTab`), so it opens as an empty article page and never shows a start. Deleting a knowledgebase's
+  last page from the page menu leaves an empty page to write on, not an empty tab.
+- **Share roles:** an Editor of the knowledgebase only; a Participant or a Viewer is never shown it.
+- **Telemetry:** the shared start's events as every app sends them (`Template·Used·<kind>`), plus
+  `UI·Opened·DescribeToSetUp` and `UI·Opened·KnowledgeImport` from its foot, and `UI·Used·StartBlank` for Blank
+  Knowledgebase.
 
 ## The control
 
@@ -100,4 +123,3 @@ no number field, and adding one is a change to the platform's telemetry, which t
 
 - **Describe to Add Pages** in the knowledgebase menu (the menu itself is not built); it is in the command palette.
 - Counts in telemetry (how many pages were suggested or created): left out on purpose, see "Telemetry".
-- The removal of the fork's template start from the code.

@@ -1,7 +1,8 @@
-// Whether an empty tab shows its template start (docs/specs/007-editor/start-diagramming.md "When it shows"): Start
-// Making Pages, to someone who can edit, while the tab is empty, outside zen and embed, with no draw tool armed. Empty
-// is no elements and its one page still unchosen (the page's own What Is This Page For? waits under the panel).
-import type { Page } from '@liveknowledge/document';
+// Whether a tab may show the knowledgebase's start screen (docs/specs/030-knowledgebase/describe-to-set-up.md "The
+// start screen"): to someone who can edit, outside zen and embed, with no draw tool armed, while the tab is still the
+// one page a new knowledgebase opens on, an article page with nothing written beyond its Title. Whether it is offered
+// at all (only on the knowledgebase /new just made) is knowledgebase-start.ts's; a page of no kind never shows it, as
+// such a tab is read as an empty article page (withKnowledgebasePage).
 
 export function showsTemplateStart(at: {
   hydrated: boolean;
@@ -10,9 +11,10 @@ export function showsTemplateStart(at: {
   readOnly: boolean;
   drawToolArmed: boolean;
   elementCount: number;
-  pages: readonly Pick<Page, 'kind'>[];
+  // The tab is one article page whose writing holds nothing beyond its Title.
+  untouchedPage: boolean;
 }): boolean {
   if (!at.hydrated || at.zen || at.embed || at.readOnly || at.drawToolArmed) return false;
   if (at.elementCount > 0) return false;
-  return at.pages.length <= 1 && !at.pages[0]?.kind;
+  return at.untouchedPage;
 }

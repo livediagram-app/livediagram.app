@@ -55,14 +55,31 @@ export const knowledgebaseId = (page: Page): string =>
 export const openPageId = (page: Page): string =>
   new URLSearchParams(new URL(page.url()).hash.slice(1)).get('t') ?? '';
 
+/** The start screen a knowledgebase made from `/new` opens on (describe-to-set-up.md "The start screen"). */
+export const startScreen = (page: Page): Locator =>
+  page.getByRole('region', { name: 'Start Your Knowledgebase' });
+
+/** Whether `/new` at this address opens on the start screen: nothing asked (no blank, no template). */
+const opensOnStart = (url: string): boolean => {
+  const params = new URL(url, 'http://x').searchParams;
+  return !params.has('template') && params.get('blank') !== '1' && params.get('start') !== 'blank';
+};
+
 /**
  * A new knowledgebase, open on Start Here with the caret in its Title
  * (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase"). A guest's is kept Offline; a
- * signed-in person's is saved to their account. Answers its id.
+ * signed-in person's is saved to their account. Plain `/new` opens on the start screen, passed by its Blank
+ * Knowledgebase; `/new?blank=1` (the default) skips it. Answers its id.
  */
 export async function newKnowledgebase(page: Page, url = '/new?blank=1'): Promise<string> {
   await page.goto(url);
   await page.waitForURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
+  if (opensOnStart(url)) {
+    const start = startScreen(page);
+    await start.waitFor({ timeout: 30_000 });
+    await start.getByRole('button', { name: /^Blank Knowledgebase:/ }).click();
+    await expect(start).toHaveCount(0);
+  }
   await titleOf(page).waitFor({ timeout: 30_000 });
   await expectCaretInTitle(page);
   return knowledgebaseId(page);

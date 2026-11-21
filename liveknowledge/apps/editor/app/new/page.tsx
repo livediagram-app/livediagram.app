@@ -46,7 +46,7 @@ import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import { useResolveSelf } from '@liveworkspace/workbench/hooks/persistence/useResolveSelf';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
-import { closeStartForBlank } from '@/components/start/close-start-for-blank';
+import { offerKnowledgebaseStart } from '@/components/start/knowledgebase-start';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
 import { newKnowledgebaseTakesCaret, wantTitleFocus } from '@/lib/page-title-focus';
 
@@ -194,8 +194,9 @@ export default function NewDocumentPage() {
     // Save location (docs/specs/006-document/save-locations.md): only Offline takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { documentId, tabId } = createIdsFor(retrying);
-    // A blank asked for (`?blank=1`, `?start=blank`) opens with its start closed (close-start-for-blank.ts).
-    if (startsBlank) closeStartForBlank(tabId, templateKind);
+    // A knowledgebase made with nothing asked opens on its start screen (docs/specs/030-knowledgebase/
+    // describe-to-set-up.md "The start screen"); a blank asked for (`?blank=1`, `?start=blank`) or a template does not.
+    if (!startsBlank && !templateKind) offerKnowledgebaseStart(tabId);
     // A blank in the cloud: the template picked later on its start may move it to that template's default folder
     // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
     handTemplatePick(

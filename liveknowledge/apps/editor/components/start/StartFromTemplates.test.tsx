@@ -6,7 +6,6 @@ import { resetCommunityEnabledForTests } from '@liveworkspace/community-ui';
 import { resetCommunityStartForTests } from '@liveworkspace/community-ui/start';
 import { track } from '@/lib/telemetry';
 import { StartFromTemplates } from './StartFromTemplates';
-import { closeStartForBlank } from './close-start-for-blank';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -27,7 +26,7 @@ beforeEach(() => {
   );
 });
 
-// docs/specs/007-editor/start-diagramming.md
+// docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen"
 afterEach(() => {
   cleanup();
   localStorage.clear();
@@ -35,13 +34,45 @@ afterEach(() => {
   vi.mocked(track).mockClear();
 });
 
-const mount = (onTemplate = vi.fn(), tabId = 't1', leave = vi.fn()) =>
-  render(<StartFromTemplates tabId={tabId} onTemplate={onTemplate} leave={leave} />);
+const mount = (
+  onTemplate = vi.fn(),
+  leave = vi.fn(),
+  foot: { onDescribe?: () => void; onImport?: () => void } = {},
+) => render(<StartFromTemplates onTemplate={onTemplate} leave={leave} {...foot} />);
+const TITLE = 'Start Your Knowledgebase';
 
 describe('StartFromTemplates', () => {
   it('names its start', () => {
     mount();
-    expect(screen.getByRole('heading', { name: 'Start a Page' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: TITLE })).toBeTruthy();
+  });
+
+  it('leads with Blank Knowledgebase, and offers no slide, infographic or canvas', () => {
+    const onTemplate = vi.fn();
+    mount(onTemplate);
+    expect(document.querySelector('[data-rail]')!.getAttribute('data-rail')).toBe('start');
+    const first = document.querySelector('[data-start-card]')!;
+    expect(first.textContent).toContain('Blank Knowledgebase');
+    fireEvent.click(screen.getByRole('button', { name: /^Blank Knowledgebase/ }));
+    expect(onTemplate).toHaveBeenCalledWith('blank');
+    for (const word of ['Slide', 'Infographic', 'Canvas'])
+      expect(document.body.textContent).not.toContain(`Blank ${word}`);
+  });
+
+  it('offers Describe to Set Up and Import at the rail foot when given, each opening its dialog', () => {
+    const onDescribe = vi.fn();
+    const onImport = vi.fn();
+    mount(vi.fn(), vi.fn(), { onDescribe, onImport });
+    fireEvent.click(document.querySelector('[data-rail="describe"]')!);
+    expect(onDescribe).toHaveBeenCalledTimes(1);
+    fireEvent.click(document.querySelector('[data-rail="import"]')!);
+    expect(onImport).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers neither where they are not given', () => {
+    mount();
+    expect(document.querySelector('[data-rail="describe"]')).toBeNull();
+    expect(document.querySelector('[data-rail="import"]')).toBeNull();
   });
 
   it('cannot be closed: no ×, no grab handle, and Escape only clears a search', () => {
@@ -53,16 +84,7 @@ describe('StartFromTemplates', () => {
     fireEvent.keyDown(search, { key: 'Escape' });
     expect((search as HTMLInputElement).value).toBe('');
     fireEvent.keyDown(search, { key: 'Escape' });
-    expect(screen.getByRole('heading', { name: 'Start a Page' })).toBeTruthy();
-  });
-
-  it('opens closed only for an explicit blank, per tab', () => {
-    closeStartForBlank('t-blank', 'blank');
-    mount(vi.fn(), 't-blank');
-    expect(screen.queryByRole('heading', { name: 'Start a Page' })).toBeNull();
-    cleanup();
-    mount(vi.fn(), 't2');
-    expect(screen.getByRole('heading', { name: 'Start a Page' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: TITLE })).toBeTruthy();
   });
 });
 
@@ -70,7 +92,7 @@ describe('StartFromTemplates', () => {
 // stay in reach; with the bars folded away (a sideways phone) there is nothing to stand on.
 describe('StartFromTemplates on a phone', () => {
   const frameOf = () =>
-    screen.getByRole('heading', { name: 'Start a Page' }).closest('section')!.parentElement!;
+    screen.getByRole('heading', { name: TITLE }).closest('section')!.parentElement!;
 
   it('stands on the edge with no tab bar showing', () => {
     mount();
@@ -125,7 +147,7 @@ describe('StartFromTemplates, from the Community', () => {
     startTiles = { product: [tile('r1', 'Annual Report')] };
     const onTemplate = vi.fn();
     const leave = vi.fn();
-    mount(onTemplate, 't1', leave);
+    mount(onTemplate, leave);
     fireEvent.click(document.querySelector('[data-rail="product"]')!);
     fireEvent.click(
       await screen.findByRole('button', { name: /^Annual Report from the Community/ }),
@@ -162,12 +184,5 @@ describe('StartFromTemplates, from the Community', () => {
     await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(screen.queryByRole('button', { name: /from the Community/ })).toBeNull();
-  });
-
-  it('asks nothing while the start is closed', async () => {
-    closeStartForBlank('t-closed', 'blank');
-    mount(vi.fn(), 't-closed');
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(fetch).not.toHaveBeenCalled();
   });
 });

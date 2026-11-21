@@ -1,19 +1,26 @@
 'use client';
 
-// Whether the active tab shows its template start (showsTemplateStart), read from the editor in render. The canvas
-// reads it too, so an empty tab's first page is never drawn while the panel's own code is still loading
-// (docs/specs/007-editor/start-diagramming.md "Start Making Pages").
+// Whether the active tab shows the knowledgebase's start screen (docs/specs/030-knowledgebase/describe-to-set-up.md
+// "The start screen"), read from the editor in render. The canvas reads it too, so the new knowledgebase's page is
+// never drawn under the start while the panel's own code is still loading.
 import { pagesOf } from '@liveknowledge/document';
-import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import { useEditorContext, type EditorContextValue } from '@/app/document/[id]/EditorContext';
+import { pageIsUntouched } from '@/lib/knowledge-setup/setup-empty';
 import { showsTemplateStart } from '@/components/start/template-start-mode';
-import { startClosedKey } from '@/components/start/start-closed-key';
+import { useKnowledgebaseStartOffered } from '@/components/start/knowledgebase-start';
 
 export function useTemplateStartShown(): boolean {
   return templateStartShownOf(useEditorContext());
 }
 
-/** The same answer off any copy of the editor's view-model (the chrome store's, read as a slice). */
+// One article page with nothing written beyond its Title: the page /new makes. Read only for a tab with no elements.
+const isUntouchedPage = (tab: EditorContextValue['activeTab']): boolean => {
+  const pages = pagesOf(tab);
+  return pages.length === 1 && pages[0]!.kind === 'article' && pageIsUntouched(tab);
+};
+
+/** The same answer off any copy of the editor's view-model (the chrome store's, read as a slice): whether the tab may
+ *  show the start, before whether it is offered. */
 export function templateStartShownOf(
   editor: Pick<
     EditorContextValue,
@@ -36,17 +43,15 @@ export function templateStartShownOf(
     readOnly: isReadOnly,
     drawToolArmed: !!pendingDraw,
     elementCount: activeTab.elements.length,
-    // Read only for an empty tab: the editor renders often, and a tab with content shows no start.
-    pages: activeTab.elements.length === 0 ? pagesOf(activeTab) : [],
+    untouchedPage: activeTab.elements.length === 0 && isUntouchedPage(activeTab),
   });
 }
 
-// Whether the start is up over the tab: shown, and not closed for it. An explicit blank opens with its start closed
-// (closeStartForBlank), its one page drawn at once to ask What Is This Page For? (start-diagramming.md "Bringing it
-// back"), so the canvas holds the first page back only while this is true.
+// Whether the start is up over the tab: it may show, and it is offered here (the knowledgebase /new just made, until a
+// choice closes it). The canvas holds the page back only while this is true.
 export function useTemplateStartOpen(): boolean {
   const shown = useTemplateStartShown();
   const { activeTab } = useEditorContext();
-  const closed = useEmptyCardDismissed(startClosedKey(activeTab.id));
-  return shown && !closed;
+  const offered = useKnowledgebaseStartOffered(activeTab.id);
+  return shown && offered;
 }

@@ -5,6 +5,7 @@ import {
   newKnowledgebase,
   pageRow,
   paragraphs,
+  startScreen,
   titleOf,
   treeShape,
   writeLines,
@@ -15,11 +16,11 @@ import {
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-// `/new` asks nothing: it makes a knowledgebase as it mounts and opens it on its one page, Start Here, the caret in
-// its Title (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase"; new-document-route.md). A
-// guest's is kept Offline (docs/specs/006-document/save-locations.md "The default depends on who is creating"):
-// listed in this browser's list for the Explorer, and said on the Share button. `/new?blank=1` names the Blank Page
-// template and opens the same way.
+// `/new` makes a knowledgebase as it mounts and opens it on its start screen, whose Blank Knowledgebase leaves it on
+// its one page, Start Here, the caret in its Title (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A
+// knowledgebase"; describe-to-set-up.md "The start screen"). A guest's is kept Offline
+// (docs/specs/006-document/save-locations.md "The default depends on who is creating"): listed in this browser's list
+// for the Explorer, and said on the Share button. `/new?blank=1` names the Blank Page template and skips the start.
 for (const url of ['/new', '/new?blank=1']) {
   test(`${url} makes a guest's knowledgebase kept Offline, open on Start Here with the caret in its Title`, async ({
     page,
@@ -100,6 +101,9 @@ test.describe('a first visit', () => {
     };
     await expect.poll(cameBack, { timeout: 15_000 }).toBe(true);
     await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
+    await startScreen(page)
+      .getByRole('button', { name: /^Blank Knowledgebase:/ })
+      .click();
     await expectCaretInTitle(page);
     expect(
       await page.evaluate(() => localStorage.getItem('liveknowledge:v2:guest-token')),

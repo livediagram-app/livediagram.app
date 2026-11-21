@@ -37,20 +37,35 @@ Hook-ins, each one line or a few: `PageTreeSidebar.tsx` (the button above New Pa
 host, beside the dialogs it does not depend on), `lib/editor-commands.ts` and `hooks/canvas/useEditorCommands.ts`
 (the palette's command), and `lib/knowledge-import/save-layers.ts` (`replaceId`).
 
-## No start screen
+## The start screen
 
-`/new` asks nothing (`app/new/page.tsx`): it makes the knowledgebase as it mounts and hands it to the editor in
-place. With no parameters the one tab is **Start Here**, already a knowledgebase page (`newDocumentContent`:
-`templateChosen: true` and `newKnowledgebasePageContent()`), so the template start (`showsTemplateStart`) is never
-up over it, and `wantTitleFocus` puts the caret in its Title. A signed-in person's is saved to the account, a
-guest's is kept Offline (`useNewDocumentLocation`). The Explorer's New (`newDocumentHref`) and Home's Make Your
-First Knowledgebase (`NEW_KNOWLEDGEBASE_HREF`) are `/new`. `/new?template=<kind>` and `/new?blank=1` are unchanged.
-This was already so when Describe to Set Up was built; nothing was removed for it. The e2e spec holds it for a
-signed-in `/new`: the editor's address, the caret in the Title, one page in the tree, no start over it.
+Derived from the spec's "The start screen". The panel is the shared one (`createStartPanel`, as every editor's), bound
+in `components/start/`.
 
-**Not removed:** the template start's code (`components/start/**`, `useTemplateFlow`) is still in the editor for a
-tab that is empty with its one page unchosen (a tab stored by the fork before pages had one kind); no route of
-liveknowledge makes such a tab. Taking it out, with the tests and help keys that pin it, is not done.
+- **Offered by /new.** `app/new/page.tsx` makes Start Here as before (`newDocumentContent`: `templateChosen: true`,
+  `newKnowledgebasePageContent()`). When the address asks for no template and no blank (`newDocumentStartsBlank`),
+  it calls `offerKnowledgebaseStart(tabId)` (`components/start/knowledgebase-start.ts`) and asks no Title focus;
+  otherwise `wantTitleFocus` as before. The offer is a key in `sessionStorage`
+  (`liveknowledge:v2:start-offered:<tabId>`): this browser tab only, kept over a reload, never stored on the
+  knowledgebase, so no other person or device sees it. `useKnowledgebaseStartOffered(tabId)` reads it through
+  `useSyncExternalStore`; `closeKnowledgebaseStart(tabId)` removes it. Storage that throws reads as not offered.
+- **When it shows** (`showsTemplateStart`, `template-start-mode.ts`): hydrated, not zen, not an embed, the session
+  may edit, no draw tool armed, the tab not connected, no elements, its pages one article page whose writing is
+  untouched (`pageIsUntouched`: nothing beyond the Title), and offered. A kindless page never qualifies.
+  `useTemplateStartOpen` (the canvas holds the page back while it is up) is the same answer.
+- **The rail** (`start-template-items.ts`): a first group **Start** (`id: 'start'`) holding `blank` (Blank
+  Knowledgebase), then one group per `TEMPLATE_CATEGORIES` entry with its listed templates (every one an article).
+  The foot (`footLead`): **Describe to Set Up** where `useSetupOffered() === 'set-up'`, and **Import** for an
+  Editor; then Connect File (`useConnectStart`). The footer is `StartSaveSwitch`.
+- **Choosing** (`EditorStartPanels`): `blank` closes the offer, asks Title focus for the tab and sends
+  `UI·Used·StartBlank`; a template runs `chooseTemplate(kind)` (the tab takes the template's page, writing and name),
+  then closes the offer; Describe to Set Up closes it, sends `UI·Opened·DescribeToSetUp` and `openSetup('set-up')`;
+  Import closes it, sends `UI·Opened·KnowledgeImport` and `setImportOpen(true)`. No `StartAgainTray`: a closed
+  knowledgebase start never comes back.
+- **A kindless tab reads as a page.** `migrateStoredTab` (`packages/document/src/stored-tab.ts`) ends with
+  `withKnowledgebasePage`, so a tab with no elements and one page of no kind is an empty knowledgebase page wherever
+  a stored tab is read (the api's reads, the offline store, a file, a peer's tab). `removePage` on a tab's last page
+  commits `newKnowledgebasePageContent()` instead of an empty tab.
 
 ## Who is offered it
 
@@ -194,25 +209,25 @@ description, the titles and the key are never sent.
 
 ## Testing
 
-| Rule                                                             | Test                                        |
-| ---------------------------------------------------------------- | ------------------------------------------- |
-| Empty: three pages, nothing beyond a title, only what is loaded  | `lib/knowledge-setup/setup-lib.test.ts`     |
-| The check's cost on a keystroke                                  | the same, "costs next to nothing"           |
-| Ticks, renames, the limits                                       | the same, "the Review step"                 |
-| The words, each failure with its next step                       | the same, "the words"                       |
-| Batches of 20 in tree order; the untouched page taken over       | `lib/knowledge-setup/run-setup.test.ts`     |
-| Title, italic line, headings with room to write                  | the same                                    |
-| Markup from a model is text                                      | the same; `components/setup/Setup.test.tsx` |
-| `replaceId` in the save layer                                    | `lib/knowledge-import/save-layers.test.ts`  |
-| Who is offered it, per role and state                            | `components/setup/Setup.test.tsx`           |
-| Every state of the dialog; Cancel aborts; no key and back        | the same                                    |
-| The palette's command                                            | `lib/editor-commands.test.ts`               |
-| In a browser: no start screen, describe to tree, the no-key path | `e2e/signed-in/knowledge-setup.spec.ts`     |
+| Rule                                                                                              | Test                                                         |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Empty: three pages, nothing beyond a title, only what is loaded                                   | `lib/knowledge-setup/setup-lib.test.ts`                      |
+| The check's cost on a keystroke                                                                   | the same, "costs next to nothing"                            |
+| Ticks, renames, the limits                                                                        | the same, "the Review step"                                  |
+| The words, each failure with its next step                                                        | the same, "the words"                                        |
+| Batches of 20 in tree order; the untouched page taken over                                        | `lib/knowledge-setup/run-setup.test.ts`                      |
+| Title, italic line, headings with room to write                                                   | the same                                                     |
+| Markup from a model is text                                                                       | the same; `components/setup/Setup.test.tsx`                  |
+| `replaceId` in the save layer                                                                     | `lib/knowledge-import/save-layers.test.ts`                   |
+| Who is offered it, per role and state                                                             | `components/setup/Setup.test.tsx`                            |
+| Every state of the dialog; Cancel aborts; no key and back                                         | the same                                                     |
+| The palette's command                                                                             | `lib/editor-commands.test.ts`                                |
+| In a browser: the start screen's Describe to Set Up, describe to tree, the no-key path            | `e2e/signed-in/knowledge-setup.spec.ts`                      |
+| The start screen: shown by `/new`, Blank Knowledgebase, a template, Import; skipped by `?blank=1` | `e2e/knowledge-start.spec.ts`; `components/start/*.test.ts*` |
 
 ## Not built, or not known
 
 - The knowledgebase menu's **Describe to Add Pages** item (the menu does not exist; the hook for it does).
 - Counts in telemetry.
-- The template start's removal ("No start screen").
 - A real model's reply has never been read: whether 4,000 tokens is enough, and how good a structure is, are
   unknown.

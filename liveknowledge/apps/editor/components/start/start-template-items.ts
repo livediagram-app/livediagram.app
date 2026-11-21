@@ -1,10 +1,10 @@
-// What an empty tab's template start offers (docs/specs/007-editor/start-diagramming.md): Start Making Pages on a
-// Pages tab. Every listed template, a rail over them (Blank Pages, then groups) and the search across them. The start
-// groups them as the catalogue does, by what each document is for, after Blank Pages (OWN_GROUPS). Drawn from the
-// template catalogue, so a new template joins its group with no change here. Pure: the panel draws what these return.
+// What the knowledgebase's start screen offers (docs/specs/030-knowledgebase/describe-to-set-up.md "The start
+// screen"): Start (Blank Knowledgebase) first, then every listed writing template under its category, and the search
+// across them. Drawn from the template catalogue, so a new template joins its group with no change here. Pure: the
+// panel draws what these return.
 import {
   BLANK_TEMPLATE,
-  EXTRA_BLANK_TEMPLATES,
+  isBlankTemplate,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   templateCategory,
@@ -35,15 +35,19 @@ type TemplateStart = {
 
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
-// Blank Pages leads with one empty page of each kind, then one group per catalogue category, in the order and with
-// the names every other picker uses (docs/specs/008-canvas/canvas-and-palette.md "Template categories"), each
-// template under its primary category. A template in none of the groups is placed in the last.
+// The id of the start's first group, and of its one card, Blank Knowledgebase: the knowledgebase as /new made it.
+export const START_GROUP_ID = 'start';
+export const BLANK_KNOWLEDGEBASE = 'blank' as const satisfies TemplateKind;
+
+// Start leads, then one group per catalogue category, in the order and with the names every other picker uses
+// (docs/specs/008-canvas/canvas-and-palette.md "Template categories"), each template under its primary category. A
+// template in none of the groups is placed in the last.
 const OWN_GROUPS: readonly OwnGroup[] = [
   {
-    id: 'blank-pages',
-    name: 'Blank Pages',
-    line: 'One empty page of the kind you mean: a slide, an article, an infographic or a card.',
-    kinds: EXTRA_BLANK_TEMPLATES,
+    id: START_GROUP_ID,
+    name: 'Start',
+    line: 'An empty knowledgebase: its first page, ready to write.',
+    kinds: [BLANK_KNOWLEDGEBASE],
   },
   ...TEMPLATE_CATEGORIES.map((c) => ({
     id: c.id,
@@ -61,10 +65,19 @@ export const templateOf = (kind: TemplateKind): TemplateDescriptor => byKind.get
 function build(type: StartPageType): TemplateStart {
   // A page type keeps only the templates opening on that kind of page (templatePageKind).
   const ofType = (k: TemplateKind) => type === 'all' || templatePageKind(k) === type;
-  // Blank Illustration leaves the same empty tab the × does, so it is offered nowhere. Blank Tab is made by name only (an agent's add_tab, a `/new?blank` link), in no category, so on no start either.
-  const listed = TEMPLATES.filter(
-    (t) => !t.hidden && t.kind !== BLANK_TEMPLATE && t.kind !== 'blank' && ofType(t.kind),
-  ).map((t) => t.kind);
+  // Blank Knowledgebase is the Start group's own; the other blanks (Blank Illustration, the blank article) are
+  // offered nowhere, as Blank Knowledgebase already is what they make.
+  const listed = [
+    ...(ofType(BLANK_KNOWLEDGEBASE) ? [BLANK_KNOWLEDGEBASE] : []),
+    ...TEMPLATES.filter(
+      (t) =>
+        !t.hidden &&
+        t.kind !== BLANK_TEMPLATE &&
+        !isBlankTemplate(t.kind) &&
+        t.kind !== 'blank-article' &&
+        ofType(t.kind),
+    ).map((t) => t.kind),
+  ];
   const rest: TemplateStartGroup[] = OWN_GROUPS.map((g, i, all) => ({
     ...g,
     kinds: [

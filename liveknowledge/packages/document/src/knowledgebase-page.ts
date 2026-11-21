@@ -83,12 +83,12 @@ export function isKnowledgebasePage(tab: Pick<Tab, 'pages' | 'articles'>): boole
   return pagesOf(tab).some((p) => p.kind === 'article' && !!p.flow && !!flows[p.flow]);
 }
 
-/** A tab with nothing on it and no page of a kind (an empty tab made outside the editor) read as a new knowledgebase
- *  page; any other tab as it is. */
+/** A tab with nothing on it (no elements, no writing) and no page of a kind (an empty tab made outside the editor)
+ *  read as a new knowledgebase page; any other tab as it is, a tab holding writing without a page included. */
 export function withKnowledgebasePage<T extends Pick<Tab, 'elements' | 'pages' | 'articles'>>(
   tab: T,
 ): T {
-  if (tab.elements.length > 0) return tab;
+  if (tab.elements.length > 0 || Object.keys(articlesOf(tab)).length > 0) return tab;
   const pages = pagesOf(tab);
   if (pages.length !== 1 || pages[0]!.kind) return tab;
   return { ...tab, ...newKnowledgebasePageContent() };

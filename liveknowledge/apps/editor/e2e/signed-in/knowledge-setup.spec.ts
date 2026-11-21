@@ -1,12 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
-import { expectCaretInTitle, newKnowledgebase, pageTree, treeShape } from '../knowledgebase';
+import { knowledgebaseId, pageTree, startScreen, treeShape } from '../knowledgebase';
 import { person, saveKey, signedInKnowledgebase } from './knowledge-session';
 import { installSession } from './session';
 
 // Describe to Set Up (docs/specs/030-knowledgebase/describe-to-set-up.md; blueprints/describe-to-set-up.md): a new
-// knowledgebase opens straight on Start Here with no start screen, its sidebar offers Describe to Set Up while it
-// is empty, and the dialog's three steps turn a description into pages. No model is called: the stack's stand-in
+// knowledgebase opens on its start screen, which offers Describe to Set Up at its rail's foot as the sidebar does
+// while it is empty, and the dialog's three steps turn a description into pages. No model is called: the stack's stand-in
 // answers for both providers (scripts/e2e-claude-stand-in.mjs `SETUP_STRUCTURE`), and the keys here are made up.
 
 const KEY = 'sk-ant-e2e-not-a-real-key-7Qx2Lm9f3c';
@@ -31,30 +31,34 @@ async function describeAndSuggest(dialog: Locator): Promise<void> {
   await expect(suggestedPages(dialog)).toHaveCount(5);
 }
 
-test('a new knowledgebase has no start screen, and a description becomes its pages', async ({
+test('a new knowledgebase opens on its start screen, whose Describe to Set Up turns a description into pages', async ({
   page,
   pageErrors,
 }) => {
-  // `/new` with nothing asked: straight into the editor on Start Here, the caret in its Title.
+  // `/new` with nothing asked: the editor's address, the start screen over Start Here.
   const who = person('Ada', 'Lovelace');
   await installSession(page, who);
-  const id = await newKnowledgebase(page, '/new');
-  await expect(page).toHaveURL(/\/document\/[^/]+/);
-  await expectCaretInTitle(page);
+  await page.goto('/new');
+  await page.waitForURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
+  const start = startScreen(page);
+  await expect(start).toBeVisible({ timeout: 30_000 });
+  const id = knowledgebaseId(page);
   await expect(page.getByRole('button', { name: 'Share, Private' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: /What Is This (Page )?For\?/ })).toHaveCount(0);
-  await expect(page.locator('[data-start-panel]')).toHaveCount(0);
   expect(await treeShape(page)).toHaveLength(1);
 
-  // Empty: the sidebar offers Describe to Set Up, directly above New Page.
+  // Empty: the sidebar offers Describe to Set Up, directly above New Page, and so does the start's foot.
   await saveKey(page, who, id, KEY);
-  const button = setupButton(page);
+  const button = page
+    .getByRole('complementary', { name: 'Pages' })
+    .getByRole('button', { name: 'Describe to Set Up', exact: true });
   await expect(button).toBeVisible();
   await expect(page.getByText('Tell AI what this is for and get a page structure.')).toBeVisible();
   const newPage = page.getByRole('button', { name: 'New Page', exact: true });
   expect((await button.boundingBox())!.y).toBeLessThan((await newPage.boundingBox())!.y);
 
-  await button.click();
+  // The start's entry closes it and opens the same dialog.
+  await start.locator('[data-rail="describe"]').click();
+  await expect(start).toHaveCount(0);
   const dialog = setupDialog(page);
   await expect(dialog.getByRole('listitem').filter({ hasText: 'Describe' })).toHaveAttribute(
     'aria-current',

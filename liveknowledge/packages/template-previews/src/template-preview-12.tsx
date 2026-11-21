@@ -16,8 +16,8 @@ const INK = 'rgb(15 23 42)';
 
 export function templatePreviewGroup12(kind: TemplateKind): ReactElement | null {
   switch (kind) {
-    // Blank Tab is an empty Pages tab: the one unchosen page Blank Illustration opens on.
-    case 'blank':
+    // Blank Illustration's one unchosen page. Blank Tab (`blank`), the knowledgebase start's Blank Knowledgebase, is
+    // drawn as a page of writing (template-preview-20.tsx).
     case 'blank-illustration':
       // One empty page with a dashed edge, a faint infographic on its top half and faint lines of
       // writing below: a page to fill, either way. Hover story: the two halves take turns to

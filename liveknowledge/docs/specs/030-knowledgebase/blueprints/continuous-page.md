@@ -40,9 +40,9 @@ sheet the writing is laid on. Code and the API keep `tab`, `document`, `article`
 - `TEMPLATES` lists `blank`, `blank-article` and the thirteen written templates. `isTemplateKind`, the start screen,
   `/new?template=`, the MCP's `template` argument and `list_templates` all read that list, so an unlisted kind is
   "not a template" everywhere.
-- A tab stored with no chosen page and nothing on it (made outside these paths) still shows the start screen, whose
-  cards are written templates and Blank Page. `withKnowledgebasePage(tab)` reads such a tab as a new page for a caller
-  that wants it converted; no path calls it on load today.
+- A tab stored with no chosen page and nothing on it (made outside these paths) is read as a new knowledgebase page
+  wherever a stored tab is read: `migrateStoredTab` ends with `withKnowledgebasePage(tab)`
+  ([Describe to set up blueprint](describe-to-set-up.md) "The start screen").
 
 ### The page's height
 

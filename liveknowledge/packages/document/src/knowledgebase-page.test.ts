@@ -62,5 +62,8 @@ describe('a knowledgebase page', () => {
       ],
     };
     expect(withKnowledgebasePage(two)).toBe(two);
+    // Writing with no page to sit on is kept as it is, never replaced.
+    const written = { elements: [], articles: { f1: { blocks: [] } } };
+    expect(withKnowledgebasePage(written)).toBe(written);
   });
 });

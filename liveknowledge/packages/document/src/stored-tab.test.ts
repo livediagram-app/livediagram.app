@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { settleStoredArticles, settleStoredArticlesData } from './article-flow';
 import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import type { Tab } from './index';
+import { isKnowledgebasePage } from './knowledgebase-page';
+import { pagesOf } from './page';
 
 describe('migrateStoredTab', () => {
   it('returns the same tab when there is nothing to settle', () => {
@@ -11,6 +13,17 @@ describe('migrateStoredTab', () => {
       elements: [{ id: 'a', type: 'sticky', x: 0, y: 0, width: 1, height: 1 }],
     };
     expect(migrateStoredTab(tab)).toBe(tab);
+  });
+
+  // docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen": an api-made tab with no page kind opens as
+  // an empty article page, never on a start.
+  it('reads an empty tab with no page of a kind as an empty knowledgebase page', () => {
+    const settled = migrateStoredTab({ id: 't', name: 'From an Agent', elements: [] } as Tab);
+    expect(isKnowledgebasePage(settled)).toBe(true);
+    expect(pagesOf(settled)).toHaveLength(1);
+    expect(settled.name).toBe('From an Agent');
+    const incoming = migrateIncomingTab({ id: 't', name: 'X', elements: [], pages: [] }) as Tab;
+    expect(isKnowledgebasePage(incoming)).toBe(true);
   });
 });
 

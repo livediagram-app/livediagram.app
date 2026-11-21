@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { Tab } from '@liveknowledge/document';
 import { pageFlowOf } from '@/lib/article/page-title';
 import { takeTitleFocus } from '@/lib/page-title-focus';
+import { useKnowledgebaseStartOffered } from '@/components/start/knowledgebase-start';
 
 // A page made here opens with the caret in its Title (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A
 // knowledgebase", "Add"). The makers ask (lib/page-title-focus.ts); this answers once the page is the open one, its
@@ -16,7 +17,10 @@ export function usePageTitleFocus(deps: {
 }) {
   const { activeTab, editable, focusTitle } = deps;
   const flow = pageFlowOf(activeTab);
-  const ready = editable && !!focusTitle && !!flow && activeTab.locked !== true;
+  // A new knowledgebase's start screen over the page holds the ask until Blank Knowledgebase closes it (describe-to-
+  // set-up.md "The start screen"); the other choices spend it first.
+  const startUp = useKnowledgebaseStartOffered(activeTab.id);
+  const ready = editable && !!focusTitle && !!flow && activeTab.locked !== true && !startUp;
   useEffect(() => {
     if (!ready || !flow || !focusTitle) return;
     if (takeTitleFocus(activeTab.id)) focusTitle(flow);

@@ -20,7 +20,7 @@ afterEach(() => {
 
 function pages() {
   const onTemplate = vi.fn();
-  render(<StartFromTemplates tabId="t1" onTemplate={onTemplate} />);
+  render(<StartFromTemplates onTemplate={onTemplate} />);
   const search = screen.getByRole('textbox', { name: 'Find a template' });
   return { onTemplate, search };
 }
@@ -30,7 +30,7 @@ describe('a start search with no match', () => {
   it('shows the empty state', () => {
     const { search } = pages();
     fireEvent.change(search, { target: { value: 'zzzz-nothing' } });
-    expect(screen.getByText('No page templates match “zzzz-nothing”')).toBeTruthy();
+    expect(screen.getByText('No templates match “zzzz-nothing”')).toBeTruthy();
     expect(screen.getByText('Try another word.')).toBeTruthy();
   });
 });
@@ -111,7 +111,7 @@ describe('the chosen rail count', () => {
     appearance.value = surface;
     render(
       <CanvasSurfaceProvider surface={surface}>
-        <StartFromTemplates tabId="t1" onTemplate={vi.fn()} />
+        <StartFromTemplates onTemplate={vi.fn()} />
       </CanvasSurfaceProvider>,
     );
     const palette = startPalette(surface, {});
@@ -129,7 +129,7 @@ describe('the chosen rail count', () => {
     appearance.value = surface;
     render(
       <CanvasSurfaceProvider surface={surface}>
-        <StartFromTemplates tabId="t1" onTemplate={vi.fn()} />
+        <StartFromTemplates onTemplate={vi.fn()} />
       </CanvasSurfaceProvider>,
     );
     const palette = startPalette(surface, {});

@@ -28,7 +28,10 @@ Public) already own the word.
 
 ## A knowledgebase
 
-- A new knowledgebase opens with one page, **Start Here**, the caret in its title. Its name is "Untitled Knowledgebase"
+- A new knowledgebase has one page, **Start Here**. Made from `/new` (the Explorer's New, Home's Make Your First
+  Knowledgebase) it opens on the **start screen** ([Describe to set up](describe-to-set-up.md#the-start-screen)):
+  Blank Knowledgebase, the writing templates, Describe to Set Up and Import. Blank Knowledgebase, `/new?blank=1` and a
+  `/new?template=` link open Start Here with the caret in its Title. Its name is "Untitled Knowledgebase"
   until a person names it: a page's Title names that page, never the knowledgebase.
 - **Where a new knowledgebase is saved.** A signed-in person's is saved to their account, in Private, so Verify,
   Ask, AI Knowledge and sharing work from the first page. A guest's, and a signed-out person's, is kept Offline in
