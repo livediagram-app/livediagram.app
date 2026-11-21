@@ -92,7 +92,6 @@ describe('Always in Context, a share role at a time', () => {
     knowledgeRights({
       can: { editPages },
       isStructureReadOnly: false,
-      accountUserId: 'u1',
       offline,
     });
 

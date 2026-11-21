@@ -21,6 +21,7 @@ import {
   pageReads,
   tokensOfChars,
   verified,
+  GUEST_VERIFIER,
   type KnowledgeFields,
   type PageAgentReadsRow,
   type PageAnswerRow,
@@ -38,7 +39,7 @@ import {
   type StoredPageKnowledge,
 } from '../knowledge/page-knowledge';
 import { readStoredPages } from '../document-room/page-tree-store';
-import { conflict, forbidden, json, notFound } from '../responses';
+import { conflict, json, notFound } from '../responses';
 import { relayPages } from '../room-client';
 import type { DocumentDTO } from '../types';
 import type { DocumentRouteContext } from './context';
@@ -91,13 +92,14 @@ export async function handlePageHealth(
 }
 
 // The write, repeated once when the tab moved between the read and the write (an autosave landing), then told to
-// every open editor as the `tab-meta` patch its own change would send.
-async function saveFields(
+// every open editor as the `tab-meta` patch its own change would send. `also` rides the write's transaction
+// (writePageKnowledge).
+export async function saveFields(
   ctx: DocumentRouteContext,
   document: DocumentDTO,
   tab: string,
   change: (page: StoredPageKnowledge) => Promise<KnowledgeFields | Response>,
-  opts: { verified?: boolean } = {},
+  opts: { verified?: boolean; also?: (rev: number) => D1PreparedStatement[] } = {},
 ): Promise<Response> {
   const now = Date.now();
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -141,9 +143,9 @@ export function handleVerify(
   document: DocumentDTO,
   tab: string,
 ): Promise<Response> | Response {
-  // Verify says who vouches for the page: an account, never a guest's or a link visitor's id.
-  const person = accountOf(ctx);
-  if (!person) return forbidden();
+  // Verify says who vouches for the page: an account, or "Guest" for a guest writer (GUEST_VERIFIER), never a guest's
+  // or a link visitor's own id.
+  const person = accountOf(ctx) ?? GUEST_VERIFIER;
   // Now; the e2e stack alone may say earlier (verifyMoment).
   const at = verifyMoment(ctx.env, ctx.request, Date.now());
   return saveFields(ctx, document, tab, async (page) => verified(page.fields, person, at), {

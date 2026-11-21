@@ -6,7 +6,7 @@
 // nothing here.
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { PageHealthResponse, PageKnowledgePatch } from '@liveknowledge/api-schema';
-import type { ReviewEvery } from '@liveknowledge/knowledge';
+import { GUEST_VERIFIER, type ReviewEvery } from '@liveknowledge/knowledge';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useToast } from '@/hooks/ui/useToast';
@@ -37,7 +37,10 @@ export function useKnowledgePeople(): {
         people.push({ id: person.userId, name: person.name });
     }
     const names = new Map(people.map((p) => [p.id, p.name]));
-    return { people, nameOf: (id) => (id ? names.get(id) : undefined) };
+    return {
+      people,
+      nameOf: (id) => (id === GUEST_VERIFIER ? 'Guest' : id ? names.get(id) : undefined),
+    };
   }, [accountUserId, selfName, candidates]);
 }
 
@@ -55,10 +58,9 @@ export function useKnowledgeActions(): KnowledgeActions {
   const offline = useIsOfflineDocument(documentId);
   const editPages = useEditorChrome((s) => s.can.editPages);
   const isStructureReadOnly = useEditorChrome((s) => s.isStructureReadOnly);
-  const accountUserId = useEditorChrome((s) => s.accountUserId ?? null);
   const rights = useMemo(
-    () => knowledgeRights({ can: { editPages }, isStructureReadOnly, accountUserId, offline }),
-    [editPages, isStructureReadOnly, accountUserId, offline],
+    () => knowledgeRights({ can: { editPages }, isStructureReadOnly, offline }),
+    [editPages, isStructureReadOnly, offline],
   );
   const callerOf = useCallback((): { who: KnowledgeCaller; documentId: string } | null => {
     const editor = chrome.get();

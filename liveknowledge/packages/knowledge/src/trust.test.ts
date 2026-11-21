@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_REVIEW_EVERY,
+  GUEST_VERIFIER,
   knowledgeHealth,
   parseKnowledgeFields,
   reviewDays,
@@ -128,6 +129,17 @@ describe('Knowledge Health', () => {
       reviewDue: 0,
       neverVerified: 0,
       total: 0,
+    });
+  });
+});
+
+describe('a guest verifies', () => {
+  it('as "guest", and never becomes the owner', () => {
+    expect(verified({}, GUEST_VERIFIER, 5)).toEqual({ verifiedAt: 5, verifiedBy: 'guest' });
+    expect(verified({ owner: 'u1' }, GUEST_VERIFIER, 5)).toEqual({
+      owner: 'u1',
+      verifiedAt: 5,
+      verifiedBy: 'guest',
     });
   });
 });

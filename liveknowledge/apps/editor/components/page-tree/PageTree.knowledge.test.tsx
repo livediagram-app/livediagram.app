@@ -31,12 +31,11 @@ const actions = (): PageTreeActions => ({
   onCopyLink: vi.fn(),
 });
 
-function mount(level: AccessLevel, accountUserId: string | null = 'u1') {
+function mount(level: AccessLevel) {
   const can = resolveEditorCapabilities(level);
   const rights = knowledgeRights({
     can,
     isStructureReadOnly: level === 'view',
-    accountUserId,
     offline: false,
   });
   const knowledge: PageTreeKnowledge = {
@@ -106,11 +105,10 @@ describe('the row menu', () => {
     expect(knowledge.onSetContext).toHaveBeenLastCalledWith('c', false);
   });
 
-  it('an Editor with no account sets Always in Context but has no Verify', () => {
-    mount('edit', null);
+  it('a guest Editor verifies too (it reads "Guest") and sets Always in Context', () => {
+    mount('edit');
     openMenu('Notes', 'Notes');
-    expect(menuItems()).toContain('Always in Context');
-    expect(menuItems()).not.toContain('Verify');
+    expect(menuItems()).toEqual(expect.arrayContaining(['Verify', 'Always in Context']));
   });
 
   it('a participate session verifies and sets Always in Context, as an Editor', () => {

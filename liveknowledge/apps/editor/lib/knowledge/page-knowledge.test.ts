@@ -71,7 +71,6 @@ describe('who may verify and change the fields', () => {
     knowledgeRights({
       can: resolveEditorCapabilities(level),
       isStructureReadOnly: level !== 'edit',
-      accountUserId: 'u1',
       offline: false,
       ...over,
     });
@@ -82,8 +81,8 @@ describe('who may verify and change the fields', () => {
   it.each(['participate', 'view'] as const)('a %s session reads only', (level) => {
     expect(rights(level)).toEqual({ editFields: false, verify: false });
   });
-  it('an Editor with no account sets the fields but cannot vouch for a page', () => {
-    expect(rights('edit', { accountUserId: null })).toEqual({ editFields: true, verify: false });
+  it('an Editor with no account (a guest) verifies too: it reads "Guest"', () => {
+    expect(rights('edit')).toEqual({ editFields: true, verify: true });
   });
   it('an Editor on one page of the knowledgebase, or on one kept Offline, changes nothing', () => {
     expect(rights('edit', { isStructureReadOnly: true }).verify).toBe(false);

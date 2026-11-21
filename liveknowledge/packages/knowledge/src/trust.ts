@@ -4,6 +4,7 @@
 // nothing a page stores changes when the period does.
 
 import type { ReviewEvery } from '@liveknowledge/document';
+import { parseApproval, type PageApproval } from './approval-field';
 
 export {
   DEFAULT_KNOWLEDGE_SETTINGS,
@@ -30,6 +31,8 @@ export type KnowledgeFields = {
   verifiedBy?: string;
   /** Always in Context (docs/specs/030-knowledgebase/ai-knowledge.md). */
   context?: true;
+  /** Asked for, approved or rejected (docs/specs/030-knowledgebase/approval.md). */
+  approval?: PageApproval;
 };
 
 const personId = (v: unknown): string | undefined =>
@@ -49,6 +52,8 @@ export function parseKnowledgeFields(v: unknown): KnowledgeFields {
     if (by) fields.verifiedBy = by;
   }
   if (raw.context === true) fields.context = true;
+  const approval = parseApproval(raw.approval);
+  if (approval) fields.approval = approval;
   return fields;
 }
 
@@ -75,8 +80,18 @@ export function trustState(fields: KnowledgeFields, every: ReviewEvery, now: num
 }
 
 /** The fields after Verify: verified now by `person`, who becomes the owner of a page that has none. */
+/** Who a guest's Verify is by (owner, 2026-11-21: "Guest users can verify, just say Guest"): never a guest's own id, and a
+ *  guest never becomes a page's owner. */
+export const GUEST_VERIFIER = 'guest';
+
 export function verified(fields: KnowledgeFields, person: string, now: number): KnowledgeFields {
-  return { ...fields, owner: fields.owner ?? person, verifiedAt: now, verifiedBy: person };
+  const owner = fields.owner ?? (person === GUEST_VERIFIER ? undefined : person);
+  return {
+    ...fields,
+    ...(owner === undefined ? {} : { owner }),
+    verifiedAt: now,
+    verifiedBy: person,
+  };
 }
 
 /** The counts Knowledge Health draws (docs/specs/030-knowledgebase/ai-knowledge.md "Knowledge Health"). */

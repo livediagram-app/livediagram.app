@@ -231,10 +231,10 @@ describe('a page’s knowledge in the editor', () => {
     },
   );
 
-  it('an Editor with no account has no Verify, and still sets the fields', async () => {
+  it('a guest Editor (no account) verifies too, and still sets the fields', async () => {
     mount('edit', null);
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-    expect(screen.queryByRole('button', { name: /Verify/ })).toBeNull();
+    expect(within(rail()).getByRole('button', { name: 'Verify' })).toBeTruthy();
     // The owner is theirs to set, and so is the knowledgebase's Review Period, through its settings.
     expect(screen.getByLabelText('Owner')).toBeTruthy();
   });
