@@ -5,6 +5,7 @@
 // page opens, and again once this editor has saved a change to the page's own links; never per keystroke.
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import type { KnowledgeBacklink } from '@liveknowledge/api-schema';
+import { Tooltip } from '@liveknowledge/ui';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { selectPage } from '@/components/page-tree/select-page';
@@ -32,20 +33,22 @@ export function LinkedFromView({
       <ul className="mt-2 flex flex-wrap gap-2">
         {backlinks.map((link) => (
           <li key={link.tab}>
-            <a
-              // The page's own address, so the chip opens in a new tab too; a plain press opens it here.
-              href={`#t=${encodeURIComponent(link.tab)}`}
-              onClick={(e) => {
-                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-                e.preventDefault();
-                onOpen(link.tab);
-              }}
-              className="inline-flex max-w-64 cursor-pointer items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[13px] font-medium leading-5 text-slate-700 no-underline motion-safe:transition-colors motion-safe:duration-micro hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 phone:min-h-11 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-              title={link.title || 'Untitled Page'}
-            >
-              {/* The ellipsis is the text's own: a flex box does not draw one for its bare text. */}
-              <span className="min-w-0 truncate">{link.title || 'Untitled Page'}</span>
-            </a>
+            {/* The full title on hover, when the chip cuts it short. */}
+            <Tooltip label={link.title || 'Untitled Page'}>
+              <a
+                // The page's own address, so the chip opens in a new tab too; a plain press opens it here.
+                href={`#t=${encodeURIComponent(link.tab)}`}
+                onClick={(e) => {
+                  if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                  e.preventDefault();
+                  onOpen(link.tab);
+                }}
+                className="inline-flex max-w-64 cursor-pointer items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[13px] font-medium leading-5 text-slate-700 no-underline motion-safe:transition-colors motion-safe:duration-micro hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 phone:min-h-11 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                {/* The ellipsis is the text's own: a flex box does not draw one for its bare text. */}
+                <span className="min-w-0 truncate">{link.title || 'Untitled Page'}</span>
+              </a>
+            </Tooltip>
           </li>
         ))}
       </ul>
