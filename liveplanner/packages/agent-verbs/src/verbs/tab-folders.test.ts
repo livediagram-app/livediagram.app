@@ -41,7 +41,10 @@ const TABS: Tab[] = [
 describe('tab ls', () => {
   it('prints the tab folder of a tab in one', async () => {
     const { route } = fileWith(TABS);
-    const out = await tabLs.run!(contextOf(fakeApi({ ...library, [FILE]: route })), tabLs.input.parse({ project: 'Auth flow' }));
+    const out = await tabLs.run!(
+      contextOf(fakeApi({ ...library, [FILE]: route })),
+      tabLs.input.parse({ project: 'Auth flow' }),
+    );
     expect(out.tabs.map((t) => t.folder)).toEqual(['Plans', undefined]);
     expect(tabLs.text!(out)).toEqual(['1  tab-o  "Overview"  in "Plans"', '2  tab-t  "Details"']);
   });
