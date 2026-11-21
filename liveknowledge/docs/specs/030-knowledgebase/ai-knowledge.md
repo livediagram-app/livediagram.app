@@ -161,16 +161,17 @@ rows and actions, long lists capped so the page never grows with the data.
   actions as below. At most 4 rows show; **Show All 9** opens the rest in place and **Show Fewer** folds them.
 - **Knowledge Health:** the verified share as a large figure, the stacked bar and its legend, and **Remind the
   Owners**.
-- **Connected Agents:** compact cards, two across in the wide column, at most 4 before **Show All**; **Connect an
+- **Connected Agents:** compact cards, two across, at most 4 before **Show All**; **Connect an
   Agent** at the card's top right.
 - **Always in Context:** the budget meter, each page with its size and a remove button, at most 5 before **Show All**,
   and **Add a Page**.
 - **Most Read:** the 5 pages read most in the last 7 days, each with a bar of its reads, people and agents in the
   same two tones as the sparkline, and its figures. A row opens its page. A deleted page is left out.
-- **What an Agent Sees:** the dark sample card, last in the narrow column.
-- On a wide screen the cards sit in two columns: Needs Attention and Connected Agents in the wide one (two thirds),
-  Knowledge Health, Always in Context, Most Read and What an Agent Sees in the narrow one. Below a laptop's width
-  (1024px) the cards are one column in that order. Nothing scrolls sideways at any width.
+- **What an Agent Sees:** the dark sample card, last.
+- On a wide screen the cards flow through two equal columns as tiles do, in the order Needs Attention, Knowledge
+  Health, Connected Agents, Always in Context, Most Read, What an Agent Sees: each takes the next free slot, so no
+  column runs long beside an empty one (owner 2026-11-21). Below a laptop's width (1024px) they are one column in that
+  order. Nothing scrolls sideways at any width.
 - **Empty states** teach how each card fills:
   - Needs Attention with nothing waiting: "Nothing Needs Attention", saying what lands here and how (an
     unanswered Ask, an agent's empty search or `report_gap`, a page that disagrees with another, an agent's

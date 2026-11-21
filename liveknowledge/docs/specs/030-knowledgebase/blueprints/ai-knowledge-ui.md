@@ -42,10 +42,10 @@ and one read.
 
 ## The dashboard
 
-`AiDashboard` lays the ready view out (ai-knowledge.md "The view, as built"): the figures band, then a grid,
-`lg:grid-cols-3`, of two stacks: the wide one (`lg:col-span-2`) Needs Attention then Connected Agents, the narrow one
-Knowledge Health, Always in Context, Most Read and What an Agent Sees. Below `lg` the stacks follow each other in one
-column. The content is at most `max-w-7xl`, centred, `px-4 sm:px-6`.
+`AiDashboard` lays the ready view out (ai-knowledge.md "The view, as built"): the figures band, then the cards in CSS
+columns (`lg:columns-2`), each in a `break-inside-avoid` slot, in reading order: Needs Attention, Knowledge Health,
+Connected Agents, Always in Context, Most Read, What an Agent Sees. The browser balances the two columns by height.
+Below `lg` they are one column. The content is at most `max-w-7xl`, centred, `px-4 sm:px-6`.
 
 - **The figures** (`dashboardFigures(overview)`, pure, in `dashboard-figures.ts`): `readsWeek` (people, agents,
   total, from the last 7 of `reads.days`), `agents` and `writers` (agents whose scopes hold `write`), `questions`
