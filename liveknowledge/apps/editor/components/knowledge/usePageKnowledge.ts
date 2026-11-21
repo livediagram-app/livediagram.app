@@ -131,7 +131,7 @@ export type PageKnowledgeView = KnowledgeActions & {
   now: number;
 };
 
-/** The current page's knowledge. Reads its health when the page opens (once a page for the session). */
+/** The current page's knowledge. Reads its health each time the page opens, which counts the person's read. */
 export function usePageKnowledge(): PageKnowledgeView {
   const chrome = useEditorChromeStore();
   const actions = useKnowledgeActions();
@@ -154,6 +154,10 @@ export function usePageKnowledge(): PageKnowledgeView {
       { ownerId: editor.selfParticipant.id, shareCode: editor.sessionShareCode },
       documentId,
       pageId,
+      false,
+      // Every open counts the person's read and reads the week's figures again (owner 2026-11-21): Read This Week
+      // moves when a page is opened, not only on a reload.
+      true,
     );
   }, [chrome, documentId, pageId, offline]);
   // After a save (here or by someone else), read the health again once the save has reached the api: its Updated

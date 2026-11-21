@@ -147,15 +147,22 @@ export function createPageKnowledgeStore(
     fieldsOf,
     /** `_at`: the store's version the caller read (see fieldsOf). */
     healthOf: (documentId: string, tab: string, _at?: number) => health.get(keyOf(documentId, tab)),
-    /** Read a page's health: once per page for the session unless `fresh`; concurrent asks share one request. A
-     *  failure leaves what was held (the fields still show from the tab). */
-    load(who: KnowledgeCaller, documentId: string, tab: string, fresh = false): Promise<void> {
+    /** Read a page's health: once per page for the session unless `fresh`, or on every open (`opened`, which also
+     *  counts the person's read); concurrent asks share one request. A failure leaves what was held (the fields still
+     *  show from the tab, the last counts stay until the new ones land). */
+    load(
+      who: KnowledgeCaller,
+      documentId: string,
+      tab: string,
+      fresh = false,
+      opened = false,
+    ): Promise<void> {
       const key = keyOf(documentId, tab);
-      if (!fresh && health.has(key)) return Promise.resolve();
+      if (!fresh && !opened && health.has(key)) return Promise.resolve();
       const running = loading.get(key);
       if (running) return running;
       const request = api
-        .health(who, documentId, tab)
+        .health(who, documentId, tab, undefined, opened)
         .then(
           (answer) => {
             health.set(key, answer);

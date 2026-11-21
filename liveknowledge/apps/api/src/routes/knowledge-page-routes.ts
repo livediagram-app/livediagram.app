@@ -44,6 +44,8 @@ import { routeWho } from '../document-room/automations/knowledge-who';
 import { readStoredPages } from '../document-room/page-tree-store';
 import { conflict, json, notFound } from '../responses';
 import type { DocumentDTO } from '../types';
+import { readerOf } from '../knowledge/knowledge-caller';
+import { countRead } from '../knowledge/knowledge-reads';
 import type { DocumentAccess, DocumentRouteContext } from './context';
 
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
@@ -80,6 +82,13 @@ export async function handlePageHealth(
   const now = Date.now();
   const page = await readPageKnowledge(ctx.env, document.id, tab);
   if (!page) return notFound();
+  // A person opening the page in the editor (`?opened=1`) is a read (ai-knowledge.md "Reads"), counted before the
+  // week's figures are, so the figures they get back hold it. Once a person a page a day, as countRead keeps; an
+  // agent's token counts its reads through its own routes, never here.
+  if (!ctx.token && new URL(ctx.request.url).searchParams.get('opened') === '1') {
+    const person = ctx.resolveOwner();
+    if (person) await countRead(ctx.env, tab, readerOf(ctx), person, now);
+  }
   // AI Context (ai-knowledge.md "AI Context on a page") rides this read: the questions a range of their
   // table's key, the agents a range of `page_reads_tab` (schema step V19).
   const [readRows, authors, editors, answered, agents] = await Promise.all([

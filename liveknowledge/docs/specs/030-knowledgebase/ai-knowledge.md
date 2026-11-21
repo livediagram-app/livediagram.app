@@ -28,6 +28,9 @@ people.
 The room counts page reads by day, by reader kind (`person` or `agent`) and by agent, in its Durable Object
 (`page_reads`), kept 90 days. A read is one open of a page in the editor, or one `read_page` or search result served
 to an agent. No reader's identity is kept beyond the agent's name.
+Opening a page in the editor, by its tree, a link or search, is counted as it opens (`GET pages/<tab>/health?opened=1`,
+once a person a page a day), and Page Health's Read This Week is read again on every open, so it moves without a
+reload (owner 2026-11-21).
 
 The view's read answers the last 14 days' reads by day, people and agents apart (the sparkline and Reads This Week),
 and the 5 pages read most in the last 7 days with each one's reads by people and by agents (Most Read).

@@ -152,8 +152,11 @@ export function apiPageHealth(
   documentId: string,
   tab: string,
   signal?: AbortSignal,
+  opened = false,
 ): Promise<PageHealthResponse> {
-  return read(who, pageUrl(documentId, tab, 'health'), 'read page health', signal);
+  // `opened`: this read is a person opening the page, which counts as their read (ai-knowledge.md "Reads").
+  const url = pageUrl(documentId, tab, 'health');
+  return read(who, opened ? `${url}?opened=1` : url, 'read page health', signal);
 }
 
 /** Verify: verified now by the caller, who owns a page with no owner. An Editor with an account; else 403. */

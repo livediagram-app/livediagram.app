@@ -111,12 +111,17 @@ afterEach(() => {
 });
 
 describe('a page’s knowledge in the editor', () => {
-  it('reads Page Health once when the page opens, and shows the reads', async () => {
+  it('reads Page Health once when the page opens, counting the open, and shows the reads', async () => {
     const { documentId, pageId } = mount('view');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
     expect(screen.getByText('7')).toBeTruthy();
     expect(api.apiPageHealth).toHaveBeenCalledTimes(1);
-    expect(api.apiPageHealth.mock.calls[0]!.slice(1)).toEqual([documentId, pageId]);
+    expect(api.apiPageHealth.mock.calls[0]!.slice(1)).toEqual([
+      documentId,
+      pageId,
+      undefined,
+      true,
+    ]);
     expect(screen.getByRole('button', { name: 'Tag the Build' })).toBeTruthy();
   });
 

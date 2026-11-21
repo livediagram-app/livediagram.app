@@ -308,6 +308,23 @@ describe('GET pages/:tab/health', () => {
   });
 });
 
+describe('GET pages/:tab/health?opened=1', () => {
+  it("counts a person's open as their read, once a day, and never an agent's here", async () => {
+    const kit = await knowledgeKit();
+    const opened = (who: 'viewer' | 'participant' | 'agent') =>
+      kit.call(who, 'GET', '/api/documents/kb/pages/deploys/health?opened=1');
+    const first = (await (await opened('viewer')).json()) as { reads: unknown };
+    // The figures handed back already hold this open.
+    expect(first.reads).toEqual({ people: 1, agents: 0 });
+    await opened('viewer');
+    await opened('agent');
+    const after = (await (await opened('participant')).json()) as { reads: unknown };
+    expect(after.reads).toEqual({ people: 2, agents: 0 });
+    // A plain read counts nothing.
+    expect((await read(kit, 'editor')).reads).toEqual({ people: 2, agents: 0 });
+  });
+});
+
 describe('Created and Updated (verification.md)', () => {
   it("makes a new page's creator its owner, and says who created and last updated each page", async () => {
     const kit = await knowledgeKit();
