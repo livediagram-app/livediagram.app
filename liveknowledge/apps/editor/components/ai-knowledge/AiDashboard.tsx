@@ -125,6 +125,8 @@ export function AiDashboard({
         <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
           <HealthSection
             health={overview.health}
+            lowHealth={overview.lowHealth}
+            onOpenPage={actions.openPage}
             canRemind={canEmailOwners}
             remindedAt={overview.reviewEmails.remindedAt}
             reminding={busy.has('remind-owners')}

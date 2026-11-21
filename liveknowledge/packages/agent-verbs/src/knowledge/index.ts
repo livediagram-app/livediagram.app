@@ -18,6 +18,7 @@ export {
   treeRowOf,
   trustFieldsOf,
   trustLine,
+  healthLine,
   type ReviewPeriod,
   type TreeRowFields,
   type TrustFields,

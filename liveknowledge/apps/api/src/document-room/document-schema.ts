@@ -28,7 +28,7 @@ import {
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SAVE_STEP, VERSION_SCHEMA } from '../versions/version-schema';
-import { knowledgeSchemaStep } from '../knowledge/knowledge-schema';
+import { knowledgeSchemaStep, knowledgeShapeStep } from '../knowledge/knowledge-schema';
 import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
 import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
 import { agentSeenSchemaStep } from '../knowledge/agent-seen';
@@ -425,6 +425,10 @@ const V34 = VERSION_SAVE_STEP;
 // the steps before it, never among the engine's own. Without it a room's restore reads a table it never made.
 const V35 = automationSchemaStep('wake');
 
+// Step 36: each page's words, headings and whether it has an owner, kept by the index beside its characters
+// (knowledge/knowledge-schema.ts knowledgeShapeStep; docs/specs/030-knowledgebase/verification.md "Health Score").
+const V36 = knowledgeShapeStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -453,6 +457,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V33,
   V34,
   V35,
+  V36,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

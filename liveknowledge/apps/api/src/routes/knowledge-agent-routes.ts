@@ -72,6 +72,7 @@ import {
   pageTrustOf,
   pageUnknownBody,
 } from '../knowledge/page-read';
+import { pageHealthWires } from '../knowledge/page-health-read';
 import { TabTooLargeError } from '../limits';
 import { capStoredName } from '../names';
 import { getParticipant } from '../person/profiles';
@@ -144,11 +145,15 @@ async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Resp
     return invalid('invalid_max_chars', `maxChars is a whole number from 1 to ${READ_MAX_CHARS}.`);
   const now = Date.now();
   const fields = parseKnowledgeFields(summary.knowledge);
-  const [stored, linking, conflicts, verifier] = await Promise.all([
+  const [stored, linking, conflicts, verifier, health] = await Promise.all([
     readStoredTab(ctx.env, document.id, summary.id),
     rowsOf<{ fromTab: string }>(ctx.env, backlinkRows(summary.id)),
     openConflictPages(ctx.env, document.tabs),
     fields.verifiedBy ? getParticipant(ctx.env, fields.verifiedBy) : null,
+    // The page's Health Score for the agent to weigh it by (verification.md "For agents and Ask"): one read.
+    pageHealthWires(ctx.env, document.id, document.knowledgeSettings.reviewEvery, now, [
+      summary.id,
+    ]),
   ]);
   if (!stored) return notFound();
   const whole = pageMarkdownOf(stored.tab, document.tabs);
@@ -179,6 +184,7 @@ async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Resp
     trust: pageTrustOf(summary.knowledge, document.knowledgeSettings.reviewEvery, now, {
       conflictsWith: conflicts.byTab.get(summary.id)?.filter((p) => byId.has(p.tab)),
       verifiedBy: verifier?.name || undefined,
+      health: health.get(summary.id),
     }),
     ...(summary.parent && byId.has(summary.parent) ? { parent: summary.parent } : {}),
     backlinks: backlinks(
@@ -221,6 +227,14 @@ async function handleContext({ ctx, document, grant }: KnowledgeRoute): Promise<
   const caller = ctx.resolveOwner();
   for (const page of context.pages) await countRead(ctx.env, page.id, reader, caller, now);
   const knowledgeOf = new Map(marked.map((p) => [p.id, p.knowledge]));
+  // Each context page's Health Score: one read for them all.
+  const health = await pageHealthWires(
+    ctx.env,
+    document.id,
+    document.knowledgeSettings.reviewEvery,
+    now,
+    context.pages.map((p) => p.id),
+  );
   const answer: KnowledgeAgentContextResponse = {
     name: document.name,
     role: grant.role,
@@ -235,7 +249,9 @@ async function handleContext({ ctx, document, grant }: KnowledgeRoute): Promise<
       title: p.title,
       markdown: p.markdown,
       tokens: p.tokens,
-      trust: pageTrustOf(knowledgeOf.get(p.id), document.knowledgeSettings.reviewEvery, now),
+      trust: pageTrustOf(knowledgeOf.get(p.id), document.knowledgeSettings.reviewEvery, now, {
+        health: health.get(p.id),
+      }),
     })),
     leftOut: context.leftOut.map((p) => ({ tab: p.id, title: p.title, tokens: p.tokens })),
     pageCount: pageCount(document.tabs),

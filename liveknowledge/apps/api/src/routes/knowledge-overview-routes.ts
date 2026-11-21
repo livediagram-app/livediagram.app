@@ -11,6 +11,7 @@ import {
   CONTEXT_BUDGET_TOKENS,
   MOST_READ_PAGES,
   agentReads,
+  averageHealth,
   conflictOfRow,
   countAgentReads,
   countDailyReads,
@@ -21,6 +22,7 @@ import {
   listConflicts,
   listQuestionAgents,
   listQuestions,
+  lowHealthPages,
   questionGroups,
   questionKey,
   trustState,
@@ -48,6 +50,7 @@ import { emailEnabled } from '../email/client';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll, sqlOf } from '../knowledge/knowledge-db';
 import { contextPages, knowledgeHealthCounts } from '../knowledge/knowledge-reads';
+import { pageHealthScores } from '../knowledge/page-health-read';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
 import { writesPages } from './context';
@@ -135,6 +138,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     reminded,
     daily,
     mostRead,
+    scores,
   ] = await Promise.all([
     rowsOf<AgentReadsRow>(env, countAgentReads(now)),
     seenAgents(env, now),
@@ -151,7 +155,19 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     // The figures band's sparkline and Most Read (ai-knowledge.md "Reads"): two ranges of page_reads.
     rowsOf<DailyReadsRow>(env, countDailyReads(now)),
     rowsOf<MostReadRow>(env, countMostRead(now)),
+    // Every page's Health Score (verification.md "Health Score"): one statement, no read a page.
+    pageHealthScores(env, document.id, every, now),
   ]);
+  const scored = [...scores.values()];
+  const scoreOf = (tab: string) => {
+    const page = scores.get(tab);
+    return page ? { score: page.health.score, label: page.health.label } : undefined;
+  };
+  const withHealth = (side: KnowledgeConflictSide): KnowledgeConflictSide => {
+    const health = scoreOf(side.tab);
+    return health ? { ...side, health } : side;
+  };
+  const average = averageHealth(scored.map((p) => p.health.score));
   const lastAt = new Map(questions.map((q) => [q.key, q.lastAt]));
   const overview: KnowledgeOverviewResponse = {
     agents: connectedAgents({
@@ -171,7 +187,8 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     })),
     conflicts: conflicts.map((conflict) => {
       const askedAt = asked.get(conflict.id);
-      return askedAt === undefined ? conflict : { ...conflict, askedAt };
+      const sided = { ...conflict, a: withHealth(conflict.a), b: withHealth(conflict.b) };
+      return askedAt === undefined ? sided : { ...sided, askedAt };
     }),
     // Agents' edits waiting for an Editor (knowledge-suggestion-routes.ts), newest first.
     suggestions,
@@ -180,7 +197,19 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
       used: pages.reduce((sum, p) => sum + p.tokens, 0),
       pages,
     },
-    health,
+    health: average === undefined ? health : { ...health, average },
+    // Pages With Low Health (ai-knowledge.md "Knowledge Health"): the 5 lowest under the Healthy line.
+    lowHealth: lowHealthPages(
+      scored.map(({ row, health: page }) => ({
+        tab: row.tab,
+        title: row.title,
+        score: page.score,
+        reads: row.reads,
+        order: row.order,
+        label: page.label,
+        reason: page.reason,
+      })),
+    ).map(({ tab, title, score, label, reason }) => ({ tab, title, score, label, reason })),
     reviewEvery: every,
     hasKey: ai.hasKey,
     hasAi: ai.hasKey || ai.builtIn,

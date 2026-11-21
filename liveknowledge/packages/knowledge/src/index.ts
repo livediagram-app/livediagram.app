@@ -6,6 +6,8 @@ export * from './hash';
 export * from './writing-text';
 export * from './passages';
 export * from './trust';
+export * from './page-shape';
+export * from './page-health';
 export * from './approval-field';
 export * from './approval';
 export * from './changed-since';

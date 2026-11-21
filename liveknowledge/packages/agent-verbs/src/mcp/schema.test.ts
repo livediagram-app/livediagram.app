@@ -125,6 +125,7 @@ describe('the trust fields', () => {
       'approval',
       'approval_requested_at',
       'approval_note',
+      'health',
     ]);
     const trust = z.object(trustFields);
     expect(trust.parse({ verified: 'never-verified', stale: false })).toEqual({

@@ -42,6 +42,7 @@ import { builtInAi } from '../knowledge/setup-built-in-ai';
 import { spendSetupDraft } from '../knowledge/setup-draft-count';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
+import { pageHealthWires } from '../knowledge/page-health-read';
 import { CORS_HEADERS, json } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
 
@@ -112,7 +113,7 @@ function turnsOf(value: unknown): AskTurn[] {
 const usedOf = async (env: KnowledgeRoute['ctx']['env'], statement: SqlStatement) =>
   (await rowsOf<{ used: number }>(env, statement))[0]?.used ?? 0;
 
-const sourceOf = ({ number, passage }: AskPassage): AskSource => ({
+const sourceOf = ({ number, passage, health }: AskPassage): AskSource => ({
   number,
   passageId: passage.id,
   tab: passage.tab,
@@ -123,6 +124,7 @@ const sourceOf = ({ number, passage }: AskPassage): AskSource => ({
   ...(passage.verifiedAt === undefined ? {} : { verifiedAt: passage.verifiedAt }),
   firstBlock: passage.firstBlock,
   lastBlock: passage.lastBlock,
+  ...(health ? { health } : {}),
 });
 
 export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Response> {
@@ -173,9 +175,21 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
     now,
     reviewEvery: document.knowledgeSettings.reviewEvery,
   });
-  const passages = chooseAskPassages(
+  const chosen = chooseAskPassages(
     search ? (await rowsOf<SearchRow>(env, search)).map(foundPassage) : [],
   );
+  // Each passage goes with its page's Health Score (search-and-ask.md "Answering"): one read for the chosen pages.
+  const health = await pageHealthWires(
+    env,
+    document.id,
+    document.knowledgeSettings.reviewEvery,
+    now,
+    chosen.map((p) => p.passage.tab),
+  );
+  const passages = chosen.map((p) => {
+    const scored = health.get(p.passage.tab);
+    return scored ? { ...p, health: { score: scored.score, label: scored.label } } : p;
+  });
   const earlier = turnsOf(body?.turns);
   const request = askRequest({ question, passages, turns: earlier });
   const asker = readerOf(ctx);

@@ -16,6 +16,7 @@
 import { KNOWLEDGE_SCHEMA } from '@liveknowledge/knowledge';
 
 type Exec = (query: string) => unknown;
+type ReadExec = (query: string) => { toArray(): Record<string, unknown>[] };
 
 // A trigger's own OR IGNORE gives way to the conflict policy of the statement that fired it (SQLite, "ON CONFLICT"),
 // and a tab's write is an upsert: so the mark is an insert that selects nothing when the page is already marked.
@@ -60,4 +61,19 @@ export function knowledgeSchemaStep(exec: Exec): void {
   for (const statement of KNOWLEDGE_SCHEMA) exec(statement);
   for (const statement of ROOM_TABLES) exec(statement);
   exec('INSERT OR IGNORE INTO knowledge_dirty (tab, queued) SELECT id, 1 FROM tabs');
+}
+
+/** Schema step 36 (docs/specs/030-knowledgebase/verification.md "Health Score"): `knowledge_pages` keeps each page's
+ *  words, headings and whether it has an owner, so the score of every page is one read with no page's writing in
+ *  it. Asks before each ALTER, so a rerun is safe; every page already indexed is queued for the alarm's backfill,
+ *  whose settle writes the three alone when the page's writing has not changed. */
+export function knowledgeShapeStep(exec: ReadExec): void {
+  const have = new Set(
+    exec('PRAGMA table_info(knowledge_pages)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  for (const column of ['words', 'headings', 'owned'])
+    if (!have.has(column)) exec(`ALTER TABLE knowledge_pages ADD COLUMN ${column} INTEGER NULL`);
+  exec('INSERT OR IGNORE INTO knowledge_dirty (tab, queued) SELECT tab, 1 FROM knowledge_pages');
 }

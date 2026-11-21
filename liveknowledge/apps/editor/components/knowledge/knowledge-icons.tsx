@@ -2,6 +2,8 @@
 // chrome's size, as the page tree's are.
 import {
   lucideCalendarClock,
+  lucideChevronDown,
+  lucideHeading2,
   lucideCheck,
   lucideCircleDashed,
   lucideHistory,
@@ -45,3 +47,5 @@ export const SearchIcon = lucideGlyph(lucideSearch, 16);
 export const PageIcon = lucideGlyph(lucideFileText, 16);
 export const NewPageIcon = lucideGlyph(lucideFilePlus, 16);
 export const OpenIcon = lucideGlyph(lucideExternalLink, 14);
+export const DisclosureIcon = lucideGlyph(lucideChevronDown, 14);
+export const HeadingIcon = lucideGlyph(lucideHeading2, 14);

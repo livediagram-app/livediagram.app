@@ -16,7 +16,11 @@ import {
   type ConflictRow,
   type ReviewEvery,
 } from '@liveknowledge/knowledge';
-import type { KnowledgePageRef, KnowledgePageTrust } from '@liveknowledge/api-schema';
+import type {
+  KnowledgePageHealth,
+  KnowledgePageRef,
+  KnowledgePageTrust,
+} from '@liveknowledge/api-schema';
 import type { DocumentDTO, DocumentEnv } from '../types';
 import { rowsOf } from './knowledge-db';
 
@@ -112,7 +116,12 @@ export function pageTrustOf(
   knowledge: unknown,
   every: ReviewEvery,
   now: number,
-  extra: { conflictsWith?: KnowledgePageRef[] | undefined; verifiedBy?: string | undefined } = {},
+  extra: {
+    conflictsWith?: KnowledgePageRef[] | undefined;
+    verifiedBy?: string | undefined;
+    /** The page's Health Score (page-health-read.ts), where the caller scored it. */
+    health?: KnowledgePageHealth | undefined;
+  } = {},
 ): KnowledgePageTrust {
   const fields = parseKnowledgeFields(knowledge);
   const state = trustState(fields, every, now);
@@ -135,5 +144,6 @@ export function pageTrustOf(
           },
         }
       : {}),
+    ...(extra.health ? { health: extra.health } : {}),
   };
 }

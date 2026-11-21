@@ -49,8 +49,37 @@ export type KnowledgeSearchResult = {
   text?: string;
   reviewAt?: number;
   conflictsWith?: KnowledgePageRef[];
+  /** For an agent: the page's Health Score. */
+  health?: KnowledgePageHealth;
 };
 export type KnowledgeSearchResponse = { results: KnowledgeSearchResult[] };
+
+/** A page's Health Score (verification.md "Health Score"), as agents and Ask read it: 0 to 100, its word, the
+ *  factor that lost the most, and each factor's points of its maximum with what would raise it when short. */
+export type KnowledgeHealthLabel = 'healthy' | 'fair' | 'needs-work';
+export type KnowledgeHealthFactorName =
+  'verification' | 'freshness' | 'owner' | 'length' | 'structure' | 'links' | 'issues' | 'use';
+export type KnowledgePageHealth = {
+  score: number;
+  label: KnowledgeHealthLabel;
+  reason: string;
+  factors: { factor: KnowledgeHealthFactorName; points: number; max: number; raise?: string }[];
+};
+/** The counts Page Health's read adds for the score, which the editor cannot see itself. */
+export type PageHealthSignals = {
+  openConflicts: number;
+  openThreads: number;
+  suggestions: number;
+  backlinks: number;
+};
+/** One of Knowledge Health's pages with low health. */
+export type KnowledgeLowHealthPage = {
+  tab: string;
+  title: string;
+  score: number;
+  label: KnowledgeHealthLabel;
+  reason: string;
+};
 
 /** A page by its id and current title. */
 export type KnowledgePageRef = { tab: string; title: string };
@@ -93,6 +122,8 @@ export type PageHealthResponse = PageKnowledgeResponse & {
   answered?: PageAnsweredQuestion[];
   /** The agents that read this page in the last 7 days, the most reads first, 3 at most. */
   agents?: PageAgentReads[];
+  /** What the Health Score counts that the editor cannot see itself; absent from an older api. */
+  signals?: PageHealthSignals;
 };
 /** One question answered from a page: the asker's words (the latest day's of like questions) and how many times. */
 export type PageAnsweredQuestion = { question: string; asked: number };
@@ -123,6 +154,9 @@ export type KnowledgeHealthCounts = {
   reviewDue: number;
   neverVerified: number;
   total: number;
+  /** The average Health Score of every page, a whole number; absent with no pages, and from an older api (and on
+   *  Home's summary, which does not score). */
+  average?: number;
 };
 export type KnowledgeRecentPage = { tab: string; title: string; updatedAt: number };
 /** A page of the caller's own that is due for review: `reviewAt` is when it came due (ms). */
@@ -186,6 +220,8 @@ export type AskSource = {
   verifiedAt?: number;
   firstBlock: string;
   lastBlock: string;
+  /** The page's Health Score and word (search-and-ask.md "Sources"); absent from an older answer. */
+  health?: { score: number; label: KnowledgeHealthLabel };
 };
 export type AskNotUsed = AskSource & { reason: string };
 /** Ask answers as server-sent events, in this order: `delta` (the answer's next piece), then one `done`; or one
@@ -272,6 +308,8 @@ export type KnowledgeConflictSide = {
   text: string;
   trust: KnowledgeTrustState;
   verifiedAt?: number;
+  /** The page's Health Score: the higher side is the likelier right (ai-knowledge.md "Pages that disagree"). */
+  health?: { score: number; label: KnowledgeHealthLabel };
 };
 export type KnowledgeConflict = {
   id: string;
@@ -328,6 +366,8 @@ export type KnowledgePageTrust = {
   /** The page's approval (approval.md "Where it shows"), without anyone's account id: its state, when it was asked
    *  for (and by which agent), when it was decided, and a rejection's note. */
   approval?: KnowledgeApprovalTrust;
+  /** The page's Health Score, on `read_page` and `get_context` (not the tree's rows). */
+  health?: KnowledgePageHealth;
 };
 export type KnowledgeApprovalTrust = {
   state: 'pending' | 'approved' | 'rejected';
@@ -444,6 +484,8 @@ export type KnowledgeOverviewResponse = {
   reviewEmails: { available: boolean; remindedAt?: number };
   /** The last 14 days' reads by day, oldest first, and the pages read most in the last 7 (at most 5). */
   reads: { days: KnowledgeReadsDay[]; mostRead: KnowledgeMostRead[] };
+  /** Pages With Low Health: the 5 lowest under the Healthy line; absent from an older api. */
+  lowHealth?: KnowledgeLowHealthPage[];
 };
 /** `POST .../questions`: an agent's `report_gap`. */
 export type ReportGapRequest = { question: string };
