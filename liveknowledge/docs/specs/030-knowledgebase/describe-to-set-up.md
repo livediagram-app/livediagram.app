@@ -10,6 +10,9 @@ the knowledgebase is for, and AI proposes a sensible structure of pages for them
 
 ## The start screen
 
+- **Nothing behind it** (owner 2026-11-21): the start stands alone over a plain backdrop the colour of the app; no page,
+  page tree, rails or bars of the new knowledgebase show behind it.
+
 Owner, 2026-11-21: "When creating a new knowledgebase, show a start screen like the other apps." (This reverses
 the earlier "no start screen".)
 

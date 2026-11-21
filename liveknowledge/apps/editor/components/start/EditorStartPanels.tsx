@@ -2,6 +2,7 @@
 
 import { useEffect, useEffectEvent } from 'react';
 import dynamic from 'next/dynamic';
+import { createPortal } from 'react-dom';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
 import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
@@ -131,20 +132,28 @@ export function EditorStartPanels() {
     }
     chooseStructure(id);
   };
-  return (
-    <StartFromTemplates
-      key={tabId}
-      onChoose={choose}
-      onDescribe={describe}
-      onImport={
-        editor
-          ? () => {
-              track('UI', 'Opened', 'KnowledgeImport');
-              close(false);
-              chrome.get().setImportOpen(true);
-            }
-          : undefined
-      }
-    />
+  // The start stands alone over a plain backdrop: no page, tree or rails of a knowledgebase that has none yet show
+  // behind it (owner 2026-11-21).
+  return createPortal(
+    <div
+      data-start-backdrop=""
+      className="fixed inset-0 z-[var(--z-overlay)] bg-slate-50 dark:bg-slate-950"
+    >
+      <StartFromTemplates
+        key={tabId}
+        onChoose={choose}
+        onDescribe={describe}
+        onImport={
+          editor
+            ? () => {
+                track('UI', 'Opened', 'KnowledgeImport');
+                close(false);
+                chrome.get().setImportOpen(true);
+              }
+            : undefined
+        }
+      />
+    </div>,
+    document.body,
   );
 }
