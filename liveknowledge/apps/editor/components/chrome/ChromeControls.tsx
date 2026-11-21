@@ -16,6 +16,9 @@ import {
 } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 import { useAutomationsToolsItem } from '@liveworkspace/automations-ui/automations-tools-item';
 
+// liveplanner's Tools list, measured: the 500 px floor plus three more 95 px rows.
+const TOOLS_MIN_PX = 785;
+
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, History (the editor's, on a stored
 // document), the open-source GitHub link, settings, and the dark-mode toggle. Each callback-driven control
@@ -81,7 +84,8 @@ export function ChromeControls({
           whole item, in one menu, drawn only while it holds one. */}
       {/* Knowledgebase Style, left of Tools, for whoever may change it (page-surface.md "Knowledgebase Style"). */}
       <FooterStyleButton labelled={labelled} />
-      <ChromeToolsMenu labelled={labelled} items={[search, automations]} />
+      {/* As tall as liveplanner's Tools (seven rows), so the tools opened in it have their room (owner 2026-11-21). */}
+      <ChromeToolsMenu labelled={labelled} items={[search, automations]} minPx={TOOLS_MIN_PX} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

@@ -144,9 +144,13 @@ function Chevron() {
 export function ChromeToolsMenu({
   items,
   labelled = false,
+  minPx,
 }: {
   items: ReadonlyArray<ChromeToolsItem | null>;
   labelled?: boolean;
+  /** A taller floor than 500 px, for an app with few tools whose views want the room a longer list gives (liveknowledge
+   *  takes liveplanner's height, owner 2026-11-21). Never past the screen. */
+  minPx?: number;
 }) {
   const [open, setOpen] = useState(false);
   // The button, held in state (not a ref) so the popover opens from it in render.
@@ -395,7 +399,11 @@ export function ChromeToolsMenu({
               data-tools-popover=""
               // Never under 300 px, list or tool (owner, 2026-11-17), unless the screen is shorter.
               className="relative flex max-h-[inherit] min-h-[min(500px,calc(100dvh-2rem))] flex-1 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
-              style={HERO_TOKEN_STYLE}
+              style={
+                minPx
+                  ? { ...HERO_TOKEN_STYLE, minHeight: `min(${minPx}px, calc(100dvh - 2rem))` }
+                  : HERO_TOKEN_STYLE
+              }
             >
               <p aria-live="polite" data-tools-live="" className="sr-only">
                 {said}

@@ -163,6 +163,7 @@ describe('a guest’s name (owner 2026-11-21: "Bright Marlin (Guest)")', () => {
     expect(isGuestVerifier(by)).toBe(true);
     expect(isGuestVerifier(GUEST_VERIFIER)).toBe(true);
     expect(isGuestVerifier('u1')).toBe(false);
+    expect(isGuestVerifier(undefined)).toBe(false);
     expect(guestVerifierName(by)).toBe('Bright Marlin (Guest)');
     expect(guestVerifierName(GUEST_VERIFIER)).toBe('Guest');
     expect(guestVerifier('')).toBe(GUEST_VERIFIER);
