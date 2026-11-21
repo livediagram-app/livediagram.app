@@ -2,7 +2,7 @@
 
 import type { Tab } from '@liveknowledge/document';
 import { describe, expect, it, vi } from 'vitest';
-import { newKnowledgebaseLayer, openKnowledgebaseLayer } from './save-layers';
+import { newKnowledgebaseLayer, openKnowledgebaseLayer, unownedPagesLayer } from './save-layers';
 
 const tab = (id: string, parent?: string): Tab => ({
   id,
@@ -196,5 +196,21 @@ describe('newKnowledgebaseLayer', () => {
       saveOrder: async () => {},
     });
     await expect(layer.writeBatch([tab('a')], 'art-1')).rejects.toThrow('no');
+  });
+});
+
+// verification.md "The owner": a page made by an import has no owner.
+describe('unownedPagesLayer', () => {
+  it("marks each of an import's pages as taking no owner, whatever it carried", async () => {
+    const writeBatch = vi.fn(async () => ({ failed: new Map<string, string>() }));
+    const layer = unownedPagesLayer({ writeBatch });
+    await layer.writeBatch([tab('a'), { ...tab('b'), knowledge: { owner: 'user_a' } }], 'f1');
+    expect(writeBatch).toHaveBeenCalledWith(
+      [
+        { ...tab('a'), knowledge: { unowned: true } },
+        { ...tab('b'), knowledge: { unowned: true } },
+      ],
+      'f1',
+    );
   });
 });

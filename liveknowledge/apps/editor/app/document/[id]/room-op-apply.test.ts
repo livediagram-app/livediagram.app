@@ -65,6 +65,15 @@ describe('applyRoomOpToTabs', () => {
     expect('backgroundColor' in next[0]!).toBe(false);
   });
 
+  it('the api\'s word of a new page\'s owner reaches the page, so Page Health names them with no reload (verification.md "The owner")', () => {
+    const next = applyRoomOpToTabs([tab()], {
+      kind: 'tab-meta',
+      tabId: 't1',
+      patch: { knowledge: { owner: 'user_a' } },
+    });
+    expect(next[0]!.knowledge).toEqual({ owner: 'user_a' });
+  });
+
   it('a tab-meta patch never moves the folder', () => {
     const tabs = [tab({ folder: 'mine' })];
     const next = applyRoomOpToTabs(tabs, {

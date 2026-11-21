@@ -38,6 +38,22 @@ export type KnowledgeFields = {
 const personId = (v: unknown): string | undefined =>
   typeof v === 'string' && v.length > 0 && v.length <= MAX_PERSON_ID ? v : undefined;
 
+/** The mark an import's new page carries in its first save (verification.md "The owner": a page made by an import
+ *  has no owner). The api reads it on a new page alone, to give it no owner, and never stores it. */
+export const UNOWNED_PAGE = { unowned: true } as const;
+
+/** The page with the mark in place of its knowledge, for its first save. The mark is no knowledge field, so it rides
+ *  outside the page's type: the one place it is put on a page. */
+export function asUnownedPage<T extends { knowledge?: unknown }>(page: T): T {
+  return { ...page, knowledge: { ...UNOWNED_PAGE } };
+}
+
+/** Whether a new page's knowledge, as an editor sent it, declines an owner (UNOWNED_PAGE). */
+export const declinesOwner = (knowledge: unknown): boolean =>
+  typeof knowledge === 'object' &&
+  knowledge !== null &&
+  (knowledge as { unowned?: unknown }).unowned === true;
+
 /** Stored knowledge fields, keeping what is valid and dropping the rest. A `verifiedBy` without a `verifiedAt`
  *  says nothing and is dropped. */
 export function parseKnowledgeFields(v: unknown): KnowledgeFields {

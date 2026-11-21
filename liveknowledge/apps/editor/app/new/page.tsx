@@ -47,8 +47,6 @@ import {
   queueStructurePick,
 } from '@/components/start/knowledgebase-start';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
-import { withCreatorOwner } from '@/lib/new-page-owner';
-import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { newKnowledgebaseTakesCaret, wantTitleFocus } from '@/lib/page-title-focus';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
@@ -177,8 +175,6 @@ export default function NewDocumentPage() {
   // itself: wait out the bootstrap (bounded — authLoaded flips by the
   // 5 s auth timeout at the latest), then fall back to the guest id.
   const { resolveSelf } = useResolveSelf(self, setSelf, ensureGuestIdentity);
-  // The signed-in account as the create runs (identity may settle after this render): its pages' owner.
-  const accountRef = useLatest(accountUserId);
 
   // Single commit point, shared by the create on mount and Retry. Every new document starts on the Default theme; we
   // persist the document so the editor route lands on a real row.
@@ -246,12 +242,12 @@ export default function NewDocumentPage() {
         // Placement rides the create (docs/specs/007-editor/new-document-route.md): a /new?folder= / ?team=
         // context is filed by the same write, or the create is refused by name and nothing is written.
         const owner = cloudOwner ?? (await settleIdentity());
-        // Its pages' owner is their creator, when signed in (lib/new-page-owner.ts); a guest's carry none.
-        const creator = accountRef.current && owner.id === accountRef.current ? owner.id : null;
+        // Its pages' owner is their creator when signed in, which the api sets from the credentials
+        // (verification.md "The owner"); a guest's carry none.
         await apiCreateDocument(owner.id, {
           id: documentId,
           name: documentName,
-          tabs: withCreatorOwner(tabs ?? [tab], creator),
+          tabs: tabs ?? [tab],
           // Passed through as given: absent is no choice (a default folder may answer), a null
           // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
           teamId: settings.teamId,

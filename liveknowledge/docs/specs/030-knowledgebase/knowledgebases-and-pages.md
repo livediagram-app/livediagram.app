@@ -35,9 +35,9 @@ Public) already own the word.
   `/new?structure=<id>` link (the landing gallery, Home) makes the knowledgebase and picks that structure on it at
   once. Blank Knowledgebase, `/new?blank=1` and a `/new?template=` link open Start Here with the caret in its Title. Its name is "Untitled Knowledgebase"
   until a person names it: a page's Title names that page, never the knowledgebase. Its creator owns every page it
-  starts with ([Verification](verification.md) "The owner"): a signed-in person's create carries their account as
-  each seeded page's `knowledge.owner` (`lib/new-page-owner.ts`), and the pages a structure adds get theirs from the
-  save that makes them. A guest's, or an Offline one's, pages have no owner.
+  starts with ([Verification](verification.md) "The owner"): the api makes a signed-in person's account each created
+  page's `knowledge.owner`, from the create's credentials, and the pages a structure adds get theirs from the save
+  that makes them. A guest's pages have no owner, and an Offline one's have none until its sync.
 - **Where a new knowledgebase is saved.** A signed-in person's is saved to their account, in Private, so Verify,
   Ask, AI Knowledge and sharing work from the first page. A guest's, and a signed-out person's, is kept Offline in
   this browser, as every app's is ([Save locations](../006-document/save-locations.md)). The start's **Sync

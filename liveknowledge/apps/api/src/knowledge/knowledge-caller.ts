@@ -27,3 +27,14 @@ export function accountOf(
   if (ctx.accountUserId) return ctx.accountUserId;
   return ctx.token && ctx.verifiedUserId ? ctx.verifiedUserId : null;
 }
+
+/** Who owns a page their save or create makes (docs/specs/030-knowledgebase/verification.md "The owner"): a signed-in
+ *  person, or the person behind a workbench session. Never an API token's agent, a guest or a link visitor, who make
+ *  a page with no owner. Read from the request's credentials alone, never from what the body says. */
+export function pageCreatorOf(
+  ctx: Pick<RouteContext, 'accountUserId' | 'token' | 'workbench' | 'resolveOwner'>,
+): string | null {
+  if (ctx.token) return null;
+  if (ctx.accountUserId) return ctx.accountUserId;
+  return ctx.workbench ? ctx.resolveOwner() : null;
+}

@@ -16,7 +16,15 @@ On the page (`Tab.knowledge`): `owner` (a person with access to the knowledgebas
 
 **The owner** of a new page is the person who created it (owner, 2026-11-21): the save that makes a page sets
 `owner` to its writer, and an Editor changes it in Page Health. A page made before this, or by an agent or an import,
-has no owner until someone picks one or verifies it.
+has no owner until someone picks one or verifies it. The api sets it on every path that makes a page, from the
+request's credentials and never from what the page says: the create that makes a knowledgebase with its first pages
+(/new, a structure's Start Here, the workbench's create in place, an Offline knowledgebase's sync), and the first save
+of a page added later (a structure's pages, New Page, Add Subpage). The writer is a signed-in person, or the person
+behind a workbench session; an agent's token, a guest and a link visitor make pages with no owner. An import's pages
+are marked by the editor as taking none (`unowned`, never stored). A page already stored keeps its fields, and a page's
+fields sent in a create are never taken. The editor that made the page sent no owner, so the api tells every open
+editor, its maker's included, as the same `tab-meta` patch a Page Health change sends: Page Health names the owner at
+once, with no reload.
 
 **Created and Updated** (owner, 2026-11-21, "like we do on cards in liveplanner"): the knowledgebase keeps who
 created each page and who last saved it, with when (`page_authors` in its Durable Object, schema step V17). The first

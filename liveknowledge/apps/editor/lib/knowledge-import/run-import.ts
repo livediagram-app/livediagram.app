@@ -18,7 +18,7 @@ import type { ImportImageOutcome, ImportImageSession } from '@/lib/import-images
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { pictureMimeType } from '@/lib/office-import/store-images';
 import { track } from '@/lib/telemetry';
-import { newKnowledgebaseLayer, openKnowledgebaseLayer } from './save-layers';
+import { newKnowledgebaseLayer, openKnowledgebaseLayer, unownedPagesLayer } from './save-layers';
 import {
   writeImportPlan,
   type ImportProgress,
@@ -124,16 +124,19 @@ export async function runImport(args: RunImportArgs): Promise<RunImportResult> {
         offline: host.offline,
       }),
     ));
-  const save = fresh
-    ? newKnowledgebase(host, documentId, args.name)
-    : openKnowledgebaseLayer({
-        documentId,
-        getTabs: host.getTabs,
-        commitTabs: host.commitTabs,
-        markTabLoaded: host.markTabLoaded,
-        markArticleSettle,
-        whenSaved: whenTabSaved,
-      });
+  // An import's pages take no owner (unownedPagesLayer).
+  const save = unownedPagesLayer(
+    fresh
+      ? newKnowledgebase(host, documentId, args.name)
+      : openKnowledgebaseLayer({
+          documentId,
+          getTabs: host.getTabs,
+          commitTabs: host.commitTabs,
+          markTabLoaded: host.markTabLoaded,
+          markArticleSettle,
+          whenSaved: whenTabSaved,
+        }),
+  );
   const result = await writeImportPlan(plan, {
     save,
     storePicture: (picture) => storePicture(sessionOf, picture),

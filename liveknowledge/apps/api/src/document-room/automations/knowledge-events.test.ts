@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { UNOWNED_PAGE } from '@liveknowledge/knowledge';
 import { ANA, DOC, box, roomWorld, type RoomWorld } from './test-automation-world';
 
 // A knowledgebase's own triggers (docs/specs/013-workspace/automations.md "Triggers of its own"), queued where they
@@ -16,9 +17,10 @@ async function started(): Promise<RoomWorld> {
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
   vi.spyOn(console, 'debug').mockImplementation(() => undefined);
   const w = roomWorld();
+  // Pages with no owner, as an import's are (verification.md "The owner"): each test gives the owner it needs.
   await w.create([
-    { id: 't1', name: 'Deploys', elements: [box('a')] },
-    { id: 't2', name: 'Holidays', elements: [] },
+    { id: 't1', name: 'Deploys', elements: [box('a')], knowledge: UNOWNED_PAGE },
+    { id: 't2', name: 'Holidays', elements: [], knowledge: UNOWNED_PAGE },
   ]);
   return w;
 }

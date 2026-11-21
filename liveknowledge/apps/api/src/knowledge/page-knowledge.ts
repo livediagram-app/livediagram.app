@@ -11,10 +11,11 @@ import {
   trustState,
   writingPrint,
   writingText,
+  declinesOwner,
   type KnowledgeFields,
   type ReviewEvery,
 } from '@liveknowledge/knowledge';
-import type { PageKnowledge } from '@liveknowledge/api-schema';
+import type { PageKnowledge, RoomOp } from '@liveknowledge/api-schema';
 import type { DocumentEnv } from '../types';
 import { pageSourceOf } from './knowledge-index';
 
@@ -137,13 +138,25 @@ export async function writePageKnowledge(
 
 /** A whole-tab save never changes the page's knowledge fields: what is stored stays, and a save of a stored tab
  *  that has none carries none in. Verify and the Page Health card write them (routes/knowledge-page-routes). The one
- *  exception is a new page (verification.md "The owner"): the person whose save makes it is its owner. */
+ *  exception is a new page (verification.md "The owner"): `creator`, the signed-in person whose save or create makes
+ *  it (pageCreatorOf), is its owner, never an owner the body claims. A new page the editor marks as an import's
+ *  (`declinesOwner`) takes none: the mark only ever declines, so it is taken as sent, and is never stored. Answers
+ *  whether the page was given its owner here, so the save can tell the open editors (`ownerPatch`). */
 export function keepStoredKnowledge(
   body: { knowledge?: unknown },
   stored: { knowledge?: unknown } | null,
-  creator?: string,
-): void {
+  creator: string | null,
+): boolean {
   if (stored && stored.knowledge !== undefined) body.knowledge = stored.knowledge;
-  else if (!stored && creator) body.knowledge = { owner: creator };
-  else delete body.knowledge;
+  else if (!stored && creator && !declinesOwner(body.knowledge)) {
+    body.knowledge = { owner: creator };
+    return true;
+  } else delete body.knowledge;
+  return false;
+}
+
+/** The `tab-meta` op that tells every open editor a new page's owner, as a Page Health change is told
+ *  (page-fields-save.ts): the editor that made the page sent none, so its rail would say Nobody until a reload. */
+export function ownerPatch(tabId: string, owner: string): RoomOp {
+  return { kind: 'tab-meta', tabId, patch: { knowledge: { owner } } };
 }

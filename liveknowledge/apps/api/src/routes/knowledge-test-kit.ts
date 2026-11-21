@@ -1,5 +1,6 @@
 // What the knowledge route tests share: a knowledgebase of three pages in the test database, and a caller for each
 // share role (docs/specs/013-workspace/share-roles.md). Not a `.test.ts` file, so vitest collects no suite from it.
+import { UNOWNED_PAGE } from '@liveknowledge/knowledge';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
@@ -132,10 +133,12 @@ export async function knowledgeKit(
       }),
     );
   };
+  // Its pages own no one, as pages made before a creator owned them, or by an import, do (verification.md "The
+  // owner"): the suites set what they test. A create's own owner rule is tested on its own (knowledge-page-routes).
   const made = await call('editor', 'POST', '/api/documents', {
     id: 'kb',
     name: 'Handbook',
-    tabs: pages,
+    tabs: pages.map((p) => ({ ...(p as object), knowledge: UNOWNED_PAGE })),
   });
   if (made.status >= 300) throw new Error(`create failed: ${made.status} ${await made.text()}`);
   db.sql.exec(`

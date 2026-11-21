@@ -4,7 +4,8 @@
 // seen and with the room's collaboration ledger, then written at the revision it read.
 
 import { SOMEONE, asTabWriter } from '@liveworkspace/automations/room';
-import { keepStoredKnowledge } from '../knowledge/page-knowledge';
+import { pageCreatorOf } from '../knowledge/knowledge-caller';
+import { keepStoredKnowledge, ownerPatch } from '../knowledge/page-knowledge';
 import { notePageWrite, savedPageChanged } from '../knowledge/page-authors';
 import {
   CHANGESET_MERGE_WINDOW_MS,
@@ -44,7 +45,7 @@ import { pushItemOf, pushNewComments } from '../person/push';
 import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import { badRequest, conflict, json, notFound, payloadTooLarge } from '../responses';
-import { applyRoomLedger, fetchRoomLedger } from '../room-client';
+import { applyRoomLedger, fetchRoomLedger, relayPages } from '../room-client';
 import { readStoredPages, tabParentRefusal } from '../document-room/page-tree-store';
 import type { TabSaveDocument } from '../db/tab-save-document';
 import { grantOn, readBody, type DocumentRouteContext } from './context';
@@ -175,8 +176,10 @@ export async function writeTabSave(
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');
     // A page's knowledge fields are the knowledge routes' to write (knowledge/page-knowledge.ts): a whole-tab save
-    // keeps what is stored, so an editor that has not heard of a Verify cannot undo it.
-    keepStoredKnowledge(body, existingTab, owner);
+    // keeps what is stored, so an editor that has not heard of a Verify cannot undo it. A new page's owner is the
+    // signed-in person making it, from the credentials, never the body (verification.md "The owner").
+    const creator = pageCreatorOf(ctx);
+    const owned = keepStoredKnowledge(body, existingTab, creator);
     // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a tab-scoped
     // editor's save stores its content under the name the tab already has, and never makes a tab: its
     // tab gone (deleted while its editor was open) reads as missing rather than coming back.
@@ -252,6 +255,12 @@ export async function writeTabSave(
       continue;
     }
     logMerge(id, tabId, merge);
+    // The page's new owner to every open editor, its maker's included: the save it sent carried none.
+    if (owned && creator) {
+      const told = relayPages(env, id, [ownerPatch(tabId, creator)], '[knowledge]').catch(() => 0);
+      if (ctx.waitUntil) ctx.waitUntil(told);
+      else await told;
+    }
     // Who made the page and who last changed it (knowledge/page-authors.ts), for Page Health: a draft's autosave is
     // not a change to the page (docs/specs/030-knowledgebase/editing.md "Save").
     // A Save keeps a version of the page as saved (the save trigger, VH1a), which names the person who pressed Save.

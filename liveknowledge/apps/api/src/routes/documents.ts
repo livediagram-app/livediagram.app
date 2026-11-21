@@ -5,6 +5,8 @@
 
 import { notePageWrites } from '../knowledge/page-authors';
 import { writerOf } from '../knowledge/page-writer';
+import { pageCreatorOf } from '../knowledge/knowledge-caller';
+import { keepStoredKnowledge } from '../knowledge/page-knowledge';
 import type { Tab } from '@liveknowledge/document';
 import {
   carriedKnowledgeStyle,
@@ -357,17 +359,22 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
       // what it already stores, so an unchanged pre-cap name is kept.
       const name = capStoredName(body.name, clash?.name ?? null, 'document');
       if (!name) return badRequest('missing id/name');
+      // Who owns the pages this create makes (verification.md "The owner"): the signed-in person making it, from the
+      // credentials. What a page's knowledge says in the body is never taken: a re-commit keeps what is stored, as a
+      // whole-tab save does (keepStoredKnowledge), and an import's pages say they take no owner.
+      const creator = pageCreatorOf(ctx);
       const incomingTabs: Tab[] | null = Array.isArray(body.tabs)
-        ? body.tabs.map((tab) => ({
-            ...tab,
-            // An agent's or the API's tab write keeps no connection (connected-tabs.md "Agents and the CLI").
-            ...(ctx.token ? { connection: undefined } : {}),
-            name: capStoredName(
-              tab.name,
-              clash?.tabs.find((t) => t.id === tab.id)?.name ?? null,
-              'tab',
-            ),
-          }))
+        ? body.tabs.map((tab) => {
+            const stored = clash?.tabs.find((t) => t.id === tab.id) ?? null;
+            const seeded: Tab = {
+              ...tab,
+              // An agent's or the API's tab write keeps no connection (connected-tabs.md "Agents and the CLI").
+              ...(ctx.token ? { connection: undefined } : {}),
+              name: capStoredName(tab.name, stored?.name ?? null, 'tab'),
+            };
+            keepStoredKnowledge(seeded, stored, creator);
+            return seeded;
+          })
         : null;
       if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
         return badRequest('presentation too large');

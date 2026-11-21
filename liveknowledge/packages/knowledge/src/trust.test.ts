@@ -5,6 +5,9 @@ import {
   guestVerifierName,
   isGuestVerifier,
   DEFAULT_REVIEW_EVERY,
+  asUnownedPage,
+  declinesOwner,
+  UNOWNED_PAGE,
   GUEST_VERIFIER,
   knowledgeHealth,
   parseKnowledgeFields,
@@ -169,5 +172,24 @@ describe('a guest’s name (owner 2026-11-21: "Bright Marlin (Guest)")', () => {
     expect(guestVerifier('')).toBe(GUEST_VERIFIER);
     expect(verified({}, by, 1).owner).toBeUndefined();
     expect(parseKnowledgeFields({ verifiedAt: 1, verifiedBy: by }).verifiedBy).toBe(by);
+  });
+});
+
+describe('an import\'s page declines an owner (verification.md "The owner")', () => {
+  it('reads the mark, and nothing else, as declining', () => {
+    expect(declinesOwner(UNOWNED_PAGE)).toBe(true);
+    expect(declinesOwner({ ...UNOWNED_PAGE, owner: 'user_a' })).toBe(true);
+    for (const other of [undefined, null, 'unowned', {}, { unowned: 'yes' }, { owner: 'user_a' }])
+      expect(declinesOwner(other)).toBe(false);
+  });
+
+  it("takes the place of a page's knowledge", () => {
+    const page = { id: 'a', knowledge: { owner: 'user_a' } };
+    expect(asUnownedPage(page)).toEqual({ id: 'a', knowledge: { unowned: true } });
+    expect(page.knowledge).toEqual({ owner: 'user_a' });
+  });
+
+  it('is never kept as a field', () => {
+    expect(parseKnowledgeFields(UNOWNED_PAGE)).toEqual({});
   });
 });

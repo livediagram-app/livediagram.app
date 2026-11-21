@@ -265,7 +265,11 @@ describe('reading', () => {
       owner: 'guest-v',
       headers: { 'X-Share-Code': 'VIEW' },
     });
-    expect(JSON.stringify(await res.json())).not.toContain(OWNER);
+    const read = await res.json<{ tab: { knowledge?: unknown } }>();
+    // The page's owner is its knowledge, which every reader sees (verification.md "The owner"); the comment is not.
+    const { knowledge, ...tab } = read.tab;
+    expect(knowledge).toEqual({ owner: OWNER });
+    expect(JSON.stringify({ ...read, tab })).not.toContain(OWNER);
   });
 });
 

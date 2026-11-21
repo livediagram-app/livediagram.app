@@ -291,7 +291,7 @@ describe('Created and Updated (verification.md)', () => {
       kit.call('editor', 'PUT', `/api/documents/kb/tabs/${id}`, {
         ...page(id, 'Fresh', [{ id: 'p1', type: 'paragraph', runs: [{ text }] }]),
       });
-    // The knowledgebase's own pages, made with it by its creator (the editor names the owner in what it seeds).
+    // The knowledgebase's own pages, made with it by its creator.
     const seeded = await read(kit);
     expect(seeded.created?.by).toBe(OWNER);
     expect(seeded.updated).toEqual(seeded.created);
@@ -332,5 +332,132 @@ describe('Created and Updated (verification.md)', () => {
     expect(
       kit.db.sql.prepare("SELECT tab FROM page_editors WHERE tab = 'fresh'").get(),
     ).toBeUndefined();
+  });
+});
+
+// verification.md "The owner": the signed-in person whose create or save makes a page owns it, from the credentials;
+// an agent, a guest and an import make pages with no owner, and a page already stored keeps what it has.
+describe('The owner of a new page (verification.md)', () => {
+  const ownerOf = (kit: Kit, tab: string): unknown => {
+    const knowledge: { owner?: unknown } | undefined = stored(kit, tab).knowledge;
+    return knowledge?.owner;
+  };
+  // A room that records every op relayed to it.
+  const recordingRoom = () => {
+    const ops: { kind: string; tabId?: string; patch?: unknown }[] = [];
+    return {
+      ops,
+      binding: {
+        idFromName: (name: string) => name,
+        get: () => ({
+          fetch: async (input: RequestInfo, init?: RequestInit) => {
+            const request = input instanceof Request ? input : new Request(input, init);
+            const text = await request.text();
+            try {
+              const body = JSON.parse(text) as { op?: (typeof ops)[number] };
+              if (body.op) ops.push(body.op);
+            } catch {
+              // Not an op.
+            }
+            return new Response(null, { status: 204 });
+          },
+        }),
+      },
+    };
+  };
+
+  it("owns a create's pages by its signed-in maker, whatever the pages claim", async () => {
+    const kit = await knowledgeKit();
+    const made = await kit.call('editor', 'POST', '/api/documents', {
+      id: 'kb2',
+      name: 'Recipes',
+      tabs: [
+        page('start', 'Start Here', []),
+        // A claimed owner and verification are never taken from the body.
+        page('forged', 'Forged', [], {
+          knowledge: { owner: 'user_someone', verifiedAt: 5, verifiedBy: 'user_someone' },
+        }),
+      ],
+    });
+    expect(made.status).toBeLessThan(300);
+    expect(stored(kit, 'start').knowledge).toEqual({ owner: OWNER });
+    expect(stored(kit, 'forged').knowledge).toEqual({ owner: OWNER });
+    // The rail's read says so too.
+    const health = await (
+      await kit.call('editor', 'GET', '/api/documents/kb2/pages/start/health')
+    ).json<Health>();
+    expect(health.knowledge.owner).toBe(OWNER);
+  });
+
+  it("keeps a re-commit's stored pages as they are, and owns the new page it brings", async () => {
+    const kit = await knowledgeKit();
+    // The kit's pages own no one; a re-commit of the same id must not make them the caller's.
+    const again = await kit.call('editor', 'POST', '/api/documents', {
+      id: 'kb',
+      name: 'Handbook',
+      tabs: [
+        page('holidays', 'Holidays', [], { knowledge: { owner: OWNER } }),
+        page('more', 'More', []),
+      ],
+    });
+    expect(again.status).toBeLessThan(300);
+    expect(stored(kit, 'holidays').knowledge).toBeUndefined();
+    expect(ownerOf(kit, 'more')).toBe(OWNER);
+  });
+
+  it("gives an import's pages no owner, in a create and in a save, and never stores the mark", async () => {
+    const kit = await knowledgeKit();
+    await kit.call('editor', 'POST', '/api/documents', {
+      id: 'kb3',
+      name: 'Imported',
+      tabs: [page('imported', 'Imported', [], { knowledge: { unowned: true } })],
+    });
+    expect(stored(kit, 'imported').knowledge).toBeUndefined();
+    const saved = await kit.call('editor', 'PUT', '/api/documents/kb/tabs/imported-2', {
+      ...page('imported-2', 'Imported Too', []),
+      knowledge: { unowned: true },
+    });
+    expect(saved.status).toBeLessThan(300);
+    expect(stored(kit, 'imported-2').knowledge).toBeUndefined();
+  });
+
+  it("makes a person's new page theirs and tells every open editor, once", async () => {
+    const room = recordingRoom();
+    const kit = await knowledgeKit({ DOCUMENT_ROOM: room.binding } as never);
+    const save = () =>
+      kit.call('participant', 'PUT', '/api/documents/kb/tabs/subpage', {
+        ...page('subpage', 'Untitled Page', [], { parent: 'deploys' }),
+      });
+    expect((await save()).status).toBeLessThan(300);
+    expect(ownerOf(kit, 'subpage')).toBe('user_p');
+    const told = () => room.ops.filter((op) => op.kind === 'tab-meta' && op.tabId === 'subpage');
+    expect(told()).toEqual([
+      { kind: 'tab-meta', tabId: 'subpage', patch: { knowledge: { owner: 'user_p' } } },
+    ]);
+    // A later save of the stored page writes and tells nothing more.
+    expect((await save()).status).toBeLessThan(300);
+    expect(told()).toHaveLength(1);
+    expect(ownerOf(kit, 'subpage')).toBe('user_p');
+  });
+
+  it("gives a guest's new page no owner", async () => {
+    const kit = await knowledgeKit();
+    const res = await kit.call('edit-link', 'PUT', '/api/documents/kb/tabs/guest-page', {
+      ...page('guest-page', 'Guest Page', []),
+      knowledge: { owner: 'guest_2' },
+    });
+    expect(res.status).toBeLessThan(300);
+    expect(stored(kit, 'guest-page').knowledge).toBeUndefined();
+  });
+
+  it("gives an agent's created pages no owner", async () => {
+    const kit = await knowledgeKit();
+    const res = await kit.call('agent', 'POST', '/api/documents', {
+      id: 'kb4',
+      name: 'Agent Made',
+      tabs: [page('agent-page', 'Agent Page', [])],
+    });
+    expect(res.status).toBeLessThan(300);
+    expect(stored(kit, 'agent-page').knowledge).toBeUndefined();
   });
 });

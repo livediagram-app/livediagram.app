@@ -5,6 +5,7 @@
 // could not be stored, each with why.
 
 import { withPageAdded, type Tab } from '@liveknowledge/document';
+import { asUnownedPage } from '@liveknowledge/knowledge';
 import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
 import type { BatchResult, ImportSaveLayer } from './write-plan';
 
@@ -159,5 +160,14 @@ export function newKnowledgebaseLayer(deps: NewKnowledgebaseDeps): ImportSaveLay
       }
       return { failed };
     },
+  };
+}
+
+/** An import's pages as its layer stores them: each marked as taking no owner (verification.md "The owner": a page made
+ *  by an import has none until someone picks one or verifies it). The api reads the mark on a new page alone and never
+ *  stores it; a structure's pages, made the same way, carry none and are their maker's. */
+export function unownedPagesLayer(layer: ImportSaveLayer): ImportSaveLayer {
+  return {
+    writeBatch: (pages, flow) => layer.writeBatch(pages.map(asUnownedPage), flow),
   };
 }
