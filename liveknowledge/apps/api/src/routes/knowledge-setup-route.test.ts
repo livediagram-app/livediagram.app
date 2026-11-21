@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  SETUP_BUILT_IN_PER_PERSON_PER_DAY,
   SETUP_PER_KNOWLEDGEBASE_PER_DAY,
   SETUP_PER_PERSON_PER_HOUR,
 } from '@liveknowledge/knowledge';
@@ -89,6 +90,7 @@ describe('POST setup/suggest', () => {
           depth: 2,
         },
       ],
+      provider: 'anthropic',
     });
     expect(claude.sent).toHaveLength(1);
     expect(claude.sent[0]!.url).toBe('https://api.anthropic.com/v1/messages');
@@ -137,11 +139,11 @@ describe('POST setup/suggest', () => {
     expect((await kit.call('editor', 'GET', '/api/documents/kb/setup/suggest')).status).toBe(405);
   });
 
-  it('refuses a description too short or too long, and a knowledgebase with no key, before any call', async () => {
+  it('refuses a description too short or too long before any call, and no key with no built-in AI in words', async () => {
     const claude = fakeClaude(STRUCTURE);
     vi.stubGlobal('fetch', claude.fetch);
     const kit = await knowledgeKit(withSecret);
-    expect(await failure(await suggest(kit, 'editor'))).toEqual([409, 'ask_unavailable']);
+    expect(await failure(await suggest(kit, 'editor'))).toEqual([503, 'built-in-unavailable']);
     await setKey(kit);
     for (const description of ['', 'too short', 7, null])
       expect(await failure(await suggest(kit, 'editor', { description }))).toEqual([
@@ -156,7 +158,7 @@ describe('POST setup/suggest', () => {
     expect(claude.sent).toEqual([]);
     expect(counters(kit)).toEqual([]);
     const bare = await knowledgeKit();
-    expect(await failure(await suggest(bare, 'editor'))).toEqual([503, 'ask_unavailable']);
+    expect(await failure(await suggest(bare, 'editor'))).toEqual([503, 'built-in-unavailable']);
   });
 
   it('answers 5 a person an hour and 20 a knowledgebase a day, counted apart from Ask', async () => {
@@ -264,6 +266,7 @@ describe('POST setup/suggest', () => {
           depth: 2,
         },
       ],
+      provider: 'anthropic',
     });
   });
 
@@ -340,4 +343,200 @@ describe('POST setup/suggest', () => {
       store: false,
     });
   });
+});
+
+// Built-in AI (owner, 2026-11-21): with no team key, Workers AI through the `AI` binding, faked here.
+describe('POST setup/suggest on built-in AI', () => {
+  // A fake `AI` binding: answers each ask in turn (the last one again after), and records what it was handed.
+  function fakeAi(...replies: unknown[]) {
+    const sent: { model: string; input: { messages: { role: string; content: string }[] } }[] = [];
+    return {
+      sent,
+      run: async (model: string, input: object) => {
+        sent.push({ model, input: input as (typeof sent)[number]['input'] });
+        const reply = replies[Math.min(sent.length - 1, replies.length - 1)];
+        return typeof reply === 'function' ? (reply as () => Promise<unknown>)() : reply;
+      },
+    };
+  }
+
+  const builtInKit = (ai: ReturnType<typeof fakeAi>, more: object = withSecret) =>
+    knowledgeKit({ ...more, AI: ai });
+  // The account's count, as the DOCUMENT_ROOM instance named for it keeps it (setup-draft-count.ts).
+  const accountCount = (kit: Kit) => {
+    const ns = kit.db.env.DOCUMENT_ROOM;
+    return ns.get(ns.idFromName('~setup-drafts:user_o')) as unknown as {
+      spendSetupDraft(day: string, cap: number): Promise<boolean>;
+    };
+  };
+  const today = () => new Date().toISOString().slice(0, 10);
+
+  it("answers with no key at all, on liveplanner's model, counted for the account and the room", async () => {
+    const logged = consoleSpy();
+    const claude = fakeClaude(STRUCTURE);
+    vi.stubGlobal('fetch', claude.fetch);
+    const ai = fakeAi({ response: JSON.parse(STRUCTURE) });
+    // No secret either: no key can be kept, and built-in AI still answers.
+    const kit = await builtInKit(ai, {});
+    const res = await suggest(kit, 'editor');
+    expect(res.status).toBe(200);
+    const body = await res.json<{ pages: { title: string }[]; provider: string; name: string }>();
+    expect(body.provider).toBe('built-in');
+    expect(body.name).toBe('Engineering Handbook');
+    expect(body.pages.map((p) => p.title)).toEqual(['Getting Started', 'Local Setup']);
+    expect(ai.sent).toHaveLength(1);
+    expect(ai.sent[0]!.model).toBe('@cf/google/gemma-4-26b-a4b-it');
+    expect(ai.sent[0]!.input.messages[1]!.content).toBe(
+      `<description>\n${DESCRIPTION}\n</description>`,
+    );
+    expect(claude.sent).toEqual([]);
+    // Counted for the account, wherever it asks: nine more today.
+    expect(
+      await accountCount(kit).spendSetupDraft(today(), SETUP_BUILT_IN_PER_PERSON_PER_DAY),
+    ).toBe(true);
+    expect(counters(kit)).toEqual([
+      { scope: 'setup:knowledgebase', used: 1 },
+      { scope: 'setup:person:user_o', used: 1 },
+    ]);
+    expect(logged()).not.toContain('logistics');
+    expect(logged()).not.toContain('Getting Started');
+  });
+
+  it('runs on the team key instead once one is set, and never asks built-in AI', async () => {
+    const claude = fakeClaude(STRUCTURE);
+    vi.stubGlobal('fetch', claude.fetch);
+    const ai = fakeAi({ response: STRUCTURE });
+    const kit = await builtInKit(ai);
+    await setKey(kit);
+    const res = await suggest(kit, 'editor');
+    expect((await res.json<{ provider: string }>()).provider).toBe('anthropic');
+    expect(claude.sent).toHaveLength(1);
+    expect(ai.sent).toEqual([]);
+  });
+
+  it('refuses a key that is kept but does not open, never swapping in built-in AI', async () => {
+    vi.stubGlobal('fetch', fakeClaude(STRUCTURE).fetch);
+    const ai = fakeAi({ response: STRUCTURE });
+    const kit = await builtInKit(ai);
+    await setKey(kit);
+    kit.db.sql
+      .prepare("UPDATE knowledge_settings SET value = 'broken' WHERE name = ?")
+      .run('ai_key');
+    expect(await failure(await suggest(kit, 'editor'))).toEqual([409, 'ask_unavailable']);
+    expect(ai.sent).toEqual([]);
+  });
+
+  it('repairs a reply that does not read by asking once more with why, and counts it once', async () => {
+    const ai = fakeAi({ response: 'Sure! Here is a structure.' }, { response: STRUCTURE });
+    const kit = await builtInKit(ai);
+    const res = await suggest(kit, 'editor');
+    expect(res.status).toBe(200);
+    expect(ai.sent).toHaveLength(2);
+    expect(ai.sent[0]!.input.messages[1]!.content).not.toContain('previous_reply');
+    const second = ai.sent[1]!.input.messages[1]!.content;
+    expect(second).toContain('<previous_reply>');
+    expect(second).toContain('not one JSON object');
+    // The model's own earlier text is never sent back.
+    expect(second).not.toContain('Sure!');
+    expect(counters(kit)).toEqual([
+      { scope: 'setup:knowledgebase', used: 1 },
+      { scope: 'setup:person:user_o', used: 1 },
+    ]);
+  });
+
+  it('refuses a structure after two replies with no page, in words', async () => {
+    const ai = fakeAi({ response: '{"name":"X","pages":[]}' });
+    const kit = await builtInKit(ai);
+    const res = await suggest(kit, 'editor');
+    expect([res.status, await res.json()]).toEqual([
+      502,
+      { error: 'no-structure', message: 'Could not suggest a structure. Try again.' },
+    ]);
+    expect(ai.sent).toHaveLength(2);
+    expect(ai.sent[1]!.input.messages[1]!.content).toContain('no page that could be used');
+  });
+
+  it('says the built-in AI could not answer when the binding errs, never its own words', async () => {
+    const logged = consoleSpy();
+    const ai = fakeAi(async () => {
+      throw new Error(`upstream said ${DESCRIPTION}`);
+    });
+    const kit = await builtInKit(ai);
+    const res = await suggest(kit, 'editor');
+    const text = await res.clone().text();
+    expect([res.status, await res.json()]).toEqual([
+      502,
+      {
+        error: 'built-in-failed',
+        message: "The built-in AI couldn't answer just now. Try again in a moment.",
+      },
+    ]);
+    expect(ai.sent).toHaveLength(1);
+    for (const held of [text, logged()]) expect(held).not.toContain('logistics');
+  });
+
+  it('gives up on a call past its bound', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      const ai = fakeAi(() => new Promise(() => {}));
+      const kit = await builtInKit(ai);
+      const pending = suggest(kit, 'editor');
+      await vi.waitFor(() => expect(ai.sent).toHaveLength(1));
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(await failure(await pending)).toEqual([502, 'built-in-failed']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it(`stops at ${SETUP_BUILT_IN_PER_PERSON_PER_DAY} a person a day across every knowledgebase`, async () => {
+    const ai = fakeAi({ response: STRUCTURE });
+    const kit = await builtInKit(ai);
+    // Other knowledgebases' suggestions, as the account's count holds them.
+    for (let i = 0; i < SETUP_BUILT_IN_PER_PERSON_PER_DAY; i++)
+      await accountCount(kit).spendSetupDraft(today(), 99);
+    expect(await failure(await suggest(kit, 'editor'))).toEqual([429, 'built-in-limit']);
+    expect(ai.sent).toEqual([]);
+    expect(counters(kit)).toEqual([]);
+  });
+
+  it('refuses rather than lifting the cap when the count cannot be reached', async () => {
+    const ai = fakeAi({ response: STRUCTURE });
+    const kit = await builtInKit(ai);
+    const ns = kit.db.env.DOCUMENT_ROOM;
+    const real = ns.get.bind(ns);
+    vi.spyOn(ns, 'get').mockImplementation((id) =>
+      String(id).startsWith('~')
+        ? ({
+            spendSetupDraft: async () => {
+              throw new Error('gone');
+            },
+          } as never)
+        : real(id),
+    );
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(await failure(await suggest(kit, 'editor'))).toEqual([503, 'built-in-failed']);
+    expect(ai.sent).toEqual([]);
+  });
+
+  it('keeps the room limits on built-in AI too', async () => {
+    const ai = fakeAi({ response: STRUCTURE });
+    const kit = await builtInKit(ai);
+    for (let i = 0; i < SETUP_PER_PERSON_PER_HOUR; i++)
+      expect((await suggest(kit, 'editor')).status).toBe(200);
+    expect(await failure(await suggest(kit, 'editor'))).toEqual([429, 'person-limit']);
+    expect(ai.sent).toHaveLength(SETUP_PER_PERSON_PER_HOUR);
+  });
+
+  it.each(['viewer', 'link', 'agent'] as const)(
+    'is refused for %s with nothing asked',
+    async (who) => {
+      const ai = fakeAi({ response: STRUCTURE });
+      const kit = await builtInKit(ai);
+      expect((await suggest(kit, who)).status).toBe(403);
+      expect(ai.sent).toEqual([]);
+      // Nothing was counted for the account.
+      expect(await accountCount(kit).spendSetupDraft(today(), 1)).toBe(true);
+    },
+  );
 });

@@ -86,6 +86,10 @@ export type Env = {
   // "Ask"; @liveknowledge/knowledge key-seal.ts). A secret (wrangler secret put AI_KEY_SECRET). Unset: no key can be
   // stored, Ask answers `ask_unavailable`, and search and everything else work.
   AI_KEY_SECRET?: string;
+  // Workers AI (docs/specs/030-knowledgebase/describe-to-set-up.md "The model"): Describe to Set Up's built-in AI,
+  // asked when the knowledgebase has no key of its own. No key, no secret: the binding is the credential. Absent (a
+  // fork that drops the [ai] block, a test), built-in AI is not set up and the team's key is the only way.
+  AI?: { run(model: string, input: object, options?: object): Promise<unknown> };
   // Set by the e2e stack alone (scripts/e2e-stack.mjs), never by a deployment: the loopback origin of its stand-in
   // for the providers' APIs (knowledge/model-door.ts `modelDoorFor`, which ignores any value that is not one).
   E2E_CLAUDE_STAND_IN?: string;

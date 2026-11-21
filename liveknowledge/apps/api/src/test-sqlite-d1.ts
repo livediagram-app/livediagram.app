@@ -161,7 +161,23 @@ function testDocumentRooms(
     if (!post || post.code !== code || !post.open) return null;
     return (await import('./document-room/community-post')).readCommunityPost(env);
   };
+  // Each account's Describe to Set Up count (knowledge/setup-draft-count.ts), as its named room's storage keeps it.
+  const counts = new Map<string, Map<string, unknown>>();
+  const countStorage = (name: string) => {
+    const kept = counts.get(name) ?? new Map<string, unknown>();
+    counts.set(name, kept);
+    return {
+      get: async (key: string) => kept.get(key),
+      put: async (key: string, value: unknown) => void kept.set(key, value),
+    } as unknown as DurableObjectStorage;
+  };
   return testRoomNamespace(rooms, (id, roomOf) => ({
+    spendSetupDraft: async (day: string, cap: number) =>
+      (await import('./knowledge/setup-draft-count')).spendSetupDraftIn(
+        countStorage(String(id)),
+        day,
+        cap,
+      ),
     outline: async (documentId: string) =>
       (await import('./document-room/document-content')).readDocumentOutline(env, documentId),
     route: async (documentId: string, request: Request, identity: unknown) =>

@@ -758,7 +758,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Describe to Set Up: propose a page structure from a description of what the knowledgebase is for (20 to 1,000 characters), on the team's own key. Answers a name and up to 30 pages, 3 levels deep, each with a title, a one-line summary and up to 6 headings, as plain text; nothing is written. A signed-in Editor in person only (no API token). 5 a person an hour, 20 a knowledgebase a day. 502 with the failure's kind in words when the model call fails or its reply holds no structure (`no-structure`).",
+      "Describe to Set Up: propose a page structure from a description of what the knowledgebase is for (20 to 1,000 characters), on the team's own key when one is set, else on built-in AI (Workers AI). Answers a name and up to 30 pages, 3 levels deep, each with a title, a one-line summary and up to 6 headings, as plain text, and which AI answered (`provider`: built-in, anthropic or openai); nothing is written. A signed-in Editor in person only (no API token). 5 a person an hour, 20 a knowledgebase a day, and on built-in AI 10 a person a day across every knowledgebase (`built-in-limit`). 502 with the failure's kind in words when the model call fails (`built-in-failed` on built-in AI) or its reply holds no structure (`no-structure`); 503 `built-in-unavailable` with no key and no built-in AI.",
     auth: 'clerk',
     tokenUsable: false,
     requestSchema: 'KnowledgeSetupRequest',

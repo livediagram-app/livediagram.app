@@ -98,6 +98,7 @@ import { CONFLICT_CHECK_DELAY_MS, oweConflictChecks } from '../knowledge/conflic
 import { runKnowledgeWork } from '../knowledge/knowledge-turn';
 import { oweWork } from '../knowledge/knowledge-work';
 import { REVIEW_CHECK_DELAY_MS } from '../knowledge/knowledge-review-timing';
+import { spendSetupDraftIn } from '../knowledge/setup-draft-count';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -466,6 +467,12 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // Take the owner and team a grant names as the document's own copy. A failure is logged, never the caller's: the
   // next grant tries again.
+  // Describe to Set Up's built-in count for one account (knowledge/setup-draft-count.ts): only ever asked of an
+  // instance named for an account, never a document's, and it touches no document state.
+  async spendSetupDraft(day: string, cap: number): Promise<boolean> {
+    return spendSetupDraftIn(this.state.storage, day, cap);
+  }
+
   async takeHead(grant: { owner?: string | null; team: string | null }): Promise<void> {
     if (!this.roomEnv) return;
     try {

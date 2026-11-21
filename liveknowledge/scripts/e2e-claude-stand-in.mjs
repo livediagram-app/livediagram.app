@@ -1,8 +1,10 @@
 // The e2e stack's stand-in for the two providers' APIs (docs/specs/003-system-architecture/e2e-smoke.md "The model
 // stand-in"): a tiny server on the loopback that answers `POST /v1/messages` the way Anthropic's Messages API
 // streams and `POST /v1/responses` the way OpenAI's Responses API does, so Ask, the conflict check and Describe to
-// Set Up run end to end with no model, no network and no real key. The api reaches it only because the stack sets
-// `E2E_CLAUDE_STAND_IN` (apps/api/src/knowledge/model-door.ts `modelDoorFor`).
+// Set Up run end to end with no model, no network and no real key. `POST /workers-ai/run` answers Describe to Set
+// Up's built-in AI as the Workers AI binding would (`{ response }`, the object JSON mode parsed). The api reaches it
+// only because the stack sets `E2E_CLAUDE_STAND_IN` (apps/api/src/knowledge/model-door.ts `modelDoorFor`,
+// setup-built-in-ai.ts `builtInAi`).
 //
 // What it answers is worked out from the request alone, so a spec knows what to expect:
 //   - a key containing "refused" is not accepted (401, in the provider's own error shape);
@@ -149,7 +151,24 @@ async function answerOpenAi(req, res, body) {
   res.end(event('response.completed', { response: { ...response, status: 'completed' } }));
 }
 
-const ROUTES = { '/v1/messages': answerClaude, '/v1/responses': answerOpenAi };
+// Workers AI's binding, as the api's `builtInAi` asks it: `{ model, input }`, answered whole. JSON mode hands back the
+// reply as an object; text that is no JSON comes back as text.
+async function answerWorkersAi(_req, res, body) {
+  const text = standInReply(body?.input);
+  let response = text;
+  try {
+    response = JSON.parse(text);
+  } catch {
+    // Not JSON: the text as it is.
+  }
+  json(res, 200, { response });
+}
+
+const ROUTES = {
+  '/v1/messages': answerClaude,
+  '/v1/responses': answerOpenAi,
+  '/workers-ai/run': answerWorkersAi,
+};
 
 async function answer(req, res) {
   const route = ROUTES[new URL(req.url, 'http://stand-in').pathname];

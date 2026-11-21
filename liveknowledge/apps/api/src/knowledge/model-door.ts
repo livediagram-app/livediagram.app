@@ -57,6 +57,11 @@ export function modelDoorFor(env: ModelDoorEnv, provider: ModelProviderId): type
   };
 }
 
+/** The e2e stack's stand-in origin, or undefined anywhere else: where built-in AI is answered under the stack
+ *  (setup-built-in-ai.ts), since the `AI` binding has no door to swap. */
+export const e2eStandInOrigin = (env: ModelDoorEnv): string | undefined =>
+  standInOrigin(env.E2E_CLAUDE_STAND_IN);
+
 /** Whether this Worker runs under the e2e stack: its stand-in is named, on the loopback. No deployment does. */
 export const underE2eStack = (env: ModelDoorEnv): boolean =>
   standInOrigin(env.E2E_CLAUDE_STAND_IN) !== undefined;

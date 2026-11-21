@@ -490,16 +490,16 @@ cap)` RPC, which counts and checks in one turn of the object. At the cap: `429 b
 suggested` (provider, page count, model, asks), `setup no structure`, `setup failed` (kind): never the
 description, a title or the key.
 
-| Rule                                                            | Test                                                                                   |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| 20 to 1,000 characters; 5 an hour, 20 a day, apart from Ask     | `setup.test.ts`; `knowledge-setup-route.test.ts`                                       |
-| The description and existing titles are fenced data             | `setup.test.ts`; the route's test                                                      |
-| 30 pages, 3 levels, 80, 200, 6 headings of 80                   | `setup.test.ts` "reading a reply"                                                      |
-| No duplicate sibling titles; parents resolved; the rest dropped | the same                                                                               |
-| No valid page is a failure, never a raw error                   | the same; the route's test                                                             |
-| Markup in a reply stays text                                    | the same; the route's test                                                             |
-| Per role, per limit, per provider                               | `knowledge-setup-route.test.ts`                                                        |
-| Built-in AI: no key, its asks, repair, cap, no binding, timeout | `knowledge-setup-route.test.ts`; `setup-built-in.test.ts`; `setup-draft-count.test.ts` |
+| Rule                                                            | Test                                                                                                              |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 20 to 1,000 characters; 5 an hour, 20 a day, apart from Ask     | `setup.test.ts`; `knowledge-setup-route.test.ts`                                                                  |
+| The description and existing titles are fenced data             | `setup.test.ts`; the route's test                                                                                 |
+| 30 pages, 3 levels, 80, 200, 6 headings of 80                   | `setup.test.ts` "reading a reply"                                                                                 |
+| No duplicate sibling titles; parents resolved; the rest dropped | the same                                                                                                          |
+| No valid page is a failure, never a raw error                   | the same; the route's test                                                                                        |
+| Markup in a reply stays text                                    | the same; the route's test                                                                                        |
+| Per role, per limit, per provider                               | `knowledge-setup-route.test.ts`                                                                                   |
+| Built-in AI: no key, its asks, repair, cap, no binding, timeout | `knowledge-setup-route.test.ts`; `setup-built-in.test.ts`; `setup-built-in-ai.test.ts` (the client and the count) |
 
 **Risk not ruled out:** thinking counts against the 4,000 token ceiling on both providers, so a long structure
 from a model that thinks at length can be cut off. The prompt asks for a compact reply and effort is `low`; a cut

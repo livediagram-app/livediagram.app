@@ -4497,6 +4497,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['id', 'title', 'summary', 'headings', 'parent', 'depth'],
     type: 'object',
   },
+  KnowledgeSetupProvider: {
+    anyOf: [
+      {
+        const: 'built-in',
+        type: 'string',
+      },
+      {
+        $ref: '#/components/schemas/KnowledgeAiProvider',
+      },
+    ],
+    description:
+      'Which AI answered a suggestion (describe-to-set-up.md "The model"): built-in AI with no key, else the team\'s.',
+  },
   KnowledgeSetupRequest: {
     additionalProperties: false,
     description:
@@ -4528,7 +4541,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   KnowledgeSetupSuggestion: {
     additionalProperties: false,
     description:
-      'A proposed structure: a name for the knowledgebase and up to 30 pages in tree order. Plain text throughout.',
+      'A proposed structure: a name for the knowledgebase and up to 30 pages in tree order. Plain text throughout. `provider`: which AI answered; the route always says, and a structure picked on the start screen has none.',
     properties: {
       name: {
         type: 'string',
@@ -4538,6 +4551,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           $ref: '#/components/schemas/KnowledgeSetupPage',
         },
         type: 'array',
+      },
+      provider: {
+        $ref: '#/components/schemas/KnowledgeSetupProvider',
       },
     },
     required: ['name', 'pages'],

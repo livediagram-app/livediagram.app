@@ -191,8 +191,15 @@ export type KnowledgeSetupPage = {
   parent: string | null;
   depth: number;
 };
-/** A proposed structure: a name for the knowledgebase and up to 30 pages in tree order. Plain text throughout. */
-export type KnowledgeSetupSuggestion = { name: string; pages: KnowledgeSetupPage[] };
+/** Which AI answered a suggestion (describe-to-set-up.md "The model"): built-in AI with no key, else the team's. */
+export type KnowledgeSetupProvider = 'built-in' | KnowledgeAiProvider;
+/** A proposed structure: a name for the knowledgebase and up to 30 pages in tree order. Plain text throughout.
+ *  `provider`: which AI answered; the route always says, and a structure picked on the start screen has none. */
+export type KnowledgeSetupSuggestion = {
+  name: string;
+  pages: KnowledgeSetupPage[];
+  provider?: KnowledgeSetupProvider;
+};
 
 /** How an agent connects: the MCP server, the command line, or an API token used directly. */
 export type KnowledgeAgentDoor = 'mcp' | 'cli' | 'token';
