@@ -47,9 +47,10 @@ describe('a structure outline', () => {
     expect(structurePageCount(wiki)).toBe(13);
   });
 
-  it('counts the top pages past its last line', () => {
-    const { lines, more } = structureOutline(wiki, 2);
-    expect(lines).toHaveLength(2);
+  it('gives its last line to a count of the top pages past it', () => {
+    expect(structureOutline(wiki, 4).more).toBe(0);
+    const { lines, more } = structureOutline(wiki, 3);
+    expect(lines.map((l) => l.title)).toEqual(['Overview', 'Architecture']);
     expect(more).toBe(2);
   });
 });

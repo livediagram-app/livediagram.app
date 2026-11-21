@@ -63,7 +63,7 @@ group, pages }`, its pages a nested outline (title, one-line summary, headings, 
   Knowledgebase) and, where `useSetupOffered() === 'set-up'`, `describe` (Describe to Set Up); then **Team**,
   **Engineering** and **Product and Support** from each structure's `group`. The search matches a structure's name,
   line and page titles (`searchStructures`). A card (`structure-card.tsx`) draws the outline (`structureOutline`:
-  each top page, then its subpages' titles after a colon, at most six lines, the rest as "and N More") with the page
+  each top page, then its subpages' titles after a colon, at most five lines, or four and "and N More"; a phone's small tile keeps the top level only) with the page
   count, in place of a picture. The foot (`footLead`): Describe to Set Up and Import (an Editor); then Connect File
   (`useConnectStart`). The footer is `StartSaveSwitch`.
 - **Choosing** (`EditorStartPanels`): `blank` closes the offer, asks Title focus for the tab and sends

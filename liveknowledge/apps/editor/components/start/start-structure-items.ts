@@ -72,15 +72,16 @@ export function knowledgebaseStart(offer: { describe: boolean }): KnowledgebaseS
   return { groups, search };
 }
 
-/** A structure's outline, two levels: each top page, with its subpages' titles after it. At most `max` lines; the
- *  rest are counted. */
+/** A structure's outline, two levels: each top page, with its subpages' titles after it. At most `max` lines: past
+ *  that, one line fewer and the rest counted on the last. */
 export function structureOutline(
   structure: SetupStructure,
-  max = 6,
+  max = 5,
 ): { lines: { title: string; under: string[] }[]; more: number } {
   const all = structure.pages.map((page) => ({
     title: page.title,
     under: page.pages.map((sub) => sub.title),
   }));
-  return { lines: all.slice(0, max), more: Math.max(0, all.length - max) };
+  if (all.length <= max) return { lines: all, more: 0 };
+  return { lines: all.slice(0, max - 1), more: all.length - (max - 1) };
 }
