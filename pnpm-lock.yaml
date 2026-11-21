@@ -7,7 +7,7 @@ settings:
 overrides:
   postcss: ^8.5.18
   undici: ^7.28.0
-  js-yaml: ^4.3.0
+  js-yaml: ^5.5.0
   esbuild: ^0.28.1
   fast-uri: ^3.1.6
   qs: ^6.16.0
@@ -1928,7 +1928,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/model-core
       js-yaml:
-        specifier: ^4.3.0
+        specifier: ^5.5.0
         version: 5.5.0
       perfect-freehand:
         specifier: ^1.2.3
@@ -1943,9 +1943,6 @@ importers:
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -9731,9 +9728,6 @@ packages:
   '@types/hast@3.0.5':
     resolution: {integrity: sha512-rp/ezSWaD1m44dPKICGhiskI13nVr7qTloFwDa/IYkhhf5nzwP+zIQcIJh3WIFSBOy/H1PzB40jPjMDksN4F+g==}
 
-  '@types/js-yaml@4.0.9':
-    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
-
   '@types/jsdom@30.0.0':
     resolution: {integrity: sha512-uAHGxujGE0cDaKGdK28zgDotFtNA7MKq5DXl8LrfdxdCI8VHcg15oJz+amHTChPNI5JpgEPQWc2xFdrw3em/nQ==}
 
@@ -12692,8 +12686,6 @@ snapshots:
   '@types/hast@3.0.5':
     dependencies:
       '@types/unist': 3.0.3
-
-  '@types/js-yaml@4.0.9': {}
 
   '@types/jsdom@30.0.0':
     dependencies:

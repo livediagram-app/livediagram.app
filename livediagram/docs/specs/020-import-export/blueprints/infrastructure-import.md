@@ -101,7 +101,8 @@ nodes: Record<string, DiagramSourceNode>; edges: Record<string, string> }`.
 
 - `checkInfraText`: text over `INFRA_MAX_FILE_BYTES` (UTF-16 length, I2) is `{ ok: false, error: 'too-large' }`;
   blank text is `empty`. Every format goes through it first.
-- TOML through `smol-toml` `parse`; Compose YAML through `js-yaml` `load` with its default (safe) schema and
+- TOML through `smol-toml` `parse`; Compose YAML through `js-yaml` `load` with `YAML_SCHEMA` (the core schema plus
+  the merge, timestamp, binary, omap, pairs and set tags, js-yaml 4's default, so `<<: *base` merges) and
   `json: true` (later keys win over duplicates, I3). A thrown error is `parse` with the message's first line and the
   line number when the parser gives one (`TomlError.line`, `YAMLException.mark.line + 1`).
 - A result that is not a plain object (a YAML scalar or list) is `not-a-table`.
@@ -343,7 +344,7 @@ files: sourceFiles(files), env?, nodes, edges } } }`, `base: rev` and `strict` (
 
 ## Security and trust
 
-- The text is untrusted. `js-yaml` 4's default schema builds no functions or classes; aliases are shared references,
+- The text is untrusted. `YAML_SCHEMA` builds no functions or classes, and js-yaml caps merge keys per load; aliases are shared references,
   and the import walks only known paths, so an alias bomb costs nothing. Every parser is bounded by the byte cap.
 - The HCL tokenizer is one pass over the text with constant work per character, its parser an explicit stack capped
   at `HCL_MAX_DEPTH`; no regular expression runs over the text (CodeQL ReDoS), so its cost is linear in the file.
