@@ -39,7 +39,7 @@ packages/api-schema/src/automations.ts        the wire types, filled in with the
 packages/api-schema/src/telemetry-schema.ts   the `Ran` action
 
 apps/api/src/document-room/
-  document-schema.ts                          steps 13 to 22
+  document-schema.ts                          steps 21 to 30, and 35
   document-room.ts                            `standing`, `automations`, `collab`; the alarm; the doors' RPC methods
   document-room-content.ts                    restoreAutomations on wake; the purge
   document-room-doors.ts                      a grant's standing; `joined`, `accessRequested`; a copy's `withRules`
@@ -110,9 +110,10 @@ Page the Rule Runs On.
 
 ## Schema
 
-Appended to `document-schema.ts` `STEPS` after step 12 (the tab folder colour, which shipped first), never edited once shipped: steps 13 to 21 are
-`itemAutomationSchemaSteps({ links: 'document_tabs' })`, one entry each; step 22 is `COLLAB_SEEN_SCHEMA_STEP`.
-`DOCUMENT_SCHEMA_VERSION` is 22.
+Appended to `document-schema.ts` `STEPS` after step 20 (the tab folder colour, which shipped first), never edited once shipped: steps 21 to 29 are
+`itemAutomationSchemaSteps({ links: 'document_tabs' })`, one entry each; step 30 is `COLLAB_SEEN_SCHEMA_STEP`;
+step 35 is `automationSchemaStep('wake')`: `automation_wake`, the engine's failed wakes in a row and the next try's hold-off
+(steps 31 to 34 are the knowledgebase's own). `DOCUMENT_SCHEMA_VERSION` is 35.
 
 ## The engine in the room
 
