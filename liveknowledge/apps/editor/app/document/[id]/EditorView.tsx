@@ -158,11 +158,15 @@ const KNOWLEDGE_VIEW = <KnowledgeViewHost />;
 // renders never reach it.
 const NEW_VERSION_PROMPT = <EditorNewVersionPrompt />;
 
+// A knowledgebase's walkthrough moves through its pages, not round a canvas.
+const WALKTHROUGH_WORDS = { item: 'knowledgebase', moving: 'move through its pages' };
+
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read
 // from EditorContext (provided by the page), so the page no longer
 // threads ~150 props through this JSX. The JSX is verbatim; only its
 // scope changed from the page's locals to the destructured context.
+
 export function EditorView() {
   const ctx = useEditorContext();
   // Offline Mode (docs/specs/006-document/offline-mode.md): a document saved only in this browser. Drives the
@@ -589,7 +593,7 @@ export function EditorView() {
                   </CanvasFinishProvider>
                 </CanvasSurfaceProvider>
                 <WalkthroughsLayer walkthroughs={walkthroughs} />
-                <WalkthroughsTools walkthroughs={walkthroughs} />
+                <WalkthroughsTools walkthroughs={walkthroughs} words={WALKTHROUGH_WORDS} />
               </ViewportStoreProvider>
             </SheetLinksHost>
           </SelectionStoreProvider>

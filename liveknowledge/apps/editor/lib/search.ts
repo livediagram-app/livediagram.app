@@ -71,6 +71,7 @@ const SEARCH: EditorSearchConfig<'document', 'documents'> = {
     untitled: 'Untitled Knowledgebase',
   },
   tableCells: true,
+  tabsLabel: 'Pages',
 };
 
 // `documents` are this editor's own; `teamDocuments` its team-library ones. Everything else is the shared input.
