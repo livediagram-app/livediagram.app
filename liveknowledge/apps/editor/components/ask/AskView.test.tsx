@@ -339,13 +339,16 @@ describe('a question and its answer', () => {
             ...source(2, { title: 'Old Release Notes', trust: 'review-due' }),
             reason: 'It says Fridays, and a newer verified page says Thursdays.',
           },
+          // A bare mark with no reason, as an answer kept from before the parser dropped them: not shown.
+          { ...source(3, { title: 'Deploy Rollback' }), reason: ' ' },
         ],
       }),
     );
     const rail = within(screen.getByRole('complementary', { name: 'Sources' }));
     expect(rail.getByText('Found but Not Used')).toBeTruthy();
     const stale = document.querySelector('[data-source="2"]')!;
-    expect(stale.textContent).toContain('Stale');
+    expect(stale.textContent).toContain('Older Passage');
+    expect(document.querySelector('[data-source="3"]')).toBeNull();
     expect(stale.textContent).toContain('It says Fridays');
     // A set-aside passage has no number of its own, so none reads as a citation.
     expect(stale.querySelector('.sr-only')).toBeNull();

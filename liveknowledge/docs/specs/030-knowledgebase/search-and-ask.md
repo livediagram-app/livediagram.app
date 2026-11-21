@@ -41,7 +41,17 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   and no setup. A team that wants its own provider adds its **own key**, Claude's or OpenAI's
   ([Providers](#providers)), in **AI Settings**; once saved, everything that uses a model runs on it instead. A
   stored key that cannot be opened is refused ("Replace it in AI Settings"), never quietly swapped for built-in AI.
-  The Ask view says, quietly under the field, which is in use: **Uses built-in AI** or **Uses your team's key**.
+  With no key, the Ask view says quietly under the field **Uses built-in AI**.
+- **Choosing which AI answers** (owner, 2026-11-21: "on Ask, I want to be able to choose whether to ask my configured
+  AI, or the built in AI"). Once a key is set, the quiet line under Ask's field becomes a small choice of two:
+  **Built-In AI** and the team's key named by its model ("Claude Fable 5.2 (Team Key)"). The team's key is chosen
+  until the person picks otherwise; the choice is kept per person, per knowledgebase, in this browser, beside the
+  chats. Each question carries it (`ai: 'built-in' | 'key'`); a follow-up uses the choice in force when it is asked,
+  so switching mid-chat applies to the next question. The server honours `built-in` even when a key is set, under
+  built-in AI's caps ([Built-in AI](#built-in-ai)), and even when the stored key cannot be opened (the person asked
+  for built-in AI, so nothing is swapped quietly); `key` with no key set answers on built-in AI, which is what the
+  person sees. With a key set, each answer says under its trust line which AI answered ("Built-In AI", or the
+  model). Draft a Page From What We Know, the conflict check and Describe to Set Up keep the key first.
 - **Built-in AI's bounds**, since liveknowledge pays for it ([Built-in AI](#built-in-ai)).
 - **The key** is sent once over TLS to the api, encrypted with AES-GCM under the Worker's `AI_KEY_SECRET`, and kept in
   the knowledgebase's Durable Object. It is never sent back to any client: AI Settings shows only "Key Ending 4f2a", **Replace**
@@ -185,7 +195,9 @@ strangers.
     then "21 Nov by Roger Blake" on the line, wrapping to a second line rather than cutting a name; **Review Due**
     (amber, "Last verified 8 Nov"); **Never Verified** (quiet slate, no tick, saying so).
     Pressing a card shows Pages at that page and passage. **Found but Not Used** follows, each card amber with a
-    "Stale" pill and the reason, and no number, so it never shares one with a cited source.
+    "Older Passage" pill and the reason under its passage, its trust in the same badges as a source, and no
+    number, so it never shares one with a cited source. One with no reason (kept in the browser from before a
+    set-aside needed one) is not shown.
 - **The field** takes 1,000 characters and counts from 900. Enter sends; Shift and Enter make a new line. While an
   answer streams the field waits and the button is **Stop**, which ends the request and keeps what had arrived.
   After ten turns the field gives way to a line saying to start a new question.

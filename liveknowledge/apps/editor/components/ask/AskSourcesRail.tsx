@@ -165,7 +165,7 @@ function SourceCard({
           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
             {title}
           </span>
-          {stale ? <span className={STALE_PILL}>Stale</span> : null}
+          {stale ? <span className={STALE_PILL}>Older Passage</span> : null}
         </span>
         {path.parents.length > 0 || path.name !== title || headings ? (
           <Breadcrumb path={path} title={title} headings={headings} />
@@ -200,7 +200,9 @@ export const AskSourcesRail = memo(function AskSourcesRail({
   onOpen: (source: AskSource) => void;
 }) {
   const sources = turn?.sources ?? [];
-  const notUsed = turn?.notUsed ?? [];
+  // A set-aside always says why (search-and-ask.md "It does not guess"); one kept from before the parser required
+  // that, with no reason, is not shown: an unexplained Older Passage beside the same page's citation reads wrong.
+  const notUsed = (turn?.notUsed ?? []).filter((n) => n.reason.trim() !== '');
   const shared = { question: turn?.question ?? '', pages, nameOf, now, onOpen };
   return (
     <div data-ask-sources="" className="flex flex-col gap-3 p-4">
