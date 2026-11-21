@@ -30,8 +30,10 @@ export function useArticleZoneCorner(active: boolean): ZoneCorner {
     if (!active) return;
     const zone = document.querySelector<HTMLElement>(ZONE);
     if (!zone) return;
-    const rail = document.querySelector<HTMLElement>(RAIL);
     const read = () => {
+      // Looked up at each read: the rail docks and undocks as the window crosses its width, and one read when the
+      // effect ran would hold a rail since taken away (its box all zeros, the buttons pushed off the left edge).
+      const rail = document.querySelector<HTMLElement>(RAIL);
       const box = zone.getBoundingClientRect();
       const next = cornerOf(
         // Its inner box: the scrollbar's gutter is not the white page area.
@@ -46,8 +48,8 @@ export function useArticleZoneCorner(active: boolean): ZoneCorner {
     };
     read();
     const watch = new ResizeObserver(read);
+    // The zone's own size changes as the rail docks or undocks beside it (the scroller ends short of a docked rail).
     watch.observe(zone);
-    if (rail) watch.observe(rail);
     window.addEventListener('resize', read);
     return () => {
       watch.disconnect();

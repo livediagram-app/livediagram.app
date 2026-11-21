@@ -1,8 +1,8 @@
 'use client';
 
 // The page surface in the canvas (docs/specs/030-knowledgebase/blueprints/page-surface.md "The lock"): keeps the
-// view locked to where the open page's column belongs, and hands the canvas the lock to draw its world at and the
-// scroll container to put it in. The lock is worked out again only when what it reads changes: the surface's size,
+// view locked to where the open page's column belongs, at 100%, tells the narrow view the room the window has for a
+// column, and hands the canvas the lock to draw its world at and the scroll container to put it in. The lock is worked out again only when what it reads changes: the surface's size,
 // the side chrome's, the page's corner or its margin. Never on a scroll, never on a keystroke.
 import { useCallback, useEffect, useLayoutEffect, useSyncExternalStore, type Ref } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -15,9 +15,11 @@ import {
   PAGE_FREE_HEIGHT_VAR,
   computePageLock,
   coverHeightOf,
+  roomColumnOf,
   worldHeight,
   pageFreeHeight,
 } from '@/lib/page-surface/page-lock';
+import { setPageRoomColumn } from '@/lib/page-surface/page-view-store';
 import { pageScrollOf } from '@/lib/page-surface/page-keys';
 import { pageViewportOf } from '@/lib/page-surface/page-viewport-store';
 import { sideChromeInsets } from '@/lib/side-chrome-insets';
@@ -75,6 +77,9 @@ export function usePageSurface({
       const railRoom = main.offsetWidth - box.offsetWidth;
       const right = Math.max(0, sides.right - railRoom);
       const cover = coverHeightOf(hasCover, phone);
+      // The widest column the window allows: a page whose column is wider is drawn narrower, its writing re-wrapped
+      // (the narrow view, lib/page-surface/page-view-lens.ts). The same room again tells nobody.
+      setPageRoomColumn(roomColumnOf({ width, sides: { left: sides.left, right }, phone }));
       const lock = computePageLock({
         width,
         // The world's own box (worldHeight), which its transform is about.
@@ -87,7 +92,7 @@ export function usePageSurface({
       });
       pageStore.lockTo(lock.view);
       // How tall the window lets a page be: the writing fills it, however short the stored page is.
-      const free = `${pageFreeHeight(height, lock.view.zoom, cover)}px`;
+      const free = `${pageFreeHeight(height, cover)}px`;
       if (scroller) {
         // The band's height and edges: between the tree (or its rail) and where the scroller ends, or the rail over
         // it. Written only when they move, so a relock that changed nothing restyles nothing.

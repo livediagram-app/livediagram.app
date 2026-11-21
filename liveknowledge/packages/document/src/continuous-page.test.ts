@@ -12,7 +12,7 @@ import {
   newKnowledgebasePageContent,
   withArticlePageHeight,
 } from './knowledgebase-page';
-import { layOutPages, pageSizeChoices, pageSizesFor, pagesOf } from './page';
+import { asViewPage, layOutPages, pageSizeChoices, pageSizesFor, pagesOf } from './page';
 import {
   CONTINUOUS_PAGE_MAX_HEIGHT,
   CONTINUOUS_PAGE_MIN_HEIGHT,
@@ -49,6 +49,24 @@ describe('the continuous size', () => {
     expect(CONTINUOUS_PAGE_WIDTH).toBe(856);
     expect(isContinuousPage({ kind: 'article' })).toBe(false);
     expect(isContinuousPage({ kind: 'infographic', size: 'fit' })).toBe(false);
+  });
+
+  it('is read at the continuous width as stored, and at its own sides only as one window draws it', () => {
+    const narrow = { ...knowledgebasePage(), fit: { width: 446, height: 3000 } };
+    // Stored (or written by anyone) narrower: read back at the continuous width.
+    expect(pagesOf({ pages: [narrow] })[0]!.fit).toEqual({
+      width: CONTINUOUS_PAGE_WIDTH,
+      height: 3000,
+    });
+    // The narrow view's own page object (docs/specs/030-knowledgebase/blueprints/page-surface.md "The narrow view").
+    const drawn = asViewPage({ ...narrow });
+    expect(pagesOf({ pages: [drawn] })[0]!.fit).toEqual({ width: 446, height: 3000 });
+    expect(layOutPages(pagesOf({ pages: [drawn] }))[0]!.rect).toMatchObject({
+      x: -223,
+      width: 446,
+    });
+    // Its copy, as a store or the sync would hold it, is a stored page again.
+    expect(pagesOf({ pages: [JSON.parse(JSON.stringify(drawn))] })[0]!.fit!.width).toBe(856);
   });
 
   it('holds a height to whole px within its limits', () => {

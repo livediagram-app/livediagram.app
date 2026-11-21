@@ -396,8 +396,8 @@ function CanvasView(props: CanvasProps) {
             <div
               ref={scrollerRef}
               data-page-scroller=""
-              // A phone shows the page at its reading scale (page-lock.ts), a wide column scrolling sideways.
-              className={`absolute inset-0 overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable] ${phone ? 'overflow-x-auto overscroll-x-contain' : 'overflow-x-hidden'}`}
+              // A page is shown at 100% and re-wraps to a narrow window (the narrow view), so nothing scrolls sideways.
+              className="absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable]"
             >
               <div
                 ref={wrapperRef}

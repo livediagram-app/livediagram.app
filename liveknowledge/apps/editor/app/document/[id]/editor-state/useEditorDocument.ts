@@ -8,12 +8,33 @@ import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { createTab } from '../editor-page-helpers';
 import { guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
 import { liftTabs, lowerTabs, type LensWriter } from '@/lib/page-edit/lens';
+import { liftViewTabs, lowerViewTabs } from '@/lib/page-surface/page-view-lens';
+import { pageViewState } from '@/lib/page-surface/page-view-store';
 
 type PageEditRef = { readonly current: { tabId: string; writer: LensWriter } | null };
+type PageViewRef = { readonly current: string | null };
+
+// A map over the tabs through the narrow view (lib/page-surface/page-view-lens.ts) of the page drawn, when this window
+// draws it narrower than it is stored: lifted, mapped, lowered back, so the narrow layout is never written.
+function throughViewLens(viewRef: PageViewRef, mapTabs: (ts: Tab[]) => Tab[]) {
+  return (ts: Tab[]) => {
+    const tabId = viewRef.current;
+    if (!tabId) return mapTabs(ts);
+    const lifted = liftViewTabs(ts, tabId, pageViewState());
+    if (lifted === ts) return mapTabs(ts);
+    return lowerViewTabs(ts, lifted, mapTabs(lifted), tabId);
+  };
+}
 
 // Every map over the tabs, while a page is being edited, runs over that page as its draft (lib/page-edit/lens.ts):
-// lifted into the lens, mapped, lowered back. A map with no page being edited runs as it is.
-function throughPageLens(ref: PageEditRef, mapTabs: (ts: Tab[]) => Tab[]) {
+// lifted into the lens, mapped, lowered back. A map with no page being edited runs as it is. The narrow view sits on
+// top of either, as it does where the page is drawn (useEditorCollaboration).
+function throughPageLens(
+  ref: PageEditRef,
+  viewRef: PageViewRef,
+  mapTabsOuter: (ts: Tab[]) => Tab[],
+) {
+  const mapTabs = throughViewLens(viewRef, mapTabsOuter);
   return (ts: Tab[]) => {
     const editing = ref.current;
     if (!editing) return mapTabs(ts);
@@ -95,7 +116,10 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
   // with who is writing, for the commit choke point below, which lifts the page into its draft and lowers it back.
   const [editingTabId, setEditingTabIdState] = useState<string | null>(null);
   const pageEditRef = useRef<{ tabId: string; writer: LensWriter } | null>(null);
-  const throughLens = (mapTabs: (ts: Tab[]) => Tab[]) => throughPageLens(pageEditRef, mapTabs);
+  // The page drawn (useEditorCollaboration), whose narrow view every commit and tick passes through.
+  const pageViewRef = useRef<string | null>(null);
+  const throughLens = (mapTabs: (ts: Tab[]) => Tab[]) =>
+    throughPageLens(pageEditRef, pageViewRef, mapTabs);
   // A tick (a drag landing, a nudge, a resize, a slider) passes the same lock guard as a commit.
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
@@ -103,7 +127,7 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
       rawTickTabs((ts) =>
         guardPagesIn(
           ts,
-          settleChipsInTabs(ts, throughPageLens(pageEditRef, mapTabs)(ts)),
+          settleChipsInTabs(ts, throughPageLens(pageEditRef, pageViewRef, mapTabs)(ts)),
           pageLockGuardRef.current,
         ),
       ),
@@ -232,6 +256,7 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
     editingTabId,
     setEditingTabIdState,
     pageEditRef,
+    pageViewRef,
     markCheckpoint,
     resetTabs,
     cancelToCheckpoint,

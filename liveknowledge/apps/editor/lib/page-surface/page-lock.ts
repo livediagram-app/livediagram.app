@@ -1,7 +1,7 @@
 // Where a knowledgebase page stands on screen (docs/specs/030-knowledgebase/page-surface.md "What a page looks
 // like"; blueprint: docs/specs/030-knowledgebase/blueprints/page-surface.md "The lock"). The canvas engine still
 // draws the page, but its view is never a person's to move: one fixed view puts the writing's column in the middle
-// of the room there is, at 100%, and the window scrolls down it. Pure: the numbers in, the view out.
+// of the room there is, at 100% always, and the window scrolls down it. Pure: the numbers in, the view out.
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 
 /** Screen px of room either side of the writing's column: on a desktop, and on a phone. */
@@ -25,14 +25,9 @@ export const coverHeightOf = (hasCover: boolean, phone: boolean): number =>
 export const PAGE_COVER_HEIGHT_VAR = '--page-cover-height';
 export const PAGE_COVER_LEFT_VAR = '--page-cover-left';
 export const PAGE_COVER_RIGHT_VAR = '--page-cover-right';
-/** The least the page is ever scaled to: a window narrower than this allows is narrower than any phone. */
-export const PAGE_MIN_SCALE = 0.25;
-/** The least a phone shows a page at, so its writing reads (owner 2026-11-21: "don't try to fit the whole page in
- *  view"): a column wider than the screen at this scale scrolls sideways, from its left edge. */
-export const PAGE_PHONE_READ_SCALE = 0.75;
-
 export type PageLockInput = {
-  /** The surface's size on screen (the canvas element's layout box). */
+  /** The surface's size on screen (the canvas element's layout box). The height is the world's box (worldHeight); at
+   *  100% the view does not depend on it, and it is kept so callers say what they lock. */
   width: number;
   height: number;
   /** Screen px of chrome standing over the surface's left and right (a sidebar, the rail). */
@@ -55,42 +50,39 @@ export type PageLock = {
   columnWidth: number;
 };
 
+/** The side room on a desktop or on a phone. */
+const sideRoomOf = (phone: boolean): number => (phone ? PAGE_SIDE_ROOM_PHONE : PAGE_SIDE_ROOM);
+
+/** The widest column the window allows (page-surface.md "A narrow window reflows the writing"): the room the side
+ *  chrome leaves, less the side room either side, in whole px. The narrow view (page-view-lens.ts) narrows a page
+ *  whose column is wider than this. */
+export function roomColumnOf(input: Pick<PageLockInput, 'width' | 'sides' | 'phone'>): number {
+  const available = input.width - input.sides.left - input.sides.right;
+  return Math.max(1, Math.floor(available - 2 * sideRoomOf(input.phone)));
+}
+
 /**
- * The one view a page is shown at. The column (the page less its margins) is centred in the room the side chrome
- * leaves, at 100% while that room holds it with the spec's side room, scaled down to fit when it does not (a narrow
- * window, a phone); never scaled up. The canvas world's transform is `scale(z) translate(o)` about the surface's
- * centre, so a canvas point p stands at `z * (p + o) + (size / 2) * (1 - z)`; the offset is that solved for the
- * page's corner.
+ * The one view a page is shown at: always 100% (owner 2026-11-21: "render normally without zoom like a news
+ * webpage"). The column (the page less its margins) is centred in the room the side chrome leaves; a narrow window
+ * narrows the drawn page itself (the narrow view), so the column fits the room. A column still wider than the room
+ * (for the moment before the narrow view has narrowed it) starts at the side room, its overflow clipped. The canvas
+ * world's transform is `scale(1) translate(o)`, so a canvas point p stands at `p + o`; the offset is that solved for
+ * the page's corner.
  */
 export function computePageLock(input: PageLockInput): PageLock {
-  const { width, height, sides, page, margin, phone, cover = 0 } = input;
-  const room = phone ? PAGE_SIDE_ROOM_PHONE : PAGE_SIDE_ROOM;
-  const available = Math.max(1, width - sides.left - sides.right);
-  const column = Math.max(1, page.width - 2 * margin);
-  const fit = (available - 2 * room) / column;
-  const floor = phone ? PAGE_PHONE_READ_SCALE : PAGE_MIN_SCALE;
-  const zoom = Math.max(floor, Math.min(1, Number.isFinite(fit) ? fit : 1));
-  const columnWidth = column * zoom;
-  // Whole px, so the writing's glyphs land on the pixel grid. A column wider than the room (a phone at its reading
-  // scale) starts at the room's left, the rest a sideways scroll away.
-  const columnLeft = Math.round(
-    columnWidth > available - 2 * room
-      ? sides.left + room
-      : sides.left + (available - columnWidth) / 2,
-  );
-  const left = columnLeft - margin * zoom;
+  const { sides, page, margin, phone, cover = 0 } = input;
+  const room = sideRoomOf(phone);
+  const available = Math.max(1, input.width - sides.left - sides.right);
+  const columnWidth = Math.max(1, page.width - 2 * margin);
+  // Whole px, so the writing's glyphs land on the pixel grid.
+  const columnLeft = Math.round(sides.left + Math.max(room, (available - columnWidth) / 2));
+  const left = columnLeft - margin;
   // Under a cover, the page's blank top room and margin tuck under the band (which stands over the world), leaving
   // COVER_TITLE_GAP between the band and the first line.
-  const tuck = cover > 0 ? Math.max(0, PAGE_TOP_ROOM + margin * zoom - COVER_TITLE_GAP) : 0;
+  const tuck = cover > 0 ? Math.max(0, PAGE_TOP_ROOM + margin - COVER_TITLE_GAP) : 0;
   const top = PAGE_TOP_ROOM + cover - tuck;
   return {
-    view: {
-      zoom,
-      offset: {
-        x: (left - (width / 2) * (1 - zoom)) / zoom - page.x,
-        y: (top - (height / 2) * (1 - zoom)) / zoom - page.y,
-      },
-    },
+    view: { zoom: 1, offset: { x: left - page.x, y: top - page.y } },
     left,
     top,
     columnLeft,
@@ -115,9 +107,9 @@ export const WORLD_HEIGHT_CSS = `calc(100% - ${PAGE_TOP_ROOM}px - var(${PAGE_COV
 
 export const PAGE_FREE_HEIGHT_VAR = '--page-free-height';
 
-/** That height for a scroll container `height` screen px tall, shown at `zoom`. */
-export function pageFreeHeight(height: number, zoom: number, cover = 0): number {
-  return Math.max(0, Math.floor((height - PAGE_TOP_ROOM - cover - PAGE_FOOT_ROOM) / zoom));
+/** That height for a scroll container `height` screen px tall (a page is shown at 100%, so canvas px are screen px). */
+export function pageFreeHeight(height: number, cover = 0): number {
+  return Math.max(0, Math.floor(height - PAGE_TOP_ROOM - cover - PAGE_FOOT_ROOM));
 }
 
 export const sameView = (a: View, b: View): boolean =>

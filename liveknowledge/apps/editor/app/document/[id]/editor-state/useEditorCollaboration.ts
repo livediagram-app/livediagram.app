@@ -26,6 +26,8 @@ import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';
 import type { Tab } from '@liveknowledge/document';
 import { pageEditLens, pageReadLens } from '@/lib/page-edit/lens';
+import { pageViewLens } from '@/lib/page-surface/page-view-lens';
+import { usePageViewState } from '@/lib/page-surface/page-view-store';
 import { readLensLocked } from '@/lib/page-edit/page-edit-roles';
 import { myEditingPage } from '@/lib/page-edit/page-edit-store';
 import {
@@ -338,14 +340,22 @@ export function useEditorCollaboration({
   // The page as stored, and the page as this editor works on it (docs/specs/030-knowledgebase/editing.md): its draft
   // in edit mode, its saved writing otherwise, locked for an Editor who is reading (lib/page-edit/lens.ts). Every
   // reader of `activeTab` draws the lens; what is stored and what readers are told read `pageTab`.
+  // Over either, the narrow view (docs/specs/030-knowledgebase/blueprints/page-surface.md "The narrow view"): in a
+  // window too narrow for the page's column, the page as this window lays it out, never stored
+  // (lib/page-surface/page-view-lens.ts); every commit passes through it too (useEditorDocument, pageViewRef).
   const pageTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
-  const activeTab =
+  const pageView = usePageViewState();
+  const activeTab = pageViewLens(
     documentSlice.editingTabId === pageTab.id
       ? pageEditLens(pageTab)
       : pageReadLens(
           pageTab,
           readLensLocked({ isReadOnly, participating: participant.participating }),
-        );
+        ),
+    pageView.room,
+    pageView.layouts.get(pageTab.id),
+  );
+  useAssignRef(documentSlice.pageViewRef, pageTab.id);
   // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
   // the collab key their presence publishes; a session that may not edit sends them through the comment endpoints.
   const commentReactions = useCommentReactionScope({

@@ -4,6 +4,8 @@
 // removed as the writing grows or shrinks, zones' elements moved with their zones) are settled by
 // whoever made the change, folded into the step that caused them (tick), so the change and its
 // consequences undo as one.
+import { isPageViewLens, narrowLayoutOf } from '@/lib/page-surface/page-view-lens';
+import { notePageViewLayout } from '@/lib/page-surface/page-view-store';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import {
   articleMarginPx,
@@ -328,6 +330,14 @@ export function useArticles(deps: {
   const onLayout = useCallback(
     (layout: FlowLayout) => {
       const d = latest.current;
+      // A page drawn narrower than it is stored (docs/specs/030-knowledgebase/blueprints/page-surface.md "The narrow
+      // view"): what this layout measured is this window's own. It goes to the narrow view's store, which redraws the
+      // page at it, and nothing is written to the tabs: no height, no zone or note settled, no absent writer's growth.
+      if (isPageViewLens(d.activeTab)) {
+        const narrow = narrowLayoutOf(d.activeTab, layout);
+        if (narrow) notePageViewLayout(tabId, narrow);
+        return;
+      }
       // An article an import here just wrote is this editor's to settle, as its writer.
       if (!layout.local && !isArticleSettleClaimed(tabId, layout.flow)) {
         growForAbsentWriter(layout);

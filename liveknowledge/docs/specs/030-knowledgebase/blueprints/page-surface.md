@@ -29,11 +29,11 @@ tool, the zoom chords, Fit).
 
 **What (a) gave up, against (b):**
 
-- **The column does not reflow on a narrow window; it scales.** The page is 856 canvas px wide and what is placed in
-  it is stored against that width, so a window too narrow for the column shows the whole page smaller (a 390 px
-  phone shows the 760 px column at 46%), as the fork's phones already did. Nothing scrolls sideways, and at 856 px
-  of room and wider the writing is at 100%. A column that re-wraps at any width needs (b): per-browser layout with
-  zone and note positions derived on screen instead of stored.
+- **A narrow window reflows through a view lens, not a second layout engine.** The page is 856 canvas px wide and
+  what is placed in it is stored against that width. A window too narrow for the column draws the page through a
+  per-browser lens ("The narrow view") that narrows the page, shows its zones' elements fitted to the column, and
+  lowers every change back to the stored page; the engine itself sees one coherent, narrower page. Option (b)'s
+  zone-local spaces were not needed for this.
 - **The canvas engine still loads with every page**, not only with pages that have a zone. First-load JS is
   unchanged by this choice. Loading it on demand needs (b) as well.
 - **Screen readers** read the writing as before (one contenteditable in the canvas's `main`); the document outline
@@ -45,16 +45,22 @@ tool, the zoom chords, Fit).
 
 - `computePageLock({ width, height, sides, page, margin, phone })` answers the one view a page is shown at. The
   column is the page less its side margins (`856 - 2 * 48 = 760` px: an article's margins default to Narrow,
-  `resolveArticleStyle`), centred in the room the side chrome leaves. Zoom is `min(1, (room - 2 * side room) /
-column)`, never above 1 and never under `PAGE_MIN_SCALE`; the side room is 48 px, 20 px on a phone. The page's top
-  stands `PAGE_TOP_ROOM` (24 px) under the top of what scrolls, which itself starts under the top row.
+  `resolveArticleStyle`), centred in the room the side chrome leaves, and never scaled: the zoom is always 1
+  (owner 2026-11-21, "render normally without zoom like a news webpage"). A column wider than the room less its side
+  room (only for a moment, before the narrow view has narrowed the page) starts at the side room, its overflow
+  clipped, never scrolled sideways. The side room is 48 px, 20 px on a phone (`PAGE_SIDE_ROOM`,
+  `PAGE_SIDE_ROOM_PHONE`). The page's top stands `PAGE_TOP_ROOM` (24 px) under the top of what scrolls, which itself
+  starts under the top row.
+- `roomColumnOf(input)` answers the widest column the window allows (the room less twice the side room, whole px),
+  which `usePageSurface` writes to the narrow view's store on every relock ("The narrow view").
 - The offset is solved for the canvas world's transform, `scale(z) translate(o)` about the surface's centre, so a
   canvas point `p` stands at `z * (p + o) + (size / 2) * (1 - z)`.
 - `usePageSurface` (called by `Canvas`) sets the lock in a layout effect and again from a `ResizeObserver` on the
   canvas, on the scroll container and on the side chrome (`[data-contents-sidebar]`, `[data-page-rail="docked"]`),
   and from a `MutationObserver` on the canvas's own children (the side chrome arriving or leaving). It measures the
   scroll container's client box, which is what the world is laid in. **It never runs on a scroll or a keystroke.**
-- The stored page is 856 px wide (`CONTINUOUS_PAGE_WIDTH`), so the column is the spec's 760 px.
+- The stored page is 856 px wide (`CONTINUOUS_PAGE_WIDTH`), so the column is the spec's 760 px wherever the room
+  holds it, and the room's own width where it does not (the narrow view).
 - **The world's box.** The canvas world is drawn `scale(z) translate(o)` about its own centre, and a transformed
   box is something a scroll container scrolls to. So the world is `WORLD_HEIGHT_CSS` tall (the container less
   `PAGE_TOP_ROOM`), the lock is solved for that height (`worldHeight`), and a continuous page's top stands on the
@@ -91,7 +97,7 @@ shared `createViewportStore`.
 ## The scroll container (built)
 
 `Canvas.tsx`: `<div data-page-scroller>` inside the canvas's `main`, `absolute inset-0`, `overflow-y: auto`,
-`overflow-x: hidden`, a stable scrollbar gutter, holding the world element. The chrome stays in `main`, outside what
+`overflow-x: hidden` (a phone too: nothing on a page scrolls sideways), a stable scrollbar gutter, holding the world element. The chrome stays in `main`, outside what
 scrolls. `main` and the world no longer set `touch-action: none`, so a finger scrolls natively and a pinch is the
 browser's.
 
@@ -488,22 +494,23 @@ preset: CoverGradientId } | { kind: 'animated', preset: PageMotion, colouring?: 
 
 ## Testing
 
-| Rule                                                                  | Test                                                                                                                                                    |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The column: centred, 100% on a desktop, side room, 320 px to 3,840 px | `page-lock.test.ts`                                                                                                                                     |
-| The view is locked; a move is a scroll; a scroll tells nobody         | `page-viewport-store.test.ts`, `useEditorViewport.test.tsx`                                                                                             |
-| The page's scroll keys                                                | `page-keys.test.ts`                                                                                                                                     |
-| The ground follows the appearance alone                               | `view-backdrop.test.ts`                                                                                                                                 |
-| No zoom chords, no Hand, no Fit                                       | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts`                                                                                        |
-| The bar: the slot, Undo and Redo, no canvas tool                      | `PageFormattingBar.test.tsx`                                                                                                                            |
-| A short page does not scroll; the free height                         | `page-lock.test.ts` "the world's box inside the scroll container"                                                                                       |
-| The breadcrumb is over the paper and pressable                        | `PageSurfaceSheet.test.tsx`                                                                                                                             |
-| A drawing's tools: four categories, no Selection mode, no Library     | `ToolbarPalette.test.tsx`, `CategoryBar.test.tsx`                                                                                                       |
-| The tools stay while reached for and used                             | `drawing-zone-store.test.ts`                                                                                                                            |
-| Space is the page's; no tool keys or commands                         | `useCanvasPanAndMarquee.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts`, `shortcut-sections.test.ts`                         |
-| A stored background, style or lock is dropped as a tab is read        | `page-looks.test.ts`, `tab-row.test.ts`                                                                                                                 |
-| Templates carry no style; no Open Theme command                       | `article-templates.test.ts`, `editor-commands.test.ts`                                                                                                  |
-| The slash menu: groups, matching, Recent, keys, placement, sheet      | `slash-menu-model.test.ts`, `slash-recent.test.ts`, `article-slash.test.ts`, `slash-menu-place.test.ts`, `SlashMenu.test.tsx`, `e2e/slash-menu.spec.ts` |
+| Rule                                                                    | Test                                                                                                                                                    |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The column: centred, 100% at every width, side room, 320 px to 3,840 px | `page-lock.test.ts`                                                                                                                                     |
+| The narrow view: drawn narrow, lowered to the stored page, no loop      | `page-view-lens.test.ts`, `page-view-store.test.ts`, `page-view-lens.perf.test.ts`                                                                      |
+| The view is locked; a move is a scroll; a scroll tells nobody           | `page-viewport-store.test.ts`, `useEditorViewport.test.tsx`                                                                                             |
+| The page's scroll keys                                                  | `page-keys.test.ts`                                                                                                                                     |
+| The ground follows the appearance alone                                 | `view-backdrop.test.ts`                                                                                                                                 |
+| No zoom chords, no Hand, no Fit                                         | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts`                                                                                        |
+| The bar: the slot, Undo and Redo, no canvas tool                        | `PageFormattingBar.test.tsx`                                                                                                                            |
+| A short page does not scroll; the free height                           | `page-lock.test.ts` "the world's box inside the scroll container"                                                                                       |
+| The breadcrumb is over the paper and pressable                          | `PageSurfaceSheet.test.tsx`                                                                                                                             |
+| A drawing's tools: four categories, no Selection mode, no Library       | `ToolbarPalette.test.tsx`, `CategoryBar.test.tsx`                                                                                                       |
+| The tools stay while reached for and used                               | `drawing-zone-store.test.ts`                                                                                                                            |
+| Space is the page's; no tool keys or commands                           | `useCanvasPanAndMarquee.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts`, `shortcut-sections.test.ts`                         |
+| A stored background, style or lock is dropped as a tab is read          | `page-looks.test.ts`, `tab-row.test.ts`                                                                                                                 |
+| Templates carry no style; no Open Theme command                         | `article-templates.test.ts`, `editor-commands.test.ts`                                                                                                  |
+| The slash menu: groups, matching, Recent, keys, placement, sheet        | `slash-menu-model.test.ts`, `slash-recent.test.ts`, `article-slash.test.ts`, `slash-menu-place.test.ts`, `SlashMenu.test.tsx`, `e2e/slash-menu.spec.ts` |
 
 Not covered by a test: `usePageSurface` (it reads layout boxes jsdom does not lay out), the scroll container's
 extent, the rail's inset, and everything a browser would show.
@@ -538,10 +545,6 @@ Built: see "Knowledgebase Style (built)" above. What is left of it:
   (`lib/help-articles.ts` `changingTheBackground`, `choosingAFinish`; `packages/help-registry`). The dialog links
   `changingTheme` (the home and Colours) and `choosingFonts` (Text), whose words are a tab's.
 
-### A column that re-wraps on a narrow window
-
-See "Narrow windows" below: investigated, not built.
-
 ### Smaller gaps
 
 - **Help:** the Keyboard list in Settings follows what is bound now (`shortcut-sections.ts`); the help centre's
@@ -565,46 +568,54 @@ See "Narrow windows" below: investigated, not built.
   dark) and `settings-memory` opens Settings from the phone footer's More. `search.spec.ts` drives the editor's search
   panel (its This Knowledgebase group).
 
-## Narrow windows
+## The narrow view (built)
 
-Asked: what does it take for the column to re-wrap to the window's width instead of scaling down (a 390 px phone
-shows the writing at 46%)?
+`apps/editor/lib/page-surface/page-view-lens.ts`, `page-view-store.ts`; drawn in
+`app/document/[id]/editor-state/useEditorCollaboration.ts`, lowered in `useEditorDocument.ts`, measured in
+`hooks/editor/useArticles.ts`.
 
-**What is shared today, and so cannot differ per browser:**
+**What is shared, and so never differs per browser:** the page's width (`CONTINUOUS_PAGE_WIDTH`), its height
+(`Page.fit.height`, written by the writer of a change from a full-width layout), every zone's `at`, width and height,
+and the canvas positions of a zone's elements and of the margin notes. A narrow browser must write none of them, or
+a desktop reader would get a page too tall and pictures at a phone's width, and two windows of different widths
+would write over each other.
 
-- The page's width is the model's (`CONTINUOUS_PAGE_WIDTH`), and the writing's column is that less its margins.
-- The page's height is stored (`Page.fit.height`), written by the writer of a change from this browser's layout
-  (`withArticlePageHeight`), synced as a `tab-meta` patch and undone with the edit.
-- Every zone's elements (a picture, a chart, a drawing's shapes, an embed) and every margin note are canvas
-  elements stored at canvas coordinates. The layout pass reads the zone's box off the screen and the writer moves
-  the elements to it as a stored write (`withZonesFitted`, the zone engine in `packages/document`), so their
-  stored x, y and width are consequences of the writer's column width.
+**The store** (`page-view-store.ts`, one per window, a plain subscribable module store like
+`drawing-zone-store.ts`): the room's column (`setPageRoomColumn`, written by `usePageSurface` on each relock; a value
+already held tells nobody) and, per tab, the narrow layout this browser measured: the page's height, each zone's `at`
+and each margin note's corner. Never synced, never stored, gone with the window.
 
-**So a client with a narrower column would** measure a taller page and narrower zones. If it wrote them, a desktop
-reader would get a page too tall and pictures at a phone's width; if it did not, its own elements would sit at
-positions laid out for 760 px, over or beside the wrong lines.
+**The lens** (`pageViewLens(tab, view)`, pure, cached in a `WeakMap` by tab and view as `lens.ts` is): the tab itself
+when the room holds the page's column. Otherwise the continuous page is `room + 2 * margin` wide and as tall as the
+narrow layout measured (the stored height until it has); each zone is scaled by `min(1, column / zone width)`, stands
+at its narrow `at` (until measured: its stored `at`, kept inside the column) and its elements are drawn through the
+transform from the stored zone box to the narrow one (position and size; text keeps its size); margin notes stand at their
+narrow corners. The drawn `activeTab` is `pageViewLens(editLens or readLens(pageTab))`, so the article engine,
+the grips, drag, resize, snapping and hit tests all work in one coherent, narrower page: nothing in the engine knows
+the lens is there.
 
-**What a proper re-wrap needs** (this is option (b) of "The choice", the zone engine's rewrite):
+**Lowering** (`lowerPageView(real, lens, mapped)`, composed inside `throughPageLens` with the edit lens: lift edit,
+lift view, map, lower view, lower edit): the page keeps its stored `fit`; each zone keeps its stored `at`, and its
+width and height unless the change resized it (then the new size over the zone's scale); each element the lens
+moved goes back through the inverse transform, the stored element itself when it comes back unchanged; margin notes
+the same. Writing typed through it lowers as it is (the edit lens then sends it to the draft). When nothing but
+layout changed, the real tab itself comes back, and `lowerTabs` returns the real array, so a narrow layout can never
+start a commit and render loop.
 
-1. Zones drawn in the writing's flow at their block (inline, or wrapped left or right of the column), each with a
-   local coordinate space, their elements positioned relative to the zone's box and scaled with it; no absolute
-   canvas coordinates for anything in the writing.
-2. The page's height never stored: measured where it is shown. `Page.fit.height` goes, with the writer's height
-   write, the absent-writer mark and the estimator's use for sizing.
-3. Margin notes anchored to their block and laid out per browser.
-4. The element engine's conversions (grips, drop caret, live carets, drag, resize, snapping, hit tests) re-derived
-   for a zone-local space.
+**Measuring:** `useArticles`' `onLayout`, when the drawn tab is a narrow lens, puts the layout's height, zone places
+and note corners into the store and writes nothing to the tabs (no height, no zone settle, no note settle, no absent
+writer's growth). The store's change redraws the lens; the next layout measures the same and changes nothing.
 
-**The smallest honest step that was considered and not shipped:** on a client under 640 px, show the column at
-100% with the column's width set to the window, heights and zone positions kept local. Heights can be made local
-cheaply (a narrow client simply never writes `fit.height`: the writing is as tall as itself in every browser and
-nothing is clipped). Zone positions cannot: a narrow client's zone boxes differ from the stored element positions,
-and the only code that reconciles them is the writer's stored move. Making that move local means drawing a zone's
-elements through a per-client transform from the stored zone box to the measured one, which is item 1 in small,
-and it touches every conversion in item 4 for those clients. That is the zone engine's rewrite begun on one
-breakpoint, so it was not started, and the scale-down stays: a phone reads a page small but true, and writes
-nothing a desktop cannot use.
+**Costs:** the lens is worked out once per stored tab and view (a keystroke's commit, a store change), never on a
+scroll or a plain re-render: two `layOutPages` of one page, one pass over the blocks and one over the elements per
+zone (`page-view-lens.perf.test.ts` holds a 2,000 block, 500 element page inside its budget).
 
-**What the owner decides:** whether pages with no zone and no margin note (most knowledgebase pages) may re-wrap
-on a phone on their own, which needs only item 2 and a client-local column width, with pages that hold a zone
-staying scaled until the rewrite. It gives two behaviours on a phone, which is why it was not chosen here.
+**Left as it is:**
+
+- An element added to the writing while narrow (a picture inserted on a phone) is stored at the narrow size it was
+  made at; the next full-width layout fits its zone to the column as any zone is fitted.
+- A drawing shown smaller keeps its text at its own size (a text size is a preset, not a number to scale), so a
+  label in a drawing scaled far down can overrun its shape on a phone. Drawing in a zone on a phone is in narrow
+  coordinates, lowered through the inverse transform.
+- A layout measured just before the window widened past the column could reach `onLayout` once the drawn tab is
+  the real one again; its height is then this browser's full-width layout's on the next pass.

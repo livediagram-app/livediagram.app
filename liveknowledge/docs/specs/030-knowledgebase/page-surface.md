@@ -19,14 +19,18 @@ replaces what the fork still shows around the writing.
 - **A reading column.** The writing is one centred column, 760 px wide at most (the stored page is 856 px wide
   and keeps 48 px either side), with 48 px of room either side on a desktop and 20 px on a phone. It
   scrolls with the window as any web page does: the wheel, the scrollbar, Page Up and Down, Home and End, and the
-  browser's find all behave as on a web page. **A phone never shrinks the page to fit** (owner 2026-11-21): it shows the
-  page at 75% at least, so the writing reads; the column starts 20 px from the left and what is wider scrolls
-  sideways. A phone has no Undo and Redo buttons (the edit bar stood over them), and its Pages, Ask and AI tabs are
-  as wide as their names.
-- **A narrow window.** Where the window has no room for the column and its side room, the whole page is shown
-  smaller to fit, and nothing scrolls sideways. The column does not re-wrap: what is placed in the writing (a
-  picture, a chart, a drawing) is stored against the page's width
-  ([blueprint](blueprints/page-surface.md) "The choice").
+  browser's find all behave as on a web page. **A page is always shown at 100%** (owner 2026-11-21: "this should
+  just render normally without zoom like a news webpage"): never scaled up or down, its text at its normal size,
+  and nothing scrolls sideways. A phone has no Undo and Redo buttons (the edit bar stood over them), and its Pages,
+  Ask and AI tabs are as wide as their names.
+- **A narrow window reflows the writing.** Where the window has no room for the 760 px column and its side room
+  (a phone, a narrow desktop window, the page tree taking room), the column is as wide as the room less the side
+  room, and the writing re-wraps to it, as a news site's does. What is placed in the writing (a picture, a chart, a
+  drawing, an embed) wider than that column is shown smaller to fit it; a wide table or code block scrolls sideways
+  inside its own box. **The narrow layout is the viewer's own and is never stored**: the page keeps its stored
+  856 px width, its height and where its placed things stand, so two people at different window widths never
+  write over each other and a phone reader writes nothing by reading. Writing typed on a phone is saved as any
+  writing is; only what the narrow layout worked out stays in that browser.
 - **As short as its writing.** A page of one line is one line long: it does not scroll on a short window, and
   Linked From stands right under the writing. The stored page is never taller than its writing needs; a press
   anywhere in the window under the last line still puts the caret in the writing, which is the view's doing and

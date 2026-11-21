@@ -174,6 +174,18 @@ function parsePage(v: unknown): Page | undefined {
   return page && rowAt ? { ...page, rowAt } : page;
 }
 
+// The pages a window draws narrower than they are stored (docs/specs/030-knowledgebase/blueprints/page-surface.md
+// "The narrow view"): made by the editor's narrow view, never stored (its changes are lowered back to the stored page
+// first), so the sides they were drawn at are honoured as they are read. A stored object is never among them, and
+// a narrow width written anywhere is read back at the continuous width.
+const viewPages = new WeakMap<object, PageSides>();
+
+/** A continuous page as one window draws it: read at its own sides, which are the drawing's alone. */
+export function asViewPage<P extends Page>(page: P): P {
+  if (page.fit) viewPages.set(page, page.fit);
+  return page;
+}
+
 /** A continuous page's sides as stored: the continuous width, and its height within the continuous limits (the
  *  least height when none was stored). */
 function continuousSides(v: unknown): PageSides {
@@ -221,7 +233,7 @@ function parsePageFields(v: unknown): Page | undefined {
     p.size !== 'fit'
       ? undefined
       : kindFields.kind === 'article'
-        ? continuousSides(p.fit)
+        ? (viewPages.get(p) ?? continuousSides(p.fit))
         : parsePageSides(p.fit);
   const ownSize =
     isPageSizeId(p.size) && p.size !== 'a4' && (p.size !== 'fit' || fit !== undefined);
