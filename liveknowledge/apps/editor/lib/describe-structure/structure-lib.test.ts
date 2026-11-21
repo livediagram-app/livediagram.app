@@ -6,7 +6,12 @@ import { structureAiLine, structureFailureWords, structurePlaceholder } from './
 // docs/specs/030-knowledgebase/describe-to-set-up.md "Describe Structure on a page".
 
 const para = (id: string, text: string, style?: string): ArticleBlock =>
-  ({ id, type: 'paragraph', ...(style ? { style } : {}), runs: text ? [{ text }] : [] }) as ArticleBlock;
+  ({
+    id,
+    type: 'paragraph',
+    ...(style ? { style } : {}),
+    runs: text ? [{ text }] : [],
+  }) as ArticleBlock;
 const ids = (blocks: readonly ArticleBlock[]) => blocks.map((b) => b.id);
 
 describe('withStructureAtTop', () => {
@@ -27,7 +32,12 @@ describe('withStructureAtTop', () => {
   it('keeps writing someone typed meanwhile, under the structure', () => {
     n = 0;
     const out = withStructureAtTop(
-      [para('t', 'Deploys', 'title'), para('sub', 'Sub', 'subtitle'), para('w', 'Typed.'), para('e', '')],
+      [
+        para('t', 'Deploys', 'title'),
+        para('sub', 'Sub', 'subtitle'),
+        para('w', 'Typed.'),
+        para('e', ''),
+      ],
       structure,
       newId,
     );

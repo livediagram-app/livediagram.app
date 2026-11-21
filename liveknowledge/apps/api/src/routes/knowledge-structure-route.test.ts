@@ -51,9 +51,7 @@ const draft = (kit: Kit, who: Who, body: unknown = { purpose: PURPOSE }, tab = '
   kit.call(who, 'POST', `/api/documents/kb/pages/${tab}/describe-structure`, body);
 const counters = (kit: Kit) =>
   kit.db.sql
-    .prepare(
-      "SELECT scope, used FROM usage_counters WHERE scope LIKE 'structure:%' ORDER BY scope",
-    )
+    .prepare("SELECT scope, used FROM usage_counters WHERE scope LIKE 'structure:%' ORDER BY scope")
     .all();
 const sentContent = (body: string) =>
   (JSON.parse(body) as { messages: { content: string }[] }).messages[0]!.content;
@@ -78,7 +76,7 @@ const builtInKit = (ai: ReturnType<typeof fakeAi>, more: object = withSecret) =>
   knowledgeKit({ ...more, AI: ai });
 
 describe('POST pages/<tab>/describe-structure on the team key', () => {
-  it("answers an Editor a structure read strictly, told only titles, and writes nothing", async () => {
+  it('answers an Editor a structure read strictly, told only titles, and writes nothing', async () => {
     const logged = consoleSpy();
     const claude = fakeClaude(STRUCTURE);
     vi.stubGlobal('fetch', claude.fetch);
@@ -112,15 +110,13 @@ describe('POST pages/<tab>/describe-structure on the team key', () => {
     expect(logged()).not.toContain('When We Ship');
   });
 
-  it("drafts from the saved name with no words, for a Participant as for an Editor", async () => {
+  it('drafts from the saved name with no words, for a Participant as for an Editor', async () => {
     const claude = fakeClaude(STRUCTURE);
     vi.stubGlobal('fetch', claude.fetch);
     const kit = await knowledgeKit(withSecret);
     await setKey(kit);
     expect((await draft(kit, 'participant', { purpose: '' })).status).toBe(200);
-    expect(sentContent(claude.sent[0]!.body)).toContain(
-      '<page_title>Holidays</page_title>',
-    );
+    expect(sentContent(claude.sent[0]!.body)).toContain('<page_title>Holidays</page_title>');
   });
 
   it('runs on OpenAI when that is the provider', async () => {
@@ -173,7 +169,10 @@ describe('POST pages/<tab>/describe-structure on the team key', () => {
       'no-purpose',
     ]);
     // Not JSON at all: no words, and the saved name drafts.
-    expect((await kit.call('editor', 'POST', '/api/documents/kb/pages/holidays/describe-structure')).status).toBe(200);
+    expect(
+      (await kit.call('editor', 'POST', '/api/documents/kb/pages/holidays/describe-structure'))
+        .status,
+    ).toBe(200);
     expect(claude.sent).toHaveLength(1);
   });
 
@@ -207,8 +206,9 @@ describe('POST pages/<tab>/describe-structure on the team key', () => {
     expect(await failure(await draft(kit, 'editor'))).toEqual([502, 'no-structure']);
     vi.stubGlobal(
       'fetch',
-      fakeClaude(() => new Response('{"type":"error","error":{"type":"overloaded_error"}}', { status: 529 }))
-        .fetch,
+      fakeClaude(
+        () => new Response('{"type":"error","error":{"type":"overloaded_error"}}', { status: 529 }),
+      ).fetch,
     );
     const res = await draft(kit, 'editor');
     const body = await res.json<{ error: string; provider: string }>();
@@ -219,7 +219,9 @@ describe('POST pages/<tab>/describe-structure on the team key', () => {
     const ai = fakeAi({ response: JSON.parse(STRUCTURE) });
     const kit = await builtInKit(ai);
     await setKey(kit);
-    kit.db.sql.prepare("UPDATE knowledge_settings SET value = 'broken' WHERE name = ?").run('ai_key');
+    kit.db.sql
+      .prepare("UPDATE knowledge_settings SET value = 'broken' WHERE name = ?")
+      .run('ai_key');
     expect(await failure(await draft(kit, 'editor'))).toEqual([409, 'ask_unavailable']);
     expect(ai.sent).toEqual([]);
   });
@@ -230,9 +232,7 @@ describe('POST pages/<tab>/describe-structure on the team key', () => {
     const kit = await knowledgeKit(withSecret);
     await setKey(kit);
     expect((await draft(kit, 'editor', { purpose: '' }, 'Rollbacks')).status).toBe(200);
-    expect(sentContent(claude.sent[0]!.body)).toContain(
-      '<page_title>Rollbacks</page_title>',
-    );
+    expect(sentContent(claude.sent[0]!.body)).toContain('<page_title>Rollbacks</page_title>');
   });
 });
 

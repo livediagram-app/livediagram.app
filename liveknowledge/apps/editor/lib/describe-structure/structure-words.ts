@@ -1,7 +1,11 @@
 // What Describe Structure says (docs/specs/030-knowledgebase/describe-to-set-up.md "Describe Structure on a page"):
 // its button, its dialog and a failure in plain words with the next step. A failure of the model call on the team's
 // key reads in the words Ask uses; never a status, a code or the upstream's own message.
-import type { AskAiChoice, KnowledgeAiProvider, KnowledgeAiSettings } from '@liveknowledge/api-schema';
+import type {
+  AskAiChoice,
+  KnowledgeAiProvider,
+  KnowledgeAiSettings,
+} from '@liveknowledge/api-schema';
 import {
   STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY,
   STRUCTURE_MAX_PURPOSE_CHARS,
@@ -61,8 +65,11 @@ export function structureFailureWords(
   if (MODEL_KINDS.has(kind)) {
     const words = askFailureWords(kind, { manageAi: opts.manageAi, provider: opts.provider });
     return {
-      title: kind === 'ask_unavailable' ? 'Describe Structure Is Not Available Right Now' : words.title,
-      text: words.text.replace(/\bask again\b/g, 'try again').replace(/\bAsk again\b/g, 'Try again'),
+      title:
+        kind === 'ask_unavailable' ? 'Describe Structure Is Not Available Right Now' : words.title,
+      text: words.text
+        .replace(/\bask again\b/g, 'try again')
+        .replace(/\bAsk again\b/g, 'Try again'),
       settings: words.step === 'ai-settings',
     };
   }

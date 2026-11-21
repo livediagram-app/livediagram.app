@@ -128,7 +128,8 @@ export function pageStructureRequest(input: PageStructureInput): ModelRequest {
 /** The asks one draft may make on built-in AI: the first, and one more with what was wrong with the first reply. */
 export const STRUCTURE_BUILT_IN_ASKS = 2;
 /** The words the second ask is given: fixed, never the model's own text. */
-export const STRUCTURE_REFUSED_NOT_JSON = 'the reply was not one JSON object in the shape asked for';
+export const STRUCTURE_REFUSED_NOT_JSON =
+  'the reply was not one JSON object in the shape asked for';
 export const STRUCTURE_REFUSED_NO_HEADING = 'the reply held no heading that could be used';
 
 /** The reply's shape, for Workers AI's JSON mode. The reader checks every field again whatever the model sends. */
@@ -210,7 +211,8 @@ const unmarked = (text: string): string =>
     .replace(/^(?:[-*+•]|\d{1,2}[.)])\s+/, '')
     .replace(/^(\*\*|__)(.+)\1$/, '$2');
 
-const textOf = (value: unknown, max: number): string => plainLine(unmarked(plainLine(value, max * 2)), max);
+const textOf = (value: unknown, max: number): string =>
+  plainLine(unmarked(plainLine(value, max * 2)), max);
 
 const itemsOf = (value: unknown, max: number, chars: number): string[] =>
   (Array.isArray(value) ? value : [])

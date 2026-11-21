@@ -7,13 +7,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { savedFlowOf } from '@liveknowledge/document';
 import { STRUCTURE_MAX_PURPOSE_CHARS } from '@liveknowledge/knowledge';
-import {
-  Button,
-  DialogCloseButton,
-  DialogFooter,
-  DialogHeader,
-  TextArea,
-} from '@liveknowledge/ui';
+import { Button, DialogCloseButton, DialogFooter, DialogHeader, TextArea } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useEditorChromeStore, type EditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -50,7 +44,13 @@ export function draftTitleOf(chrome: EditorChromeStore, tabId: string): string {
   return typed.trim() || pageTab.name.trim();
 }
 
-export function DescribeStructureDialog({ tabId, onClose }: { tabId: string; onClose: () => void }) {
+export function DescribeStructureDialog({
+  tabId,
+  onClose,
+}: {
+  tabId: string;
+  onClose: () => void;
+}) {
   const session = useAskSession();
   if (!session) return null;
   return <DialogBody session={session} tabId={tabId} onClose={onClose} />;
@@ -140,7 +140,10 @@ function DialogBody({
 
   return (
     <Dialog open onClose={close} titleId={titleId} size="md" phoneSheet>
-      <DialogHeader title={<span id={titleId}>{STRUCTURE_BUTTON}</span>} subtitle={STRUCTURE_SUBTITLE}>
+      <DialogHeader
+        title={<span id={titleId}>{STRUCTURE_BUTTON}</span>}
+        subtitle={STRUCTURE_SUBTITLE}
+      >
         <DialogCloseButton onClick={close} />
       </DialogHeader>
       <div className="flex flex-col gap-3 px-6 py-5" data-describe-structure-dialog="">

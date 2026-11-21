@@ -1140,7 +1140,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      "Delete one page: it moves to the knowledgebase's page Trash (docs/specs/030-knowledgebase/knowledgebases-and-pages.md \"The page Trash\"), restorable by a person in the editor for 30 days. A connected file's row, and a tab shared with another item, are removed outright.",
+      'Delete one page: it moves to the knowledgebase\'s page Trash (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page Trash"), restorable by a person in the editor for 30 days. A connected file\'s row, and a tab shared with another item, are removed outright.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404, 410],

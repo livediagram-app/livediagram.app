@@ -197,10 +197,7 @@ describe('parsePageStructure', () => {
     expect((items[1] as { items: string[] }).items).toHaveLength(STRUCTURE_MAX_ITEMS);
     const long = Array.from({ length: 40 }, () => ({ kind: 'text', text: 'y'.repeat(240) }));
     const capped = parsePageStructure(reply([heading('One'), ...long]))!;
-    const chars = capped.reduce(
-      (n, b) => n + ('text' in b ? b.text.length : 0),
-      0,
-    );
+    const chars = capped.reduce((n, b) => n + ('text' in b ? b.text.length : 0), 0);
     expect(chars).toBeLessThanOrEqual(STRUCTURE_MAX_CHARS);
     expect(capped.length).toBeLessThan(long.length);
     // Item and column text counts toward the bound too.

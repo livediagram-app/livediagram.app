@@ -36,16 +36,20 @@ import { DescribeStructureWhenOpen } from './DescribeStructureHost';
 import { describeStructureOf, useDescribeStructureOffered } from './useDescribeStructureOffered';
 
 const para = (id: string, text: string, style?: string): ArticleBlock =>
-  ({ id, type: 'paragraph', ...(style ? { style } : {}), runs: text ? [{ text }] : [] }) as ArticleBlock;
-
-const pageOf = (blocks: ArticleBlock[], over: Partial<Tab> = {}): Tab =>
   ({
-    id: 'p1',
-    name: 'Deploys',
-    elements: [],
-    articles: { [KNOWLEDGEBASE_FLOW]: { blocks } },
-    ...over,
-  });
+    id,
+    type: 'paragraph',
+    ...(style ? { style } : {}),
+    runs: text ? [{ text }] : [],
+  }) as ArticleBlock;
+
+const pageOf = (blocks: ArticleBlock[], over: Partial<Tab> = {}): Tab => ({
+  id: 'p1',
+  name: 'Deploys',
+  elements: [],
+  articles: { [KNOWLEDGEBASE_FLOW]: { blocks } },
+  ...over,
+});
 const EMPTY = () => pageOf([para('t', 'Deploys', 'title'), para('e', '')]);
 const WRITTEN = () => pageOf([para('t', 'Deploys', 'title'), para('w', 'We deploy on Tuesdays.')]);
 
@@ -114,7 +118,9 @@ describe('who is offered Describe Structure, and where', () => {
   it('is offered to a signed-in person who may edit, and never to a Viewer, a guest, an embed or a workbench', () => {
     expect(describeStructureOf(chrome(EMPTY(), {}, 'participate').value)).toBe('read');
     expect(describeStructureOf(chrome(EMPTY(), { mayEdit: false }, 'view').value)).toBeNull();
-    expect(describeStructureOf(chrome(EMPTY(), {}, 'edit', { accountUserId: null }).value)).toBeNull();
+    expect(
+      describeStructureOf(chrome(EMPTY(), {}, 'edit', { accountUserId: null }).value),
+    ).toBeNull();
     expect(describeStructureOf(chrome(EMPTY(), {}, 'edit', { embedMode: true }).value)).toBeNull();
     expect(
       describeStructureOf(chrome(EMPTY(), {}, 'edit', { workbench: { id: 'w' } }).value),
@@ -149,7 +155,9 @@ describe('the button', () => {
     />
   );
   const order = () =>
-    [...document.querySelectorAll('button')].map((b) => b.textContent?.replace(/[⌘]|Ctrl S|E$/g, '').trim());
+    [...document.querySelectorAll('button')].map((b) =>
+      b.textContent?.replace(/[⌘]|Ctrl S|E$/g, '').trim(),
+    );
 
   it('stands to the left of Edit while reading', () => {
     const onDescribe = vi.fn();
@@ -210,7 +218,9 @@ describe('the dialog', () => {
     const map = commitTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
     const [after] = map([page]);
     const blocks = after!.articles![KNOWLEDGEBASE_FLOW]!.blocks;
-    expect(blocks.map((b) => (b.type === 'paragraph' ? [b.style, b.runs[0]?.text] : b.type))).toEqual([
+    expect(
+      blocks.map((b) => (b.type === 'paragraph' ? [b.style, b.runs[0]?.text] : b.type)),
+    ).toEqual([
       ['title', 'Deploys'],
       ['h2', 'When We Deploy'],
       [undefined, 'The days deploys go out.'],
@@ -221,7 +231,11 @@ describe('the dialog', () => {
   it("sends built-in when the person chose it over the team's key, and says so", async () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: true }));
     askAiChoiceStore.set({ ownerId: 'me', shareCode: null }, 'd1', 'built-in');
-    structureApi.apiDescribeStructure.mockResolvedValue({ ok: true, blocks: BLOCKS, provider: 'built-in' });
+    structureApi.apiDescribeStructure.mockResolvedValue({
+      ok: true,
+      blocks: BLOCKS,
+      provider: 'built-in',
+    });
     renderInEditor(
       <DescribeStructureDialog tabId="p1" onClose={vi.fn()} />,
       chrome(EMPTY(), { editing: true }).value,
@@ -257,7 +271,11 @@ describe('the dialog', () => {
 
   it('enters edit mode first when it ended while the request was out', async () => {
     const { value, start, commitTabs } = chrome(EMPTY(), { editing: false });
-    structureApi.apiDescribeStructure.mockResolvedValue({ ok: true, blocks: BLOCKS, provider: 'anthropic' });
+    structureApi.apiDescribeStructure.mockResolvedValue({
+      ok: true,
+      blocks: BLOCKS,
+      provider: 'anthropic',
+    });
     renderInEditor(<DescribeStructureDialog tabId="p1" onClose={vi.fn()} />, value);
     fireEvent.click(screen.getByRole('button', { name: 'Describe' }));
     await waitFor(() => expect(commitTabs).toHaveBeenCalled());

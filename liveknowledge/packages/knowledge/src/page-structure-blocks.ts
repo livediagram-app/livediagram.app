@@ -34,14 +34,12 @@ export function pageStructureArticleBlocks(
         return [tableFromGrid(newId(), [header, empty], true)!];
       }
       default:
-        return block.items.map(
-          (text): ArticleBlock => ({
-            id: newId(),
-            type: 'list',
-            list: LIST[block.kind],
-            runs: [{ text }],
-          }),
-        );
+        return block.items.map((text): ArticleBlock => ({
+          id: newId(),
+          type: 'list',
+          list: LIST[block.kind],
+          runs: [{ text }],
+        }));
     }
   });
 }
