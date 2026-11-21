@@ -39,6 +39,8 @@ editing share live and that nobody else sees until it is saved.
 - The top of the page shows the draft bar: who is editing (discs), "Unsaved changes" once the draft differs from the
   saved page, then **Cancel** and **Save** (primary). `Mod-S` saves; `Escape` with the caret not in a menu asks to
   Cancel.
+- **The page's name while editing** (owner, 2026-11-21): the sidebar shows the draft's Title as it is typed, before
+  Save, for the one editing; Save makes it the stored name, and Cancel (or discarding) puts the saved name back.
 - **Save** makes the draft the saved page for everyone: readers see it at once, search and agents read it, the
   Updated stamp (verification.md "Created and Updated") moves to the person who pressed Save, "Changed since
   verified" is worked out against it, and the draft is gone. Everyone else still in edit mode stays in edit mode on

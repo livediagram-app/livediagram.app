@@ -23,6 +23,7 @@ import { wantsTitleFocus } from '@/lib/page-title-focus';
 import { track } from '@/lib/telemetry';
 import type { EditorDocument } from './useEditorDocument';
 import type { EditorSelection } from './useEditorSelection';
+import { clearLivePageTitle } from '@/lib/article/live-page-title';
 import type { EditorSession } from './useEditorSession';
 import type { EditorCollaboration } from './useEditorCollaboration';
 import type { EditorPages } from './useEditorPages';
@@ -138,6 +139,8 @@ export function useEditorPageEditing({
     );
     resetHistory();
     enter(null);
+    // The tree named the page from the draft's Title: it goes back to the saved name.
+    clearLivePageTitle();
     debugLog('[page-edit] discarded', { tabId });
     track('Tab', 'Ended', 'Discard');
   };
@@ -152,6 +155,7 @@ export function useEditorPageEditing({
       debugLog('[page-edit] cancelled, others editing', { tabId });
       resetHistory();
       enter(null);
+      clearLivePageTitle();
       return;
     }
     // What is typed counts though its commit has not rendered yet: the tabs here are this render's.
@@ -172,6 +176,7 @@ export function useEditorPageEditing({
     if (pageEditorsOf(tabId).length > 0) {
       resetHistory();
       enter(null);
+      clearLivePageTitle();
       return;
     }
     discard(tabId);
