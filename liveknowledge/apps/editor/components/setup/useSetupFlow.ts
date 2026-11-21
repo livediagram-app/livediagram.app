@@ -128,7 +128,9 @@ export function useSetupFlow(session: AskSession, mode: SetupMode, onClose: () =
         setStep('describe');
         return;
       }
-      track('UI', 'Used', 'SetupSuggested');
+      // Which AI answered: the team's key, or built-in AI (literal types, so the telemetry catalogue's scan reads them).
+      if (outcome.suggestion.provider === 'built-in') track('UI', 'Used', 'SetupSuggestedBuiltIn');
+      else track('UI', 'Used', 'SetupSuggested');
       setPages(reviewPages(outcome.suggestion.pages));
       setName(
         mode === 'set-up' && isUntitled(chrome.get().documentName)

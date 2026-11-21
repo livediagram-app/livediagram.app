@@ -783,7 +783,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|CopyPageLink': "Someone copied a page's link from its menu in the page tree.",
   'UI|Changed|PageTreeCollapsed': 'Someone folded the page tree away.',
   'UI|Changed|PageTreeExpanded': 'Someone opened the page tree out again.',
-  'UI|Used|SetupSuggested': 'Describe to Set Up suggested a page tree from what someone described.',
+  'UI|Used|SetupSuggested':
+    "Describe to Set Up suggested a page tree from what someone described, on the team's own AI key.",
+  'UI|Used|SetupSuggestedBuiltIn':
+    'Describe to Set Up suggested a page tree from what someone described, on built-in AI (no team key set).',
   'UI|Added|AiKey':
     "Someone added the team's own Claude or OpenAI key to a knowledgebase. Never the key.",
   'UI|Removed|AiKey': "Someone removed a knowledgebase's AI key.",

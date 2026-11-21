@@ -28,6 +28,7 @@ import {
   SETUP_BUTTON_LINE,
   createLabel,
   describeHint,
+  setupAiLine,
   setupFailureWords,
   setupTitle,
 } from './setup-words';
@@ -300,6 +301,9 @@ describe('the words', () => {
     ['network', 'The Description Could Not Be Sent', 'try-again'],
     ['forbidden', 'Only a Signed-In Editor Can Do This', 'none'],
     ['description-too-long', 'That Description Cannot Be Used', 'none'],
+    ['built-in-unavailable', 'Built-In AI Is Not Set Up Here', 'ai-settings'],
+    ['built-in-limit', "You Have Used Today's 10 Built-In Suggestions", 'ai-settings'],
+    ['built-in-failed', 'The Built-In AI Could Not Answer', 'try-again'],
     ['anything-else', 'Could Not Suggest a Structure', 'try-again'],
   ])('words %s as Ask does, with its next step', (kind, title, step) => {
     const words = setupFailureWords(kind, { provider: 'openai' });
@@ -307,6 +311,12 @@ describe('the words', () => {
     expect(words.step).toBe(step);
     expect(words.text).not.toMatch(/ask again|Ask Again|\b[45]\d\d\b/);
     expect(words.title + words.text).not.toContain('Claude');
+  });
+
+  it("says which AI answers: built-in with no key, the team's with one, nothing unread", () => {
+    expect(setupAiLine(null)).toBeNull();
+    expect(setupAiLine({ hasKey: false })).toBe('Uses built-in AI');
+    expect(setupAiLine({ hasKey: true })).toBe("Uses your team's key");
   });
 
   it('names Claude when that is the provider, or none is known', () => {

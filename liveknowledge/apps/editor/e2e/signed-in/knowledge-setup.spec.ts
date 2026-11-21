@@ -7,7 +7,8 @@ import { installSession } from './session';
 // Describe to Set Up (docs/specs/030-knowledgebase/describe-to-set-up.md; blueprints/describe-to-set-up.md): a new
 // knowledgebase opens on its start screen, which offers Describe to Set Up at its rail's foot as the sidebar does
 // while it is empty, and the dialog's three steps turn a description into pages. No model is called: the stack's stand-in
-// answers for both providers (scripts/e2e-claude-stand-in.mjs `SETUP_STRUCTURE`), and the keys here are made up.
+// answers for both providers and for built-in AI (scripts/e2e-claude-stand-in.mjs `SETUP_STRUCTURE`), and the keys
+// here are made up.
 
 const KEY = 'sk-ant-e2e-not-a-real-key-7Qx2Lm9f3c';
 const OPENAI_KEY = 'sk-proj-e2e-not-a-real-key-4Hd8Rt2v9c';
@@ -70,8 +71,10 @@ test('a new knowledgebase opens on its start screen, whose Describe to Set Up tu
   const suggested = page.waitForResponse(
     (r) => r.request().method() === 'POST' && /\/setup\/suggest$/.test(new URL(r.url()).pathname),
   );
+  await expect(dialog.locator('[data-setup-ai]')).toHaveText("Uses your team's key");
   await describeAndSuggest(dialog);
   expect((await suggested).ok()).toBe(true);
+  expect(((await (await suggested).json()) as { provider: string }).provider).toBe('anthropic');
   expect(await titlesOf(dialog)).toEqual([
     'Getting Started',
     'Local Setup',
@@ -113,11 +116,11 @@ test('a new knowledgebase opens on its start screen, whose Describe to Set Up tu
   expectNoPageErrors(pageErrors);
 });
 
-test('with no key the dialog says why, and an OpenAI key added in AI Settings returns to step 1', async ({
+test('with no key it runs on built-in AI at once, and on an OpenAI key once one is set', async ({
   page,
   pageErrors,
 }) => {
-  await signedInKnowledgebase(page);
+  const { who, id } = await signedInKnowledgebase(page);
   // What the control does is its hover card, not a line under it.
   await setupButton(page).hover();
   await expect(
@@ -125,29 +128,33 @@ test('with no key the dialog says why, and an OpenAI key added in AI Settings re
   ).toBeVisible();
   await setupButton(page).click();
   const dialog = setupDialog(page);
-  await expect(
-    dialog.getByRole('heading', { name: "Describe to Set Up Needs Your Team's AI Key" }),
-  ).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Suggest a Structure' })).toHaveCount(0);
-
-  await dialog.getByRole('button', { name: 'Open AI Settings' }).click();
-  const settings = page.getByRole('dialog', { name: 'AI Settings' });
-  // Provider first, then the key.
-  // The radio itself is visually hidden: the row is what is pressed.
-  await settings.locator('[data-ai-provider="openai"]').click();
-  await expect(settings.getByRole('radio', { name: /^OpenAI/ })).toBeChecked();
-  const field = settings.getByRole('textbox', { name: 'Add an OpenAI Key' });
-  await expect(field).toHaveAttribute('placeholder', 'sk-...');
-  await field.fill(OPENAI_KEY);
-  await settings.getByRole('button', { name: 'Save Key' }).click();
-  await expect(settings.getByRole('status')).toHaveText(`Key Ending ${OPENAI_KEY.slice(-4)}`);
-  await settings.getByRole('button', { name: 'Done' }).click();
-
-  // Back at step 1, and the suggestion is made on OpenAI (the stand-in's Responses route).
+  // No key is no stop: step 1 is there, saying quietly which AI answers.
   await expect(
     dialog.getByRole('textbox', { name: 'What Is This Knowledgebase For?' }),
   ).toBeVisible();
+  await expect(dialog.locator('[data-setup-ai]')).toHaveText('Uses built-in AI');
+  await expect(dialog.getByRole('button', { name: 'Open AI Settings' })).toHaveCount(0);
+  // Built-in AI answers (the stand-in's Workers AI route, as the binding would).
+  const builtIn = page.waitForResponse(
+    (r) => r.request().method() === 'POST' && /\/setup\/suggest$/.test(new URL(r.url()).pathname),
+  );
   await describeAndSuggest(dialog);
+  expect(((await (await builtIn).json()) as { provider: string }).provider).toBe('built-in');
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(await treeShape(page)).toHaveLength(1);
+
+  // The team's OpenAI key set: the line says so, and the suggestion is made on OpenAI (the stand-in's Responses
+  // route).
+  await saveKey(page, who, id, OPENAI_KEY, 'openai');
+  await page.reload();
+  await setupButton(page).click();
+  await expect(dialog.locator('[data-setup-ai]')).toHaveText("Uses your team's key");
+  const onKey = page.waitForResponse(
+    (r) => r.request().method() === 'POST' && /\/setup\/suggest$/.test(new URL(r.url()).pathname),
+  );
+  await describeAndSuggest(dialog);
+  expect(((await (await onKey).json()) as { provider: string }).provider).toBe('openai');
   await dialog.getByRole('button', { name: 'Cancel' }).click();
   await expect(dialog).toHaveCount(0);
   expect(await treeShape(page)).toHaveLength(1);

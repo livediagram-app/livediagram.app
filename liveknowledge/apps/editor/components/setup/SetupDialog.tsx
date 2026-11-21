@@ -1,8 +1,9 @@
 'use client';
 
 // Describe to Set Up (docs/specs/030-knowledgebase/describe-to-set-up.md "The flow"): one centred dialog of steady
-// height in three steps, Describe, Review and Create. It runs on the team's own AI key: with none, step 1 is the
-// explanation with the way into AI Settings. Fetched when first opened (SetupHost.tsx).
+// height in three steps, Describe, Review and Create. It runs on built-in AI with no key, and on the team's own key
+// when one is set (owner, 2026-11-21): step 1 is there at once either way, with one quiet line saying which. Fetched
+// when first opened (SetupHost.tsx).
 import { useEffect, useId } from 'react';
 import { Button, DialogCloseButton, DialogFooter, DialogHeader } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
@@ -11,16 +12,15 @@ import { openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
 import { useAiSettingsState, useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import type { SetupMode } from '@/lib/knowledge-setup/setup-open';
-import { createLabel, setupFailureWords, setupTitle } from '@/lib/knowledge-setup/setup-words';
+import {
+  createLabel,
+  setupAiLine,
+  setupFailureWords,
+  setupTitle,
+} from '@/lib/knowledge-setup/setup-words';
 import { DescribeStep } from './DescribeStep';
 import { ReviewStep } from './ReviewStep';
-import {
-  SetupCreating,
-  SetupDone,
-  SetupNoKey,
-  SetupSettingsFailed,
-  SetupSuggesting,
-} from './SetupStates';
+import { SetupCreating, SetupDone, SetupSuggesting } from './SetupStates';
 import { useSetupFlow, type SetupStep } from './useSetupFlow';
 
 const STEPS = ['Describe', 'Review', 'Create'] as const;
@@ -88,9 +88,9 @@ function SetupDialogBody({
     void aiSettingsStore.load(who, documentId);
   }, [who, documentId]);
 
+  // Read only for the line that says which AI answers: nothing waits for it, and the api decides.
   const ready = settings.status === 'ready' ? settings.settings : null;
-  const noKey = ready !== null && !ready.hasKey;
-  const loading = settings.status !== 'ready' && settings.status !== 'failed';
+  const aiLine = setupAiLine(ready);
   // The request and the run end with the dialog; while pages are being made it does not close under the person.
   const close = flow.step === 'creating' ? flow.cancelCreate : onClose;
   const failure = flow.failure
@@ -98,11 +98,7 @@ function SetupDialogBody({
     : null;
 
   let body;
-  if (settings.status === 'failed')
-    body = <SetupSettingsFailed onRetry={() => void aiSettingsStore.load(who, documentId)} />;
-  else if (loading) body = <div role="status" aria-label="Loading" className="min-h-0 flex-1" />;
-  else if (noKey) body = <SetupNoKey />;
-  else if (flow.step === 'suggesting') body = <SetupSuggesting />;
+  if (flow.step === 'suggesting') body = <SetupSuggesting />;
   else if (flow.step === 'review')
     body = (
       <ReviewStep
@@ -138,10 +134,15 @@ function SetupDialogBody({
           onSubmit={flow.suggest}
           adding={mode === 'add'}
         />
+        {aiLine ? (
+          <p className="-mt-2 text-xs text-slate-600 dark:text-slate-400" data-setup-ai="">
+            {aiLine}
+          </p>
+        ) : null}
       </>
     );
 
-  const describing = !noKey && !loading && settings.status !== 'failed' && flow.step === 'describe';
+  const describing = flow.step === 'describe';
   return (
     <Dialog open onClose={close} titleId={titleId} size="lg" phoneSheet>
       <DialogHeader

@@ -2,8 +2,9 @@
 // and a failure in plain words with the next step. A failure of the model call reads in the words Ask uses
 // (lib/knowledge-ask/ask-failure-words.ts); the limits and an answer with no structure have words of their own.
 // Never a status, a code or the upstream's own message.
-import type { KnowledgeAiProvider } from '@liveknowledge/api-schema';
+import type { KnowledgeAiProvider, KnowledgeAiSettings } from '@liveknowledge/api-schema';
 import {
+  SETUP_BUILT_IN_PER_PERSON_PER_DAY,
   SETUP_MAX_DESCRIPTION_CHARS,
   SETUP_MIN_DESCRIPTION_CHARS,
   SETUP_PER_KNOWLEDGEBASE_PER_DAY,
@@ -54,6 +55,11 @@ export const createLabel = (count: number): string =>
 
 export const UNDO_NOTE = 'Pages are made twenty at a time; Undo takes back the last twenty.';
 
+/** The quiet line under the field saying which AI answers (describe-to-set-up.md "The model"): nothing until the
+ *  settings are read. */
+export const setupAiLine = (settings: Pick<KnowledgeAiSettings, 'hasKey'> | null): string | null =>
+  settings === null ? null : settings.hasKey ? "Uses your team's key" : 'Uses built-in AI';
+
 export type SetupNextStep = 'ai-settings' | 'try-again' | 'none';
 export type SetupFailureWords = { title: string; text: string; step: SetupNextStep };
 
@@ -89,6 +95,24 @@ export function setupFailureWords(
     };
   }
   switch (kind) {
+    case 'built-in-unavailable':
+      return {
+        title: 'Built-In AI Is Not Set Up Here',
+        text: "This server has no built-in AI. Add your team's AI key, from Anthropic or OpenAI, in AI Settings to describe what this knowledgebase is for.",
+        step: 'ai-settings',
+      };
+    case 'built-in-limit':
+      return {
+        title: `You Have Used Today's ${SETUP_BUILT_IN_PER_PERSON_PER_DAY} Built-In Suggestions`,
+        text: "That is the most built-in AI gives one person in a day, across every knowledgebase. Try again tomorrow, or add your team's AI key in AI Settings.",
+        step: 'ai-settings',
+      };
+    case 'built-in-failed':
+      return {
+        title: 'The Built-In AI Could Not Answer',
+        text: 'It did not answer just now. Try again in a moment.',
+        step: 'try-again',
+      };
     case 'person-limit':
       return {
         title: `You Have Asked for ${SETUP_PER_PERSON_PER_HOUR} Structures This Hour`,
@@ -112,7 +136,7 @@ export function setupFailureWords(
     case 'sign_in_required':
       return {
         title: 'Only a Signed-In Editor Can Do This',
-        text: "Describe to Set Up spends your team's AI key, so it is for an Editor of this knowledgebase who is signed in.",
+        text: 'Describe to Set Up spends an AI call, so it is for someone who edits this knowledgebase and is signed in.',
         step: 'none',
       };
     case 'network':

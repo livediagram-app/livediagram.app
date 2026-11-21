@@ -114,10 +114,16 @@ export async function openAiSettings(page: Page): Promise<Locator> {
 
 /** Saves a Claude key for the knowledgebase through the api, as the person. Never a real key: the stack's stand-in
  *  answers for Anthropic (scripts/e2e-claude-stand-in.mjs). */
-export async function saveKey(page: Page, who: Person, id: string, key: string): Promise<void> {
+export async function saveKey(
+  page: Page,
+  who: Person,
+  id: string,
+  key: string,
+  provider?: 'anthropic' | 'openai',
+): Promise<void> {
   const res = await page.request.put(`/api/documents/${id}/ai/key`, {
     headers: await asPerson(page, who, id),
-    data: { key },
+    data: provider ? { provider, key } : { key },
   });
   expect(res.ok(), `saving the key: ${res.status()}`).toBe(true);
 }

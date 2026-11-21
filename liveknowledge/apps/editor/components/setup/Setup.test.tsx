@@ -325,6 +325,9 @@ describe('step 1, Describe', () => {
     expect(screen.getByLabelText('What Is This Knowledgebase For?')).toBe(field());
     expect(document.activeElement).toBe(field());
     expect(screen.getByText(/12 person logistics startup/)).toBeTruthy();
+    await waitFor(() =>
+      expect(document.querySelector('[data-setup-ai]')?.textContent).toBe("Uses your team's key"),
+    );
     const steps = [...document.querySelectorAll('[data-setup-steps] li')];
     expect(steps.map((s) => s.textContent)).toEqual(['1Describe', '2Review', '3Create']);
     expect(steps[0]!.getAttribute('aria-current')).toBe('step');
@@ -409,6 +412,9 @@ describe('step 1, Describe', () => {
     ['knowledgebase-limit', 'This Knowledgebase Has Had Its 20 Structures Today', null],
     ['no-structure', 'Could Not Suggest a Structure', null],
     ['network', 'The Description Could Not Be Sent', null],
+    ['built-in-unavailable', 'Built-In AI Is Not Set Up Here', 'Open AI Settings'],
+    ['built-in-limit', "You Have Used Today's 10 Built-In Suggestions", 'Open AI Settings'],
+    ['built-in-failed', 'The Built-In AI Could Not Answer', null],
   ])(
     'says a failure in words, back at step 1 with the description kept: %s',
     async (kind, title, action) => {
@@ -441,29 +447,61 @@ describe('step 1, Describe', () => {
   });
 });
 
-describe('with no key', () => {
-  it('explains in step 1 place, opens AI Settings, and returns to step 1 once a key exists', async () => {
+describe('which AI answers', () => {
+  const aiLine = () => document.querySelector('[data-setup-ai]')?.textContent ?? null;
+
+  it('needs no key: step 1 at once, on built-in AI, said quietly, and its event says so', async () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
+    setupApi.apiSuggestSetup.mockResolvedValue({
+      ok: true,
+      suggestion: { ...SUGGESTION, provider: 'built-in' },
+    });
     await openDialog();
-    expect(step()).toBe('no-key');
-    expect(screen.getByText("Describe to Set Up Needs Your Team's AI Key")).toBeTruthy();
-    expect(document.body.textContent).not.toMatch(/is free|paid tier/i);
-    expect(screen.queryByRole('button', { name: 'Suggest a Structure' })).toBeNull();
-    press('Open AI Settings');
-    expect(renderHook(() => useAiSettingsOpen()).result.current).toBe(true);
-    // The key is saved in AI Settings: the store hears, and step 1 is here.
-    act(() => aiSettingsStore.set('d1', settings()));
     expect(step()).toBe('describe');
-    expect(setupApi.apiSuggestSetup).not.toHaveBeenCalled();
+    await waitFor(() => expect(aiLine()).toBe('Uses built-in AI'));
+    expect(screen.queryByText(/Needs Your Team's AI Key/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Open AI Settings' })).toBeNull();
+    describe_(DESCRIPTION);
+    press('Suggest a Structure');
+    await waitFor(() => expect(step()).toBe('review'));
+    expect(track).toHaveBeenCalledWith('UI', 'Used', 'SetupSuggestedBuiltIn');
+    expect(track).not.toHaveBeenCalledWith('UI', 'Used', 'SetupSuggested');
   });
 
-  it('says so when the settings cannot be read, and reads them again when asked', async () => {
-    api.apiKnowledgeAi.mockRejectedValueOnce(new Error('offline'));
+  it("offers AI Settings when built-in AI's day is used up, since the team's key is the way on", async () => {
+    setupApi.apiSuggestSetup.mockResolvedValue({ ok: false, kind: 'built-in-limit' });
     await openDialog();
-    expect(step()).toBe('settings-failed');
-    api.apiKnowledgeAi.mockResolvedValue(settings());
-    press('Try Again');
-    await waitFor(() => expect(step()).toBe('describe'));
+    describe_(DESCRIPTION);
+    press('Suggest a Structure');
+    within(await screen.findByRole('alert'))
+      .getByRole('button', { name: 'Open AI Settings' })
+      .click();
+    expect(renderHook(() => useAiSettingsOpen()).result.current).toBe(true);
+  });
+
+  it("says the team's key once one is set", async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
+    await openDialog();
+    await waitFor(() => expect(aiLine()).toBe('Uses built-in AI'));
+    act(() => aiSettingsStore.set('d1', settings()));
+    expect(aiLine()).toBe("Uses your team's key");
+  });
+
+  it('waits for nothing: step 1 while the settings are read, and when they cannot be, with no line', async () => {
+    api.apiKnowledgeAi.mockReturnValue(new Promise(() => {}));
+    await openDialog();
+    expect(step()).toBe('describe');
+    expect(aiLine()).toBeNull();
+    cleanup();
+    act(() => closeSetup());
+    aiSettingsStore.reset();
+    api.apiKnowledgeAi.mockRejectedValue(new Error('offline'));
+    await openDialog();
+    expect(step()).toBe('describe');
+    expect(aiLine()).toBeNull();
+    describe_(DESCRIPTION);
+    press('Suggest a Structure');
+    await waitFor(() => expect(step()).toBe('review'));
   });
 });
 

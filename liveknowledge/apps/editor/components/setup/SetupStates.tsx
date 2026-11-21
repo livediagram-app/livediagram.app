@@ -1,47 +1,11 @@
 'use client';
 
-// What Describe to Set Up shows in a step's place (docs/specs/030-knowledgebase/describe-to-set-up.md): no key yet,
-// a structure being suggested, the pages being made, and how a run that did not make everything ended. Each takes
+// What Describe to Set Up shows in a step's place (docs/specs/030-knowledgebase/describe-to-set-up.md): a structure
+// being suggested, the pages being made, and how a run that did not make everything ended. Each takes
 // the body's whole room, so the dialog keeps one height.
-import { Button, EmptyState, SkeletonRows } from '@liveknowledge/ui';
+import { SkeletonRows } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
-import { openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
-import { KeyIcon } from '@/components/ask/ask-icons';
 import type { ImportProgress, ImportWriteResult } from '@/lib/knowledge-import/write-plan';
-
-/** No key: the explanation Ask shows, with the way into AI Settings. Adding a key returns to step 1. */
-export function SetupNoKey() {
-  return (
-    <div className="flex min-h-0 flex-1 items-center justify-center" data-setup-step="no-key">
-      <EmptyState
-        icon={<KeyIcon />}
-        title="Describe to Set Up Needs Your Team's AI Key"
-        description="liveknowledge pays for no model: your team pays its provider for what it uses. Add your team's AI key, from Anthropic or OpenAI, and describe what this knowledgebase is for."
-      >
-        <Button variant="primary" size="sm" onClick={openAiSettingsFrom}>
-          Open AI Settings
-        </Button>
-      </EmptyState>
-    </div>
-  );
-}
-
-/** The settings could not be read, so whether there is a key is not known. */
-export function SetupSettingsFailed({ onRetry }: { onRetry: () => void }) {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col" data-setup-step="settings-failed">
-      <Callout
-        tone="error"
-        size="md"
-        role="alert"
-        title="The AI Settings Could Not Be Read"
-        action={{ label: 'Try Again', onSelect: onRetry }}
-      >
-        Whether this knowledgebase has a key is not known. Check your connection.
-      </Callout>
-    </div>
-  );
-}
 
 /** While a structure is suggested: the tree's place held by rows of its shape, so nothing jumps when it arrives. */
 export function SetupSuggesting() {

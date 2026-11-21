@@ -351,8 +351,8 @@ export const SETUPS_SUGGESTED = chart(
   'UI',
   'Used',
   'Set-Ups Suggested',
-  'Describe to Set Up suggested a page tree from what someone described.',
-  { types: ['SetupSuggested'] },
+  "Describe to Set Up suggested a page tree from what someone described, on the team's own key or on built-in AI when there is none.",
+  { types: ['SetupSuggested', 'SetupSuggestedBuiltIn'] },
 );
 
 export const AI_KEYS_ADDED = chart(
