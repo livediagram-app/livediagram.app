@@ -3,7 +3,7 @@
 // The meta row and the rail over the editor's store (docs/specs/030-knowledgebase/verification.md): Page Health is
 // read once when a page opens, a typing commit renders nothing and reads nothing, Verify is optimistic and rolls
 // back with a toast, and each share role is offered what it may do.
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { Profiler } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AccessLevel } from '@liveknowledge/api-schema';
@@ -143,15 +143,19 @@ describe('a page’s knowledge in the editor', () => {
     expect(screen.getByRole('button', { name: 'Ship It' })).toBeTruthy();
   });
 
+  const rail = () => document.querySelector<HTMLElement>('[data-page-health]')!;
+  const railButton = (name: string) => within(rail()).getByRole('button', { name });
+
   it('an Editor verifies in one press, shown at once', async () => {
     let answer!: (value: unknown) => void;
     api.apiVerifyPage.mockReturnValue(new Promise((resolve) => (answer = resolve)));
     mount('edit');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-    fireEvent.click(screen.getByRole('button', { name: 'Verify' }));
+    // The rail's Verify is one press (the meta row's asks first, VerifyPageButton.test.tsx).
+    fireEvent.click(railButton('Verify'));
     // Before the server answers.
     expect(screen.getByText('Verified by Priya Nair')).toBeTruthy();
-    expect(screen.getAllByRole('button', { name: 'Verify Again' })).toHaveLength(1);
+    expect(within(rail()).getAllByRole('button', { name: 'Verify Again' })).toHaveLength(1);
     await act(async () => {
       answer({
         tab: 'p1',
@@ -171,12 +175,12 @@ describe('a page’s knowledge in the editor', () => {
     api.apiVerifyPage.mockRejectedValue(new Error('down'));
     mount('edit');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-    fireEvent.click(screen.getByRole('button', { name: 'Verify' }));
+    fireEvent.click(railButton('Verify'));
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith('The page could not be verified. Try again.'),
     );
     expect(screen.queryByText(/^Verified/)).toBeNull();
-    expect(screen.getAllByRole('button', { name: 'Verify' })).toHaveLength(1);
+    expect(within(rail()).getAllByRole('button', { name: 'Verify' })).toHaveLength(1);
   });
 
   it('shows the due date under the knowledgebase’s Review Period, and follows a change of it at once', async () => {
