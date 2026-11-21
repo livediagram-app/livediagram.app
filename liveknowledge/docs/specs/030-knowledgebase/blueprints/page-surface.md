@@ -229,6 +229,12 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
   `background` and `locked`, the tab's `locked`, and each article's `style`, and answers the same tab when it holds
   none. So nothing downstream draws or honours one, and the next save writes the tab without them. A page of
   another kind (a slide a JSON import still carries) keeps its own.
+- **Paper.** A tab whose pages are one article's paper sheets (a Word import, a livedocuments file, an agent's or
+  a script's write, an older stored tab) reads as that article on one continuous page: `withArticleContinuous`
+  (`packages/document/src/continuous-article.ts`) runs in `migrateStoredTab` after `withoutPageLooks`, keeps the
+  first sheet's id, drops the other sheets (the writing is whole in its flow) and sizes the page with
+  `withArticleHeightEstimated`; the editor's first layout settles the real height. A tab of several articles, or
+  with a slide among its pages, is left as it is. `continuous-article.test.ts`.
 - **Templates** carry no article style (`articleTabOverrides`): a template is its writing.
 - **The controls.** A knowledgebase page draws `PageSurfaceSheet`, which has no title bar, so Style, Text,
   Background, Lock and the page panel behind them are not drawn. Also removed: the Theme & Canvas brush in the
@@ -401,10 +407,6 @@ See "Narrow windows" below: investigated, not built.
 
 ### Smaller gaps
 
-- **An article kept in a paper size** (a tab exported from livedocuments and imported as JSON) still draws the
-  fork's sheets, locked to its first page. To do: where a stored tab is settled (`migrateStoredTab`, beside
-  `withoutPageLooks`), read a tab whose pages are all one article's as one continuous page (`continuousPage` of the
-  first) and size it with `withArticleHeightEstimated`.
 - **Help:** the Keyboard list in Settings follows what is bound now (`shortcut-sections.ts`); the help centre's
   articles on zoom, the hand tool, the Selection mode, the Library, the page panel and the page lock are not yet
   retired from liveknowledge's scope (`lib/help-articles.ts`, `packages/help-registry`).

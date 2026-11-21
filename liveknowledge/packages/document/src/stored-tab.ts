@@ -2,6 +2,7 @@
 // thumbnail render, the offline store's tab load and a file import all run this, so a new step is
 // added once and reaches every entry point.
 import { settleStoredArticles } from './article-flow';
+import { withArticleContinuous } from './continuous-article';
 import { withoutPageLooks } from './page-looks';
 import { migrateRetiredPattern } from './retired-patterns';
 import { migrateRetiredTheme } from './retired-themes';
@@ -20,8 +21,11 @@ export function migrateStoredTab<
   // An article's legacy suggestions read as rejected (docs/specs/007-editor/suggestions.md "Writing stored with a
   // suggestion"), here so the plain tab JSON a Community visitor or an agent reads never carries one.
   // A page's own background, style and lock are not in liveknowledge (./page-looks): read without them.
-  const settled = withoutPageLooks(
-    settleStoredArticles(migrateRetiredPattern(migrateRetiredTheme(settleTabFields(tab)))),
+  // An article that arrives on paper sheets reads as one continuous page (./continuous-article).
+  const settled = withArticleContinuous(
+    withoutPageLooks(
+      settleStoredArticles(migrateRetiredPattern(migrateRetiredTheme(settleTabFields(tab)))),
+    ),
   );
   if (!Array.isArray(settled.elements)) return settled;
   // Stacks lay out last (docs/specs/009-elements/stack.md), over the settled elements.
