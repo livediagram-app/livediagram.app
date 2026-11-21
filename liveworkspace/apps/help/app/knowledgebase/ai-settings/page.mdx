@@ -1,0 +1,97 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { AiSettingsScene } from '@/editions/liveknowledge/components/illustrations/finding';
+
+export const metadata = helpMetadata({
+  title: 'AI Settings',
+  description:
+    "Add your team's own Claude or OpenAI API key to a Knowledgebase in AI Settings: choose the provider and the model, and see how the key is kept and who pays.",
+  path: '/help/knowledgebase/ai-settings/',
+});
+
+<ArticleLayout path="knowledgebase/ai-settings" title="AI Settings" description="Add your team's Claude or OpenAI key so Ask can answer: the provider, the key, the model and who pays." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+liveknowledge pays for no AI model. Everything in it that uses one runs on **your team's own key**, from Anthropic (Claude) or OpenAI, and your team pays that provider for what it uses. **AI Settings** is where an Editor adds the key. It belongs to one Knowledgebase and is the same for everyone in it.
+
+<Figure caption="AI Settings: the provider, the key's state with Replace and Remove, and the model.">
+  <AiSettingsScene />
+</Figure>
+
+## What Uses the Key
+
+- [Ask](/help/knowledgebase/ask/), and drafting a page from a Knowledge Gap.
+- [Describe to Set Up](/help/getting-started/describe-to-set-up/).
+- The check that finds [pages that disagree](/help/knowledgebase/pages-that-disagree/).
+
+Search, verifying, the page tree, agents connected over MCP and everything else need no key.
+
+## Add a Key
+
+<Step n={1}>
+  Open the **Ask** or **AI Knowledge** tab in the footer and press **AI Settings** in the top row.
+  Where a feature needs a key and there is none, **Open AI Settings** takes you to the same place.
+</Step>
+
+<Step n={2}>
+  Under **Provider**, choose **Anthropic (Claude)** or **OpenAI**.
+</Step>
+
+<Step n={3}>
+  Make an API key in the provider's own console (the Claude Console, or the OpenAI platform), paste
+  it into the field and press **Save Key**.
+</Step>
+
+<Step n={4}>
+  Under **Model**, keep the one chosen or pick another. The list is the provider's current models,
+  and the most capable is chosen to begin with.
+</Step>
+
+The key's state now reads "Key Ending" and its last four characters, and Ask works for everyone in the Knowledgebase who is signed in.
+
+## How the Key Is Kept
+
+- The key is sent once, over an encrypted connection, and **encrypted when it is saved**.
+- It is **never shown again**, here or anywhere else. AI Settings shows only its last four characters ("Key Ending 4f2a"), and to someone who is not an Editor just "Key Added".
+- The field is cleared as soon as the key is sent, whatever the answer. The key is not kept in the page, in your browser, in a log or in telemetry.
+- It is used only to call the provider you chose. A Claude key is never sent to OpenAI, or the other way round.
+
+## Replace or Remove the Key
+
+- **Replace:** paste a new key in the field and press **Replace**. The new key takes over from that moment.
+- **Remove:** press **Remove** beside the key's state and confirm **Remove the Key?** Ask stops answering for everyone in the Knowledgebase until an Editor adds a key again. Search and everything else keep working. Removing the key keeps the provider chosen.
+
+If a key may have leaked, revoke it in the provider's console first, then replace it here.
+
+## Change the Provider
+
+A Knowledgebase holds one provider and one key at a time.
+
+- With **no key saved**, choosing the other provider takes effect at once.
+- With **a key saved**, it asks first ("Replace the Claude Key With an OpenAI Key?"). Confirm with **Choose Provider**. The saved key stays in use until you save a key for the new provider. That save replaces it and sets the model to the new provider's most capable one.
+
+Everything behaves the same on either provider: the same limits, the same citations and the same words.
+
+## Who Pays, and for What
+
+Your team pays its provider directly, at the provider's prices, for each question asked and each structure, draft or check made. liveknowledge adds no charge. To keep spending bounded, a Knowledgebase answers at most 200 questions a day and one person asks at most 20 an hour. See [Ask](/help/knowledgebase/ask/#limits).
+
+What is sent to the provider for a question: the question, the conversation so far, and the passages of your pages that best match it. Whether that suits your team's data is your team's decision; the provider's own terms cover what it does with it.
+
+## Who Can Do What
+
+| Action                                   | Editor | Participant | Viewer |
+| ---------------------------------------- | ------ | ----------- | ------ |
+| See the provider, the key's state and the model | Yes | Yes     | Yes    |
+| Add, replace or remove the key           | Yes    | No          | No     |
+| Choose the provider or the model         | Yes    | No          | No     |
+
+A Participant and a Viewer see "Only an Editor of this knowledgebase can change these."
+
+## Good to Know
+
+- A key that is not the chosen provider's is refused as you save it: "That is not a Claude API key. Copy it again from the Claude Console and paste it whole."
+- A Knowledgebase kept Offline has no key and no Ask: there is no server to keep the key.
+- AI Settings is not part of [Settings](/help/user-interface/settings/), which holds your own preferences. The key belongs to the Knowledgebase.
+- When Ask says the key was not accepted, see [Ask Is Not Answering](/help/troubleshooting/ask-is-not-answering/).
+
+</ArticleLayout>

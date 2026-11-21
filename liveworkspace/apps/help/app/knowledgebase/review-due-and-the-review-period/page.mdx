@@ -1,0 +1,88 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ReviewPeriodSettings } from '@/editions/liveknowledge/components/illustrations/trust';
+
+export const metadata = helpMetadata({
+  title: 'Review Due and the Review Period',
+  description:
+    'A verified page comes due for review after the Review Period: every 30, 90 or 180 days, every year, or never. One setting covers the whole Knowledgebase.',
+  path: '/help/knowledgebase/review-due-and-the-review-period/',
+});
+
+<ArticleLayout path="knowledgebase/review-due-and-the-review-period" title="Review Due and the Review Period" description="A verified page comes due for review after the Review Period, one setting for the whole Knowledgebase." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Verifying a page says it is right today. It will not stay right for ever, so a verified page comes **Review Due** once the Knowledgebase's **Review Period** has passed. Review Due is a prompt to read the page again, not a verdict that it is wrong.
+
+## What Review Due Means
+
+- A page is **Review Due** when the Review Period has passed since it was last verified.
+- It shows as an amber **Review Due** pill in the row under the page's title, with "Review was due" and the date. In the tree the row shows a small amber **Due**.
+- Nothing is written to the page when a review comes due. The state is worked out from the date it was verified, the Review Period and today's date each time it is shown.
+- To clear it, read the page, fix what has changed, and press **Verify Again**. See [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
+
+Before it is due, the row says when it will be: "Review due" and the date.
+
+## The Review Period
+
+One Review Period covers every page of a Knowledgebase. A page has no period of its own.
+
+| Choice             | A verified page comes due           |
+| ------------------ | ----------------------------------- |
+| **Every 30 Days**  | 30 days after it was verified       |
+| **Every 90 Days**  | 90 days after (the default)         |
+| **Every 180 Days** | 180 days after                      |
+| **Every Year**     | 365 days after                      |
+| **Never**          | Never: pages do not age             |
+
+Under **Never**, no page is ever Review Due: pages are Verified or Never Verified, and no review email is sent.
+
+## Change the Review Period
+
+<Step n={1}>
+  Open **Knowledgebase Settings**. On a page, press **Change** under **Review Period** on the
+  [Page Health](/help/knowledgebase/page-health/) card. From anywhere, open the command palette
+  and choose **Knowledgebase Settings**.
+</Step>
+
+<Step n={2}>
+  Under **Reviews**, choose one of the five rows of **Review Period**.
+</Step>
+
+<Step n={3}>
+  A longer period, or **Never**, applies at once. A shorter period that would make more pages due
+  than are due now asks first: a strip under the rows says how many ("12 pages will be due for
+  review with Every 30 Days."). Press **Apply** to go ahead or **Cancel** to keep the period you
+  had.
+</Step>
+
+<Figure caption="Knowledgebase Settings, Reviews: Every 90 Days is the period in force, and Every 30 Days is asking before it is applied.">
+  <ReviewPeriodSettings />
+</Figure>
+
+A toast confirms the change ("Pages are now reviewed every 30 days.") with **Undo**, which puts back the period you replaced.
+
+## What Changing It Does
+
+- It changes when **every** page comes due, at once, for everyone. No page is rewritten or saved again.
+- Pages verified longer ago than the new period become Review Due straight away. That is why a shorter period asks first.
+- An owner is emailed once for each review that comes due. Changing the period never tells an owner twice about the same review.
+- The editor's own Undo (`Cmd+Z` or `Ctrl+Z`) is for writing and does not reach the Review Period. Use the toast's **Undo**, or choose the old period again.
+
+Many pages turned Review Due at once and you did not mean it? See [Review Due on Every Page](/help/troubleshooting/review-due-everywhere/).
+
+## Who Can Do What
+
+| Action                        | Editor | Participant | Viewer |
+| ----------------------------- | ------ | ----------- | ------ |
+| See Review Due and the dates  | Yes    | Yes         | Yes    |
+| Change the Review Period      | Yes    | No          | No     |
+
+Only an Editor of the whole Knowledgebase is offered Knowledgebase Settings. Someone who opened a link to one page is not.
+
+## Good to Know
+
+- The Review Period travels with the Knowledgebase: with a copy of it, its export, its Google Drive file and a snapshot.
+- A Knowledgebase kept Offline keeps its period in this browser and takes it along when it is synced.
+- Agents are told the period once, with the page list, and work out the same dates. No agent tool changes it.
+
+</ArticleLayout>

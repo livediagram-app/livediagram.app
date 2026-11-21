@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { KnowledgebaseAtAGlance } from '@/editions/liveknowledge/components/illustrations/getting-started';
+
+export const metadata = helpMetadata({
+  title: 'What Is liveknowledge?',
+  description:
+    'liveknowledge is a free, open-source Knowledgebase for a team: pages in a tree, each verified by its owner, that people and AI agents can search and ask.',
+  path: '/help/about/what-is-liveknowledge/',
+});
+
+<ArticleLayout path="about/what-is-liveknowledge" title="What Is liveknowledge?" description="A free, open-source Knowledgebase your team writes together, keeps right, and asks questions of." categoryTitle="About liveknowledge" categorySlug="about">
+
+liveknowledge is a web app where a team keeps what it knows. You make a **Knowledgebase**, write its **pages** together, and say who vouches for each one. Then anyone on the team, and any AI agent the team connects, can find an answer and see how far to trust it.
+
+<Figure caption="A page in its tree, verified by its owner, and Ask answering a question from it with a citation.">
+  <KnowledgebaseAtAGlance />
+</Figure>
+
+## Pages in a Tree
+
+A Knowledgebase is pages of writing, arranged in a tree in the sidebar. A page can have subpages, up to 8 levels deep, and a Knowledgebase holds up to 500 pages.
+
+- **Writing**: one continuous page with headings, lists, tables, a table of contents, footnotes and margin notes, and pictures, charts and drawings placed in the writing. See [Writing on a Page](/help/knowledgebase/writing-on-a-page/).
+- **The page tree**: add, nest, move, rename, duplicate and delete pages. See [The Page Tree](/help/knowledgebase/the-page-tree/).
+- **Links**: type `[[` to link one page to another, and see what links to a page under **Linked From**. See [Linking Pages](/help/knowledgebase/linking-pages/).
+- **Embeds**: show a diagram, a plan, a document, a design or a Space from the other liveworkspace apps inside a page. See [Embedding From Other Apps](/help/knowledgebase/embedding-from-other-apps/).
+
+## Pages You Can Trust
+
+A Knowledgebase is only useful while it is right, so every page says who vouches for it and when they last did.
+
+- A page has an **owner**, and an Editor presses **Verify** to say the page is right. See [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
+- A verified page comes **Review Due** after the Knowledgebase's Review Period, 90 days unless you change it. See [Review Due and the Review Period](/help/knowledgebase/review-due-and-the-review-period/).
+- **Page Health** shows a page's owner, its dates and how often people and agents read it. See [Page Health](/help/knowledgebase/page-health/).
+
+## Finding an Answer
+
+- **Search** finds pages and passages by their words, this Knowledgebase's first. It needs no AI and works for everyone. See [Search](/help/knowledgebase/searching-a-knowledgebase/).
+- **Ask** answers a question in plain words from your own pages and cites the passage behind each claim. It runs on your team's own Claude or OpenAI key. See [Ask](/help/knowledgebase/ask/) and [AI Settings](/help/knowledgebase/ai-settings/).
+
+## A Knowledgebase for Agents Too
+
+AI agents read a Knowledgebase through its MCP server, its command line or an API token, and every answer they get carries the page's verified state. A new connection can read, search and suggest edits; an Editor decides whether one may write. The **AI Knowledge** view shows which agents are connected, what they read, the questions nobody could answer and the pages that disagree. See [Connecting an Agent](/help/knowledgebase/connecting-an-agent/) and [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
+
+## What liveknowledge Is Not
+
+liveknowledge has one kind of page: writing. It has no slides, infographics or flashcards, no presenting, and no paper sizes while you write; those are [livedocuments](https://www.livedocuments.app/)' job. Sharing is for a whole Knowledgebase or one page of it by link, not page by page for named people.
+
+## Free and Open Source
+
+liveknowledge is **MIT-licensed** and **free for everyone**, with no paid tier. liveknowledge pays for no AI model: Search is free for everyone, and Ask spends only the key your team adds.
+
+<Tip>
+  The fastest way to understand liveknowledge is to use it. Open [a new Knowledgebase](/new) and
+  follow [Your First Knowledgebase](/help/getting-started/your-first-knowledgebase/).
+</Tip>
+
+</ArticleLayout>

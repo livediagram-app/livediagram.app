@@ -1,0 +1,78 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { DescribeToSetUpSteps } from '@/editions/liveknowledge/components/illustrations/getting-started';
+
+export const metadata = helpMetadata({
+  title: 'Describe to Set Up',
+  description:
+    'Describe what a new Knowledgebase is for and liveknowledge suggests a structure of pages: review it, untick or rename pages, then create them in one go.',
+  path: '/help/getting-started/describe-to-set-up/',
+});
+
+<ArticleLayout path="getting-started/describe-to-set-up" title="Describe to Set Up" description="Say what the Knowledgebase is for and get a page structure to review, rename and create." categoryTitle="Getting Started" categorySlug="getting-started">
+
+An empty page tree is the hardest part of starting a Knowledgebase. **Describe to Set Up** takes a description of what the Knowledgebase is for and suggests a structure of pages. Nothing is written until you have reviewed it.
+
+<Figure caption="Describe what the Knowledgebase is for, then review the suggested pages: untick what you do not want and rename what you like.">
+  <DescribeToSetUpSteps />
+</Figure>
+
+## Before You Start
+
+- Describe to Set Up runs on your team's own AI key, as Ask does. Without one, the dialog explains this and offers **Open AI Settings**. See [AI Settings](/help/knowledgebase/ai-settings/).
+- You need to be signed in, as an **Editor** of the whole Knowledgebase.
+- It is not offered for a Knowledgebase kept Offline.
+
+## Set Up an Empty Knowledgebase
+
+<Step n={1}>
+  Press **Describe to Set Up** in the sidebar, above **New Page**. It shows while the Knowledgebase
+  is empty: at most three pages, none with any writing beyond a title. On a phone it is in the
+  **Pages** sheet.
+</Step>
+
+<Step n={2}>
+  Under **What Is This Knowledgebase For?**, describe it in your own words, in 20 to 1,000
+  characters. The three chips under the field (**Engineering Handbook**, **Customer Support**,
+  **Company Handbook**) fill it with an example you can edit.
+</Step>
+
+<Step n={3}>
+  Press **Suggest a Structure**. In a few seconds the dialog shows a tree of up to 30 pages, at
+  most 3 levels deep, each with a title and one line on what belongs there.
+</Step>
+
+<Step n={4}>
+  Review it. Untick a page you do not want (its subpages are unticked with it), and press a title
+  to rename it. Above the pages, a name is suggested for the Knowledgebase too; it is offered only while the Knowledgebase
+  is still called "Untitled Knowledgebase". **Try Again** goes back to your description.
+</Step>
+
+<Step n={5}>
+  Press **Create 14 Pages** (the number follows your ticks). The pages are made in order, twenty
+  at a time, and the dialog closes on the first new page.
+</Step>
+
+Each new page holds its title, its one line in italics as the first paragraph, and its suggested headings with an empty paragraph under each. If the Knowledgebase still has its untouched **Start Here** page, that page becomes the first page of the structure.
+
+## Add Pages to a Knowledgebase Later
+
+Once a Knowledgebase holds writing, the button leaves the sidebar and **Describe to Add Pages** takes over: open the command palette, type "Describe to Add Pages" and press `Enter`. It asks **What Pages Should Be Added?**, is told the titles of the pages you already have, and adds the new pages under the page you have open. Nothing that exists is changed.
+
+## Who Can Use It
+
+| Action                         | Editor | Participant | Viewer |
+| ------------------------------ | ------ | ----------- | ------ |
+| See and use Describe to Set Up | Yes    | No          | No     |
+| See the pages it made          | Yes    | Yes         | Yes    |
+
+## Good to Know
+
+- **Undo** takes back the last twenty pages made, not the whole structure. The pages can also be deleted from [the page tree](/help/knowledgebase/the-page-tree/).
+- New pages are **Never Verified** and have no owner. Nothing here verifies anything.
+- A structure that would pass the Knowledgebase's 500 pages or 8 levels says so under **These Pages Do Not Fit** and creates nothing.
+- **Limits:** 5 suggestions a person an hour, and 20 a Knowledgebase a day. Past either, the dialog says which and when to try again; you can still add pages by hand.
+- Your description is sent to your team's AI provider to make the suggestion. It is not kept in telemetry.
+- If no usable structure comes back, the dialog says **Could Not Suggest a Structure** and offers **Try Again**. Other failures read as they do in Ask: see [Ask Is Not Answering](/help/troubleshooting/ask-is-not-answering/).
+
+</ArticleLayout>

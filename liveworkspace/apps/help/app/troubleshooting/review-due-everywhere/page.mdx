@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ReviewPeriodSettings } from '@/editions/liveknowledge/components/illustrations/trust';
+
+export const metadata = helpMetadata({
+  title: 'Review Due on Every Page',
+  description:
+    'If most pages of a Knowledgebase turned Review Due at once, the Review Period was shortened. How to check it, undo it, or work through the reviews.',
+  path: '/help/troubleshooting/review-due-everywhere/',
+});
+
+<ArticleLayout path="troubleshooting/review-due-everywhere" title="Review Due on Every Page" description="Why many pages turned Review Due at once after the Review Period changed, and how to put it right." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+
+Yesterday the tree was full of ticks. Today most rows read **Due** and the pages wear an amber **Review Due** pill. Nothing has happened to the pages: the Knowledgebase's **Review Period** was made shorter.
+
+## Why It Happens
+
+A page is Review Due when the Review Period has passed since it was verified, and that is worked out each time the page is shown. Shorten the period from **Every 180 Days** to **Every 30 Days** and every page verified more than 30 days ago is due at once. No page was changed, and no verification was lost.
+
+<Figure caption="A shorter period says how many pages it will make due before it is applied." width="narrow">
+  <ReviewPeriodSettings />
+</Figure>
+
+## Check the Period
+
+Open any page's [Page Health](/help/knowledgebase/page-health/) card and read **Review Period**. If it is shorter than you expected, an Editor changed it.
+
+## Put It Back
+
+<Step n={1}>
+  As an Editor, press **Change** under **Review Period** on the Page Health card to open
+  **Knowledgebase Settings**.
+</Step>
+
+<Step n={2}>
+  Choose the period you had before. A longer period applies at once, and the pages that were only
+  due under the shorter one go back to Verified.
+</Step>
+
+If you made the change a moment ago, the toast that confirmed it has **Undo**, which does the same.
+
+## Or Keep the Shorter Period
+
+If the shorter period is what the team wants, the pages really are due under it.
+
+- Each owner sees their own under **Yours to Review** on [Home](/help/getting-started/knowledgebase-home/), oldest first, with **Still Right** to verify one without leaving Home.
+- An Editor can press **Remind the Owners** in [Knowledge Health](/help/knowledgebase/knowledge-health-and-reminders/) to email every owner their list.
+- Owners are emailed once for each review that came due, not once more because the period changed.
+
+## Pages That Should Never Age
+
+For a Knowledgebase whose pages do not go stale (a glossary, an archive), choose **Never**. No page is then Review Due, and no review email is sent.
+
+## Still Wrong?
+
+- A page shows **Review Due** though it was verified this week: check the date under **Last Verified** on its Page Health card. Verifying an older copy, or a page with a similar name, is the usual cause.
+- You cannot see **Change**: only an Editor of the whole Knowledgebase can change the period. See [Roles in a Knowledgebase](/help/knowledgebase/knowledgebase-roles/).
+
+</ArticleLayout>

@@ -1,0 +1,81 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { AgentCardScene } from '@/editions/liveknowledge/components/illustrations/ai-knowledge';
+
+export const metadata = helpMetadata({
+  title: 'What Agents Can Do',
+  description:
+    'A new agent connection reads, searches and suggests edits. An Editor can allow one to write pages directly, never over a verified page or one due for review.',
+  path: '/help/knowledgebase/what-agents-can-do/',
+});
+
+<ArticleLayout path="knowledgebase/what-agents-can-do" title="What Agents Can Do" description="A new connection reads, searches and suggests. An Editor can allow one to write, never over a verified page." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+An agent connected to a Knowledgebase can do three kinds of thing, each called a **scope**: read, suggest and write. A new connection holds the first two. Writing is something an Editor allows, for one connection, in one Knowledgebase.
+
+## The Three Scopes
+
+| Scope     | Chip on its card   | What it lets the agent do                                                                 |
+| --------- | ------------------ | ----------------------------------------------------------------------------------------- |
+| `read`    | **Reads**          | Read the context pages, the page tree and pages; search; report a question nobody could answer |
+| `suggest` | **Suggests Edits** | Everything `read` does, plus create a page and suggest an edit to a page                   |
+| `write`   | **Writes**         | Everything `suggest` does, plus replace a page's writing and move pages                    |
+
+- A full API token, and a connection your AI tool made through the MCP server, hold `read` and `suggest`.
+- A read-only token holds `read` only, and can never hold more.
+- `write` is never given by a token. An Editor grants it in the Knowledgebase, and it applies there alone.
+
+## The Person Behind the Agent Still Counts
+
+An agent acts for the person or token that connected it, and never does more than that person could:
+
+- A **Viewer's** agent only reads, whatever its scopes.
+- A **Participant's** agent can suggest edits, but not create pages or write.
+- An **Editor's** agent can create pages and suggest edits, and can be allowed to write.
+
+## Allow an Agent to Write
+
+<Step n={1}>
+  Open the **AI Knowledge** tab in the footer and find the agent under **Connected Agents**.
+</Step>
+
+<Step n={2}>
+  Press the More button (⋯) at the right of its card and choose **Allow Writing**.
+</Step>
+
+<Step n={3}>
+  The dialog says what writing allows. Confirm with **Allow Writing**. The card shows a **Writes** chip at once.
+</Step>
+
+<Figure caption="An Editor's menu on a connected agent's card: Allow Writing.">
+  <AgentCardScene />
+</Figure>
+
+To take it back, choose **Stop Writing** from the same menu and confirm. The agent goes back to reading and suggesting. Nothing it has written is undone.
+
+A card with no menu cannot be allowed to write, and says why: its token is read-only, or the person it acts for is not an Editor here.
+
+## Never on a Verified Page
+
+An agent that may write still never rewrites a page that is **Verified** or **Review Due**. Those are pages a person vouched for, and the one that is due is the page most in need of a person's eye. On either, the write is refused and the agent is told to use `suggest_edit` instead, so the change waits for a person to accept. It can write directly only on a page that was never verified.
+
+## What an Agent Never Does
+
+- It never verifies a page. A page an agent creates is **Never Verified**.
+- No MCP tool or CLI command changes the Review Period or Knowledgebase Style. An Editor sets both in the app.
+- It never sees the team's AI key.
+- It never reaches a Knowledgebase kept Offline.
+
+## Good to Know
+
+- Allowing writing applies to one connection in one Knowledgebase. The same agent connected to another Knowledgebase still only reads and suggests there.
+- Each confirmation reads "This applies to this knowledgebase only."
+
+## Who Can Do What
+
+| Action                                | Editor | Participant | Viewer |
+| ------------------------------------- | ------ | ----------- | ------ |
+| See what each agent may do            | Yes    | Yes         | Yes    |
+| Allow an agent to write, or stop it   | Yes    | No          | No     |
+
+</ArticleLayout>

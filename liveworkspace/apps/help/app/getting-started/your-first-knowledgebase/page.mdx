@@ -1,0 +1,90 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  FirstPages,
+  NewKnowledgebase,
+} from '@/editions/liveknowledge/components/illustrations/getting-started';
+
+export const metadata = helpMetadata({
+  title: 'Your First Knowledgebase',
+  description:
+    'Make your first liveknowledge Knowledgebase in a couple of minutes: name it, write the first page, add subpages, link them and share it with your team.',
+  path: '/help/getting-started/your-first-knowledgebase/',
+});
+
+<ArticleLayout path="getting-started/your-first-knowledgebase" title="Your First Knowledgebase" description="From a new Knowledgebase to a few linked pages your team can read, in a couple of minutes." categoryTitle="Getting Started" categorySlug="getting-started">
+
+This walkthrough takes you from nothing to a small Knowledgebase with a few pages, a link between them and a share link for your team.
+
+## Make a Knowledgebase
+
+<Step n={1}>
+  Open [a new Knowledgebase](/new). It is made there and then, called "Untitled Knowledgebase",
+  with one page, **Start Here**. There is no template to pick and nothing to fill in first.
+</Step>
+
+<Step n={2}>
+  The caret is already in the page's title. Type a title and the page takes it as its name in the
+  sidebar, a moment after you stop typing.
+</Step>
+
+<Step n={3}>
+  To name the Knowledgebase itself, press its name at the top of the sidebar, type a name and press
+  `Enter`. `Escape` leaves the name as it was.
+</Step>
+
+<Figure caption="A new Knowledgebase: one page, Start Here, with the caret in its title, and Describe to Set Up above New Page while it is empty.">
+  <NewKnowledgebase />
+</Figure>
+
+Where it is saved depends on whether you are signed in:
+
+- **Signed in**, it is saved to your account, in **Private**, so it is on every device you sign in on.
+- **As a guest**, it is kept **Offline**, in this browser only.
+
+Search and writing work either way. **Verify**, **Ask**, **AI Knowledge** and sharing need the Knowledgebase to be saved to an account. See [Guest vs Account](/help/getting-started/guest-vs-account/) and [Offline](/help/privacy-and-security/offline-mode/).
+
+## Add Pages
+
+<Step n={1}>
+  Press **New Page** at the foot of the sidebar to add a page at the top level. It opens with the
+  caret in its title.
+</Step>
+
+<Step n={2}>
+  To put a page under another, hover the parent's row and press its **+** (**Add Subpage**). The
+  new page is added as the parent's last subpage.
+</Step>
+
+<Step n={3}>
+  Drag a row to move it, or open its **Page Options** menu for **Move Up**, **Move Down**,
+  **Indent** and **Outdent**.
+</Step>
+
+Rather build the structure in one go? While the Knowledgebase is still empty, **Describe to Set Up** in the sidebar proposes a whole tree of pages from a description. See [Describe to Set Up](/help/getting-started/describe-to-set-up/). Already have your writing somewhere else? See [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/).
+
+<Figure caption="A few pages in: Deploying sits under Engineering, which shows as its breadcrumb above the title, and links to On-Call.">
+  <FirstPages />
+</Figure>
+
+## Write and Link
+
+Press in a page and write. The formatting controls are in the row above the page; type `/` on an empty line for the list of things you can insert. See [Writing on a Page](/help/knowledgebase/writing-on-a-page/).
+
+To link to another page, type `[[` and start typing its title, then press `Enter` on the page you want. The link follows the page if it is renamed or moved. See [Linking Pages](/help/knowledgebase/linking-pages/).
+
+## Say a Page Is Right
+
+When a page says what you want it to say, press **Verify** in the row under its title. The page shows a tick and your name, and it comes due for review 90 days later unless the Knowledgebase's Review Period says otherwise. See [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
+
+## Share It
+
+Press **Share** at the right of the top row and choose who can open the Knowledgebase and what they can do: an **Editor** writes and verifies, a **Participant** reads and comments, and a **Viewer** reads. See [Sharing](/help/collaboration/sharing/) and [Roles in a Knowledgebase](/help/knowledgebase/knowledgebase-roles/).
+
+## Good to Know
+
+- A Knowledgebase holds up to **500 pages**, nested up to **8 levels** deep.
+- A page's name and its title are one thing: renaming the page in the sidebar rewrites its title.
+- The three tabs in the footer are the Knowledgebase's views: **Pages**, **Ask** and **AI Knowledge**.
+
+</ArticleLayout>

@@ -1,0 +1,66 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ReviewPeriodSettings } from '@/editions/liveknowledge/components/illustrations/trust';
+
+export const metadata = helpMetadata({
+  title: 'Knowledgebase Settings',
+  description:
+    'Knowledgebase Settings holds what every page of one Knowledgebase follows, the same for everyone in it. Today that is the Review Period, under Reviews.',
+  path: '/help/knowledgebase/knowledgebase-settings/',
+});
+
+<ArticleLayout path="knowledgebase/knowledgebase-settings" title="Knowledgebase Settings" description="The settings that belong to one Knowledgebase and are the same for everyone in it: today, the Review Period." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+liveknowledge has three places for settings, and it helps to know which is which.
+
+| Setting               | Belongs to                 | Holds                                                           |
+| --------------------- | -------------------------- | --------------------------------------------------------------- |
+| **Knowledgebase Settings** | One Knowledgebase, for everyone in it | The Review Period                                   |
+| **AI Settings**       | One Knowledgebase, for everyone in it | The AI provider, key and model. See [AI Settings](/help/knowledgebase/ai-settings/) |
+| **Settings**          | You, on your account       | Your own preferences, such as appearance and notifications. See [Settings](/help/user-interface/settings/) |
+
+This article is about the first.
+
+<Figure caption="Knowledgebase Settings has one section, Reviews, holding the Review Period." width="narrow">
+  <ReviewPeriodSettings asking={false} />
+</Figure>
+
+## Open Knowledgebase Settings
+
+- On a page, open [Page Health](/help/knowledgebase/page-health/) and press **Change** under **Review Period**.
+- From anywhere in the Knowledgebase, open the command palette, type "Knowledgebase Settings" and press `Enter`.
+
+The dialog opens in the middle of the window (as a sheet on a phone), titled **Knowledgebase Settings**, with the line "What every page of this knowledgebase follows."
+
+## Reviews
+
+The dialog has one section, **Reviews**, with one setting.
+
+**Review Period:** how long after it was last verified a verified page comes due for review. Five choices, one chosen: **Every 30 Days**, **Every 90 Days** (the default), **Every 180 Days**, **Every Year** and **Never**.
+
+<Step n={1}>
+  Press the row you want. Use the arrow keys to move between rows.
+</Step>
+
+<Step n={2}>
+  If the new period is shorter and would make more pages due, a strip under the rows says how many
+  and offers **Apply** and **Cancel**. Any other change applies at once.
+</Step>
+
+<Step n={3}>
+  Press **Done** to close the dialog.
+</Step>
+
+What each choice means, and what happens to pages when you change it, is in [Review Due and the Review Period](/help/knowledgebase/review-due-and-the-review-period/).
+
+## Who Can Open It
+
+An **Editor** of the whole Knowledgebase. A Participant, a Viewer, and someone who opened a link to one page are not offered it: the **Change** link and the command are not shown to them. They still see the period on the Page Health card.
+
+## Good to Know
+
+- A change is for everyone, at once. It is not a preference of yours.
+- If the change is refused, the period goes back as it was and a toast says why.
+- The look of the pages is not here: see [Knowledgebase Style](/help/knowledgebase/knowledgebase-style/).
+
+</ArticleLayout>
