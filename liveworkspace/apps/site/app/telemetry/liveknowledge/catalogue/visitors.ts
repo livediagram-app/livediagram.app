@@ -3,12 +3,7 @@
 
 import { pageViewApp, type PageViewApp } from '@liveknowledge/api-schema';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
-import {
-  ACTION_SIGN_IN_NUDGE,
-  PAGES_TOUR_OFFERED,
-  ELEMENT_TOURS_OFFERED,
-  NEW_VERSION_OFFERED,
-} from './features';
+import { ACTION_SIGN_IN_NUDGE, ELEMENT_TOURS_OFFERED, NEW_VERSION_OFFERED } from './features';
 import { chart } from '../../_shared/catalogue-helpers';
 import { ELEMENT_TOUR_KINDS, elementTourTokens } from '../element-tour-kinds';
 
@@ -124,73 +119,9 @@ export const WELCOME_DIALOG_CLOSED = chart(
   { types: ['Welcome'] },
 );
 
-// The Pages tour (docs/specs/007-editor/pages-tour.md): its own funnel.
-export const PAGES_TOUR_DECLINED = chart(
-  'UI',
-  'Closed',
-  'Pages Tours Declined',
-  'The Pages tour turned down on its welcome card, before it started (until 25 October 2026, when tours stopped offering themselves).',
-  { types: ['PagesTourOffer'], rising: 'neutral' },
-);
-
-export const PAGES_TOURS_STARTED = chart(
-  'UI',
-  'Started',
-  'Pages Tours Started',
-  'The Pages tour started.',
-  { types: ['PagesTour'] },
-);
-
-export const PAGES_TOUR_STEPS_VIEWED = chart(
-  'UI',
-  'View',
-  'Pages Tour Steps Viewed',
-  'A step of the Pages tour shown.',
-  { typeIn: (t) => (t ?? '').startsWith('PagesTourStep') },
-);
-
-export const PAGES_TOURS_COMPLETED = chart(
-  'UI',
-  'Ended',
-  'Pages Tours Completed',
-  'The Pages tour run to its last step.',
-  { types: ['PagesTourCompleted'] },
-);
-
-export const PAGES_TOURS_SKIPPED = chart(
-  'UI',
-  'Ended',
-  'Pages Tours Skipped',
-  'The Pages tour closed before its end.',
-  { types: ['PagesTourSkipped'], rising: 'neutral' },
-);
-
-export const PAGES_TOUR: MetricStack = {
-  stack: true,
-  title: 'Pages Tour',
-  blurb:
-    'The first time in Pages mode: the Pages tour offered, stepped through, finished or skipped.',
-  members: [
-    PAGES_TOUR_OFFERED,
-    PAGES_TOUR_DECLINED,
-    PAGES_TOURS_STARTED,
-    PAGES_TOUR_STEPS_VIEWED,
-    PAGES_TOURS_COMPLETED,
-    PAGES_TOURS_SKIPPED,
-  ],
-  headline: PAGES_TOURS_STARTED,
-};
-
 // Element tours (docs/specs/007-editor/element-tours.md): a tour of one element type, offered beside a selected one.
-// One stack for them all, as Show Me's: offered, declined, started (and started per element), steps, how they end.
-export const ELEMENT_TOURS_DECLINED = chart(
-  'UI',
-  'Closed',
-  'Element Tours Declined',
-  'An element tour turned down with the cross on its Tour toolbar.',
-  { types: elementTourTokens('Offer'), rising: 'neutral' },
-);
-
+// One stack for them all, as Show Me's: offered, started (and started per element), steps, how they end. The Pages
+// tour went with the slides and infographics it walked (docs/specs/002-project-scope/not-in-liveknowledge.md).
 export const ELEMENT_TOURS_STARTED = chart(
   'UI',
   'Started',
@@ -233,10 +164,9 @@ export const ELEMENT_TOURS: MetricStack = {
   stack: true,
   title: 'Element Tours',
   blurb:
-    'Tours of one element type, offered beside a selected one: offered, declined, started, stepped through, finished or skipped.',
+    'Tours of one element type, offered beside a selected one: offered, started, stepped through, finished or skipped.',
   members: [
     ELEMENT_TOURS_OFFERED,
-    ELEMENT_TOURS_DECLINED,
     ELEMENT_TOURS_STARTED,
     ...ELEMENT_TOURS_BY_KIND,
     ELEMENT_TOUR_STEPS_VIEWED,
@@ -250,12 +180,7 @@ export const ELEMENT_TOURS: MetricStack = {
 // only when its button is pressed. One stack for all of them: every start, the starts per surface, then how they end.
 const SHOW_ME_SURFACES = [
   { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
-  { token: 'SlideTour', title: 'Slide', where: 'a slide page’s panel' },
-  { token: 'InfographicTour', title: 'Infographic', where: 'an infographic page’s panel' },
-  { token: 'ArticleTour', title: 'Article', where: 'an article page’s panel' },
-  { token: 'FlashcardTour', title: 'Flashcard', where: 'a flashcard page’s panel' },
   { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
-  { token: 'TabStyleTour', title: 'Tab Style', where: 'the Tab Style dialog' },
 ] as const;
 
 export const SHOW_ME_TOURS_STARTED = chart(
@@ -309,7 +234,7 @@ export const ONBOARDING_TOURS: MetricStack = {
   title: 'Onboarding Tours',
   blurb:
     'Every guided tour started, one line per tour. How far people get through each one is in Pages & Help.',
-  members: [PAGES_TOURS_STARTED, ELEMENT_TOURS_STARTED, SHOW_ME_TOURS_STARTED],
+  members: [ELEMENT_TOURS_STARTED, SHOW_ME_TOURS_STARTED],
   seeAlso: { section: 'tours', label: 'See Each Tour in Pages & Help' },
 };
 

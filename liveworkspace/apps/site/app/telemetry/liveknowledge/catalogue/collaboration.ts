@@ -1,8 +1,7 @@
-// Working together: live sessions, the Share dialog and embeds, discussion, teams and presenting (docs/specs/017-telemetry/telemetry.md).
+// Working together: live sessions, the Share dialog and embeds, discussion and teams (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../../_shared/metric-series';
-import { PRESENTATION_SETTINGS_OPENED } from './features';
 import { chart } from '../../_shared/catalogue-helpers';
 import { HOME_PICK_TYPES, HOME_START_TYPES } from '../../_shared/home-picks';
 
@@ -100,47 +99,6 @@ export const TEAM_REMOVALS = chart(
   'Team Removals',
   'A member removed, an invite withdrawn, a document or an invite link taken out of a team, or someone leaving.',
   { rising: 'neutral' },
-);
-
-export const SLIDE_NOTES = chart(
-  'UI',
-  'Changed',
-  'Slide Notes',
-  'Speaker notes on a slide edited.',
-  { types: ['SlideNotes'] },
-);
-
-// Speaker note cards (liveknowledge docs/specs/012-collaboration/speaker-note-cards.md "Telemetry").
-export const NOTE_CARDS_ADDED = chart(
-  'UI',
-  'Added',
-  'Note Cards Added',
-  'A speaker note card added to a slide.',
-  { types: ['NoteCard'] },
-);
-
-export const NOTE_CARDS_REMOVED = chart(
-  'UI',
-  'Removed',
-  'Note Cards Removed',
-  'A speaker note card removed from a slide.',
-  { types: ['NoteCard'] },
-);
-
-export const NOTE_CARDS_REORDERED = chart(
-  'UI',
-  'Moved',
-  'Note Cards Reordered',
-  'A speaker note card moved up or down its slide’s stack.',
-  { types: ['NoteCard'] },
-);
-
-export const NOTE_CARD_FLIPS = chart(
-  'UI',
-  'Used',
-  'Note Card Flips',
-  'A presenter flipped to another note card while presenting.',
-  { types: ['NoteCardFlip'] },
 );
 
 export const LIVE_IMAGE_TABS = chart(
@@ -518,86 +476,4 @@ export const HOME_AND_ACTIVITY: MetricStack = {
     ACTIVITY_RESOLVED,
     FEED_RETRIES,
   ],
-};
-
-// Presentations (docs/specs/012-collaboration/presentation-mode.md).
-export const PRESENTATIONS_STARTED = chart(
-  'UI',
-  'Started',
-  'Presentations Started',
-  'A slide deck presented full screen.',
-  { types: ['Presentation'] },
-);
-
-export const PRESENTATIONS_CLOSED = chart(
-  'UI',
-  'Closed',
-  'Presentations Closed',
-  'A presentation ended.',
-  { types: ['Presentation'] },
-);
-
-export const SLIDES_ADDED = chart(
-  'UI',
-  'Added',
-  'Slides Added',
-  'A page added to the deck, with Add to Slides on its Contents menu.',
-  { types: ['PageSlide'] },
-);
-
-export const PRESENTED_FROM_HERE = chart(
-  'UI',
-  'Used',
-  'Presented From Here',
-  'A show started at a chosen slide, from its page\u2019s Contents menu.',
-  { types: ['PresentFromHere'] },
-);
-
-export const SLIDES_SHOWN_HIDDEN = chart(
-  'UI',
-  'Toggled',
-  'Slides Shown & Hidden',
-  'A slide hidden from the deck or shown again.',
-  { types: ['SlideShown', 'SlideHidden'], rising: 'neutral' },
-);
-
-// The presenter settings (transition, speed, auto-advance, loop and the
-// rest) send UI·Changed·Presentation-<field>: which setting, never its value.
-export const PRESENTER_SETTINGS_CHANGED = chart(
-  'UI',
-  'Changed',
-  'Presenter Settings Changed',
-  'A presentation setting changed: the transition, speed, auto-advance, loop, zoom, or what the presenter sees.',
-  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
-);
-
-// The Settings dialog's presenter switches send UI·Toggled·Presentation-<field>On|Off.
-export const PRESENTER_SETTINGS_TOGGLED = chart(
-  'UI',
-  'Toggled',
-  'Presenter Settings Switched',
-  'A presentation switch turned on or off in Settings: advance on click, loop, or what the presenter sees.',
-  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
-);
-
-export const PRESENTATIONS: MetricStack = {
-  stack: true,
-  title: 'Presentations',
-  blurb: 'Slide decks built from pages and presented full screen.',
-  members: [
-    PRESENTATIONS_STARTED,
-    PRESENTATIONS_CLOSED,
-    PRESENTED_FROM_HERE,
-    PRESENTATION_SETTINGS_OPENED,
-    SLIDES_ADDED,
-    SLIDES_SHOWN_HIDDEN,
-    SLIDE_NOTES,
-    NOTE_CARDS_ADDED,
-    NOTE_CARDS_REMOVED,
-    NOTE_CARDS_REORDERED,
-    NOTE_CARD_FLIPS,
-    PRESENTER_SETTINGS_CHANGED,
-    PRESENTER_SETTINGS_TOGGLED,
-  ],
-  headline: PRESENTATIONS_STARTED,
 };

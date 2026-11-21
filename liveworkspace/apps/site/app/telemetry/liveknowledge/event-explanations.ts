@@ -398,6 +398,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Email|Sent|Week1': 'The one-week onboarding email went out.',
   'Email|Sent|Week2': 'The two-week onboarding email went out.',
   'Email|Sent|Welcome': 'The welcome email went out just after someone signed up.',
+  // The Knowledgebase Reviews notices (docs/specs/030-knowledgebase/verification.md).
+  'Email|Sent|ReviewDue': "An email went out to a page's owners: its review is due.",
+  'Email|Sent|PagesDisagree':
+    'An email went out to the owners of two pages that disagree, asking them to settle it.',
+  'Email|Sent|OwnersReminded':
+    "An email went out to a page's owners after an Editor reminded them its review is due.",
   'Error|Api|Internal':
     'A liveknowledge server crashed while handling a request. No longer recorded in this bare form; a crash like this now also records which endpoint or tool broke.',
   'Error|Api|Network.SendEmail':
@@ -542,14 +548,27 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone changed how the Community gallery is sorted: newest, most loved or most copied.',
   'Community|Selected|Mine':
     'Someone turned on My Shares, to see the documents they shared to the Community and how they are doing.',
-  'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
-  'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new document.',
+  'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new knowledgebase.',
   'Mcp|Used|FindDocuments':
-    "An AI tool connected over MCP searched for one of the user's documents.",
-  'Mcp|Used|ReadDocument': "An AI tool connected over MCP read a document's contents.",
-  'Mcp|Used|RenameDocument': 'An AI tool connected over MCP renamed a document.',
-  'Mcp|Used|ShareDocument': 'An AI tool connected over MCP generated a share link for a document.',
-  'Mcp|Used|UpdateDocument': "An AI tool connected over MCP updated a tab's content in a document.",
+    "An AI tool connected over MCP searched for one of the user's knowledgebases.",
+  'Mcp|Used|RenameDocument': 'An AI tool connected over MCP renamed a knowledgebase.',
+  'Mcp|Used|ShareDocument':
+    'An AI tool connected over MCP generated a share link for a knowledgebase.',
+  // The knowledgebase tools (docs/specs/024-agents/knowledgebase-for-agents.md).
+  'Mcp|Used|GetContext':
+    "An AI tool connected over MCP read a knowledgebase's Always in Context pages, the ones every agent reads first.",
+  'Mcp|Used|ListPages': "An AI tool connected over MCP read a knowledgebase's page tree.",
+  'Mcp|Used|SearchPages':
+    "An AI tool connected over MCP searched a knowledgebase's pages and passages.",
+  'Mcp|Used|ReadPage': 'An AI tool connected over MCP read one page as Markdown.',
+  'Mcp|Used|ReportGap':
+    'An AI tool connected over MCP recorded a question the knowledgebase could not answer.',
+  'Mcp|Used|CreatePage':
+    'An AI tool connected over MCP added a page from Markdown, unverified until a person checks it.',
+  'Mcp|Used|SuggestEdit':
+    'An AI tool connected over MCP suggested a change to a page, for an Editor to accept or dismiss.',
+  'Mcp|Used|WritePage': 'An AI tool connected over MCP wrote a page directly.',
+  'Mcp|Used|MovePage': 'An AI tool connected over MCP moved a page in the page tree.',
   'Note|Added|': 'A note was added to an element (first non-empty save).',
   'Note|Changed|': "An existing note's text was edited.",
   'Note|Deleted|': 'A note was cleared from an element.',
@@ -696,10 +715,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto a page.',
   'Tab|Changed|PageLayoutSurprise':
     "Someone pressed Surprise Me in a page's layout gallery, putting a random layout onto the page.",
-  'Tab|Changed|Look':
-    "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
-  'Tab|Changed|SeasonalLook':
-    "Someone picked a seasonal look (New Year, Easter, Halloween or Christmas) behind the Seasonal toggle in Tab Style, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|AllTabs':
     "Someone pressed Apply to All Tabs in Tab Style, putting the open tab's style on every other tab at once.",
   'Tab|Changed|Finish':
@@ -709,7 +724,77 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|Font':
     "Someone changed a tab's default font, or applied the tab's font and size to every element on it.",
   'Tab|Cleared|': "A tab's content was wiped.",
-  'Tab|Created|': 'A new tab was added to a document.',
+  'Tab|Created|': 'Someone added a page to a knowledgebase by hand.',
+  'Tab|Created|FromAnswer': 'Someone saved an answer from Ask as a new page.',
+  'Tab|Created|FromGap':
+    'Someone drafted a page for a question nobody could answer, from AI Knowledge.',
+  'Tab|Created|FromPageLink':
+    'Someone followed a link to a page that did not exist yet, and so made that page.',
+  'Tab|Created|FromSetup': 'Describe to Set Up made the pages it had suggested.',
+  // Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style").
+  'Tab|Changed|Look': "Someone picked a look for the knowledgebase's style, changing every page.",
+  'Tab|Changed|SeasonalLook':
+    "Someone picked a seasonal look for the knowledgebase's style, changing every page.",
+  'Tab|Changed|Mashup':
+    "Someone rolled a random Mashup for the knowledgebase's style, changing every page.",
+  'Tab|Changed|Text':
+    "Someone changed the text in the knowledgebase's style: its fonts, size, spacing or headings.",
+  'Tab|Changed|Colours':
+    "Someone changed the colours in the knowledgebase's style: its theme or accent.",
+  // Ask, AI Knowledge, verification, search and getting around (docs/specs/030-knowledgebase).
+  'UI|Used|StartBlank':
+    "Someone picked Blank Knowledgebase on a new knowledgebase's start, to write from an empty first page.",
+  'UI|Used|AskQuestion': 'Someone asked the knowledgebase a question in Ask. Never the words.',
+  'UI|Used|HomeAsk': 'Someone asked a question from the box on Home, opening it in Ask.',
+  'UI|Ended|AskStopped': 'Someone stopped Ask while it was still writing an answer.',
+  'UI|Used|AskHelpful': 'Someone marked an answer from Ask as helpful.',
+  'UI|Used|AskNotHelpful': 'Someone marked an answer from Ask as not helpful.',
+  'UI|Used|SuggestionAccepted':
+    'An Editor accepted an edit an agent had suggested, changing the page.',
+  'UI|Used|SuggestionDismissed': 'An Editor dismissed an edit an agent had suggested.',
+  'UI|Used|ConflictDismissed':
+    'An Editor dismissed a conflict between two pages in AI Knowledge, marking it as fine.',
+  'UI|Used|QuestionDismissed':
+    'An Editor dismissed a question nobody could answer, without writing a page for it.',
+  'UI|Used|OwnersAsked': "An Editor emailed a page's owners to settle two pages that disagree.",
+  'UI|Used|OwnersReminded': "An Editor emailed a page's owners a reminder that its review is due.",
+  'UI|Used|AgentWriteAllowed':
+    'An Editor let a connected agent write pages directly, not only suggest.',
+  'UI|Used|AgentWriteStopped':
+    "An Editor took back a connected agent's right to write pages directly.",
+  'UI|Added|ContextPage':
+    'Someone added a page to Always in Context, the pages every agent reads first.',
+  'UI|Removed|ContextPage': 'Someone took a page out of Always in Context.',
+  'UI|Used|VerifyPage': 'An Editor verified a page, marking it as right until its review is due.',
+  'UI|Used|HomeStillRight':
+    'Someone confirmed a page due for review with Still Right on Home, verifying it again.',
+  'UI|Used|ReviewPeriodChanged':
+    "Someone changed a knowledgebase's Review Period: how long a verified page stays verified.",
+  'UI|Used|SearchResultPage': 'Someone opened a page whose title matched their search.',
+  'UI|Used|SearchResultPassage':
+    'Someone opened a passage of writing that matched their search, on its page.',
+  'UI|Used|SearchRecentPage':
+    'Someone opened a recent page from the search panel before typing anything.',
+  'UI|Used|PageLink': 'Someone followed a link in the writing to another page.',
+  'UI|Used|Backlink': 'Someone opened a page from Linked From, the pages that link to this one.',
+  'UI|Used|OnThisPage': 'Someone jumped to a heading from the On This Page list.',
+  'UI|Used|CopyPageLink': "Someone copied a page's link from its menu in the page tree.",
+  'UI|Changed|PageTreeCollapsed': 'Someone folded the page tree away.',
+  'UI|Changed|PageTreeExpanded': 'Someone opened the page tree out again.',
+  'UI|Used|SetupSuggested': 'Describe to Set Up suggested a page tree from what someone described.',
+  'UI|Added|AiKey':
+    "Someone added the team's own Claude or OpenAI key to a knowledgebase. Never the key.",
+  'UI|Removed|AiKey': "Someone removed a knowledgebase's AI key.",
+  'UI|Changed|AiProvider': "Someone switched a knowledgebase's AI provider.",
+  'UI|Changed|AiModel': 'Someone picked another model for Ask and AI Knowledge.',
+  'UI|Opened|AskView': 'Someone opened the Ask view, to ask the knowledgebase a question.',
+  'UI|Opened|AiKnowledgeView': 'Someone opened the AI Knowledge view.',
+  'UI|Opened|KnowledgeSearch': 'Someone opened the search panel to search this knowledgebase.',
+  'Element|Added|ArticleEmbed': 'Someone put an embed into the writing of a page.',
+  'UI|Toggled|NotifyKnowledgeReviewsOn':
+    'Someone switched on the Knowledgebase Reviews emails in Settings: review due, pages that disagree, owner reminders.',
+  'UI|Toggled|NotifyKnowledgeReviewsOff':
+    'Someone switched off the Knowledgebase Reviews emails in Settings.',
   'Tab|Deleted|': 'A tab was removed from a document.',
   'Tab|Duplicated|': 'A tab was duplicated.',
   'Tab|Linked|': 'A tab was linked into another document.',
@@ -1789,7 +1874,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'An earlier version of a tab was restored, as one undoable change: from the editor, the MCP server, the CLI or the API.',
   'Version|Copied': 'An earlier version of a tab was copied into a new tab beside it.',
   'Mcp|Used':
-    'An AI tool connected to liveknowledge over MCP used one of its actions on a document.',
+    'An AI tool connected to liveknowledge over MCP used one of its tools on a knowledgebase.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
   'Cli|Used': 'Someone ran a liveknowledge command from the command line, and it succeeded.',
   'Note|Changed': "An existing note's text was edited.",
@@ -1815,10 +1900,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Added': 'Someone connected a file from a liveworkspace app to this document as a tab.',
   'Tab|Aligned':
     "Someone tidied a tab's layout with Auto Layout, arranging its elements automatically.",
-  'Tab|Changed': "Someone changed a tab-wide setting, such as the tab's default font or text size.",
+  'Tab|Changed': "Someone changed the knowledgebase's style, which every page is drawn in.",
   'Template|Changed': 'Someone cleared or kept the example content a template landed with.',
   'Tab|Cleared': "A tab's content was wiped.",
-  'Tab|Created': 'A new tab was added to a document.',
+  'Tab|Created': 'A new page was added to a knowledgebase.',
   'Tab|Deleted': 'A tab was removed from a document.',
   'Tab|Duplicated': 'A tab was duplicated.',
   'Tab|Imported': 'Someone imported a tab from a file.',
@@ -1879,7 +1964,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'A new API token was created, either by hand or for an AI tool connected over MCP.',
   'Token|Linked': 'A token’s owner allowed a developer tool to open their documents.',
   'Token|Removed': 'Someone revoked an API token.',
-  'UI|Added': 'Someone added something in the editor, such as a slide.',
+  'UI|Added':
+    'Someone added something in the editor, such as an AI key or an Always in Context page.',
   'UI|Changed':
     "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
   'UI|Cleared':
@@ -1888,16 +1974,18 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone closed or dismissed a banner, card, or presentation somewhere in the editor.',
   'UI|Copied':
     'Someone copied something to their clipboard from a Share or invite control, such as a share link, an embed snippet, a live image URL, or a team invite link.',
-  'UI|Ended': 'The welcome tour finished, either completed in full or skipped partway through.',
+  'UI|Ended':
+    'Something someone started finished or was stopped: a tour completed or skipped, or an answer from Ask stopped.',
   'UI|Moved': "Someone dragged something to a new position in the editor's interface.",
   'UI|Opened':
     "Someone opened a dialog, panel, popover, or menu somewhere in the editor. A lowercase, hyphenated type is a help-centre article's address: someone clicked a help link, or a Help result in search, to read it.",
-  'UI|Removed': 'Someone removed something in the editor, such as a slide.',
+  'UI|Removed':
+    'Someone removed something in the editor, such as an AI key or an Always in Context page.',
   'UI|Searched':
     'Someone typed into a search box inside a palette tab (Icons, Technology or Stickers), narrowing it to matching tiles. Counted once per tab visit, on the first keystroke.',
   'UI|Selected':
     'Someone picked an option from a dropdown, or clicked through on a banner, somewhere in the editor.',
-  'UI|Started': 'Someone started a presentation or the welcome tour.',
+  'UI|Started': 'Someone started a tour.',
   'UI|Toggled': 'Someone turned an editor setting on or off.',
   'UI|Used':
     'Someone used a wizard-skipping entry point into a new document, or accepted an offer.',

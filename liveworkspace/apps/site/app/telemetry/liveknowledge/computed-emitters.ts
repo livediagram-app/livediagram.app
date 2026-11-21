@@ -105,32 +105,21 @@ const PRESENTATION_FIELDS = (() => {
   return [...block.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => `Presentation-${m[1]}`);
 })();
 
-// The Settings dialog's presenter rows (settings-catalogue.ts presentingToggle / presentingChoice): a toggle sends
-// `Presentation-<field>On|Off` for each boolean field, a choice `Presentation-<field><Option>` (choiceTelemetryType).
-const PRESENTATION_SETTINGS = (() => {
-  const source = read('editor/lib/presentation-config.ts');
-  const start = source.indexOf('export type PresentationConfig = {');
-  const block = source.slice(start, source.indexOf('\n};', start));
-  const fields = [...block.matchAll(/^ {2}([a-zA-Z]+)\??: ([A-Za-z]+);/gm)].map(
-    (m) => [m[1]!, m[2]!] as const,
+// The Settings dialog's UI Scale part sliders (settings-catalogue.ts uiScalePartRow): each sends
+// `UI·Changed·<changed>` with the `changed` its call names.
+const UI_SCALE_PARTS = [
+  ...read('editor/components/dialogs/settings/settings-catalogue.ts').matchAll(
+    /uiScalePartRow\('[a-zA-Z]+', \{[^}]*?changed: '([A-Za-z]+)'/g,
+  ),
+].map((m) => m[1]!);
+
+// Knowledgebase Style's picks (apps/editor components/knowledge-style: KnowledgeStyleDialog sends its
+// StyleChangeKind as `Tab·Changed`).
+const KNOWLEDGE_STYLE_KINDS = (() => {
+  const m = /export type StyleChangeKind = ([^;]+);/.exec(
+    read('editor/components/knowledge-style/knowledge-style-context.ts'),
   );
-  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const unionOf = (type: string) => {
-    const m = new RegExp(`export type ${type} = ([^;]+);`).exec(source);
-    return m ? [...m[1]!.matchAll(/'([^']+)'/g)].map((x) => x[1]!) : [];
-  };
-  const seconds = [...source.matchAll(/\{ seconds: (\d+),/g)].map((m) => m[1]!);
-  return {
-    toggled: fields
-      .filter(([, type]) => type === 'boolean')
-      .flatMap(([f]) => [`Presentation-${f}On`, `Presentation-${f}Off`]),
-    changed: [
-      ...fields
-        .filter(([, type]) => type !== 'boolean' && type !== 'number')
-        .flatMap(([f, type]) => unionOf(type).map((o) => `Presentation-${f}${cap(o)}`)),
-      ...seconds.map((n) => `Presentation-autoAdvanceSeconds${n}`),
-    ],
-  };
+  return m ? [...m[1]!.matchAll(/'([A-Za-z]+)'/g)].map((x) => x[1]!) : [];
 })();
 
 // The image picker's search failures (@liveworkspace/workbench lib/image-search/telemetry.ts):
@@ -322,11 +311,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: ELEMENT_WHY,
   },
   'apps/editor/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
-  'apps/editor/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
-    values: PRESENTATION_SETTINGS.toggled,
-  },
   'apps/editor/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
-    values: PRESENTATION_SETTINGS.changed,
+    values: UI_SCALE_PARTS,
+  },
+  'apps/editor/components/knowledge-style/KnowledgeStyleDialog.tsx Tab·Changed': {
+    values: KNOWLEDGE_STYLE_KINDS,
   },
   // ARTICLE_BLOCK_INSERT_EVENT (apps/editor/lib/article/article-telemetry.ts): a block put into an
   // article from the page toolbar's Insert or the slash menu.

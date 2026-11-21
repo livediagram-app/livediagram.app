@@ -12,6 +12,7 @@ export * from './catalogue/content';
 export * from './catalogue/email';
 export * from './catalogue/features';
 export * from './catalogue/health';
+export * from './catalogue/knowledge';
 export * from './catalogue/settings';
 export * from './catalogue/timings';
 export * from './catalogue/visitors';

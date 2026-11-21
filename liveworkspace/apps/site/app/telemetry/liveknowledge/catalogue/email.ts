@@ -153,6 +153,29 @@ export const ACCOUNT_DELETED_EMAILS = email(
   'bad',
 );
 
+// The Knowledgebase Reviews notices (docs/specs/030-knowledgebase/verification.md), each to a page's owners, each
+// switched off by the one Knowledgebase Reviews setting.
+export const REVIEW_DUE_EMAILS = email(
+  'ReviewDue',
+  'Review Due Emails',
+  'A page someone owns came due for review.',
+  'neutral',
+);
+
+export const PAGES_DISAGREE_EMAILS = email(
+  'PagesDisagree',
+  'Pages Disagree Emails',
+  'Two pages someone owns were found to disagree, asking the owners to settle it.',
+  'neutral',
+);
+
+export const OWNERS_REMINDED_EMAILS = email(
+  'OwnersReminded',
+  'Owner Reminder Emails',
+  "An Editor reminded a page's owners that its review is due.",
+  'neutral',
+);
+
 export const EMAIL_KIND_METRICS: readonly Metric[] = [
   WELCOME_EMAILS,
   WEEK1_EMAILS,
@@ -175,6 +198,9 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   MENTION_EMAILS,
   TOKEN_EXPIRING_EMAILS,
   ACCOUNT_DELETED_EMAILS,
+  REVIEW_DUE_EMAILS,
+  PAGES_DISAGREE_EMAILS,
+  OWNERS_REMINDED_EMAILS,
 ];
 
 export const EMAILS_SENT: MetricStack = {

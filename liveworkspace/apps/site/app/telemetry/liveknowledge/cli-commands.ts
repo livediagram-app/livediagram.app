@@ -3,6 +3,25 @@
 // sentence read it; `metric-series.test` fails when a counted verb has no row. `telemetry on|off` is not counted.
 
 export const CLI_COMMANDS: readonly { type: string; command: string; what: string }[] = [
+  // The knowledgebase commands (docs/specs/024-agents/knowledgebase-for-agents.md "CLI"), each an MCP tool's twin.
+  { type: 'Context', command: 'context', what: 'reading the pages every agent reads first' },
+  { type: 'Pages', command: 'pages', what: 'listing a knowledgebase’s page tree' },
+  { type: 'Search', command: 'search', what: 'searching a knowledgebase’s passages' },
+  { type: 'Read', command: 'read', what: 'reading a page as Markdown' },
+  { type: 'New', command: 'new', what: 'adding a page from Markdown' },
+  { type: 'Suggest', command: 'suggest', what: 'suggesting an edit to a page' },
+  { type: 'Write', command: 'write', what: 'writing a page directly' },
+  { type: 'Move', command: 'move', what: 'moving a page in the tree' },
+  {
+    type: 'Gap',
+    command: 'gap',
+    what: 'reporting a question the knowledgebase could not answer',
+  },
+  {
+    type: 'Import',
+    command: 'import',
+    what: 'importing a Markdown folder or a Notion export as pages',
+  },
   { type: 'DocumentLs', command: 'document ls', what: 'listing documents' },
   { type: 'DocumentView', command: 'document view', what: 'reading a document’s overview' },
   { type: 'DocumentCreate', command: 'document create', what: 'creating a document' },
@@ -39,7 +58,6 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'ElementConnect', command: 'element connect', what: 'drawing an arrow' },
   { type: 'ElementInsert', command: 'element insert', what: 'putting an element on an arrow' },
   { type: 'PageLs', command: 'page ls', what: 'listing a tab’s pages and articles' },
-  { type: 'PageSet', command: 'page set', what: 'changing a tab’s pages' },
   { type: 'ArticleGet', command: 'article get', what: 'reading an article as Markdown' },
   { type: 'ArticleSet', command: 'article set', what: 'writing an article from Markdown' },
   { type: 'ChangesetApply', command: 'edit', what: 'applying edit operations from a file' },

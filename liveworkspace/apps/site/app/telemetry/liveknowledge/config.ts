@@ -36,7 +36,15 @@ import {
   ARTICLE_VIEWS,
   ASSIGNED_ACTIONS,
   CALLS_TO_ACTION,
-  CANVAS_MODES,
+  FORMAT_PAINTER,
+  ASK,
+  AI_KNOWLEDGE,
+  VERIFICATION,
+  KNOWLEDGE_SEARCH,
+  PAGE_NAVIGATION,
+  PAGES_BY_SOURCE,
+  AI_SETUP,
+  AGENT_ACCESS,
   CLIENT_EXCEPTIONS,
   CLI_COMMANDS_STACK,
   DISCUSSION,
@@ -70,12 +78,10 @@ import {
   OFFLINE_MODE,
   ONBOARDING_TOURS,
   ORGANISATION,
-  PAGES_TOUR,
   PAGE_VIEWS_BY_APP,
   PAGE_WORK,
   PALETTE_USE,
   PANELS_OPENED,
-  PRESENTATIONS,
   REALTIME_RESYNCS,
   RETURNING_VISITORS,
   SERVER_CRASHES,
@@ -98,7 +104,7 @@ import {
   WEB_VITAL_CHARTS,
   WELCOME_DIALOG_CLOSED,
 } from './metric-catalogue';
-import { isNonThemePick, PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
+import { isNonThemePick, PALETTE_TYPE_ALIASES } from './palette-types';
 import { isRetiredEvent } from './retired-events';
 
 const NOUN = noun('document');
@@ -211,31 +217,38 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
         ONBOARDING_TOURS,
       ],
     },
+    // What a knowledgebase is for: questions asked and answered, pages kept right, found and moved through, and the
+    // pages those make. Read Ask against Verification: an answer is only as good as the pages behind it.
+    {
+      title: 'Knowledge',
+      metrics: [
+        ASK,
+        AI_KNOWLEDGE,
+        VERIFICATION,
+        KNOWLEDGE_SEARCH,
+        PAGE_NAVIGATION,
+        PAGES_BY_SOURCE,
+        AI_SETUP,
+      ],
+    },
     {
       title: 'Content',
       metrics: [DOCUMENT_ACTIONS, TAB_ACTIONS, ELEMENTS_ADDED, ELEMENT_EDITING],
     },
     {
       title: 'Features',
-      metrics: [PAGE_WORK, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+      metrics: [PAGE_WORK, PALETTE_USE, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
     },
     // Live Together is the only stack that counts two people on one canvas at
     // the same moment; the rest of Collaboration counts the ways in and keeping
     // up, so read them against it.
     {
       title: 'Collaboration',
-      metrics: [
-        LIVE_TOGETHER,
-        JOINING,
-        SHARE_LINKS_MADE,
-        SHARING_AND_EMBEDS,
-        HOME_AND_ACTIVITY,
-        PRESENTATIONS,
-      ],
+      metrics: [LIVE_TOGETHER, JOINING, SHARE_LINKS_MADE, SHARING_AND_EMBEDS, HOME_AND_ACTIVITY],
     },
     {
       title: 'Connections',
-      metrics: [MCP_TOOL_CALLS, CLI_COMMANDS_STACK, AGENT_VIEWED],
+      metrics: [AGENT_ACCESS, MCP_TOOL_CALLS, CLI_COMMANDS_STACK, AGENT_VIEWED],
     },
     // Emails Sent is written server-side by the api worker: nothing about a send
     // reaches a browser, so this is the only place it can be counted. The
@@ -251,7 +264,7 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
       {
         title: 'Editing tools',
         // Notes left with element notes (docs/specs/009-elements/links-and-notes-retired.md).
-        metrics: [ASSIGNED_ACTIONS, ORGANISATION],
+        metrics: [ASSIGNED_ACTIONS, ORGANISATION, FORMAT_PAINTER],
       },
       {
         title: 'More editing',
@@ -271,7 +284,7 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
         ],
       },
     ],
-    exportFormats: 'Which formats diagrams leave in: PNG, SVG, PDF, JSON, Markdown',
+    exportFormats: 'Which formats pages leave in: PDF, Word, Markdown, PNG, SVG, JSON',
     aiOptIn: false,
   },
   palette: {
@@ -282,13 +295,8 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
       devices: 'Device frames: browser, phone, laptop and friends',
     },
   },
-  modes: {
-    selection: SELECTION_MODES,
-    selectionSubtitle: 'Laser, spotlight, eraser, format painter',
-    option: /^(Laser|Spotlight|Format)/,
-    optionsSubtitle:
-      'Settings inside a mode: eraser size and target, laser colour and trail, spotlight shape, format painter copies',
-  },
+  // No Selection mode (docs/specs/030-knowledgebase/page-surface.md "No Selection mode"): the format painter, the one
+  // tool kept, is charted in Editing tools, so there is no Modes section.
   settings: [
     { title: 'All categories', metrics: [SETTINGS_CHANGED] },
     { title: 'By category', metrics: [...SETTINGS_STACKS] },
@@ -297,7 +305,7 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
   teamwork: {
     key: 'teamwork',
     title: 'Discussion & Teams',
-    intro: 'Comments and teams, beside the presenting on the Dashboard',
+    intro: 'Comments and teams, beside the sharing on the Dashboard',
     groups: [
       {
         title: 'Discussion and teams',
@@ -315,7 +323,8 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
     ],
   },
   connections: {
-    intro: 'API tokens, agent changes and version history, beside the MCP and CLI on the Dashboard',
+    intro:
+      'API tokens, agent changes and version history, beside agent access, the MCP and the CLI on the Dashboard',
     groups: [
       { title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS, VERSION_HISTORY] },
     ],
@@ -339,7 +348,7 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
   tours: [
     {
       title: 'Tours',
-      metrics: [PAGES_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
+      metrics: [ELEMENT_TOURS, SHOW_ME_TOURS],
     },
     { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
   ],

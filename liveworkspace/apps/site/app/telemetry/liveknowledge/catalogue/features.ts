@@ -1,13 +1,13 @@
-// Which features carry the work: the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
+// Which features carry the work: writing the pages, the palette and the format painter, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { isHelpArticleType, isSettingsCategory } from '../../_shared/opened-types';
-import { SELECTION_MODES } from '../palette-types';
 import { NON_PATTERN_CANVAS_TYPES } from '../../_shared/look-feel-types';
 import { isNonThemePick } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { elementTourTokens } from '../element-tour-kinds';
+import { OPENED_HOMES, openedChart } from './opened';
 
 // The one layer event still sent since the Layers panel went (2026-11-08, docs/specs/006-document/layers.md
 // "Retired: the Layers panel"): a layer named from the first labelled element put on it (smart naming).
@@ -72,102 +72,22 @@ export const TABS_UNFILED = chart(
   { types: ['Folder'], rising: 'neutral' },
 );
 
-export const MODE_OPTIONS = chart(
-  'UI',
-  'Changed',
-  'Mode Options',
-  'Settings inside a canvas mode: laser, spotlight and format painter options.',
-  { typeIn: (t) => /^(Laser|Spotlight|Format)/.test(t ?? '') },
-);
-
-// Pages mode's A4 page turned portrait or landscape (docs/specs/007-editor/pages-mode.md).
-export const PAGE_ORIENTATION = chart(
-  'Tab',
-  'Changed',
-  'Page Orientations Set',
-  "A Pages tab's A4 page turned to portrait or landscape, from the page's settings.",
-  { types: ['PagePortrait', 'PageLandscape'] },
-);
-
-// Pages added after the last one, or deleted (docs/specs/007-editor/pages-mode.md "The pages").
-export const PAGES = chart(
-  'Tab',
-  'Changed',
-  'Pages Added and Deleted',
-  'A page added to a Pages tab from the plus after its last page (an infographic page, a new article, a slide or a flashcard), or deleted from its settings.',
-  {
-    types: [
-      'PageAdded',
-      'ArticleAdded',
-      'SlidePageAdded',
-      'FlashcardAdded',
-      'PageRemoved',
-      'PageKindInfographic',
-      'PageKindArticle',
-      'PageKindSlide',
-      'PageKindFlashcard',
-      'PageAddedLikeLast',
-    ],
-  },
-);
-
-// A page's own settings (docs/specs/007-editor/pages-mode.md).
-export const PAGE_SETUP = chart(
-  'Tab',
-  'Changed',
-  'Pages Set Up',
-  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), a page locked or unlocked, or a tab's pages stacked or set side by side.",
-  {
-    types: [
-      'PageSize',
-      'PageRenamed',
-      'PageBackground',
-      'PageBackgroundImage',
-      'PageBackgroundImageBlur',
-      'PageBackgroundAnimated',
-      'PageBackgroundAnimatedSpeed',
-      'PageBackgroundAppliedToAll',
-      'PageBackgroundPainted',
-      // Tab Style's New Page Background (docs/specs/011-theme/canvas-and-theme-dialog.md).
-      'NewPageBackground',
-      'NewPageBackgroundCarried',
-      'NewPageBackgroundToEveryPage',
-      'PagePattern',
-      'PageLocked',
-      'PageUnlocked',
-      'PagesStacked',
-      'PagesSideBySide',
-    ],
-  },
-);
-
-// Contents (docs/specs/007-editor/pages-mode.md "Contents"): a press on a page in the list,
-// going there, or a page dragged to a new place in it.
-export const PAGE_CONTENTS_JUMPS = chart(
-  'UI',
+// The format painter (docs/specs/030-knowledgebase/page-surface.md "No Selection mode": the one canvas tool kept, every
+// other reads as Select), and the options set inside it.
+export const FORMAT_PAINTER_USED = chart(
+  'Canvas',
   'Used',
-  'Contents Jumps and Reorders',
-  "A page pressed in Pages mode's Contents list (the canvas gliding to it), or dragged to a new place there.",
-  { types: ['PageContentsJump', 'PageContentsReorder'], rising: 'neutral' },
+  'Format Painter',
+  'The format painter switched on, to copy one element\u2019s style onto others.',
+  { types: ['FormatPainter'] },
 );
 
-// The view rests on a page (docs/specs/007-editor/pages-mode.md "Getting around the pages"): a
-// short pan or a flick from a page seen whole turning to its neighbour.
-export const PAGE_SWIPES = chart(
+export const FORMAT_PAINTER_OPTIONS = chart(
   'UI',
-  'Used',
-  'Page Swipes',
-  'A short pan or flick in Pages mode that turned the view to the next or previous page.',
-  { types: ['PageSwipe'], rising: 'neutral' },
-);
-
-// A flashcard turned over to its other side (docs/specs/007-editor/flashcards.md).
-export const FLASHCARD_FLIPS = chart(
-  'UI',
-  'Used',
-  'Flashcard Flips',
-  'A flashcard turned over to show its other side.',
-  { types: ['FlashcardFlip'], rising: 'neutral' },
+  'Changed',
+  'Format Painter Options',
+  'What the format painter copies, and whether it stays on for more than one paste.',
+  { typeIn: (t) => /^Format/.test(t ?? ''), rising: 'neutral' },
 );
 
 // The Word Count line picked to select the article's next long sentence (docs/specs/007-editor/article-pages.md
@@ -180,16 +100,6 @@ export const LONG_SENTENCES = chart(
   { types: ['LongSentenceSelected'], rising: 'neutral' },
 );
 
-// A stack's Previous or Next pressed under its page in front (docs/specs/007-editor/flashcards.md "Getting around a
-// stack").
-export const STACK_NAV = chart(
-  'UI',
-  'Used',
-  'Stack Turns',
-  "A stack of flashcards or infographic pages turned to the previous or next page from the page in front's own Previous and Next.",
-  { types: ['StackNav'], rising: 'neutral' },
-);
-
 // Print (docs/specs/020-import-export/print.md): Export's Print, the scope in the type.
 export const PRINTS = chart(
   'UI',
@@ -199,31 +109,12 @@ export const PRINTS = chart(
   { types: ['PrintPage', 'PrintDocument'], rising: 'good' },
 );
 
-// Building pages: a layout placed, a page duplicated or moved.
-export const PAGE_BUILDING = chart(
-  'Tab',
-  'Changed',
-  'Pages Built',
-  'A layout put onto a page, a page duplicated, moved or split (a flashcard too long for its card included), or a board put onto a page.',
-  {
-    types: [
-      'PageLayout',
-      'PageLayoutSurprise',
-      'PageDuplicated',
-      'PageMoved',
-      'PagesLaidOut',
-      'PageFitToContent',
-      'FlashcardSplit',
-    ],
-  },
-);
-
 // Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
 export const ARTICLE_INSERTS = chart(
   'Element',
   'Added',
   'Article Inserts',
-  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote, code block, table of contents or footnote.',
+  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote, code block, table of contents, footnote or embed.',
   {
     types: [
       'ArticleImage',
@@ -241,6 +132,7 @@ export const ARTICLE_INSERTS = chart(
       'ArticleFootnote',
       'ArticleComment',
       'ArticleAction',
+      'ArticleEmbed',
     ],
   },
 );
@@ -267,44 +159,15 @@ export const ARTICLE_FORMATTING = chart(
   },
 );
 
-export const ARTICLE_LOOKS = chart(
-  'Tab',
-  'Changed',
-  'Article Looks',
-  "An article's look chosen in its Style tab, or one of its style fields changed.",
-  {
-    types: [
-      'ArticleLookClean',
-      'ArticleLookClassic',
-      'ArticleLookReport',
-      'ArticleLookNotebook',
-      'ArticleLookBold',
-      'ArticleStyle',
-    ],
-  },
-);
-
-// Pages (docs/specs/007-editor/pages-mode.md): pages made and set up, and articles.
+// Writing the pages (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"): every page is
+// one article, so this is what goes into the writing, how it is formatted and styled, and printing it.
 export const PAGE_WORK: MetricStack = {
   stack: true,
-  title: 'Pages',
-  blurb: 'Pages added and set up, and articles written and styled.',
-  members: [
-    PAGE_ORIENTATION,
-    PAGES,
-    PAGE_SETUP,
-    PAGE_BUILDING,
-    PAGE_CONTENTS_JUMPS,
-    PAGE_SWIPES,
-    FLASHCARD_FLIPS,
-    STACK_NAV,
-    PRINTS,
-    ARTICLE_INSERTS,
-    ARTICLE_FORMATTING,
-    LONG_SENTENCES,
-    ARTICLE_LOOKS,
-  ],
-  headline: PAGES,
+  title: 'Writing',
+  blurb:
+    'What goes into the pages and how it is shaped: inserts, formatting, long sentences split, and prints. Headed by inserts and formatting.',
+  members: [ARTICLE_INSERTS, ARTICLE_FORMATTING, LONG_SENTENCES, PRINTS],
+  headline: [ARTICLE_INSERTS, ARTICLE_FORMATTING],
 };
 
 // ---- Editing tab -------------------------------------------------------------
@@ -550,41 +413,14 @@ export const PALETTE_USE: MetricStack = {
   seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
 };
 
-// The canvas selection modes, one chart per mode, and the options set inside
-// them (Canvas Modes tab has the rankings).
-const MODE_TITLES: Record<string, string> = {
-  Laser: 'Laser',
-  Spotlight: 'Spotlight',
-  FormatPainter: 'Format Painter',
-};
-
-export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
-  chart(
-    'Canvas',
-    'Used',
-    MODE_TITLES[mode] ?? mode,
-    `The ${(MODE_TITLES[mode] ?? mode).toLowerCase()} mode switched on from the palette.`,
-    { types: [mode] },
-  ),
-);
-
-export const CANVAS_MODES: MetricStack = {
+export const FORMAT_PAINTER: MetricStack = {
   stack: true,
-  title: 'Canvas Modes',
-  blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, MODE_OPTIONS],
-  // Modes switched into; tweaking an option inside one is not another use.
-  headline: [...MODE_METRICS],
-  seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
+  title: 'Format Painter',
+  blurb: 'The format painter switched on, and the options set inside it.',
+  members: [FORMAT_PAINTER_USED, FORMAT_PAINTER_OPTIONS],
+  // Switched on; tweaking an option inside it is not another use.
+  headline: FORMAT_PAINTER_USED,
 };
-
-// Editor chrome: layout and navigation.
-export const CANVAS_ZOOMS = chart(
-  'Canvas',
-  'Zoomed',
-  'Canvas Zooms',
-  'Zoomed in or out, to fit, to a preset, or on a double-tapped spot.',
-);
 
 export const ZEN_MODE = chart('UI', 'Toggled', 'Zen Mode', 'Zen mode switched on or off.', {
   types: ['ZenModeOn', 'ZenModeOff'],
@@ -619,64 +455,51 @@ export const EDITOR_CHROME: MetricStack = {
   stack: true,
   title: 'Editor Chrome',
   blurb:
-    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout, the Explorer view.',
-  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
+    'Arranging the workspace: zen mode, the bars on a phone held sideways, panel layout, the Explorer view.',
+  members: [ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
 };
 
-// Dialogs and panels opened (UI·Opened), split by what was opened.
-const OPENED_HOMES: ((type: string | null) => boolean)[] = [];
+// Dialogs and panels opened (UI·Opened), split by what was opened (./opened.ts keeps the homes).
 
-const opened = (title: string, blurb: string, typeIn: (type: string | null) => boolean): Metric => {
-  OPENED_HOMES.push(typeIn);
-  return chart('UI', 'Opened', title, blurb, { typeIn });
-};
-
-export const SETTINGS_OPENED = opened(
+export const SETTINGS_OPENED = openedChart(
   'Settings Opened',
   'The Settings dialog opened.',
   (t) => t === 'Settings',
 );
 
-export const SETTINGS_CATEGORIES_VISITED = opened(
+export const SETTINGS_CATEGORIES_VISITED = openedChart(
   'Settings Categories Visited',
   'A category picked inside the open Settings dialog: Appearance, Editor, Account and the rest.',
   isSettingsCategory,
 );
 
-export const SHARE_OPENED = opened(
+export const SHARE_OPENED = openedChart(
   'Share Opened',
   'The Share dialog or the collaborators list opened.',
   (t) => t === 'Share' || t === 'Collaborators',
 );
 
-export const PICKERS_OPENED = opened(
+export const PICKERS_OPENED = openedChart(
   'Theme & Canvas Pickers',
   'The theme picker or the canvas style panel opened.',
   (t) => t === 'ThemePicker' || t === 'CanvasStyle',
 );
 
-export const HELP_FROM_EDITOR = opened(
+export const HELP_FROM_EDITOR = openedChart(
   'Help from the Editor',
   'A help article opened from inside the editor.',
   isHelpArticleType,
 );
 
-export const SHORTCUTS_OPENED = opened(
+export const SHORTCUTS_OPENED = openedChart(
   'Shortcuts Opened',
   'The keyboard shortcuts list opened.',
   (t) => t === 'Shortcuts',
 );
 
-// The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
-export const PAGES_TOUR_OFFERED = opened(
-  'Pages Tour Offered',
-  'The Pages tour offered, the first time someone works in Pages mode. Since 25 October 2026, the Start Tour button in the footer showing it.',
-  (t) => t === 'PagesTourOffer',
-);
-
 // The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
 // the Visitors tab, which names the kinds.
-export const ELEMENT_TOURS_OFFERED = opened(
+export const ELEMENT_TOURS_OFFERED = openedChart(
   'Element Tours Offered',
   'An element tour offered beside a selected element, once per kind per visit. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => elementTourTokens('Offer').includes(t ?? ''),
@@ -684,19 +507,13 @@ export const ELEMENT_TOURS_OFFERED = opened(
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md); charted with its reloads
 // on the Visitors tab.
-export const NEW_VERSION_OFFERED = opened(
+export const NEW_VERSION_OFFERED = openedChart(
   'New Version Offered',
   'An open editor heard the server serves a newer document format, and offered a reload.',
   (t) => t === 'NewVersionPrompt',
 );
 
-export const PRESENTATION_SETTINGS_OPENED = opened(
-  'Presentation Settings Opened',
-  "The settings on a presentation's on-screen controls opened, while presenting.",
-  (t) => t === 'PresentationSettings',
-);
-
-export const ACTION_SIGN_IN_NUDGE = opened(
+export const ACTION_SIGN_IN_NUDGE = openedChart(
   'Assign Action Nudge',
   'A guest opened Assign Action and was asked to sign in, since actions need an account.',
   (t) => t === 'ActionSignInNudge',
@@ -704,7 +521,7 @@ export const ACTION_SIGN_IN_NUDGE = opened(
 
 // The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents kept Offline
 // after signing in"); charted with Offline Mode on the Dashboard.
-export const LOCAL_MOVE_OFFERED = opened(
+export const LOCAL_MOVE_OFFERED = openedChart(
   'Move Prompt Shown',
   'Someone signed in with documents kept only in this browser and was offered to move them to the account.',
   (t) => t === 'LocalMovePrompt',

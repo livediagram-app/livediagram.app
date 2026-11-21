@@ -2,7 +2,7 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { PALETTE_TELEMETRY_TYPES } from '@liveknowledge/api-schema';
-import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
+import { canonicalElementType, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { LOCAL_MOVE_OFFERED } from './features';
@@ -22,28 +22,14 @@ export const TEMPLATE_LINKS = chart(
   { types: ['TemplateLink'] },
 );
 
-export const TAB_TEXT_DEFAULTS = chart(
-  'Tab',
-  'Changed',
-  'Tab Text Defaults',
-  'A tab’s font or default text size changed.',
-  { types: ['Font', 'DefaultTextSize'] },
-);
-
-export const TAB_FINISH = chart(
-  'Tab',
-  'Changed',
-  'Tab Finish',
-  'A tab’s finish changed (Flexible, Professional, Sketch or Marker).',
-  { types: ['Finish'] },
-);
-
+// Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): one style for every page,
+// sent as the platform's Tab Style events.
 export const TAB_LOOKS_PICKED = chart(
   'Tab',
   'Changed',
-  'Tab Looks',
-  'A look picked in Tab Style: theme, finish, font and canvas pattern set at once, a random Mashup rolled, a seasonal look picked, or one tab’s style applied to all tabs.',
-  { types: ['Look', 'Mashup', 'SeasonalLook', 'AllTabs'] },
+  'Knowledgebase Style',
+  'The style every page is drawn in changed: a look picked, a random Mashup rolled or a seasonal look, or its text or colours set.',
+  { types: ['Look', 'Mashup', 'SeasonalLook', 'Text', 'Colours'] },
 );
 
 export const TABS_ARRANGED = chart(
@@ -56,8 +42,8 @@ export const TABS_ARRANGED = chart(
 export const TABS_REORDERED = chart(
   'Tab',
   'Reordered',
-  'Tabs Reordered',
-  'Tab pills dragged into a new order.',
+  'Pages Reordered',
+  'Pages dragged into a new order.',
 );
 
 export const LINKS_ADDED = chart(
@@ -97,6 +83,16 @@ export const TABS_LOCKED = chart(
   'Tabs Locked & Unlocked',
   'A tab locked against edits, or unlocked.',
   { actionIn: ['Unlocked'] },
+);
+
+// Blank Knowledgebase picked on a new knowledgebase's start (docs/specs/030-knowledgebase/knowledgebases-and-pages.md), its
+// other choices being a template, Describe to Set Up and Import.
+export const STARTED_BLANK = chart(
+  'UI',
+  'Used',
+  'Started Blank',
+  'Blank Knowledgebase picked on a new knowledgebase’s start, to write from an empty first page.',
+  { types: ['StartBlank'] },
 );
 
 // Document lifecycle.
@@ -207,23 +203,26 @@ export const TABS_LOADED: Metric = {
   category: 'Tab',
   action: 'Loaded',
   type: null,
-  title: 'Tabs Loaded',
+  title: 'Pages Loaded',
   blurb:
-    "A tab's content was fetched for viewing, counted each time (the first tab when a document opens, then each tab switched to).",
+    "A page's content was fetched for reading, counted each time (the first page when a knowledgebase opens, then each page opened).",
 };
 
+// A page added by hand. The pages made from an answer, an unanswered question, a link or Describe to Set Up carry
+// their source as the type and are charted in New Pages by Source (./knowledge.ts).
 export const TABS_CREATED: Metric = {
   category: 'Tab',
   action: 'Created',
-  type: null,
-  title: 'Tabs Created',
+  typeIn: (type) => type === null,
+  title: 'Pages Added',
+  blurb: 'A page added by hand, from the page tree or a page’s menu.',
 };
 
 export const TABS_RENAMED: Metric = {
   category: 'Tab',
   action: 'Renamed',
   type: null,
-  title: 'Tabs Renamed',
+  title: 'Pages Renamed',
 };
 
 export const TABS_DELETED: Metric = {
@@ -231,14 +230,14 @@ export const TABS_DELETED: Metric = {
   category: 'Tab',
   action: 'Deleted',
   type: null,
-  title: 'Tabs Deleted',
+  title: 'Pages Deleted',
 };
 
 export const TABS_DUPLICATED: Metric = {
   category: 'Tab',
   action: 'Duplicated',
   type: null,
-  title: 'Tabs Duplicated',
+  title: 'Pages Duplicated',
 };
 
 // Exports sit in the Export & Import stack below.
@@ -261,7 +260,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Document Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or Offline (those three are part of Documents Created), and how often the wizard was backed out of with Escape.',
+    'Knowledgebases opened, made, renamed, deleted and duplicated, and how new ones were started: from a template link, blank, or Offline.',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,
@@ -269,6 +268,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
     DOCUMENTS_DELETED,
     DOCUMENTS_DUPLICATED,
     TEMPLATE_LINKS,
+    STARTED_BLANK,
     CREATED_OFFLINE,
   ],
   headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
@@ -316,8 +316,6 @@ const TAB_CHANGES = [
   TABS_RENAMED,
   TABS_DELETED,
   TABS_DUPLICATED,
-  TAB_TEXT_DEFAULTS,
-  TAB_FINISH,
   TAB_LOOKS_PICKED,
   TABS_ARRANGED,
   TABS_REORDERED,
@@ -328,9 +326,9 @@ const TAB_CHANGES = [
 
 export const TAB_ACTIONS: MetricStack = {
   stack: true,
-  title: 'Tab Actions',
+  title: 'Page Actions',
   blurb:
-    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, linked into another document, locked and cleared.',
+    'Pages opened, then everything done to one: added, renamed, deleted, duplicated, the knowledgebase restyled, auto-arranged, reordered, linked into another knowledgebase, locked and cleared.',
   headline: TAB_CHANGES,
   members: [
     TABS_LOADED,
@@ -338,8 +336,6 @@ export const TAB_ACTIONS: MetricStack = {
     TABS_RENAMED,
     TABS_DELETED,
     TABS_DUPLICATED,
-    TAB_TEXT_DEFAULTS,
-    TAB_FINISH,
     TAB_LOOKS_PICKED,
     TABS_ARRANGED,
     TABS_REORDERED,
@@ -465,27 +461,27 @@ export const COMPONENTS_ADDED = addedFrom(
   'Blocks that lay themselves out: cards, badges, step numbers, banners, callouts, stat rows, heroes.',
 );
 
-export const CONCEPTS_ADDED = addedFrom(
-  'concepts',
-  'Concepts Added',
-  'Concept graphics that lay out their own rows: layer stacks, pyramids, funnels and cycles.',
-);
-
-export const DEVICES_ADDED = addedFrom('devices', 'Devices Added', 'Device frames and mockups.');
-
 export const ICONS_ADDED = addedFrom('icons', 'Icons Added', 'Line-art and technology icons.');
+
+// The palette tabs a knowledgebase page's drawings reach. The concept graphics and device frames are tiles of the
+// palette kinds cut from the fork (docs/specs/002-project-scope/not-in-liveknowledge.md), so any that arrive (pasted
+// from another app) count as other elements.
+const CHARTED_TABS: readonly PaletteTab[] = ['shapes', 'tools', 'components', 'icons'];
+const CHARTED_KINDS: ReadonlySet<string> = new Set(
+  CHARTED_TABS.flatMap((tab) => PALETTE_TELEMETRY_TYPES[tab] as readonly string[]),
+);
 
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
   // Article inserts (`Article…`) are their own card (Article Inserts, features.ts).
   typeIn: (type) =>
-    !PALETTE_KINDS.has(canonicalElementType(type)) &&
+    !CHARTED_KINDS.has(canonicalElementType(type)) &&
     !isTablePart(type) &&
     !/^Article[A-Z]/.test(type ?? ''),
   title: 'Other Elements Added',
   blurb:
-    'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables.',
+    'Kinds the palette’s Shapes, Tools, Components and Icons do not list, such as pasted images. Table rows and columns are in Tables.',
 };
 
 export const ELEMENTS_ADDED: MetricStack = {
@@ -493,15 +489,7 @@ export const ELEMENTS_ADDED: MetricStack = {
   title: 'Elements Added',
   blurb:
     'Everything put on a canvas, by the palette tab it comes from. Copies count too: a duplicate or paste adds one per element.',
-  members: [
-    SHAPES_ADDED,
-    TOOLS_ADDED,
-    COMPONENTS_ADDED,
-    CONCEPTS_ADDED,
-    DEVICES_ADDED,
-    ICONS_ADDED,
-    OTHER_ELEMENTS_ADDED,
-  ],
+  members: [SHAPES_ADDED, TOOLS_ADDED, COMPONENTS_ADDED, ICONS_ADDED, OTHER_ELEMENTS_ADDED],
   seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
 };
 
@@ -713,7 +701,7 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
   blurb:
-    'Diagrams leaving liveknowledge as files and text, and tabs coming in from Markdown documents and JSON exports.',
+    'Knowledgebases leaving liveknowledge as files and text, and pages coming in from Markdown documents and JSON exports.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
   seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };

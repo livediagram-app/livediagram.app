@@ -185,7 +185,122 @@ function isRetiredLayersPanel(category: string, action: string, type: string | n
   return category === 'UI' && LAYERS_PANEL_UI.has(`${action}|${type ?? ''}`);
 }
 
+// Cut from the fork (docs/specs/002-project-scope/not-in-liveknowledge.md): what livedocuments brought that
+// liveknowledge does not keep. Slides, infographics and flashcards with presenting, speaker notes and PowerPoint;
+// the row of paper pages (adding, laying out, sizing, turning, backgrounds and locks of their own, the Contents
+// list, swiping between them); a tab's own style (a knowledgebase has one style for every page); zoom; the Selection
+// mode's laser and spotlight; and the Pages tour and the Show Me tours of the cut surfaces. Their code stays until it
+// is deleted, behind closed doors (the spec's "Unreachable, to delete"), so the emitter scan still reads their sends:
+// these events can never arrive, so no chart counts them and the dashboard would drop one that did.
+const CUT_FROM_FORK_EVENTS = new Set([
+  // Presenting and slides.
+  'UI|Started|Presentation',
+  'UI|Closed|Presentation',
+  'UI|Used|PresentFromHere',
+  'UI|Added|PageSlide',
+  'UI|Toggled|SlideHidden',
+  'UI|Toggled|SlideShown',
+  'UI|Opened|PresentationSettings',
+  'UI|Opened|PresenterNotes',
+  'UI|Opened|SlideElementDetail',
+  'UI|Opened|PageNotesButton',
+  // Speaker notes and their cards.
+  'UI|Changed|SlideNotes',
+  'UI|Added|NoteCard',
+  'UI|Removed|NoteCard',
+  'UI|Moved|NoteCard',
+  'UI|Used|NoteCardFlip',
+  // Flashcards and stacks of pages.
+  'UI|Used|FlashcardFlip',
+  'UI|Used|StackNav',
+  // The row of paper pages and a page's own look and lock.
+  'Tab|Changed|PageAdded',
+  'Tab|Changed|PageAddedLikeLast',
+  'Tab|Changed|ArticleAdded',
+  'Tab|Changed|SlidePageAdded',
+  'Tab|Changed|FlashcardAdded',
+  'Tab|Changed|PageRemoved',
+  'Tab|Changed|PageKindArticle',
+  'Tab|Changed|PageKindInfographic',
+  'Tab|Changed|PageKindSlide',
+  'Tab|Changed|PageKindFlashcard',
+  'Tab|Changed|PageDuplicated',
+  'Tab|Changed|PageMoved',
+  'Tab|Changed|PageLayout',
+  'Tab|Changed|PageLayoutSurprise',
+  'Tab|Changed|PagesLaidOut',
+  'Tab|Changed|PageFitToContent',
+  'Tab|Changed|FlashcardSplit',
+  'Tab|Changed|PageSize',
+  'Tab|Changed|PagePortrait',
+  'Tab|Changed|PageLandscape',
+  'Tab|Changed|PageRenamed',
+  'Tab|Changed|PagePattern',
+  'Tab|Changed|PageLocked',
+  'Tab|Changed|PageUnlocked',
+  'Tab|Changed|PagesStacked',
+  'Tab|Changed|PagesSideBySide',
+  'UI|Opened|PageLayoutsButton',
+  'UI|Opened|PageBackgroundButton',
+  'UI|Opened|PageAppearance',
+  'UI|Opened|PageArticleStyleButton',
+  'UI|Opened|PageArticleTextButton',
+  'UI|Used|PageContentsJump',
+  'UI|Used|PageContentsReorder',
+  'UI|Used|PageSwipe',
+  'UI|Changed|ContentsPlacementButton',
+  'UI|Changed|ContentsPlacementSidebar',
+  // A page's own article style (its look comes from the knowledgebase's style now).
+  'Tab|Changed|ArticleStyle',
+  // A tab's own style: its font, text size and finish, and Apply to All Tabs.
+  'Tab|Changed|Font',
+  'Tab|Changed|DefaultTextSize',
+  'Tab|Changed|Finish',
+  'Tab|Changed|AllTabs',
+  // PowerPoint, both ways.
+  'Document|Exported|PagesPPTX',
+  'Tab|Imported|PowerPoint',
+  // The Selection mode's tools.
+  'Canvas|Used|Laser',
+  'Canvas|Used|Spotlight',
+  // The Settings rows that went with the minimap and middle-mouse panning.
+  'UI|Toggled|MinimapOn',
+  'UI|Toggled|MinimapOff',
+  'UI|Toggled|MapDimOn',
+  'UI|Toggled|MapDimOff',
+  'UI|Toggled|MiddleMousePanOn',
+  'UI|Toggled|MiddleMousePanOff',
+]);
+
+// Token prefixes of the same cut, by category and action (`*` for any action).
+const CUT_FROM_FORK_PREFIXES: readonly [string, RegExp][] = [
+  // Presenter settings, from the presenter and from Settings.
+  ['UI|Changed', /^Presentation-/],
+  ['UI|Toggled', /^Presentation-/],
+  // The laser's and the spotlight's options.
+  ['UI|Changed', /^(?:Laser|Spotlight)[A-Z]/],
+  // A page's own article look.
+  ['Tab|Changed', /^ArticleLook[A-Z]/],
+  // A page's background, and the New Page Background of Tab Style.
+  ['Tab|Changed', /^(?:Page|NewPage)Background/],
+  // The Pages tour (offer, start, steps, ends and switches) and the Show Me tours of the cut surfaces.
+  [
+    'UI|*',
+    /^(?:PagesTour|SlidesTour|SlideTour|InfographicTour|ArticleTour|FlashcardTour|FlashcardsTour|TabStyleTour)/,
+  ],
+];
+
+function isCutFromFork(category: string, action: string, type: string | null): boolean {
+  if (category === 'Canvas' && action === 'Zoomed') return true;
+  if (CUT_FROM_FORK_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
+  const t = type ?? '';
+  return CUT_FROM_FORK_PREFIXES.some(
+    ([pair, re]) => (pair === `${category}|${action}` || pair === `${category}|*`) && re.test(t),
+  );
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isCutFromFork(category, action, type)) return true;
   if (isRetiredExplorerEvent(category, action, type)) return true;
   if (isRetiredSignInBannerEvent(category, action, type)) return true;
   if (isRetiredLayersPanel(category, action, type)) return true;

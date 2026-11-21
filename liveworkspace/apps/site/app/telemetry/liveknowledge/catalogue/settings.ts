@@ -46,16 +46,8 @@ const settingsStack = (title: string, blurb: string, members: Metric[]): MetricS
 
 export const EDITOR_SETTINGS = settingsStack(
   'Editor Settings',
-  'How the canvas behaves while you draw.',
+  'How elements behave while a page is written and drawn on.',
   [
-    toggle(
-      'UI',
-      'QuickAddHoverOn',
-      'QuickAddHoverOff',
-      'Quick-Add on Hover',
-      'Hover handles that add a connected shape.',
-    ),
-    changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
     toggle(
       'UI',
       'AlignmentGuidesOn',
@@ -70,15 +62,13 @@ export const EDITOR_SETTINGS = settingsStack(
       'Auto-Attach Arrows',
       'Arrows re-attaching to the nearest shape.',
     ),
-    changed(
-      'ContentsPlacement',
-      'Contents Placement',
-      "Pages mode's Contents docked as a sidebar or minimised to its button.",
-    ),
-    changed(
-      'ContentsSide',
-      'Contents Side',
-      "Pages mode's Contents sidebar dragged to the canvas's left or right edge.",
+    changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
+    toggle(
+      'UI',
+      'QuickAddHoverOn',
+      'QuickAddHoverOff',
+      'Quick-Add on Hover',
+      'Hover handles that add a connected shape.',
     ),
   ],
 );
@@ -92,54 +82,23 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     blurb: 'Light, Dark or System picked, from the header toggle or Settings.',
     rising: 'neutral',
   },
-  changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome. No longer recorded.'),
-  toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
-  toggle(
-    'UI',
-    'AutoOpenExplorerOn',
-    'AutoOpenExplorerOff',
-    'Automatically Open Explorer',
-    'The homepage opening straight on the Explorer, switched in Settings > Explorer.',
-  ),
-  toggle(
-    'UI',
-    'HomeBannerOn',
-    'HomeBannerOff',
-    'Home Banner',
-    'The greeting and large search at the top of Explorer Home, closed from its corner or switched in Settings.',
-  ),
   toggle(
     'UI',
     'DockButtonNamesOn',
     'DockButtonNamesOff',
     'Button Labels',
-    'Names beside the bottom-right buttons\u2019 icons on a wide desktop.',
+    'Names beside the bottom-right buttons’ icons on a wide desktop.',
   ),
-  changed('PanelOpacity', 'Panel Opacity', 'The panels\u2019 transparency slider.', true),
-  changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons\u2019 size slider.', true),
-  changed('UiScalePanels', 'Panel Scale', 'The panels\u2019 own size slider.', true),
-  changed('UiScaleToolbar', 'Toolbar Scale', 'The toolbar\u2019s own size slider.', true),
+  changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons’ size slider.', true),
+  changed('UiScalePanels', 'Panel Scale', 'The panels’ own size slider.', true),
+  changed('UiScaleToolbar', 'Toolbar Scale', 'The toolbar’s own size slider.', true),
   changed(
     'UiScaleCornerButtons',
     'Corner Buttons Scale',
-    'The bottom-right buttons\u2019 own size slider.',
+    'The bottom-right buttons’ own size slider.',
     true,
   ),
 ]);
-
-export const CONTROLS_SETTINGS = settingsStack(
-  'Controls Settings',
-  'Mouse and trackpad behaviour.',
-  [
-    toggle(
-      'UI',
-      'MiddleMousePanOn',
-      'MiddleMousePanOff',
-      'Middle-Mouse Pan',
-      'Panning with the middle mouse button.',
-    ),
-  ],
-);
 
 export const KEYBOARD_SETTINGS = settingsStack(
   'Keyboard Settings',
@@ -155,21 +114,18 @@ export const KEYBOARD_SETTINGS = settingsStack(
   ],
 );
 
-export const PANELS_SETTINGS = settingsStack('Panels Settings', 'What the minimap shows.', [
-  toggle(
-    'UI',
-    'MapDimOn',
-    'MapDimOff',
-    'Dim Outside the View',
-    'The minimap dimming what is off screen.',
-  ),
-  changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
-]);
-
-export const COLLABORATE_SETTINGS = settingsStack(
-  'Collaborate Settings',
-  'The Collaborate panel and seeing other people\u2019s cursors.',
+export const PANELS_SETTINGS = settingsStack(
+  'Panels Settings',
+  'The panels: how see-through they are, and which ones show.',
   [
+    changed('PanelOpacity', 'Panel Opacity', 'The panels’ transparency slider.', true),
+    toggle(
+      'UI',
+      'QuickStylePanelOn',
+      'QuickStylePanelOff',
+      'Quick Style Panel',
+      'The Quick Style panel switched on or off.',
+    ),
     toggle(
       'UI',
       'CollaboratePanelOn',
@@ -182,14 +138,49 @@ export const COLLABORATE_SETTINGS = settingsStack(
       'HideCursorsOn',
       'HideCursorsOff',
       'Hide Participant Cursors',
-      'Other people\u2019s cursors hidden or shown, for this device.',
+      'Other people’s cursors hidden or shown, for this device.',
+    ),
+  ],
+);
+
+export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'Motion.', [
+  toggle('UI', 'ReduceMotionOn', 'ReduceMotionOff', 'Reduce Motion', 'Turning animation down.'),
+]);
+
+// Getting Started: the Show Me tours' switches, one over them all and one per toured element. Each switch's tokens
+// track its PREFERENCE, so switching a tour on is `…SeenOff`.
+export const TOURS_SETTINGS = settingsStack(
+  'Getting Started Settings',
+  'The Show Me tours switched back on or off.',
+  [
+    {
+      category: 'UI',
+      action: 'Toggled',
+      typeIn: (type) => /^[A-Z][A-Za-z]*Tours?Seen(On|Off)$/.test(type ?? ''),
+      title: 'Show Me Tours',
+      blurb: 'The Show Me tours switched back on or off, all at once or one element’s.',
+      rising: 'neutral',
+    },
+  ],
+);
+
+export const EXPLORER_SETTINGS = settingsStack(
+  'Explorer Settings',
+  'Where the homepage opens and what Explorer Home shows.',
+  [
+    toggle(
+      'UI',
+      'AutoOpenExplorerOn',
+      'AutoOpenExplorerOff',
+      'Automatically Open Explorer',
+      'The homepage opening straight on the Explorer.',
     ),
     toggle(
       'UI',
-      'QuickStylePanelOn',
-      'QuickStylePanelOff',
-      'Quick Style Panel',
-      'The Quick Style panel switched on or off.',
+      'HomeBannerOn',
+      'HomeBannerOff',
+      'Home Banner',
+      'The greeting and large search at the top of Explorer Home, closed from its corner or switched in Settings.',
     ),
   ],
 );
@@ -207,24 +198,17 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'NotifyDocumentJoinOn',
-      'NotifyDocumentJoinOff',
-      'Someone Joins My Document',
-      'The document-joined email.',
-    ),
-    toggle(
-      'UI',
-      'NotifyInviteResponseOn',
-      'NotifyInviteResponseOff',
-      'Someone Responds to a Team Invite',
-      'The invite-response email.',
-    ),
-    toggle(
-      'UI',
       'NotifyCommentsOn',
       'NotifyCommentsOff',
-      'Someone Comments on My Document',
+      'Someone Comments on My Knowledgebase',
       'The new-comment email.',
+    ),
+    toggle(
+      'UI',
+      'NotifyMentionsOn',
+      'NotifyMentionsOff',
+      'Someone Mentions Me in a Comment',
+      'The comment-mention email.',
     ),
     toggle(
       'UI',
@@ -235,10 +219,24 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'NotifyMentionsOn',
-      'NotifyMentionsOff',
-      'Someone Mentions Me in a Comment',
-      'The comment-mention email.',
+      'NotifyInviteResponseOn',
+      'NotifyInviteResponseOff',
+      'Someone Responds to a Team Invite',
+      'The invite-response email.',
+    ),
+    toggle(
+      'UI',
+      'NotifyDocumentJoinOn',
+      'NotifyDocumentJoinOff',
+      'Someone Joins My Knowledgebase',
+      'The knowledgebase-joined email.',
+    ),
+    toggle(
+      'UI',
+      'NotifyKnowledgeReviewsOn',
+      'NotifyKnowledgeReviewsOff',
+      'Knowledgebase Reviews',
+      'The emails about pages you own: a review due, two pages that disagree, or an Editor reminding their owners.',
     ),
     toggle(
       'UI',
@@ -257,67 +255,6 @@ export const NOTIFICATION_SETTINGS = settingsStack(
   ],
 );
 
-export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'Motion.', [
-  toggle('UI', 'ReduceMotionOn', 'ReduceMotionOff', 'Reduce Motion', 'Turning animation down.'),
-]);
-
-// The tours, a Settings category of their own since October 2026 (Accessibility's Onboarding
-// Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
-export const TOURS_SETTINGS = settingsStack(
-  'Tours Settings',
-  'The Pages and element tours switched back on or off.',
-  [
-    toggle(
-      'UI',
-      'PagesTourSeenOff',
-      'PagesTourSeenOn',
-      'Pages Tours',
-      'Every Pages tour (slides, infographics, articles and flashcards) switched back on or off at once.',
-    ),
-    toggle(
-      'UI',
-      'SlidesTourSeenOff',
-      'SlidesTourSeenOn',
-      'Slides Tour',
-      "The Pages tour's slides track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'InfographicTourSeenOff',
-      'InfographicTourSeenOn',
-      'Infographic Tour',
-      "The Pages tour's infographic track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'ArticleTourSeenOff',
-      'ArticleTourSeenOn',
-      'Article Tour',
-      "The Pages tour's article track switched back on or off.",
-    ),
-    toggle(
-      'UI',
-      'FlashcardsTourSeenOff',
-      'FlashcardsTourSeenOn',
-      'Flashcards Tour',
-      "The Pages tour's flashcards track switched back on or off.",
-    ),
-    // Every other tour's switch: the Show Me tours' own (one over them all, one per toured kind) and any tour
-    // of a single element, so a switch with no chart of its own above still counts.
-    {
-      category: 'UI',
-      action: 'Toggled',
-      typeIn: (type) =>
-        /^(?!(?:Pages|Slides|Infographic|Article|Flashcards)Tour)[A-Z][A-Za-z]*Tours?Seen(On|Off)$/.test(
-          type ?? '',
-        ),
-      title: 'Show Me Tours',
-      blurb: 'The Show Me tours switched back on or off, all at once or one element\u2019s.',
-      rising: 'neutral',
-    },
-  ],
-);
-
 export const PRIVACY_SETTINGS = settingsStack(
   'Privacy Settings',
   'Anonymous usage events, the thing this dashboard counts.',
@@ -332,16 +269,16 @@ export const PRIVACY_SETTINGS = settingsStack(
   ],
 );
 
+// In the order of the editor's Settings categories (apps/editor settings-catalogue.ts).
 export const SETTINGS_STACKS: readonly MetricStack[] = [
   EDITOR_SETTINGS,
   APPEARANCE_SETTINGS,
-  CONTROLS_SETTINGS,
   KEYBOARD_SETTINGS,
   PANELS_SETTINGS,
-  COLLABORATE_SETTINGS,
-  NOTIFICATION_SETTINGS,
   ACCESSIBILITY_SETTINGS,
   TOURS_SETTINGS,
+  EXPLORER_SETTINGS,
+  NOTIFICATION_SETTINGS,
   PRIVACY_SETTINGS,
 ];
 

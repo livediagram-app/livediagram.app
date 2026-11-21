@@ -25,7 +25,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'IsometricExport')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'isometric-mode')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'isometric-mode')).toBe(true);
-    expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'PatternExport')).toBe(false);
     // The Isometric background pattern followed the view on 2026-10-25; the other patterns carry on.
     expect(isRetiredEvent('Canvas', 'Changed', 'Isometric')).toBe(true);
@@ -57,7 +57,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'StackTourOffer')).toBe(false);
   });
 
-  it('retires the Slide Deck panel and its tour steps, not hiding, page slides or presenting', () => {
+  it('retires the Slide Deck panel and its tour steps', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SlideDeck')).toBe(true);
     expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(true);
     expect(isRetiredEvent('UI', 'Removed', 'Slide')).toBe(true);
@@ -65,18 +65,13 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Added', 'AllPageSlides')).toBe(true);
     expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideDeck')).toBe(true);
     expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideShowSettings')).toBe(true);
-    expect(isRetiredEvent('UI', 'Added', 'PageSlide')).toBe(false);
-    expect(isRetiredEvent('UI', 'Toggled', 'SlideHidden')).toBe(false);
-    expect(isRetiredEvent('UI', 'Used', 'PresentFromHere')).toBe(false);
-    expect(isRetiredEvent('UI', 'Opened', 'PresentationSettings')).toBe(false);
-    expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideContents')).toBe(false);
   });
 
   it('retires the in-page layout card events, not the Page Layouts it opened', () => {
     expect(isRetiredEvent('UI', 'Closed', 'EmptyPageLayouts')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'EmptyPageInvite')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'EmptyPageLayouts')).toBe(false);
-    expect(isRetiredEvent('UI', 'Closed', 'Presentation')).toBe(false);
+    expect(isRetiredEvent('UI', 'Closed', 'Welcome')).toBe(false);
   });
 
   it('retires the palette Favourites events', () => {
@@ -152,6 +147,45 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Error', 'Api', 'Http401.ListFolders')).toBe(false);
   });
 
+  it('retires what liveknowledge cut from the fork, not the writing, the tours or the format painter', () => {
+    // docs/specs/002-project-scope/not-in-liveknowledge.md: slides, infographics, flashcards and presenting.
+    expect(isRetiredEvent('UI', 'Started', 'Presentation')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'Presentation-transitionFade')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'Presentation-loopOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'PageSlide')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'NoteCard')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'FlashcardFlip')).toBe(true);
+    expect(isRetiredEvent('Document', 'Exported', 'PagesPPTX')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Imported', 'PowerPoint')).toBe(true);
+    // The row of paper pages, a page's own look and a tab's own style.
+    expect(isRetiredEvent('Tab', 'Changed', 'PageKindSlide')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageLandscape')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'NewPageBackgroundCarried')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'Finish')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'ArticleLookClean')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'PageSwipe')).toBe(true);
+    // Zoom, the laser and the spotlight.
+    expect(isRetiredEvent('Canvas', 'Zoomed', 'In')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'SpotlightShape')).toBe(true);
+    // The Pages tour and the Show Me tours of cut surfaces.
+    expect(isRetiredEvent('UI', 'Opened', 'PagesTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideContents')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'SlideTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'Ended', 'TabStyleTourCompleted')).toBe(true);
+    // What carries on: the knowledgebase's style, the writing, the other tours, the format painter.
+    expect(isRetiredEvent('Tab', 'Changed', 'Look')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'Text')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'ArticleEmbed')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'ShareTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'FunnelTour')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatCopies')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Created', 'FromAnswer')).toBe(false);
+    expect(isRetiredEvent('Document', 'Exported', 'PagesPDF')).toBe(false);
+  });
+
   it('keeps everything that still exists', () => {
     expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);
@@ -183,7 +217,6 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'HiddenLayersExport')).toBe(true);
     expect(isRetiredEvent('Layer', 'Renamed', 'Adopted')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'PatternExport')).toBe(false);
-    expect(isRetiredEvent('UI', 'Toggled', 'MapDimOn')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'CollaboratePanelOff')).toBe(false);
   });
 });

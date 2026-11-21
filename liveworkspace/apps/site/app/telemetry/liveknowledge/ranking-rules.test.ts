@@ -6,7 +6,6 @@ import { aliasedSeries, foldAliases, rank } from '../_shared/rank';
 import { LIVEKNOWLEDGE as APP } from './config';
 
 const PALETTE_TYPE_ALIASES = APP.palette.aliases;
-const SELECTION_MODES = APP.modes!.selection;
 
 // The read-time rules the rankings apply to stored rows (docs/specs/017-telemetry/telemetry.md): folding old
 // spellings into today's token, and keeping events that aren't the thing a
@@ -70,8 +69,9 @@ describe('foldAliases / rank', () => {
 });
 
 describe('what each ranking leaves out', () => {
-  it('Selection Modes excludes the Canvas·Used events that are not modes', () => {
-    expect(SELECTION_MODES).not.toContain('FollowMe');
+  it('has no Selection Modes ranking: liveknowledge has no Selection mode', () => {
+    // docs/specs/030-knowledgebase/page-surface.md "No Selection mode"; the format painter is a Features chart.
+    expect(APP.modes).toBeUndefined();
   });
 
   it('Canvas Styles excludes the colour, opacity and scale controls', () => {

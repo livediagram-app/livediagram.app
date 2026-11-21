@@ -32,7 +32,6 @@ const PAGES = APP.pages;
 const CONNECTIONS_GROUPS = APP.connections.groups;
 const TEAMWORK_GROUPS = APP.teamwork.groups;
 const TOURS_GROUPS = APP.tours;
-const SELECTION_MODES = APP.modes!.selection;
 
 // Every card and every hard-coded ranking type on the dashboard must be an
 // event something in the repo can actually send. Two ways that went wrong:
@@ -187,9 +186,6 @@ describe('metric cards', () => {
 
 describe('hard-coded ranking types', () => {
   const triples: [string, string, string, string][] = [
-    ...SELECTION_MODES.map(
-      (t) => ['Selection modes', 'Canvas', 'Used', t] as [string, string, string, string],
-    ),
     ...NON_PATTERN_CANVAS_TYPES.map(
       (t) =>
         ['Canvas styles exclusion', 'Canvas', 'Changed', t] as [string, string, string, string],
@@ -239,7 +235,8 @@ describe('the Settings tab', () => {
 // existing stack) or, if it is genuinely not worth a chart, list it below with
 // the reason.
 // (Empty today: the tours' declines, once read by the scan as UI·Ended·TourDeclined, now name their
-// tokens outright.)
+// tokens outright.) A retired event needs no chart either: the dashboard drops it before any chart reads it
+// (retired-events.ts), which is where what liveknowledge cut from the fork, still in its code behind closed doors, goes.
 const NO_CHART: Record<string, string> = {};
 
 describe('every event has a chart', () => {
@@ -249,7 +246,10 @@ describe('every event has a chart', () => {
   const home = (e: (typeof SENDS)[number]) =>
     charts.some((m) => matches(m, e.category, e.action, e.type as string | null));
   const orphans = SENDS.filter(
-    (e) => !home(e) && !(`${e.category}·${e.action}·${String(e.type)}` in NO_CHART),
+    (e) =>
+      !home(e) &&
+      !APP.isRetired(e.category, e.action, e.type as string | null) &&
+      !(`${e.category}·${e.action}·${String(e.type)}` in NO_CHART),
   );
   it('finds a chart for every event an emitter can send', () => {
     expect(
@@ -262,6 +262,15 @@ describe('every event has a chart', () => {
         ),
       ].sort(),
     ).toEqual([]);
+  });
+
+  // A chart whose every event is retired would read 0 for ever, since the dashboard drops them before it counts.
+  it('has no chart that counts only retired events', () => {
+    const live = SENDS.filter((e) => !APP.isRetired(e.category, e.action, e.type as string | null));
+    const dead = charts.filter(
+      (m) => !live.some((e) => matches(m, e.category, e.action, e.type as string | null)),
+    );
+    expect(dead.map((m) => m.title)).toEqual([]);
   });
 });
 
