@@ -153,7 +153,7 @@ export function AskConversationPane({
         className="flex shrink-0 flex-col lg:min-w-0 lg:flex-1 lg:shrink"
       >
         <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto" data-ask-scroller="">
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-4 py-6">
             {turns.length === 0 ? (
               <EmptyState
                 icon={<AskViewIcon />}
@@ -162,7 +162,7 @@ export function AskConversationPane({
               />
             ) : (
               turns.map((turn) => (
-                <div key={turn.id} className="flex flex-col gap-3">
+                <div key={turn.id} className="flex flex-col gap-5">
                   <p className={QUESTION_BUBBLE}>
                     <span className="sr-only">You asked: </span>
                     {turn.question}
