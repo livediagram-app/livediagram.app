@@ -18,6 +18,10 @@ describe('the gallery shelves', () => {
       'Engineering',
       'Product and Research',
       'Customers',
+      'Operations',
+      'Clients and Communities',
+      'Education',
+      'Personal',
     ]);
   });
 

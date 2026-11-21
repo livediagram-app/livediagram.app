@@ -54,15 +54,21 @@ in `components/start/`.
   untouched (`pageIsUntouched`: nothing beyond the Title), and offered. A kindless page never qualifies.
   `useTemplateStartOpen` (the canvas holds the page back while it is up) is the same answer.
 - **The structures** (`packages/knowledge/src/setup-structures.ts`, `SETUP_STRUCTURES`): each `{ id, name, line,
-group, pages }`, its pages a nested outline (title, one-line summary, headings, subpages). `structureSuggestion`
+group, pages }`, its pages a nested outline (title, one-line summary, headings, subpages). The data is one module per
+  group under `src/structures/` (`team.ts`, `engineering.ts`, `product.ts`, `customers.ts`, `operations.ts`,
+  `community.ts`, `education.ts`, `personal.ts`, the shapes and the `p` page helper in `shape.ts`), so no file passes
+  the file size guard; `setup-structures.ts` joins them in `STRUCTURE_GROUPS` order and stays the one entry every
+  importer reads. `structureSuggestion`
   flattens one into the shape a model's reply has and reads it with `parseSetupSuggestion`, the parser a reply goes
   through, so a structure is a `SetupSuggestion` exactly as an AI one is: ids `p1`, `p2`, ... in tree order, depth
   from 1, within `SETUP_MAX_PAGES` and `SETUP_MAX_DEPTH`, sibling titles unique. `setup-structures.test.ts` pins every
   structure to those bounds and to its outline surviving the parser whole.
 - **The rail** (`start-structure-items.ts`): a first group **Start** (`id: 'start'`) holding `blank` (Blank
-  Knowledgebase) and, where `useSetupOffered() === 'set-up'`, `describe` (Describe to Set Up); then the four
-  `STRUCTURE_GROUPS` (**Company and Team**, **Engineering**, **Product and Research**, **Customers**) from
-  each structure's `group`. The search matches a structure's name, line and page titles (`knowledgebaseStart`'s
+  Knowledgebase) and, where `useSetupOffered() === 'set-up'`, `describe` (Describe to Set Up); then the eight
+  `STRUCTURE_GROUPS` (**Company and Team**, **Engineering**, **Product and Research**, **Customers**,
+  **Operations**, **Clients and Communities**, **Education**, **Personal**) from each structure's `group`, each
+  with its rail glyph (`RAIL_ICONS` in `StartFromTemplates.tsx`: users, code, package, handshake, briefcase, globe,
+  graduation cap, user). The search matches a structure's name, line and page titles (`knowledgebaseStart`'s
   `search`). A card (`structure-card.tsx`) draws the
   outline (`structureOutline`, `packages/knowledge`, shared with the landing gallery's `StructureCard`:
   each top page, then its subpages' titles after a colon, at most five lines, or four and "and N More"; a phone's small tile keeps the top level only) with the page

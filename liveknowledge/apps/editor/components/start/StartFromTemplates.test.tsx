@@ -31,7 +31,17 @@ describe('StartFromTemplates', () => {
     expect(onChoose).toHaveBeenCalledWith('blank');
     expect(
       [...document.querySelectorAll('[data-rail]')].map((r) => r.getAttribute('data-rail')),
-    ).toEqual(['start', 'team', 'engineering', 'product', 'support']);
+    ).toEqual([
+      'start',
+      'team',
+      'engineering',
+      'product',
+      'support',
+      'operations',
+      'community',
+      'education',
+      'personal',
+    ]);
     for (const word of ['Slide', 'Infographic', 'Canvas'])
       expect(document.body.textContent).not.toContain(`Blank ${word}`);
   });
@@ -63,7 +73,7 @@ describe('StartFromTemplates', () => {
   it('finds a structure by a page title inside it', () => {
     mount();
     fireEvent.change(screen.getByRole('textbox', { name: 'Find a knowledgebase' }), {
-      target: { value: 'invoices' },
+      target: { value: 'common errors' },
     });
     expect(
       [...document.querySelectorAll('[data-start-card]')].map((c) =>

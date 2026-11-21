@@ -89,7 +89,7 @@ describe('the structures', () => {
   });
 
   it('fill every group with four, a gallery shelf’s row', () => {
-    expect(SETUP_STRUCTURES.length).toBe(16);
+    expect(SETUP_STRUCTURES.length).toBe(32);
     for (const group of STRUCTURE_GROUPS)
       expect(SETUP_STRUCTURES.filter((s) => s.group === group.id).length, group.id).toBe(4);
   });

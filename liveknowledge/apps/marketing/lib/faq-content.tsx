@@ -25,8 +25,12 @@ export const STRUCTURE_GROUP_NAMES = [
   'Engineering',
   'Product and Research',
   'Customers',
+  'Operations',
+  'Clients and Communities',
+  'Education',
+  'Personal',
 ];
-export const STRUCTURE_COUNT_WORD = 'sixteen';
+export const STRUCTURE_COUNT_WORD = 'thirty-two';
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {

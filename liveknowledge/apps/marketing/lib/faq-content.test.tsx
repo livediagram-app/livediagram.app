@@ -49,8 +49,8 @@ describe('FAQ content', () => {
 
   it('names the structure groups and counts the structures the templates are', () => {
     expect(STRUCTURE_GROUP_NAMES).toEqual(STRUCTURE_GROUPS.map((g) => g.name));
-    expect(STRUCTURE_COUNT_WORD).toBe('sixteen');
-    expect(SETUP_STRUCTURES).toHaveLength(16);
+    expect(STRUCTURE_COUNT_WORD).toBe('thirty-two');
+    expect(SETUP_STRUCTURES).toHaveLength(32);
     for (const name of [
       'Team Handbook',
       'Engineering Handbook',

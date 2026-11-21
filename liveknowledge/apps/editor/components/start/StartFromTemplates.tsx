@@ -8,11 +8,15 @@
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@liveknowledge/ui';
 import {
+  lucideBriefcase,
   lucideCode,
   lucideFileDown,
+  lucideGlobe,
+  lucideGraduationCap,
   lucideHandshake,
   lucidePackage,
   lucideSquareDashed,
+  lucideUser,
   lucideUsers,
 } from '@liveworkspace/icons/lucide';
 import type { HelpArticleKey } from '@/lib/help-articles';
@@ -33,6 +37,10 @@ const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   engineering: glyph(lucideCode),
   product: glyph(lucidePackage),
   support: glyph(lucideHandshake),
+  operations: glyph(lucideBriefcase),
+  community: glyph(lucideGlobe),
+  education: glyph(lucideGraduationCap),
+  personal: glyph(lucideUser),
 };
 const ImportGlyph = glyph(lucideFileDown);
 

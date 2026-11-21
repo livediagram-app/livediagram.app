@@ -10,7 +10,7 @@ import { BLANK_TEMPLATE } from '@liveknowledge/templates';
 
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md "Structure" 3): liveknowledge's
 // templates are knowledgebase structures (docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen"),
-// whole trees of pages, the same sixteen the editor's start offers. One shelf per structure group, in the start's
+// whole trees of pages, the same thirty-two the editor's start offers. One shelf per structure group, in the start's
 // order, each card a link that makes a new knowledgebase from that structure straight away (/new?structure=<id>,
 // docs/specs/007-editor/new-document-route.md "The other parameters"), with Blank Knowledgebase leading the group
 // tiles as a link that makes one (no shelf of its own). The data half lives here so it can be tested without
