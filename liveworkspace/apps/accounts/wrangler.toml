@@ -49,6 +49,11 @@ workers_dev = false
 #                         the old livediagram.app's GUEST_ID_HMAC_SECRET (from its repository's GitHub secrets), for
 #                         the migration's returning guests (src/legacy-guests.ts); unset, that route is a plain 404.
 #                         Set for the migration and removed after it (docs/migration.md step 6)
+#   LEGACY_GUEST_REKEY_SECRET
+#                         a new random secret (`openssl rand -base64 32`, kept in the password manager) that the ids of
+#                         the old site's guests from before signing are re-keyed under (src/legacy-guest-rekey.ts), so
+#                         their bare id is proof again; unset, their unsigned claims stay paused. Never changed once a
+#                         re-key has run: the re-keyed guests could no longer be claimed
 #   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
 #                         phone notifications' VAPID key pair (src/push/web-push.ts), from
 #                         `node scripts/generate-vapid-keys.ts`, one pair per environment, kept for good; unset, devices

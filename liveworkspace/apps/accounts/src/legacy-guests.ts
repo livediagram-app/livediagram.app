@@ -2,11 +2,13 @@
 // livediagram.app", docs/migration.md step 6). Their copied work is under `guest_<old uuid>`, which no browser is
 // ever handed; the new editor finds the old id in the browser and livediagram's api forwards it here with its
 // client credentials. This checks the browser really holds it (the old signature, or for an id from before signing
-// that the old site saw it then) and merges it into the caller, a guest or an account, through the index.
+// that its guest was re-keyed to the id only the bare id leads to, legacy-guest-rekey.ts) and merges it into the
+// caller, a guest or an account, through the index.
 
 import {
   LEGACY_GUEST_SIGNING_LIVE_AT,
   legacyGuestOwner,
+  rekeyedLegacyGuestOwner,
   type LegacyGuestClaimAnswer,
 } from '@liveworkspace/migration/contract';
 import { ANONYMISED_PERSON } from '@liveworkspace/index-client';
@@ -15,7 +17,7 @@ import { guestMergeConfig, mergeGuestInto, type MergeConfig } from './guests.ts'
 import { GUEST_ID, USER_ID } from './ids.ts';
 
 // The old site's ids: `crypto.randomUUID()`, a lowercase v4 UUID.
-const LEGACY_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+export const LEGACY_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 // An HMAC-SHA-256 in base64url without padding: 32 bytes, 43 characters.
 const SIGNATURE = /^[A-Za-z0-9_-]{43}$/;
 // How long a claim holds the row while it merges: far past the merge's own 5-second timeout, so a live claim is never
@@ -26,7 +28,13 @@ export type ClaimOutcome =
   | { status: 200; body: LegacyGuestClaimAnswer }
   | { status: 400 | 403 | 502 | 503; body: { error: string } };
 
-type LegacyGuestRow = { firstSeenAt: number; claimedAt: number | null; claimedBy: string | null };
+type LegacyGuestRow = {
+  id: string;
+  firstSeenAt: number;
+  claimedAt: number | null;
+  claimedBy: string | null;
+  rekeyedAt: number | null;
+};
 
 const refuse = (status: 400 | 403 | 502 | 503, error: string): ClaimOutcome => ({
   status,
@@ -60,12 +68,19 @@ export async function legacySignatureValid(
 export type ClaimConfig = {
   db: D1Database;
   secret: string;
+  // LEGACY_GUEST_REKEY_SECRET: unset, no id is taken as re-keyed and unsigned claims stay paused.
+  rekeySecret?: string;
   merge: MergeConfig;
   now?: number;
 };
 
 export function legacyClaimConfig(env: Env, secret: string): ClaimConfig {
-  return { db: env.AUTH_DB, secret, merge: guestMergeConfig(env) };
+  return {
+    db: env.AUTH_DB,
+    secret,
+    rekeySecret: env.LEGACY_GUEST_REKEY_SECRET?.trim() || undefined,
+    merge: guestMergeConfig(env),
+  };
 }
 
 // One claim. Possession is checked before anything is moved; the row is held while the merge runs, so two claims at
@@ -81,11 +96,15 @@ export async function claimLegacyGuest(
   if (signature !== null && signature !== undefined && typeof signature !== 'string') {
     return refuse(400, 'invalid_signature');
   }
-  const guestId = legacyGuestOwner(legacyId);
+  const plainId = legacyGuestOwner(legacyId);
+  const rekeyedId = config.rekeySecret
+    ? await rekeyedLegacyGuestOwner(legacyId, config.rekeySecret)
+    : null;
   if (
     typeof into !== 'string' ||
     !(USER_ID.test(into) || GUEST_ID.test(into)) ||
-    into === guestId
+    into === plainId ||
+    into === rekeyedId
   ) {
     return refuse(400, 'invalid_into');
   }
@@ -95,11 +114,20 @@ export async function claimLegacyGuest(
     return refuse(403, 'bad_signature');
   }
 
-  const row = await config.db
-    .prepare('SELECT firstSeenAt, claimedAt, claimedBy FROM legacy_guest WHERE id = ?')
-    .bind(guestId)
-    .first<LegacyGuestRow>();
+  // Both forms in one read. A re-keyed row is reached only through the id derived from the bare id; its stored id,
+  // which the index shows every reader of its items, names no row a claim can take (accounts.md "Re-keyed ids").
+  const { results } = await config.db
+    .prepare(
+      'SELECT id, firstSeenAt, claimedAt, claimedBy, rekeyedAt FROM legacy_guest WHERE id IN (?, ?)',
+    )
+    .bind(plainId, rekeyedId ?? plainId)
+    .all<LegacyGuestRow>();
+  const row =
+    results.find((r) => r.id === rekeyedId && r.rekeyedAt !== null) ??
+    results.find((r) => r.id === plainId && r.rekeyedAt === null);
   if (!row) return { status: 200, body: { merged: false, reason: 'unknown' } };
+  const guestId = row.id;
+  const rekeyed = row.rekeyedAt !== null;
   // An id from before signing: the old site's own rule, it must have been seen before signing went live.
   if (!signed && !(row.firstSeenAt < LEGACY_GUEST_SIGNING_LIVE_AT)) {
     return refuse(403, 'signature_required');
@@ -109,11 +137,11 @@ export async function claimLegacyGuest(
       ? { status: 200, body: { merged: true } }
       : { status: 200, body: { merged: false, reason: 'claimed' } };
   }
-  // Unsigned claims are paused (accounts.md "Returning guests of the old livediagram.app", "Possession"): the bare
-  // id is all an unsigned claim proves, and the index hands `guest_<old uuid>` to every reader of that guest's
-  // shared items, so knowing it is not possession. A 503, never a 403: livediagram's editor keeps the old keys on
-  // any answer but a settled one, so the guest can still claim once the ids are re-keyed.
-  if (!signed) return refuse(503, 'unsigned_claims_paused');
+  // Unsigned claims of a guest not yet re-keyed are paused (accounts.md "Possession"): the bare id is all an
+  // unsigned claim proves, and the index hands `guest_<old uuid>` to every reader of that guest's shared items, so
+  // knowing it is not possession. A 503, never a 403: livediagram's editor keeps the old keys on any answer but a
+  // settled one, so the guest can still claim once their id is re-keyed.
+  if (!signed && !rekeyed) return refuse(503, 'unsigned_claims_paused');
 
   // Hold the row before anything moves, in one conditional update: of two claims at once only one merges, and the
   // other is told to come back (503, which livediagram's editor takes as "try on a later load"). A hold that lapsed
@@ -140,7 +168,14 @@ export async function claimLegacyGuest(
     return refuse(503, 'claim_in_progress');
   }
 
-  if (!(await mergeGuestInto(config.merge, guestId, into, { legacy: true }))) {
+  // A plain row from before signing while re-keying is on: its re-keyed id too, which holds nothing unless a re-key
+  // stopped after the index moved the guest and before this row was renamed. Then nothing is stranded.
+  const alsoRekeyed =
+    !rekeyed && rekeyedId !== null && row.firstSeenAt < LEGACY_GUEST_SIGNING_LIVE_AT;
+  const merged =
+    (await mergeGuestInto(config.merge, guestId, into, { legacy: true })) &&
+    (!alsoRekeyed || (await mergeGuestInto(config.merge, rekeyedId, into, { legacy: true })));
+  if (!merged) {
     // Let the next try in at once rather than wait out the hold.
     await config.db
       .prepare(
@@ -167,6 +202,7 @@ export async function claimLegacyGuest(
   }
   console.info('[accounts] legacy guest claimed', {
     into: into.startsWith('guest_') ? 'guest' : 'account',
+    rekeyed,
   });
   return { status: 200, body: { merged: true } };
 }

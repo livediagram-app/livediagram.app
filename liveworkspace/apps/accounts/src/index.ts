@@ -8,6 +8,7 @@ import { getAuth, getGoogleAuthFor } from './auth.ts';
 import { appOriginOfProxy, signInOnAppAddress } from './handoff.ts';
 import { BENCH_ACCOUNTS_PATH, benchAccounts } from './bench-accounts.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
+import { REKEY_PATH, rekeyLegacyGuests } from './legacy-guest-rekey.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import {
   checkDeletionCodeRoute,
@@ -204,6 +205,11 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
 
   if (request.method === 'POST' && pathname === BENCH_ACCOUNTS_PATH) {
     return benchAccounts(request, env);
+  }
+
+  // Re-keying the old livediagram.app's guests from before signing, by the owner (legacy-guest-rekey.ts).
+  if (request.method === 'POST' && pathname === REKEY_PATH) {
+    return rekeyLegacyGuests(request, env);
   }
 
   // Closing an account, and the code emailed first that it needs (deletion-code.ts).

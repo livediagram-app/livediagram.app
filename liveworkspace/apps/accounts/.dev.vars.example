@@ -44,6 +44,9 @@ EXPORT_KEY_ACCOUNTS=
 # The migration's returning guests (src/legacy-guests.ts): the old livediagram.app's GUEST_ID_HMAC_SECRET. Optional:
 # without it, POST /api/account/internal/legacy-guests/claim is a plain 404.
 LEGACY_GUEST_ID_HMAC_SECRET=
+# The key their ids from before signing are re-keyed under (src/legacy-guest-rekey.ts). Optional: without it, the
+# re-key route is a plain 404 and unsigned claims stay paused.
+LEGACY_GUEST_REKEY_SECRET=
 
 # Phone notifications (src/push/): the VAPID key pair, from `node scripts/generate-vapid-keys.ts`. Optional: without
 # both, devices can't register and nothing is sent.
