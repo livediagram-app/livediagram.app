@@ -22,10 +22,11 @@ import { useUiScale } from '../../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../../lib/ui-scale';
 import { useModalGuard } from '../../../hooks/ui/useModalGuard';
 import { useTabStyleAnchor } from './useTabStyleAnchor';
-import type { TabStyleFrame, TabStyleFrameParts } from './tab-style-profile';
+import { TAB_STYLE_TITLE, type TabStyleFrame, type TabStyleFrameParts } from './tab-style-profile';
 
 export function TabStyleModal({
   frame,
+  title,
   subtitle,
   help,
   tourApi,
@@ -66,7 +67,7 @@ export function TabStyleModal({
           tabIndex={-1}
           role="dialog"
           aria-modal="true"
-          aria-label="Tab style"
+          aria-label={title === TAB_STYLE_TITLE ? 'Tab style' : title}
           // A bottom sheet on a phone, rising from the bottom edge as the editor's other phone sheets do, the canvas
           // still in view above it so each pick shows on the tab.
           className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:max-h-[75dvh] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-x-0 max-sm:border-b-0 max-sm:shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900 ${anchor ? `fixed ${hanging ? 'animate-dialog-in' : 'animate-fly-up-in'} shadow-2xl motion-reduce:animate-fade-in` : ''}`}
@@ -99,7 +100,7 @@ export function TabStyleModal({
           <HeroDialogHeader
             art={canvasThemeHeroArt}
             titleId={titleId}
-            title="Tab Style"
+            title={title}
             subtitle={subtitle}
             actions={
               <>
