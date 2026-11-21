@@ -7,16 +7,11 @@ import { useState } from 'react';
 import { useThisKnowledgebaseSearch } from '@/components/knowledge/useThisKnowledgebaseSearch';
 import { searchPanelSources } from '@/components/panels/search-panel-sources';
 
-import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useOfferedSettingItems } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
-import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
-import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
-import { tileHandler } from '@/components/palette/PaletteTileGrid';
-import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
 import { explorerPath } from '@liveworkspace/explorer';
 import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
@@ -34,35 +29,21 @@ const SearchPanel = dynamic(
 // itself context-driven), so EditorView just renders <EditorSearchPanel />.
 // Every app's work, from the index (Work Tracker #63): only what the person can open, as the index decides.
 const WORKSPACE = { client: indexClient };
+const NO_TABS: [] = [];
 
 export function EditorSearchPanel() {
   const {
     searchOpen,
     documentList,
     teams,
-    tabs,
     activeId,
     openDocument,
     setActiveId,
     setSelectedId,
-    isReadOnly,
-    addShape,
-    addIcon,
-    addSticker,
-    addTechIcon,
-    addImage,
     setSearchOpen,
     openSettingsAt,
   } = useEditorContext();
   const { commandItems, runCommand } = useEditorCommands(searchOpen);
-  const tileActions = useEditorTileActions();
-  // The icon catalogues load async (lib/icon-registry.ts); subscribing here
-  // re-renders the panel — and rebuilds the palette items below — the moment
-  // they land, so "Add to canvas" results go from shapes-only to the full
-  // shapes + icons + tech list without a reopen. (In practice the editor page
-  // kicked the load at mount, so by the time anyone opens search the data is
-  // almost always already in.)
-  const cataloguesLoaded = useIconCatalogs();
 
   // Less the Hide Participant Cursors row on a tab that draws no cursors (collaborator-enhancements.md).
   const settingItems = useOfferedSettingItems(SETTINGS_SEARCH_ITEMS);
@@ -89,7 +70,9 @@ export function EditorSearchPanel() {
         teams,
         teamDocuments: [],
       })}
-      tabs={tabs}
+      // Pages are This Knowledgebase's group (titles, then passages): no second list of them, nor of canvas
+      // elements, and nothing to add to a canvas (sweep 2026-11-21).
+      tabs={NO_TABS}
       currentTabId={activeId}
       onSelectDocument={(id) => {
         openDocument(id);
@@ -123,24 +106,6 @@ export function EditorSearchPanel() {
           setSelectedId(elementId);
         });
       }}
-      paletteItems={
-        isReadOnly
-          ? undefined
-          : buildPaletteSearchItems({ hasImage: !!addImage, catalogues: cataloguesLoaded })
-      }
-      onAddPaletteItem={
-        isReadOnly
-          ? undefined
-          : (add) => {
-              if (add.type === 'shape') addShape(add.shapeKind, { variant: add.variant });
-              else if (add.type === 'icon') addIcon(add.iconId);
-              else if (add.type === 'sticker') addSticker(add.stickerId);
-              else if (add.type === 'tile') {
-                const def = PALETTE_TILES.find((t) => t.id === add.tileId);
-                if (def) tileHandler(def, tileActions)();
-              } else addTechIcon(add.iconId);
-            }
-      }
       commandItems={commandItems}
       onRunCommand={runCommand}
       workspace={WORKSPACE}
