@@ -240,7 +240,11 @@ describe('Page Health', () => {
     const { container } = render(<Rail {...props()} />);
     const state = container.querySelector('[data-page-state]')!;
     expect(state.getAttribute('data-page-state')).toBe('verified');
-    expect(state.textContent).toBe('VerifiedFresh for 80 more days');
+    expect(state.querySelector('p')!.textContent).toBe('Verified');
+    expect(state.textContent).toContain('Fresh for 80 more days');
+    // Its `?` opens the help article on verifying, in a new tab.
+    const help = state.querySelector('a[target="_blank"]')!;
+    expect(help.getAttribute('href')).toContain('owners-and-verifying');
     expect(freshness(verified, 90, NOW)).toBeCloseTo(80 / 90);
     expect(container.querySelector('[data-freshness-arc]')).toBeTruthy();
     expect(healthHeadline(pageTrust({}, 90, NOW), 90, NOW).title).toBe('Not Verified');

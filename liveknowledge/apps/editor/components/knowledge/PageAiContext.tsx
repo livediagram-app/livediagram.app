@@ -10,6 +10,7 @@ import { Switch } from '@liveknowledge/ui';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { track } from '@/lib/telemetry';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { AgentsIcon, ContextIcon } from './knowledge-icons';
 import { RAIL_LABEL } from './PageHealthCard';
 import type { PageKnowledgeView } from './usePageKnowledge';
@@ -65,7 +66,10 @@ export function PageAiContext({
       data-ai-context=""
       className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
     >
-      <h2 className={RAIL_LABEL}>AI Context</h2>
+      <div className="flex items-center gap-1">
+        <h2 className={RAIL_LABEL}>AI Context</h2>
+        <HelpArticleLink article="aiContext" />
+      </div>
 
       <div data-ai-context-always="" className="mt-3 flex items-start gap-2.5">
         <span

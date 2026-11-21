@@ -7,6 +7,7 @@
 // place, and the Review Period (the knowledgebase's, every page's) beside its row. Every row keeps its height
 // while the reads load and when the period changes, so nothing moves under the pointer.
 import { GUEST_DISC_TINT, isGuestName } from './guest-disc';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { ReactNode } from 'react';
 import { reviewDays, type ReviewEvery } from '@liveknowledge/knowledge';
 import { Button, Select, Tooltip } from '@liveknowledge/ui';
@@ -408,9 +409,12 @@ export function PageHealthCard({
         <div data-page-state={trust.state} className="flex items-center gap-3.5">
           <FreshnessRing state={trust.state} left={freshness(trust, reviewEvery, now)} />
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-              {head.title}
-            </p>
+            <div className="flex min-w-0 items-center gap-1">
+              <p className="truncate text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                {head.title}
+              </p>
+              <HelpArticleLink article="verifying" />
+            </div>
             <p className="truncate text-xs text-slate-600 dark:text-slate-400">{head.line}</p>
           </div>
         </div>

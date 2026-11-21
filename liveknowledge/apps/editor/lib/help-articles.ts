@@ -38,6 +38,9 @@ export const HELP_ARTICLES = {
   formatPainter: 'knowledgebase/writing-on-a-page',
   // AI
   connectAiTool: 'knowledgebase/connecting-an-agent',
+  // The page rail's `?`s (docs/specs/030-knowledgebase/verification.md, ai-knowledge.md "AI Context on a page").
+  verifying: 'knowledgebase/owners-and-verifying',
+  aiContext: 'knowledgebase/always-in-context',
   // Tabs / import-export
   exportingDiagrams: 'knowledgebase/exporting-a-knowledgebase',
   apiTokens: 'account-and-data/api-tokens',
@@ -115,6 +118,14 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sharePasswords: {
     title: 'Learn about share passwords',
     description: 'One password that guards every link to a knowledgebase, embeds included.',
+  },
+  verifying: {
+    title: 'Learn about verifying a page',
+    description: 'What Verified, Review Due and Not Verified mean, and who can verify.',
+  },
+  aiContext: {
+    title: 'Learn about AI Context',
+    description: 'What agents are handed first, and which answers came from this page.',
   },
   requestApproval: {
     title: 'Learn about requesting approval',
