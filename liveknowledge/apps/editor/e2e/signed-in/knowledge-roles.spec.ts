@@ -153,7 +153,7 @@ test('a Participant edits and saves a page, sets a cover and verifies, with no S
   // Verify, in Page Health: the page is vouched for by the Participant.
   await health(visitor).getByRole('button', { name: 'Verify', exact: true }).click();
   await expect(visitor.locator('[data-page-meta]')).toContainText('Verified by Grace Hopper');
-  // The Review Period is shown, with no Change link: it is the settings'.
+  // The Review Period is shown, with no Change link (it is Knowledgebase Settings', for an Editor).
   await expect(
     health(visitor).getByRole('button', { name: 'Change the Review Period' }),
   ).toHaveCount(0);

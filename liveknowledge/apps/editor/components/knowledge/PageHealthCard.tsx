@@ -42,7 +42,6 @@ export type PageHealthCardProps = {
   // Absent for anyone who may not change the fields: the rows read as text.
   onSetOwner: ((owner: string | null) => void) | undefined;
   // Opens Knowledgebase Settings; absent for anyone who may not change the Review Period.
-  onChangeReviewPeriod: (() => void) | undefined;
   onVerify: (() => void) | undefined;
 };
 
@@ -64,7 +63,7 @@ export function healthHeadline(
   now: number,
 ): { title: string; line: string } {
   if (trust.state === 'never-verified')
-    return { title: 'Not Verified Yet', line: 'Verify it once it is right.' };
+    return { title: 'Not Verified', line: "Verify once it's right." };
   if (trust.state === 'review-due')
     return {
       title: 'Review Due',
@@ -261,6 +260,33 @@ function ReadStat({
   );
 }
 
+/** Read This Week's drawing: an open book in the theme's ink, its lines read off as dots, behind the counts. */
+function ReadWeekArt() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 120 64"
+      className="pointer-events-none absolute -right-3 -top-2 -z-10 h-20 w-36 text-brand-600/25 dark:text-brand-300/20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M60 18c-9-6-22-8-36-6v40c14-2 27 0 36 6 9-6 22-8 36-6V12c-14-2-27 0-36 6Z" />
+      <path d="M60 18v40" />
+      <path d="M32 22h18M32 29h20M32 36h14M68 22h20M68 29h16M68 36h19" opacity=".7" />
+      <path d="M32 43h1M38 43h1M44 43h1M68 43h1M74 43h1M80 43h1" strokeWidth="2.5" />
+      <path d="M100 8l2 4 4 2-4 2-2 4-2-4-4-2 4-2Z" fill="currentColor" stroke="none" />
+      <path
+        d="M14 50l1.2 2.4 2.4 1.2-2.4 1.2L14 57.2l-1.2-2.4-2.4-1.2 2.4-1.2Z"
+        fill="currentColor"
+        stroke="none"
+      />
+    </svg>
+  );
+}
+
 export type PageActivityProps = {
   now: number;
   reads: { people: number; agents: number } | undefined;
@@ -281,21 +307,28 @@ export function PageActivity({ now, reads, created, updated }: PageActivityProps
       data-page-activity=""
       className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
     >
-      <p className={RAIL_LABEL}>Read This Week</p>
-      <dl className="mt-2 grid grid-cols-2 gap-2">
-        <ReadStat
-          icon={<PeopleIcon />}
-          value={count(reads?.people)}
-          unit={reads?.people === 1 ? 'Person' : 'People'}
-          label="Reads by People This Week"
-        />
-        <ReadStat
-          icon={<AgentsIcon />}
-          value={count(reads?.agents)}
-          unit={reads?.agents === 1 ? 'Agent' : 'Agents'}
-          label="Reads by Agents This Week"
-        />
-      </dl>
+      {/* The week's reads on the theme's tint, with a quiet open book and its reading lines drawn behind. */}
+      <div
+        data-read-week=""
+        className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 via-brand-50/40 to-white p-3 ring-1 ring-inset ring-brand-100 dark:from-brand-950/50 dark:via-brand-950/20 dark:to-slate-900 dark:ring-brand-900/40"
+      >
+        <ReadWeekArt />
+        <p className={RAIL_LABEL}>Read This Week</p>
+        <dl className="mt-2 grid grid-cols-2 gap-2">
+          <ReadStat
+            icon={<PeopleIcon />}
+            value={count(reads?.people)}
+            unit={reads?.people === 1 ? 'Person' : 'People'}
+            label="Reads by People This Week"
+          />
+          <ReadStat
+            icon={<AgentsIcon />}
+            value={count(reads?.agents)}
+            unit={reads?.agents === 1 ? 'Agent' : 'Agents'}
+            label="Reads by Agents This Week"
+          />
+        </dl>
+      </div>
       {created || updated ? (
         <div className="mt-3 flex flex-col gap-0.5">
           {created ? <StampRow what="Created" stamp={created} now={now} /> : null}
@@ -313,7 +346,6 @@ export function PageHealthCard({
   people,
   nameOf,
   onSetOwner,
-  onChangeReviewPeriod,
   onVerify,
 }: PageHealthCardProps) {
   const { owner, verifiedAt, verifiedBy } = trust.fields;
@@ -414,22 +446,9 @@ export function PageHealthCard({
                 : shortDate(trust.reviewAt, now)}
           </span>
         </Row>
-        {/* The period and its link, each whole: the link takes a line of its own for an Editor, so the row is one
-            height whatever the period. */}
-        <Row icon={<PeriodIcon />} label="Review Period" wrap={!!onChangeReviewPeriod}>
-          <span data-review-period="" className="block whitespace-nowrap">
-            {reviewPeriodLabel(reviewEvery)}
-          </span>
-          {onChangeReviewPeriod ? (
-            <button
-              type="button"
-              onClick={onChangeReviewPeriod}
-              aria-label="Change the Review Period"
-              className="ml-auto block cursor-pointer rounded-sm text-xs font-medium text-brand-700 underline-offset-2 hover:text-brand-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-300 dark:hover:text-brand-200"
-            >
-              Change
-            </button>
-          ) : null}
+        {/* The knowledgebase's Review Period, read-only here: it is changed in Knowledgebase Settings. */}
+        <Row icon={<PeriodIcon />} label="Review Period">
+          <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
         </Row>
       </dl>
     </section>

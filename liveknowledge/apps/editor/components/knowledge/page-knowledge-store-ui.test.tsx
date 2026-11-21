@@ -27,10 +27,6 @@ vi.mock('@/hooks/persistence/useIsOfflineDocument', () => ({ useIsOfflineDocumen
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
-import {
-  closeKnowledgeSettings,
-  isKnowledgeSettingsOpen,
-} from '@/lib/knowledge-settings/settings-open';
 import { PageMetaRow } from './PageMetaRow';
 import { PageRailBody } from './PageRail';
 
@@ -214,15 +210,8 @@ describe('a page’s knowledge in the editor', () => {
     expect(pageId).toBeTruthy();
   });
 
-  it('an Editor is linked to Knowledgebase Settings from Page Health; nobody else is', async () => {
-    mount('edit');
-    await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-    expect(isKnowledgeSettingsOpen()).toBe(false);
-    fireEvent.click(screen.getByRole('button', { name: 'Change the Review Period' }));
-    expect(isKnowledgeSettingsOpen()).toBe(true);
-    closeKnowledgeSettings();
-    cleanup();
-    for (const level of ['participate', 'view'] as const) {
+  it("Page Health shows the Review Period to everyone and changes it for nobody (it is the settings')", async () => {
+    for (const level of ['edit', 'participate', 'view'] as const) {
       mount(level);
       await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
       expect(screen.queryByRole('button', { name: 'Change the Review Period' })).toBeNull();
@@ -248,6 +237,5 @@ describe('a page’s knowledge in the editor', () => {
     expect(screen.queryByRole('button', { name: /Verify/ })).toBeNull();
     // The owner is theirs to set, and so is the knowledgebase's Review Period, through its settings.
     expect(screen.getByLabelText('Owner')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Change the Review Period' })).toBeTruthy();
   });
 });

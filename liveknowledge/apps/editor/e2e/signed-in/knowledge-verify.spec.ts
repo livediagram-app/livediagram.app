@@ -145,8 +145,13 @@ test('Knowledgebase Settings changes the Review Period, and a page comes due at 
   await expect(meta(page)).toContainText(/Review due /);
   await expect(health(page).locator('[data-review-period]')).toHaveText('Every 90 Days');
 
-  // Page Health's link opens the knowledgebase's settings: one dialog, five choices, the current one chosen.
-  await health(page).getByRole('button', { name: 'Change the Review Period' }).click();
+  // Page Health only shows the period; Knowledgebase Settings changes it: one dialog, five choices, the current one
+  // chosen.
+  await expect(health(page).getByRole('button', { name: 'Change the Review Period' })).toHaveCount(
+    0,
+  );
+  await page.locator('[data-knowledgebase-menu]').click();
+  await page.getByRole('menuitem', { name: 'Knowledgebase Settings' }).click();
   const settings = page.getByRole('dialog', { name: 'Knowledgebase Settings' });
   await expect(settings.getByRole('heading', { name: 'Reviews' })).toBeVisible();
   const period = (name: string) => settings.getByRole('radio', { name });
@@ -205,7 +210,8 @@ test('Knowledgebase Settings changes the Review Period, and a page comes due at 
   await expect(health(page).locator('[data-review-period]')).toHaveText('Every 30 Days');
 
   // Never applies at once, with no question: no page is due, and the page says it has no review period.
-  await health(page).getByRole('button', { name: 'Change the Review Period' }).click();
+  await page.locator('[data-knowledgebase-menu]').click();
+  await page.getByRole('menuitem', { name: 'Knowledgebase Settings' }).click();
   done = stored();
   await period('Never').click();
   expect((await done).ok()).toBe(true);

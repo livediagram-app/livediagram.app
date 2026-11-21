@@ -137,7 +137,6 @@ describe('Page Health', () => {
     ],
     nameOf: (id) => ({ u1: 'Priya Nair', u2: 'Marcus Oyelaran' })[id ?? ''],
     onSetOwner: vi.fn(),
-    onChangeReviewPeriod: vi.fn(),
     onVerify: vi.fn(),
     ...over,
   });
@@ -152,18 +151,9 @@ describe('Page Health', () => {
     // The Review Period is the knowledgebase's: the card says it and links to the setting.
     expect(screen.queryByLabelText('Review Interval')).toBeNull();
     expect(screen.getAllByRole('combobox')).toHaveLength(1);
-    // The period and the link are each whole, the link on a line of its own: nothing is cut off at the card's
-    // width, whatever the period.
-    const period = screen.getByText('Every 90 Days').closest('dd')!;
-    expect(period.textContent).toBe('Every 90 DaysChange');
-    expect(period.className).not.toMatch(/\btruncate\b/);
-    expect(period.className).toContain('break-words');
-    expect(screen.getByText('Every 90 Days').className).toContain('block');
-    expect(screen.getByRole('button', { name: 'Change the Review Period' }).className).toContain(
-      'block',
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Change the Review Period' }));
-    expect(p.onChangeReviewPeriod).toHaveBeenCalledTimes(1);
+    // The period is shown, with no way to change it here: it is changed in Knowledgebase Settings.
+    expect(screen.getByText('Every 90 Days').closest('dd')!.textContent).toBe('Every 90 Days');
+    expect(screen.queryByRole('button', { name: 'Change the Review Period' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Verify Again' }));
     expect(p.onVerify).toHaveBeenCalledTimes(1);
     expect(screen.getByText('12')).toBeTruthy();
@@ -175,7 +165,6 @@ describe('Page Health', () => {
       <Rail
         {...props({
           onSetOwner: undefined,
-          onChangeReviewPeriod: undefined,
           onVerify: undefined,
         })}
       />,
@@ -257,7 +246,7 @@ describe('Page Health', () => {
     expect(state.textContent).toBe('VerifiedFresh for 80 more days');
     expect(freshness(verified, 90, NOW)).toBeCloseTo(80 / 90);
     expect(container.querySelector('[data-freshness-arc]')).toBeTruthy();
-    expect(healthHeadline(pageTrust({}, 90, NOW), 90, NOW).title).toBe('Not Verified Yet');
+    expect(healthHeadline(pageTrust({}, 90, NOW), 90, NOW).title).toBe('Not Verified');
     expect(freshness(pageTrust({}, 90, NOW), 90, NOW)).toBeUndefined();
     const due = pageTrust({ verifiedAt: NOW - 100 * DAY, verifiedBy: 'u1' }, 90, NOW);
     expect(healthHeadline(due, 90, NOW).title).toBe('Review Due');

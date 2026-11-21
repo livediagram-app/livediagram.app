@@ -19,7 +19,6 @@ import { track } from '@/lib/telemetry';
 import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
-import { useKnowledgebaseSettings } from '@/components/knowledge-settings/KnowledgeSettingsHost';
 import { PageActivity, PageHealthCard, type PageStamp } from './PageHealthCard';
 import { PageRailAiContext } from './PageAiContext';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
@@ -114,7 +113,6 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
   );
   const { rights, pageId } = page;
   // Knowledgebase Settings, for an Editor: where the Review Period is changed (the card has no control of its own).
-  const changeReviewPeriod = useKnowledgebaseSettings();
   const activity = (
     <PageActivity
       now={page.now}
@@ -135,7 +133,6 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         onSetOwner={
           rights.editFields ? (owner) => page.setFields(pageId, { owner }, 'owner') : undefined
         }
-        onChangeReviewPeriod={changeReviewPeriod?.onSelect}
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
       />
       <PageRailAiContext page={page} />

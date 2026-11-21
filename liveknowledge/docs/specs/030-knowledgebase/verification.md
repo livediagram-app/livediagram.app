@@ -80,10 +80,10 @@ own.
   boring"): no card and no borders, the page's own ground under it, sections headed by small capitals as On This
   Page is. Page Health leads with the page's state beside a thin **freshness ring**, the share of the Review Period
   left, in the state's colour (green verified, amber due, an empty dashed ring for a page never verified), with one
-  line under it: "Fresh for 80 more days", "Was due 14 Jan", "Verify it once it is right." The week's reads are two
+  line under it: "Fresh for 80 more days", "Was due 14 Jan", "Verify once it's right." The week's reads are two
   quiet figures (people, agents) under "Read This Week". The ring fills over 200 ms when it changes (the chrome motion budget), and not
   at all with reduced motion. (Redesigned 2026-11-21, "it's rubbish": the state, its line and Verify sit in a soft
-  panel washed in the state's colour; the facts below each have a glyph; **Read This Week** and Created / Updated
+  panel washed in the state's colour; the facts below each have a glyph; **Read This Week** (a panel on the theme's tint, a quiet open book drawn behind its two counts) and Created / Updated
   are the rail's foot, held at its bottom while the rest scrolls, the Page Info card showing them last.) **AI
   Context** follows Page Health, before the foot, in the same quiet style ([AI Knowledge](ai-knowledge.md) "AI
   Context on a page").
@@ -103,12 +103,12 @@ own.
   The dialog says how many pages the new period makes due before it is applied when that number grows ("12 pages
   will be due for review"), and applying is one undoable edit.
 - **Never** means no page is ever Review Due: pages are Verified or Never Verified, and no review email is sent.
-- Page Health shows the page's due date and, for an Editor, a link to the setting ("Every 90 Days, Change"); it has
-  no control of its own.
+- Page Health shows the page's due date and the knowledgebase's period ("Every 90 Days"), read-only for everyone
+  (owner 2026-11-21: the period is changed in Knowledgebase Settings, not the sidebar).
 
 ### The Review Period, as built
 
-- **Ways in.** Page Health's **Change** link, the command palette's **Knowledgebase Settings**, and the
+- **Ways in.** The command palette's **Knowledgebase Settings** and the
   knowledgebase menu's **Knowledgebase Settings** row (the menu takes it from `useKnowledgebaseSettings()`).
 - **The dialog** is titled **Knowledgebase Settings**, centred, of one height, with one section, **Reviews**. The
   five choices are bordered single-choice rows, the chosen one ticked. A shorter period is counted first; when it
@@ -155,5 +155,5 @@ own.
 ## Share roles
 
 Verify and change a page's owner: an Editor or a Participant. Change the Review Period: an Editor only, as all of
-Knowledgebase Settings ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)); a Participant sees the
-period in Page Health with no Change link. Everyone sees the states.
+Knowledgebase Settings ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)); everyone sees the
+period in Page Health, with no Change link. Everyone sees the states.
