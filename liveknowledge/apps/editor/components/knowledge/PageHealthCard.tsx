@@ -462,6 +462,7 @@ export function PageHealthCard({
                   <span
                     data-verified-by=""
                     tabIndex={0}
+                    role="img"
                     aria-label={`Verified by ${verifier}`}
                     className="inline-flex cursor-default rounded-full focus-visible:outline-2 focus-visible:outline-brand-600"
                   >

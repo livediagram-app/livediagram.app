@@ -65,7 +65,7 @@ db/documents.ts, best effort: a preview the purge misses is unreachable, since e
 The editor asks `/api/previews/items/<id>?v=<savedAt>` on its own origin (the router forwards it to liveworkspace),
 through the authenticated client, with the viewer's token (or, for a shared row, its share code), and wraps the bytes
 in a blob URL (a native `<img>` can't send auth headers). A 404 (nothing drawn, no access) shows the still, dashed
-sketch, captioned "No preview yet" where there is room. So does an answer the browser cannot draw as a picture (its
+sketch, captioned "Nothing to preview" where there is room. So does an answer the browser cannot draw as a picture (its
 `<img>` fails to decode), never a broken-image glyph; it is remembered as broken for that version.
 
 - The Explorer row fetches **lazily** (IntersectionObserver): only rows
@@ -96,7 +96,7 @@ sketch, captioned "No preview yet" where there is room. So does an answer the br
   `empty` per document (`DocumentSummary`, `SharedWithItem`): true when its
   first tab has nothing to draw (no element: `drawnCount` in
   `@liveknowledge/document`), or it has no tab. Such a row shows the still,
-  dashed page sketch at once, captioned "No preview yet" where there is room,
+  dashed page sketch at once, captioned "Nothing to preview" where there is room,
   and makes no request, so an Explorer of new or blank documents fires no
   404s. The list knows without reading any tab body: each tab row keeps its
   drawn count (`tabs.element_count`: its elements), and a list reads the first tab's

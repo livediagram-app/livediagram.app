@@ -130,7 +130,7 @@ export function PageCommentComposer({
             }
           }}
           style={{ maxHeight: MAX.px }}
-          className="block min-h-9 w-full resize-none bg-transparent py-1.5 pr-1 font-sans text-sm leading-6 text-slate-800 outline-none placeholder:text-slate-400 phone:min-h-11 dark:text-slate-100 dark:placeholder:text-slate-500"
+          className="block min-h-9 w-full resize-none bg-transparent py-1.5 pr-1 font-sans text-sm leading-6 text-slate-800 outline-none placeholder:text-slate-500 phone:min-h-11 dark:text-slate-100 dark:placeholder:text-slate-400"
         />
         {open ? (
           <div className="flex items-center justify-end gap-2 pt-1 motion-safe:animate-fade-in">
@@ -139,7 +139,7 @@ export function PageCommentComposer({
                 {words.length.toLocaleString('en')}/{COMMENT_TEXT_MAX.toLocaleString('en')}
               </p>
             ) : (
-              <p className="mr-auto hidden text-[11px] text-slate-400 sm:block dark:text-slate-500">
+              <p className="mr-auto hidden text-[11px] text-slate-500 sm:block dark:text-slate-400">
                 <Kbd>{modifier}</Kbd> <Kbd>Enter</Kbd> to {submitLabel.toLowerCase()}
               </p>
             )}

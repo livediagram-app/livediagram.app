@@ -112,6 +112,7 @@ describe('useWorkspaceNavigation', () => {
       folderId: 'f1',
       teamId: null,
       templateKind: null,
+      structure: null,
     });
     expect(path()).toBe('/embed/workbench/document/doc-new');
   });

@@ -218,7 +218,7 @@ export function DocumentThumbnail({
 }
 
 // Placeholder shown when there's no snapshot: a page of writing, the smallest thing that still says "knowledgebase"
-// (it was the fork's three-node diagram and "Nothing drawn yet", sweep 2026-11-21). Scales with the box, capped so it
+// (it was the fork's three-node diagram and "Nothing drawn yet", sweep 2026-11-21; not "No preview yet", which reads as an empty state). Scales with the box, capped so it
 // stays a modest centred sketch in a card. Inlined so the component carries no cross-folder icon dependency (it's
 // imported from both app/ and components/ surfaces).
 function BlankCanvasIllustration() {
@@ -242,7 +242,7 @@ function BlankCanvasIllustration() {
       {/* Container-queried: only where the box is wide enough to hold
           the words without crowding the sketch (a card, not a row). */}
       <span className="hidden text-[11px] font-medium text-slate-500 dark:text-slate-400 @min-[140px]:block">
-        No preview yet
+        Nothing to preview
       </span>
     </span>
   );
