@@ -170,8 +170,19 @@ describe('the knowledgebase’s menu', () => {
     expect(rows()).toEqual(['Rename', 'Knowledgebase Style', 'Import', 'Export', 'Delete']);
   });
 
-  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles".
-  it.each(['participate', 'view'] as AccessLevel[])('%s: Export alone', (level) => {
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant is an Editor minus the
+  // settings, the style and automations; renaming and deleting the knowledgebase stay an Editor's.
+  it('participate: Describe to Add Pages, Import and Export, never Rename, the Style, the Settings or Delete', () => {
+    Object.assign(offered, { settings: false, ai: false });
+    const { handlers } = open({ level: 'participate' });
+    fireEvent.click(button());
+    expect(rows()).toEqual(['Describe to Add Pages', 'Import', 'Export']);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Import' }));
+    expect(handlers.setImportOpen).toHaveBeenCalledWith(true);
+    expect(handlers.setCanvasThemeTab).not.toHaveBeenCalled();
+  });
+
+  it.each(['view'] as AccessLevel[])('%s: Export alone', (level) => {
     Object.assign(offered, { settings: false, describe: false, ai: false });
     const { handlers } = open({ level }, { onRename: undefined });
     fireEvent.click(button());

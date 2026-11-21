@@ -35,5 +35,6 @@ export function opForReader(op: unknown): unknown {
   return op;
 }
 
-/** Whether a session's role reads the draft: an Editor's alone. */
-export const roleReadsDraft = (role: unknown): boolean => role === 'edit';
+/** Whether a session's role reads the draft: an Editor's or a Participant's, who both edit a page
+ *  (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"). */
+export const roleReadsDraft = (role: unknown): boolean => role === 'edit' || role === 'participate';

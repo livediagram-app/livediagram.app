@@ -251,8 +251,9 @@ describe('two editors writing note cards on one slide at once', () => {
     expect(storedCards(db)).toEqual([{ id: 'c1', text: 'Open with the story' }]);
   });
 
-  it('lets a Participant or a Viewer write no cards, whole or patched', async () => {
-    for (const level of ['participate', 'view'] as const) {
+  // A Participant writes a knowledgebase as an Editor (knowledgebases-and-pages.md "Share roles"); a Viewer writes nothing.
+  it('lets a Viewer write no cards, whole or patched', async () => {
+    for (const level of ['view'] as const) {
       const db = await setUp();
       const slide = parseStoredPresentation(deckOf([{ id: 'c1', text: 'Not mine' }]))!.decks[0]!
         .slides[0]!;
@@ -267,8 +268,8 @@ describe('two editors writing note cards on one slide at once', () => {
     }
   });
 
-  it('lets a Participant or a Viewer write no cards', async () => {
-    for (const level of ['participate', 'view'] as const) {
+  it('lets a Viewer write no cards', async () => {
+    for (const level of ['view'] as const) {
       const db = await setUp();
       const res = await put(
         db.env,

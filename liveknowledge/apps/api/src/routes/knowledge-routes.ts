@@ -31,6 +31,7 @@ import {
   missingDocument,
   type DocumentAccess,
   type DocumentRouteContext,
+  writesPages,
 } from './context';
 import { handleAgentPageRoute, handleAgentRoutes } from './knowledge-agent-routes';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
@@ -60,7 +61,6 @@ export type KnowledgeRoute = {
   grant: DocumentAccess;
 };
 
-const isEditor = (grant: DocumentAccess) => grant.role === 'edit';
 const safeDecode = (segment: string) => {
   try {
     return decodeURIComponent(segment);
@@ -122,8 +122,8 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
     return method === 'GET' ? handlePageHealth(ctx, document, tab) : methodNotAllowed();
   if (segments[5] !== 'verify' && segments[5] !== 'knowledge') return notFound();
   if (method !== (segments[5] === 'verify' ? 'POST' : 'PUT')) return methodNotAllowed();
-  // Verify, owner and Always in Context: Editor only, and the whole knowledgebase's to decide.
-  if (!isEditor(grant) || !wholeKnowledgebase(grant)) return forbidden();
+  // Verify, owner and Always in Context: an Editor's or a Participant's, and the whole knowledgebase's to decide.
+  if (!writesPages(grant) || !wholeKnowledgebase(grant)) return forbidden();
   return segments[5] === 'verify'
     ? handleVerify(ctx, document, tab)
     : handleKnowledgePatch(ctx, document, tab);

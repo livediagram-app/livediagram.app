@@ -4,6 +4,7 @@ import type { CommentMention } from '@liveknowledge/document';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useParticipantSession } from '../useParticipantSession';
+import { writesKnowledgebase } from '@/lib/editor-capabilities';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
@@ -285,11 +286,14 @@ export function useEditorSession({
   // The level in force (docs/specs/013-workspace/share-roles.md): a workbench session that ended leaves the
   // editor read-only (the autosave stands down with it).
   const level = workbench?.ended ? 'view' : embedSessionRole(sessionRole, readOnlyEmbed);
-  const canEdit = level === 'edit';
+  // An Editor and a Participant both write the knowledgebase (docs/specs/030-knowledgebase/knowledgebases-and-pages.md
+  // "Share roles"): a Participant is an Editor minus the Knowledgebase Settings, the Knowledgebase Style and
+  // automations, which `participant.can.manageKnowledgebase` gates.
+  const canEdit = writesKnowledgebase(level);
   const isReadOnly = !canEdit;
-  // What a Participant may do, and the guard on its commits (docs/specs/013-workspace/share-roles.md): text only.
-  // `isReadOnly` stays true for a Participant: its text gestures open through `participant.can` alone.
-  const participant = useParticipantSession(level, toast.info);
+  // What the session may do (`participant.can`), and the commit guard of the platform's text-only Participant, which
+  // no liveknowledge role is (useParticipantSession).
+  const participant = useParticipantSession(level);
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
   // edit link edits its one tab's content, nothing around it

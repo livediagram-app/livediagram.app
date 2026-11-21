@@ -97,6 +97,24 @@ describe('PUT documents/<id> with knowledgeStyle', () => {
     expect((await styleOf(kit)).theme).toBe('ocean');
   });
 
+  // A Participant is an Editor minus the settings, the style and automations
+  // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"): its metadata write orders the page tree,
+  // and is refused whole when it restyles or renames the knowledgebase.
+  it('lets a Participant order the pages, never restyle or rename the knowledgebase', async () => {
+    const kit = await knowledgeKit();
+    expect((await kit.call('participant', 'PUT', DOC, { name: 'Handbook' })).status).toBe(200);
+    const renamed = await kit.call('participant', 'PUT', DOC, { name: 'Mine Now' });
+    expect(renamed.status).toBe(403);
+    const both = await kit.call('participant', 'PUT', DOC, {
+      name: 'Handbook',
+      knowledgeStyle: STEEL,
+    });
+    expect(both.status).toBe(403);
+    const read = await (await kit.call('editor', 'GET', DOC)).json<Read>();
+    expect(read.document.name).toBe('Handbook');
+    expect(row(kit)).toEqual({ s: null });
+  });
+
   it.each([
     'participant',
     'viewer',

@@ -66,7 +66,7 @@ own.
   what verifying means ("You are vouching that this page is right as it stands today. Readers and agents see it as
   Verified, and it comes due for review again in 90 days."), "It has no owner yet, so you become its owner." where that
   is so, then **Cancel** and **Verify**. The rail's and the menu's stay one press.
-  A page with no owner takes the verifier as its owner. 
+  A page with no owner takes the verifier as its owner.
 - An agent never rewrites a page that is Verified or Review Due, whatever it was granted: it suggests the edit, and
   a person accepts it ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md)). A due page is the
   one most likely to need a person's eye.
@@ -96,9 +96,9 @@ own.
 
 ## The Review Period
 
-- **Knowledgebase Settings > Reviews** (the knowledgebase's menu), Editor only: **Review Period**, a row of five
-  choices (Every 30 Days, Every 90 Days, Every 180 Days, Every Year, Never) with one line under it saying what it
-  does: "A verified page comes due for review this long after it was last verified."
+- **Knowledgebase Settings > Reviews** (the knowledgebase's menu), Editor only (never a Participant): **Review
+  Period**, a row of five choices (Every 30 Days, Every 90 Days, Every 180 Days, Every Year, Never) with one line
+  under it saying what it does: "A verified page comes due for review this long after it was last verified."
 - Changing it changes when every page comes due, at once: states are worked out when read, so nothing is rewritten.
   The dialog says how many pages the new period makes due before it is applied when that number grows ("12 pages
   will be due for review"), and applying is one undoable edit.
@@ -154,4 +154,6 @@ own.
 
 ## Share roles
 
-Verify, change owner and change the Review Period: Editor only. Everyone sees the states.
+Verify and change a page's owner: an Editor or a Participant. Change the Review Period: an Editor only, as all of
+Knowledgebase Settings ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)); a Participant sees the
+period in Page Health with no Change link. Everyone sees the states.

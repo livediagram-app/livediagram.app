@@ -9,6 +9,7 @@ import { askConflictOwners, remindOwners } from '../knowledge/knowledge-emails';
 import { forbidden, json, methodNotAllowed } from '../responses';
 import { openConflicts } from './knowledge-overview-routes';
 import type { KnowledgeRoute } from './knowledge-routes';
+import { writesPages } from './context';
 
 /** Null when the path is neither route. */
 export async function handleEmailRoutes(route: KnowledgeRoute): Promise<Response | null> {
@@ -23,8 +24,9 @@ export async function handleEmailRoutes(route: KnowledgeRoute): Promise<Response
     segments[5] === 'ask-owners';
   if (!remind && !ask) return null;
   if (request.method !== 'POST') return methodNotAllowed();
-  // A signed-in Editor: an email is asked for by a person the owners can name, never a token or a passing guest.
-  if (grant.role !== 'edit' || ctx.token || !ctx.accountUserId) return forbidden();
+  // A signed-in Editor or Participant: an email is asked for by a person the owners can name, never a token or a
+  // passing guest.
+  if (!writesPages(grant) || ctx.token || !ctx.accountUserId) return forbidden();
   const now = Date.now();
   let result: KnowledgeEmailResult;
   if (remind) result = await remindOwners(env, document, now);

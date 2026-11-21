@@ -9,7 +9,7 @@ import { frontDoorOf } from '../changesets/front-door';
 import { submitPages } from '../changesets/pages';
 import { forbidden, json } from '../responses';
 import { authorOf, notePageWriteAfter, refreshAfterWrite } from './changesets';
-import { gateEdit, missingDocument, requireOwner, type DocumentRouteContext } from './context';
+import { gateWrite, missingDocument, requireOwner, type DocumentRouteContext } from './context';
 
 export async function handleTabPages(
   ctx: DocumentRouteContext,
@@ -20,7 +20,7 @@ export async function handleTabPages(
   if (owner instanceof Response) return owner;
   const document = await getDocument(ctx.env, id);
   if (!document) return missingDocument(ctx, id);
-  if (!(await gateEdit(ctx, id, document.ownerId, document.teamId, tabId))) return forbidden();
+  if (!(await gateWrite(ctx, id, document.ownerId, document.teamId, tabId))) return forbidden();
   const parsed = parsePagesRequest(await ctx.request.json().catch(() => undefined));
   if ('refusal' in parsed) {
     const { code, ...rest } = parsed.refusal;

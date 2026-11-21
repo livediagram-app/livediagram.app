@@ -75,10 +75,10 @@ export const PRESENCE_OP_KINDS = [
   'follow',
   // The page the sender is editing (docs/specs/030-knowledgebase/editing.md "Edit mode"), or none: the room keeps it on
   // the session's presence (`editing`) and sends the roster again, so a late joiner sees who is editing; never relayed
-  // as sent. Only from an Editor.
+  // as sent. Only from an Editor or a Participant (knowledgebases-and-pages.md "Share roles").
   'page-editing',
   // The sender just saved a page's draft (editing.md "Save"): relayed to the others, who say "<name> saved the page".
-  // Writes nothing (the save's own frames do). Only from an Editor.
+  // Writes nothing (the save's own frames do). Only from an Editor or a Participant.
   'page-saved',
 ] as const;
 

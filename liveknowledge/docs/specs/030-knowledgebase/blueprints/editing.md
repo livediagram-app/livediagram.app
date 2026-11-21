@@ -157,9 +157,10 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
   flow and never `DRAFT_FLOW` (`article_not_found` for it).
 - **The index** (`pageBlocks`), Ask's sources, the backlink and link tables, reading time, On This Page, hover cards,
   exports, the Explorer preview and the emails read `savedArticlesOf`.
-- **Who may edit:** an Editor of the knowledgebase (`can.editPage`), on the client and again in the room (the role
-  gate drops a non-Editor's `article`, `tab-meta`, `page-editing` and `page-saved`). A Participant reads, as
-  [Knowledgebases and pages](../knowledgebases-and-pages.md) "Share roles" has it: writing on a page is an Editor's.
+- **Who may edit:** an Editor or a Participant of the knowledgebase (`can.editPages`, `isReadOnly` false for both),
+  on the client and again in the room (the role gate drops a Viewer's `article`, `tab-meta`, `page-editing` and
+  `page-saved`; `writerLevel` in `room-op-gate.ts`), as [Knowledgebases and pages](../knowledgebases-and-pages.md)
+  "Share roles" has it. Both read the draft (`roleReadsDraft`, `readsDraft`); a Viewer reads the saved page.
 
 ## Performance and limits
 

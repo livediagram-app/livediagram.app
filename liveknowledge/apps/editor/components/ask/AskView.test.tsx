@@ -366,7 +366,7 @@ describe('the parts the pages do not cover', () => {
     });
 
   it.each(ROLES)(
-    'as %s: an amber note, a Knowledge Gap card, Draft a Page for an Editor',
+    'as %s: an amber note, a Knowledge Gap card, Draft a Page for a writer',
     async (role) => {
       await open(role);
       await answer(ask('Q?'), gaps());
@@ -375,7 +375,7 @@ describe('the parts the pages do not cover', () => {
       expect(card.getByText('Who approves a release?')).toBeTruthy();
       expect(card.getByText('No page answers it.')).toBeTruthy();
       expect(card.queryByRole('button', { name: 'Draft a Page From What We Know' }) !== null).toBe(
-        role === 'edit',
+        role !== 'view',
       );
       // Email is not built: nothing offers to ask the owner.
       expect(screen.queryByRole('button', { name: /to Write It/ })).toBeNull();
@@ -413,7 +413,7 @@ describe('the parts the pages do not cover', () => {
 
 describe('the answer footer', () => {
   it.each(ROLES)(
-    'as %s: helpful, not helpful and Copy Answer; Save as Page for an Editor',
+    'as %s: helpful, not helpful and Copy Answer; Save as Page for a writer',
     async (role) => {
       await open(role);
       await answer(ask('Q?'), done('An answer [1].', { sources: [source(1)] }));
@@ -426,7 +426,7 @@ describe('the answer footer', () => {
         'false',
       );
       expect(screen.getByRole('button', { name: 'Copy Answer' })).toBeTruthy();
-      expect(screen.queryByRole('button', { name: 'Save as Page' }) !== null).toBe(role === 'edit');
+      expect(screen.queryByRole('button', { name: 'Save as Page' }) !== null).toBe(role !== 'view');
     },
   );
 

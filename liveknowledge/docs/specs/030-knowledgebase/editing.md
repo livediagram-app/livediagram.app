@@ -11,8 +11,8 @@ editing share live and that nobody else sees until it is saved.
 
 - Every page opens to read, for every role: the writing, the meta row, the right rail, links and embeds all work, and
   nothing in the writing is editable (no caret, no toolbar, no slash menu, no drag handles).
-- An Editor sees **Edit** (pencil icon, primary, at the top right of the page next to Share; also the `E` key while
-  reading). A Participant, a Viewer, a link visitor and an agent never see it.
+- An Editor and a Participant see **Edit** (pencil icon, primary, at the top right of the page next to Share; also
+  the `E` key while reading). A Viewer, a link visitor and an agent never see it.
 - **Double-click to edit** (owner, 2026-11-21): while an Editor reads, a small quiet label rides just under the
   pointer over the writing, "Double-click to Edit" (a dark pill, 11 px, shown after the pointer rests a moment, never
   over a link or a control, never for touch), and a double-click on the writing opens edit mode.
@@ -62,10 +62,11 @@ stay).
 
 ## Share roles
 
-- **Editor:** Edit, Save, Cancel, Discard.
-- **Participant, Viewer, link visitor:** read mode only; never sees the draft or who is editing beyond the "Being
-  edited" note. Writing on a page is an Editor's ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)),
-  and a draft is writing; a Participant comments as before.
+- **Editor, Participant:** Edit, co-edit the draft, Save, Cancel, Discard. A Participant is an Editor minus the
+  Knowledgebase Settings, the Knowledgebase Style and automations
+  ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)), none of which is in the draft.
+- **Viewer, link visitor:** read mode only; never sees the draft or who is editing beyond the "Being edited" note.
+  A view link's visitor reads the saved page.
 
 ## Offline
 

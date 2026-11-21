@@ -60,8 +60,8 @@ the name), one line about it, an optional action at the right, then its rows or 
   opens A, each at the passage that disagrees: a side carries `firstBlock` (the passage's `first_block`, from the
   overview route), and `openPassage(chrome, tab, block)` brings that block into view and lights it, the search
   dialog's own way in (`goToBlock`). A side's title opens its page at its passage the same way. Not a Conflict is `apiDismissKnowledgeConflict`.
-- **The owner emails.** `canEmailOwners` is `askRights.emailOwners` (an Editor of the whole knowledgebase with an
-  account) and `reviewEmails.available`. **Ask Both Owners** (a mail icon, `secondary`) sits before Not a Conflict
+- **The owner emails.** `canEmailOwners` is `askRights.emailOwners` (an Editor or a Participant of the whole
+  knowledgebase with an account) and `reviewEmails.available`. **Ask Both Owners** (a mail icon, `secondary`) sits before Not a Conflict
   while the conflict has no `askedAt`; with one, `ownersEmailedText('ask', …)` ("Owners asked 14 Nov") is there
   instead. **Remind the Owners** (a bell icon) is the Health section's action while `reviewDue + neverVerified`
   is over zero; while `remindedThisWeek(remindedAt, now)` it is "Owners reminded 14 Nov". Each press is `run` under
@@ -99,12 +99,12 @@ Again**. Offline: one `EmptyState` for the view. Ready: the sections, in the ord
 | Action                                                             | Editor | Participant | Viewer |
 | ------------------------------------------------------------------ | ------ | ----------- | ------ |
 | See every section, open a page, Connect an Agent, open AI Settings | yes    | yes         | yes    |
-| Is Right, Fix the Other; Not a Conflict                            | yes    | no          | no     |
-| Draft a Page; dismiss a question                                   | yes    | no          | no     |
-| Accept or dismiss a suggestion                                     | yes    | no          | no     |
-| Add a page to Always in Context, or take one out                   | yes    | no          | no     |
+| Is Right, Fix the Other; Not a Conflict                            | yes    | yes         | no     |
+| Draft a Page; dismiss a question                                   | yes    | yes         | no     |
+| Accept or dismiss a suggestion                                     | yes    | yes         | no     |
+| Add a page to Always in Context, or take one out                   | yes    | yes         | no     |
 | Allow Writing; Stop Writing                                        | yes    | no          | no     |
-| Ask Both Owners; Remind the Owners (signed in)                     | yes    | no          | no     |
+| Ask Both Owners; Remind the Owners (signed in)                     | yes    | yes         | no     |
 
 Gated on `askRights` (`resolve`, `makePages`, `context`, `manageAi`, `grantAgents`, `emailOwners`): without the flag the control is not drawn, and
 each handler checks it again. Tests, a role at a time: `components/ai-knowledge/AiKnowledgeView.test.tsx` "as edit",
@@ -169,8 +169,8 @@ day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows wi
     `initialValue`, focused with the caret at the end. A draft is kept in memory only, for this knowledgebase, and
     taken once.
 - **Offline**: `PageRailBody` does not draw the section.
-- **Share roles**: every role sees it; only `rights.editFields` draws the switch (an Editor on the whole
-  knowledgebase, not Offline).
+- **Share roles**: every role sees it; only `rights.editFields` draws the switch (an Editor or a Participant on the
+  whole knowledgebase, not Offline).
 - **Performance**: no request of its own; one statement per answer; the rail renders it from the store slice Page
   Health already reads.
 - **Tests.** `packages/knowledge/src/sql/page-answers.test.ts` (recording, grouping, the 30-day window, the cap,

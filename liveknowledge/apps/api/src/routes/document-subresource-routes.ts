@@ -26,7 +26,7 @@ import { readerOf } from '../knowledge/knowledge-caller';
 import {
   COMMUNITY_CONTENT,
   deniedOnTab,
-  gateEdit,
+  gateWrite,
   gateGrant,
   missingDocument,
   type DocumentRouteContext,
@@ -92,7 +92,7 @@ export async function handleDocumentSubresources(
     if (caller === null) return missingAuth();
     const saving = await getDocumentForSave(env, id);
     if (!saving) return missingDocument(ctx, id);
-    const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
+    const allowed = await gateWrite(ctx, id, saving.ownerId, saving.teamId, tabId);
     if (!allowed) return forbidden();
     return handleTabDelta(ctx, saving, tabId, caller);
   }
@@ -113,7 +113,7 @@ export async function handleDocumentSubresources(
       const saving = await getDocumentForSave(env, id);
       if (!saving) return missingDocument(ctx, id);
       // Owner or edit-role share visitor only, and a tab-scoped visitor on their own tab only.
-      const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
+      const allowed = await gateWrite(ctx, id, saving.ownerId, saving.teamId, tabId);
       if (!allowed) return forbidden();
       return handleTabPut(ctx, saving, tabId, caller);
     }
@@ -170,7 +170,7 @@ export async function handleDocumentSubresources(
 
     // Writes below: owner or edit-role share visitor only, and a tab-scoped
     // visitor on their own tab only.
-    const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
+    const allowed = await gateWrite(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return forbidden();
     if (request.method === 'DELETE') {
       // A tab-scoped link can't delete the tab it is scoped to: that would

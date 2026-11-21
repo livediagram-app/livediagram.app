@@ -14,7 +14,7 @@ words). The page tools replace livedocuments' element and page-layout tools:
 | Tool           | Does                                                                                                                                                    |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `get_context`  | The knowledgebase's Always in Context pages as Markdown, in tree order, within the budget, with its Review Period (`review_period`). Call it first.     |
-| `list_pages`   | The page tree: ids, titles, depth, verified state, owner, review date, and once for them all the knowledgebase's Review Period (`review_period`).       |
+| `list_pages`   | The page tree: ids, titles, depth, verified state, owner, review date, and once for them all the knowledgebase's Review Period (`review_period`). A connected file in the sidebar is a row with `kind: "connected"` and its `app`, no trust; `read_page` does not read it. |
 | `search_pages` | Passages matching a query, each with its page, heading, verified state and date, `stale` and any `conflicts_with`.                                      |
 | `read_page`    | One page as Markdown with the same trust fields, its backlinks, its subpages and its cover.                                                             |
 | `create_page`  | A new page from Markdown under a parent. Never Verified.                                                                                                |
@@ -37,7 +37,10 @@ beside a repository.
 ## Share roles
 
 An agent has the role of the person or token it acts for, narrowed by its scopes: a Viewer's agent can never suggest;
-only an Editor's agent can hold `write`.
+only an Editor's agent can hold `write`. A Participant writes pages in person
+([Knowledgebases and pages](../030-knowledgebase/knowledgebases-and-pages.md#share-roles), owner 2026-11-21), but
+the scopes are unchanged: a token below `write`, and every token of a Participant, suggests and never writes, as
+before.
 
 ## What is built, and where it differs
 

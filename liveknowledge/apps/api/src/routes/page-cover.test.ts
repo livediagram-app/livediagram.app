@@ -175,7 +175,14 @@ describe('a page’s cover from a person', () => {
     expect('cover' in stored(kit)).toBe(false);
   });
 
-  it.each<Who>(['participant', 'viewer', 'link'])('is refused to a %s', async (who) => {
+  it('is set by a Participant, as by an Editor', async () => {
+    const kit = await knowledgeKit();
+    const cover = { motion: 'aurora', colouring: 'soft', speed: 2 };
+    expect((await save(kit, 'participant', cover)).status).toBe(200);
+    expect(stored(kit).cover).toEqual(cover);
+  });
+
+  it.each<Who>(['viewer', 'link'])('is refused to a %s', async (who) => {
     const kit = await knowledgeKit();
     expect((await save(kit, who, { imageId: 'img_mine' })).status).toBe(403);
     expect('cover' in stored(kit)).toBe(false);

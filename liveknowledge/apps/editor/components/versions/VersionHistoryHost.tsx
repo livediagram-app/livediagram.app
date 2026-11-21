@@ -39,7 +39,8 @@ function OpenHost({
 }) {
   const ownerId = useEditorChrome((s) => s.selfParticipant.id);
   const shareCode = useEditorChrome((s) => s.sessionShareCode);
-  const canEdit = useEditorChrome((s) => s.can.level === 'edit');
+  // A page writer (an Editor or a Participant) restores, copies and names versions.
+  const canEdit = useEditorChrome((s) => s.can.editPages);
   // A link confined to one tab never makes a tab (tab-scoped-share-links.md).
   const tabScoped = useEditorChrome((s) => s.sessionTabScope !== null);
 

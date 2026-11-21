@@ -250,7 +250,7 @@ describe('POST knowledge/remind-owners', () => {
 
   it.each<[Who, number]>([
     ['editor', 200],
-    ['participant', 403],
+    ['participant', 200],
     ['viewer', 403],
     ['link', 403],
     ['agent', 403],
@@ -335,7 +335,7 @@ describe('POST conflicts/<id>/ask-owners', () => {
 
   it.each<[Who, number]>([
     ['editor', 200],
-    ['participant', 403],
+    ['participant', 200],
     ['viewer', 403],
     ['agent', 403],
   ])('as %s answers %i', async (who, status) => {

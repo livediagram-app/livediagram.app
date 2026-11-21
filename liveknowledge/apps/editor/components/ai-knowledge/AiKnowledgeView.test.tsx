@@ -346,30 +346,32 @@ describe('what it shows', () => {
   });
 });
 
-// ai-knowledge.md "Share roles": everyone sees it; every action below is an Editor's.
+// ai-knowledge.md "Share roles": everyone sees it; every action below is a writer's (an Editor or a Participant),
+// but allowing an agent to write and AI Settings, which are an Editor's.
 describe.each(ROLES)('as %s', (role) => {
   const editor = role === 'edit';
+  const writer = role !== 'view';
   const has = (scope: ReturnType<typeof section>, name: string | RegExp) =>
     scope.queryByRole('button', { name }) !== null;
 
-  it(`${editor ? 'offers' : 'hides'} every Editor action, and shows everything else`, async () => {
+  it(`${writer ? 'offers' : 'hides'} every writer's action, and shows everything else`, async () => {
     await open(role);
     const conflicts = section('Pages That Disagree');
-    expect(has(conflicts, 'Release Process Is Right, Fix the Other')).toBe(editor);
-    expect(has(conflicts, 'Hotfixes Is Right, Fix the Other')).toBe(editor);
-    expect(has(conflicts, 'Not a Conflict')).toBe(editor);
-    expect(has(conflicts, 'Ask Both Owners')).toBe(editor);
-    expect(has(section('Knowledge Health'), 'Remind the Owners')).toBe(editor);
+    expect(has(conflicts, 'Release Process Is Right, Fix the Other')).toBe(writer);
+    expect(has(conflicts, 'Hotfixes Is Right, Fix the Other')).toBe(writer);
+    expect(has(conflicts, 'Not a Conflict')).toBe(writer);
+    expect(has(conflicts, 'Ask Both Owners')).toBe(writer);
+    expect(has(section('Knowledge Health'), 'Remind the Owners')).toBe(writer);
     const questions = section('Questions Nobody Could Answer');
-    expect(has(questions, 'Draft a Page')).toBe(editor);
-    expect(has(questions, 'Dismiss: Who approves a release?')).toBe(editor);
+    expect(has(questions, 'Draft a Page')).toBe(writer);
+    expect(has(questions, 'Dismiss: Who approves a release?')).toBe(writer);
     const suggestions = section('Edits Suggested by Agents');
-    expect(has(suggestions, 'Accept')).toBe(editor);
-    expect(has(suggestions, 'Dismiss')).toBe(editor);
+    expect(has(suggestions, 'Accept')).toBe(writer);
+    expect(has(suggestions, 'Dismiss')).toBe(writer);
     expect(has(suggestions, 'Open the Page')).toBe(true);
     const context = section('Always in Context');
-    expect(has(context, 'Add a Page')).toBe(editor);
-    expect(has(context, /Remove .* from Always in Context/)).toBe(editor);
+    expect(has(context, 'Add a Page')).toBe(writer);
+    expect(has(context, /Remove .* from Always in Context/)).toBe(writer);
     // The chips are everyone's; the menu that allows writing is an Editor's.
     const agent = within(document.querySelector<HTMLElement>('[data-agent="Coding Agent"]')!);
     expect(agent.getByRole('list', { name: 'What it may do' }).textContent).toBe(

@@ -130,7 +130,7 @@ describe('accepting a suggestion', () => {
     kit.call(who, 'POST', `/api/documents/kb/suggestions/${id}/accept`);
 
   it.each<[Who, number]>([
-    ['participant', 403],
+    ['participant', 200],
     ['viewer', 403],
     ['link', 403],
     ['participant-agent', 403],
@@ -217,7 +217,7 @@ describe('accepting a suggestion', () => {
 
 describe('dismissing a suggestion', () => {
   it.each<[Who, number]>([
-    ['participant', 403],
+    ['participant', 204],
     ['viewer', 403],
     ['agent-stored', 403],
     ['editor', 204],

@@ -124,12 +124,12 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
 
 ### Share roles
 
-| Action                                              | Editor               | Participant | Viewer |
-| --------------------------------------------------- | -------------------- | ----------- | ------ |
-| See the states, the meta row, Page Health, the rail | yes                  | yes         | yes    |
-| Verify, Verify Again                                | yes, with an account | no          | no     |
-| Owner, Always in Context                            | yes                  | no          | no     |
-| Knowledgebase Settings: the Review Period           | yes                  | no          | no     |
+| Action                                              | Editor               | Participant          | Viewer |
+| --------------------------------------------------- | -------------------- | -------------------- | ------ |
+| See the states, the meta row, Page Health, the rail | yes                  | yes                  | yes    |
+| Verify, Verify Again                                | yes, with an account | yes, with an account | no     |
+| Owner, Always in Context                            | yes                  | yes                  | no     |
+| Knowledgebase Settings: the Review Period           | yes                  | no                   | no     |
 
 `knowledgeRights({ can, isStructureReadOnly, accountUserId, offline })`: `editFields` is `can.editPages` on the
 whole knowledgebase (never a link confined to one page) that is not kept Offline; `verify` also needs an account,

@@ -34,7 +34,9 @@ export function receivePeerDragPreview(
   op: DragPreviewOp,
   roleOf: (presenceId: string) => string | undefined,
 ): void {
-  if (roleOf(presenceId) !== 'edit') {
+  // A writer's alone: an Editor's or a Participant's (knowledgebases-and-pages.md "Share roles"), as the room relays.
+  const role = roleOf(presenceId);
+  if (role !== 'edit' && role !== 'participate') {
     warnOnce(presenceId, '[drag-preview] peer ignored');
     return;
   }

@@ -56,7 +56,7 @@ structure of the whole knowledgebase". So every choice on it is a whole knowledg
   empty knowledgebase page as it is loaded, everywhere a stored tab is read (`withKnowledgebasePage` in
   `migrateStoredTab`), so it opens as an empty article page and never shows a start. Deleting a knowledgebase's
   last page from the page menu leaves an empty page to write on, not an empty tab.
-- **Share roles:** an Editor of the knowledgebase only; a Participant or a Viewer is never shown it.
+- **Share roles:** an Editor or a Participant of the whole knowledgebase; a Viewer is never shown it.
 - **Telemetry:** `UI·Used·StartBlank` for Blank Knowledgebase, `Tab·Created·FromStructure` when a structure's
   pages are made, and `UI·Opened·DescribeToSetUp` and `UI·Opened·KnowledgeImport` from its cards and foot. Which
   structure is not sent: the event is three fixed words.
@@ -72,7 +72,7 @@ structure of the whole knowledgebase". So every choice on it is a whole knowledg
 - Once the knowledgebase is no longer empty the control leaves the sidebar. It stays in the knowledgebase menu as
   **Describe to Add Pages**, which adds to what is there instead of starting it. Until that menu is built it is a
   command of the command palette.
-- Editor only, signed in. A Participant or Viewer never sees it, nor does anyone in a knowledgebase kept Offline.
+- An Editor or a Participant, signed in. A Viewer never sees it, nor does anyone in a knowledgebase kept Offline.
 
 ## The flow
 
@@ -126,7 +126,8 @@ headings (up to 6), parent }`, and which AI answered (`provider`: `built-in`, `a
   with Try Again; never a raw error.
 - The description is untrusted text to the model and the answer is untrusted text to the app: it is fenced in the
   request, and what comes back is only ever placed as text.
-- The route answers a signed-in Editor in person only: not an API token, a guest or a share link's visitor.
+- The route answers a signed-in Editor or Participant in person only: not an API token, a guest or a share link's
+  visitor.
 - **Limits**, whichever AI answers: 5 suggestions a person an hour and 20 a knowledgebase a day (`SETUP_*`,
   counted in the room beside Ask's counters); one request, 4,000 output tokens at most. **On built-in AI also** 10
   a person a UTC day across every knowledgebase (`SETUP_BUILT_IN_PER_PERSON_PER_DAY`, liveplanner's per-account
@@ -144,7 +145,7 @@ headings (up to 6), parent }`, and which AI answered (`provider`: `built-in`, `a
 
 | Action                         | Editor | Participant | Viewer |
 | ------------------------------ | ------ | ----------- | ------ |
-| See and use Describe to Set Up | yes    | no          | no     |
+| See and use Describe to Set Up | yes    | yes         | no     |
 | See the pages it made          | yes    | yes         | yes    |
 
 ## Telemetry

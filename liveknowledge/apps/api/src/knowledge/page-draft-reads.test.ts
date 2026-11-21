@@ -5,21 +5,31 @@ import { savedPageChanged } from './page-authors';
 // docs/specs/030-knowledgebase/editing.md "What reads the saved page only"; "Save".
 
 describe('who reads a draft', () => {
-  const editor = { role: 'edit', community: false } as const;
-  it("is an Editor's own editor, with no token, reading the plain tab", () => {
+  const editor = { role: 'edit', scopes: null, community: false } as const;
+  const participant = { role: 'participate', scopes: null, community: false } as const;
+  it("is an Editor's or a Participant's own editor, with no token, reading the plain tab", () => {
     expect(readsDraft({ token: null }, editor, false)).toBe(true);
+    expect(readsDraft({ token: null }, participant, false)).toBe(true);
   });
-  it('never a Viewer, a Participant, a Community visitor, an agent or a document view', () => {
-    expect(readsDraft({ token: null }, { role: 'view', community: false }, false)).toBe(false);
-    expect(readsDraft({ token: null }, { role: 'participate' as never, community: false }, false)).toBe(false);
-    expect(readsDraft({ token: null }, { role: 'edit', community: true }, false)).toBe(false);
+  it('never a Viewer, a Community visitor, an agent or a document view', () => {
+    const viewer = { role: 'view', scopes: null, community: false } as const;
+    expect(readsDraft({ token: null }, viewer, false)).toBe(false);
+    expect(readsDraft({ token: null }, { ...editor, community: true }, false)).toBe(false);
     expect(readsDraft({ token: { id: 'tok' } }, editor, false)).toBe(false);
+    expect(readsDraft({ token: { id: 'tok' } }, participant, false)).toBe(false);
     expect(readsDraft({ token: null }, editor, true)).toBe(false);
+  });
+  it("never a token's grant held below write, even without the token on the context", () => {
+    expect(
+      readsDraft({ token: null }, { ...participant, scopes: ['read', 'suggest'] }, false),
+    ).toBe(false);
   });
 });
 
 describe('a save that changes the page', () => {
-  const writing = (text: string) => ({ 'art-1': { blocks: [{ id: 'a', type: 'paragraph', runs: [{ text }] }] } });
+  const writing = (text: string) => ({
+    'art-1': { blocks: [{ id: 'a', type: 'paragraph', runs: [{ text }] }] },
+  });
   const page = { name: 'P', elements: [], articles: writing('saved') };
   const drafted = (draftText: string, extra: object = {}) => ({
     ...page,

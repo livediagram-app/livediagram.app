@@ -147,19 +147,15 @@ describe('useFindReplace', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Used', 'FindReplaceAll');
   });
 
-  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant writes nothing.
-  it('lets a Participant find but never replace', () => {
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant writes as an Editor does.
+  it('lets a Participant find and replace, as an Editor', () => {
     const s = setup('participate');
     chord('h', true);
-    expect(s.find().open).toBe(true);
-    expect(s.find().canReplace).toBe(false);
+    expect(s.find().canReplace).toBe(true);
     search(s, 'plan');
-    expect(s.find().count).toBe(12);
-    act(() => s.find().setReplaceOpen(true));
+    act(() => s.find().setBy('map'));
     act(() => s.find().replaceAll());
-    act(() => s.find().replace());
-    expect(s.find().replaceOpen).toBe(false);
-    expect(s.deps.commits).toBe(0);
+    expect(s.deps.commits).toBe(1);
   });
 
   it('lets a Viewer find but never replace', () => {

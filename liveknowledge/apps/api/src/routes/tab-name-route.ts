@@ -8,7 +8,7 @@ import { capStoredName } from '../names';
 import { forbidden, json, notFound } from '../responses';
 import { relayTabRename } from '../room-client';
 import {
-  gateEdit,
+  gateWrite,
   grantOn,
   missingDocument,
   requireOwner,
@@ -24,7 +24,7 @@ export async function handleTabRename(
   if (owner instanceof Response) return owner;
   const existing = await getDocument(ctx.env, id);
   if (!existing) return missingDocument(ctx, id);
-  if (!(await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId))) return forbidden();
+  if (!(await gateWrite(ctx, id, existing.ownerId, existing.teamId, tabId))) return forbidden();
   // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a grant confined to
   // this tab edits its content, never its name.
   if ((grantOn(ctx, id)?.tabScope ?? null) !== null) return forbidden();

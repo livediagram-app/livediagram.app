@@ -43,6 +43,7 @@ import { rowsOf, runAll, sqlOf } from '../knowledge/knowledge-db';
 import { contextPages, knowledgeHealthCounts } from '../knowledge/knowledge-reads';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
+import { writesPages } from './context';
 import { pendingSuggestions } from './knowledge-suggestion-routes';
 
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
@@ -183,7 +184,9 @@ export async function handleOverviewRoutes(route: KnowledgeRoute): Promise<Respo
   const { ctx, document, grant } = route;
   const { env, request, segments } = ctx;
   const id = segments[4];
-  const editor = grant.role === 'edit';
+  // Dismissing a question or a conflict is a page writer's: an Editor's or a Participant's (ai-knowledge.md "Share
+  // roles").
+  const writer = writesPages(grant);
   if (segments[3] === 'knowledge' && segments.length === 4)
     return request.method === 'GET' ? handleOverview(route) : methodNotAllowed();
   if (segments[3] === 'questions' && segments.length === 4) {
@@ -205,13 +208,13 @@ export async function handleOverviewRoutes(route: KnowledgeRoute): Promise<Respo
   }
   if (segments[3] === 'questions' && segments.length === 5 && id) {
     if (request.method !== 'DELETE') return methodNotAllowed();
-    if (!editor) return forbidden();
+    if (!writer) return forbidden();
     await runAll(env, dismissQuestion(decodeURIComponent(id)));
     return noContent();
   }
   if (segments[3] === 'conflicts' && segments.length === 6 && id && segments[5] === 'dismiss') {
     if (request.method !== 'POST') return methodNotAllowed();
-    if (!editor) return forbidden();
+    if (!writer) return forbidden();
     await runAll(env, [dismissConflict(id)]);
     return noContent();
   }

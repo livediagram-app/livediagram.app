@@ -1,7 +1,7 @@
 'use client';
 
 // Who is offered Describe to Set Up, and which way (docs/specs/030-knowledgebase/describe-to-set-up.md "The
-// control", "Share roles"): a signed-in Editor of the whole knowledgebase, never a Participant, a Viewer, a
+// control", "Share roles"): a signed-in Editor or Participant of the whole knowledgebase, never a Viewer, a
 // page-scoped link or a knowledgebase kept Offline. While the knowledgebase is empty it is `set-up` (the sidebar's
 // button); after that it is `add` (Describe to Add Pages). The answer is one short string read from the
 // store, so a keystroke renders nothing here until it changes.

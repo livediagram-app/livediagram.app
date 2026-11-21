@@ -568,9 +568,10 @@ describe('AI Knowledge', () => {
     }[];
     expect(group).toMatchObject({ asked: 2, people: 1 });
     const path = `/api/documents/kb/questions/${encodeURIComponent(group!.key)}`;
-    for (const who of ['participant', 'viewer', 'link', 'stranger'] as const)
+    for (const who of ['viewer', 'link', 'stranger'] as const)
       expect((await kit.call(who, 'DELETE', path)).status).toBe(403);
-    expect((await kit.call('editor', 'DELETE', path)).status).toBe(204);
+    // A Participant dismisses as an Editor does (ai-knowledge.md "Share roles").
+    expect((await kit.call('participant', 'DELETE', path)).status).toBe(204);
     expect(kit.db.sql.prepare('SELECT * FROM questions').all()).toEqual([]);
     expect(kit.db.sql.prepare('SELECT * FROM question_agents').all()).toEqual([]);
   });
@@ -630,11 +631,11 @@ describe('pages that disagree', () => {
       'deploys',
       'releases',
     ]);
-    // Not a Conflict: an Editor's, and for good.
+    // Not a Conflict: an Editor's or a Participant's, and for good.
     const path = `/api/documents/kb/conflicts/${overview.conflicts[0]!.id}/dismiss`;
-    for (const who of ['participant', 'viewer', 'link', 'stranger'] as const)
+    for (const who of ['viewer', 'link', 'stranger'] as const)
       expect((await kit.call(who, 'POST', path)).status).toBe(403);
-    expect((await kit.call('editor', 'POST', path)).status).toBe(204);
+    expect((await kit.call('participant', 'POST', path)).status).toBe(204);
     const after = await (
       await kit.call('viewer', 'GET', '/api/documents/kb/knowledge')
     ).json<{

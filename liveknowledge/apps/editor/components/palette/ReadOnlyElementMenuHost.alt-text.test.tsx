@@ -15,8 +15,7 @@ vi.stubGlobal(
 );
 
 // docs/specs/009-elements/images.md "Alt text" (Roles) and docs/specs/008-canvas/element-menu-quick-bar.md "Element
-// menu for Participants and Viewers": a Viewer reads a picture's alt text in its menu and cannot change it; a
-// Participant who may write the image's words writes it.
+// menu for Participants and Viewers": a Viewer reads a picture's alt text in its menu and cannot change it.
 
 let ctx: Record<string, unknown> = {};
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx }));
@@ -60,23 +59,8 @@ describe('ReadOnlyElementMenuHost alt text', () => {
     expect(screen.getByText('Not described yet')).toBeTruthy();
   });
 
-  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant comments and writes nothing.
-  it('shows a Participant the words under its rows, with no field to write them', () => {
-    const setImageAlt = open('participate', picture({ alt: 'A harbour at dusk' }));
-    expect(screen.getByRole('button', { name: 'Add Comment' })).toBeTruthy();
-    expect(screen.queryByRole('textbox')).toBeNull();
-    expect(screen.getByText('A harbour at dusk')).toBeTruthy();
-    expect(setImageAlt).not.toHaveBeenCalled();
-  });
-
-  it('only shows a Participant the words on a locked image, or one someone else holds', () => {
-    open('participate', picture({ alt: 'Locked', locked: true }));
-    expect(screen.queryByRole('textbox')).toBeNull();
-    expect(screen.getByText('Locked')).toBeTruthy();
-    cleanup();
-    open('participate', picture({ alt: 'Held' }), { lockedByOther: () => true });
-    expect(screen.queryByRole('textbox')).toBeNull();
-  });
+  // A Participant never reaches this menu: it is an Editor minus the settings, the style and automations
+  // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"), and has an Editor's element menu.
 
   it('shows nothing about alt text on an image still waiting for its picture', () => {
     open('view', picture({ imageId: null }));

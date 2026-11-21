@@ -13,7 +13,13 @@ describe('the draft withheld from a reader', () => {
   });
 
   it('sends a whole tab without either half', () => {
-    const tab = { id: 't', name: 'n', elements: [], articles: { 'art-1': { blocks: [] }, [DRAFT_FLOW]: { blocks: [] } }, draft: { by: 'P', at: 1, base: {} } };
+    const tab = {
+      id: 't',
+      name: 'n',
+      elements: [],
+      articles: { 'art-1': { blocks: [] }, [DRAFT_FLOW]: { blocks: [] } },
+      draft: { by: 'P', at: 1, base: {} },
+    };
     const out = opForReader({ kind: 'tab', tab }) as { tab: Record<string, unknown> };
     expect(out.tab.draft).toBeUndefined();
     expect(Object.keys(out.tab.articles as object)).toEqual(['art-1']);
@@ -22,10 +28,18 @@ describe('the draft withheld from a reader', () => {
   });
 
   it("strips a meta patch's draft record, and withholds a patch that was only that", () => {
-    expect(opForReader({ kind: 'tab-meta', tabId: 't', patch: { draft: { by: 'P', at: 1, base: {} } } })).toBeNull();
-    expect(opForReader({ kind: 'tab-meta', tabId: 't', patch: { draft: {}, name: 'New' } })).toEqual({ kind: 'tab-meta', tabId: 't', patch: { name: 'New' } });
-    expect(opForReader({ kind: 'tab-meta', tabId: 't', patch: { draft: {} }, clear: ['parent'] })).toEqual({ kind: 'tab-meta', tabId: 't', patch: {}, clear: ['parent'] });
-    expect(opForReader({ kind: 'tab-meta', tabId: 't', patch: { draft: {} }, pageSteps: [] })).toEqual({ kind: 'tab-meta', tabId: 't', patch: {}, pageSteps: [] });
+    expect(
+      opForReader({ kind: 'tab-meta', tabId: 't', patch: { draft: { by: 'P', at: 1, base: {} } } }),
+    ).toBeNull();
+    expect(
+      opForReader({ kind: 'tab-meta', tabId: 't', patch: { draft: {}, name: 'New' } }),
+    ).toEqual({ kind: 'tab-meta', tabId: 't', patch: { name: 'New' } });
+    expect(
+      opForReader({ kind: 'tab-meta', tabId: 't', patch: { draft: {} }, clear: ['parent'] }),
+    ).toEqual({ kind: 'tab-meta', tabId: 't', patch: {}, clear: ['parent'] });
+    expect(
+      opForReader({ kind: 'tab-meta', tabId: 't', patch: { draft: {} }, pageSteps: [] }),
+    ).toEqual({ kind: 'tab-meta', tabId: 't', patch: {}, pageSteps: [] });
     const name = { kind: 'tab-meta', tabId: 't', patch: { name: 'x' } };
     expect(opForReader(name)).toBe(name);
   });
@@ -39,8 +53,10 @@ describe('the draft withheld from a reader', () => {
     expect(opForReader(odd)).toBe(odd);
   });
 
-  it('reads the draft only for an Editor', () => {
+  it('reads the draft for an Editor and a Participant only', () => {
     expect(roleReadsDraft('edit')).toBe(true);
-    for (const role of ['view', 'comment', 'participate', undefined, null]) expect(roleReadsDraft(role)).toBe(false);
+    expect(roleReadsDraft('participate')).toBe(true);
+    for (const role of ['view', 'comment', undefined, null])
+      expect(roleReadsDraft(role)).toBe(false);
   });
 });

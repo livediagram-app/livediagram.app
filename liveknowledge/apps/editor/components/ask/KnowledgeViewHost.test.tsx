@@ -91,7 +91,7 @@ describe('the view over the editor', () => {
 describe('Import handed over by the Knowledgebase Home', () => {
   it.each([
     ['edit', true],
-    ['participate', false],
+    ['participate', true],
     ['view', false],
   ] as const)('as %s', (role, opens) => {
     handArrival({ kind: 'import', documentId: 'd1' });

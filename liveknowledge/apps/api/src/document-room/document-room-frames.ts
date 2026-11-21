@@ -132,16 +132,7 @@ export function webSocketMessage(
       tabScope: session.tabScope ?? null,
     });
     if (gate.kind === 'drop') return;
-    if (gate.kind === 'participant-content') {
-      const writer = {
-        ws,
-        presenceId: sender.id,
-        documentId: session.documentId ?? null,
-      };
-      void room.participantWrites.applyContentOp(writer, msg.op, msg.ref);
-      return;
-    }
-    // An Editor's element op the validator refuses goes nowhere; its sender alone hears why
+    // A writer's element op (an Editor's or a Participant's) the validator refuses goes nowhere; its sender alone hears why
     // (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
     if (!gate.presence && refusesElementOp(room, ws, msg)) return;
     // Nor does one that would break the page tree (docs/specs/030-knowledgebase/blueprints/page-tree.md "The

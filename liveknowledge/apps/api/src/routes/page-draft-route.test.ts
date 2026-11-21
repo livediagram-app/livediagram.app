@@ -40,7 +40,9 @@ async function pageWithDraft() {
   const data = JSON.parse(row.data) as Record<string, unknown>;
   data.articles = { ...(data.articles as object), draft: writing('Draft') };
   data.draft = { by: 'Priya', at: 1, base: {} };
-  db.sql.prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'").run(JSON.stringify(data));
+  db.sql
+    .prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'")
+    .run(JSON.stringify(data));
   return db;
 }
 
@@ -54,17 +56,32 @@ describe('the draft on the tab GET', () => {
     const db = await pageWithDraft();
     const { status, text } = await read(db, {});
     expect(status).toBe(200);
-    const { tab } = JSON.parse(text) as { tab: { articles: Record<string, unknown>; draft?: unknown } };
+    const { tab } = JSON.parse(text) as {
+      tab: { articles: Record<string, unknown>; draft?: unknown };
+    };
     expect(Object.keys(tab.articles).sort()).toEqual(['art-1', 'draft']);
     expect(tab.draft).toBeDefined();
   });
 
-  it('never reaches a Viewer, a Participant or a link visitor', async () => {
+  it("reaches a Participant's link, who edits the page as an Editor does", async () => {
+    const db = await pageWithDraft();
+    testShareLink(db, 'D', 'PART', 'participate');
+    const { status, text } = await read(db, {
+      owner: 'guest_PART',
+      headers: { 'X-Share-Code': 'PART' },
+    });
+    expect(status).toBe(200);
+    expect(text).toContain('Priya');
+  });
+
+  it('never reaches a Viewer or a view link visitor', async () => {
     const db = await pageWithDraft();
     testShareLink(db, 'D', 'VIEW', 'view');
-    testShareLink(db, 'D', 'PART', 'participate');
-    for (const code of ['VIEW', 'PART']) {
-      const { status, text } = await read(db, { owner: `guest_${code}`, headers: { 'X-Share-Code': code } });
+    for (const code of ['VIEW']) {
+      const { status, text } = await read(db, {
+        owner: `guest_${code}`,
+        headers: { 'X-Share-Code': code },
+      });
       expect(status).toBe(200);
       expect(text).not.toContain('Draft');
       expect(text).not.toContain('Priya');

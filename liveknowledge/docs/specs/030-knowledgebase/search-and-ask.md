@@ -32,7 +32,7 @@ Owner, 2026-11-20: the sidebar's search is the **universal search**, with this k
 
 Ask answers a question in plain words from the knowledgebase's own pages, and says where each part came from.
 
-- **Bring your own key.** liveknowledge pays for no model Ask uses: the team pays its provider for what it uses
+- **Bring your own key.** Ask runs on the team's own key (Describe to Set Up also has built-in AI, describe-to-set-up.md): the team pays its provider for what it uses
   (Describe to Set Up alone has built-in AI, liveknowledge's, when there is no key). Ask is
   offered once an Editor adds the knowledgebase's own key, Claude's or OpenAI's ([Providers](#providers)), in
   **AI Settings**. Without a key the Ask tab explains this with one button to AI Settings, and
@@ -145,7 +145,7 @@ Ask through an anonymous share link is off: it would spend the team's key for st
   are the same for everyone in it.
 - It shows the key's state ("No Key Yet", "Key Ending 4f2a"; "Key Added" to someone the ending is not told), a
   password field to add or **Replace** it, **Remove** (asked first), the **Model** and two sentences: the key is
-  encrypted and never shown again, and liveknowledge pays for no model: the team pays its provider (named:
+  encrypted and never shown again, and Ask runs on the team's own key: the team pays its provider (named:
   Anthropic or OpenAI) for what it uses. It opens with the **Provider** ([Providers](#providers)).
 - The typed key is held only in the field. It is read once when sent and the field is cleared in the same turn,
   whatever the answer. It is never kept in the page's state, a browser store, a log, telemetry or an error message.

@@ -214,6 +214,28 @@ export async function gateParticipate(
   return holds(ctx, documentId, 'participate', tabId);
 }
 
+/** Whether a grant writes a knowledgebase's pages (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share
+ *  roles"): an Editor, or a Participant in person, who is an Editor minus the Knowledgebase Settings, the Knowledgebase
+ *  Style and automations. A token keeps its scopes' bound (docs/specs/024-agents/knowledgebase-for-agents.md): one
+ *  below `write` acts at `participate` and writes nothing, as before. */
+export function writesPages(grant: Pick<DocumentAccess, 'role' | 'scopes'>): boolean {
+  return grant.role === 'edit' || (grant.role === 'participate' && grant.scopes === null);
+}
+
+// The page-writing gate: every write to a page, the page tree and the page's knowledge. An Editor's alone are the
+// knowledgebase's settings and style, and sharing, which keep `gateEdit` or read `role === 'edit'`.
+export async function gateWrite(
+  ctx: RouteContext,
+  documentId: string,
+  _documentOwnerId?: string,
+  _documentTeamId?: string | null,
+  tabId?: string,
+): Promise<boolean> {
+  const grant = grantOn(ctx, documentId);
+  if (!grant || !writesPages(grant)) return false;
+  return grant.tabScope === null || grant.tabScope === tabId;
+}
+
 export async function gateEdit(
   ctx: RouteContext,
   documentId: string,

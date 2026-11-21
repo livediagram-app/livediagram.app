@@ -6,8 +6,6 @@ import { scopedSenderMayRelay } from './room-scope';
 type OpGate =
   /** Never relayed, never answered. */
   | { kind: 'drop' }
-  /** A Participant's `el` op: through the participant content rule (text only), never relayed as sent. */
-  | { kind: 'participant-content' }
   /** Relayed: unordered when `presence`. */
   | { kind: 'relay'; presence: boolean };
 
@@ -32,6 +30,12 @@ function keepsToItsTab(op: unknown): boolean {
     return !TAB_META_FIXED.some((key) => Object.hasOwn(patch, key));
   }
   return true;
+}
+
+/** Whether a server-verified role writes the knowledgebase: an Editor or a Participant. */
+function writerLevel(role: unknown): boolean {
+  const level = parseStoredLevel(role);
+  return level === 'edit' || level === 'participate';
 }
 
 /** The sender as the gate needs it: its server-verified role and tab scope. */
@@ -61,21 +65,18 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
   if (!keepsToItsTab(op)) return DROP;
   const presence = isPresenceOpKind(opKind);
-  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's `el` op goes
-  // through the participant rules (its comments and replies) and never relays as sent; everything else needs an
-  // Editor. Writing on a page is an Editor's alone (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share
-  // roles"): a Participant's `article` frame is dropped like a Viewer's, and so is every change to the page tree
-  // (`tab`, `tab-meta`, `document-meta`).
-  const level = parseStoredLevel(sender.role);
-  if (!presence && level !== 'edit') {
-    if (level === 'participate' && opKind === 'el') return { kind: 'participant-content' };
-    return DROP;
-  }
-  // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only
-  // an editor's may reach anyone, so a viewer can never make others' elements appear to move.
-  if (opKind === 'drag-preview' && sender.role !== 'edit') return DROP;
-  // Who is editing a page, and a page saved (docs/specs/030-knowledgebase/editing.md): only an Editor edits a page,
+  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; every change needs a page
+  // writer. In liveknowledge a Participant is an Editor minus the Knowledgebase Settings, the Knowledgebase Style and
+  // automations (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"), so its writing, its page
+  // tree changes and its elements relay as an Editor's. Neither the settings nor the style ever rides a socket's
+  // `document-meta` (document-room-frames.ts strips both, whoever sent it): the api alone sends them.
+  const writes = writerLevel(sender.role);
+  if (!presence && !writes) return DROP;
+  // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only a writer's
+  // may reach anyone, so a viewer can never make others' elements appear to move.
+  if (opKind === 'drag-preview' && !writes) return DROP;
+  // Who is editing a page, and a page saved (docs/specs/030-knowledgebase/editing.md): only a writer edits a page,
   // so nobody else can claim to be editing one or say they saved it.
-  if ((opKind === 'page-editing' || opKind === 'page-saved') && sender.role !== 'edit') return DROP;
+  if ((opKind === 'page-editing' || opKind === 'page-saved') && !writes) return DROP;
   return { kind: 'relay', presence };
 }

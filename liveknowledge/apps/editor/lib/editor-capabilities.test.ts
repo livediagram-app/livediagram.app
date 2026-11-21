@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@liveknowledge/document';
-import { resolveEditorCapabilities } from './editor-capabilities';
+import { resolveEditorCapabilities, writesKnowledgebase } from './editor-capabilities';
 
 // docs/specs/013-workspace/share-roles.md "What a Participant changes", as the editor renders it.
 const box = { x: 0, y: 0, width: 10, height: 10 };
@@ -12,7 +12,7 @@ const shape = (extra: Record<string, unknown> = {}) =>
 describe('resolveEditorCapabilities', () => {
   it('gives an Editor everything', () => {
     const can = resolveEditorCapabilities('edit');
-    expect(can.takePart && can.writeArticle && can.editPages).toBe(true);
+    expect(can.takePart && can.writeArticle && can.editPages && can.manageKnowledgebase).toBe(true);
     expect(can.writeText(shape()) && can.writeText(shape({ locked: true }))).toBe(true);
     // Find and replace: an Editor replaces anywhere it finds.
     expect(can.replace).toBe('any');
@@ -30,30 +30,36 @@ describe('resolveEditorCapabilities', () => {
     }
   });
 
-  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant comments, and that is all.
-  it('lets a Participant comment, and nothing else: no writing, no page tree, no replace', () => {
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant is an Editor minus the
+  // Knowledgebase Settings, the Knowledgebase Style and automations.
+  it('lets a Participant do all an Editor does but manage the knowledgebase', () => {
+    const editor = resolveEditorCapabilities('edit');
     const can = resolveEditorCapabilities('participate');
-    expect(can.takePart).toBe(true);
+    expect(can.manageKnowledgebase).toBe(false);
     for (const [key, value] of Object.entries(can)) {
-      if (key === 'level' || key === 'takePart') continue;
+      if (key === 'level' || key === 'manageKnowledgebase') continue;
+      const theirs = editor[key as keyof typeof editor];
       if (typeof value === 'function') {
-        for (const el of [sticky(), shape()]) expect(value(el), key).toBe(false);
-      } else expect(value, key).toBe(false);
+        for (const el of [sticky(), shape()])
+          expect(value(el), key).toBe((theirs as (e: Element) => boolean)(el));
+      } else expect(value, key).toEqual(theirs);
     }
   });
 
-  // One row a role: writing on a page, changing the page tree, commenting.
+  // One row a role: writing on a page, changing the page tree, commenting, managing the knowledgebase.
   it.each([
-    ['edit', true, true, true],
-    ['participate', false, false, true],
-    ['view', false, false, false],
+    ['edit', true, true, true, true],
+    ['participate', true, true, true, false],
+    ['view', false, false, false, false],
   ] as const)(
-    '%s: writes %s, edits the page tree %s, comments %s',
-    (level, writes, tree, comments) => {
+    '%s: writes %s, edits the page tree %s, comments %s, manages %s',
+    (level, writes, tree, comments, manages) => {
       const can = resolveEditorCapabilities(level);
       expect(can.writeArticle).toBe(writes);
       expect(can.editPages).toBe(tree);
       expect(can.takePart).toBe(comments);
+      expect(can.manageKnowledgebase).toBe(manages);
+      expect(writesKnowledgebase(level)).toBe(writes);
     },
   );
 
@@ -63,6 +69,7 @@ describe('resolveEditorCapabilities', () => {
     expect(Object.keys(resolveEditorCapabilities('participate')).sort()).toEqual([
       'editPages',
       'level',
+      'manageKnowledgebase',
       'replace',
       'takePart',
       'writeArticle',

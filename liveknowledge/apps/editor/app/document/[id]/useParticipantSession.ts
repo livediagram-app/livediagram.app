@@ -1,37 +1,18 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import type { AccessLevel } from '@liveknowledge/api-schema';
-import { participantTabChange, type Tab } from '@liveknowledge/document';
-import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import type { Tab } from '@liveknowledge/document';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 
-// A Participant's session in the editor (docs/specs/013-workspace/share-roles.md; blueprint "Editor state"): what
-// it may do (`can`), and the one guard every commit passes through, so a change the room would refuse never lands
-// on screen. A Participant edits text only. An Editor and a Viewer pass through untouched: an Editor's commit is
-// never checked, and a Viewer's never reaches here.
-// How often a Participant is told a gesture was held back: once for a burst (a drag, a held key), not per frame.
-const HELD_BACK_NOTICE_MS = 4000;
-export const HELD_BACK_NOTICE = 'As a participant you can edit text and comment.';
+// A session's rights in the editor (docs/specs/013-workspace/share-roles.md; blueprint "Editor state"): what it may
+// do (`can`), and the commit guard the platform keeps for a text-only Participant. liveknowledge has no text-only
+// Participant: its Participant is an Editor minus the Knowledgebase Settings, the Knowledgebase Style and automations
+// (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"), so its commits pass as an Editor's.
+// `participating` is false for every level and `guardCommit` passes every commit; the room relays a Participant's
+// changes as an Editor's (apps/api/src/room-op-gate.ts).
 
-export function useParticipantSession(level: AccessLevel, notify?: (message: string) => void) {
+const passCommit = (_before: Tab, after: Tab): Tab | null => after;
+
+export function useParticipantSession(level: AccessLevel) {
   const can = useMemo(() => resolveEditorCapabilities(level), [level]);
-  const participating = level === 'participate';
-  const lastNoticeRef = useRef(0);
-  // The tab a commit would make, or null to drop it.
-  const guardCommit = useCallback(
-    (before: Tab, after: Tab): Tab | null => {
-      if (!participating) return after;
-      const allowed = participantTabChange(before, after);
-      if (!allowed) {
-        debugLog('[participant] change held back', before.id);
-        const now = Date.now();
-        if (now - lastNoticeRef.current > HELD_BACK_NOTICE_MS) {
-          lastNoticeRef.current = now;
-          notify?.(HELD_BACK_NOTICE);
-        }
-      }
-      return allowed;
-    },
-    [participating, notify],
-  );
-  return { can, participating, guardCommit };
+  return { can, participating: false, guardCommit: passCommit };
 }

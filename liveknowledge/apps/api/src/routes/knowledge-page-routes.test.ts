@@ -88,7 +88,14 @@ describe('POST pages/:tab/verify', () => {
     expect(after.filter((tab) => Object.hasOwn(tab, 'knowledge'))).toHaveLength(1);
   });
 
-  it.each(['participant', 'viewer', 'link', 'page-link', 'stranger'] as const)(
+  it('lets a Participant verify, as an Editor does', async () => {
+    const kit = await knowledgeKit();
+    const res = await kit.call('participant', 'POST', '/api/documents/kb/pages/holidays/verify');
+    expect(res.status).toBe(200);
+    expect(stored(kit, 'holidays').knowledge).toBeDefined();
+  });
+
+  it.each(['viewer', 'link', 'page-link', 'stranger'] as const)(
     'is refused for %s, who changes nothing',
     async (who) => {
       const kit = await knowledgeKit();
@@ -184,7 +191,16 @@ describe('PUT pages/:tab/knowledge', () => {
     expect(stored(kit).knowledge).toBeUndefined();
   });
 
-  it.each(['participant', 'viewer', 'link', 'page-link', 'stranger'] as const)(
+  it('lets a Participant set Always in Context, as an Editor does', async () => {
+    const kit = await knowledgeKit();
+    const res = await kit.call('participant', 'PUT', '/api/documents/kb/pages/holidays/knowledge', {
+      context: true,
+    });
+    expect(res.status).toBe(200);
+    expect(stored(kit, 'holidays').knowledge).toBeDefined();
+  });
+
+  it.each(['viewer', 'link', 'page-link', 'stranger'] as const)(
     'is refused for %s',
     async (who) => {
       const kit = await knowledgeKit();

@@ -17,10 +17,10 @@ describe('gateClientOp', () => {
 
   // docs/specs/006-document/delta-saves.md "A peer's save moves the base copy": sequenced after the save's ops, an
   // Editor's alone, and a scoped session's for its own tab only.
-  it("relays an Editor's tab-saved as a mutation, never a Participant's or a Viewer's", () => {
+  it("relays an Editor's and a Participant's tab-saved as a mutation, never a Viewer's", () => {
     const saved = { kind: 'tab-saved', tabId: 't', rev: 3, digest: 'a'.repeat(64) };
     expect(gateClientOp(saved, as('edit'))).toEqual(relay(false));
-    expect(gateClientOp(saved, as('participate'))).toEqual(DROP);
+    expect(gateClientOp(saved, as('participate'))).toEqual(relay(false));
     expect(gateClientOp(saved, as('view'))).toEqual(DROP);
     expect(gateClientOp(saved, as('edit', { tabScope: 'other' }))).toEqual(DROP);
     expect(gateClientOp(saved, as('edit', { tabScope: 't' }))).toEqual(relay(false));
@@ -35,12 +35,11 @@ describe('gateClientOp', () => {
     expect(gateClientOp(tab, as('admin'))).toEqual(DROP);
   });
 
-  it("routes a participant's element op through the comment rules, and drops its other mutations", () => {
-    expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual({
-      kind: 'participant-content',
-    });
-    for (const kind of ['tab', 'tab-meta', 'el-delta', 'document-meta', 'article']) {
-      expect(gateClientOp({ kind, tabId: 't' }, as('participate')), kind).toEqual(DROP);
+  // A Participant is an Editor minus the settings, the style and automations, none of which a socket carries.
+  it("relays a Participant's mutations as an Editor's", () => {
+    expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual(relay(false));
+    for (const kind of ['el-delta', 'document-meta', 'article']) {
+      expect(gateClientOp({ kind, tabId: 't' }, as('participate')), kind).toEqual(relay(false));
     }
   });
 
@@ -53,29 +52,36 @@ describe('gateClientOp', () => {
       ['rename a page', { kind: 'tab-meta', tabId: 't', patch: { name: 'Renamed' } }],
       ['indent or outdent a page', { kind: 'tab-meta', tabId: 't', patch: { parent: 'p' } }],
       ['move or delete a page', { kind: 'document-meta', name: 'K', tabs: [] }],
+      ['set a cover', { kind: 'tab-meta', tabId: 't', patch: { cover: { kind: 'gradient' } } }],
     ];
     it.each(actions)('an Editor may %s', (_label, op) => {
       expect(gateClientOp(op, as('edit'))).toEqual(relay(false));
     });
-    it.each(actions)('a Participant may not %s', (_label, op) => {
-      expect(gateClientOp(op, as('participate'))).toEqual(DROP);
+    it.each(actions)('a Participant may %s', (_label, op) => {
+      expect(gateClientOp(op, as('participate'))).toEqual(relay(false));
     });
     it.each(actions)('a Viewer may not %s', (_label, op) => {
       expect(gateClientOp(op, as('view'))).toEqual(DROP);
     });
-    it('commenting: an Editor relays, a Participant goes through the comment rules, a Viewer is dropped', () => {
+    it('commenting: an Editor and a Participant relay, a Viewer is dropped', () => {
       const comment = { kind: 'el', tabId: 't', op: { kind: 'update', id: 'e' } };
       expect(gateClientOp(comment, as('edit'))).toEqual(relay(false));
-      expect(gateClientOp(comment, as('participate'))).toEqual({ kind: 'participant-content' });
+      expect(gateClientOp(comment, as('participate'))).toEqual(relay(false));
       expect(gateClientOp(comment, as('view'))).toEqual(DROP);
+    });
+    it('editing a page: an Editor and a Participant say so and save, a Viewer cannot claim either', () => {
+      for (const kind of ['page-editing', 'page-saved']) {
+        const op = { kind, tabId: 't' };
+        expect(gateClientOp(op, as('edit')), kind).toEqual(relay(true));
+        expect(gateClientOp(op, as('participate')), kind).toEqual(relay(true));
+        expect(gateClientOp(op, as('view')), kind).toEqual(DROP);
+      }
     });
   });
 
   it("drops a participant's op for a tab outside its link", () => {
     const scoped = as('participate', { tabScope: 't1' });
-    expect(gateClientOp({ kind: 'el', tabId: 't1' }, scoped)).toEqual({
-      kind: 'participant-content',
-    });
+    expect(gateClientOp({ kind: 'el', tabId: 't1' }, scoped)).toEqual(relay(false));
     expect(gateClientOp({ kind: 'el', tabId: 't2' }, scoped)).toEqual(DROP);
   });
 
@@ -84,9 +90,9 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'article', tabId: 't' }, as('view'))).toEqual(DROP);
   });
 
-  // docs/specs/012-collaboration/comment-reactions.md: an Editor's reaction rides the room; a Participant's goes
-  // through the comment endpoints (which relay it), so the room drops one sent directly, as it drops a Viewer's.
-  it("relays an Editor's comment reaction only", () => {
+  // docs/specs/012-collaboration/comment-reactions.md: an Editor's reaction rides the room, and so does a
+  // Participant's, who is an Editor of the page here; a Viewer's is dropped.
+  it("relays an Editor's and a Participant's comment reaction, never a Viewer's", () => {
     const react = {
       kind: 'el-delta',
       tabId: 't',
@@ -101,13 +107,14 @@ describe('gateClientOp', () => {
       },
     };
     expect(gateClientOp(react, as('edit'))).toEqual(relay(false));
-    expect(gateClientOp(react, as('participate'))).toEqual(DROP);
+    expect(gateClientOp(react, as('participate'))).toEqual(relay(false));
     expect(gateClientOp(react, as('view'))).toEqual(DROP);
   });
 
-  it("shows only an editor's drag preview", () => {
+  it("shows only a writer's drag preview", () => {
     expect(gateClientOp({ kind: 'drag-preview' }, as('edit'))).toEqual(relay(true));
-    expect(gateClientOp({ kind: 'drag-preview' }, as('participate'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'drag-preview' }, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp({ kind: 'drag-preview' }, as('view'))).toEqual(DROP);
   });
 
   it('keeps a tab-scoped session to its own tab', () => {

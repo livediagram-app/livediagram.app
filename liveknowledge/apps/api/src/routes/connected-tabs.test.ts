@@ -181,10 +181,10 @@ describe('the editor adds a connected tab', () => {
 });
 
 describe('share roles', () => {
-  it('lets an Editor add one, and neither a Participant nor a Viewer', async () => {
+  it('lets an Editor or a Participant add one, and never a Viewer', async () => {
     const db = await document();
     const other = 'guest_00000000-0000-4000-8000-000000000002';
-    for (const level of ['view', 'participate'] as const) {
+    for (const level of ['view'] as const) {
       const res = await call(db, 'PUT', '/api/documents/D/tabs/t2', {
         body: { id: 't2', name: 'Plan', elements: [], connection: CONNECTION },
         grant: grantAt(level),
@@ -195,14 +195,14 @@ describe('share roles', () => {
     }
     const res = await call(db, 'PUT', '/api/documents/D/tabs/t2', {
       body: { id: 't2', name: 'Plan', elements: [], connection: CONNECTION },
-      grant: grantAt('edit'),
+      grant: grantAt('participate'),
       owner: other,
     });
     expect(res.status).toBe(200);
     expect(JSON.parse(column(db, 't2')!.connection!)).toEqual(CONNECTION);
   });
 
-  it('shows every role the connected tab, and only an Editor removes it', async () => {
+  it('shows every role the connected tab, and an Editor or a Participant removes it', async () => {
     const db = await document();
     await addConnected(db);
     const other = 'guest_00000000-0000-4000-8000-000000000002';
@@ -215,7 +215,7 @@ describe('share roles', () => {
         CONNECTION,
       );
     }
-    for (const level of ['view', 'participate'] as const) {
+    for (const level of ['view'] as const) {
       const res = await call(db, 'DELETE', '/api/documents/D/tabs/t2', {
         grant: grantAt(level),
         owner: other,
@@ -224,7 +224,7 @@ describe('share roles', () => {
     }
     expect(removals(db)).toEqual([]);
     const res = await call(db, 'DELETE', '/api/documents/D/tabs/t2', {
-      grant: grantAt('edit'),
+      grant: grantAt('participate'),
       owner: other,
     });
     expect(res.status).toBe(204);

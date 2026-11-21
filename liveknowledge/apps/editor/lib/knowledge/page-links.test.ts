@@ -180,8 +180,12 @@ describe('the [[ picker', () => {
     expect(e.query()).toEqual({ active: true, from: 1, query: '' });
   });
 
-  it('never opens for a Participant or a Viewer, or from a paste or a remote change', () => {
-    for (const level of ['participate', 'view'] as const) {
+  it('opens for a Participant as for an Editor, never for a Viewer, a paste or a remote change', () => {
+    const participant = resolveEditorCapabilities('participate');
+    const typed = editor({ canInsert: () => participant.writeArticle });
+    typed.type('[[');
+    expect(typed.query()).toMatchObject({ active: true });
+    for (const level of ['view'] as const) {
       const can = resolveEditorCapabilities(level);
       const e = editor({ canInsert: () => can.writeArticle });
       e.type('[[');

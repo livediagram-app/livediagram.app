@@ -3,7 +3,7 @@
 // a Community visitor. A knowledgebase kept Offline is its one person's to style. Pure, so the editor's slice, the
 // menu row and the dialog's host all ask the same question.
 export type StyleOfferedInput = {
-  can: { editPages: boolean };
+  can: { manageKnowledgebase: boolean };
   isStructureReadOnly: boolean;
   hydrated: boolean;
   embedMode: boolean;
@@ -13,7 +13,7 @@ export type StyleOfferedInput = {
 };
 
 export function styleOfferedOf(s: StyleOfferedInput): boolean {
-  const editor = s.can.editPages && !s.isStructureReadOnly;
+  const editor = s.can.manageKnowledgebase && !s.isStructureReadOnly;
   const plain = s.hydrated && !s.embedMode && !s.workbench && !s.sessionCommunity;
   return !!s.documentId && editor && plain;
 }

@@ -31,6 +31,7 @@ import type { Author } from '../changesets/write';
 import type { DocumentDTO } from '../types';
 import {
   gateEdit,
+  gateWrite,
   gateGrant,
   gateRead,
   grantOn,
@@ -79,7 +80,7 @@ async function handleSubmit(
   tabId: string,
   owner: string,
 ): Promise<Response> {
-  if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, tabId)))
+  if (!(await gateWrite(ctx, document.id, document.ownerId, document.teamId, tabId)))
     return forbidden();
   // A tab-scoped grant writes its own tab and never makes one (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its tab gone reads as missing, so a `replace` cannot bring it back under a name of the caller's choosing.
@@ -154,7 +155,7 @@ async function handleRevert(
   record: ChangesetRecord,
   owner: string,
 ): Promise<Response> {
-  if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, record.tabId))) {
+  if (!(await gateWrite(ctx, document.id, document.ownerId, document.teamId, record.tabId))) {
     return forbidden();
   }
   const author = await authorOf(ctx, owner);

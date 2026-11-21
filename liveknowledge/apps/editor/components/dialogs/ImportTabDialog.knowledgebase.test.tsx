@@ -120,8 +120,10 @@ describe('useKnowledgeImportProps, by share role', () => {
     expect(props?.host.getTabs()).toHaveLength(1);
   });
 
-  it('hands a Participant and a Viewer nothing', () => {
-    expect(propsFor({ can: resolveEditorCapabilities('participate') })).toBeUndefined();
+  it('hands a Participant the import, as an Editor, and a Viewer nothing', () => {
+    expect(propsFor({ can: resolveEditorCapabilities('participate') })?.host).toMatchObject({
+      documentId: 'doc',
+    });
     expect(propsFor({ can: resolveEditorCapabilities('view') })).toBeUndefined();
   });
 

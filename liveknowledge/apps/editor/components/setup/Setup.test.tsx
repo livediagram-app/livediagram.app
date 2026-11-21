@@ -172,7 +172,13 @@ describe('who is offered Describe to Set Up', () => {
     expect(offered('edit').menu).toBeNull();
   });
 
-  it.each(['participate', 'view'] as const)('is never a %s session', (role) => {
+  // A Participant is an Editor minus the settings, the style and automations (knowledgebases-and-pages.md "Share
+  // roles"): it is offered Describe to Set Up as an Editor is.
+  it('is a signed-in Participant as an Editor', () => {
+    expect(offered('participate').mode).toBe('set-up');
+  });
+
+  it.each(['view'] as const)('is never a %s session', (role) => {
     expect(offered(role)).toEqual({ mode: null, menu: null });
     expect(offered(role, { ...emptyKb(), tabs: [writtenPage()] })).toEqual({
       mode: null,
@@ -211,7 +217,7 @@ describe('the host', () => {
     expect(screen.getByText('Describe to Set Up')).toBeTruthy();
   });
 
-  it.each(['participate', 'view'] as const)('closes at once for a %s session', (role) => {
+  it.each(['view'] as const)('closes at once for a %s session', (role) => {
     renderInEditor(<SetupWhenOpen />, chromeValue(role, emptyKb()));
     act(() => openSetup('set-up'));
     expect(renderHook(() => useSetupOpen()).result.current).toBeNull();
@@ -284,7 +290,7 @@ describe('the sidebar button', () => {
     expect(screen.queryByRole('button', { name: 'Describe to Set Up' })).toBeNull();
   });
 
-  it.each(['participate', 'view'] as const)('is not drawn for a %s session', (role) => {
+  it.each(['view'] as const)('is not drawn for a %s session', (role) => {
     const { container } = renderInEditor(<DescribeToSetUpButton />, chromeValue(role, emptyKb()));
     expect(container.innerHTML).toBe('');
   });

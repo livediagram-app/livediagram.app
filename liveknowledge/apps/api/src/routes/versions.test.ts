@@ -155,7 +155,7 @@ const quiet = () => {
 };
 
 describe('who sees and does what', () => {
-  it('lets every level look, and only an Editor restore, copy or name', async () => {
+  it('lets every level look, and only an Editor or a Participant restore, copy or name', async () => {
     quiet();
     const { db } = await setUp();
     const version = await namedThenChanged(db);
@@ -169,7 +169,7 @@ describe('who sees and does what', () => {
       expect((await call(db, 'GET', base, undefined, who)).status).toBe(200);
       expect((await call(db, 'GET', `${base}/${version.id}`, undefined, who)).status).toBe(200);
     }
-    for (const who of [viewer, participant]) {
+    for (const who of [viewer]) {
       expect((await call(db, 'POST', `${base}/${version.id}/restore`, {}, who)).status).toBe(403);
       expect((await call(db, 'POST', `${base}/${version.id}/copy`, {}, who)).status).toBe(403);
       expect((await call(db, 'POST', base, { name: 'Mine' }, who)).status).toBe(403);
@@ -181,6 +181,9 @@ describe('who sees and does what', () => {
     expect(restored.status).toBe(200);
     expect(stored(db).elements.find((e) => e.id === 'a')).toMatchObject({ label: 'a' });
     expect((await call(db, 'POST', `${base}/${version.id}/copy`, {}, editor)).status).toBe(201);
+    expect((await call(db, 'POST', `${base}/${version.id}/restore`, {}, participant)).status).toBe(
+      200,
+    );
   });
 
   it('keeps a stranger and a Community visitor out, and reads another tab as missing', async () => {
@@ -496,7 +499,7 @@ describe('the two stores', () => {
     );
   });
 
-  it('lets every level look at both stores, and only an Editor name or restore', async () => {
+  it('lets every level look at both stores, and only an Editor or a Participant name or restore', async () => {
     quiet();
     const { db } = await setUp();
     const old = legacyVersion(db, { id: 'v_legacy', rev: 0, name: 'Legacy', label: 'old a' });
@@ -513,7 +516,7 @@ describe('the two stores', () => {
         expect((await call(db, 'GET', `${base}/${id}`, undefined, who)).status).toBe(200);
       }
     }
-    for (const who of [viewer, participant]) {
+    for (const who of [viewer]) {
       for (const id of [old, fresh.id]) {
         expect((await call(db, 'POST', `${base}/${id}/restore`, {}, who)).status).toBe(403);
         expect((await call(db, 'PUT', `${base}/${id}/name`, { name: 'X' }, who)).status).toBe(403);
@@ -522,6 +525,9 @@ describe('the two stores', () => {
     for (const id of [old, fresh.id]) {
       expect((await call(db, 'POST', `${base}/${id}/restore`, {}, editor)).status).toBe(200);
       expect((await call(db, 'PUT', `${base}/${id}/name`, { name: 'E' }, editor)).status).toBe(200);
+      expect((await call(db, 'PUT', `${base}/${id}/name`, { name: 'P' }, participant)).status).toBe(
+        200,
+      );
     }
     expect((await call(db, 'GET', base, undefined, { owner: 'g', community: true })).status).toBe(
       404,

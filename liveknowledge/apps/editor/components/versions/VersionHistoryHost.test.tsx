@@ -41,7 +41,7 @@ function view(over: Record<string, unknown> = {}) {
     documentId: 'd1',
     selfParticipant: { id: 'me' },
     sessionShareCode: null,
-    can: { level: 'edit' },
+    can: { level: 'edit', editPages: true },
     sessionTabScope: null,
     isOutOfScope: () => false,
     tabs: [tab('t1', 'Pitch'), tab('t2', 'Notes')],
@@ -73,7 +73,7 @@ describe('VersionHistoryHost', () => {
   it('hands a Viewer no edits, and a tab link no copy, and its own tab alone', () => {
     host(
       view({
-        can: { level: 'view' },
+        can: { level: 'view', editPages: false },
         sessionTabScope: 't2',
         isOutOfScope: (id: string) => id !== 't2',
       }),

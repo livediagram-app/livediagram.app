@@ -22,9 +22,11 @@ import {
 } from './knowledge-session';
 
 // Share roles in a knowledgebase (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"): a second
-// person arrives through a share link at each role. A Viewer and a Participant read every page, follow the tree and
-// search; neither writes on a page nor changes the tree. The room's own refusal of their writes is held by the
-// api's role tests; this is what the editor offers them.
+// person arrives through a share link at each role. A Viewer reads every page, follows the tree and searches, and
+// neither writes on a page nor changes the tree. A Participant is an Editor minus the Knowledgebase Settings, the
+// Knowledgebase Style and automations: it edits and saves a page, sets a cover and verifies, and is offered neither
+// the settings nor the style. The room's and the api's own rules are held by the api's role tests; this is what the
+// editor offers them, and that what a Participant writes reaches the owner.
 
 test.use({ viewport: { width: 1440, height: 860 } });
 
@@ -103,11 +105,15 @@ test('a Viewer reads, follows the tree and searches, and cannot write or change 
   await visitor.context().close();
 });
 
-test('a Participant reads and cannot write or change the tree', async ({
+const editButton = (page: Page) => page.getByRole('button', { name: 'Edit', exact: true });
+const health = (page: Page) => page.getByRole('region', { name: 'Page Health' });
+
+test('a Participant edits and saves a page, sets a cover and verifies, with no Settings or Style', async ({
   page,
   browser,
   baseURL,
 }) => {
+  test.setTimeout(150_000);
   const { id, code } = await sharedKnowledgebase(page, 'participate');
   const visitor = await secondPerson(
     browser,
@@ -115,8 +121,61 @@ test('a Participant reads and cannot write or change the tree', async ({
     `/document/${id}?s=${code}`,
     person('Grace', 'Hopper'),
   );
-  await expectReadOnly(visitor);
+  await pageRow(visitor, 'Handbook').click();
+  await expect(titleOf(visitor)).toHaveText('Handbook');
+
+  // Edit, write in the draft, and Save: the owner reads it.
+  await editButton(visitor).click();
+  await expect(visitor.locator('[data-page-edit-bar]')).toBeVisible();
+  await expect(writing(visitor)).toHaveAttribute('contenteditable', 'true');
+  await paragraphs(visitor).filter({ hasText: 'Welcome to the team.' }).click();
+  await visitor.keyboard.press('End');
+  await visitor.keyboard.press('Enter');
+  await visitor.keyboard.type('Grace wrote this line.');
+  await visitor.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(editButton(visitor)).toBeVisible();
   await pageRow(page, 'Handbook').click();
-  await expect(writing(page)).not.toContainText('XYZ');
+  await expect(writing(page)).toContainText('Grace wrote this line.');
+
+  // A cover, from edit mode: saved at once, and the owner sees it.
+  await editButton(visitor).click();
+  const coverSaved = savedWith(visitor, '"cover"');
+  await visitor.getByRole('button', { name: /^Add Cover/ }).click();
+  await visitor
+    .getByRole('dialog', { name: 'Add Cover' })
+    .getByRole('button', { name: 'Theme Dusk' })
+    .click();
+  await coverSaved;
+  await expect(visitor.locator('[data-page-cover]')).toHaveAttribute('data-page-cover', 'gradient');
+  await expect(page.locator('[data-page-cover]')).toHaveAttribute('data-page-cover', 'gradient');
+  await visitor.getByRole('button', { name: 'Save', exact: true }).click();
+
+  // Verify, in Page Health: the page is vouched for by the Participant.
+  await health(visitor).getByRole('button', { name: 'Verify', exact: true }).click();
+  await expect(visitor.locator('[data-page-meta]')).toContainText('Verified by Grace Hopper');
+  // The Review Period is shown, with no Change link: it is the settings'.
+  await expect(
+    health(visitor).getByRole('button', { name: 'Change the Review Period' }),
+  ).toHaveCount(0);
+
+  // The knowledgebase's menu: no Rename, Knowledgebase Style, Knowledgebase Settings, AI Settings or Delete.
+  await visitor.locator('[data-knowledgebase-menu]').click();
+  const rows = visitor.getByRole('menuitem');
+  await expect(rows.filter({ hasText: 'Export' })).toHaveCount(1);
+  for (const name of [
+    'Rename',
+    'Knowledgebase Style',
+    'Knowledgebase Settings',
+    'AI Settings',
+    'Delete',
+  ])
+    await expect(visitor.getByRole('menuitem', { name })).toHaveCount(0);
+  await visitor.keyboard.press('Escape');
+
+  // The owner keeps both.
+  await page.locator('[data-knowledgebase-menu]').click();
+  await expect(page.getByRole('menuitem', { name: 'Knowledgebase Style' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Knowledgebase Settings' })).toBeVisible();
+  await page.keyboard.press('Escape');
   await visitor.context().close();
 });

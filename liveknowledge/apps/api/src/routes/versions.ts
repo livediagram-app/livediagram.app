@@ -31,7 +31,7 @@ import { restoreVersion } from '../versions/restore';
 import { versionTelemetry } from '../versions/telemetry';
 import { authorOf, notePageWriteAfter, refreshAfterWrite } from './changesets';
 import {
-  gateEdit,
+  gateWrite,
   gateRead,
   grantOn,
   missingDocument,
@@ -69,7 +69,7 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
   const reads = door === 'list' || door === 'read';
   const allowed = reads
     ? await gateRead(ctx, document.id, document.ownerId, document.teamId, tabId)
-    : await gateEdit(ctx, document.id, document.ownerId, document.teamId, tabId);
+    : await gateWrite(ctx, document.id, document.ownerId, document.teamId, tabId);
   if (!allowed) return refused(ctx, document, door);
   if (!document.tabs.some((t) => t.id === tabId)) return notFound();
   if (door === 'list') return json({ versions: await listVersions(ctx.env, tabId) });

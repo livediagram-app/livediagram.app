@@ -1,11 +1,10 @@
 // What this session may do in the editor (docs/specs/013-workspace/share-roles.md; blueprint "Editor state").
 // Presentation only: the server is the rule, so a flag here decides what renders and what a gesture starts,
-// never what is allowed. An Editor holds every flag; a Viewer none; a Participant takes part (it comments) and
-// writes nothing: in a knowledgebase, writing on a page and every change to the page tree are an Editor's alone
-// (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles").
-//
-// `isReadOnly` stays true for a Participant, so every structural gate in the editor (adding, moving, resizing,
-// styling, deleting, the palette, pages, themes) stays shut without a change.
+// never what is allowed. An Editor holds every flag; a Viewer none. In liveknowledge a Participant is an Editor minus
+// three things (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"): the Knowledgebase Settings
+// (the Review Period with it), the Knowledgebase Style and automations, which `manageKnowledgebase` gates with the
+// knowledgebase's other Editor-only doors (AI Settings, agents' scopes, renaming and deleting the knowledgebase).
+// Everything else a Participant writes as an Editor does, so `isReadOnly` is false for it.
 
 import type { Element } from '@liveknowledge/document';
 import type { AccessLevel } from '@liveknowledge/api-schema';
@@ -23,6 +22,9 @@ export type EditorCapabilities = {
   // Replace found text (docs/specs/007-editor/find-and-replace.md "Share roles"): anywhere ('any', an Editor) or not
   // at all. 'text' (only the text a role may write) is kept for the type; no role holds it here.
   replace: ReplaceScope;
+  // The knowledgebase's own Editor-only doors: Knowledgebase Settings, Knowledgebase Style, automations, AI Settings,
+  // agents' scopes, renaming and deleting the knowledgebase. An Editor's alone; never a Participant's.
+  manageKnowledgebase: boolean;
 };
 
 export type ReplaceScope = 'any' | 'text' | false;
@@ -31,7 +33,8 @@ const never = () => false;
 const always = () => true;
 
 export function resolveEditorCapabilities(level: AccessLevel): EditorCapabilities {
-  if (level === 'edit')
+  // An Editor and a Participant write the knowledgebase alike; only the Editor manages it.
+  if (level === 'edit' || level === 'participate')
     return {
       level,
       takePart: true,
@@ -39,14 +42,21 @@ export function resolveEditorCapabilities(level: AccessLevel): EditorCapabilitie
       writeArticle: true,
       editPages: true,
       replace: 'any',
+      manageKnowledgebase: level === 'edit',
     };
-  // A Participant comments and a Viewer reads; neither writes or changes the tree.
+  // A Viewer reads.
   return {
     level,
-    takePart: level === 'participate',
+    takePart: false,
     writeText: never,
     writeArticle: false,
     editPages: false,
     replace: false,
+    manageKnowledgebase: false,
   };
+}
+
+/** Whether a level writes the knowledgebase (its pages, its tree, its knowledge): an Editor or a Participant. */
+export function writesKnowledgebase(level: AccessLevel): boolean {
+  return level === 'edit' || level === 'participate';
 }

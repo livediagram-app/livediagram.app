@@ -91,6 +91,7 @@ import { resolveDocumentGrant } from './document-grant';
 import {
   COMMUNITY_CONTENT,
   gateEdit,
+  gateWrite,
   gateGrant,
   grantCallerOf,
   missingDocument,
@@ -490,9 +491,15 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
-      if (!(await gateEdit(ctx, id))) return (await gateGrant(ctx, id)) ? forbidden() : notFound();
+      // The page tree's order and places are a page writer's (an Editor or a Participant); the Knowledgebase Style
+      // and the knowledgebase's own name are an Editor's (docs/specs/030-knowledgebase/knowledgebases-and-pages.md
+      // "Share roles"), so a Participant's write that names either is refused whole.
+      if (!(await gateWrite(ctx, id))) return (await gateGrant(ctx, id)) ? forbidden() : notFound();
       const existing = await startedDocument(ctx, id);
       if (!existing) return missingDocument(ctx, id);
+      const renames = typeof body.name === 'string' && body.name !== existing.name;
+      const restyles = body.knowledgeStyle !== undefined;
+      if ((renames || restyles) && !(await gateEdit(ctx, id))) return forbidden();
       const order = Array.isArray(body.tabs)
         ? readReorderEntries(body.tabs)
         : Array.isArray(body.tabIds)

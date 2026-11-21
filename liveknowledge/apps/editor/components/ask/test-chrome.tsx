@@ -42,7 +42,7 @@ export function chromeValue(
     selfParticipant: { id: 'me', name: 'Ada Lovelace' },
     accountUserId: 'me',
     can: resolveEditorCapabilities(role),
-    isStructureReadOnly: role !== 'edit',
+    isStructureReadOnly: role === 'view',
     tabs: PAGES,
     activeId: 'p1',
     activeTab: PAGES[0],

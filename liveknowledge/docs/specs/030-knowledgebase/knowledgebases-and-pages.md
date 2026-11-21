@@ -126,14 +126,17 @@ it. The menu is icon-left verb rows under the knowledgebase's name:
 | Rename                 | The name becomes a field where it stands; Enter keeps it, Escape leaves it                | Editor                   |
 | Knowledgebase Style    | Opens [Knowledgebase Style](page-surface.md#knowledgebase-style)                          | Editor                   |
 | Knowledgebase Settings | Opens the settings ([Verification](verification.md) "The Review Period")                  | Editor                   |
-| Describe to Add Pages  | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                  | Editor, signed in        |
-| Import                 | Opens Import                                                                              | Editor                   |
+| Describe to Add Pages  | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                  | Writer, signed in        |
+| Import                 | Opens Import                                                                              | Writer                   |
 | Export                 | Opens Export                                                                              | everyone                 |
 | AI Settings            | Opens AI Settings ([Search and Ask](search-and-ask.md))                                   | Editor, not kept Offline |
 | Delete                 | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator | Editor                   |
 
-- "Editor" is an Editor of the whole knowledgebase: never a Participant, a Viewer, a link confined to one page or a
-  Community visitor, who have Export alone. An embed has no menu, and shows the name as text.
+- "Editor" is an Editor of the whole knowledgebase; "Writer" is an Editor or a Participant of the whole
+  knowledgebase ([Share roles](#share-roles)). A Participant's menu is Describe to Add Pages, Import and Export; a
+  Viewer, a link confined to one page and a Community visitor have Export alone. An embed has no menu, and shows the
+  name as text. Rename and Delete stay an Editor's: the name and the Trash are the knowledgebase's as an item, which
+  the platform's share roles keep for an Editor.
 - A row a session is not offered is absent, not greyed: each is decided by the feature it opens, so the menu never
   offers what the feature would refuse.
 - **Keyboard and screen readers:** the button says it has a menu and whether it is open, and is named with the
@@ -167,17 +170,34 @@ A page is one article that never breaks onto paper pages while it is being writt
 
 ## Share roles
 
-| Action                                     | Editor | Participant | Viewer |
-| ------------------------------------------ | ------ | ----------- | ------ |
-| Read pages, follow links, search           | yes    | yes         | yes    |
-| Write on a page                            | yes    | no          | no     |
-| Comment (margin notes, threads)            | yes    | yes         | no     |
-| Add, rename, move, duplicate, delete pages | yes    | no          | no     |
-| The knowledgebase's menu, but Export       | yes    | no          | no     |
-| Export, from the knowledgebase's menu      | yes    | yes         | yes    |
-| Copy a page's link, fold the tree          | yes    | yes         | yes    |
+A Participant is an Editor minus three things (owner, 2026-11-21): **Knowledgebase Settings** (the Review Period
+with it), **Knowledgebase Style** and **automations**. Sharing and roles stay as the platform has them: a
+Participant never manages who has access.
 
-Every gate reads `can`, on the client and again in the room, and ships a test per role.
+| Action                                                          | Editor | Participant | Viewer |
+| --------------------------------------------------------------- | ------ | ----------- | ------ |
+| Read pages, follow links, search                                | yes    | yes         | yes    |
+| Edit a page: Edit, co-edit the draft, Save, Cancel, Discard     | yes    | yes         | no     |
+| Comment (margin notes, threads)                                 | yes    | yes         | no     |
+| Add, rename, move, duplicate, delete pages                      | yes    | yes         | no     |
+| Set, change or remove a page's cover                            | yes    | yes         | no     |
+| Verify a page, change its owner, set Always in Context          | yes    | yes         | no     |
+| Describe to Add Pages, Import                                   | yes    | yes         | no     |
+| Accept or dismiss an agent's suggestion                         | yes    | yes         | no     |
+| Knowledgebase Settings, the Review Period                       | yes    | no          | no     |
+| Knowledgebase Style                                             | yes    | no          | no     |
+| Automations (none built yet; the rule stands for when they are) | yes    | no          | no     |
+| AI Settings (the key and the model), allow an agent to write    | yes    | no          | no     |
+| Rename or delete the knowledgebase, share it, change roles      | yes    | no          | no     |
+| Export, from the knowledgebase's menu                           | yes    | yes         | yes    |
+| Copy a page's link, fold the tree                               | yes    | yes         | yes    |
 
-A Participant comments in threads and replies in a margin note's thread. Starting a margin note puts a mark in the
-writing, which is writing: it is an Editor's until the room has a rule that takes a mark and nothing else.
+"Participant" is a person in their own session. An agent's token keeps its scopes as
+[Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md) has them: a token below `write` acts as a
+Participant did before this rule (it suggests, it never writes), and only an Editor's token writes.
+
+Every gate reads `can`, on the client and again in the api and the room, and ships a test per role. The room relays a
+Participant's page changes as it does an Editor's; it strips the Knowledgebase Settings and Style from every
+socket's metadata, whoever sent it, and the api refuses a Participant's settings and style writes.
+
+A Participant starts margin notes too: the mark it puts in the writing is writing, which is now a Participant's.

@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// A Participant in the room (docs/specs/013-workspace/share-roles.md "Integrity"): it edits text only. Its element
-// ops and article frames go through the participant rules against what the document holds and only the rules' result reaches
-// anyone; everything else from a Participant is dropped.
+// A Participant in the room (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"): an Editor minus
+// the Knowledgebase Settings, the Knowledgebase Style and automations. Its element ops, article frames and page tree
+// changes relay as an Editor's, with no write by the room (its editor saves, as an Editor's does); the settings and the
+// style never ride its metadata. A Viewer's changes are dropped.
 
 const { store } = vi.hoisted(() => {
   const store: { data: string | null; rev: number; writes: number } = {
@@ -111,8 +112,6 @@ function wsOf(s: Socket): WebSocket {
 
 const frames = (s: Socket) => s.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
 const ops = (s: Socket) => frames(s).filter((f) => f.kind === 'op');
-const storedTab = () => JSON.parse(store.data!) as { elements: unknown[]; articles?: unknown };
-const storedElements = () => storedTab().elements;
 const settle = () => new Promise((r) => setTimeout(r, 0));
 
 async function send(room: DocumentRoom, from: Socket, op: unknown, ref?: number) {
@@ -137,139 +136,22 @@ const articleTab = (text: string) =>
     articles: { f1: { blocks: [paragraph(text)] } },
   });
 
-describe('DocumentRoom: a Participant edits text only', () => {
-  it('relays and persists a change of words, only the fields it changed, and answers its cursor', async () => {
-    const { room, join } = newRoom();
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate');
-    const op = { kind: 'update', element: shape('col', { label: 'Start doing' }) };
-    await send(room, part, { kind: 'el', tabId: 't1', op }, 7);
-    expect(storedElements()[0]).toMatchObject({ label: 'Start doing' });
-    expect(store.writes).toBe(1);
-    expect(ops(editor)).toEqual([
-      expect.objectContaining({
-        from: 'P',
-        op: {
-          kind: 'el',
-          tabId: 't1',
-          op: { kind: 'patch', id: 'col', set: { label: 'Start doing' } },
-        },
-      }),
-    ]);
-    expect(ops(part)).toEqual([]);
-    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'cursor', ref: 7 }));
-  });
-
-  // The review's case: an Editor resized the shape a moment ago and has not saved yet. The Participant's label
-  // must reach everyone without the stored (older) size coming back with it.
-  it('never sends the stored copy over live state: forbidden fields are simply not in the patch', async () => {
-    const { room, join } = newRoom();
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate');
-    const op = { kind: 'update', element: shape('col', { label: 'New', width: 999 }) };
-    await send(room, part, { kind: 'el', tabId: 't1', op });
-    expect(storedElements()[0]).toMatchObject({ label: 'New', width: 100 });
-    expect(ops(editor)[0]).toMatchObject({
-      from: 'P',
-      op: { op: { kind: 'patch', id: 'col', set: { label: 'New' } } },
-    });
-    expect(ops(part)).toEqual([]);
-  });
-
-  it('drops a move and a restyle: nothing written, nothing relayed', async () => {
-    const { room, join } = newRoom();
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate');
-    const before = store.data;
-    for (const element of [sticky('ed', { x: 300, y: 40 }), sticky('ed', { fillColor: '#000' })]) {
-      await send(room, part, { kind: 'el', tabId: 't1', op: { kind: 'update', element } });
-    }
-    expect(store.writes).toBe(0);
-    expect(store.data).toBe(before);
-    expect(ops(editor)).toEqual([]);
-  });
-
-  it('drops an add: nothing written, and the sender takes it back off', async () => {
-    const { room, join } = newRoom();
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate');
-    await send(room, part, {
-      kind: 'el',
-      tabId: 't1',
-      op: { kind: 'add', element: sticky('n'), at: 2 },
-    });
-    expect(store.writes).toBe(0);
-    expect(storedElements()).toHaveLength(2);
-    expect(ops(editor)).toEqual([]);
-    expect(ops(part)).toEqual([
-      {
-        kind: 'op',
-        from: 'system',
-        op: { kind: 'el', tabId: 't1', op: { kind: 'remove', id: 'n' } },
-      },
-    ]);
-  });
-
-  it('drops a delete: nothing written, and the sender gets the element back', async () => {
-    const { room, join } = newRoom();
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate');
-    await send(room, part, { kind: 'el', tabId: 't1', op: { kind: 'remove', id: 'ed' } });
-    expect(store.writes).toBe(0);
-    expect(ops(editor)).toEqual([]);
-    expect(ops(part)).toEqual([
-      {
-        kind: 'op',
-        from: 'system',
-        op: { kind: 'el', tabId: 't1', op: { kind: 'add', element: sticky('ed'), at: 1 } },
-      },
-    ]);
-  });
-
-  it('re-hydrates the sender when the element is not saved yet', async () => {
-    const { room, join } = newRoom();
-    const part = join('P', 'participate');
-    await send(room, part, {
-      kind: 'el',
-      tabId: 't1',
-      op: { kind: 'update', element: sticky('unsaved') },
-    });
-    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'catchup', resync: true }));
-  });
-
-  it('re-hydrates the sender when the tab is gone', async () => {
-    const { room, join } = newRoom();
-    const part = join('P', 'participate');
-    store.data = null;
-    await send(room, part, {
-      kind: 'el',
-      tabId: 't1',
-      op: { kind: 'update', element: sticky('ed', { label: 'y' }) },
-    });
-    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'catchup', resync: true }));
-  });
-
-  // Writing on a page is an Editor's alone (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles").
-  it("drops a Participant's writing in an article: nothing stored, nothing relayed", async () => {
+describe('DocumentRoom: a Participant writes as an Editor', () => {
+  it("relays a Participant's writing in an article as sent, and the room writes nothing", async () => {
     const { room, join } = newRoom();
     store.data = articleTab('Hello');
     const editor = join('E', 'edit');
     const part = join('P', 'participate');
-    await send(
-      room,
-      part,
-      {
-        kind: 'article',
-        tabId: 't1',
-        flow: 'f1',
-        ops: [{ kind: 'put', block: paragraph('Hello there') }],
-      },
-      3,
-    );
-    await send(room, part, { kind: 'article', tabId: 't1', flow: 'f1', removed: true });
-    expect(storedTab().articles).toEqual({ f1: { blocks: [paragraph('Hello')] } });
+    const frame = {
+      kind: 'article',
+      tabId: 't1',
+      flow: 'f1',
+      ops: [{ kind: 'put', block: paragraph('Hello there') }],
+    };
+    await send(room, part, frame, 3);
+    expect(ops(editor)).toEqual([expect.objectContaining({ from: 'P', op: frame })]);
+    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'cursor', ref: 3 }));
     expect(store.writes).toBe(0);
-    expect(ops(editor)).toEqual([]);
   });
 
   it("relays an Editor's writing in an article as sent", async () => {
@@ -308,25 +190,26 @@ describe('DocumentRoom: a Participant edits text only', () => {
     expect(ops(editor)).toEqual([]);
   });
 
-  it('drops structure from a Participant: tabs, metadata, ticks, drag previews', async () => {
+  it("relays a Participant's page tree changes and elements, never the settings or the style", async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
     const part = join('P', 'participate');
-    for (const op of [
-      { kind: 'tab', tabId: 't1', tab: { id: 't1', name: 'x', elements: [] } },
-      { kind: 'tab-meta', tabId: 't1', patch: { locked: true } },
-      { kind: 'document-meta', name: 'Renamed', tabs: [] },
-      {
-        kind: 'el-delta',
-        tabId: 't1',
-        elementId: 'col',
-        delta: { kind: 'check', index: 0, text: 'a', done: true },
-      },
-      { kind: 'drag-preview', tabId: 't1', ids: ['col'] },
-    ]) {
-      await send(room, part, op);
-    }
-    expect(ops(editor)).toEqual([]);
+    await send(room, part, { kind: 'tab-meta', tabId: 't1', patch: { name: 'Renamed' } });
+    await send(room, part, {
+      kind: 'el',
+      tabId: 't1',
+      op: { kind: 'update', element: shape('col', { label: 'Changed' }) },
+    });
+    await send(room, part, {
+      kind: 'document-meta',
+      name: 'K',
+      tabs: [],
+      knowledgeSettings: { reviewEvery: 30 },
+      knowledgeStyle: { theme: 'ink' },
+    });
+    const relayed = ops(editor).map((f) => f.op as Record<string, unknown>);
+    expect(relayed.map((o) => o.kind)).toEqual(['tab-meta', 'el', 'document-meta']);
+    expect(relayed[2]).toEqual({ kind: 'document-meta', name: 'K', tabs: [] });
     expect(store.writes).toBe(0);
   });
 

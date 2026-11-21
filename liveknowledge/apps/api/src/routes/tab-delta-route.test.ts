@@ -282,11 +282,11 @@ describe('share roles', () => {
     expect(stored(db)).toEqual([box('a')]);
   });
 
-  it('lets an Editor save, and neither a Participant nor a Viewer', async () => {
+  it('lets an Editor or a Participant save, and never a Viewer', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await itemWith([box('a')]);
     const body = await deltaFor([box('a')], [box('a', 'x')], revOf(db));
-    for (const level of ['view', 'participate'] as const) {
+    for (const level of ['view'] as const) {
       const res = await call(db, 'POST', PATH, {
         body,
         visitor: { owner: 'guest_v', grant: grantAt(level) },

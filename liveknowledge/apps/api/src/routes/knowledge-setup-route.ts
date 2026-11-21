@@ -33,6 +33,7 @@ import { modelDoorFor } from '../knowledge/model-door';
 import { builtInAi, suggestOnBuiltIn } from '../knowledge/setup-built-in-ai';
 import { spendSetupDraft } from '../knowledge/setup-draft-count';
 import { forbidden, json } from '../responses';
+import { writesPages } from './context';
 import type { KnowledgeRoute } from './knowledge-routes';
 
 const REFUSAL: Record<SetupRefusal, { status: number; message: string }> = {
@@ -108,7 +109,7 @@ export async function handleSetupSuggest({
 }: KnowledgeRoute): Promise<Response> {
   const { env } = ctx;
   // A signed-in Editor or Participant in person (describe-to-set-up.md "Share roles").
-  if (grant.role !== 'edit' || ctx.token || !ctx.accountUserId) return forbidden();
+  if (!writesPages(grant) || ctx.token || !ctx.accountUserId) return forbidden();
   const person = ctx.accountUserId;
   const body = (await ctx.request.json().catch(() => null)) as Record<string, unknown> | null;
   const description = typeof body?.description === 'string' ? body.description : '';

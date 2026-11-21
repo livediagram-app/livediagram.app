@@ -99,7 +99,7 @@ what agents and Ask make of this one page. It looks as the rest of the rail does
 | Action                                           | Editor | Participant | Viewer |
 | ------------------------------------------------ | ------ | ----------- | ------ |
 | See AI Context                                   | yes    | yes         | yes    |
-| Set Always in Context from it                    | yes    | no          | no     |
+| Set Always in Context from it                    | yes    | yes         | no     |
 | Ask About This Page (Ask's own rules then apply) | yes    | yes         | yes    |
 
 ## Knowledge Health
@@ -170,7 +170,7 @@ every page is verified when there is nothing to remind anyone of.
 | Action                                                  | Editor | Participant | Viewer |
 | ------------------------------------------------------- | ------ | ----------- | ------ |
 | See AI Knowledge                                        | yes    | yes         | yes    |
-| Accept or dismiss a suggestion, resolve a conflict      | yes    | no          | no     |
-| Draft a page, dismiss a question, set Always in Context | yes    | no          | no     |
+| Accept or dismiss a suggestion, resolve a conflict      | yes    | yes         | no     |
+| Draft a page, dismiss a question, set Always in Context | yes    | yes         | no     |
 | Allow an agent to write, or stop it                     | yes    | no          | no     |
-| Ask both owners of a conflict; remind the owners        | yes    | no          | no     |
+| Ask both owners of a conflict; remind the owners        | yes    | yes         | no     |

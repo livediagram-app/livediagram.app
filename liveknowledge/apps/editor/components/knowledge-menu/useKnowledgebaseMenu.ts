@@ -2,9 +2,11 @@
 
 // What the knowledgebase's menu holds for this session (docs/specs/030-knowledgebase/knowledgebases-and-pages.md
 // "The knowledgebase's menu"): Rename, Knowledgebase Style, Knowledgebase Settings, Describe to Add Pages, Import,
-// Export, AI Settings, then Delete. Every row but Export is an Editor's, on the whole knowledgebase: a Participant
-// or a Viewer has Export alone, an embed has no menu. Each row is one a hook elsewhere already decides (the style's
-// offer, the settings' offer, the setup's offer, the Ask rights), so the menu never disagrees with the feature.
+// Export, AI Settings, then Delete. Describe to Add Pages and Import are a writer's (an Editor or a Participant of the
+// whole knowledgebase); Rename, the Style, the Settings, AI Settings and Delete are an Editor's (a Participant is an
+// Editor minus the settings, the style and automations, knowledgebases-and-pages.md "Share roles"); a Viewer has
+// Export alone, an embed has no menu. Each row is one a hook elsewhere already decides (the style's offer, the
+// settings' offer, the setup's offer, the Ask rights), so the menu never disagrees with the feature.
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useAskSession } from '@/components/ask/useAskSession';
 import { useKnowledgebaseSettings } from '@/components/knowledge-settings/KnowledgeSettingsHost';
@@ -24,6 +26,17 @@ export function useKnowledgebaseMenu(onRename: (() => void) | undefined): Knowle
   const store = useEditorChromeStore();
   // An Editor of the whole knowledgebase, outside an embed, a workbench pane and a Community visit.
   const editor = useStyleOffered();
+  // A writer of the whole knowledgebase, in the same places: an Editor or a Participant.
+  const writer = useEditorChrome(
+    (s) =>
+      s.can.editPages &&
+      !s.isStructureReadOnly &&
+      s.hydrated &&
+      !s.embedMode &&
+      !s.workbench &&
+      !s.sessionCommunity &&
+      !!s.documentId,
+  );
   const settings = useKnowledgebaseSettings();
   const describe = useDescribeToAddPages();
   const manageAi = useAskSession()?.rights.manageAi === true;
@@ -41,7 +54,7 @@ export function useKnowledgebaseMenu(onRename: (() => void) | undefined): Knowle
     });
   if (settings) rows.push({ verb: 'settings', label: settings.label, run: settings.onSelect });
   if (describe) rows.push({ verb: 'describe', label: describe.label, run: describe.onSelect });
-  if (editor)
+  if (writer)
     rows.push({ verb: 'import', label: 'Import', run: () => store.get().setImportOpen(true) });
   if (plain)
     rows.push({

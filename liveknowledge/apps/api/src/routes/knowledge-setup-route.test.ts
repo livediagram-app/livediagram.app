@@ -115,8 +115,16 @@ describe('POST setup/suggest', () => {
     expect(logged()).not.toContain('Getting Started');
   });
 
+  // A Participant is an Editor minus the settings, the style and automations (knowledgebases-and-pages.md "Share
+  // roles"): it describes pages to add as an Editor does.
+  it('answers a Participant in person, as an Editor', async () => {
+    vi.stubGlobal('fetch', fakeClaude(STRUCTURE).fetch);
+    const kit = await knowledgeKit(withSecret);
+    await setKey(kit);
+    expect((await suggest(kit, 'participant')).status).toBe(200);
+  });
+
   it.each([
-    'participant',
     'viewer',
     'link',
     'page-link',

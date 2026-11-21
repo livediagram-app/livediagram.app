@@ -376,7 +376,8 @@ describe('the drag', () => {
 // a role may do is `can.editPages` (lib/editor-capabilities.ts), which the model hands the tree as `canEdit`.
 describe.each(['edit', 'participate', 'view'] as AccessLevel[])('share roles: %s', (level) => {
   const may = resolveEditorCapabilities(level).editPages;
-  const offered = level === 'edit';
+  // A Participant is an Editor minus the settings, the style and automations: the tree is its to change.
+  const offered = level !== 'view';
 
   it(`${offered ? 'may' : 'may not'} change the page tree`, () => {
     expect(may).toBe(offered);

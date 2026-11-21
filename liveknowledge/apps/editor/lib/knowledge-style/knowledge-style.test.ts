@@ -123,7 +123,7 @@ describe('the change door', () => {
 
 describe('who is offered Knowledgebase Style', () => {
   const editor: StyleOfferedInput = {
-    can: { editPages: true },
+    can: { manageKnowledgebase: true },
     isStructureReadOnly: false,
     hydrated: true,
     embedMode: false,
@@ -135,8 +135,9 @@ describe('who is offered Knowledgebase Style', () => {
     expect(styleOfferedOf(editor)).toBe(true);
   });
   it.each([
-    ['a Participant', { can: { editPages: false }, isStructureReadOnly: true }],
-    ['a Viewer', { can: { editPages: false }, isStructureReadOnly: true }],
+    // A Participant writes the pages and the tree (isStructureReadOnly false) but never manages the knowledgebase.
+    ['a Participant', { can: { manageKnowledgebase: false } }],
+    ['a Viewer', { can: { manageKnowledgebase: false }, isStructureReadOnly: true }],
     ['an Editor confined to one page', { isStructureReadOnly: true }],
     ['an embed', { embedMode: true }],
     ['a workbench pane', { workbench: {} }],

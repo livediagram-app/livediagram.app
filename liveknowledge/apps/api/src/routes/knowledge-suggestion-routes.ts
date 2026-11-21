@@ -31,7 +31,7 @@ import { getParticipant } from '../person/profiles';
 import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import type { DocumentDTO } from '../types';
 import { authorOf } from './changesets';
-import { requireOwner } from './context';
+import { requireOwner, writesPages } from './context';
 import type { KnowledgeRoute } from './knowledge-routes';
 
 const refused = (status: number, error: string, message: string) =>
@@ -192,7 +192,7 @@ export async function handleSuggestionRoutes(route: KnowledgeRoute): Promise<Res
   if (segments.length !== 6 || !id) return null;
   if (segments[5] !== 'accept' && segments[5] !== 'dismiss') return null;
   if (request.method !== 'POST') return methodNotAllowed();
-  if (grant.role !== 'edit') return forbidden();
+  if (!writesPages(grant)) return forbidden();
   if (segments[5] === 'accept') return handleAccept(route, id);
   await removeSuggestion(ctx.env, id);
   console.info('[knowledge] suggestion dismissed', {

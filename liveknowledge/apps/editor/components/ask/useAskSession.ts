@@ -24,6 +24,7 @@ export function useAskSession(): AskSession | null {
   const ownerId = useEditorChrome((s) => s.selfParticipant.id);
   const shareCode = useEditorChrome((s) => s.sessionShareCode);
   const editPages = useEditorChrome((s) => s.can.editPages);
+  const manageKnowledgebase = useEditorChrome((s) => s.can.manageKnowledgebase);
   const isStructureReadOnly = useEditorChrome((s) => s.isStructureReadOnly);
   const accountUserId = useEditorChrome((s) => s.accountUserId ?? null);
   const offline = useIsOfflineDocument(documentId);
@@ -35,14 +36,24 @@ export function useAskSession(): AskSession | null {
             name,
             who: { ownerId, shareCode },
             rights: askRights({
-              can: { editPages },
+              can: { editPages, manageKnowledgebase },
               isStructureReadOnly,
               accountUserId,
               offline,
             }),
           }
         : null,
-    [documentId, name, ownerId, shareCode, editPages, isStructureReadOnly, accountUserId, offline],
+    [
+      documentId,
+      name,
+      ownerId,
+      shareCode,
+      editPages,
+      manageKnowledgebase,
+      isStructureReadOnly,
+      accountUserId,
+      offline,
+    ],
   );
 }
 

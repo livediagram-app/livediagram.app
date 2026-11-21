@@ -81,7 +81,7 @@ import { relayDocumentTree } from '../room-tree';
 import type { DocumentDTO } from '../types';
 import { refreshAfterRead } from './changesets';
 import { handleTabPages } from './tab-pages-route';
-import { requireOwner } from './context';
+import { requireOwner, writesPages } from './context';
 import type { KnowledgeRoute } from './knowledge-routes';
 
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
@@ -294,11 +294,11 @@ function linkedPages(given: unknown): Map<string, string> | null {
 
 async function handleCreate(route: KnowledgeRoute): Promise<Response> {
   const { ctx, document, grant } = route;
-  // A page is an Editor's to add; an Editor's agent adds one with `suggest` (a page it makes is never Verified,
-  // and a person reads it before trusting it).
+  // A page is an Editor's or a Participant's to add; an Editor's agent adds one with `suggest` (a page it makes is
+  // never Verified, and a person reads it before trusting it).
   const may = grant.scopes
     ? grant.personRole === 'edit' && grant.scopes.includes('suggest')
-    : grant.role === 'edit';
+    : writesPages(grant);
   if (!may) return forbidden();
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
@@ -357,7 +357,7 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
 
 async function handleMove(route: KnowledgeRoute, tab: string): Promise<Response> {
   const { ctx, document, grant } = route;
-  if (grant.role !== 'edit') return forbidden();
+  if (!writesPages(grant)) return forbidden();
   const body = (await ctx.request.json().catch(() => null)) as MovePageRequest | null;
   if (!body || typeof body !== 'object' || Array.isArray(body))
     return invalid(

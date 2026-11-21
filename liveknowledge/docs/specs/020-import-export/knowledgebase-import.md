@@ -30,7 +30,7 @@ single-file imports the fork already has ([Markdown import](markdown-import.md),
   never holds every page in memory or sends one huge message. A failed page is reported by name at the end; the rest
   are kept.
 - Imported pages are Never Verified, owned by nobody.
-- Editor only. One undo step is not offered for a whole import: the dialog says so, and the pages land under one
+- An Editor or a Participant. One undo step is not offered for a whole import: the dialog says so, and the pages land under one
   parent so they can be deleted together.
 
 ## The dialog
@@ -70,10 +70,10 @@ Notion and Confluence are named in plain words under a generic glyph, never a lo
 
 | Action                               | Editor | Participant | Viewer |
 | ------------------------------------ | ------ | ----------- | ------ |
-| See and use the three sources        | yes    | no          | no     |
-| Import into a page (the old formats) | yes    | no          | no     |
+| See and use the three sources        | yes    | yes         | no     |
+| Import into a page (the old formats) | yes    | yes         | no     |
 
-An Editor of one page only (a page-scoped link) is not offered them either: an import adds pages.
+An Editor or a Participant of one page only (a page-scoped link) is not offered them: an import adds pages.
 
 ## What the engine answers
 

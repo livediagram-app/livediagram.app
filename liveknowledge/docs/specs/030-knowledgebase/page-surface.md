@@ -57,7 +57,6 @@ replaces what the fork still shows around the writing.
   the command search. No Library.
 - **Undo and Redo** stay, in the formatting bar.
 
-
 **Size and spacing** (owner, 2026-11-21: "a bit bigger, hard to see, space them out nicely"): in the top row the
 controls are 40 px targets with 18 px glyphs in slate-700 at rest, and the gap between them grows with the room the
 row has (up to 12 px), so a wide window spreads them across the top. Undo and Redo match.
@@ -118,11 +117,10 @@ forms do" and "The gradients offered should be related to the knowledgebases the
   "Drag the picture to reposition" across the band, and **Save Position** and **Cancel** in place of the hover
   buttons. The arrow keys move it by 5 while the band has the focus; Enter saves and Escape cancels. Nothing is
   stored until Save Position.
-- **Who changes it.** An Editor, and only where the page can be edited: whenever the page is editable today, and
-  only in edit mode once [read and edit modes](editing.md) land. A Participant, a Viewer and a link visitor see the
-  cover and none of its controls: a cover is part of the page as published, and a Participant writes nothing on a
-  page ([Share roles](knowledgebases-and-pages.md#share-roles)). The room and the api refuse a cover from anyone
-  else.
+- **Who changes it.** An Editor or a Participant, and only where the page can be edited: whenever the page is
+  editable today, and only in edit mode once [read and edit modes](editing.md) land. A Viewer and a link visitor see
+  the cover and none of its controls ([Share roles](knowledgebases-and-pages.md#share-roles)). The room and the api
+  refuse a cover from anyone else.
 - **It is saved at once**, as the page's name is, whether or not the page is being edited: it is not part of the
   draft, and Save and Cancel neither keep nor drop it. Everyone with the page open sees it change.
 - **Agents.** `read_page` (and the api's page read) answers the cover with its `kind`: `{ kind: "image", imageId,
@@ -209,7 +207,7 @@ it opens and closes). It never takes the caret from the writing: what is typed a
 - **Cost**: it draws only while open, and opening it measures nothing of the writing but the `/`'s place; typing
   with it closed costs what it did.
 - **Telemetry**: a block put in from it counts as the toolbar's Insert does (`Element` `Added`, the block's type).
-- **Share roles**: an Editor has it; a Participant (who writes but inserts nothing) and a Viewer do not.
+- **Share roles**: an Editor and a Participant have it; a Viewer does not.
 
 ## What a page no longer has
 
@@ -295,8 +293,9 @@ per-page and no per-tab style.
 
 ## Share roles
 
-Changing the Knowledgebase Style is Editor only. Everyone sees the same look. A page's cover is changed by an Editor
-only, and seen by everyone.
+Changing the Knowledgebase Style is Editor only: a Participant is never offered it and the api refuses its style
+write ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)). Everyone sees the same look. A page's
+cover is changed by an Editor or a Participant, and seen by everyone.
 
 ## Performance
 

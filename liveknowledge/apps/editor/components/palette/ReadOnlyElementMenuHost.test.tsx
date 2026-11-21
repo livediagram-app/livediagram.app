@@ -49,20 +49,8 @@ afterEach(cleanup);
 describe('ReadOnlyElementMenuHost', () => {
   // Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): no Open Link or View
   // Note for a stored one.
-  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant comments and writes nothing.
-  it('gives a Participant comments, no writing, and no row for a stored link or note', () => {
-    open(
-      'participate',
-      square({
-        label: 'Login',
-        link: { kind: 'url', url: 'https://example.com' },
-        note: 'Remember',
-      }),
-    );
-    expect(screen.getByText('Square')).toBeTruthy();
-    expect(rows()).toEqual(['Add Comment', 'Copy Text']);
-  });
-
+  // A Participant never reaches this menu: it is an Editor minus the settings, the style and automations
+  // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"), and has an Editor's element menu.
   it('gives a Viewer no comment to start, no writing, and comments only where there are some', () => {
     open('view', square({ label: 'Login' }));
     expect(rows()).toEqual(['Copy Text']);
@@ -127,7 +115,7 @@ describe('ReadOnlyElementMenuHost', () => {
   });
 
   it('attaches nothing to an arrow', () => {
-    open('participate', { ...createArrow(0, 0, 10, 10), id: 'ar', label: 'yes' });
+    open('view', { ...createArrow(0, 0, 10, 10), id: 'ar', label: 'yes' });
     expect(rows()).toEqual(['Copy Text']);
   });
 

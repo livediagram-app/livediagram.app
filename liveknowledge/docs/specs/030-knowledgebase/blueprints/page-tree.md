@@ -118,21 +118,25 @@ subpage still arrive first it is refused `unknown_page`, and the autosave writes
 
 | Action                                                | Editor | Participant | Viewer |
 | ----------------------------------------------------- | ------ | ----------- | ------ |
-| Write on a page                                       | yes    | no          | no     |
-| Add, rename, move, indent, outdent, duplicate, delete | yes    | no          | no     |
+| Write on a page                                       | yes    | yes         | no     |
+| Add, rename, move, indent, outdent, duplicate, delete | yes    | yes         | no     |
 | Comment                                               | yes    | yes         | no     |
 
 - **In the editor:** `resolveEditorCapabilities` (`apps/editor/lib/editor-capabilities.ts`) gives a Participant
-  `takePart` alone: `writeArticle`, `writeText`, `editPages` and `replace` are an Editor's.
-- **In the room:** `gateClientOp` (`apps/api/src/room-op-gate.ts`) drops a Participant's `article` frame as it drops
-  a Viewer's, and relays `tab`, `tab-meta` and `document-meta` from an Editor only. A Participant's `el` op still
-  goes through the participant content rule, which is how its comments and replies are written.
-- **Not built:** the participant content rule (`packages/document/src/participant-content.ts`) still takes a
-  Participant's change to the words of an element placed in a zone (a label, a table's cells); the editor no longer
-  offers it. A Participant replies in a margin note's thread but cannot start a margin note, which needs a mark in
-  the writing.
+  every flag an Editor holds but `manageKnowledgebase` (Knowledgebase Settings, Knowledgebase Style, AI Settings,
+  agents' scopes, renaming and deleting the knowledgebase); `writesKnowledgebase` makes `isReadOnly` false for both.
+- **In the room:** `gateClientOp` (`apps/api/src/room-op-gate.ts`) relays a Participant's `article`, `el`, `tab`,
+  `tab-meta` and `document-meta` as an Editor's (`writerLevel`); the room strips `knowledgeSettings` and
+  `knowledgeStyle` from every socket's `document-meta`. A Viewer's are dropped.
+- **In the api:** `gateWrite` / `writesPages` (`apps/api/src/routes/context.ts`) let an Editor or a Participant in
+  person write tabs, the tree's order, names, versions and page knowledge; `PUT /api/documents/<id>` refuses a
+  Participant's write that renames the knowledgebase or names `knowledgeStyle`.
+- **Not reached:** the platform's text-only participant rule (`packages/document/src/participant-content.ts`,
+  `apps/api/src/room-participant.ts`, `participant-write.ts`) stays in the code with its own tests, but no
+  liveknowledge session goes through it now.
 - **Tests:** `room-op-gate.test.ts` "the knowledgebase share roles, in the room" (a row per role and action),
-  `document-room-participant.test.ts`, `editor-capabilities.test.ts`.
+  `document-room-participant.test.ts`, `context.test.ts`, `editor-capabilities.test.ts`,
+  `e2e/signed-in/knowledge-roles.spec.ts`.
 
 ## The sidebar (built)
 
@@ -275,7 +279,13 @@ there is no New Page or knowledgebase rename. Tested a role at a time in `PageTr
 6. **The fork's files this replaces are left unreferenced:** `components/canvas/useContentsChrome.tsx` and its test,
    `hooks/persistence/useTabFolders.ts`. The end-to-end specs under `apps/editor/e2e` that drive the tab bar are not
    updated.
-7. **Connected tabs** show in the tree as any page; their short menu (Connect Again, Remove) is not in the row menu.
+7. (Done: connected tabs are connected rows, below.)
+
+## Connected rows (built)
+
+[Links and embeds](../links-and-embeds.md) "Connected files in the sidebar". A connected row is a tab holding a
+connection (`tabs.connection`, `{ id, app, itemId }`, liveworkspace's connected-tabs.md), stored, synced and ordered
+as every tab is, with `parent` placing it. The fold-back below names the files.
 
 ## Performance and limits
 

@@ -35,7 +35,7 @@ function mount(level: AccessLevel, accountUserId: string | null = 'u1') {
   const can = resolveEditorCapabilities(level);
   const rights = knowledgeRights({
     can,
-    isStructureReadOnly: level !== 'edit',
+    isStructureReadOnly: level === 'view',
     accountUserId,
     offline: false,
   });
@@ -113,7 +113,13 @@ describe('the row menu', () => {
     expect(menuItems()).not.toContain('Verify');
   });
 
-  it.each(['participate', 'view'] as const)('a %s session has neither', (level) => {
+  it('a participate session verifies and sets Always in Context, as an Editor', () => {
+    mount('participate');
+    openMenu('Notes', 'Notes');
+    expect(menuItems()).toEqual(expect.arrayContaining(['Verify', 'Always in Context']));
+  });
+
+  it.each(['view'] as const)('a %s session has neither', (level) => {
     mount(level);
     openMenu('Notes', 'Notes');
     expect(menuItems()).toEqual(['Copy Link']);

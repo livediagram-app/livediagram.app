@@ -52,7 +52,33 @@ opens that in a new tab". (This replaces the earlier ask that connected files sh
   (opening still needs access to the file in its own app).
 - The footer keeps Pages, Ask and AI Knowledge only.
 
+**Details** (decided 2026-11-21, building the owner's ask):
+
+- **Where Connect File is.** The sidebar's foot keeps New Page and, beside it, an Add to Sidebar button whose menu
+  holds New Page and Connect File; a page's row menu has Connect File Here, which places the file as that page's last
+  subpage. Either opens the Connect File dialog (the shared Connect list: Recent, Find a file, the role, both ways);
+  picking a file adds its row and closes the dialog. A file already in the sidebar says Connected, and picking it
+  goes to its row. Connect File needs an account and a knowledgebase on the server (never one kept Offline, an embed
+  or a link confined to one page).
+- **A row is never the open page.** Pressing it, Enter on it and its menu's Open open the file in a new browser tab
+  and leave the page you are on open. When a knowledgebase loads, or a page is deleted, the open page is always a
+  page, never a connected row.
+- **Where it leads** is asked of the index once a row is drawn (one ask a row for the session, at most four at once),
+  so the row is a real link (`<a target="_blank" rel="noopener">`: a middle click and Cmd-click work as on any link)
+  and a row that opens nothing shows Can't Open at once. Copy Link copies that address. The name the index answers
+  is the row's name: a writer's editor renames the row to match.
+- **Can't Open**, in amber, says why in its hover card: the file was moved to the Trash or deleted; its link was
+  removed; or the row came with a copy or an import. Its menu offers Connect Again (when the link was removed or it
+  came with a copy, for a writer) and Remove from Sidebar. A row that could not be asked (offline, the network) stays
+  a plain row, and pressing it asks again.
+- **It is not a page.** It never counts toward the 500 pages, holds no subpages (nothing drops into it, and a stored
+  subpage under one reads at the top level), takes no Rename, Duplicate, Verify or Always in Context, and is never in
+  search, Ask, backlinks, the page link picker or Export. Agents see it in `list_pages` as a row with
+  `kind: "connected"` and its app; `read_page` on it says it is a connected file. The index allows 50 connections a
+  knowledgebase (`CONNECTIONS_PER_ITEM`).
+- **Remove from Sidebar** removes the row at once, with no confirm (the file is untouched).
+
 ## Share roles
 
-Inserting or removing a link or an embed is writing: Editor only. Following links, reading backlinks and opening an
+Inserting or removing a link or an embed is writing: an Editor or a Participant. Following links, reading backlinks and opening an
 embedded item: every role (the embedded item's own sharing decides whether it opens).

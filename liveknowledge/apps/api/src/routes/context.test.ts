@@ -9,9 +9,11 @@ import {
   gateGrant,
   gateParticipate,
   gateRead,
+  gateWrite,
   grantCallerOf,
   requireOwner,
   shareAccessOf,
+  writesPages,
 } from './context';
 
 // The gates in routes/context.ts: who may do what to a document is the index's grant
@@ -72,6 +74,27 @@ describe('the grant gates', () => {
     expect(await gateParticipate(part, 'd1')).toBe(true);
     expect(await gateEdit(part, 'd1')).toBe(false);
     expect(await gateEdit(makeCtx(), 'd1')).toBe(true);
+  });
+
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant writes pages as an Editor
+  // does, in person; a token keeps its scopes' bound.
+  it('let an Editor or a Participant write pages, never a Viewer', async () => {
+    expect(await gateWrite(makeCtx(), 'd1')).toBe(true);
+    expect(await gateWrite(makeCtx({ grant: grant({ level: 'participate' }) }), 'd1')).toBe(true);
+    expect(await gateWrite(makeCtx({ grant: grant({ level: 'view' }) }), 'd1')).toBe(false);
+    expect(await gateWrite(makeCtx({ grant: null }), 'd1')).toBe(false);
+    const scoped = makeCtx({ grant: grant({ level: 'participate', tab: 't1' }) });
+    expect(await gateWrite(scoped, 'd1', undefined, undefined, 't1')).toBe(true);
+    expect(await gateWrite(scoped, 'd1', undefined, undefined, 't2')).toBe(false);
+    expect(await gateWrite(makeCtx({ workbench: { level: 'participate' } }), 'd1')).toBe(true);
+    expect(await gateWrite(makeCtx({ workbench: { level: 'view' } }), 'd1')).toBe(false);
+  });
+
+  it("hold a token's grant below write to suggesting, as before", () => {
+    expect(writesPages({ role: 'edit', scopes: ['read', 'suggest', 'write'] })).toBe(true);
+    expect(writesPages({ role: 'participate', scopes: ['read', 'suggest'] })).toBe(false);
+    expect(writesPages({ role: 'participate', scopes: null })).toBe(true);
+    expect(writesPages({ role: 'view', scopes: null })).toBe(false);
   });
 
   it('refuse without a grant, or with one for another document', async () => {

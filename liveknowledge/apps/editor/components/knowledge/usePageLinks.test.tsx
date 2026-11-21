@@ -156,7 +156,13 @@ describe('the page picker', () => {
     expect(editor.setActiveId).not.toHaveBeenCalled();
   });
 
-  it.each(['participate', 'view'] as const)('never opens for a %s session', (level) => {
+  it('opens for a participate session, as for an Editor', () => {
+    mount('participate');
+    type('[[');
+    expect(screen.getByRole('listbox')).toBeTruthy();
+  });
+
+  it.each(['view'] as const)('never opens for a %s session', (level) => {
     mount(level);
     type('[[');
     expect(screen.queryByRole('listbox')).toBeNull();
