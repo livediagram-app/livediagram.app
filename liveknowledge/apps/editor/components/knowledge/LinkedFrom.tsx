@@ -40,9 +40,11 @@ export function LinkedFromView({
                 e.preventDefault();
                 onOpen(link.tab);
               }}
-              className="inline-flex max-w-64 cursor-pointer items-center truncate rounded-full border border-slate-200 bg-white px-3 py-1 text-[13px] font-medium leading-5 text-slate-700 no-underline motion-safe:transition-colors motion-safe:duration-micro hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 phone:min-h-11 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="inline-flex max-w-64 cursor-pointer items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[13px] font-medium leading-5 text-slate-700 no-underline motion-safe:transition-colors motion-safe:duration-micro hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 phone:min-h-11 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              title={link.title || 'Untitled Page'}
             >
-              {link.title || 'Untitled Page'}
+              {/* The ellipsis is the text's own: a flex box does not draw one for its bare text. */}
+              <span className="min-w-0 truncate">{link.title || 'Untitled Page'}</span>
             </a>
           </li>
         ))}
