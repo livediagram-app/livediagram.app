@@ -23,30 +23,35 @@ test.describe('menus by keyboard', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
   });
 
-  test('the zoom menu opens on Down Arrow, takes focus and gives it back', async ({
+  // The knowledgebase's menu (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The knowledgebase's menu"):
+  // the name in the sidebar's head is its button. liveknowledge has no zoom menu: the browser's zoom is the page's.
+  test('the knowledgebase menu opens on Down Arrow, takes focus and gives it back', async ({
     page,
     pageErrors,
   }) => {
     await startBlankDocument(page);
 
-    const zoom = page.getByRole('button', { name: 'Fit to screen' }).first();
-    await zoom.focus();
-    // Focus alone no longer opens it; Down Arrow does, on the current level.
-    await expect(page.getByRole('menu', { name: 'Zoom level' })).toHaveCount(0);
+    const name = page.locator('[data-knowledgebase-menu]');
+    await expect(name).toHaveAttribute('aria-haspopup', 'menu');
+    await name.focus();
+    // Focus alone does not open it; Down Arrow does.
+    await expect(page.getByRole('menu')).toHaveCount(0);
     await page.keyboard.press('ArrowDown');
-    const presets = page.getByRole('menu', { name: 'Zoom level' });
-    await expect(presets).toBeVisible();
-    // A blank page opens fitted, between the preset levels: focus lands inside the menu.
+    const menu = page.getByRole('menu');
+    await expect(menu).toBeVisible();
+    await expect(name).toHaveAttribute('aria-expanded', 'true');
     // The menu moves focus in over the next frames (useMenu), so this waits for it rather than checking once.
-    await expect
-      .poll(() => presets.evaluate((el) => el.contains(document.activeElement)))
-      .toBe(true);
+    await expect.poll(() => menu.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    // An Editor's rows, Delete last.
+    await expect(menu.getByRole('menuitem', { name: 'Knowledgebase Style' })).toBeVisible();
     await page.keyboard.press('End');
-    await expect(presets.getByRole('menuitem', { name: 'Fit to screen' })).toBeFocused();
-    await shot(page, 'after-zoom-menu-focus');
+    await expect(menu.getByRole('menuitem', { name: 'Delete' })).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(menu.getByRole('menuitem', { name: 'Rename' })).toBeFocused();
+    await shot(page, 'after-knowledgebase-menu-focus');
     await page.keyboard.press('Escape');
-    await expect(presets).toHaveCount(0);
-    await expect(zoom).toBeFocused();
+    await expect(menu).toHaveCount(0);
+    await expect(name).toBeFocused();
     expectNoPageErrors(pageErrors);
   });
 

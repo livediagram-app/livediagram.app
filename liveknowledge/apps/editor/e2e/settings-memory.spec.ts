@@ -8,6 +8,11 @@ import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Settings' });
 
 async function openSettings(page: Page): Promise<void> {
+  // On a phone the footer's items other than the three views stand behind More
+  // (docs/specs/030-knowledgebase/page-surface.md "The footer").
+  if ((page.viewportSize()?.width ?? 1280) < 640) {
+    await page.getByRole('button', { name: 'More', exact: true }).click();
+  }
   await page.getByRole('button', { name: 'Application settings' }).click();
   await dialog(page).waitFor();
 }

@@ -1,4 +1,3 @@
-import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@liveknowledge/document';
 import { expect, test, expectNoPageErrors } from './fixtures';
 import { newServerKnowledgebase, writeLines } from './knowledgebase';
 
@@ -14,8 +13,11 @@ const CANVAS = '[data-canvas-a11y-root]';
 
 // A new knowledgebase on the Default colour scheme, on the server so a write to it would be a request to see.
 const startBlank = newServerKnowledgebase;
-const DARK_CANVAS = DARK_CANVAS_BACKGROUND_COLOR;
-const LIGHT_CANVAS = DEFAULT_BACKGROUND_COLOR;
+// The page's ground follows the appearance alone (lib/view-backdrop.ts): white in light, and in dark the chrome's
+// own surface, the lime theme's slate-900 for a new knowledgebase (knowledgeDarkGround,
+// docs/specs/030-knowledgebase/blueprints/page-surface.md "Knowledgebase Style (built)").
+const DARK_CANVAS = '#131b26';
+const LIGHT_CANVAS = '#ffffff';
 
 const rgb = (hex: string) => {
   const n = parseInt(hex.slice(1), 16);

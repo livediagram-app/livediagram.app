@@ -415,13 +415,26 @@ See "Narrow windows" below: investigated, not built.
   articles on zoom, the hand tool, the Selection mode, the Library, the page panel and the page lock are not yet
   retired from liveknowledge's scope (`lib/help-articles.ts`, `packages/help-registry`).
 - **Optical alignment:** the meta row's "Verified by" pill is centred (`TrustBadge`: even padding with
-  `optical-edges`; its contents measured 0.05 px off centre in a browser, from 0.63). The footer's view tabs have
-  not been through the audit (`e2e/signed-in/knowledge-audit.spec.ts`).
+  `optical-edges`; its contents measured 0.05 px off centre in a browser, from 0.63). The optical audit
+  (`e2e/signed-in/knowledge-audit.spec.ts`) passes on Pages, Ask, AI Knowledge and Home in light and dark, the
+  footer's view tabs included, with no known failure.
 - **A drawing's tools on a phone** show in the row (`CanvasChrome`), unchecked in a browser.
-- **The e2e specs** have not been updated for this surface or run against it: `menu-keyboard`, `motion-budget`,
-  `smoke`'s phone cluster test, `page-tree`'s breadcrumb test, `chrome-drift`, `knowledge-audit`, the perf probe,
-  and `knowledge-session.ts` `openView` (it presses the old switch; the tabs are links in the footer's
-  `nav` "Knowledgebase Views").
+- **The e2e specs** follow this surface: `menu-keyboard` holds the knowledgebase's menu by keyboard (it has no zoom
+  menu), `motion-budget` tours the menu and Knowledgebase Style and opens the search panel from Cmd or Ctrl K,
+  `smoke`'s phone test holds the top row on screen in one row, `page-tree`'s breadcrumb test runs at 1,280 px,
+  `chrome-drift` is deleted (no corner chrome), `knowledge-audit` has no known failures, and `knowledge-session.ts`
+  opens a view from the footer's `nav` "Knowledgebase Views". The perf probe reaches the foot of the writing by its
+  key and needs no change. `appearance` reads the page's ground as it is now (white, and the theme's slate-900 in
+  dark) and `settings-memory` opens Settings from the phone footer's More. `search.spec.ts` still waits for the
+  deleted Search This Knowledgebase dialog (the search moved to the editor's search panel) and fails: it belongs to
+  the search work, not this surface.
+- **A phone's Pages button does not come back after writing** (`phone.spec.ts` "the Pages sheet opens" fails). The
+  phone's writing bar takes the top row while an article is active (`data-article-toolbar-top`, set by
+  `usePageToolbarPlacement` from `useShownArticle`), not only while its writing has the caret, and the active article
+  ends only on a press off its pages (`useOffPagePressClears`). On a phone the page fills the width and a new page
+  the height, so there is nowhere to press: the menu button, Pages and Share stay hidden. The fix is to give the row
+  back when the writing loses the caret (`ActiveArticle.focused`) while keeping the bar for its own open menus, which
+  blur the writing too; it needs a browser to check and was not made here.
 
 ## Narrow windows
 

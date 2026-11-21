@@ -131,7 +131,8 @@ test('the editor header has a plain logo, with no site switcher or apps menu', a
 // a popover that only OVERLAPS its host when the viewport is too narrow to
 // put it alongside, and so only then has to win the stacking contest.
 //
-// The bottom-right cluster stays one row at phone width, with Undo on screen. A desktop run is blind to it.
+// The top row holds its buttons on screen in one row at phone width (docs/specs/030-knowledgebase/page-surface.md
+// "The top row"). A desktop run is blind to it.
 test.describe('mobile', () => {
   // Only the properties that create the condition — a narrow viewport and a
   // real touch pointer. Spreading a whole `devices[...]` entry would also set
@@ -143,24 +144,26 @@ test.describe('mobile', () => {
     deviceScaleFactor: 3,
   });
 
-  test('the cluster keeps Undo on screen in one row', async ({ page, pageErrors }) => {
+  test('the top row keeps its buttons on screen in one row', async ({ page, pageErrors }) => {
     await openStartBlank(page);
 
-    // Every cluster button is inside the viewport: nothing pushed off the left edge.
-    const undo = page.getByRole('button', { name: /^undo/i });
-    await expect(undo).toBeVisible();
-    const undoBox = await undo.boundingBox();
-    expect(undoBox && undoBox.x >= 0).toBe(true);
-    // And the whole cluster is one row at phone width.
-    const rows = await page.locator('[data-zoom-cluster] button').evaluateAll((buttons) => [
-      ...new Set(
-        buttons
-          .map((b) => b.getBoundingClientRect())
-          .filter((r) => r.width > 0)
-          .map((r) => Math.round((r.top + r.bottom) / 2 / 10)),
-      ),
-    ]);
-    expect(rows).toHaveLength(1);
+    // Every button of the row is inside the viewport: nothing pushed off either edge.
+    const row = page.locator('[data-knowledge-top-row]');
+    await expect(row.getByRole('button').first()).toBeVisible();
+    const width = page.viewportSize()!.width;
+    const boxes = await row.getByRole('button').evaluateAll((buttons) =>
+      buttons
+        .map((b) => b.getBoundingClientRect())
+        .filter((r) => r.width > 0)
+        .map((r) => ({ left: r.left, right: r.right, middle: (r.top + r.bottom) / 2 })),
+    );
+    expect(boxes.length).toBeGreaterThan(0);
+    for (const box of boxes) {
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.right).toBeLessThanOrEqual(width);
+    }
+    // And the whole row is one row at phone width.
+    expect(new Set(boxes.map((box) => Math.round(box.middle / 10))).size).toBe(1);
 
     expectNoPageErrors(pageErrors);
   });

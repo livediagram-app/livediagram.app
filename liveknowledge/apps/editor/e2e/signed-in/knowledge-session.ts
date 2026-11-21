@@ -23,8 +23,20 @@ export async function signedInKnowledgebase(
 ): Promise<{ who: Person; id: string }> {
   await installSession(page, who);
   const id = await newKnowledgebase(page);
-  // Saved to the account, in Private (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase").
-  await expect(page.getByRole('button', { name: 'Share, Private' })).toBeVisible();
+  // Saved to the account, in Private (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase"). On
+  // a phone the caret in the Title gives the top row to the writing bar and Share steps aside (page-surface.md "The
+  // footer"), so there the api answers for it to the account instead.
+  if ((page.viewportSize()?.width ?? 1280) >= 640) {
+    await expect(page.getByRole('button', { name: 'Share, Private' })).toBeVisible();
+  } else {
+    await expect
+      .poll(async () =>
+        (
+          await page.request.get(`/api/documents/${id}`, { headers: await asPerson(page, who, id) })
+        ).status(),
+      )
+      .toBe(200);
+  }
   return { who, id };
 }
 
@@ -84,16 +96,19 @@ export async function openView(page: Page, view: 'Pages' | 'Ask' | 'AI Knowledge
     .getByRole('link', { name: view, exact: true })
     .click();
   const param = view === 'Ask' ? 'ask' : view === 'AI Knowledge' ? 'ai' : null;
-  await expect
-    .poll(() => new URL(page.url()).searchParams.get('view'))
-    .toBe(param);
+  await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBe(param);
 }
 
 /** The AI Settings dialog, opened from the Ask view's head. */
 export async function openAiSettings(page: Page): Promise<Locator> {
-  await page.getByRole('region', { name: 'Ask' }).getByRole('button', { name: 'AI Settings', exact: true }).click();
+  await page
+    .getByRole('region', { name: 'Ask' })
+    .getByRole('button', { name: 'AI Settings', exact: true })
+    .click();
   const dialog = page.getByRole('dialog', { name: 'AI Settings' });
-  await expect(dialog.getByRole('region', { name: 'Claude API Key' }).getByRole('status')).toBeVisible();
+  await expect(
+    dialog.getByRole('region', { name: 'Claude API Key' }).getByRole('status'),
+  ).toBeVisible();
   return dialog;
 }
 

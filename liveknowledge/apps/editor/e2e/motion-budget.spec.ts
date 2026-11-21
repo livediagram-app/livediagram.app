@@ -93,12 +93,24 @@ async function tourTheChrome(page: Page): Promise<void> {
   await writeLines(page, 'A line, so the page holds writing.');
   await page.waitForTimeout(400);
 
-  await toggle(page, 'Selection mode');
-  await toggle(page, 'Fit to screen');
+  // The knowledgebase's menu, and Knowledgebase Style from it (liveknowledge has no Selection mode and no zoom
+  // cluster: docs/specs/030-knowledgebase/page-surface.md).
+  const name = page.locator('[data-knowledgebase-menu]');
+  await openAndClose(page, () => name.click());
+  await openAndClose(
+    page,
+    async () => {
+      await name.click();
+      await page.getByRole('menuitem', { name: 'Knowledgebase Style' }).click();
+    },
+    undefined,
+    page.getByRole('dialog', { name: 'Knowledgebase Style' }),
+  );
   // The Explorer popover.
   const explorer = page.getByRole('button', { name: 'Explorer', exact: true });
   await openAndClose(page, () => explorer.click());
-  // A page's row menu, the knowledgebase's search, and the writing's Insert menu.
+  // A page's row menu, the search panel from Cmd or Ctrl K (this knowledgebase first: search-and-ask.md "Search"),
+  // and the writing's Insert menu.
   await openAndClose(page, async () => {
     await openRowMenu(page, 'Start Here');
   });
@@ -106,7 +118,7 @@ async function tourTheChrome(page: Page): Promise<void> {
     page,
     () => page.keyboard.press('ControlOrMeta+k'),
     undefined,
-    page.getByRole('dialog', { name: 'Search This Knowledgebase' }),
+    page.getByRole('dialog', { name: 'Search', exact: true }),
   );
   await toggle(page, 'Insert');
   await openAndClose(
@@ -136,9 +148,9 @@ test.describe('Motion budget', () => {
     await tourTheChrome(page);
 
     const seen = transitions(await recorded(page));
-    // Guard against the probe going blind: menus, dialogs and hovers all ran.
+    // Guard against the probe going blind: menus, dialogs and hovers all ran. No `dropdown-open`: that is the
+    // palette's dropdowns, which a knowledgebase page shows only while a drawing is edited.
     expect(seen.length).toBeGreaterThan(20);
-    expect(seen.some((m) => m.name === 'dropdown-open')).toBe(true);
     expect(seen.some((m) => m.name === 'dialog-in')).toBe(true);
     expect(seen.some((m) => m.name === 'fly-up-in')).toBe(true);
 

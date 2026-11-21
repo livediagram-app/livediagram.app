@@ -37,10 +37,9 @@ test('New Page and Add Subpage take the caret in the new Title, and a subpage sh
   page,
   pageErrors,
 }) => {
-  // Wide enough that the page stands clear of the tree: under about 1,350 px the page is centred in the window and
-  // its left edge, the breadcrumb with it, sits under the sidebar, where it cannot be pressed. Known, and left for
-  // page-surface.md, which replaces how the page is placed.
-  await page.setViewportSize({ width: 1600, height: 900 });
+  // At a laptop's width: the reading column is centred in the room beside the tree, so the breadcrumb over the paper
+  // stands clear of the sidebar (docs/specs/030-knowledgebase/page-surface.md "A reading column").
+  await page.setViewportSize({ width: 1280, height: 800 });
   await newKnowledgebase(page);
   await nameOpenPage(page, 'Guides');
 

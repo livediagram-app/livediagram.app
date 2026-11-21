@@ -12,7 +12,6 @@ import { openView, savedWith, signedInKnowledgebase } from './knowledge-session'
 
 type Screen = 'Pages' | 'Ask' | 'AI Knowledge' | 'Home';
 const SCREENS: Screen[] = ['Pages', 'Ask', 'AI Knowledge', 'Home'];
-const KNOWN_OFF_CENTRE: Screen[] = ['Pages', 'AI Knowledge'];
 
 // A knowledgebase with a verified page of writing, then the screen asked for.
 async function open(page: Page, screen: Screen): Promise<void> {
@@ -21,7 +20,10 @@ async function open(page: Page, screen: Screen): Promise<void> {
   const saved = savedWith(page, 'blue lever');
   await writeLines(page, 'Restart the queue worker with the blue lever.');
   await saved;
-  await page.locator('[data-page-meta]').getByRole('button', { name: 'Verify', exact: true }).click();
+  await page
+    .locator('[data-page-meta]')
+    .getByRole('button', { name: 'Verify', exact: true })
+    .click();
   await expect(page.locator('[data-page-meta]')).toContainText('Verified by');
   if (screen === 'Home') {
     await page.goto('/home');
@@ -38,7 +40,11 @@ async function open(page: Page, screen: Screen): Promise<void> {
 
 for (const scheme of ['light', 'dark'] as const) {
   test.describe(`Knowledgebase audits, ${scheme}`, () => {
-    test.use({ colorScheme: scheme, reducedMotion: 'reduce', viewport: { width: 1440, height: 860 } });
+    test.use({
+      colorScheme: scheme,
+      reducedMotion: 'reduce',
+      viewport: { width: 1440, height: 860 },
+    });
 
     for (const screen of SCREENS) {
       test(`contrast: ${screen}`, async ({ page }) => {
@@ -50,7 +56,8 @@ for (const scheme of ['light', 'dark'] as const) {
         });
         expect(report.measured, `${screen}: nothing was measured`).toBeGreaterThan(0);
         const lines = report.failures.map(
-          (f) => `"${f.text}" ${f.fg} on ${f.bg} = ${f.ratio}:1 (needs ${f.required}) at ${f.where}`,
+          (f) =>
+            `"${f.text}" ${f.fg} on ${f.bg} = ${f.ratio}:1 (needs ${f.required}) at ${f.where}`,
         );
         expect(lines, `${screen}: text below WCAG AA in ${scheme} mode`).toEqual([]);
       });
@@ -61,11 +68,6 @@ for (const scheme of ['light', 'dark'] as const) {
       test.use({ deviceScaleFactor: 4 });
       for (const screen of SCREENS) {
         test(`optical alignment: ${screen}`, async ({ page }) => {
-          // Known, not fixed (found 2026-11-20): the view switch's current segment sits 0.5 to 0.9px off its
-          // centre across (its icon is wrapped, so the segment's edge trim does not see it), the meta row's
-          // "Verified by" pill 0.6px, and on Pages the top bar's Library button 0.5px. Pages and AI Knowledge show
-          // the switch with a current segment wide enough to measure; this turns green when they are fixed.
-          test.fail(KNOWN_OFF_CENTRE.includes(screen), 'the view switch and the Verified pill are off-centre');
           await open(page, screen);
           const report = await auditOptical(page);
           test.info().annotations.push({
@@ -74,7 +76,10 @@ for (const scheme of ['light', 'dark'] as const) {
           });
           expect(report.measured, `${screen}: nothing was measured`).toBeGreaterThan(0);
           const lines = report.failures.map((f) => `${f.offsetPx}px ${f.what} at ${f.where}`);
-          expect(lines, `${screen}: glyphs off-centre by more than ${OPTICAL_TOLERANCE_PX}px`).toEqual([]);
+          expect(
+            lines,
+            `${screen}: glyphs off-centre by more than ${OPTICAL_TOLERANCE_PX}px`,
+          ).toEqual([]);
         });
       }
     });

@@ -56,7 +56,6 @@ export const HELP_ARTICLES = {
   choosingAFinish: 'canvas/finish',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Activity / comments
-  pagesTour: 'pages/pages-tour',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
   assignedActions: 'collaboration/assigned-actions',
@@ -106,10 +105,6 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn More" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
-  pagesTour: {
-    title: 'Learn about the Pages Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
   sharing: {
     title: 'Learn about sharing',
     description: 'Roles, live collaboration, and how share links work.',

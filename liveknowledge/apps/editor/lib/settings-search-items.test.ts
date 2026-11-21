@@ -29,11 +29,11 @@ describe('SETTINGS_SEARCH_ITEMS', () => {
   });
 
   it('carries the category and section into the haystack', () => {
-    // So "panels" finds the Map rows from the canvas search too, not just
+    // So "interface" finds Button Labels from the editor's search too, not just
     // from inside the dialog.
-    const dim = SETTINGS_SEARCH_ITEMS.find((i) => i.rowKey === 'mapDimOutside')!;
-    expect(dim.keywords.toLowerCase()).toContain('panels');
-    expect(dim.keywords.toLowerCase()).toContain('map');
+    const labels = SETTINGS_SEARCH_ITEMS.find((i) => i.rowKey === 'dockButtonNames')!;
+    expect(labels.keywords.toLowerCase()).toContain('appearance');
+    expect(labels.keywords.toLowerCase()).toContain('interface');
   });
 
   it('surfaces a Settings group from the shared search builder', () => {
