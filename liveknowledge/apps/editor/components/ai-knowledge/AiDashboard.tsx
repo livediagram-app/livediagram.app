@@ -53,6 +53,9 @@ const CARD_OF: Record<'reads' | 'agents' | 'health', string> = {
   health: 'ai-health',
 };
 
+// One card in the dashboard's flowing columns: never split across two, spaced as the band above.
+const CARD_SLOT = 'mb-4 min-w-0 break-inside-avoid sm:mb-5';
+
 export function AiDashboard({
   overview,
   rights,
@@ -90,8 +93,10 @@ export function AiDashboard({
         filter={filter}
         onGo={go}
       />
-      <div className="grid items-start gap-4 sm:gap-5 lg:grid-cols-3">
-        <div className="flex min-w-0 flex-col gap-4 sm:gap-5 lg:col-span-2">
+      {/* The cards fill two columns as tiles do (owner 2026-11-21): each takes the next free slot, in reading order,
+          so no column runs long beside an empty one. One column below lg. */}
+      <div className="lg:columns-2 lg:gap-5">
+        <div className={CARD_SLOT}>
           <NeedsAttention
             overview={overview}
             filter={filter}
@@ -112,6 +117,18 @@ export function AiDashboard({
             onDismissSuggestion={actions.dismissSuggestion}
             onOpenAiSettings={actions.openAiSettings}
           />
+        </div>
+        <div className={CARD_SLOT}>
+          <HealthSection
+            health={overview.health}
+            canRemind={canEmailOwners}
+            remindedAt={overview.reviewEmails.remindedAt}
+            reminding={busy.has('remind-owners')}
+            now={now}
+            onRemind={actions.remindOwners}
+          />
+        </div>
+        <div className={CARD_SLOT}>
           <AgentsSection
             agents={agents}
             canGrant={rights.grantAgents}
@@ -122,15 +139,7 @@ export function AiDashboard({
             onAskWrite={actions.askWrite}
           />
         </div>
-        <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
-          <HealthSection
-            health={overview.health}
-            canRemind={canEmailOwners}
-            remindedAt={overview.reviewEmails.remindedAt}
-            reminding={busy.has('remind-owners')}
-            now={now}
-            onRemind={actions.remindOwners}
-          />
+        <div className={CARD_SLOT}>
           <ContextSection
             context={overview.context}
             canEdit={rights.context}
@@ -139,7 +148,11 @@ export function AiDashboard({
             onAdd={actions.addContext}
             onRemove={actions.removeContext}
           />
+        </div>
+        <div className={CARD_SLOT}>
           <MostReadCard pages={overview.reads.mostRead} onOpenPage={actions.openPage} />
+        </div>
+        <div className={CARD_SLOT}>
           <AgentSampleCard sample={agentSample(overview, now)} />
         </div>
       </div>
