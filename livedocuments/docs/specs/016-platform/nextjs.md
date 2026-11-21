@@ -28,7 +28,7 @@ shared configuration, and which Next.js features they use or decline, with the r
 | `agentRules`                 | `false`                                                                                                   | `next dev` writes no `AGENTS.md`: the repository's agent files are written by hand                    |
 | `env.NEXT_PUBLIC_BUILD_YEAR` | the build's year                                                                                          | The footer's year, the same in the prerender and the browser                                          |
 
-- **An app's own settings**: `basePath`, `assetPrefix`, `trailingSlash`, `pageExtensions`, MDX and `transpilePackages`.
+- **An app's own settings**: `basePath`, `assetPrefix`, `trailingSlash`, `pageExtensions`, MDX and `transpilePackages`, plus any build-time `env` of its own, passed as the shared config's `inlineEnv` option so the shared `env` stays.
 - **The React Compiler runs in the editor alone.** The four static sites' pages rarely re-render, and on them it added
   6 to 12 KiB of first-load JavaScript per page (44 KiB, +14%, on the marketing home) for little gain.
 - **The React Compiler needs Turbopack.** Under the webpack escape hatch (`dev:webpack`) it is left off.
