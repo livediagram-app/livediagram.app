@@ -107,6 +107,8 @@ export function knowledgeStyleProfile(
           <KnowledgeColoursPanel />
         ) : null,
       panelValues: { font: textSummary(style), theme: coloursSummary(style) },
+      // The Text row's "Aa" in the heading font worn now: a heading face and a body face wear no tab font.
+      textFont: style.headingFont,
       copy: tabStyleCopy({
         viewLines: { looks: STYLE_LINE, font: TEXT_LINE, theme: COLOURS_LINE },
       }),
