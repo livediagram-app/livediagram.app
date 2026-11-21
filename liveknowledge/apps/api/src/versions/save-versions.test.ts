@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { VERSION_IDLE_MS } from '@liveknowledge/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { DOCUMENT_SCHEMA_VERSION, migrateDocumentSchema } from '../document-room/document-schema';
+import { migrateDocumentSchema } from '../document-room/document-schema';
 import { listVersions, saveVersionStampStatement } from '../db/versions';
 import { knowledgeKit, OWNER, page } from '../routes/knowledge-test-kit';
 import { setTestProfile, clearTestProfiles } from '../test-profiles';
@@ -164,7 +164,7 @@ describe('schema step 34', () => {
       INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES ('t1', 'Deploys', '${body('first')}', 1000, 0, 1);
       INSERT INTO tab_versions (id, tab_id, rev, kind, name, tab_name, data, bytes, element_count, saved_at, created_at)
         VALUES ('v_old', 't1', 1, 'idle', NULL, 'Deploys', '{}', 2, 0, 900, 1000);
-      UPDATE _document_schema SET version = ${DOCUMENT_SCHEMA_VERSION - 1};
+      UPDATE _document_schema SET version = 33;
     `);
     migrateDocumentSchema((q) => exec.exec(q));
     sql
