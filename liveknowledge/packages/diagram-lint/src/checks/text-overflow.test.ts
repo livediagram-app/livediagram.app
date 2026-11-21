@@ -122,6 +122,26 @@ describe('text-overflow', () => {
     ).toHaveLength(1);
   });
 
+  it('sets lines by their alignment: texts on one row, at its two ends, print over nothing', () => {
+    const left = text('l', 0, 0, 'Left', {
+      width: 400,
+      height: 60,
+      textAlignX: 'left',
+      textAlignY: 'bottom',
+    });
+    const right = text('r', 0, 0, 'Right', {
+      width: 400,
+      height: 60,
+      textAlignX: 'right',
+      textAlignY: 'bottom',
+    });
+    expect(of(lint(tabOf(left, right)), 'text-overflow')).toEqual([]);
+    // Both at the same end, they do.
+    expect(
+      of(lint(tabOf(left, { ...right, textAlignX: 'left' } as Element)), 'text-overflow'),
+    ).toHaveLength(1);
+  });
+
   it('stays quiet on text that fits, set to scale, or blank', () => {
     const fits = text('f', 0, 0, 'Short');
     const scaled = text('s', 0, 100, 'A heading long enough to wrap onto three or more lines', {

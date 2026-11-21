@@ -53,6 +53,14 @@ describe('patchPageCover', () => {
       credit: 'c',
     });
     expect(patchPageCover(undefined, { fill: gradient })).toEqual({ fill: gradient });
+    // A pattern over a picture keeps both; the pattern alone is a cover too.
+    expect(patchPageCover({ imageId: 'a' }, { pattern: 'dots' })).toEqual({
+      imageId: 'a',
+      pattern: 'dots',
+    });
+    expect(patchPageCover({ imageId: 'a', pattern: 'dots' }, { imageId: undefined })).toEqual({
+      pattern: 'dots',
+    });
   });
 
   it('drops a centred focus, a picture’s parts with the picture, and an empty cover', () => {
