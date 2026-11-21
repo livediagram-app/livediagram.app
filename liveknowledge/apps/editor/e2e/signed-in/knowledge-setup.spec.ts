@@ -53,7 +53,9 @@ test('a new knowledgebase opens on its start screen, whose Describe to Set Up tu
     .getByRole('button', { name: 'Describe to Set Up', exact: true });
   await expect(button).toBeVisible();
   // No line under it: what it does is its hover card's.
-  await expect(page.getByText('Tell AI what this is for and get a page structure.')).toHaveCount(0);
+  await expect(
+    page.getByText('Tell AI what this is for and get a page structure.').filter({ visible: true }),
+  ).toHaveCount(0);
   const newPage = page.getByRole('button', { name: 'New Page', exact: true });
   expect((await button.boundingBox())!.y).toBeLessThan((await newPage.boundingBox())!.y);
 
@@ -118,7 +120,9 @@ test('with no key the dialog says why, and an OpenAI key added in AI Settings re
   await signedInKnowledgebase(page);
   // What the control does is its hover card, not a line under it.
   await setupButton(page).hover();
-  await expect(page.getByText('Tell AI what this is for and get a page structure.')).toBeVisible();
+  await expect(
+    page.getByText('Tell AI what this is for and get a page structure.').filter({ visible: true }),
+  ).toBeVisible();
   await setupButton(page).click();
   const dialog = setupDialog(page);
   await expect(
