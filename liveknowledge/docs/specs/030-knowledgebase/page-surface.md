@@ -12,7 +12,10 @@ replaces what the fork still shows around the writing.
 
 - **No paper, no canvas.** The writing sits straight on the app's ground: no sheet with a border or shadow, no dotted
   canvas behind it, no page edge. The ground is white in the light theme and the chrome's dark ground in the dark
-  theme, following the app's appearance and nothing else.
+  theme. Under a Knowledgebase Style whose theme is not the product's own, both follow the theme (owner,
+  2026-11-21): the dark surfaces take its hue, and in the light theme the white ground and the palest greys
+  (slate-50 to 200) take a pale wash of its accent (`hooks/ui/useEditorAccent.ts`), so the page, the sidebar and
+  the rail read as the theme in either appearance. Text greys stay neutral.
 - **A reading column.** The writing is one centred column, 760 px wide at most (the stored page is 856 px wide
   and keeps 48 px either side), with 48 px of room either side on a desktop and 20 px on a phone. It
   scrolls with the window as any web page does: the wheel, the scrollbar, Page Up and Down, Home and End, and the
