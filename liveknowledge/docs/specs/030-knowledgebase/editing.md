@@ -39,6 +39,9 @@ editing share live and that nobody else sees until it is saved.
 - The top of the page shows the draft bar: who is editing (discs), "Unsaved changes" once the draft differs from the
   saved page, then **Cancel** and **Save** (primary). `Mod-S` saves; `Escape` with the caret not in a menu asks to
   Cancel.
+- **The Title and the writing** (owner, 2026-11-21): select all (`Mod-A`) takes the box the caret is in, the Title's
+  words or all the writing under it, never both; Tab in the Title puts the caret at the start of the writing (a body
+  line is made there on a page with none).
 - **The page's name while editing** (owner, 2026-11-21): the sidebar shows the draft's Title as it is typed, before
   Save, for the one editing; Save makes it the stored name, and Cancel (or discarding) puts the saved name back.
 - **Save** makes the draft the saved page for everyone: readers see it at once, search and agents read it, the

@@ -157,6 +157,7 @@ export const deleteAtEnd: Command = (state, dispatch) => {
 /** Tab: a list item a level in; at the start of body text, a bulleted list; in code, two spaces.
  *  Anything else is kept by the writing (focus stays). */
 export const tab: Command = (state, dispatch) => {
+  if (tabFromTitle(state, dispatch)) return true;
   const here = caretBlock(state.selection.$from);
   if (!here) return true;
   const { node } = here;
@@ -192,12 +193,43 @@ export const lineBreak: Command = (state, dispatch) => {
   return true;
 };
 
-/** Select all of the writing. */
+/** The page's Title block, the writing's first top-level paragraph in the Title style; undefined with none. */
+const titleOf = (doc: Parameters<Command>[0]['doc']) => {
+  const first = doc.firstChild;
+  return first && first.type === PARAGRAPH && first.attrs.style === 'title' ? first : undefined;
+};
+
+/** Select all of the box the caret is in (owner, 2026-11-21): in the Title, the Title's words; in the writing under
+ *  it, all of that writing and never the Title. A page with no Title selects everything. */
 export const selectAll: Command = (state, dispatch) => {
   if (dispatch) {
-    const start = Selection.atStart(state.doc);
+    const title = titleOf(state.doc);
+    const inTitle = title !== undefined && state.selection.$from.pos < title.nodeSize;
+    if (title && inTitle) {
+      dispatch(state.tr.setSelection(TextSelection.create(state.doc, 1, title.nodeSize - 1)));
+      return true;
+    }
+    const start = title
+      ? Selection.findFrom(state.doc.resolve(title.nodeSize), 1, true)
+      : Selection.atStart(state.doc);
     const end = Selection.atEnd(state.doc);
+    if (!start) return true;
     dispatch(state.tr.setSelection(TextSelection.between(start.$from, end.$to)));
+  }
+  return true;
+};
+
+/** Tab in the Title (owner, 2026-11-21): the caret goes to the start of the writing under it, a body line made there
+ *  when the page has none yet. */
+export const tabFromTitle: Command = (state, dispatch) => {
+  const title = titleOf(state.doc);
+  if (!title || state.selection.$from.pos >= title.nodeSize) return false;
+  if (dispatch) {
+    let tr = state.tr;
+    if (state.doc.childCount === 1)
+      tr = tr.insert(title.nodeSize, PARAGRAPH.create({ style: 'body' }));
+    const next = Selection.findFrom(tr.doc.resolve(title.nodeSize), 1, true);
+    if (next) dispatch(tr.setSelection(next).scrollIntoView());
   }
   return true;
 };
