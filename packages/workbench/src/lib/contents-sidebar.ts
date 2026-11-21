@@ -52,28 +52,17 @@ export function restingRect(el: HTMLElement): Box {
  *  `width` (x) or `height` (y). */
 export function translateOf(value: string | undefined, width = 0, height = 0): [number, number] {
   if (!value || value === 'none') return [0, 0];
-  // Split on the spaces between the two values, not inside a calc().
-  const parts: string[] = [];
-  let depth = 0;
-  let part = '';
-  for (const ch of value.trim()) {
-    if (ch === '(') depth++;
-    if (ch === ')') depth--;
-    if (/\s/.test(ch) && depth === 0) {
-      if (part) parts.push(part);
-      part = '';
-    } else part += ch;
-  }
-  if (part) parts.push(part);
+  // The two values split on a space outside any calc(); each the sum of its px and its % of the panel.
+  const [x = '', y = ''] = value.trim().split(/\s+(?![^(]*\))/);
   const px = (v: string, size: number) => {
     let sum = 0;
-    for (const m of v.matchAll(/([+-]?\s*[\d.]+(?:e-?\d+)?)(px|%)/g)) {
-      const n = Number.parseFloat(m[1]!.replace(/\s/g, '')) || 0;
+    for (const m of v.matchAll(/([+-]?\s*[\d.]+)(px|%)/g)) {
+      const n = Number.parseFloat(m[1]!.replace(/\s/g, ''));
       sum += m[2] === '%' ? (n / 100) * size : n;
     }
     return sum;
   };
-  return [px(parts[0] ?? '0', width), px(parts[1] ?? '0', height)];
+  return [px(x, width), px(y, height)];
 }
 
 /** The screen px a panel covers at the canvas's left or right: a panel in the canvas's left half

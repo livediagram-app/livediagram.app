@@ -90,4 +90,18 @@ describe('translateOf with percentages (a sidebar sliding in)', () => {
     expect(translateOf('12px', 280, 900)).toEqual([12, 0]);
     expect(translateOf('none', 280, 900)).toEqual([0, 0]);
   });
+
+  it('measures a panel mid-slide at its resting place, by its own width', () => {
+    const panel = document.createElement('div');
+    document.body.append(panel);
+    panel.style.translate = '-50%';
+    panel.getBoundingClientRect = () =>
+      ({ left: -140, right: 140, top: 0, bottom: 800, width: 280, height: 800 }) as DOMRect;
+    // jsdom lays nothing out: the box's own size stands in.
+    expect(restingRect(panel)).toEqual({ left: 0, right: 280, top: 0, bottom: 800 });
+    Object.defineProperty(panel, 'offsetWidth', { value: 300 });
+    Object.defineProperty(panel, 'offsetHeight', { value: 800 });
+    expect(restingRect(panel).left).toBe(10);
+    panel.remove();
+  });
 });
