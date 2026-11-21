@@ -99,6 +99,13 @@ export async function ensureEditing(page: Page): Promise<void> {
   await expect(writing(page)).toHaveAttribute('contenteditable', 'true');
 }
 
+/** Edit mode on a page with no writing (a canvas-only page): Edit pressed when the page is being read, then Save shows
+ *  (docs/specs/030-knowledgebase/editing.md). */
+export async function ensureEditMode(page: Page): Promise<void> {
+  if (await editButton(page).isVisible()) await editButton(page).click();
+  await expect(saveButton(page)).toBeVisible();
+}
+
 /** Saves the open page's draft and goes on editing it, as a person pressing Save and then Edit would: readers, the
  *  tree and the index see what was written (docs/specs/030-knowledgebase/editing.md "Save"). */
 export async function saveAndGoOn(page: Page): Promise<void> {

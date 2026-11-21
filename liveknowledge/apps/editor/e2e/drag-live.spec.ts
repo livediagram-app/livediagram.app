@@ -8,7 +8,7 @@ import {
   documentHeaders,
   seedDocumentItem,
 } from './fixtures';
-import { ensureEditing } from './knowledgebase';
+import { ensureEditMode } from './knowledgebase';
 
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators": while the owner drags a box,
 // a collaborator on an edit link sees it move (and the arrow on it follow) before anything is saved,
@@ -127,7 +127,7 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
 
   // A drawing moves in edit mode (docs/specs/030-knowledgebase/editing.md); the collaborator, who may edit too,
   // joins it ("Everyone joins") and sees the draft live.
-  await ensureEditing(ownerPage);
+  await ensureEditMode(ownerPage);
   await ownerPage.keyboard.press('v');
   const r = (await box(ownerPage, 'a').boundingBox())!;
   await ownerPage.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
