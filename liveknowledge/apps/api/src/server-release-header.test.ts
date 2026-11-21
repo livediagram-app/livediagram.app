@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@liveknowledge/api-schema';
+import {
+  BUILD_ID_HEADER,
+  DOCUMENT_FORMAT,
+  DOCUMENT_FORMAT_HEADER,
+} from '@liveknowledge/api-schema';
 import { withServerRelease } from './server-release-header';
 import { CORS_HEADERS } from './responses';
 

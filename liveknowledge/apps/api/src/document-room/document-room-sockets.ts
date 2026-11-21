@@ -102,7 +102,8 @@ export function opForSocket(room: DocumentRoom, ws: WebSocket, op: unknown): unk
   const scoped = scope === null ? op : opForScope(op, scope);
   if (scoped === null || readsDraftOf(room, ws)) return scoped;
   const read = opForReader(scoped);
-  if (read !== scoped) console.info('[room] draft withheld', { kind: (scoped as { kind?: unknown }).kind });
+  if (read !== scoped)
+    console.info('[room] draft withheld', { kind: (scoped as { kind?: unknown }).kind });
   return read;
 }
 

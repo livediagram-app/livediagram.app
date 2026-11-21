@@ -41,13 +41,7 @@ export function pageEditKeyAction(
   const mod = e.metaKey || e.ctrlKey;
   if (state.editing && mod && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 's')
     return 'save';
-  if (
-    state.editing &&
-    e.key === 'Escape' &&
-    !mod &&
-    !state.overlayAtKeyDown &&
-    !overlayOpen()
-  )
+  if (state.editing && e.key === 'Escape' && !mod && !state.overlayAtKeyDown && !overlayOpen())
     return 'cancel';
   if (
     !state.editing &&

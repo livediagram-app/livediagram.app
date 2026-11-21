@@ -214,9 +214,12 @@ describe('connected rows', () => {
     expect(tabParentRefusal(stored, 'b', 'x')).toBe('unknown_page');
     expect(tabParentRefusal(stored, 'y', 'x', true)).toBe('unknown_page');
     expect(tabParentRefusal(stored, 'x', 'a')).toBeNull();
-    expect(tabListRefusal(stored, [{ id: 'a', parent: 'x' }, { id: 'x', parent: null }])).toBe(
-      'unknown_page',
-    );
+    expect(
+      tabListRefusal(stored, [
+        { id: 'a', parent: 'x' },
+        { id: 'x', parent: null },
+      ]),
+    ).toBe('unknown_page');
     expect(tabListRefusal(stored, [{ id: 'x', parent: 'a' }])).toBeNull();
   });
 

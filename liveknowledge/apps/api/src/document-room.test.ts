@@ -2376,9 +2376,11 @@ describe('DocumentRoom page editing', () => {
     return { ws };
   }
   const editingOf = (ws: FakeSocket, id: string) =>
-    rosters(ws).at(-1)?.participants.find((p) => p.id === id)?.editing;
+    rosters(ws)
+      .at(-1)
+      ?.participants.find((p) => p.id === id)?.editing;
 
-  it("keeps who is editing on the roster, never relays it, and takes it only from an Editor", () => {
+  it('keeps who is editing on the roster, never relays it, and takes it only from an Editor', () => {
     const { room, state } = newRoom();
     const a = makeSocket();
     const v = makeSocket();

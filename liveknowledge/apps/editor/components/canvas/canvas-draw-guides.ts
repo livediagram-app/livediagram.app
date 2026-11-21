@@ -71,14 +71,13 @@ export function computeDrawGuides({
   // 0×0 candidate), so the user sees the first corner latch before they
   // press. Mutually exclusive with drawBoxGuides (hover is cleared once a
   // drag starts). The snapped dot itself renders below the guide overlay.
-  const drawHoverGuides =
-    drawHover
-      ? alignmentGuides(
-          { x: drawHover.x, y: drawHover.y, width: 0, height: 0 },
-          elements,
-          NO_GUIDE_EXCLUDE,
-        )
-      : [];
+  const drawHoverGuides = drawHover
+    ? alignmentGuides(
+        { x: drawHover.x, y: drawHover.y, width: 0, height: 0 },
+        elements,
+        NO_GUIDE_EXCLUDE,
+      )
+    : [];
   const alignGuides =
     drawBoxGuides.length > 0 || drawHoverGuides.length > 0
       ? [...snapGuides, ...drawBoxGuides, ...drawHoverGuides]

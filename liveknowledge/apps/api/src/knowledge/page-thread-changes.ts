@@ -38,9 +38,7 @@ export type ThreadOutcome =
   { thread: StoredThread; changed: boolean } | { removed: string } | { refusal: ThreadRefusal };
 
 /** A change's words, trimmed, or why they will not do. */
-export function threadText(
-  text: unknown,
-): string | { refusal: 'missing_text' | 'text_too_long' } {
+export function threadText(text: unknown): string | { refusal: 'missing_text' | 'text_too_long' } {
   const words = typeof text === 'string' ? text.trim() : '';
   if (!words) return { refusal: 'missing_text' };
   return words.length > COMMENT_TEXT_MAX ? { refusal: 'text_too_long' } : words;

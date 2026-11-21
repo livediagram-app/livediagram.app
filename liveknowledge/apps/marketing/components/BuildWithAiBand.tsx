@@ -27,9 +27,9 @@ export function BuildWithAiBand() {
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-pretty text-slate-600 dark:text-slate-300">
             Your agent does the thinking, on the model you already use. liveknowledge's MCP server
-            and command line hand it the knowledgebase in pages and passages: the pages you marked Always in Context first,
-            then whatever a search finds, each with who verified it and when. An agent sees only
-            what the person or token it acts for can open.
+            and command line hand it the knowledgebase in pages and passages: the pages you marked
+            Always in Context first, then whatever a search finds, each with who verified it and
+            when. An agent sees only what the person or token it acts for can open.
           </p>
           <ul aria-label="Tools an agent calls" className="mt-6 flex flex-wrap gap-2">
             {TOOLS.map((tool) => (

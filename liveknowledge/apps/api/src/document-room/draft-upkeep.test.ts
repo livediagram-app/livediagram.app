@@ -15,10 +15,15 @@ function room() {
   migrateDocumentSchema((q) => sql.exec(q));
   const put = (id: string, data: object) =>
     raw
-      .prepare('INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, ?, ?, 0, 0, 3)')
+      .prepare(
+        'INSERT INTO tabs (id, name, data, updated_at, element_count, rev) VALUES (?, ?, ?, 0, 0, 3)',
+      )
       .run(id, id, JSON.stringify(data));
   const read = (id: string) => {
-    const row = raw.prepare('SELECT data, rev FROM tabs WHERE id = ?').get(id) as { data: string; rev: number };
+    const row = raw.prepare('SELECT data, rev FROM tabs WHERE id = ?').get(id) as {
+      data: string;
+      rev: number;
+    };
     return { data: JSON.parse(row.data) as Record<string, unknown>, rev: row.rev };
   };
   return { sql, put, read };
@@ -29,8 +34,16 @@ const writing = { blocks: [{ id: 'a', type: 'paragraph', runs: [{ text: 'x' }] }
 describe('dropping stale drafts', () => {
   it('drops a draft untouched for thirty days, at the next revision, and keeps the saved page', () => {
     const r = room();
-    r.put('old', { elements: [], articles: { 'art-1': writing, draft: writing }, draft: { by: 'P', at: NOW - DRAFT_KEEP_MS, base: {} } });
-    r.put('new', { elements: [], articles: { 'art-1': writing, draft: writing }, draft: { by: 'P', at: NOW - 1000, base: {} } });
+    r.put('old', {
+      elements: [],
+      articles: { 'art-1': writing, draft: writing },
+      draft: { by: 'P', at: NOW - DRAFT_KEEP_MS, base: {} },
+    });
+    r.put('new', {
+      elements: [],
+      articles: { 'art-1': writing, draft: writing },
+      draft: { by: 'P', at: NOW - 1000, base: {} },
+    });
     r.put('none', { elements: [], articles: { 'art-1': writing } });
     expect(dropStaleDrafts(r.sql, NOW)).toBe(1);
     const old = r.read('old');
@@ -43,7 +56,11 @@ describe('dropping stale drafts', () => {
 
   it('never throws: a failure is logged and drops nothing', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const broken = { exec: () => { throw new Error('gone'); } } as unknown as Parameters<typeof dropStaleDrafts>[0];
+    const broken = {
+      exec: () => {
+        throw new Error('gone');
+      },
+    } as unknown as Parameters<typeof dropStaleDrafts>[0];
     expect(dropStaleDrafts(broken, NOW)).toBe(0);
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();

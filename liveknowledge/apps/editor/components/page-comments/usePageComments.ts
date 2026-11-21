@@ -72,7 +72,10 @@ export function usePageComments(): PageCommentsView {
       void pageThreadsStore.load(who, documentId, pageId).then(() => {
         // A page made a moment ago (a template's tree) may not be stored yet: one more read before saying it failed.
         if (live && pageThreadsStore.entryOf(documentId, pageId).status === 'failed')
-          retry = window.setTimeout(() => void pageThreadsStore.load(who, documentId, pageId), RETRY_MS);
+          retry = window.setTimeout(
+            () => void pageThreadsStore.load(who, documentId, pageId),
+            RETRY_MS,
+          );
       });
     }, 0);
     return () => {

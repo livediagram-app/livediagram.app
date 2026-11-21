@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { elementFingerprint, type Element, type ElementOp, type Tab } from '@liveknowledge/document';
+import {
+  elementFingerprint,
+  type Element,
+  type ElementOp,
+  type Tab,
+} from '@liveknowledge/document';
 import type { ChangesetFingerprints, MergeEntry } from '../db/changesets';
 import { mergeChangesetsIntoSave } from './merge-on-save';
 

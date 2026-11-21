@@ -5,7 +5,6 @@
 import type { ItemSql } from '@liveworkspace/index-app';
 import { DRAFT_FLOW, DRAFT_KEEP_MS } from '@liveknowledge/document';
 
-
 /** Drop every draft untouched since `now - DRAFT_KEEP_MS`; answers how many pages lost one. Never throws. */
 export function dropStaleDrafts(sql: ItemSql, now: number): number {
   try {

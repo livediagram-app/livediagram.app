@@ -16,7 +16,9 @@ import {
 const WORDS = 'the team keeps its runbooks here so anyone on call can find the steps fast and act';
 
 function bigPage(): Tab {
-  const blocks: ArticleBlock[] = [{ id: 't', type: 'paragraph', style: 'title', runs: [{ text: 'Runbook' }] }];
+  const blocks: ArticleBlock[] = [
+    { id: 't', type: 'paragraph', style: 'title', runs: [{ text: 'Runbook' }] },
+  ];
   for (let i = 0; i < 250; i++) {
     const text = `${WORDS} step ${i} done now`.split(' ').slice(0, 20).join(' ');
     blocks.push({ id: `b${i}`, type: 'paragraph', runs: [{ text }] });
@@ -25,7 +27,16 @@ function bigPage(): Tab {
     id: 't1',
     name: 'Runbook',
     elements: [],
-    pages: [{ id: 'p', orientation: 'portrait', kind: 'article', flow: 'art-1', size: 'fit', fit: { width: 856, height: 9000 } }],
+    pages: [
+      {
+        id: 'p',
+        orientation: 'portrait',
+        kind: 'article',
+        flow: 'art-1',
+        size: 'fit',
+        fit: { width: 856, height: 9000 },
+      },
+    ],
     articles: { 'art-1': { blocks } },
   };
 }
@@ -35,7 +46,14 @@ describe('a 5,000 word page', () => {
     const tab = bigPage();
     const writing = tab.articles!['art-1']!;
     const words = writing.blocks.reduce(
-      (n, b) => n + ('runs' in b ? b.runs.map((r) => r.text).join('').split(' ').length : 0),
+      (n, b) =>
+        n +
+        ('runs' in b
+          ? b.runs
+              .map((r) => r.text)
+              .join('')
+              .split(' ').length
+          : 0),
       0,
     );
     expect(words).toBeGreaterThanOrEqual(5000);
@@ -60,9 +78,18 @@ describe('a 5,000 word page', () => {
       expect(savedChangesUnderDraft(edited)).toBe(0);
       out = withDraftSaved(edited);
     });
-    expect(out.articles!['art-1']!.blocks[100]).toEqual({ ...writing.blocks[100], runs: [{ text: 'changed' }] });
+    expect(out.articles!['art-1']!.blocks[100]).toEqual({
+      ...writing.blocks[100],
+      runs: [{ text: 'changed' }],
+    });
     // A cold print of every block, then a save: both well under a frame on a laptop.
-    console.info('[perf] 5,000 words: make draft', make.toFixed(2), 'ms, save', save.toFixed(2), 'ms');
+    console.info(
+      '[perf] 5,000 words: make draft',
+      make.toFixed(2),
+      'ms, save',
+      save.toFixed(2),
+      'ms',
+    );
     expect(make).toBeLessThan(cpuBudgetMs(50));
     expect(save).toBeLessThan(cpuBudgetMs(50));
     expect(Object.keys(printsOf(writing))).toHaveLength(251);

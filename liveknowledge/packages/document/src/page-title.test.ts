@@ -63,12 +63,14 @@ describe('a page’s title', () => {
 });
 
 // A page stored before its pages were: its one article is its writing.
-it('takes a tab\'s one article where no page names it', () => {
+it("takes a tab's one article where no page names it", () => {
   const old: Tab = {
     id: 'o',
     name: 'Old',
     elements: [],
-    articles: { f1: { blocks: [{ id: 'b1', type: 'paragraph', style: 'title', runs: [{ text: 'Old' }] }] } },
+    articles: {
+      f1: { blocks: [{ id: 'b1', type: 'paragraph', style: 'title', runs: [{ text: 'Old' }] }] },
+    },
   };
   expect(pageFlowOf(old)).toBe('f1');
   expect(pageTitleOf(old)).toBe('Old');

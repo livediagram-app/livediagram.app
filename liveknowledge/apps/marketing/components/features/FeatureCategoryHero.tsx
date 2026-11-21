@@ -24,7 +24,10 @@ export function FeatureCategoryHero({ section }: { section: LandingSection }) {
       >
         {/* Centred while the band is one column, as the landing beats are. */}
         <div className="text-center lg:text-left">
-          <p className={`enter flex items-center justify-center gap-3 lg:justify-start ${EYEBROW}`} style={delay(0)}>
+          <p
+            className={`enter flex items-center justify-center gap-3 lg:justify-start ${EYEBROW}`}
+            style={delay(0)}
+          >
             {Icon ? (
               <GlyphDisc aria-hidden className="h-8 w-8 bg-brand-700 text-white">
                 <Icon size={16} aria-hidden />

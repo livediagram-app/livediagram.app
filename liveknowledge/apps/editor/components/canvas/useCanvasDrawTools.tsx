@@ -11,12 +11,7 @@ type CanvasDrawToolsInput = {
   viewportZoom: number;
 } & Pick<
   CanvasProps,
-  | 'pendingDraw'
-  | 'elements'
-  | 'canvasTool'
-  | 'isPinchingRef'
-  | 'onCommitDraw'
-  | 'onCommitPolygon'
+  'pendingDraw' | 'elements' | 'canvasTool' | 'isPinchingRef' | 'onCommitDraw' | 'onCommitPolygon'
 >;
 
 // The canvas's drawing gestures, composed in their order of precedence: a polygon's click-to-place
@@ -34,15 +29,14 @@ export function useCanvasDrawTools({
   onCommitDraw,
   onCommitPolygon,
 }: CanvasDrawToolsInput) {
-  const { drawDrag, drawHover, beginPendingDrawGesture } =
-    useCanvasDrawGesture({
-      pendingDraw,
-      elements,
-      wrapperRef,
-      viewportZoom,
-      isPinchingRef,
-      onCommitDraw,
-    });
+  const { drawDrag, drawHover, beginPendingDrawGesture } = useCanvasDrawGesture({
+    pendingDraw,
+    elements,
+    wrapperRef,
+    viewportZoom,
+    isPinchingRef,
+    onCommitDraw,
+  });
 
   // Polygon click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), composed IN FRONT of the
   // drag-based draw gesture: while the polygon intent is armed it

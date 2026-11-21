@@ -29,34 +29,32 @@ import {
 
 // docs/specs/030-knowledgebase/editing.md; blueprint blueprints/editing.md "Interfaces and contracts".
 
-const para = (id: string, text: string, style?: 'title'): ArticleBlock =>
-  ({
-    id,
-    type: 'paragraph',
-    ...(style ? { style } : {}),
-    runs: text ? [{ text }] : [],
-  });
+const para = (id: string, text: string, style?: 'title'): ArticleBlock => ({
+  id,
+  type: 'paragraph',
+  ...(style ? { style } : {}),
+  runs: text ? [{ text }] : [],
+});
 
 const flowOf = (...blocks: ArticleBlock[]): ArticleFlow => ({ blocks });
 
-const page = (blocks: ArticleBlock[], extra: Partial<Tab> = {}): Tab =>
-  ({
-    id: 't1',
-    name: 'Onboarding',
-    elements: [],
-    pages: [
-      {
-        id: 'p1',
-        orientation: 'portrait',
-        kind: 'article',
-        flow: 'art-1',
-        size: 'fit',
-        fit: { width: 856, height: 400 },
-      },
-    ],
-    articles: { 'art-1': flowOf(...blocks) },
-    ...extra,
-  });
+const page = (blocks: ArticleBlock[], extra: Partial<Tab> = {}): Tab => ({
+  id: 't1',
+  name: 'Onboarding',
+  elements: [],
+  pages: [
+    {
+      id: 'p1',
+      orientation: 'portrait',
+      kind: 'article',
+      flow: 'art-1',
+      size: 'fit',
+      fit: { width: 856, height: 400 },
+    },
+  ],
+  articles: { 'art-1': flowOf(...blocks) },
+  ...extra,
+});
 
 const saved = [para('t', 'Onboarding', 'title'), para('a', 'First'), para('b', 'Second')];
 
@@ -152,8 +150,11 @@ describe('making, discarding and stripping a draft', () => {
   });
 
   it('drops the margin notes only the draft marked, and keeps those the saved writing marks', () => {
-    const marked = (id: string, note: string): ArticleBlock =>
-      ({ id, type: 'paragraph', runs: [{ text: 'on-call', note, nk: 'action' }] });
+    const marked = (id: string, note: string): ArticleBlock => ({
+      id,
+      type: 'paragraph',
+      runs: [{ text: 'on-call', note, nk: 'action' }],
+    });
     const marker = (id: string) => ({ id, type: 'article-note', kind: 'action', x: 0, y: 0 });
     const plain = page([...saved, marked('c', 'kept')], {
       elements: [
