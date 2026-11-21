@@ -15,6 +15,7 @@ import {
   readTabSaveChanges,
 } from '@liveknowledge/api-schema';
 import {
+  holdsDraft,
   isValidTab,
   mergeSaveOverStored,
   migrateIncomingTab,
@@ -29,7 +30,13 @@ import {
 import { indexAppClient } from '../index-service';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { newCommentsBy, rewriteCommentAuthors } from '../comments';
-import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../db';
+import {
+  changesetMergePages,
+  getTab,
+  isTabRevStale,
+  saveVersionStampStatement,
+  upsertTabAtRev,
+} from '../db';
 import { getParticipant } from '../person/profiles';
 import { emailEnabled } from '../email/client';
 import { notifyMentions, notifyNewComment } from '../email/notifications';
@@ -247,7 +254,23 @@ export async function writeTabSave(
     logMerge(id, tabId, merge);
     // Who made the page and who last changed it (knowledge/page-authors.ts), for Page Health: a draft's autosave is
     // not a change to the page (docs/specs/030-knowledgebase/editing.md "Save").
-    if (savedPageChanged(existingTab, sanitised)) await notePageWrite(env, tabId, owner);
+    // A Save keeps a version of the page as saved (the save trigger, VH1a), which names the person who pressed Save.
+    if (savedPageChanged(existingTab, sanitised))
+      await notePageWrite(
+        env,
+        tabId,
+        owner,
+        undefined,
+        writerParticipant && !holdsDraft(sanitised)
+          ? [
+              saveVersionStampStatement(env, tabId, rev, {
+                id: owner,
+                name: writerParticipant.name,
+                color: writerParticipant.color,
+              }),
+            ]
+          : [],
+      );
     // The tab holding a new connection is in: the index confirms it, or its sweep takes it back within the hour.
     const kept = connection ?? existingTab?.connection;
     if (connection && !sameConnection(connection, existingTab?.connection)) {

@@ -22,7 +22,8 @@ export const VERSION_AUTO_MAX_BYTES = 16 * 1024 * 1024;
 // Named versions a tab may keep; naming one more is refused. Safe range 5 to 100.
 export const VERSION_NAMED_MAX = 25;
 
-export const VERSION_KINDS = ['idle', 'agent', 'restore', 'manual'] as const;
+// `save`: the page as each Save left it (docs/specs/006-document/version-history.md "When a version is kept").
+export const VERSION_KINDS = ['idle', 'agent', 'restore', 'manual', 'save'] as const;
 export type VersionKind = (typeof VERSION_KINDS)[number];
 
 // A version as the rail lists it: everything but its body.
@@ -34,7 +35,7 @@ export type VersionSummary = {
   kind: VersionKind;
   // Named when not null.
   name: string | null;
-  // Who it names: the namer, the restorer, the person whose agent wrote. Null for an idle version.
+  // Who it names: the namer, the restorer, the person whose agent wrote, the person who saved. Null for an idle version.
   author: { name: string; color: string } | null;
   // When its content was last written, epoch ms.
   savedAt: number;

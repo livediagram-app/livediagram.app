@@ -26,7 +26,7 @@ import {
   itemAutomationSchemaSteps,
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
-import { VERSION_SCHEMA } from '../versions/version-schema';
+import { VERSION_SAVE_STEP, VERSION_SCHEMA } from '../versions/version-schema';
 import { knowledgeSchemaStep } from '../knowledge/knowledge-schema';
 import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
 import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
@@ -415,6 +415,10 @@ const V32 = pageThreadsSchemaStep;
 // page-surface.md "Who made the page"). Additive, IF NOT EXISTS.
 const V33 = pageEditorsSchemaStep;
 
+// Step 34: each Save of a page keeps a version, and no version keeps a draft (versions/version-schema.ts; docs/specs/
+// 006-document/version-history.md "When a version is kept"): `tab_versions` rebuilt once so its kind takes `save`.
+const V34 = VERSION_SAVE_STEP;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -441,6 +445,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V31,
   V32,
   V33,
+  V34,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

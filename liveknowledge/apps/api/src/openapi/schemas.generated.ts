@@ -12151,7 +12151,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "idle",
       "agent",
       "restore",
-      "manual"
+      "manual",
+      "save"
     ],
     "type": "string"
   },

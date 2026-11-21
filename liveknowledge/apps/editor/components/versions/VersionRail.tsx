@@ -94,7 +94,7 @@ export function VersionRail(props: RailProps) {
             className="mt-4"
             icon={<HistoryIcon size={18} />}
             title="No earlier versions yet"
-            description="A version is kept after 30 minutes without changes, before an AI edit, and whenever you name one."
+            description="A version is kept each time the page is saved, before an AI edit, and whenever you name one."
           />
         ) : null}
         {list.state === 'ready' && versions.length > 0 && shown.length === 0 ? (

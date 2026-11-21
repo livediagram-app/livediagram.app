@@ -31,14 +31,17 @@ document's name, its tab order and folders, its slide deck and its share links a
 
 ## When a version is kept
 
-The document keeps a version, at most one per tab revision, at four moments:
+The document keeps a version, at most one per tab revision, at five moments. A page is edited in a shared draft
+([Reading and Editing a Page](../030-knowledgebase/editing.md)), and Version History records saves only: a version
+always holds a saved page, never a draft's keystrokes.
 
-| Kind      | When                                                                                                                                                                                                                                                                                                                                                                                    | Who it names                 |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `idle`    | **After about 30 minutes idle.** The first write to a tab that had not changed for `VERSION_IDLE_MS` (30 minutes) keeps the tab as it stood, before the write lands. A working session therefore ends in a version, timed when its last edit landed. Every write path meets it: an editor's save, a delta save, a Participant's writing, a changeset, a revert, a restore, a migration. | Nobody                       |
-| `agent`   | **Before an agent's changeset.** Before the first changeset of an agent's burst on a tab: one from an API token with no changeset from the same token on that tab in the last `VERSION_AGENT_BURST_MS` (10 minutes). An assistant's run of edits is one version before it, never one per edit. An agent's page change or article write counts as its changeset.                         | The person whose token wrote |
-| `restore` | **Before a restore.** The content a restore replaces, so the restore can be undone.                                                                                                                                                                                                                                                                                                     | The person who restored      |
-| `manual`  | **Name This Version.** The tab's current content, named. Naming an older version names that one instead (no copy).                                                                                                                                                                                                                                                                      | The person who named it      |
+| Kind      | When                                                                                                                                                                                                                                                                                                                                                               | Who it names                 |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| `save`    | **Each Save of a page.** A write that changes a page's saved writing and leaves no draft on it (a person's Save, an agent's write to a page nobody is editing, a restore) keeps the page as it now stands, after the write lands. Draft keystrokes, Cancel and Discard change no saved writing and keep nothing. Every write path meets it, as the idle one does.  | The person who saved         |
+| `idle`    | **After about 30 minutes idle.** The first write to a tab that had not changed for `VERSION_IDLE_MS` (30 minutes) keeps the tab as it stood, before the write lands, unless it held an open draft then (a draft is never kept). Every write path meets it: an editor's save, a delta save, a Participant's writing, a changeset, a revert, a restore, a migration. | Nobody                       |
+| `agent`   | **Before an agent's changeset.** Before the first changeset of an agent's burst on a tab: one from an API token with no changeset from the same token on that tab in the last `VERSION_AGENT_BURST_MS` (10 minutes). An assistant's run of edits is one version before it, never one per edit. An agent's page change or article write counts as its changeset.    | The person whose token wrote |
+| `restore` | **Before a restore.** The content a restore replaces, so the restore can be undone.                                                                                                                                                                                                                                                                                | The person who restored      |
+| `manual`  | **Name This Version.** The tab's current content, named. Naming an older version names that one instead (no copy).                                                                                                                                                                                                                                                 | The person who named it      |
 
 - **One per revision.** A moment that would keep a revision already kept keeps nothing new (an `idle` version and
   an `agent` one at the same revision are one version). Naming the current content when a named version already holds
@@ -47,6 +50,11 @@ The document keeps a version, at most one per tab revision, at four moments:
 - **The idle check costs nothing on a busy tab.** It is a trigger on the tab row comparing two numbers, so an
   autosave every 600 ms while someone types pays only the comparison; the copy is SQLite copying the stored body,
   never parsed in JavaScript.
+- **The save check is cheap on a draft's autosave.** It is a trigger on the tab row too: a draft's autosave stops at a
+  scan of the stored body for the draft's key, and only a write with no draft compares the saved writing in SQLite.
+  Measured on node:sqlite (a 2.2 MB page, the 2 MB cap): 0.8 ms more for a draft's autosave and 3.7 ms more for a
+  Save that keeps a version; a typical 15 KB page pays 0.006 ms and 0.025 ms. Who saved is stamped on it by the
+  save that made it; a write without a person (a Participant's, through the room) names whoever last wrote the draft.
 
 ## Where versions are kept
 
@@ -190,7 +198,7 @@ it has no Make a Copy.
   session may open, a tab picker naming the tab.
 - **The rail.** **Now** first (the tab as it is), then the versions newest first under day headings (Today,
   Yesterday, the weekday within the week, then the date). Each row: its time, its name or its kind in words
-  ("Automatic", "Before an AI edit", "Before restoring"), and who it names. The selected row is marked current.
+  ("Saved", "Automatic", "Before an AI edit", "Before restoring"), and who it names. The selected row is marked current.
   Named versions carry their name in the row's own weight; **Only Named Versions** filters to them.
 - **Name This Version** (Editor) sits at the rail's head and names the current content; a row's **Name** (and
   **Rename**, **Remove Name**) edits a version's name in place, in the row.
@@ -199,7 +207,7 @@ it has no Make a Copy.
   This Version** and **Make a Copy**. Restore asks first, in place ("Restore this version? The tab changes for
   everyone; you can undo it."), never in a separate dialog.
 - **States.** Loading: a rail-shaped skeleton (`aria-busy`). No versions yet: the shared empty state, "No earlier
-  versions yet. A version is kept after 30 minutes without changes, before an AI edit, and whenever you name one."
+  versions yet. A version is kept each time the page is saved, before an AI edit, and whenever you name one."
   A failed read says so with **Try Again**. A Viewer or Participant reads "Only an Editor can restore a version."
   where the buttons would be.
 - **Fit.** A desktop shows the pages and the rail side by side; a phone shows the pages with the rail as a sheet

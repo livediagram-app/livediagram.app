@@ -49,6 +49,8 @@ describe('titles', () => {
     expect(versionTitle({ name: null, kind: 'agent' })).toBe('Before an AI edit');
     expect(versionTitle({ name: null, kind: 'restore' })).toBe('Before restoring');
     expect(kindWords('manual')).toBe('Named');
+    // Each Save of a page (docs/specs/006-document/version-history.md "When a version is kept").
+    expect(versionTitle({ name: null, kind: 'save' })).toBe('Saved');
   });
 });
 

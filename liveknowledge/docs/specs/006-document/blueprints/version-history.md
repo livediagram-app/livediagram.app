@@ -7,7 +7,7 @@ Derived from [Version history](../version-history.md). Rules are numbered `VH<n>
 | Spec term         | Identifier                                                                                                                                             |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | version           | a `tab_versions` row, or a `tab_named_versions` row with its `snapshots` row; `VersionSummary` on the wire (`@liveknowledge/api-schema` `versions.ts`) |
-| kind              | `VersionKind` = `'idle' \| 'agent' \| 'restore' \| 'manual'`                                                                                           |
+| kind              | `VersionKind` = `'save' \| 'idle' \| 'agent' \| 'restore' \| 'manual'`                                                                                 |
 | named version     | a `tab_versions` row whose `name` is not NULL, or a version in the snapshots' store (always named)                                                     |
 | the two stores    | `tab_versions` (the old store) and the snapshots' store (`db/named-versions.ts` over `@liveworkspace/snapshots/server`)                                |
 | automatic version | a row whose `name` is NULL                                                                                                                             |
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS tab_versions (
   id           TEXT    PRIMARY KEY,            -- 'v_' + 16 hex
   tab_id       TEXT    NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
   rev          INTEGER NOT NULL,               -- the tab revision it holds
-  kind         TEXT    NOT NULL CHECK (kind IN ('idle', 'agent', 'restore', 'manual')),
+  kind         TEXT    NOT NULL CHECK (kind IN ('idle', 'agent', 'restore', 'manual', 'save')),
   name         TEXT    NULL,                   -- named when not NULL
   author_id    TEXT    NULL,                   -- for anonymising; never on the wire
   author_name  TEXT    NULL,
@@ -44,6 +44,15 @@ CREATE INDEX IF NOT EXISTS tab_versions_by_rev ON tab_versions (tab_id, rev);
 - **VH1 idle trigger.** `tab_versions_idle BEFORE UPDATE OF data ON tabs WHEN NEW.data IS NOT OLD.data AND
 OLD.updated_at <= NEW.updated_at - VERSION_IDLE_MS` inserts OLD as kind `idle` unless a row for `(OLD.id,
 OLD.rev)` exists. A statement the revision trigger aborts takes the insert with it.
+- **VH1a save trigger.** `tab_versions_saved AFTER UPDATE OF data ON tabs WHEN NEW.data IS NOT OLD.data AND
+instr(NEW.data, '"draft":') = 0 AND json_valid(OLD.data) AND json_valid(NEW.data) AND the saved flows differ`
+  (`json_remove(json_extract(OLD.data, '$.articles'), '$.draft') IS NOT json_extract(NEW.data, '$.articles')`) inserts
+  NEW as kind `save` unless a row for `(NEW.id, NEW.rev)` exists, naming `OLD.data`'s `$.draft.by` (or nobody). The
+  idle trigger's WHEN also asks `instr(OLD.data, '"draft":') = 0`. The tab PUT stamps the saver
+  (`saveVersionStampStatement`, in the batch that notes the page's writer: author id, name and colour of the row at the revision it wrote) when its save changed the saved
+  page and left no draft.
+- **VH1b schema step 34.** Rooms made before it rebuild `tab_versions` once (`VERSION_SAVE_STEP`): the CHECK takes
+  `save`, rows copied as they are, the indexes and the three triggers made again.
 - **VH2 prune trigger.** `tab_versions_prune AFTER INSERT ON tab_versions` deletes, for `NEW.tab_id`, unnamed rows
   past the newest `VERSION_AUTO_MAX` (by `created_at DESC, rowid DESC`), unnamed rows with `created_at < NEW.created_at -
 VERSION_AUTO_MAX_DAYS`, and unnamed rows whose running byte total from the newest passes
@@ -173,6 +182,9 @@ invalid_name`. Renames the named version holding the stored revision (either sto
 ## Performance and limits
 
 - The idle trigger's WHEN is two integer reads on the hot autosave path; the copy is a row copy in SQLite.
+- The save trigger's WHEN on a draft's autosave is a byte scan of NEW for the draft key; only a write with no draft
+  parses both bodies. Measured on node:sqlite, 2.2 MB page: +0.8 ms a draft autosave, +3.7 ms a Save that keeps a
+  version; 15 KB page: +0.006 ms and +0.025 ms (spec "The save check is cheap on a draft's autosave").
 - The list reads summaries only (no `data`): one query per store, `tab_versions` by its `(tab_id, saved_at)` index and
   the snapshots' store by `tab_named_versions (tab_id, rev)` joined on the snapshot's primary key: at most 75 rows
   between them (50 automatic, 25 named), merged in memory.
@@ -204,6 +216,7 @@ idle and agent captures inside SQL are logged by the restore and copy that read 
 | Rule         | Test                                                                                                              |
 | ------------ | ----------------------------------------------------------------------------------------------------------------- |
 | VH1-VH3      | `apps/api/src/db/versions.test.ts`                                                                                |
+| VH1a, VH1b   | `apps/api/src/versions/save-versions.test.ts`, `apps/api/src/routes/versions.test.ts` (a Save through the PUT)    |
 | VH4          | `apps/api/src/db/versions.test.ts`, `apps/api/src/routes/versions.test.ts` (agent burst)                          |
 | VH5, VH15    | `apps/api/src/routes/versions.test.ts` (restore)                                                                  |
 | VH6          | `apps/api/src/db/versions.test.ts` (upkeep)                                                                       |

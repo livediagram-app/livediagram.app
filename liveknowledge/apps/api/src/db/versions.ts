@@ -1,5 +1,6 @@
 // tab_versions (versions/version-schema.ts): each tab's versions in the document's own SQLite
-// (docs/specs/006-document/version-history.md; blueprint "Data and persistence"). The idle copies are the trigger's;
+// (docs/specs/006-document/version-history.md; blueprint "Data and persistence"). The idle and save copies are the
+// triggers';
 // these are the reads, the copies the api asks for (before an agent's burst, before a restore, a named one), names,
 // and the upkeep. Every copy reads the stored row in SQL, so a body is never parsed to be kept.
 
@@ -235,6 +236,22 @@ export function agentVersionStatement(
     a.author.id,
     a.now - VERSION_AGENT_BURST_MS,
   );
+}
+
+// The person who pressed Save, on the version the save trigger kept at the revision their save wrote (VH1a): the trigger
+// names whoever last wrote the draft, since SQL cannot know who asked. Changes nothing when that save kept no version.
+// The tab PUT runs it in the batch that notes the page's writer (knowledge/page-authors.ts notePageWrite), so a Save
+// costs no extra round trip.
+export function saveVersionStampStatement(
+  env: DocumentEnv,
+  tabId: string,
+  rev: number,
+  author: VersionAuthor,
+): D1PreparedStatement {
+  return env.DOCUMENT_DB.prepare(
+    `UPDATE tab_versions SET author_id = ?, author_name = ?, author_color = ?
+      WHERE tab_id = ? AND rev = ? AND kind = 'save'`,
+  ).bind(author.id, author.name, author.color, tabId, rev);
 }
 
 // The tab's current revision, without its body; null when there is no such tab.

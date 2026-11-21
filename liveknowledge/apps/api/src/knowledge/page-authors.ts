@@ -56,12 +56,14 @@ export function savedPageChanged(
   return !sameArticleValue(before.elements, after.elements);
 }
 
-/** Note a write; a failure is logged and never fails the write it follows. */
+/** Note a write; a failure is logged and never fails the write it follows. `also` rides the same batch (the tab PUT's
+ *  stamp of who saved, db/versions.ts saveVersionStampStatement). */
 export async function notePageWrite(
   env: DocumentEnv,
   tab: string,
   by: string | PageWriter,
   at = Date.now(),
+  also: readonly D1PreparedStatement[] = [],
 ): Promise<void> {
   try {
     // The creator and last change, and the page's list of writers (page-editors.ts), in one batch.
@@ -69,6 +71,7 @@ export async function notePageWrite(
     await env.DOCUMENT_DB.batch([
       pageAuthorStatement(env, tab, w, at),
       pageEditorStatement(env, tab, w, at),
+      ...also,
     ]);
   } catch (err) {
     console.warn('[knowledge] page author not noted', { tabId: tab, err: String(err) });

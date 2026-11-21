@@ -4,6 +4,7 @@
 import type { VersionKind, VersionSummary } from '@liveknowledge/api-schema';
 
 const KIND_WORDS: Record<VersionKind, string> = {
+  save: 'Saved',
   idle: 'Automatic',
   agent: 'Before an AI edit',
   restore: 'Before restoring',
