@@ -323,12 +323,26 @@ export const PAGES_FROM_SETUP = chart(
   { types: ['FromSetup'] },
 );
 
+export const PAGES_FROM_STRUCTURE = chart(
+  'Tab',
+  'Created',
+  'Pages From a Structure',
+  'A whole knowledgebase shape picked on the start (Team Handbook, Engineering Wiki and the rest), counted once per pick.',
+  { types: ['FromStructure'] },
+);
+
 export const PAGES_BY_SOURCE: MetricStack = {
   stack: true,
   title: 'New Pages by Source',
   blurb:
-    'Pages made from somewhere other than adding one by hand: an answer saved, a draft for an unanswered question, a link to a missing page, and Describe to Set Up. Pages added by hand are in Page Actions.',
-  members: [PAGES_FROM_ANSWERS, PAGES_FROM_GAPS, PAGES_FROM_LINKS, PAGES_FROM_SETUP],
+    'Pages made from somewhere other than adding one by hand: an answer saved, a draft for an unanswered question, a link to a missing page, Describe to Set Up, and a structure picked on the start. Pages added by hand are in Page Actions.',
+  members: [
+    PAGES_FROM_ANSWERS,
+    PAGES_FROM_GAPS,
+    PAGES_FROM_LINKS,
+    PAGES_FROM_SETUP,
+    PAGES_FROM_STRUCTURE,
+  ],
 };
 
 // ---- Describe to Set Up and the team's AI key (describe-to-set-up.md, search-and-ask.md "The AI key") ----------

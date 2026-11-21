@@ -731,6 +731,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Created|FromPageLink':
     'Someone followed a link to a page that did not exist yet, and so made that page.',
   'Tab|Created|FromSetup': 'Describe to Set Up made the pages it had suggested.',
+  'Tab|Created|FromStructure':
+    'Someone picked a whole knowledgebase shape on the start, and its pages were made.',
   // Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style").
   'Tab|Changed|Look': "Someone picked a look for the knowledgebase's style, changing every page.",
   'Tab|Changed|SeasonalLook':

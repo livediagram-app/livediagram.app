@@ -193,6 +193,8 @@ function isRetiredLayersPanel(category: string, action: string, type: string | n
 // is deleted, behind closed doors (the spec's "Unreachable, to delete"), so the emitter scan still reads their sends:
 // these events can never arrive, so no chart counts them and the dashboard would drop one that did.
 const CUT_FROM_FORK_EVENTS = new Set([
+  // The start offers whole knowledgebases, not Community posts (describe-to-set-up.md "The start screen").
+  'Community|Copied|StartWith',
   // Presenting and slides.
   'UI|Started|Presentation',
   'UI|Closed|Presentation',

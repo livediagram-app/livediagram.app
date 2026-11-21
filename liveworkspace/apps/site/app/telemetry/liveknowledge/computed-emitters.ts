@@ -314,6 +314,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
     values: UI_SCALE_PARTS,
   },
+  // createStructure's one event when pages are made: `from` is Describe to Set Up's or a start structure's.
+  'apps/editor/components/setup/create-structure.ts Tab·Created': {
+    values: ['FromSetup', 'FromStructure'],
+  },
   'apps/editor/components/knowledge-style/KnowledgeStyleDialog.tsx Tab·Changed': {
     values: KNOWLEDGE_STYLE_KINDS,
   },
