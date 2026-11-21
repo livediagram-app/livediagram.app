@@ -358,6 +358,7 @@ export function ExportTabDialog({
 
   return exportTabDialogFrame({
     isSelection,
+    title: 'Export',
     titleId,
     subtitle,
     help: <HelpArticleLink article="exportingDiagrams" size="md" />,

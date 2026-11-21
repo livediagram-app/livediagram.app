@@ -155,7 +155,7 @@ export function ImportTabDialog({
                 : activeFormat
                   ? `Paste your ${activeFormat.title}, or import a file.`
                   : knowledgebase
-                    ? 'Import into this page, or bring in a whole Knowledgebase.'
+                    ? 'Import into this page, or bring in a whole knowledgebase.'
                     : 'Pick a format to import into the current page.'
         }
         actions={<HelpArticleLink article="importTabs" size="md" />}

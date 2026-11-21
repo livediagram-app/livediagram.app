@@ -17,6 +17,7 @@ export type FormatCardCopy<F extends string> = { kind: F; title: string; descrip
  *  in its body, or the format grid while none is open. */
 export function exportTabDialogFrame<F extends string>({
   isSelection,
+  title: wholeTitle = 'Export Tab',
   titleId,
   subtitle,
   help,
@@ -27,6 +28,8 @@ export function exportTabDialogFrame<F extends string>({
   FormatIcon,
 }: {
   isSelection: boolean;
+  // The title when the whole of it leaves: an app without tabs names it its own way (liveknowledge: "Export").
+  title?: string;
   titleId: string;
   subtitle: string;
   // The header's help link (the editor's HelpArticleLink to its export article).
@@ -42,7 +45,7 @@ export function exportTabDialogFrame<F extends string>({
     <Dialog
       open
       onClose={onClose}
-      ariaLabel={isSelection ? 'Export Selection' : 'Export Tab'}
+      ariaLabel={isSelection ? 'Export Selection' : wholeTitle}
       size="xl"
       className="max-h-[90vh]"
     >
@@ -50,7 +53,7 @@ export function exportTabDialogFrame<F extends string>({
       <HeroDialogHeader
         art={exportHeroArt}
         titleId={titleId}
-        title={isSelection ? 'Export Selection' : 'Export Tab'}
+        title={isSelection ? 'Export Selection' : wholeTitle}
         subtitle={subtitle}
         actions={help}
         onClose={onClose}

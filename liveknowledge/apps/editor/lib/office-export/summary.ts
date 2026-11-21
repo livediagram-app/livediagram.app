@@ -39,7 +39,7 @@ export const OFFICE_CARDS: Readonly<Record<OfficeFormat, { title: string; descri
     docx: {
       title: 'Word',
       description:
-        'The article as an editable document, its headings as Word styles. Opens in Google Docs.',
+        'The page as an editable Word document, its headings as Word styles. Opens in Google Docs.',
     },
   };
 

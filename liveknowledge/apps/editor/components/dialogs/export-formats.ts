@@ -24,7 +24,7 @@ export const PAGES_CARD_COPY: Partial<Record<Format, string>> = {
   svg: 'A scalable vector image of a page, or a .zip with one per page.',
   // An article tab's only (docs/specs/020-import-export/markdown-import.md "Markdown export").
   markdown:
-    "The article's writing as Markdown, for a README, a wiki or a chat. Copy it or save a .md.",
+    "The page's writing as Markdown, for a README, a wiki or a chat. Copy it or save a .md.",
 };
 
 // The article's Markdown panel's blurb: it is the writing, in the form Import reads back.
