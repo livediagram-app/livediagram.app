@@ -15,7 +15,6 @@ const ITEM = {
   people: [{ id: 'user_ana', name: 'Ana Costa' }],
   timeZone: 'Europe/London',
 };
-const STAMP = { by: { id: 'user_ana', name: 'Ana', color: '#111' }, at: 1 };
 
 // What each template leaves to the person, by template: the spec's "(pick a tab)", "(pick a tab and a version)"
 // and a connection for each Slack post. The version is this app's own reference, asked for by its panel.
@@ -86,9 +85,7 @@ describe('the Templates gallery', () => {
     const tabOnly = structuredClone(reset.body);
     (tabOnly.steps[0] as Record<string, unknown>)['tab'] = 't1';
     expect(readItemRule(tabOnly, KINDS)).toMatchObject({ path: 'steps.0.version' });
-    expect(
-      ruleLeftToPick({ ...tabOnly, id: 'r', enabled: false, made: STAMP, edited: STAMP }, KINDS),
-    ).toBe(true);
+    expect(ruleLeftToPick(tabOnly, KINDS)).toBe(true);
   });
 
   it('names a version of the run’s tab when a review is signed off', () => {
