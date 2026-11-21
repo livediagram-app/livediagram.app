@@ -81,6 +81,10 @@ export type PageKnowledgeResponse = { knowledge: PageKnowledge };
 /** Page Health (verification.md): the fields, and the reads of the last seven days. */
 export type PageHealthResponse = PageKnowledgeResponse & {
   reads: { people: number; agents: number };
+  /** The names of the accounts this page names (its creator, its last writer, its editors, its owner, who verified
+   *  it), by account id, so every reader can name them (verification.md "Created and Updated"); absent when none has
+   *  a name. */
+  names?: Record<string, string>;
   /** Who made the page and who last saved it (verification.md "Created and Updated"), by account id; absent for a
    *  page not saved since the server began keeping them. */
   created?: PageAuthorStamp;

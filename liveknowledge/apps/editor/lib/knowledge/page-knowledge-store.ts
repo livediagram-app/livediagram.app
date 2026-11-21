@@ -88,6 +88,9 @@ export function createPageKnowledgeStore(
   reviewEveryOf: (documentId: string) => ReviewEvery = knowledgeSettingsStore.reviewEveryOf,
 ) {
   const health = new Map<string, PageHealthResponse>();
+  // The accounts' names Page Health reads carry (verification.md "Created and Updated"), by account id: how a reader
+  // outside the team (a Viewer through a link) names who made, changed, owns and verified a page.
+  const names = new Map<string, string>();
   const loading = new Map<string, Promise<void>>();
   const overrides = new Map<string, Override>();
   const listeners = new Set<() => void>();
@@ -147,6 +150,8 @@ export function createPageKnowledgeStore(
     fieldsOf,
     /** `_at`: the store's version the caller read (see fieldsOf). */
     healthOf: (documentId: string, tab: string, _at?: number) => health.get(keyOf(documentId, tab)),
+    /** An account's name, as a Page Health read gave it; undefined when none has. */
+    nameOf: (id: string): string | undefined => names.get(id),
     /** Read a page's health: once per page for the session unless `fresh`, or on every open (`opened`, which also
      *  counts the person's read); concurrent asks share one request. A failure leaves what was held (the fields still
      *  show from the tab, the last counts stay until the new ones land). */
@@ -166,6 +171,7 @@ export function createPageKnowledgeStore(
         .then(
           (answer) => {
             health.set(key, answer);
+            for (const [id, name] of Object.entries(answer.names ?? {})) names.set(id, name);
             changed();
           },
           () => {},
