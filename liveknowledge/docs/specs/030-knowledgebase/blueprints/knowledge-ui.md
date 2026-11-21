@@ -86,7 +86,7 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
 - **Page Health** is read (`GET pages/<tab>/health`) once per page for the session, when the page opens; concurrent
   asks share one request. A failed read leaves the fields showing from the tab and the reads as a dash.
 - **Page Health has no control for the review.** Its rows are Owner, Last Verified, **Review Due** (the date under
-  the knowledgebase's period, "Once Verified" for a page never verified, "No Review Period" under Never), **Review
+  the knowledgebase's period, "Not Verified" for a page never verified, "No Review Period" under Never), **Review
   Period** ("Every 90 Days", and for an Editor **Change** on a line of its own under it: a link button named
   "Change the Review Period" that opens Knowledgebase Settings; the row wraps like Last Verified, because the
   period and the link do not fit one line beside the label at the card's width and a truncated value would clip
@@ -117,7 +117,7 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   first."
 - **Names.** `owner` and `verifiedBy` are account ids. The editor can name the person here and the people of the
   team whose library holds the knowledgebase (the comment mentions' list). Anyone else shows as "Verified" with no
-  name, and as "Someone Else" in the owner picker, which offers those same people and No Owner.
+  name, and as "Someone Else" in the owner picker, which offers those same people and Nobody.
 - **Reads** need no call of the editor's: opening a page is `GET tabs/<tab>` (`apiLoadTabRevisioned`, from
   `seed-fetched-document.ts` for the first page and `usePerTabLoad` for the rest), which the api counts once a
   person a page a day.

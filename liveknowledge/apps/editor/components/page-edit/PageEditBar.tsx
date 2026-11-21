@@ -92,22 +92,19 @@ export function PageEditBarView({
       <span className="contents phone:hidden">
         <EditorDiscs editors={others} label={`Also editing: ${names}`} />
       </span>
-      {/* One capsule: the mode and its state, then Cancel and Save, so editing reads as a place you are in. */}
+      {/* One capsule: the draft's state when there is one to tell (unsaved changes, an agent's change), then Cancel
+          and Save. No "Editing" label (owner 2026-11-21): the buttons say it. */}
       <div className="flex min-w-0 items-center gap-1 rounded-xl bg-slate-100/80 p-1 ring-1 ring-inset ring-slate-200/80 dark:bg-slate-800/60 dark:ring-slate-700/80">
         <span
           aria-live="polite"
           data-page-edit-status=""
-          className="flex min-w-0 items-center gap-1.5 pl-2 pr-1 text-xs text-slate-600 dark:text-slate-300"
+          className={`flex min-w-0 items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 ${
+            unsaved || agentChanges > 0 ? 'pl-2 pr-1' : ''
+          }`}
         >
-          <span
-            aria-hidden
-            className={`size-1.5 shrink-0 rounded-full ${
-              unsaved ? 'bg-amber-500' : 'bg-brand-600 dark:bg-brand-400'
-            }`}
-          />
-          <span className="font-semibold text-slate-800 phone:hidden dark:text-slate-100">
-            Editing
-          </span>
+          {unsaved ? (
+            <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-amber-500" />
+          ) : null}
           {agentChanges > 0 ? (
             <HoverCard
               title="An Agent Changed the Saved Page"

@@ -399,7 +399,7 @@ export function PageHealthCard({
               onChange={(e) => onSetOwner(e.target.value === NO_OWNER ? null : e.target.value)}
               className="max-w-40 cursor-pointer"
             >
-              <option value={NO_OWNER}>No Owner</option>
+              <option value={NO_OWNER}>Nobody</option>
               {ownerOptions.map((person) => (
                 <option key={person.id} value={person.id}>
                   {person.name}
@@ -409,7 +409,7 @@ export function PageHealthCard({
           ) : (
             <span className="inline-flex max-w-full items-center gap-2">
               {owner ? <Disc name={ownerName} size="size-5" /> : null}
-              <span className="truncate">{ownerName ?? (owner ? 'Someone Else' : 'No Owner')}</span>
+              <span className="truncate">{ownerName ?? (owner ? 'Someone Else' : 'Nobody')}</span>
             </span>
           )}
         </Row>
@@ -442,7 +442,7 @@ export function PageHealthCard({
             {reviewEvery === 'never'
               ? NO_REVIEW_PERIOD
               : trust.reviewAt === undefined
-                ? 'Once Verified'
+                ? 'Not Verified'
                 : shortDate(trust.reviewAt, now)}
           </span>
         </Row>

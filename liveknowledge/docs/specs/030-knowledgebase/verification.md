@@ -119,7 +119,7 @@ own.
   days."): it applies the period that was replaced. The editor's own undo (Cmd or Ctrl Z) holds a page's writing,
   not the knowledgebase's settings, and does not reach it.
 - **A refusal** puts the period back and says why in a toast, in words.
-- **Page Health** has two rows for it: **Review Due** (the date; "Once Verified" for a page never verified; "No
+- **Page Health** has two rows for it: **Review Due** (the date; "Not Verified" for a page never verified; "No
   Review Period" under Never) and **Review Period** ("Every 90 Days", with **Change** on a line under it for an
   Editor: at the card's width "Every 180 Days, Change" does not fit one line beside its label, and a clipped value
   would cut the link off).

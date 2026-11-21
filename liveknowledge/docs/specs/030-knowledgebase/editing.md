@@ -16,9 +16,12 @@ editing share live and that nobody else sees until it is saved.
 - **Double-click to edit** (owner, 2026-11-21): while an Editor reads, a small quiet label rides just under the
   pointer over the writing, "Double-click to Edit" (a dark pill, 11 px, shown after the pointer rests a moment, never
   over a link or a control, never for touch), and a double-click on the writing opens edit mode.
+- **An empty page** (owner, 2026-11-21), read: a page with nothing under its title shows a drawing of a blank page,
+  "Nothing Written Yet", and for whoever may edit **Start Writing** (opens edit mode); a reader is told it has no
+  writing yet. Never while editing.
 - **The buttons** (owner, 2026-11-21: "look rubbish"): Edit is a solid accent button with a pencil and its key, E.
-  While editing, one capsule holds the mode ("Editing", a dot that turns amber with unsaved changes, and the draft's
-  status), then Cancel and Save (accent, a tick and its keys). The key hints are hidden from assistive technology so
+  While editing, one capsule holds the draft's status only when there is one (an amber dot and "Unsaved changes
+  since ...", or an agent's change; no "Editing" label, owner 2026-11-21), then Cancel and Save (accent, a tick and its keys). The key hints are hidden from assistive technology so
   the buttons are named Edit and Save.
 - A page made here (New Page, Add Subpage) opens straight into edit mode with the caret in its Title: it was made
   to be written.

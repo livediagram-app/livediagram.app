@@ -93,7 +93,7 @@ test('Page Health changes the owner and says the Review Period, and Always in Co
         /\/pages\/[^/]+\/knowledge$/.test(new URL(r.url()).pathname),
     );
   let done = patched();
-  await owner.selectOption({ label: 'No Owner' });
+  await owner.selectOption({ label: 'Nobody' });
   expect((await done).ok()).toBe(true);
 
   // Always in Context, from the row menu: a checkmark row.

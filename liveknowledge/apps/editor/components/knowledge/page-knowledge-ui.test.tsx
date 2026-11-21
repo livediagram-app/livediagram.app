@@ -198,7 +198,7 @@ describe('Page Health', () => {
   it('keeps every row while the reads load, and names a page never verified', () => {
     const { container } = render(<Rail {...props({ trust: never, reads: undefined })} />);
     expect(container.querySelectorAll('dt')).toHaveLength(6);
-    expect(container.querySelector('[data-review-due]')!.textContent).toBe('Once Verified');
+    expect(container.querySelector('[data-review-due]')!.textContent).toBe('Not Verified');
     // Reads not in yet count as none, never a dash.
     expect(screen.queryByText('–')).toBeNull();
     expect(screen.getByText('People').parentElement!.textContent).toBe('0 People');

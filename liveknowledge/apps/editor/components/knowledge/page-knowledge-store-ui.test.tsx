@@ -227,7 +227,7 @@ describe('a page’s knowledge in the editor', () => {
       await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
       expect(screen.queryByRole('button', { name: /Verify/ })).toBeNull();
       expect(screen.queryByRole('combobox')).toBeNull();
-      expect(screen.getByText('No Owner')).toBeTruthy();
+      expect(screen.getByText('Nobody')).toBeTruthy();
     },
   );
 
