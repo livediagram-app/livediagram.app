@@ -81,4 +81,7 @@ opens that in a new tab". (This replaces the earlier ask that connected files sh
 ## Share roles
 
 Inserting or removing a link or an embed is writing: an Editor or a Participant. Following links, reading backlinks and opening an
-embedded item: every role (the embedded item's own sharing decides whether it opens).
+embedded item: every role (the embedded item's own sharing decides whether it opens). A link confined to one page
+reads no other page through its page: its backlinks, `read_page`'s backlinks, subpages, parent and conflicts, and Page
+Health's Answered From This Page (the knowledgebase's Ask, which it has not) leave every other page out, and it never
+moves its page in the tree (tab-scoped-share-links.md: the tree is structure).

@@ -33,7 +33,8 @@ document's name, its tab order and folders, its slide deck and its share links a
 
 The document keeps a version, at most one per tab revision, at five moments. A page is edited in a shared draft
 ([Reading and Editing a Page](../030-knowledgebase/editing.md)), and Version History records saves only: a version
-always holds a saved page, never a draft's keystrokes.
+always holds a saved page, never a draft's keystrokes. A copy taken while a draft was open (an agent's version, Name
+This Version) is read without the draft: looking at, copying or restoring a version never shows or brings back one.
 
 | Kind      | When                                                                                                                                                                                                                                                                                                                                                               | Who it names                 |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |

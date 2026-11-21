@@ -26,6 +26,9 @@ single-file imports the fork already has ([Markdown import](markdown-import.md),
 - **Where it lands:** into a new knowledgebase, or under a chosen page of the current one. The dialog first shows what it
   found (pages, pictures, anything it will skip and why) and imports only on **Import <n> Pages**.
 - **Bounds:** 200 MB an archive, 500 pages (the knowledgebase's limit, counted with the pages already there), 10 MB a picture.
+  A zip's entries are unpacked as they are read, each at most the largest page or picture an import takes, and at most
+  twice the archive's bound in all, counted as it unpacks, in the app and the CLI alike: a zip that claims small sizes
+  and unpacks huge stops there.
   The archive is read in the browser as a stream, page by page; pages are written in batches of 20 so a large import
   never holds every page in memory or sends one huge message. A failed page is reported by name at the end; the rest
   are kept.

@@ -19,6 +19,8 @@ import {
 import {
   MAX_ARCHIVE_BYTES,
   MAX_ARCHIVE_ENTRIES,
+  MAX_PAGE_SOURCE_BYTES,
+  MAX_PICTURE_BYTES,
   PAGE_LINK_SCHEME,
   PICTURE_SCHEME,
   planImport,
@@ -78,8 +80,17 @@ async function archiveOf(path: string): Promise<{ entries: ArchiveEntry[]; bytes
     throw usage(`${path} is neither a folder nor a .zip`, 'liveknowledge import <folder|zip>');
   if (found.size > MAX_ARCHIVE_BYTES) return { entries: [], bytes: found.size };
   try {
-    const zip = openZip(new Uint8Array(await readFile(path)), MAX_ARCHIVE_ENTRIES);
-    return { entries: zipEntries(zip, MAX_ARCHIVE_BYTES), bytes: found.size };
+    // As the editor opens one (apps/editor/lib/knowledge-import/archive-sources.ts): no entry past the largest page or
+    // picture the import takes, and no more unpacked in all than twice the archive's own bound.
+    const zip = openZip(
+      new Uint8Array(await readFile(path)),
+      MAX_ARCHIVE_ENTRIES,
+      2 * MAX_ARCHIVE_BYTES,
+    );
+    return {
+      entries: zipEntries(zip, Math.max(MAX_PAGE_SOURCE_BYTES, MAX_PICTURE_BYTES)),
+      bytes: found.size,
+    };
   } catch (error) {
     throw new CliError({
       exit: EXIT.rejected,

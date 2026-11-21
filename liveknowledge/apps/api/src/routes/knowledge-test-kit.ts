@@ -15,6 +15,7 @@ export type Who =
   | 'link'
   | 'edit-link'
   | 'page-link'
+  | 'page-edit-link'
   | 'stranger'
   | 'agent'
   | 'agent-stored'
@@ -97,6 +98,8 @@ const CALLERS: Record<
   // A guest through a link that grants Participant (an edit link), with no account.
   'edit-link': { owner: 'guest_2', account: null, code: 'PART' },
   'page-link': { owner: null, account: null, code: 'PAGE' },
+  // A guest through a link that grants Participant on the Rollbacks page alone.
+  'page-edit-link': { owner: 'guest_3', account: null, code: 'PAGEP' },
   stranger: { owner: 'user_x', account: 'user_x' },
   // An API token acting for the owner, through the MCP server.
   // It holds every scope (test-route-context.ts), as an Editor's agent granted `write`.
@@ -145,6 +148,7 @@ export async function knowledgeKit(
     INSERT INTO test_share_links (code, document_id, role, level, tab_id, created_at) VALUES ('PART', 'kb', 'view', 'participate', NULL, 1);
     INSERT INTO test_share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'kb', 'view', NULL, 1);
     INSERT INTO test_share_links (code, document_id, role, tab_id, created_at) VALUES ('PAGE', 'kb', 'view', 'holidays', 1);
+    INSERT INTO test_share_links (code, document_id, role, level, tab_id, created_at) VALUES ('PAGEP', 'kb', 'view', 'participate', 'rollbacks', 1);
   `);
   return { db, call };
 }

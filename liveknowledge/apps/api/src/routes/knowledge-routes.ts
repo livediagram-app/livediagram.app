@@ -24,6 +24,7 @@
 // The gate is the caller's grant (routes/context.ts): reading is every role's, a share link's visitor included; a
 // write is an Editor's. A link confined to one page reaches that page's own routes and search, nothing else.
 import { getDocument } from '../db';
+import { redactDocumentForScope } from '../redact-document';
 import { knowledgeHealthCounts, ownDuePages, recentPages } from '../knowledge/knowledge-reads';
 import { awaitingApproval } from '../knowledge/page-approvals';
 import { pageNamed, pageUnknownBody } from '../knowledge/page-read';
@@ -118,16 +119,23 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
   }
   const tab = summary.id;
   const method = ctx.request.method;
+  // A link confined to one page sees no other page (tab-scoped-share-links.md): every page route below reads the
+  // knowledgebase as its visitor's copy holds it, the other pages nameless, and never moves the page in the tree.
+  if (grant.tabScope !== null && segments[5] === 'move') return forbidden();
+  const seen: KnowledgeRoute =
+    grant.tabScope === null
+      ? route
+      : { ...route, document: redactDocumentForScope(document, grant.tabScope) };
   // The page as Markdown, and its place in the tree (knowledge-agent-routes.ts).
-  const agent = await handleAgentPageRoute(route, summary);
+  const agent = await handleAgentPageRoute(seen, summary);
   if (agent) return agent;
   if (segments.length !== 6) return notFound();
   if (segments[5] === 'suggestions')
-    return method === 'POST' ? handleSuggest(route, tab) : methodNotAllowed();
+    return method === 'POST' ? handleSuggest(seen, tab) : methodNotAllowed();
   if (segments[5] === 'backlinks')
-    return method === 'GET' ? handleBacklinks(ctx, document, tab) : methodNotAllowed();
+    return method === 'GET' ? handleBacklinks(ctx, seen.document, tab) : methodNotAllowed();
   if (segments[5] === 'health')
-    return method === 'GET' ? handlePageHealth(ctx, document, tab) : methodNotAllowed();
+    return method === 'GET' ? handlePageHealth(ctx, seen.document, tab, grant) : methodNotAllowed();
   if (segments[5] === 'threads') return handlePageThreads(ctx, document, grant, tab);
   if (segments[5] === 'approval')
     return method === 'POST' ? handleApproval(ctx, document, grant, tab) : methodNotAllowed();

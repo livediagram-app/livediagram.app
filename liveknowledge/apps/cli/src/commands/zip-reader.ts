@@ -1,7 +1,9 @@
 // A `.zip` as the import engine reads one (@liveknowledge/knowledge-import `ZipReader`), on Node: the central
 // directory read once, bounds-checked at every step, and an entry unpacked only when it is asked for. The sizes the
 // file declares are never trusted: an entry is inflated with the cap as its limit, so a zip bomb costs at most the
-// cap. Stored and deflated entries only; an encrypted one, or one packed another way, reads as missing.
+// cap. Every read counts the bytes it really unpacked: past `maxUnpackedBytes` in all, any further read is missing, so
+// an archive of many small bombs costs the budget at most, never one cap an entry. Stored and deflated entries only;
+// an encrypted one, or one packed another way, reads as missing.
 import { inflateRawSync } from 'node:zlib';
 import type { ZipReader } from '@liveknowledge/knowledge-import';
 
@@ -16,7 +18,12 @@ type Entry = { method: number; flags: number; packed: number; size: number; offs
 
 export class ZipFormatError extends Error {}
 
-export function openZip(bytes: Uint8Array, maxEntries: number): ZipReader {
+export function openZip(
+  bytes: Uint8Array,
+  maxEntries: number,
+  maxUnpackedBytes = Number.POSITIVE_INFINITY,
+): ZipReader {
+  let unpacked = 0;
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let eocd = -1;
   for (let at = bytes.length - EOCD_MIN; at >= Math.max(0, bytes.length - EOCD_SEARCH); at -= 1)
@@ -57,10 +64,20 @@ export function openZip(bytes: Uint8Array, maxEntries: number): ZipReader {
         local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
       const packed = bytes.subarray(start, start + entry.packed);
       if (packed.length !== entry.packed) return null;
-      if (entry.method === 0) return packed.length > max ? null : packed;
+      const budget = Math.min(max, maxUnpackedBytes - unpacked);
+      if (budget <= 0) return null;
+      if (entry.method === 0) {
+        if (packed.length > budget) return null;
+        unpacked += packed.length;
+        return packed;
+      }
       try {
-        return new Uint8Array(inflateRawSync(packed, { maxOutputLength: max }));
+        const out = new Uint8Array(inflateRawSync(packed, { maxOutputLength: budget }));
+        unpacked += out.length;
+        return out;
       } catch {
+        // Inflated to the limit and stopped: those bytes were spent all the same.
+        unpacked += budget;
         return null;
       }
     },

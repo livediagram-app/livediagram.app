@@ -23,6 +23,19 @@ describe('openZip', () => {
     expect(await openZip(zipOf(files, { deflate: false }), 100).read('docs/b.md', 100)).toBeNull();
   });
 
+  it('stops every read once the bytes unpacked in all pass the budget', async () => {
+    // Many small bombs: each under the per-entry cap, together past the budget.
+    const bombs = Object.fromEntries(
+      Array.from({ length: 5 }, (_, i) => [`b${i}.md`, 'x'.repeat(3000)]),
+    );
+    for (const deflate of [false, true]) {
+      const zip = openZip(zipOf(bombs, { deflate }), 100, 7000);
+      const read = [];
+      for (const name of zip.names()) read.push(await zip.read(name, 5000));
+      expect(read.map((r) => r?.length ?? null)).toEqual([3000, 3000, null, null, null]);
+    }
+  });
+
   it('reads an encrypted entry, one packed another way and a damaged one as missing', async () => {
     expect(await openZip(zipOf(files, { flags: 1 }), 100).read('docs/a.md', 1000)).toBeNull();
     expect(await openZip(zipOf(files, { method: 12 }), 100).read('docs/a.md', 1000)).toBeNull();

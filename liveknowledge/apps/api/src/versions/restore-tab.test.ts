@@ -29,6 +29,23 @@ describe('parseVersionBody', () => {
     expect(parseVersionBody('null')).toBeNull();
     expect(parseVersionBody('{')).toBeNull();
   });
+
+  it('never hands back a draft a version was copied with', () => {
+    const body = parseVersionBody(
+      JSON.stringify({
+        elements: [],
+        articles: {
+          f1: { blocks: [{ id: 'b1', type: 'paragraph', runs: [{ text: 'Saved' }] }] },
+          draft: { blocks: [{ id: 'b1', type: 'paragraph', runs: [{ text: 'Secret draft' }] }] },
+        },
+        draft: { by: 'Priya', at: 1, base: {} },
+      }),
+    );
+    expect(body).not.toBeNull();
+    expect(JSON.stringify(body)).not.toContain('Secret draft');
+    expect(body).not.toHaveProperty('draft');
+    expect(Object.keys(body?.articles ?? {})).toEqual(['f1']);
+  });
 });
 
 describe('restoredTab', () => {

@@ -8,6 +8,7 @@ import {
   pageStepsOf,
   type Element,
   type Tab,
+  withoutDraft,
 } from '@liveknowledge/document';
 
 // A stored body: the tab without its id and name, which live in their own columns (tab-row.ts).
@@ -26,13 +27,17 @@ const NOT_CONTENT = new Set([
 ]);
 
 // A version's stored body, settled as every tab read settles one; null when it no longer parses as a tab body.
+// No version keeps a draft (docs/specs/006-document/version-history.md): a copy taken of a tab while its draft was
+// open (an agent's version, Name This Version) holds one in its stored body, so the body is read without it, and a
+// Viewer looking at, copying or restoring a version never meets the draft's writing
+// (docs/specs/030-knowledgebase/editing.md "Share roles").
 export function parseVersionBody(data: string): VersionBody | null {
   try {
     const parsed = JSON.parse(data) as unknown;
     if (!parsed || typeof parsed !== 'object' || !Array.isArray((parsed as Tab).elements)) {
       return null;
     }
-    return migrateStoredTab(parsed as VersionBody);
+    return withoutDraft(migrateStoredTab(parsed as VersionBody));
   } catch {
     return null;
   }

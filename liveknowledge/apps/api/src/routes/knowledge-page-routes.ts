@@ -44,7 +44,7 @@ import { routeWho } from '../document-room/automations/knowledge-who';
 import { readStoredPages } from '../document-room/page-tree-store';
 import { conflict, json, notFound } from '../responses';
 import type { DocumentDTO } from '../types';
-import type { DocumentRouteContext } from './context';
+import type { DocumentAccess, DocumentRouteContext } from './context';
 
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
 
@@ -57,8 +57,11 @@ export async function handleBacklinks(
     rowsOf<{ fromTab: string }>(ctx.env, backlinkRows(tab)),
     readStoredPages(ctx.env, document.id),
   ]);
-  const titles = new Map(document.tabs.map((t) => [t.id, t.name]));
-  const order = pageTreeRows(pages).map((row) => row.page.id);
+  // A page a link confined to another cannot see is no backlink of its (the routes hand it the visitor's copy).
+  const titles = new Map(document.tabs.filter((t) => !t.outOfScope).map((t) => [t.id, t.name]));
+  const order = pageTreeRows(pages)
+    .map((row) => row.page.id)
+    .filter((id) => titles.has(id));
   return json({
     backlinks: backlinks(
       tab,
@@ -72,6 +75,7 @@ export async function handlePageHealth(
   ctx: DocumentRouteContext,
   document: DocumentDTO,
   tab: string,
+  grant: Pick<DocumentAccess, 'tabScope'>,
 ): Promise<Response> {
   const now = Date.now();
   const page = await readPageKnowledge(ctx.env, document.id, tab);
@@ -96,7 +100,11 @@ export async function handlePageHealth(
     reads: pageReads(readRows),
     ...(authors ? { created: named(authors.created), updated: named(authors.updated) } : {}),
     ...(editors.length > 0 ? { editors: editors.map(named) } : {}),
-    answered: answered.map((r) => ({ question: r.question, asked: r.asked })),
+    // The questions are the knowledgebase's Ask, which a link confined to one page has not (search-and-ask.md).
+    answered:
+      grant.tabScope === null
+        ? answered.map((r) => ({ question: r.question, asked: r.asked }))
+        : [],
     agents: agents.map((r) => ({ agent: r.agent, reads: r.reads })),
   });
 }

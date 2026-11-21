@@ -162,7 +162,9 @@ async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Resp
         : `This page has no headings: read it without "heading".`,
     );
   const cut = cutMarkdown(section, maxChars);
-  const byId = new Map(document.tabs.map((t) => [t.id, t]));
+  // A link confined to one page reads the visitor's copy (knowledge-routes.ts): the pages it cannot see are no
+  // backlink, subpage, parent or conflict of this one.
+  const byId = new Map(document.tabs.filter((t) => !t.outOfScope).map((t) => [t.id, t]));
   const order = treeOf(document).map((row) => row.page.id);
   const caller = ctx.resolveOwner();
   if (caller !== null) refreshAfterRead(ctx, document, summary.id, caller);
@@ -175,10 +177,10 @@ async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Resp
     leftOut: whole.length - cut.markdown.length,
     headings,
     trust: pageTrustOf(summary.knowledge, document.knowledgeSettings.reviewEvery, now, {
-      conflictsWith: conflicts.byTab.get(summary.id),
+      conflictsWith: conflicts.byTab.get(summary.id)?.filter((p) => byId.has(p.tab)),
       verifiedBy: verifier?.name || undefined,
     }),
-    ...(summary.parent ? { parent: summary.parent } : {}),
+    ...(summary.parent && byId.has(summary.parent) ? { parent: summary.parent } : {}),
     backlinks: backlinks(
       summary.id,
       linking.map((r) => r.fromTab),
