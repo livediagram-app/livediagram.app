@@ -7,6 +7,7 @@
 import type { ReactNode } from 'react';
 import type { Finish } from '@liveworkspace/element-model/finish';
 import type { TextSize, TextSizePreset } from '@liveworkspace/model-core/basics';
+import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { Glyph, lucideGlyph } from '@liveworkspace/ui';
 import { lucideChevronRight, lucideSlidersHorizontal } from '@liveworkspace/icons/lucide';
 import type { TabLookSettings } from '../../../lib/tab-looks';
@@ -80,7 +81,15 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
       value: surface.hiddenControls.includes('defaultTextSize')
         ? fontLabel
         : `${fontLabel}, ${sizeLabel(defaultTextSize)}`,
-      icon: <span className="text-[15px] font-semibold">Aa</span>,
+      // In the face worn now, so the row shows the type change as a look or a font is picked.
+      icon: (
+        <span
+          className="text-[15px] font-semibold"
+          style={{ fontFamily: resolveFontStack(surface.textFont ?? font) }}
+        >
+          Aa
+        </span>
+      ),
     },
     canvas: { value: canvasSummary ?? profile.patternLabel(pattern), icon: <CanvasGlyph /> },
   };

@@ -318,7 +318,12 @@ per-page and no per-tab style.
   style back. Closing with nothing picked asks nothing.
 - **Looks.** The same carousel of looks, each card a small **page of writing** drawn in that look (a title, a
   heading, two lines, a link, a quote and a small table), never a diagram: a look is a theme (its colours) and a
-  font. Seasonal looks and their toggle stay, as does **Mashup** (it rolls a theme and a font). A card reads as
+  font. Each card's name is set in the look's typeface too, and the Text row's "Aa" in the heading font worn now,
+  so the dialog itself shows the type change as a look or a font is picked (owner 2026-11-21: "the tab style menu
+  itself doesn't seem to change font"), as the Text panel's sample and its two font lists already do. The faces
+  load only as the dialog draws them (the one fonts stylesheet's `@font-face` rules fetch a family when it is
+  first used): about 150 KB of woff2 on a first open, measured 2026-11-21. Seasonal looks and their toggle stay, as
+  does **Mashup** (it rolls a theme and a font). A card reads as
   selected while the knowledgebase's theme and font are the look's; a knowledgebase whose headings and body are in
   two fonts wears no look. A card's line names the two ("Steel, Inter"); the product's own theme is named **Lime**.
   Picking a look sets the theme and both fonts, keeps the size, spacing and heading style, and puts the accent back
@@ -351,6 +356,13 @@ per-page and no per-tab style.
     until white reads on its solid fills and its deeper step reads on its wash at 4.5:1.
   - In the dark appearance the page's ground is the chrome's own dark surface, so under a theme that tints the dark
     surfaces the reading column is the same ground as the top row and the sidebar.
+  - **The chrome keeps its edges** (owner 2026-11-21: "The everyday theme loses the borders on the sidebar and
+    header etc so it all blends into one mess"). The sidebar's right edge, the top row's foot, the rail's left edge
+    and the footer's top are one edge colour, a fixed step off the ground (the ground mixed 16% toward slate-900 in
+    the light, 13% toward white in the dark), and the sidebar stands a shade off the page (4% toward slate-900 in
+    the light, 30% toward black in the dark). Mixed from the ground, they read alike under every look, Everyday
+    included, in both appearances: about 1.4:1 for an edge, where the plain slate stops gave Everyday 1.06:1 in the
+    dark.
   - A picked accent colours the writing only, never the chrome.
   - Page links take the theme's accent (lime under the product's own theme), held to 4.5:1.
 - **Stored once**, on the knowledgebase (`knowledgeStyle` in the document's metadata: the theme, the heading and

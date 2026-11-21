@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_KNOWLEDGE_STYLE, type KnowledgeStyle } from '@liveknowledge/document';
@@ -78,6 +78,8 @@ const card = (carousel: string, name: string | RegExp): HTMLElement =>
     dialog(),
   )!;
 
+/** The home's Text row, whatever its line says now. */
+const textRow = (): HTMLElement => within(dialog()).getByRole('button', { name: /^Text:/ });
 /** Close the dialog, answering its confirm; waits for the answer to land. */
 async function closeWith(apply: boolean) {
   answer = apply;
@@ -126,6 +128,26 @@ describe('Knowledgebase Style', () => {
     expect(everyday.textContent).toContain('Lime, Inter');
     expect(everyday.querySelector('svg')!.textContent).toContain('Team Handbook');
     expect(everyday.querySelector('svg path')).toBeNull();
+  });
+
+  // Owner 2026-11-21: "the tab style menu itself doesn't seem to change font when I change the look or fine tune
+  // the font". Each card names its look in the look's typeface, and the Text row's "Aa" follows the face worn now.
+  it("sets each card's name in its look's typeface, and the Text row's sample in the font worn now", () => {
+    render(<Open />);
+    const nameOf = (look: RegExp) =>
+      within(card('Looks', look)).getByText(look.source.slice(1), { exact: true });
+    expect(nameOf(/^Editorial/).style.fontFamily).toContain('Lora');
+    expect(nameOf(/^Spectrum/).style.fontFamily).toContain('Poppins');
+    expect(nameOf(/^Everyday/).style.fontFamily).toContain('Inter');
+    const sample = () => within(textRow()).getByText('Aa');
+    expect(sample().style.fontFamily).toContain('Inter');
+    fireEvent.click(card('Looks', /^Notebook/));
+    expect(sample().style.fontFamily).toContain('Nunito');
+    // A heading face of its own: the sample takes it.
+    act(() => {
+      knowledgeStyleStore.set('kb', { ...knowledgeStyleStore.styleOf('kb'), headingFont: 'lora' });
+    });
+    expect(sample().style.fontFamily).toContain('Lora');
   });
 
   it('applies a look as one change of the theme and both fonts, and counts it', async () => {
