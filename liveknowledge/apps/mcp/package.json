@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --inspector-port 9430 --var CONSENT_BASE_URL:http://localhost:3600",
+    "dev": "wrangler dev --inspector-port 9730 --var CONSENT_BASE_URL:http://localhost:3600",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
     "staging:check": "wrangler deploy --dry-run --env staging",
