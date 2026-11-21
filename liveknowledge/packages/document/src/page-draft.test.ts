@@ -30,7 +30,12 @@ import {
 // docs/specs/030-knowledgebase/editing.md; blueprint blueprints/editing.md "Interfaces and contracts".
 
 const para = (id: string, text: string, style?: 'title'): ArticleBlock =>
-  ({ id, type: 'paragraph', ...(style ? { style } : {}), runs: text ? [{ text }] : [] }) as ArticleBlock;
+  ({
+    id,
+    type: 'paragraph',
+    ...(style ? { style } : {}),
+    runs: text ? [{ text }] : [],
+  }) as ArticleBlock;
 
 const flowOf = (...blocks: ArticleBlock[]): ArticleFlow => ({ blocks });
 
@@ -86,9 +91,9 @@ describe('the draft record', () => {
     expect(parseTabDraft([])).toBeUndefined();
     expect(parseTabDraft({ by: 1, at: 1 })).toBeUndefined();
     expect(parseTabDraft({ by: 'a', at: Number.NaN })).toBeUndefined();
-    expect(parseTabDraft({ by: 'x'.repeat(200), at: 5, height: -3, base: { a: 'p', b: 2, '': 'q' } })).toEqual(
-      { by: 'x'.repeat(80), at: 5, base: { a: 'p' } },
-    );
+    expect(
+      parseTabDraft({ by: 'x'.repeat(200), at: 5, height: -3, base: { a: 'p', b: 2, '': 'q' } }),
+    ).toEqual({ by: 'x'.repeat(80), at: 5, base: { a: 'p' } });
     expect(parseTabDraft({ by: 'a', at: 1, height: 900, base: [] })).toEqual({
       by: 'a',
       at: 1,
@@ -105,7 +110,10 @@ describe('the draft record', () => {
   it('is touched at most once a minute by the same person', () => {
     const r = { by: 'Priya', at: 1000, base: {} };
     expect(touchedDraft(r, 'Priya', 1000 + DRAFT_TOUCH_MS - 1)).toBe(r);
-    expect(touchedDraft(r, 'Priya', 1000 + DRAFT_TOUCH_MS)).toEqual({ ...r, at: 1000 + DRAFT_TOUCH_MS });
+    expect(touchedDraft(r, 'Priya', 1000 + DRAFT_TOUCH_MS)).toEqual({
+      ...r,
+      at: 1000 + DRAFT_TOUCH_MS,
+    });
     expect(touchedDraft(r, 'Sam', 1001)).toEqual({ by: 'Sam', at: 1001, base: {} });
   });
 });
@@ -115,7 +123,12 @@ describe('making, discarding and stripping a draft', () => {
     const tab = withDraftMade(page(saved), flowOf(...saved, para('c', 'Third')), 'Priya', 7, 610);
     const draft = draftOf(tab)!;
     expect(draft.flow.blocks.map((b) => b.id)).toEqual(['t', 'a', 'b', 'c']);
-    expect(draft.record).toEqual({ by: 'Priya', at: 7, height: 610, base: printsOf(flowOf(...saved)) });
+    expect(draft.record).toEqual({
+      by: 'Priya',
+      at: 7,
+      height: 610,
+      base: printsOf(flowOf(...saved)),
+    });
     expect(holdsDraft(tab)).toBe(true);
     expect(holdsDraft(page(saved))).toBe(false);
   });
@@ -138,10 +151,34 @@ describe('making, discarding and stripping a draft', () => {
     expect(withoutDraft(recordOnly).articles).toBe(plain.articles);
   });
 
+  it('drops the margin notes only the draft marked, and keeps those the saved writing marks', () => {
+    const marked = (id: string, note: string): ArticleBlock =>
+      ({ id, type: 'paragraph', runs: [{ text: 'on-call', note, nk: 'action' }] }) as ArticleBlock;
+    const marker = (id: string) => ({ id, type: 'article-note', kind: 'action', x: 0, y: 0 });
+    const plain = page([...saved, marked('c', 'kept')], {
+      elements: [
+        marker('kept'),
+        marker('draft-only'),
+        { id: 'box', type: 'rectangle' },
+      ] as Tab['elements'],
+    });
+    const tab = withDraftMade(
+      plain,
+      flowOf(...saved, marked('c', 'kept'), marked('d', 'draft-only')),
+      'Priya',
+      7,
+    );
+    expect(withDraftDiscarded(tab).elements.map((e) => e.id)).toEqual(['kept', 'box']);
+    // Saved, the draft's note is the page's own.
+    expect(withDraftSaved(tab).elements.map((e) => e.id)).toEqual(['kept', 'draft-only', 'box']);
+  });
+
   it('says whether the draft differs from the saved page', () => {
     expect(draftDiffers(page(saved))).toBe(false);
     expect(draftDiffers(withDraftMade(page(saved), flowOf(...saved), 'P', 1))).toBe(false);
-    expect(draftDiffers(withDraftMade(page(saved), flowOf(para('t', 'New', 'title')), 'P', 1))).toBe(true);
+    expect(
+      draftDiffers(withDraftMade(page(saved), flowOf(para('t', 'New', 'title')), 'P', 1)),
+    ).toBe(true);
     const noSaved = withDraftMade(
       { id: 't', name: '', elements: [] } as Tab,
       flowOf(para('x', 'y')),
@@ -161,7 +198,11 @@ describe('making, discarding and stripping a draft', () => {
 
 describe('Save', () => {
   it('makes the draft the saved page, names the page from its Title and takes its height', () => {
-    const draft = flowOf(para('t', 'Getting Started', 'title'), para('a', 'First, edited'), para('c', 'New'));
+    const draft = flowOf(
+      para('t', 'Getting Started', 'title'),
+      para('a', 'First, edited'),
+      para('c', 'New'),
+    );
     const tab = withDraftMade(page(saved), draft, 'Priya', 1, 980);
     const out = withDraftSaved(tab);
     expect(holdsDraft(out)).toBe(false);
@@ -182,7 +223,12 @@ describe('Save', () => {
     expect(withDraftSaved(plain)).toBe(plain);
     const stray = { ...plain, draft: { by: 'a', at: 1, base: {} } };
     expect(holdsDraft(withDraftSaved(stray))).toBe(false);
-    const noFlow = withDraftMade({ id: 't', name: 'n', elements: [] } as Tab, flowOf(para('x', 'y')), 'P', 1);
+    const noFlow = withDraftMade(
+      { id: 't', name: 'n', elements: [] } as Tab,
+      flowOf(para('x', 'y')),
+      'P',
+      1,
+    );
     expect(holdsDraft(withDraftSaved(noFlow))).toBe(false);
   });
 });
@@ -199,9 +245,16 @@ describe('an agent writing under a draft', () => {
   it("keeps the draft's changed blocks and the agent's others", () => {
     // The draft changed `a`; the agent changed `a` and `b`, and added `n` after `b`.
     const draft = flowOf(saved[0]!, para('a', 'Mine'), saved[2]!);
-    const agent = flowOf(saved[0]!, para('a', 'Agent'), para('b', 'Agent b'), para('n', 'Agent new'));
+    const agent = flowOf(
+      saved[0]!,
+      para('a', 'Agent'),
+      para('b', 'Agent b'),
+      para('n', 'Agent new'),
+    );
     const out = mergeDraftOverSaved(base, draft, agent);
-    expect(out.blocks.map((b) => [b.id, (b as { runs: { text: string }[] }).runs[0]?.text])).toEqual([
+    expect(
+      out.blocks.map((b) => [b.id, (b as { runs: { text: string }[] }).runs[0]?.text]),
+    ).toEqual([
       ['t', 'Onboarding'],
       ['a', 'Mine'],
       ['b', 'Agent b'],
@@ -233,7 +286,10 @@ describe('an agent writing under a draft', () => {
     // `a` changed and `b` went.
     expect(savedChangesUnderDraft(agentWrote)).toBe(2);
     expect(savedChangesUnderDraft(page(saved))).toBe(0);
-    expect(withDraftSaved(agentWrote).articles!['art-1']!.blocks.map((b) => b.id)).toEqual(['t', 'a']);
+    expect(withDraftSaved(agentWrote).articles!['art-1']!.blocks.map((b) => b.id)).toEqual([
+      't',
+      'a',
+    ]);
   });
 
   it('prints the same value the same, and tells two values apart', () => {

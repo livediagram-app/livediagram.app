@@ -3,6 +3,7 @@
 // with its record (`Tab.draft`). The saved writing is every other flow; whatever reads a page for a reader, the
 // index or an agent reads `savedArticlesOf`. Pure: a tab in, a tab or an answer out. Shared by the editor and the api.
 import { articlesOf, sameArticleValue, type ArticleBlock, type ArticleFlow } from './article-flow';
+import { articleNoteIds, withNoteMarkersRemoved } from './article-notes';
 import { withArticleFlow } from './article-pages';
 import { withArticlePageHeight } from './knowledgebase-page';
 import { pagesOf } from './page';
@@ -36,7 +37,8 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 /** A stored draft record read defensively; undefined for anything that is not one. */
 export function parseTabDraft(v: unknown): TabDraft | undefined {
   if (!isRecord(v)) return undefined;
-  if (typeof v.by !== 'string' || typeof v.at !== 'number' || !Number.isFinite(v.at)) return undefined;
+  if (typeof v.by !== 'string' || typeof v.at !== 'number' || !Number.isFinite(v.at))
+    return undefined;
   const base: Record<string, string> = {};
   if (isRecord(v.base)) {
     let n = 0;
@@ -47,7 +49,8 @@ export function parseTabDraft(v: unknown): TabDraft | undefined {
     }
   }
   const out: TabDraft = { by: v.by.slice(0, DRAFT_BY_MAX), at: v.at, base };
-  if (typeof v.height === 'number' && Number.isFinite(v.height) && v.height > 0) out.height = v.height;
+  if (typeof v.height === 'number' && Number.isFinite(v.height) && v.height > 0)
+    out.height = v.height;
   return out;
 }
 
@@ -163,9 +166,19 @@ export function touchedDraft(record: TabDraft, by: string, at: number): TabDraft
   return { ...record, by: name, at };
 }
 
-/** The tab without its draft, both halves. The same tab when it has none. */
+/**
+ * The tab without its draft, both halves, and without the margin notes (a comment or an action on some words) only
+ * the draft's writing marked: a note's marker is an element, written as made, while its mark is in the draft, so
+ * discarding the writing alone left the marker beside words that no longer carry it (sweep 2026-11-21). The same tab
+ * when it has none.
+ */
 export function withDraftDiscarded(tab: Tab): Tab {
-  return withoutDraft(tab);
+  const draft = draftOf(tab);
+  const next = withoutDraft(tab);
+  if (!draft) return next;
+  const kept = articleNoteIds(savedArticlesOf(next));
+  const gone = new Set([...articleNoteIds({ draft: draft.flow })].filter((id) => !kept.has(id)));
+  return withNoteMarkersRemoved(next, gone);
 }
 
 /**

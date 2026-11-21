@@ -62,7 +62,7 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   the new saved page, with a toast "Priya saved the page".
 - **Cancel** leaves edit mode. If others are still editing, the draft stays theirs and nothing is lost. If you are the
   last one editing and the draft has unsaved changes, Cancel asks first: "Discard your changes to this page?" with
-  **Discard Changes** (destructive) and **Keep Editing**. Discarding throws the draft away.
+  **Discard Changes** (destructive) and **Keep Editing**. Discarding throws the draft away, with any comment or action started on words only the draft held (its margin marker goes too).
 - **Only on a page:** while Version History is open, or the footer shows Ask or AI Knowledge, the floating Edit button
   and double-click to edit are gone
   (owner 2026-11-21).
