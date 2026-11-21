@@ -49,12 +49,13 @@ describe("sealing the team's key", () => {
 
   it('fails closed on a wrong secret, and on another knowledgebase', async () => {
     const envelope = await sealApiKey(SECRET, KEY, 'doc-1');
+    // Each open starts only when awaited: a rejection made ahead of its handler is reported as unhandled.
     for (const work of [
-      openApiKey('another-secret', envelope, 'doc-1'),
-      openApiKey(SECRET, envelope, 'doc-2'),
-      openApiKey(SECRET, envelope),
+      () => openApiKey('another-secret', envelope, 'doc-1'),
+      () => openApiKey(SECRET, envelope, 'doc-2'),
+      () => openApiKey(SECRET, envelope),
     ]) {
-      const error = await rejection(work);
+      const error = await rejection(work());
       expect(error).toBeInstanceOf(KeySealError);
       expect(error.message).toBe('The stored key could not be read.');
     }
