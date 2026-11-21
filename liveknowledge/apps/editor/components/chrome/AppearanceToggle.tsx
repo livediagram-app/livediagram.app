@@ -22,9 +22,9 @@ import {
 // hover card and accessible name carry where the next click takes you.
 
 const DESCRIPTION: Record<AppearanceSetting, string> = {
-  light: 'The editor chrome is light.',
-  dark: 'The editor chrome is dark.',
-  system: 'The editor chrome follows your device setting.',
+  light: 'liveknowledge is light.',
+  dark: 'liveknowledge is dark.',
+  system: 'liveknowledge follows your device setting.',
 };
 
 export function AppearanceToggle({ labelled = false }: { labelled?: boolean }) {

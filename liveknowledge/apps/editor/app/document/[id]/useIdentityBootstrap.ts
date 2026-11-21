@@ -54,7 +54,7 @@ const DEPS: IdentityBootstrapDeps<
   notFoundKey: 'setDocumentNotFound',
   setNotFound: (s) => s.setDocumentNotFound,
   setLoading: (s) => s.setLoadingDocument,
-  noun: 'document',
+  noun: 'knowledgebase',
   readPath: (pathname) => ({ id: documentIdFromPath(pathname) }),
   isEditorPath: (pathname) => isEditorPath(pathname),
   isOfflineId: (id) => isOfflineId(id),

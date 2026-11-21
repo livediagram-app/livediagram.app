@@ -185,7 +185,7 @@ export function EditorView() {
     shareCode: ctx.sessionShareCode,
     apiBase: ITEM_API_BASE,
     collection: 'documents',
-    noun: 'document',
+    noun: 'knowledgebase',
     apiFetch: itemApiFetch,
     apiHeaders: itemApiHeaders,
   });
@@ -203,7 +203,7 @@ export function EditorView() {
     isStructureReadOnly: ctx.isStructureReadOnly,
     shareCode: ctx.sessionShareCode,
     client: indexClient,
-    noun: 'document',
+    noun: 'knowledgebase',
     teamMembers: apiTeamMembers,
     snapshots: snapshotsDoor?.api ?? null,
     setShareOpen: ctx.setShareDialogOpen,

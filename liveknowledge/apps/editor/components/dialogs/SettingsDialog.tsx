@@ -51,7 +51,7 @@ const BINDING: EditorSettingsBinding<ReturnType<typeof visibleCategories>, UserP
   renderLogo: renderSettingsLogo,
   model: settingsModel,
   memoryKey: 'liveknowledge:settings-view:v1',
-  noun: 'document',
+  noun: 'knowledgebase',
   // Which categories people actually open is the signal for what belongs on the first screen next.
   onCategoryOpened: (id) =>
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`),

@@ -392,8 +392,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'appearance',
         keywords: 'dark mode light theme colour color night scheme',
         label: 'Theme',
-        description:
-          'Light or dark editor chrome, or System to follow your device. Saved on this device only.',
+        description: 'Light or dark, or System to follow your device. Saved on this device only.',
         alsoIn: 'the editor’s footer bar',
         illustration: 'appearance',
       },
@@ -426,7 +425,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Interface',
         label: 'UI Scale',
         description:
-          'Sizes the panels, the toolbar and the corner buttons. The canvas, dialogs and menus stay as they are.',
+          'Sizes the panels, the toolbar and the corner buttons. Pages, dialogs and menus stay as they are.',
         read: (p: UserPreferences) => resolveUiScale(p),
         write: (p: UserPreferences, v: number) => withUiScalePatch(p, uiScalePatch(v)),
         preview: (v) => setUiScalePreview(v === null ? null : uiScalePatch(v)),
@@ -447,7 +446,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       uiScalePartRow('cornerButtons', {
         label: 'Corner Buttons Scale',
         keywords: 'undo redo zoom controls theme corner buttons size bigger smaller scale',
-        description: 'Undo and Redo, Style and zoom.',
+        description: 'Edit, Save and Cancel in the page’s corner.',
         changed: 'UiScaleCornerButtons',
       }),
     ],
@@ -492,7 +491,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'transparency translucent fade see through alpha',
         label: 'Panel Opacity',
         description:
-          'Lets the canvas show through panels and the toolbar. A panel turns solid while you use it.',
+          'Lets the page show through panels and the toolbar. A panel turns solid while you use it.',
         helpArticle: 'panelOpacity',
         min: 0.3,
         max: 1,

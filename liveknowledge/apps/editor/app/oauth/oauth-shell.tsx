@@ -33,7 +33,7 @@ function useOauthSignIn() {
 
 export const OAUTH_PAGES: OauthPagesConfig = {
   product: 'liveknowledge',
-  noun: 'documents',
+  noun: 'knowledgebases',
   mcpOrigin: MCP_ORIGIN,
   cliClientId: CLI_CLIENT_ID,
   Shell: OauthShell,
