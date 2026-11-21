@@ -218,8 +218,20 @@ export function publishedWriting(
     const text = blockText(b).trim();
     if (text) lines.push(text);
   }
-  const text = lines.join('\n');
+  const text = joinLines(lines);
   return { html, text, description: describe(text) };
+}
+
+/** A line that ends a sentence already reads apart from the next. */
+const ENDS_A_SENTENCE = /[.!?:;…]$/u;
+
+/** The page's lines as one text, a line with no closing punctuation (a heading, a list item) kept apart from the
+ *  next by " ·", so a snippet or description reads "Before a Release · Releasing", never "Before a Release
+ *  Releasing". */
+export function joinLines(lines: readonly string[]): string {
+  return lines
+    .map((line, i) => (i < lines.length - 1 && !ENDS_A_SENTENCE.test(line) ? `${line} ·` : line))
+    .join('\n');
 }
 
 /** The first words of `text`, whitespace collapsed, cut at a word to PUBLISHED_DESCRIPTION_MAX with an ellipsis. */

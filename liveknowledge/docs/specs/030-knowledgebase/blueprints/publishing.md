@@ -94,8 +94,10 @@ an identifier of this feature.
 - **P12 Page links** to a page in the snapshot link to `/kb/<site>/<address>` (the front page to `/kb/<site>`); any
   other is its text.
 - **P13 The description**: the writing's text after the title, whitespace collapsed, cut at a word to 160 characters
-  with an ellipsis; the knowledgebase's name when empty.
-- **P14 Writers** (only with `showWriters`): the people in `page_editors` of kind `person`, first first, their names
+  with an ellipsis; the knowledgebase's name when empty. The text (also what search indexes and snips) is one line
+  per block, a line with no closing punctuation (a heading, a list item) kept apart from the next by " ·": "Before a
+  Release · Releasing", never "Before a Release Releasing".
+- **P14 Writers** (only with `showWriters`): the people in `page_editors` of kind `human`, first first, their names
   read once a refresh through `getParticipants`; an agent, an id or an email is never written. A name that cannot be
   read is left out.
 - **P15 The front page.** `/kb/<site>` serves the first page in the snapshot's order; its own address redirects there

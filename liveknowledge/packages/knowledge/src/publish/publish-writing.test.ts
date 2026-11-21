@@ -6,6 +6,7 @@ import {
   describe as describeText,
   escapeHtml,
   publishedWriting,
+  joinLines,
   PUBLISHED_DESCRIPTION_MAX,
 } from './publish-writing';
 
@@ -170,6 +171,24 @@ describe('publishedWriting', () => {
       text: '',
       description: '',
     });
+  });
+});
+
+describe('the text', () => {
+  it('keeps a heading apart from the line after it, and a sentence as it is', () => {
+    expect(joinLines(['How and when changes are released.', 'Before a Release', 'Releasing'])).toBe(
+      'How and when changes are released.\nBefore a Release ·\nReleasing',
+    );
+    expect(joinLines(['Ready?', 'Yes!', 'Steps:', 'One;', 'Then…', 'Done'])).toBe(
+      'Ready?\nYes!\nSteps:\nOne;\nThen…\nDone',
+    );
+    expect(joinLines([])).toBe('');
+    const { text, description } = publishedWriting(
+      [p([t('Before a Release')], { style: 'h1' }), p([t('Releasing')], { style: 'h1' })],
+      none,
+    );
+    expect(text).toBe('Before a Release ·\nReleasing');
+    expect(description).toBe('Before a Release · Releasing');
   });
 });
 
