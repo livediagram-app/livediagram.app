@@ -49,8 +49,8 @@ the interface says "Publish to the Web", "public site" and "Published", never "P
   after Export, for the Editors above. It opens the **Publish to the Web** dialog (the centred dialog, a bottom
   sheet on a phone).
 - The dialog shows, top to bottom:
-  - **The state**: "Not Published", or "Published" with the site's link, **Copy Link** and **Open Site**, and when
-    it was last published.
+  - **The state**: "Not Published", or "Live on the Web" with the site's link, **Copy Link** and an open-the-site
+    button, and when it was last published. On a phone the two buttons sit on a row of their own under the link.
   - **What to Publish**: Whole Knowledgebase, or one section ("Onboarding and Its Subpages"), picked from the page
     tree in its order. A section's first page is the site's front page.
   - **Address**: `liveknowledge.app/kb/` and the site address, filled from the knowledgebase's name the first time.
@@ -62,8 +62,8 @@ the interface says "Publish to the Web", "public site" and "Published", never "P
     people who wrote it, as Page Health does).
   - **What Goes Public**: how many pages the site will hold, each named, and the pages left out with why: Pending
     Approval, Rejected, or Empty (a page with no saved writing). It reads the knowledgebase as it stands and changes
-    as the section is picked. Under it, the line "Comments, drafts, Page Health, Ask and AI Knowledge never go
-    public. Pictures and drawings in a page are not published yet."
+    as the section is picked. Under it, the line "Only saved writing goes public: never drafts, comments, Page
+    Health or pages waiting for approval. Pictures and drawings stay private for now."
   - **Unpublish** (only while published), then **Publish** (or **Update Site** while published) as the primary.
 - **Publish** writes the published snapshot and answers with the site as it now stands; the link is live at once.
   The dialog stays open on the published state, so the Editor can copy or open the link.
