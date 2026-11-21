@@ -51,7 +51,7 @@ import { tabLint, tabLs, tabView } from './verbs/tab';
 import { linkFromCode, linkInit, linkLs, linkReview, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
-import { ruleVerbs } from './verbs/rule';
+import { ruleVerbs } from './rules';
 
 export const VERBS: readonly Verb[] = [
   documentLs,

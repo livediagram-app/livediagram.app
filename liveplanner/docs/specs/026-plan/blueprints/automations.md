@@ -1104,12 +1104,12 @@ Threads and Wait (spec "Actions", "Wait").
 
 ## The Pick a Trigger picker
 
-- `components/tile-picker/TilePicker.tsx` is the pickers' one shell (the forms builder's Add a Question gallery
+- `../packages/automations-ui/src/tile-picker/TilePicker.tsx` is the pickers' one shell (the forms builder's Add a Question gallery
   uses it too): `HeroDialogHeader` with the art passed in (`addActionHeroArt` from
   `AddActionHeroArt.tsx` for Add an Action, `automationsHeroArt` for Pick a Trigger; the centre piece at 4.5rem, as
   only the close stands beside the title), the search, the rail or
   chips, the grouped tile grid with its arrow keys, the empty state and the Current badge. Tiles carry
-  `data-picker-tile`, which `automation-scenes.css` plays on hover. `components/tile-picker/tile-scene.tsx` holds the tiles'
+  `data-picker-tile`, which `automation-scenes.css` plays on hover. `../packages/automations-ui/src/tile-picker/tile-scene.tsx` holds the tiles'
   stage (`TileStage`: the tone's wash and fading dots), the tones and the moving-part helpers (`at`, `after`),
   which `scene-parts.tsx` re-exports. `AddActionDialog` and `ChangeTriggerField` map
   their groups into it.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTemplateCatalogue } from './template-catalogue';
+import { createAutomationTabTemplates, createTemplateCatalogue } from './template-catalogue';
 
 type Kind = 'blank' | 'flowchart' | 'retro';
 type Category = 'diagrams' | 'meetings' | 'forms';
@@ -49,5 +49,24 @@ describe('createTemplateCatalogue', () => {
       blanksDescription: 'Unused.',
     });
     expect(noBlanks().categories.map((c) => c.id)).toEqual(['meetings']);
+  });
+});
+
+describe('createAutomationTabTemplates', () => {
+  it('lists the catalogue once, as ids and names, and names them by id', () => {
+    let reads = 0;
+    const { automationTabTemplates, automationTabTemplateNames } = createAutomationTabTemplates(
+      () => {
+        reads += 1;
+        return {
+          categories: [],
+          templates: [{ kind: 'kanban', title: 'Kanban', description: '', category: 'blanks' }],
+        };
+      },
+    );
+    expect(automationTabTemplates()).toEqual([{ id: 'kanban', name: 'Kanban' }]);
+    expect(automationTabTemplates()).toBe(automationTabTemplates());
+    expect(automationTabTemplateNames().get('kanban')).toBe('Kanban');
+    expect(reads).toBe(1);
   });
 });

@@ -51,3 +51,22 @@ export function createTemplateCatalogue<Kind extends string, Category extends st
     };
   };
 }
+
+/** A template a rule's Add a Tab from a Template step may name (liveworkspace/docs/specs/018-automations/automations.md
+ *  "Steps"): its kind as the id, its title as the name. */
+export type AutomationTabTemplate = { id: string; name: string };
+
+/** The templates Add a Tab from a Template offers, from the product's catalogue, so the picker, the room and the
+ *  agents' tools offer the same ones in the library's order; and their names by id, as a rule's words name one. */
+export function createAutomationTabTemplates(catalogue: () => TemplateCatalogue): {
+  automationTabTemplates: () => readonly AutomationTabTemplate[];
+  automationTabTemplateNames: () => ReadonlyMap<string, string>;
+} {
+  let listed: readonly AutomationTabTemplate[] | null = null;
+  const automationTabTemplates = () =>
+    (listed ??= catalogue().templates.map((t) => ({ id: t.kind, name: t.title })));
+  return {
+    automationTabTemplates,
+    automationTabTemplateNames: () => new Map(automationTabTemplates().map((t) => [t.id, t.name])),
+  };
+}

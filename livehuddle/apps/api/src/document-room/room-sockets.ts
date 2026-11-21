@@ -4,6 +4,7 @@ import {
   ROOM_FULL_REASON,
   roomIsFull,
   SNAPSHOT_REVERTED_CLOSE,
+  type AccessLevel,
 } from '@livehuddle/api-schema';
 import {
   accessCloseCode,
@@ -12,7 +13,7 @@ import {
 } from '@liveworkspace/api-kit/room-access';
 import type { AvatarRelaySession } from '../room-avatar-track';
 import { opForScope } from '../room-scope';
-import type { SessionAttachment } from '../room-session';
+import { newSessionAttachment, type SessionAttachment } from '../room-session';
 import type { ServerMessage } from '../types';
 import type { DocumentRoom } from './document-room';
 
@@ -182,3 +183,63 @@ export function relaySessionOf(session: SessionAttachment | null): AvatarRelaySe
     leanAvatars: session.leanAvatars === true,
   };
 }
+
+// Admit one server-side socket into the room: pin its hibernation-proof session state (attachment) and hand it to
+// the runtime.
+export function acceptSession(
+  room: DocumentRoom,
+  ws: WebSocket,
+  verifiedRole?: AccessLevel,
+  isOwner = false,
+  tabScope: string | null = null,
+  shareCode: string | null = null,
+  personTag: string | null = null,
+  adderKey: string | null = null,
+  documentId: string | null = null,
+  grantExp: number | null = null,
+  // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
+  // none mints one for this socket.
+  collabKey: string | null = null,
+  // The person stamped on its reactions (X-Verified-Reaction-Person,
+  // docs/specs/012-collaboration/comment-reactions.md).
+  reactionPerson: string | null = null,
+  // The person's presence name, their profile's (X-Verified-Name, docs/specs/014-identity/
+  // auth-and-guest-access.md "Presence names"): none for a session with no identity.
+  name: string | null = null,
+  // A verified account holds this session (X-Verified-Account): only such a session keeps a Google picture, and
+  // its Attendance visits are not a guest's (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures").
+  account = false,
+  // The API token whose ticket opened it (X-Verified-Api-Token, public-api-and-tokens.md "Revoking a token"):
+  // revoking the token closes it.
+  apiToken: string | null = null,
+): void {
+  ws.serializeAttachment(
+    newSessionAttachment(
+      {
+        verifiedRole,
+        collabKey,
+        reactionPerson,
+        name,
+        account,
+        isOwner,
+        tabScope,
+        shareCode,
+        personTag,
+        adderKey,
+        documentId,
+        grantExp,
+        apiToken,
+      },
+      crypto.randomUUID(),
+    ),
+  );
+  // Hibernation-aware accept: the runtime owns the socket's event
+  // delivery (webSocketMessage / webSocketClose / webSocketError) and
+  // may evict this DO between events. NOT ws.accept(), which would pin
+  // the DO in memory for the socket's whole life.
+  room.state.acceptWebSocket(ws);
+}
+
+/** acceptSession's arguments after the room. */
+export type SessionArgs =
+  Parameters<typeof acceptSession> extends [unknown, ...infer R] ? R : never;

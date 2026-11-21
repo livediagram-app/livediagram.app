@@ -23,7 +23,7 @@ export {
   automationTabTemplateNames,
   automationTabTemplates,
   type AutomationTabTemplate,
-} from './automation-tab-templates';
+} from './template-catalogue';
 export { withBlankPageThemed } from './blank-page-templates';
 export { templatePageKind } from './template-page-kinds';
 export { templateExampleText } from './template-example-text';

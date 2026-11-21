@@ -38,7 +38,7 @@ packages/document/src/automations/          @livehuddle/document/automations (pu
   values.ts                                   visit.people, visit.count, visit.minutes, suggestion
   templates.ts                                SPACE_TEMPLATES, TEMPLATE_CATEGORIES (the screen's, "Editor")
 packages/document/src/document-envelope.ts    `document.automations` in the file; copyDocumentEnvelope answers `tabIds`
-packages/templates/src/automation-tab-templates.ts   automationTabTemplates, automationTabTemplateNames
+packages/templates/src/template-catalogue.ts       automationTabTemplates, automationTabTemplateNames (createAutomationTabTemplates)
 packages/api-schema/src/automations.ts        the wire types, filled in with the item engine's rule and run
 packages/api-schema/src/telemetry-schema.ts   the `Ran` action
 
@@ -232,19 +232,19 @@ a stretch read, 20 names, 500 characters of a note.
 
 ## Tests
 
-| File                                                      | Holds                                                                  |
-| --------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `packages/document/src/automations/kinds.test.ts`         | the kinds, their words, values and refusals; no kind undescribed       |
-| `packages/document/src/document-envelope.test.ts`         | rules in the file; `tabIds`                                            |
-| `packages/templates/src/automation-tab-templates.test.ts` | the Add a Tab list                                                     |
-| `apps/api/src/routes/automation-routes.test.ts`           | the share roles                                                        |
-| `apps/api/src/routes/automation-doors.test.ts`            | the two public doors through the Worker                                |
-| `…/automations/automation-events.test.ts`                 | every call site; nothing queued with no rule on; put away; purge       |
-| `…/automations/automation-runs.test.ts`                   | Scheduled, the visit triggers, Clear the Suggestion Box, revert, Add a |
-|                                                           | Tab, Summarise, a hook                                                 |
-| `…/automations/visit-events.test.ts`                      | the stretch: order, the 20 names, the grace, the minutes               |
-| `…/automations/rules-file.test.ts`                        | the file, an import, Make a Copy                                       |
-| `apps/api/test/workerd-automations/`                      | the real room on workerd                                               |
+| File                                                           | Holds                                                                  |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `packages/document/src/automations/kinds.test.ts`              | the kinds, their words, values and refusals; no kind undescribed       |
+| `packages/document/src/document-envelope.test.ts`              | rules in the file; `tabIds`                                            |
+| `packages/templates/src/template-catalogue.automation.test.ts` | the Add a Tab list                                                     |
+| `apps/api/src/routes/automation-routes.test.ts`                | the share roles                                                        |
+| `apps/api/src/routes/automation-doors.test.ts`                 | the two public doors through the Worker                                |
+| `…/automations/automation-events.test.ts`                      | every call site; nothing queued with no rule on; put away; purge       |
+| `…/automations/automation-runs.test.ts`                        | Scheduled, the visit triggers, Clear the Suggestion Box, revert, Add a |
+|                                                                | Tab, Summarise, a hook                                                 |
+| `…/automations/visit-events.test.ts`                           | the stretch: order, the 20 names, the grace, the minutes               |
+| `…/automations/rules-file.test.ts`                             | the file, an import, Make a Copy                                       |
+| `apps/api/test/workerd-automations/`                           | the real room on workerd                                               |
 
 The workerd test runs the real `DocumentRoom` through the platform's harness
 (`@liveworkspace/automations/testing/workerd`) and its own `/attend` door (`noteAttendance` with a session's before

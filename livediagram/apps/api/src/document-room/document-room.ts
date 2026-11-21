@@ -24,11 +24,7 @@ import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import type { InternalRoom } from '../room-internal';
 import type { FacilitatorState } from '../facilitator';
 import { RoomFacilitator } from '../room-facilitator';
-import {
-  newSessionAttachment,
-  readSessionAttachment,
-  type SessionAttachment,
-} from '../room-session';
+import { readSessionAttachment, type SessionAttachment } from '../room-session';
 import type { CommunityAuthor } from '@livediagram/api-schema';
 import { documentHasTab } from '../db/tabs';
 import { grantOwnImages } from '../db/image-grants';
@@ -99,8 +95,9 @@ import {
   frameFor,
   relaySessionOf,
   sendToPresence,
+  acceptSession as acceptRoomSession,
   turnAwayIfFull,
-  VIEW_ONLY_TAG,
+  type SessionArgs,
 } from './room-sockets';
 import { alarm, armAlarm, purge } from './room-lifecycle';
 import { roomMessage } from './room-message';
@@ -683,58 +680,9 @@ export class DocumentRoom extends DurableObject<Env> {
     return turnAwayIfFull(this, server, viewOnly);
   }
 
-  // Admit one server-side socket into the room: pin its hibernation-proof
-  // session state (attachment) and hand it to the runtime. Split out of
-  // fetch so tests can drive sessions without constructing WebSocketPair.
-  acceptSession(
-    ws: WebSocket,
-    verifiedRole?: AccessLevel,
-    isOwner = false,
-    tabScope: string | null = null,
-    shareCode: string | null = null,
-    personTag: string | null = null,
-    networkTag: string | null = null,
-    workbenchPairing: string | null = null,
-    adderKey: string | null = null,
-    documentId: string | null = null,
-    grantExp: number | null = null,
-    // The session's collab key (X-Verified-Collab-Key, docs/specs/013-workspace/share-roles.md "The collab key"):
-    // none mints one for this socket.
-    collabKey: string | null = null,
-    // The person stamped on its reactions (X-Verified-Reaction-Person,
-    // docs/specs/012-collaboration/comment-reactions.md).
-    reactionPerson: string | null = null,
-    // A view-only ticket's socket (X-Verified-View-Only): it watches, counted apart from the people (room-sockets.ts).
-    viewOnly = false,
-    // The API token whose ticket opened it (X-Verified-Api-Token), so revoking the token closes it.
-    apiToken: string | null = null,
-  ): void {
-    ws.serializeAttachment(
-      newSessionAttachment(
-        {
-          verifiedRole,
-          collabKey,
-          reactionPerson,
-          isOwner,
-          tabScope,
-          shareCode,
-          personTag,
-          networkTag,
-          workbenchPairing,
-          adderKey,
-          documentId,
-          grantExp,
-          viewOnly,
-          apiToken,
-        },
-        crypto.randomUUID(),
-      ),
-    );
-    // Hibernation-aware accept: the runtime owns the socket's event
-    // delivery (webSocketMessage / webSocketClose / webSocketError) and
-    // may evict this DO between events. NOT ws.accept(), which would pin
-    // the DO in memory for the socket's whole life.
-    this.state.acceptWebSocket(ws, viewOnly ? [VIEW_ONLY_TAG] : []);
+  // Admit one server-side socket (room-sockets.ts), apart from fetch so tests need no WebSocketPair.
+  acceptSession(...args: SessionArgs): void {
+    acceptRoomSession(this, ...args);
   }
 
   // Read a socket's session attachment (room-session.ts); frames from a null one are dropped.

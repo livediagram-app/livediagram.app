@@ -26,7 +26,7 @@ packages/document/src/automations/        @livediagram/document/automations (pur
   triggers.ts                               Poll Ended, Question Asked, Agent Made Changes; the event kinds and data keys
   values.ts                                 poll.question, poll.results, poll.answers, question; pollResultLines
 packages/document/src/document-envelope.ts  `document.automations` in the file; copyDocumentEnvelope answers `tabIds`
-packages/templates/src/automation-tab-templates.ts   automationTabTemplates, automationTabTemplateNames
+packages/templates/src/template-catalogue.ts       automationTabTemplates, automationTabTemplateNames (createAutomationTabTemplates)
 packages/api-schema/src/automations.ts      the wire types, filled in with the item engine's rule and run
 packages/api-schema/src/telemetry-schema.ts the `Ran` action
 
@@ -325,7 +325,7 @@ poll results, 500 characters of a question, and the engine's own (50 rules, 500 
 | ------------------------------------------------------------------ | ----------------------------------------------------------------- |
 | `packages/document/src/automations/kinds.test.ts`                  | the kinds, their words, values and refusals; no kind undescribed  |
 | `packages/document/src/document-envelope.test.ts`                  | rules in the file; `tabIds`                                       |
-| `packages/templates/src/automation-tab-templates.test.ts`          | the Add a Tab list                                                |
+| `packages/templates/src/template-catalogue.automation.test.ts`     | the Add a Tab list                                                |
 | `apps/api/src/routes/automation-routes.test.ts`                    | the share roles, through the real gates                           |
 | `apps/api/src/routes/automation-doors.test.ts`                     | the two public doors' refusals before the room                    |
 | `…/automations/automation-events.test.ts`                          | every call site; nothing written with no rule on; put away; purge |
@@ -504,7 +504,7 @@ bound in this product's agent-verbs package:
 | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `packages/agent-verbs/src/rules/index.ts`    | `RULE_PRODUCT` (`AGENT_PRODUCT`, `KINDS` from `@livediagram/document/automations`, `TEMPLATES`'s kinds and titles), `ruleRun` |
 | `packages/agent-verbs/src/mcp/rule-tools.ts` | `mcpListRules`, `mcpChangeRules` (`createRuleTools`), in `MCP_TOOL_VERBS`                                                     |
-| `packages/agent-verbs/src/verbs/rule.ts`     | the `rule` verbs (`createRuleVerbs` over its addressing), in `VERBS`; `guide rules`                                           |
+| `packages/agent-verbs/src/rules/index.ts`    | also `ruleVerbs`, the `rule` verbs (`createRuleVerbs` over its addressing), in `VERBS`; `guide rules`                         |
 
 `apps/mcp/src/rule-tools.ts` registers the two tools; `apps/cli` maps them to `rule ls` and `rule set` in its tool
 names and names `rule` on the top help's last line. Tests: `packages/agent-verbs/src/verbs/rule.test.ts` (catalogue, format, listing, a

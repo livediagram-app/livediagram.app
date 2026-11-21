@@ -49,7 +49,7 @@ import { tabLint, tabLs, tabView } from './verbs/tab';
 import { pagesVerbs } from './verbs/pages';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
-import { ruleVerbs } from './verbs/rule';
+import { ruleVerbs } from './rules';
 
 export const VERBS: readonly Verb[] = [
   documentLs,

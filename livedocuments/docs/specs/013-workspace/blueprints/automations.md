@@ -29,7 +29,7 @@ packages/document/src/automations/          @livedocuments/document/automations 
   actions.ts                                  Name This Version, Restore a Version; VERSION_REF
   values.ts                                   version.name
 packages/document/src/document-envelope.ts    `document.automations` in the file; copyDocumentEnvelope answers `tabIds`
-packages/templates/src/automation-tab-templates.ts   automationTabTemplates, automationTabTemplateNames
+packages/templates/src/template-catalogue.ts       automationTabTemplates, automationTabTemplateNames (createAutomationTabTemplates)
 packages/api-schema/src/automations.ts        the wire types, filled in with the item engine's rule and run
 packages/api-schema/src/telemetry-schema.ts   the `Ran` action
 
@@ -201,17 +201,17 @@ for Add a Tab, 10 tabs a baseline pass.
 
 ## Tests
 
-| File                                                      | Holds                                                                  |
-| --------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `packages/document/src/automations/kinds.test.ts`         | the kinds, their words, values and refusals; no kind undescribed       |
-| `packages/document/src/document-envelope.test.ts`         | rules in the file; `tabIds`                                            |
-| `packages/templates/src/automation-tab-templates.test.ts` | the Add a Tab list                                                     |
-| `apps/api/src/routes/automation-routes.test.ts`           | the share roles                                                        |
-| `apps/api/src/routes/automation-doors.test.ts`            | the two public doors through the Worker                                |
-| `…/automations/automation-events.test.ts`                 | every call site; nothing queued with no rule on; put away; purge       |
-| `…/automations/automation-runs.test.ts`                   | Scheduled, the two version steps, revert, Add a Tab, Summarise, a hook |
-| `…/automations/rules-file.test.ts`                        | the file, an import, Make a Copy                                       |
-| `apps/api/test/workerd-automations/`                      | the real room on workerd                                               |
+| File                                                           | Holds                                                                  |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `packages/document/src/automations/kinds.test.ts`              | the kinds, their words, values and refusals; no kind undescribed       |
+| `packages/document/src/document-envelope.test.ts`              | rules in the file; `tabIds`                                            |
+| `packages/templates/src/template-catalogue.automation.test.ts` | the Add a Tab list                                                     |
+| `apps/api/src/routes/automation-routes.test.ts`                | the share roles                                                        |
+| `apps/api/src/routes/automation-doors.test.ts`                 | the two public doors through the Worker                                |
+| `…/automations/automation-events.test.ts`                      | every call site; nothing queued with no rule on; put away; purge       |
+| `…/automations/automation-runs.test.ts`                        | Scheduled, the two version steps, revert, Add a Tab, Summarise, a hook |
+| `…/automations/rules-file.test.ts`                             | the file, an import, Make a Copy                                       |
+| `apps/api/test/workerd-automations/`                           | the real room on workerd                                               |
 
 The workerd test runs the real `DocumentRoom` through the platform's harness
 (`@liveworkspace/automations/testing/workerd`): the schema applies, a save with no rule queues nothing, a Scheduled
@@ -349,7 +349,7 @@ bound in this product's agent-verbs package:
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/agent-verbs/src/rules/index.ts`    | `RULE_PRODUCT` (`AGENT_PRODUCT`, `KINDS` from `@livedocuments/document/automations`, `TEMPLATES`'s kinds and titles), `ruleRun` |
 | `packages/agent-verbs/src/mcp/rule-tools.ts` | `mcpListRules`, `mcpChangeRules` (`createRuleTools`), in `MCP_TOOL_VERBS`                                                       |
-| `packages/agent-verbs/src/verbs/rule.ts`     | the `rule` verbs (`createRuleVerbs` over its addressing), in `VERBS`; `guide rules`                                             |
+| `packages/agent-verbs/src/rules/index.ts`    | also `ruleVerbs`, the `rule` verbs (`createRuleVerbs` over its addressing), in `VERBS`; `guide rules`                           |
 
 `apps/mcp/src/rule-tools.ts` registers the two tools; `apps/cli` maps them to `rule ls` and `rule set` in its tool
 names and names `rule` on the top help's last line. Tests: `packages/agent-verbs/src/verbs/rule.test.ts` (catalogue, format, listing, a

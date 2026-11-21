@@ -27,5 +27,5 @@ export {
   automationTabTemplateNames,
   automationTabTemplates,
   type AutomationTabTemplate,
-} from './automation-tab-templates';
+} from './template-catalogue';
 export { templateExampleText } from './template-example-text';
