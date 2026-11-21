@@ -2,7 +2,7 @@
 
 Derived from [AI Knowledge](../ai-knowledge.md): the knowledgebase's third view, over `GET knowledge` and the routes
 its actions call ([api.md](../../015-api/api.md) "Knowledge"). It is drawn on the surface the
-[Ask UI blueprint](ask-ui.md) "The three views" describes and shares its session, rights, page picker, Draft a Page
+[Ask UI blueprint](ask-ui.md) "The views" describes and shares its session, rights, page picker, Draft a Page
 and AI Settings. The dashboard was seen in a browser on 2026-11-21; a conflict's row only through a stubbed read.
 
 | Piece                                     | File                                                                                                         |
@@ -15,7 +15,7 @@ and AI Settings. The dashboard was seen in a browser on 2026-11-21; a conflict's
 | a card, its cap and Show All              | `components/ai-knowledge/AiSection.tsx`, `useShowAll.tsx`                                                    |
 | the other cards                           | `AgentsSection.tsx`, `HealthAndContext.tsx`, `MostReadCard.tsx`                                              |
 | an agent's card, its menu and its change  | `AgentCard.tsx`, `useAgentWrite.ts`, `AgentWriteDialog.tsx`; `lib/api/knowledge-agents.ts`                   |
-| Connect an Agent                          | `ConnectAgentDialog.tsx`                                                                                     |
+| Connect an Agent                          | the Connect view ([its blueprint](mcp-connect-ui.md))                                                        |
 | the owner emails' requests and words      | `lib/api/knowledge-emails.ts`, `lib/knowledge-ask/email-words.ts`                                            |
 | the words and the figures                 | `lib/knowledge-ask/overview-words.ts`, `lib/knowledge-ask/dashboard-figures.ts`                              |
 | accept and dismiss a suggestion, refusals | `lib/knowledge-ask/suggestions-api.ts`                                                                       |
@@ -106,9 +106,8 @@ outside the name), one line about it, an optional action at the right, then its 
   the optimistic change are the [agents blueprint](../../024-agents/blueprints/knowledgebase-for-agents.md)'s
   "The editor's control". The More button is named "More for <name>" (its tooltip the same); the menu is
   `useMenuButton` and `useMenu`, its one row a verb with its icon at the left.
-- **Connect an Agent.** A `Dialog` (size `md`, a sheet on a phone): the subtitle says what a new connection may
-  do; one paragraph on writing (by `canGrant`); three ways, each an icon tile, a heading, a line and the address,
-  the commands or **Open API Tokens** (closes the dialog, `openSettingsOn('tokens')`); **Done**.
+- **Connect an Agent** is `showKnowledgeView('connect')`: the [Connect view](mcp-connect-ui.md), which replaced
+  the dialog.
 - **Conflicts.** Each side shows its title (a button to its page), `trustText` and the passage
   (`whitespace-pre-wrap`, six lines at most). `<A> Is Right, Fix the Other` opens B; `<B> Is Right, Fix the Other`
   opens A, each at the passage that disagrees: a side carries `firstBlock` (the passage's `first_block`, from the

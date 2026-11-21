@@ -1,10 +1,10 @@
 # Ask UI blueprint
 
-Derived from [Search and Ask](../search-and-ask.md) "The three views" and "Ask": the way between the
+Derived from [Search and Ask](../search-and-ask.md) "The views" and "Ask": the way between the
 knowledgebase's views, the surface Ask and AI Knowledge are drawn on, AI Settings and the Ask view, over the client
 the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verified in a browser.**
 
-## The three views
+## The views
 
 | Piece                             | File                                                                                               |
 | --------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -15,7 +15,7 @@ the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verif
 | the view's host, the frame's mark | `components/ask/KnowledgeViewHost.tsx`                                                             |
 | the surface a view is drawn on    | `components/ask/KnowledgeViewFrame.tsx`                                                            |
 
-- **`KnowledgeView`** is `'pages' | 'ask' | 'ai'`. `knowledgeViewOf(search)` reads `?view=`; anything else is
+- **`KnowledgeView`** is `'pages' | 'ask' | 'ai' | 'connect'` (Connect: [its blueprint](mcp-connect-ui.md)). `knowledgeViewOf(search)` reads `?view=`; anything else is
   `pages`. `knowledgeViewHref(href, view)` sets or removes the parameter and keeps the path, the rest of the query
   (a share link's `s`) and the hash (`#t=<page>`).
 - **Why the query and not the hash:** `useTabEntryEffects` rewrites the whole hash to `#t=<id>` whenever it is not
@@ -26,7 +26,7 @@ the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verif
 - **`showKnowledgeView(view, { replace })`** is `history.pushState` (or `replaceState`) with the router's own state
   handed back, then a notify. `subscribeKnowledgeView` also hears `popstate`, so Back and Forward move the view.
   `useKnowledgeView()` is `useSyncExternalStore` over the two; on the server it is `pages`.
-- **The way between the views** is the footer's three tabs, a `nav` named "Knowledgebase Views"
+- **The way between the views** is the footer's four tabs, a `nav` named "Knowledgebase Views"
   ([page surface blueprint](page-surface.md) "The footer and the top row"). The corner card's switch and the
   phone's switch row are gone.
 - **Offered** (`useKnowledgeViewsOffered`): `hydrated`, a `documentId`, `appChrome`, and none of `embedMode`,

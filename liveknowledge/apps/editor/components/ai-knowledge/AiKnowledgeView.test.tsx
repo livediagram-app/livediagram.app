@@ -54,6 +54,7 @@ vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 vi.mock('@/lib/knowledge/go-to-block', () => ({ BLOCK_HIT_MS: 1600, goToBlock: vi.fn() }));
 
 import { ContextBudgetError } from '@/lib/api/knowledge';
+import { track } from '@/lib/telemetry';
 import { goToBlock } from '@/lib/knowledge/go-to-block';
 import { closeAiSettings, useAiSettingsOpen } from '@/lib/knowledge-ask/ai-settings-open';
 import { ROLES, chromeValue, renderInEditor, type Role } from '@/components/ask/test-chrome';
@@ -545,34 +546,16 @@ describe('an Editor’s actions', () => {
     );
   });
 
-  it('opens the connection instructions from Connect an Agent', async () => {
-    const openSettingsOn = vi.fn();
-    await open('edit', { openSettingsOn });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Connect an Agent' })[0]!);
-    const dialog = within(screen.getByRole('dialog', { name: 'Connect an Agent' }));
-    expect(
-      dialog.getByText(/can read and search this knowledgebase and suggest edits/),
-    ).toBeTruthy();
-    expect(dialog.getByText(/choose Allow Writing/)).toBeTruthy();
-    // The tools and commands by their own names.
-    expect(
-      dialog.getByText(/get_context first, and search_pages,\s+read_page and suggest_edit/),
-    ).toBeTruthy();
-    expect(dialog.getByText(/liveknowledge auth login/)).toBeTruthy();
-    expect(dialog.getByText('https://mcp.liveknowledge.app/mcp')).toBeTruthy();
-    fireEvent.click(dialog.getByRole('button', { name: 'Open API Tokens' }));
-    expect(openSettingsOn).toHaveBeenCalledWith('tokens');
-    expect(screen.queryByRole('dialog', { name: 'Connect an Agent' })).toBeNull();
-  });
-
-  it('tells anyone but an Editor who can allow writing', async () => {
-    await open('view');
-    fireEvent.click(screen.getAllByRole('button', { name: 'Connect an Agent' })[0]!);
-    const dialog = within(screen.getByRole('dialog', { name: 'Connect an Agent' }));
-    expect(
-      dialog.getByText(/Only an Editor of this knowledgebase can allow a connection to write/),
-    ).toBeTruthy();
-    expect(dialog.queryByText(/choose Allow Writing/)).toBeNull();
+  it('opens the Connect view from Connect an Agent, for every role', async () => {
+    for (const role of ['edit', 'view'] as const) {
+      window.history.replaceState(null, '', '/document/d1?view=ai');
+      const { unmount } = await open(role);
+      fireEvent.click(screen.getAllByRole('button', { name: 'Connect an Agent' })[0]!);
+      expect(window.location.search).toBe('?view=connect');
+      expect(track).toHaveBeenCalledWith('UI', 'Opened', 'ConnectAgent');
+      expect(screen.queryByRole('dialog')).toBeNull();
+      unmount();
+    }
   });
 });
 

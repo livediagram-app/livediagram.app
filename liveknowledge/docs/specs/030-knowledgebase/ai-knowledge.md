@@ -13,7 +13,8 @@ Most of it needs no model: it is bookkeeping the room already has.
 
 One card per agent that has read or written this knowledgebase in the last 30 days: its name (the MCP client's, the CLI, or an
 API token's label), how it connects, what it may do (**Reads**, **Suggests Edits**, **Writes**), pages read this week and the
-three it read most. **Connect an Agent** opens the instructions for the MCP server, the CLI and tokens.
+three it read most. **Connect an Agent** opens the [Connect](mcp-connect.md) view: the steps for an AI app over the
+MCP server, the CLI and tokens.
 
 A new connection reads and suggests. An Editor allows one connection to write from its card's menu (**Allow
 Writing**), and stops it there (**Stop Writing**); each asks first, saying what writing allows (replace a page's
@@ -185,10 +186,9 @@ rows and actions, long lists capped so the page never grows with the data.
   (owner, 2026-11-21). Only where no AI can check (no key, and no built-in AI on this server) does the Disagreements
   filter carry one small note, with **Open AI Settings** for an Editor; the All list, the tiles and the empty states
   say nothing of a key.
-- **Connect an Agent** is a dialog: a new connection can read, search and suggest; how an Editor allows writing
-  (anyone else reads that an Editor can); then the MCP server's address and its first tools (`get_context`,
-  `search_pages`, `read_page`, `suggest_edit`), the command line (`liveknowledge auth login`, `context`, `search`)
-  and **Open API Tokens** (Settings' Tokens page).
+- **Connect an Agent** opens the [Connect](mcp-connect.md) view (owner 2026-11-21), which replaced the dialog it
+  opened: the steps for each AI app, what a connection may do and how an Editor allows writing, the command line
+  and **Open API Tokens**.
 - **An agent's card:** an icon, the name, how it connects and when it was last seen (what the room noted of its
   token), a "Connected" dot, what it may do as chips from its scopes (**Reads**, **Suggests Edits**, **Writes**),
   pages read this week and the three it read most, each opening its page. An agent known only by its reads, counted

@@ -293,6 +293,7 @@ export { lucidePipette } from './lucide/pipette';
 export { lucidePizza } from './lucide/pizza';
 export { lucidePlane } from './lucide/plane';
 export { lucidePlay } from './lucide/play';
+export { lucidePlug } from './lucide/plug';
 export { lucidePlus } from './lucide/plus';
 export { lucidePresentation } from './lucide/presentation';
 export { lucideProportions } from './lucide/proportions';

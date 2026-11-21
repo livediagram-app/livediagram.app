@@ -4580,6 +4580,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/marketing-site':
+        specifier: workspace:^
+        version: link:../../../packages/marketing-site
       '@liveworkspace/media':
         specifier: workspace:*
         version: link:../../../packages/media

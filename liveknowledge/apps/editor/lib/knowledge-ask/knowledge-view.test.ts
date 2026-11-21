@@ -11,11 +11,13 @@ import {
 afterEach(() => window.history.replaceState(null, '', '/document/d1'));
 
 describe('the view an address names', () => {
-  it('is Pages unless it names Ask or AI Knowledge', () => {
+  it('is Pages unless it names Ask, AI Knowledge or Connect', () => {
     expect(knowledgeViewOf('')).toBe('pages');
     expect(knowledgeViewOf('?view=ask')).toBe('ask');
     expect(knowledgeViewOf('?s=abc&view=ai')).toBe('ai');
+    expect(knowledgeViewOf('?view=connect')).toBe('connect');
     expect(knowledgeViewOf('?view=slides')).toBe('pages');
+    expect(knowledgeViewOf('?view=toString')).toBe('pages');
   });
 
   it('keeps the path, the share code and the open page', () => {
