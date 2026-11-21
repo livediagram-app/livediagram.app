@@ -1,6 +1,7 @@
 'use client';
 
-// The meta row under a page's title (docs/specs/030-knowledgebase/verification.md "States"): the verified state,
+// The meta row under a page's title (docs/specs/030-knowledgebase/verification.md "States"): how long it takes to read
+// (page-surface.md "Reading time"), the verified state,
 // when the review is due, when it was last edited (where that is known) and "Changed since verified". Verifying is
 // the right rail's (Page Health), never the page's own. Its height is kept whatever it holds, so nothing in the writing moves when the page's
 // health arrives or its state changes, except that a row with nothing in it is not drawn at all.
@@ -8,9 +9,14 @@ import { Fragment, type ReactNode } from 'react';
 import { reviewDueText, trustMark, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
 import { TrustBadge } from './TrustBadge';
+import { ClockIcon } from './knowledge-icons';
+import { pageWords, readingMinutes } from '@/lib/knowledge/reading-time';
+import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 
 export type PageMetaRowProps = {
+  /** Whole minutes the page takes to read (reading-time.ts); 0 for an empty page, which shows none. */
+  minutes?: number;
   trust: PageTrust;
   now: number;
   // The verifier's name, where the editor knows it.
@@ -21,6 +27,7 @@ export type PageMetaRowProps = {
 };
 
 export function PageMetaRowView({
+  minutes = 0,
   trust,
   now,
   verifiedBy,
@@ -29,6 +36,18 @@ export function PageMetaRowView({
 }: PageMetaRowProps) {
   const mark = trustMark(trust.state);
   const notes: { key: string; node: ReactNode }[] = [];
+  if (minutes > 0)
+    notes.push({
+      key: 'read',
+      node: (
+        <span data-reading-time="" className="inline-flex items-center gap-1 tabular-nums">
+          <span className="text-slate-400 dark:text-slate-500">
+            <ClockIcon />
+          </span>
+          {minutes} min read
+        </span>
+      ),
+    });
   if (trust.reviewAt !== undefined)
     notes.push({ key: 'review', node: reviewDueText(trust.reviewAt, now) });
   if (edited)
@@ -64,8 +83,14 @@ export function PageMetaRowView({
 export function PageMetaRow() {
   const page = usePageKnowledge();
   const { nameOf } = useKnowledgePeople();
+  // Counted from the committed blocks (cached per block list), so it moves when the writing commits, not per key.
+  const minutes = useEditorChrome((s) => {
+    const article = Object.values(s.activeTab.articles ?? {})[0];
+    return article ? readingMinutes(pageWords(article.blocks)) : 0;
+  });
   return (
     <PageMetaRowView
+      minutes={minutes}
       trust={page.trust}
       now={page.now}
       verifiedBy={nameOf(page.trust.fields.verifiedBy)}

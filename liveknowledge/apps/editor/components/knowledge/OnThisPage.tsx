@@ -1,8 +1,8 @@
 'use client';
 
-// On This Page (the right rail): how long the page takes to read, then the headings of its writing, the one being
-// read marked as the page scrolls, each a press that brings its heading into view. Absent for an empty page; a page
-// with writing and no headings shows its reading time alone.
+// On This Page (the right rail): the headings of its writing, the one being read marked as the page scrolls, each a
+// press that brings its heading into view. Absent for a page with no headings. (The reading time is under the title,
+// in the meta row: PageMetaRow.)
 import type { PageHeading } from '@/lib/knowledge/page-headings';
 import { RAIL_LABEL } from './PageHealthCard';
 
@@ -12,30 +12,15 @@ export function OnThisPage({
   headings,
   current,
   onGo,
-  minutes = 0,
 }: {
   headings: readonly PageHeading[];
   current: string | undefined;
   onGo: (id: string) => void;
-  /** Whole minutes the page takes to read; 0 for an empty page. */
-  minutes?: number;
 }) {
-  const readTime =
-    minutes > 0 ? (
-      <span
-        data-reading-time=""
-        className="shrink-0 text-xs text-slate-500 tabular-nums dark:text-slate-400"
-      >
-        {minutes} min read
-      </span>
-    ) : null;
-  if (headings.length === 0) return readTime ? <div>{readTime}</div> : null;
+  if (headings.length === 0) return null;
   return (
     <nav aria-label="On This Page" data-on-this-page="">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className={RAIL_LABEL}>On This Page</p>
-        {readTime}
-      </div>
+      <p className={RAIL_LABEL}>On This Page</p>
       <ul className="mt-2 border-l-2 border-slate-200 dark:border-slate-800">
         {headings.map((heading) => {
           const here = heading.id === current;

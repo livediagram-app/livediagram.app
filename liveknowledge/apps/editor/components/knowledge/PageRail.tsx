@@ -15,7 +15,6 @@ import {
   type PageHeading,
 } from '@/lib/knowledge/page-headings';
 import { pageViewportOf } from '@/lib/page-surface/page-viewport-store';
-import { pageWords, readingMinutes } from '@/lib/knowledge/reading-time';
 import { track } from '@/lib/telemetry';
 import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
@@ -39,18 +38,18 @@ const stampOf = (
   nameOf: (id: string | undefined) => string | undefined,
 ): PageStamp | undefined => (stamp ? { at: stamp.at, by: nameOf(stamp.by) } : undefined);
 
-type Writing = { flow: string; headings: readonly PageHeading[]; minutes: number };
+type Writing = { flow: string; headings: readonly PageHeading[] };
 
 // The page's one article: its flow and its headings, read from the committed blocks (page-headings.ts keeps the
 // last answer per block list, so a store update that changed no block reads nothing).
 function writingOf(tab: { articles?: Record<string, { blocks: readonly unknown[] }> }): Writing {
   const [flow, article] = Object.entries(tab.articles ?? {})[0] ?? [];
-  if (!flow || !article) return { flow: '', headings: NO_HEADINGS, minutes: 0 };
+  if (!flow || !article) return { flow: '', headings: NO_HEADINGS };
   const blocks = article.blocks as Parameters<typeof pageHeadings>[0];
-  return { flow, headings: pageHeadings(blocks), minutes: readingMinutes(pageWords(blocks)) };
+  return { flow, headings: pageHeadings(blocks) };
 }
 const sameWriting = (a: Writing, b: Writing) =>
-  a.flow === b.flow && a.minutes === b.minutes && sameHeadings(a.headings, b.headings);
+  a.flow === b.flow && sameHeadings(a.headings, b.headings);
 
 const blockEl = (id: string) =>
   document.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
@@ -113,12 +112,7 @@ export function PageRailBody() {
   const changeReviewPeriod = useKnowledgebaseSettings();
   return (
     <div className="flex flex-col gap-8">
-      <OnThisPage
-        headings={writing.headings}
-        current={current}
-        onGo={go}
-        minutes={writing.minutes}
-      />
+      <OnThisPage headings={writing.headings} current={current} onGo={go} />
       <PageHealthCard
         trust={page.trust}
         reviewEvery={page.reviewEvery}

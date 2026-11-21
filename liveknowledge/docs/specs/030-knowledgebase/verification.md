@@ -58,8 +58,11 @@ own.
   line under it: "Fresh for 80 more days", "Was due 14 Jan", "Verify it once it is right." The week's reads are two
   quiet figures (people, agents) under "Read This Week". The ring fills over half a second when it changes, and not
   at all with reduced motion.
-- **The meta row** under the title is drawn only when it has something to say (a tick or pill, a due date, an edit):
-  a page never verified and never edited has no row, so the writing starts right under the title.
+- **The meta row** under the title is drawn only when it has something to say (a tick or pill, a due date, an edit,
+  how long it takes to read): an empty page never verified has no row, so the writing starts right under the title.
+- **Reading time** sits in the meta row (owner, 2026-11-21: "1 min read should go under the page title, not the
+  sidebar"), a small clock then "4 min read", counted at 230 words a minute from the committed writing; none for an
+  empty page. The right rail no longer shows it. The page's Add Cover control joins this row when covers land.
 
 ## The Review Period
 

@@ -81,3 +81,13 @@ describe('contentsClusterLeft: the bottom-right cluster beside a docked sidebar'
     expect(contentsClusterLeft(true, 1.25)).toBe(contentsSidebarClearancePx(1.25));
   });
 });
+
+describe('translateOf with percentages (a sidebar sliding in)', () => {
+  it('reads a percentage of the panel, and a calc() of % and px mid-slide', () => {
+    expect(translateOf('-100%', 280, 900)).toEqual([-280, 0]);
+    expect(translateOf('calc(-37.5% + 4px)', 280, 900)).toEqual([-101, 0]);
+    expect(translateOf('0px -50%', 280, 900)).toEqual([0, -450]);
+    expect(translateOf('12px', 280, 900)).toEqual([12, 0]);
+    expect(translateOf('none', 280, 900)).toEqual([0, 0]);
+  });
+});

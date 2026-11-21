@@ -72,6 +72,35 @@ describe('the meta row', () => {
     expect(row.className.split(' ')).toContain('hidden');
   });
 
+  it('says how long the page takes to read, with a clock, and nothing for an empty page', () => {
+    const never = pageTrust({}, 90, NOW);
+    const { container, rerender } = render(
+      <PageMetaRowView
+        minutes={4}
+        trust={never}
+        now={NOW}
+        verifiedBy={undefined}
+        changedSinceVerified={false}
+      />,
+    );
+    const read = container.querySelector('[data-reading-time]')!;
+    expect(read.textContent).toBe('4 min read');
+    expect(read.querySelector('svg')).toBeTruthy();
+    expect(container.querySelector('[data-page-meta]')!.className.split(' ')).not.toContain(
+      'hidden',
+    );
+    rerender(
+      <PageMetaRowView
+        minutes={0}
+        trust={never}
+        now={NOW}
+        verifiedBy={undefined}
+        changedSinceVerified={false}
+      />,
+    );
+    expect(container.querySelector('[data-reading-time]')).toBeNull();
+  });
+
   it("holds no Verify button: verifying is the right rail's", () => {
     render(
       <PageMetaRowView

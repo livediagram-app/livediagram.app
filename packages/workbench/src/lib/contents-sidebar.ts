@@ -38,16 +38,42 @@ type Box = { left: number; right: number; top: number; bottom: number };
  *  be, not where it has got to. */
 export function restingRect(el: HTMLElement): Box {
   const r = el.getBoundingClientRect();
-  const [dx = 0, dy = 0] = translateOf(getComputedStyle(el).translate);
+  // A percentage is of the panel's own box (a sidebar sliding in from `-100%` reads "-100%", or a `calc()` of % and
+  // px mid-slide), so it counts against the panel's untransformed size.
+  const [dx = 0, dy = 0] = translateOf(
+    getComputedStyle(el).translate,
+    el.offsetWidth || r.width,
+    el.offsetHeight || r.height,
+  );
   return { left: r.left - dx, right: r.right - dx, top: r.top - dy, bottom: r.bottom - dy };
 }
 
-/** The px of a computed `translate` ("12px", "12px -4px", "none"). */
-export function translateOf(value: string | undefined): [number, number] {
+/** The px of a computed `translate` ("12px", "12px -4px", "-100%", "calc(-37.5% + 4px)", "none"); a percentage is of
+ *  `width` (x) or `height` (y). */
+export function translateOf(value: string | undefined, width = 0, height = 0): [number, number] {
   if (!value || value === 'none') return [0, 0];
-  const [x = '0', y = '0'] = value.trim().split(/\s+/);
-  const px = (v: string) => (v.endsWith('px') ? Number.parseFloat(v) || 0 : 0);
-  return [px(x), px(y)];
+  // Split on the spaces between the two values, not inside a calc().
+  const parts: string[] = [];
+  let depth = 0;
+  let part = '';
+  for (const ch of value.trim()) {
+    if (ch === '(') depth++;
+    if (ch === ')') depth--;
+    if (/\s/.test(ch) && depth === 0) {
+      if (part) parts.push(part);
+      part = '';
+    } else part += ch;
+  }
+  if (part) parts.push(part);
+  const px = (v: string, size: number) => {
+    let sum = 0;
+    for (const m of v.matchAll(/([+-]?\s*[\d.]+(?:e-?\d+)?)(px|%)/g)) {
+      const n = Number.parseFloat(m[1]!.replace(/\s/g, '')) || 0;
+      sum += m[2] === '%' ? (n / 100) * size : n;
+    }
+    return sum;
+  };
+  return [px(parts[0] ?? '0', width), px(parts[1] ?? '0', height)];
 }
 
 /** The screen px a panel covers at the canvas's left or right: a panel in the canvas's left half
