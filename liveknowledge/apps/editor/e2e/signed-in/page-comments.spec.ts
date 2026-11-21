@@ -35,7 +35,9 @@ test('threads at a page’s foot: start, reply and resolve, live for everyone on
   await saved;
 
   // A writer with no threads sees the empty state and the composer.
-  await expect(comments(page)).toContainText('No Comments Yet');
+  await expect(comments(page)).toContainText(
+    'Questions, corrections and context for this page go here.',
+  );
   const field = comments(page).getByLabel('Add a comment');
   await field.fill('Is the blue lever still the right one?');
   await field.press('ControlOrMeta+Enter');

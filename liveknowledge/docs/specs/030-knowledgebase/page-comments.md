@@ -32,14 +32,17 @@ Comments are about the page as a whole.
   **Resolve**.
 - **Resolved threads** are folded under "2 Resolved" (closed by default); opened, each shows dimmed with "Resolved
   by Priya, 2 days ago" and **Reopen**.
-- **Start a thread:** at the end, a composer, "Add a comment...", that grows with its words; **Comment** (accent)
-  posts, as does Cmd or Ctrl Enter; Escape clears it. An empty composer's button is disabled.
+- **Start a thread** (redesigned, owner 2026-11-21: "make it amazing"): at the end, a composer card: the writer's
+  initials disc beside a borderless field on a soft rounded card. At rest it is one quiet line ("Start the
+  conversation about this page…" with no threads, else "Add a comment…"); focused or holding words, the card takes the
+  accent's ring and opens its foot: a "Cmd Enter to comment" hint (desktop) and **Comment**, an accent pill with a send
+  glyph, disabled while empty. It grows with its words; Cmd or Ctrl Enter posts; Escape clears it.
 - **Reply** opens a composer under the thread's last comment, focused; **Reply** posts it.
 - **Your own comment** has **Edit** and **Delete** in a small menu on hover or focus (always shown on touch). Edit
   turns it into a composer with **Save** and **Cancel**. Delete asks first ("Delete This Comment?"); deleting a
   thread's last comment removes the thread.
-- **Nothing to show:** with no threads, a writer sees the composer under the empty state "No Comments Yet", "Start
-  the conversation about this page."
+- **Nothing to show:** with no threads, a writer sees no empty-state box: one quiet line under the heading with the
+  comments glyph, "Questions, corrections and context for this page go here.", then the composer.
   A Viewer sees nothing at all: no heading, no empty state (decided), so a page with no conversation is just a page.
 - **An empty page has no Comments** (owner 2026-11-21): while a page has nothing under its title (the empty page's
   drawing shows instead), the Comments section is not drawn for anyone, threads or not. It appears once the page has

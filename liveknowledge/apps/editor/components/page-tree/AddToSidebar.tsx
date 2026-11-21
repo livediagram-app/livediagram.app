@@ -17,8 +17,9 @@ import { AddIcon, ConnectFileIcon, MoreToAddIcon, NewPageIcon } from './page-tre
 import type { PageTreeProps } from './PageTree';
 
 /** The dashed button that adds a page (the sidebar's foot, the phone sheet's). */
+// New Page and its chevron wear the foot's bordered look, as Hide Pages beside them (owner 2026-11-21).
 export const NEW_PAGE_BUTTON =
-  'optical-edges flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-2.5 py-2 text-sm font-medium text-slate-600 motion-safe:transition-colors motion-safe:duration-micro hover:border-brand-400 hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100';
+  'optical-edges flex h-[38px] w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-600 motion-safe:transition-colors motion-safe:duration-micro hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50 phone:h-11 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100';
 
 /** New Page: adds a top-level page. At the page limit it is disabled and says why. */
 export function NewPageButton({ tabs, onAdd }: { tabs: PageTreeProps['tabs']; onAdd: () => void }) {
@@ -49,7 +50,7 @@ export function NewPageButton({ tabs, onAdd }: { tabs: PageTreeProps['tabs']; on
 
 // The New Page button's dashed look, square, so the two read as one foot.
 const MORE_BUTTON =
-  'flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-600 motion-safe:transition-colors motion-safe:duration-micro hover:border-brand-400 hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-brand-600 aria-expanded:border-brand-400 aria-expanded:bg-brand-50 aria-expanded:text-brand-800 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100 dark:aria-expanded:border-brand-400/60 dark:aria-expanded:bg-brand-500/20 dark:aria-expanded:text-brand-100';
+  'flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 motion-safe:transition-colors motion-safe:duration-micro hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 aria-expanded:border-brand-300 aria-expanded:bg-brand-50 aria-expanded:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100 dark:aria-expanded:border-brand-400/60 dark:aria-expanded:bg-brand-500/20 dark:aria-expanded:text-brand-100';
 
 export function AddToSidebar({
   tabs,

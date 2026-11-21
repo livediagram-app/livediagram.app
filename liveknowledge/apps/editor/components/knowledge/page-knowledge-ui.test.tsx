@@ -2,7 +2,7 @@
 
 // The page's verification UI (docs/specs/030-knowledgebase/verification.md): the meta row, the Page Health card,
 // On This Page and the badge, each from plain props, a share role at a time.
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -138,22 +138,28 @@ describe('Page Health', () => {
     nameOf: (id) => ({ u1: 'Priya Nair', u2: 'Marcus Oyelaran' })[id ?? ''],
     onSetOwner: vi.fn(),
     onVerify: vi.fn(),
+    periodControl: <button type="button">Change</button>,
     ...over,
   });
 
-  it('an Editor changes the owner, verifies again, and is linked to the Review Period, with no control of its own', () => {
+  it('an Editor changes the owner, verifies again, and has Change beside the Review Period', () => {
     const p = props();
     render(<Rail {...p} />);
     fireEvent.change(screen.getByLabelText('Owner'), { target: { value: 'u2' } });
     expect(p.onSetOwner).toHaveBeenCalledWith('u2');
     fireEvent.change(screen.getByLabelText('Owner'), { target: { value: '' } });
     expect(p.onSetOwner).toHaveBeenLastCalledWith(null);
-    // The Review Period is the knowledgebase's: the card says it and links to the setting.
+    // The Review Period is the knowledgebase's: the card says it, with the control it is given beside it.
     expect(screen.queryByLabelText('Review Interval')).toBeNull();
     expect(screen.getAllByRole('combobox')).toHaveLength(1);
-    // The period is shown, with no way to change it here: it is changed in Knowledgebase Settings.
-    expect(screen.getByText('Every 90 Days').closest('dd')!.textContent).toBe('Every 90 Days');
-    expect(screen.queryByRole('button', { name: 'Change the Review Period' })).toBeNull();
+    expect(screen.getByText('Every 90 Days').closest('dd')!.textContent).toBe(
+      'Every 90 DaysChange',
+    );
+    expect(
+      within(screen.getByText('Every 90 Days').closest('dd')!).getByRole('button', {
+        name: 'Change',
+      }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Verify Again' }));
     expect(p.onVerify).toHaveBeenCalledTimes(1);
     expect(screen.getByText('12')).toBeTruthy();
@@ -166,6 +172,7 @@ describe('Page Health', () => {
         {...props({
           onSetOwner: undefined,
           onVerify: undefined,
+          periodControl: undefined,
         })}
       />,
     );
@@ -252,6 +259,9 @@ describe('Page Health', () => {
     expect(healthHeadline(due, 90, NOW).title).toBe('Review Due');
     expect(freshness(due, 90, NOW)).toBe(0);
     expect(healthHeadline(verified, 'never', NOW).line).toBe('No review needed');
+    // Just verified, read by a clock a few seconds behind: the whole period, never a day more.
+    const justNow = pageTrust({ verifiedAt: NOW, verifiedBy: 'u1' }, 90, NOW);
+    expect(healthHeadline(justNow, 90, NOW - 30_000).line).toBe('Fresh for 90 more days');
   });
 
   it('says who created the page and who last updated it, at its foot, and nothing when unknown', () => {

@@ -44,7 +44,7 @@ replaces what the fork still shows around the writing.
   the mark alone. It opens the Explorer on the place that holds the knowledgebase.
 - **Sidebars slide.** Opening or folding the page tree slides it in from, or out to, the left (200 ms; at once with
   reduced motion). Folded to its rail, resting a mouse on the rail for 150 ms slides the whole tree out over the page
-  (a shadow, the page not moving), with **Keep Pages Open** in place of Hide Pages (both a bordered button at the tree's foot, right of
+  (a shadow, the page not moving), with **Keep Pages Open** in place of Hide Pages (both a bordered button at the tree's foot, New Page and its chevron wearing the same border and ground, right of
   New Page as livedocuments' Contents Options, so the knowledgebase's name has its row to itself; owner 2026-11-21); it slides back 300 ms after the
   pointer leaves it, unless a menu opened from it is still open. Touch has no hover, so a phone keeps its Pages sheet.
 - **Reading time:** On This Page's heading carries how long the page takes to read ("4 min read"), at 230 words a

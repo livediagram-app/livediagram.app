@@ -6,8 +6,8 @@
 // Viewer with none sees nothing at all. Outside the writing: never in the draft, search or what agents read of it.
 import { useMemo } from 'react';
 import type { PageThread, PageThreadChange } from '@liveknowledge/api-schema';
-import { CompactEmptyState } from '@liveknowledge/ui';
 import { useRelativeNow } from '@/lib/relative-time';
+import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { CommentsIcon } from '@/components/knowledge/approval/feedback-icons';
 import { PageCommentComposer } from './PageCommentComposer';
 import { PageThreadCard } from './PageThreadCard';
@@ -20,6 +20,8 @@ export type PageCommentsViewProps = {
   ownKey: string | null;
   now: number;
   change: (change: PageThreadChange) => Promise<boolean>;
+  /** The writer, for the composer's disc. */
+  me?: { name: string; color: string } | undefined;
 };
 
 export function PageCommentsView({
@@ -29,6 +31,7 @@ export function PageCommentsView({
   ownKey,
   now,
   change,
+  me,
 }: PageCommentsViewProps) {
   const { open, resolved } = useMemo(
     () => ({
@@ -89,17 +92,24 @@ export function PageCommentsView({
         ) : null}
         {canWrite ? (
           <>
+            {/* No threads yet: no empty-state box, one quiet line and the composer resting as a line beside the
+                writer's disc (owner 2026-11-21: "make it amazing"). */}
             {threads.length === 0 ? (
-              <CompactEmptyState
-                size="small"
-                icon={<CommentsIcon />}
-                title="No Comments Yet"
-                description="Start the conversation about this page."
-              />
+              <p
+                data-comments-empty=""
+                className="-mt-1 flex items-center gap-1.5 text-[13px] text-slate-500 dark:text-slate-400"
+              >
+                <CommentsIcon />
+                Questions, corrections and context for this page go here.
+              </p>
             ) : null}
             <PageCommentComposer
-              placeholder="Add a comment..."
+              placeholder={
+                threads.length === 0 ? 'Start the conversation about this page…' : 'Add a comment…'
+              }
               submitLabel="Comment"
+              label="Add a comment"
+              me={me}
               onSubmit={(text) => change({ op: 'start', text })}
             />
           </>
@@ -118,6 +128,9 @@ export function PageCommentsView({
 export function PageComments() {
   const view = usePageComments();
   const now = useRelativeNow();
+  const name = useEditorChrome((s) => s.selfParticipant.name);
+  const color = useEditorChrome((s) => s.selfParticipant.color);
+  const me = useMemo(() => ({ name: name || 'Guest', color }), [name, color]);
   if (view.hidden) return null;
   return (
     <PageCommentsView
@@ -129,6 +142,7 @@ export function PageComments() {
       ownKey={view.ownKey}
       now={now}
       change={view.change}
+      me={me}
     />
   );
 }

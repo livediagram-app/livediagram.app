@@ -7,7 +7,20 @@
 import { useRef, useState } from 'react';
 import { COMMENT_TEXT_MAX } from '@liveknowledge/api-schema';
 import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
-import { Button } from '@liveknowledge/ui';
+import { Button, GlyphDisc, IDENTITY_FILL, identityVars, lucideGlyph } from '@liveknowledge/ui';
+import { lucideSend } from '@liveworkspace/icons/lucide';
+import { initialsOf } from '@/lib/identity';
+import { modifierName } from '@/lib/page-edit/page-edit-text';
+
+const SendIcon = lucideGlyph(lucideSend, 14);
+
+function Kbd({ children }: { children: string }) {
+  return (
+    <kbd className="rounded border border-slate-200 bg-slate-50 px-1 py-px font-sans text-[10px] font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+      {children}
+    </kbd>
+  );
+}
 
 const MAX = { px: 200 };
 
@@ -22,6 +35,10 @@ export type PageCommentComposerProps = {
   onSubmit: (text: string) => Promise<boolean>;
   /** A reply or an edit has Cancel; the thread's own composer has none. */
   onCancel?: () => void;
+  /** The start composer: the writer's disc beside it, resting as one line until it is focused. */
+  me?: { name: string; color: string } | undefined;
+  /** The field's name when the placeholder says more than it ("Add a comment"). */
+  label?: string;
 };
 
 export function PageCommentComposer({
@@ -31,7 +48,10 @@ export function PageCommentComposer({
   autoFocus = false,
   onSubmit,
   onCancel,
+  me,
+  label,
 }: PageCommentComposerProps) {
+  const modifier = modifierName(typeof navigator === 'undefined' ? undefined : navigator.platform);
   const [draft, setDraft] = useState(initial);
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -48,58 +68,94 @@ export function PageCommentComposer({
       setBusy(false);
     }
   };
+  const [focused, setFocused] = useState(false);
+  // The start composer rests as one quiet line with the writer's disc; its actions open with focus or words.
+  const open = !me || focused || draft.length > 0;
   return (
-    <div data-page-comment-composer="" className="flex flex-col gap-2">
-      <textarea
-        ref={ref}
-        value={draft}
-        rows={1}
-        autoFocus={autoFocus}
-        aria-label={placeholder.replace(/\.+$|…$/, '')}
-        placeholder={placeholder}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-            e.preventDefault();
-            void submit();
-          } else if (e.key === 'Escape') {
-            e.stopPropagation();
-            if (onCancel) onCancel();
-            else setDraft('');
-          }
-        }}
-        style={{ maxHeight: MAX.px }}
-        className={`block min-h-10 w-full resize-none rounded-xl border bg-white px-3 py-2 font-sans text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:ring-2 motion-reduce:transition-none phone:min-h-11 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-400 ${
-          tooLong
-            ? 'border-rose-400 focus:ring-rose-400/30 dark:border-rose-500/70'
-            : 'border-slate-200 focus:border-brand-400 focus:ring-brand-400/30 dark:border-slate-700 dark:focus:border-brand-500'
-        }`}
-      />
-      <div className="flex items-center justify-end gap-2">
-        {tooLong ? (
-          <p className="mr-auto text-xs tabular-nums text-rose-700 dark:text-rose-300">
-            {words.length.toLocaleString('en')}/{COMMENT_TEXT_MAX.toLocaleString('en')}
-          </p>
-        ) : null}
-        {onCancel ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-            className="cursor-pointer phone:min-h-11"
-          >
-            Cancel
-          </Button>
-        ) : null}
-        <Button
-          variant="primary"
-          size="sm"
-          disabled={!ready}
-          onClick={() => void submit()}
-          className="cursor-pointer phone:min-h-11"
+    <div
+      data-page-comment-composer=""
+      data-open={open ? '' : undefined}
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+      }}
+      className={`group/composer flex gap-3 rounded-2xl border bg-white p-2 pl-3 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-[border-color,box-shadow] duration-150 motion-reduce:transition-none dark:bg-slate-900 ${
+        tooLong
+          ? 'border-rose-400 dark:border-rose-500/70'
+          : focused
+            ? 'border-brand-400 shadow-[0_0_0_4px_rgb(var(--color-brand-500-rgb,132_204_22)/0.12)] dark:border-brand-500'
+            : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'
+      }`}
+    >
+      {me ? (
+        <GlyphDisc
+          size={28}
+          as="span"
+          aria-hidden
+          style={identityVars(me.color)}
+          className={`mt-1 shrink-0 text-[11px] font-semibold text-white ${IDENTITY_FILL}`}
         >
-          {submitLabel}
-        </Button>
+          {initialsOf(me.name)}
+        </GlyphDisc>
+      ) : null}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <textarea
+          ref={ref}
+          value={draft}
+          rows={1}
+          autoFocus={autoFocus}
+          aria-label={label ?? placeholder.replace(/\.+$|…$/, '')}
+          placeholder={placeholder}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+              e.preventDefault();
+              void submit();
+            } else if (e.key === 'Escape') {
+              e.stopPropagation();
+              if (onCancel) onCancel();
+              else {
+                setDraft('');
+                e.currentTarget.blur();
+              }
+            }
+          }}
+          style={{ maxHeight: MAX.px }}
+          className="block min-h-9 w-full resize-none bg-transparent py-1.5 pr-1 font-sans text-sm leading-6 text-slate-800 outline-none placeholder:text-slate-400 phone:min-h-11 dark:text-slate-100 dark:placeholder:text-slate-500"
+        />
+        {open ? (
+          <div className="flex items-center justify-end gap-2 pt-1 motion-safe:animate-fade-in">
+            {tooLong ? (
+              <p className="mr-auto text-xs tabular-nums text-rose-700 dark:text-rose-300">
+                {words.length.toLocaleString('en')}/{COMMENT_TEXT_MAX.toLocaleString('en')}
+              </p>
+            ) : (
+              <p className="mr-auto hidden text-[11px] text-slate-400 sm:block dark:text-slate-500">
+                <Kbd>{modifier}</Kbd> <Kbd>Enter</Kbd> to {submitLabel.toLowerCase()}
+              </p>
+            )}
+            {onCancel ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCancel}
+                className="cursor-pointer rounded-full phone:min-h-11"
+              >
+                Cancel
+              </Button>
+            ) : null}
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!ready}
+              onClick={() => void submit()}
+              className="cursor-pointer gap-1.5 rounded-full pl-3 pr-3.5 phone:min-h-11"
+            >
+              <SendIcon />
+              {submitLabel}
+            </Button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

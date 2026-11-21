@@ -129,7 +129,9 @@ describe('the comments at a page’s foot, by role', () => {
     expect(container.innerHTML).toBe('');
     unmount();
     draw('participant', []);
-    expect(screen.getByText('No Comments Yet')).toBeTruthy();
+    expect(
+      screen.getByText('Questions, corrections and context for this page go here.'),
+    ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Comment' }).hasAttribute('disabled')).toBe(true);
   });
 

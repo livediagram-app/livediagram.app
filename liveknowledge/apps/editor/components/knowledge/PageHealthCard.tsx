@@ -4,7 +4,7 @@
 // panel washed in the state's colour (a freshness ring round the state's glyph, how much of the Review Period is left,
 // and Verify), then the owner and review facts, each with its glyph. The week's reads and who created and last
 // updated the page are PageActivity, held at the rail's foot (as a liveplanner card's footer is). An Editor changes the owner in
-// place; the Review Period is the knowledgebase's, so the rail only links to the setting. Every row keeps its height
+// place, and the Review Period (the knowledgebase's, every page's) beside its row. Every row keeps its height
 // while the reads load and when the period changes, so nothing moves under the pointer.
 import { GUEST_DISC_TINT, isGuestName } from './guest-disc';
 import type { ReactNode } from 'react';
@@ -43,8 +43,10 @@ export type PageHealthCardProps = {
   nameOf: (id: string | undefined) => string | undefined;
   // Absent for anyone who may not change the fields: the rows read as text.
   onSetOwner: ((owner: string | null) => void) | undefined;
-  // Opens Knowledgebase Settings; absent for anyone who may not change the Review Period.
   onVerify: (() => void) | undefined;
+  /** Change, beside the Review Period: absent for anyone who may not change it (anyone but an Editor of the whole
+   *  knowledgebase). */
+  periodControl?: ReactNode;
 };
 
 /** The section label, as On This Page's. */
@@ -76,7 +78,10 @@ export function healthHeadline(
     };
   if (every === 'never' || trust.reviewAt === undefined)
     return { title: 'Verified', line: 'No review needed' };
-  const left = Math.max(1, Math.ceil((trust.reviewAt - now) / DAY_MS));
+  // The rail's clock ticks once a minute, so just after a verify it can read earlier than the verify itself: counted
+  // from no earlier than the verify, a page verified now reads its whole period, never a day more.
+  const from = Math.max(now, trust.fields.verifiedAt ?? now);
+  const left = Math.max(1, Math.ceil((trust.reviewAt - from) / DAY_MS));
   return { title: 'Verified', line: `Fresh for ${left} more ${left === 1 ? 'day' : 'days'}` };
 }
 
@@ -362,6 +367,7 @@ export function PageHealthCard({
   nameOf,
   onSetOwner,
   onVerify,
+  periodControl,
 }: PageHealthCardProps) {
   const { owner, verifiedAt, verifiedBy } = trust.fields;
   const ownerName = nameOf(owner);
@@ -461,9 +467,18 @@ export function PageHealthCard({
                 : shortDate(trust.reviewAt, now)}
           </span>
         </Row>
-        {/* The knowledgebase's Review Period, read-only here: it is changed in Knowledgebase Settings. */}
+        {/* The knowledgebase's Review Period; an Editor changes it from Change, beside the value. */}
         <Row icon={<PeriodIcon />} label="Review Period">
-          <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
+          {periodControl ? (
+            <span className="flex min-w-0 items-center justify-end gap-1.5">
+              <span data-review-period="" className="truncate">
+                {reviewPeriodLabel(reviewEvery)}
+              </span>
+              {periodControl}
+            </span>
+          ) : (
+            <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
+          )}
         </Row>
       </dl>
     </section>
