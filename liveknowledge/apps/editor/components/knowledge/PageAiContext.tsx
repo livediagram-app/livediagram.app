@@ -1,18 +1,15 @@
 'use client';
 
 // AI Context in the right rail (docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page"): whether every
-// agent is handed this page first, the questions Ask answered from it, the agents that read it this week, and Ask
-// About This Page. It reads nothing of its own: the questions and the agents ride Page Health's one read. Quiet, as
+// agent is handed this page first, the questions Ask answered from it, the agents that read it this week (each
+// shown only when there is something: owner 2026-11-21). It reads nothing of its own: the questions and the agents ride Page Health's one read. Quiet, as
 // the rest of the rail is: small-capital headings, no card, no border.
 import { useId } from 'react';
 import type { PageAgentReads, PageAnsweredQuestion } from '@liveknowledge/api-schema';
-import { Button, CompactEmptyState, Switch } from '@liveknowledge/ui';
+import { Switch } from '@liveknowledge/ui';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { askAboutPageText, setAskDraft } from '@/lib/knowledge-ask/ask-draft';
-import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
 import { track } from '@/lib/telemetry';
-import { AskViewIcon } from '@/components/ask/ask-icons';
 import { AgentsIcon, ContextIcon } from './knowledge-icons';
 import { RAIL_LABEL } from './PageHealthCard';
 import type { PageKnowledgeView } from './usePageKnowledge';
@@ -26,7 +23,6 @@ export type PageAiContextProps = {
   agents: readonly PageAgentReads[] | undefined;
   /** Absent for anyone who may not change it: the state reads as words. */
   onSetContext: ((on: boolean) => void) | undefined;
-  onAskAboutPage: () => void;
 };
 
 const SUB_LABEL = 'text-xs font-medium text-slate-500 dark:text-slate-400';
@@ -60,7 +56,6 @@ export function PageAiContext({
   answered,
   agents,
   onSetContext,
-  onAskAboutPage,
 }: PageAiContextProps) {
   const labelId = useId();
   const sizeId = useId();
@@ -110,54 +105,42 @@ export function PageAiContext({
         ) : null}
       </div>
 
-      <div data-ai-context-answered="" className="mt-5">
-        <h3 className={SUB_LABEL}>Answered From This Page</h3>
-        {answered === undefined ? (
-          <Placeholder />
-        ) : answered.length === 0 ? (
-          <CompactEmptyState
-            size="small"
-            icon={<AskViewIcon />}
-            title="No Questions Answered Yet"
-            description="Questions Ask answers from this page show here."
-            className="mt-1.5"
-          />
-        ) : (
-          <ul className="mt-2 flex flex-col gap-3">
-            {answered.map((q) => (
-              <li key={q.question} data-answered-question="" className="flex gap-2">
-                <span
-                  aria-hidden
-                  className="-mt-0.5 select-none font-serif text-2xl leading-7 text-brand-600/70 dark:text-brand-400/70"
-                >
-                  {'“'}
-                </span>
-                <div className="min-w-0">
-                  {/* Other people's words, drawn as text. Clamped to three lines; the whole stays for a reader. */}
-                  <p className="line-clamp-3 break-words text-slate-800 dark:text-slate-200">
-                    {q.question}
-                  </p>
-                  <p className="mt-0.5 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
-                    {askedTimes(q.asked)}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {/* Only when Ask has answered from the page (owner 2026-11-21: "if no questions or read by agents, don't show
+        it"); a placeholder while Page Health is read. */}
+      {answered?.length === 0 ? null : (
+        <div data-ai-context-answered="" className="mt-5">
+          <h3 className={SUB_LABEL}>Answered From This Page</h3>
+          {answered === undefined ? (
+            <Placeholder />
+          ) : (
+            <ul className="mt-2 flex flex-col gap-3">
+              {answered.map((q) => (
+                <li key={q.question} data-answered-question="" className="flex gap-2">
+                  <span
+                    aria-hidden
+                    className="-mt-0.5 select-none font-serif text-2xl leading-7 text-brand-600/70 dark:text-brand-400/70"
+                  >
+                    {'“'}
+                  </span>
+                  <div className="min-w-0">
+                    {/* Other people's words, drawn as text. Clamped to three lines; the whole stays for a reader. */}
+                    <p className="line-clamp-3 break-words text-slate-800 dark:text-slate-200">
+                      {q.question}
+                    </p>
+                    <p className="mt-0.5 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                      {askedTimes(q.asked)}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
-      <div data-ai-context-agents="" className="mt-5">
-        <h3 className={SUB_LABEL}>Read by Agents</h3>
-        {agents === undefined ? null : agents.length === 0 ? (
-          <CompactEmptyState
-            size="small"
-            icon={<AgentsIcon />}
-            title="No Agent Reads This Week"
-            description="Agents that read this page show here."
-            className="mt-1.5"
-          />
-        ) : (
+      {agents === undefined || agents.length === 0 ? null : (
+        <div data-ai-context-agents="" className="mt-5">
+          <h3 className={SUB_LABEL}>Read by Agents</h3>
           <ul className="mt-1.5 flex flex-col">
             {agents.map((a) => (
               <li key={a.agent} data-page-agent="" className="flex min-h-8 items-center gap-2">
@@ -173,18 +156,8 @@ export function PageAiContext({
               </li>
             ))}
           </ul>
-        )}
-      </div>
-
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={onAskAboutPage}
-        className="mt-5 w-full cursor-pointer justify-center gap-1.5 phone:min-h-11"
-      >
-        <AskViewIcon />
-        Ask About This Page
-      </Button>
+        </div>
+      )}
     </section>
   );
 }
@@ -192,7 +165,6 @@ export function PageAiContext({
 /** The section for the page open, from what the rail already holds; nothing for a knowledgebase kept Offline. */
 export function PageRailAiContext({ page }: { page: PageKnowledgeView }) {
   const documentId = useEditorChrome((s) => s.documentId);
-  const title = useEditorChrome((s) => s.activeTab.name);
   const offline = useIsOfflineDocument(documentId);
   if (offline || !documentId) return null;
   const { health, rights, pageId } = page;
@@ -210,11 +182,6 @@ export function PageRailAiContext({ page }: { page: PageKnowledgeView }) {
             }
           : undefined
       }
-      onAskAboutPage={() => {
-        track('UI', 'Used', 'AskAboutPage');
-        setAskDraft(documentId, askAboutPageText(title));
-        showKnowledgeView('ask');
-      }}
     />
   );
 }

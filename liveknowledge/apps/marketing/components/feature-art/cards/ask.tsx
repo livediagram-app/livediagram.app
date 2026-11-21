@@ -1,5 +1,5 @@
 // The Ask page's card drawings (docs/specs/019-marketing/marketing-site.md "Feature pages", `ask`): citations, the
-// Sources rail, a Knowledge Gap, the team's own key, search with no key, and Ask About This Page.
+// Sources rail, a Knowledge Gap, the team's own key, search with no key, and Save as Page.
 import { Bars, Button, PageGlyph, Pill, Scene, Sheet, Tick, Txt, at } from './kit';
 
 /** A citation number, in a small lime box. */
@@ -216,32 +216,32 @@ export function SearchArt() {
   );
 }
 
-/** A page's AI Context: the questions answered from it, and Ask About This Page. */
-export function AskThisPageArt() {
+/** Save as Page: an answer, with its sources, becomes a subpage of the page picked. */
+export function SaveAsPageArt() {
   return (
     <Scene>
-      <Sheet x={14} y={8} w={140} h={80}>
-        <Txt x={22} y={22} size={7} weight={700}>
-          Rollback Runbook
+      <Sheet x={14} y={8} w={128} h={80}>
+        <Txt x={22} y={22} size={6.2} weight={700}>
+          How do we roll back?
         </Txt>
-        <Bars x={22} y={30} widths={[120, 100, 116, 84, 110, 60]} gap={8} />
+        <Bars x={22} y={30} widths={[110, 96, 104, 70]} gap={8} />
+        <g className="kb-pop" style={at(0.6)}>
+          <Button x={22} y={66} w={60} filled>
+            Save as Page
+          </Button>
+        </g>
       </Sheet>
-      <Txt x={166} y={18} size={5.8} weight={700} tone="quiet">
-        AI CONTEXT
-      </Txt>
-      <Txt x={166} y={30} size={5.6} weight={600} tone="quiet">
-        Answered From This Page
-      </Txt>
-      <Txt x={166} y={41} size={6} weight={500}>
-        “How do we roll back?”
-      </Txt>
-      <Txt x={166} y={50} size={5.4} weight={500} tone="quiet">
-        Asked 6 times
-      </Txt>
       <g className="kb-pop" style={at(1.2)}>
-        <Button x={166} y={60} w={78} filled>
-          Ask About This Page
-        </Button>
+        <Sheet x={158} y={20} w={112} h={62}>
+          <PageGlyph x={166} y={28} />
+          <Txt x={176} y={34.5} size={6.4} weight={700}>
+            Rolling Back
+          </Txt>
+          <Txt x={166} y={46} size={5.4} weight={500} tone="quiet">
+            Under Release Process
+          </Txt>
+          <Bars x={166} y={56} widths={[92, 78, 60]} gap={7} />
+        </Sheet>
       </g>
     </Scene>
   );

@@ -88,19 +88,3 @@ test('a question Ask answered from the page shows under Answered From This Page'
   );
   expectNoPageErrors(pageErrors);
 });
-
-test('Ask About This Page opens Ask with the page named in the field, nothing sent', async ({
-  page,
-  pageErrors,
-}) => {
-  await runbook(page);
-  await aiContext(page).getByRole('button', { name: 'Ask About This Page' }).click();
-  await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBe('ask');
-  const field = page.getByRole('textbox', { name: 'Ask a question' });
-  await expect(field).toHaveValue('About Runbook: ');
-  await expect(field).toBeFocused();
-  await expect(page.getByRole('article', { name: 'Answer' })).toHaveCount(0);
-  await page.keyboard.type('where is the lever?');
-  await expect(field).toHaveValue('About Runbook: where is the lever?');
-  expectNoPageErrors(pageErrors);
-});

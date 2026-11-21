@@ -219,10 +219,10 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/knowledgebase/searching-a-knowledgebase/',
       },
       {
-        title: 'Ask About This Page',
+        title: 'Save an Answer as a Page',
         description:
-          'A page’s AI Context shows the questions Ask answered from it, and Ask About This Page starts a question about it.',
-        art: <AskCardArt.AskThisPageArt />,
+          'A good answer becomes a subpage of the page you pick, its words ready to edit, so the next person finds it in the tree.',
+        art: <AskCardArt.SaveAsPageArt />,
         href: '/help/knowledgebase/ask/',
       },
     ],

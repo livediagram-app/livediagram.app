@@ -175,7 +175,7 @@ export function PageEditBar() {
   const mayEdit = useEditorChrome((s) => s.pageEditing.mayEdit);
   const agentChanges = useEditorChrome((s) => s.pageEditing.agentChanges);
   const tabId = useEditorChrome((s) => s.pageTab.id);
-  const me = useEditorChrome((s) => s.selfParticipant.name.trim() || 'Someone');
+  const me = useEditorChrome((s) => s.selfParticipant.name.trim() || 'Guest');
   const since = useEditorChrome((s) => s.pageEditing.since);
   // A relative time ticks with the shared clock; the draft's record moves at most once a minute.
   const now = useRelativeNow();

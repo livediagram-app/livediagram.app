@@ -265,7 +265,7 @@ describe('Page Health', () => {
     );
     const rows = [...container.querySelectorAll('[data-page-stamp]')].map((r) => r.textContent);
     expect(rows[0]).toMatch(/^PNPriya NairCreated 3 days ago/);
-    expect(rows[1]).toMatch(/^\?SomeoneUpdated 3 mins ago/);
+    expect(rows[1]).toMatch(/^GGuestUpdated 3 mins ago/);
     rerender(<Rail {...props()} />);
     expect(container.querySelectorAll('[data-page-stamp]')).toHaveLength(0);
   });

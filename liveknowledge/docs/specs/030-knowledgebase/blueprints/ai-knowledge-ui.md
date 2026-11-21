@@ -152,7 +152,7 @@ day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows wi
   name, `PAGE_AGENTS_LISTED` (3). Both run beside the reads and the authors in `handlePageHealth`'s one
   `Promise.all`; each is a range of an index. The answer gains `answered: { question, asked }[]` and
   `agents: { agent, reads }[]` (`PageHealthResponse`, optional so a read held from before them is still one).
-- **The section** (`PageAiContext`): a `section` named "AI Context", its `RAIL_LABEL` heading, then three blocks
+- **The section** (`PageAiContext`): a `section` named "AI Context", its `RAIL_LABEL` heading, then up to three blocks
   each under a smaller label, no card and no border:
   - **Always in Context**: a glyph, "Always in Context" and "About 1,200 tokens" (`tokens` from the read; nothing
     before it), and for an Editor (`rights.editFields`) a `Switch` (`sm`) labelled "Always in Context" calling
@@ -161,13 +161,8 @@ day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows wi
     First". Telemetry `UI·Added·ContextPage` / `UI·Removed·ContextPage`, as AI Knowledge sends.
   - **Answered From This Page**: up to three quotes (an opening curly quote in the brand's colour, then the
     question, clamped to three lines with the whole words still in the page for a screen reader) with "Asked once" or "Asked 6 times" under each; before the read, quiet
-    placeholder lines; with none, "No questions answered from this page yet."
-  - **Read by Agents**: each agent's name and its reads ("12 reads"), or "No agent has read this page this week."
-  - **Ask About This Page**: a secondary `Button`, full width. It puts "About <title>: " in `ask-draft.ts` for this
-    knowledgebase, sends `UI·Used·AskAboutPage` and shows Ask (`showKnowledgeView('ask')`). `AskReady` takes the
-    draft once when it mounts (`takeAskDraft`), starts a new conversation and hands it to `AskComposer` as its
-    `initialValue`, focused with the caret at the end. A draft is kept in memory only, for this knowledgebase, and
-    taken once.
+    placeholder lines; with none, the block is not drawn.
+  - **Read by Agents**: each agent's name and its reads ("12 reads"); with none, the block is not drawn.
 - **Offline**: `PageRailBody` does not draw the section.
 - **Share roles**: every role sees it; only `rights.editFields` draws the switch (an Editor or a Participant on the
   whole knowledgebase, not Offline).
@@ -176,8 +171,8 @@ day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows wi
 - **Tests.** `packages/knowledge/src/sql/page-answers.test.ts` (recording, grouping, the 30-day window, the cap,
   the agents' order); `apps/api/src/routes/knowledge-ai-context.test.ts` (recorded by an answer and not by a
   follow-up or an uncited one, every reading role, pruning, a deleted page); `PageAiContext.test.tsx` (per role,
-  empty states, the switch, Ask About This Page); `e2e/signed-in/ai-context.spec.ts` (an asked question shows under
-  Answered From This Page; Ask About This Page fills the field).
+  hidden empty blocks, the switch); `e2e/signed-in/ai-context.spec.ts` (an asked question shows under
+  Answered From This Page).
 
 ## Not built, or not known
 

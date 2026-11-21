@@ -1,17 +1,10 @@
 // @vitest-environment jsdom
 
 // AI Context in the right rail (docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page"), from plain
-// props, a share role at a time; and the words Ask About This Page leaves for Ask's field.
+// props, a share role at a time.
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { knowledgeRights } from '@/lib/knowledge/knowledge-rights';
-import {
-  ASK_DRAFT_TTL_MS,
-  askAboutPageText,
-  setAskDraft,
-  takeAskDraft,
-} from '@/lib/knowledge-ask/ask-draft';
-import { AskComposer } from '@/components/ask/AskComposer';
 import { PageAiContext, aboutTokens, askedTimes, type PageAiContextProps } from './PageAiContext';
 
 afterEach(cleanup);
@@ -33,7 +26,6 @@ const view = (props: Partial<PageAiContextProps> = {}) =>
       answered={ANSWERED}
       agents={AGENTS}
       onSetContext={undefined}
-      onAskAboutPage={() => {}}
       {...props}
     />,
   );
@@ -60,10 +52,11 @@ describe('AI Context', () => {
     ]);
   });
 
-  it('says so when nothing was answered from the page and no agent read it', () => {
+  it('shows neither list when nothing was answered from the page and no agent read it', () => {
     view({ answered: [], agents: [] });
-    expect(screen.getByText('No Questions Answered Yet')).toBeTruthy();
-    expect(screen.getByText('No Agent Reads This Week')).toBeTruthy();
+    expect(section().querySelector('[data-ai-context-answered]')).toBeNull();
+    expect(section().querySelector('[data-ai-context-agents]')).toBeNull();
+    expect(screen.getByText('Always in Context')).toBeTruthy();
   });
 
   it('holds quiet placeholders before Page Health is read, and no size', () => {
@@ -77,13 +70,6 @@ describe('AI Context', () => {
     view({ answered: [{ question: '<img src=x onerror=alert(1)> deploys?', asked: 2 }] });
     expect(section().querySelector('img')).toBeNull();
     expect(screen.getByText('<img src=x onerror=alert(1)> deploys?')).toBeTruthy();
-  });
-
-  it('opens Ask about the page for every role', () => {
-    const ask = vi.fn();
-    view({ onAskAboutPage: ask });
-    fireEvent.click(screen.getByRole('button', { name: 'Ask About This Page' }));
-    expect(ask).toHaveBeenCalledOnce();
   });
 });
 
@@ -137,38 +123,5 @@ describe('the words', () => {
     expect(askedTimes(1234)).toBe('Asked 1,234 times');
     expect(aboutTokens(1)).toBe('About 1 token');
     expect(aboutTokens(8000)).toBe('About 8,000 tokens');
-  });
-});
-
-describe('Ask About This Page', () => {
-  it('leaves "About <title>: " for this knowledgebase, taken once, within a minute', () => {
-    expect(askAboutPageText('  Release\n Process ')).toBe('About Release Process: ');
-    expect(askAboutPageText('')).toBe('About This Page: ');
-    setAskDraft('kb', 'About Deploys: ', 1000);
-    expect(takeAskDraft('other', 1000)).toBeNull();
-    expect(takeAskDraft('kb', 1000)).toBeNull();
-    setAskDraft('kb', 'About Deploys: ', 1000);
-    expect(takeAskDraft('kb', 1000 + ASK_DRAFT_TTL_MS)).toBeNull();
-    setAskDraft('kb', 'About Deploys: ', 1000);
-    expect(takeAskDraft('kb', 2000)).toBe('About Deploys: ');
-    expect(takeAskDraft('kb', 2000)).toBeNull();
-  });
-
-  it("fills Ask's field, focused, the caret at the end, and sends nothing", () => {
-    const onAsk = vi.fn(() => true);
-    render(
-      <AskComposer
-        streaming={false}
-        followUp={false}
-        onAsk={onAsk}
-        onStop={() => {}}
-        initialValue="About Deploys: "
-      />,
-    );
-    const field = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Ask a question' });
-    expect(field.value).toBe('About Deploys: ');
-    expect(document.activeElement).toBe(field);
-    expect(field.selectionStart).toBe('About Deploys: '.length);
-    expect(onAsk).not.toHaveBeenCalled();
   });
 });

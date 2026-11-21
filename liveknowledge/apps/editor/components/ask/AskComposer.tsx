@@ -3,7 +3,7 @@
 // The question field at the foot of the conversation (docs/specs/030-knowledgebase/search-and-ask.md "Bounds"): Enter
 // sends, Shift and Enter make a new line, 1,000 characters at most with a count as the limit nears. While an answer
 // streams the field waits and the button becomes Stop, which aborts the request.
-import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { HoverCard, TextArea, isComposingKey } from '@liveknowledge/ui';
 import { ASK_MAX_QUESTION_CHARS } from '@liveknowledge/knowledge';
 import { SendIcon, StopIcon } from './ask-icons';
@@ -21,7 +21,6 @@ export function AskComposer({
   followUp,
   onAsk,
   onStop,
-  initialValue = '',
 }: {
   streaming: boolean;
   // A turn is already there: the field asks for a follow-up.
@@ -29,18 +28,9 @@ export function AskComposer({
   // False when the question was not taken (the field then keeps it).
   onAsk: (question: string) => boolean;
   onStop: () => void;
-  // Words already in the field (Ask About This Page): focused, the caret at their end, nothing sent.
-  initialValue?: string;
 }) {
-  const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState('');
   const field = useRef<HTMLTextAreaElement>(null);
-  const started = useRef(initialValue);
-  useEffect(() => {
-    const el = field.current;
-    if (!started.current || !el) return;
-    el.focus();
-    el.setSelectionRange(el.value.length, el.value.length);
-  }, []);
   const countId = useId();
   const length = value.length;
   const ready = value.trim() !== '' && !streaming;

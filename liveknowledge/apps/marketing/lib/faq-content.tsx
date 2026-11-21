@@ -48,8 +48,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
               GitHub
             </a>
             . Writing, linking, verifying, searching and connecting an agent cost nothing. Ask runs
-            on your team’s own AI key, so that usage is paid to your provider, not to us.
-            Describe to Set Up runs on built-in AI when your team has no key.
+            on your team’s own AI key, so that usage is paid to your provider, not to us. Describe
+            to Set Up runs on built-in AI when your team has no key.
           </>
         ),
         aText:
@@ -109,7 +109,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What is AI Context?',
-        a: 'A section in every page’s right rail: whether the page is Always in Context (handed to every agent first, with its size in tokens), the questions Ask answered from it, which agents read it this week, and Ask About This Page. Always in Context pages share a budget of 8,000 tokens, and a page that would pass it says so.',
+        a: 'A section in every page’s right rail: whether the page is Always in Context (handed to every agent first, with its size in tokens), the questions Ask answered from it, and which agents read it this week, each shown once there is one. Always in Context pages share a budget of 8,000 tokens, and a page that would pass it says so.',
       },
       {
         q: 'What does AI Knowledge show?',

@@ -1,7 +1,7 @@
 /* Edit, Save and Cancel say they happened (docs/specs/030-knowledgebase/editing.md "The buttons"; owner 2026-11-21:
    "an animation when I click edit cancel or save to make it obvious it did something"): the document's white area
    glows round its edge in the mode's colour and fades, the buttons that take over pop in, and a double-click to edit
-   sends a ring out from the pointer. Short and once; reduced motion collapses them (globals.css). */
+   sends a ring out from the pointer. Within the 250ms chrome budget (motion-budget.test.ts); reduced motion collapses them (globals.css). */
 @keyframes lk-mode-flash {
   from {
     box-shadow:
@@ -15,7 +15,7 @@
   }
 }
 [data-page-scroller][data-mode-flash] {
-  animation: lk-mode-flash 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: lk-mode-flash 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 [data-page-scroller][data-mode-flash='edit'] {
   --lk-flash: color-mix(in oklab, var(--color-brand-500) 70%, transparent);
@@ -38,7 +38,7 @@
   }
 }
 .lk-pop-in {
-  animation: lk-pop-in 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: lk-pop-in 220ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @keyframes lk-click-ring {
@@ -60,5 +60,5 @@
   background: color-mix(in oklab, var(--color-brand-400) 18%, transparent);
   pointer-events: none;
   z-index: var(--z-toolbar);
-  animation: lk-click-ring 550ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: lk-click-ring 250ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

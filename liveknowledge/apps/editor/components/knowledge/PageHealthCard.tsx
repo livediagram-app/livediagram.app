@@ -217,10 +217,11 @@ function StampRow({ what, stamp, now }: { what: string; stamp: PageStamp; now: n
   // Two lines, so a whole name fits the rail: who, then what they did and when.
   return (
     <div data-page-stamp="" className="flex min-h-9 items-center gap-2.5">
-      <Disc name={stamp.by} />
+      <Disc name={!stamp.by || stamp.by === 'Someone' ? 'Guest' : stamp.by} />
       <span className="min-w-0 flex-1 leading-4">
         <span className="block truncate text-[13px] font-medium text-slate-800 dark:text-slate-200">
-          {stamp.by ?? 'Someone'}
+          {/* A guest's stamp, and one written before guests were named so, reads "Guest" (owner 2026-11-21). */}
+          {!stamp.by || stamp.by === 'Someone' ? 'Guest' : stamp.by}
         </span>
         <span className="block text-[11px] text-slate-500 dark:text-slate-400">
           {what}{' '}

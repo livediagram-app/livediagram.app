@@ -1,14 +1,12 @@
 'use client';
 
+import { knowledgeTabTitle } from '@/lib/knowledge-tab-title';
 import { EditorLibraryProvider } from '@/components/primitives/EditorLibraryProvider';
 import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import {
-  editorTabTitle,
-  useBrowserTabTitle,
-} from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
+import { useBrowserTabTitle } from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
 import { DOCUMENT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import {
@@ -105,13 +103,12 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     'liveknowledge',
     documentIdFromPath,
   );
-  // Tab title reflects the document and its open tab: "<name> | <tab> | liveknowledge" (falls back to
-  // Untitled when the document has no name yet). Updates as the user renames.
+  // The browser tab names the page first (owner, 2026-11-21): "<page> | <knowledgebase> | liveknowledge", the page
+  // left out while it has no name. Updates as either is renamed.
   useBrowserTabTitle(
-    editorTabTitle(
-      state.documentName?.trim() || 'Untitled Knowledgebase',
+    knowledgeTabTitle(
       state.activeTab?.name,
-      'liveknowledge',
+      state.documentName?.trim() || 'Untitled Knowledgebase',
     ),
   );
   const {

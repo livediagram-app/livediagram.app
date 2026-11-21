@@ -85,7 +85,7 @@ export function useEditorPageEditing({
         ? null
         : {
             tabId,
-            writer: { by: selfParticipant.name.trim() || 'Someone', now: () => Date.now() },
+            writer: { by: selfParticipant.name.trim() || 'Guest', now: () => Date.now() },
           };
     sessionRef.current = tabId === null ? null : { tabId, since: Date.now() };
     setEditingTabIdState(tabId);

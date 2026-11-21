@@ -37,7 +37,7 @@ export function notePageEditors(roster: readonly RosterEntry[]): void {
   const next = new Map<string, { tabId: string; who: PageEditor }>();
   names.clear();
   for (const p of roster) {
-    const name = typeof p.name === 'string' && p.name.trim() ? p.name.trim() : 'Someone';
+    const name = typeof p.name === 'string' && p.name.trim() ? p.name.trim() : 'Guest';
     names.set(p.id, name);
     if (typeof p.editing !== 'string' || !p.editing) continue;
     const who: PageEditor = {
@@ -86,7 +86,7 @@ export const peerEditing = (presenceId: string, tabId: string): boolean =>
 
 /** A peer saved a page (the page-saved presence op): told to whoever listens, with the peer's roster name. */
 export function notePeerSaved(presenceId: string, tabId: string): void {
-  const name = names.get(presenceId) ?? 'Someone';
+  const name = names.get(presenceId) ?? 'Guest';
   saveListeners.forEach((l) => l(tabId, name));
 }
 

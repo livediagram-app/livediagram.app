@@ -30,7 +30,7 @@ describe('who is editing', () => {
       { id: 'p3', name: 'Sam', color: '#00f' },
       { id: 'p4', name: 'Ana', color: 5, editing: 't2' },
     ]);
-    expect(pageEditorsOf('t1').map((e) => e.name)).toEqual(['Priya', 'Someone']);
+    expect(pageEditorsOf('t1').map((e) => e.name)).toEqual(['Priya', 'Guest']);
     expect(pageEditorsOf('t1')[1]!.picture).toBe('https://x/p.png');
     expect(pageEditorsOf('t2')[0]!.color).toBe('');
     expect(pageEditorsOf('t1')).toBe(pageEditorsOf('t1'));
@@ -71,7 +71,7 @@ describe('who is editing', () => {
     notePeerSaved('p1', 't1');
     expect(heard.mock.calls).toEqual([
       ['t1', 'Priya'],
-      ['t1', 'Someone'],
+      ['t1', 'Guest'],
     ]);
   });
 });

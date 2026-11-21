@@ -80,12 +80,11 @@ what agents and Ask make of this one page. It looks as the rest of the rail does
   would pass the budget is not added and the refusal says so in the route's words. Anyone else reads "Handed to
   Every Agent First" or "Not Handed to Agents First".
 - **Answered From This Page**: the questions whose Ask answer cited this page, up to 3, most asked first, over the
-  last 30 days, each quoted with "Asked 6 times" ("Asked once" for one). With none: "No questions answered from
-  this page yet."
+  last 30 days, each quoted with "Asked 6 times" ("Asked once" for one). With none it is not shown (owner,
+  2026-11-21: "if no questions or read by agents, don't show it").
 - **Read by Agents**: the agents that read this page in the last 7 days, the 3 that read it most, each with its
-  reads. With none: "No agent has read this page this week."
-- **Ask About This Page**: opens Ask with "About <page title>: " already in the question field, the caret at its
-  end, nothing asked until the person sends it.
+  reads. With none it is not shown.
+- No Ask About This Page (owner, 2026-11-21: "we already have Ask in the footer").
 - **What is kept.** When Ask answers a first question (not a follow-up) and cites pages, the room counts it once
   for each page cited, under the question's key (the words that carry meaning, stemmed: the same grouping as
   questions nobody could answer), by day: `page_answers`, a row a page, key and day, holding the asker's words (at
@@ -96,11 +95,10 @@ what agents and Ask make of this one page. It looks as the rest of the rail does
   more requests. Every role that can read the page reads them.
 - **A knowledgebase kept Offline** has no room, no Ask and no agents: the section is not drawn and nothing is kept.
 
-| Action                                           | Editor | Participant | Viewer |
-| ------------------------------------------------ | ------ | ----------- | ------ |
-| See AI Context                                   | yes    | yes         | yes    |
-| Set Always in Context from it                    | yes    | yes         | no     |
-| Ask About This Page (Ask's own rules then apply) | yes    | yes         | yes    |
+| Action                        | Editor | Participant | Viewer |
+| ----------------------------- | ------ | ----------- | ------ |
+| See AI Context                | yes    | yes         | yes    |
+| Set Always in Context from it | yes    | yes         | no     |
 
 ## Knowledge Health
 

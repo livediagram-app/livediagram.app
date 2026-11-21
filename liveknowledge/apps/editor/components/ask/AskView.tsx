@@ -10,7 +10,6 @@ import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { useKnowledgePeople } from '@/components/knowledge/usePageKnowledge';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import { askConversationFor, recentQuestionsStore } from '@/lib/knowledge-ask/ask-session-store';
-import { takeAskDraft } from '@/lib/knowledge-ask/ask-draft';
 import { takeArrival } from '@/lib/knowledge-home/arrival-handoff';
 import { useRelativeNow } from '@/lib/relative-time';
 import { AiSettingsButton } from './AiSettingsButton';
@@ -86,12 +85,6 @@ function AskReady({ session }: { session: AskSession }) {
   const { nameOf } = useKnowledgePeople();
   const now = useRelativeNow();
   const [recentOpen, setRecentOpen] = useState(false);
-  // Words Ask About This Page left for the field: taken once, on a new question.
-  const [draft] = useState(() => takeAskDraft(documentId));
-  useEffect(() => {
-    if (draft) conversation.reset();
-  }, [draft, conversation]);
-
   // A question typed on the Knowledgebase Home (knowledgebase-home.md "Hero"): asked here as a new question, once.
   useEffect(() => {
     const arrival = takeArrival('ask', documentId);
@@ -135,7 +128,6 @@ function AskReady({ session }: { session: AskSession }) {
         nameOf={nameOf}
         now={now}
         onNew={() => askNew()}
-        waiting={draft ?? undefined}
       />
     </div>
   );
