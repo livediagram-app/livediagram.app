@@ -4,7 +4,14 @@
 // every archive, move out, trash and restore; the room keeps the newest under one storage key and, while the item is
 // put away, its rules hear nothing and no time rule, Wait or settle wakes it. An item that never heard keeps no key
 // and runs as before (fails open). A grant signed after the stored moment says where the item stands too (none is
-// signed for an archived item), so a lost restore mends itself the next time anyone opens the item.
+// signed for an archived item), so a lost restore mends itself the next time anyone opens the item. While it is put
+// away, a grant signed before it was (an API token's, cached by its worker) is refused (`refusal`, Work Tracker 1323).
+import {
+  putAwayRefusal,
+  type KeptStanding,
+  type PutAwayRefusal,
+  type StandingGrant,
+} from '@liveworkspace/index-app';
 import type { ItemWord } from '../../item';
 import { AUTOMATION_LATE_MAX_MS } from '../../limits';
 import { settleWaiting } from '../automation-log';
@@ -12,10 +19,10 @@ import type { ItemEngine } from '../item/engine';
 import type { Sql } from '../sql';
 import type { CollabWatch } from './collab-watch';
 
-export type StoredStanding = { putAway: boolean; at: number };
+export type StoredStanding = KeptStanding;
 
 // What a grant says of where its item stands.
-export type StandingGrant = { iat?: number; iatMs?: number; trashed?: boolean };
+export type { StandingGrant };
 
 /** A held run whose time came while the item was put away, more than a day before it came back. */
 export const waitPutAwayWords = (itemWord: ItemWord): string =>
@@ -55,8 +62,13 @@ export class ItemStandingKeeper {
     const v = value as Partial<StoredStanding> | null | undefined;
     this.stored =
       v && typeof v.putAway === 'boolean' && typeof v.at === 'number'
-        ? { putAway: v.putAway, at: v.at }
+        ? { putAway: v.putAway, at: v.at, ...(v.trashed === true ? { trashed: true } : {}) }
         : null;
+  }
+
+  /** Whether a request's grant is refused: signed before the item was put away (putAwayRefusal). */
+  refusal(grant: StandingGrant): PutAwayRefusal | null {
+    return putAwayRefusal(this.stored, grant);
   }
 
   /** Whether `next` is newer than what is kept. */
@@ -70,7 +82,8 @@ export class ItemStandingKeeper {
     if (this.stored === null) return null;
     const at = grant.iatMs ?? (typeof grant.iat === 'number' ? grant.iat * 1000 : null);
     if (at === null) return null;
-    const next = { putAway: grant.trashed === true, at };
+    const trashed = grant.trashed === true;
+    const next = { putAway: trashed, trashed, at };
     return next.putAway !== this.stored.putAway && this.newer(next) ? next : null;
   }
 
@@ -96,7 +109,11 @@ export class ItemStandingKeeper {
 
   /** The index's push: `{archived, trashed, at}`. */
   take(standing: { archived: boolean; trashed: boolean; at: number }): Promise<void> {
-    return this.apply({ putAway: standing.archived || standing.trashed, at: standing.at });
+    return this.apply({
+      putAway: standing.archived || standing.trashed,
+      trashed: standing.trashed,
+      at: standing.at,
+    });
   }
 
   /** A grant handed to the room (an API request's). A failure is logged, never the caller's. */
