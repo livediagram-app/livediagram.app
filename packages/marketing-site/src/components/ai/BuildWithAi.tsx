@@ -18,7 +18,6 @@ import { StarterPrompts } from './StarterPrompts';
 // clients, prompts, art, capabilities and the few sentences that say what it makes).
 
 const ArrowIcon = lucideGlyph(lucideArrowRight, 16);
-const HELP_GUIDE = '/help/account-and-data/connect-ai-mcp/ai-clients/';
 
 export type BuildWithAiProps = AiProduct & {
   /** The product's clients, from aiClients(product). */
@@ -34,6 +33,9 @@ export type BuildWithAiProps = AiProduct & {
   capabilities: ReactNode;
   /** In your control: why connecting needs an account, and what never does. */
   controlLead: ReactNode;
+  /** The help article the page's guide links point at, in the app's own help centre (the app's help-links test
+   *  checks it is registered). */
+  helpGuide: string;
 };
 
 function SectionHead({
@@ -68,6 +70,7 @@ export function BuildWithAi({
   art,
   capabilities,
   controlLead,
+  helpGuide,
 }: BuildWithAiProps) {
   return (
     <main>
@@ -209,7 +212,7 @@ export function BuildWithAi({
                 <ButtonContent>Create a free account</ButtonContent>
               </a>
               <a
-                href={HELP_GUIDE}
+                href={helpGuide}
                 className={buttonClassName({ variant: 'secondary', size: 'cta-sm' })}
               >
                 <ButtonContent>Read the full guide</ButtonContent>
@@ -234,7 +237,7 @@ export function BuildWithAi({
           <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
             Still stuck? The{' '}
             <a
-              href={HELP_GUIDE}
+              href={helpGuide}
               className="font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-300"
             >
               Connecting AI Tools guide

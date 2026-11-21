@@ -24,6 +24,7 @@ export default function BuildWithAiPage() {
       <BreadcrumbJsonLd name="Build with AI" path="/ai" />
       <Header surface="Ai" />
       <BuildWithAi
+        helpGuide="/help/knowledgebase/connecting-an-agent/"
         {...AI_PRODUCT}
         clients={AI_CLIENTS}
         prompts={STARTER_PROMPTS}
