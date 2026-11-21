@@ -38,7 +38,7 @@ const OUTLINE = {
   ],
   people: [{ id: 'user_ana', name: 'Ana Costa' }],
 };
-const NAMES = itemNames('document', OUTLINE);
+const NAMES = itemNames('canvas', OUTLINE);
 
 const rule = (trigger: ItemPart, more: Partial<ItemRuleBody> = {}): ItemRuleBody => ({
   name: 'A Rule',
@@ -62,7 +62,7 @@ const stored = (body: ItemRuleBody): ItemRule => ({
 
 describe('KINDS', () => {
   it('is a document’s registry: its word, comment threads and tab templates', () => {
-    expect(KINDS.itemWord).toBe('document');
+    expect(KINDS.itemWord).toBe('canvas');
     expect(KINDS.collab).toBe(true);
     expect(KINDS.tabTemplates).toBe(true);
     expect(AUTOMATIONS_TELEMETRY_CATEGORY).toBe('Document');
