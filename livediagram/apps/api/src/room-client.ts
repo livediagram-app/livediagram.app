@@ -78,7 +78,13 @@ export const relayDocumentRename: (
   env: Env,
   documentId: string,
   name: string,
-  tabs: readonly { id: string; name: string; orderIndex: number; folder?: string }[],
+  tabs: readonly {
+    id: string;
+    name: string;
+    orderIndex: number;
+    folder?: string;
+    folderColor?: string;
+  }[],
 ) => Promise<boolean> = room.relayItemRename;
 
 // Slides the api appended to the deck (docs/specs/012-collaboration/presentation-mode.md "Slides an agent appends"),

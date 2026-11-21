@@ -161,8 +161,9 @@ describe('relays', () => {
     expect(await client.relayTabRename(env, 'd1', 't1', 'N')).toBe(true);
     expect(
       await client.relayItemRename(env, 'd1', 'Name', [
-        { id: 'a', name: 'A', orderIndex: 0, folder: 'F' },
-        { id: 'b', name: 'B', orderIndex: 1 },
+        { id: 'a', name: 'A', orderIndex: 0, folder: 'F', folderColor: 'rose' },
+        { id: 'b', name: 'B', orderIndex: 1, folderColor: 'rose' },
+        { id: 'c', name: 'C', orderIndex: 2, folder: 'G' },
       ]),
     ).toBe(true);
     const renameBody = JSON.parse(fetch.mock.calls[3]![1]!.body as string) as { op: unknown };
@@ -170,8 +171,10 @@ describe('relays', () => {
       kind: 'design-meta',
       name: 'Name',
       tabs: [
-        { id: 'a', name: 'A', orderIndex: 0, folder: 'F' },
+        { id: 'a', name: 'A', orderIndex: 0, folder: 'F', folderColor: 'rose' },
+        // A loose tab carries no colour.
         { id: 'b', name: 'B', orderIndex: 1 },
+        { id: 'c', name: 'C', orderIndex: 2, folder: 'G' },
       ],
     });
   });

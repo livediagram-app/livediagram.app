@@ -103,6 +103,9 @@ export type Tab = {
   // loose in another. Unset / empty = loose. See tab-folders.ts for
   // the normalize + grouping helpers.
   folder?: string;
+  // The folder's colour (tab-folders.md "Folder colour"): a hue name, carried on the same link row as `folder`
+  // and on every member alike; none is Automatic, the hue its name picks.
+  folderColor?: string;
   // Photoshop-style layers (docs/specs/006-design/layers.md), ordered BOTTOM -> TOP (index 0
   // paints lowest). Absent = the tab behaves as one implicit default
   // layer; the array is materialised lazily on the first layer

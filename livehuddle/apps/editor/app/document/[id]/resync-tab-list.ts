@@ -24,6 +24,7 @@ export function tabListOf(document: {
       name: t.name,
       orderIndex: i,
       ...(t.folder !== undefined ? { folder: t.folder } : {}),
+      ...(t.folderColor !== undefined ? { folderColor: t.folderColor } : {}),
       ...(t.outOfScope ? { outOfScope: true as const } : {}),
       ...(t.connection ? { connection: t.connection } : {}),
     })),

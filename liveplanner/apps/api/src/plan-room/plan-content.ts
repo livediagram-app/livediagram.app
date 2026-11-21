@@ -77,7 +77,7 @@ function metaOf(head: PlanHeadRow | null): PlanMeta | null {
 export async function readPlanOutline(env: PlanEnv, planId: string): Promise<PlanOutline> {
   const [tabs, plan] = await env.PLAN_DB.batch([
     env.PLAN_DB.prepare(
-      `SELECT t.id, dt.plan_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, t.connection
+      `SELECT t.id, dt.plan_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, dt.folder_color, t.connection
          FROM plan_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.plan_id = ?

@@ -140,11 +140,13 @@ describe('the parking schema step (V6)', () => {
     raw.exec('DROP INDEX outbox_due');
     for (const column of ['parked_at', 'retry_at', 'attempts'])
       raw.exec(`ALTER TABLE outbox DROP COLUMN ${column}`);
+    // Nor the steps after 5 (the folder colour column, V8).
+    raw.exec('ALTER TABLE document_tabs DROP COLUMN folder_color');
     raw.exec('UPDATE _document_schema SET version = 5');
     expect(() => outboxDueAt(nodeSql(raw))).toThrow();
     migrateDocumentSchema(exec);
     expect(outboxDueAt(nodeSql(raw))).toBeNull();
-    expect(DOCUMENT_SCHEMA_VERSION).toBe(7);
+    expect(DOCUMENT_SCHEMA_VERSION).toBe(8);
     // The Community triggers key the summary by delete-then-insert now.
     const triggers = raw
       .prepare(

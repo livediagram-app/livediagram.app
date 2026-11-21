@@ -323,14 +323,14 @@ export function itemTabWrites<Env, Tab extends WritableTab, Stats extends { elem
   }
 
   // A revert to a snapshot (liveworkspace/docs/specs/014-snapshots/snapshots.md "Revert", step 3): the item's tabs
-  // become exactly `tabs`, in their order and folders, with their own ids. Every one is written as a save writes it, in
+  // become exactly `tabs`, in their order and folders (with each folder's colour), with their own ids. Every one is written as a save writes it, in
   // one batch, so each revision moves forward (a draft kept over an older one is never replayed) and its stats and
   // reference indexes follow; a tab the item holds that `tabs` lacks is then removed as a tab delete removes it. A
   // tab's connection column is left as it is. Answers how many were written and removed.
   async function replaceTabs(
     env: Env,
     itemId: string,
-    tabs: readonly { tab: Tab; folder: string | null }[],
+    tabs: readonly { tab: Tab; folder: string | null; folderColor?: string | null }[],
     now = Date.now(),
   ): Promise<{ written: number; removed: number }> {
     const d1 = db(env);
@@ -339,11 +339,11 @@ export function itemTabWrites<Env, Tab extends WritableTab, Stats extends { elem
       .bind(itemId)
       .all<{ tab_id: string }>();
     const keep = new Set(tabs.map((t) => t.tab.id));
-    const statements = tabs.flatMap(({ tab, folder }, orderIndex) => [
+    const statements = tabs.flatMap(({ tab, folder, folderColor }, orderIndex) => [
       ...tabWriteStatements(env, itemId, tab, orderIndex, { advance: true }, now),
       d1
-        .prepare(`UPDATE ${links} SET folder = ? WHERE ${key} = ? AND tab_id = ?`)
-        .bind(folder, itemId, tab.id),
+        .prepare(`UPDATE ${links} SET folder = ?, folder_color = ? WHERE ${key} = ? AND tab_id = ?`)
+        .bind(folder, folder ? (folderColor ?? null) : null, itemId, tab.id),
     ]);
     if (statements.length > 0) await d1.batch(statements);
     let removed = 0;

@@ -76,3 +76,21 @@ describe('TabPill tap area', () => {
     expect(button.className).toMatch(/\brelative\b/);
   });
 });
+
+// Share roles (tab-folders.md "Membership UX"): the tab menu, the only way into Organise in Tab Folder and its
+// colour buttons, is an Editor's. A Viewer or a Participant (readOnly) gets no menu, by button or right-click.
+describe('Organise in Tab Folder (share roles)', () => {
+  it('offers no tab menu to a Viewer or a Participant', () => {
+    const c = ctx({ readOnly: true, isOutOfScope: () => false });
+    const { container } = render(<TabPill tab={tab('t2', 'Roadmap')} ctx={c} />);
+    expect(screen.queryByRole('button', { name: 'Tab menu' })).toBeNull();
+    fireEvent.contextMenu(container.firstElementChild as HTMLElement);
+    expect(c.setMenuFor).not.toHaveBeenCalled();
+  });
+
+  it("offers an Editor the active tab's menu", () => {
+    const c = ctx({ readOnly: false, selfRole: 'edit', isOutOfScope: () => false });
+    render(<TabPill tab={tab('t2', 'Roadmap')} ctx={c} />);
+    expect(screen.getByRole('button', { name: 'Tab menu' })).toBeTruthy();
+  });
+});

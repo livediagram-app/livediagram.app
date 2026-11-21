@@ -68,13 +68,16 @@ export const SESSION_TOKEN_TIMEOUT_MS = 10_000;
 //   - `folder`: per-file membership (tab-folders.md) that lives on the tab's link row, carried via the meta/reorder
 //     path. Leaking it into the shared body would make a folder follow the tab into every file it's shared into,
 //     breaking per-file scope.
-export function stripUiTabFields<T extends { templateChosen?: unknown; folder?: unknown }>(
-  tab: T,
-): T {
-  if (tab.templateChosen === undefined && tab.folder === undefined) return tab;
-  const { templateChosen: _tc, folder: _f, ...rest } = tab;
+//   - `folderColor`: the folder's colour, on the same link row for the same reason.
+export function stripUiTabFields<
+  T extends { templateChosen?: unknown; folder?: unknown; folderColor?: unknown },
+>(tab: T): T {
+  if (tab.templateChosen === undefined && tab.folder === undefined && tab.folderColor === undefined)
+    return tab;
+  const { templateChosen: _tc, folder: _f, folderColor: _fc, ...rest } = tab;
   void _tc;
   void _f;
+  void _fc;
   return rest as T;
 }
 

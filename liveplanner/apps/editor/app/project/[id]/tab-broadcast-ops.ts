@@ -26,7 +26,7 @@ export const EL_OP_BROADCAST_LIMIT = 20;
 // Tab keys that never ride a `tab-meta` patch: `id` is immutable, `elements`
 // travels as `el` ops, and `folder` is owned by the project-meta op (docs/specs/006-project/tab-folders.md)
 // so a content/meta edit can't clobber a concurrent folder move.
-export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder']);
+export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder', 'folderColor']);
 
 // A whole tab as one op. When both sides have a layout, it says the layout rides its own deltas (dashboardDeltaOps), so
 // the peer keeps its own layout through this copy.
@@ -217,6 +217,7 @@ export function mergeRemoteTab(
     ...rest,
     elements,
     folder: local.folder,
+    folderColor: local.folderColor,
     ...(vote !== undefined ? { vote } : {}),
     ...(keepLayout ? { dashboard: local.dashboard } : {}),
   };

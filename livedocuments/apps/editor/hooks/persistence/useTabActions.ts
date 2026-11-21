@@ -19,6 +19,7 @@ import { defaultTabName } from '@livedocuments/document';
 import {
   normalizeFolderOrder,
   tabFolderName,
+  tabInFolder,
   truncateName,
   type Element,
   type Tab,
@@ -296,7 +297,8 @@ export function useTabActions(deps: TabActionsDeps) {
       // direction.
       const insertBase = next.findIndex((t) => t.id === targetId);
       const insertIdx = placeBefore ? insertBase : insertBase + 1;
-      next.splice(insertIdx, 0, { ...moved!, folder: folder ?? undefined });
+      // It takes the folder's colour with its membership (tab-folders.md "Folder colour").
+      next.splice(insertIdx, 0, tabInFolder(moved!, folder, next));
       // Re-normalize so every folder stays one contiguous run (docs/specs/006-document/tab-folders.md).
       return normalizeFolderOrder(next);
     });

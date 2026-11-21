@@ -37,6 +37,7 @@
     "./signed-in-hint": "./src/signed-in-hint.ts",
     "./snapshot-svg": "./src/snapshot-svg.ts",
     "./tab-delta": "./src/tab-delta.ts",
+    "./tab-folder-colour": "./src/tab-folder-colour.ts",
     "./tab-save-changes": "./src/tab-save-changes.ts",
     "./tab-size": "./src/tab-size.ts",
     "./tab-connection": "./src/tab-connection.ts",

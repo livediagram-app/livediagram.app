@@ -15,6 +15,7 @@ import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
   outboxRetrySchema,
+  tabFolderColourStep,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
 
@@ -321,11 +322,16 @@ CREATE TABLE IF NOT EXISTS visitor_names (
 );
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6, V7, V8];
+type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
+
+// A tab folder's chosen colour (docs/specs/006-document/tab-folders.md "Folder colour"), `document_tabs.folder_color`: a hue
+// name beside the folder, or NULL for Automatic. It asks before the ALTER, so a rerun is safe; every row already there reads as
+// Automatic.
+const V9 = tabFolderColourStep('document_tabs');
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [V1, V2, V3, V4, V5, V6, V7, V8, V9];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
-
-type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
 
 // Bring the document's SQLite up to DOCUMENT_SCHEMA_VERSION. Idempotent: every statement is IF NOT EXISTS, and the
 // version row skips what already ran. Runs inside the caller's transaction when it has one.
@@ -334,7 +340,11 @@ export function migrateDocumentSchema(exec: Exec): void {
   const row = exec('SELECT version FROM _document_schema LIMIT 1').toArray()[0];
   const at = typeof row?.version === 'number' ? row.version : 0;
   if (at >= STEPS.length) return;
-  for (let step = at; step < STEPS.length; step++) exec(STEPS[step]!);
+  for (let step = at; step < STEPS.length; step++) {
+    const run = STEPS[step]!;
+    if (typeof run === 'string') exec(run);
+    else run(exec);
+  }
   exec('DELETE FROM _document_schema');
   exec(`INSERT INTO _document_schema (version) VALUES (${STEPS.length})`);
 }

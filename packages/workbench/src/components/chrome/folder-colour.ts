@@ -1,24 +1,32 @@
-// A tab folder's colour (docs/specs/006-document/tab-folders.md "Tab bar rendering"): a stable pick from eight hues,
-// made from the folder's name, so a folder keeps its colour from visit to visit and every collaborator sees the same
-// one, with nothing stored. Each hue is a light-mode ink (Tailwind's 600) and a dark-mode ink (its 300), set as CSS
-// variables on the folder so its chip and shelf colour themselves in either appearance (folderStyle).
+// A tab folder's colour (docs/specs/006-document/tab-folders.md "Folder colour" and "Tab bar rendering"): the hue
+// chosen for it, stored as its name on every member, else a stable pick from the eight made from the folder's name
+// (Automatic), so a folder keeps its colour from visit to visit and every collaborator sees the same one. Each hue is
+// a light-mode ink (Tailwind's 600) and a dark-mode ink (its 300), set as CSS variables on the folder so its chip,
+// shelf and Organise dialog row colour themselves in either appearance (folderStyle).
 
 import type { CSSProperties } from 'react';
+import {
+  tabFolderColourOf,
+  type TabFolderColour,
+} from '@liveworkspace/api-schema/tab-folder-colour';
 
-export type FolderHue = { name: string; light: string; dark: string };
+export type FolderHue = { name: TabFolderColour; label: string; light: string; dark: string };
 
+// In TAB_FOLDER_COLOURS' order (the Automatic pick indexes it, so the order is every Automatic folder's colour).
 export const FOLDER_HUES: readonly FolderHue[] = [
-  { name: 'blue', light: '#2563eb', dark: '#93c5fd' },
-  { name: 'violet', light: '#7c3aed', dark: '#c4b5fd' },
-  { name: 'emerald', light: '#059669', dark: '#6ee7b7' },
-  { name: 'amber', light: '#d97706', dark: '#fcd34d' },
-  { name: 'rose', light: '#e11d48', dark: '#fda4af' },
-  { name: 'cyan', light: '#0891b2', dark: '#67e8f9' },
-  { name: 'orange', light: '#ea580c', dark: '#fdba74' },
-  { name: 'pink', light: '#db2777', dark: '#f9a8d4' },
+  { name: 'blue', label: 'Blue', light: '#2563eb', dark: '#93c5fd' },
+  { name: 'violet', label: 'Violet', light: '#7c3aed', dark: '#c4b5fd' },
+  { name: 'emerald', label: 'Emerald', light: '#059669', dark: '#6ee7b7' },
+  { name: 'amber', label: 'Amber', light: '#d97706', dark: '#fcd34d' },
+  { name: 'rose', label: 'Rose', light: '#e11d48', dark: '#fda4af' },
+  { name: 'cyan', label: 'Cyan', light: '#0891b2', dark: '#67e8f9' },
+  { name: 'orange', label: 'Orange', light: '#ea580c', dark: '#fdba74' },
+  { name: 'pink', label: 'Pink', light: '#db2777', dark: '#f9a8d4' },
 ];
+const BY_NAME = new Map(FOLDER_HUES.map((hue) => [hue.name, hue]));
 
-// FNV-1a over the name's UTF-16 units: cheap, stable everywhere, and spreads near-identical names apart.
+// The Automatic pick. FNV-1a over the name's UTF-16 units: cheap, stable everywhere, and spreads near-identical names
+// apart.
 export function folderHue(name: string): FolderHue {
   let h = 0x811c9dc5;
   for (let i = 0; i < name.length; i += 1) {
@@ -28,9 +36,19 @@ export function folderHue(name: string): FolderHue {
   return FOLDER_HUES[(h >>> 0) % FOLDER_HUES.length]!;
 }
 
-// The CSS variables a folder's chip and shelf read (`--tf` light, `--tfd` dark).
-export function folderStyle(name: string): CSSProperties {
-  const hue = folderHue(name);
+// The hue a stored colour names, or null for Automatic (no colour, or one this build does not know).
+export function chosenFolderHue(colour: string | null | undefined): FolderHue | null {
+  const name = tabFolderColourOf(colour);
+  return name ? BY_NAME.get(name)! : null;
+}
+
+// The hue a folder draws in: its chosen one, else its name's.
+export function resolveFolderHue(name: string, colour: string | null | undefined): FolderHue {
+  return chosenFolderHue(colour) ?? folderHue(name);
+}
+
+// The CSS variables a folder's chip, shelf and dialog row read (`--tf` light, `--tfd` dark).
+export function folderStyle(hue: FolderHue): CSSProperties {
   return { '--tf': hue.light, '--tfd': hue.dark } as CSSProperties;
 }
 

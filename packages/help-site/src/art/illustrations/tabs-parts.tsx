@@ -255,28 +255,29 @@ export function TabBar({ y, w }: { y: number; w: number }) {
   );
 }
 
-/** A tile in a dialog grid: an icon well, a label and an optional sub-line. */
-export function PickTile({
+/** A row in the Organise in Tab Folder list: a tile in the folder's colour, the name over its tab count, a
+ *  Current pill on the tab's own folder, and the colour button at the end. `tone` null draws the No Folder row. */
+export function FolderRow({
   x,
   y,
-  w = 80,
-  h = 64,
-  label,
+  w,
+  name,
   sub,
-  selected = false,
+  tone,
+  current = false,
   dashed = false,
-  children,
 }: {
   x: number;
   y: number;
-  w?: number;
-  h?: number;
-  label: string;
+  w: number;
+  name: string;
   sub?: string;
-  selected?: boolean;
+  tone: keyof typeof FOLDER_TONES | null;
+  current?: boolean;
   dashed?: boolean;
-  children?: ReactNode;
 }) {
+  const t = tone ? FOLDER_TONES[tone] : null;
+  const h = 34;
   return (
     <g>
       <rect
@@ -285,25 +286,77 @@ export function PickTile({
         width={w}
         height={h}
         rx={8}
-        className={selected ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'}
-        strokeWidth={1.5}
+        className={current ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'}
+        strokeWidth={1.25}
         strokeDasharray={dashed ? '4 3' : undefined}
       />
-      {children && <g transform={`translate(${x + w / 2} ${y + 18})`}>{children}</g>}
+      <rect
+        x={x + 7}
+        y={y + 6}
+        width={22}
+        height={22}
+        rx={6}
+        className={t ? t.chip : 'fill-slate-100'}
+      />
+      <g transform={`translate(${x + 18} ${y + 17}) scale(0.8)`}>
+        {dashed ? (
+          <path
+            d="M-6 0 h12 M0 -6 v12"
+            className="stroke-slate-500"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+          />
+        ) : (
+          <>
+            <FolderIcon />
+            {!t && (
+              <path d="M-3 -2 l6 6 M3 -2 l-6 6" className="stroke-slate-500" strokeWidth={1.3} />
+            )}
+          </>
+        )}
+      </g>
       <Label
-        x={x + w / 2}
-        y={y + 38}
-        anchor="middle"
+        x={x + 38}
+        y={sub ? y + 15 : y + 21}
         size={10}
         weight={600}
-        tone={selected ? 'accent' : 'strong'}
+        tone={current ? 'accent' : 'strong'}
       >
-        {label}
+        {name}
       </Label>
       {sub && (
-        <Label x={x + w / 2} y={y + 52} anchor="middle" size={10} tone="muted">
+        <Label x={x + 38} y={y + 27} size={9} tone="muted">
           {sub}
         </Label>
+      )}
+      {current && (
+        <>
+          <rect
+            x={x + w - 84}
+            y={y + 10}
+            width={44}
+            height={14}
+            rx={7}
+            className="fill-brand-100"
+          />
+          <Label x={x + w - 62} y={y + 20} anchor="middle" size={8} weight={600} tone="accent">
+            Current
+          </Label>
+        </>
+      )}
+      {t && (
+        <>
+          <rect
+            x={x + w - 32}
+            y={y + 6}
+            width={24}
+            height={22}
+            rx={6}
+            className="fill-white stroke-slate-200"
+            strokeWidth={1}
+          />
+          <circle cx={x + w - 20} cy={y + 17} r={5.5} className={t.ink} />
+        </>
       )}
     </g>
   );

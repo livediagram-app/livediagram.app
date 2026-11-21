@@ -13,8 +13,9 @@
 //     groups (loose tab | folder + its tabs)
 //   - folderNamesInDocument — distinct existing folder names
 
-/** The one field of a tab its folder is read from. */
-type TabFolder = { folder?: string };
+/** The fields of a tab its folder is read from: the name, and the colour chosen for it (a hue name; none is
+ * Automatic, docs/specs/006-document/tab-folders.md "Folder colour"). */
+type TabFolder = { folder?: string; folderColor?: string };
 
 // A tab's effective folder, or null when loose. Whitespace-only and
 // empty names are treated as loose so an accidental " " can never
@@ -109,4 +110,97 @@ export function folderNamesInDocument(tabs: TabFolder[]): string[] {
     }
   }
   return names;
+}
+
+// The same, under a name that fits any product's item (a design, a plan).
+export const folderNamesIn = folderNamesInDocument;
+
+// A folder's colour (docs/specs/006-document/tab-folders.md "Folder colour"): its first member's chosen colour, or
+// null for Automatic (the tab bar then picks one from the name). `except` leaves one tab out, the one being moved.
+export function folderColourIn(
+  tabs: readonly TabFolder[],
+  name: string,
+  except?: TabFolder,
+): string | null {
+  for (const tab of tabs) {
+    if (tab !== except && tabFolderName(tab) === name && tab.folderColor) return tab.folderColor;
+  }
+  return null;
+}
+
+/** A folder as the Organise dialog lists it: its name, how many tabs it holds and its chosen colour. */
+export type TabFolderSummary = { name: string; count: number; colour: string | null };
+
+// Every folder in the document in bar order, with its count and colour, in one pass.
+export function tabFolderSummaries(tabs: readonly TabFolder[]): TabFolderSummary[] {
+  const byName = new Map<string, TabFolderSummary>();
+  for (const tab of tabs) {
+    const name = tabFolderName(tab);
+    if (name === null) continue;
+    const summary = byName.get(name);
+    if (summary) {
+      summary.count += 1;
+      summary.colour ??= tab.folderColor || null;
+    } else byName.set(name, { name, count: 1, colour: tab.folderColor || null });
+  }
+  return [...byName.values()];
+}
+
+// The tab with its folder set (null: loose) and the colour that goes with it: a loose tab has none, a tab staying in
+// its folder keeps its own, and a tab joining a folder takes the folder's (folderColourIn). `tabs` is the list it
+// joins, the tab itself left out of the reading.
+export function tabInFolder<T extends TabFolder>(
+  tab: T,
+  folder: string | null,
+  tabs: readonly TabFolder[],
+): T {
+  if (folder === null) return { ...tab, folder: undefined, folderColor: undefined };
+  if (tabFolderName(tab) === folder) return tab;
+  return { ...tab, folder, folderColor: folderColourIn(tabs, folder, tab) ?? undefined };
+}
+
+// Move one tab into a folder by name, normalized. A folder nobody holds yet takes `colour` (left out or null:
+// Automatic); an existing one keeps its own, whatever `colour` says (same name = same folder).
+export function withTabInFolder<T extends TabFolder & { id: string }>(
+  tabs: T[],
+  tabId: string,
+  name: string,
+  colour?: string | null,
+): T[] {
+  const target = tabs.find((t) => t.id === tabId);
+  if (!target || tabFolderName(target) === name) return tabs;
+  const exists = tabs.some((t) => t !== target && tabFolderName(t) === name);
+  return normalizeFolderOrder(
+    tabs.map((t) => {
+      if (t !== target) return t;
+      const moved = tabInFolder(t, name, tabs);
+      return exists ? moved : { ...moved, folderColor: colour || undefined };
+    }),
+  );
+}
+
+// Rename a folder on every member. Their colour stays; renaming into a name another folder uses merges the two, and
+// the merged folder takes that folder's colour, else the renamed one's.
+export function withFolderRenamed<T extends TabFolder>(tabs: T[], from: string, to: string): T[] {
+  const colour =
+    tabs.find((t) => tabFolderName(t) === to && t.folderColor)?.folderColor ??
+    folderColourIn(tabs, from) ??
+    undefined;
+  return normalizeFolderOrder(
+    tabs.map((t) => (tabFolderName(t) === from ? { ...t, folder: to, folderColor: colour } : t)),
+  );
+}
+
+// Set a folder's colour on every member (null: Automatic). Tabs already carrying it are kept as they are.
+export function withFolderColour<T extends TabFolder>(
+  tabs: T[],
+  name: string,
+  colour: string | null,
+): T[] {
+  const want = colour || undefined;
+  return tabs.map((t) =>
+    tabFolderName(t) === name && (t.folderColor || undefined) !== want
+      ? { ...t, folderColor: want }
+      : t,
+  );
 }

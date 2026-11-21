@@ -77,7 +77,13 @@ export const relayProjectRename: (
   env: Env,
   projectId: string,
   name: string,
-  tabs: readonly { id: string; name: string; orderIndex: number; folder?: string }[],
+  tabs: readonly {
+    id: string;
+    name: string;
+    orderIndex: number;
+    folder?: string;
+    folderColor?: string;
+  }[],
 ) => Promise<boolean> = room.relayItemRename;
 
 // A tab the api renamed (CS42), as the same tab-meta op an editor's own rename sends.

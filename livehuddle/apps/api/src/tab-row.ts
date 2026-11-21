@@ -1,6 +1,7 @@
 import { migrateStoredTab, type Tab } from '@livehuddle/document';
 import { storedTabConnection } from '@liveworkspace/index-app';
 import type { TabDTO, TabSummaryDTO } from './types';
+import { tabFolderColourOf } from '@liveworkspace/api-schema/tab-folder-colour';
 
 // tabs row shape as read from D1. The `data` column is the
 // JSON-serialised Tab body, MINUS the `id` and `name` fields, which
@@ -23,10 +24,17 @@ export type TabRow = {
   // for folder (none today) leave it undefined, which maps the same
   // as NULL.
   folder?: string | null;
+  // The folder's colour from the same link row (tab-folders.md "Folder colour"), a hue name or NULL for Automatic.
+  folder_color?: string | null;
   // A connected tab's connection (liveworkspace/docs/specs/004-index/connected-tabs.md), `tabs.connection`: JSON of
   // `{ id, app, itemId }`, or NULL for every other tab. Read sites that don't select it leave it undefined.
   connection?: string | null;
 };
+
+// The folder colour a row carries: a hue name for a tab in a folder, else none (Automatic, or loose).
+function folderColorField(row: TabRow): string | undefined {
+  return row.folder ? tabFolderColourOf(row.folder_color) : undefined;
+}
 
 // The connection a row carries, as the wire shape spreads it: absent for a tab that is not connected.
 function connectionField(row: TabRow) {
@@ -67,6 +75,7 @@ export function rowToTab(row: TabRow): TabDTO {
     // stale `folder` a forged data blob might carry (the client
     // strips it before persisting, so it should never be in `data`).
     folder: row.folder ?? undefined,
+    folderColor: folderColorField(row),
     // Link metadata too: a connection lives in its column, never in `data`.
     connection: undefined,
     ...connectionField(row),
@@ -84,6 +93,7 @@ export function rowToTabSummary(row: TabRow): TabSummaryDTO {
     orderIndex: row.order_index,
     updatedAt: row.updated_at,
     folder: row.folder ?? undefined,
+    folderColor: folderColorField(row),
     ...connectionField(row),
   };
 }

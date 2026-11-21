@@ -45,6 +45,7 @@ export function designSnapshotDoor(env: DesignEnv, designId: string): SnapshotDo
             name: t.name,
           },
           folder: t.folder,
+          folderColor: t.folderColor ?? null,
         })),
       );
       return 'ok';

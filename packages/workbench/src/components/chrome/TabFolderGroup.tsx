@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CollapseWidth, COLLAPSE_WIDTH_MS } from '../primitives/CollapseWidth';
-import { FOLDER_CHIP_CLASS, FOLDER_SHELF_CLASS, folderStyle } from './folder-colour';
+import {
+  FOLDER_CHIP_CLASS,
+  FOLDER_SHELF_CLASS,
+  folderStyle,
+  resolveFolderHue,
+} from './folder-colour';
 import { FolderStackGlyph } from './FolderStackGlyph';
 
 // One tab folder in the strip (docs/specs/006-document/tab-folders.md "Tab bar rendering"), the same in every editor.
@@ -18,7 +23,7 @@ import { FolderStackGlyph } from './FolderStackGlyph';
 // How long a dragged tab rests on a collapsed chip before the folder springs open.
 export const SPRING_OPEN_MS = 500;
 
-export type TabFolderGroupProps<T extends { id: string }> = {
+export type TabFolderGroupProps<T extends { id: string; folderColor?: string }> = {
   name: string;
   tabs: T[];
   activeId: string;
@@ -47,7 +52,7 @@ export type TabFolderGroupProps<T extends { id: string }> = {
   onClosed?: () => void;
 };
 
-export function TabFolderGroup<T extends { id: string }>({
+export function TabFolderGroup<T extends { id: string; folderColor?: string }>({
   name,
   tabs,
   activeId,
@@ -104,7 +109,8 @@ export function TabFolderGroup<T extends { id: string }>({
       ref={groupRef}
       data-tab-folder={name}
       data-expanded={expanded ? '' : undefined}
-      style={folderStyle(name)}
+      // Its colour: the first member's chosen one (every member carries the same), else its name's.
+      style={folderStyle(resolveFolderHue(name, tabs.find((t) => t.folderColor)?.folderColor))}
       className={`${FOLDER_SHELF_CLASS} mx-1 flex h-10 shrink-0 items-end pr-0.5 [[data-tab-folder]+&]:ml-0`}
     >
       <div className="flex h-10 shrink-0 items-center">
