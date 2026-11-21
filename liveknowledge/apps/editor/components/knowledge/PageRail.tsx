@@ -245,14 +245,16 @@ export function PageRailButton({ sheet }: { sheet: boolean }) {
     setOpen(false);
     button.current?.focus();
   }, []);
+  // Escape closes the card and the sheet alike: BottomSheet leaves Escape to its caller, so skipping the sheet here left
+  // nothing to close it (sweep 2026-11-21).
   useEffect(() => {
-    if (!open || sheet) return;
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, sheet, close]);
+  }, [open, close]);
   return (
     <div className="relative flex shrink-0 items-center" onPointerDown={(e) => e.stopPropagation()}>
       <HoverCard title="Page Info" description="On This Page and this page's health.">

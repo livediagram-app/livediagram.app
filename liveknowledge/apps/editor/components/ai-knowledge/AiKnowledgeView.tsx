@@ -12,6 +12,7 @@ import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/Edito
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { AiSettingsButton, openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
 import { AiViewIcon } from '@/components/ask/ask-icons';
+import { AgentIcon } from './ai-knowledge-icons';
 import { KnowledgeViewHeader } from '@/components/ask/KnowledgeViewFrame';
 import { openPassage } from '@/components/ask/open-passage';
 import { PagePickerDialog } from '@/components/ask/PagePickerDialog';
@@ -117,8 +118,17 @@ function AiKnowledge({ session }: { session: AskSession }) {
         title="AI Knowledge"
         about="What agents know of this knowledgebase, where they learned it and what they could not find."
       >
-        <Button variant="secondary" size="xs" onClick={connect}>
-          Connect an Agent
+        {/* Icon only on a phone, as AI Settings beside it: the top row has no room for both labels and Share
+            (sweep 2026-11-21: they overlapped). */}
+        <Button
+          variant="secondary"
+          size="xs"
+          onClick={connect}
+          aria-label="Connect an Agent"
+          className="cursor-pointer"
+        >
+          <AgentIcon />
+          <span className="phone:sr-only">Connect an Agent</span>
         </Button>
         {offline ? null : <AiSettingsButton />}
       </KnowledgeViewHeader>
