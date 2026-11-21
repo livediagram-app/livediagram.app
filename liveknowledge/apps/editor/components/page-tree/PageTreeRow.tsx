@@ -14,6 +14,8 @@ import { APPROVAL_MARK_LABEL, type ApprovalMark } from '@/lib/knowledge/approval
 import { AddIcon, ChevronIcon, MoreIcon } from './page-tree-icons';
 import { useRowMark, type PageTreeUi } from './page-tree-ui';
 import { useLivePageTitle } from '@/lib/article/live-page-title';
+import { pageIconOfKey } from '@liveknowledge/document';
+import { PageIconGlyph } from '@/components/page-icon/PageIconGlyph';
 import {
   INSERT_LINE,
   PAGE_RENAME_FIELD,
@@ -88,6 +90,7 @@ function PageTreeRowView({
   const name = outOfScope ? 'Not Shared' : (live ?? row.name) || 'Untitled Page';
   const indent = ROW_INSET + (row.level - 1) * PAGE_TREE_INDENT;
   const hasSubpages = row.subpages > 0;
+  const icon = outOfScope ? undefined : pageIconOfKey(row.icon);
   const control = touch ? 'h-11 w-9' : 'h-6 w-6';
   const menuButton = (
     <button
@@ -170,6 +173,7 @@ function PageTreeRowView({
       ) : (
         <span aria-hidden className={`shrink-0 ${touch ? 'w-7' : 'w-5'}`} />
       )}
+      {icon ? <PageIconGlyph icon={icon} size={16} className="mr-1.5" /> : null}
       {editing ? (
         <NameEditor
           label="Page name"

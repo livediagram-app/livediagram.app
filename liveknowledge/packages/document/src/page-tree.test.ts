@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 import {
   buildPageTree,
+  isConnectedRow,
   MAX_KNOWLEDGEBASE_PAGES,
   MAX_PAGE_DEPTH,
   pageAddRefusal,
   pageAncestors,
+  pageCount,
   pageDepth,
   pageMoveRefusal,
   pageParents,
@@ -15,6 +17,7 @@ import {
   pageTreeRows,
   parseTabParent,
   subpageCount,
+  withConnectedRowAdded,
   withPageAdded,
   withPageDeleted,
   withPageIndented,
@@ -318,5 +321,72 @@ describe('cost', () => {
     expect(withPageMoved(pages, 'p8', { before: 'p0' })).not.toBeNull();
     expect(pageTreeRefusal(pages)).toBeNull();
     expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(150));
+  });
+});
+
+// docs/specs/030-knowledgebase/links-and-embeds.md "Connected files in the sidebar": a connected row is placed like a
+// page but is no page.
+describe('connected rows', () => {
+  const link = { id: 'c1', app: 'livediagram', itemId: 'i1' };
+  const row = (id: string, parent?: string): TreePage =>
+    parent ? { id, parent, connection: link } : { id, connection: link };
+
+  it('tells a connected row from a page, and counts pages alone', () => {
+    expect(isConnectedRow(row('x'))).toBe(true);
+    expect(isConnectedRow(page('a'))).toBe(false);
+    expect(isConnectedRow({ id: 'n', connection: null })).toBe(false);
+    expect(pageCount([page('a'), row('x'), page('b', 'a')])).toBe(2);
+  });
+
+  it('never counts a connected row toward the page limit', () => {
+    const full = Array.from({ length: MAX_KNOWLEDGEBASE_PAGES - 1 }, (_, i) => page(`p${i}`));
+    const withRows = [...full, row('x'), row('y')];
+    expect(pageAddRefusal(withRows)).toBeNull();
+    expect(pageTreeRefusal([...withRows, page('last')])).toBeNull();
+    expect(pageAddRefusal([...withRows, page('last')])).toBe('page_limit');
+    // Adding a connected row is never refused for the page limit.
+    expect(withConnectedRowAdded([...withRows, page('last')], row('z'))).toHaveLength(
+      MAX_KNOWLEDGEBASE_PAGES + 3,
+    );
+  });
+
+  it("places a connected row at the top level or as a page's last subpage, never under another row", () => {
+    const pages = [page('a'), page('b', 'a'), row('x')];
+    expect(withConnectedRowAdded(pages, row('y'), 'a')).toEqual([
+      page('a'),
+      page('b', 'a'),
+      row('y', 'a'),
+      row('x'),
+    ]);
+    expect(withConnectedRowAdded(pages, row('y'))).toEqual([...pages, row('y')]);
+    expect(withConnectedRowAdded(pages, row('y'), 'x')).toEqual({ refused: 'unknown_page' });
+    expect(withConnectedRowAdded(pages, row('y'), 'gone')).toEqual({ refused: 'unknown_page' });
+    expect(withConnectedRowAdded(pages, row('x'))).toEqual({ refused: 'unknown_page' });
+    const deep = Array.from({ length: MAX_PAGE_DEPTH }, (_, i) =>
+      page(`d${i}`, i ? `d${i - 1}` : undefined),
+    );
+    expect(withConnectedRowAdded(deep, row('y'), `d${MAX_PAGE_DEPTH - 1}`)).toEqual({
+      refused: 'depth_limit',
+    });
+  });
+
+  it('holds no subpages: nothing is added or moved under one, and a stored one reads at the top level', () => {
+    const pages = [page('a'), row('x'), page('b')];
+    expect(pageAddRefusal(pages, 'x')).toBe('unknown_page');
+    expect(pageMoveRefusal(pages, 'b', { parent: 'x' })).toBe('unknown_page');
+    expect(withPageMoved(pages, 'b', { parent: 'x' })).toBeNull();
+    expect(pageParents([page('a'), row('x'), page('b', 'x')]).get('b')).toBeUndefined();
+    // A connected row moves like a page: under a page, or back to the top.
+    expect(withPageMoved(pages, 'x', { parent: 'a' })).toEqual([
+      page('a'),
+      row('x', 'a'),
+      page('b'),
+    ]);
+  });
+
+  it('never deletes the last page, whatever connected rows are left', () => {
+    expect(withPageDeleted([page('a'), row('x')], 'a')).toBeNull();
+    expect(withPageDeleted([page('a'), row('x')], 'x')).toEqual([page('a')]);
+    expect(withPageDeleted([page('a'), row('x', 'a'), page('b')], 'a')).toEqual([page('b')]);
   });
 });

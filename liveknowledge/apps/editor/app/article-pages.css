@@ -653,6 +653,13 @@ html[data-presenting] .article-flow .article-note {
 .article-flow .article-page-slot-foot:not(:empty) {
   margin-top: 3rem;
 }
+/* The page's icon over its Title (page-surface.md "The page icon"): 48 px of the page's, a little room under it. A
+   page with none has an empty slot, which takes no room. */
+.article-flow .article-page-slot-head:not(:empty) {
+  display: flex;
+  margin: 0 0 0.75rem;
+  line-height: 1;
+}
 
 /* A page link (docs/specs/030-knowledgebase/links-and-embeds.md "Page links"). Its stored words take no room: what
    shows is the page's current title, written as a rule a page by lib/knowledge/page-link-titles.ts. A link no rule

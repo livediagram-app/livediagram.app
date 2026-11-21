@@ -28,6 +28,8 @@ test('threads at a page’s foot: start, reply and resolve, live for everyone on
   test.setTimeout(150_000);
   const { who, id } = await signedInKnowledgebase(page);
   await nameOpenPage(page, 'Runbook');
+  // An empty page has no Comments: they appear once it has some writing.
+  await expect(comments(page)).toHaveCount(0);
   const saved = savedWith(page, 'blue lever');
   await writeLines(page, 'Restart the queue worker with the blue lever.');
   await saved;

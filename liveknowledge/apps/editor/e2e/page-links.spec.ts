@@ -93,7 +93,10 @@ test('Create Page in the picker makes a subpage of the open page and links to it
   expectNoPageErrors(pageErrors);
 });
 
-test('a link to a deleted page reads Deleted Page and goes nowhere', async ({ page, pageErrors }) => {
+test('a link to a deleted page reads Deleted Page and goes nowhere', async ({
+  page,
+  pageErrors,
+}) => {
   await newKnowledgebase(page);
   await threePages(page);
   await writeLines(page, 'See [[Onb');

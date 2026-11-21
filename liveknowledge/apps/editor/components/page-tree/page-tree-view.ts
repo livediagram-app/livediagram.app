@@ -1,7 +1,13 @@
 // The page tree as the sidebar draws it (docs/specs/030-knowledgebase/blueprints/page-tree.md "The sidebar"): the
 // rows on screen, where the arrow keys go, and where a dragged row lands. Pure, over the tree functions
 // (@liveknowledge/document page-tree.ts): the list of tabs in, rows or a move out.
-import { pageAncestors, pageTreeRows, type PageMove, type TreePage } from '@liveknowledge/document';
+import {
+  pageAncestors,
+  pageIconKey,
+  pageTreeRows,
+  type PageMove,
+  type TreePage,
+} from '@liveknowledge/document';
 import type { App } from '@liveworkspace/index-client';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
 
@@ -24,7 +30,7 @@ export function pageTreeClearancePx(width: number, panelScale: number): number {
 }
 
 /** What the tree reads of a tab to draw its row. */
-export type TreeTab = TreePage & { name: string; locked?: boolean | undefined };
+export type TreeTab = TreePage & { name: string; locked?: boolean | undefined; icon?: unknown };
 
 /** One row on screen. `level` is 1 at the top; `position` and `siblings` place it among its siblings. */
 export type PageRow = {
@@ -41,6 +47,9 @@ export type PageRow = {
   // null for a page. Plain values, so a row compares field by field.
   connectionId: string | null;
   app: App | null;
+  // The page's icon as one plain key (pageIconKey: `e:🚀`, `i:rocket`), null for none: compared by value, so a row
+  // renders only when its own icon changes (page-surface.md "The page icon").
+  icon: string | null;
 };
 
 /**
@@ -91,6 +100,7 @@ export function visiblePageRows(
       locked: page.locked === true,
       connectionId: connection?.id ?? null,
       app: connection?.app ?? null,
+      icon: pageIconKey(page.icon),
     });
   });
   return out;

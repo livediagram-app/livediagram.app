@@ -20,20 +20,23 @@ const places = (slots: ReturnType<typeof createPageSlots>, state: EditorState) =
     .map((d) => [(d.spec as { key: string }).key, d.from]);
 
 describe('the page slots', () => {
-  it('puts the meta row under the Title and the foot after the last block', () => {
+  it('puts the icon over the Title, the meta row under it and the foot after the last block', () => {
     const { slots, state } = stateOf([para('t', 'title', 'Release'), para('b', 'body', 'Words')]);
     const title = state.doc.firstChild!.nodeSize;
     expect(places(slots, state)).toEqual(
       expect.arrayContaining([
+        ['head', 0],
         ['meta', title],
         ['foot', state.doc.content.size],
       ]),
     );
     expect(slots.meta.contentEditable).toBe('false');
     expect(slots.meta.dataset.pageSlot).toBe('meta');
+    expect(slots.head.dataset.pageSlot).toBe('head');
+    expect(slots.head.contentEditable).toBe('false');
   });
 
-  it('has no meta row on writing that does not start with a Title', () => {
+  it('has no icon or meta row on writing that does not start with a Title', () => {
     const { slots, state } = stateOf([para('b', 'body', 'Words')]);
     expect(places(slots, state)).toEqual([['foot', state.doc.content.size]]);
   });

@@ -35,4 +35,3 @@ export async function quickRow(page: Page, title: QuickRowTitle): Promise<Locato
     `[role="radiogroup"][aria-label="${title}"], [role="group"][aria-label="${title}"]`,
   );
 }
-

@@ -15,7 +15,9 @@ import {
 } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { AiViewIcon, AskViewIcon, PagesViewIcon } from '@/components/ask/ask-icons';
+import { SyncKnowledgebaseButton } from '@/components/ask/SyncKnowledgebaseButton';
 import { useKnowledgeViewsOffered } from '@/components/ask/useKnowledgeViewsOffered';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import {
   KNOWLEDGE_VIEWS,
   showKnowledgeView,
@@ -53,12 +55,23 @@ function pressed(
 
 // The open tab's ink: the app's own, where another editor's tab wears its tab theme's accent.
 const OPEN_INK = 'text-slate-900 dark:text-white';
+// A view an Offline knowledgebase can't open: the tab stays, quieter, and says why (owner 2026-11-21).
+const OFF_INK = 'text-slate-400 dark:text-slate-400/60';
+
+// Why Ask and AI Knowledge are off in a knowledgebase kept Offline: both answer on the server, from the team's key.
+export const OFFLINE_VIEW_WHY =
+  'This knowledgebase is kept in this browser. Ask and AI Knowledge work on liveknowledge, so sync it to turn them on.';
+
+// A view this knowledgebase can't open while it is kept Offline: everything but Pages.
+export const offlineOff = (view: KnowledgeView, offline: boolean): boolean =>
+  offline && view !== 'pages';
 
 /** The three tabs, or nothing for a session that is not offered the views (useKnowledgeViewsOffered). */
 export function KnowledgeViewTabs() {
   const offered = useKnowledgeViewsOffered();
   const current = useKnowledgeView();
   const href = useKnowledgeViewHref(useEditorChrome((s) => (s.hydrated ? s.activeId : null)));
+  const offline = useIsOfflineDocument(useEditorChrome((s) => s.documentId));
   if (!offered) return null;
   return (
     <nav
@@ -69,26 +82,31 @@ export function KnowledgeViewTabs() {
     >
       {KNOWLEDGE_VIEWS.map(({ view, label, short, about }) => {
         const open = view === current;
+        const off = offlineOff(view, offline);
         return (
           <HoverCard
             key={view}
-            title={label}
-            description={about}
+            title={off ? `${label} Needs Syncing` : label}
+            description={off ? OFFLINE_VIEW_WHY : about}
+            {...(off ? { action: <SyncKnowledgebaseButton />, pressWithText: true } : {})}
             className="self-end phone:min-w-0 phone:flex-1"
           >
             <span
               data-knowledge-view-tab={view}
               data-open={open ? '' : undefined}
-              className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : ''} phone:h-11 phone:w-full phone:justify-center phone:px-2`}
+              data-off={off ? '' : undefined}
+              className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} phone:h-11 phone:w-full phone:justify-center phone:px-2`}
             >
+              {/* Off, the link goes nowhere: a press opens the card that says why and holds Sync Knowledgebase. */}
               <a
-                href={href(view)}
+                {...(off ? { role: 'link', 'aria-disabled': true } : { href: href(view) })}
+                tabIndex={0}
                 aria-label={label}
                 aria-current={open ? 'page' : undefined}
                 data-tab-key=""
                 data-knowledge-view-link={view}
-                onClick={(event) => pressed(event, view, current)}
-                className={`${TAB_NAME_BUTTON_CLASS} phone:h-11`}
+                onClick={(event) => (off ? event.preventDefault() : pressed(event, view, current))}
+                className={`${TAB_NAME_BUTTON_CLASS} ${off ? 'cursor-default!' : ''} phone:h-11`}
               >
                 <span aria-hidden className="flex shrink-0">
                   {ICONS[view]}

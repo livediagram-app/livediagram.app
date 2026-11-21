@@ -127,6 +127,10 @@ Ask through an anonymous share link is off: it would spend the team's key for st
 - **When Ask is off:** no key (an Editor gets **Open AI Settings**; anyone else is told to ask an Editor), not
   signed in (a share link's visitor included: **Sign In**), or a knowledgebase kept Offline. Each says why, and
   each offers **Search the Pages**.
+- **Offline, in the footer** (owner 2026-11-21): a knowledgebase kept Offline keeps the Ask and AI Knowledge tabs,
+  quieter and going nowhere. Hovering one (a long press on a phone, focus from the keyboard) shows "Ask Needs
+  Syncing" (or "AI Knowledge Needs Syncing"), why ("kept in this browser ... sync it to turn them on") and **Sync
+  Knowledgebase**, the Share dialog's sync in place. Once it lands the tabs open as usual.
 - **A failure** is said in the answer's place in words with its next step: the key not accepted or the model not
   allowed (Open AI Settings for an Editor), no credit, the account's rate limit, Claude busy, a lost connection (Ask
   Again), a refusal, 20 questions in the hour, 200 in the day. Never a status, a code or the upstream's words.

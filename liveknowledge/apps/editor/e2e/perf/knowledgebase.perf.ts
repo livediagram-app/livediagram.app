@@ -80,7 +80,9 @@ const quantile = (sorted: number[], q: number) =>
 test('typing at the foot of a 100,000 character page', async ({ page, browser, baseURL }) => {
   test.setTimeout(10 * 60_000);
   const bodies = Array.from({ length: LONG_PAGE_PARAGRAPHS }, (_, i) => paragraphText(i));
-  const id = await seed(page, baseURL!, 'Long page', [pageOf(crypto.randomUUID(), 'Long Page', bodies)]);
+  const id = await seed(page, baseURL!, 'Long page', [
+    pageOf(crypto.randomUUID(), 'Long Page', bodies),
+  ]);
   const reference = await probeThrottle(browser, process.env.PERF_THROTTLE);
 
   for (const rate of [1, reference]) {
@@ -112,7 +114,9 @@ test('typing at the foot of a 100,000 character page', async ({ page, browser, b
         'keydown',
         () => {
           const at = performance.now();
-          requestAnimationFrame(() => requestAnimationFrame(() => times.push(performance.now() - at)));
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => times.push(performance.now() - at)),
+          );
         },
         true,
       );
@@ -172,7 +176,9 @@ test('opening the tree of a 500 page knowledgebase', async ({ page, browser, bas
     const rows = await pageTree(page).getByRole('treeitem').count();
 
     // A new browser shows every section open, so all 500 rows are drawn by the open itself.
-    await expect(pageTree(page).getByRole('treeitem')).toHaveCount(TREE_PAGES, { timeout: 120_000 });
+    await expect(pageTree(page).getByRole('treeitem')).toHaveCount(TREE_PAGES, {
+      timeout: 120_000,
+    });
     const allRowsMs = Date.now() - started;
     console.log(
       [

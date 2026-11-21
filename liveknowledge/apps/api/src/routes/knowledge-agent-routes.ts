@@ -38,6 +38,7 @@ import {
 } from '@liveknowledge/document';
 import {
   agentCoverOf,
+  agentPageIconOf,
   newPageFromMarkdown,
   withTitleFrontMatter,
 } from '@liveknowledge/edit-operations';
@@ -190,6 +191,9 @@ async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Resp
   // The page's cover, as an agent names one (page-surface.md "The cover").
   const cover = agentCoverOf(stored.tab.cover);
   if (cover) page.cover = cover;
+  // Its icon, an emoji or a catalogue icon (page-surface.md "The page icon").
+  const icon = agentPageIconOf(stored.tab.icon);
+  if (icon) page.icon = icon;
   return json({ page }, { headers: { ETag: `"${stored.rev}"` } });
 }
 

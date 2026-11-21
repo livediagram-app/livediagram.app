@@ -1,13 +1,15 @@
 // Room in the writing for what a knowledgebase page shows beside its words (docs/specs/030-knowledgebase/
-// verification.md "the page's meta row under the title", links-and-embeds.md "Backlinks"): one host element under
-// the Title block and one at the foot of the writing, each a ProseMirror widget, so the writing flows round them
-// and they scale with the page. The hosts are made once per article and reused; React draws into them through
+// verification.md "the page's meta row under the title", links-and-embeds.md "Backlinks", page-surface.md "The page
+// icon"): one host element over the Title block (the page's icon), one under it and one at the foot of the
+// writing, each a ProseMirror widget, so the writing flows round them and they scale with the page. The hosts are made once per article and reused; React draws into them through
 // portals (PageKnowledgeSlots). Nothing here is part of the document: no block, no step, no sync.
 import { Plugin, type EditorState } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 
 export type PageSlots = {
   plugin: Plugin<DecorationSet>;
+  /** Over the Title block: the page's icon. */
+  head: HTMLElement;
   /** Under the Title block. */
   meta: HTMLElement;
   /** After the writing's last block. */
@@ -23,9 +25,10 @@ function host(name: string): HTMLElement {
 }
 
 export function createPageSlots(): PageSlots {
+  const head = host('head');
   const meta = host('meta');
   const foot = host('foot');
-  // Two widgets, placed by the first block's size and the document's: constant work, whatever the page's length.
+  // Three widgets, placed by the first block's size and the document's: constant work, whatever the page's length.
   const build = (doc: EditorState['doc']): DecorationSet => {
     const first = doc.firstChild;
     const widget = (pos: number, el: HTMLElement, side: number) =>
@@ -37,7 +40,8 @@ export function createPageSlots(): PageSlots {
         stopEvent: () => true,
       });
     const decorations = [widget(doc.content.size, foot, 1)];
-    if (first && first.attrs.style === 'title') decorations.push(widget(first.nodeSize, meta, -1));
+    if (first && first.attrs.style === 'title')
+      decorations.push(widget(0, head, -1), widget(first.nodeSize, meta, -1));
     return DecorationSet.create(doc, decorations);
   };
   const plugin: Plugin<DecorationSet> = new Plugin<DecorationSet>({
@@ -53,5 +57,5 @@ export function createPageSlots(): PageSlots {
       },
     },
   });
-  return { plugin, meta, foot };
+  return { plugin, head, meta, foot };
 }

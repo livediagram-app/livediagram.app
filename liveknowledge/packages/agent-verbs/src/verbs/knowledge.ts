@@ -139,8 +139,7 @@ export const pages = defineVerb({
           // Once, for every row's review date.
           `${o.count} ${o.count === 1 ? 'page' : 'pages'} · ${reviewPeriodLine(o.review_period)}`,
           ...o.pages.map(
-            (p) =>
-              `${'  '.repeat(p.depth - 1)}${p.title}  (${p.page})  ${treeRowLine(p)}`,
+            (p) => `${'  '.repeat(p.depth - 1)}${p.title}  (${p.page})  ${treeRowLine(p)}`,
           ),
         ],
   quiet: (o) => o.pages.map((p) => p.page),

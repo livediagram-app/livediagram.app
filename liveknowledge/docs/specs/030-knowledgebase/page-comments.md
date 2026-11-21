@@ -41,6 +41,9 @@ Comments are about the page as a whole.
 - **Nothing to show:** with no threads, a writer sees the composer under the empty state "No Comments Yet", "Start
   the conversation about this page."
   A Viewer sees nothing at all: no heading, no empty state (decided), so a page with no conversation is just a page.
+- **An empty page has no Comments** (owner 2026-11-21): while a page has nothing under its title (the empty page's
+  drawing shows instead), the Comments section is not drawn for anyone, threads or not. It appears once the page has
+  some writing.
 - Light and dark, phone and desktop: on a phone the composer and each action are 44 px tall.
 
 ## Live

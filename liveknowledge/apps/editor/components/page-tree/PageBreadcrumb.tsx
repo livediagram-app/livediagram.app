@@ -4,7 +4,8 @@
 // page's ancestors, the top-level one first, each a link that opens that page. A top-level page has none, and shows
 // nothing. Drawn in the page's title row, at one size whatever the zoom.
 import { useContext, useSyncExternalStore } from 'react';
-import { pageAncestors, type Tab } from '@liveknowledge/document';
+import { pageAncestors, pageIconKey, pageIconOfKey, type Tab } from '@liveknowledge/document';
+import { PageIconGlyph } from '@/components/page-icon/PageIconGlyph';
 import { EditorChromeContext, type EditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { ChevronIcon } from './page-tree-icons';
 import { selectPage } from './select-page';
@@ -12,7 +13,7 @@ import { selectPage } from './select-page';
 /** The crumbs as one string a reader compares by value: a typing commit changes no ancestor's id or name. */
 function crumbsKey(tabs: readonly Tab[], activeId: string): string {
   return pageAncestors(tabs, activeId)
-    .map((page) => `${page.id}\u0000${page.name}`)
+    .map((page) => `${page.id}\u0000${page.name}\u0000${pageIconKey(page.icon) ?? ''}`)
     .join('\u0001');
 }
 
@@ -24,8 +25,8 @@ function Crumbs({ store }: { store: EditorChromeStore }) {
   );
   if (!key) return null;
   const crumbs = key.split('\u0001').map((entry) => {
-    const [id = '', name = ''] = entry.split('\u0000');
-    return { id, name: name || 'Untitled Page' };
+    const [id = '', name = '', icon = ''] = entry.split('\u0000');
+    return { id, name: name || 'Untitled Page', icon: pageIconOfKey(icon) };
   });
   return (
     <nav
@@ -45,9 +46,10 @@ function Crumbs({ store }: { store: EditorChromeStore }) {
                 e.preventDefault();
                 selectPage(store.get(), crumb.id);
               }}
-              className="min-w-0 max-w-40 cursor-pointer truncate rounded px-1 py-0.5 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              className="flex min-w-0 max-w-40 cursor-pointer items-center gap-1 rounded px-1 py-0.5 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             >
-              {crumb.name}
+              {crumb.icon ? <PageIconGlyph icon={crumb.icon} size={14} /> : null}
+              <span className="min-w-0 truncate">{crumb.name}</span>
             </a>
             <ChevronIcon aria-hidden className="shrink-0 text-slate-400" />
           </li>

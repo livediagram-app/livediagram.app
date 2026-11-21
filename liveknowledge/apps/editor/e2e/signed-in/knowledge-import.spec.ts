@@ -38,7 +38,9 @@ async function chooseZip(
 ): Promise<void> {
   const chooser = page.waitForEvent('filechooser');
   await dialog.getByRole('button', { name: 'Choose a .zip' }).click();
-  await (await chooser).setFiles({
+  await (
+    await chooser
+  ).setFiles({
     name,
     mimeType: 'application/zip',
     buffer: Buffer.from(writeZip(files)),

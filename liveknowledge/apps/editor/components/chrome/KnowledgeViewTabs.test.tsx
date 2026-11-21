@@ -6,6 +6,13 @@ import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const offline = vi.hoisted(() => ({ on: false }));
+vi.mock('@/hooks/persistence/useIsOfflineDocument', () => ({
+  useIsOfflineDocument: () => offline.on,
+}));
+vi.mock('@/components/ask/SyncKnowledgebaseButton', () => ({
+  SyncKnowledgebaseButton: () => <button type="button">Sync Knowledgebase</button>,
+}));
 
 import { track } from '@/lib/telemetry';
 import { ROLES, chromeValue, renderInEditor } from '@/components/ask/test-chrome';
@@ -13,6 +20,7 @@ import { BottomBar } from './BottomBar';
 import { KnowledgeViewTabs } from './KnowledgeViewTabs';
 
 afterEach(() => {
+  offline.on = false;
   cleanup();
   window.history.replaceState(null, '', '/document/d1');
   vi.clearAllMocks();
@@ -39,6 +47,27 @@ describe('the view tabs', () => {
     // The open tab alone wears the tab's card.
     expect(nav.querySelectorAll('[data-open]')).toHaveLength(1);
     expect(nav.querySelector('[data-open]')?.getAttribute('data-knowledge-view-tab')).toBe('ask');
+  });
+
+  it('in a knowledgebase kept Offline, keep Ask and AI Knowledge but quiet, going nowhere, saying why with Sync', async () => {
+    offline.on = true;
+    window.history.replaceState(null, '', '/document/d1#t=p1');
+    renderInEditor(<KnowledgeViewTabs />);
+    expect(link('Pages').getAttribute('href')).toBe('/document/d1#t=p1');
+    for (const name of ['Ask', 'AI Knowledge']) {
+      const a = link(name);
+      expect(a.getAttribute('href')).toBeNull();
+      expect(a.getAttribute('aria-disabled')).toBe('true');
+      expect(a.closest('[data-off]')).not.toBeNull();
+    }
+    fireEvent.click(link('Ask'));
+    expect(track).not.toHaveBeenCalled();
+    expect(window.location.search).toBe('');
+    fireEvent.pointerEnter(link('Ask'), { pointerType: 'mouse' });
+    const card = await screen.findByRole('tooltip');
+    expect(card.textContent).toContain('Ask Needs Syncing');
+    expect(card.textContent).toContain('kept in this browser');
+    expect(screen.getByRole('button', { name: 'Sync Knowledgebase' })).toBeTruthy();
   });
 
   it('moves in place on a plain press, as a history entry, and tells telemetry which view', () => {

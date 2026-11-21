@@ -77,7 +77,10 @@ test('an answer streams in, and each citation chip goes to its source card', asy
   const streamed = await page.evaluate(() => [
     ...(window as unknown as { __streamed: Set<string> }).__streamed,
   ]);
-  expect(streamed.length, `the answer arrived in pieces: ${JSON.stringify(streamed)}`).toBeGreaterThan(1);
+  expect(
+    streamed.length,
+    `the answer arrived in pieces: ${JSON.stringify(streamed)}`,
+  ).toBeGreaterThan(1);
   // The form's own tags never show.
   expect(streamed.join('')).not.toContain('<');
   await expect(answer).toContainText('The pages answer this');
@@ -87,9 +90,12 @@ test('an answer streams in, and each citation chip goes to its source card', asy
   // Chips and cards carry the same numbers; pressing a chip lights its card.
   const chips = answer.locator('[data-citation]');
   const sources = ask(page).getByRole('complementary', { name: 'Sources' });
-  const numbers = await chips.evaluateAll((els) => els.map((el) => el.getAttribute('data-citation')));
+  const numbers = await chips.evaluateAll((els) =>
+    els.map((el) => el.getAttribute('data-citation')),
+  );
   expect(numbers.length).toBeGreaterThan(0);
-  for (const number of numbers) await expect(sources.locator(`[data-source="${number}"]`)).toBeVisible();
+  for (const number of numbers)
+    await expect(sources.locator(`[data-source="${number}"]`)).toBeVisible();
   await expect(chips.first()).toHaveAccessibleName(/^Source \d+: (Runbook|Escalation)$/);
   await chips.first().click();
   await expect(sources.locator(`[data-source="${numbers[0]}"]`)).toHaveAttribute('data-lit', '');
@@ -104,7 +110,9 @@ test('an answer streams in, and each citation chip goes to its source card', asy
 
   // A source card shows Pages at that page and passage.
   await sources.locator(`[data-source="${numbers[0]}"]`).click();
-  await expect(pageRow(page, /^(Runbook|Escalation)$/).and(page.locator('[aria-current="page"]'))).toBeVisible();
+  await expect(
+    pageRow(page, /^(Runbook|Escalation)$/).and(page.locator('[aria-current="page"]')),
+  ).toBeVisible();
   await expect(paragraphs(page).filter({ hasText: 'queue worker' }).first()).toBeInViewport();
   expectNoPageErrors(pageErrors);
 });
@@ -121,7 +129,9 @@ test('what the pages do not cover shows as a Knowledge Gap and is listed under A
   const answer = ask(page).getByRole('article', { name: 'Answer' });
   await expect(answer).toHaveAttribute('data-status', 'done');
   await expect(answer).toContainText('The pages do not cover this.');
-  await expect(answer.getByRole('note')).toContainText('One thing the knowledgebase does not cover.');
+  await expect(answer.getByRole('note')).toContainText(
+    'One thing the knowledgebase does not cover.',
+  );
   const gap = ask(page).getByRole('region', { name: 'Knowledge Gap' });
   await expect(gap).toContainText(question);
 

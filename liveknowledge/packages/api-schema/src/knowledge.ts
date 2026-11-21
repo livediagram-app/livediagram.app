@@ -3,7 +3,7 @@
 // only: the engine and its limits are `@liveknowledge/knowledge`.
 
 import type { KnowledgeStyle, PageApproval } from '@liveknowledge/document';
-import type { AgentCover } from './pages';
+import type { AgentCover, AgentPageIcon } from './pages';
 
 /** The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): the one look every
  *  page is drawn in. In a document read (always whole), the `document-meta` op when it changed, and the metadata
@@ -374,6 +374,8 @@ export type KnowledgePageRead = KnowledgePageRef & {
   subpages: KnowledgePageRef[];
   /** The page's cover (page-surface.md "The cover"): its kind, and its picture or its preset. */
   cover?: Exclude<AgentCover, null>;
+  /** The page's icon (page-surface.md "The page icon"): an emoji or a catalogue icon. */
+  icon?: AgentPageIcon;
 };
 export type KnowledgePageReadResponse = { page: KnowledgePageRead };
 /** `GET .../context`: the Always in Context pages as Markdown in tree order, within the budget, with what the

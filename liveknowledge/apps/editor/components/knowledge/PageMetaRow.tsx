@@ -20,6 +20,8 @@ import { EditorDiscs } from '@/components/page-edit/EditorDiscs';
 import { periodPhrase, VerifyPageButton, type VerifyPageButtonProps } from './VerifyPageButton';
 import { AddCoverButton } from '@/components/page-cover/AddCoverButton';
 import { useCoverEditable, usePageHasCover } from '@/components/page-cover/page-cover-state';
+import { AddIconButton } from '@/components/page-icon/AddIconButton';
+import { usePageIcon } from '@/components/page-icon/page-icon-state';
 import { PageMakersBadges, type PageMakers } from './PageMakersBadges';
 import { useCurrentApprovalMeta } from './approval/PageApprovalMeta';
 
@@ -40,6 +42,8 @@ export type PageMetaRowProps = {
   editors?: readonly PageEditor[];
   // Add Cover after the reading time, for whoever may add one to a page with none (page-surface.md "The cover").
   addCover?: boolean;
+  // Add Icon right after Add Cover, for whoever may give a page with none an icon (page-surface.md "The page icon").
+  addIcon?: boolean;
   // Who made the page and who changed it last, a person or an agent (verification.md "Made by a person or an
   // agent"), with the names of the people they name.
   makers?: PageMakers;
@@ -59,6 +63,7 @@ export function PageMetaRowView({
   edited,
   editors = [],
   addCover = false,
+  addIcon = false,
   makers,
   nameOf = () => undefined,
   verify,
@@ -78,7 +83,17 @@ export function PageMetaRowView({
         </span>
       ),
     });
-  if (addCover) notes.push({ key: 'cover', node: <AddCoverButton /> });
+  // Add Cover and Add Icon are one pair, side by side with no dot between: the page's own dressing.
+  if (addCover || addIcon)
+    notes.push({
+      key: 'dress',
+      node: (
+        <span className="inline-flex items-center gap-3">
+          {addCover ? <AddCoverButton /> : null}
+          {addIcon ? <AddIconButton /> : null}
+        </span>
+      ),
+    });
   if (verify) notes.push({ key: 'verify', node: <VerifyPageButton {...verify} /> });
   if (approval) notes.push({ key: 'approval', node: approval });
   if (makers && (makers.created || makers.updated))
@@ -155,6 +170,8 @@ export function PageMetaRow() {
   const coverEditable = useCoverEditable();
   const hasCover = usePageHasCover();
   const addCover = coverEditable && !hasCover;
+  const hasIcon = usePageIcon() !== undefined;
+  const addIcon = coverEditable && !hasIcon;
   const health = page.health;
   const approval = useCurrentApprovalMeta();
   return (
@@ -166,6 +183,7 @@ export function PageMetaRow() {
       changedSinceVerified={page.health?.knowledge.changedSinceVerified === true}
       editors={editingHere ? NO_EDITORS : editors}
       addCover={addCover}
+      addIcon={addIcon}
       {...(health ? { makers: makersOf(health) } : {})}
       nameOf={nameOf}
       approval={approval}

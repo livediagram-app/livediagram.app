@@ -11,8 +11,21 @@ export const MAX_PAGE_DEPTH = 8;
 // The longest id a stored parent may be (a tab id is a UUID; anything longer is not one).
 const PARENT_ID_MAX = 128;
 
-/** What the tree reads of a tab. */
-export type TreePage = { id: string; parent?: string | undefined };
+/** What the tree reads of a tab. `connection` marks a connected row (docs/specs/030-knowledgebase/links-and-embeds.md
+ *  "Connected files in the sidebar"): another app's file placed among the pages, which is no page. */
+export type TreePage = { id: string; parent?: string | undefined; connection?: unknown };
+
+/** Whether a tree entry is a connected row rather than a page: it holds a connection (the tab's object, or `true`
+ *  where only the mark is kept, as the api's stored tree keeps it). */
+export const isConnectedRow = (page: TreePage): boolean =>
+  page.connection === true || (typeof page.connection === 'object' && page.connection !== null);
+
+/** How many pages a list holds: its connected rows are not counted (they never count toward the page limit). */
+export function pageCount(pages: readonly TreePage[]): number {
+  let n = 0;
+  for (const p of pages) if (!isConnectedRow(p)) n += 1;
+  return n;
+}
 
 /** A page in the tree, with its subpages in order. */
 export type PageTreeNode<T extends TreePage> = { page: T; children: PageTreeNode<T>[] };
@@ -36,7 +49,8 @@ export function parseTabParent(v: unknown): string | undefined {
 export function pageParents<T extends TreePage>(
   pages: readonly T[],
 ): Map<string, string | undefined> {
-  const ids = new Set(pages.map((p) => p.id));
+  // Only a page holds subpages: an entry stored under a connected row reads at the top level.
+  const ids = new Set(pages.filter((p) => !isConnectedRow(p)).map((p) => p.id));
   const raw = new Map<string, string | undefined>();
   for (const p of pages) {
     const parent = parseTabParent(p.parent);
@@ -176,10 +190,19 @@ export function pageAddRefusal<T extends TreePage>(
   pages: readonly T[],
   parent?: string,
 ): PageTreeRefusal | null {
-  if (pages.length >= MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
+  if (pageCount(pages) >= MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
+  return placeRefusal(pages, parent);
+}
+
+// Whether anything may go under `parent` (the top level when absent): a page there, not at the deepest level.
+function placeRefusal<T extends TreePage>(
+  pages: readonly T[],
+  parent: string | undefined,
+): PageTreeRefusal | null {
   if (parent === undefined) return null;
+  const at = pages.find((p) => p.id === parent);
+  if (!at || isConnectedRow(at)) return 'unknown_page';
   const depth = pageDepth(pages, parent);
-  if (depth === 0) return 'unknown_page';
   return depth + 1 > MAX_PAGE_DEPTH ? 'depth_limit' : null;
 }
 
@@ -193,6 +216,20 @@ export function withPageAdded<T extends TreePage>(
   if (refused) return { refused };
   if (pages.some((p) => p.id === page.id)) return { refused: 'unknown_page' };
   const all = [...pages, withParent(page, parent)];
+  return listOf(all, shapeOf(all));
+}
+
+/** The list with a connected row added as the last entry under `parent` (the top level when absent). Never refused
+ *  for the page limit: a connected row is no page (the index bounds how many a knowledgebase connects). */
+export function withConnectedRowAdded<T extends TreePage>(
+  pages: readonly T[],
+  row: T,
+  parent?: string,
+): T[] | { refused: PageTreeRefusal } {
+  const refused = placeRefusal(pages, parent);
+  if (refused) return { refused };
+  if (pages.some((p) => p.id === row.id)) return { refused: 'unknown_page' };
+  const all = [...pages, withParent(row, parent)];
   return listOf(all, shapeOf(all));
 }
 
@@ -211,6 +248,7 @@ export function pageMoveRefusal<T extends TreePage>(
   if (!shape.children.has(id) || id === ROOT) return 'unknown_page';
   if (to.parent !== undefined) {
     if (!shape.children.has(to.parent) || to.parent === ROOT) return 'unknown_page';
+    if (pages.some((p) => p.id === to.parent && isConnectedRow(p))) return 'unknown_page';
     if (pageSubtreeIds(pages, id).includes(to.parent)) return 'own_subtree';
   }
   const under = to.parent === undefined ? 0 : pageDepth(pages, to.parent);
@@ -275,15 +313,17 @@ export function withPageOutdented<T extends TreePage>(pages: readonly T[], id: s
 /** The list without a page and its subpages; null for a page not there, or when no page would be left. */
 export function withPageDeleted<T extends TreePage>(pages: readonly T[], id: string): T[] | null {
   const gone = new Set(pageSubtreeIds(pages, id));
-  if (gone.size === 0 || gone.size >= pages.length) return null;
+  if (gone.size === 0) return null;
   const left = pages.filter((p) => !gone.has(p.id));
+  // A knowledgebase always keeps a page: its connected rows alone are not one.
+  if (pageCount(left) === 0) return null;
   return listOf(left, shapeOf(left));
 }
 
 /** Whether a list of pages is within the tree's limits: at most MAX_KNOWLEDGEBASE_PAGES, none below MAX_PAGE_DEPTH.
  *  What the room checks before it takes a change to the tree. */
 export function pageTreeRefusal<T extends TreePage>(pages: readonly T[]): PageTreeRefusal | null {
-  if (pages.length > MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
+  if (pageCount(pages) > MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
   const { children } = shapeOf(pages);
   let deepest = 0;
   for (const top of children.get(ROOT)!) deepest = Math.max(deepest, subtreeLevels(children, top));

@@ -12,11 +12,7 @@ function shape(id: string, x: number, y: number): Element {
   return { id, type: 'shape', shape: 'square', x, y, width: 100, height: 100 };
 }
 
-function harness(opts: {
-  elements: Element[];
-  selected?: string;
-  multi?: string[];
-}) {
+function harness(opts: { elements: Element[]; selected?: string; multi?: string[] }) {
   let elements = opts.elements;
   const nudge = renderHook(() =>
     useNudgeSelection({
@@ -59,7 +55,7 @@ describe('nudging a locked element', () => {
     const locked = { ...shape('l', 0, 0), locked: true } as Element;
     const h = harness({
       elements: [locked, shape('s', 200, 0)],
-      multi: ['l', 's']
+      multi: ['l', 's'],
     });
     h.press(10, 0);
     expect(h.at('l').x).toBe(0);

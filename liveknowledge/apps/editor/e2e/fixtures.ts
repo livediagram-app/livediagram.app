@@ -388,4 +388,3 @@ export async function settledBox(
     .toBe(true);
   return box!;
 }
-

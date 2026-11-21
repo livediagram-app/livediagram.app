@@ -6,6 +6,7 @@ import type { Page, PageArrangement, PageBackground, PageOrientation } from './p
 import type { ArticleFlow } from './article-flow';
 import type { TabDraft } from './page-draft';
 import type { TabCover } from './page-cover';
+import type { TabIcon } from './page-icon';
 import type { Layer } from './layers';
 import type { Finish } from './finish';
 import type { TabId, TextSize } from '@liveworkspace/model-core/basics';
@@ -57,6 +58,10 @@ export type Tab = {
   // The page's cover (docs/specs/030-knowledgebase/page-surface.md "The cover"): a picture, a theme gradient or an animated background across the
   // top of the page. Settled on every read (`withSettledCover`), synced in a `tab-meta` patch, as the name is.
   cover?: TabCover;
+  // The page's icon (docs/specs/030-knowledgebase/page-surface.md "The page icon"): an emoji or a line-art catalogue
+  // icon, above the Title and before the page's name in the tree. Settled on every read (`withSettledIcon`), synced
+  // in a `tab-meta` patch, as the cover is.
+  icon?: TabIcon;
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).

@@ -5,6 +5,7 @@ export { applyPageChanges, backgroundPatch, type PageChangesOutcome } from './pa
 export { applyArticleWrite } from './article-write';
 export { enterPages, type PagesIds } from './enter';
 export { agentCoverOf, parseAgentCover, type CoverRefusal } from './cover';
+export { agentPageIconOf } from './icon';
 export {
   articleSummaries,
   describeBackground,

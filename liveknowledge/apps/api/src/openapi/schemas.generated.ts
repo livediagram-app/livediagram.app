@@ -47,6 +47,44 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "AgentPageIcon": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "emoji": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "emoji",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "emoji"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "iconId": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "icon",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "iconId"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "AgentPresenceResult": {
     "additionalProperties": false,
     "properties": {
@@ -5941,6 +5979,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "icon": {
+        "$ref": "#/components/schemas/AgentPageIcon",
+        "description": "The page's icon (page-surface.md \"The page icon\"): an emoji or a catalogue icon."
+      },
       "leftOut": {
         "type": "number"
       },
@@ -10777,6 +10819,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
+      "icon": {
+        "$ref": "#/components/schemas/TabIcon"
+      },
       "id": {
         "$ref": "#/components/schemas/TabId"
       },
@@ -10947,6 +10992,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "TabIcon": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "emoji": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "emoji"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "iconId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "iconId"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "A page's icon: an emoji as the system draws it, or a line-art catalogue icon by its id."
+  },
   "TabId": {
     "type": "string"
   },
@@ -11032,6 +11106,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "font": {
         "type": "string"
+      },
+      "icon": {
+        "$ref": "#/components/schemas/TabIcon"
       },
       "id": {
         "$ref": "#/components/schemas/TabId"

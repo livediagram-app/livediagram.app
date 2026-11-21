@@ -95,6 +95,10 @@ export type AgentCover =
   | { kind: 'animated'; preset: string; colouring?: string; speed?: number }
   | null;
 
+// A page's icon as an agent reads it (docs/specs/030-knowledgebase/page-surface.md "The page icon"): an emoji, or a
+// line-art catalogue icon by its id (the ids search_icons answers).
+export type AgentPageIcon = { kind: 'emoji'; emoji: string } | { kind: 'icon'; iconId: string };
+
 // `cover` is the parsed cover (the stored shape), or null to remove it; it rides an article write or stands alone.
 export type PagesRequest =
   | { pages: PageChange[] }

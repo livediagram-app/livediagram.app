@@ -36,7 +36,6 @@ import { textResult } from './tool-helpers';
 
 const ref = pageRefOf;
 
-
 export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpGetContext, async (args, extra) => {
     const api = await knowledgeApi(server, env, extra);
@@ -143,6 +142,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
       backlinks: page.backlinks.map(ref),
       subpages: page.subpages.map(ref),
       ...(page.cover ? { cover: page.cover } : {}),
+      ...(page.icon ? { icon: page.icon } : {}),
       ...trustFieldsOf(page.trust),
       next:
         (page.leftOut > 0
