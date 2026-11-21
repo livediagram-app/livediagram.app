@@ -76,12 +76,14 @@ describe('the comments at a page’s foot, by role', () => {
     it(`lets ${who === 'editor' ? 'an' : 'a'} ${who} start a thread, reply and resolve`, async () => {
       const { change } = draw(who, [OPEN]);
       expect(screen.getByRole('heading', { name: /Comments/ }).textContent).toBe('Comments1');
+      // With a thread to answer, a new thread is behind a quiet button; the thread ends in its own reply line.
+      expect(screen.queryByLabelText('Add a comment')).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: 'Start a New Thread' }));
       fireEvent.change(screen.getByLabelText('Add a comment'), { target: { value: 'New point' } });
       fireEvent.click(screen.getByRole('button', { name: 'Comment' }));
       await waitFor(() => expect(change).toHaveBeenCalledWith({ op: 'start', text: 'New point' }));
       fireEvent.click(screen.getByRole('button', { name: 'Resolve' }));
       expect(change).toHaveBeenCalledWith({ op: 'resolve', thread: 't1' });
-      fireEvent.click(screen.getByRole('button', { name: 'Reply' }));
       fireEvent.change(screen.getByLabelText('Reply'), { target: { value: 'Agreed' } });
       fireEvent.keyDown(screen.getByLabelText('Reply'), { key: 'Enter', ctrlKey: true });
       await waitFor(() =>

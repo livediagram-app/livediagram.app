@@ -4,7 +4,9 @@
 // heading in small capitals with the open count, the open threads oldest first, the resolved ones folded under
 // "2 Resolved", then a composer to start one. A writer with no threads sees the composer under an empty state; a
 // Viewer with none sees nothing at all. Outside the writing: never in the draft, search or what agents read of it.
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { lucideGlyph } from '@liveknowledge/ui';
+import { lucidePlus } from '@liveworkspace/icons/lucide';
 import type { PageThread, PageThreadChange } from '@liveknowledge/api-schema';
 import { useRelativeNow } from '@/lib/relative-time';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
@@ -12,6 +14,8 @@ import { CommentsIcon } from '@/components/knowledge/approval/feedback-icons';
 import { PageCommentComposer } from './PageCommentComposer';
 import { PageThreadCard } from './PageThreadCard';
 import { usePageComments } from './usePageComments';
+
+const PlusIcon = lucideGlyph(lucidePlus, 14);
 
 export type PageCommentsViewProps = {
   status: 'loading' | 'ready' | 'failed';
@@ -33,6 +37,8 @@ export function PageCommentsView({
   change,
   me,
 }: PageCommentsViewProps) {
+  // A new thread's composer, opened from Start a New Thread while there are threads to reply to.
+  const [starting, setStarting] = useState(false);
   const { open, resolved } = useMemo(
     () => ({
       open: threads.filter((t) => !t.resolved),
@@ -51,6 +57,7 @@ export function PageCommentsView({
       canWrite={canWrite}
       now={now}
       change={change}
+      me={me}
     />
   );
   return (
@@ -103,15 +110,37 @@ export function PageCommentsView({
                 Questions, corrections and context for this page go here.
               </p>
             ) : null}
-            <PageCommentComposer
-              placeholder={
-                threads.length === 0 ? 'Start the conversation about this page…' : 'Add a comment…'
-              }
-              submitLabel="Comment"
-              label="Add a comment"
-              me={me}
-              onSubmit={(text) => change({ op: 'start', text })}
-            />
+            {threads.length === 0 || starting ? (
+              <PageCommentComposer
+                placeholder={
+                  threads.length === 0
+                    ? 'Start the conversation about this page…'
+                    : 'Start a new thread…'
+                }
+                submitLabel="Comment"
+                label="Add a comment"
+                me={me}
+                autoFocus={starting}
+                {...(starting ? { onCancel: () => setStarting(false) } : {})}
+                onSubmit={async (text) => {
+                  const done = await change({ op: 'start', text });
+                  if (done) setStarting(false);
+                  return done;
+                }}
+              />
+            ) : (
+              // With threads to answer, a new one is a quiet second choice: replying sits in each thread
+              // (owner 2026-11-21: the UI led people to start threads rather than reply).
+              <button
+                type="button"
+                data-start-thread=""
+                onClick={() => setStarting(true)}
+                className="flex min-h-9 cursor-pointer items-center gap-1.5 self-start rounded-lg px-2 text-[13px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 phone:min-h-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              >
+                <PlusIcon />
+                Start a New Thread
+              </button>
+            )}
           </>
         ) : null}
         {status === 'failed' ? (

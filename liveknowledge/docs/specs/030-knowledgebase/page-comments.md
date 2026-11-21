@@ -37,7 +37,13 @@ Comments are about the page as a whole.
   conversation about this page…" with no threads, else "Add a comment…"); focused or holding words, the card takes the
   accent's ring and opens its foot: a "Cmd Enter to comment" hint (desktop) and **Comment**, an accent pill with a send
   glyph, disabled while empty. It grows with its words; Cmd or Ctrl Enter posts; Escape clears it.
-- **Reply** opens a composer under the thread's last comment, focused; **Reply** posts it.
+- **Reply** (owner 2026-11-21: the old Reply button was ugly and led people to start threads rather than reply):
+  every open thread ends in its own reply line, the writer's small disc beside a soft filled "Reply…" field inside
+  the thread's card; focused, it takes the accent ring and opens **Reply** (a send pill) and the Cmd Enter hint.
+  **Resolve** is an icon button in the thread's top-right corner, with a "Resolve Thread" tooltip.
+- **A new thread is the second choice:** while a page has threads, the foot's composer folds into a quiet **Start a
+  New Thread** button; pressing it opens the composer ("Start a new thread…", focused, with Cancel). With no
+  threads the composer shows at once.
 - **Your own comment** has **Edit** and **Delete** in a small menu on hover or focus (always shown on touch). Edit
   turns it into a composer with **Save** and **Cancel**. Delete asks first ("Delete This Comment?"); deleting a
   thread's last comment removes the thread.

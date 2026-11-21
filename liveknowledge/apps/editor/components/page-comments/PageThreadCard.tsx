@@ -161,24 +161,41 @@ export function PageThreadCard({
   canWrite,
   now,
   change,
+  me,
 }: {
   thread: PageThread;
   ownKey: string | null;
   canWrite: boolean;
   now: number;
   change: Change;
+  /** The writer, for the reply line's disc. */
+  me?: { name: string; color: string } | undefined;
 }) {
-  const [replying, setReplying] = useState(false);
   const pending = thread.id.startsWith('pending-');
+  const open = !thread.resolved;
   return (
     <article
       data-page-thread={thread.resolved ? 'resolved' : 'open'}
       aria-label={`Comment thread by ${thread.comments[0]?.authorName ?? 'someone'}`}
-      className={`rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-sm shadow-slate-900/[0.03] dark:border-slate-800 dark:bg-slate-900/60 ${
+      className={`group/thread relative rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-sm shadow-slate-900/[0.03] dark:border-slate-800 dark:bg-slate-900/60 ${
         thread.resolved ? 'opacity-70' : ''
       }`}
     >
-      <ul className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/70">
+      {/* Resolve sits in the thread's corner, out of the way of replying (owner 2026-11-21). */}
+      {canWrite && !pending && open ? (
+        <Tooltip label="Resolve Thread">
+          <button
+            type="button"
+            aria-label="Resolve"
+            data-thread-resolve=""
+            onClick={() => void change({ op: 'resolve', thread: thread.id })}
+            className="absolute right-2.5 top-2.5 flex size-8 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 phone:size-11 dark:text-slate-500 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+          >
+            <ResolveIcon />
+          </button>
+        </Tooltip>
+      ) : null}
+      <ul className="flex flex-col divide-y divide-slate-100 pr-8 dark:divide-slate-800/70">
         {thread.comments.map((comment) => (
           <CommentItem
             key={comment.id}
@@ -191,63 +208,41 @@ export function PageThreadCard({
           />
         ))}
       </ul>
-      {replying ? (
-        <div className="mt-3 pl-10">
+      {/* An open thread always ends in its own reply line, so answering here is the obvious next step, never a new
+          thread (owner 2026-11-21). */}
+      {canWrite && !pending && open ? (
+        <div data-thread-reply="" className="mt-3">
           <PageCommentComposer
-            placeholder="Reply..."
+            placeholder="Reply…"
+            label="Reply"
             submitLabel="Reply"
-            autoFocus
-            onCancel={() => setReplying(false)}
-            onSubmit={async (text) => {
-              const done = await change({ op: 'reply', thread: thread.id, text });
-              if (done) setReplying(false);
-              return done;
-            }}
+            inline
+            me={me}
+            onSubmit={(text) => change({ op: 'reply', thread: thread.id, text })}
           />
         </div>
-      ) : (
+      ) : null}
+      {thread.resolved ? (
         <footer className="mt-2 flex min-h-8 flex-wrap items-center gap-1 pl-10">
-          {thread.resolved && thread.resolvedAt !== undefined ? (
+          {thread.resolvedAt !== undefined ? (
             <span className="mr-auto text-xs text-slate-500 dark:text-slate-400">
               Resolved{thread.resolvedBy ? ` by ${thread.resolvedBy}` : ''},{' '}
               {relativeSince(thread.resolvedAt, now)}
             </span>
           ) : null}
           {canWrite && !pending ? (
-            thread.resolved ? (
-              <Button
-                variant="ghost"
-                size="xs"
-                onClick={() => void change({ op: 'reopen', thread: thread.id })}
-                className="cursor-pointer gap-1 phone:min-h-11"
-              >
-                <ReopenIcon />
-                Reopen
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => setReplying(true)}
-                  className="cursor-pointer phone:min-h-11"
-                >
-                  Reply
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => void change({ op: 'resolve', thread: thread.id })}
-                  className="cursor-pointer gap-1 phone:min-h-11"
-                >
-                  <ResolveIcon />
-                  Resolve
-                </Button>
-              </>
-            )
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={() => void change({ op: 'reopen', thread: thread.id })}
+              className="cursor-pointer gap-1 phone:min-h-11"
+            >
+              <ReopenIcon />
+              Reopen
+            </Button>
           ) : null}
         </footer>
-      )}
+      ) : null}
     </article>
   );
 }

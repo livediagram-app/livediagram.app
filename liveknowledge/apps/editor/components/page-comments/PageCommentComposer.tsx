@@ -39,6 +39,8 @@ export type PageCommentComposerProps = {
   me?: { name: string; color: string } | undefined;
   /** The field's name when the placeholder says more than it ("Add a comment"). */
   label?: string;
+  /** Inside a thread: a soft filled line, no card of its own, a smaller disc. */
+  inline?: boolean;
 };
 
 export function PageCommentComposer({
@@ -50,6 +52,7 @@ export function PageCommentComposer({
   onCancel,
   me,
   label,
+  inline = false,
 }: PageCommentComposerProps) {
   const modifier = modifierName(typeof navigator === 'undefined' ? undefined : navigator.platform);
   const [draft, setDraft] = useState(initial);
@@ -79,17 +82,23 @@ export function PageCommentComposer({
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
       }}
-      className={`group/composer flex gap-3 rounded-2xl border bg-white p-2 pl-3 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-[border-color,box-shadow] duration-150 motion-reduce:transition-none dark:bg-slate-900 ${
+      className={`group/composer flex gap-3 border transition-[border-color,box-shadow,background-color] duration-150 motion-reduce:transition-none ${
+        inline
+          ? 'rounded-xl p-1.5 pl-2 gap-2.5'
+          : 'rounded-2xl bg-white p-2 pl-3 shadow-[0_1px_2px_rgb(15_23_42/0.04)] dark:bg-slate-900'
+      } ${
         tooLong
           ? 'border-rose-400 dark:border-rose-500/70'
           : focused
-            ? 'border-brand-400 shadow-[0_0_0_4px_rgb(var(--color-brand-500-rgb,132_204_22)/0.12)] dark:border-brand-500'
-            : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'
+            ? `border-brand-400 ring-4 ring-brand-500/10 dark:border-brand-500 ${inline ? 'bg-white dark:bg-slate-900' : ''}`
+            : inline
+              ? 'border-transparent bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800/50 dark:hover:bg-slate-800'
+              : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'
       }`}
     >
       {me ? (
         <GlyphDisc
-          size={28}
+          size={inline ? 24 : 28}
           as="span"
           aria-hidden
           style={identityVars(me.color)}
