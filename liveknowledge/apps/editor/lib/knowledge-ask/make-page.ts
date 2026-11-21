@@ -20,9 +20,14 @@ export type MadePage = { ok: true; id: string; title: string } | { ok: false; re
 
 type PageEditor = Pick<EditorContextValue, 'tabs' | 'activeTab' | 'commitTabs' | 'markTabLoaded'>;
 
-/** A page's title from a question: one line, the question mark kept, capped as every name is. */
+/** A page's title from a question: one line, the question mark kept, a closing full stop dropped (a Knowledge Gap
+ *  is a sentence; a title has none), capped as every name is. */
 export function titleFromQuestion(question: string): string {
-  return truncateName(question.trim().replace(/\s+/g, ' ')) || 'Untitled Page';
+  const line = question
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/(?<!\.)\.$/, '');
+  return truncateName(line) || 'Untitled Page';
 }
 
 /** Add a page titled `title` holding `markdown`, under `parent` (the top level when absent). `links` are the pages

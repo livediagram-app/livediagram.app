@@ -140,6 +140,9 @@ describe('a title from a question', () => {
   it('is one line, capped as a page name is', () => {
     expect(titleFromQuestion('  How\n do we\tship? ')).toBe('How do we ship?');
     expect(titleFromQuestion('x'.repeat(500)).length).toBeLessThan(200);
+    // A Knowledge Gap is a sentence: its full stop goes, an ellipsis stays.
+    expect(titleFromQuestion('How a deploy is rolled back.')).toBe('How a deploy is rolled back');
+    expect(titleFromQuestion('And then...')).toBe('And then...');
     expect(titleFromQuestion('   ')).toBe('Untitled Page');
   });
 });

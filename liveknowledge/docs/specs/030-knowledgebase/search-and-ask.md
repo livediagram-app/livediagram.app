@@ -190,7 +190,9 @@ strangers.
   without its markers and a Sources list linking each cited page.
 - **Draft a Page From What We Know** makes a top-level page titled from the question whose first line is "Draft,
   Not Verified", then the question as a heading, then a draft from one more Ask call. If that call fails the page
-  holds the mark and the heading alone. The draft's Ask call counts against the limits like any question.
+  holds the mark and the heading alone. The draft's Ask call counts against the limits like any question. A title
+  made from a question (here and Save as Page) drops a closing full stop, since a Knowledge Gap is a sentence and a
+  title has none; a question mark stays.
 - **The conversation lasts as long as the browser tab**: leaving Ask to read a cited page and coming back finds it,
   still streaming if it was. A reload starts a fresh field, and the chat is in the list with every answer that
   had ended.
