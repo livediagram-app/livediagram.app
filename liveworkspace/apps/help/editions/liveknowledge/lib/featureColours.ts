@@ -24,7 +24,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'questions-nobody-could-answer': '#f59e0b',
   'pages-that-disagree': '#e11d48',
   'always-in-context': '#84cc16',
-  // ---- Style and Settings ----
+  // ---- Style ----
   'knowledgebase-style': '#db2777',
   // ---- Import and Export ----
   'import-a-markdown-folder': '#ca8a04',
