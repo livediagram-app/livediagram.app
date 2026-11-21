@@ -1,5 +1,6 @@
 'use client';
 
+import { ZenIcon } from '@/components/palette/palette-icons';
 import { useVersionHistoryState } from '@/lib/version-history-store';
 import { useKnowledgeView } from '@/lib/knowledge-ask/useKnowledgeView';
 import { lucideCheck, lucideX } from '@liveworkspace/icons/lucide';
@@ -28,6 +29,9 @@ import { useKnowledgebaseStartOffered } from '@/components/start/knowledgebase-s
 // edit button"), each standing on its own over the page, no capsule round them.
 const PILL =
   'inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl text-[13px] font-semibold shadow-lg motion-safe:transition-colors motion-safe:duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 phone:h-11';
+// Cancel's and Zen's quiet pill, white on the page beside the accent one.
+const QUIET =
+  'bg-white text-slate-700 shadow-slate-900/10 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-slate-400 dark:bg-slate-800 dark:text-slate-200 dark:shadow-black/40 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-white';
 const BRAND =
   'bg-brand-700 pl-3 pr-2 text-white shadow-brand-900/25 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500';
 
@@ -58,6 +62,8 @@ export type PageEditBarViewProps = {
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
+  // Zen Mode, to the right of Edit while the page is read (owner 2026-11-21): absent where zen is not offered.
+  onZen?: (() => void) | undefined;
 };
 
 /** The bar itself, from plain props (tests, and the store-reading wrapper below). */
@@ -70,6 +76,7 @@ export function PageEditBarView({
   onEdit,
   onSave,
   onCancel,
+  onZen,
 }: PageEditBarViewProps) {
   const corner = useArticleZoneCorner(mayEdit);
   if (!mayEdit) return null;
@@ -80,7 +87,7 @@ export function PageEditBarView({
           style={{ right: corner.right, bottom: corner.bottom }}
           // Toasts stand on this button's line, beside it (liveworkspace toasts.md "Placement").
           data-toast-side=""
-          className="fixed z-[var(--z-toolbar)]"
+          className="fixed z-[var(--z-toolbar)] flex items-center gap-2"
         >
           {/* No tooltip (owner 2026-11-21): the label and the key say it. */}
           <button
@@ -93,6 +100,22 @@ export function PageEditBarView({
             Edit
             <Kbd tone="onBrand">E</Kbd>
           </button>
+          {onZen ? (
+            <HoverCard
+              title="Zen Mode"
+              description="Hide every bar and panel to read the page (Z)."
+            >
+              <button
+                type="button"
+                onClick={onZen}
+                aria-label="Zen Mode"
+                data-page-zen=""
+                className={`${PILL} ${QUIET} lk-pop-in w-10 justify-center phone:w-11`}
+              >
+                <ZenIcon />
+              </button>
+            </HoverCard>
+          ) : null}
         </div>
       </Portal>
     );
@@ -155,7 +178,7 @@ export function PageEditBarView({
           type="button"
           onClick={onCancel}
           data-page-edit-cancel=""
-          className={`${PILL} lk-pop-in bg-white pl-3 pr-3.5 text-slate-700 shadow-slate-900/10 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-slate-400 dark:bg-slate-800 dark:text-slate-200 dark:shadow-black/40 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-white`}
+          className={`${PILL} ${QUIET} lk-pop-in pl-3 pr-3.5`}
         >
           <XIcon />
           Cancel
@@ -197,6 +220,8 @@ export function PageEditBar() {
   // A new knowledgebase's start screen covers its first page: no Cancel and Save floating beside it.
   const startMayShow = useEditorChrome(templateStartShownOf);
   const startOffered = useKnowledgebaseStartOffered(tabId);
+  // Zen beside Edit: never in an embed or once zen is on (its way out stands at the page's foot).
+  const zenOffered = useEditorChrome((s) => !s.embedMode && !s.zenMode);
   if (inHistory || !onPages || (startMayShow && startOffered)) return null;
   return (
     <>
@@ -213,6 +238,7 @@ export function PageEditBar() {
         onEdit={() => store.get().pageEditing.start()}
         onSave={() => store.get().pageEditing.save()}
         onCancel={() => void store.get().pageEditing.cancel()}
+        onZen={zenOffered ? () => store.get().toggleZenMode() : undefined}
       />
     </>
   );
