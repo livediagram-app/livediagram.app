@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@liveworkspace/trusted-types": "workspace:*",
-    "fontkit": "2.0.4"
+    "fontkit": "3.0.0"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",
