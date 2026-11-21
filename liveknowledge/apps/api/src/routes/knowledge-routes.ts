@@ -143,6 +143,12 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
   if (method !== (segments[5] === 'verify' ? 'POST' : 'PUT')) return methodNotAllowed();
   // Verify, owner and Always in Context: an Editor's or a Participant's, and the whole knowledgebase's to decide.
   if (!writesPages(grant) || !wholeKnowledgebase(grant)) return forbidden();
+  // A person vouches for a page (verification.md "Share roles"), never an agent, as approval (approval.md).
+  if (segments[5] === 'verify' && ctx.token)
+    return json(
+      { error: 'needs_a_person', message: 'A person verifies a page, never an agent.' },
+      { status: 403 },
+    );
   return segments[5] === 'verify'
     ? handleVerify(ctx, document, tab)
     : handleKnowledgePatch(ctx, document, tab);

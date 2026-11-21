@@ -47,7 +47,9 @@ export async function copyVersion(args: {
   }
   const id = crypto.randomUUID();
   const name = capStoredName(args.name?.trim() || `${version.tabName} (copy)`, null, 'tab');
-  const { locked: _locked, ...content } = body;
+  // A copy is a new page nobody has vouched for: no owner, verification or approval of the page it was taken from
+  // (verification.md "The fields").
+  const { locked: _locked, knowledge: _knowledge, ...content } = body;
   // The content, not the conversation: the comment threads and actions stay on the tab they were left on.
   const elements = content.elements.map((element) => {
     const copy: Record<string, unknown> = { ...element };

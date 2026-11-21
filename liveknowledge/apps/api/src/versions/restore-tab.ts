@@ -24,6 +24,8 @@ const NOT_CONTENT = new Set([
   'connection',
   'elements',
   'articles',
+  // The page's knowledge fields (verification.md "The fields"): a restore keeps the page's own (restoredTab).
+  'knowledge',
 ]);
 
 // A version's stored body, settled as every tab read settles one; null when it no longer parses as a tab body.
@@ -59,8 +61,12 @@ export function restoredTab(stored: Tab, body: VersionBody): Tab {
     return kept as Element;
   });
   const { locked: _locked, folder: _folder, ...rest } = body as VersionBody & { folder?: string };
-  const next = { ...rest, elements, id: stored.id, name: stored.name } as Tab;
+  const { knowledge: _knowledge, ...content } = rest as typeof rest & { knowledge?: unknown };
+  const next = { ...content, elements, id: stored.id, name: stored.name } as Tab;
   if (stored.locked) next.locked = stored.locked;
+  // The page's knowledge fields are the knowledge routes' alone (verification.md "The fields"): a restore keeps the
+  // page's own owner, verification and approval, and never brings back a Verify the version was taken under.
+  if (stored.knowledge !== undefined) next.knowledge = stored.knowledge;
   return migrateIncomingTab(next) as Tab;
 }
 

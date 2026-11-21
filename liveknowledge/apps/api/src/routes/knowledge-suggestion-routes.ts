@@ -204,6 +204,14 @@ export async function handleSuggestionRoutes(route: KnowledgeRoute): Promise<Res
   if (segments[5] !== 'accept' && segments[5] !== 'dismiss') return null;
   if (request.method !== 'POST') return methodNotAllowed();
   if (!writesPages(grant)) return forbidden();
+  // A suggestion is for a person to accept or dismiss (knowledgebase-for-agents.md `suggest_edit`): an agent that
+  // accepted one would rewrite a page it may not, a Verified one included.
+  if (ctx.token)
+    return refused(
+      403,
+      'needs_a_person',
+      'A person accepts or dismisses a suggestion, never an agent.',
+    );
   if (segments[5] === 'accept') return handleAccept(route, id);
   await removeSuggestion(ctx.env, id);
   console.info('[knowledge] suggestion dismissed', {

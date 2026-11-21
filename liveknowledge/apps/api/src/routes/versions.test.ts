@@ -627,3 +627,76 @@ describe('an agent changeset', () => {
     expect(versionRows(db).filter((v) => v.kind === 'agent')).toHaveLength(1);
   });
 });
+
+// docs/specs/030-knowledgebase/verification.md "The fields": a page's owner, verification and approval are the
+// knowledge routes' alone. A restore keeps the page's own; a copy is a new page nobody has vouched for; and an agent
+// never restores over a page a person vouched for (knowledgebase-for-agents.md `write_page`).
+describe("a page's knowledge fields", () => {
+  const VOUCHED = { owner: OWNER, verifiedAt: 1, verifiedBy: 'someone_else' };
+  const versionWith = (db: SqliteD1, knowledge: unknown) => {
+    const data = JSON.stringify({ elements: [box('a', 'old'), box('b', 'b', 200)], knowledge });
+    db.sql
+      .prepare(
+        `INSERT INTO tab_versions (id, tab_id, rev, kind, name, author_id, author_name, author_color, tab_name, data,
+                                   bytes, element_count, saved_at, created_at)
+         VALUES ('v_k', 't1', 0, 'manual', 'Vouched', ?, 'Webber', '#123456', 'Board', ?, ?, 2, 1, 1)`,
+      )
+      .run(OWNER, data, data.length);
+    return 'v_k';
+  };
+  const knowledgeOf = (db: SqliteD1, tab = 't1') =>
+    (stored(db, tab) as { knowledge?: unknown }).knowledge;
+
+  it('never brings back a Verify the version was taken under', async () => {
+    quiet();
+    const { db } = await setUp();
+    const id = versionWith(db, VOUCHED);
+    const res = await call(db, 'POST', `${base}/${id}/restore`, {});
+    expect(res.status).toBe(200);
+    expect(stored(db).elements.find((e) => e.id === 'a')).toMatchObject({ label: 'old' });
+    // The page's maker owns it, as it did; the version's owner and Verify are not brought back.
+    expect(knowledgeOf(db)).toEqual({ owner: OWNER });
+  });
+
+  it("keeps the page's own verification over a version taken before it", async () => {
+    quiet();
+    const { db } = await setUp();
+    const id = versionWith(db, undefined);
+    db.sql
+      .prepare(
+        `UPDATE tabs SET data = json_set(data, '$.knowledge', json(?)), rev = rev + 1 WHERE id = 't1'`,
+      )
+      .run(JSON.stringify({ owner: OWNER, verifiedAt: Date.now() }));
+    // A person restores: the writing changes, the page stays theirs and verified.
+    const res = await call(db, 'POST', `${base}/${id}/restore`, {});
+    expect(res.status).toBe(200);
+    expect(knowledgeOf(db)).toMatchObject({ owner: OWNER });
+    expect((knowledgeOf(db) as { verifiedAt?: number }).verifiedAt).toBeGreaterThan(1);
+  });
+
+  it('refuses an agent restoring over a verified page, and changes nothing', async () => {
+    quiet();
+    const { db } = await setUp();
+    const id = versionWith(db, undefined);
+    db.sql
+      .prepare(
+        `UPDATE tabs SET data = json_set(data, '$.knowledge', json(?)), rev = rev + 1 WHERE id = 't1'`,
+      )
+      .run(JSON.stringify({ verifiedAt: Date.now() }));
+    const before = stored(db);
+    const res = await call(db, 'POST', `${base}/${id}/restore`, {}, { token: true });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ error: 'page_verified' });
+    expect(stored(db)).toEqual(before);
+  });
+
+  it('makes a copy that nobody owns or has verified', async () => {
+    quiet();
+    const { db } = await setUp();
+    const id = versionWith(db, VOUCHED);
+    const res = await call(db, 'POST', `${base}/${id}/copy`, {});
+    expect(res.status).toBe(201);
+    const { tab } = await res.json<{ tab: { id: string } }>();
+    expect(knowledgeOf(db, tab.id)).toBeUndefined();
+  });
+});

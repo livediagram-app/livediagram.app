@@ -26,6 +26,7 @@ import { parseVersionBody } from '../versions/restore-tab';
 import { restoreVersion } from '../versions/restore';
 import { versionTelemetry } from '../versions/telemetry';
 import { authorOf, notePageWriteAfter, refreshAfterWrite } from './changesets';
+import { agentRewriteRefusal } from './tab-pages-route';
 import {
   gateWrite,
   gateRead,
@@ -87,6 +88,9 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
   const author = await authorOf(ctx, owner);
   const tokenId = ctx.token?.id ?? null;
   if (door === 'restore') {
+    // A restore rewrites the page's writing: an agent's is refused on a page a person vouched for, as `write_page`.
+    const refusal = ctx.token ? agentRewriteRefusal(document, tabId) : null;
+    if (refusal) return refusal;
     const result = await restoreVersion({
       env: ctx.env,
       document,

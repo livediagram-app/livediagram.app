@@ -96,6 +96,14 @@ describe('POST pages/:tab/verify', () => {
     expect(stored(kit, 'holidays').knowledge).toBeDefined();
   });
 
+  it('is refused for an agent, even one holding write: a person vouches for a page', async () => {
+    const kit = await knowledgeKit();
+    const res = await kit.call('agent', 'POST', '/api/documents/kb/pages/holidays/verify');
+    expect(res.status).toBe(403);
+    expect(await res.json()).toMatchObject({ error: 'needs_a_person' });
+    expect(stored(kit, 'holidays').knowledge).toBeUndefined();
+  });
+
   it.each(['viewer', 'link', 'page-link', 'stranger'] as const)(
     'is refused for %s, who changes nothing',
     async (who) => {

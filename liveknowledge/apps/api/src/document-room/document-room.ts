@@ -28,6 +28,7 @@ import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { readSessionAttachment, verifiedSessionOf, type SessionAttachment } from '../room-session';
+import { tokenRoomRole } from '../knowledge/agent-grants';
 import { documentHasTab } from '../db/tabs';
 import {
   documentShares,
@@ -600,9 +601,15 @@ export class DocumentRoom extends DurableObject<Env> {
     const server = pair[1];
     // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
     const v = verifiedSessionOf(request);
+    // A token's socket writes only with `write` granted here (knowledge/agent-grants.ts tokenRoomRole).
+    const role = this.roomEnv
+      ? await tokenRoomRole(this.roomEnv, v.verifiedRole, v.apiToken)
+      : v.apiToken
+        ? 'view'
+        : v.verifiedRole;
     this.acceptSession(
       server,
-      v.verifiedRole,
+      role,
       v.tabScope,
       v.shareCode,
       v.personTag,

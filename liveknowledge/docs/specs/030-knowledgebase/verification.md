@@ -174,7 +174,9 @@ own.
 
 ## Share roles
 
-Verify and change a page's owner: an Editor or a Participant. Change the Review Period: an Editor only
+Verify and change a page's owner: an Editor or a Participant, in person or through a workbench, never an agent
+(`needs_a_person`). A version restore keeps the page's own fields, and a version's copy is a new page with none: no
+Verify, owner or approval rides a version. Change the Review Period: an Editor only
 ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)); everyone sees the period in Page Health, and
 only an Editor sees its pencil. Everyone sees the states.
 

@@ -5,7 +5,12 @@
 //
 // The grant is settled once a request, before the document's routes run, and narrows the role the token's person
 // holds (routes/context.ts grantOn): every gate then reads the narrowed role, so no route checks a scope of its own.
-import { parseAgentScopes, type AgentScope } from '@liveknowledge/api-schema';
+import {
+  agentScopesFor,
+  parseAgentScopes,
+  type AccessLevel,
+  type AgentScope,
+} from '@liveknowledge/api-schema';
 import { json } from '../responses';
 import { grantOn, type DocumentRouteContext } from '../routes/context';
 import type { DocumentEnv } from '../types';
@@ -45,6 +50,23 @@ export async function writeScopes(
     )
     .bind(tokenId, scopes.join(' '), now)
     .run();
+}
+
+/** The level a token's socket joins the room at (docs/specs/024-agents/knowledgebase-for-agents.md "Share roles"):
+ *  its person's, while an Editor has granted the token `write` here, else `view`. A token without `write` changes no
+ *  page over REST, so it changes none live either: its socket watches. A grant that cannot be read watches too. */
+export async function tokenRoomRole(
+  env: DocumentEnv,
+  role: AccessLevel | undefined,
+  tokenId: string | null | undefined,
+): Promise<AccessLevel | undefined> {
+  if (!tokenId || !role || role === 'view') return role;
+  try {
+    const granted = await storedScopes(env, tokenId);
+    return agentScopesFor({ readOnly: false, role, granted }).includes('write') ? role : 'view';
+  } catch {
+    return 'view';
+  }
 }
 
 /** The request with its token's grant settled: one keyed read for a full token, none for a read-only one (it

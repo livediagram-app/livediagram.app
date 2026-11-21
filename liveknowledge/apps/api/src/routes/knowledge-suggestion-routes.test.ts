@@ -137,11 +137,33 @@ describe('accepting a suggestion', () => {
     ['viewer-agent', 403],
     ['agent-stored', 403],
     ['editor', 200],
-    ['agent', 200],
+    // A person accepts: an agent holding `write` never accepts one, its own included.
+    ['agent', 403],
   ])('as %s answers %i', async (who, status) => {
     const { id } = await made();
     expect((await accept(who, id)).status).toBe(status);
     expect(await pending()).toHaveLength(status === 200 ? 0 : 1);
+  });
+
+  it('tells an agent with write that a person accepts, and leaves a verified page as it was', async () => {
+    expect(
+      (await kit.call('editor', 'POST', '/api/documents/kb/pages/deploys/verify')).status,
+    ).toBe(200);
+    const before = await (
+      await kit.call('editor', 'GET', '/api/documents/kb/pages/deploys')
+    ).json<{
+      page: { rev: number };
+    }>();
+    const { id } = await made();
+    const res = await accept('agent', id);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toMatchObject({ error: 'needs_a_person' });
+    const after = await (
+      await kit.call('editor', 'GET', '/api/documents/kb/pages/deploys')
+    ).json<{
+      page: { rev: number };
+    }>();
+    expect(after.page.rev).toBe(before.page.rev);
   });
 
   it('tells an agent without write what it holds and what to do', async () => {
@@ -220,6 +242,7 @@ describe('dismissing a suggestion', () => {
     ['participant', 204],
     ['viewer', 403],
     ['agent-stored', 403],
+    ['agent', 403],
     ['editor', 204],
   ])('as %s answers %i', async (who, status) => {
     const { id } = await made();

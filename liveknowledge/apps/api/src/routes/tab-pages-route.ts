@@ -8,6 +8,7 @@ import { afterChangeset } from '../changesets/after';
 import { frontDoorOf } from '../changesets/front-door';
 import { submitPages } from '../changesets/pages';
 import { forbidden, json } from '../responses';
+import type { DocumentDTO } from '../types';
 import { authorOf, notePageWriteAfter, refreshAfterWrite } from './changesets';
 import { gateWrite, missingDocument, requireOwner, type DocumentRouteContext } from './context';
 
@@ -32,28 +33,9 @@ export async function handleTabPages(
     });
     return json({ error: code, ...rest }, { status: 400 });
   }
-  // An agent never rewrites a page a person verified, current or due for review (docs/specs/024-agents/
-  // knowledgebase-for-agents.md `write_page`): what a person vouched for changes through a suggestion a person
-  // accepts.
   if (ctx.token && 'article' in parsed) {
-    const fields = parseKnowledgeFields(document.tabs.find((t) => t.id === tabId)?.knowledge);
-    const state = trustState(fields, document.knowledgeSettings.reviewEvery, Date.now()).state;
-    // A page whose review is due is refused as a verified one is: it is the page most likely to need a person's
-    // eye, and a rewrite by an agent would bury what the review was for.
-    if (state !== 'never-verified') {
-      const code = state === 'verified' ? 'page_verified' : 'page_review_due';
-      console.info('[pages-agent] refused', { documentId: id, tabId, code });
-      return json(
-        {
-          error: code,
-          message:
-            state === 'verified'
-              ? 'This page is verified, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept.'
-              : 'This page is due for review, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_edit, for a person to accept.',
-        },
-        { status: 409 },
-      );
-    }
+    const refusal = agentRewriteRefusal(document, tabId);
+    if (refusal) return refusal;
   }
   const author = await authorOf(ctx, owner);
   const result = await submitPages({
@@ -83,4 +65,27 @@ export async function handleTabPages(
       body: result.status === 200 ? { changeset: true } : null,
     });
   return json(result.body, { status: result.status });
+}
+
+/** The refusal an agent meets rewriting a page a person verified, current or due for review (docs/specs/024-agents/
+ *  knowledgebase-for-agents.md `write_page`): what a person vouched for changes through a suggestion a person accepts.
+ *  A page whose review is due is refused as a verified one is: it is the page most likely to need a person's eye, and
+ *  a rewrite by an agent would bury what the review was for. Null for a page never verified. Every agent write of a
+ *  page's writing takes it: `write_page` here, and a version restore (routes/versions.ts). */
+export function agentRewriteRefusal(document: DocumentDTO, tabId: string): Response | null {
+  const fields = parseKnowledgeFields(document.tabs.find((t) => t.id === tabId)?.knowledge);
+  const state = trustState(fields, document.knowledgeSettings.reviewEvery, Date.now()).state;
+  if (state === 'never-verified') return null;
+  const code = state === 'verified' ? 'page_verified' : 'page_review_due';
+  console.info('[pages-agent] refused', { documentId: document.id, tabId, code });
+  return json(
+    {
+      error: code,
+      message:
+        state === 'verified'
+          ? 'This page is verified, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept.'
+          : 'This page is due for review, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_edit, for a person to accept.',
+    },
+    { status: 409 },
+  );
 }

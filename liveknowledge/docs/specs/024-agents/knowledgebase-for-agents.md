@@ -87,7 +87,10 @@ the [blueprint](blueprints/knowledgebase-for-agents.md).
   (`page_review_due`), whatever the connection holds. A page whose review is due is the one most likely to need a
   person's eye, and an agent's rewrite would bury what the review was for: the agent suggests the edit
   (`suggest_edit` stays allowed on both), and a person reviews, verifies or rewrites the page. Only a page never
-  verified is written directly.
+  verified is written directly. A version restore by a token is refused the same way, and the person's own doors stay
+  theirs: an agent never Verifies a page, nor accepts or dismisses a suggestion (`needs_a_person`, 403), whatever it
+  holds. A token's realtime socket (its room ticket) joins at its person's level only with `write` granted here, and
+  watches otherwise, so no scope is passed over the room.
 - **The room knows its connections by token** (`agent_seen`): each API token that calls a knowledge route is
   noted with the name it is counted under, how it connects (the MCP server, the CLI or the token directly),
   whether it is read-only, the role of its person and when it was last seen (to the hour). `GET knowledge` answers
