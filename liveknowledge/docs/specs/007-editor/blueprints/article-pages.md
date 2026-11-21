@@ -418,8 +418,8 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
      members, then arrows pinned or riding them, to a fixed point).
   4. Elements just added and loose on an article page (`looseOnArticles`) per flow:
      `zonePlanFor(els, all, textWidth, textHeight)` (one non-drawing box: an object zone of its size, scaled to
-     the text area, `zoneHeightMax` tall at most; else a drawing zone the text width, `max(ARTICLE_DRAWING_MIN_HEIGHT, h + 2 *
-ARTICLE_DRAWING_PAD)` tall), `handle.insertZone(spec, centre)`, `withZoneLanded`,
+     the text area, `zoneHeightMax` tall at most, and `align: 'left'` when that box is an embed (`video`); else a drawing zone the text width, `max(ARTICLE_DRAWING_MIN_HEIGHT, h + 2 *
+ARTICLE_DRAWING_PAD)` tall), `handle.insertZone(spec, centre)` (the spec carries the plan's `align`), `withZoneLanded`,
      `withElementsIntoZone` (centred, scaled about the box corner). `ArticleDrawing` /
      `ArticleObject`.
   5. `withZonesFitted` per article that holds a zone block (one without is skipped before its text box is

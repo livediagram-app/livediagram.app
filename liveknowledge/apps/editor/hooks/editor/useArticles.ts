@@ -474,7 +474,12 @@ export function useArticles(deps: {
       const { width, height } = textBox(d.activeTab, flow);
       const plan = zonePlanFor(els, all, width, height);
       const res = handle.insertZone(
-        { zone: plan.zone, width: plan.width, height: plan.height },
+        {
+          zone: plan.zone,
+          width: plan.width,
+          height: plan.height,
+          ...(plan.align ? { align: plan.align } : {}),
+        },
         { x: plan.bounds.x + plan.bounds.width / 2, y: plan.bounds.y + plan.bounds.height / 2 },
       );
       if (!res) return;

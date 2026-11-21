@@ -28,11 +28,12 @@ embed, placed from the slash menu, which is not the card described below: the bl
 
 - The slash menu's **Embed** takes a link to a livediagram, liveplanner, livedocuments, livedesign or livehuddle item
   (or a tab of one) the person can open, and adds an embed zone: a framed card with the app's logo mark and wordmark,
-  the item's name, its current preview picture and **Open**.
+  the item's name, its current preview picture and **Open**. A new embed sits aligned left, level with the text
+  (owner, 2026-11-21: "left align the embeds by default"); the zone bar's Align Centre and Align Right still move it.
 - The picture is the platform's preview of that item (`/api/previews`), so it follows the item as it changes; the card
   re-reads it when the page opens and every five minutes while it is visible. A reader who cannot open the item sees
   the frame with "You Don't Have Access to This".
-- External links (YouTube, Figma, Loom and the rest) embed as they do in livedocuments.
+- External links (YouTube, Figma, Loom and the rest) embed as they do in livedocuments, and land aligned left too.
 
 ## Connected files in the sidebar
 

@@ -43,7 +43,13 @@ export type ArticleEditorHandle = {
   // the caret is in), the writing so far taken as written: its blocks, the zone's id, and where it
   // landed (its page by index among the article's pages, and its spot from that page's corner).
   insertZone: (
-    spec: { zone: 'object' | 'drawing'; width: number; height: number },
+    spec: {
+      zone: 'object' | 'drawing';
+      width: number;
+      height: number;
+      // Its place across the text; absent is the zone's default, centre.
+      align?: import('@liveknowledge/document').ArticleZoneAlign;
+    },
     near: { x: number; y: number } | null,
   ) => {
     id: string;

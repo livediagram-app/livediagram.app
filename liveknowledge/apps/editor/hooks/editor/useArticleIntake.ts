@@ -149,7 +149,12 @@ export function useArticleIntake({
         y: plan.bounds.y + plan.bounds.height / 2,
       };
       const res = handle.insertZone(
-        { zone: plan.zone, width: plan.width, height: plan.height },
+        {
+          zone: plan.zone,
+          width: plan.width,
+          height: plan.height,
+          ...(plan.align ? { align: plan.align } : {}),
+        },
         near,
       );
       if (res) intakes.push({ flow, ids, plan, res });

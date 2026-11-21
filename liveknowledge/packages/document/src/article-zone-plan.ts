@@ -1,7 +1,12 @@
 // A new zone's plan (article-intake.ts, docs/specs/007-editor/article-pages.md "Zones"): which kind of zone the
 // elements coming in make (a drawing or an object), how big it is, and where they sit in it. Pure.
 
-import { ARTICLE_ZONE_MAX, ARTICLE_ZONE_MIN, type ArticleZoneKind } from './article-flow';
+import {
+  ARTICLE_ZONE_MAX,
+  ARTICLE_ZONE_MIN,
+  type ArticleZoneAlign,
+  type ArticleZoneKind,
+} from './article-flow';
 import { zoneAnchorOf } from './article-zones';
 import { isBoxed, type Element } from './index';
 import { type PageRect } from './page';
@@ -68,6 +73,10 @@ export type ZonePlan = {
   bounds: PageRect;
   // An object wider than the text is scaled down to it.
   scale: number;
+  // Its place across the text when not the zone's default (centre): an embed's zone is made aligned left, level
+  // with the text (docs/specs/030-knowledgebase/links-and-embeds.md "Embeds from other apps"). Set on the zone as
+  // it is made, so a zone stored without one keeps the centre it always had.
+  align?: ArticleZoneAlign;
 };
 
 /** The zone a set of newly added elements goes into: an object zone hugging a single object, else
@@ -88,6 +97,7 @@ export function zonePlanFor(
       height: zoneSide(single.height * scale),
       bounds,
       scale,
+      ...(single.type === 'video' ? { align: 'left' as const } : {}),
     };
   }
   const width = Math.round(textWidth);
