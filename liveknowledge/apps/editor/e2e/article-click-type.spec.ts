@@ -1,4 +1,5 @@
 import { expect, expectNoPageErrors, test } from './fixtures';
+import { ensureEditing } from './knowledgebase';
 
 // A click into a paragraph, then typing (docs/specs/007-editor/article-pages.md "Writing"): the words land where the
 // caret went and every letter already there stays (Work Tracker 1232, where a paragraph's first letters "Ever" were
@@ -11,6 +12,8 @@ test('a click into a paragraph and typing keeps the whole paragraph', async ({
   await page.goto('/new?template=article');
   const bodies = page.locator('.ProseMirror p.article-body');
   await bodies.first().waitFor({ timeout: 30_000 });
+  // A template's page opens to read (docs/specs/030-knowledgebase/editing.md): Edit, then the click and typing.
+  await ensureEditing(page);
   const count = Math.min(await bodies.count(), 3);
   expect(count).toBeGreaterThan(0);
   for (let i = 0; i < count; i++) {

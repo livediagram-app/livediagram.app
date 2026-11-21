@@ -6,6 +6,7 @@ import {
   newKnowledgebase,
   pageRow,
   rowVerb,
+  saveAndGoOn,
   titleOf,
   treeShape,
 } from './knowledgebase';
@@ -43,7 +44,8 @@ test('the Title names the page as it is typed, and a rename in the tree rewrites
   await page.keyboard.type('Travel');
   await expect(pageRow(page, 'Travel')).toBeVisible();
 
-  // Kept: the stored name is the Title.
+  // Kept once saved: the stored name is the Title (docs/specs/030-knowledgebase/editing.md "Save").
+  await saveAndGoOn(page);
   await expectKeptOffline(page, 'Travel');
   await page.reload();
   await titleOf(page).waitFor();

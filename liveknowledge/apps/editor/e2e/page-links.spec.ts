@@ -1,6 +1,7 @@
 import { expect, expectNoPageErrors, test } from './fixtures';
 import {
   addPage,
+  draftLines,
   linkPicker,
   nameOpenPage,
   newKnowledgebase,
@@ -10,6 +11,7 @@ import {
   pageRow,
   pageTree,
   rowVerb,
+  saveAndGoOn,
   shownLinkText,
   titleOf,
   treeShape,
@@ -36,7 +38,8 @@ test('the [[ picker filters as it is typed in, Enter links, and the link follows
   await newKnowledgebase(page);
   await threePages(page);
 
-  await writeLines(page, 'See [[');
+  // The `[[` is typed into the draft: a Save would close its picker (docs/specs/030-knowledgebase/editing.md).
+  await draftLines(page, 'See [[');
   const picker = linkPicker(page);
   // Every other page is offered; the open page is not linked to itself.
   await expect(picker.getByRole('group', { name: 'Pages' }).getByRole('option')).toHaveText([
@@ -64,7 +67,9 @@ test('the [[ picker filters as it is typed in, Enter links, and the link follows
   await expect(pageRow(page, 'Leaving')).toBeVisible();
   await expect.poll(() => shownLinkText(link)).toBe('Leaving');
 
-  // Pressing the link opens its page.
+  // Pressing the link opens its page: saved first, so leaving asks nothing (editing.md "Leaving with unsaved
+  // changes").
+  await saveAndGoOn(page);
   await link.click();
   await expect(pageRow(page, 'Leaving')).toHaveAttribute('aria-current', 'page');
   await expect(titleOf(page)).toHaveText('Leaving');
@@ -99,8 +104,9 @@ test('a link to a deleted page reads Deleted Page and goes nowhere', async ({
 }) => {
   await newKnowledgebase(page);
   await threePages(page);
-  await writeLines(page, 'See [[Onb');
+  await draftLines(page, 'See [[Onb');
   await page.keyboard.press('Enter');
+  await saveAndGoOn(page);
   const link = pageLinks(page);
   await expect.poll(() => shownLinkText(link)).toBe('Onboarding');
 
@@ -137,9 +143,11 @@ test('Linked From at the foot of a page lists the pages that link to it', async 
       /\/api\/documents\/[^/]+\/tabs\//.test(r.url()) &&
       (r.request().postData() ?? '').includes('"page":'),
   );
-  await writeLines(page, 'Start with [[Onb');
+  await draftLines(page, 'Start with [[Onb');
   await page.keyboard.press('Enter');
   await expect(pageLinks(page)).toHaveCount(1);
+  // Save is what carries the link to the room (editing.md "Save").
+  await saveAndGoOn(page);
   expect((await saved).ok()).toBe(true);
 
   await openPage(page, 'Onboarding');

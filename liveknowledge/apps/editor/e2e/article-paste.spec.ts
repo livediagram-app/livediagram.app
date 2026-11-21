@@ -1,4 +1,5 @@
 import { expect, expectNoPageErrors, test } from './fixtures';
+import { ensureEditing } from './knowledgebase';
 
 // Pasting into an article (docs/specs/016-platform/trusted-types.md, "ProseMirror (the article editor)"): the editor
 // parses the clipboard's HTML through its own ProseMirrorClipboard policy. It used to ask the page's `default` policy
@@ -8,6 +9,8 @@ test('a rich paste into an article keeps its text and formatting', async ({ page
   await page.goto('/new?template=article');
   const editor = page.locator('.ProseMirror').first();
   await editor.waitFor({ timeout: 30_000 });
+  // A template's page opens to read (docs/specs/030-knowledgebase/editing.md): Edit, then the paste.
+  await ensureEditing(page);
   // The writing's box spans every page of the article, its middle the gap between two pages: click its first line.
   await editor.locator('[data-block-id]').first().click();
   await page.keyboard.press('End');

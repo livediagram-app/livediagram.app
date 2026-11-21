@@ -43,7 +43,7 @@ test.describe('menus by keyboard', () => {
     // The menu moves focus in over the next frames (useMenu), so this waits for it rather than checking once.
     await expect.poll(() => menu.evaluate((el) => el.contains(document.activeElement))).toBe(true);
     // An Editor's rows, Delete last.
-    await expect(menu.getByRole('menuitem', { name: 'Knowledgebase Style' })).toBeVisible();
+    await expect(menu.getByRole('menuitem', { name: 'Import' })).toBeVisible();
     await page.keyboard.press('End');
     await expect(menu.getByRole('menuitem', { name: 'Delete' })).toBeFocused();
     await page.keyboard.press('Home');

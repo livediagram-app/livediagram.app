@@ -124,6 +124,9 @@ export function EditorStartPanels() {
     if (id === BLANK_KNOWLEDGEBASE) {
       track('UI', 'Used', 'StartBlank');
       close(true);
+      // Start Here is already open behind the start, so the edit-on-open ask (useEditorPageEditing) has passed:
+      // edit mode opens here, its Title taking the caret (editing.md "Edit mode").
+      chrome.get().pageEditing.start();
       return;
     }
     if (id === DESCRIBE_TO_SET_UP) {

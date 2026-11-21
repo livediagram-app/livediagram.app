@@ -1,4 +1,5 @@
 import { expect, expectNoPageErrors, test } from './fixtures';
+import { ensureEditing } from './knowledgebase';
 
 // A finger on an article paragraph (docs/specs/007-editor/article-pages.md "On a phone", Work Tracker 978): a tap
 // puts the caret in the paragraph tapped, and what is typed next lands there, never in the Title. On a phone the
@@ -31,6 +32,8 @@ test.describe('article on a phone', () => {
     await page.goto('/new?template=article');
     const body = page.locator('.ProseMirror p.article-body').first();
     await body.waitFor({ timeout: 30_000 });
+    // A template's page opens to read (docs/specs/030-knowledgebase/editing.md): Edit, then the tap.
+    await ensureEditing(page);
     const title = page.locator('.article-flow > *').first();
     const titleBefore = await title.textContent();
     const box = (await body.boundingBox())!;

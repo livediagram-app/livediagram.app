@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test, expectNoPageErrors } from './fixtures';
-import { newServerKnowledgebase, openRowMenu, writeLines } from './knowledgebase';
+import { draftLines, newServerKnowledgebase, openRowMenu, writeLines } from './knowledgebase';
 
 // The runtime motion guard (docs/specs/004-interface-design/motion.md "Enforcement").
 //
@@ -93,16 +93,13 @@ async function tourTheChrome(page: Page): Promise<void> {
   await writeLines(page, 'A line, so the page holds writing.');
   await page.waitForTimeout(400);
 
-  // The knowledgebase's menu, and Knowledgebase Style from it (liveknowledge has no Selection mode and no zoom
-  // cluster: docs/specs/030-knowledgebase/page-surface.md).
+  // The knowledgebase's menu, and Knowledgebase Style from the footer's Style (liveknowledge has no Selection mode
+  // and no zoom cluster: docs/specs/030-knowledgebase/page-surface.md).
   const name = page.locator('[data-knowledgebase-menu]');
   await openAndClose(page, () => name.click());
   await openAndClose(
     page,
-    async () => {
-      await name.click();
-      await page.getByRole('menuitem', { name: 'Knowledgebase Style' }).click();
-    },
+    () => page.getByRole('button', { name: 'Style', exact: true }).click(),
     undefined,
     page.getByRole('dialog', { name: 'Knowledgebase Style' }),
   );
@@ -126,7 +123,8 @@ async function tourTheChrome(page: Page): Promise<void> {
   await openAndClose(
     page,
     async () => {
-      await writeLines(page, '/');
+      // Into the draft: a Save would close the menu (docs/specs/030-knowledgebase/editing.md).
+      await draftLines(page, '/');
       await page.getByRole('listbox', { name: 'Insert a block' }).waitFor();
     },
     async () => {

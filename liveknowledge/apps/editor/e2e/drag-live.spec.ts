@@ -8,6 +8,7 @@ import {
   documentHeaders,
   seedDocumentItem,
 } from './fixtures';
+import { ensureEditing } from './knowledgebase';
 
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators": while the owner drags a box,
 // a collaborator on an edit link sees it move (and the arrow on it follow) before anything is saved,
@@ -124,6 +125,9 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
     .first()
     .getAttribute('d');
 
+  // A drawing moves in edit mode (docs/specs/030-knowledgebase/editing.md); the collaborator, who may edit too,
+  // joins it ("Everyone joins") and sees the draft live.
+  await ensureEditing(ownerPage);
   await ownerPage.keyboard.press('v');
   const r = (await box(ownerPage, 'a').boundingBox())!;
   await ownerPage.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
@@ -144,6 +148,8 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
 
   const lastSeen = await leftOf(peerPage, 'a');
   await ownerPage.mouse.up();
+  // Save is what writes the move for readers (editing.md "Save").
+  await ownerPage.getByRole('button', { name: 'Save', exact: true }).click();
   // From the release until the save lands, the collaborator keeps the box where the drag left it: it
   // never jumps back to where it started.
   const seen: number[] = [];

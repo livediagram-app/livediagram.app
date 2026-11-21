@@ -125,13 +125,13 @@ it. The menu is icon-left verb rows under the knowledgebase's name:
 | Row                   | Does                                                                                      | Who                      |
 | --------------------- | ----------------------------------------------------------------------------------------- | ------------------------ |
 | Rename                | The name becomes a field where it stands; Enter keeps it, Escape leaves it                | Editor                   |
-| Knowledgebase Style   | Opens [Knowledgebase Style](page-surface.md#knowledgebase-style)                          | Editor                   |
 | Describe to Add Pages | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                  | Writer, signed in        |
 | Import                | Opens Import                                                                              | Writer                   |
 | Export                | Opens Export                                                                              | everyone                 |
 | AI Settings           | Opens AI Settings ([Search and Ask](search-and-ask.md))                                   | Editor, not kept Offline |
 | Delete                | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator | Editor                   |
 
+- Knowledgebase Style is not a row: it opens from the footer's Style ([Knowledgebase Style](page-surface.md#knowledgebase-style)).
 - "Editor" is an Editor of the whole knowledgebase; "Writer" is an Editor or a Participant of the whole
   knowledgebase ([Share roles](#share-roles)). A Participant's menu is Describe to Add Pages, Import and Export; a
   Viewer, a link confined to one page and a Community visitor have Export alone. An embed has no menu, and shows the
