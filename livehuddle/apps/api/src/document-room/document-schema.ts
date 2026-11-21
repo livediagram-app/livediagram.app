@@ -11,7 +11,7 @@
 // Made on first use, never on construction (@liveworkspace/index-app item-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
-import { itemAutomationSchemaSteps } from '@liveworkspace/automations/room';
+import { automationSchemaStep, itemAutomationSchemaSteps } from '@liveworkspace/automations/room';
 import {
   TAB_CONNECTION_SCHEMA,
   migrationSchema,
@@ -338,6 +338,11 @@ const V9 = tabFolderColourStep('document_tabs');
 // livehuddle has no comment threads, so no collab step follows.
 const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).map((s) => s.run);
 
+// Step 19: the engine's failed wakes (@liveworkspace/automations/room automation-wake.ts), how many in a row and
+// when the next may try, so a wake that keeps failing backs off and gives up, over a restart too. Appended after
+// the steps before it, never among the engine's own.
+const V19 = automationSchemaStep('wake');
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -349,6 +354,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V8,
   V9,
   ...AUTOMATION_STEPS,
+  V19,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

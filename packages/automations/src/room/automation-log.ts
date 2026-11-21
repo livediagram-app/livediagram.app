@@ -37,8 +37,10 @@ export const derivedLineId = (ruleId: string, moment: string): string =>
 // A rule's one line a UTC day saying the day's budget is spent, however many of its triggers came after.
 export const budgetLineId = (ruleId: string, now: number): string =>
   `budget:${ruleId}:${utcMidnight(now)}`;
+// The one line saying the item's wakes gave up after failing again and again (automation-wake.ts).
+export const stoppedLineId = (now: number): string => `stopped:${now}`;
 const NO_LINE =
-  "id NOT LIKE 'burst:%' AND id NOT LIKE 'time:%' AND id NOT LIKE 'derived:%' AND id NOT LIKE 'budget:%'";
+  "id NOT LIKE 'burst:%' AND id NOT LIKE 'time:%' AND id NOT LIKE 'derived:%' AND id NOT LIKE 'budget:%' AND id NOT LIKE 'stopped:%'";
 
 // Runs today (UTC) that did something, failed or were skipped, pending ones too: what the daily budget counts. A No
 // Match is logged and never counted, nor is one of the Audit Trail's own lines.

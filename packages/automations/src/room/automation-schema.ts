@@ -143,9 +143,29 @@ CREATE TABLE IF NOT EXISTS automation_ai_days (
 );
 `;
 
+// A wake that failed as a whole (liveworkspace/docs/specs/018-automations/automations.md "Runs, limits and loops"):
+// one row while wakes keep failing, with how many in a row and when the next may try (automation-wake.ts). In SQLite,
+// so a room that restarts keeps both: a deterministic failure backs off and gives up, never retries every minute.
+export const AUTOMATION_WAKE_SCHEMA = `
+CREATE TABLE IF NOT EXISTS automation_wake (
+  id       INTEGER PRIMARY KEY CHECK (id = 1),
+  failures INTEGER NOT NULL,
+  retry_at INTEGER NOT NULL
+);
+`;
+
 // A schema step as an app's own list of steps takes one: SQL to run, or a function that asks before it changes.
 export type AutomationSchemaStep = {
-  name: 'rules' | 'schedule' | 'hooks' | 'waiting' | 'ai_drafts' | 'fired' | 'addresses' | 'counts';
+  name:
+    | 'rules'
+    | 'schedule'
+    | 'hooks'
+    | 'waiting'
+    | 'ai_drafts'
+    | 'fired'
+    | 'addresses'
+    | 'counts'
+    | 'wake';
   run: string | ((exec: SchemaExec) => void);
 };
 
@@ -159,6 +179,7 @@ export const AUTOMATION_SCHEMA_STEPS: readonly AutomationSchemaStep[] = [
   { name: 'fired', run: AUTOMATION_FIRED_SCHEMA },
   { name: 'addresses', run: AUTOMATION_ADDRESSES_SCHEMA },
   { name: 'counts', run: AUTOMATION_COUNTS_SCHEMA },
+  { name: 'wake', run: AUTOMATION_WAKE_SCHEMA },
 ];
 
 /** The step of that name, for an app that registered the steps one by one as they shipped. */

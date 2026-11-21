@@ -12,6 +12,7 @@ import type { AutomationsAi } from '../automation-ai';
 import { listRuns, runsToday } from '../automation-log';
 import { SENDS_UNREACHABLE } from '../automation-sends';
 import { WAIT_CONDITIONS, WAIT_RULE_CHANGED } from '../automation-waits';
+import { WAKE_RETRY_MS } from '../automation-wake';
 import {
   EMAIL_COUNT_FAILED,
   EMAIL_EMPTY,
@@ -27,7 +28,6 @@ import { ANA, BEN, queued, rowsOf, world, type World } from './test-kit';
 import {
   ITEM_EVENTS_PER_WAKE,
   ITEM_MORE_MS,
-  ITEM_RETRY_MS,
   QUEUE_FULL,
   runItemAutomations,
   runItemWake,
@@ -975,16 +975,15 @@ describe('a wake', () => {
       throw new Error('storage');
     });
     await expect(wake(w, now)).resolves.toBeUndefined();
-    expect(w.engine.schedule.at).toBe(now + ITEM_RETRY_MS);
+    expect(w.engine.schedule.retryAt).toBe(now + WAKE_RETRY_MS);
     expect(w.engine.schedule.due(now)).toBe(false);
-    expect(w.engine.schedule.wakeAt).toBe(now + ITEM_RETRY_MS);
+    expect(w.engine.schedule.settleDue(now)).toBe(false);
+    expect(w.engine.schedule.wakeAt).toBe(now + WAKE_RETRY_MS);
     await w.settled();
     expect(w.events.map((e) => e.type)).toEqual(['AutomationWakeFailed']);
-    // A failed wake with no time due leaves the times alone.
-    w.engine.schedule.timeAt = null;
-    w.engine.schedule.at = 1;
-    await wake(w, now);
-    expect(w.engine.schedule.timeAt).toBeNull();
+    // Held off, an early alarm runs nothing and counts nothing.
+    await wake(w, now + 1);
+    expect(w.engine.schedule.failures).toBe(1);
   });
 
   it('holds a time that was due when the wake failed for the retry too', async () => {
@@ -996,7 +995,8 @@ describe('a wake', () => {
       throw new Error('storage');
     });
     await wake(w, now);
-    expect(w.engine.schedule.timeAt).toBe(now + ITEM_RETRY_MS);
+    expect(w.engine.schedule.timeDue(now)).toBe(false);
+    expect(w.engine.schedule.timeDue(now + WAKE_RETRY_MS)).toBe(true);
   });
 
   it('runs the queue with no tally to count into', async () => {

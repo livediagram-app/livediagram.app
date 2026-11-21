@@ -21,6 +21,10 @@ export class AutomationSchedule<Event = unknown> {
   timeAt: number | null = null;
   // Triggers the queue had no room for since the last wake (one Skipped line says so).
   dropped = 0;
+  // A failed wake's hold-off (automation-wake.ts): nothing is due before it; 0 for none. Read back on a restart.
+  retryAt = 0;
+  // Wakes failed in a row as `automation_wake` holds them; null until read (a success then clears the row once).
+  failures: number | null = null;
 
   private readonly sql: () => Sql;
   private readonly ready: () => boolean;
@@ -36,10 +40,21 @@ export class AutomationSchedule<Event = unknown> {
     );
   }
 
-  // After a wake (the object restarted): now when a trigger waits, and the time triggers' next moment.
+  // After a wake (the object restarted): now when a trigger waits (held off while wakes keep failing), and the time
+  // triggers' next moment.
   restore(now: number): void {
+    this.restoreRetry();
     this.at = this.waiting() ? now : null;
     this.restoreTimes();
+  }
+
+  // The failed wakes' row: how many in a row and the hold-off, so a restart neither retries at once nor counts
+  // afresh. One read of a table with at most one row.
+  private restoreRetry(): void {
+    if (!this.ready()) return;
+    const row = this.sql().exec('SELECT failures, retry_at FROM automation_wake').toArray()[0];
+    this.failures = Number(row?.['failures'] ?? 0);
+    this.retryAt = Number(row?.['retry_at'] ?? 0);
   }
 
   // The earliest time-trigger moment stored, or a waiting run's.
@@ -58,18 +73,23 @@ export class AutomationSchedule<Event = unknown> {
     this.timeAt = typeof row?.['at'] === 'number' ? row['at'] : null;
   }
 
-  // The room's wake: the earlier of the two.
+  // The room's wake: the earlier of the two, never before a failed wake's hold-off.
   get wakeAt(): number | null {
-    if (this.at === null) return this.timeAt;
-    return this.timeAt === null ? this.at : Math.min(this.at, this.timeAt);
+    const at =
+      this.at === null
+        ? this.timeAt
+        : this.timeAt === null
+          ? this.at
+          : Math.min(this.at, this.timeAt);
+    return at === null ? null : Math.max(at, this.retryAt);
   }
 
   timeDue(now: number): boolean {
-    return this.timeAt !== null && this.timeAt <= now;
+    return this.timeAt !== null && Math.max(this.timeAt, this.retryAt) <= now;
   }
 
   queueDue(now: number): boolean {
-    return this.at !== null && this.at <= now;
+    return this.at !== null && Math.max(this.at, this.retryAt) <= now;
   }
 
   // Events were queued: a wake now. Whether the alarm needs arming.

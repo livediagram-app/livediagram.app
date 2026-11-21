@@ -8,6 +8,7 @@ export * from './automation-store';
 export * from './automation-queue';
 export * from './automation-log';
 export * from './automation-waits';
+export * from './automation-wake';
 export * from './automation-fired';
 export * from './automation-incoming';
 export * from './automation-sends';

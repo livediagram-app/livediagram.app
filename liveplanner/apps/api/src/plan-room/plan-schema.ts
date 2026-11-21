@@ -37,6 +37,7 @@ import {
   AUTOMATION_ADDRESSES_SCHEMA,
   AUTOMATION_COUNTS_SCHEMA,
   AUTOMATIONS_SCHEMA,
+  AUTOMATION_WAKE_SCHEMA,
   automationsScheduleStep,
 } from '@liveworkspace/automations/room';
 import { GITHUB_PULLS_SCHEMA, GITHUB_SCHEMA } from './github/github-schema';
@@ -603,6 +604,10 @@ const V41 = tabFolderColourStep('plan_tabs');
 // Webhook rule took in the last 10 minutes (a replay is refused), and the AI calls asked each day.
 const V42 = AUTOMATION_COUNTS_SCHEMA;
 
+// Automations' failed wakes (@liveworkspace/automations/room automation-wake.ts): how many in a row and when the
+// next may try, so a wake that keeps failing backs off and gives up, over a restart too.
+const V43 = AUTOMATION_WAKE_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -646,6 +651,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V40,
   V41,
   V42,
+  V43,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

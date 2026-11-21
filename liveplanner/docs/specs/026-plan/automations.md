@@ -983,6 +983,11 @@ hands focus back to the field, the caret after the value:
   ("Too many changes at once").
 - **Pausing**: a rule that fails **10 runs in a row** turns itself off and is marked **Paused** with the last
   failure's reason; **Resume** turns it on again and clears the count. Any matched run resets the count.
+- **A wake that keeps failing** (as a whole, not one run) tries again after 1, 2, 4 … minutes, an hour at most, kept
+  over a restart; a wake that does its work clears the count. The **12th in a row gives up**: the waiting triggers
+  are dropped, runs a Wait held whose time is up are **Skipped**, each time rule moves on to its next moment, and one
+  Skipped line says "Automations stopped after repeated errors; they start again on the next change". The rules stay
+  on ([the platform's](../../../../liveworkspace/docs/specs/018-automations/automations.md) "Runs, limits and loops").
 
 ### Put away
 
@@ -1467,8 +1472,8 @@ wake makes sends `Plan · Ran · AutomationDone`, `AutomationFailed`, `Automatio
 (`AutomationTrigger.CardMoved`, `AutomationTrigger.PullRequestChecks`). Trouble has its own: `AutomationPaused` (a
 rule turned off after its failures in a row), `AutomationCrashed` (a run that threw, logged as Something went wrong),
 `AutomationQueueFull` (a wake whose queue had dropped a burst, once per wake), `AutomationTimeMissed` (a time rule's
-moment found too late to run) and `AutomationWakeFailed` (a wake that failed as a whole and tries again a minute
-later). Test on a Card and Run Rule count as above from the browser and not again here. Each Incoming Webhook call to
+moment found too late to run) and `AutomationWakeFailed` (a wake that failed as a whole and tries again later,
+backing off) and `AutomationWakeGaveUp` (the 12th failed wake in a row, which gave up). Test on a Card and Run Rule count as above from the browser and not again here. Each Incoming Webhook call to
 a rule that is on sends `AutomationHookAccepted`, `AutomationHookUnauthorized` (a wrong secret or signature),
 `AutomationHookRateLimited`, `AutomationHookBudget` (the day's runs spent) or `AutomationHookInvalid` (a body it could
 not read); a call to an address no such rule holds counts nothing, so strangers trying addresses cannot fill the

@@ -942,7 +942,7 @@ export const PLAN_AUTOMATION_TROUBLE = chart(
   'Plan',
   'Ran',
   'Automation Trouble',
-  'A rule paused after failing again and again, a run that broke, a burst of changes too big to queue, a time moment missed, or a wake that failed and tried again.',
+  'A rule paused after failing again and again, a run that broke, a burst of changes too big to queue, a time moment missed, a wake that failed and tried again, or one that gave up after failing 12 times in a row.',
   {
     types: [
       'AutomationPaused',
@@ -950,6 +950,7 @@ export const PLAN_AUTOMATION_TROUBLE = chart(
       'AutomationQueueFull',
       'AutomationTimeMissed',
       'AutomationWakeFailed',
+      'AutomationWakeGaveUp',
     ],
     rising: 'bad',
   },

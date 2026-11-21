@@ -29,6 +29,7 @@ import type {
   SnapshotDone,
   StepOutcome,
 } from './kit';
+import { automationSchemaStep } from '../automation-schema';
 import { itemAutomationSchemaSteps } from './schema';
 
 export const ANA: AutomationPerson = { id: 'ana', name: 'Ana Costa', color: '#111111' };
@@ -127,7 +128,10 @@ export function itemDb(automations = true): { db: DatabaseSync; sql: Sql } {
     sql.exec(query) as unknown as { toArray(): Record<string, unknown>[] };
   exec(TABLES);
   if (automations)
-    for (const step of itemAutomationSchemaSteps({ links: 'document_tabs' })) {
+    for (const step of [
+      ...itemAutomationSchemaSteps({ links: 'document_tabs' }),
+      { run: automationSchemaStep('wake') },
+    ]) {
       if (typeof step.run === 'string') exec(step.run);
       else step.run(exec);
     }
