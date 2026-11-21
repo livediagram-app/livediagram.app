@@ -34,6 +34,24 @@ embed, placed from the slash menu, which is not the card described below: the bl
   the frame with "You Don't Have Access to This".
 - External links (YouTube, Figma, Loom and the rest) embed as they do in livedocuments.
 
+## Connected files in the sidebar
+
+Owner, 2026-11-21: "Connect File shouldn't be a tab, we should be able to add it to the sidebar and then clicking it
+opens that in a new tab". (This replaces the earlier ask that connected files show as footer tabs.)
+
+- **Connect File** (the page tree's + menu, and the tree's context menu) adds another app's file (a canvas, plan,
+  document, design or Space) to the page tree as a **connected row**: led by its app's logo, its name following the
+  file's own name, with a small arrow-out mark after it. It is placed like a page (at the top level or under a page)
+  and moved by drag as pages are, but it holds no subpages.
+- **Pressing it opens the file in its own app in a new browser tab** (`target="_blank"`, `noopener`). It never opens
+  inside the knowledgebase: there is no connected tab, no host view and no footer tab for it.
+- Its row menu: Open (new tab), Copy Link, Move To, Remove from Sidebar (the file itself is untouched). A file that
+  can no longer be opened (deleted, or access lost) shows an amber dot and "Can't Open" with Connect Again and Remove.
+- Search, Ask and agents do not read connected files; page links and embeds are unchanged.
+- Editors and Participants add, move and remove connected rows; Viewers and link visitors see and open them only
+  (opening still needs access to the file in its own app).
+- The footer keeps Pages, Ask and AI Knowledge only.
+
 ## Share roles
 
 Inserting or removing a link or an embed is writing: Editor only. Following links, reading backlinks and opening an
