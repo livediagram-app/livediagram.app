@@ -44,35 +44,6 @@ const settingsStack = (title: string, blurb: string, members: Metric[]): MetricS
   rising: 'neutral',
 });
 
-export const EDITOR_SETTINGS = settingsStack(
-  'Editor Settings',
-  'How elements behave while a page is written and drawn on.',
-  [
-    toggle(
-      'UI',
-      'AlignmentGuidesOn',
-      'AlignmentGuidesOff',
-      'Alignment Guides',
-      'Snap guides while dragging.',
-    ),
-    toggle(
-      'UI',
-      'AutoRebindOn',
-      'AutoRebindOff',
-      'Auto-Attach Arrows',
-      'Arrows re-attaching to the nearest shape.',
-    ),
-    changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
-    toggle(
-      'UI',
-      'QuickAddHoverOn',
-      'QuickAddHoverOff',
-      'Quick-Add on Hover',
-      'Hover handles that add a connected shape.',
-    ),
-  ],
-);
-
 export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the editor looks.', [
   {
     category: 'UI',
@@ -116,23 +87,9 @@ export const KEYBOARD_SETTINGS = settingsStack(
 
 export const PANELS_SETTINGS = settingsStack(
   'Panels Settings',
-  'The panels: how see-through they are, and which ones show.',
+  'The panels: how see-through they are, and whether other people’s cursors show.',
   [
     changed('PanelOpacity', 'Panel Opacity', 'The panels’ transparency slider.', true),
-    toggle(
-      'UI',
-      'QuickStylePanelOn',
-      'QuickStylePanelOff',
-      'Quick Style Panel',
-      'The Quick Style panel switched on or off.',
-    ),
-    toggle(
-      'UI',
-      'CollaboratePanelOn',
-      'CollaboratePanelOff',
-      'Collaborate Panel',
-      'The Collaborate panel switched on or off.',
-    ),
     toggle(
       'UI',
       'HideCursorsOn',
@@ -271,7 +228,6 @@ export const PRIVACY_SETTINGS = settingsStack(
 
 // In the order of the editor's Settings categories (apps/editor settings-catalogue.ts).
 export const SETTINGS_STACKS: readonly MetricStack[] = [
-  EDITOR_SETTINGS,
   APPEARANCE_SETTINGS,
   KEYBOARD_SETTINGS,
   PANELS_SETTINGS,
@@ -304,5 +260,5 @@ export const SETTINGS_CHANGED: MetricStack = {
     'Settings changed, by Settings category. The theme counts the header toggle as well as the dialog.',
   members: SETTINGS_STACKS.map(categoryChart),
   rising: 'neutral',
-  seeAlso: { section: 'settings', label: 'See Each Setting in Features › Settings' },
+  seeAlso: { tab: 'settings', label: 'See Each Setting on the Settings Tab' },
 };

@@ -12,6 +12,9 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'Suggest', command: 'suggest', what: 'suggesting an edit to a page' },
   { type: 'Write', command: 'write', what: 'writing a page directly' },
   { type: 'Move', command: 'move', what: 'moving a page in the tree' },
+  { type: 'Approval', command: 'approval', what: 'asking for a page to be approved, or taking the request back' },
+  { type: 'Comments', command: 'comments', what: 'reading the comment threads at the foot of a page' },
+  { type: 'Discuss', command: 'discuss', what: 'commenting at the foot of a page' },
   {
     type: 'Gap',
     command: 'gap',

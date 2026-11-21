@@ -343,10 +343,19 @@ export const SHARING_AND_EMBEDS: MetricStack = {
   headline: SHARE_LINKS_COPIED,
 };
 
+// A comment at a page's foot edited by its writer (page-comments.md); its other changes are the Comment events.
+export const PAGE_COMMENTS_EDITED = chart(
+  'UI',
+  'Used',
+  'Page Comments Edited',
+  'A comment at the foot of a page edited by the person who wrote it.',
+  { types: ['EditPageComment'], rising: 'neutral' },
+);
+
 export const DISCUSSION: MetricStack = {
   stack: true,
   title: 'Discussion',
-  blurb: 'Comments left on elements, opened to read or reply, and resolved.',
+  blurb: 'Comments left on elements and at the foot of pages, opened to read or reply, resolved and edited.',
   members: [
     COMMENTS_ADDED,
     COMMENT_POPOVERS_OPENED,
@@ -354,6 +363,7 @@ export const DISCUSSION: MetricStack = {
     COMMENTS_MENTIONED,
     COMMENTS_REOPENED,
     COMMENTS_DELETED,
+    PAGE_COMMENTS_EDITED,
   ],
   headline: COMMENTS_ADDED,
 };

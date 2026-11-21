@@ -176,6 +176,13 @@ export const OWNERS_REMINDED_EMAILS = email(
   'neutral',
 );
 
+export const PAGE_REJECTED_EMAILS = email(
+  'PageRejected',
+  'Page Rejected Emails',
+  "A page its owner answers for was rejected, with the reviewer's note.",
+  'neutral',
+);
+
 export const EMAIL_KIND_METRICS: readonly Metric[] = [
   WELCOME_EMAILS,
   WEEK1_EMAILS,
@@ -201,6 +208,7 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   REVIEW_DUE_EMAILS,
   PAGES_DISAGREE_EMAILS,
   OWNERS_REMINDED_EMAILS,
+  PAGE_REJECTED_EMAILS,
 ];
 
 export const EMAILS_SENT: MetricStack = {

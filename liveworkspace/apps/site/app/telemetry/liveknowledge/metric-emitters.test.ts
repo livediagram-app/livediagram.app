@@ -31,7 +31,7 @@ const TIMINGS = [
 const PAGES = APP.pages;
 const CONNECTIONS_GROUPS = APP.connections.groups;
 const TEAMWORK_GROUPS = APP.teamwork.groups;
-const TOURS_GROUPS = APP.tours;
+const TOURS_GROUPS = APP.tours.groups;
 
 // Every card and every hard-coded ranking type on the dashboard must be an
 // event something in the repo can actually send. Two ways that went wrong:
@@ -109,6 +109,7 @@ const ALL: MetricGroup[] = [
   ...PAGES,
   ...HELP,
   ...TOURS_GROUPS,
+  ...APP.community.groups,
   ...TEAMWORK_GROUPS,
   ...CONNECTIONS_GROUPS,
   ...TIMINGS,
@@ -132,7 +133,7 @@ describe('the emitter scan', () => {
     expect(
       has('Document', 'Exported', COMPUTED as never) || has('Document', 'Exported', 'PNG'),
     ).toBe(true);
-    expect(has('UI', 'Toggled', 'AlignmentGuidesOn')).toBe(true); // Settings catalogue row
+    expect(has('UI', 'Toggled', 'DockButtonNamesOn')).toBe(true); // Settings catalogue row
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);
     expect(has('Document', 'Created', 'Offline')).toBe(true); // ternary type

@@ -3,6 +3,7 @@
 // charts on each tab, and its name, noun and accent.
 
 import {
+  COMMUNITY_CATEGORIES,
   ctaSurfaceOf,
   ctaSurfaceOfPath,
   CTA_SOURCES,
@@ -15,6 +16,7 @@ import {
   type TelemetryCategory,
 } from '@liveknowledge/api-schema';
 import { noun, type TelemetryAppConfig } from '../_shared/app';
+import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
 import { LIBRARY } from '../_shared/library-metrics';
@@ -24,10 +26,17 @@ import { cliCommandSentence } from './cli-commands';
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
 import {
   ACCOUNT_ACTIVITY,
+  COMMUNITY_COPIES,
   COMMUNITY_DISCOVERY,
   COMMUNITY_ENGAGEMENT,
+  COMMUNITY_FILTERS,
+  COMMUNITY_LIKES,
   COMMUNITY_MODERATION,
+  COMMUNITY_POSTS_OPENED,
+  COMMUNITY_POSTS_SHARED,
   COMMUNITY_PUBLISHING,
+  COMMUNITY_REPORTS,
+  COMMUNITY_SEARCHES,
   AGENT_CHANGESETS,
   VERSION_HISTORY,
   AGENT_VIEWED,
@@ -197,6 +206,22 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
   isRetired: isRetiredEvent,
   funnel: FUNNEL,
   pageViews: { apps: PAGE_VIEW_APPS, appOf: pageViewApp },
+  community: {
+    groups: communityGroups({
+      COMMUNITY_POSTS_SHARED,
+      COMMUNITY_POSTS_OPENED,
+      COMMUNITY_LIKES,
+      COMMUNITY_COPIES,
+      COMMUNITY_SEARCHES,
+      COMMUNITY_FILTERS,
+      COMMUNITY_REPORTS,
+      COMMUNITY_PUBLISHING,
+      COMMUNITY_ENGAGEMENT,
+      COMMUNITY_DISCOVERY,
+      COMMUNITY_MODERATION,
+    }),
+    categories: COMMUNITY_CATEGORIES,
+  },
   dashboard: [
     {
       title: 'At a glance',
@@ -220,7 +245,8 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
       ],
     },
     // What a knowledgebase is for: questions asked and answered, pages kept right, found and moved through, and the
-    // pages those make. Read Ask against Verification: an answer is only as good as the pages behind it.
+    // pages those make. Read Ask against Verification: an answer is only as good as the pages behind it. The team's
+    // AI key and Describe to Set Up are set up once, so they sit on the Connections tab.
     {
       title: 'Knowledge',
       metrics: [
@@ -231,7 +257,6 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
         PAGE_NAVIGATION,
         PAGES_BY_SOURCE,
         PAGE_EDITING,
-        AI_SETUP,
       ],
     },
     {
@@ -314,22 +339,14 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
         title: 'Discussion and teams',
         metrics: [DISCUSSION, TEAM_ACTIVITY],
       },
-      {
-        title: 'Community',
-        metrics: [
-          COMMUNITY_PUBLISHING,
-          COMMUNITY_ENGAGEMENT,
-          COMMUNITY_DISCOVERY,
-          COMMUNITY_MODERATION,
-        ],
-      },
     ],
   },
   connections: {
     intro:
-      'API tokens, agent changes, version history and Automations, beside agent access, the MCP and the CLI on the Dashboard',
+      'API tokens, agent changes, version history, the team’s AI key and Automations, beside agent access, the MCP and the CLI on the Dashboard',
     groups: [
       { title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS, VERSION_HISTORY] },
+      { title: 'AI Setup', metrics: [AI_SETUP] },
       { title: 'Automations', metrics: [DOCUMENT_AUTOMATIONS] },
     ],
   },
@@ -349,13 +366,16 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
       },
     ],
   },
-  tours: [
-    {
-      title: 'Tours',
-      metrics: [ELEMENT_TOURS, SHOW_ME_TOURS],
-    },
-    { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
-  ],
+  tours: {
+    intro: 'Each guided tour from offer to finish, then the one-off prompts',
+    groups: [
+      {
+        title: 'Tours',
+        metrics: [ELEMENT_TOURS, SHOW_ME_TOURS],
+      },
+      { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
+    ],
+  },
   exceptions: {
     groups: [
       {

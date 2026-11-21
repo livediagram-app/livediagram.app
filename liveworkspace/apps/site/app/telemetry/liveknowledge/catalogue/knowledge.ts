@@ -55,11 +55,35 @@ export const ANSWERS_NOT_HELPFUL = chart(
   { types: ['AskNotHelpful'], rising: 'bad' },
 );
 
+export const ANSWERS_ACCEPTED = chart(
+  'UI',
+  'Used',
+  'Answers Accepted',
+  'Accept Answer pressed: the chat moves to Completed Questions and the field is fresh.',
+  { types: ['AskAccepted'] },
+);
+
+export const QUESTIONS_REOPENED = chart(
+  'UI',
+  'Used',
+  'Questions Reopened',
+  'A completed question opened again to carry on its chat.',
+  { types: ['AskReopened'], rising: 'neutral' },
+);
+
+export const ASK_CHATS_DELETED = chart(
+  'UI',
+  'Removed',
+  'Ask Chats Deleted',
+  'A past question and its chat deleted from the recent questions.',
+  { types: ['AskChat'], rising: 'neutral' },
+);
+
 export const ASK: MetricStack = {
   stack: true,
   title: 'Ask',
   blurb:
-    'Questions put to the knowledgebase and how the answers landed: asked, stopped, and marked helpful or not. Headed by the questions asked.',
+    'Questions put to the knowledgebase and how the answers landed: asked, stopped, marked helpful or not, accepted, reopened and deleted. Headed by the questions asked.',
   members: [
     QUESTIONS_ASKED,
     ASKED_FROM_HOME,
@@ -67,6 +91,9 @@ export const ASK: MetricStack = {
     ANSWERS_STOPPED,
     ANSWERS_HELPFUL,
     ANSWERS_NOT_HELPFUL,
+    ANSWERS_ACCEPTED,
+    QUESTIONS_REOPENED,
+    ASK_CHATS_DELETED,
   ],
   headline: QUESTIONS_ASKED,
 };
@@ -177,12 +204,54 @@ export const REVIEW_PERIODS_CHANGED = chart(
   { types: ['ReviewPeriodChanged'], rising: 'neutral' },
 );
 
+// Approval (approval.md): a page put Pending Approval, the request taken back, and a person's approval (which
+// verifies it) or rejection, with or without a note.
+export const APPROVALS_REQUESTED = chart(
+  'Tab',
+  'Changed',
+  'Approvals Requested',
+  'A page put Pending Approval, for a person on the team to approve or reject.',
+  { types: ['ApprovalRequested'] },
+);
+
+export const APPROVALS_WITHDRAWN = chart(
+  'Tab',
+  'Changed',
+  'Approvals Withdrawn',
+  'A request for approval taken back while it was pending.',
+  { types: ['ApprovalWithdrawn'], rising: 'neutral' },
+);
+
+export const PAGES_APPROVED = chart(
+  'Tab',
+  'Changed',
+  'Pages Approved',
+  'A pending page approved, which verifies it.',
+  { types: ['Approved'] },
+);
+
+export const PAGES_REJECTED = chart(
+  'Tab',
+  'Changed',
+  'Pages Rejected',
+  'A pending page rejected, with or without a note for its owner.',
+  { types: ['Rejected', 'RejectedWithNote'], rising: 'neutral' },
+);
+
 export const VERIFICATION: MetricStack = {
   stack: true,
   title: 'Verification',
   blurb:
-    'Pages checked and marked right, from the page or from Home, and how long a knowledgebase lets a page stay verified. Headed by the pages verified.',
-  members: [PAGES_VERIFIED, STILL_RIGHT_FROM_HOME, REVIEW_PERIODS_CHANGED],
+    'Pages checked and marked right, from the page or from Home, how long a knowledgebase lets a page stay verified, and approvals asked for, taken back, given and refused. Headed by the pages verified.',
+  members: [
+    PAGES_VERIFIED,
+    STILL_RIGHT_FROM_HOME,
+    REVIEW_PERIODS_CHANGED,
+    APPROVALS_REQUESTED,
+    APPROVALS_WITHDRAWN,
+    PAGES_APPROVED,
+    PAGES_REJECTED,
+  ],
   headline: [PAGES_VERIFIED, STILL_RIGHT_FROM_HOME],
 };
 
@@ -357,20 +426,20 @@ export const EDITS_DISCARDED = chart(
   { types: ['Discard'], rising: 'neutral' },
 );
 
-export const ASK_ABOUT_PAGE = chart(
-  'UI',
-  'Used',
-  'Ask About This Page',
-  "Someone opened Ask from a page's AI Context, with the page named in the question.",
-  { types: ['AskAboutPage'] },
+export const EDITS_JOINED = chart(
+  'Tab',
+  'Started',
+  'Edits Joined',
+  "Someone reading a page was brought into its edit mode when another person started editing it, so both work in the one shared draft.",
+  { types: ['EditJoined'], rising: 'neutral' },
 );
 
 export const PAGE_EDITING: MetricStack = {
   stack: true,
   title: 'Editing Pages',
   blurb:
-    'Pages open to read; Edit opens their one shared draft, which is saved for every reader or thrown away. And Ask opened from a page about that page.',
-  members: [EDITS_STARTED, EDITS_SAVED, EDITS_DISCARDED, ASK_ABOUT_PAGE],
+    'Pages open to read; Edit opens their one shared draft, which others editing join, and which is saved for every reader or thrown away.',
+  members: [EDITS_STARTED, EDITS_JOINED, EDITS_SAVED, EDITS_DISCARDED],
   headline: [EDITS_STARTED, EDITS_SAVED],
 };
 

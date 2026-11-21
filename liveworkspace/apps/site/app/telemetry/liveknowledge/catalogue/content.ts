@@ -227,11 +227,12 @@ export const TABS_RENAMED: Metric = {
   title: 'Pages Renamed',
 };
 
+// A page deleted. A connected file's row taken out of the tree carries `Connected` and is charted in Connected Tabs.
 export const TABS_DELETED: Metric = {
   rising: 'neutral',
   category: 'Tab',
   action: 'Deleted',
-  type: null,
+  typeIn: (type) => type === null,
   title: 'Pages Deleted',
 };
 
@@ -411,24 +412,37 @@ export const FILES_CONNECTED_AGAIN: Metric = {
     'A connected tab mended with Connect Again, after its link was removed or it came with a copy.',
 };
 
+// A knowledgebase shows a connected file as a row in its page tree (links-and-embeds.md "Connected files in the
+// sidebar"), which opens the file itself, so its open is the row's, not the shared connected tab page's.
 export const CONNECTED_TABS_OPENED: Metric = {
+  category: 'UI',
+  action: 'Used',
+  type: 'OpenConnectedFile',
+  title: 'Connected Files Opened',
+  blurb: 'Someone opened a connected file from its row in the page tree. Read against files connected.',
+};
+
+export const CONNECTED_FILES_REMOVED: Metric = {
+  rising: 'neutral',
   category: 'Tab',
-  action: 'Opened',
+  action: 'Deleted',
   type: 'Connected',
-  title: 'Connected Tabs Opened',
-  blurb: 'Someone opened the file a connected tab stands for. Read against files connected.',
+  title: 'Connected Files Removed',
+  blurb: 'A connected file’s row taken out of the page tree with Remove from Sidebar; the file stays as it is.',
 };
 
 export const CONNECTED_TABS: MetricStack = {
   stack: true,
   title: 'Connected Tabs',
-  blurb: 'Files from other apps (or this one) connected as tabs, and how often people follow them.',
+  blurb:
+    'Files from other apps (or this one) connected as rows in the page tree, how often people follow them, and rows removed.',
   headline: FILES_CONNECTED,
   members: [
     FILES_CONNECTED,
     FILES_CONNECTED_BOTH_WAYS,
     FILES_CONNECTED_AGAIN,
     CONNECTED_TABS_OPENED,
+    CONNECTED_FILES_REMOVED,
   ],
 };
 
@@ -492,7 +506,7 @@ export const ELEMENTS_ADDED: MetricStack = {
   blurb:
     'Everything put on a canvas, by the palette tab it comes from. Copies count too: a duplicate or paste adds one per element.',
   members: [SHAPES_ADDED, TOOLS_ADDED, COMPONENTS_ADDED, ICONS_ADDED, OTHER_ELEMENTS_ADDED],
-  seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
+  seeAlso: { tab: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 
 // ---- Every other event, so nothing lands only in Search (docs/specs/017-telemetry/telemetry.md) ----------
@@ -619,7 +633,7 @@ export const ELEMENT_EDITING: MetricStack = {
     LINKS_ADDED,
     LINKS_REMOVED,
   ],
-  seeAlso: { section: 'editing', label: 'See Each Formatting Control in Features › Editing' },
+  seeAlso: { tab: 'editing', label: 'See Each Formatting Control on the Editing Tab' },
 };
 
 // Tables: the row and column edits inside a table element. They are sent as
@@ -705,5 +719,5 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   blurb:
     'Knowledgebases leaving liveknowledge as files and text, and pages coming in from Markdown documents and JSON exports.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
-  seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
+  seeAlso: { tab: 'editing', label: 'See Each Export Format on the Editing Tab' },
 };

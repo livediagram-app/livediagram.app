@@ -322,12 +322,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: KNOWLEDGE_STYLE_KINDS,
   },
   // ARTICLE_BLOCK_INSERT_EVENT (apps/editor/lib/article/article-telemetry.ts): a block put into an
-  // article from the page toolbar's Insert or the slash menu.
-  'apps/editor/components/canvas/article/PageToolbar.tsx Element·Added': {
-    values: ARTICLE_BLOCK_INSERTS,
-  },
+  // article from the slash menu (the formatting bar has no Insert menu).
   'apps/editor/components/canvas/article/ArticleEditor.tsx Element·Added': {
     values: ARTICLE_BLOCK_INSERTS,
+  },
+  // An approval decided with a note (docs/specs/030-knowledgebase/approval.md): only a rejection takes one.
+  'apps/editor/components/knowledge/approval/usePageApproval.ts Tab·Changed': {
+    values: ['RejectedWithNote'],
   },
   'apps/editor/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
