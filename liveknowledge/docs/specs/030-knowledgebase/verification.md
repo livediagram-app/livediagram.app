@@ -4,7 +4,7 @@ Status: **the states, Verify, the meta row, the tree's tick, Page Health and the
 verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md) step 7;
 [blueprint](blueprints/knowledge-ui.md)). Not built: "Edited <when> by <name>" (no route says when a page's writing
 was last edited, or by whom). The Review Due email is built and tested over
-a fake sender, not yet sent from a deployed Worker. A guest may verify too, shown by their name with "(Guest)" after it ("Verified by Bright Marlin (Guest)", or "Guest" with no name) and never made the page's owner (owner, 2026-11-21); the same name marks a guest's Created and Updated stamps, and a knowledgebase kept Offline has
+a fake sender, not yet sent from a deployed Worker. A guest may verify too, shown by their name with "(Guest)" after it ("Verified by Bright Marlin (Guest)", or "Guest" with no name) and never made the page's owner (owner, 2026-11-21); the same name marks a guest's Created and Updated stamps, the api swapping a guest's owner id (a credential, never sent to readers) for "guest:<name> (Guest)" from their profile as the page's health is read, and a knowledgebase kept Offline has
 none.
 
 A knowledgebase is only useful, to a person or to an agent, while it is right. Each page says who vouches for it and when they

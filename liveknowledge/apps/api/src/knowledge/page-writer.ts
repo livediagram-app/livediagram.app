@@ -4,6 +4,8 @@
 // person accepting an agent's suggestion, whose words are the agent's. The stamp's `by` is always a person: the
 // token's maker, or the Editor who accepted. Kept beside each stamp of `page_authors` (page-authors.ts, schema step
 // V18).
+import { isAccountIdShape } from '@liveknowledge/api-schema';
+import { guestVerifier, isGuestVerifier } from '@liveknowledge/knowledge';
 import type { PageAuthorKind, PageAuthorStamp, PageAuthorVia } from '@liveknowledge/api-schema';
 import { agentName as cleanAgentName } from '@liveknowledge/knowledge';
 import { frontDoorOf } from '../changesets/front-door';
@@ -105,3 +107,21 @@ export function stampOf(
     ...(VIAS.includes(via as PageAuthorVia) ? { via: via as PageAuthorVia } : {}),
   };
 }
+
+// A guest's owner id (`guest_…`, never an account's `user_…`) on a stamp, and not one already naming a guest.
+const isGuestOwner = (by: string): boolean => !!by && !isAccountIdShape(by) && !isGuestVerifier(by);
+
+/** The guests' owner ids among stamps, once each: whose names to read. */
+export const guestOwnersOf = (stamps: readonly { by: string }[]): string[] => [
+  ...new Set(stamps.map((s) => s.by).filter(isGuestOwner)),
+];
+
+/**
+ * A stamp as it leaves the api: a guest's owner id is a credential, so it never does. It reads `guest:<name> (Guest)`
+ * from their profile's name, or `guest` with none (owner 2026-11-21: "Bright Marlin (Guest)"), as a guest's Verify is
+ * stored (guestVerifier). An account's stamp and an agent's pass as they are.
+ */
+export const guestStampNamer =
+  (nameOf: (id: string) => string | undefined) =>
+  <T extends { by: string }>(stamp: T): T =>
+    isGuestOwner(stamp.by) ? { ...stamp, by: guestVerifier(nameOf(stamp.by)) } : stamp;

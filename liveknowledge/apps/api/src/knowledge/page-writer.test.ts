@@ -4,6 +4,8 @@ import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { migrateDocumentSchema } from '../document-room/document-schema';
 import {
   acceptedSuggestionWriter,
+  guestOwnersOf,
+  guestStampNamer,
   pageAuthorKindsSchemaStep,
   stampOf,
   writerOf,
@@ -103,5 +105,21 @@ describe('schema step V18', () => {
     });
     // Asked before each ALTER: a second run, or a room that already had some, adds nothing twice.
     expect(() => pageAuthorKindsSchemaStep(exec)).not.toThrow();
+  });
+});
+
+describe('a guest on a stamp, as it leaves the api', () => {
+  const names = new Map([['guest_abc', 'Bright Marlin']]);
+  const named = guestStampNamer((id) => names.get(id));
+  it('names a guest from their profile and never sends their owner id', () => {
+    expect(named({ by: 'guest_abc', at: 1 })).toEqual({ by: 'guest:Bright Marlin (Guest)', at: 1 });
+    expect(named({ by: 'guest_zzz', at: 1 }).by).toBe('guest');
+  });
+  it('passes an account’s stamp and one already naming a guest as they are', () => {
+    expect(named({ by: 'user_1', at: 1 }).by).toBe('user_1');
+    expect(named({ by: 'guest:Sam (Guest)', at: 1 }).by).toBe('guest:Sam (Guest)');
+    expect(guestOwnersOf([{ by: 'guest_abc' }, { by: 'guest_abc' }, { by: 'user_1' }])).toEqual([
+      'guest_abc',
+    ]);
   });
 });

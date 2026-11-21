@@ -7,7 +7,9 @@
 //   PUT   /api/documents/<id>/pages/<tab>/knowledge   owner, Always in Context (each optional)
 // Reading is every role's; Verify and the fields are an Editor's (verification.md "Share roles"). When a page's
 // review comes due is the knowledgebase's Review Period (knowledge-settings-routes.ts), never the page's.
+import { getParticipants } from '../person/profiles';
 import { readPageAuthors } from '../knowledge/page-authors';
+import { guestOwnersOf, guestStampNamer } from '../knowledge/page-writer';
 import { readPageEditors } from '../knowledge/page-editors';
 import { verifyMoment } from '../knowledge/model-door';
 import { pageTreeRows } from '@liveknowledge/document';
@@ -83,11 +85,17 @@ export async function handlePageHealth(
     rowsOf<PageAnswerRow>(ctx.env, listPageAnswers(tab, now)),
     rowsOf<PageAgentReadsRow>(ctx.env, countPageAgentReads(tab, now)),
   ]);
+  // A guest's stamp holds their owner id, a credential: it never leaves here. It reads as the name on their profile,
+  // "Bright Marlin (Guest)" (owner 2026-11-21), the way a guest's Verify is stored (guestVerifier).
+  const named = await guestStampsNamed(ctx, [
+    ...(authors ? [authors.created, authors.updated] : []),
+    ...editors,
+  ]);
   return json({
     knowledge: pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now),
     reads: pageReads(readRows),
-    ...(authors ?? {}),
-    ...(editors.length > 0 ? { editors } : {}),
+    ...(authors ? { created: named(authors.created), updated: named(authors.updated) } : {}),
+    ...(editors.length > 0 ? { editors: editors.map(named) } : {}),
     answered: answered.map((r) => ({ question: r.question, asked: r.asked })),
     agents: agents.map((r) => ({ agent: r.agent, reads: r.reads })),
   });
@@ -206,4 +214,17 @@ export async function handleKnowledgePatch(
     }
     return next;
   });
+}
+
+/** Swaps each guest's owner id on a stamp for its name (guestStampNamer), the names read from profiles in one call. */
+async function guestStampsNamed<T extends { by: string }>(
+  ctx: DocumentRouteContext,
+  stamps: readonly T[],
+): Promise<(stamp: T) => T> {
+  const guests = guestOwnersOf(stamps);
+  if (guests.length === 0) return (stamp) => stamp;
+  const people = await getParticipants(ctx.env, guests).catch(
+    () => new Map<string, { name: string }>(),
+  );
+  return guestStampNamer((id) => people.get(id)?.name);
 }
