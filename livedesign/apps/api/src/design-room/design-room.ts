@@ -1,4 +1,10 @@
-import { ItemDb, type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
+import {
+  ItemDb,
+  type ItemHeadSync,
+  sharesDueAt,
+  ShareSchedule,
+  type PutAwayRefusal,
+} from '@liveworkspace/index-app';
 import { tellSourceChanged } from '@liveworkspace/index-app';
 import type { SourceChange } from '@liveworkspace/index-client';
 import { DurableObject } from 'cloudflare:workers';
@@ -481,6 +487,12 @@ export class DesignRoom extends DurableObject<Env> {
 
   takeGrantStanding(grant: StandingGrant): Promise<void> {
     return this.standing.takeGrant(grant);
+  }
+
+  // Whether the room refuses a grant as put away: the room-ticket door's question (Work Tracker 1323).
+  standingRefusal(designId: string, grant: StandingGrant): Promise<PutAwayRefusal | null> {
+    this.bindDesign(designId);
+    return Promise.resolve(this.standing.refusal(grant));
   }
 
   // A Sheet a linked chart reads changed (the index's source-changed door, @liveworkspace/index-app

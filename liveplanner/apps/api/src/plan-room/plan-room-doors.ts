@@ -7,6 +7,7 @@ import {
   type ExportQuery,
   type ExportResult,
   type ExportTablesResult,
+  putAwayGate,
 } from '@liveworkspace/index-app';
 import { getTab, planHasTab } from '../db/tabs';
 import { itemIdsShownOnTab, tabShowsEveryCard } from '@liveplanner/items';
@@ -47,7 +48,7 @@ import { ensureSchema, noteWrite } from './plan-room-content';
 import { closeSessionsOfChangedLink } from './plan-room-sockets';
 import { clearAgentsFor } from './plan-room-presence';
 import { admitAfterPurge } from './plan-room-purged';
-import { notFound } from '../responses';
+import { notFound, PUT_AWAY_ANSWERS } from '../responses';
 
 // What the export door answers a drawing as.
 const SVG_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
@@ -66,6 +67,10 @@ export async function route(
   if (identity.grant?.item === planId) {
     await room.takeHead(identity.grant);
     await room.takeGrantStanding(identity.grant);
+    // A grant from before the plan was archived or trashed (an API token's, kept by its worker until it
+    // lapses) is refused here, where every isolate's requests meet (Work Tracker 1323).
+    const away = putAwayGate(room.standing.refusal(identity.grant), PUT_AWAY_ANSWERS);
+    if (away) return away;
   }
   const community = await communityOf(room, planId);
   const writesBefore = room.writes;

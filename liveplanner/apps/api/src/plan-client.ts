@@ -11,7 +11,7 @@ import type { CardThread } from '@liveplanner/project';
 import type { ThreadOp, ThreadsRelay, ThreadWriteResult } from './plan-room/card-thread-store';
 import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { CommunityShareInfo } from '@liveplanner/api-schema';
-import type { Copier } from '@liveworkspace/index-app';
+import type { Copier, PutAwayRefusal, StandingGrant } from '@liveworkspace/index-app';
 import type { SheetRangeAsk } from '@liveworkspace/index-client';
 import type { RouteIdentity } from './plan-room/plan-route';
 import type { CalendarFeed } from './calendar/feed-store';
@@ -93,6 +93,8 @@ export type PlanRoomClient = {
   revokeCodes(codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
   // Where the plan stands at the index (archived, in the Trash), after a change there (plan-standing.ts).
   takeStanding(standing: ItemStanding): Promise<void>;
+  // Whether the room refuses a grant as put away (Work Tracker 1323): the room-ticket door asks.
+  standingRefusal(grant: StandingGrant): Promise<PutAwayRefusal | null>;
   // The plan's Community post's link (its code, and whether it opens the plan now), or null for none.
   community(): Promise<CommunityLink | null>;
   // The post's title when `code` is its open link: what a copy through it is named.
@@ -167,6 +169,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     purge: () => room.purge(planId),
     revokeCodes: (codes, reason) => room.revokeCodes(planId, codes, reason),
     takeStanding: (standing) => room.takeStanding(planId, standing),
+    standingRefusal: (grant) => room.standingRefusal(planId, grant),
     community: () => room.community(planId),
     communityPostTitle: (code) => room.communityPostTitle(planId, code),
     communityListing: (code) => room.communityListing(planId, code),
@@ -224,6 +227,7 @@ export type PlanRoomRpc = {
   purge(planId: string): Promise<void>;
   revokeCodes(planId: string, codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
   takeStanding(planId: string, standing: ItemStanding): Promise<void>;
+  standingRefusal(planId: string, grant: StandingGrant): Promise<PutAwayRefusal | null>;
   community(planId: string): Promise<CommunityLink | null>;
   communityPostTitle(planId: string, code: string): Promise<string | null>;
   communityListing(planId: string, code: string): Promise<CommunityListing | null>;

@@ -1,4 +1,9 @@
-import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
+import {
+  type ItemHeadSync,
+  sharesDueAt,
+  ShareSchedule,
+  type PutAwayRefusal,
+} from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
   BELL_THROTTLE_MS,
@@ -601,6 +606,12 @@ export class DocumentRoom extends DurableObject<Env> {
 
   takeGrantStanding(grant: StandingGrant): Promise<void> {
     return this.standing.takeGrant(grant);
+  }
+
+  // Whether the room refuses a grant as put away: the room-ticket door's question (Work Tracker 1323).
+  standingRefusal(documentId: string, grant: StandingGrant): Promise<PutAwayRefusal | null> {
+    this.bindDocument(documentId);
+    return Promise.resolve(this.standing.refusal(grant));
   }
 
   anonymise(

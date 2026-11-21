@@ -296,6 +296,8 @@ function testPlanRooms(
       }
     },
     revokeCodes: async () => 0,
+    // A room that never heard where the item stands refuses no grant (Work Tracker 1323).
+    standingRefusal: async () => null,
     // A card's comment threads across plans (plan-room/card-thread-store.ts), against the shared tables.
     threadsFor: async (planId: string, ids: string[], via: string) =>
       (await import('./plan-room/card-thread-store')).threadsForVia(env, planId, ids, via),

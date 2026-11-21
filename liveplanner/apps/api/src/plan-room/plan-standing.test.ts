@@ -4,7 +4,12 @@ import type { AutomationRule, AutomationRun } from '@liveplanner/items';
 import { PROJECT_TRASHED_CLOSE, type AutomationSecretResponse } from '@liveplanner/api-schema';
 import { ITEM_ARCHIVED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 import { endRepeatWorld } from './test-repeat-world';
-import { automationWorld, type AutomationWorld } from './automations/test-automation-world';
+import {
+  automationWorld,
+  identityOf,
+  type AutomationWorld,
+} from './automations/test-automation-world';
+import { ITEM_PUT_AWAY_HEADER } from '@liveworkspace/index-app';
 import { STANDING_KEY, WAIT_PUT_AWAY } from './plan-standing';
 
 // A plan archived or in the Trash runs no rule (docs/specs/026-plan/automations.md "Put away"; blueprint
@@ -85,7 +90,11 @@ describe('the standing door', () => {
     const at = Date.now();
     expect((await tell(true, false, at)).status).toBe(200);
     expect(room().standing.putAway).toBe(true);
-    expect(await room().state.storage.get(STANDING_KEY)).toEqual({ putAway: true, at });
+    expect(await room().state.storage.get(STANDING_KEY)).toEqual({
+      putAway: true,
+      trashed: false,
+      at,
+    });
     // An older word (two calls that crossed) changes nothing; the same moment neither.
     await tell(false, false, at - 1);
     await tell(false, false, at);
@@ -95,7 +104,11 @@ describe('the standing door', () => {
     expect(room().standing.putAway).toBe(true);
     await tell(false, false, at + 2);
     expect(room().standing.putAway).toBe(false);
-    expect(await room().state.storage.get(STANDING_KEY)).toEqual({ putAway: false, at: at + 2 });
+    expect(await room().state.storage.get(STANDING_KEY)).toEqual({
+      putAway: false,
+      trashed: false,
+      at: at + 2,
+    });
   });
 
   it("takes the index's key alone and refuses a malformed body", async () => {
@@ -442,7 +455,11 @@ describe('failing open', () => {
     expect(room().standing.putAway).toBe(true);
     // A trashed grant agrees it is put away: nothing written.
     await room().takeGrantStanding({ iat: Math.floor(at / 1000) + 5, trashed: true });
-    expect(await room().state.storage.get(STANDING_KEY)).toEqual({ putAway: true, at });
+    expect(await room().state.storage.get(STANDING_KEY)).toEqual({
+      putAway: true,
+      trashed: false,
+      at,
+    });
     await room().takeGrantStanding({ iat: Math.floor(at / 1000) + 5 });
     expect(room().standing.putAway).toBe(false);
   });
@@ -460,5 +477,47 @@ describe('failing open', () => {
   it('writes nothing for a grant on a plan that never heard', async () => {
     await room().takeGrantStanding({ iat: Math.floor(Date.now() / 1000) });
     expect(await room().state.storage.get(STANDING_KEY)).toBeUndefined();
+  });
+
+  // Work Tracker 1323 (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Where an item stands"): an API
+  // token's grant kept by its worker from before the plan was archived or trashed is refused by the room.
+  it("refuses a token's kept grant from before an archive or a trash, and nothing once it is back", async () => {
+    const signedAt = Date.now() - 60_000;
+    const asToken = (method: string, body?: unknown) => {
+      const identity = identityOf('A', 'token');
+      return room().route(
+        'A',
+        new Request('https://api.test/api/projects/A', {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        }),
+        { ...identity, grant: { ...identity.grant!, iat: Math.floor(signedAt / 1000) } },
+      );
+    };
+    expect((await asToken('GET')).status).toBe(200);
+    await tell(true, false, signedAt + 1_000);
+    const read = await asToken('GET');
+    expect(read.status).toBe(409);
+    expect(await read.json()).toEqual({ error: 'archived' });
+    expect(read.headers.get(ITEM_PUT_AWAY_HEADER)).toBe('archived');
+    expect((await asToken('PUT', { name: 'Changed' })).status).toBe(409);
+    expect(await room().standingRefusal('A', { iat: Math.floor(signedAt / 1000) })).toBe(
+      'archived',
+    );
+    await tell(false, true, signedAt + 2_000);
+    const trashed = await asToken('GET');
+    expect(trashed.status).toBe(410);
+    expect(await trashed.json()).toEqual({ error: 'project_trashed' });
+    // The index's own trashed grant answers the same.
+    const identity = identityOf('A', 'owner');
+    const own = await room().route('A', new Request('https://api.test/api/projects/A'), {
+      ...identity,
+      grant: { ...identity.grant!, trashed: true },
+    });
+    expect(own.status).toBe(410);
+    await tell(false, false, signedAt + 3_000);
+    expect((await asToken('GET')).status).toBe(200);
+    expect(room().standing.refusal({ iat: 1 })).toBeNull();
   });
 });

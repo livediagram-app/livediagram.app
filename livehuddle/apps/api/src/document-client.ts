@@ -12,6 +12,8 @@ import type {
   ExportCommentsResult,
   ExportQuery,
   ExportResult,
+  PutAwayRefusal,
+  StandingGrant,
 } from '@liveworkspace/index-app';
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
 import type { DocumentFileImport } from './document-room/document-file';
@@ -76,6 +78,8 @@ export type DocumentRoomClient = {
   emailOptOut(token: string): Promise<boolean>;
   // Where the Space stands at the index (@liveworkspace/automations/room standing.ts): put away, its rules run nothing.
   takeStanding(standing: ItemStanding): Promise<void>;
+  // Whether the room refuses a grant as put away (Work Tracker 1323): the room-ticket door asks.
+  standingRefusal(grant: StandingGrant): Promise<PutAwayRefusal | null>;
   // A closed account's name off the canvas (document-anonymise.ts), and the guests it signed in from off its
   // Attendance (`guestKeys`, their collab keys) and as its own (`guestIds`, the index's): answers the rows changed.
   anonymise(
@@ -125,6 +129,7 @@ export function documentRoom(
     incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
     emailOptOut: (token) => room.emailOptOut(documentId, token),
     takeStanding: (standing) => room.takeStanding(documentId, standing),
+    standingRefusal: (grant) => room.standingRefusal(documentId, grant),
     anonymise: (personId, guestKeys = [], guestIds = []) =>
       room.anonymise(documentId, personId, guestKeys, guestIds),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
@@ -169,6 +174,7 @@ export type DocumentRoomRpc = {
   incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
   emailOptOut(documentId: string, token: string): Promise<boolean>;
   takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
+  standingRefusal(documentId: string, grant: StandingGrant): Promise<PutAwayRefusal | null>;
   anonymise(
     documentId: string,
     personId: string,

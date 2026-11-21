@@ -13,6 +13,8 @@ import type {
   ExportCommentsResult,
   ExportQuery,
   ExportResult,
+  PutAwayRefusal,
+  StandingGrant,
 } from '@liveworkspace/index-app';
 import type { notifyActionAssigned, notifyMentioned } from './email/notifications';
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
@@ -91,6 +93,8 @@ export type DocumentRoomClient = {
   emailOptOut(token: string): Promise<boolean>;
   // Where the canvas stands at the index (@liveworkspace/automations/room standing.ts): put away, its rules run nothing.
   takeStanding(standing: ItemStanding): Promise<void>;
+  // Whether the room refuses a grant as put away (Work Tracker 1323): the room-ticket door asks.
+  standingRefusal(grant: StandingGrant): Promise<PutAwayRefusal | null>;
   // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
   sourceChanged(change: SourceChange): Promise<void>;
   // A closed account's name off the canvas (document-anonymise.ts), and the guests merged into it (`guestIds`) as its
@@ -143,6 +147,7 @@ export function documentRoom(
     incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
     emailOptOut: (token) => room.emailOptOut(documentId, token),
     takeStanding: (standing) => room.takeStanding(documentId, standing),
+    standingRefusal: (grant) => room.standingRefusal(documentId, grant),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
     anonymise: (personId, guestIds = []) => room.anonymise(documentId, personId, guestIds),
     notifyAction: (input) => room.notifyAction(documentId, input),
@@ -190,6 +195,7 @@ export type DocumentRoomRpc = {
   incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
   emailOptOut(documentId: string, token: string): Promise<boolean>;
   takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
+  standingRefusal(documentId: string, grant: StandingGrant): Promise<PutAwayRefusal | null>;
   sourceChanged(documentId: string, change: SourceChange): Promise<void>;
   anonymise(documentId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   notifyAction(documentId: string, input: ActionNotice): Promise<boolean>;
