@@ -1,9 +1,9 @@
 'use client';
 
-// Page Health in the right rail (docs/specs/030-knowledgebase/verification.md "Page Health"). Quiet by design: no
-// card, no borders, the page's ground showing through. It leads with the page's state beside a freshness ring (how
-// much of the Review Period is left), then the owner, the review rows, the week's reads, Verify, and at its foot who
-// created the page and who last updated it (as a liveplanner card's footer does). An Editor changes the owner in
+// Page Health in the right rail (docs/specs/030-knowledgebase/verification.md "Page Health"). It leads with a status
+// panel washed in the state's colour (a freshness ring round the state's glyph, how much of the Review Period is left,
+// and Verify), then the owner and review facts, each with its glyph. The week's reads and who created and last
+// updated the page are PageActivity, held at the rail's foot (as a liveplanner card's footer is). An Editor changes the owner in
 // place; the Review Period is the knowledgebase's, so the rail only links to the setting. Every row keeps its height
 // while the reads load and when the period changes, so nothing moves under the pointer.
 import type { ReactNode } from 'react';
@@ -12,7 +12,18 @@ import { Button, Select, Tooltip } from '@liveknowledge/ui';
 import { NO_REVIEW_PERIOD, reviewPeriodLabel } from '@/lib/knowledge-settings/review-period-words';
 import { shortDate, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
-import { AgentsIcon, CheckIcon, PeopleIcon } from './knowledge-icons';
+import {
+  AgentsIcon,
+  CheckIcon,
+  DueIcon,
+  DueRowIcon,
+  OwnerIcon,
+  PeopleIcon,
+  PeriodIcon,
+  UnverifiedIcon,
+  VerifiedIcon,
+  VerifiedRowIcon,
+} from './knowledge-icons';
 import type { KnowledgePerson } from './usePageKnowledge';
 
 const NO_OWNER = '';
@@ -26,8 +37,6 @@ export type PageHealthCardProps = {
   /** The knowledgebase's Review Period, which `trust` was worked out under. */
   reviewEvery: ReviewEvery;
   now: number;
-  // The week's reads; absent until Page Health is read (and for a knowledgebase kept Offline).
-  reads: { people: number; agents: number } | undefined;
   people: readonly KnowledgePerson[];
   nameOf: (id: string | undefined) => string | undefined;
   // Absent for anyone who may not change the fields: the rows read as text.
@@ -35,9 +44,6 @@ export type PageHealthCardProps = {
   // Opens Knowledgebase Settings; absent for anyone who may not change the Review Period.
   onChangeReviewPeriod: (() => void) | undefined;
   onVerify: (() => void) | undefined;
-  // Who created the page and who last updated it, where the server says so.
-  created?: PageStamp | undefined;
-  updated?: PageStamp | undefined;
 };
 
 /** The section label, as On This Page's. */
@@ -73,77 +79,96 @@ export function healthHeadline(
   return { title: 'Verified', line: `Fresh for ${left} more ${left === 1 ? 'day' : 'days'}` };
 }
 
-// A thin ring: the share of the period left, drawn in the state's colour over a faint track. A page never verified
-// shows an empty dashed ring.
+// The state's tone: a soft wash behind the status panel, the ring's arc and the glyph's ink.
+const TONE: Record<PageTrust['state'], { wash: string; ink: string }> = {
+  verified: {
+    wash: 'bg-gradient-to-br from-brand-50 via-brand-50/50 to-white ring-brand-100 dark:from-brand-950/60 dark:via-brand-950/25 dark:to-transparent dark:ring-brand-900/50',
+    ink: 'text-brand-700 dark:text-brand-300',
+  },
+  'review-due': {
+    wash: 'bg-gradient-to-br from-amber-50 via-amber-50/50 to-white ring-amber-100 dark:from-amber-950/50 dark:via-amber-950/20 dark:to-transparent dark:ring-amber-900/40',
+    ink: 'text-amber-700 dark:text-amber-300',
+  },
+  'never-verified': {
+    wash: 'bg-gradient-to-br from-slate-50 via-slate-50/60 to-white ring-slate-200/70 dark:from-slate-900/70 dark:via-slate-900/30 dark:to-transparent dark:ring-slate-800',
+    ink: 'text-slate-500 dark:text-slate-400',
+  },
+};
+
+// The ring: the share of the Review Period left, in the state's colour over a faint track, around the state's glyph.
+// A page never verified shows an empty dashed ring.
 function FreshnessRing({ state, left }: { state: PageTrust['state']; left: number | undefined }) {
-  const r = 15;
+  const r = 21;
   const c = 2 * Math.PI * r;
-  const tone =
-    state === 'review-due'
-      ? 'text-amber-500 dark:text-amber-400'
-      : 'text-brand-700 dark:text-brand-400';
+  const { ink } = TONE[state];
   return (
-    <span className="relative flex size-10 shrink-0 items-center justify-center" aria-hidden>
-      <svg viewBox="0 0 36 36" className="absolute inset-0 size-10 -rotate-90">
+    <span
+      className={`relative flex size-12 shrink-0 items-center justify-center ${ink}`}
+      aria-hidden
+    >
+      <svg viewBox="0 0 48 48" className="absolute inset-0 size-12 -rotate-90">
         <circle
-          cx="18"
-          cy="18"
+          cx="24"
+          cy="24"
           r={r}
           fill="none"
-          strokeWidth="2.5"
-          className="stroke-slate-200 dark:stroke-slate-700"
-          {...(state === 'never-verified' ? { strokeDasharray: '3 3' } : {})}
+          strokeWidth="3"
+          className="stroke-white/90 dark:stroke-slate-800"
+          {...(state === 'never-verified' ? { strokeDasharray: '3 4' } : {})}
         />
         {state === 'never-verified' ? null : (
           <circle
             data-freshness-arc=""
-            cx="18"
-            cy="18"
+            cx="24"
+            cy="24"
             r={r}
             fill="none"
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinecap="round"
             stroke="currentColor"
-            strokeDasharray={`${c * (left ?? 1)} ${c}`}
-            className={`${tone} motion-safe:transition-[stroke-dasharray] motion-safe:duration-200`}
+            strokeDasharray={`${c * Math.max(0.02, left ?? 1)} ${c}`}
+            className="motion-safe:transition-[stroke-dasharray] motion-safe:duration-200"
           />
         )}
       </svg>
       {state === 'verified' ? (
-        <span className={`${tone} flex`}>
-          <CheckIcon />
-        </span>
+        <VerifiedIcon />
+      ) : state === 'review-due' ? (
+        <DueIcon />
       ) : (
-        <span
-          className={`size-1.5 rounded-full ${
-            state === 'review-due'
-              ? 'bg-amber-500 dark:bg-amber-400'
-              : 'bg-slate-300 dark:bg-slate-600'
-          }`}
-        />
+        <UnverifiedIcon />
       )}
     </span>
   );
 }
 
-// `wrap`: a value of two parts (a date and a name) that are each read in full: it wraps onto a second line at the
-// rail's width, where a one-part value truncates.
+// One fact: a quiet glyph, its label, and the value at the right. `wrap`: a value of two parts (a date and a name)
+// that are each read in full, on two lines, where a one-part value truncates.
 function Row({
+  icon,
   label,
   wrap = false,
   children,
 }: {
+  icon: ReactNode;
   label: string;
   wrap?: boolean;
   children: ReactNode;
 }) {
   return (
     <div
-      className={`flex min-h-8 justify-between gap-3 ${wrap ? 'items-baseline py-1' : 'items-center'}`}
+      className={`flex min-h-9 justify-between gap-3 ${wrap ? 'items-baseline py-1.5' : 'items-center'}`}
     >
-      <dt className="shrink-0 text-slate-500 dark:text-slate-400">{label}</dt>
+      <dt className="flex shrink-0 items-center gap-2 text-slate-500 dark:text-slate-400">
+        <span
+          className={`flex text-slate-400 dark:text-slate-400/60 ${wrap ? 'translate-y-0.5 self-start' : ''}`}
+        >
+          {icon}
+        </span>
+        {label}
+      </dt>
       <dd
-        className={`min-w-0 text-right text-slate-800 dark:text-slate-200 ${
+        className={`min-w-0 text-right font-medium text-slate-800 dark:text-slate-200 ${
           wrap ? 'break-words' : 'truncate'
         }`}
       >
@@ -160,21 +185,45 @@ function initials(name: string): string {
   ).toUpperCase();
 }
 
+// A person's disc, tinted by their name so the same person reads the same everywhere in the rail.
+const DISC_TINTS = [
+  'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200',
+  'bg-violet-100 text-violet-800 dark:bg-violet-900/60 dark:text-violet-200',
+  'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200',
+  'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200',
+  'bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-200',
+  'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200',
+];
+const NO_TINT = 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200';
+
+function tintOf(name: string | undefined): string {
+  if (!name) return NO_TINT;
+  let h = 0;
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) | 0;
+  return DISC_TINTS[Math.abs(h) % DISC_TINTS.length]!;
+}
+
+function Disc({ name, size = 'size-6' }: { name: string | undefined; size?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={`flex ${size} shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-white dark:ring-slate-950 ${tintOf(name)}`}
+    >
+      <span className="text-optical-centre">{name ? initials(name) : '?'}</span>
+    </span>
+  );
+}
+
 function StampRow({ what, stamp, now }: { what: string; stamp: PageStamp; now: number }) {
   // Two lines, so a whole name fits the rail: who, then what they did and when.
   return (
     <div data-page-stamp="" className="flex min-h-9 items-center gap-2.5">
-      <span
-        aria-hidden
-        className="flex size-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200"
-      >
-        <span className="text-optical-centre">{stamp.by ? initials(stamp.by) : '?'}</span>
-      </span>
+      <Disc name={stamp.by} />
       <span className="min-w-0 flex-1 leading-4">
-        <span className="block truncate text-[13px] text-slate-800 dark:text-slate-200">
+        <span className="block truncate text-[13px] font-medium text-slate-800 dark:text-slate-200">
           {stamp.by ?? 'Someone'}
         </span>
-        <span className="block text-[11px]">
+        <span className="block text-[11px] text-slate-500 dark:text-slate-400">
           {what}{' '}
           <Tooltip label={new Date(stamp.at).toLocaleString('en-GB')}>
             <time dateTime={new Date(stamp.at).toISOString()} className="tabular-nums">
@@ -199,10 +248,10 @@ function ReadStat({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-slate-400 dark:text-slate-400">{icon}</span>
+    <div className="flex items-center gap-2 rounded-lg bg-white/80 px-2.5 py-2 ring-1 ring-inset ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-800">
+      <span className="flex text-slate-400 dark:text-slate-400/60">{icon}</span>
       <dt className="sr-only">{label}</dt>
-      <dd className="truncate">
+      <dd className="min-w-0 truncate">
         <span className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">
           {value}
         </span>{' '}
@@ -212,18 +261,60 @@ function ReadStat({
   );
 }
 
+export type PageActivityProps = {
+  now: number;
+  reads: { people: number; agents: number } | undefined;
+  created?: PageStamp | undefined;
+  updated?: PageStamp | undefined;
+};
+
+/**
+ * The rail's foot, held at the bottom of the docked rail while the rest scrolls: the week's reads, then who created
+ * the page and who last updated it.
+ */
+export function PageActivity({ now, reads, created, updated }: PageActivityProps) {
+  // Before Page Health is read (and Offline) the week's reads count as none yet.
+  const count = (n: number | undefined) => (n ?? 0).toLocaleString('en');
+  return (
+    <section
+      aria-label="Page Activity"
+      data-page-activity=""
+      className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
+    >
+      <p className={RAIL_LABEL}>Read This Week</p>
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <ReadStat
+          icon={<PeopleIcon />}
+          value={count(reads?.people)}
+          unit={reads?.people === 1 ? 'Person' : 'People'}
+          label="Reads by People This Week"
+        />
+        <ReadStat
+          icon={<AgentsIcon />}
+          value={count(reads?.agents)}
+          unit={reads?.agents === 1 ? 'Agent' : 'Agents'}
+          label="Reads by Agents This Week"
+        />
+      </dl>
+      {created || updated ? (
+        <div className="mt-3 flex flex-col gap-0.5">
+          {created ? <StampRow what="Created" stamp={created} now={now} /> : null}
+          {updated ? <StampRow what="Updated" stamp={updated} now={now} /> : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 export function PageHealthCard({
   trust,
   reviewEvery,
   now,
-  reads,
   people,
   nameOf,
   onSetOwner,
   onChangeReviewPeriod,
   onVerify,
-  created,
-  updated,
 }: PageHealthCardProps) {
   const { owner, verifiedAt, verifiedBy } = trust.fields;
   const ownerName = nameOf(owner);
@@ -233,9 +324,10 @@ export function PageHealthCard({
     owner && !people.some((p) => p.id === owner)
       ? [...people, { id: owner, name: 'Someone Else' }]
       : people;
-  // Before Page Health is read (and Offline) the week's reads count as none yet.
-  const count = (n: number | undefined) => (n ?? 0).toLocaleString('en');
   const head = healthHeadline(trust, reviewEvery, now);
+  const tone = TONE[trust.state];
+  // Verify leads where the page needs it (never verified, or due); a fresh page offers it quietly.
+  const urgent = trust.state !== 'verified';
   return (
     <section
       aria-label="Page Health"
@@ -243,17 +335,30 @@ export function PageHealthCard({
       className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
     >
       <h2 className={RAIL_LABEL}>Page Health</h2>
-      <div data-page-state={trust.state} className="mt-3 flex items-center gap-3">
-        <FreshnessRing state={trust.state} left={freshness(trust, reviewEvery, now)} />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-            {head.title}
-          </p>
-          <p className="truncate text-xs text-slate-500 dark:text-slate-400">{head.line}</p>
+      <div className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${tone.wash}`}>
+        <div data-page-state={trust.state} className="flex items-center gap-3.5">
+          <FreshnessRing state={trust.state} left={freshness(trust, reviewEvery, now)} />
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+              {head.title}
+            </p>
+            <p className="truncate text-xs text-slate-600 dark:text-slate-400">{head.line}</p>
+          </div>
         </div>
+        {onVerify ? (
+          <Button
+            variant={urgent ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={onVerify}
+            className="mt-4 w-full cursor-pointer justify-center gap-1.5 phone:min-h-11"
+          >
+            <CheckIcon />
+            {verifiedAt === undefined ? 'Verify' : 'Verify Again'}
+          </Button>
+        ) : null}
       </div>
-      <dl className="mt-3 flex flex-col">
-        <Row label="Owner">
+      <dl className="mt-3 flex flex-col divide-y divide-slate-100 dark:divide-slate-800/70">
+        <Row icon={<OwnerIcon />} label="Owner">
           {onSetOwner ? (
             <Select
               aria-label="Owner"
@@ -270,11 +375,18 @@ export function PageHealthCard({
               ))}
             </Select>
           ) : (
-            (ownerName ?? (owner ? 'Someone Else' : 'No Owner'))
+            <span className="inline-flex max-w-full items-center gap-2">
+              {owner ? <Disc name={ownerName} size="size-5" /> : null}
+              <span className="truncate">{ownerName ?? (owner ? 'Someone Else' : 'No Owner')}</span>
+            </span>
           )}
         </Row>
         {/* The date and who verified, each whole: the name takes a line of its own rather than being cut short. */}
-        <Row label="Last Verified" wrap={verifiedAt !== undefined && !!verifier}>
+        <Row
+          icon={<VerifiedRowIcon />}
+          label="Last Verified"
+          wrap={verifiedAt !== undefined && !!verifier}
+        >
           {verifiedAt === undefined ? (
             'Never'
           ) : (
@@ -283,14 +395,17 @@ export function PageHealthCard({
                 {shortDate(verifiedAt, now)}
               </span>
               {verifier ? (
-                <span data-verified-by="" className="block text-slate-500 dark:text-slate-400">
+                <span
+                  data-verified-by=""
+                  className="block text-xs font-normal text-slate-500 dark:text-slate-400"
+                >
                   by {verifier}
                 </span>
               ) : null}
             </>
           )}
         </Row>
-        <Row label="Review Due">
+        <Row icon={<DueRowIcon />} label="Review Due">
           <span data-review-due="">
             {reviewEvery === 'never'
               ? NO_REVIEW_PERIOD
@@ -301,7 +416,7 @@ export function PageHealthCard({
         </Row>
         {/* The period and its link, each whole: the link takes a line of its own for an Editor, so the row is one
             height whatever the period. */}
-        <Row label="Review Period" wrap={!!onChangeReviewPeriod}>
+        <Row icon={<PeriodIcon />} label="Review Period" wrap={!!onChangeReviewPeriod}>
           <span data-review-period="" className="block whitespace-nowrap">
             {reviewPeriodLabel(reviewEvery)}
           </span>
@@ -317,40 +432,6 @@ export function PageHealthCard({
           ) : null}
         </Row>
       </dl>
-      <div className="mt-4">
-        <p className={RAIL_LABEL}>Read This Week</p>
-        <dl className="mt-2 grid grid-cols-2 gap-2">
-          <ReadStat
-            icon={<PeopleIcon />}
-            value={count(reads?.people)}
-            unit={reads?.people === 1 ? 'Person' : 'People'}
-            label="Reads by People This Week"
-          />
-          <ReadStat
-            icon={<AgentsIcon />}
-            value={count(reads?.agents)}
-            unit={reads?.agents === 1 ? 'Agent' : 'Agents'}
-            label="Reads by Agents This Week"
-          />
-        </dl>
-      </div>
-      {onVerify ? (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onVerify}
-          className="mt-4 w-full cursor-pointer justify-center gap-1.5 phone:min-h-11"
-        >
-          <CheckIcon />
-          {verifiedAt === undefined ? 'Verify' : 'Verify Again'}
-        </Button>
-      ) : null}
-      {created || updated ? (
-        <div className="mt-5 flex flex-col gap-1 border-t border-slate-200/70 pt-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-          {created ? <StampRow what="Created" stamp={created} now={now} /> : null}
-          {updated ? <StampRow what="Updated" stamp={updated} now={now} /> : null}
-        </div>
-      ) : null}
     </section>
   );
 }

@@ -20,7 +20,7 @@ import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
 import { useKnowledgebaseSettings } from '@/components/knowledge-settings/KnowledgeSettingsHost';
-import { PageHealthCard, type PageStamp } from './PageHealthCard';
+import { PageActivity, PageHealthCard, type PageStamp } from './PageHealthCard';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 
 /** The rail's width, in px. */
@@ -93,7 +93,11 @@ function useCurrentHeading(headings: readonly PageHeading[]): string | undefined
 }
 
 /** The rail's two sections, for the current page. */
-export function PageRailBody() {
+/**
+ * The rail's sections. Docked, the week's reads and who made and updated the page sit in a foot held at the rail's
+ * bottom while the rest scrolls; in the Page Info card they follow on.
+ */
+export function PageRailBody({ docked = false }: { docked?: boolean }) {
   const chrome = useEditorChromeStore();
   const writing = useEditorChrome((s) => writingOf(s.activeTab), sameWriting);
   const page = usePageKnowledge();
@@ -110,14 +114,21 @@ export function PageRailBody() {
   const { rights, pageId } = page;
   // Knowledgebase Settings, for an Editor: where the Review Period is changed (the card has no control of its own).
   const changeReviewPeriod = useKnowledgebaseSettings();
-  return (
+  const activity = (
+    <PageActivity
+      now={page.now}
+      reads={page.health?.reads}
+      created={stampOf(page.health?.created, nameOf)}
+      updated={stampOf(page.health?.updated, nameOf)}
+    />
+  );
+  const sections = (
     <div className="flex flex-col gap-8">
       <OnThisPage headings={writing.headings} current={current} onGo={go} />
       <PageHealthCard
         trust={page.trust}
         reviewEvery={page.reviewEvery}
         now={page.now}
-        reads={page.health?.reads}
         people={people}
         nameOf={nameOf}
         onSetOwner={
@@ -125,10 +136,21 @@ export function PageRailBody() {
         }
         onChangeReviewPeriod={changeReviewPeriod?.onSelect}
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
-        created={stampOf(page.health?.created, nameOf)}
-        updated={stampOf(page.health?.updated, nameOf)}
       />
+      {docked ? null : activity}
     </div>
+  );
+  if (!docked) return sections;
+  return (
+    <>
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8 pt-6">{sections}</div>
+      <div
+        data-page-rail-foot=""
+        className="shrink-0 border-t border-slate-200/70 bg-slate-50/70 px-6 pb-4 pt-4 dark:border-slate-800/70 dark:bg-slate-900/40"
+      >
+        {activity}
+      </div>
+    </>
   );
 }
 
@@ -141,9 +163,9 @@ export function PageRailDocked() {
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.stopPropagation()}
       style={{ top: TOP_ROW_HEIGHT_VAR, width: PAGE_RAIL_WIDTH }}
-      className="pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] cursor-default overflow-y-auto border-l border-slate-200/70 px-6 pb-24 pt-6 text-slate-900 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800/70 dark:text-slate-100"
+      className="pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] flex cursor-default flex-col border-l border-slate-200/70 text-slate-900 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800/70 dark:text-slate-100"
     >
-      <PageRailBody />
+      <PageRailBody docked />
     </aside>
   );
 }

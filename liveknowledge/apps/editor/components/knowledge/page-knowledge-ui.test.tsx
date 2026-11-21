@@ -13,6 +13,8 @@ import {
   PageHealthCard,
   freshness,
   healthHeadline,
+  PageActivity,
+  type PageActivityProps,
   type PageHealthCardProps,
 } from './PageHealthCard';
 import { PageMetaRowView } from './PageMetaRow';
@@ -115,7 +117,16 @@ describe('the meta row', () => {
 });
 
 describe('Page Health', () => {
-  const props = (over: Partial<PageHealthCardProps> = {}): PageHealthCardProps => ({
+  // The rail as docked: Page Health, then the foot with the week's reads and who made and updated the page.
+  type RailProps = PageHealthCardProps & PageActivityProps;
+  const Rail = (p: RailProps) => (
+    <>
+      <PageHealthCard {...p} />
+      <PageActivity now={p.now} reads={p.reads} created={p.created} updated={p.updated} />
+    </>
+  );
+
+  const props = (over: Partial<RailProps> = {}): RailProps => ({
     trust: verified,
     reviewEvery: 90,
     now: NOW,
@@ -133,7 +144,7 @@ describe('Page Health', () => {
 
   it('an Editor changes the owner, verifies again, and is linked to the Review Period, with no control of its own', () => {
     const p = props();
-    render(<PageHealthCard {...p} />);
+    render(<Rail {...p} />);
     fireEvent.change(screen.getByLabelText('Owner'), { target: { value: 'u2' } });
     expect(p.onSetOwner).toHaveBeenCalledWith('u2');
     fireEvent.change(screen.getByLabelText('Owner'), { target: { value: '' } });
@@ -161,7 +172,7 @@ describe('Page Health', () => {
 
   it.each(['Participant', 'Viewer'])('a %s reads the card and changes nothing', () => {
     render(
-      <PageHealthCard
+      <Rail
         {...props({
           onSetOwner: undefined,
           onChangeReviewPeriod: undefined,
@@ -180,9 +191,7 @@ describe('Page Health', () => {
   // a line of its own when the card is too narrow for both.
   it('shows when it was last verified and by whom, each in full, never cut short', () => {
     const long = 'Priyamvada Nair-Oyelaran of Platform Reliability';
-    const { container } = render(
-      <PageHealthCard {...props({ nameOf: (id) => (id ? long : undefined) })} />,
-    );
+    const { container } = render(<Rail {...props({ nameOf: (id) => (id ? long : undefined) })} />);
     const date = container.querySelector('[data-verified-date]')!;
     const by = container.querySelector('[data-verified-by]')!;
     expect(by.textContent).toBe(`by ${long}`);
@@ -198,7 +207,7 @@ describe('Page Health', () => {
   });
 
   it('keeps every row while the reads load, and names a page never verified', () => {
-    const { container } = render(<PageHealthCard {...props({ trust: never, reads: undefined })} />);
+    const { container } = render(<Rail {...props({ trust: never, reads: undefined })} />);
     expect(container.querySelectorAll('dt')).toHaveLength(6);
     expect(container.querySelector('[data-review-due]')!.textContent).toBe('Once Verified');
     // Reads not in yet count as none, never a dash.
@@ -210,8 +219,8 @@ describe('Page Health', () => {
   });
 
   it('says when the review is due under the knowledgebase’s period, and No Review Period under Never', () => {
-    const dueOf = (over: Partial<PageHealthCardProps>) => {
-      const { container, unmount } = render(<PageHealthCard {...props(over)} />);
+    const dueOf = (over: Partial<RailProps>) => {
+      const { container, unmount } = render(<Rail {...props(over)} />);
       const shown = [
         container.querySelector('[data-review-due]')!.textContent,
         container.querySelector('[data-review-period]')!.textContent,
@@ -236,13 +245,13 @@ describe('Page Health', () => {
   });
 
   it('keeps an owner it cannot name as the chosen one', () => {
-    render(<PageHealthCard {...props({ trust: pageTrust({ owner: 'u9' }, 90, NOW) })} />);
+    render(<Rail {...props({ trust: pageTrust({ owner: 'u9' }, 90, NOW) })} />);
     expect(screen.getByLabelText<HTMLSelectElement>('Owner').value).toBe('u9');
     expect(screen.getByRole('option', { name: 'Someone Else' })).toBeTruthy();
   });
 
   it('leads with the state and how long the page stays fresh, its ring filled by the share of the period left', () => {
-    const { container } = render(<PageHealthCard {...props()} />);
+    const { container } = render(<Rail {...props()} />);
     const state = container.querySelector('[data-page-state]')!;
     expect(state.getAttribute('data-page-state')).toBe('verified');
     expect(state.textContent).toBe('VerifiedFresh for 80 more days');
@@ -258,7 +267,7 @@ describe('Page Health', () => {
 
   it('says who created the page and who last updated it, at its foot, and nothing when unknown', () => {
     const { container, rerender } = render(
-      <PageHealthCard
+      <Rail
         {...props({
           created: { at: NOW - 3 * DAY, by: 'Priya Nair' },
           updated: { at: NOW - 3 * 60_000, by: undefined },
@@ -268,7 +277,7 @@ describe('Page Health', () => {
     const rows = [...container.querySelectorAll('[data-page-stamp]')].map((r) => r.textContent);
     expect(rows[0]).toMatch(/^PNPriya NairCreated 3 days ago/);
     expect(rows[1]).toMatch(/^\?SomeoneUpdated 3 mins ago/);
-    rerender(<PageHealthCard {...props()} />);
+    rerender(<Rail {...props()} />);
     expect(container.querySelectorAll('[data-page-stamp]')).toHaveLength(0);
   });
 });
