@@ -263,9 +263,10 @@ describe('readContentSummary', () => {
       { id: 'a', name: 'Essay', elements: [], articles: { f1: article } } as never,
       0,
     );
-    // An article's writing lives beside the elements: its tab counts none, and is still content.
+    // An article's writing lives beside the elements: its tab counts one for the writing (tab-writing.ts), so its
+    // preview is asked for, and it is content.
     const { summary } = await readContentSummary(db.env, 'P');
-    expect(summary).toMatchObject({ hasContent: true, firstTabCount: 0 });
+    expect(summary).toMatchObject({ hasContent: true, firstTabCount: 1 });
   });
 
   it('counts a body that is not JSON as content, failing safe', async () => {
