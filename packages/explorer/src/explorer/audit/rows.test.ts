@@ -57,6 +57,19 @@ describe('auditSentence', () => {
     expect(says('team_renamed', { title: 'Design Ops' })).toBe(
       'Ann Lee renamed the team to Design Ops',
     );
+    expect(says('team_ai_key_changed', { detail: { change: 'set' } })).toBe(
+      'Ann Lee added the team’s AI key',
+    );
+    expect(says('team_ai_key_changed', { detail: { change: 'replaced' } })).toBe(
+      'Ann Lee replaced the team’s AI key',
+    );
+    expect(says('team_ai_key_changed', { detail: { change: 'model' } })).toBe(
+      'Ann Lee changed the team’s AI model',
+    );
+    expect(says('team_ai_key_changed', { detail: { change: 'removed' } })).toBe(
+      'Ann Lee removed the team’s AI key',
+    );
+    expect(says('team_ai_key_changed')).toBe('Ann Lee changed the team’s AI key');
     expect(says('shared')).toBe('Ann Lee made a share link on Roadmap');
     expect(says('shared', { detail: { public: 'true' } })).toBe(
       'Ann Lee made a public link on Roadmap',
@@ -107,6 +120,10 @@ describe('auditDetail', () => {
     expect(auditDetail(ev('shared', { detail: { public: 'true' } }))).toBe('Community post');
     expect(auditDetail(ev('team_renamed', { detail: { from: 'Old' } }))).toBe('Was “⁨Old⁩”');
     expect(auditDetail(ev('team_renamed'))).toBeNull();
+    expect(auditDetail(ev('team_ai_key_changed', { detail: { provider: 'openai' } }))).toBe(
+      'OpenAI',
+    );
+    expect(auditDetail(ev('team_ai_key_changed'))).toBeNull();
     expect(auditDetail(ev('deleted', { detail: { reason: 'offline' } }))).toBe('Taken offline');
     expect(auditDetail(ev('deleted'))).toBeNull();
     expect(auditDetail(ev('webhook_added', { detail: { kind: 'teams' } }))).toBe('Microsoft Teams');

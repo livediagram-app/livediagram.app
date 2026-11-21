@@ -21,7 +21,9 @@ function service(answer: () => Response | Promise<Response>) {
 describe('disconnectDrive', () => {
   it('asks the Drive service to forget the person, with accounts’ key', async () => {
     const { calls, fetcher } = service(() => new Response(null, { status: 204 }));
-    expect(await disconnectDrive({ driveService: fetcher, driveKey: 'k' }, 'user_ada')).toBe('done');
+    expect(await disconnectDrive({ driveService: fetcher, driveKey: 'k' }, 'user_ada')).toBe(
+      'done',
+    );
     expect(calls).toEqual([
       { url: 'https://drive/app/people/user_ada', method: 'DELETE', authorization: 'Bearer k' },
     ]);
@@ -29,7 +31,9 @@ describe('disconnectDrive', () => {
 
   it('takes a person who never connected (404) as done', async () => {
     const { fetcher } = service(() => new Response(null, { status: 404 }));
-    expect(await disconnectDrive({ driveService: fetcher, driveKey: 'k' }, 'user_ada')).toBe('done');
+    expect(await disconnectDrive({ driveService: fetcher, driveKey: 'k' }, 'user_ada')).toBe(
+      'done',
+    );
   });
 
   it('sends nothing without the binding or the key', async () => {
@@ -50,9 +54,9 @@ describe('disconnectDrive', () => {
     const broken = service(() => {
       throw new TypeError('network');
     });
-    expect(
-      await disconnectDrive({ driveService: broken.fetcher, driveKey: 'k' }, 'user_ada'),
-    ).toBe('failed');
+    expect(await disconnectDrive({ driveService: broken.fetcher, driveKey: 'k' }, 'user_ada')).toBe(
+      'failed',
+    );
     expect(warn).toHaveBeenCalledTimes(2);
     warn.mockRestore();
   });

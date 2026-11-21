@@ -17,6 +17,7 @@ import {
 import { pushDeviceRoutes } from '../push/routes.ts';
 import { reportServerEvent } from '../telemetry.ts';
 import { handleDataExport } from '../data-export/routes.ts';
+import { aiKeyRoutes } from '../ai-keys/routes.ts';
 import { answer, error, json, type WaitUntil } from './http.ts';
 import { overLinkLimit, patchSharedSettings, peopleNames, tellAdmins } from './shared.ts';
 import {
@@ -132,6 +133,10 @@ export async function handleSignedIn(
   // Join and token events are counted under the app the actor signed up through, found when the batch
   // goes (telemetry.ts).
   const home = () => signupAppOf(db, actor.id);
+
+  // Their AI key and their teams' (ai-keys/routes.ts); a write has passed the same-origin check above.
+  const ai = await aiKeyRoutes(request, env, actor, parts, waitUntil);
+  if (ai) return ai;
 
   const teams = await teamRoutes(request, env, actor, parts);
   if (teams) return teams;

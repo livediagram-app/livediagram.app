@@ -53,6 +53,12 @@ workers_dev = false
 #                         phone notifications' VAPID key pair (src/push/web-push.ts), from
 #                         `node scripts/generate-vapid-keys.ts`, one pair per environment, kept for good; unset, devices
 #                         can't register and nothing is sent
+#   AI_KEY_SECRET         the master secret every AI key is sealed under (src/ai-keys/seal.ts;
+#                         liveworkspace/docs/specs/003-accounts/ai-keys.md "Sealing"): `<version>:<openssl rand -hex 32>`,
+#                         a bare secret being version 1. Unset, no AI key is kept or answered: the routes fail closed
+#   AI_KEY_SECRET_PREVIOUS
+#                         the one before it, only while a rotation runs ("Rotating the master secret"); the cron
+#                         re-seals every row under the current one, then it is deleted
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://www.liveworkspace.app"
@@ -141,6 +147,18 @@ simple = { limit = 30, period = 60 }
 [[ratelimits]]
 name = "LEGACY_GUEST_LIMITER"
 namespace_id = "1105"
+simple = { limit = 10, period = 60 }
+
+# AI keys (src/ai-keys/; liveworkspace/docs/specs/003-accounts/ai-keys.md): the internal door's reads per account, and
+# the writes per account (each one calls the provider to check the key).
+[[ratelimits]]
+name = "AI_KEY_LIMITER"
+namespace_id = "1111"
+simple = { limit = 120, period = 60 }
+
+[[ratelimits]]
+name = "AI_KEY_WRITE_LIMITER"
+namespace_id = "1112"
 simple = { limit = 10, period = 60 }
 
 # Workbench pairings, tickets and sessions, one SQLite-backed store per person
@@ -236,6 +254,16 @@ simple = { limit = 30, period = 60 }
 [[env.staging.ratelimits]]
 name = "LEGACY_GUEST_LIMITER"
 namespace_id = "2105"
+simple = { limit = 10, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "AI_KEY_LIMITER"
+namespace_id = "2111"
+simple = { limit = 120, period = 60 }
+
+[[env.staging.ratelimits]]
+name = "AI_KEY_WRITE_LIMITER"
+namespace_id = "2112"
 simple = { limit = 10, period = 60 }
 
 [[env.staging.durable_objects.bindings]]

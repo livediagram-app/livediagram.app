@@ -50,3 +50,6 @@ LEGACY_GUEST_ID_HMAC_SECRET=
 # both, devices can't register and nothing is sent.
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
+# AI keys (src/ai-keys/): the master secret every person's and team's AI key is sealed under, a local value only.
+# Unset, the AI settings say keys can't be kept here and the apps fall back to their built-in AI.
+AI_KEY_SECRET=1:dev-local-ai-key-secret-not-for-production

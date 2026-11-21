@@ -8,6 +8,7 @@ import type { Env } from '../env.ts';
 import { resetSettings } from '../settings.ts';
 import { pushDeviceRoutes } from '../push/routes.ts';
 import { handleDataExport } from '../data-export/routes.ts';
+import { aiKeyRoutes } from '../ai-keys/routes.ts';
 import { error, json, type WaitUntil } from './http.ts';
 import {
   accountName,
@@ -59,6 +60,10 @@ export async function handleBearer(
     id: person.userId,
     email: person.emailVerified && person.email ? person.email.toLowerCase() : null,
   };
+  // Their AI key and their teams' (ai-keys/routes.ts): an account's own access token only, never a guest's or an API
+  // token's (refused above), so no tool or agent reads or changes one.
+  const ai = await aiKeyRoutes(request, env, actor, parts, waitUntil);
+  if (ai) return ai;
   if (section === 'teams' || section === 'invitations') {
     const teams = await teamRoutes(
       request,
