@@ -114,7 +114,9 @@ export function pageTrustOf(
   now: number,
   extra: { conflictsWith?: KnowledgePageRef[] | undefined; verifiedBy?: string | undefined } = {},
 ): KnowledgePageTrust {
-  const state = trustState(parseKnowledgeFields(knowledge), every, now);
+  const fields = parseKnowledgeFields(knowledge);
+  const state = trustState(fields, every, now);
+  const approval = fields.approval;
   return {
     state: state.state,
     ...('verifiedAt' in state ? { verifiedAt: state.verifiedAt } : {}),
@@ -122,5 +124,16 @@ export function pageTrustOf(
     ...('reviewAt' in state && state.reviewAt !== undefined ? { reviewAt: state.reviewAt } : {}),
     stale: state.state === 'review-due',
     ...(extra.conflictsWith?.length ? { conflictsWith: extra.conflictsWith } : {}),
+    ...(approval
+      ? {
+          approval: {
+            state: approval.state,
+            requestedAt: approval.requestedAt,
+            ...(approval.requestedByAgent ? { requestedByAgent: approval.requestedByAgent } : {}),
+            ...(approval.decidedAt !== undefined ? { decidedAt: approval.decidedAt } : {}),
+            ...(approval.note ? { note: approval.note } : {}),
+          },
+        }
+      : {}),
   };
 }

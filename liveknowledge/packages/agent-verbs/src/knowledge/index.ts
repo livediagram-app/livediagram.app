@@ -2,6 +2,13 @@
 // knowledgebase-for-agents.md): the routes' paths and the trust fields every answer carries.
 export { jsonBody, knowledgePath } from './paths';
 export {
+  applyPageCommentChanges,
+  listPageComments,
+  listedPageThread,
+  requestApproval,
+  type ListedPageThread,
+} from './page-feedback';
+export {
   REVIEW_PERIODS,
   pageRefOf,
   resultTrustOf,

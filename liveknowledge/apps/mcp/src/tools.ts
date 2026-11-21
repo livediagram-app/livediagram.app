@@ -26,6 +26,7 @@ import { registerThreadTools } from './thread-tools';
 import { registerCreateTool } from './create-tool';
 import { registerKnowledgeReadTools } from './knowledge-read-tools';
 import { registerKnowledgeWriteTools } from './knowledge-write-tools';
+import { registerPageFeedbackTools } from './page-feedback-tools';
 
 import { pageRowNamed } from './page-named';
 import {
@@ -53,6 +54,7 @@ export function registerTools(server: McpServer, env: Env): void {
   // The page tools, get_context at their head (docs/specs/024-agents/knowledgebase-for-agents.md).
   registerKnowledgeReadTools(server, env);
   registerKnowledgeWriteTools(server, env);
+  registerPageFeedbackTools(server, env);
 
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
     const token = requireToken(extra);

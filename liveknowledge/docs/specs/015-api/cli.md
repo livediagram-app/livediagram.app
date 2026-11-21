@@ -212,8 +212,8 @@ slows or fails a command, and when it last asked is kept in the CLI's config fol
 
 ## Limits
 
-| Constant                   | Value | Why                                                         |
-| -------------------------- | ----- | ----------------------------------------------------------- |
-| `HELP_TOP_MAX_TOKENS`      | 520   | Top-level help measured at 380; room to grow, not to sprawl |
-| `HELP_RESOURCE_MAX_TOKENS` | 250   | A resource's verbs, a line each                             |
-| `HELP_VERB_MAX_TOKENS`     | 400   | Usage, flags, two examples                                  |
+| Constant                   | Value | Why                                                                                                  |
+| -------------------------- | ----- | ---------------------------------------------------------------------------------------------------- |
+| `HELP_TOP_MAX_TOKENS`      | 540   | Top-level help measured at 380, 535 with approval, comments and discuss; room to grow, not to sprawl |
+| `HELP_RESOURCE_MAX_TOKENS` | 250   | A resource's verbs, a line each                                                                      |
+| `HELP_VERB_MAX_TOKENS`     | 400   | Usage, flags, two examples                                                                           |

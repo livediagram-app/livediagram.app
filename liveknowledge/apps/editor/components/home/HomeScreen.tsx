@@ -3,6 +3,7 @@
 // The Knowledgebase Home (docs/specs/030-knowledgebase/knowledgebase-home.md): the start of liveknowledge for a
 // signed-in person, in place of the forked start. Someone not signed in is sent where the start sent everyone: /new,
 // which makes a knowledgebase kept Offline for a guest, so the editor still works with no account.
+import { HomeAwaitingApproval, awaitingApprovalAcross } from './HomeAwaitingApproval';
 import { useEffect, useMemo, useState } from 'react';
 import { Callout } from '@liveworkspace/ui/callout';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -115,6 +116,11 @@ function SignedInHome({ ownerId, name }: { ownerId: string; name: string | null 
 
   // Yours to Review: the person's own due pages, from the summaries Home already reads (useStillRight).
   const review = useStillRight({ ownerId, knowledgebases, summaries, refresh: data.refresh });
+  // Waiting for Your Approval: from the same summaries, no request of its own.
+  const awaiting = useMemo(
+    () => awaitingApprovalAcross(knowledgebases, summaries),
+    [knowledgebases, summaries],
+  );
 
   const loading = data.status === 'loading';
   const none = data.status === 'ready' && knowledgebases.length === 0;
@@ -165,6 +171,7 @@ function SignedInHome({ ownerId, name }: { ownerId: string; name: string | null 
               verifying={NOT_VERIFYING}
               onStillRight={review.stillRight}
             />
+            <HomeAwaitingApproval rows={awaiting} now={now} />
             <HomeRecent
               loading={loading || (recent.length === 0 && summariesPending)}
               pages={recent}

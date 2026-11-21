@@ -157,3 +157,6 @@ own.
 Verify and change a page's owner: an Editor or a Participant. Change the Review Period: an Editor only, as all of
 Knowledgebase Settings ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)); everyone sees the
 period in Page Health, with no Change link. Everyone sees the states.
+
+A writer may also ask someone else to vouch for a page before it is trusted: [Approval](approval.md). Approving a
+page verifies it.

@@ -21,6 +21,7 @@ import { periodPhrase, VerifyPageButton, type VerifyPageButtonProps } from './Ve
 import { AddCoverButton } from '@/components/page-cover/AddCoverButton';
 import { useCoverEditable, usePageHasCover } from '@/components/page-cover/page-cover-state';
 import { PageMakersBadges, type PageMakers } from './PageMakersBadges';
+import { useCurrentApprovalMeta } from './approval/PageApprovalMeta';
 
 const NO_EDITORS: readonly PageEditor[] = [];
 
@@ -45,6 +46,8 @@ export type PageMetaRowProps = {
   nameOf?: (id: string | undefined) => string | undefined;
   // Verify, after Add Cover, for whoever may verify (verification.md "Verify"); it asks before it verifies.
   verify?: VerifyPageButtonProps | undefined;
+  // Approval after Verify: its pill, or Request Approval (approval.md "Where it shows").
+  approval?: ReactNode;
 };
 
 export function PageMetaRowView({
@@ -59,6 +62,7 @@ export function PageMetaRowView({
   makers,
   nameOf = () => undefined,
   verify,
+  approval,
 }: PageMetaRowProps) {
   const mark = trustMark(trust.state);
   const notes: { key: string; node: ReactNode }[] = [];
@@ -76,6 +80,7 @@ export function PageMetaRowView({
     });
   if (addCover) notes.push({ key: 'cover', node: <AddCoverButton /> });
   if (verify) notes.push({ key: 'verify', node: <VerifyPageButton {...verify} /> });
+  if (approval) notes.push({ key: 'approval', node: approval });
   if (makers && (makers.created || makers.updated))
     notes.push({
       key: 'makers',
@@ -151,6 +156,7 @@ export function PageMetaRow() {
   const hasCover = usePageHasCover();
   const addCover = coverEditable && !hasCover;
   const health = page.health;
+  const approval = useCurrentApprovalMeta();
   return (
     <PageMetaRowView
       minutes={minutes}
@@ -162,6 +168,7 @@ export function PageMetaRow() {
       addCover={addCover}
       {...(health ? { makers: makersOf(health) } : {})}
       nameOf={nameOf}
+      approval={approval}
       verify={
         page.rights.verify
           ? {

@@ -126,9 +126,10 @@ confined to one page names it by id and reads any other as a plain `404`.
 
 ## MCP tools
 
-- **Catalogue**: `MCP_TOOL_VERBS` (packages/agent-verbs `verbs/mcp-tools.ts`), 24 tools, the nine page tools
-  first: `get_context`, `list_pages`, `search_pages`, `read_page`, `report_gap`, `create_page`, `suggest_edit`,
-  `write_page`, `move_page`; then `find_documents`, `create_document`, `rename_document`, `share_document`,
+- **Catalogue**: `MCP_TOOL_VERBS` (packages/agent-verbs `verbs/mcp-tools.ts`), the page tools first:
+  `get_context`, `list_pages`, `search_pages`, `read_page`, `report_gap`, `create_page`, `suggest_edit`,
+  `write_page`, `move_page`, then approval and a page's comments (`request_approval`, `list_page_comments`,
+  `change_page_comments`, apps/mcp `page-feedback-tools.ts`); then `find_documents`, `create_document`, `rename_document`, `share_document`,
   `archive_document`, `unarchive_document`, `delete_document`, `restore_document`, `list_trash`,
   `list_templates`, `list_images`, `upload_image`, `delete_image`, `list_threads`, `change_threads`.
 - **Removed**: `read_document`, `update_document`, `add_tab`, `write_article`, `search_icons`, `list_versions`,

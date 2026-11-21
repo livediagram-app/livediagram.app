@@ -8,6 +8,8 @@
 //   GET    pages/<tab>/health
 //   POST   pages/<tab>/verify
 //   PUT    pages/<tab>/knowledge
+//   POST   pages/<tab>/approval                             knowledge-approval-route.ts
+//   GET    pages/<tab>/threads, POST pages/<tab>/threads    knowledge-thread-routes.ts
 //   GET    ai, PUT ai/key, DELETE ai/key, PUT ai/model      knowledge-ai-routes.ts
 //   POST   ask                                              knowledge-ask-route.ts
 //   POST   setup/suggest                                    knowledge-setup-route.ts
@@ -23,6 +25,7 @@
 // write is an Editor's. A link confined to one page reaches that page's own routes and search, nothing else.
 import { getDocument } from '../db';
 import { knowledgeHealthCounts, ownDuePages, recentPages } from '../knowledge/knowledge-reads';
+import { awaitingApproval } from '../knowledge/page-approvals';
 import { pageNamed, pageUnknownBody } from '../knowledge/page-read';
 import { forbidden, json, methodNotAllowed, notFound } from '../responses';
 import type { DocumentDTO } from '../types';
@@ -38,6 +41,8 @@ import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { doorOf, noteAgentSeen } from '../knowledge/agent-seen';
 import { frontDoorOf } from '../changesets/front-door';
 import { handleAiRoutes } from './knowledge-ai-routes';
+import { handleApproval } from './knowledge-approval-route';
+import { handlePageThreads } from './knowledge-thread-routes';
 import { handleAsk } from './knowledge-ask-route';
 import { handleEmailRoutes } from './knowledge-email-routes';
 import { handleOverviewRoutes } from './knowledge-overview-routes';
@@ -71,19 +76,22 @@ const safeDecode = (segment: string) => {
 /** Whole-knowledgebase routes are closed to a link confined to one page. */
 const wholeKnowledgebase = (grant: DocumentAccess) => grant.tabScope === null;
 
-async function handleSummary({ ctx, document }: KnowledgeRoute): Promise<Response> {
+async function handleSummary({ ctx, document, grant }: KnowledgeRoute): Promise<Response> {
   const now = Date.now();
   // Yours to Review is the caller's own: a guest, or a visitor through a link, owns no page.
   const account = accountOf(ctx);
   // The Review Period, read once with the document: the counts and the due pages are worked out under it.
   const { reviewEvery } = document.knowledgeSettings;
-  const [health, recent, yoursToReview] = await Promise.all([
+  // Waiting for Your Approval (approval.md): for a person who may decide, the pages others asked about.
+  const decides = account && !ctx.token && (grant.role === 'edit' || grant.role === 'participate');
+  const [health, recent, yoursToReview, awaiting] = await Promise.all([
     knowledgeHealthCounts(ctx.env, document.id, reviewEvery, now),
     recentPages(ctx.env, document.id),
     account ? ownDuePages(ctx.env, document.id, account, reviewEvery, now) : [],
+    decides ? awaitingApproval(ctx.env, document.id, account) : [],
   ]);
   return json(
-    { pages: health.total, reviewEvery, health, recent, yoursToReview },
+    { pages: health.total, reviewEvery, health, recent, yoursToReview, awaitingApproval: awaiting },
     { headers: { 'Cache-Control': `private, max-age=${SUMMARY_MAX_AGE_SECONDS}` } },
   );
 }
@@ -120,6 +128,9 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
     return method === 'GET' ? handleBacklinks(ctx, document, tab) : methodNotAllowed();
   if (segments[5] === 'health')
     return method === 'GET' ? handlePageHealth(ctx, document, tab) : methodNotAllowed();
+  if (segments[5] === 'threads') return handlePageThreads(ctx, document, grant, tab);
+  if (segments[5] === 'approval')
+    return method === 'POST' ? handleApproval(ctx, document, grant, tab) : methodNotAllowed();
   if (segments[5] !== 'verify' && segments[5] !== 'knowledge') return notFound();
   if (method !== (segments[5] === 'verify' ? 'POST' : 'PUT')) return methodNotAllowed();
   // Verify, owner and Always in Context: an Editor's or a Participant's, and the whole knowledgebase's to decide.
@@ -162,6 +173,8 @@ function isKnowledgePath(segments: readonly string[]): boolean {
           segments[5] === 'health' ||
           segments[5] === 'verify' ||
           segments[5] === 'knowledge' ||
+          segments[5] === 'approval' ||
+          segments[5] === 'threads' ||
           segments[5] === 'suggestions' ||
           segments[5] === 'move')) ||
       (segments[3] === 'conflicts' &&

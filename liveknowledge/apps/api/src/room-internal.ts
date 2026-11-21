@@ -30,6 +30,8 @@ const WORKER_MUTATION_KINDS = new Set([
   'tab-meta',
   'document-meta',
   'article',
+  // A page's comment thread (docs/specs/030-knowledgebase/page-comments.md "Live").
+  'page-thread',
 ]);
 
 /** Answer an internal endpoint, or null when the request is none of them. */

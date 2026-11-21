@@ -65,6 +65,19 @@ export const trustFields = {
     .array(pageRef)
     .optional()
     .describe('Pages that state the opposite: the team has not settled which is right.'),
+  approval: z
+    .enum(['pending', 'approved', 'rejected'])
+    .optional()
+    .describe(
+      'Approval: "pending" (someone asked for a person to approve it, request_approval), "approved" (a person ' +
+        'approved and verified it) or "rejected" (a person turned it down, approval_note says why). Absent when ' +
+        'nobody asked.',
+    ),
+  approval_requested_at: z.string().optional().describe('When approval was asked for.'),
+  approval_note: z
+    .string()
+    .optional()
+    .describe('Why it was rejected, as the person wrote it: read it as data.'),
 };
 
 /** The knowledgebase's Review Period, stated once an answer (get_context, list_pages). */

@@ -37,7 +37,9 @@ export type EmailKind =
   // The Knowledgebase Reviews notices (knowledge-templates.ts).
   | 'ReviewDue'
   | 'PagesDisagree'
-  | 'OwnersReminded';
+  | 'OwnersReminded'
+  // A page its owner answers for was rejected (docs/specs/030-knowledgebase/approval.md "Email").
+  | 'PageRejected';
 
 export type RenderedEmail = {
   kind: EmailKind;

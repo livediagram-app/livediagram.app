@@ -178,10 +178,11 @@ Participant never manages who has access.
 | --------------------------------------------------------------- | ------ | ----------- | ------ |
 | Read pages, follow links, search                                | yes    | yes         | yes    |
 | Edit a page: Edit, co-edit the draft, Save, Cancel, Discard     | yes    | yes         | no     |
-| Comment (margin notes, threads)                                 | yes    | yes         | no     |
+| Comment (margin notes, threads at the page's foot)              | yes    | yes         | no     |
 | Add, rename, move, duplicate, delete pages                      | yes    | yes         | no     |
 | Set, change or remove a page's cover                            | yes    | yes         | no     |
 | Verify a page, change its owner, set Always in Context          | yes    | yes         | no     |
+| Request Approval; Approve or Reject another's request           | yes    | yes         | no     |
 | Describe to Add Pages, Import                                   | yes    | yes         | no     |
 | Accept or dismiss an agent's suggestion                         | yes    | yes         | no     |
 | Knowledgebase Settings, the Review Period                       | yes    | no          | no     |

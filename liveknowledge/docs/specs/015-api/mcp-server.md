@@ -184,9 +184,9 @@ browser. A token minted for the CLI is named "liveknowledge CLI".
 
 ## 4. Tools
 
-> **The tools are the knowledgebase's** since build-plan step 13: nine page tools (`get_context`, `list_pages`,
-> `search_pages`, `read_page`, `report_gap`, `create_page`, `suggest_edit`, `write_page`, `move_page`) and the
-> fifteen every app has, 24 in all, listed with their scopes in
+> **The tools are the knowledgebase's** since build-plan step 13: twelve page tools (`get_context`, `list_pages`,
+> `search_pages`, `read_page`, `report_gap`, `create_page`, `suggest_edit`, `write_page`, `move_page`,
+> `request_approval`, `list_page_comments`, `change_page_comments`) and the ones every app has, listed with their scopes in
 > [Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md) and its
 > [blueprint](../024-agents/blueprints/knowledgebase-for-agents.md#mcp-tools). The sections below that describe
 > `read_document`, `add_tab`, `update_document`, `search_icons`, the schema resource, element kinds, version
@@ -431,7 +431,7 @@ element's `imageId` takes. The shared code is `@liveworkspace/agent-verbs`'s `pa
 - **Fetching a URL.** `@liveworkspace/api-kit`'s `fetchPublicBytes` (`public-fetch.ts`), the server-side fetch of a
   URL someone else chose: https on port 443 only, with no user name or password; a literal address is judged as it
   stands and a name is resolved (DNS over HTTPS, A and AAAA) and refused when any answer is private, loopback,
-  link-local, carrier NAT, multicast, reserved or a cloud metadata address (`public-address.ts`, the index's webhook
+  link-local, carrier NAT, multicast, reserved or a cloud metadata address (`public-address.ts`, the index's connection
   checks), or an internal name (`localhost`, `.local`, `.internal`, a single label). Redirects are followed by hand,
   at most 3, each target checked the same way; the whole exchange, body included, has 10 seconds; the body is read
   through a byte counter that stops one chunk past 10 MB, so a huge or endless answer is cut off there. The answer's

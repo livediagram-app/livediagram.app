@@ -35,6 +35,10 @@ export type TrustFields = {
   review_due?: string;
   stale: boolean;
   conflicts_with?: { page: string; title: string }[];
+  /** Approval (docs/specs/030-knowledgebase/approval.md): absent for a page never asked about. */
+  approval?: 'pending' | 'approved' | 'rejected';
+  approval_requested_at?: string;
+  approval_note?: string;
 };
 
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -50,6 +54,13 @@ export function trustFieldsOf(trust: KnowledgePageTrust): TrustFields {
     ...(trust.reviewAt === undefined ? {} : { review_due: iso(trust.reviewAt) }),
     stale: trust.stale,
     ...(trust.conflictsWith?.length ? { conflicts_with: trust.conflictsWith.map(pageRefOf) } : {}),
+    ...(trust.approval
+      ? {
+          approval: trust.approval.state,
+          approval_requested_at: iso(trust.approval.requestedAt),
+          ...(trust.approval.note ? { approval_note: trust.approval.note } : {}),
+        }
+      : {}),
   };
 }
 
@@ -81,8 +92,7 @@ export function treeRowOf(row: KnowledgeTreeRow): TreeRowFields {
     depth: row.depth,
     ...(row.parent ? { parent: row.parent } : {}),
   };
-  if (!isKnowledgePageRow(row))
-    return { ...place, kind: 'connected', app: row.app, subpages: 0 };
+  if (!isKnowledgePageRow(row)) return { ...place, kind: 'connected', app: row.app, subpages: 0 };
   return {
     ...place,
     subpages: row.subpages,
@@ -122,5 +132,8 @@ export function trustLine(trust: TrustFields): string {
         ];
   if (trust.conflicts_with?.length)
     parts.push(`CONFLICTS WITH ${trust.conflicts_with.map((p) => `"${p.title}"`).join(', ')}`);
+  if (trust.approval === 'pending') parts.push('PENDING APPROVAL');
+  if (trust.approval === 'rejected')
+    parts.push(`REJECTED${trust.approval_note ? `: ${trust.approval_note}` : ''}`);
   return parts.join(', ');
 }

@@ -4,6 +4,7 @@ import type { Env } from '../types';
 import * as templates from './knowledge-templates';
 import {
   EMAIL_PAGES_LISTED,
+  pageRejectedEmail,
   pagesDisagreeEmail,
   remindOwnersEmail,
   reviewDueEmail,
@@ -57,10 +58,16 @@ const FIXTURES: Record<string, unknown[][]> = {
     [{ ...KB, knowledgeSettings: { reviewEvery: 180 } }, [{ tab: 't1', title: 'Due' }]],
   ],
   pagesDisagreeEmail: [[KB, CONFLICT]],
+  // docs/specs/030-knowledgebase/approval.md "Email": with a note, and without one.
+  pageRejectedEmail: [
+    [KB, { tab: 't 1', title: 'Deploys <i>' }, 'Sam <Lee>', `Name the rota.\n${HOSTILE}`],
+    [{ id: 'x', name: '' }, { tab: 't2', title: '' }, 'Sam', undefined],
+  ],
 };
 
 const EXPECTED: Record<string, string> = {
   pagesDisagreeEmail: 'a8c37a3b46ed8cec3632fd636a2589c64e3a336d74fefb19965dd55d30315014',
+  pageRejectedEmail: 'f2ef4d239dd286b76d189e8f6b015b5eef830c6e684ff8632f30da908498e8f4',
   remindOwnersEmail: '2543a86f52503a6df8ab3cc79b72185c99e349bc00a221b0f6c872042071affe',
   reviewDueEmail: '77e3d091b74e39c42447e8cd13a64455d902b5dc5e6aee3a76b6aadb0b832c69',
 };
@@ -100,6 +107,13 @@ describe('what they do with other people’s text', () => {
         a: { tab: 't1', title: HOSTILE, text: HOSTILE },
         b: { tab: 't2', title: 'B', text: 'b' },
       },
+    ),
+    pageRejectedEmail(
+      env,
+      { id: 'kb', name: HOSTILE },
+      { tab: 't1', title: HOSTILE },
+      HOSTILE,
+      HOSTILE,
     ),
   ];
 

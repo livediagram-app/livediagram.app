@@ -96,7 +96,9 @@ export async function writePageKnowledge(
   env: DocumentEnv,
   page: StoredPageKnowledge,
   next: KnowledgeFields,
-  opts: { verified?: boolean; now?: number } = {},
+  // `also`: statements that ride the same transaction, each guarded on the revision this write makes (`rev`), so
+  // they land only with it (the approval's row, page-approvals.ts).
+  opts: { verified?: boolean; now?: number; also?: (rev: number) => D1PreparedStatement[] } = {},
 ): Promise<number | null> {
   const fields = parseKnowledgeFields(next);
   const now = opts.now ?? Date.now();
@@ -127,6 +129,7 @@ export async function writePageKnowledge(
         )
         .bind(page.tab, sealWritingPrint(writingPrint(page.text)), page.tab, page.rev + 1),
     );
+  if (opts.also) statements.push(...opts.also(page.rev + 1));
   const results = await db.batch(statements);
   const rev = (results[0]?.results?.[0] as { rev?: number } | undefined)?.rev;
   return typeof rev === 'number' ? rev : null;

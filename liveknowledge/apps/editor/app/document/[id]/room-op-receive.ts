@@ -17,6 +17,7 @@ import { remoteSelectionOf } from '@/lib/presence-rows';
 import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 import { notePeerSaved } from '@/lib/page-edit/page-edit-store';
+import { pageThreadsStore } from '@/lib/page-threads/page-threads-store';
 
 type RoomOpFrom = Parameters<NonNullable<RoomHandlers['onOp']>>[0];
 type RoomOp = Parameters<NonNullable<RoomHandlers['onOp']>>[1];
@@ -198,5 +199,9 @@ export function receiveRoomOp(
     // The document went to the Trash. System-only, like the share ops:
     // the room refuses it from a client socket.
     if (from === 'system') receiveDocumentTrashed();
+  } else if (op.kind === 'page-thread') {
+    // A thread at a page's foot changed (docs/specs/030-knowledgebase/page-comments.md "Live"): the api's, never a
+    // client's, like the share ops.
+    if (from === 'system' && opts.documentId) pageThreadsStore.receive(opts.documentId, op);
   }
 }

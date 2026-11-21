@@ -49,12 +49,15 @@ import { documentArchive, documentUnarchive } from './verbs/archive';
 import { tabLint, tabLs, tabView } from './verbs/tab';
 import { pagesVerbs } from './verbs/pages';
 import { knowledgeVerbs } from './verbs/knowledge';
+import { pageFeedbackVerbs } from './verbs/page-feedback';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
 
 export const VERBS: readonly Verb[] = [
   // The knowledgebase commands first: what an agent reaches for (verbs/knowledge.ts).
   ...knowledgeVerbs,
+  // Approval and a page's comments (verbs/page-feedback.ts).
+  ...pageFeedbackVerbs,
   documentLs,
   documentView,
   documentCreate,
@@ -152,6 +155,9 @@ export const TOP_LEVEL = [
   'write',
   'move',
   'gap',
+  'approval',
+  'comments',
+  'discuss',
   'import',
   'export',
   'guide',

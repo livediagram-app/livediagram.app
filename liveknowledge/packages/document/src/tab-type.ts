@@ -19,6 +19,26 @@ export type TabKnowledge = {
   verifiedAt?: number;
   verifiedBy?: string;
   context?: true;
+  approval?: PageApproval;
+};
+
+/** A page's approval (docs/specs/030-knowledgebase/approval.md "The field"): asked for, then approved or rejected
+ *  by someone else. Written only by the api's approval route. */
+export type PageApprovalState = 'pending' | 'approved' | 'rejected';
+export type PageApproval = {
+  state: PageApprovalState;
+  /** The account that asked: a person's, or an agent token's person. */
+  requestedBy: string;
+  requestedAt: number;
+  /** The agent's name, when an agent asked. */
+  requestedByAgent?: string;
+  /** The asker's name as their profile said it then, so a reader the editor cannot name still sees who. */
+  requestedByName?: string;
+  decidedBy?: string;
+  decidedAt?: number;
+  decidedByName?: string;
+  /** A rejection's note, up to 500 characters. */
+  note?: string;
 };
 
 export type Tab = {

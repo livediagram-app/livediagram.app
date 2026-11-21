@@ -2,7 +2,7 @@
 // backlinks, a page's verification, the knowledgebase's summary, Ask, its settings and the AI Knowledge tab. Types
 // only: the engine and its limits are `@liveknowledge/knowledge`.
 
-import type { KnowledgeStyle } from '@liveknowledge/document';
+import type { KnowledgeStyle, PageApproval } from '@liveknowledge/document';
 import type { AgentCover } from './pages';
 
 /** The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): the one look every
@@ -66,6 +66,8 @@ export type PageKnowledge = {
   verifiedAt?: number;
   verifiedBy?: string;
   context?: true;
+  /** Asked for, approved or rejected (approval.md); absent for a page never asked about. */
+  approval?: PageApproval;
   state: KnowledgeTrustState;
   /** When the review comes due under the knowledgebase's Review Period; absent for a page never verified or a
    *  knowledgebase whose period is Never. */
@@ -131,7 +133,23 @@ export type KnowledgeSummaryResponse = {
   health: KnowledgeHealthCounts;
   recent: KnowledgeRecentPage[];
   yoursToReview: KnowledgeDuePage[];
+  /** Waiting for Your Approval (approval.md "Where it shows"): pages Pending Approval the caller did not ask for,
+   *  oldest request first, ten at most; empty for a caller who may not decide. Absent from an older api. */
+  awaitingApproval?: KnowledgeAwaitingPage[];
 };
+/** A page waiting for someone's approval: who asked (an account id, and an agent's name when one asked) and when. */
+export type KnowledgeAwaitingPage = {
+  tab: string;
+  title: string;
+  requestedBy: string;
+  requestedAt: number;
+  requestedByAgent?: string;
+};
+
+/** `POST .../pages/<tab>/approval` (approval.md): one action; `note` is a rejection's, up to 500 characters.
+ *  Answers the page's knowledge as `PageKnowledgeResponse`. */
+export type PageApprovalAction = 'request' | 'withdraw' | 'approve' | 'reject';
+export type PageApprovalRequest = { action: PageApprovalAction; note?: string };
 
 /** Whose API a knowledgebase's key is for (search-and-ask.md "Providers"). */
 export type KnowledgeAiProvider = 'anthropic' | 'openai';
@@ -297,6 +315,16 @@ export type KnowledgePageTrust = {
   stale: boolean;
   /** The pages an open conflict sets this one against. */
   conflictsWith?: KnowledgePageRef[];
+  /** The page's approval (approval.md "Where it shows"), without anyone's account id: its state, when it was asked
+   *  for (and by which agent), when it was decided, and a rejection's note. */
+  approval?: KnowledgeApprovalTrust;
+};
+export type KnowledgeApprovalTrust = {
+  state: 'pending' | 'approved' | 'rejected';
+  requestedAt: number;
+  requestedByAgent?: string;
+  decidedAt?: number;
+  note?: string;
 };
 /** One row of `GET .../pages`: the page tree in order. `depth` is 1 at the top level. */
 export type KnowledgePageRow = KnowledgePageRef & {

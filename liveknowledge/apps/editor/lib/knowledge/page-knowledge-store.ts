@@ -3,8 +3,10 @@
 // page opens and kept for the session, and the fields a Verify or a Page Health change has just set, shown at once
 // and rolled back if the server refuses. Outside React: a reader subscribes to one page's entry.
 import {
+  applyApproval,
   trustState,
   verified,
+  type ApprovalAction,
   type KnowledgeFields,
   type ReviewEvery,
 } from '@liveknowledge/knowledge';
@@ -20,11 +22,14 @@ import {
   apiVerifyPage,
   type KnowledgeCaller,
 } from '@/lib/api/knowledge';
+import { apiPageApproval } from '@/lib/api/page-feedback';
 
 export type PageKnowledgeApi = {
   health: typeof apiPageHealth;
   verify: typeof apiVerifyPage;
   set: typeof apiSetPageKnowledge;
+  /** Defaults to the route's own call. */
+  approval?: typeof apiPageApproval;
 };
 
 /** A page as the store reads it: its id and the fields its tab carries. */
@@ -32,7 +37,7 @@ export type KnowledgePage = { id: string; knowledge?: unknown };
 
 type Override = { fields: KnowledgeFields; base: unknown };
 
-const FIELD_KEYS = ['owner', 'verifiedAt', 'verifiedBy', 'context'] as const;
+const FIELD_KEYS = ['owner', 'verifiedAt', 'verifiedBy', 'context', 'approval'] as const;
 
 const fieldsOfKnowledge = (knowledge: PageKnowledge): KnowledgeFields => {
   const fields: KnowledgeFields = {};
@@ -75,6 +80,7 @@ export function createPageKnowledgeStore(
     health: apiPageHealth,
     verify: apiVerifyPage,
     set: apiSetPageKnowledge,
+    approval: apiPageApproval,
   },
   // The knowledgebase's Review Period, read when a change is shown before the server answers.
   reviewEveryOf: (documentId: string) => ReviewEvery = knowledgeSettingsStore.reviewEveryOf,
@@ -194,6 +200,29 @@ export function createPageKnowledgeStore(
         next,
         (was) => withFields(was, next, reviewEveryOf(documentId), now),
         () => api.set(who, documentId, page.id, patch),
+      );
+    },
+    /** Approval (approval.md): request, withdraw, approve (which verifies) or reject, by `person` in person. Shown
+     *  at once; rejects, rolled back, on a refusal. */
+    approval(
+      who: KnowledgeCaller,
+      documentId: string,
+      page: KnowledgePage,
+      action: ApprovalAction,
+      person: { account: string; role: 'edit' | 'participate' },
+      now: number,
+      note?: string,
+    ): Promise<PageKnowledge> {
+      const next = applyApproval(fieldsOfPage(page), action, { ...person, agent: null }, now, note);
+      return write(
+        documentId,
+        page,
+        next,
+        (was) => ({
+          ...withFields(was, next, reviewEveryOf(documentId), now),
+          ...(action === 'approve' ? { changedSinceVerified: false } : {}),
+        }),
+        () => (api.approval ?? apiPageApproval)(who, documentId, page.id, action, note),
       );
     },
   };

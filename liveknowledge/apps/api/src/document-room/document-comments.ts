@@ -12,6 +12,7 @@ import {
 } from '@liveworkspace/index-app';
 import type { DocumentEnv } from '../types';
 import { readContentTabRows, readDocumentHead, type ContentTabRow } from './document-content';
+import { readAllPageThreads } from '../knowledge/page-threads';
 
 // A thread lives on an element (comments.ts commentThreadOf), one per element, so the element names it: the tab's id
 // beside it keeps it unique across the document, as the same element id may sit on two tabs.
@@ -71,5 +72,28 @@ export async function exportDocumentComments(
   const { meta } = await readDocumentHead(env, documentId);
   if (!meta) return { status: 'not_found' };
   const rows = await readContentTabRows(env, documentId, null);
-  return { status: 'ok', threads: rows.flatMap(threadsOfRow) };
+  // The threads at the foot of each page (docs/specs/030-knowledgebase/page-comments.md "Data export"), after the
+  // page's own: on the page as a whole, so `on` is null.
+  const names = new Map(rows.map((row) => [row.id, row.name]));
+  const pageThreads = (await readAllPageThreads(env)).flatMap((t): ExportThread[] =>
+    names.has(t.tab)
+      ? [
+          {
+            id: `${t.tab}:page:${t.id}`,
+            tabId: t.tab,
+            tabName: names.get(t.tab) ?? null,
+            on: null,
+            resolved: t.resolved,
+            comments: t.comments.map((c) => ({
+              id: c.id,
+              authorId: c.authorId && c.authorId !== ANONYMISED_PERSON ? c.authorId : null,
+              authorName: c.authorName || null,
+              text: c.text,
+              createdAt: c.createdAt,
+            })),
+          },
+        ]
+      : [],
+  );
+  return { status: 'ok', threads: [...rows.flatMap(threadsOfRow), ...pageThreads] };
 }

@@ -20,6 +20,7 @@ import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
 import { PageActivity, PageHealthCard, type PageStamp } from './PageHealthCard';
+import { PageHealthApproval } from './approval/PageHealthApproval';
 import { PageRailAiContext } from './PageAiContext';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 
@@ -135,6 +136,7 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         }
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
       />
+      <PageHealthApproval />
       <PageRailAiContext page={page} />
       {docked ? null : activity}
     </div>

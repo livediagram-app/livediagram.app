@@ -17,6 +17,7 @@ import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
 import { useKnowledgeActions } from '@/components/knowledge/usePageKnowledge';
 import { pageKnowledgeStore } from '@/lib/knowledge/page-knowledge-store';
 import { pageTrust, trustMarks } from '@/lib/knowledge/page-trust';
+import { approvalMarks } from '@/lib/knowledge/approval-view';
 import { useRelativeNow } from '@/lib/relative-time';
 import type { PageTreeActions, PageTreeKnowledge, PageTreeProps } from './PageTree';
 import { selectPage } from './select-page';
@@ -151,6 +152,7 @@ export function usePageTreeModel(): PageTreeModel {
     }
     return {
       marks: trustMarks(tabs, reviewEvery, now, pageKnowledgeStore.fieldsOf),
+      approvalMarks: approvalMarks(tabs, pageKnowledgeStore.fieldsOf),
       inContext,
       canVerify: knowledgeActions.rights.verify,
       canEditFields: knowledgeActions.rights.editFields,

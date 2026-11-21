@@ -12,6 +12,7 @@ export type Who =
   | 'participant'
   | 'viewer'
   | 'link'
+  | 'edit-link'
   | 'page-link'
   | 'stranger'
   | 'agent'
@@ -92,6 +93,8 @@ const CALLERS: Record<
   viewer: { owner: 'user_v', account: 'user_v', code: 'VIEW' },
   // A visitor through a share link, with no account: a guest's id, or none at all.
   link: { owner: 'guest_1', account: null, code: 'VIEW' },
+  // A guest through a link that grants Participant (an edit link), with no account.
+  'edit-link': { owner: 'guest_2', account: null, code: 'PART' },
   'page-link': { owner: null, account: null, code: 'PAGE' },
   stranger: { owner: 'user_x', account: 'user_x' },
   // An API token acting for the owner, through the MCP server.

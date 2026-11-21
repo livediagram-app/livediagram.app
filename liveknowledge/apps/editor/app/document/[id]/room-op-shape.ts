@@ -53,6 +53,12 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
       return tabSavedIsWellFormed(op);
     case 'tab-meta':
       return isText(op.tabId) && isRecord(op.patch) && isOptionalList(op.clear);
+    case 'page-thread':
+      return (
+        isText(op.tabId) &&
+        ((isRecord(op.thread) && isText(op.thread.id) && Array.isArray(op.thread.comments)) ||
+          (op.removed === true && isText(op.threadId)))
+      );
     case 'article':
       return isText(op.tabId) && isText(op.flow);
     case 'document-meta':

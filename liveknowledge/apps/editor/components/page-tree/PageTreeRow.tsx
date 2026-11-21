@@ -10,6 +10,7 @@ import { HoverCard, Tooltip } from '@liveknowledge/ui';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { TrustBadge } from '@/components/knowledge/TrustBadge';
 import type { TrustMark } from '@/lib/knowledge/page-trust';
+import { APPROVAL_MARK_LABEL, type ApprovalMark } from '@/lib/knowledge/approval-view';
 import { AddIcon, ChevronIcon, MoreIcon } from './page-tree-icons';
 import { useRowMark, type PageTreeUi } from './page-tree-ui';
 import { useLivePageTitle } from '@/lib/article/live-page-title';
@@ -49,6 +50,8 @@ export type PageTreeRowProps = {
   people?: ReactNode;
   // The page's verified state: a tick or a Review Due pill at the row's right; absent for a page never verified.
   trust?: TrustMark | undefined;
+  // Pending Approval or Rejected: a 6 px dot after the title (approval.md "Where it shows").
+  approval?: ApprovalMark | undefined;
   onRename: (id: string, name: string) => void;
   onRenameDone: () => void;
 };
@@ -65,6 +68,7 @@ function PageTreeRowView({
   ui,
   people,
   trust,
+  approval,
   onRename,
   onRenameDone,
 }: PageTreeRowProps) {
@@ -113,7 +117,11 @@ function PageTreeRowView({
     <div
       role="treeitem"
       // The state is part of the row's name: a screen reader hears it with the title.
-      aria-label={trust ? `${name}, ${trust === 'verified' ? 'Verified' : 'Review Due'}` : name}
+      aria-label={[
+        name,
+        ...(trust ? [trust === 'verified' ? 'Verified' : 'Review Due'] : []),
+        ...(approval ? [APPROVAL_MARK_LABEL[approval]] : []),
+      ].join(', ')}
       aria-level={row.level}
       aria-posinset={row.position}
       aria-setsize={row.siblings}
@@ -185,6 +193,14 @@ function PageTreeRowView({
           {name}
         </span>
       )}
+      {approval && !editing && !outOfScope ? (
+        <span
+          aria-hidden
+          // Named in the row's own label for a screen reader; the meta row's pill says it in words.
+          data-approval-dot={approval}
+          className={`size-1.5 shrink-0 rounded-full ${approval === 'pending' ? 'bg-violet-500 dark:bg-violet-400' : 'bg-rose-500 dark:bg-rose-400'}`}
+        />
+      ) : null}
       {trust && !editing && !outOfScope ? <TrustBadge mark={trust} compact /> : null}
       {people}
       {/* The row's buttons: their room is kept whether they are there or not, so a hover moves nothing. */}

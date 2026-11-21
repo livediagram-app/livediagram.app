@@ -101,7 +101,7 @@ export {
 // The element union, the cross-tab link and the element guards (./element-union), and the Tab type
 // (./tab-type). Every module here imports them from this root as before.
 export * from './element-union';
-export type { Tab, TabKnowledge } from './tab-type';
+export type { PageApproval, PageApprovalState, Tab, TabKnowledge } from './tab-type';
 import type { Element } from './element-union';
 
 // --- Type guards -----------------------------------------------------------

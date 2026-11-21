@@ -8,6 +8,7 @@ import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@liveknowledge
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
 import type { KnowledgeSettingsWire, KnowledgeStyleWire } from './knowledge';
+import type { PageThreadOp } from './page-threads';
 import type { ChangesetRoomOp } from './changesets';
 import type {
   CursorMessage,
@@ -121,6 +122,9 @@ export const SYSTEM_OP_KINDS = [
   'share-rescoped',
   'document-trashed',
   'changeset',
+  // A page's comment thread changed (docs/specs/030-knowledgebase/page-comments.md "Live"): the api wrote it and
+  // sends it through /mutation. A forged one would show people a comment nobody wrote.
+  'page-thread',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -480,6 +484,9 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
+  // A page's comment thread, whole, or its removal (docs/specs/030-knowledgebase/page-comments.md "Live").
+  // Worker-originated through /mutation.
+  | PageThreadOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

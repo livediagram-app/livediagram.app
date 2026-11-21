@@ -4,7 +4,8 @@
 import { COMMAND_ALIASES, RESOURCES, verbsOf, type Verb } from '@liveknowledge/agent-verbs';
 import { fieldsOf, flagOf, keyOf, restName } from '@liveworkspace/cli-kit/fields';
 
-export const HELP_TOP_MAX_TOKENS = 520;
+// 540 since approval, comments and discuss joined the top level (docs/specs/030-knowledgebase/approval.md).
+export const HELP_TOP_MAX_TOKENS = 540;
 export const HELP_RESOURCE_MAX_TOKENS = 250;
 export const HELP_VERB_MAX_TOKENS = 400;
 
@@ -61,6 +62,7 @@ export function topHelp(): string {
     '',
     '  context, pages, search, read    read a knowledgebase',
     '  new, suggest, write, move, gap  change its pages; report a gap',
+    '  approval, comments, discuss     ask for approval; comment',
     '  import, export                  a Markdown folder in or out',
     '',
     ...rows.flatMap((r) => [

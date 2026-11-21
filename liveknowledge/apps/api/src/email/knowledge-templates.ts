@@ -217,3 +217,47 @@ export function pagesDisagreeEmail(
     unsubscribeUrl: profilePath(env),
   };
 }
+
+/** A page its owner answers for was rejected (docs/specs/030-knowledgebase/approval.md "Email"): who rejected it,
+ *  and their note quoted as plain text, cut at a word (`mentionQuote`). */
+export function pageRejectedEmail(
+  env: Env,
+  kb: EmailKnowledgebase,
+  page: { tab: string; title: string },
+  rejectedBy: string,
+  note: string | undefined,
+): RenderedEmail {
+  const name = named(kb.name, 'a knowledgebase');
+  const title = named(page.title, 'Untitled Page');
+  const who = named(rejectedBy, 'Someone');
+  const href = pageUrl(env, kb, page.tab);
+  const quote = note ? mentionQuote(note) : '';
+  const reason = 'You’re receiving this because you own this page.';
+  return {
+    kind: 'PageRejected',
+    subject: subjectText(`${title} Was Rejected in ${name}`),
+    html: shell(env, {
+      heading: 'A Page Was Rejected',
+      preheader: `${xmlEscape(who)} rejected ${xmlEscape(title)}.`,
+      intro: `${xmlEscape(who)} rejected ${link(href, title)} in <strong>${xmlEscape(name)}</strong>.`,
+      points: quote ? [`“${xmlEscape(quote)}”`] : [],
+      outro: 'Change what needs changing, then ask for approval again.',
+      ctaText: 'Open the Page',
+      ctaHref: href,
+      footer: manageNotificationsFooter(env, reason),
+    }),
+    text: text(
+      env,
+      [
+        `${subjectText(title)} Was Rejected in ${subjectText(name)}`,
+        '',
+        `${subjectText(who)} rejected ${subjectText(title)}.`,
+        ...(quote ? ['', `"${quote}"`] : []),
+        '',
+        `Open the page: ${href}`,
+      ],
+      reason,
+    ),
+    unsubscribeUrl: profilePath(env),
+  };
+}

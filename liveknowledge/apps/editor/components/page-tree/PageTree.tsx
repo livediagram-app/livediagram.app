@@ -21,6 +21,7 @@ import { ConnectedTreeRow } from './ConnectedTreeRow';
 import { ConnectedRowMenu, type ConnectedMenuVerb } from './ConnectedRowMenu';
 import type { PageTreeConnected } from './connected-rows';
 import type { TrustMark } from '@/lib/knowledge/page-trust';
+import type { ApprovalMark } from '@/lib/knowledge/approval-view';
 import { PageTreeRowMenu, type PageMenuVerb } from './PageTreeRowMenu';
 import { createPageTreeUi } from './page-tree-ui';
 import {
@@ -73,6 +74,8 @@ export type PageTreeProps = {
  *  tree, never a request a row. */
 export type PageTreeKnowledge = {
   marks: ReadonlyMap<string, TrustMark>;
+  // A page Pending Approval or Rejected: a dot after its title (approval.md "Where it shows").
+  approvalMarks?: ReadonlyMap<string, ApprovalMark>;
   inContext: ReadonlySet<string>;
   // Verify: an Editor with an account. The fields: an Editor.
   canVerify: boolean;
@@ -417,6 +420,7 @@ export function PageTree({
               ui={ui}
               people={people?.(row.id)}
               trust={knowledge?.marks.get(row.id)}
+              approval={knowledge?.approvalMarks?.get(row.id)}
               onRename={onRename}
               onRenameDone={onRenameDone}
             />

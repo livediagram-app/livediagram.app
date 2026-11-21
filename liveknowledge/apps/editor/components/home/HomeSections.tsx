@@ -38,7 +38,7 @@ const CARD = 'rounded-2xl border border-slate-200 bg-white dark:border-slate-800
 const LINK_CARD = `${CARD} cursor-pointer motion-safe:transition-[border-color,box-shadow] motion-safe:duration-micro hover:border-brand-400 hover:shadow-md hover:shadow-slate-900/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:hover:border-brand-500`;
 const SKELETON = 'rounded bg-slate-200 motion-safe:animate-pulse dark:bg-slate-800';
 
-function Section({
+export function Section({
   title,
   action,
   children,

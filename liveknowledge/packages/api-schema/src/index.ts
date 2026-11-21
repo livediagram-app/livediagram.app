@@ -402,4 +402,5 @@ export * from '@liveworkspace/api-schema/share-links';
 export * from '@liveworkspace/api-schema/participants';
 export * from '@liveworkspace/api-schema/image-summary';
 export * from './knowledge';
+export * from './page-threads';
 export * from './agent-scopes';
