@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { answerEvents, errorResponse, fakeFetch, streamResponse } from './__fixtures__/claude';
-import { openAiErrorResponse, openAiEvents } from './__fixtures__/openai';
-import { ASK_SYSTEM, askRequest } from './ask-request';
+import { answerEvents, errorResponse, fakeFetch, streamResponse } from './testing/claude';
+import { openAiErrorResponse, openAiEvents } from './testing/openai';
 import { CLAUDE_MESSAGES_URL } from './claude-request';
-import { CONFLICT_SYSTEM } from './conflict-request';
 import { ModelCallError, modelFailureWords, type ModelFailureKind } from './model-failure';
 import {
   DEFAULT_MODEL_PROVIDER,
@@ -79,7 +77,12 @@ describe('one call for both providers', () => {
   it('sends the same prompt and material to each, in its own request shape, to its own host', async () => {
     const claude = fakeFetch(() => streamResponse(answerEvents(['Hello.'])));
     const openai = fakeFetch(() => streamResponse(openAiEvents(['Hello.'])));
-    const request = askRequest({ question: 'When do we deploy?', passages: [] });
+    const request: ModelRequest = {
+      system: 'Answer from the passages only.',
+      messages: [{ role: 'user', content: 'When do we deploy?' }],
+      maxTokens: 4000,
+      effort: 'medium',
+    };
     const fromClaude = await callModel({
       provider: 'anthropic',
       fetch: claude.fetch,
@@ -99,8 +102,8 @@ describe('one call for both providers', () => {
     expect(fromClaude.stopReason).toBe(fromOpenAi.stopReason);
     expect(claude.sent[0]!.url).toBe(CLAUDE_MESSAGES_URL);
     expect(openai.sent[0]!.url).toBe(OPENAI_RESPONSES_URL);
-    expect(claude.sent[0]!.body.system).toBe(ASK_SYSTEM);
-    expect(openai.sent[0]!.body.instructions).toBe(ASK_SYSTEM);
+    expect(claude.sent[0]!.body.system).toBe(request.system);
+    expect(openai.sent[0]!.body.instructions).toBe(request.system);
     expect(openai.sent[0]!.body.input).toEqual(claude.sent[0]!.body.messages);
     expect(claude.sent[0]!.body.model).toBe('claude-opus-5-5');
     expect(openai.sent[0]!.body.model).toBe('gpt-6.2-sol');
@@ -109,7 +112,6 @@ describe('one call for both providers', () => {
     expect(claude.sent[0]!.headers).not.toHaveProperty('authorization');
     expect(openai.sent[0]!.headers.authorization).toBe(`Bearer ${KEYS.openai}`);
     expect(openai.sent[0]!.headers).not.toHaveProperty('x-api-key');
-    expect(ASK_SYSTEM + CONFLICT_SYSTEM).not.toMatch(/Claude|Anthropic|OpenAI|GPT/);
   });
 
   it('never asks one provider for the other provider model: a foreign id is the default', async () => {

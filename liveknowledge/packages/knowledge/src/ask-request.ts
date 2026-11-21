@@ -4,7 +4,7 @@
 // model is told they are material to read, never instructions.
 import { ASK_MAX_QUESTION_CHARS, ASK_MAX_TURNS } from './ask-limits';
 import type { AskPassage } from './ask-passages';
-import { fenced, type ModelMessage, type ModelRequest } from './model-request';
+import { fenced, type ModelMessage, type ModelRequest } from '@liveworkspace/ai';
 import { dayOf } from './days';
 
 /** Room for the answer and the thinking before it. The team pays for what is used, not for the ceiling. */

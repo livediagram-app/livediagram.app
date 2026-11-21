@@ -13,28 +13,25 @@ import {
   ASK_MAX_TURNS,
   ASK_PER_KNOWLEDGEBASE_PER_DAY,
   ASK_PER_PERSON_PER_HOUR,
-  ModelCallError,
   askAnswerStream,
   askCounters,
   askRefusal,
   askRequest,
   askSearch,
   bumpCounter,
-  callModel,
   chooseAskPassages,
   dayOf,
   foundPassage,
-  modelFailureWords,
   questionKey,
   readCounter,
   recordPageAnswers,
   upsertQuestion,
   type AskPassage,
   type AskRefusal,
-  type ModelCaller,
   type SearchRow,
   type SqlStatement,
 } from '@liveknowledge/knowledge';
+import { ModelCallError, callModel, modelFailureWords, type ModelCaller } from '@liveworkspace/ai';
 import type { AskEvent, AskSource, AskTurn } from '@liveknowledge/api-schema';
 import { ASK_UNAVAILABLE_WORDS, openAi } from '../knowledge/ai-settings';
 import { modelDoorFor } from '../knowledge/model-door';

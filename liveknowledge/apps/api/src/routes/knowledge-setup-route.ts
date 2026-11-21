@@ -7,7 +7,6 @@
 // text to the model and the reply untrusted text to the app: one is fenced, the other is validated field by field
 // (`parseSetupSuggestion`) and only ever placed as text.
 import {
-  ModelCallError,
   SETUP_BUILT_IN_PER_PERSON_PER_DAY,
   SETUP_MAX_DESCRIPTION_CHARS,
   SETUP_MAX_EXISTING_PAGES,
@@ -15,8 +14,6 @@ import {
   SETUP_MIN_DESCRIPTION_CHARS,
   SETUP_PER_KNOWLEDGEBASE_PER_DAY,
   SETUP_PER_PERSON_PER_HOUR,
-  callModel,
-  modelFailureWords,
   parseSetupSuggestion,
   setupCounters,
   setupRefusal,
@@ -26,6 +23,7 @@ import {
   type SetupSuggestion,
   type SqlStatement,
 } from '@liveknowledge/knowledge';
+import { ModelCallError, callModel, modelFailureWords } from '@liveworkspace/ai';
 import type { KnowledgeSetupProvider, KnowledgeSetupSuggestion } from '@liveknowledge/api-schema';
 import { ASK_UNAVAILABLE_WORDS, openAi } from '../knowledge/ai-settings';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';

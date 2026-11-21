@@ -3,7 +3,7 @@
 // as JSON in one fixed shape. The description, and the titles of the pages already there, are other people's
 // writing: they are fenced, and the model is told they are material to read, never instructions. The same request
 // goes to whichever provider's model the team chose (model-providers.ts `callModel`).
-import { fenced, type ModelRequest } from './model-request';
+import { fenced, type ModelRequest } from '@liveworkspace/ai';
 import {
   SETUP_MAX_DEPTH,
   SETUP_MAX_DESCRIPTION_CHARS,

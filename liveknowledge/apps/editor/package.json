@@ -73,6 +73,7 @@
   },
   "devDependencies": {
     "@liveknowledge/tailwind-config": "workspace:*",
+    "@liveworkspace/ai": "workspace:^",
     "@liveworkspace/e2e-kit": "workspace:*",
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",

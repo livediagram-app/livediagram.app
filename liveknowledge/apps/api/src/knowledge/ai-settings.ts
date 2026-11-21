@@ -4,25 +4,27 @@
 // `callModel`; no log line, error or response holds it.
 import {
   KeySealError,
-  MODEL_PROVIDERS,
   SETTING_AI_KEY,
   SETTING_AI_KEY_HINT,
   SETTING_AI_MODEL,
   SETTING_AI_PROVIDER,
-  isModelProviderId,
-  isProviderModel,
   keyHint,
-  modelProvider,
   openApiKey,
-  providerModel,
   putAiKey,
   putSetting,
   readSetting,
   removeAiKey,
   removeAiModel,
   sealApiKey,
-  type KeyProviderId,
 } from '@liveknowledge/knowledge';
+import {
+  MODEL_PROVIDERS,
+  isModelProviderId,
+  isProviderModel,
+  modelProvider,
+  providerModel,
+  type KeyProviderId,
+} from '@liveworkspace/ai';
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
 import type { DocumentEnv } from '../types';
 import { rowsOf, runAll } from './knowledge-db';
