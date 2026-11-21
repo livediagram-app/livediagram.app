@@ -281,7 +281,9 @@ No test reaches Anthropic or OpenAI. The stack starts a stand-in on a free loopb
 (`scripts/e2e-claude-stand-in.mjs`) and hands the api its origin as `E2E_CLAUDE_STAND_IN`; the api's one door to a
 model (`apps/api/src/knowledge/model-door.ts`, `modelDoorFor`) then sends a request for the stored provider's API
 there instead: `/v1/messages` is answered as Anthropic's Messages API streams, `/v1/responses` as OpenAI's Responses
-API does, so one var serves both. A description (Describe to Set Up) is answered with a fixed structure of five
+API does, so one var serves both. Built-in AI (Workers AI) has no door to swap, so under the same var alone the api's
+`builtInAi` posts `{ model, input }` to the stand-in's `/workers-ai/run` instead of the `AI` binding, answered as the
+binding answers (`{ response }`). A description (Describe to Set Up) is answered with a fixed structure of five
 pages (`SETUP_STRUCTURE`), or with text that is no JSON when it holds "not json".
 The door ignores the var unless it names plain HTTP on a loopback port, the var is in no `wrangler.toml` or hosted
 var, and a unit test holds both. The stand-in answers from the request alone: a question sent with passages is

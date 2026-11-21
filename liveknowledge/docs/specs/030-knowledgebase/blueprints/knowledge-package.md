@@ -457,22 +457,49 @@ Derived from [Describe to set up](../describe-to-set-up.md) "The model". The edi
    characters, kept as they are, and the editor places them as text (`setup.test.ts`, the route's test and the
    editor's tests each hold it).
 
+6. **Built-in AI** (`setup-built-in.ts`; owner, 2026-11-21: built-in by default, the team's key when set).
+   `SETUP_BUILT_IN_MODEL` is liveplanner's Describe a Plan model, `@cf/google/gemma-4-26b-a4b-it`.
+   `setupBuiltInInput({ description, existing }, refused?)` writes `setupRequest`'s request in Workers AI's chat
+   shape: the system prompt as the first message, `max_tokens` 4,000, `temperature` 0, `response_format` a strict
+   `json_schema` of the reply's shape (`SETUP_REPLY_SCHEMA`), and `chat_template_kwargs.enable_thinking` false. On
+   the second ask `refused` (fixed words from the check, never the model's text) is added to the user message in
+   `<previous_reply>`, fenced. `builtInReplyText(raw)` reads the binding's answer, whatever shape it comes in
+   (`{ response }` as text or an object, `{ choices: [{ message: { content } }] }`, a string) into the text
+   `parseSetupSuggestion` reads; anything else is `undefined`. `SETUP_BUILT_IN_ASKS` is 2;
+   `SETUP_BUILT_IN_PER_PERSON_PER_DAY` is 10 (liveplanner's `PLAN_DRAFT_PER_DAY`).
+
 **The route** (`routes/knowledge-setup-route.ts`): `POST setup/suggest`, a signed-in Editor in person
 (`grant.role === 'edit'`, no token, an account), else `403`; `existing` read defensively (500 entries, titles of
-80); the refusal before the key is opened; counted before the model is called; `callModel` through the door with
-the request's signal; `200` the suggestion; `502` `{ error: <kind>, provider, message }` for a failed call and
-`{ error: 'no-structure' }` for a reply with no page. Logs `[knowledge] setup suggested` (provider, page count,
-model), `setup no structure`, `setup failed` (kind): never the description, a title or the key.
+80); the refusal before the key is opened. Then `openAi`: a key that opens runs **the team's key** (counted, then
+`callModel` through the door with the request's signal; `502` `{ error: <kind>, provider, message }` for a failed
+call); `unreadable` is refused as before (`409 ask_unavailable`); `no-key` and `no-secret` run **built-in AI**
+(`knowledge/setup-built-in-ai.ts`):
 
-| Rule                                                            | Test                                             |
-| --------------------------------------------------------------- | ------------------------------------------------ |
-| 20 to 1,000 characters; 5 an hour, 20 a day, apart from Ask     | `setup.test.ts`; `knowledge-setup-route.test.ts` |
-| The description and existing titles are fenced data             | `setup.test.ts`; the route's test                |
-| 30 pages, 3 levels, 80, 200, 6 headings of 80                   | `setup.test.ts` "reading a reply"                |
-| No duplicate sibling titles; parents resolved; the rest dropped | the same                                         |
-| No valid page is a failure, never a raw error                   | the same; the route's test                       |
-| Markup in a reply stays text                                    | the same; the route's test                       |
-| Per role, per limit, per provider                               | `knowledge-setup-route.test.ts`                  |
+- `builtInAi(env)`: the `AI` binding, or under the e2e stack alone the stand-in's `POST /workers-ai/run` (its origin
+  `E2E_CLAUDE_STAND_IN`, checked by `model-door.ts` `standInOrigin`); none: `503 built-in-unavailable`.
+- The account's count (`knowledge/setup-draft-count.ts`, after liveplanner's `plan-draft-count.ts`): one
+  `DOCUMENT_ROOM` instance per account under a name no document id can take (`~setup-drafts:<account>`; document
+  ids are UUIDs), holding one storage key `{ day, count }` and nothing else, reached by its `spendSetupDraft(day,
+cap)` RPC, which counts and checks in one turn of the object. At the cap: `429 built-in-limit`. Unreachable:
+  `503 built-in-failed` (a fault never lifts the cap). Then the room's hour and day counters are bumped.
+- At most `SETUP_BUILT_IN_ASKS` asks (`askBuiltIn`, each bounded at `SETUP_BUILT_IN_TIMEOUT_MS`, 60 s): a reply that
+  does not read is asked once more with why; the binding's error or the bound: `502 built-in-failed`; still no
+  structure: `502 no-structure`.
+
+`200` answers the suggestion with `provider`: `built-in`, `anthropic` or `openai`. Logs `[knowledge] setup
+suggested` (provider, page count, model, asks), `setup no structure`, `setup failed` (kind): never the
+description, a title or the key.
+
+| Rule                                                            | Test                                                                                   |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 20 to 1,000 characters; 5 an hour, 20 a day, apart from Ask     | `setup.test.ts`; `knowledge-setup-route.test.ts`                                       |
+| The description and existing titles are fenced data             | `setup.test.ts`; the route's test                                                      |
+| 30 pages, 3 levels, 80, 200, 6 headings of 80                   | `setup.test.ts` "reading a reply"                                                      |
+| No duplicate sibling titles; parents resolved; the rest dropped | the same                                                                               |
+| No valid page is a failure, never a raw error                   | the same; the route's test                                                             |
+| Markup in a reply stays text                                    | the same; the route's test                                                             |
+| Per role, per limit, per provider                               | `knowledge-setup-route.test.ts`                                                        |
+| Built-in AI: no key, its asks, repair, cap, no binding, timeout | `knowledge-setup-route.test.ts`; `setup-built-in.test.ts`; `setup-draft-count.test.ts` |
 
 **Risk not ruled out:** thinking counts against the 4,000 token ceiling on both providers, so a long structure
 from a model that thinks at length can be cut off. The prompt asks for a compact reply and effort is `low`; a cut

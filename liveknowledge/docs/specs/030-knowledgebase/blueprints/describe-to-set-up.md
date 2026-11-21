@@ -126,19 +126,19 @@ opened from the dialog (over Ask or AI Knowledge the views' host draws it).
 `Dialog` `size="lg"`, a sheet on a phone, centred. The body is one height whatever shows
 (`h-[29rem] max-h-[calc(100dvh-13rem)]`), with the three step names above it (`aria-current="step"`).
 
-| State             | When                            | Shows                                                                                   | Footer                                    |
-| ----------------- | ------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
-| loading           | the AI settings are being read  | the room held                                                                           | Cancel                                    |
-| could not be read | `GET ai` failed                 | an error callout, **Try Again**                                                         | Cancel                                    |
-| no key            | `hasKey` false                  | "Describe to Set Up Needs Your Team's AI Key", **Open AI Settings**                     | Cancel                                    |
-| Describe          | step 1                          | the field, the example, three chips, the counter from 900; a failure's callout above it | Cancel, **Suggest a Structure**           |
-| suggesting        | the request is out              | one line and a skeleton in the tree's place (`SkeletonRows`)                            | Cancel (aborts, back to Describe)         |
-| Review            | step 2                          | the name (while untitled), the tree, the note or the limit's callout                    | Cancel, **Try Again**, **Create N Pages** |
-| creating          | step 3                          | "Making Pages: 20 of 30" and a bar                                                      | Stop (between batches)                    |
-| done              | the run did not make every page | how many were made, each page that was not with why                                     | Done                                      |
+| State      | When                            | Shows                                                                                                | Footer                                    |
+| ---------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Describe   | step 1, at once on open         | the field, the example, three chips, the counter from 900; a failure's callout above it; the AI line | Cancel, **Suggest a Structure**           |
+| suggesting | the request is out              | one line and a skeleton in the tree's place (`SkeletonRows`)                                         | Cancel (aborts, back to Describe)         |
+| Review     | step 2                          | the name (while untitled), the tree, the note or the limit's callout                                 | Cancel, **Try Again**, **Create N Pages** |
+| creating   | step 3                          | "Making Pages: 20 of 30" and a bar                                                                   | Stop (between batches)                    |
+| done       | the run did not make every page | how many were made, each page that was not with why                                                  | Done                                      |
 
-- **No key.** Adding a key in AI Settings writes the settings store, which the dialog reads: step 1 is there when
-  AI Settings closes. Nothing is asked of the api before a key exists.
+- **No key is no stop** (owner, 2026-11-21). Step 1 shows at once, whatever the AI settings say and before they
+  are read. The dialog still reads them (`aiSettingsStore.load`) for one quiet line under the field
+  (`setupAiLine(settings)`, `data-setup-ai`): **Uses built-in AI** with no key, **Uses your team's key** with one,
+  nothing while unread or unreadable. The api, not the line, decides which AI answers; the answer names it
+  (`provider`). There is no no-key state, no loading state and no "could not be read" state any more.
 - **Describe.** `TextArea`, focused on open, labelled "What Is This Knowledgebase For?" ("What Pages Should Be
   Added?" when adding). Under it the example, or what stops the description (under 20, over 1,000); the counter
   shows from 900 characters. Three chips fill the field (Engineering Handbook, Customer Support, Company Handbook).
@@ -146,8 +146,9 @@ opened from the dialog (over Ask or AI Knowledge the views' host draws it).
 - **The request** (`apiSuggestSetup`): one `POST setup/suggest` with an `AbortController` (Cancel, and the dialog
   going, abort it) joined to a 90 second bound. A failure is a kind, never the route's message:
   `setupFailureWords(kind, { provider })` words a model failure as Ask does (`askFailureWords`, "ask again" read
-  as "try again") and the limits, a reply with no structure ("Could Not Suggest a Structure") and a lost connection
-  in words of their own. It shows above the field with the description kept; a bad key or model offers **Open AI
+  as "try again") and the limits, built-in AI's three (`built-in-unavailable`, `built-in-limit`, `built-in-failed`;
+  the first two offer **Open AI Settings**, since the team's key is the way past them), a reply with no structure
+  ("Could Not Suggest a Structure") and a lost connection in words of their own. It shows above the field with the description kept; a bad key or model offers **Open AI
   Settings**.
 - **Review.** A list named "Suggested Pages", each row indented by its level as the sidebar's rows are
   (`10 + (depth - 1) * 18` px): a native checkbox ("Create <title>"), the page glyph, the title in a text input
@@ -175,6 +176,8 @@ step) stored by the autosave before the next begins. 30 pages are two batches (`
   first page that page's id (`newId` answers it first) and passes `replaceId`: `openKnowledgebaseLayer` swaps the
   page in place in the same edit as its batch (its place in the tree kept) and waits for its save with the rest.
   Otherwise nothing existing is changed. Adding lands under the open page (`parent: activeId`).
+- **After the suggestion.** `UI·Used·SetupSuggested` when the answer's `provider` is the team's (`anthropic`,
+  `openai`), `UI·Used·SetupSuggestedBuiltIn` when it is `built-in`.
 - **After.** `Tab·Created·FromSetup`; the suggested name is given (`nameDocument`) only if the knowledgebase is
   still untitled; the first new page is opened (`selectPage`); the dialog closes. A run that did not make every
   page (a refusal of the tree, a stalled save, Stop) stays open on **done**.
@@ -187,7 +190,7 @@ step) stored by the autosave before the next begins. 30 pages are two batches (`
 - Titles, summaries, headings and the name are drawn as text nodes and input values, and written through
   `plainLine` and the Markdown reader, which keeps `http`, `https` and `mailto` links only and no HTML. Tests hold
   `<script>`, `<img onerror>`, `[x](javascript:…)` and `![x](…)` as characters in the dialog and in the page made.
-- The team's key is never in the editor. The route is an Editor's in person; the api is the rule, the editor's
+- The team's key is never in the editor, and neither is any built-in AI credential (the binding is the api's). The route is an Editor's in person; the api is the rule, the editor's
   gate is presentation.
 
 ## Performance and limits
@@ -213,7 +216,8 @@ checked in a browser: contrast in dark mode, and the dialog at phone width.
 
 ## Telemetry
 
-`UI·Opened·DescribeToSetUp`, `UI·Opened·DescribeToAddPages`, `UI·Used·SetupSuggested`, `Tab·Created·FromSetup`.
+`UI·Opened·DescribeToSetUp`, `UI·Opened·DescribeToAddPages`, `UI·Used·SetupSuggested` (the team's key) or
+`UI·Used·SetupSuggestedBuiltIn` (built-in AI), `Tab·Created·FromSetup`.
 Each is a fixed token: an event has no number in it, so **no count is sent** (how many pages were suggested,
 ticked or created would need a field the telemetry vocabulary does not have; the spec says so too). The
 description, the titles and the key are never sent.
@@ -231,14 +235,14 @@ description, the titles and the key are never sent.
 | Markup from a model is text                                                                                     | the same; `components/setup/Setup.test.tsx`                                              |
 | `replaceId` in the save layer                                                                                   | `lib/knowledge-import/save-layers.test.ts`                                               |
 | Who is offered it, per role and state                                                                           | `components/setup/Setup.test.tsx`                                                        |
-| Every state of the dialog; Cancel aborts; no key and back                                                       | the same                                                                                 |
+| Every state of the dialog; Cancel aborts; no key goes straight to step 1 and says built-in AI                   | the same                                                                                 |
 | The palette's command                                                                                           | `lib/editor-commands.test.ts`                                                            |
-| In a browser: the start screen's Describe to Set Up, describe to tree, the no-key path                          | `e2e/signed-in/knowledge-setup.spec.ts`                                                  |
+| In a browser: the start screen's Describe to Set Up, describe to tree, built-in AI with no key, an OpenAI key   | `e2e/signed-in/knowledge-setup.spec.ts`                                                  |
 | The start screen: shown by `/new`, Blank Knowledgebase, a structure's whole tree, Import; skipped by `?blank=1` | `e2e/knowledge-start.spec.ts`; `components/start/*.test.ts*`; `setup-structures.test.ts` |
 
 ## Not built, or not known
 
 - The knowledgebase menu's **Describe to Add Pages** item (the menu does not exist; the hook for it does).
 - Counts in telemetry.
-- A real model's reply has never been read: whether 4,000 tokens is enough, and how good a structure is, are
-  unknown.
+- A real model's reply has never been read, built-in or the team's: whether 4,000 tokens is enough, how good a
+  structure is, and whether the built-in model finishes inside its 60 seconds, are unknown.

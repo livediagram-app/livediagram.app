@@ -32,7 +32,8 @@ Owner, 2026-11-20: the sidebar's search is the **universal search**, with this k
 
 Ask answers a question in plain words from the knowledgebase's own pages, and says where each part came from.
 
-- **Bring your own key.** liveknowledge pays for no model: the team pays its provider for what it uses. Ask is
+- **Bring your own key.** liveknowledge pays for no model Ask uses: the team pays its provider for what it uses
+  (Describe to Set Up alone has built-in AI, liveknowledge's, when there is no key). Ask is
   offered once an Editor adds the knowledgebase's own key, Claude's or OpenAI's ([Providers](#providers)), in
   **AI Settings**. Without a key the Ask tab explains this with one button to AI Settings, and
   search still works.
@@ -66,7 +67,8 @@ called for either provider, so the request and stream shapes are unverified agai
   knowledgebase holds one provider and one key at a time; choosing the other provider replaces the key after a
   confirmation.
 - Everything that uses a model runs on whichever is set, with the same behaviour, limits and words: Ask, the
-  conflict check, drafting a page from a gap and [Describe to Set Up](describe-to-set-up.md). The interface says
+  conflict check, drafting a page from a gap and [Describe to Set Up](describe-to-set-up.md) (which, alone, runs on
+  built-in AI when no key is set: owner, 2026-11-21, [The model](describe-to-set-up.md#the-model)). The interface says
   "your team's AI key" wherever it does not matter which, and names the provider where it does (a refused key:
   "OpenAI Did Not Accept the Key").
 - The key is sealed and kept exactly as a Claude key is, with its provider beside it. The api calls only the chosen
@@ -91,7 +93,7 @@ called for either provider, so the request and stream shapes are unverified agai
 | Search                                | yes    | yes         | yes    |
 | Ask                                   | yes    | yes         | yes    |
 | Add, replace or remove the key, model | yes    | no          | no     |
-| Draft a page from a gap               | yes    | no          | no     |
+| Draft a page from a gap               | yes    | yes         | no     |
 
 Ask through an anonymous share link is off: it would spend the team's key for strangers.
 
@@ -133,7 +135,7 @@ Ask through an anonymous share link is off: it would spend the team's key for st
 | Action                                 | Editor | Participant | Viewer |
 | -------------------------------------- | ------ | ----------- | ------ |
 | Copy an answer, mark it helpful or not | yes    | yes         | yes    |
-| Save an answer as a page               | yes    | no          | no     |
+| Save an answer as a page               | yes    | yes         | no     |
 
 ## AI Settings
 

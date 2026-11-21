@@ -1,8 +1,9 @@
 # Describe to set up
 
 Status: **built** ([blueprint](blueprints/describe-to-set-up.md); the request and its reading are in the
-[knowledge package blueprint](blueprints/knowledge-package.md)). Asked for by the owner on 2026-11-20. Driven in a
-browser against a stand-in; no real model has answered it. What is not built is listed at the foot.
+[knowledge package blueprint](blueprints/knowledge-package.md)). Asked for by the owner on 2026-11-20; built-in AI by
+default on 2026-11-21. Driven in a browser against a stand-in; no real model, built-in or the team's, has answered
+it. What is not built is listed at the foot.
 
 A new knowledgebase is empty, and an empty page tree is the hardest part of starting one. The person describes what
 the knowledgebase is for, and AI proposes a sensible structure of pages for them to accept.
@@ -98,24 +99,44 @@ One centred dialog of steady height, in three steps.
 
 ## The model
 
-Describe to Set Up runs on the team's own AI key, Claude's or OpenAI's ([Providers](search-and-ask.md#providers)),
-as [Ask](search-and-ask.md#ask) does: liveknowledge pays for no model.
+Owner, 2026-11-21: Describe to Set Up runs on **built-in AI** by default, as liveplanner's
+Describe a Plan does, so it works with no key at all.
+The team's own AI key, Claude's or OpenAI's ([Providers](search-and-ask.md#providers)), is optional and is used when
+one is set. (This reverses "runs on the team's own key; liveknowledge pays for no model" for this feature only:
+Ask, the conflict check and drafting a page from a gap stay on the team's key.)
 
-- **No key yet:** step 1 is replaced by the same explanation Ask shows, with **Open AI Settings** for the Editor.
-  Adding a key returns to step 1. **Offline** knowledgebases do not show the control (they have no server to hold
-  a key).
+- **Built-in AI.** With no key set, the suggestion is asked of Cloudflare Workers AI through the api's `AI` binding:
+  no key and no secret, the binding is the credential, billed to liveknowledge's account. The model is the one
+  liveplanner's Describe a Plan uses (`@cf/google/gemma-4-26b-a4b-it`, its thinking turned off). Under the field
+  the dialog says, quietly, **Uses built-in AI**.
+- **The team's key.** When the knowledgebase has a key, the suggestion runs on it instead, and the dialog says
+  **Uses your team's key**. A key that is stored but cannot be opened is refused as Ask refuses it; it is never
+  quietly swapped for built-in AI.
+- **No key is no longer a stop.** The dialog has no "add your key" step: step 1 is there whether or not a key is
+  set, and an Editor who never opens AI Settings can still set a knowledgebase up. **Offline** knowledgebases still
+  do not show the control (there is no server to ask).
 - `POST …/setup/suggest` takes the description (and, for adding pages, the existing page titles in tree order) and
-  answers a structure: a name, and up to **30** pages no more than **3** levels deep, each `{ title, summary,
-headings (up to 6), parent }`. The api asks the model for JSON in a fixed shape and validates every field: titles
-  at most 80 characters, summaries at most 200 (text over a bound is cut to it), no duplicate titles among siblings,
-  a parent that is unknown or leads back to itself dropped with its subpages, anything else dropped. An answer
-  that does not parse or leaves no valid page is "Could Not Suggest a Structure", with Try Again; never a raw error.
+  answers a structure: a name, up to **30** pages no more than **3** levels deep, each `{ title, summary,
+headings (up to 6), parent }`, and which AI answered (`provider`: `built-in`, `anthropic` or `openai`). The api
+  asks the model for JSON in a fixed shape and validates every field: titles at most 80 characters, summaries at
+  most 200 (text over a bound is cut to it), no duplicate titles among siblings, a parent that is unknown or leads
+  back to itself dropped with its subpages, anything else dropped. On built-in AI a reply that does not read is
+  asked once more, with what was wrong with it (never the model's own earlier text): two asks at most, counted as
+  one suggestion. An answer that still does not parse or leaves no valid page is "Could Not Suggest a Structure",
+  with Try Again; never a raw error.
 - The description is untrusted text to the model and the answer is untrusted text to the app: it is fenced in the
   request, and what comes back is only ever placed as text.
 - The route answers a signed-in Editor in person only: not an API token, a guest or a share link's visitor.
-- **Limits:** 5 suggestions a person an hour and 20 a knowledgebase a day (`SETUP_*`, counted in the room beside
-  Ask's counters); one request, 4,000 output tokens at most. Failures (bad key, no credit, rate limited,
-  overloaded, refused) read in the words Ask uses.
+- **Limits**, whichever AI answers: 5 suggestions a person an hour and 20 a knowledgebase a day (`SETUP_*`,
+  counted in the room beside Ask's counters); one request, 4,000 output tokens at most. **On built-in AI also** 10
+  a person a UTC day across every knowledgebase (`SETUP_BUILT_IN_PER_PERSON_PER_DAY`, liveplanner's per-account
+  draft count of 10), since liveknowledge pays for those: a new knowledgebase never buys another ten. That count
+  guards a bill, so a fault reaching it refuses the suggestion rather than lifting the cap. A built-in call that
+  takes over 60 seconds is given up.
+- **Failures read in words.** On the team's key: bad key, no credit, rate limited, overloaded, refused, in the
+  words Ask uses. On built-in AI: "Built-in AI Is Not Set Up Here" (a deployment with no `AI` binding; adding the
+  team's key in AI Settings is the way on), "You Have Used Today's 10 Built-In Suggestions" (try tomorrow, or add
+  the team's key), and "The Built-In AI Could Not Answer" (try again in a moment).
 - Creating the pages meets the knowledgebase's page and depth limits; a structure that would pass them says so in
   step 2 and creates nothing.
 
@@ -128,7 +149,8 @@ headings (up to 6), parent }`. The api asks the model for JSON in a fixed shape 
 
 ## Telemetry
 
-One event when a structure is suggested (`UI·Used·SetupSuggested`) and one when pages are created
+One event when a structure is suggested, saying which AI answered (`UI·Used·SetupSuggested` on the team's key,
+`UI·Used·SetupSuggestedBuiltIn` on built-in AI), and one when pages are created
 (`Tab·Created·FromSetup`), and one each time the dialog is opened (`UI·Opened·DescribeToSetUp`,
 `UI·Opened·DescribeToAddPages`). Each event is three fixed words and nothing else: never the description, the
 titles or the key, and **no count** (how many pages were suggested, ticked or created is not sent). An event has
@@ -138,3 +160,5 @@ no number field, and adding one is a change to the platform's telemetry, which t
 
 - **Describe to Add Pages** in the knowledgebase menu (the menu itself is not built); it is in the command palette.
 - Counts in telemetry (how many pages were suggested or created): left out on purpose, see "Telemetry".
+- Built-in AI's spend across every account together has no ceiling of its own beyond the per-person and
+  per-knowledgebase counts; an AI Gateway with a spend limit (liveplanner's `AI_GATEWAY`) is not wired here.
