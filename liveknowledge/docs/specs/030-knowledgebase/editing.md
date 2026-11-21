@@ -24,7 +24,7 @@ editing share live and that nobody else sees until it is saved.
 - **The buttons** (owner, 2026-11-21: "look rubbish"): Edit is a solid accent button with a pencil and its key, E.
   While editing, one capsule holds the draft's status only when there is one (an amber dot and "Unsaved changes
   since ...", or an agent's change; no "Editing" label, owner 2026-11-21), then Cancel and Save, floating at the bottom right of the document itself (the reading column's right edge, 24 px above the footer, never
-  over the rail; owner 2026-11-21), where Edit floats too while reading, (accent, a tick and its keys). The key hints are hidden from assistive technology so
+  over the rail; owner 2026-11-21), where Edit floats too while reading. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
   the buttons are named Edit and Save.
 - A page made here (New Page, Add Subpage) opens straight into edit mode with the caret in its Title: it was made
   to be written.
