@@ -528,7 +528,10 @@ const parsedFlows = new WeakMap<object, { flow: string; parsed: ArticleFlow }>()
 function parsedFlowOf(flow: string, raw: unknown): ArticleFlow {
   if (!raw || typeof raw !== 'object') return parseArticleFlow(raw, `${flow}-b0`);
   const cached = parsedFlows.get(raw);
-  if (cached && cached.flow === flow) return cached.parsed;
+  // Read under another flow id (a page's draft is drawn under its saved flow's id, page-draft.ts): the same answer
+  // unless the read fell back to the empty block, whose id names the flow.
+  if (cached && (cached.flow === flow || cached.parsed.blocks[0]?.id !== `${cached.flow}-b0`))
+    return cached.parsed;
   const parsed = parseArticleFlow(raw, `${flow}-b0`);
   parsedFlows.set(raw, { flow, parsed });
   return parsed;

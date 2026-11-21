@@ -2,7 +2,7 @@
 // every page link showing the linked page's current title, and how far it can be trusted. The same Markdown is what
 // a suggestion's passage is found in, so an agent's read and its suggested edit agree on the text.
 import {
-  articlesOf,
+  savedArticlesOf,
   articleToMarkdown,
   pagesOf,
   pageTitleIn,
@@ -67,7 +67,8 @@ export function pageUnknownBody(
 /** The page's one article: the flow its first article page shows, else its first flow. Undefined for a page with
  *  no writing. */
 export function pageFlowOf(tab: Tab): string | undefined {
-  const flows = articlesOf(tab);
+  // The saved writing: a page's draft is read by nobody but the people editing it (editing.md).
+  const flows = savedArticlesOf(tab);
   const shown = pagesOf(tab).find((p) => p.kind === 'article' && p.flow && flows[p.flow]);
   return shown?.flow ?? Object.keys(flows)[0];
 }
@@ -77,7 +78,7 @@ export function pageMarkdownOf(tab: Tab, tabs: TabSummaries): string {
   const flow = pageFlowOf(tab);
   if (!flow) return '';
   const titleOf = pageTitleIn(tabs.map((t) => ({ id: t.id, name: t.name })));
-  return articleToMarkdown(withPageLinkTitles(articlesOf(tab)[flow]!, titleOf));
+  return articleToMarkdown(withPageLinkTitles(savedArticlesOf(tab)[flow]!, titleOf));
 }
 
 /** For each page an open conflict names, the pages it is set against; and the same by passage. One read of the

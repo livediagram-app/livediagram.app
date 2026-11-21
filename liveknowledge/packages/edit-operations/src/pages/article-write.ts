@@ -6,6 +6,7 @@ import {
   articleFromMarkdown,
   articleNoteIds,
   articlesOf,
+  savedArticlesOf,
   articleTitleOf,
   withArticleHeightEstimated,
   elementIdsOnPage,
@@ -51,7 +52,8 @@ export function applyArticleWrite(
   if (locked) return locked;
   let current = tab;
   const lines: string[] = [];
-  const articles = articlesOf(current);
+  // The saved writing only: an agent never writes a page's draft (docs/specs/030-knowledgebase/editing.md "Agents").
+  const articles = savedArticlesOf(current);
   const flows = Object.keys(articles);
   const titles = () => flows.map((f) => `"${articleTitleOf(articles[f]!)}" (${f})`).join(', ');
 

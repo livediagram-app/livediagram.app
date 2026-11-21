@@ -1,6 +1,7 @@
 // An article tab's Markdown export (docs/specs/020-import-export/markdown-import.md "Markdown export"): every
 // article's writing in page order, in the form articleFromMarkdown reads back, and a count of what Markdown cannot hold.
-import { articlesOf, type ArticleBlock } from './article-flow';
+import { type ArticleBlock } from './article-flow';
+import { savedArticlesOf } from './page-draft';
 import { articleToMarkdown } from './article-markdown-io';
 import { pageUnits } from './article-pages';
 import { pagesOf } from './page';
@@ -25,7 +26,8 @@ const asHeading = (b: ArticleBlock): ArticleBlock =>
 
 /** The tab's articles as one Markdown text, in the order their pages run, a `\pagebreak` line between them. */
 export function articleTabMarkdown(tab: Tab): ArticleTabMarkdown {
-  const written = articlesOf(tab);
+  // The saved writing: an export never carries a page's draft (docs/specs/030-knowledgebase/editing.md).
+  const written = savedArticlesOf(tab);
   const flows = pageUnits(pagesOf(tab)).flatMap((u) => (u.flow && written[u.flow] ? [u.flow] : []));
   let zones = 0;
   const texts = flows.map((flow, i) => {

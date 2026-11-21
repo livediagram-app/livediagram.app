@@ -11,7 +11,12 @@ import {
   type PageChange,
   type TabResponse,
 } from '@liveknowledge/api-schema';
-import { articlesOf, articleTitleOf, articleToMarkdown, type Tab } from '@liveknowledge/document';
+import {
+  articleTitleOf,
+  articleToMarkdown,
+  savedArticlesOf,
+  type Tab,
+} from '@liveknowledge/document';
 import { apiRefusalOf } from '../api-refusal';
 import { tabPath } from '../verbs/shared';
 
@@ -125,7 +130,8 @@ export async function readArticle(
 > {
   const found = await pagesTabOf(api, documentId, input.tabId);
   if ('ok' in found) return found;
-  const articles = articlesOf(found.tab);
+  // The saved writing only (docs/specs/030-knowledgebase/editing.md "What reads the saved page only").
+  const articles = savedArticlesOf(found.tab);
   const flows = Object.keys(articles);
   const key = input.article === undefined ? '' : titleKey(input.article);
   const flow = key

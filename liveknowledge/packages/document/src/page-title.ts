@@ -8,15 +8,17 @@ import { articleRunsText } from './article-footnotes';
 import { articlesOf, type ArticleBlock, type ArticleParagraphBlock } from './article-flow';
 import { withArticleFlow } from './article-pages';
 import { pagesOf } from './page';
+import { savedArticlesOf } from './page-draft';
 import type { Tab } from './tab-type';
 
 const isTitle = (block: ArticleBlock): block is ArticleParagraphBlock =>
   block.type === 'paragraph' && block.style === 'title';
 
 /** The flow of the page's writing: its first article page's, or the tab's one article where no page names it (a
- *  page written before pages were stored). Undefined for a tab whose writing is not held here. */
+ *  page written before pages were stored). Undefined for a tab whose writing is not held here. Never the draft's
+ *  (page-draft.ts): a page's title and name are its saved writing's. */
 export function pageFlowOf(tab: Tab): string | undefined {
-  const flows = articlesOf(tab);
+  const flows = savedArticlesOf(tab);
   for (const page of pagesOf(tab)) {
     if (page.kind === 'article' && page.flow && flows[page.flow]) return page.flow;
   }

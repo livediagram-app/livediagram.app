@@ -4,6 +4,7 @@
 import type { TagColour } from './tag-colours';
 import type { Page, PageArrangement, PageBackground, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
+import type { TabDraft } from './page-draft';
 import type { Layer } from './layers';
 import type { Finish } from './finish';
 import type { TabId, TextSize } from '@liveworkspace/model-core/basics';
@@ -40,6 +41,10 @@ export type Tab = {
   // each document's blocks and style, shared by its pages (`Page.flow`). Read via
   // `articlesOf`; synced block by block (the `article` room op), never in a `tab-meta` patch.
   articles?: Record<string, ArticleFlow>;
+  // The page's open draft's record (docs/specs/030-knowledgebase/editing.md): who last changed the draft, when, its
+  // height and the saved blocks it was made from. Its writing is `articles.draft` (page-draft.ts); read via
+  // `draftOf`. Synced in a `tab-meta` patch, never sent to a session that cannot edit.
+  draft?: TabDraft;
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
   // is absent; dropped the first time the pages change (`withPages`).
   pageOrientation?: PageOrientation;

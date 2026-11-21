@@ -12,7 +12,7 @@
 // title, the passages' text hashes and the links; `trust_hash` the verification. A save that moved a picture, a
 // rename of nothing, a cursor's op: one read of the tab and one of `knowledge_pages`, no index write.
 import {
-  articlesOf,
+  savedArticlesOf,
   pageUnits,
   pagesOf,
   type ArticleBlock,
@@ -46,7 +46,8 @@ const run = (sql: ItemSql, statement: SqlStatement) =>
 /** The writing of a page: its articles' blocks in the order their pages run. A page holds one article; a tab that
  *  holds more (an import from livedocuments) is read whole. */
 export function pageBlocks(tab: Tab): ArticleBlock[] {
-  const written = articlesOf(tab);
+  // The saved writing: a draft is never indexed, linked or trusted (docs/specs/030-knowledgebase/editing.md).
+  const written = savedArticlesOf(tab);
   const seen = new Set<string>();
   const blocks: ArticleBlock[] = [];
   const take = (flow: string | undefined) => {

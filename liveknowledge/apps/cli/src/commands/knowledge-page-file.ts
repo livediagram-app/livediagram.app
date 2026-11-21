@@ -3,7 +3,7 @@
 // Markdown, each link to another page a relative link to that page's file, and each picture where it sits in the
 // writing. Pure: the files and the pictures' addresses are handed in.
 import {
-  articlesOf,
+  savedArticlesOf,
   articleToMarkdown,
   layOutPages,
   pagesOf,
@@ -32,7 +32,7 @@ export function pagePictures(tab: Pick<Tab, 'elements'>): string[] {
 
 // The page's one article: the flow its first article page shows, else its first.
 function flowOf(tab: Tab) {
-  const flows = articlesOf(tab);
+  const flows = savedArticlesOf(tab);
   const shown = pagesOf(tab).find((p) => p.kind === 'article' && p.flow && flows[p.flow]);
   return flows[shown?.flow ?? Object.keys(flows)[0] ?? ''];
 }

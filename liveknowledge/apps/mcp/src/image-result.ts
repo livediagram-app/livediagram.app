@@ -7,7 +7,7 @@
 import { embedTabImages } from '@liveknowledge/api-schema';
 import {
   ensureMapGeometry,
-  articlesOf,
+  savedArticlesOf,
   exportFontIds,
   resolveArticleStyle,
   renderPageToSvg,
@@ -140,7 +140,7 @@ export async function tabSvg(
 // The editor's font ids a tab draws in: its elements' and its own, and its articles' heading and body faces (the fonts
 // a preview fetches beyond Inter), and Inter's italics when any text is set in italic.
 export function tabFontIds(tab: Tab): string[] {
-  const articles = Object.values(articlesOf(tab)).flatMap((doc) => {
+  const articles = Object.values(savedArticlesOf(tab)).flatMap((doc) => {
     const style = resolveArticleStyle(doc.style);
     return [style.headingFont, style.bodyFont];
   });
@@ -172,7 +172,7 @@ export async function imageResult(
   const texts = notes.map((text) => ({ type: 'text' as const, text }));
   // A tab with nothing on it yet answers no picture: a blank page told the caller nothing, and a blank slide's
   // gradient was a 120 KB picture on the first call of every deck (mcp-server.md §5 "An empty tab").
-  if (tab.elements.length === 0 && Object.keys(articlesOf(tab)).length === 0)
+  if (tab.elements.length === 0 && Object.keys(savedArticlesOf(tab)).length === 0)
     return {
       ...result,
       content: [...result.content, ...texts, { type: 'text', text: EMPTY_TAB_NOTE }],
