@@ -43,7 +43,7 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   stored key that cannot be opened is refused ("Replace it in AI Settings"), never quietly swapped for built-in AI.
   With no key, the Ask view says quietly under the field **Uses built-in AI**.
 - **Choosing which AI answers** (owner, 2026-11-21: "on Ask, I want to be able to choose whether to ask my configured
-  AI, or the built in AI"). Once a key is set, the quiet line under Ask's field becomes a small choice of two, **Answer With**:
+  AI, or the built in AI"). Once a key applies ([Which key answers](#which-key-answers)), the quiet line under Ask's field becomes a small choice of two, **Answer With**:
   **Built-In AI** and the team's key named by its model ("Claude Fable 5.2 (Team Key)"). The team's key is chosen
   until the person picks otherwise; the choice is kept per person, per knowledgebase, in this browser, beside the
   chats. Each question carries it (`ai: 'built-in' | 'key'`); a follow-up uses the choice in force when it is asked,
@@ -79,6 +79,30 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   whichever AI answers, and on built-in AI the [Built-in AI](#built-in-ai) caps too; a question is at most 1,000
   characters; the passages sent are capped at 24,000 characters. A failed or refused model call says
   which (bad key, no credit, rate limit) in words, never a raw error.
+
+## Which key answers
+
+Owner, 2026-11-21: a person's and a team's own AI key, kept once in liveworkspace and used in every app
+([liveworkspace/docs/specs/003-accounts/ai-keys.md](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md)).
+The knowledgebase's own key stays, and comes first.
+
+- **The order**, for Ask, Draft a Page From What We Know and Describe to Set Up: the knowledgebase's own key (AI
+  Settings), else its team's key (the knowledgebase's team, when the asker is a joined member), else the asker's own
+  key, else built-in AI. Asking for built-in AI (`ai: 'built-in'`) skips the keys, as before.
+- **The conflict check** runs in the background, with no asker whose request could prove who they are, so it uses
+  the knowledgebase's own key or built-in AI only, never a team's or a person's.
+- **Only a signed-in person's own request** reaches a shared key: the api forwards the person's access token to
+  accounts, which checks it and their team itself (`aiKeyFor`). An API token, an agent, a workbench session, a guest
+  or a link visitor gets the knowledgebase's key or built-in AI.
+- **A shared key that will not open** is refused in words ("Your team's AI key could not be read. An admin can
+  replace it in Settings, under AI." or "Your AI key could not be read. Replace it in Settings, under AI."), never
+  swapped quietly for the next in line.
+- **The plain key** is held in the one request's memory for the one call, never stored in the room.
+- **Which is in use** is said in AI Settings ("Uses This Knowledgebase's Key", "Uses Your Team's Key", "Uses Your Key",
+  "Uses Built-In AI"), with **Your AI Keys** linking to the shared Settings category (`?settings=ai`), and on Ask's
+  **Answer With**, whose second choice names the key's model and its source ("Claude Fable 5.2 (Team Key)", "(Your
+  Key)", "(Knowledgebase Key)"). `GET ai` answers it as `uses` (`knowledgebase`, `team`, `personal`, `built-in`) with
+  `usesModel`, read for the asker; the AI Knowledge overview does not ask accounts.
 
 ## Built-in AI
 
@@ -254,6 +278,9 @@ strangers.
 - The typed key is held only in the field. It is read once when sent and the field is cleared in the same turn,
   whatever the answer. It is never kept in the page's state, a browser store, a log, telemetry or an error message.
 - An Editor has the controls; a Participant and a Viewer see the state and the model with none.
+- Under Which AI, one line says which AI answers this person now, and **Your AI Keys** opens the shared Settings
+  category ([Which key answers](#which-key-answers)): with no knowledgebase key, a team's or the person's own key
+  answers before built-in AI.
 
 ## The three views
 
