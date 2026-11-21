@@ -169,6 +169,7 @@ function testDocumentRooms(
     return {
       get: async (key: string) => kept.get(key),
       put: async (key: string, value: unknown) => void kept.set(key, value),
+      delete: async (key: string) => kept.delete(key),
     } as unknown as DurableObjectStorage;
   };
   return testRoomNamespace(rooms, (id, roomOf) => ({
@@ -180,6 +181,11 @@ function testDocumentRooms(
       ),
     outline: async (documentId: string) =>
       (await import('./document-room/document-content')).readDocumentOutline(env, documentId),
+    // A public site's address (publishing/site-addresses.ts), as its named room's storage keeps it.
+    siteAddress: async (op: never) =>
+      (await import('./publishing/site-addresses')).siteAddressIn(countStorage(String(id)), op),
+    publishedRead: async (documentId: string, read: never) =>
+      (await import('./publishing/published-reads')).readPublished(env, documentId, read),
     route: async (documentId: string, request: Request, identity: unknown) =>
       (await import('./document-room/document-route')).answerDocumentRequest(
         env,
