@@ -5,7 +5,7 @@
 // when the review is due, when it was last edited (where that is known) and "Changed since verified". Verifying is
 // the right rail's (Page Health), never the page's own. Its height is kept whatever it holds, so nothing in the writing moves when the page's
 // health arrives or its state changes, except that a row with nothing in it is not drawn at all.
-import { Fragment, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { reviewDueText, trustMark, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
 import { TrustBadge } from './TrustBadge';
@@ -129,16 +129,22 @@ export function PageMetaRowView({
     <div
       data-page-meta=""
       // Nothing to say (a page never verified, no edit known): no row, so the writing sits right under the title.
-      className={`${mark || notes.length ? 'flex min-h-7' : 'hidden'} flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-600 dark:text-slate-400`}
+      className={`${mark || notes.length ? 'flex min-h-7' : 'hidden'} flex-wrap items-center gap-x-[0.8rem] gap-y-1 [clip-path:inset(-1rem_-1rem_-1rem_0)] font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-600 dark:text-slate-400`}
     >
       {mark ? (
         <TrustBadge mark={mark} {...(verifiedBy ? { label: `Verified by ${verifiedBy}` } : {})} />
       ) : null}
+      {/* Each note's dot leads it, in the gap before it: a note that wraps to start a line has its dot clipped by the
+          row's left edge, so no line ends or starts on a stray dot (owner 2026-11-21). */}
       {notes.map((note, i) => (
-        <Fragment key={note.key}>
-          {i > 0 ? <span aria-hidden>·</span> : null}
-          <span>{note.node}</span>
-        </Fragment>
+        <span key={note.key} data-meta-note="" className="relative">
+          {i > 0 ? (
+            <span aria-hidden className="absolute -left-[0.4rem] top-0 -translate-x-1/2">
+              ·
+            </span>
+          ) : null}
+          {note.node}
+        </span>
       ))}
     </div>
   );
