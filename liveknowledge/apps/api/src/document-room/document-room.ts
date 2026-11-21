@@ -256,6 +256,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // made that a structured-clone read per peer per packet. Lost with the
   // object when the room hibernates, and read again on the next frame.
   readonly scopes = new WeakMap<WebSocket, string | null>();
+  // Whether a socket's session reads a page's draft (an Editor's; room-draft-filter.ts), read once per socket like its
+  // scope: every op frame asks it of every recipient.
+  readonly draftReaders = new WeakMap<WebSocket, boolean>();
 
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);

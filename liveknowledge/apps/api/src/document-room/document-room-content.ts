@@ -29,6 +29,7 @@ import { drainOutbox } from './document-outbox';
 import type { DocumentRoom } from './document-room';
 import { closeSockets } from './document-room-sockets';
 import { pruneKnowledge } from '../knowledge/room-knowledge';
+import { dropStaleDrafts } from './draft-upkeep';
 import { knowledgeWorkDueAt } from '../knowledge/knowledge-work';
 
 // The document's own daily upkeep: old changesets go.
@@ -156,6 +157,8 @@ export async function maintain(room: DocumentRoom, now: number): Promise<void> {
     if (pruned > 0) console.info('[versions] pruned', { documentId, deleted: pruned });
     // Reads past 90 days, counters past their window, questions past the cap (blueprint "Wiring").
     pruneKnowledge(room.state.storage.sql, now);
+    // Drafts nobody has touched for 30 days (docs/specs/030-knowledgebase/editing.md).
+    dropStaleDrafts(room.state.storage.sql, now);
   } catch (error) {
     console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
   }

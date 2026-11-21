@@ -3,6 +3,7 @@
 import { DOCUMENT_TRASHED_CLOSE, SNAPSHOT_REVERTED_CLOSE } from '@liveknowledge/api-schema';
 import type { ServerMessage } from '../types';
 import { opForScope } from '../room-scope';
+import { opForReader, roleReadsDraft } from '../room-draft-filter';
 import {
   accessCloseCode,
   sessionMatchesAccessClose,
@@ -89,11 +90,29 @@ export function frameFor(
   serialized: string,
 ): string | null {
   if (payload.kind !== 'op') return serialized;
-  const scope = scopeOf(room, ws);
-  if (scope === null) return serialized;
-  const op = opForScope(payload.op, scope);
+  const op = opForSocket(room, ws, payload.op);
   if (op === null) return null;
   return op === payload.op ? serialized : JSON.stringify({ ...payload, op });
+}
+
+// One op as this socket may receive it: confined to its tab scope, and without a page's draft for a session that
+// cannot edit (room-draft-filter.ts, docs/specs/030-knowledgebase/editing.md). Null to withhold it.
+export function opForSocket(room: DocumentRoom, ws: WebSocket, op: unknown): unknown {
+  const scope = scopeOf(room, ws);
+  const scoped = scope === null ? op : opForScope(op, scope);
+  if (scoped === null || readsDraftOf(room, ws)) return scoped;
+  const read = opForReader(scoped);
+  if (read !== scoped) console.info('[room] draft withheld', { kind: (scoped as { kind?: unknown }).kind });
+  return read;
+}
+
+// Whether this socket's session reads a page's draft: an Editor's. Read once per socket, as its scope is.
+function readsDraftOf(room: DocumentRoom, ws: WebSocket): boolean {
+  const known = room.draftReaders.get(ws);
+  if (known !== undefined) return known;
+  const reads = roleReadsDraft(room.readSession(ws)?.verifiedRole);
+  room.draftReaders.set(ws, reads);
+  return reads;
 }
 
 export function scopeOf(room: DocumentRoom, ws: WebSocket): string | null {

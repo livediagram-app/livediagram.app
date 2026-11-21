@@ -666,7 +666,9 @@ describe('DocumentRoom op-role enforcement', () => {
   // loop automatically instead of shipping untested.
   // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
-  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview'];
+  // `page-editing` and `page-saved` (docs/specs/030-knowledgebase/editing.md) are an Editor's alone: only an Editor
+  // edits a page. The "DocumentRoom page editing" block pins them.
+  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'page-editing', 'page-saved'];
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
   // `article-hold` is arbitrated, and never from a viewer, who holds nothing (document-room-holds.test.ts).
   const ROOM_DECIDED_PRESENCE_KINDS = ['follow', 'article-hold'];
@@ -2358,5 +2360,85 @@ describe('the collab key (docs/specs/013-workspace/share-roles.md "The collab ke
     } finally {
       warn.mockRestore();
     }
+  });
+});
+
+// docs/specs/030-knowledgebase/editing.md "Edit mode", "Save", "Share roles"; blueprint blueprints/editing.md "Room
+// frames" and "Security and trust".
+describe('DocumentRoom page editing', () => {
+  type Roster = { participants: { id: string; editing?: string }[] };
+  const rosters = (ws: FakeSocket) => receivedOf(ws, 'presence') as unknown as Roster[];
+  const opsReceived = (ws: FakeSocket): unknown[] => receivedOf(ws, 'op');
+  function connect(room: DocumentRoom, id: string, role: 'edit' | 'view') {
+    const ws = makeSocket();
+    room.acceptSession(asWs(ws), role);
+    sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
+    return { ws };
+  }
+  const editingOf = (ws: FakeSocket, id: string) =>
+    rosters(ws).at(-1)?.participants.find((p) => p.id === id)?.editing;
+
+  it("keeps who is editing on the roster, never relays it, and takes it only from an Editor", () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const v = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, v, presence('p-v', 'view'));
+
+    sendFrame(room, a, { kind: 'op', op: { kind: 'page-editing', tabId: 't1' } });
+    expect(editingOf(v, 'p-a')).toBe('t1');
+    expect(opsReceived(v)).toHaveLength(0);
+    const sent = v.sent.length;
+    // The same again changes nothing and sends nothing.
+    sendFrame(room, a, { kind: 'op', op: { kind: 'page-editing', tabId: 't1' } });
+    expect(v.sent.length).toBe(sent);
+
+    sendFrame(room, v, { kind: 'op', op: { kind: 'page-editing', tabId: 't1' } });
+    expect(editingOf(a, 'p-v')).toBeUndefined();
+
+    sendFrame(room, a, { kind: 'op', op: { kind: 'page-editing', tabId: null } });
+    expect(editingOf(v, 'p-a')).toBeUndefined();
+  });
+
+  it("relays an Editor's save, and drops anyone else's", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const other = connect(room, 'other', 'edit');
+    other.ws.sent.length = 0;
+    sendFrame(room, viewer.ws, { kind: 'op', op: { kind: 'page-saved', tabId: 't' } });
+    expect(opsReceived(other.ws)).toHaveLength(0);
+    sendFrame(room, editor.ws, { kind: 'op', op: { kind: 'page-saved', tabId: 't' } });
+    expect(opsReceived(other.ws)).toHaveLength(1);
+  });
+
+  it('never sends the draft to a session that cannot edit, live or on catch-up', () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const peer = connect(room, 'peer', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    peer.ws.sent.length = 0;
+    viewer.ws.sent.length = 0;
+    const draftOp = { kind: 'article', tabId: 't', flow: 'draft', blocks: [] };
+    const metaOp = { kind: 'tab-meta', tabId: 't', patch: { draft: { by: 'P', at: 1, base: {} } } };
+    sendFrame(room, editor.ws, { kind: 'op', op: draftOp });
+    sendFrame(room, editor.ws, { kind: 'op', op: metaOp });
+    expect(opsReceived(peer.ws)).toHaveLength(2);
+    expect(opsReceived(viewer.ws)).toHaveLength(0);
+
+    const late = connect(room, 'late', 'view');
+    sendFrame(room, late.ws, { kind: 'sync', epoch: room.epoch, lastSeq: 0 });
+    const catchup = late.ws.sent
+      .map((s) => JSON.parse(s) as { kind: string; ops?: unknown[] })
+      .filter((m) => m.kind === 'catchup')
+      .at(-1)!;
+    expect(catchup.ops).toEqual([]);
+    const lateEditor = connect(room, 'late-editor', 'edit');
+    sendFrame(room, lateEditor.ws, { kind: 'sync', epoch: room.epoch, lastSeq: 0 });
+    const editorCatchup = lateEditor.ws.sent
+      .map((s) => JSON.parse(s) as { kind: string; ops?: unknown[] })
+      .filter((m) => m.kind === 'catchup')
+      .at(-1)!;
+    expect(editorCatchup.ops).toHaveLength(2);
   });
 });

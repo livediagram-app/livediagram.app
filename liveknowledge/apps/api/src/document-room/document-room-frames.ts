@@ -9,12 +9,12 @@ import { selectionFromOp } from '../room-selections';
 import type { ClientMessage, ParticipantPresence, ServerMessage } from '../types';
 import { MAX_TAB_ID_LEN, admitFrame, helloPresence, resolveCatchup } from '../document-room-rules';
 import { followTargetOf } from '@liveworkspace/api-kit/room-follows';
-import { opForScope, opFromScopedSender } from '../room-scope';
+import { opFromScopedSender } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
 import { helloChangesRoster } from '@liveworkspace/api-kit/room-roster';
 import { type SessionAttachment } from '../room-session';
 import type { DocumentRoom } from './document-room';
-import { scopeOf, sequenceMutation, sendTo } from './document-room-sockets';
+import { opForSocket, sequenceMutation, sendTo } from './document-room-sockets';
 import { sendFollowers, noteMultiplayer } from './document-room-presence';
 import { answerArticleHold } from './document-room-holds';
 
@@ -74,6 +74,8 @@ export function webSocketMessage(
     const next = helloPresence(msg.participant, session);
     if (session.presence.tabId !== undefined) next.tabId = session.presence.tabId;
     if (session.presence.besideTabId !== undefined) next.besideTabId = session.presence.besideTabId;
+    const editing = (session.presence as { editing?: string }).editing;
+    if (editing !== undefined) (next as { editing?: string }).editing = editing;
     ws.serializeAttachment({ ...session, presence: next } satisfies SessionAttachment);
     room.broadcastPresence();
     return;
@@ -192,6 +194,11 @@ export function webSocketMessage(
       noteFollow(room, ws, session, sender, msg.op);
       return;
     }
+    // Who is editing a page is the room's to keep on the roster, never relayed (docs/specs/030-knowledgebase/editing.md).
+    if (opKind === 'page-editing') {
+      notePageEditing(room, ws, session, sender, msg.op);
+      return;
+    }
     // Presence ops relay unordered (ephemeral, no catch-up). Mutation
     // ops get a monotonic seq within the epoch and land in the catch-up
     // log so a reconnecting peer can replay the delta (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1).
@@ -241,15 +248,12 @@ export function sendCatchup(
     { epoch, lastSeq },
     { epoch: room.epoch, seq: room.seq, opLog: room.opLog },
   );
-  // A tab-scoped session replays its own tab only, like the live relay.
-  const scope = scopeOf(room, ws);
-  const visible =
-    scope === null
-      ? ops
-      : ops.flatMap((o) => {
-          const op = opForScope(o.op, scope);
-          return op === null ? [] : [{ ...o, op }];
-        });
+  // A tab-scoped session replays its own tab only, and a session that cannot edit no draft, like the live relay.
+  const visible = ops.flatMap((o) => {
+    const op = opForSocket(room, ws, o.op);
+    if (op === null) return [];
+    return op === o.op ? [o] : [{ ...o, op }];
+  });
   const payload: ServerMessage = {
     kind: 'catchup',
     epoch: room.epoch,
@@ -308,6 +312,26 @@ export function refusesPageTreeOp(
       : {}),
   });
   return true;
+}
+
+// The page this session is editing (docs/specs/030-knowledgebase/editing.md "Edit mode"), or none: kept on its presence
+// as `editing`, clamped like a tab id, and the roster sent again so everyone (a late joiner too) sees who is editing.
+// Nothing changes when it says what the presence already holds.
+export function notePageEditing(
+  room: DocumentRoom,
+  ws: WebSocket,
+  session: SessionAttachment,
+  sender: ParticipantPresence,
+  op: unknown,
+): void {
+  const raw = (op as { tabId?: unknown } | null)?.tabId;
+  const next = typeof raw === 'string' && raw.length > 0 ? raw.slice(0, MAX_TAB_ID_LEN) : null;
+  const presence = sender as ParticipantPresence & { editing?: string };
+  if ((presence.editing ?? null) === next) return;
+  if (next === null) delete presence.editing;
+  else presence.editing = next;
+  ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
+  room.broadcastPresence();
 }
 
 // Who this session follows (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): kept on the

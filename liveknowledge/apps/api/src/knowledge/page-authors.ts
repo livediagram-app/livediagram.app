@@ -2,6 +2,7 @@
 // row a page in the knowledgebase's own SQLite, `page_authors`. The first person whose write makes the page is its
 // creator for good; every later write by a person moves "updated". A page that predates the table has no row until
 // its next write, and then that writer counts as both (the rail shows what it knows, nothing it guesses).
+import { holdsDraft, sameArticleValue, savedArticlesOf } from '@liveknowledge/document';
 import type { DocumentEnv } from '../types';
 
 type Exec = (query: string) => unknown;
@@ -27,6 +28,21 @@ export function pageAuthorStatement(
     `INSERT INTO page_authors (tab, created_by, created_at, updated_by, updated_at) VALUES (?1, ?2, ?3, ?2, ?3)
      ON CONFLICT (tab) DO UPDATE SET updated_by = excluded.updated_by, updated_at = excluded.updated_at`,
   ).bind(tab, by, at);
+}
+
+/**
+ * Whether a save changed the page a reader reads (docs/specs/030-knowledgebase/editing.md "Save"): a draft's
+ * autosave is nobody's update until Save puts it in the saved writing. With no draft either side, every write
+ * counts, as it always did; with one, the name, the saved writing or the objects must have moved.
+ */
+export function savedPageChanged(
+  before: { name: string; elements: unknown; articles?: unknown; draft?: unknown } | null,
+  after: { name: string; elements: unknown; articles?: unknown; draft?: unknown },
+): boolean {
+  if (!before || (!holdsDraft(before) && !holdsDraft(after))) return true;
+  if (before.name !== after.name) return true;
+  if (!sameArticleValue(savedArticlesOf(before), savedArticlesOf(after))) return true;
+  return !sameArticleValue(before.elements, after.elements);
 }
 
 /** Note a write; a failure is logged and never fails the write it follows. */

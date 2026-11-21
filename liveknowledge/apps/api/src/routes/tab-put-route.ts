@@ -4,7 +4,7 @@
 // seen and with the room's collaboration ledger, then written at the revision it read.
 
 import { keepStoredKnowledge } from '../knowledge/page-knowledge';
-import { notePageWrite } from '../knowledge/page-authors';
+import { notePageWrite, savedPageChanged } from '../knowledge/page-authors';
 import {
   CHANGESET_MERGE_WINDOW_MS,
   CHANGESET_SEEN_HEADER,
@@ -221,8 +221,9 @@ export async function writeTabSave(
       continue;
     }
     logMerge(id, tabId, merge);
-    // Who made the page and who last changed it (knowledge/page-authors.ts), for Page Health.
-    await notePageWrite(env, tabId, owner);
+    // Who made the page and who last changed it (knowledge/page-authors.ts), for Page Health: a draft's autosave is
+    // not a change to the page (docs/specs/030-knowledgebase/editing.md "Save").
+    if (savedPageChanged(existingTab, sanitised)) await notePageWrite(env, tabId, owner);
     // The tab holding a new connection is in: the index confirms it, or its sweep takes it back within the hour.
     const kept = connection ?? existingTab?.connection;
     if (connection && !sameConnection(connection, existingTab?.connection)) {

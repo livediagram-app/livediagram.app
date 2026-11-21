@@ -20,7 +20,7 @@ import {
 } from '@liveknowledge/api-schema';
 import { formatLintReport, lintTab } from '@liveknowledge/diagram-lint';
 import { lintLog } from '../changesets/lint';
-import { isKnownElement } from '@liveknowledge/document';
+import { isKnownElement, withoutDraft } from '@liveknowledge/document';
 import {
   FIND_QUERY_MAX_LENGTH,
   headerFactsOf,
@@ -322,7 +322,9 @@ async function inScopeFacts(
     for (const tab of tabs) {
       // A Community visitor's overview counts what they can read: no comment threads, no people
       // (docs/specs/025-community/community.md "Viewing a post's document").
-      const seen = community ? redactTabForCommunity(tab) : tab;
+      // A view reads the saved page: never a draft (docs/specs/030-knowledgebase/editing.md).
+      const saved = withoutDraft(tab);
+      const seen = community ? redactTabForCommunity(saved) : saved;
       facts.set(tab.id, headerFactsOf(seen, { rev: tab.rev, tabIds }));
     }
   };

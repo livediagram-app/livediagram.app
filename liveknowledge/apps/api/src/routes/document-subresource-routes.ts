@@ -20,6 +20,8 @@ import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import { handleKnowledgeRoutes } from './knowledge-routes';
 import { countRead } from '../knowledge/knowledge-reads';
+import { readsDraft } from '../knowledge/page-draft-reads';
+import { withoutDraft } from '@liveknowledge/document';
 import { readerOf } from '../knowledge/knowledge-caller';
 import {
   COMMUNITY_CONTENT,
@@ -131,8 +133,11 @@ export async function handleDocumentSubresources(
       if (!grant || (grant.tabScope !== null && grant.tabScope !== tabId)) {
         return deniedOnTab(ctx, existing);
       }
-      const tab = await getTab(env, id, tabId);
-      if (!tab) return notFound();
+      const stored = await getTab(env, id, tabId);
+      if (!stored) return notFound();
+      // A page's draft (docs/specs/030-knowledgebase/editing.md) is read only by the people who may edit it: an
+      // Editor's editor, never a Viewer, a Participant, a link visitor, an agent's token or a document view.
+      const tab = readsDraft(ctx, grant, view !== null) ? stored : withoutDraft(stored);
       // An agent's read shows it on this tab (docs/specs/024-agents/agent-presence.md "Presence").
       if (caller !== null) refreshAfterRead(ctx, existing, tabId, caller);
       // One open of a page is a read (ai-knowledge.md "Reads"); a document view is an agent's `read_page`.

@@ -73,6 +73,13 @@ export const PRESENCE_OP_KINDS = [
   // keeps it on the session and is the only one who reads it: it tells each person, on their own socket, who
   // follows them (`followers`). Never relayed, from any session (a viewer follows too).
   'follow',
+  // The page the sender is editing (docs/specs/030-knowledgebase/editing.md "Edit mode"), or none: the room keeps it on
+  // the session's presence (`editing`) and sends the roster again, so a late joiner sees who is editing; never relayed
+  // as sent. Only from an Editor.
+  'page-editing',
+  // The sender just saved a page's draft (editing.md "Save"): relayed to the others, who say "<name> saved the page".
+  // Writes nothing (the save's own frames do). Only from an Editor.
+  'page-saved',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -455,6 +462,10 @@ export type RoomOp =
     }
   // Who the sender follows (a presence id), or null when they stop: to the room, never relayed.
   | { kind: 'follow'; target: string | null }
+  // The page the sender is editing, or none (docs/specs/030-knowledgebase/editing.md): to the room, kept on presence.
+  | { kind: 'page-editing'; tabId: string | null }
+  // The sender saved this page's draft (editing.md "Save"): peers say who.
+  | { kind: 'page-saved'; tabId: string }
   // A share link was revoked by the document owner. Every connected
   // peer using that share code (the `X-Share-Code` they handed in to
   // hydrate) should hard-redirect to a "share revoked" surface so

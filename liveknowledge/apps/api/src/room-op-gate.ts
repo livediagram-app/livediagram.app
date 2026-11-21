@@ -74,5 +74,8 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only
   // an editor's may reach anyone, so a viewer can never make others' elements appear to move.
   if (opKind === 'drag-preview' && sender.role !== 'edit') return DROP;
+  // Who is editing a page, and a page saved (docs/specs/030-knowledgebase/editing.md): only an Editor edits a page,
+  // so nobody else can claim to be editing one or say they saved it.
+  if ((opKind === 'page-editing' || opKind === 'page-saved') && sender.role !== 'edit') return DROP;
   return { kind: 'relay', presence };
 }
