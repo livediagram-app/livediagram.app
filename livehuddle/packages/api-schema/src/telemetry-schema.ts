@@ -291,7 +291,7 @@ export const TELEMETRY_ACTIONS = [
   // room, one batch a wake, under `Document`. Typed by the result ('AutomationDone', 'AutomationFailed',
   // 'AutomationSkipped', 'AutomationWaiting', 'AutomationNoMatch'), the trigger ('AutomationTrigger.<Kind>'), and
   // what else happened ('AutomationPaused', 'AutomationCrashed', 'AutomationQueueFull', 'AutomationTimeMissed',
-  // 'AutomationWakeFailed', the Incoming Webhook answers and Describe a Rule's). Never a rule's name, a tab or the
+  // 'AutomationWakeFailed', 'AutomationWakeGaveUp', the Incoming Webhook answers and Describe a Rule's). Never a rule's name, a tab or the
   // Space.
   'Ran',
 ] as const;

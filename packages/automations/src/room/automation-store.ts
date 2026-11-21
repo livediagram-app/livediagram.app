@@ -85,6 +85,21 @@ export class AutomationStore<Rule extends StoredRule, EventKind extends string =
     this.onSchedule();
   }
 
+  // Each time rule whose moment is past moves on to its next one after `now` (or goes, for a rule off, gone or with
+  // no next): a wake that gave up (automation-wake.ts), so no past moment wakes the room again at once.
+  advanceDue(now: number): void {
+    const rows = this.sql()
+      .exec('SELECT rule_id FROM automation_schedule WHERE next_at <= ?', now)
+      .toArray() as unknown as { rule_id: string }[];
+    for (const { rule_id: id } of rows) {
+      const rule = this.get(id);
+      const next = rule?.enabled ? this.kit.nextAt(rule, now) : null;
+      if (next === null) this.sql().exec('DELETE FROM automation_schedule WHERE rule_id = ?', id);
+      else
+        this.sql().exec('UPDATE automation_schedule SET next_at = ? WHERE rule_id = ?', next, id);
+    }
+  }
+
   // Each time rule's next moment, by rule id, for the Rules list's "Next: Mon 9:00".
   nextAts(): Map<string, number> {
     if (!this.ready()) return new Map();

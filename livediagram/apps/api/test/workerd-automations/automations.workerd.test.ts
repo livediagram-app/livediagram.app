@@ -117,13 +117,14 @@ describe('the schema', () => {
       'table automation_quiet',
       'table automation_settles',
       'table automation_collab_seen',
+      'table automation_wake',
       'trigger automation_tab_added',
       'trigger automation_tab_removed',
       'trigger automation_tab_edited',
     ])
       expect(names).toContain(name);
     const [version] = await c.rows<{ version: number }>('SELECT version FROM _document_schema');
-    expect(version!.version).toBe(18);
+    expect(version!.version).toBe(19);
   });
 });
 

@@ -31,7 +31,7 @@ packages/api-schema/src/automations.ts      the wire types, filled in with the i
 packages/api-schema/src/telemetry-schema.ts the `Ran` action
 
 apps/api/src/document-room/
-  document-schema.ts                        steps 9 to 18
+  document-schema.ts                        steps 9 to 19
   document-room.ts                          `standing`, `automations`, `collab`; the doors' RPC methods
   room-content-state.ts                     restoreAutomations on wake
   room-lifecycle.ts                         the alarm's due list and run; the purge
@@ -96,9 +96,10 @@ shipped:
 | 9 to 16 | the engine's `rules`, `schedule`, `hooks`, `waiting`, `ai_drafts`, `fired`, `addresses`, `counts`     |
 | 17      | the engine's `item` step: its five tables and three SQL triggers on `tabs` and `document_tabs`        |
 | 18      | `automation_collab_seen (tab_id PRIMARY KEY, summary)`: each tab's threads and actions as last diffed |
+| 19      | the engine's `wake` step: `automation_wake`, failed wakes in a row and the next try's hold-off        |
 
-`DOCUMENT_SCHEMA_VERSION` is 18. Steps 9 to 17 are `itemAutomationSchemaSteps({ links: 'document_tabs' })`, one entry
-each.
+`DOCUMENT_SCHEMA_VERSION` is 19. Steps 9 to 17 are `itemAutomationSchemaSteps({ links: 'document_tabs' })`, one entry
+each; step 19 is `automationSchemaStep('wake')`, after the collab step, so no shipped step moves.
 
 ## The engine in the room (checklist 3, 5, 6)
 

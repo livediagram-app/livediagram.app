@@ -288,7 +288,7 @@ export const TELEMETRY_ACTIONS = [
   // room, one batch a wake, under `Document`. Typed by the result ('AutomationDone', 'AutomationFailed',
   // 'AutomationSkipped', 'AutomationWaiting', 'AutomationNoMatch'), the trigger ('AutomationTrigger.<Kind>'), and what
   // else happened ('AutomationPaused', 'AutomationCrashed', 'AutomationQueueFull', 'AutomationTimeMissed',
-  // 'AutomationWakeFailed', the Incoming Webhook answers 'AutomationHookAccepted' / 'Unauthorized' / 'RateLimited' /
+  // 'AutomationWakeFailed', 'AutomationWakeGaveUp', the Incoming Webhook answers 'AutomationHookAccepted' / 'Unauthorized' / 'RateLimited' /
   // 'Budget' / 'Invalid', and Describe a Rule's 'AutomationAiDraft' / 'AutomationAiOffTopic'). Never a rule's name, a
   // tab or the document.
   'Ran',

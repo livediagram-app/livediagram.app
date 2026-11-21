@@ -49,6 +49,7 @@ packages/automations/
     automation-queue.ts     AutomationSchedule (the wake), ItemAutomations (what the room holds), AutomationsHook
     automation-log.ts       the Audit Trail: claim, settle, trim, list, stats, today's count
     automation-waits.ts     holdRun, stopWaits, runWaits
+    automation-wake.ts      a wake that fails as a whole: the count, the back-off, giving up
     automation-fired.ts     the event ids a time rule has run on
     automation-incoming.ts  an Incoming Webhook secret: made, proved, listed; the rule's minute
     automation-sends.ts     a run's messages through the item's connections
@@ -174,9 +175,12 @@ where `run` is SQL or a function of the schema's `exec`. A step, once shipped, i
 | `fired`     | `automation_fired`                                                                    |
 | `addresses` | `automation_email_addresses`, `automation_email_days`                                 |
 | `counts`    | `automation_hook_seen` (each signature a rule took, 10 minutes), `automation_ai_days` |
+| `wake`      | `automation_wake`: one row (`id` 1) while wakes fail, `failures` in a row, `retry_at` |
 
 No table holds an item id. liveplanner registers the same SQL at the versions it shipped under (V18, V19, V20, V22,
-V24, V26, V28, V42), by the exported constants; `automationSchemaStep(name)` answers one step.
+V24, V26, V28, V42, V43), by the exported constants; `automationSchemaStep(name)` answers one step. An item app takes
+`itemAutomationSchemaSteps` (every step before `wake`, then `item`) and appends `automationSchemaStep('wake')` after
+its own later steps, so no step an item already ran moves.
 
 ### What an app hands in
 
@@ -202,7 +206,7 @@ dashboard's emitter scan reads them.
   `automation_fired` ids when the rule goes or its trigger's kind changes, and settles its waiting runs Skipped when
   it is turned off or its `edited.at` changes.
 - A run's id is claimed (`claimRun`) before anything is done; `runsToday` leaves out No Match and the Audit Trail's
-  own lines (`burst:`, `time:`, `derived:`).
+  own lines (`burst:`, `time:`, `derived:`, `budget:`, `stopped:`).
 - `provesSecret(call, hash, now)` checks a rule with no secret against a dummy hash, so every refusal costs the same
   work. A signature is worked out over `<timestamp>.<body>` and compared whether or not the timestamp is fresh; a
   timestamp missing, not digits, or more than `WEBHOOK_SKEW_MS` off `now` either way then fails the proof.
@@ -221,6 +225,16 @@ dashboard's emitter scan reads them.
 - `claimAddresses` is synchronous, and throws (claiming nothing) when the day's count cannot be read.
 - Log lines keep their tags: `[automations] paused`, `queue.full`, `waits.due`, `sends`, `sends.failed`,
   `ai.failed`, `email.failed`.
+- A wake that fails as a whole (automation-wake.ts): `wakeFailed(sql, schedule, now)` bumps `automation_wake` and
+  sets `schedule.retryAt = now + wakeRetryMs(n)` (`min(60 s × 2^(n−1), 1 h)`); `AutomationSchedule` holds `wakeAt`,
+  `timeDue` and `queueDue` (and the item engine its settles) to `retryAt`, and `restore` reads the row back, so a
+  restart neither retries at once nor counts afresh. The wake itself returns before anything while `now < retryAt`.
+  `wakeDone` deletes the row (no statement once the count is known to be none). At `WAKE_FAILURES_MAX` (12)
+  `giveUpWake(sql, schedule, now, { store, settles, line })` empties `automation_queue`, deletes the due
+  `automation_waiting` rows and settles them (and any queued resume's `origin`) Skipped with `WAKE_GAVE_UP`, deletes
+  the due `automation_settles` rows when the app has them, moves each due `automation_schedule` row to its next
+  moment (`store.advanceDue(now)`), writes one `stopped:<now>` line (`ruleId` ''), and clears the count; the app
+  tracks `AutomationWakeGaveUp`. A count that cannot be written holds the wake off an hour, in memory.
 - `runsToday` and `ruleStats` also leave out `budget:` lines (`budgetLineId(ruleId, now)`: one a rule a UTC day, said
   once the day's budget is spent).
 

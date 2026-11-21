@@ -13,6 +13,7 @@
 
 import {
   COLLAB_SEEN_SCHEMA_STEP,
+  automationSchemaStep,
   itemAutomationSchemaSteps,
 } from '@liveworkspace/automations/room';
 import {
@@ -350,6 +351,11 @@ const AUTOMATION_STEPS = itemAutomationSchemaSteps({ links: 'document_tabs' }).m
 // watch), kept only while a rule that is on hears one.
 const V18 = COLLAB_SEEN_SCHEMA_STEP;
 
+// Step 19: the engine's failed wakes (@liveworkspace/automations/room automation-wake.ts), how many in a row and
+// when the next may try, so a wake that keeps failing backs off and gives up, over a restart too. Appended after
+// the steps before it, never among the engine's own.
+const V19 = automationSchemaStep('wake');
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -361,6 +367,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V8,
   ...AUTOMATION_STEPS,
   V18,
+  V19,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

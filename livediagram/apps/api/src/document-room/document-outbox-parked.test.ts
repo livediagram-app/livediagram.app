@@ -146,8 +146,8 @@ describe('the parking schema step (V6)', () => {
     expect(() => outboxDueAt(nodeSql(raw))).toThrow();
     migrateDocumentSchema(exec);
     expect(outboxDueAt(nodeSql(raw))).toBeNull();
-    // 8 content steps (the folder colour last), then Automations' 10 (document-schema.ts).
-    expect(DOCUMENT_SCHEMA_VERSION).toBe(18);
+    // 8 content steps (the folder colour last), then Automations' 11 (document-schema.ts).
+    expect(DOCUMENT_SCHEMA_VERSION).toBe(19);
     // The Community triggers key the summary by delete-then-insert now.
     const triggers = raw
       .prepare(
