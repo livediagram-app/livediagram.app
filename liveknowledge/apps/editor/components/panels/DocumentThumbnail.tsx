@@ -217,12 +217,10 @@ export function DocumentThumbnail({
   );
 }
 
-// Placeholder shown when there's no snapshot: three nodes and two
-// arrows, the smallest thing that still says "diagram". Scales with the
-// box, capped so it stays a modest
-// centred sketch in a card. Inlined so the component carries no
-// cross-folder icon dependency (it's imported from both app/ and
-// components/ surfaces).
+// Placeholder shown when there's no snapshot: a page of writing, the smallest thing that still says "knowledgebase"
+// (it was the fork's three-node diagram and "Nothing drawn yet", sweep 2026-11-21). Scales with the box, capped so it
+// stays a modest centred sketch in a card. Inlined so the component carries no cross-folder icon dependency (it's
+// imported from both app/ and components/ surfaces).
 function BlankCanvasIllustration() {
   return (
     <span className="flex h-full flex-col items-center justify-center gap-2 p-1">
@@ -236,20 +234,15 @@ function BlankCanvasIllustration() {
         aria-hidden
         className="h-full max-h-20 w-auto text-slate-300 dark:text-slate-600"
       >
-        {/* Three nodes and two connectors, dashed: a diagram that hasn't
-            been drawn yet rather than a thumbnail of one that has. The
-            box is plain (no canvas dot grid) so the caption under it
-            stays readable. */}
-        <rect x="4" y="14" width="18" height="12" rx="3" strokeDasharray="3 2.5" />
-        <rect x="42" y="3" width="18" height="12" rx="3" strokeDasharray="3 2.5" />
-        <rect x="42" y="25" width="18" height="12" rx="3" strokeDasharray="3 2.5" />
-        <path d="M22 20c8 0 10-11 18-11M22 20c8 0 10 11 18 11" />
-        <path d="M37 6.5l3 2.5-3 2.5M37 28.5l3 2.5-3 2.5" />
+        {/* A page, dashed (not written yet as far as the preview knows), its title and lines of writing. */}
+        <rect x="18" y="2" width="28" height="36" rx="3" strokeDasharray="3 2.5" />
+        <path d="M24 10h12" strokeWidth="2.4" />
+        <path d="M24 17h16M24 22h16M24 27h10" />
       </svg>
       {/* Container-queried: only where the box is wide enough to hold
           the words without crowding the sketch (a card, not a row). */}
       <span className="hidden text-[11px] font-medium text-slate-500 dark:text-slate-400 @min-[140px]:block">
-        Nothing drawn yet
+        No preview yet
       </span>
     </span>
   );

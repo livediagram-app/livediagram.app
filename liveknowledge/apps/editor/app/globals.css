@@ -117,8 +117,13 @@
    so an element's own pointer-events utility still wins. */
 /* The page's scroll container (components/canvas/Canvas.tsx, docs/specs/030-knowledgebase/page-surface.md): it ends
    where the docked page rail begins, so its scrollbar is never under the rail and the rail never over the writing. */
+/* PAGE_RAIL_WIDTH and PAGE_RAIL_STRIP_WIDTH (components/knowledge/PageRail.tsx; page-rail-css.test.ts keeps them in
+   step: the scroller ran 32 px under the rail when it widened to 312, sweep 2026-11-21). */
 [data-canvas-root]:has(> [data-page-rail='docked']) > [data-page-scroller] {
-  right: 280px;
+  right: 312px;
+}
+[data-canvas-root]:has(> [data-page-rail='strip']) > [data-page-scroller] {
+  right: 48px;
 }
 
 /* The top row of the content area (components/chrome/KnowledgeTopRow.tsx, page-surface.md "The footer"): 48 px, and

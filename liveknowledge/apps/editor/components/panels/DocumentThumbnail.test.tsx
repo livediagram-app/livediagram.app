@@ -116,7 +116,7 @@ describe('DocumentThumbnail', () => {
     render(thumb(1));
     await act(async () => pending[0]!(null));
     expect(loader()).toBeNull();
-    expect(document.body.textContent).toContain('Nothing drawn yet');
+    expect(document.body.textContent).toContain('No preview yet');
   });
 
   it('paints a remount straight from the cache without refetching', async () => {
