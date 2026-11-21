@@ -8241,6 +8241,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "knowledge": {
         "$ref": "#/components/schemas/PageKnowledge"
       },
+      "names": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "The names of the accounts this page names (its creator, its last writer, its editors, its owner, who verified it), by account id, so every reader can name them (verification.md \"Created and Updated\"); absent when none has a name.",
+        "type": "object"
+      },
       "reads": {
         "additionalProperties": false,
         "properties": {

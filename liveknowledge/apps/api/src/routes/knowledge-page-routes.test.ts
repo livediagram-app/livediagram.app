@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { knowledgeKit, OWNER, page, type Kit, type Who } from './knowledge-test-kit';
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
+
+vi.mock('../person/profiles', () => import('../test-profiles'));
 
 // docs/specs/030-knowledgebase/verification.md and ai-knowledge.md "Always in Context".
 vi.mock('../index-service', async (original) => {
@@ -17,6 +20,7 @@ afterEach(() => {
 });
 
 type Health = {
+  names?: Record<string, string>;
   knowledge: {
     owner?: string;
     verifiedAt?: number;
@@ -305,6 +309,26 @@ describe('GET pages/:tab/health', () => {
     expect(
       (await kit.call('stranger', 'GET', '/api/documents/kb/pages/deploys/health')).status,
     ).toBe(403);
+  });
+});
+
+describe('GET pages/:tab/health names', () => {
+  afterEach(() => clearTestProfiles());
+  // verification.md "Created and Updated" (owner 2026-11-21): a Viewer outside the team names who made, changed,
+  // owns and verified the page, never "Guest" or "Someone".
+  it('names the accounts the page names, for every reader', async () => {
+    setTestProfile(OWNER, 'Alex Tester');
+    const kit = await knowledgeKit();
+    await kit.call('editor', 'POST', '/api/documents/kb/pages/deploys/verify');
+    const health = await read(kit, 'viewer');
+    expect(health.knowledge.verifiedBy).toBe(OWNER);
+    expect(health.names).toEqual({ [OWNER]: 'Alex Tester' });
+  });
+
+  it('leaves names out when no account has one', async () => {
+    const kit = await knowledgeKit();
+    await kit.call('editor', 'POST', '/api/documents/kb/pages/deploys/verify');
+    expect(await read(kit, 'viewer')).not.toHaveProperty('names');
   });
 });
 

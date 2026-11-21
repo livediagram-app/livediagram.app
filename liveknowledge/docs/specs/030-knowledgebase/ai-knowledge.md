@@ -45,8 +45,11 @@ and the 5 pages read most in the last 7 days with each one's reads by people and
 - **Draft a Page** starts a page titled from the question, drafted from the nearest passages (on the team's key, or
   built-in AI without one: [Built-in AI](search-and-ask.md#built-in-ai)), marked "Draft, Not Verified" in its first
   line; when no AI can answer (no key and no built-in AI on the server, or the draft's call fails) it opens with the
-  question as its first heading alone.
-  **Dismiss** removes the row.
+  question as its first heading alone. While it drafts, the button shows a spinner and reads **Drafting…** (the call
+  takes seconds). Once the page is made the question has a page, so its row leaves the list.
+  **Dismiss** removes the row. A question also leaves the list once it is answered (owner 2026-11-21): when Ask later
+  answers it in full from pages (a first question, citing pages, with no gap), and when a writer presses **Accept
+  Answer** on a chat, which settles the chat's question and every gap its answers named.
 
 ## Pages that disagree
 

@@ -30,7 +30,10 @@ once, with no reload.
 created each page and who last saved it, with when (`page_authors` in its Durable Object, schema step V17). The first
 person whose save makes the page is its creator for good; each later save by a person that changes the page moves "updated" (an editor saving back what it already holds changes nothing, so an agent's edit stays the agent's). A page not
 saved since the table began has no row and shows neither: nothing is guessed. Page Health's read answers them as
-`created` and `updated`.
+`created` and `updated`. Every reader sees the people by name (owner 2026-11-21: a Viewer through a link saw "Guest" and "Someone"):
+the read also answers `names`, the profile name of each account the page names (its creator, its last writer, its
+editors, its owner and who verified it), from one profiles read, so a reader outside the team names them as a member
+does.
 
 **Made by a person or an agent** (owner, 2026-11-21: badges under the title, "AI Generated" or "Human Generated" and
 "AI Edited" or "Human Edited"). Each of the two stamps also says what kind of writer made it (schema step V18):

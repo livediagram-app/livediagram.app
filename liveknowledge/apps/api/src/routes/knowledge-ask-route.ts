@@ -23,6 +23,7 @@ import {
   callModel,
   chooseAskPassages,
   dayOf,
+  dismissQuestion,
   foundPassage,
   modelFailureWords,
   questionKey,
@@ -230,7 +231,14 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
             return key ? [{ key, question: gap }] : [];
           }),
         );
-        await runAll(env, answered ? [...gaps, answered] : gaps);
+        // A first question answered in full, from pages, is no longer unanswered: its group leaves Needs Attention
+        // (owner 2026-11-21), as once a page is written for it.
+        const askedKey = questionKey(question);
+        const settled =
+          !earlier.length && sources.length > 0 && read.gaps.length === 0 && askedKey
+            ? dismissQuestion(askedKey)
+            : [];
+        await runAll(env, [...gaps, ...(answered ? [answered] : []), ...settled]);
         await queueNewQuestions(ctx, fresh);
         console.info('[knowledge] ask', {
           documentId: document.id,
