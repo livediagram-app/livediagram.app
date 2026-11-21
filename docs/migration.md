@@ -412,12 +412,31 @@ fails. The bundle lists the people in `people/people.jsonl`, one `people/<app>/<
 - **Accounts**: the `legacy_guest` table (`migrations/0011_legacy_guest.sql`) and
   `POST /api/account/internal/legacy-guests/claim` `{ legacyId, signature | null, into }`, livediagram's client
   only, a plain 404 without `LEGACY_GUEST_ID_HMAC_SECRET` (the old site's `GUEST_ID_HMAC_SECRET`). The signature is
-  checked before any row is read (403 `bad_signature`); an unsigned id is never merged: first seen at or after
-  `LEGACY_GUEST_SIGNING_LIVE_AT` it is 403 `signature_required`, and before it 503 `unsigned_claims_paused` (the
-  bare id is not a secret, so those guests wait, keys kept, for their ids to be re-keyed). It answers `{merged:false, reason:'unknown'}` with no
+  checked before any row is read (403 `bad_signature`). An unsigned id first seen at or after
+  `LEGACY_GUEST_SIGNING_LIVE_AT` is 403 `signature_required`. One from before it is merged only once its guest is
+  re-keyed (below): until then 503 `unsigned_claims_paused`, keys kept. It answers `{merged:false, reason:'unknown'}` with no
   row, `{merged:false, reason:'claimed'}` for one claimed by someone else, `{merged:true}` (also on a retry by the
   same person), 502 `merge_failed` when the index merge fails (nothing stamped), and 429 past 10 a minute per caller
   (`LEGACY_GUEST_LIMITER`).
+- **Re-keying the guests from before signing.** `guest_<old uuid>` is not a secret (the index hands an item's owner
+  id to every reader of it), so the bare id of a guest from before signing proves nothing while their work is under
+  it. `POST /api/auth/internal/legacy-guests/rekey` (`ADMIN_TOKEN`; 404 without `LEGACY_GUEST_REKEY_SECRET`) moves
+  each unclaimed one to `rekeyedLegacyGuestOwner(old uuid, LEGACY_GUEST_REKEY_SECRET)` (HMAC-SHA-256, first 16
+  bytes as a v4 UUID) through the index's legacy merge, so the apps move what they keep too, then moves its settings
+  and profile and renames its row (`rekeyedAt`), each row held like a claim while it moves. The claim derives the
+  same id from the bare id the browser sends, so holding the old id is proof again. Run it with the migrate tool:
+
+  ```sh
+  cd liveworkspace/apps/migrate
+  MIGRATE_ADMIN_TOKEN=… corepack pnpm migrate rekey-guests --env production --dry-run
+  MIGRATE_ADMIN_TOKEN=… corepack pnpm migrate rekey-guests --env production
+  ```
+
+  The dry run prints the counts and a sample and changes nothing. A run calls the route in batches of 25 until none
+  are left, or a batch moves none (the rest are held by claims under way, or failing: run it again later). Run again,
+  it finds nothing to do. Ids someone noted before the re-key still lead to the work: it ends the exposure, it does
+  not undo it.
+
 - **Index**: `/internal/merge` with `legacy: true` lets the target be a guest; `person_app_merges` gains a `legacy`
   flag (`migrations/0006_person_app_merges_legacy.sql`), so each app's people merge is called with
   `{ into, legacy: true }`, and takes a guest as `into` only then. `POST /app/migration/handoff`: livediagram's key

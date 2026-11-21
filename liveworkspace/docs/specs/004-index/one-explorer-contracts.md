@@ -120,7 +120,9 @@ defaults, the Inbox's rows, one batch); an item or folder outside a team lands i
 space, guest or account. Without `legacy: true` a guest target is still refused (400). The apps hear it as
 `POST /api/internal/people/:guest/merge {into, legacy: true}`, so an app can tell a legacy merge (whose `into` may
 be a guest) from an ordinary one, which keeps its `{into}` shape. The index keeps the flag on each
-`person_app_merges` row until the app confirms. An app's door that takes only an account refuses a guest `into`
+`person_app_merges` row until the app confirms. A merge also points the rows still waiting to tell the apps of a
+merge into the guest at its new target, so a chain (an old guest re-keyed, then claimed) reaches the apps' final
+owner whatever order the rows are sent in. An app's door that takes only an account refuses a guest `into`
 until it is taught the legacy form; the index retries it like any other refusal, for up to a week.
 
 A guest's things stay until the guest deletes them, becomes an account, or goes 400 days unseen. By then its token
