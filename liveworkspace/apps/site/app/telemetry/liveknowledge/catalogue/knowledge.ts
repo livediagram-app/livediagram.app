@@ -154,6 +154,22 @@ export const OWNERS_REMINDED = chart(
   { types: ['OwnersReminded'] },
 );
 
+// ---- Connect (mcp-connect.md) ----------------------------------------------------------------------------------
+
+export const CONNECT_OPENED = openedChart(
+  'Connect Opened',
+  'The Connect view opened, from the footer or Connect an Agent: the steps to connect an AI app over MCP.',
+  (t) => t === 'ConnectView' || t === 'ConnectAgent',
+);
+
+export const CONNECT_COPIED = chart(
+  'UI',
+  'Copied',
+  'Connect Steps Copied',
+  'An MCP address, command, config or first prompt copied from the Connect view.',
+  { types: ['McpSetup', 'ConnectPrompt'] },
+);
+
 export const AI_KNOWLEDGE: MetricStack = {
   stack: true,
   title: 'AI Knowledge',
@@ -161,6 +177,8 @@ export const AI_KNOWLEDGE: MetricStack = {
     'Keeping the knowledgebase right: agent suggestions accepted or dismissed, conflicts and unanswered questions settled, and owners emailed.',
   members: [
     AI_KNOWLEDGE_OPENED,
+    CONNECT_OPENED,
+    CONNECT_COPIED,
     SUGGESTIONS_ACCEPTED,
     SUGGESTIONS_DISMISSED,
     CONFLICTS_DISMISSED,

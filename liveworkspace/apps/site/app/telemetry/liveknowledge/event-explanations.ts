@@ -832,6 +832,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|AskAiKey': "Someone chose the team's key to answer their questions on Ask.",
   'UI|Opened|AskView': 'Someone opened the Ask view, to ask the knowledgebase a question.',
   'UI|Opened|AiKnowledgeView': 'Someone opened the AI Knowledge view.',
+  'UI|Opened|ConnectView': 'Someone opened the Connect view, to connect an AI app over MCP.',
+  'UI|Opened|ConnectAgent':
+    'Someone pressed Connect an Agent in AI Knowledge, which opens the Connect view.',
+  'UI|Copied|McpSetup':
+    'Someone copied the MCP address, a command or a config from the Connect view. Never what was copied.',
+  'UI|Copied|ConnectPrompt': 'Someone copied the first prompt to try from the Connect view.',
   'UI|Opened|KnowledgeSearch': 'Someone opened the search panel to search this knowledgebase.',
   'Element|Added|ArticleEmbed': 'Someone put an embed into the writing of a page.',
   'UI|Toggled|NotifyKnowledgeReviewsOn':

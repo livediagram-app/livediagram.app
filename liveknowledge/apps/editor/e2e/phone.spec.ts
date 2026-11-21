@@ -10,7 +10,7 @@ import {
 
 // A knowledgebase on a phone (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree": "On a phone
 // the tree is a sheet opened from a Pages button"): the sheet, a row opening its page, writing with a finger, the
-// three views within reach, and no view scrolling sideways. A guest's knowledgebase, kept Offline; Home's phone
+// four views within reach, and no view scrolling sideways. A guest's knowledgebase, kept Offline; Home's phone
 // width is signed-in/knowledge-audit.spec.ts's.
 
 test.use({
@@ -81,7 +81,7 @@ test('the view switch is within reach, and no view scrolls sideways', async ({
 }) => {
   await newKnowledgebase(page);
   const views = page.getByRole('navigation', { name: 'Knowledgebase Views' });
-  for (const view of ['Pages', 'Ask', 'AI Knowledge']) {
+  for (const view of ['Pages', 'Ask', 'AI Knowledge', 'Connect']) {
     const link = views.getByRole('link', { name: view, exact: true });
     await expect(link).toBeInViewport({ ratio: 1 });
     const box = (await link.boundingBox())!;

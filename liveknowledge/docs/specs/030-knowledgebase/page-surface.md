@@ -220,8 +220,8 @@ should be to the right of Add Cover under the title."
 
 Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs in the footer."
 
-- The three views are **tabs in the footer**, where the other liveworkspace editors show their tab bar, with the
-  same look: **Pages**, **Ask**, **AI Knowledge**, each with its icon, the current one raised as a tab pill is.
+- The views are **tabs in the footer**, where the other liveworkspace editors show their tab bar, with the
+  same look: **Pages**, **Ask**, **AI Knowledge**, **Connect** ([Connect](mcp-connect.md)), each with its icon, the current one raised as a tab pill is.
   They are links (`?view=`, so Back works) with `aria-current`, reachable by keyboard, each with a hover card of a
   title and one line. They are views, not a person's tabs: no add, close, drag or menu.
 - The footer is a bar across the bottom of the content area: the tabs at its left, then Get Started, Tools,
@@ -229,11 +229,11 @@ Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs 
   scrolls above it.
 - **The top row.** The content area starts with one row, the same height in the three views (48 px; 56 px on a
   phone): a hairline under it, nothing floating. On Pages its left holds the formatting controls while a page is
-  being written; on Ask and AI Knowledge it holds the view's name and its own buttons. **Share** and the account
+  being written; on Ask, AI Knowledge and Connect it holds the view's name and its own buttons. **Share** and the account
   button stand at its right end, always; the floating corner card is gone. The page scrolls under the row, never
   behind it, and the right rail starts below it. Below 1,280 px the **Page Info** button is in the row, left of
   Share, so nothing stands over the reading column at any width.
-- On a phone the three tabs are the footer's row, icons with short labels (Pages, Ask, AI), 44 px targets; the
+- On a phone the four tabs are the footer's row, icons with short labels (Pages, Ask, AI, Connect), 44 px targets; the
   notification list stays beside them and the footer's other items go behind one **More** button. The top row
   there leads with the menu button and **Pages** (the tree's sheet); while the caret is in the writing, the phone's
   writing bar takes the row and the row's own buttons step aside until the caret leaves.

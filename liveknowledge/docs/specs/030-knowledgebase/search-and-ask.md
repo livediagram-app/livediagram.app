@@ -220,9 +220,9 @@ strangers.
   and opens those same words in a dialog over it, a sheet on a phone. Its actions close it first (Open AI Settings
   opens over Pages). The key is read on the first press only, never on load. Ask's address followed from a link
   still shows them in the view.
-- **Offline, in the footer** (owner 2026-11-21): a knowledgebase kept Offline keeps the Ask and AI Knowledge tabs,
-  quieter and going nowhere. Hovering one (a long press on a phone, focus from the keyboard) shows "Ask Needs
-  Syncing" (or "AI Knowledge Needs Syncing"), why ("This knowledgebase is kept in this browser. Ask and AI Knowledge require your content to be synced to our servers.") and **Sync
+- **Offline, in the footer** (owner 2026-11-21): a knowledgebase kept Offline keeps the Ask, AI Knowledge and Connect
+  tabs, quieter and going nowhere. Hovering one (a long press on a phone, focus from the keyboard) shows "Ask Needs
+  Syncing" (or "AI Knowledge Needs Syncing", "Connect Needs Syncing"), why ("This knowledgebase is kept in this browser. Ask, AI Knowledge and Connect require your content to be synced to our servers.") and **Sync
   Knowledgebase**, the Share dialog's sync in place. Once it lands the tabs open as usual.
 - **A failure** is said in the answer's place in words with its next step: the key not accepted or the model not
   allowed (Open AI Settings for an Editor), no credit, the account's rate limit, Claude busy, a lost connection (Ask
@@ -255,14 +255,17 @@ strangers.
   whatever the answer. It is never kept in the page's state, a browser store, a log, telemetry or an error message.
 - An Editor has the controls; a Participant and a Viewer see the state and the model with none.
 
-## The three views
+## The views
 
-- A knowledgebase has three views: **Pages** (the editor), **Ask** and **AI Knowledge**
-  ([AI Knowledge](ai-knowledge.md)). They are three tabs at the left of the footer, **Pages | Ask | AI Knowledge**
-  ([The page surface](page-surface.md) "The footer"), on a phone too.
-- The view is in the address (`?view=ask`, `?view=ai`; none is Pages), not the hash, which is the open page's. A
-  reload keeps it, each change is a history entry, so Back returns to the view before, and each tab is a link.
-- Ask and AI Knowledge cover the canvas and the page tree, down to the footer; their header is the top row every view
-  shares, with Share and the account button at its right end. The editor under them takes no key, press or focus.
+- A knowledgebase has four views: **Pages** (the editor), **Ask**, **AI Knowledge**
+  ([AI Knowledge](ai-knowledge.md)) and **Connect** ([Connect](mcp-connect.md), owner 2026-11-21). They are four
+  tabs at the left of the footer, **Pages | Ask | AI Knowledge | Connect** ([The page surface](page-surface.md) "The
+  footer"), on a phone too.
+- The view is in the address (`?view=ask`, `?view=ai`, `?view=connect`; none is Pages), not the hash, which is the
+  open page's. A reload keeps it, each change is a history entry, so Back returns to the view before, and each tab
+  is a link.
+- Ask, AI Knowledge and Connect cover the canvas and the page tree, down to the footer; their header is the top row
+  every view shares, with Share and the account button at its right end. The editor under them takes no key, press
+  or focus.
 - Not offered in an embed, in zen mode, in a workbench, behind the welcome flow, to a Community visitor or through a
   link confined to one page.
