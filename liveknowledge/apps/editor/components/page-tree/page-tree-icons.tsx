@@ -18,6 +18,8 @@ import {
   lucideIndentIncrease,
   lucideLink,
   lucidePanelLeftClose,
+  lucidePanelRight,
+  lucidePanelRightClose,
   lucidePanelLeftOpen,
   lucidePencil,
   lucidePlus,
@@ -38,6 +40,8 @@ export const IndentIcon = lucideGlyph(lucideIndentIncrease, 16);
 export const OutdentIcon = lucideGlyph(lucideIndentDecrease, 16);
 export const DeleteIcon = lucideGlyph(lucideTrash2, 16);
 export const CollapseIcon = lucideGlyph(lucidePanelLeftClose, 16);
+export const RailCollapseIcon = lucideGlyph(lucidePanelRightClose, 16);
+export const RailExpandIcon = lucideGlyph(lucidePanelRight, 16);
 export const ExpandIcon = lucideGlyph(lucidePanelLeftOpen, 16);
 export const PagesIcon = lucideGlyph(lucideFileText, 16);
 // A connected file's row (links-and-embeds.md "Connected files in the sidebar"): the arrow-out mark after its name,

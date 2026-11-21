@@ -35,7 +35,7 @@ replaces what the fork still shows around the writing.
   cursor is the plain one, and a letter typed outside the writing adds no shape.
 - **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
   has one ("The page icon") to the left of the Title, the Title (40 px,
-  bold, tight tracking), then the meta row ([Verification](verification.md)). **Beside it** on a wide window, the right rail (Page Health, then On This Page): docked from 1,280 px,
+  bold, tight tracking), then the meta row ([Verification](verification.md)). **Beside it** on a wide window, the right rail (Page Health, then On This Page; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
   and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.

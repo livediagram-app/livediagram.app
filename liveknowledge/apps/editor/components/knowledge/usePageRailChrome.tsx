@@ -8,7 +8,8 @@ import { useContext, useSyncExternalStore, type ReactNode } from 'react';
 import { useMediaQuery } from '@liveknowledge/ui';
 import { EditorChromeContext } from '@/app/document/[id]/EditorContext';
 import { KnowledgeSearchHost } from './KnowledgeSearchHost';
-import { PAGE_RAIL_WIDTH, PageRailButton, PageRailDocked } from './PageRail';
+import { usePageRailCollapsed } from '@/lib/page-rail-collapsed';
+import { PAGE_RAIL_STRIP_WIDTH, PAGE_RAIL_WIDTH, PageRailButton, PageRailDocked } from './PageRail';
 
 /** The least window width the rail docks at. */
 export const PAGE_RAIL_MIN_WINDOW = 1280;
@@ -48,6 +49,7 @@ export function usePageRailChrome({
   // keeps its full width between the two.
   treeWidth?: number;
 }): PageRailChrome {
+  const collapsed = usePageRailCollapsed();
   const wide = useMediaQuery(`(min-width: ${pageRailDockWidth(treeWidth)}px)`);
   // Rendered on its own (a test, a workbench preview) the chrome has no editor store, and so no rail.
   const store = useContext(EditorChromeContext);
@@ -63,7 +65,8 @@ export function usePageRailChrome({
   if (!shown) return { width: 0, el: search, rowButton: null };
   if (wide && !isMobile)
     return {
-      width: PAGE_RAIL_WIDTH,
+      // Collapsed, the page centres beside the strip.
+      width: collapsed ? PAGE_RAIL_STRIP_WIDTH : PAGE_RAIL_WIDTH,
       el: (
         <>
           {search}

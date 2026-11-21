@@ -25,9 +25,14 @@ import { useSettingsOffered } from '@/components/knowledge-settings/useSettingsO
 import { PageHealthApproval } from './approval/PageHealthApproval';
 import { PageRailAiContext } from './PageAiContext';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
+import { RailCollapseIcon, RailExpandIcon } from '@/components/page-tree/page-tree-icons';
+import { setPageRailCollapsed, usePageRailCollapsed } from '@/lib/page-rail-collapsed';
 
 /** The rail's width, in px. */
-export const PAGE_RAIL_WIDTH = 280;
+// 312 (owner 2026-11-21: slightly wider than 280): with the tree open the rail still docks on a 1,440 px window.
+export const PAGE_RAIL_WIDTH = 312;
+/** The collapsed rail's strip, as wide as the page tree's (owner 2026-11-21). */
+export const PAGE_RAIL_STRIP_WIDTH = 48;
 /** What the page framing measures to centre the page beside the rail (lib/side-chrome-insets.ts). */
 export const PAGE_RAIL_ATTR = 'data-page-rail';
 /** How far below the window's top a heading counts as the one being read. */
@@ -169,18 +174,65 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
   );
 }
 
-/** Docked down the canvas's right, from under the top row to its foot. */
+// The rail's collapse and show buttons: the page tree's bordered square (owner 2026-11-21).
+const RAIL_TOGGLE =
+  'flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100';
+
+/** Docked down the canvas's right, from under the top row to its foot; collapsed, a narrow strip with the way back. */
 export function PageRailDocked() {
+  const collapsed = usePageRailCollapsed();
   return (
     <aside
       aria-label="Page Info"
-      {...{ [PAGE_RAIL_ATTR]: 'docked' }}
+      {...{ [PAGE_RAIL_ATTR]: collapsed ? 'strip' : 'docked' }}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.stopPropagation()}
-      style={{ top: TOP_ROW_HEIGHT_VAR, width: PAGE_RAIL_WIDTH }}
+      style={{
+        top: TOP_ROW_HEIGHT_VAR,
+        width: collapsed ? PAGE_RAIL_STRIP_WIDTH : PAGE_RAIL_WIDTH,
+      }}
       className="pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] flex cursor-default flex-col border-l border-slate-200/70 text-slate-900 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800/70 dark:text-slate-100"
     >
-      <PageRailBody docked />
+      {collapsed ? (
+        <div className="flex justify-center pt-3">
+          <HoverCard
+            title="Show Page Info"
+            description="Opens Page Health and the rest of this sidebar."
+          >
+            <button
+              type="button"
+              aria-label="Show Page Info"
+              aria-expanded={false}
+              data-page-rail-expand=""
+              onClick={() => setPageRailCollapsed(false)}
+              className={RAIL_TOGGLE}
+            >
+              <RailExpandIcon />
+            </button>
+          </HoverCard>
+        </div>
+      ) : (
+        <>
+          <div className="absolute right-4 top-4 z-10">
+            <HoverCard
+              title="Hide Page Info"
+              description="Collapses this sidebar to a narrow strip."
+            >
+              <button
+                type="button"
+                aria-label="Hide Page Info"
+                aria-expanded
+                data-page-rail-collapse=""
+                onClick={() => setPageRailCollapsed(true)}
+                className={RAIL_TOGGLE}
+              >
+                <RailCollapseIcon />
+              </button>
+            </HoverCard>
+          </div>
+          <PageRailBody docked />
+        </>
+      )}
     </aside>
   );
 }
