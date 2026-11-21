@@ -52,7 +52,11 @@ export function TrustBadge({
   ) : (
     <span
       data-trust="verified"
-      className={`${PILL} ${VERIFIED_PILL} gap-1 py-0.5 pl-1.5 pr-2 text-[13px]`}
+      // Even padding to the ink either side (docs/specs/004-interface-design/optical-alignment.md): the tick is
+      // drawn inside its box with blank space around it, so `optical-edges` pulls it in by that margin and the
+      // pill's contents sit on its centre (they sat 0.63 px off it with 6 px before the tick's box and 8 px after
+      // the words).
+      className={`${PILL} ${VERIFIED_PILL} optical-edges gap-1 px-2 py-0.5 text-[13px]`}
     >
       <TickIcon />
       {label ?? 'Verified'}
