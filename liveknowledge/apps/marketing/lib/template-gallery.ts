@@ -4,6 +4,7 @@ import {
   setupStructure,
   structureOutline,
   structurePageCount,
+  type SetupStructure,
   type StructureGroup,
 } from '@liveknowledge/knowledge';
 import { BLANK_TEMPLATE } from '@liveknowledge/templates';
@@ -23,6 +24,9 @@ export type GalleryStructure = {
   line: string;
   pageCount: number;
   outline: ReturnType<typeof structureOutline>;
+  // Its group and its page tree, as its picture (StructureArt, @liveknowledge/ui) draws them.
+  group: StructureGroup;
+  pages: SetupStructure['pages'];
 };
 
 export type ShelfId = StructureGroup;
@@ -39,6 +43,8 @@ export function galleryStructure(id: string): GalleryStructure | null {
     line: structure.line,
     pageCount: structurePageCount(structure),
     outline: structureOutline(structure),
+    group: structure.group,
+    pages: structure.pages,
   };
 }
 

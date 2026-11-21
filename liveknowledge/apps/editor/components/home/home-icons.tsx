@@ -3,11 +3,8 @@ import {
   lucideArrowRight,
   lucideBookOpen,
   lucideCircleCheck,
-  lucideCode,
   lucideFileInput,
   lucideFileText,
-  lucideGraduationCap,
-  lucideHandshake,
   lucideLibrary,
   lucidePlus,
   lucideSearch,
@@ -22,8 +19,5 @@ export const KnowledgebaseIcon = lucideGlyph(lucideLibrary, 18);
 export const PageIcon = lucideGlyph(lucideFileText, 16);
 export const ReviewIcon = lucideGlyph(lucideCircleCheck, 16);
 export const NewIcon = lucideGlyph(lucidePlus, 16);
-export const HandbookIcon = lucideGlyph(lucideGraduationCap, 22);
-export const EngineeringIcon = lucideGlyph(lucideCode, 22);
-export const SupportIcon = lucideGlyph(lucideHandshake, 22);
 export const ImportIcon = lucideGlyph(lucideFileInput, 22);
 export const RecentIcon = lucideGlyph(lucideBookOpen, 18);

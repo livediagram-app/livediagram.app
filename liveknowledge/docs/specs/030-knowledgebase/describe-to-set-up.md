@@ -45,9 +45,21 @@ and picks that structure on its start, so it is created exactly as a pick here i
     2026-11-21). Owner, 2026-11-21: "Add more templates to give structure for lots
     of different use cases people might have", so the second sixteen reach past the software company: the business
     underneath it, work done with people outside a team, teaching and learning, and a knowledgebase of one's own. The
-    groups run in that order, work for a company first and a person's own last. Each card shows the structure, not a picture of a page: an outline of its page tree two levels
-    deep (each top page, and its subpages after it: "Shipping: Release Process, On-Call"), and its page count
-    ("12 Pages"). The search finds a structure by its name, its line or any of its page titles.
+    groups run in that order, work for a company first and a person's own last. Each card shows the structure, not a picture of a page, and
+    its page count ("12 Pages"). The search finds a structure by its name, its line or any of its page titles.
+  - **A card's picture** (owner, 2026-11-21: the outline tiles "need massive improvements"): the knowledgebase it
+    makes, as a miniature liveknowledge window on a wash of its group's colour. At the left the page tree, the
+    structure's own top pages in its real titles, the first page with subpages opened on one or two of them and
+    chosen; at the right that page, with a cover band in the group's colour, the structure's **emblem** as its page
+    icon over the cover's edge, its title and a few lines of writing. Each group has its colour (Company violet,
+    Engineering sky, Product fuchsia, Customers emerald, Operations slate, Community orange, Education amber,
+    Personal rose) and each structure its own emblem, none shared (a chef's hat for Recipe Book, a shield for IT and
+    Security, a git fork for Open Source Project), so no two of the thirty-two cards look alike. Blank
+    Knowledgebase is the same window holding only Start Here and an empty page with a plus for its icon; Describe
+    to Set Up holds sparkles for its icon and pages still to come, drawn as placeholders. The window is drawn in the
+    theme's own colours in light and dark (never re-lit by inverting it). On a phone's small tile the tree goes and
+    the page fills the window. On hover the window lifts and the emblem grows a little; under reduced motion neither moves.
+    The picture is decorative: the card's accessible name stays its name and line.
   - At the rail's foot, as liveplanner's Import: **Import**, which opens the knowledgebase's Import dialog (Markdown
     folder, Notion or Confluence archive); Describe to Set Up stays there too, as on liveplanner's start. Then
     Connect File where connecting works.

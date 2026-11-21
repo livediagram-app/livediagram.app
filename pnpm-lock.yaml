@@ -5428,6 +5428,9 @@ importers:
       '@liveworkspace/community-ui':
         specifier: workspace:^
         version: link:../../../packages/community-ui
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings

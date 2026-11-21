@@ -46,14 +46,17 @@ describe('StartFromTemplates', () => {
       expect(document.body.textContent).not.toContain(`Blank ${word}`);
   });
 
-  it('shows a structure as its outline and page count, and chooses it by id', () => {
+  it('shows a structure as its knowledgebase and page count, and chooses it by id', () => {
     const onChoose = vi.fn();
     mount(onChoose);
     fireEvent.click(document.querySelector('[data-rail="engineering"]')!);
     const card = document.querySelector<HTMLElement>('[data-start-card="engineering-handbook"]')!;
     expect(card.textContent).toContain('Engineering Handbook');
     expect(card.textContent).toContain('13 Pages');
-    expect(card.textContent).toContain('Shipping: Release Process, On-Call');
+    // Its picture: its top pages in the tree, Architecture chosen and opened, in Engineering's colour.
+    expect(
+      card.querySelector('[data-structure-art="engineering-handbook"]')?.textContent,
+    ).toContain('OverviewArchitectureServicesData');
     fireEvent.click(card);
     expect(onChoose).toHaveBeenCalledWith('engineering-handbook');
   });

@@ -96,6 +96,23 @@ export {
 // icons' contract (icons/), shared by the editor's palette and the marketing site's mock of it.
 export * from '@liveworkspace/ui/palette-tab-icons';
 export * from '@liveworkspace/ui/palette-group-icons';
+// A knowledgebase structure's picture and emblem (docs/specs/030-knowledgebase/describe-to-set-up.md "A card's
+// picture"): the editor's start cards, Home's tiles and the landing gallery's cards.
+export {
+  EmblemGlyph,
+  StructureArt,
+  StructureEmblem,
+  structureArtRows,
+  type StructureArtPage,
+  type StructureArtProps,
+} from './structure-art/StructureArt';
+export {
+  BLANK_EMBLEM,
+  DESCRIBE_EMBLEM,
+  GROUP_TONES,
+  STRUCTURE_EMBLEMS,
+  type StructureTone,
+} from './structure-art/structure-tones';
 // Everything above is this product's own. The design system every liveworkspace app shares (buttons,
 // fields, dialogs, menus, hints, the optical primitives and the hooks they use) is @liveworkspace/ui.
 export * from '@liveworkspace/ui';

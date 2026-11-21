@@ -44,7 +44,8 @@ marketing site sends a signed-in person on). Someone not signed in is sent to `/
 - **Start a Knowledgebase From** offers **Team Handbook**, **Engineering Handbook** and **Support Knowledgebase**
   (`HOME_STRUCTURES`, `components/home/HomeSections.tsx`), each a `/new?structure=<id>` link that makes a new
   knowledgebase with that structure's whole tree ([New document route](../007-editor/new-document-route.md) "The
-  other parameters"), and **Import**, which opens the Import dialog in the scoped knowledgebase (in a new blank one
+  other parameters"), each tile's icon the structure's emblem on its group's colour, as its card on the start draws
+  it ([Describe to set up](describe-to-set-up.md#the-start-screen) "A card's picture"), and **Import**, which opens the Import dialog in the scoped knowledgebase (in a new blank one
   for a person with none). Every structure is on the new knowledgebase's start.
 
 ## Not built

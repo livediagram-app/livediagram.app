@@ -69,10 +69,21 @@ group, pages }`, its pages a nested outline (title, one-line summary, headings, 
   **Operations**, **Community**, **Education**, **Personal**) from each structure's `group`, each
   with its rail glyph (`RAIL_ICONS` in `StartFromTemplates.tsx`: users, code, package, handshake, briefcase, globe,
   graduation cap, user). The search matches a structure's name, line and page titles (`knowledgebaseStart`'s
-  `search`). A card (`structure-card.tsx`) draws the
-  outline (`structureOutline`, `packages/knowledge`, shared with the landing gallery's `StructureCard`:
-  each top page, then its subpages' titles after a colon, at most five lines, or four and "and N More"; a phone's small tile keeps the top level only) with the page
-  count, in place of a picture. The foot (`footLead`): Describe to Set Up and Import (an Editor); then Connect File
+  `search`). A card (`structure-card.tsx`) draws its
+  picture with `StructureArt` (`@liveknowledge/ui` `src/structure-art/`, shared with the landing gallery's
+  `StructureCard` and, as `StructureEmblem`, Home's Start a Knowledgebase From tiles): a tile washed in its group's
+  tone (`GROUP_TONES`, one Tailwind ramp a group, set as `--kb-*` custom properties) that bleeds over the picture
+  panel's padding, and on it a window whose foot runs off the tile: the tree (`structureArtRows`: each top page, the
+  first with subpages chosen and opened on two, at most six rows, real titles) and the chosen page (a cover in the
+  tone, its angle and glow seeded from the id; the emblem, `STRUCTURE_EMBLEMS` by id, as the page icon and large and
+  faint in the cover's corner; the title, its first heading and three bars of writing). The emblem is one CSS mask
+  (`emblemMask`: the Lucide glyph's SVG as a data URL, cached a glyph) on two pseudo-elements, so a picture is
+  sixteen nodes (the outline it replaced was twelve; `structure-card.test.tsx` holds it to eighteen). Blank
+  Knowledgebase is the window with Start Here, a dashed coverless page, a plus and a caret; Describe to Set Up is the
+  brand tone, sparkles and dashed placeholder pages. Under an 11rem tile (`@container`, a phone's start card) the
+  tree goes and the page fills the window. Hover lifts the window 3px and scales the icon 110% (`duration-micro`;
+  none under reduced motion). Light and dark are each drawn (`dark:`), never a `preview-art-tile`. The page count
+  sits beside the name. The foot (`footLead`): Describe to Set Up and Import (an Editor); then Connect File
   (`useConnectStart`). The footer is `StartSaveSwitch`.
 - **Choosing** (`EditorStartPanels`): `blank` closes the offer, asks Title focus for the tab and sends
   `UI·Used·StartBlank`; `describe` closes it, sends `UI·Opened·DescribeToSetUp` and `openSetup('set-up')`; Import

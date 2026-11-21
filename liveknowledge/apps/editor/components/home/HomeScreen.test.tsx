@@ -403,8 +403,11 @@ describe('starting something', () => {
       ['Engineering Handbook', '/new?structure=engineering-handbook'],
       ['Support Knowledgebase', '/new?structure=support-knowledgebase'],
     ]);
-    // Each is a structure the start has, under its own name.
-    for (const s of HOME_STRUCTURES) expect(setupStructure(s.id)?.name).toBe(s.label);
+    // Each is a structure the start has, under its own name, its emblem in its own group's colour.
+    for (const s of HOME_STRUCTURES) {
+      expect(setupStructure(s.id)?.name).toBe(s.label);
+      expect(setupStructure(s.id)?.group).toBe(s.group);
+    }
     fireEvent.click(start.getByRole('button', { name: 'Import' }));
     expect(JSON.parse(sessionStorage.getItem(ARRIVAL_KEY)!)).toMatchObject({
       kind: 'import',

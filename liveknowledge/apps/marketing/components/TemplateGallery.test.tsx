@@ -20,8 +20,8 @@ window.matchMedia = ((q: string) => ({
 })) as unknown as typeof window.matchMedia;
 window.scrollTo = () => {};
 
-// docs/specs/019-marketing/marketing-site.md "Structure" 3: the gallery's cards are knowledgebase structures, each an
-// outline of its tree and a link that makes a new knowledgebase from it.
+// docs/specs/019-marketing/marketing-site.md "Structure" 3: the gallery's cards are knowledgebase structures, each a
+// picture of the knowledgebase it makes and a link that makes a new knowledgebase from it.
 describe('the template gallery', () => {
   it('opens on Company, each card a structure linking to /new?structure=', () => {
     render(<TemplateGallery />);
@@ -36,12 +36,12 @@ describe('the template gallery', () => {
     expect(handbook.getAttribute('href')).toBe('/new?structure=team-handbook&via=Home.Gallery');
     expect(handbook.textContent).toContain('Team Handbook');
     expect(handbook.textContent).toContain('11 Pages');
-    expect(handbook.textContent).toContain('How We Work: Meetings, Communication, Decisions');
-    // Its name starts with its own visible title (WCAG 2.5.3); the outline is decoration.
+    // Its picture: its top pages in the tree, How We Work chosen and opened on two of its subpages.
+    const art = handbook.querySelector('[data-structure-art="team-handbook"]')!;
+    expect(art.textContent).toContain('WelcomeWho We AreHow We WorkMeetingsCommunication');
+    // Its name starts with its own visible title (WCAG 2.5.3); the picture is decoration.
     expect(handbook.querySelector('.sr-only')!.textContent).toBe('Create a ');
-    expect(handbook.firstElementChild!.getAttribute('aria-hidden')).toBe('true');
-    // A long tree keeps to five lines.
-    expect(cards[0]!.textContent).toContain('and 2 More');
+    expect(art.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('leads the folded groups with Blank Knowledgebase, and opens a group in place', () => {
@@ -72,16 +72,18 @@ describe('the template gallery', () => {
 });
 
 describe('a structure’s small drawing', () => {
-  it('draws its tree: each top page, and up to two subpages under it, at most seven rows', () => {
+  it('draws its tree: each top page, the first with subpages opened on two, at most six rows', () => {
     const { container } = render(<StructurePreview kind="engineering-handbook" />);
-    // Overview; Architecture + 2; Development + 2; Shipping, cut at seven rows.
-    expect(container.querySelectorAll('g')).toHaveLength(7);
-    expect(container.querySelectorAll('path')).toHaveLength(4);
+    // Overview; Architecture (chosen) + 2; Services; Data, cut at six rows. Then the emblem's group.
+    expect(container.querySelectorAll('svg > g')).toHaveLength(7);
+    // Its cover in Engineering's colour.
+    expect(container.querySelector('linearGradient')).not.toBeNull();
   });
 
-  it('draws one page, Start Here, for the blank', () => {
+  it('draws one page, Start Here, for the blank, with no cover', () => {
     const { container } = render(<StructurePreview kind="blank-article" />);
-    expect(container.querySelectorAll('g')).toHaveLength(1);
+    expect(container.querySelectorAll('svg > g')).toHaveLength(2);
+    expect(container.querySelector('linearGradient')).toBeNull();
     expect(container.querySelector('svg')!.getAttribute('aria-hidden')).toBe('true');
   });
 });

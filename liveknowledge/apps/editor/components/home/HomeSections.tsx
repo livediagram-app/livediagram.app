@@ -5,7 +5,13 @@
 // rows while its numbers are read, so nothing moves when they arrive.
 import type { ReactNode } from 'react';
 import type { KnowledgeSummaryResponse } from '@liveknowledge/api-schema';
-import { Button, CompactEmptyState, EmptyState, buttonClassName } from '@liveknowledge/ui';
+import {
+  Button,
+  CompactEmptyState,
+  EmptyState,
+  StructureEmblem,
+  buttonClassName,
+} from '@liveknowledge/ui';
 import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 import {
   pagesText,
@@ -22,15 +28,12 @@ import {
 import { reviewDueText, shortDate } from '@/lib/knowledge/page-trust';
 import {
   ArrowIcon,
-  EngineeringIcon,
-  HandbookIcon,
   ImportIcon,
   KnowledgebaseIcon,
   NewIcon,
   PageIcon,
   RecentIcon,
   ReviewIcon,
-  SupportIcon,
 } from './home-icons';
 
 const SECTION_TITLE = 'text-lg font-semibold tracking-tight text-slate-900 dark:text-white';
@@ -299,11 +302,11 @@ const TILE_ICON =
   'flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 text-brand-800 dark:bg-brand-500/20 dark:text-brand-200';
 
 /** The knowledgebase structures Home starts a knowledgebase from (packages/knowledge setup-structures.ts), each
- *  making its whole tree. The rest are on the new knowledgebase's start. */
+ *  making its whole tree, its group named for its emblem's colour. The rest are on the new knowledgebase's start. */
 export const HOME_STRUCTURES = [
-  { id: 'team-handbook', label: 'Team Handbook', icon: <HandbookIcon /> },
-  { id: 'engineering-handbook', label: 'Engineering Handbook', icon: <EngineeringIcon /> },
-  { id: 'support-knowledgebase', label: 'Support Knowledgebase', icon: <SupportIcon /> },
+  { id: 'team-handbook', label: 'Team Handbook', group: 'team' },
+  { id: 'engineering-handbook', label: 'Engineering Handbook', group: 'engineering' },
+  { id: 'support-knowledgebase', label: 'Support Knowledgebase', group: 'support' },
 ] as const;
 
 export function HomeStartTiles({ onImport }: { onImport: () => void }) {
@@ -317,9 +320,8 @@ export function HomeStartTiles({ onImport }: { onImport: () => void }) {
               data-home-structure={structure.id}
               className={TILE}
             >
-              <span aria-hidden className={TILE_ICON}>
-                {structure.icon}
-              </span>
+              {/* Its emblem on its group's colour, as its card on the start draws it. */}
+              <StructureEmblem id={structure.id} group={structure.group} />
               {structure.label}
             </a>
           </li>
