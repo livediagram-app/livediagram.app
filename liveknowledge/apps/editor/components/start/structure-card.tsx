@@ -12,10 +12,11 @@ import { SetupSparkleIcon } from '@/components/setup/setup-icons';
 
 const plural = (n: number) => `${n} ${n === 1 ? 'Page' : 'Pages'}`;
 
-// The outline's frame: a quiet sheet of rows, like the sidebar's tree in miniature.
+// The outline's frame: a quiet sheet of rows, like the sidebar's tree in miniature. Real text in the theme's own
+// colours, not a preview-art-tile (that tile inverts in dark, which turned this ink dark on a dark plate).
 function Outline({ children }: { children: ReactNode }) {
   return (
-    <span className="preview-art-tile flex h-full w-full flex-col justify-center overflow-hidden rounded-lg bg-slate-50 px-4 py-2 text-left text-[11px] leading-[14px] text-slate-600 max-sm:px-1.5 max-sm:py-1 max-sm:text-[8px] max-sm:leading-[11px] dark:bg-slate-800/60 dark:text-slate-300">
+    <span className="flex h-full w-full flex-col justify-center overflow-hidden rounded-lg bg-slate-50 px-4 py-2 text-left text-[11px] leading-[14px] text-slate-600 max-sm:px-1.5 max-sm:py-1 max-sm:text-[8px] max-sm:leading-[11px] dark:bg-slate-800/60 dark:text-slate-300">
       {children}
     </span>
   );
