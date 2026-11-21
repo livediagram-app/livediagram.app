@@ -122,6 +122,15 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
       updated={stampOf(page.health?.updated, nameOf)}
     />
   );
+  const fillActivity = (
+    <PageActivity
+      now={page.now}
+      reads={page.health?.reads}
+      created={stampOf(page.health?.created, nameOf)}
+      updated={stampOf(page.health?.updated, nameOf)}
+      fill
+    />
+  );
   const sections = (
     <div className="flex flex-col gap-8">
       <PageHealthCard
@@ -150,7 +159,7 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         data-page-rail-foot=""
         className="shrink-0 border-t border-slate-200/70 bg-slate-50/70 px-6 pb-4 pt-4 dark:border-slate-800/70 dark:bg-slate-900/40"
       >
-        {activity}
+        {fillActivity}
       </div>
     </>
   );

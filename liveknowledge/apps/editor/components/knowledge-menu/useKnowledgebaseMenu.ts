@@ -1,7 +1,7 @@
 'use client';
 
 // What the knowledgebase's menu holds for this session (docs/specs/030-knowledgebase/knowledgebases-and-pages.md
-// "The knowledgebase's menu"): Rename, Knowledgebase Style, Knowledgebase Settings, Describe to Add Pages, Import,
+// "The knowledgebase's menu"): Rename, Knowledgebase Settings, Describe to Add Pages, Import,
 // Export, AI Settings, then Delete. Describe to Add Pages and Import are a writer's (an Editor or a Participant of the
 // whole knowledgebase); Rename, the Style, the Settings, AI Settings and Delete are an Editor's (a Participant is an
 // Editor minus the settings, the style and automations, knowledgebases-and-pages.md "Share roles"); a Viewer has
@@ -11,13 +11,11 @@ import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/Edito
 import { useAskSession } from '@/components/ask/useAskSession';
 import { useKnowledgebaseSettings } from '@/components/knowledge-settings/KnowledgeSettingsHost';
 import { useStyleOffered } from '@/components/knowledge-style/useStyleOffered';
-import { STYLE_TITLE } from '@/lib/knowledge-style/knowledge-style-words';
 import { useDescribeToAddPages } from '@/components/setup/SetupHost';
 import { openAiSettings } from '@/lib/knowledge-ask/ai-settings-open';
-import { track } from '@/lib/telemetry';
 
 export type KnowledgeMenuVerb =
-  'rename' | 'style' | 'settings' | 'describe' | 'import' | 'export' | 'ai' | 'delete';
+  'rename' | 'settings' | 'describe' | 'import' | 'export' | 'ai' | 'delete';
 
 export type KnowledgeMenuRow = { verb: KnowledgeMenuVerb; label: string; run: () => void };
 
@@ -43,15 +41,6 @@ export function useKnowledgebaseMenu(onRename: (() => void) | undefined): Knowle
   const plain = useEditorChrome((s) => !s.embedMode);
   const rows: KnowledgeMenuRow[] = [];
   if (editor && onRename) rows.push({ verb: 'rename', label: 'Rename', run: onRename });
-  if (editor)
-    rows.push({
-      verb: 'style',
-      label: STYLE_TITLE,
-      run: () => {
-        track('UI', 'Opened', 'ThemePicker');
-        store.get().setCanvasThemeTab('looks');
-      },
-    });
   if (settings) rows.push({ verb: 'settings', label: settings.label, run: settings.onSelect });
   if (describe) rows.push({ verb: 'describe', label: describe.label, run: describe.onSelect });
   if (writer)

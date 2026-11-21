@@ -1,4 +1,5 @@
 import { AppearanceToggle } from '@/components/chrome/AppearanceToggle';
+import { FooterStyleButton } from '@/components/chrome/FooterStyleButton';
 import { ToastBell } from '@liveworkspace/ui/toast';
 import {
   CHROME_BTN,
@@ -78,6 +79,8 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
+      {/* Knowledgebase Style, left of Tools, for whoever may change it (page-surface.md "Knowledgebase Style"). */}
+      <FooterStyleButton labelled={labelled} />
       <ChromeToolsMenu labelled={labelled} items={[search, automations]} />
       {github ? (
         <>

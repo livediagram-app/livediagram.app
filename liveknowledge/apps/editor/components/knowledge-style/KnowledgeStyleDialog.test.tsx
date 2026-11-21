@@ -9,12 +9,25 @@ import { bindStyleChange } from '@/lib/knowledge-style/style-change';
 import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
 import { KnowledgeStyleDialog } from './KnowledgeStyleDialog';
 
+// The confirm a close with picks asks (owner 2026-11-21: the style is the whole knowledgebase's): each test answers.
+let answer = true;
+const asked = vi.fn<(o: { title: string }) => void>();
+vi.mock('@liveworkspace/workbench/hooks/ui/useConfirm', () => ({
+  useConfirm: () => async (o: { title: string }) => {
+    asked(o);
+    return answer;
+  },
+}));
+
 const track = vi.fn<(...a: unknown[]) => void>();
 vi.mock('@/lib/telemetry', () => ({ track: (...a: unknown[]) => track(...a) }));
 // Rendered on its own there is no editor store: the dialog reads the open knowledgebase's id through this.
 vi.mock('./useOpenKnowledgeStyle', async () => {
   const store = await import('@/lib/knowledge-style/knowledge-style-store');
-  return { useOpenKnowledgeStyle: () => store.useKnowledgeStyle('kb') };
+  return {
+    useOpenKnowledgeStyle: () => store.useKnowledgeStyle('kb'),
+    useOpenKnowledgeId: () => 'kb',
+  };
 });
 
 // jsdom has no ResizeObserver; the dialog's animated height measures itself with one.
@@ -25,16 +38,25 @@ globalThis.ResizeObserver ??= class {
 } as unknown as typeof ResizeObserver;
 
 // docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style".
+// What the dialog showed (its previews), and what was applied for everyone through the door.
 let changes: KnowledgeStyle[] = [];
+let applied: KnowledgeStyle[] = [];
+let unsubscribe = () => {};
 beforeEach(() => {
   changes = [];
+  answer = true;
+  asked.mockClear();
   // An Editor's session: the door is bound, and a change is shown at once, as the editor's slice does.
+  applied = [];
   bindStyleChange((next) => {
-    changes.push(next);
+    applied.push(next);
     knowledgeStyleStore.set('kb', next);
   });
+  const sub = knowledgeStyleStore.subscribe(() => changes.push(knowledgeStyleStore.styleOf('kb')));
+  unsubscribe = () => void sub();
 });
 afterEach(() => {
+  unsubscribe();
   cleanup();
   bindStyleChange(null);
   knowledgeStyleStore.clear();
@@ -55,6 +77,14 @@ const card = (carousel: string, name: string | RegExp): HTMLElement =>
     (el) => fireEvent.click(el),
     dialog(),
   )!;
+
+/** Close the dialog, answering its confirm; waits for the answer to land. */
+async function closeWith(apply: boolean) {
+  answer = apply;
+  fireEvent.click(within(dialog()).getByRole('button', { name: /^Close/ }));
+  await vi.waitFor(() => expect(asked).toHaveBeenCalled());
+  await Promise.resolve();
+}
 
 describe('Knowledgebase Style', () => {
   it('is titled Knowledgebase Style, says what it styles, and is the centred dialog', () => {
@@ -98,34 +128,62 @@ describe('Knowledgebase Style', () => {
     expect(everyday.querySelector('svg path')).toBeNull();
   });
 
-  it('applies a look as one change of the theme and both fonts, and counts it', () => {
+  it('applies a look as one change of the theme and both fonts, and counts it', async () => {
     render(<Open />);
     fireEvent.click(card('Looks', /^Boardroom/));
+    // Previewed here, nothing applied or counted until the close is confirmed.
     expect(changes).toEqual([{ ...DEFAULT_KNOWLEDGE_STYLE, theme: 'steel' }]);
-    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Look');
+    expect(applied).toEqual([]);
+    expect(track).not.toHaveBeenCalled();
     expect(
       within(dialog())
         .getByRole('button', { name: /^Boardroom/ })
         .getAttribute('aria-pressed'),
     ).toBe('true');
     expect(within(dialog()).getByRole('button', { name: 'Colours: Steel theme' })).toBeTruthy();
+    await closeWith(true);
+    expect(asked).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Apply This Style to the Whole Knowledgebase?' }),
+    );
+    expect(applied).toEqual([{ ...DEFAULT_KNOWLEDGE_STYLE, theme: 'steel' }]);
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Look');
   });
 
-  it('rolls a mashup and applies a seasonal look, each counted as itself', () => {
+  it('puts the saved style back when the changes are discarded', async () => {
+    render(<Open />);
+    fireEvent.click(card('Looks', /^Boardroom/));
+    expect(knowledgeStyleStore.styleOf('kb').theme).toBe('steel');
+    await closeWith(false);
+    expect(applied).toEqual([]);
+    expect(knowledgeStyleStore.styleOf('kb')).toEqual(DEFAULT_KNOWLEDGE_STYLE);
+    expect(track).not.toHaveBeenCalled();
+  });
+
+  it('closes without asking when nothing was picked', () => {
+    const onClose = vi.fn();
+    render(<Open onClose={onClose} />);
+    fireEvent.click(within(dialog()).getByRole('button', { name: /^Close/ }));
+    expect(asked).not.toHaveBeenCalled();
+  });
+
+  it('rolls a mashup and applies a seasonal look, each counted as itself', async () => {
     render(<Open />);
     const d = within(dialog());
     fireEvent.click(d.getByRole('button', { name: 'Mashup: a random look, press for another' }));
     expect(changes).toHaveLength(1);
-    expect(track).toHaveBeenLastCalledWith('Tab', 'Changed', 'Mashup');
     fireEvent.click(d.getByRole('button', { name: 'Seasonal' }));
     // The seasonal looks only, with no Mashup card.
     expect(d.queryByRole('button', { name: /^Mashup/ })).toBeNull();
     fireEvent.click(card('Looks', /Fireside/));
     expect(changes[1]).toMatchObject({ theme: 'evergreen', headingFont: 'roboto-slab' });
-    expect(track).toHaveBeenLastCalledWith('Tab', 'Changed', 'SeasonalLook');
+    await closeWith(true);
+    // One change for everyone: the last pick, each kind picked counted.
+    expect(applied).toHaveLength(1);
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Mashup');
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'SeasonalLook');
   });
 
-  it('opens Text under the shared back bar: fonts, size, spacing and heading style', () => {
+  it('opens Text under the shared back bar: fonts, size, spacing and heading style', async () => {
     render(<Open />);
     const d = within(dialog());
     fireEvent.click(d.getByRole('button', { name: 'Text: Inter, Medium' }));
@@ -152,7 +210,6 @@ describe('Knowledgebase Style', () => {
       headingStyle: 'ruled',
     });
     expect(changes).toHaveLength(5);
-    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Text');
     // The options are worded for writing, in Title Case.
     for (const name of [
       'Small',
@@ -170,6 +227,8 @@ describe('Knowledgebase Style', () => {
     // The shared back bar goes home, where the row now says what the knowledgebase holds.
     fireEvent.click(d.getByRole('button', { name: /Knowledgebase Style/ }));
     expect(d.getByRole('button', { name: 'Text: Poppins and Lora, Large' })).toBeTruthy();
+    await closeWith(true);
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Text');
   });
 
   it('moves a segmented choice with the arrow keys', () => {
@@ -182,7 +241,7 @@ describe('Knowledgebase Style', () => {
     expect(changes.at(-1)!.textSize).toBe('small');
   });
 
-  it('opens Colours: themes as pages of writing, and the accent within the theme', () => {
+  it('opens Colours: themes as pages of writing, and the accent within the theme', async () => {
     knowledgeStyleStore.set('kb', { ...DEFAULT_KNOWLEDGE_STYLE, accent: '#0ea5e9' });
     render(<Open start="theme" />);
     const d = within(dialog());
@@ -195,10 +254,11 @@ describe('Knowledgebase Style', () => {
     // Picking a theme puts the accent back on the theme's own.
     fireEvent.click(card('Themes', 'Forest'));
     expect(changes.at(-1)).toEqual({ ...DEFAULT_KNOWLEDGE_STYLE, theme: 'forest' });
-    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Colours');
     // No seasonal theme is listed, and no card says canvas, grid or finish.
     expect(d.queryByRole('button', { name: 'Frost' })).toBeNull();
     expect(dialog().textContent).not.toMatch(/canvas|grid|finish/i);
+    await closeWith(true);
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Colours');
   });
 
   it('changes nothing for a session the door is not bound for', () => {

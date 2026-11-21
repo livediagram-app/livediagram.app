@@ -299,13 +299,15 @@ export type PageActivityProps = {
   reads: { people: number; agents: number } | undefined;
   created?: PageStamp | undefined;
   updated?: PageStamp | undefined;
+  /** In the docked rail's foot: the week's reads fill it to its edges. */
+  fill?: boolean;
 };
 
 /**
- * The rail's foot, held at the bottom of the docked rail while the rest scrolls: the week's reads, then who created
- * the page and who last updated it.
+ * The rail's foot, held at the bottom of the docked rail while the rest scrolls: who created the page and who last
+ * updated it, then the week's reads.
  */
-export function PageActivity({ now, reads, created, updated }: PageActivityProps) {
+export function PageActivity({ now, reads, created, updated, fill = false }: PageActivityProps) {
   // Before Page Health is read (and Offline) the week's reads count as none yet.
   const count = (n: number | undefined) => (n ?? 0).toLocaleString('en');
   return (
@@ -324,7 +326,12 @@ export function PageActivity({ now, reads, created, updated }: PageActivityProps
       {/* The week's reads on the theme's tint, with a quiet open book and its reading lines drawn behind. */}
       <div
         data-read-week=""
-        className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 via-brand-50/40 to-white p-3 ring-1 ring-inset ring-brand-100 dark:from-brand-950/50 dark:via-brand-950/20 dark:to-slate-900 dark:ring-brand-900/40"
+        className={`relative isolate overflow-hidden bg-gradient-to-br from-brand-50 via-brand-50/40 to-white dark:from-brand-950/50 dark:via-brand-950/20 dark:to-slate-900 ${
+          // In the docked rail's foot it fills the foot to its edges (owner 2026-11-21); elsewhere a soft panel.
+          fill
+            ? '-mx-6 -mb-4 border-t border-brand-100 px-6 py-4 first:-mt-4 first:border-t-0 dark:border-brand-900/40'
+            : 'rounded-2xl p-3 ring-1 ring-inset ring-brand-100 dark:ring-brand-900/40'
+        }`}
       >
         <ReadWeekArt />
         <p className={RAIL_LABEL}>Read This Week</p>

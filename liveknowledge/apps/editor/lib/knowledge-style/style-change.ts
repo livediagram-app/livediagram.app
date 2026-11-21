@@ -31,6 +31,9 @@ export function useStyleChangeBound(): boolean {
   );
 }
 
+/** Whether this session may change the style now, for a caller outside React (the dialog's preview). */
+export const styleChangeBound = (): boolean => bound !== null;
+
 /** Set the open knowledgebase's style: shown at once, saved, one undo step. False when this session may not. */
 export function changeKnowledgeStyle(next: KnowledgeStyle): boolean {
   if (!bound) return false;

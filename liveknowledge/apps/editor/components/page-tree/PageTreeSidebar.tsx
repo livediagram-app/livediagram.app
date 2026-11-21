@@ -49,6 +49,10 @@ export type PageTreeSidebarProps = PageTreeProps & {
   joined: boolean;
 };
 
+// The foot's Hide Pages: bordered, as livedocuments' Contents Options beside Add Page.
+const FOOT_BUTTON =
+  'flex h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 phone:h-11 phone:w-11 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100';
+
 export function PageTreeSidebar({
   name,
   onRenameKnowledgebase,
@@ -204,8 +208,20 @@ export function PageTreeSidebar({
       <div className="border-t border-slate-200 p-3 dark:border-slate-800">
         {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"). */}
         {tree.canEdit ? <DescribeToSetUpButton /> : null}
-        {/* Hide Pages (or Keep Pages Open while it peeks) leads the foot, left of New Page; a reader has it alone. */}
-        <div data-page-tree-foot-row="" className="flex items-center gap-1.5">
+        {/* Hide Pages (or Keep Pages Open while it peeks) is a bordered button at the foot's right, after New Page, as
+            livedocuments' Contents Options sits beside Add Page (owner 2026-11-21); a reader has it alone, at the right. */}
+        <div data-page-tree-foot-row="" className="flex items-center justify-end gap-1.5">
+          {tree.canEdit ? (
+            <div className="min-w-0 flex-1">
+              <AddToSidebar
+                tabs={tree.tabs}
+                onAdd={() => tree.actions.onAdd()}
+                onConnect={
+                  tree.connected?.canConnect ? () => tree.connected?.onConnect() : undefined
+                }
+              />
+            </div>
+          ) : null}
           {mode === 'peek' ? (
             <HoverCard
               title="Keep Pages Open"
@@ -216,7 +232,7 @@ export function PageTreeSidebar({
                 aria-label="Keep Pages Open"
                 data-page-tree-pin=""
                 onClick={() => setTreeCollapsed(false)}
-                className={ICON_BUTTON}
+                className={FOOT_BUTTON}
               >
                 <ExpandIcon />
               </button>
@@ -229,23 +245,12 @@ export function PageTreeSidebar({
                 aria-expanded
                 data-page-tree-collapse=""
                 onClick={() => setTreeCollapsed(true)}
-                className={ICON_BUTTON}
+                className={FOOT_BUTTON}
               >
                 <CollapseIcon />
               </button>
             </HoverCard>
           )}
-          {tree.canEdit ? (
-            <div className="min-w-0 flex-1">
-              <AddToSidebar
-                tabs={tree.tabs}
-                onAdd={() => tree.actions.onAdd()}
-                onConnect={
-                  tree.connected?.canConnect ? () => tree.connected?.onConnect() : undefined
-                }
-              />
-            </div>
-          ) : null}
         </div>
       </div>
     </>

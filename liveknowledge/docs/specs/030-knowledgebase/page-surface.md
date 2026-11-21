@@ -44,8 +44,8 @@ replaces what the fork still shows around the writing.
   the mark alone. It opens the Explorer on the place that holds the knowledgebase.
 - **Sidebars slide.** Opening or folding the page tree slides it in from, or out to, the left (200 ms; at once with
   reduced motion). Folded to its rail, resting a mouse on the rail for 150 ms slides the whole tree out over the page
-  (a shadow, the page not moving), with **Keep Pages Open** in place of Hide Pages (both sit at the tree's foot, left of
-  New Page, so the knowledgebase's name has its row to itself; owner 2026-11-21); it slides back 300 ms after the
+  (a shadow, the page not moving), with **Keep Pages Open** in place of Hide Pages (both a bordered button at the tree's foot, right of
+  New Page as livedocuments' Contents Options, so the knowledgebase's name has its row to itself; owner 2026-11-21); it slides back 300 ms after the
   pointer leaves it, unless a menu opened from it is still open. Touch has no hover, so a phone keeps its Pages sheet.
 - **Reading time:** On This Page's heading carries how long the page takes to read ("4 min read"), at 230 words a
   minute over its text, lists, tables and code, rounded, at least 1 minute; an empty page shows none, and a page with
@@ -295,12 +295,16 @@ Knowledgebase Style is the platform's [Tab Style dialog](../011-theme/canvas-and
 it suits writing and cut where it only suits a canvas. It styles the **whole knowledgebase at once**: there is no
 per-page and no per-tab style.
 
-- **Opening it.** **Knowledgebase Style** in the knowledgebase's menu (the sidebar header,
-  [Knowledgebases and pages](knowledgebases-and-pages.md#the-knowledgebases-menu)) and the command search, Editor
-  only. The dialog is titled **Knowledgebase Style**, and its line reads "Pick a look for every page of this
+- **Opening it.** **Style** in the footer, left of Tools (a palette glyph; owner 2026-11-21, moved out of the
+  knowledgebase's menu), and the command search, Editor only. The dialog is titled **Knowledgebase Style**, and its line reads "Pick a look for every page of this
   knowledgebase." It is the centred dialog (a bottom sheet on a phone), and its Fine-tune panels keep the home's
   height, so it does not move as a panel opens. It has no Show Me: the platform's tour walks a tab's finish and
   canvas, which are not here.
+- **Confirming** (owner 2026-11-21: "it affects the whole knowledgebase"). A pick is previewed at once on this
+  screen only; nothing is saved or sent. Closing the dialog (Close, Escape) with a change asks **Apply This Style to
+  the Whole Knowledgebase?** ("Every page of this knowledgebase takes this style, for everyone who reads it."):
+  **Apply to Knowledgebase** saves the last pick for everyone as one undo step; **Discard Changes** puts the saved
+  style back. Closing with nothing picked asks nothing.
 - **Looks.** The same carousel of looks, each card a small **page of writing** drawn in that look (a title, a
   heading, two lines, a link, a quote and a small table), never a diagram: a look is a theme (its colours) and a
   font. Seasonal looks and their toggle stay, as does **Mashup** (it rolls a theme and a font). A card reads as
