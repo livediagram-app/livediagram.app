@@ -50,6 +50,8 @@ every page. The route writes the field and the row in one transaction; a deleted
   Participant with an account, on a page that is not Pending Approval. It opens the page with Page Health's Approval
   section showing the ask: "Request Approval?", "Signed-in members of this knowledgebase can approve or reject it.
   Approving also verifies it.", then **Cancel** and **Request Approval**.
+  **Cancel** puts that ask away. A page already asked about has no Cancel in Page Health, only its actions (owner
+  2026-11-21: it did nothing there).
 - **Until then nothing shows:** a page with no approval has no Approval section in Page Health and nothing in the
   meta row.
 - **The panel's heading** carries its state glyph at its left; the lines under it take the panel's full width.

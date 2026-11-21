@@ -181,6 +181,38 @@ describe('Page Health’s Approval panel', () => {
     expect(screen.getByRole('button', { name: 'Request Again' })).toBeTruthy();
   });
 
+  it('offers Cancel on the request form alone, never beside a pending page’s actions', () => {
+    const onPutAway = vi.fn();
+    const { rerender } = render(
+      <PageHealthApprovalView
+        asked
+        onPutAway={onPutAway}
+        approval={undefined}
+        actions={['request']}
+        nameOf={nameOf}
+        self="user_editor"
+        now={NOW}
+        onAct={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onPutAway).toHaveBeenCalledOnce();
+    rerender(
+      <PageHealthApprovalView
+        asked
+        onPutAway={onPutAway}
+        approval={PENDING}
+        actions={approvalActionsOf(PENDING, callerOf('editor'))}
+        nameOf={nameOf}
+        self="user_editor"
+        now={NOW}
+        onAct={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Approve' })).toBeTruthy();
+  });
+
   it('is absent for a Viewer on a page never asked about', () => {
     const { container } = render(
       <PageHealthApprovalView

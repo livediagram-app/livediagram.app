@@ -43,7 +43,13 @@ export function PageHealthApprovalView({
       <div
         className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${WASH[props.approval?.state ?? 'none']}`}
       >
-        <ApprovalPanel {...props} inPanel {...(onPutAway ? { onCancel: onPutAway } : {})} />
+        {/* Cancel puts away a request form asked for from the menu; a page already asked about has nothing to put
+            away (owner 2026-11-21: its Cancel did nothing), so it shows its actions alone. */}
+        <ApprovalPanel
+          {...props}
+          inPanel
+          {...(onPutAway && !props.approval ? { onCancel: onPutAway } : {})}
+        />
       </div>
     </section>
   );
