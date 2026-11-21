@@ -87,7 +87,7 @@ describe('the view over the editor', () => {
   });
 });
 
-// knowledgebase-home.md "Start a Page From": Import asked for on Home opens here, for someone who may import.
+// knowledgebase-home.md "Start a Knowledgebase From": Import asked for on Home opens here, for someone who may import.
 describe('Import handed over by the Knowledgebase Home', () => {
   it.each([
     ['edit', true],

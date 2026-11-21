@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import dynamic from 'next/dynamic';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
 import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
 import {
   closeKnowledgebaseStart,
+  takeStructurePick,
   useKnowledgebaseStartOffered,
+  useQueuedStructurePick,
 } from '@/components/start/knowledgebase-start';
 import { BLANK_KNOWLEDGEBASE, DESCRIBE_TO_SET_UP } from '@/components/start/start-structure-items';
 import { useSetupOffered } from '@/components/setup/useSetupOffered';
@@ -66,21 +68,49 @@ export function EditorStartPanels() {
   const offered = useKnowledgebaseStartOffered(tabId);
   const setup = useSetupOffered();
   const editor = useEditorChrome((s) => s.can.editPages && !s.isStructureReadOnly);
+  // A structure asked for by link (`/new?structure=<id>`), waiting for the start to pick it.
+  const queued = useQueuedStructurePick(tabId);
+  const shown = mayShow && offered;
   // Writing on the page ends the offer: the start never comes back over a page with words on it.
   useEffect(() => {
     if (offered && written) closeKnowledgebaseStart(tabId);
   }, [offered, written, tabId]);
-
-  if (!(mayShow && offered)) {
-    // A template's example content, once it has landed: Clear Example Content or Keep It.
-    return <ExampleContentTray />;
-  }
   // Each choice closes the start; only Blank Knowledgebase keeps the ask for the caret in the Title.
   const close = (keepTitleFocus: boolean) => {
     if (keepTitleFocus) wantTitleFocus(tabId);
     else takeTitleFocus(tabId);
     closeKnowledgebaseStart(tabId);
   };
+  // A structure: its whole tree, made by the path a Describe to Set Up suggestion is (create-structure.ts), in
+  // Start Here's place, the knowledgebase opening on its first page.
+  const chooseStructure = (id: string) => {
+    close(false);
+    const knowledgebase = documentId();
+    if (knowledgebase) void pickStructure(chrome, knowledgebase, tabId, id);
+  };
+  const chooseQueued = useEffectEvent((id: string, known: boolean) => {
+    takeStructurePick(tabId);
+    if (known) chooseStructure(id);
+  });
+  // The waiting structure is chosen as a click on its card would choose it, once the start may show. One the
+  // structures do not have is dropped, and the start opens as `/new`'s does.
+  useEffect(() => {
+    if (!(shown && queued)) return;
+    let cancelled = false;
+    void import('@liveknowledge/knowledge').then(({ setupStructure }) => {
+      if (!cancelled) chooseQueued(queued, !!setupStructure(queued));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [shown, queued]);
+
+  if (!shown) {
+    // A template's example content, once it has landed: Clear Example Content or Keep It.
+    return <ExampleContentTray />;
+  }
+  // The start is never drawn under a pick asked for by link.
+  if (queued) return null;
   const describe =
     setup === 'set-up'
       ? () => {
@@ -99,11 +129,7 @@ export function EditorStartPanels() {
       describe?.();
       return;
     }
-    // A structure: its whole tree, made by the path a Describe to Set Up suggestion is (create-structure.ts), in
-    // Start Here's place, the knowledgebase opening on its first page.
-    close(false);
-    const knowledgebase = documentId();
-    if (knowledgebase) void pickStructure(chrome, knowledgebase, tabId, id);
+    chooseStructure(id);
   };
   return (
     <StartFromTemplates

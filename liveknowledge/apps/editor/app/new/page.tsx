@@ -27,16 +27,14 @@ import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureGuestIdentity } from '@/lib/guest-identity';
 import { ensureGuestToken } from '@/lib/guest-token';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
-import {
-  untitledNameForTemplate,
-  type TemplateKind,
-} from '@liveknowledge/templates';
+import { untitledNameForTemplate, type TemplateKind } from '@liveknowledge/templates';
 import { CREATION_INTENT } from '@liveknowledge/api-schema';
 import {
   choosePlacementAgainUrl,
   newDocumentKind,
   newDocumentQuery,
   newDocumentStartsBlank,
+  newDocumentStructure,
   placementParamsFromSearch,
 } from '@/lib/new-document-params';
 import { useBackOutOnRestore } from '@liveworkspace/workbench/hooks/ui/useBackOutOnRestore';
@@ -44,7 +42,10 @@ import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import { useResolveSelf } from '@liveworkspace/workbench/hooks/persistence/useResolveSelf';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
-import { offerKnowledgebaseStart } from '@/components/start/knowledgebase-start';
+import {
+  offerKnowledgebaseStart,
+  queueStructurePick,
+} from '@/components/start/knowledgebase-start';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
 import { withCreatorOwner } from '@/lib/new-page-owner';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -61,8 +62,8 @@ const EditorPage = dynamic(loadEditor, {
 });
 
 // Dedicated create-new flow, see docs/specs/007-editor/new-document-route.md. Owns identity bootstrap and the
-// "commit a new document" handoff: it asks nothing, makes the document the URL names (`?template=`, `?blank=1`, or one
-// that opens on its start) as it mounts, and hands it to the editor in place.
+// "commit a new document" handoff: it asks nothing, makes the document the URL names (`?template=`, `?blank=1`, one
+// that opens on its start, or one whose start picks `?structure=`) as it mounts, and hands it to the editor in place.
 const PENDING_SELF: Participant = {
   id: 'pending',
   name: 'Guest',
@@ -198,7 +199,10 @@ export default function NewDocumentPage() {
     const { documentId, tabId } = createIdsFor(retrying);
     // A knowledgebase made with nothing asked opens on its start screen (docs/specs/030-knowledgebase/
     // describe-to-set-up.md "The start screen"); a blank asked for (`?blank=1`, `?start=blank`) or a template does not.
-    if (!startsBlank && !templateKind) offerKnowledgebaseStart(tabId);
+    // A structure asked for (`?structure=<id>`) is waiting on that start, for it to pick at once.
+    const structure = newDocumentStructure(window.location.search);
+    if (structure) queueStructurePick(tabId, structure);
+    else if (!startsBlank && !templateKind) offerKnowledgebaseStart(tabId);
     // A Retry re-runs the create, not the preference write below.
     lastCreateArgs.current = { kind: templateKind, settings, ids: { documentId, tabId } };
     // Named after its template ("Untitled Diagram"); renamed in the editor.
@@ -307,7 +311,8 @@ export default function NewDocumentPage() {
   const createOnMount = useEffectEvent(() => {
     const kind = newDocumentKind(window.location.search);
     // A template link's adoption signal (docs/specs/017-telemetry/telemetry.md): a fixed preset, never user content.
-    if (kind) track('UI', 'Used', 'TemplateLink');
+    // A structure's link is a template link: the structures are liveknowledge's templates.
+    if (kind || newDocumentStructure(window.location.search)) track('UI', 'Used', 'TemplateLink');
     void createByDefault(kind);
   });
   useEffect(() => {

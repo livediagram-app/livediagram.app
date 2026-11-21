@@ -60,9 +60,11 @@ group, pages }`, its pages a nested outline (title, one-line summary, headings, 
   from 1, within `SETUP_MAX_PAGES` and `SETUP_MAX_DEPTH`, sibling titles unique. `setup-structures.test.ts` pins every
   structure to those bounds and to its outline surviving the parser whole.
 - **The rail** (`start-structure-items.ts`): a first group **Start** (`id: 'start'`) holding `blank` (Blank
-  Knowledgebase) and, where `useSetupOffered() === 'set-up'`, `describe` (Describe to Set Up); then **Team**,
-  **Engineering** and **Product and Support** from each structure's `group`. The search matches a structure's name,
-  line and page titles (`searchStructures`). A card (`structure-card.tsx`) draws the outline (`structureOutline`:
+  Knowledgebase) and, where `useSetupOffered() === 'set-up'`, `describe` (Describe to Set Up); then the four
+  `STRUCTURE_GROUPS` (**Company and Team**, **Engineering**, **Product and Research**, **Customers**) from
+  each structure's `group`. The search matches a structure's name, line and page titles (`knowledgebaseStart`'s
+  `search`). A card (`structure-card.tsx`) draws the
+  outline (`structureOutline`, `packages/knowledge`, shared with the landing gallery's `StructureCard`:
   each top page, then its subpages' titles after a colon, at most five lines, or four and "and N More"; a phone's small tile keeps the top level only) with the page
   count, in place of a picture. The foot (`footLead`): Describe to Set Up and Import (an Editor); then Connect File
   (`useConnectStart`). The footer is `StartSaveSwitch`.
@@ -73,6 +75,14 @@ group, pages }`, its pages a nested outline (title, one-line summary, headings, 
   pages all ticked and Start Here as `replaceId`, the knowledgebase named after it while untitled, the first page
   opened, `Tab·Created·FromStructure`. Describe to Set Up's Create runs the same `createStructure`. No
   `StartAgainTray`: a closed knowledgebase start never comes back.
+- **A structure asked for by link** (`/new?structure=<id>`, `newDocumentStructure` in `lib/new-document-params.ts`,
+  which reads the id by its shape only, so `/new` never loads the structures): `/new` and the workspace frame's create in place make the
+  knowledgebase as for `/new` and call `queueStructurePick(tabId, id)` (`knowledgebase-start.ts`), which offers the
+  start and keeps the id under `liveknowledge:v2:start-structure:<tabId>` in sessionStorage. `EditorStartPanels`,
+  while the start may show and is offered, reads it (`queuedStructurePick`): it draws nothing (the start's code is
+  never loaded), and an effect takes the pick once (`takeStructurePick` removes it) and runs the same `choose(id)` a
+  card's click does, once `setupStructure` (loaded then) knows the id; an id it does not know is dropped and the
+  start draws as usual. Storage that throws queues nothing, so the knowledgebase opens on its start.
 - **A kindless tab reads as a page.** `migrateStoredTab` (`packages/document/src/stored-tab.ts`) ends with
   `withKnowledgebasePage`, so a tab with no elements and one page of no kind is an empty knowledgebase page wherever
   a stored tab is read (the api's reads, the offline store, a file, a peer's tab). `removePage` on a tab's last page

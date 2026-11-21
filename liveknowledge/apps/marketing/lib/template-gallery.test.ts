@@ -1,97 +1,89 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, isBlankTemplate } from '@liveknowledge/templates';
+import { SETUP_STRUCTURES, STRUCTURE_GROUPS } from '@liveknowledge/knowledge';
 import {
-  filterGallery,
-  galleryShelves,
-  galleryTemplates,
-  groupGallery,
   BLANK_START,
+  galleryShelves,
+  galleryStructure,
+  structureCreateHref,
 } from './template-gallery';
 
-describe('galleryTemplates (docs/specs/019-marketing/marketing-site.md)', () => {
-  it('has one category card for every listed template but the blanks', () => {
-    const kinds = galleryTemplates().map((t) => t.kind);
-    const expected = TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(
-      (t) => t.kind,
-    );
-    expect(kinds).toEqual(expected);
-    for (const blank of ['blank', 'blank-illustration', 'blank-slide-deck']) {
-      expect(kinds).not.toContain(blank);
-    }
-    expect(new Set(kinds).size).toBe(kinds.length);
-  });
-
-  it('labels every card with its category', () => {
-    for (const t of galleryTemplates()) expect(t.categoryLabel, t.kind).not.toBe('');
-  });
-});
-
-describe('filterGallery', () => {
-  const all = galleryTemplates();
-
-  it('returns everything for an empty or blank query', () => {
-    expect(filterGallery(all, '')).toBe(all);
-    expect(filterGallery(all, '   ')).toBe(all);
-  });
-
-  it('matches the title, case-insensitively', () => {
-    expect(filterGallery(all, 'NEWSLETTER').map((t) => t.kind)).toEqual(['newsletter']);
-  });
-
-  it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'onboarding').map((t) => t.kind)).toContain('onboarding-handbook');
-    expect(filterGallery(all, 'support').map((t) => t.kind)).toContain('case-study');
-    expect(filterGallery(all, 'minutes').map((t) => t.kind)).toEqual(['meeting-notes']);
-  });
-
-  it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'design doc').map((t) => t.kind);
-    expect(kinds).toContain('design-doc');
-    expect(kinds).not.toContain('newsletter');
-    expect(filterGallery(all, 'newsletter zebra')).toEqual([]);
-  });
-});
-
-describe('groupGallery', () => {
-  it('keeps catalogue category order and drops emptied categories', () => {
-    const groups = groupGallery(filterGallery(galleryTemplates(), 'minutes'));
-    expect(groups.map((g) => g.label)).toEqual(['Handbooks']);
-    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['meeting-notes']);
-  });
-
-  it('runs the categories alphabetically by name, with no Blank Slate shelf', () => {
+// docs/specs/019-marketing/marketing-site.md "Structure" 3: the gallery's templates are the knowledgebase
+// structures, the same ones the editor's start offers, on one shelf per group.
+describe('the gallery shelves', () => {
+  it('are the structure groups, in the start’s order, Company and Team first', () => {
     const shelves = galleryShelves();
-    expect(shelves.map((g) => g.label)).not.toContain('Blank Slate');
-    const names = shelves.map((g) => g.label);
-    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
+    expect(shelves.map((s) => s.id)).toEqual(STRUCTURE_GROUPS.map((g) => g.id));
+    expect(shelves.map((s) => s.label)).toEqual([
+      'Company and Team',
+      'Engineering',
+      'Product and Research',
+      'Customers',
+    ]);
   });
 
-  it('shows each template on its own category', () => {
-    const browse = groupGallery(galleryTemplates());
-    const holding = (kind: string) =>
-      browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('design-doc')).toEqual(['engineering']);
-    expect(holding('lesson-plan')).toEqual(['onboarding']);
-    // A cross-listed template shows on each of its categories.
-    expect(holding('onboarding-handbook')).toEqual(['handbooks', 'onboarding']);
-  });
-
-  it('finds a template by its search words, as the editor does', () => {
-    expect(filterGallery(galleryTemplates(), 'rfc').map((t) => t.kind)).toContain('design-doc');
-    expect(filterGallery(galleryTemplates(), 'minutes').map((t) => t.kind)).toContain(
-      'meeting-notes',
-    );
-  });
-});
-
-// docs/specs/019-marketing/marketing-site.md "Templates": Blank Knowledgebase leads the category tiles but is no
-// category (owner 2026-11-21): a link that makes a blank knowledgebase.
-describe('the shelves and the blank', () => {
-  it('opens on the first category; the blank is the start tile, on no shelf', () => {
+  it('hold every structure once, on its own group’s shelf', () => {
     const shelves = galleryShelves();
-    expect(shelves.map((s) => s.id)).toEqual(groupGallery(galleryTemplates()).map((g) => g.id));
+    const dealt = shelves.flatMap((s) => s.templates.map((t) => t.kind));
+    expect([...dealt].sort()).toEqual(SETUP_STRUCTURES.map((s) => s.id).sort());
     for (const shelf of shelves)
-      for (const t of shelf.templates) expect(isBlankTemplate(t.kind), t.kind).toBe(false);
+      for (const t of shelf.templates)
+        expect(SETUP_STRUCTURES.find((s) => s.id === t.kind)?.group, t.kind).toBe(shelf.id);
+  });
+
+  it('give each shelf four, so an open shelf fills its four-across row', () => {
+    for (const shelf of galleryShelves()) expect(shelf.templates).toHaveLength(4);
+  });
+
+  it('never call a structure a wiki, or the product a knowledge base', () => {
+    for (const shelf of galleryShelves()) {
+      expect(shelf.label).not.toMatch(/wiki|knowledge base/i);
+      for (const t of shelf.templates) {
+        const words = [t.title, t.line, ...t.outline.lines.flatMap((l) => [l.title, ...l.under])];
+        for (const w of words) expect(w, t.kind).not.toMatch(/wiki|knowledge base|—/i);
+      }
+    }
+  });
+});
+
+describe('a gallery structure', () => {
+  it('carries its name, line, page count and two-level outline', () => {
+    expect(galleryStructure('engineering-handbook')).toMatchObject({
+      kind: 'engineering-handbook',
+      title: 'Engineering Handbook',
+      pageCount: 13,
+      outline: { more: 0 },
+    });
+    const outline = galleryStructure('engineering-handbook')!.outline;
+    expect(outline.lines.at(-1)).toEqual({
+      title: 'Shipping',
+      under: ['Release Process', 'On-Call'],
+    });
+  });
+
+  it('keeps its outline to five lines, the last counting the rest', () => {
+    for (const shelf of galleryShelves())
+      for (const t of shelf.templates) {
+        expect(t.outline.lines.length + (t.outline.more > 0 ? 1 : 0)).toBeLessThanOrEqual(5);
+      }
+    // Company Knowledgebase has six top pages: four lines, then "and 2 More".
+    expect(galleryStructure('company-knowledgebase')!.outline.more).toBe(2);
+  });
+
+  it('is none for an id no structure has', () => {
+    expect(galleryStructure('meeting-notes')).toBeNull();
+  });
+
+  it('links to a new knowledgebase made from it', () => {
+    expect(structureCreateHref('team-handbook')).toBe('/new?structure=team-handbook');
+    expect(structureCreateHref('a b')).toBe('/new?structure=a%20b');
+  });
+});
+
+// Blank Knowledgebase leads the group tiles but is no group (owner 2026-11-21): a link that makes a blank one.
+describe('the blank', () => {
+  it('is the start tile, on no shelf', () => {
     expect(BLANK_START).toMatchObject({ label: 'Blank Knowledgebase', kind: 'blank-article' });
+    for (const shelf of galleryShelves())
+      expect(shelf.templates.map((t) => t.kind)).not.toContain(BLANK_START.kind);
   });
 });

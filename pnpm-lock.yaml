@@ -4722,6 +4722,9 @@ importers:
       '@liveknowledge/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
+      '@liveknowledge/knowledge':
+        specifier: workspace:^
+        version: link:../../packages/knowledge
       '@liveknowledge/template-previews':
         specifier: workspace:*
         version: link:../../packages/template-previews

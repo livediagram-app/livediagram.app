@@ -43,7 +43,8 @@ vi.mock('@/components/chrome/OpeningScreen', () => ({
 import { ARRIVAL_KEY } from '@/lib/knowledge-home/arrival-handoff';
 import { recentQuestionsKey } from '@/lib/knowledge-ask/recent-questions';
 import { HomeScreen, homeSignedOut } from './HomeScreen';
-import { HomeReview } from './HomeSections';
+import { HOME_STRUCTURES, HomeReview } from './HomeSections';
+import { setupStructure } from '@liveknowledge/knowledge';
 
 const item = (id: string, title: string, updatedAt: number) => ({
   id,
@@ -394,14 +395,16 @@ describe('the field', () => {
 });
 
 describe('starting something', () => {
-  it('offers the kept templates under their own names, and Import into the scoped knowledgebase', async () => {
+  it('offers three structures, each a whole new knowledgebase, and Import into the scoped one', async () => {
     await home();
-    const start = within(await screen.findByRole('region', { name: 'Start a Page From' }));
+    const start = within(await screen.findByRole('region', { name: 'Start a Knowledgebase From' }));
     expect(start.getAllByRole('link').map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
-      ['Meeting Notes', '/new?template=meeting-notes'],
-      ['Design Doc', '/new?template=design-doc'],
-      ['Onboarding Handbook', '/new?template=onboarding-handbook'],
+      ['Team Handbook', '/new?structure=team-handbook'],
+      ['Engineering Handbook', '/new?structure=engineering-handbook'],
+      ['Support Knowledgebase', '/new?structure=support-knowledgebase'],
     ]);
+    // Each is a structure the start has, under its own name.
+    for (const s of HOME_STRUCTURES) expect(setupStructure(s.id)?.name).toBe(s.label);
     fireEvent.click(start.getByRole('button', { name: 'Import' }));
     expect(JSON.parse(sessionStorage.getItem(ARRIVAL_KEY)!)).toMatchObject({
       kind: 'import',

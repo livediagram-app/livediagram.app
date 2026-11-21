@@ -6,7 +6,8 @@ import { CREATION_INTENT } from '@liveknowledge/api-schema';
 import { untitledNameForTemplate, type TemplateKind } from '@liveknowledge/templates';
 import { apiCreateDocument } from '@/lib/api-client';
 import { NEW_DOCUMENT_THEME_ID, newDocumentContent } from '@/lib/new-document-content';
-import { newDocumentKind } from '@/lib/new-document-params';
+import { newDocumentKind, newDocumentStructure } from '@/lib/new-document-params';
+import { queueStructurePick } from '@/components/start/knowledgebase-start';
 import type { WorkspacePlace } from '@/lib/workbench/workspace-place';
 
 export type CreateInPlace = {
@@ -15,6 +16,8 @@ export type CreateInPlace = {
   teamId: string | null;
   // The template the href names; null makes a blank that opens on the editor's start, with the templates.
   templateKind: TemplateKind | null;
+  // The structure the href names (`?structure=<id>`), picked on that start at once; null for none.
+  structure: string | null;
 };
 
 export function createInPlaceOf(
@@ -24,14 +27,16 @@ export function createInPlaceOf(
 ): CreateInPlace {
   const search = new URL(href, origin).searchParams;
   const templateKind = newDocumentKind(search.toString());
+  const structure = newDocumentStructure(search.toString());
   const folder = search.get('folder');
   const team = search.get('team');
-  if (folder || team) return { folderId: folder ?? undefined, teamId: team, templateKind };
+  if (folder || team)
+    return { folderId: folder ?? undefined, teamId: team, templateKind, structure };
   if (place.kind === 'explorer' && place.node.kind === 'folder')
-    return { folderId: place.node.id, teamId: null, templateKind };
+    return { folderId: place.node.id, teamId: null, templateKind, structure };
   if (place.kind === 'explorer' && place.node.kind === 'team')
-    return { folderId: null, teamId: place.node.id, templateKind };
-  return { folderId: undefined, teamId: null, templateKind };
+    return { folderId: null, teamId: place.node.id, templateKind, structure };
+  return { folderId: undefined, teamId: null, templateKind, structure };
 }
 
 // Makes the document and answers its id; throws when the api refuses or cannot be reached.
@@ -57,5 +62,8 @@ export async function createDocumentInPlace(
     folderId: request.folderId,
     intent: CREATION_INTENT,
   });
+  // A structure asked for waits on the new knowledgebase's start, which picks it once the editor opens it
+  // (docs/specs/007-editor/new-document-route.md "The other parameters").
+  if (request.structure) queueStructurePick(tabId, request.structure);
   return documentId;
 }

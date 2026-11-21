@@ -17,8 +17,11 @@ marketing site sends a signed-in person on). Someone not signed in is sent to `/
   Due is due under each knowledgebase's own Review Period, as its card's verified share is; a period changed in
   this browser shows on the next visit.
 - **Recently Updated:** the eight pages changed most recently across those knowledgebases, each with who and when.
-- **Start a Page From:** How-To Guide, Decision Record, Meeting Notes, and **Import**
-  ([Knowledgebase import](../020-import-export/knowledgebase-import.md)). Each asks which knowledgebase, or makes one.
+- **Start a Knowledgebase From:** three knowledgebase structures, Team Handbook, Engineering Handbook and Support
+  Knowledgebase, and **Import** ([Knowledgebase import](../020-import-export/knowledgebase-import.md)). It was
+  **Start a Page From** (How-To Guide, Decision Record, Meeting Notes), each tile making a new knowledgebase from one
+  page; since the owner's "templates should be entire knowledgebase structures" (2026-11-21,
+  [Describe to set up](describe-to-set-up.md#the-start-screen)) a tile that makes a knowledgebase makes a whole one.
 - A signed-out visitor sees the marketing site. A person with no knowledgebases sees the hero and one card: **Make Your First
   Knowledgebase**, with Import beside it.
 - The numbers come from the index (the list of knowledgebases) and one summary read per knowledgebase (`GET .../summary`: page count,
@@ -38,15 +41,16 @@ marketing site sends a signed-in person on). Someone not signed in is sent to `/
 - **Knowledgebases** cards show the name, "64 pages", "92% verified" and the share as a thin bar. A card keeps its
   height while its numbers are read, and says so when they cannot be.
 - **Recently Updated** rows show the page, its knowledgebase and the date.
-- **Start a Page From** offers the kept article templates under their own names, **Meeting Notes**, **Design Doc**
-  and **Onboarding Handbook**, each making a new knowledgebase from it, and **Import**, which opens the Import dialog
-  in the scoped knowledgebase (in a new blank one for a person with none).
+- **Start a Knowledgebase From** offers **Team Handbook**, **Engineering Handbook** and **Support Knowledgebase**
+  (`HOME_STRUCTURES`, `components/home/HomeSections.tsx`), each a `/new?structure=<id>` link that makes a new
+  knowledgebase with that structure's whole tree ([New document route](../007-editor/new-document-route.md) "The
+  other parameters"), and **Import**, which opens the Import dialog in the scoped knowledgebase (in a new blank one
+  for a person with none). Every structure is on the new knowledgebase's start.
 
 ## Not built
 
-- **How-To Guide and Decision Record.** The templates package keeps no article template of either name, so the two
-  nearest are offered under their own names. Each tile makes a new knowledgebase: asking which knowledgebase a
-  template's page goes into is not built.
+- **A page from a writing template into a knowledgebase** (How-To Guide, Decision Record, Meeting Notes into a
+  knowledgebase Home asks for): not built, so Home offers no single-page template.
 - **Yours to Review** is drawn (oldest first, **Still Right**, a link) but has no rows: `GET .../summary` does not
   say which pages the person owns that are due. Pages with an agent's suggestion waiting are not listed either.
 - **A card's description** and **who** changed a recently updated page: neither is in the index's list or the

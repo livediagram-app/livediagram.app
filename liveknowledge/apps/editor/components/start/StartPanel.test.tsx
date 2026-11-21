@@ -43,15 +43,15 @@ describe('a start search, best match first', () => {
 
   it('leads with the structure whose name is what was typed, and lists it once', () => {
     const { search } = pages();
-    fireEvent.change(search, { target: { value: 'engineering wiki' } });
+    fireEvent.change(search, { target: { value: 'engineering handbook' } });
     const best = screen.getByRole('region', { name: 'Best Match' });
     const first = best.querySelector('[data-start-card]')!.getAttribute('data-start-card');
-    expect(first).toBe('engineering-wiki');
-    expect(document.querySelectorAll('[data-start-card="engineering-wiki"]')).toHaveLength(1);
+    expect(first).toBe('engineering-handbook');
+    expect(document.querySelectorAll('[data-start-card="engineering-handbook"]')).toHaveLength(1);
     // Before every group.
     expect(sections().indexOf('Best Match')).toBe(0);
     fireEvent.keyDown(search, { key: 'ArrowDown' });
-    expect(document.activeElement?.getAttribute('data-start-card')).toBe('engineering-wiki');
+    expect(document.activeElement?.getAttribute('data-start-card')).toBe('engineering-handbook');
   });
 
   it('has no Best Match when no name begins with the words', () => {

@@ -3,13 +3,14 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { TEMPLATE_CATEGORIES } from '@liveknowledge/templates';
+import { SETUP_STRUCTURES, STRUCTURE_GROUPS } from '@liveknowledge/knowledge';
 import { faqAnswerText, filterFaq } from '@liveworkspace/marketing-site/lib/faq';
 import {
   FAQ_CATEGORIES,
   LANDING_FAQ,
   LANDING_FAQ_COUNT,
-  TEMPLATE_CATEGORY_NAMES,
+  STRUCTURE_COUNT_WORD,
+  STRUCTURE_GROUP_NAMES,
 } from './faq-content';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
@@ -46,8 +47,17 @@ describe('FAQ content', () => {
     for (const item of items) expect(`${item.q} ${faqAnswerText(item)}`, item.q).not.toMatch(/—/);
   });
 
-  it('names the template categories the catalogue has', () => {
-    expect(TEMPLATE_CATEGORY_NAMES).toEqual(TEMPLATE_CATEGORIES.map((c) => c.label));
+  it('names the structure groups and counts the structures the templates are', () => {
+    expect(STRUCTURE_GROUP_NAMES).toEqual(STRUCTURE_GROUPS.map((g) => g.name));
+    expect(STRUCTURE_COUNT_WORD).toBe('sixteen');
+    expect(SETUP_STRUCTURES).toHaveLength(16);
+    for (const name of [
+      'Team Handbook',
+      'Engineering Handbook',
+      'Runbooks and On-Call',
+      'Sales Playbook',
+    ])
+      expect(SETUP_STRUCTURES.map((s) => s.name)).toContain(name);
   });
 
   it('is searchable by a word in an answer', () => {

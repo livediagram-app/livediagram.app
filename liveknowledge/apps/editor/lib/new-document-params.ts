@@ -1,8 +1,9 @@
 import { templateKindOf, type TemplateKind } from '@liveknowledge/templates';
 
 // What a /new URL asks for (docs/specs/007-editor/new-document-route.md): `/new` makes a document at once and opens it
-// on its start, where the templates are; `?blank=1` makes a blank one with its start closed; `?template=<kind>` (built
-// by the templates package's templateCreateHref) makes that template. One reader for the page and the workbench's
+// on its start, where the templates are; `?structure=<id>` does too, with that structure picked on it; `?blank=1`
+// makes a blank one with its start closed; `?template=<kind>` (built by the templates package's templateCreateHref)
+// makes that writing template. One reader for the page and the workbench's
 // create in place, so both agree on what counts.
 
 // The template the query asks for, or null for a document that opens on its start. `blank` wins when both are present
@@ -11,7 +12,21 @@ import { templateKindOf, type TemplateKind } from '@liveknowledge/templates';
 export function newDocumentKind(search: string): TemplateKind | null {
   const params = new URLSearchParams(search);
   if (params.has('blank')) return 'blank';
+  // A structure asked for wins over a writing template: the knowledgebase opens on its start, the structure picked.
+  if (newDocumentStructure(search)) return null;
   return templateKindOf(params.get('template'));
+}
+
+// `?structure=<id>` (docs/specs/007-editor/new-document-route.md "The other parameters"): a knowledgebase structure,
+// liveknowledge's templates (docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen"), picked on the new
+// knowledgebase's start at once. Read by its shape only, so /new never loads the structures: the start, which loads
+// them for the pick, ignores an id no structure has and opens as `/new`'s does. A blank asked for wins.
+const STRUCTURE_ID = /^[a-z0-9-]{1,64}$/;
+
+export function newDocumentStructure(search: string): string | null {
+  if (newDocumentStartsBlank(search)) return null;
+  const id = new URLSearchParams(search).get('structure');
+  return id && STRUCTURE_ID.test(id) ? id : null;
 }
 
 // `?start=blank` (docs/specs/007-editor/new-document-route.md "Start Blank"): the public sites' Start Blank links. The

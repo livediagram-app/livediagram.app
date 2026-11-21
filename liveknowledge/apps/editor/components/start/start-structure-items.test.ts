@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { SETUP_STRUCTURES, setupStructure } from '@liveknowledge/knowledge';
+import { SETUP_STRUCTURES } from '@liveknowledge/knowledge';
 import {
   BLANK_KNOWLEDGEBASE,
   DESCRIBE_TO_SET_UP,
   START_GROUP_ID,
   knowledgebaseStart,
-  structureOutline,
-  structurePageCount,
 } from './start-structure-items';
 
 // docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen"
@@ -26,31 +24,7 @@ describe('the knowledgebase start', () => {
     const { search } = knowledgebaseStart({ describe: true });
     expect(search('blank')).toEqual([{ group: 'start', ids: ['blank'] }]);
     expect(search('describe ai')).toEqual([{ group: 'start', ids: ['describe'] }]);
-    expect(search('release process').flatMap((g) => g.ids)).toEqual(['engineering-wiki']);
+    expect(search('release process').flatMap((g) => g.ids)).toEqual(['engineering-handbook']);
     expect(search('zzzz')).toEqual([]);
-  });
-});
-
-describe('a structure outline', () => {
-  const wiki = setupStructure('engineering-wiki')!;
-
-  it('lists each top page with its subpages, and counts every page', () => {
-    const { lines, more } = structureOutline(wiki);
-    expect(lines.map((l) => l.title)).toEqual([
-      'Overview',
-      'Architecture',
-      'Development',
-      'Shipping',
-    ]);
-    expect(lines[3]!.under).toEqual(['Release Process', 'On-Call']);
-    expect(more).toBe(0);
-    expect(structurePageCount(wiki)).toBe(13);
-  });
-
-  it('gives its last line to a count of the top pages past it', () => {
-    expect(structureOutline(wiki, 4).more).toBe(0);
-    const { lines, more } = structureOutline(wiki, 3);
-    expect(lines.map((l) => l.title)).toEqual(['Overview', 'Architecture']);
-    expect(more).toBe(2);
   });
 });

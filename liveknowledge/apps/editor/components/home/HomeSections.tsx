@@ -1,8 +1,8 @@
 'use client';
 
 // The Knowledgebase Home's sections under the hero (docs/specs/030-knowledgebase/knowledgebase-home.md):
-// Knowledgebases, Yours to Review, Recently Updated and Start a Page From. Each list keeps the height of its rows
-// while its numbers are read, so nothing moves when they arrive.
+// Knowledgebases, Yours to Review, Recently Updated and Start a Knowledgebase From. Each list keeps the height of its
+// rows while its numbers are read, so nothing moves when they arrive.
 import type { ReactNode } from 'react';
 import type { KnowledgeSummaryResponse } from '@liveknowledge/api-schema';
 import { Button, CompactEmptyState, EmptyState, buttonClassName } from '@liveknowledge/ui';
@@ -17,20 +17,20 @@ import {
   NEW_KNOWLEDGEBASE_HREF,
   knowledgebaseHref,
   pageHref,
-  templateHref,
+  structureHref,
 } from '@/lib/knowledge-home/home-links';
 import { reviewDueText, shortDate } from '@/lib/knowledge/page-trust';
 import {
   ArrowIcon,
-  DesignDocIcon,
+  EngineeringIcon,
   HandbookIcon,
   ImportIcon,
   KnowledgebaseIcon,
-  MeetingNotesIcon,
   NewIcon,
   PageIcon,
   RecentIcon,
   ReviewIcon,
+  SupportIcon,
 } from './home-icons';
 
 const SECTION_TITLE = 'text-lg font-semibold tracking-tight text-slate-900 dark:text-white';
@@ -298,28 +298,29 @@ const TILE = `${LINK_CARD} flex min-h-[6.5rem] w-full flex-col items-center just
 const TILE_ICON =
   'flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 text-brand-800 dark:bg-brand-500/20 dark:text-brand-200';
 
-/** The kept article templates Home starts a knowledgebase from, under their own names. */
-export const HOME_TEMPLATES = [
-  { kind: 'meeting-notes', label: 'Meeting Notes', icon: <MeetingNotesIcon /> },
-  { kind: 'design-doc', label: 'Design Doc', icon: <DesignDocIcon /> },
-  { kind: 'onboarding-handbook', label: 'Onboarding Handbook', icon: <HandbookIcon /> },
+/** The knowledgebase structures Home starts a knowledgebase from (packages/knowledge setup-structures.ts), each
+ *  making its whole tree. The rest are on the new knowledgebase's start. */
+export const HOME_STRUCTURES = [
+  { id: 'team-handbook', label: 'Team Handbook', icon: <HandbookIcon /> },
+  { id: 'engineering-handbook', label: 'Engineering Handbook', icon: <EngineeringIcon /> },
+  { id: 'support-knowledgebase', label: 'Support Knowledgebase', icon: <SupportIcon /> },
 ] as const;
 
 export function HomeStartTiles({ onImport }: { onImport: () => void }) {
   return (
-    <Section id="home-start" title="Start a Page From">
+    <Section id="home-start" title="Start a Knowledgebase From">
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {HOME_TEMPLATES.map((template) => (
-          <li key={template.kind}>
+        {HOME_STRUCTURES.map((structure) => (
+          <li key={structure.id}>
             <a
-              href={templateHref(template.kind)}
-              data-home-template={template.kind}
+              href={structureHref(structure.id)}
+              data-home-structure={structure.id}
               className={TILE}
             >
               <span aria-hidden className={TILE_ICON}>
-                {template.icon}
+                {structure.icon}
               </span>
-              {template.label}
+              {structure.label}
             </a>
           </li>
         ))}

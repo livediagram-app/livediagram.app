@@ -31,7 +31,7 @@ describe('StartFromTemplates', () => {
     expect(onChoose).toHaveBeenCalledWith('blank');
     expect(
       [...document.querySelectorAll('[data-rail]')].map((r) => r.getAttribute('data-rail')),
-    ).toEqual(['start', 'team', 'engineering', 'product']);
+    ).toEqual(['start', 'team', 'engineering', 'product', 'support']);
     for (const word of ['Slide', 'Infographic', 'Canvas'])
       expect(document.body.textContent).not.toContain(`Blank ${word}`);
   });
@@ -40,12 +40,12 @@ describe('StartFromTemplates', () => {
     const onChoose = vi.fn();
     mount(onChoose);
     fireEvent.click(document.querySelector('[data-rail="engineering"]')!);
-    const card = document.querySelector<HTMLElement>('[data-start-card="engineering-wiki"]')!;
-    expect(card.textContent).toContain('Engineering Wiki');
+    const card = document.querySelector<HTMLElement>('[data-start-card="engineering-handbook"]')!;
+    expect(card.textContent).toContain('Engineering Handbook');
     expect(card.textContent).toContain('13 Pages');
     expect(card.textContent).toContain('Shipping: Release Process, On-Call');
     fireEvent.click(card);
-    expect(onChoose).toHaveBeenCalledWith('engineering-wiki');
+    expect(onChoose).toHaveBeenCalledWith('engineering-handbook');
   });
 
   it('offers Describe to Set Up as a Start card where it is offered', () => {

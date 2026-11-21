@@ -48,10 +48,10 @@ test('a structure from the start makes its whole page tree, and Import opens the
   const start = await openNew(page);
   // Each structure shows its outline and page count.
   await start.locator('[data-rail="engineering"]').click();
-  const wiki = start.locator('[data-start-card="engineering-wiki"]');
-  await expect(wiki).toContainText('13 Pages');
-  await expect(wiki).toContainText('Shipping: Release Process, On-Call');
-  await wiki.click();
+  const handbook = start.locator('[data-start-card="engineering-handbook"]');
+  await expect(handbook).toContainText('13 Pages');
+  await expect(handbook).toContainText('Shipping: Release Process, On-Call');
+  await handbook.click();
   await expect(startScreen(page)).toHaveCount(0);
   // Its tree, Start Here become its first page, which is open.
   await expect
@@ -73,7 +73,9 @@ test('a structure from the start makes its whole page tree, and Import opens the
     ]);
   await expect(titleOf(page)).toHaveText('Overview');
   await expect(page.locator('.article-flow')).toContainText('Where to Start');
-  await expect(page.locator('[data-knowledgebase-name]:visible').first()).toHaveText('Engineering Wiki');
+  await expect(page.locator('[data-knowledgebase-name]:visible').first()).toHaveText(
+    'Engineering Handbook',
+  );
 
   // A second new knowledgebase: its Import closes the start and opens the dialog over the empty page.
   const second = await openNew(page);

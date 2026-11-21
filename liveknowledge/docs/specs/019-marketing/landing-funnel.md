@@ -101,9 +101,9 @@ The slots:
   still reads): one slot per blank, as the header's `Header<Blank>`.
 - `HeroFan`: one of the template cards fanned along the hero's foot (`/new?template=<kind>`).
 - `HeroCanvas` (**retired**: no link carries it; the slot stays so its history still reads): a hero launch window.
-- `Gallery`: any card in the landing template gallery
-  (`/new?template=<kind>`). The template itself is already reported by
-  `Template·Used`, so it is not repeated in the source. `GalleryDraw` (**retired**: the gallery has no search, so no link carries it).
+- `Gallery`: any card in the landing template gallery, each a knowledgebase structure
+  (`/new?structure=<id>`), and its Blank Knowledgebase tile. Which structure is not sent, in the source or anywhere
+  (`Tab·Created·FromStructure` is three fixed words). `GalleryDraw` (**retired**: the gallery has no search, so no link carries it).
 - `Templates`: a card in a category page's **Start from a template** band (`/new?template=<kind>`),
   the category's own pick of up to nine templates.
 - `Closing`: the shared "Time to start" band (`StartDrawingCta`).

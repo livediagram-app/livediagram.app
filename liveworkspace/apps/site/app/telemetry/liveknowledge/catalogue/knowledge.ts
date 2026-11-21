@@ -327,7 +327,7 @@ export const PAGES_FROM_STRUCTURE = chart(
   'Tab',
   'Created',
   'Pages From a Structure',
-  'A whole knowledgebase shape picked on the start (Team Handbook, Engineering Wiki and the rest), counted once per pick.',
+  'A whole knowledgebase shape picked on the start or from a template link (Team Handbook, Engineering Handbook and the rest), counted once per pick.',
   { types: ['FromStructure'] },
 );
 

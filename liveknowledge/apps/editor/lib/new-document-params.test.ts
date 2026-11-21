@@ -5,6 +5,7 @@ import {
   newDocumentKind,
   newDocumentQuery,
   newDocumentStartsBlank,
+  newDocumentStructure,
   placementParamsFromSearch,
   SEARCH_PRESET_MAX,
 } from './new-document-params';
@@ -33,8 +34,31 @@ describe('newDocumentKind (docs/specs/007-editor/new-document-route.md)', () => 
     expect(newDocumentKind('?template=design-doc&blank=1')).toBe('blank');
   });
 
-  it('reads back the link the templates package builds for the gallery', () => {
+  it('reads back the link the templates package builds', () => {
     expect(newDocumentKind(templateCreateHref('article').slice('/new'.length))).toBe('article');
+  });
+
+  it('is no template when a structure is asked for: the knowledgebase opens on its start', () => {
+    expect(newDocumentKind('?structure=team-handbook&template=design-doc')).toBeNull();
+    expect(newDocumentKind('?structure=team-handbook&blank=1')).toBe('blank');
+  });
+});
+
+describe('newDocumentStructure (new-document-route.md "The other parameters")', () => {
+  it('reads ?structure=<id>, with any other params', () => {
+    expect(newDocumentStructure('?structure=team-handbook')).toBe('team-handbook');
+    expect(newDocumentStructure('?folder=f1&structure=sales-playbook&via=Home.Gallery')).toBe(
+      'sales-playbook',
+    );
+  });
+
+  it('is none without one, for an empty or ill-formed id, or when a blank is asked for', () => {
+    expect(newDocumentStructure('')).toBeNull();
+    expect(newDocumentStructure('?structure=')).toBeNull();
+    expect(newDocumentStructure('?structure=Team%20Handbook')).toBeNull();
+    expect(newDocumentStructure(`?structure=${'a'.repeat(65)}`)).toBeNull();
+    expect(newDocumentStructure('?structure=team-handbook&blank=1')).toBeNull();
+    expect(newDocumentStructure('?structure=team-handbook&start=blank')).toBeNull();
   });
 });
 

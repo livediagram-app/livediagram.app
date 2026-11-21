@@ -5,14 +5,9 @@
 // count beside its name. Blank Knowledgebase and
 // Describe to Set Up draw their own small outline: an empty page, and a sparkle over pages to come.
 import type { ReactNode } from 'react';
-import { setupStructure } from '@liveknowledge/knowledge';
+import { setupStructure, structureOutline, structurePageCount } from '@liveknowledge/knowledge';
 import type { StartPanelCard } from '@liveworkspace/workbench/components/start/StartCard';
-import {
-  BLANK_KNOWLEDGEBASE,
-  DESCRIBE_TO_SET_UP,
-  structureOutline,
-  structurePageCount,
-} from './start-structure-items';
+import { BLANK_KNOWLEDGEBASE, DESCRIBE_TO_SET_UP } from './start-structure-items';
 import { SetupSparkleIcon } from '@/components/setup/setup-icons';
 
 const plural = (n: number) => `${n} ${n === 1 ? 'Page' : 'Pages'}`;

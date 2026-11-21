@@ -10,6 +10,7 @@ import { lucideGlyph } from '@liveknowledge/ui';
 import {
   lucideCode,
   lucideFileDown,
+  lucideHandshake,
   lucidePackage,
   lucideSquareDashed,
   lucideUsers,
@@ -31,6 +32,7 @@ const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   team: glyph(lucideUsers),
   engineering: glyph(lucideCode),
   product: glyph(lucidePackage),
+  support: glyph(lucideHandshake),
 };
 const ImportGlyph = glyph(lucideFileDown);
 

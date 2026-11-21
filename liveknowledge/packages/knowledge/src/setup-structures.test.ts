@@ -12,6 +12,9 @@ import {
   SETUP_STRUCTURES,
   STRUCTURE_GROUPS,
   setupStructure,
+  structureOutline,
+  structurePageCount,
+  structurePageTitles,
   structureSuggestion,
   type StructurePage,
 } from './setup-structures';
@@ -68,7 +71,7 @@ describe('the structures', () => {
     const ids = SETUP_STRUCTURES.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(SETUP_STRUCTURES.map((s) => s.name)).size).toBe(ids.length);
-    expect(setupStructure('engineering-wiki')?.name).toBe('Engineering Wiki');
+    expect(setupStructure('engineering-handbook')?.name).toBe('Engineering Handbook');
     expect(setupStructure('nope')).toBeUndefined();
   });
 
@@ -83,5 +86,52 @@ describe('the structures', () => {
         SETUP_STRUCTURES.some((s) => s.group === group.id),
         group.id,
       ).toBe(true);
+  });
+
+  it('fill every group with four, a gallery shelf’s row', () => {
+    expect(SETUP_STRUCTURES.length).toBe(16);
+    for (const group of STRUCTURE_GROUPS)
+      expect(SETUP_STRUCTURES.filter((s) => s.group === group.id).length, group.id).toBe(4);
+  });
+
+  // docs/specs/019-marketing/marketing-site.md "The pitch": the product says knowledgebase, as one word, and never
+  // calls itself a wiki. The structures are read on the landing page as well as in the editor.
+  it('say knowledgebase, never a wiki or a knowledge base', () => {
+    const text = (pages: readonly StructurePage[]): string[] =>
+      pages.flatMap((p) => [p.title, p.summary, ...p.headings, ...text(p.pages)]);
+    for (const s of SETUP_STRUCTURES)
+      for (const words of [s.name, s.line, ...text(s.pages)]) {
+        expect(words, s.id).not.toMatch(/wiki|knowledge base|—/i);
+      }
+    for (const g of STRUCTURE_GROUPS) expect(`${g.name} ${g.line}`).not.toMatch(/wiki/i);
+  });
+});
+
+describe('a structure outline', () => {
+  const handbook = setupStructure('engineering-handbook')!;
+
+  it('lists each top page with its subpages, and counts every page', () => {
+    const { lines, more } = structureOutline(handbook);
+    expect(lines.map((l) => l.title)).toEqual([
+      'Overview',
+      'Architecture',
+      'Development',
+      'Shipping',
+    ]);
+    expect(lines[3]!.under).toEqual(['Release Process', 'On-Call']);
+    expect(more).toBe(0);
+    expect(structurePageCount(handbook)).toBe(13);
+    expect(structurePageTitles(handbook).slice(0, 3)).toEqual([
+      'Overview',
+      'Architecture',
+      'Services',
+    ]);
+  });
+
+  it('gives its last line to a count of the top pages past it', () => {
+    expect(structureOutline(handbook, 4).more).toBe(0);
+    const { lines, more } = structureOutline(handbook, 3);
+    expect(lines.map((l) => l.title)).toEqual(['Overview', 'Architecture']);
+    expect(more).toBe(2);
   });
 });

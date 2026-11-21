@@ -16,6 +16,15 @@ the earlier "no start screen".)
 Owner, 2026-11-21, on the first build of it: the start "should be less about an individual page and more about the
 structure of the whole knowledgebase". So every choice on it is a whole knowledgebase's shape, never one page.
 
+Owner, 2026-11-21, again: "Templates should do more than create a single page, they should be entire knowledgebase
+structures, not about the content so much." So the **structures are liveknowledge's templates**, wherever a
+template is offered: this start, the landing page's template gallery ([Marketing site](../019-marketing/marketing-site.md)
+"Structure" 3) and Home's **Start a Knowledgebase From** tiles ([Knowledgebase Home](knowledgebase-home.md)). Each is
+the shape of a whole knowledgebase (its pages, their one-line summaries and the headings their writing sits under),
+never sample writing. Outside the editor a structure is a link, `/new?structure=<id>`
+([New document route](../007-editor/new-document-route.md) "The other parameters"), which makes a new knowledgebase
+and picks that structure on its start, so it is created exactly as a pick here is.
+
 - `/new`, the Explorer's New button and Home's **Make Your First Knowledgebase** make the knowledgebase straight
   away (its one page, **Start Here**, saved to the account for a signed-in person, Offline for a guest, as
   [Knowledgebases and pages](knowledgebases-and-pages.md) says) and open it on the **start screen**, the shared
@@ -25,10 +34,12 @@ structure of the whole knowledgebase". So every choice on it is a whole knowledg
   - **Start**, first: **Blank Knowledgebase** (the first card), which closes onto Start Here, the caret in its
     Title; and **Describe to Set Up** (where it is offered: a signed-in Editor, not Offline), a card that closes the
     start and opens this feature's dialog over the empty knowledgebase, so the AI proposes a structure.
-  - Then the **knowledgebase structures**, grouped by who they are for: **Team** (Team Handbook, Onboarding),
-    **Engineering** (Engineering Wiki, Runbooks and On-Call) and **Product and Support** (Product Docs, Support
-    Knowledgebase). Each card shows the structure, not a picture of a page: an outline of its page tree two levels
-    deep (each top page, and its subpages after it: "Engineering: Release Process, On-Call"), and its page count
+  - Then the **knowledgebase structures**, sixteen, four to a group, grouped by who they are for: **Company and
+    Team** (Company Knowledgebase, Team Handbook, Onboarding, People Operations), **Engineering** (Engineering
+    Handbook, Runbooks and On-Call, Design System, API Docs), **Product and Research** (Product Docs, Research
+    Library, Project Hub, Product Strategy) and **Customers** (Support Knowledgebase, Sales Playbook, Customer
+    Success, Marketing Playbook). Each card shows the structure, not a picture of a page: an outline of its page tree two levels
+    deep (each top page, and its subpages after it: "Shipping: Release Process, On-Call"), and its page count
     ("12 Pages"). The search finds a structure by its name, its line or any of its page titles.
   - At the rail's foot, as liveplanner's Import: **Import**, which opens the knowledgebase's Import dialog (Markdown
     folder, Notion or Confluence archive); Describe to Set Up stays there too, as on liveplanner's start. Then
@@ -42,16 +53,21 @@ structure of the whole knowledgebase". So every choice on it is a whole knowledg
   titles unique under each parent: the bounds a suggestion keeps. It is one undo step. Whoever picks it owns its pages
   (verification.md "The owner"): Start Here's place keeps the owner the create gave it, and each page added takes its
   creator from the save that makes it.
-- The writing templates (Meeting Notes, Design Doc and the rest) are a page's, so they are not on this start; the
-  Community's tiles, which are pages too, are not either.
+- The writing templates (Meeting Notes, Design Doc and the rest, `@liveknowledge/templates`) are a page's, so they
+  are not on this start; the Community's tiles, which are pages too, are not either. No surface lists them any more:
+  the landing gallery and Home offer structures. `/new?template=<kind>` still makes one, so an older link still opens.
+  Adding a page from a writing template inside an existing knowledgebase is not built (see "Not built").
 - The start cannot be closed by itself: Blank Knowledgebase is the way past it. Describe to Set Up and Import close
   it first, so cancelling their dialog leaves the person on the empty Start Here page.
 - **Only for a knowledgebase just made here.** The start shows on the knowledgebase `/new` made, in the browser tab
   that made it (kept for that tab's session, so a reload keeps it), while Start Here is untouched (nothing written
   beyond its Title) and the person may edit it. Nobody else, and no other knowledgebase, ever sees it: a collaborator
   who opens the knowledgebase meanwhile sees the empty page.
-- `/new?blank=1` (Start Blank) and `/new?template=<kind>` (links from the marketing site, the Community and Home's
-  **Start a Page From** tiles) skip it: they already say what to start with.
+- `/new?blank=1` (Start Blank) and `/new?template=<kind>` (older links to a writing template) skip it: they already
+  say what to start with. `/new?structure=<id>` (the landing gallery's cards and Home's Start a Knowledgebase From
+  tiles) opens it already picked: the knowledgebase is made, the start is offered and that structure is chosen on it
+  at once, without the start being drawn, so its tree, its name and its one undo step are the pick's. An unknown id
+  opens the start as `/new` does.
 - **A tab with no page kind** (made by an agent, a script or an older client, with nothing on it) is read as an
   empty knowledgebase page as it is loaded, everywhere a stored tab is read (`withKnowledgebasePage` in
   `migrateStoredTab`), so it opens as an empty article page and never shows a start. Deleting a knowledgebase's
@@ -163,3 +179,5 @@ no number field, and adding one is a change to the platform's telemetry, which t
 - Counts in telemetry (how many pages were suggested or created): left out on purpose, see "Telemetry".
 - Built-in AI's spend across every account together has no ceiling of its own beyond the per-person and
   per-knowledgebase counts; an AI Gateway with a spend limit (liveplanner's `AI_GATEWAY`) is not wired here.
+- **A page from a writing template inside a knowledgebase** (New Page from Meeting Notes, say): no entry offers it.
+  The writing templates stay in `@liveknowledge/templates` for `/new?template=` and for that entry when it is built.

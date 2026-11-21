@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@liveknowledge/api-schema": "workspace:*",
+    "@liveknowledge/knowledge": "workspace:^",
     "@liveknowledge/template-previews": "workspace:*",
     "@liveknowledge/templates": "workspace:*",
     "@liveknowledge/ui": "workspace:*",

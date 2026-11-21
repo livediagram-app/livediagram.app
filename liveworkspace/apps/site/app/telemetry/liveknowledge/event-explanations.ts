@@ -1517,7 +1517,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
   'UI|Used|TemplateLink':
-    'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
+    'Someone made a new knowledgebase through a template link: a structure from the landing gallery or Home, or an older single-page template link.',
   'UI|View|PagesTourStepPageName':
     'The Pages tour reached its "Your Pages" step, on the first page\'s name.',
   'UI|View|PagesTourStepPageSettings':

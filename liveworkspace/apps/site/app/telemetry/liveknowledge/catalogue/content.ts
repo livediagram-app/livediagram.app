@@ -18,7 +18,7 @@ export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
   'Template Links',
-  'A document made straight from a template link into /new, skipping the wizard.',
+  'A knowledgebase made straight from a template link into /new: a structure from the landing gallery or Home, or an older single-page template link.',
   { types: ['TemplateLink'] },
 );
 

@@ -215,7 +215,8 @@ page), logging `[new] restored, back out <target>` (`../packages/workbench/src/h
 (`apps/editor/app/new/page.tsx`, the URL read by `apps/editor/lib/new-document-params.ts`):
 
 - **Which document:** the template `?template=<kind>` names (`newDocumentKind`), a blank for `?blank=1`, else one
-  empty tab that opens on its start (Start Making Pages). An unknown template kind is ignored rather than guessed,
+  empty tab that opens on its start (Start Making Pages), with the structure `?structure=<id>` names already picked
+  on it (`newDocumentStructure`, below). An unknown template kind is ignored rather than guessed,
   so a stale link makes a document, not a 404; a retired kind opens its replacement.
 - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
   says: Offline for a guest, liveknowledge for a signed-in person (`defaultSaveLocationFor`). Decided at commit by
@@ -254,9 +255,19 @@ shown templates. Its telemetry token is `JustDraw` (`UI / Used / JustDraw`).
 
 ### The other parameters
 
-- **`/new?template=<kind>`** makes that template. This is the URL the marketing site's template gallery links every
-  card to ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`. `blank` wins
-  when both are present.
+- **`/new?structure=<id>`** makes a new knowledgebase from that structure, a whole tree of pages
+  ([Describe to set up](../030-knowledgebase/describe-to-set-up.md#the-start-screen)). This is the URL the marketing
+  site's template gallery links every card to ([Marketing site](../019-marketing/marketing-site.md)), and Home's
+  Start a Knowledgebase From tiles. `/new` makes the knowledgebase as it makes any (one Start Here page, its start
+  offered) and queues the pick for that tab (`queueStructurePick`, `components/start/knowledgebase-start.ts`, kept in
+  sessionStorage beside the offer); the editor's start, once the page is loaded, takes the queued pick instead of
+  drawing itself and chooses it exactly as a click on its card does (`EditorStartPanels`): the structure's pages in
+  Start Here's place by `createStructure`, one undo step, the knowledgebase named after the structure, opening on its
+  first page. A workspace frame's create in place (`create-in-place.ts`) queues it the same way. An unknown id is
+  ignored, so the knowledgebase opens on its start as `/new` does; `blank` wins over it, and it wins over `template`.
+  It fires `UI / Used / TemplateLink`, as a template link does: a structure is the template.
+- **`/new?template=<kind>`** makes that writing template, a single page. No surface links one any more (older links
+  and the e2e suite do); it fires `UI / Used / TemplateLink`. `blank` wins when both are present.
 - **`/new?q=<words>`** (trimmed, at most 60 characters, `SEARCH_PRESET_MAX`) is handed to the new document's start
   as its search ([Template start](start-diagramming.md) "Search handed over"). An empty `q` is ignored.
 - **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
