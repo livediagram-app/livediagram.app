@@ -30,7 +30,12 @@ import { StreamingAnswer } from './StreamingAnswer';
 const CARD =
   'rounded-2xl border border-slate-200 bg-white p-4 text-[15px] leading-7 text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 sm:p-5';
 const FOOT_BUTTON = 'gap-1.5 !px-2';
-const PRESSED = '!bg-slate-100 !text-slate-900 dark:!bg-slate-800 dark:!text-white';
+// A chosen rating colours its hand, filled, and leaves the button's ground alone (owner 2026-11-21: the ground alone
+// "didn't feel selected").
+const HELPFUL_ON =
+  '!text-brand-700 [&_svg]:fill-brand-500/25 dark:!text-brand-300 dark:[&_svg]:fill-brand-400/30';
+const NOT_HELPFUL_ON =
+  '!text-rose-700 [&_svg]:fill-rose-500/20 dark:!text-rose-300 dark:[&_svg]:fill-rose-400/25';
 /** How long Copy Answer says Copied. */
 const COPIED_MS = 2000;
 
@@ -106,7 +111,7 @@ function AnswerFooter({ turn, conversation, canSave, onSave }: AskAnswerCardProp
           aria-label="Helpful"
           aria-pressed={turn.feedback === 'helpful'}
           onClick={() => rate('helpful')}
-          className={`${FOOT_BUTTON} ${turn.feedback === 'helpful' ? PRESSED : ''}`}
+          className={`${FOOT_BUTTON} ${turn.feedback === 'helpful' ? HELPFUL_ON : ''}`}
         >
           <HelpfulIcon />
         </Button>
@@ -118,7 +123,7 @@ function AnswerFooter({ turn, conversation, canSave, onSave }: AskAnswerCardProp
           aria-label="Not Helpful"
           aria-pressed={turn.feedback === 'not-helpful'}
           onClick={() => rate('not-helpful')}
-          className={`${FOOT_BUTTON} ${turn.feedback === 'not-helpful' ? PRESSED : ''}`}
+          className={`${FOOT_BUTTON} ${turn.feedback === 'not-helpful' ? NOT_HELPFUL_ON : ''}`}
         >
           <NotHelpfulIcon />
         </Button>

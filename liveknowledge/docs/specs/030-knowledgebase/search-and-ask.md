@@ -139,7 +139,7 @@ Ask through an anonymous share link is off: it would spend the team's key for st
 - **A failure** is said in the answer's place in words with its next step: the key not accepted or the model not
   allowed (Open AI Settings for an Editor), no credit, the account's rate limit, Claude busy, a lost connection (Ask
   Again), a refusal, 20 questions in the hour, 200 in the day. Never a status, a code or the upstream's words.
-- Helpful and not helpful are kept on the answer for the conversation and counted in telemetry, with no words.
+- Helpful and not helpful are kept on the answer for the conversation and counted in telemetry, with no words. A chosen one colours its hand, filled (green for helpful, rose for not), not the button behind it.
 
 | Action                                 | Editor | Participant | Viewer |
 | -------------------------------------- | ------ | ----------- | ------ |
