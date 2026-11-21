@@ -143,7 +143,10 @@ describe('decorationsPlugin', () => {
       );
     expect(placeholders(false).join()).toContain('Untitled Page');
     expect(placeholders(true).join()).toContain('"data-placeholder":"Title"');
-    const named = start([{ ...blocks[0]!, runs: [{ text: 'Named' }] }, blocks[1]!], () => false);
+    const named = start(
+      [{ id: 'title', type: 'paragraph', style: 'title', runs: [{ text: 'Named' }] }, blocks[1]!],
+      () => false,
+    );
     expect(decosOf(fresh(named.state, false)).join()).not.toContain('Untitled Page');
   });
 

@@ -34,7 +34,7 @@ vi.mock('./media', () => ({
       : null,
 }));
 
-import { drawDocument } from './thumbnail';
+import { drawDocument, firstPageHasElements } from './thumbnail';
 
 // A deploy with the media service, so a drawing inlines its images.
 const ENV = { MEDIA_KEY: 'k' } as unknown as DocumentEnv;
@@ -98,6 +98,46 @@ describe('drawDocument', () => {
     expect(await draw(liveDoc())).toBeNull();
     db.getTabBody.mockResolvedValue(stored('not json'));
     expect(await draw(liveDoc())).toBeNull();
+  });
+
+  it('draws a page of writing with no elements, a knowledgebase page, and nothing for one with no words', async () => {
+    const page = { id: 'p1', kind: 'article', flow: 'art-1' };
+    const title = (text: string) => ({
+      id: 't',
+      type: 'paragraph',
+      style: 'title',
+      runs: [{ text }],
+    });
+    db.getTabBody.mockResolvedValue(
+      stored(
+        JSON.stringify({
+          elements: [],
+          pages: [page],
+          articles: { 'art-1': { blocks: [title('Start Here')] } },
+        }),
+      ),
+    );
+    expect(await draw(liveDoc())).toContain('<svg');
+    db.getTabBody.mockResolvedValue(
+      stored(
+        JSON.stringify({
+          elements: [],
+          pages: [page],
+          articles: { 'art-1': { blocks: [title(' ')] } },
+        }),
+      ),
+    );
+    expect(await draw(liveDoc())).toBeNull();
+  });
+
+  it('counts a page of writing as something to show on a Community card', async () => {
+    const title = { id: 't', type: 'paragraph', style: 'title', runs: [{ text: 'Start Here' }] };
+    db.getTabBody.mockResolvedValue(
+      stored(JSON.stringify({ elements: [], articles: { 'art-1': { blocks: [title] } } })),
+    );
+    expect(await firstPageHasElements(ENV, 'd1')).toBe(true);
+    db.getTabBody.mockResolvedValue(stored(JSON.stringify({ elements: [] })));
+    expect(await firstPageHasElements(ENV, 'd1')).toBe(false);
   });
 
   it('embeds a referenced image as a base64 data URL', async () => {

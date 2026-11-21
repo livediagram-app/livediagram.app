@@ -84,7 +84,7 @@ viewer does not stream changes. The publish dialog says so plainly.
   editor's Share, liveknowledge's Explorer, and the Explorer on liveworkspace.app. Unpublished, it invites the owner to share
   the document with the Community; published, it shows the post (title, category, likes, copies), a link to it, **Edit
   Listing** and **Remove From Community**; hidden, it says **Hidden after reports** with neither.
-- **Something to show**: its first tab's first page has at least one element (counted, never rendered): that page is the post's card picture. When the editor holds that tab and it is empty, the tab holds **Share to
+- **Something to show**: its first tab has writing (a knowledgebase page's words), or its first page has at least one element (counted, never rendered): that page is the post's card picture. When the editor holds that tab and it is empty, the tab holds **Share to
   Community** and says why beside it: "Add something to your first page before sharing: it is the picture on your Community card." Elsewhere the server's refusal says it.
 - **The Publish dialog** asks for a **Title** (3 to 80 characters, prefilled with the document's name), a
   **Description** (20 to 500, with a live counter and a prompt: what it shows, how you made it, how someone could

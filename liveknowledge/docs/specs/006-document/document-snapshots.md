@@ -29,7 +29,7 @@ as a full-size embed.
   budget, unknown to the media service, or not a recognised raster format keeps its placeholder box.
 - `304` when `If-None-Match` names the current `saved_at`: the platform's copy is still the document's, at the cost
   of one row read and no drawing.
-- `204` with the ETag: nothing to draw (an empty or unparseable tab, no tab).
+- `204` with the ETag: nothing to draw (a tab with no elements and no words, an unparseable tab, no tab).
 - `404`: no such document, or no such tab in it.
 
 Whether the asker may see the document, and which tab a link confines it to, is decided by the index before the
@@ -42,7 +42,8 @@ A first tab in Pages (pages: infographics, slides, articles)
 draws as **its first page alone**, drawn as the page export draws it
 (`renderPageToSvg`, [Pages](../007-editor/pages-mode.md) "Export"): the page's sheet and
 background, an article page's estimated writing, and the elements reaching
-onto it, cut at its edges, at the page's own size. Drawing the whole canvas
+onto it, cut at its edges, at the page's own size. A continuous page (a knowledgebase page) draws as tall as its
+estimated writing, never its stored height, which can be the 240 px minimum. Drawing the whole canvas
 instead put every page side by side, which at preview size shrank to a
 row of slivers nobody could recognise; a deck is recognised by its cover.
 The same rule holds wherever this renderer serves a preview: the Explorer
@@ -94,8 +95,9 @@ sketch, captioned "Nothing to preview" where there is room. So does an answer th
   size.
 - **An empty document is never asked for.** Every document list carries
   `empty` per document (`DocumentSummary`, `SharedWithItem`): true when its
-  first tab has nothing to draw (no element: `drawnCount` in
-  `@liveknowledge/document`), or it has no tab. Such a row shows the still,
+  first tab has nothing to draw (no element and no words: `drawnCountWithWriting` in the api's
+  `tab-writing.ts`, the elements plus one for writing, since a knowledgebase page is writing with no elements), or
+  it has no tab. Such a row shows the still,
   dashed page sketch at once, captioned "Nothing to preview" where there is room,
   and makes no request, so an Explorer of new or blank documents fires no
   404s. The list knows without reading any tab body: each tab row keeps its

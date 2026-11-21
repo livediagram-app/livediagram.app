@@ -6,7 +6,8 @@
 
 import { itemTabOrder, itemTabReads, itemTabWrites } from '@liveworkspace/index-app';
 import { DOCUMENT_OUTBOX } from '../document-room/document-outbox';
-import { drawnCount, type Tab } from '@liveknowledge/document';
+import { type Tab } from '@liveknowledge/document';
+import { drawnCountWithWriting as drawnCount } from '../tab-writing';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 import type { DocumentEnv, TabDTO } from '../types';

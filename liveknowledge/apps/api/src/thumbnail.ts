@@ -23,6 +23,7 @@ import { getTab, getTabBody, type StoredTabBody, servableImageIds } from './db';
 import { imageRefIds } from '@liveworkspace/api-kit/image-refs';
 import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { mediaClient } from './media';
+import { hasWriting } from './tab-writing';
 import type { DocumentEnv } from './types';
 
 // Ceiling on the raw image bytes inlined into one drawing. The renderer
@@ -50,8 +51,8 @@ export async function drawDocument(
   return renderTabBodyToSvg(env, doc, body, community);
 }
 
-// Something to show, for a Community post (docs/specs/025-community/community.md "Publishing"): the first tab's first
-// page has at least one element, since that page is the post's card picture. Counted from the stored body, never
+// Something to show, for a Community post (docs/specs/025-community/community.md "Publishing"): the first tab has
+// writing, or its first page has at least one element, since that page is the post's card picture. Counted from the stored body, never
 // rendered; a tab with no pages counts its elements.
 export async function firstPageHasElements(env: DocumentEnv, documentId: string): Promise<boolean> {
   const body = await getTabBody(env, documentId);
@@ -62,7 +63,10 @@ export async function firstPageHasElements(env: DocumentEnv, documentId: string)
   } catch {
     return false;
   }
-  if (!Array.isArray(parsed.elements) || parsed.elements.length === 0) return false;
+  if (!Array.isArray(parsed.elements)) return false;
+  // A knowledgebase page is writing with no elements: its words are the card picture.
+  if (hasWriting(parsed)) return true;
+  if (parsed.elements.length === 0) return false;
   const tab = migrateStoredTab({ id: documentId, name: '', ...parsed } as Tab);
   const pages = laidOutPagesOf(tab);
   const firstPage = pages[0];
@@ -115,7 +119,8 @@ async function renderTabBodyToSvg(
     return null;
   }
   if (!Array.isArray(parsed.elements)) return null;
-  if (parsed.elements.length === 0) return null;
+  // A knowledgebase page is writing (an article) with no elements: it has something to draw too.
+  if (parsed.elements.length === 0 && !hasWriting(parsed)) return null;
   // `tabs.data` is the tab body minus id + name (see db/tabs.ts
   // upsertTab); re-attach them so the value is a complete Tab. The
   // renderer only reads `elements` + `backgroundColor`, both already in

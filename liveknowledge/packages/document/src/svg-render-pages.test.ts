@@ -30,6 +30,22 @@ describe('a Pages tab drawn as its pages', () => {
     expect(svg).toContain('data:image/png;base64,QUJD');
   });
 
+  it('draws a continuous page (a knowledgebase page) as tall as its writing, not its stored minimum', () => {
+    const para = (id: string) => ({
+      id,
+      type: 'paragraph',
+      runs: [{ text: 'A line of writing.' }],
+    });
+    const t = {
+      ...tab([{ id: 'a', kind: 'article', size: 'fit', flow: 'f', orientation: 'portrait' }]),
+      articles: { f: { blocks: Array.from({ length: 30 }, (_, i) => para(`b${i}`)) } },
+    } as unknown as Tab;
+    const page = laidOutPagesOf(t)[0]!;
+    expect(page.rect.height).toBe(240);
+    const height = Number(/^<svg [^>]*height="([\d.]+)"/.exec(renderPageToSvg(t, page))?.[1]);
+    expect(height).toBeGreaterThan(600);
+  });
+
   it("lays out a tab's pages", () => {
     expect(laidOutPagesOf(tab([portrait('a')])).map((p) => p.id)).toEqual(['a']);
   });

@@ -9,7 +9,6 @@
 import {
   copyDocumentEnvelope,
   documentToEnvelopeText,
-  drawnCount,
   isValidTab,
   migrateIncomingTab,
   migrateStoredTab,
@@ -24,6 +23,7 @@ import { APP_FILE_FORMATS } from '@liveworkspace/drive/formats';
 import { storedTabConnection, tabConnectionOf, type ExportResult } from '@liveworkspace/index-app';
 import { MAX_DECK_LEN, MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
+import { drawnCountWithWriting } from '../tab-writing';
 import type { DocumentEnv } from '../types';
 import { hostRulesForFile, type CopiedRules } from '@liveworkspace/automations/room';
 import {
@@ -167,7 +167,7 @@ export function readDocumentFile(text: string, opts: { keepIds?: boolean } = {})
       orderIndex: index,
       folder,
       data,
-      elementCount: drawnCount(tab),
+      elementCount: drawnCountWithWriting(tab),
       connection: tabConnectionOf(incoming) ?? null,
     });
   }

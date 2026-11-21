@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
+import { hasWriting } from '@liveknowledge/document';
 
 import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -196,7 +197,10 @@ function OpenEditorTabDialogs() {
           // empty while a later one is not, is left to the server (docs/specs/025-community/community.md "Something
           // to show").
           firstTabEmpty={
-            !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0
+            !!activeTab &&
+            tabs[0]?.id === activeTab.id &&
+            activeTab.elements.length === 0 &&
+            !hasWriting(activeTab)
           }
           // The Share legend's Everyone stop opens it on the Community tab (openShareOn).
           initialView={shareStartView}

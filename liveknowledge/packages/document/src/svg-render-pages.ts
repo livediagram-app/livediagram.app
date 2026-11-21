@@ -11,6 +11,7 @@ import { articleOpsToSvg } from './article-draw-ops';
 import { estimateArticle } from './article-layout-estimate';
 import { themeAccent } from './page-default-background';
 import { getBuiltInTheme } from './themes';
+import { continuousPageHeight, isContinuousPage } from './page-sizes';
 
 type RenderOpts = Omit<NonNullable<Parameters<typeof renderElementsToSvg>[1]>, 'frame'>;
 
@@ -44,16 +45,26 @@ export function pagesWithWriting(tab: Tab): {
   const byPage = new Map<string, string>();
   const after = new Map<string, LaidOutPage[]>();
   const added = new Set<string>();
+  // A continuous page (a knowledgebase page) as tall as its writing: its stored height can be the minimum.
+  const grown = new Map<string, number>();
   for (const flow of new Set(own.flatMap((p) => (p.flow ? [p.flow] : [])))) {
     const est = estimateArticle(tab, flow, own, accent);
     for (const [id, ops] of est.ops) byPage.set(id, articleOpsToSvg(ops));
+    const first = own.find((p) => p.flow === flow);
+    if (est.height !== undefined && first && isContinuousPage(first)) {
+      grown.set(first.id, continuousPageHeight(est.height));
+    }
     if (est.added.length) {
       const last = own.filter((p) => p.flow === flow).at(-1)!;
       after.set(last.id, est.added);
       for (const p of est.added) added.add(p.id);
     }
   }
-  const pages = own.flatMap((p) => [p, ...(after.get(p.id) ?? [])]);
+  const sized = (p: LaidOutPage): LaidOutPage => {
+    const height = grown.get(p.id);
+    return height === undefined ? p : { ...p, rect: { ...p.rect, height } };
+  };
+  const pages = own.flatMap((p) => [sized(p), ...(after.get(p.id) ?? [])]);
   return { pages, added, writing: (page) => byPage.get(page.id) };
 }
 
@@ -61,10 +72,14 @@ export function pagesWithWriting(tab: Tab): {
 // estimated writing unless `writingSvg` says otherwise).
 export function renderPageToSvg(
   tab: Tab,
-  page: LaidOutPage,
+  given: LaidOutPage,
   opts: RenderOpts & { writingSvg?: (page: LaidOutPage) => string | undefined } = {},
 ): string {
-  const { writingSvg = pagesWithWriting(tab).writing, ...rest } = opts;
+  const { writingSvg: passed, ...rest } = opts;
+  const laid = passed ? null : pagesWithWriting(tab);
+  const writingSvg = passed ?? laid?.writing ?? (() => undefined);
+  // As tall as its writing when it is a continuous page (pagesWithWriting).
+  const page = laid?.pages.find((p) => p.id === given.id) ?? given;
   // The page's own picture too, from the same resolver as its image elements.
   const frame = pageExportFrame(page, {
     idPrefix: `pg-${page.index}`,

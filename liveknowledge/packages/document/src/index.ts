@@ -141,6 +141,7 @@ export * from './paginate';
 export * from './article-flow';
 export * from './article-table';
 export * from './article-toc';
+export * from './tab-writing';
 export * from './article-footnotes';
 export * from './article-bands';
 export * from './article-flow-ops';
