@@ -61,8 +61,8 @@ walk is jarring, no animation to soften the transition and size change on the pa
   (the micro token); the incoming ones slide 12 px in from the other side, a short beat later and a 10 ms cascade
   apart: on **Walk** the avatar palette's contents come in from the right, on **Edit** the building strip's from the
   left.
-- **The toggle stays the toggle.** The Edit | Walk toggle and the divider after it do not fade or re-enter: they ride
-  the bar's start edge (on a phone that edge does not move, so they hold still), and the brand pill glides from the
+- **The toggle stays the toggle.** The Edit | Walk toggle (no divider after it; its pill sets it apart) does not fade or re-enter: it rides
+  the bar's start edge (on a phone that edge does not move, so it holds still), and the brand pill glides from the
   side that was on to the side now on.
 - **It starts where the strip lands.** The incoming strip settles its place a frame or two after its size (it
   measures its room between the menu card and the top-right corner card, and may shift). Until its left edge holds
@@ -238,7 +238,7 @@ height, so switching group never moves the flyout. Each reopens on the group it 
 A strip shows one category at a time, so finding an element means knowing which category holds it.
 **Search** finds it by name instead, across every category.
 
-- **Where:** the last control on the strip, behind a divider, with a hover card ("Search Elements"). On a phone it
+- **Where:** the last control on the strip, with no divider before it or the Library (their tint sets them apart from the other controls), and a hover card ("Search Elements"). On a phone it
   stays put at the end of the strip.
 - **Opening it clears the way**: a tile armed to place is let go (its "Click to drop" banner goes), and the
   session timer's pill stands aside while the panel is open, since both sit where the panel hangs.
