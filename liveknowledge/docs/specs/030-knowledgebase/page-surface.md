@@ -54,6 +54,8 @@ replaces what the fork still shows around the writing.
   (a shadow, the page not moving), with **Keep Pages Open** in place of Hide Pages (both a bordered button at the tree's foot, New Page and its chevron wearing the same border and ground, right of
   New Page as livedocuments' Contents Options, so the knowledgebase's name has its row to itself; owner 2026-11-21); it slides back 300 ms after the
   pointer leaves it, unless a menu opened from it is still open. Touch has no hover, so a phone keeps its Pages sheet.
+  The Page Info rail on the right slides the same way (owner 2026-11-21): **Hide Page Info** slides it out to the right
+  as its strip takes its place, and **Show Page Info** slides it back in (200 ms; at once with reduced motion).
 - **Reading time:** On This Page's heading carries how long the page takes to read ("4 min read"), at 230 words a
   minute over its text, lists, tables and code, rounded, at least 1 minute; an empty page shows none, and a page with
   writing but no headings shows the time alone. It follows the committed writing, never each keystroke.
