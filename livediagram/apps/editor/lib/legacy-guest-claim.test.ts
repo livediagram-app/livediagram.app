@@ -54,13 +54,28 @@ describe('claiming an old guest', () => {
     expect(tracked).toEqual(['Participant·Moved·LegacyGuest']);
   });
 
-  // Unsigned claims are paused: the bare id proves nothing, so it is not sent, and stays for when it can be claimed.
-  it('sends nothing for a guest from before signing, and keeps the old id', async () => {
+  // A guest from before signing: the bare id alone, which accounts merges once their id is re-keyed.
+  it.each([
+    ['no signature', null],
+    ['an empty one', ''],
+  ])('sends a null signature for a guest from before signing (%s)', async (_name, sig) => {
+    if (sig === null) localStorage.removeItem(LEGACY_GUEST_SIG_KEY);
+    else localStorage.setItem(LEGACY_GUEST_SIG_KEY, sig);
+    claim.mockResolvedValue({ merged: true });
+    expect(await claimLegacyGuest('user_1')).toBe('merged');
+    expect(claim).toHaveBeenCalledWith('user_1', { legacyId: OLD_ID, signature: null });
+    expect(localStorage.getItem(LEGACY_GUEST_ID_KEY)).toBeNull();
+  });
+
+  // Until their id is re-keyed accounts pauses it (503 unsigned_claims_paused): the old id stays for a later load.
+  it('keeps the old id while an unsigned claim is paused', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     localStorage.removeItem(LEGACY_GUEST_SIG_KEY);
+    claim.mockRejectedValueOnce(new ApiError('claim legacy guest', 503, null));
     expect(await claimLegacyGuest('user_1')).toBe('kept');
-    expect(claim).not.toHaveBeenCalled();
     expect(localStorage.getItem(LEGACY_GUEST_ID_KEY)).toBe(OLD_ID);
     expect(tracked).toEqual([]);
+    warn.mockRestore();
   });
 
   it('forgets the old keys when there was nothing to merge', async () => {

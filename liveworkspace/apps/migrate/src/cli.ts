@@ -5,13 +5,15 @@
 //                [--oauth-kv <dump.json>] [--no-pictures] --out <bundle-dir>
 //   migrate apply <bundle> --env staging|production --ledger <ledger.sqlite> [--dry-run] [--concurrency <n>]
 //   migrate verify <bundle> --env staging|production [--out <verify.json>]
+//   migrate rekey-guests --env staging|production [--dry-run]
 /* oxlint-disable no-console -- a command line tool: its report is what it prints to stdout */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { apply, defaultWrangler } from './apply.ts';
 import { createPictureDrawer } from './pictures.ts';
 import { plan } from './plan/index.ts';
-import { fetchHttp, processRunner } from './run.ts';
+import { rekeyGuests } from './rekey-guests.ts';
+import { fetchHttp, fetchPost, processRunner } from './run.ts';
 import { openSnapshot, snapshot } from './snapshot.ts';
 import type { Env } from './targets.ts';
 import { bundleKeys, verify, verifyQueries, wranglerExecute } from './verify.ts';
@@ -20,7 +22,8 @@ const USAGE = `usage:
   migrate snapshot <export.sql> <out.sqlite>
   migrate plan <snapshot> --clerk <users.csv> --accounts <existing-accounts.json> [--ledger <ledger.sqlite>] [--oauth-kv <dump.json>] [--no-pictures] --out <bundle-dir>
   migrate apply <bundle> --env staging|production --ledger <ledger.sqlite> [--dry-run] [--concurrency <n>]
-  migrate verify <bundle> --env staging|production [--out <verify.json>]`;
+  migrate verify <bundle> --env staging|production [--out <verify.json>]
+  migrate rekey-guests --env staging|production [--dry-run]`;
 
 function fail(message: string): never {
   console.error(message);
@@ -136,6 +139,21 @@ async function main(argv: string[]): Promise<void> {
     if (values.out) writeFileSync(values.out, `${text}\n`);
     console.log(text);
     if (tables.some((t) => t.missing > 0)) process.exitCode = 1;
+    return;
+  }
+  if (command === 'rekey-guests') {
+    const { values } = parseArgs({
+      args: rest,
+      options: { env: { type: 'string' }, 'dry-run': { type: 'boolean' } },
+    });
+    const left = await rekeyGuests({
+      env: envOf(values.env),
+      dryRun: values['dry-run'] ?? false,
+      vars: process.env,
+      post: fetchPost,
+      log: (line) => console.log(line),
+    });
+    if (left > 0) process.exitCode = 1;
     return;
   }
   fail(command ? `unknown command ${command}` : 'no command');
