@@ -16,7 +16,8 @@
     "./signed-out-here": "./src/signed-out-here.ts",
     "./token-answer": "./src/token-answer.ts",
     "./api-tokens": "./src/api-tokens.ts",
-    "./workbench-sessions": "./src/workbench-sessions.ts"
+    "./workbench-sessions": "./src/workbench-sessions.ts",
+    "./ai-key": "./src/ai-key.ts"
   },
   "scripts": {
     "lint": "oxlint",

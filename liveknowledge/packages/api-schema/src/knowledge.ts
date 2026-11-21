@@ -167,7 +167,14 @@ export type KnowledgeAiSettings = {
   providers: { id: KnowledgeAiProvider; label: string; keyPrefix: string }[];
   /** Whether this deployment has built-in AI (search-and-ask.md "Built-in AI"): with no key, it answers. */
   builtIn: boolean;
+  /** Which key answers the asker (search-and-ask.md "Which key answers"), and its model's id; on `GET ai` only, never
+   *  in the overview. `usesModel` and its label are absent for built-in AI and for a key that will not open. */
+  uses?: KnowledgeAiUses;
+  usesModel?: string;
+  /** `usesModel`'s name ("Claude Fable 5.2"), for "Answer With". */
+  usesModelLabel?: string;
 };
+export type KnowledgeAiUses = 'knowledgebase' | 'team' | 'personal' | 'built-in';
 
 export type AskTurn = { question: string; answer: string };
 /** Which AI a person asked to answer (search-and-ask.md "Choosing which AI answers"): built-in AI even with a key

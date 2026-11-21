@@ -117,6 +117,7 @@ describe('addresses the Explorer used to have', () => {
     // Webhooks left Settings for each document's own: an old link opens Profile.
     expect(settingsOpening('webhooks', null)).toMatchObject({ categoryId: 'account:account' });
     expect(settingsOpening('data', null)).toMatchObject({ categoryId: 'account:data' });
+    expect(settingsOpening('ai', null)).toMatchObject({ categoryId: 'account:ai' });
     expect(settingsOpening('accessibility', null)).toMatchObject({
       categoryId: 'account:accessibility',
     });

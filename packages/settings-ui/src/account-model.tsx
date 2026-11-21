@@ -59,6 +59,9 @@ export interface AccountSection {
   // account. A host without an account (a guest, a workbench, a self-hosted editor) hands none.
   renderTokens?: () => ReactNode;
   renderDataExport?: () => ReactNode;
+  // The person's AI key and their teams' (liveworkspace/docs/specs/003-accounts/ai-keys.md "Settings"), drawn here
+  // (accountPanels) for a signed-in account; none for a guest or a workbench.
+  renderAi?: () => ReactNode;
   // The email switches, only where the person has an address the emails can go to (default true).
   emails?: boolean;
   // Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): where the deployment offers Drive and the person is signed
@@ -90,6 +93,9 @@ const toggleRow =
     onChange: (next) => set(row.key, next),
   });
 
+const AI_KEYWORDS =
+  'ai key api anthropic claude openai gpt chatgpt model provider built-in own key team billing';
+
 const TOKENS_KEYWORDS =
   'api token key mcp integration script developer access create revoke secret';
 
@@ -100,6 +106,7 @@ export const ACCOUNT_CATEGORY_IDS = [
   'notifications',
   'privacy',
   'accessibility',
+  'ai',
   'data',
   'tokens',
 ] as const satisfies readonly SettingsTileId[];
@@ -113,10 +120,10 @@ export function accountCategoryTile(id: AccountCategoryId): ReactNode {
 }
 
 /** The account's categories, by their own ids (the panel prefixes them `account:`), in the order they are listed:
- *  Profile, Notifications, Privacy, Accessibility and Your Data (the rail's Account), then API Tokens
+ *  Profile, Notifications, Privacy, Accessibility, AI and Your Data (the rail's Account), then API Tokens
  *  (its Developers). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
-  const { all, set, renderTokens, renderDataExport, emails = true } = section;
+  const { all, set, renderAi, renderTokens, renderDataExport, emails = true } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
     rows.map(toggleRow(all, set, heading));
 
@@ -160,6 +167,24 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
       rows: toggle(ACCESSIBILITY_ROWS),
     },
   );
+  if (renderAi) {
+    categories.push({
+      id: 'ai',
+      label: 'AI',
+      icon: accountCategoryTile('ai'),
+      rows: [
+        {
+          kind: 'custom',
+          key: 'aiKey',
+          label: 'AI',
+          description: 'Your own AI key, and your teams’, used by every app’s AI features.',
+          keywords: AI_KEYWORDS,
+          section: 'AI',
+          render: renderAi,
+        },
+      ],
+    });
+  }
   const data: SettingsRow | null = renderDataExport
     ? {
         kind: 'custom',

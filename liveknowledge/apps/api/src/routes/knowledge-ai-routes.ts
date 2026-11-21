@@ -1,12 +1,15 @@
 // The knowledgebase's AI settings over REST (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Providers"):
-//   GET    /api/documents/<id>/ai         { provider, hasKey, keyHint, model, models, providers, builtIn }, never the key
+//   GET    /api/documents/<id>/ai         { provider, hasKey, keyHint, model, models, providers, builtIn, uses,
+//                                          usesModel? }, never a key
 //   PUT    /api/documents/<id>/ai/key     { provider, key }: seal and store it; another provider replaces the key
 //   DELETE /api/documents/<id>/ai/key     remove it
 //   PUT    /api/documents/<id>/ai/model   { model }: one of the stored provider's
 // Reading is every role's (the Ask tab says whether a key is set; the hint is an Editor's). Changing is an Editor's.
 import {
   ASK_UNAVAILABLE_WORDS,
+  askerOf,
   readAiSettings,
+  whichAi,
   removeStoredAiKey,
   storeAiKey,
   storeAiModel,
@@ -19,8 +22,13 @@ const invalid = (error: string, message: string) => json({ error, message }, { s
 export async function handleAiRoutes({ ctx, document, grant }: KnowledgeRoute): Promise<Response> {
   const { env, request, segments } = ctx;
   const editor = grant.role === 'edit';
-  if (segments.length === 4)
-    return request.method === 'GET' ? json(await readAiSettings(env, editor)) : methodNotAllowed();
+  if (segments.length === 4) {
+    if (request.method !== 'GET') return methodNotAllowed();
+    // Which key answers this asker too (search-and-ask.md "Which key answers"): one call to accounts, only when the
+    // knowledgebase has no key of its own, and never the key.
+    const settings = await readAiSettings(env, editor);
+    return json({ ...settings, ...(await whichAi(env, settings, askerOf(ctx, document.teamId))) });
+  }
   if (segments.length !== 5 || (segments[4] !== 'key' && segments[4] !== 'model'))
     return notFound();
   if (request.method !== 'PUT' && !(segments[4] === 'key' && request.method === 'DELETE'))
