@@ -122,7 +122,6 @@ livedocuments/apps/editor/components/canvas/editor-canvas-host/useEditCanvasProp
 livedocuments/apps/editor/components/canvas/editor-canvas-host/usePanelCanvasProps.ts	liveknowledge/apps/editor/components/canvas/editor-canvas-host/usePanelCanvasProps.ts
 livedocuments/apps/editor/components/canvas/text-hug-measure.ts	liveknowledge/apps/editor/components/canvas/text-hug-measure.ts
 livedocuments/apps/editor/components/canvas/tool-panels.ts	liveknowledge/apps/editor/components/canvas/tool-panels.ts
-livedocuments/apps/editor/components/canvas/useCanvasDrawTools.tsx	liveknowledge/apps/editor/components/canvas/useCanvasDrawTools.tsx
 livedocuments/apps/editor/components/canvas/useCanvasHostBrush.ts	liveknowledge/apps/editor/components/canvas/useCanvasHostBrush.ts
 livedocuments/apps/editor/components/canvas/useCanvasHostMenus.ts	liveknowledge/apps/editor/components/canvas/useCanvasHostMenus.ts
 livedocuments/apps/editor/components/canvas/useCanvasPointer.tsx	liveknowledge/apps/editor/components/canvas/useCanvasPointer.tsx
@@ -293,7 +292,6 @@ livedocuments/packages/document/src/svg-render-body.ts	liveknowledge/packages/do
 livedocuments/packages/document/src/svg-render-boxed.ts	liveknowledge/packages/document/src/svg-render-boxed.ts
 livedocuments/packages/document/src/svg-render-describe.ts	liveknowledge/packages/document/src/svg-render-describe.ts
 livedocuments/packages/document/src/svg-render-map.ts	liveknowledge/packages/document/src/svg-render-map.ts
-livedocuments/packages/document/src/svg-render-pages.ts	liveknowledge/packages/document/src/svg-render-pages.ts
 livedocuments/packages/document/src/svg-render-quote.ts	liveknowledge/packages/document/src/svg-render-quote.ts
 livedocuments/packages/document/src/svg-render-shapes.ts	liveknowledge/packages/document/src/svg-render-shapes.ts
 livedocuments/packages/document/src/svg-render-wordmark.ts	liveknowledge/packages/document/src/svg-render-wordmark.ts
