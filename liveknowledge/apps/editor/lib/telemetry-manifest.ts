@@ -36,7 +36,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // From Community in the Share dialog; Copied when a Community tile on Start Making Pages is chosen
   // (docs/specs/007-editor/start-diagramming.md "From the Community").
   'Community·Changed',
-  'Community·Copied',
   'Community·Removed',
   'Community·Shared',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a public-page CTA brought somebody to /new
