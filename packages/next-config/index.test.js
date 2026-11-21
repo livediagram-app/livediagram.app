@@ -71,6 +71,16 @@ describe('liveworkspaceNextConfig', () => {
     expect(config.env).toEqual({ NEXT_PUBLIC_BUILD_YEAR: '2027' });
   });
 
+  it("adds an app's own inlined values beside the shared ones", () => {
+    quiet();
+    const config = liveworkspaceNextConfig({
+      env: {},
+      now,
+      inlineEnv: { HELP_ART_APP: 'livehuddle' },
+    });
+    expect(config.env).toEqual({ NEXT_PUBLIC_BUILD_YEAR: '2027', HELP_ART_APP: 'livehuddle' });
+  });
+
   it('writes no AGENTS.md and points agents at the latest release', () => {
     quiet();
     const config = liveworkspaceNextConfig({ env: {}, now });
