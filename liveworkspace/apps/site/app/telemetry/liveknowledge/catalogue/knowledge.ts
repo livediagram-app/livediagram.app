@@ -430,7 +430,7 @@ export const EDITS_JOINED = chart(
   'Tab',
   'Started',
   'Edits Joined',
-  "Someone reading a page was brought into its edit mode when another person started editing it, so both work in the one shared draft.",
+  'Someone reading a page was brought into its edit mode when another person started editing it, so both work in the one shared draft.',
   { types: ['EditJoined'], rising: 'neutral' },
 );
 

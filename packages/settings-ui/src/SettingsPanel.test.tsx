@@ -210,7 +210,9 @@ describe('SettingsPanel', () => {
     fireEvent.click(within(apps).getByRole('button', { name: /^Editor/ }));
     expect(pane().querySelector('[data-settings-app-heading]')).toBeNull();
     const guides = within(pane()).getByRole('switch', { name: 'Alignment Guides' });
-    expect(marksOf(guides)).toBe('livediagram, liveplanner, livedocuments, livedesign and livehuddle');
+    expect(marksOf(guides)).toBe(
+      'livediagram, liveplanner, livedocuments, livedesign and livehuddle',
+    );
     fireEvent.click(guides);
     const ownGuides = own[0]!.rows[0] as Extract<SettingsRow, { kind: 'toggle' }>;
     expect(ownGuides.onChange).toHaveBeenCalledWith(true);

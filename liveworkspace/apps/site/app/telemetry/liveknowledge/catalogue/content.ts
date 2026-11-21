@@ -419,7 +419,8 @@ export const CONNECTED_TABS_OPENED: Metric = {
   action: 'Used',
   type: 'OpenConnectedFile',
   title: 'Connected Files Opened',
-  blurb: 'Someone opened a connected file from its row in the page tree. Read against files connected.',
+  blurb:
+    'Someone opened a connected file from its row in the page tree. Read against files connected.',
 };
 
 export const CONNECTED_FILES_REMOVED: Metric = {
@@ -428,7 +429,8 @@ export const CONNECTED_FILES_REMOVED: Metric = {
   action: 'Deleted',
   type: 'Connected',
   title: 'Connected Files Removed',
-  blurb: 'A connected file’s row taken out of the page tree with Remove from Sidebar; the file stays as it is.',
+  blurb:
+    'A connected file’s row taken out of the page tree with Remove from Sidebar; the file stays as it is.',
 };
 
 export const CONNECTED_TABS: MetricStack = {

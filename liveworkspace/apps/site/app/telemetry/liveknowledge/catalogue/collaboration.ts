@@ -355,7 +355,8 @@ export const PAGE_COMMENTS_EDITED = chart(
 export const DISCUSSION: MetricStack = {
   stack: true,
   title: 'Discussion',
-  blurb: 'Comments left on elements and at the foot of pages, opened to read or reply, resolved and edited.',
+  blurb:
+    'Comments left on elements and at the foot of pages, opened to read or reply, resolved and edited.',
   members: [
     COMMENTS_ADDED,
     COMMENT_POPOVERS_OPENED,
