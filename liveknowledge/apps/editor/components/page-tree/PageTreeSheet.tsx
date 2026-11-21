@@ -3,7 +3,7 @@
 // The page tree on a phone (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "On a phone the tree is a sheet
 // opened from the top bar"): a Pages button in the top row, and the same tree in the shared bottom sheet, its rows 44px tall.
 // Choosing a page closes the sheet.
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { HoverCard } from '@liveknowledge/ui';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
@@ -60,6 +60,23 @@ export function PageTreeSheet({
         : undefined,
     [connected],
   );
+  // Escape closes the sheet (BottomSheet leaves Escape to its caller; sweep 2026-11-21: nothing closed it), but not
+  // over a row's menu or while a name is being typed: those take their own Escape first.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      if (document.querySelector('[role=menu]')) return;
+      if (
+        e.target instanceof HTMLElement &&
+        e.target.closest('input, textarea, [contenteditable=true]')
+      )
+        return;
+      setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
   return (
     <>
       <HoverCard title="Pages" description="Opens this knowledgebase's page tree.">

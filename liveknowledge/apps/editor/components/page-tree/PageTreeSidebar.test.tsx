@@ -235,6 +235,24 @@ describe('PageTreeSheet', () => {
     expect(within(sheet).getAllByRole('button', { name: /^Page Options for/ })).toHaveLength(2);
   });
 
+  it('closes on Escape', () => {
+    render(<PageTreeSheet {...props()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Pages' }));
+    expect(screen.getByRole('dialog', { name: 'Pages' })).toBeTruthy();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'Pages' })).toBeNull();
+  });
+
+  it('leaves Escape to a row menu open inside it', () => {
+    render(<PageTreeSheet {...props()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Pages' }));
+    const sheet = screen.getByRole('dialog', { name: 'Pages' });
+    fireEvent.click(within(sheet).getAllByRole('button', { name: /^Page Options for/ })[0]!);
+    expect(document.querySelector('[role=menu]')).toBeTruthy();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.getByRole('dialog', { name: 'Pages' })).toBeTruthy();
+  });
+
   it('closes when a page is chosen or added', () => {
     const p = props();
     render(<PageTreeSheet {...p} />);
