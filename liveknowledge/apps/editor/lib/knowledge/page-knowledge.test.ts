@@ -102,6 +102,8 @@ describe('the store', () => {
   const health = (over: Partial<PageKnowledge> = {}): PageHealthResponse => ({
     knowledge: answer(over),
     reads: { people: 4, agents: 9 },
+    created: { by: 'u2', at: NOW - DAY },
+    updated: { by: 'u1', at: NOW - 60_000 },
   });
   function deferred<T>() {
     let resolve!: (value: T) => void;
@@ -159,7 +161,12 @@ describe('the store', () => {
     sent.resolve(answer({ state: 'verified', owner: 'u1', verifiedBy: 'u1', verifiedAt: NOW + 5 }));
     await done;
     expect(store.fieldsOf(page)).toMatchObject({ verifiedAt: NOW + 5 });
-    expect(store.healthOf('d1', 't1')?.reads).toEqual({ people: 4, agents: 9 });
+    // What only Page Health's read says stays: the week's reads, who created and updated the page.
+    expect(store.healthOf('d1', 't1')).toMatchObject({
+      reads: { people: 4, agents: 9 },
+      created: { by: 'u2' },
+      updated: { by: 'u1' },
+    });
   });
 
   it('rolls a refused Verify back, fields and health alike', async () => {

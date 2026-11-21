@@ -114,7 +114,9 @@ export function usePageKnowledge(): PageKnowledgeView {
   const stored = useEditorChrome((s) => s.activeTab.knowledge);
   const offline = useIsOfflineDocument(documentId);
   const now = useRelativeNow();
-  useSyncExternalStore(
+  // The store's version is read into what follows (`at`), never dropped: the React Compiler memoises a call by the
+  // values it reads, so a lookup that ignored the version would keep its first answer (Page Health stuck at none).
+  const at = useSyncExternalStore(
     pageKnowledgeStore.subscribe,
     pageKnowledgeStore.version,
     pageKnowledgeStore.version,
@@ -128,10 +130,10 @@ export function usePageKnowledge(): PageKnowledgeView {
       pageId,
     );
   }, [chrome, documentId, pageId, offline]);
-  const fields = pageKnowledgeStore.fieldsOf({ id: pageId, knowledge: stored });
+  const fields = pageKnowledgeStore.fieldsOf({ id: pageId, knowledge: stored }, at);
   // The knowledgebase's Review Period: a change of it moves the state and the due date at once.
   const every = useReviewEvery(documentId);
   const trust = useMemo(() => pageTrust(fields, every, now), [fields, every, now]);
-  const health = documentId ? pageKnowledgeStore.healthOf(documentId, pageId) : undefined;
+  const health = documentId ? pageKnowledgeStore.healthOf(documentId, pageId, at) : undefined;
   return { ...actions, pageId, trust, reviewEvery: every, health, now };
 }

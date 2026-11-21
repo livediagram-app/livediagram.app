@@ -91,7 +91,8 @@ export function createPageKnowledgeStore(
   const keyOf = (documentId: string, tab: string) => `${documentId}\u0000${tab}`;
 
   /** The page's fields: what was just set here, until the tab itself says something newer (the room's patch). */
-  const fieldsOf = (page: KnowledgePage): unknown => {
+  // `_at`: the store's version the caller read, so a memoising compiler asks again when it moves.
+  const fieldsOf = (page: KnowledgePage, _at?: number): unknown => {
     const override = overrides.get(page.id);
     return override && override.base === page.knowledge ? override.fields : page.knowledge;
   };
@@ -113,8 +114,9 @@ export function createPageKnowledgeStore(
     try {
       const knowledge = await send();
       overrides.set(page.id, { fields: fieldsOfKnowledge(knowledge), base: page.knowledge });
-      const reads = health.get(key)?.reads ?? wasHealth?.reads ?? { people: 0, agents: 0 };
-      health.set(key, { knowledge, reads });
+      // What only Page Health's read says (the reads, who created and updated the page) is kept.
+      const held = health.get(key) ?? wasHealth;
+      health.set(key, { ...held, knowledge, reads: held?.reads ?? { people: 0, agents: 0 } });
       changed();
       return knowledge;
     } catch (err) {
@@ -135,7 +137,8 @@ export function createPageKnowledgeStore(
     /** Moves with every change: a reader that derives from several pages (the tree's marks) keys on it. */
     version: () => version,
     fieldsOf,
-    healthOf: (documentId: string, tab: string) => health.get(keyOf(documentId, tab)),
+    /** `_at`: the store's version the caller read (see fieldsOf). */
+    healthOf: (documentId: string, tab: string, _at?: number) => health.get(keyOf(documentId, tab)),
     /** Read a page's health: once per page for the session unless `fresh`; concurrent asks share one request. A
      *  failure leaves what was held (the fields still show from the tab). */
     load(who: KnowledgeCaller, documentId: string, tab: string, fresh = false): Promise<void> {
