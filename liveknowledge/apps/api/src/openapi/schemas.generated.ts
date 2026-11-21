@@ -4040,6 +4040,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       chars: {
         type: 'number',
       },
+      cover: {
+        anyOf: [
+          {
+            additionalProperties: false,
+            properties: {
+              focus: {
+                type: 'number',
+              },
+              imageId: {
+                type: 'string',
+              },
+            },
+            required: ['imageId'],
+            type: 'object',
+          },
+          {
+            additionalProperties: false,
+            properties: {
+              gradient: {
+                type: 'string',
+              },
+            },
+            required: ['gradient'],
+            type: 'object',
+          },
+        ],
+        description:
+          'The page\'s cover (page-surface.md "The cover"): its picture and where it sits, or its gradient\'s name.',
+      },
       headings: {
         items: {
           type: 'string',
@@ -5432,6 +5461,42 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     enum: ['stack', 'row'],
     type: 'string',
   },
+  PageAuthorKind: {
+    description:
+      'What kind of writer made a stamp (verification.md "Made by a person or an agent").',
+    enum: ['human', 'ai'],
+    type: 'string',
+  },
+  PageAuthorStamp: {
+    additionalProperties: false,
+    description:
+      "One stamp: the person (an agent's is its token's maker, or the Editor who accepted its suggestion), when, the kind, and an agent's name and door where they are known.",
+    properties: {
+      agent: {
+        type: 'string',
+      },
+      at: {
+        type: 'number',
+      },
+      by: {
+        type: 'string',
+      },
+      kind: {
+        $ref: '#/components/schemas/PageAuthorKind',
+      },
+      via: {
+        $ref: '#/components/schemas/PageAuthorVia',
+      },
+    },
+    required: ['by', 'at', 'kind'],
+    type: 'object',
+  },
+  PageAuthorVia: {
+    description:
+      "The door an agent's write came through; `suggestion` is an agent's suggestion a person accepted.",
+    enum: ['mcp', 'cli', 'api', 'suggestion'],
+    type: 'string',
+  },
   PageBackground: {
     additionalProperties: false,
     properties: {
@@ -5664,6 +5729,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     ],
   },
+  PageCover: {
+    additionalProperties: false,
+    description:
+      "`imageId` a picture of the item's, `focus` where it sits vertically (0 top to 100 bottom, 50 when absent), `credit` an Image Search pick's credit line.",
+    properties: {
+      credit: {
+        type: 'string',
+      },
+      fill: {
+        $ref: '#/components/schemas/PageColourFill',
+      },
+      focus: {
+        type: 'number',
+      },
+      imageId: {
+        type: 'string',
+      },
+      pattern: {
+        $ref: '#/components/schemas/PagePattern',
+      },
+    },
+    type: 'object',
+  },
   PageFill: {
     anyOf: [
       {
@@ -5679,19 +5767,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     description: 'Page Health (verification.md): the fields, and the reads of the last seven days.',
     properties: {
       created: {
-        additionalProperties: false,
+        $ref: '#/components/schemas/PageAuthorStamp',
         description:
           'Who made the page and who last saved it (verification.md "Created and Updated"), by account id; absent for a page not saved since the server began keeping them.',
-        properties: {
-          at: {
-            type: 'number',
-          },
-          by: {
-            type: 'string',
-          },
-        },
-        required: ['by', 'at'],
-        type: 'object',
       },
       knowledge: {
         $ref: '#/components/schemas/PageKnowledge',
@@ -5710,17 +5788,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'object',
       },
       updated: {
-        additionalProperties: false,
-        properties: {
-          at: {
-            type: 'number',
-          },
-          by: {
-            type: 'string',
-          },
-        },
-        required: ['by', 'at'],
-        type: 'object',
+        $ref: '#/components/schemas/PageAuthorStamp',
       },
     },
     required: ['knowledge', 'reads'],
@@ -6101,8 +6169,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           article: {
             $ref: '#/components/schemas/ArticleWrite',
           },
+          cover: {
+            anyOf: [
+              {
+                $ref: '#/components/schemas/PageCover',
+              },
+              {
+                type: 'null',
+              },
+            ],
+          },
         },
         required: ['article'],
+        type: 'object',
+      },
+      {
+        additionalProperties: false,
+        properties: {
+          cover: {
+            anyOf: [
+              {
+                $ref: '#/components/schemas/PageCover',
+              },
+              {
+                type: 'null',
+              },
+            ],
+          },
+        },
+        required: ['cover'],
         type: 'object',
       },
     ],
@@ -7737,6 +7832,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       backgroundPatternScale: {
         type: 'number',
       },
+      cover: {
+        $ref: '#/components/schemas/PageCover',
+      },
       customColours: {
         items: {
           type: 'string',
@@ -7745,6 +7843,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       defaultTextSize: {
         $ref: '#/components/schemas/TextSize',
+      },
+      draft: {
+        $ref: '#/components/schemas/TabDraft',
       },
       elements: {
         items: {
@@ -7843,6 +7944,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['id', 'app', 'itemId'],
     type: 'object',
   },
+  TabDraft: {
+    additionalProperties: false,
+    properties: {
+      at: {
+        type: 'number',
+      },
+      base: {
+        additionalProperties: {
+          type: 'string',
+        },
+        type: 'object',
+      },
+      by: {
+        type: 'string',
+      },
+      height: {
+        type: 'number',
+      },
+    },
+    required: ['by', 'at', 'base'],
+    type: 'object',
+  },
   TabId: {
     type: 'string',
   },
@@ -7894,6 +8017,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       connection: {
         $ref: '#/components/schemas/TabConnectionWire',
       },
+      cover: {
+        $ref: '#/components/schemas/PageCover',
+      },
       customColours: {
         items: {
           type: 'string',
@@ -7905,6 +8031,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       documentId: {
         type: 'string',
+      },
+      draft: {
+        $ref: '#/components/schemas/TabDraft',
       },
       elements: {
         items: {

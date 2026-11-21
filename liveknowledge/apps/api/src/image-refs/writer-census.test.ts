@@ -43,6 +43,10 @@ const KNOWN_WRITERS: Record<string, number> = {
   // and the Page Health card (docs/specs/030-knowledgebase/verification.md). It changes no element, so the body's
   // image references and its element count stay as they were.
   'api/src/knowledge/page-knowledge.ts': 2,
+  // dropStaleDrafts: a page's draft left 30 days (docs/specs/030-knowledgebase/editing.md "A draft that is left")
+  // taken off its body by the daily upkeep. It adds no image; references only the draft placed stay until the page's
+  // next save replaces the set, so an image is kept a little longer, never reaped early.
+  'api/src/document-room/draft-upkeep.ts': 1,
   // The test database's stand-in for a document's purge (its object deletes everything it stores); the
   // references go with the tabs by their foreign key.
   'api/src/test-sqlite-d1.ts': 1,
