@@ -230,7 +230,8 @@ export function PageHealthCard({
     owner && !people.some((p) => p.id === owner)
       ? [...people, { id: owner, name: 'Someone Else' }]
       : people;
-  const count = (n: number | undefined) => (n === undefined ? '–' : n.toLocaleString('en'));
+  // Before Page Health is read (and Offline) the week's reads count as none yet.
+  const count = (n: number | undefined) => (n ?? 0).toLocaleString('en');
   const head = healthHeadline(trust, reviewEvery, now);
   return (
     <section
@@ -319,13 +320,13 @@ export function PageHealthCard({
           <ReadStat
             icon={<PeopleIcon />}
             value={count(reads?.people)}
-            unit="people"
+            unit={reads?.people === 1 ? 'Person' : 'People'}
             label="Reads by People This Week"
           />
           <ReadStat
             icon={<AgentsIcon />}
             value={count(reads?.agents)}
-            unit="agents"
+            unit={reads?.agents === 1 ? 'Agent' : 'Agents'}
             label="Reads by Agents This Week"
           />
         </dl>

@@ -166,9 +166,12 @@ All of it is in `apps/editor/components/page-tree/`.
   with `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (a page with subpages) and `aria-current` (the
   current page, in `brand-100` with `brand-900` text: 10.1:1). One row is the Tab stop (roving tabindex): the last one
   focused, else the current page.
-- **A row's controls** (Add Subpage, Page Options) and its title's tooltip mount only while the row is under the
-  pointer, holds focus or has its menu open; their 50 px is always kept, so nothing shifts. On a touch screen the
-  menu button is always there and Add Subpage is in the menu.
+- **A row's controls** (Add Subpage, Page Options) are always there on every row (owner, 2026-11-21: "always keep
+  the + and ... visible on pages in the sidebar, not just on hover"), faint (`slate-400` at 70%) until the row is
+  under the pointer, holds focus or has its menu open, when they take full strength. Their hover cards and the title's
+  tooltip mount only on that active row, so a 500-page tree carries plain buttons and no cards (the drag perf test
+  holds the budget). Their 50 px is always kept, so nothing shifts. On a touch screen the menu button is always
+  there and Add Subpage is in the menu.
 - **One set of handlers.** The list listens once for every row: a click, a double click (rename), a key, a hover and
   the drag are read off the row the event came from (`data-page-row`, `data-row-action`), so rows carry no handlers.
 - **Drag** (HTML drag and drop, as the tab bar used): a row's top and bottom quarters are its edges (an insertion

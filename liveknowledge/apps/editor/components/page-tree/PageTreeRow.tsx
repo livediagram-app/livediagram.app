@@ -28,6 +28,8 @@ const ROW =
 // The current page: the brand tint (brand-900 on brand-100 is over 4.5:1, page-tree-contrast.test.ts).
 const ROW_CURRENT =
   'bg-brand-100 font-medium text-brand-900 dark:bg-brand-500/20 dark:text-brand-100';
+// A row's buttons while it is not pointed at: there, but faint, so a long tree stays calm.
+const QUIET = 'text-slate-400/70 dark:text-slate-500/70';
 const ROW_REST = 'text-slate-700 hover:bg-slate-200/70 dark:text-slate-200 dark:hover:bg-slate-800';
 const ROW_NEST = 'ring-2 ring-inset ring-brand-500';
 const ROW_BUTTON =
@@ -101,9 +103,20 @@ function PageTreeRowView({
       aria-label={`Page Options for ${name}`}
       aria-haspopup="menu"
       aria-expanded={menuOpen}
-      className={`${ROW_BUTTON} ${control}`}
+      className={`${ROW_BUTTON} ${control} ${active || menuOpen ? '' : QUIET}`}
     >
       <MoreIcon />
+    </button>
+  );
+  const addButton = (
+    <button
+      type="button"
+      tabIndex={-1}
+      data-row-action="add"
+      aria-label={`Add Subpage to ${name}`}
+      className={`${ROW_BUTTON} ${control} ${active ? '' : QUIET}`}
+    >
+      <AddIcon />
     </button>
   );
   return (
@@ -191,34 +204,37 @@ function PageTreeRowView({
       >
         {editing || outOfScope ? null : touch ? (
           menuButton
-        ) : active ? (
+        ) : (
+          // Always there (owner, 2026-11-21: "always keep the + and ... visible"), quiet until the row is pointed
+          // at or current. Their hover cards are drawn on the active row only, so 500 rows carry 1,000 plain buttons
+          // and no extra cards.
           <>
             {canEdit ? (
-              <HoverCard title="Add Subpage" description="Adds a new page under this one.">
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  data-row-action="add"
-                  aria-label={`Add Subpage to ${name}`}
-                  className={`${ROW_BUTTON} ${control}`}
-                >
-                  <AddIcon />
-                </button>
-              </HoverCard>
+              active ? (
+                <HoverCard title="Add Subpage" description="Adds a new page under this one.">
+                  {addButton}
+                </HoverCard>
+              ) : (
+                addButton
+              )
             ) : null}
-            <HoverCard
-              title="Page Options"
-              description={
-                canEdit
-                  ? 'Rename, move, duplicate or delete this page.'
-                  : 'Copy a link to this page.'
-              }
-              disabled={menuOpen}
-            >
-              {menuButton}
-            </HoverCard>
+            {active ? (
+              <HoverCard
+                title="Page Options"
+                description={
+                  canEdit
+                    ? 'Rename, move, duplicate or delete this page.'
+                    : 'Copy a link to this page.'
+                }
+                disabled={menuOpen}
+              >
+                {menuButton}
+              </HoverCard>
+            ) : (
+              menuButton
+            )}
           </>
-        ) : null}
+        )}
       </span>
     </div>
   );

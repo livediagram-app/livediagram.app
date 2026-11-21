@@ -3,6 +3,7 @@
 // Trash are the index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are
 // answered from it (document-index-routes.ts).
 
+import { notePageWrites } from '../knowledge/page-authors';
 import type { Tab } from '@liveknowledge/document';
 import {
   carriedKnowledgeStyle,
@@ -405,6 +406,14 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
       if (seeded) {
         try {
           await seedTabs(env, body.id, seeded, savedAt);
+          // Who made these pages (knowledge/page-authors.ts): one batch, a person's create only.
+          if (!ctx.token && seeded.length > 0)
+            await notePageWrites(
+              env,
+              seeded.map((t) => t.id),
+              owner,
+              savedAt,
+            );
         } catch (error) {
           if (error instanceof TabTooLargeError) return payloadTooLarge();
           throw error;

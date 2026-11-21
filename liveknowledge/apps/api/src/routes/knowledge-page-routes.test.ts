@@ -274,10 +274,13 @@ describe('Created and Updated (verification.md)', () => {
       kit.call('editor', 'PUT', `/api/documents/kb/tabs/${id}`, {
         ...page(id, 'Fresh', [{ id: 'p1', type: 'paragraph', runs: [{ text }] }]),
       });
-    // A page stored before anyone saved it here: nothing guessed.
+    // The knowledgebase's own pages, made with it by its creator (the editor names the owner in what it seeds).
     const seeded = await read(kit);
-    expect(seeded.created).toBeUndefined();
-    expect(seeded.updated).toBeUndefined();
+    expect(seeded.created?.by).toBe(OWNER);
+    expect(seeded.updated).toEqual(seeded.created);
+    // A page from before the table: nothing guessed.
+    kit.db.sql.prepare("DELETE FROM page_authors WHERE tab = 'deploys'").run();
+    expect((await read(kit)).created).toBeUndefined();
 
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(1_000_000);

@@ -172,7 +172,10 @@ describe('Page Health', () => {
     const { container } = render(<PageHealthCard {...props({ trust: never, reads: undefined })} />);
     expect(container.querySelectorAll('dt')).toHaveLength(6);
     expect(container.querySelector('[data-review-due]')!.textContent).toBe('Once Verified');
-    expect(screen.getAllByText('–')).toHaveLength(2);
+    // Reads not in yet count as none, never a dash.
+    expect(screen.queryByText('–')).toBeNull();
+    expect(screen.getByText('People').parentElement!.textContent).toBe('0 People');
+    expect(screen.getByText('Agents').parentElement!.textContent).toBe('0 Agents');
     expect(screen.getByText('Never', { selector: 'dd' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Verify' })).toBeTruthy();
   });

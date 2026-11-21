@@ -125,16 +125,20 @@ describe('the tree', () => {
     expect(a.onSelect).not.toHaveBeenCalled();
   });
 
-  it('keeps the room for a row’s buttons whether they are there or not', () => {
+  it('always shows a row’s + and …, quiet until pointed at, in room that never changes', () => {
     mount();
     const room = (name: string) => row(name).querySelector('[data-row-controls]')!;
-    expect(within(row('Notes')).queryByRole('button', { name: /Page Options/ })).toBeNull();
+    const options = () =>
+      within(row('Notes')).getByRole('button', { name: 'Page Options for Notes' });
+    expect(options().className).toContain('text-slate-400/70');
+    expect(within(row('Notes')).getByRole('button', { name: 'Add Subpage to Notes' })).toBeTruthy();
     const before = room('Notes').className;
     hover('Notes');
     expect(
       within(row('Notes')).getByRole('button', { name: 'Page Options for Notes' }),
     ).toBeTruthy();
     expect(within(row('Notes')).getByRole('button', { name: 'Add Subpage to Notes' })).toBeTruthy();
+    expect(options().className).not.toContain('text-slate-400/70');
     expect(room('Notes').className).toBe(before);
     expect(before).toContain('w-[50px]');
   });

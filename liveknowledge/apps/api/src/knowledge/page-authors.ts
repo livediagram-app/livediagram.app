@@ -43,6 +43,20 @@ export async function notePageWrite(
   }
 }
 
+/** Note one person's making of many pages at once (a create that seeds them), in one batch. */
+export async function notePageWrites(
+  env: DocumentEnv,
+  tabs: readonly string[],
+  by: string,
+  at: number,
+): Promise<void> {
+  try {
+    await env.DOCUMENT_DB.batch(tabs.map((tab) => pageAuthorStatement(env, tab, by, at)));
+  } catch (err) {
+    console.warn('[knowledge] page authors not noted', { pages: tabs.length, err: String(err) });
+  }
+}
+
 export type PageAuthors = {
   created: { by: string; at: number };
   updated: { by: string; at: number };
