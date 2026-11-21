@@ -39,7 +39,7 @@ tabs and writes `articles[flow]`. Two ways were open.
 | Save                        | `withDraftSaved(tab)`, then the `page-saved` presence op                                                   |
 | Discard                     | `withDraftDiscarded(tab)`                                                                                  |
 | differs from the saved page | `draftDiffers(tab)`                                                                                        |
-| an agent changed the saved  | `savedMovedUnderDraft(tab)`: a saved block's print is not the base's                                       |
+| an agent changed the saved  | `savedChangesUnderDraft(tab)`: a saved block's print is not the base's                                     |
 | the draft bar               | `PageEditBar` (`apps/editor/components/page-edit/PageEditBar.tsx`), in the top row before Share            |
 | the note readers see        | `BeingEditedNote` in the meta row                                                                          |
 
@@ -54,7 +54,7 @@ States of a page, per editor: **reading** and **editing**; per page in the knowl
 | reading → editing (Edit)               | `can.editPage` (an Editor of the knowledgebase), the page loaded        | `editingTabId = tab`, `page-editing { tabId }` sent; undo history starts here (`markCheckpoint`) |
 | first change while editing             | the page has no draft                                                   | the lowering makes the draft: `withDraftMade(real, viewAfter, by, now)`                          |
 | any change while editing               | the draft exists                                                        | the lowering writes `articles.draft`, `draft.height`, `draft.by`/`at` (at most once a minute)    |
-| Save (button, `Mod-S`)                 | editing, the writing flushed (`articleHandleOf(flow).flush()`)          | commit `withDraftSaved`; `page-saved` sent; editing → reading; history reset                     |
+| Save (button, `Mod-S`)                 | editing, the writing taken as typed (`flush()`, then `takeBlocks()`)    | commit `withDraftSaved`; `page-saved` sent; editing → reading; history reset                     |
 | Cancel, others editing                 | `othersEditing(tab) > 0`                                                | editing → reading; the draft stays                                                               |
 | Cancel, last, no changes               | `!draftDiffers(tab)`                                                    | commit `withDraftDiscarded` when a draft exists; editing → reading                               |
 | Cancel, last, changes                  | `draftDiffers(tab)`                                                     | asks "Discard your changes to this page?" (Discard Changes / Keep Editing)                       |
@@ -96,7 +96,7 @@ States of a page, per editor: **reading** and **editing**; per page in the knowl
 | `withDraftMade(tab, writing, by, at)`                      | the real tab, the lens's saved writing | the tab with the draft and its record (`base` from the saved flow)                                                                                       |
 | `withDraftSaved(tab)`                                      | a tab                                  | the saved tab; the same tab with no draft                                                                                                                |
 | `withDraftDiscarded(tab)`                                  | a tab                                  | the tab without the draft; the same tab with none                                                                                                        |
-| `draftDiffers(tab)`, `savedMovedUnderDraft(tab)`           | a tab                                  | boolean                                                                                                                                                  |
+| `draftDiffers(tab)`, `savedChangesUnderDraft(tab)`         | a tab                                  | boolean                                                                                                                                                  |
 | `mergeDraftOverSaved(base, draft, saved)`                  | prints, two flows                      | the flow Save writes                                                                                                                                     |
 | `pageEditLens(tab)`, `pageReadLens(tab)`                   | a real tab                             | the lens; one object per real tab (cached), so a commit that changes nothing returns the real tab                                                        |
 | `liftTabs(ts, id)`, `lowerTabs(real, lifted, mapped, ctx)` | tabs                                   | the lens list; the real list, the same array when nothing changed                                                                                        |
@@ -119,7 +119,7 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
 - **The saved writing is what is stored outside `articles.draft`.** Every reader of a page's writing reads
   `savedArticlesOf` (Security and trust lists them).
 - **Created and Updated** (`page_authors`): a whole-tab save notes the writer only when the saved writing or the name
-  changed (`savedWritingChanged(before, after)`, `apps/api/src/knowledge/page-authors.ts`), so a draft's autosaves
+  changed (`savedPageChanged(before, after)`, `apps/api/src/knowledge/page-authors.ts`), so a draft's autosaves
   move nothing and the save that publishes it moves "updated" to the person who pressed Save (their editor wrote it).
   "Changed since verified" is worked out from the saved writing on each read, so Save moves it.
 - **Upkeep:** `maintain` (document-room-content.ts) reads the tabs whose `$.draft.at` is older than `DRAFT_KEEP_MS`
@@ -140,7 +140,7 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
 - **Cancel by the last editor while a peer's join is in flight:** the count is read from the roster at the press;
   a peer who arrives after the discard finds the saved page, as if nobody had edited.
 - **A Participant's or a Viewer's draft frames** are dropped by the room's role gate, as their writing frames are.
-- **An agent writes the saved page under a draft:** `savedMovedUnderDraft` shows "An agent changed the saved page"
+- **An agent writes the saved page under a draft:** `savedChangesUnderDraft` shows "An agent changed the saved page"
   in the draft bar, with the count of blocks it changed in its hover card; Save merges as above.
 - **A version restored** writes the stored body as it was, draft included: a restore under an open draft brings back
   that version's draft, or none.
@@ -189,7 +189,8 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
   draft someone left (`by` is not this person, or `at` is before Edit); "An agent changed the saved page" in amber,
   with a `HoverCard` of what changed ("3 blocks changed. Saving keeps your changes and theirs."). Then **Cancel**
   (`Button` ghost) and **Save** (`Button` primary, `HoverCard` "Save / Publish this draft for everyone. Ctrl+S" with
-  the platform's modifier). On a phone the status shortens to a dot and the buttons keep their words.
+  the platform's modifier). On a phone the status shortens to a dot and the buttons keep their words;
+  the others' discs and Page Info step out of the row while editing (the meta row's note still names who is editing).
 - **The question** is the shared confirm dialog, centred: title "Discard your changes to this page?", message
   "Nobody else is editing it, so your changes go for good.", **Discard Changes** and **Keep Editing**.
 - **Toasts**: "<name> saved the page" (info) to everyone else editing it; "Page saved" to the saver.
@@ -206,23 +207,24 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
 
 - `debugLog('[page-edit] ...')` at entering, making the draft, saving, cancelling, discarding, a peer's save and a
   lowering that kept a peer's late writing. The room logs `[room] draft withheld` once per frame kind it filters for
-  a Viewer (counted, never the writing), and `[upkeep] drafts dropped { count }`.
-- Telemetry: `Page` `Opened` `Edit`, `Page` `Saved` `Draft`, `Page` `Discarded` `Draft` (one-liners in the handlers).
+  a Viewer (counted, never the writing), and `[page-edit] stale drafts dropped { pages }`.
+- Telemetry: `Tab` `Started` `Edit`, `Tab` `Ended` `Save`, `Tab` `Ended` `Discard` (one-liners in the handlers; the
+  `Page` category is page views alone).
 
 ## Testing
 
-| Rule                                                                                                                 | Test                                                                                     |
-| -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| the draft's helpers, merge, prints, upkeep cut-off                                                                   | `packages/document/src/page-draft.test.ts`                                               |
-| entering edit and Save on a 5,000 word page under budget                                                             | `packages/document/src/page-draft.perf.test.ts`                                          |
-| lift and lower: the draft written, the saved flow untouched, no-op identity, a peer's save                           | `apps/editor/lib/page-edit/lens.test.ts`                                                 |
-| the mode switch, the bar's states, Cancel's three cases, Mod-S                                                       | `apps/editor/components/page-edit/PageEditBar.test.tsx`, `usePageEditing.test.tsx`       |
-| role gate: Editor edits, Participant and Viewer and a link read                                                      | `apps/editor/lib/page-edit/page-edit-roles.test.ts`, `apps/api/src/room-op-gate.test.ts` |
-| the room withholds the draft from a Viewer                                                                           | `apps/api/src/room-draft-filter.test.ts`                                                 |
-| the draft never reaches the index, agent reads or the tab GET of a Viewer or token                                   | `apps/api/src/knowledge/page-draft-reads.test.ts`                                        |
-| Created and Updated move on Save only                                                                                | `apps/api/src/routes/tab-put-route.test.ts`                                              |
-| upkeep drops a 30 day old draft                                                                                      | `apps/api/src/document-room/draft-upkeep.test.ts`                                        |
-| two contexts co-edit one draft, a third reads the saved page, Save publishes, Cancel/Discard, reload keeps the draft | `apps/editor/e2e/signed-in/page-editing.spec.ts`                                         |
+| Rule                                                                                                                 | Test                                                                                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the draft's helpers, merge, prints, upkeep cut-off                                                                   | `packages/document/src/page-draft.test.ts`                                                                                                                            |
+| entering edit and Save on a 5,000 word page under budget                                                             | `packages/document/src/page-draft.perf.test.ts`, `apps/editor/lib/page-edit/lens.perf.test.ts`                                                                        |
+| lift and lower: the draft written, the saved flow untouched, no-op identity, a peer's save                           | `apps/editor/lib/page-edit/lens.test.ts`                                                                                                                              |
+| the mode switch, the bar's states, Cancel's three cases, the keys                                                    | `apps/editor/components/page-edit/PageEditBar.test.tsx`, `lib/page-edit/page-edit-keys.test.ts`, the e2e                                                              |
+| role gate: Editor edits, Participant and Viewer and a link read                                                      | `apps/editor/lib/page-edit/page-edit-roles.test.ts`, `apps/api/src/document-room.test.ts` "DocumentRoom page editing", `apps/api/src/routes/page-draft-route.test.ts` |
+| the room withholds the draft from a Viewer                                                                           | `apps/api/src/room-draft-filter.test.ts`                                                                                                                              |
+| the draft never reaches the index, agent reads or the tab GET of a Viewer or token                                   | `apps/api/src/knowledge/page-draft-reads.test.ts`                                                                                                                     |
+| Created and Updated move on Save only                                                                                | `apps/api/src/knowledge/page-draft-reads.test.ts`                                                                                                                     |
+| upkeep drops a 30 day old draft                                                                                      | `apps/api/src/document-room/draft-upkeep.test.ts`                                                                                                                     |
+| two contexts co-edit one draft, a third reads the saved page, Save publishes, Cancel/Discard, reload keeps the draft | `apps/editor/e2e/signed-in/page-editing.spec.ts`                                                                                                                      |
 
 ## Constants and configuration
 
@@ -238,6 +240,11 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
 Rows D8 to D12 in [DEFAULTS.md](DEFAULTS.md).
 
 ## Not built
+
+- **Reading locks comments on objects for an Editor**: the read lens is locked, so an Editor reading adds no comment
+  thread on an object until Edit (a Viewer's and a Participant's comments are as before).
+- **The guest and signed-in e2e suites** were written for a page always in edit mode: a spec that names a page and
+  waits for the tree, or reopens a page and types, now presses Edit and Save (the helpers in `e2e/knowledgebase.ts`).
 
 - **Objects placed in the writing** (pictures, charts, drawings, embeds) are the tab's elements, shared by the saved
   page and the draft: placing, moving or removing one in edit mode changes it for readers at once. Drafting them
