@@ -13,12 +13,9 @@ import type { TelemetryCategory } from '@liveknowledge/api-schema';
 import {
   autoRebindArrowsEnabled,
   panelEnabled,
-  type MapSize,
   type PanelSwitch,
   type UserPreferences,
 } from '@/lib/user-preferences';
-import { PAGES_TOUR_KINDS, pagesKindSeen } from '@/lib/pages-tour';
-import type { PageKind } from '@liveknowledge/document';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -325,11 +322,7 @@ function uiScalePartRow(
   };
 }
 
-const MINIMAP_DESKTOP_ONLY =
-  'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
-
-// The Mouse section's rows answer a hover and a middle button, which a phone has neither of, so they are inert there
-// and share this note.
+// The Mouse section's row answers a hover, which a phone has none of, so it is inert there and says so.
 const MOUSE_DESKTOP_ONLY =
   'A mouse setting, so it has no effect on a phone. Your choice still applies on a larger screen.';
 
@@ -390,34 +383,6 @@ function elementTourSwitch(
 
 // Element tours are called Show Me wherever a person sees them (docs/specs/007-editor/element-tours.md "Naming").
 const ELEMENT_TOURS_SECTION = 'Show Me';
-
-// One page kind's track of the Pages tour (lib/tour-tracks.ts), as its own row nested under Pages Tours, the switch
-// over every kind (docs/specs/007-editor/user-preferences.md "Getting Started"). On while the track is owed; off answers it, on
-// forgets its answer. Each track is named for itself ("Slides Tour"). The tour's single seen flag is cleared, so only the
-// answered list speaks for the tracks.
-function pagesTourTrackSwitch(
-  kind: PageKind,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key: `pagesTourSeen-${kind}`,
-    section: 'Offer Again',
-    parent: 'pagesTourSeen',
-    ...row,
-    read: (p) => !pagesKindSeen(p, kind),
-    write: (p, v) => {
-      const answered = PAGES_TOUR_KINDS.filter(
-        (k) => pagesKindSeen(p, k) && (v ? k !== kind : true),
-      );
-      return {
-        ...p,
-        pagesTourSeen: false,
-        pagesTourKinds: v ? answered : [...new Set([...answered, kind])],
-      };
-    },
-  };
-}
 
 function tourTracksSwitch(
   key: 'pagesTourSeen' | 'elementToursSeen',
@@ -511,19 +476,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, quickAddOnHover: v }),
         event: { category: 'UI', on: 'QuickAddHoverOn', off: 'QuickAddHoverOff' },
       },
-      {
-        kind: 'toggle',
-        key: 'middleMousePan',
-        keywords: 'scroll wheel drag pan navigate mouse',
-        section: 'Mouse',
-        desktopOnly: MOUSE_DESKTOP_ONLY,
-        label: 'Middle-Mouse Pan',
-        description:
-          'Hold the middle button and drag to pan, whatever tool is active. Off leaves the button to your browser.',
-        read: (p) => p.middleMousePan !== false,
-        write: (p, v) => ({ ...p, middleMousePan: v }),
-        event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
-      },
+      // No Middle-Mouse Pan row: a knowledgebase page does not pan (docs/specs/030-knowledgebase/page-surface.md
+      // "No zoom and no panning"); the middle button is the browser's.
     ],
   },
   // No Presenting category and no Contents row: liveknowledge has no slides and no row of paper pages
@@ -656,55 +610,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           "The most-used colours, widths and alignments beside the page of a selected shape or arrow. Off, they are all in the element's menu.",
         event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
       }),
-      {
-        section: 'Map',
-        // The Map's switch, written out rather than a panelSwitch: it keeps its
-        // older key and telemetry tokens so stored choices and the dashboard
-        // carry over the rename from "Show Map".
-        kind: 'toggle',
-        key: 'showMinimap',
-        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off enable',
-        illustration: 'showMinimap',
-        label: 'Enable Map',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description:
-          'An overview of the whole canvas in the bottom-left corner, once a page has a few elements. Drag it to move around.',
-        read: (p) => p.showMinimap !== false,
-        write: (p, v) => ({ ...p, showMinimap: v }),
-        event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
-      },
-      {
-        section: 'Map',
-        kind: 'toggle',
-        key: 'mapDimOutside',
-        parent: 'showMinimap',
-        keywords: 'shade minimap viewport dim',
-        illustration: 'mapDimOutside',
-        label: 'Dim Outside the View',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description: 'Shades what is off screen, so the part you are looking at stands out.',
-        read: (p) => p.mapDimOutside !== false,
-        write: (p, v) => ({ ...p, mapDimOutside: v }),
-        event: { category: 'UI', on: 'MapDimOn', off: 'MapDimOff' },
-      },
-      {
-        section: 'Map',
-        kind: 'choice',
-        key: 'mapSize',
-        parent: 'showMinimap',
-        keywords: 'minimap height short medium tall',
-        label: 'Map Size',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description: 'How much of the corner the Map takes up.',
-        options: [
-          { id: 'short', label: 'Short' },
-          { id: 'medium', label: 'Medium' },
-          { id: 'tall', label: 'Tall' },
-        ],
-        read: (p) => p.mapSize ?? 'medium',
-        write: (p, v) => ({ ...p, mapSize: v as MapSize }),
-        event: { category: 'UI', changed: 'MapSize' },
-      },
+      // No Map rows: liveknowledge has no Map (page-surface.md "No zoom and no panning").
       panelSwitch('collaboratePanelEnabled', {
         section: 'Collaborate',
         label: 'Enable Collaborate Panel',
@@ -755,48 +661,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       [ELEMENT_TOURS_SECTION]: {
         note: 'Select a complex element and press Start Tour in the bottom bar to see how it works. A switch is on until you have taken its tour.',
       },
-      'Offer Again': {
-        note: 'Start a tour from the Start Tour button in the bottom bar, left of Search: it offers the tour for what you are working on. A switch is on until you have taken its tour; switch one back on and close Settings to take it again now.',
-      },
     },
     rows: [
-      // The Pages tour: one switch over every kind of page, then each kind's own row beneath it
-      // (docs/specs/007-editor/pages-tour.md).
-      tourTracksSwitch(
-        'pagesTourSeen',
-        'pagesTourKinds',
-        PAGES_TOUR_KINDS,
-        (p) => PAGES_TOUR_KINDS.some((k) => !pagesKindSeen(p, k)),
-        {
-          label: 'Pages Tours',
-          event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
-          keywords:
-            'tour walkthrough onboarding tutorial pages slides infographic article all replay',
-          description: 'Every Pages tour at once: slides, infographics and articles.',
-          helpArticle: 'pagesTour',
-        },
-      ),
-      pagesTourTrackSwitch('slide', {
-        label: 'Slides Tour',
-        event: { category: 'UI', on: 'SlidesTourSeenOff', off: 'SlidesTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial pages slides deck present replay',
-        description: 'On a slide: layouts, backgrounds, the deck and presenting.',
-        helpArticle: 'pagesTour',
-      }),
-      pagesTourTrackSwitch('infographic', {
-        label: 'Infographic Tour',
-        event: { category: 'UI', on: 'InfographicTourSeenOff', off: 'InfographicTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial pages infographic poster layout replay',
-        description: 'On an infographic page: layouts, backgrounds, page size and presenting.',
-        helpArticle: 'pagesTour',
-      }),
-      pagesTourTrackSwitch('article', {
-        label: 'Article Tour',
-        event: { category: 'UI', on: 'ArticleTourSeenOff', off: 'ArticleTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial pages article document writing replay',
-        description: 'On an article: writing, the page toolbar, its style and fonts.',
-        helpArticle: 'pagesTour',
-      }),
+      // No Pages tours rows: a knowledgebase has one kind of page and no Pages tour
+      // (docs/specs/002-project-scope/not-in-liveknowledge.md).
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
       // them all over one per toured kind.
       tourTracksSwitch(

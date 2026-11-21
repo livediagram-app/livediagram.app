@@ -102,7 +102,7 @@ test('Settings reopens on the last category and row, across a resize', async ({
   // range to put the row back where it was rather than clamping at the end.
   await page.setViewportSize({ width: 390, height: 560 });
   await openSettings(page);
-  await expect(dialog(page).getByRole('switch', { name: 'Middle-Mouse Pan' })).toBeVisible();
+  await expect(dialog(page).getByRole('switch', { name: 'Quick-Add on Hover' })).toBeVisible();
   await expect(async () => {
     const back = await topRow(scroller);
     expect(back.key).toBe(leftAt.key);

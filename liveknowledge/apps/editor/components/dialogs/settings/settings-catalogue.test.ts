@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HELP_ARTICLES } from '@/lib/help-articles';
 import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
-import { TELEMETRY_TYPE_PATTERN, upgradeLegacyPreferences } from '@liveknowledge/api-schema';
+import { TELEMETRY_TYPE_PATTERN } from '@liveknowledge/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
 import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
 
@@ -9,7 +9,6 @@ const ALL_ROWS = SETTINGS_CATEGORIES.flatMap((c) => c.rows);
 const TOGGLES = ALL_ROWS.filter((r) => r.kind === 'toggle');
 // The switches inside toggle groups (the tours): each its own preference, checked like a toggle row's.
 const GROUP_TOGGLES = ALL_ROWS.flatMap((r) => (r.kind === 'toggleGroup' ? r.toggles : []));
-const SWITCHES = [...TOGGLES, ...GROUP_TOGGLES];
 const CHOICES = ALL_ROWS.filter((r) => r.kind === 'choice');
 const SLIDERS = ALL_ROWS.filter((r) => r.kind === 'slider');
 const BOTH_CONTEXTS = [
@@ -63,32 +62,28 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('gives each Pages tour track its own row, named for itself', () => {
-    // docs/specs/007-editor/pages-tour.md: each kind of page its own tour, never "Pages Tour".
-    const slide = SWITCHES.find((r) => r.key === 'pagesTourSeen-slide')!;
-    const article = SWITCHES.find((r) => r.key === 'pagesTourSeen-article')!;
-    expect([slide.label, article.label]).toEqual(['Slides Tour', 'Article Tour']);
-    expect(slide.read({ pagesTourKinds: ['slide'] })).toBe(false);
-    expect(article.read({ pagesTourKinds: ['slide'] })).toBe(true);
-    // On forgets this track alone; off answers it alone.
-    expect(slide.write({ pagesTourKinds: ['slide', 'article'] }, true)).toEqual({
-      pagesTourSeen: false,
-      pagesTourKinds: ['article'],
-    });
-    expect(article.write({}, false)).toEqual({ pagesTourSeen: false, pagesTourKinds: ['article'] });
-    expect(slide.event.on).toBe('SlidesTourSeenOff');
-    expect(article.event.off).toBe('ArticleTourSeenOn');
-  });
-
-  it('keeps every track answered for someone who had Power user mode on, so one back on leaves the others', () => {
-    // docs/specs/007-editor/power-user-mode.md "What happens to stored preferences": the blob as it is read.
-    const power = upgradeLegacyPreferences({ powerUserMode: true, pagesTourSeen: true });
-    const slide = SWITCHES.find((r) => r.key === 'pagesTourSeen-slide')!;
-    const article = SWITCHES.find((r) => r.key === 'pagesTourSeen-article')!;
-    expect(slide.read(power)).toBe(false);
-    const next = slide.write(power, true);
-    expect(slide.read(next)).toBe(true);
-    expect(article.read(next)).toBe(false);
+  // docs/specs/030-knowledgebase/page-surface.md "What a page no longer has": a setting for something liveknowledge
+  // does not have is not offered. No Pages tours (one kind of page, no Pages tour), no Map and no Middle-Mouse Pan
+  // (a knowledgebase page neither zooms nor pans).
+  it('offers no row for what liveknowledge does not have', () => {
+    const keys = SETTINGS_CATEGORIES.flatMap((c) => c.rows).map((r) => r.key);
+    for (const gone of [
+      'pagesTourSeen',
+      'pagesTourSeen-slide',
+      'pagesTourSeen-infographic',
+      'pagesTourSeen-article',
+      'showMinimap',
+      'mapDimOutside',
+      'mapSize',
+      'middleMousePan',
+    ])
+      expect(keys, gone).not.toContain(gone);
+    const words = SETTINGS_CATEGORIES.flatMap((c) => c.rows)
+      .map((r) => `${r.label} ${'section' in r ? (r.section ?? '') : ''}`)
+      .join(' | ');
+    expect(words).not.toMatch(
+      /\bMap\b|Pages Tour|Slides Tour|Infographic Tour|Article Tour|Middle-Mouse/,
+    );
   });
 
   // docs/specs/007-editor/user-preferences.md "Getting Started": a category of its own, one switch per tour in
@@ -96,11 +91,6 @@ describe('settings catalogue', () => {
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
-      // A tour of several tracks: one switch over them all, then each track's own row beneath it.
-      ['pagesTourSeen', 'toggle', 'Pages Tours', 'pagesTour'],
-      ['pagesTourSeen-slide', 'toggle', 'Slides Tour', 'pagesTour'],
-      ['pagesTourSeen-infographic', 'toggle', 'Infographic Tour', 'pagesTour'],
-      ['pagesTourSeen-article', 'toggle', 'Article Tour', 'pagesTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
@@ -117,7 +107,7 @@ describe('settings catalogue', () => {
       ['elementTour-stack', 'toggle', 'Stack', 'stacks'],
     ]);
     // One shared explanation under the section heading, not one per row.
-    expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
+    expect(tours.sectionNotes?.['Show Me']?.note).toMatch(/Start Tour/);
     const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
     expect(accessibility.rows.some((r) => r.key.toLowerCase().includes('tour'))).toBe(false);
   });
@@ -126,10 +116,6 @@ describe('settings catalogue', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
-        ['PagesTourSeenOff', 'PagesTourSeenOn'],
-        ['SlidesTourSeenOff', 'SlidesTourSeenOn'],
-        ['InfographicTourSeenOff', 'InfographicTourSeenOn'],
-        ['ArticleTourSeenOff', 'ArticleTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
         ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
@@ -146,12 +132,12 @@ describe('settings catalogue', () => {
     );
   });
 
-  // A phone has no hover and no middle button: the Mouse section's rows are inert there, as the Map's are.
+  // A phone has no hover: the Mouse section's row is inert there.
   it('makes the Mouse section desktop only', () => {
     const rows = SETTINGS_CATEGORIES.flatMap((c) => c.rows).filter(
       (r) => 'section' in r && r.section === 'Mouse',
     );
-    expect(rows.map((r) => r.key)).toEqual(['quickAddOnHover', 'middleMousePan']);
+    expect(rows.map((r) => r.key)).toEqual(['quickAddOnHover']);
     for (const row of rows) expect(row.desktopOnly).toMatch(/A mouse setting/);
   });
 
@@ -196,11 +182,6 @@ describe('settings catalogue', () => {
     const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
     // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
     const own: Record<string, string[]> = {
-      // A tour track's row writes the answered list and clears the tour's single flag (lib/tour-tracks.ts).
-      pagesTourSeen: ['pagesTourSeen', 'pagesTourKinds'],
-      'pagesTourSeen-slide': ['pagesTourSeen', 'pagesTourKinds'],
-      'pagesTourSeen-infographic': ['pagesTourSeen', 'pagesTourKinds'],
-      'pagesTourSeen-article': ['pagesTourSeen', 'pagesTourKinds'],
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
       'elementTour-sankey': ['elementTourKinds'],
@@ -224,22 +205,6 @@ describe('settings catalogue', () => {
       const presenting = row.key.startsWith('presentation-') ? ['presentation'] : undefined;
       expect(changed, row.key).toEqual(own[row.key] ?? presenting ?? [row.key]);
     }
-  });
-
-  // docs/specs/007-editor/pages-tour.md "Where it appears": one switch over every page kind's track.
-  it('gives each kind of page its own tour row, turned back on alone', () => {
-    // docs/specs/007-editor/pages-tour.md: Slides Tour, Infographic Tour, Article Tour.
-    const slides = TOGGLES.find((r) => r.key === 'pagesTourSeen-slide')!;
-    const article = TOGGLES.find((r) => r.key === 'pagesTourSeen-article')!;
-    const seen: UserPreferences = { pagesTourKinds: ['slide', 'infographic', 'article'] };
-    expect(slides.read(seen)).toBe(false);
-    const next = slides.write(seen, true);
-    expect(next).toEqual({
-      pagesTourSeen: false,
-      pagesTourKinds: ['infographic', 'article'],
-    });
-    expect(slides.read(next)).toBe(true);
-    expect(article.read(next)).toBe(false);
   });
 
   it('keeps row keys and telemetry tokens unique', () => {
@@ -379,7 +344,6 @@ describe('settings sub-categories', () => {
     expect(panels.rows[0]!.key).toBe('panelOpacity');
     expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual([
       'Quick Style',
-      'Map',
       'Collaborate',
     ]);
     // Their old sub-category ids still land on Panels, the retired Layers panel's too
@@ -391,7 +355,6 @@ describe('settings sub-categories', () => {
     const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     const switches: Record<string, [string, string]> = {
       'Quick Style': ['quickStylePanelEnabled', 'Enable Quick Style Bar'],
-      Map: ['showMinimap', 'Enable Map'],
       Collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
     };
     for (const [section, [key, label]] of Object.entries(switches)) {
@@ -403,14 +366,14 @@ describe('settings sub-categories', () => {
     }
   });
 
-  it("offers a panel's other rows only while its Enable switch is on", () => {
-    const rows = (section: string, preferences: UserPreferences) =>
+  // A row nested under a switch (`parent`) is offered only while that switch is on: Show Me's rows under theirs.
+  it("offers a switch's nested rows only while it is on", () => {
+    const rows = (preferences: UserPreferences) =>
       visibleCategories({ emailEnabled: false, signedIn: false, preferences })
-        .find((c) => c.id === 'panels')!
-        .rows.filter((r) => r.section === section)
-        .map((r) => r.key);
-    expect(rows('Map', { showMinimap: false })).toEqual(['showMinimap']);
-    expect(rows('Map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
+        .find((c) => c.id === 'tours')!
+        .rows.map((r) => r.key);
+    expect(rows({ elementToursSeen: true })).toEqual(['elementToursSeen']);
+    expect(rows({})).toContain('elementTour-sankey');
   });
 
   it('names a sub-category by its path', () => {

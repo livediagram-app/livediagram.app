@@ -147,7 +147,7 @@ describe('SettingsDialog', () => {
     setViewport(true);
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
-    for (const name of ['Quick Style', 'Map', 'Collaborate']) {
+    for (const name of ['Quick Style', 'Collaborate']) {
       expect(screen.getByRole('heading', { name })).toBeTruthy();
     }
     // The Layers panel retired (docs/specs/006-document/layers.md "Retired: the Layers panel"), and its section with it.

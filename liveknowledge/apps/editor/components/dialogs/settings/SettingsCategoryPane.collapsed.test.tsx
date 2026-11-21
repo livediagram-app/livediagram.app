@@ -22,8 +22,8 @@ describe('Show Me section (element tours)', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     expect(header().getAttribute('aria-expanded')).toBe('false');
     expect(header().textContent).toContain('11 of 11 On');
-    // The mode tours stay open above it.
-    expect(screen.getByRole('switch', { name: 'Slides Tour' })).toBeTruthy();
+    // No Pages tour switch stands above it: liveknowledge has no Pages tour.
+    expect(screen.queryByRole('switch', { name: 'Slides Tour' })).toBeNull();
   });
 
   it('opens from its heading, the master switch over each element', () => {

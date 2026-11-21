@@ -234,9 +234,12 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
   Background, Lock and the page panel behind them are not drawn. Also removed: the Theme & Canvas brush in the
   bottom-right cluster, the Open Theme and Open Canvas Options commands, Article Style in the bar's More menu, and
   Lock Page in the page's menu.
-- **Not removed, and unreachable or inert:** the Map, Middle-Mouse Pan and the Pages tours' rows in Settings (their
-  catalogue is mirrored by liveworkspace.app's settings page and pinned by nineteen tests; see "Not built"), and
-  the help centre's articles on them.
+- **Settings.** The rows for what liveknowledge does not have are gone from
+  `components/dialogs/settings/settings-catalogue.ts`: Middle-Mouse Pan, the Map's three rows and the four Pages
+  tours rows, with the mirror liveworkspace.app's settings page reads
+  (`packages/settings/src/catalogues/liveknowledge.ts`, regenerated). A stored preference of theirs is kept and
+  read by nothing here. `settings-catalogue.test.ts` holds that none of them is offered.
+- **Not removed:** the help centre's articles on them (see "Not built").
 
 ## Knowledgebase Style (built)
 
@@ -398,14 +401,6 @@ See "Narrow windows" below: investigated, not built.
 
 ### Smaller gaps
 
-- **Inert Settings rows:** Middle-Mouse Pan (Editor > Mouse), the Map's three rows (Panels > Map) and the four
-  Pages tours rows (Getting Started) do nothing in liveknowledge. Removing them from
-  `components/dialogs/settings/settings-catalogue.ts` fails nineteen tests that pin them
-  (`settings-catalogue.test.ts`, `SettingsCategoryPane.test.tsx`, `SettingsCategoryPane.collapsed.test.tsx`,
-  `SettingsDialog.test.tsx`, `settings-site-catalogue.test.ts`); they need updating, then the liveworkspace.app
-  mirror regenerating (`UPDATE_SITE_CATALOGUE=1 corepack pnpm exec vitest run
-components/dialogs/settings/settings-site-catalogue.test.ts` in `apps/editor`, which rewrites
-  `packages/settings/src/catalogues/liveknowledge.ts`). It was tried and put back, not half done.
 - **An article kept in a paper size** (a tab exported from livedocuments and imported as JSON) still draws the
   fork's sheets, locked to its first page. To do: where a stored tab is settled (`migrateStoredTab`, beside
   `withoutPageLooks`), read a tab whose pages are all one article's as one continuous page (`continuousPage` of the

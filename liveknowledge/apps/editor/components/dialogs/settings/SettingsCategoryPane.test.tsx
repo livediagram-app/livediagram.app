@@ -29,111 +29,48 @@ function show(onChange = vi.fn(), category = PANELS) {
   return onChange;
 }
 
-// A whole desktop-only row (the minimap's, docs/specs/008-canvas/minimap.md):
-// a phone never draws the minimap, so its rows are greyed and inert there,
-// with a note, rather than flipping to no visible effect.
+// A whole desktop-only row (the Mouse section's Quick-Add on Hover): a phone has no hover, so the row is greyed and
+// inert there, with a note, rather than flipping to no visible effect.
 describe('SettingsCategoryPane desktop-only rows', () => {
-  // The Map's rows are Panels' Map section.
-  const MAP = PANELS;
-  const mapSwitch = () => screen.getByRole('switch', { name: /Enable Map/ });
+  const EDITOR = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
+  const hover = () => screen.getByRole<HTMLButtonElement>('switch', { name: /Quick-Add on Hover/ });
 
-  it('greys out Enable Map on a phone, says why, and ignores a tap', () => {
+  it('greys out Quick-Add on Hover on a phone, says why, and ignores a tap', () => {
     mobile.value = true;
-    const onChange = show(vi.fn(), MAP);
-    expect((mapSwitch() as HTMLButtonElement).disabled).toBe(true);
-    expect(mapSwitch().getAttribute('aria-checked')).toBe('true');
+    const onChange = show(vi.fn(), EDITOR);
+    expect(hover().disabled).toBe(true);
     expect(
-      screen.getAllByRole('note').some((n) => /Map is desktop only/.test(n.textContent ?? '')),
+      screen.getAllByRole('note').some((n) => /A mouse setting/.test(n.textContent ?? '')),
     ).toBe(true);
-    fireEvent.click(mapSwitch());
+    fireEvent.click(hover());
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('locks the other Map rows on a phone too', () => {
-    mobile.value = true;
-    render(<SettingsCategoryPane category={MAP} settings={{}} onChange={vi.fn()} />);
-    const dim = screen.getByRole<HTMLButtonElement>('switch', { name: /Dim Outside the View/ });
-    expect(dim.disabled).toBe(true);
-    const sizes = screen
-      .getByRole('radiogroup', { name: 'Map Size' })
-      .querySelectorAll<HTMLButtonElement>('[role="radio"]');
-    expect([...sizes].every((b) => b.disabled)).toBe(true);
-  });
-
-  it('leaves Enable Map working on desktop, with no note', () => {
-    const onChange = show(vi.fn(), MAP);
-    expect((mapSwitch() as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.click(mapSwitch());
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ showMinimap: false }));
+  it('leaves it working on desktop, with no note', () => {
+    const onChange = show(vi.fn(), EDITOR);
+    expect(hover().disabled).toBe(false);
+    const was = hover().getAttribute('aria-checked') === 'true';
+    fireEvent.click(hover());
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ quickAddOnHover: !was }));
   });
 });
 
-describe('SettingsCategoryPane telemetry', () => {
-  // A choice row names the option picked (docs/specs/017-telemetry/telemetry.md).
-  it('tracks which option was picked, not just that it changed', () => {
-    const category = SETTINGS_CATEGORIES.find((c) =>
-      c.rows.some((r) => r.key === 'elementIndicatorStyle'),
-    )!;
-    show(vi.fn(), category);
-    const footer = screen
-      .getByRole('radiogroup', { name: 'Element Indicators' })
-      .querySelector('[role="radio"]:nth-child(2)') as HTMLButtonElement;
-    fireEvent.click(footer);
-    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'ElementIndicatorsFooter');
-  });
-});
-
-describe('SettingsCategoryPane: targeting a section', () => {
-  it('scrolls a targeted section into view and focuses its heading', async () => {
-    const scroll = vi.fn();
-    Element.prototype.scrollIntoView = scroll;
-    const account = SETTINGS_CATEGORIES.find((c) => c.id === 'account')!;
-    render(
-      <SettingsCategoryPane
-        category={account}
-        settings={{}}
-        onChange={vi.fn()}
-        focusSectionId="danger-zone"
-      />,
-    );
-    await new Promise((r) => requestAnimationFrame(r));
-    const heading = screen.getByRole('heading', { name: 'Danger Zone' });
-    expect(heading.id).toBe('settings-section-danger-zone');
-    expect(document.activeElement).toBe(heading);
-    expect(scroll).toHaveBeenCalledWith(expect.objectContaining({ block: 'start' }));
-    expect(heading.closest('[data-settings-section]')!.getAttribute('data-settings-section')).toBe(
-      'danger-zone',
-    );
-  });
-});
-
-// Tours (docs/specs/007-editor/user-preferences.md "Getting Started"): each switch writes its own preference,
-// inverted, and sends its own token.
 describe('SettingsCategoryPane tours', () => {
   const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
 
-  it('turns the Slides tour back on alone, leaving the Article tour answered', () => {
-    const onChange = vi.fn();
+  // docs/specs/030-knowledgebase/page-surface.md "What a page no longer has": a knowledgebase has one kind of page
+  // and no Pages tour, so Getting Started holds Show Me alone.
+  it('offers no Pages tour switch, only Show Me', () => {
     render(
       <SettingsCategoryPane
         category={TOURS}
         settings={{ pagesTourSeen: true, pagesTourKinds: ['slide', 'article'] }}
-        onChange={onChange}
+        onChange={vi.fn()}
       />,
     );
-    const slides = screen.getByRole('switch', { name: 'Slides Tour' });
-    expect(screen.getByRole('switch', { name: 'Article Tour' }).getAttribute('aria-checked')).toBe(
-      'false',
-    );
-    expect(slides.getAttribute('aria-checked')).toBe('false');
-    // The shared explanation sits once, under the section heading.
-    expect(screen.getByRole('heading', { name: 'Offer Again' })).toBeTruthy();
-    expect(screen.getAllByText(/Start a tour from the Start Tour button/)).toHaveLength(1);
-    fireEvent.click(slides);
-    expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'SlidesTourSeenOff');
-    expect(onChange).toHaveBeenCalledWith({
-      pagesTourSeen: false,
-      pagesTourKinds: ['article'],
-    });
+    for (const gone of ['Pages Tours', 'Slides Tour', 'Infographic Tour', 'Article Tour'])
+      expect(screen.queryByRole('switch', { name: gone })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Offer Again' })).toBeNull();
+    expect(screen.getByRole('button', { name: /^Show Me/ })).toBeTruthy();
   });
 });

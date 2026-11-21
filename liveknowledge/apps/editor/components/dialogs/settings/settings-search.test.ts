@@ -22,7 +22,7 @@ describe('settings search', () => {
   });
 
   it('finds a setting by its label', () => {
-    expect(keysFor('minimap')).toContain('showMinimap');
+    expect(keysFor('alignment guides')).toContain('alignmentGuides');
   });
 
   it('finds a setting by a synonym it never displays', () => {
@@ -35,17 +35,17 @@ describe('settings search', () => {
   });
 
   it('finds a setting by its category or section name', () => {
-    // "panels" appears in no Map row's own words: the category name finds them.
+    // "panels" appears in no Collaborate row's own label: the category name finds them.
     const panelKeys = keysFor('panels');
-    expect(panelKeys).toContain('mapDimOutside');
-    expect(panelKeys).toContain('mapSize');
+    expect(panelKeys).toContain('collaboratePanelEnabled');
+    expect(panelKeys).toContain('panelOpacity');
   });
 
   it('narrows on a second term rather than widening', () => {
-    const one = keysFor('minimap');
-    const two = keysFor('minimap dim');
+    const one = keysFor('scale');
+    const two = keysFor('scale toolbar');
     expect(two.length).toBeLessThan(one.length);
-    expect(two).toContain('mapDimOutside');
+    expect(two).toContain('uiScale-toolbar');
   });
 
   it('is case-insensitive', () => {
