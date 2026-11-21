@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { filterSlashItems } from '@/lib/article/article-slash-items';
+import { slashModel } from '@/lib/article/slash-menu-model';
+
+const found = (query: string) => slashModel(query).items;
 import { slashInsertEvent } from '@/lib/article/article-telemetry';
 
 // docs/specs/030-knowledgebase/links-and-embeds.md "Embeds from other apps" and "Page links": what the slash menu
@@ -7,18 +9,18 @@ import { slashInsertEvent } from '@/lib/article/article-telemetry';
 // to a Participant or a Viewer.
 describe('the slash menu’s knowledge entries', () => {
   it('offers Embed, found by its name and by each app’s', () => {
-    const [embed] = filterSlashItems('embed');
+    const [embed] = found('embed');
     expect(embed).toMatchObject({
       label: 'Embed',
-      group: 'Insert',
+      group: 'Knowledge',
       action: { kind: 'insert', what: 'embed' },
     });
     for (const app of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'])
-      expect(filterSlashItems(app).map((i) => i.id)).toContain('embed');
+      expect(found(app).map((i) => i.id)).toContain('embed');
   });
 
   it('offers Link to Page', () => {
-    expect(filterSlashItems('link to')[0]).toMatchObject({
+    expect(found('link to')[0]).toMatchObject({
       label: 'Link to Page',
       action: { kind: 'page-link' },
     });

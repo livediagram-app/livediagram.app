@@ -19,7 +19,10 @@ import { flowFrame } from '@/lib/article/article-flow-geometry';
 import { articleStyleVars } from '@/lib/article/article-style-vars';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import { slashKey, slashPlugin, type SlashBridge } from '@/lib/article/article-slash';
-import { type SlashItem } from '@/lib/article/article-slash-items';
+import { slashItemById, type SlashItem } from '@/lib/article/article-slash-items';
+import { groupJump } from '@/lib/article/slash-menu-model';
+import { readSlashPicks, recentIds } from '@/lib/article/slash-recent';
+import { articleLookOf } from '@/lib/article/article-style-vars';
 import { setLocalArticleCaret } from '@/lib/article/article-carets-store';
 import { articlePeersPlugin, onlyPeers } from '@/lib/article/article-peers';
 import { articleHoldsPlugin, holdSpotOf, onlyHolds } from '@/lib/article/article-holds';
@@ -67,7 +70,12 @@ export type MountContext = {
   announced: MutableRefObject<boolean>;
   blurTimer: MutableRefObject<number | null>;
   barsCache: MutableRefObject<{ ink: string; ops: ArticleDrawOp[] } | null>;
-  slashLive: MutableRefObject<{ items: SlashItem[]; index: number; open: boolean }>;
+  slashLive: MutableRefObject<{
+    items: readonly SlashItem[];
+    starts: readonly number[];
+    index: number;
+    open: boolean;
+  }>;
   pickSlashRef: MutableRefObject<(item: SlashItem) => void>;
   handleRef: MutableRefObject<ArticleEditorHandle | null>;
   caretFrame: MutableRefObject<number | null>;
@@ -135,20 +143,26 @@ export function mountArticleView({
       }
       try {
         const c = v.coordsAtPos(s.from);
+        const at = { left: c.left, top: c.top, bottom: c.bottom };
         setSlash((prev) => {
           if (prev?.query !== s.query) setSlashIndex(0);
-          return { query: s.query, at: { left: c.left, top: c.top, bottom: c.bottom } };
+          // Recent and the writing's look are read once, as it opens; each letter typed only filters.
+          if (prev) return { ...prev, query: s.query, at };
+          const recent = recentIds(readSlashPicks(), Date.now(), (id) => !!slashItemById(id));
+          return { query: s.query, at, recent, look: articleLookOf(v.dom) };
         });
       } catch {
         setSlash(null);
       }
     },
     onKey: (key) => {
-      const { items, index } = slashLive.current;
+      const { items, starts, index } = slashLive.current;
       if (items.length === 0) return false;
       if (key === 'down') setSlashIndex((index + 1) % items.length);
       else if (key === 'up') setSlashIndex((index - 1 + items.length) % items.length);
-      else if (key === 'enter') pickSlashRef.current(items[index] ?? items[0]!);
+      else if (key === 'next-group') setSlashIndex(groupJump(starts, index, 1));
+      else if (key === 'prev-group') setSlashIndex(groupJump(starts, index, -1));
+      else pickSlashRef.current(items[index] ?? items[0]!);
       return true;
     },
   };

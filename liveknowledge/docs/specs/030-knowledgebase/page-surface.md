@@ -80,6 +80,54 @@ Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs 
   writing bar takes the row and the row's own buttons step aside until the caret leaves.
 - With the page tree collapsed to its rail, the menu button leads the top row, which then runs the window's width.
 
+## The slash menu
+
+Owner, 2026-11-21: "Make the / blocks menu look truly amazing, not just a boring list." A `/` typed at a block's
+start or after a space opens it under the caret ([Article pages](../007-editor/article-pages.md) "Writing" says when
+it opens and closes). It never takes the caret from the writing: what is typed after the `/` filters it.
+
+- **What it offers**: only the blocks a knowledgebase page has, in five groups, in this order:
+  - **Text**: Text, Heading 1, Heading 2, Heading 3, Subtitle, Quote, Code.
+  - **Lists**: Bulleted List, Numbered List, To-Do List.
+  - **Media and Embeds**: Image, Bar Chart, Pie Chart, Line Chart, Drawing.
+  - **Knowledge**: Link to Page, Embed (a live file from another liveworkspace app), Footnote, Table of Contents.
+  - **Layout**: Table, Divider.
+  - Not offered: Title (a page has one, its name), Page Break (a page is continuous), Callout and Sticky Note (canvas
+    shapes, not writing), and anything of slides, infographics or the canvas.
+- **Each entry** is a tile with its own icon, its name, and one short line on what it is ("A big section heading").
+  The highlighted entry is tinted in the theme's accent, its tile filled.
+- **Recent** heads the menu, before the groups, while nothing is typed: the three entries this person picks most,
+  the more recent first among equals (each pick weighs less the older it is: a pick a day old counts half). It is
+  kept in this browser only, for this person; with nothing picked yet, or storage refused, there is no Recent. An
+  entry in Recent is in its group too.
+- **Filtering**: what is typed matches an entry's name loosely, letters in order with gaps allowed ("hd2" finds
+  Heading 2, "tbl" Table), then its keywords ("ul" finds Bulleted List, "diagram" Drawing). A name starting with
+  what is typed ranks first, then a word of the name starting with it, then a name holding it, then the loose
+  matches, then keywords. The letters matched are drawn bold in the name. The groups stay, each ordered by its best
+  match, the best match of all highlighted. Nothing matching says "No blocks match" with what was typed.
+- **Keys**, the caret staying in the writing: Up and Down move through every entry (wrapping), Tab and Shift+Tab jump
+  to the next or previous group's first entry (wrapping), Enter chooses, Escape closes. The pointer: resting on an
+  entry highlights it, a press chooses it.
+- **The preview** (desktop, where the window has room beside the list): a pane at the menu's right draws the
+  highlighted block as it will look on the page, in the knowledgebase's own fonts and accent (a heading at its
+  size, a list's bullets, a quote's bar, a table's grid, a chart's bars, a footnote's number and note), with its
+  name, a line on what it does and its shortcut (the key, or the Markdown typed at a block's start).
+- **Where it sits**: under the `/`, its left edge at the `/`; where it would run past the window's foot it opens
+  above the `/` instead, and it never runs past the window's sides (8 px from them). With no room for the preview
+  beside the list, the list alone shows.
+- **Motion**: it unfolds from the `/` (the menus' 150 ms open, from its top-left corner, or its bottom-left when it
+  opens above); with reduced motion it appears at once.
+- **On a phone** it is a sheet along the foot of the visible screen, above the on-screen keyboard, the window's
+  width less 8 px a side, at most 45% of the visible height: entries 44 px tall, group names standing at its top
+  as it scrolls, no preview. It slides up (250 ms, at once with reduced motion).
+- **Light and dark**: it follows the app's appearance, a white or dark panel with the theme's accent.
+- **Screen readers**: a listbox "Insert a block" of groups named by their heading, each entry an option named by
+  its name and line; the writing points at the highlighted one (`aria-activedescendant`).
+- **Cost**: it draws only while open, and opening it measures nothing of the writing but the `/`'s place; typing
+  with it closed costs what it did.
+- **Telemetry**: a block put in from it counts as the toolbar's Insert does (`Element` `Added`, the block's type).
+- **Share roles**: an Editor has it; a Participant (who writes but inserts nothing) and a Viewer do not.
+
 ## What a page no longer has
 
 The page's own **Style**, **Text**, **Background** and **Lock** controls are not in liveknowledge, with the page

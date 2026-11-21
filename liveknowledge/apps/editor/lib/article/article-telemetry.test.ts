@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { filterSlashItems } from './article-slash-items';
+import { SLASH_ITEMS } from './article-slash-items';
 import { slashInsertEvent } from './article-telemetry';
 
 // docs/specs/007-editor/article-pages.md "Telemetry": a block inserted from the slash menu counts
 // as one from the toolbar's Insert.
-const eventOf = (id: string) =>
-  slashInsertEvent(filterSlashItems('').find((i) => i.id === id)!.action);
+const eventOf = (id: string) => slashInsertEvent(SLASH_ITEMS.find((i) => i.id === id)!.action);
 
 describe('slash menu telemetry', () => {
   it('counts the block inserts', () => {

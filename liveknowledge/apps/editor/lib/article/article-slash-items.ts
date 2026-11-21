@@ -1,6 +1,6 @@
-// The slash menu's entries (docs/specs/007-editor/article-pages.md "The slash menu"), in groups,
-// and the filter: entries whose name matches what is typed come first (a name starting with it
-// before one containing it), then entries matched by a keyword.
+// The slash menu's entries (docs/specs/030-knowledgebase/page-surface.md "The slash menu"): only the blocks a
+// knowledgebase page has, in five groups, each with a short line, keywords, and the shortcut its preview shows.
+// The menu's sections (Recent, the groups, filtering) are slash-menu-model.ts's.
 import type { ArticleListKind, ArticleParagraphStyle } from '@liveknowledge/document';
 
 export type SlashAction =
@@ -17,16 +17,24 @@ export type SlashAction =
   | { kind: 'page'; page: string; title: string }
   | { kind: 'create-page'; title: string };
 
+/** The slash menu's groups, in order. */
+export const SLASH_GROUPS = ['Text', 'Lists', 'Media and Embeds', 'Knowledge', 'Layout'] as const;
+export type SlashGroup = (typeof SLASH_GROUPS)[number];
+
 export type SlashItem = {
   id: string;
   label: string;
-  group: 'Text' | 'Lists' | 'Blocks' | 'Insert' | 'Pages' | 'New';
+  // A slash entry's group; the page picker's are its own ('Pages', 'New').
+  group: SlashGroup | 'Pages' | 'New';
   keywords: string;
   hint: string;
   action: SlashAction;
+  // The shortcut the preview names: a key chord (keyLabel's form) or the Markdown typed at a block's start.
+  keys?: string;
+  markdown?: string;
 };
 
-const SLASH_ITEMS: readonly SlashItem[] = [
+export const SLASH_ITEMS: readonly SlashItem[] = [
   {
     id: 'text',
     label: 'Text',
@@ -34,30 +42,17 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     keywords: 'paragraph body plain normal',
     hint: 'Plain writing',
     action: { kind: 'style', style: 'body' },
-  },
-  {
-    id: 'title',
-    label: 'Title',
-    group: 'Text',
-    keywords: 'heading big',
-    hint: 'The page title',
-    action: { kind: 'style', style: 'title' },
-  },
-  {
-    id: 'subtitle',
-    label: 'Subtitle',
-    group: 'Text',
-    keywords: 'standfirst lead',
-    hint: 'A line under the title',
-    action: { kind: 'style', style: 'subtitle' },
+    keys: 'Mod-Alt-0',
   },
   {
     id: 'h1',
     label: 'Heading 1',
     group: 'Text',
-    keywords: 'h1 section title',
+    keywords: 'h1 section title big',
     hint: 'A big section heading',
     action: { kind: 'style', style: 'h1' },
+    keys: 'Mod-Alt-1',
+    markdown: '#',
   },
   {
     id: 'h2',
@@ -66,6 +61,8 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     keywords: 'h2 subsection',
     hint: 'A medium heading',
     action: { kind: 'style', style: 'h2' },
+    keys: 'Mod-Alt-2',
+    markdown: '##',
   },
   {
     id: 'h3',
@@ -74,110 +71,85 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     keywords: 'h3 small',
     hint: 'A small heading',
     action: { kind: 'style', style: 'h3' },
+    keys: 'Mod-Alt-3',
+    markdown: '###',
+  },
+  {
+    id: 'subtitle',
+    label: 'Subtitle',
+    group: 'Text',
+    keywords: 'standfirst lead summary intro',
+    hint: 'A line that sums up the page',
+    action: { kind: 'style', style: 'subtitle' },
+  },
+  {
+    id: 'quote',
+    label: 'Quote',
+    group: 'Text',
+    keywords: 'blockquote citation pull',
+    hint: 'A quotation, set apart',
+    action: { kind: 'style', style: 'quote' },
+    markdown: '>',
+  },
+  {
+    id: 'code',
+    label: 'Code',
+    group: 'Text',
+    keywords: 'pre monospace snippet command',
+    hint: 'Code, exactly as typed',
+    action: { kind: 'style', style: 'code' },
+    markdown: '```',
   },
   {
     id: 'bullet',
     label: 'Bulleted List',
     group: 'Lists',
     keywords: 'ul unordered points dots',
-    hint: 'A simple list',
+    hint: 'A simple list of points',
     action: { kind: 'list', list: 'bullet' },
+    keys: 'Mod-Shift-8',
+    markdown: '-',
   },
   {
     id: 'numbered',
     label: 'Numbered List',
     group: 'Lists',
     keywords: 'ol ordered steps 123',
-    hint: 'A list with numbers',
+    hint: 'Steps, in order',
     action: { kind: 'list', list: 'numbered' },
+    keys: 'Mod-Shift-7',
+    markdown: '1.',
   },
   {
     id: 'todo',
     label: 'To-Do List',
     group: 'Lists',
-    keywords: 'checklist tasks checkbox tick',
+    keywords: 'todo checklist tasks checkbox tick',
     hint: 'Tasks to tick off',
     action: { kind: 'list', list: 'todo' },
-  },
-  {
-    id: 'quote',
-    label: 'Quote',
-    group: 'Blocks',
-    keywords: 'blockquote citation pull',
-    hint: 'A quotation',
-    action: { kind: 'style', style: 'quote' },
-  },
-  {
-    id: 'code',
-    label: 'Code',
-    group: 'Blocks',
-    keywords: 'pre monospace snippet',
-    hint: 'Code, as typed',
-    action: { kind: 'style', style: 'code' },
-  },
-  {
-    id: 'divider',
-    label: 'Divider',
-    group: 'Blocks',
-    keywords: 'rule line hr separator',
-    hint: 'A line across',
-    action: { kind: 'block', block: 'divider' },
-  },
-  // No Page Break: a knowledgebase page is one continuous page (docs/specs/030-knowledgebase/
-  // knowledgebases-and-pages.md "The continuous page").
-  {
-    id: 'table',
-    label: 'Table',
-    group: 'Blocks',
-    keywords: 'grid rows columns cells spreadsheet',
-    hint: 'Rows and columns in the text',
-    action: { kind: 'block', block: 'table' },
-  },
-  {
-    id: 'toc',
-    label: 'Table of Contents',
-    group: 'Blocks',
-    keywords: 'contents toc outline headings index',
-    hint: 'The headings, with their pages',
-    action: { kind: 'block', block: 'toc' },
-  },
-  {
-    id: 'footnote',
-    label: 'Footnote',
-    group: 'Blocks',
-    keywords: 'note reference citation source endnote',
-    hint: 'A numbered note at the foot of the page',
-    action: { kind: 'block', block: 'footnote' },
-  },
-  {
-    id: 'page-link',
-    label: 'Link to Page',
-    group: 'Insert',
-    keywords: 'page link mention reference',
-    hint: 'A page of this knowledgebase',
-    action: { kind: 'page-link' },
+    keys: 'Mod-Shift-9',
+    markdown: '[]',
   },
   {
     id: 'image',
     label: 'Image',
-    group: 'Insert',
-    keywords: 'picture photo upload',
+    group: 'Media and Embeds',
+    keywords: 'picture photo upload screenshot',
     hint: 'A picture in the text',
     action: { kind: 'insert', what: 'image' },
   },
-
   {
     id: 'chart',
     label: 'Bar Chart',
-    group: 'Insert',
-    keywords: 'graph bars data',
-    hint: 'Compare values',
+    group: 'Media and Embeds',
+    keywords: 'graph bars data column',
+    hint: 'Compare values side by side',
     action: { kind: 'insert', what: 'chart' },
   },
   {
     id: 'pie',
     label: 'Pie Chart',
-    group: 'Insert',
+    group: 'Media and Embeds',
     keywords: 'graph slices share donut',
     hint: 'Parts of a whole',
     action: { kind: 'insert', what: 'pie' },
@@ -185,7 +157,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   {
     id: 'line',
     label: 'Line Chart',
-    group: 'Insert',
+    group: 'Media and Embeds',
     keywords: 'graph trend time series',
     hint: 'A trend over time',
     action: { kind: 'insert', what: 'line' },
@@ -193,51 +165,65 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   {
     id: 'drawing',
     label: 'Drawing',
-    group: 'Insert',
-    keywords: 'diagram shapes flowchart sketch canvas',
-    hint: 'Shapes and arrows',
+    group: 'Media and Embeds',
+    keywords: 'diagram shapes flowchart sketch arrows',
+    hint: 'Shapes and arrows, drawn in place',
     action: { kind: 'insert', what: 'drawing' },
   },
   {
-    id: 'callout',
-    label: 'Callout',
-    group: 'Insert',
-    keywords: 'note tip warning box',
-    hint: 'A highlighted note',
-    action: { kind: 'insert', what: 'callout' },
-  },
-  {
-    id: 'sticky',
-    label: 'Sticky Note',
-    group: 'Insert',
-    keywords: 'post-it note',
-    hint: 'A sticky note',
-    action: { kind: 'insert', what: 'sticky' },
+    id: 'page-link',
+    label: 'Link to Page',
+    group: 'Knowledge',
+    keywords: 'page link mention wiki backlink',
+    hint: 'Another page of this knowledgebase',
+    action: { kind: 'page-link' },
+    markdown: '[[',
   },
   {
     id: 'embed',
     label: 'Embed',
-    group: 'Insert',
+    group: 'Knowledge',
     keywords:
-      'livediagram liveplanner livedocuments livedesign livehuddle diagram plan board design file live',
-    hint: "Another app's file, live",
+      'livediagram liveplanner livedocuments livedesign livehuddle plan board design file app live',
+    hint: 'A live file from another app',
     action: { kind: 'insert', what: 'embed' },
+  },
+  {
+    id: 'footnote',
+    label: 'Footnote',
+    group: 'Knowledge',
+    keywords: 'note reference citation source endnote',
+    hint: 'A numbered note on a source',
+    action: { kind: 'block', block: 'footnote' },
+    keys: 'Mod-Alt-f',
+  },
+  {
+    id: 'toc',
+    label: 'Table of Contents',
+    group: 'Knowledge',
+    keywords: 'contents toc outline headings index',
+    hint: "The page's headings, linked",
+    action: { kind: 'block', block: 'toc' },
+  },
+  {
+    id: 'table',
+    label: 'Table',
+    group: 'Layout',
+    keywords: 'grid rows columns cells spreadsheet',
+    hint: 'Rows and columns in the text',
+    action: { kind: 'block', block: 'table' },
+  },
+  {
+    id: 'divider',
+    label: 'Divider',
+    group: 'Layout',
+    keywords: 'rule line hr separator',
+    hint: 'A line across the page',
+    action: { kind: 'block', block: 'divider' },
+    markdown: '---',
   },
 ];
 
-/** The entries matching `query`, best first. Empty query: every entry, in order. */
-export function filterSlashItems(query: string): SlashItem[] {
-  const items = SLASH_ITEMS;
-  const q = query.trim().toLowerCase();
-  if (!q) return [...items];
-  const starts: SlashItem[] = [];
-  const contains: SlashItem[] = [];
-  const keyword: SlashItem[] = [];
-  for (const item of items) {
-    const name = item.label.toLowerCase();
-    if (name.startsWith(q)) starts.push(item);
-    else if (name.includes(q)) contains.push(item);
-    else if (item.keywords.split(' ').some((k) => k.startsWith(q))) keyword.push(item);
-  }
-  return [...starts, ...contains, ...keyword];
-}
+const BY_ID = new Map(SLASH_ITEMS.map((item) => [item.id, item]));
+/** The entry of `id`, or undefined when the menu has none (a Recent pick since taken out). */
+export const slashItemById = (id: string): SlashItem | undefined => BY_ID.get(id);

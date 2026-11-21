@@ -192,15 +192,9 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   Hovering a link shows its address with **Open**, **Edit** and **Remove**; ⌘-press opens it in
   a new tab.
 - **The slash menu**: `/` at the start of a block or after a space opens a menu of blocks, filtered
-  as you type (names, then keywords), Up / Down to move, Enter or Tab to choose, Escape to close;
-  it closes when the caret leaves the `/`. With nothing matching it says so ("No blocks match"
-  and what was typed). Entries: **Text**, **Title**, **Subtitle**, **Heading
-  1 to 3**, **Bulleted List**, **Numbered List**, **To-Do List**, **Quote**, **Code**,
-  **Divider**, **Page Break**, **Table**, **Table of Contents**, **Footnote**, **Image**, **Bar Chart**, **Pie
-  Chart**, **Line Chart**, **Drawing**, **Callout**, **Sticky Note**. **Table** puts a table block
-  in the text; the palette's table element still places a table freely, as an object zone or loose on
-  a page. (An icon comes in from the palette, where one is chosen: dropped or placed on the writing
-  it lands as an object zone.) Inside a table cell the slash menu does not open: a cell holds text.
+  as you type, Escape to close; it closes when the caret leaves the `/`. Its entries, groups, look, filtering and
+  keys are liveknowledge's own ([The page surface](../030-knowledgebase/page-surface.md) "The slash menu"). **Table**
+  puts a table block in the text. Inside a table cell the slash menu does not open: a cell holds text.
 - **Commits**: typing is written to the tab when the writing pauses for **600** ms
   (`ARTICLE_IDLE_COMMIT_MS`), when the caret leaves the writing, before any edit that is not typing
   (a toolbar change, an insert, a zone move) and before an undo. Each commit is one undo step and
@@ -255,8 +249,7 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
     **Clear Formatting**, **Article Style**, which opens the page panel on Style, and at its foot the article's
     **Word Count**);
   - **Insert** (a menu: Image, Bar Chart, Pie Chart, Line Chart, then Table, Table of Contents, Footnote, Divider,
-    Page break, Quote, Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
-    callout from the slash menu). An object always goes in: at the caret, or, when the writing has no caret it can
+    Page break, Quote, Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**). An object always goes in: at the caret, or, when the writing has no caret it can
     measure, under its first line (Work Tracker 1090).
   - **Table** (a menu, shown only while the caret or a cell selection is in a table: Insert Row
     Above, Insert Row Below, Insert Column Left, Insert Column Right, Delete Row, Delete Column,

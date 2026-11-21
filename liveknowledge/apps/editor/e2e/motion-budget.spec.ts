@@ -121,6 +121,19 @@ async function tourTheChrome(page: Page): Promise<void> {
     page.getByRole('dialog', { name: 'Search', exact: true }),
   );
   await toggle(page, 'Insert');
+  // The slash menu (page-surface.md "The slash menu", "Motion"): it unfolds from the `/` typed in the writing, and
+  // Escape closes it; the `/` typed goes again so the writing is as it was.
+  await openAndClose(
+    page,
+    async () => {
+      await writeLines(page, '/');
+      await page.getByRole('listbox', { name: 'Insert a block' }).waitFor();
+    },
+    async () => {
+      await page.keyboard.press('Escape');
+      await page.keyboard.press('Backspace');
+    },
+  );
   await openAndClose(
     page,
     () => page.getByRole('button', { name: 'Application settings' }).click(),
@@ -148,11 +161,12 @@ test.describe('Motion budget', () => {
     await tourTheChrome(page);
 
     const seen = transitions(await recorded(page));
-    // Guard against the probe going blind: menus, dialogs and hovers all ran. No `dropdown-open`: that is the
-    // palette's dropdowns, which a knowledgebase page shows only while a drawing is edited.
+    // Guard against the probe going blind: menus, dialogs and hovers all ran, the slash menu's `dropdown-open`
+    // among them (the palette's dropdowns, which share it, show only while a drawing is edited).
     expect(seen.length).toBeGreaterThan(20);
     expect(seen.some((m) => m.name === 'dialog-in')).toBe(true);
     expect(seen.some((m) => m.name === 'fly-up-in')).toBe(true);
+    expect(seen.some((m) => m.name === 'dropdown-open' && m.target.includes('fixed'))).toBe(true);
 
     const slow = seen
       .filter((m) => m.delay + m.active > CEILING_MS)

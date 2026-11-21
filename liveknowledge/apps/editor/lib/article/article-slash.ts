@@ -1,8 +1,9 @@
 // The slash menu's trigger (docs/specs/007-editor/article-pages.md "Writing", "The slash menu"):
 // a `/` typed at a block's start or after a space opens it; what is typed after it filters it; it
 // closes when the caret leaves the `/`, on a space typed straight after it, past 24 characters, or
-// on Escape. The keys it takes while open (Up, Down, Enter, Tab, Escape) go to the menu, which the
-// writing's editor draws (SlashMenu) through a bridge.
+// on Escape. The keys it takes while open (Up, Down, Enter, Tab and Shift+Tab between its groups,
+// Escape) go to the menu, which the writing's editor draws (SlashMenu) through a bridge
+// (docs/specs/030-knowledgebase/page-surface.md "The slash menu", "Keys").
 import { Plugin, PluginKey, type EditorState } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
 
@@ -10,11 +11,14 @@ export type SlashState = { active: false } | { active: true; from: number; query
 
 const SLASH_QUERY_MAX = 24;
 
+/** A key the open menu takes: move, choose, or jump to the next or previous group. */
+export type SlashKey = 'up' | 'down' | 'enter' | 'next-group' | 'prev-group';
+
 export type SlashBridge = {
   // The menu's state changed (opened, filtered, closed).
   onChange: (state: SlashState, view: EditorView) => void;
   // A key while it is open: true when the menu took it.
-  onKey: (key: 'up' | 'down' | 'enter' | 'escape') => boolean;
+  onKey: (key: SlashKey) => boolean;
 };
 
 export const slashKey = new PluginKey<SlashState>('article-slash');
@@ -81,22 +85,23 @@ export function slashPlugin(bridge: SlashBridge): Plugin<SlashState> {
       handleKeyDown(view, event) {
         const s = slashKey.getState(view.state);
         if (!s?.active) return false;
-        const key =
+        if (event.key === 'Escape') {
+          view.dispatch(view.state.tr.setMeta(slashKey, 'close'));
+          return true;
+        }
+        const key: SlashKey | null =
           event.key === 'ArrowDown'
             ? 'down'
             : event.key === 'ArrowUp'
               ? 'up'
-              : event.key === 'Enter' || event.key === 'Tab'
+              : event.key === 'Enter'
                 ? 'enter'
-                : event.key === 'Escape'
-                  ? 'escape'
+                : event.key === 'Tab'
+                  ? event.shiftKey
+                    ? 'prev-group'
+                    : 'next-group'
                   : null;
-        if (!key) return false;
-        if (key === 'escape') {
-          view.dispatch(view.state.tr.setMeta(slashKey, 'close'));
-          return true;
-        }
-        return bridge.onKey(key);
+        return key ? bridge.onKey(key) : false;
       },
     },
   });

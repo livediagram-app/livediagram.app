@@ -9,6 +9,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -21,6 +22,7 @@ import { EditorChromeContext, type EditorChromeStore } from '@/app/document/[id]
 import { SlashMenu } from '@/components/canvas/article/SlashMenu';
 import { selectPage } from '@/components/page-tree/select-page';
 import type { SlashItem } from '@/lib/article/article-slash-items';
+import { modelOf, sectionsOfItems } from '@/lib/article/slash-menu-model';
 import { pageOfPastedUrl, pagePickItems } from '@/lib/knowledge/page-link-pick';
 import {
   openPageLinkPicker,
@@ -155,6 +157,8 @@ export function usePageLinks(
     return pageLinkPlugin(bridge);
   }, []);
   const shown = Math.min(index, Math.max(0, items.length - 1));
+  // The pages as the menu's sections (a run of Pages, then New): worked out only when the list changes.
+  const model = useMemo(() => modelOf(sectionsOfItems(items)), [items]);
   return {
     makePlugin,
     openPicker: openPageLinkPicker,
@@ -163,7 +167,8 @@ export function usePageLinks(
         {picker && canInsert ? (
           <SlashMenu
             at={picker.at}
-            items={items}
+            model={model}
+            preview={false}
             query={picker.query}
             index={shown}
             onPick={pick}

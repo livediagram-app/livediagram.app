@@ -8,7 +8,7 @@
 // an undo) is merged in block by block, so neither loses the other. After every change it measures
 // where the writing reaches (how many pages, where each zone landed) and reports it, so the host
 // can add or remove pages and move zones' elements (useArticles).
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { EditorView } from 'prosemirror-view';
 import { applyArticleOps, diffArticleFlow, type ArticleFlow } from '@liveknowledge/document';
 import { docToBlocks } from '@/lib/article/article-convert';
@@ -28,7 +28,9 @@ import { focusSelection } from '@/lib/article/article-focus-selection';
 import { columnAt } from '@/lib/article/article-flow-geometry';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import { removeSlashQuery } from '@/lib/article/article-slash';
-import { filterSlashItems, type SlashItem } from '@/lib/article/article-slash-items';
+import { slashItemById, type SlashItem } from '@/lib/article/article-slash-items';
+import { modelOf, slashModel } from '@/lib/article/slash-menu-model';
+import { noteSlashPick } from '@/lib/article/slash-recent';
 import { setBlockStyle, toggleList } from '@/lib/article/article-commands';
 import { caretOf } from '@/lib/article/article-caret';
 import { setLocalArticleCaret, useArticlePeers } from '@/lib/article/article-carets-store';
@@ -45,7 +47,7 @@ import { slashInsertEvent } from '@/lib/article/article-telemetry';
 import { insertTable } from '@/lib/article/article-table-commands';
 import { insertFootnote } from '@/lib/article/article-footnotes';
 import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
-import type { ArticleEditorProps } from './article-editor-types';
+import type { ArticleEditorProps, SlashState } from './article-editor-types';
 import { measureArticleLayout } from './article-measure';
 import { mountArticleView } from './article-view-mount';
 import { PageLimitNotice, replaceContent } from './article-editor-parts';
@@ -58,6 +60,8 @@ import { usePageLinks } from '@/components/knowledge/usePageLinks';
 const ARTICLE_IDLE_COMMIT_MS = 600;
 // How long an undo or redo from the writing waits for its writing to come back (UNDO_SETTLE_MS).
 const UNDO_SETTLE_MS = 400;
+// The slash menu while shut: nothing worked out.
+const EMPTY_SLASH = modelOf([]);
 
 export type { FlowLayout, FocusRequest, ArticleEditorProps } from './article-editor-types';
 
@@ -119,18 +123,28 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   const [cutOff, setCutOff] = useState(false);
   // The writing as soft bars, measured once per layout (handle.bars).
   const barsCache = useRef<{ ink: string; ops: ArticleDrawOp[] } | null>(null);
-  // The slash menu: open with its query and where the `/` is, and the entry highlighted.
-  const [slash, setSlash] = useState<{
-    query: string;
-    at: { left: number; top: number; bottom: number };
-  } | null>(null);
+  // The slash menu: open with its query, where the `/` is, Recent and the writing's look, and the entry
+  // highlighted. Its sections are worked out only while it is open, once per letter typed after the `/`.
+  const [slash, setSlash] = useState<SlashState | null>(null);
   const [slashIndex, setSlashIndex] = useState(0);
-  const slashItems = slash && props.reshape !== false ? filterSlashItems(slash.query) : [];
-  const slashLive = useRef({ items: slashItems, index: slashIndex, open: false });
+  const slashOpen = !!slash && props.reshape !== false;
+  const slashQuery = slash?.query ?? '';
+  const slashRecent = slash?.recent;
+  const slashMenu = useMemo(
+    () => (slashOpen ? slashModel(slashQuery, slashRecent) : EMPTY_SLASH),
+    [slashOpen, slashQuery, slashRecent],
+  );
+  const slashItems = slashMenu.items;
+  const slashLive = useRef({
+    items: slashItems,
+    starts: slashMenu.starts,
+    index: slashIndex,
+    open: false,
+  });
   useLayoutEffect(() => {
     const open = !!slash && slashItems.length > 0;
     const was = slashLive.current;
-    slashLive.current = { items: slashItems, index: slashIndex, open };
+    slashLive.current = { items: slashItems, starts: slashMenu.starts, index: slashIndex, open };
     // The writing points at the open menu and its highlighted option (aria-activedescendant).
     if (was.open !== open || was.index !== slashIndex) viewRef.current?.setProps({});
   });
@@ -141,6 +155,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     if (!view) return;
     removeSlashQuery(view);
     setSlash(null);
+    // Recent learns the pick (this browser only).
+    if (slashItemById(item.id)) noteSlashPick(item.id);
     const a = item.action;
     let done = false;
     if (a.kind === 'style') done = setBlockStyle(a.style)(view.state, view.dispatch, view);
@@ -393,8 +409,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       {slash && props.editable && props.reshape !== false ? (
         <SlashMenu
           at={slash.at}
-          items={slashItems}
+          model={slashMenu}
           query={slash.query}
+          look={slash.look}
           index={Math.min(slashIndex, Math.max(0, slashItems.length - 1))}
           onPick={pickSlash}
           onHover={setSlashIndex}

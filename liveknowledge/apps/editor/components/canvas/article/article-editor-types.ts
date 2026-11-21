@@ -74,8 +74,11 @@ export type ArticleEditorProps = {
   onRevealCaret?: (rect: { x: number; y: number; w: number; h: number }) => void;
 };
 
-// The slash menu while open: its query and where the `/` is.
+// The slash menu while open: its query, where the `/` is, and what it read as it opened: Recent's entries and the
+// writing's look (page-surface.md "The slash menu").
 export type SlashState = {
   query: string;
   at: { left: number; top: number; bottom: number };
+  recent: readonly string[];
+  look: Readonly<Record<string, string>>;
 };

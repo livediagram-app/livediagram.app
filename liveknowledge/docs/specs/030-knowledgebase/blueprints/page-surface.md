@@ -232,6 +232,37 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
   chevron with nothing past it is out of the tab order and hidden from assistive technology.
 - **Renders:** the bar's props are the history's two flags, which a keystroke does not change; the page toolbar inside it renders on a selection change, as it did in the strip.
 
+## The slash menu (built)
+
+| Piece                                       | File (under `apps/editor`)                                           |
+| ------------------------------------------- | -------------------------------------------------------------------- |
+| The entries, their groups, lines and keys   | `lib/article/article-slash-items.ts` (`SLASH_ITEMS`, `SLASH_GROUPS`) |
+| Matching one name: its rank and bold marks  | `lib/article/slash-match.ts` (`matchSlash`)                          |
+| Sections, Recent, the flat list, Tab's jump | `lib/article/slash-menu-model.ts` (`slashModel`, `groupJump`)        |
+| Recent, kept in this browser                | `lib/article/slash-recent.ts` (`liveknowledge:v2:slash-recent`)      |
+| Where the popover sits                      | `components/canvas/article/slash-menu-place.ts`                      |
+| The tiles' glyphs                           | `components/canvas/article/slash-menu-icons.tsx`                     |
+| The preview of each entry                   | `components/canvas/article/SlashPreview.tsx`                         |
+| The popover and the phone's sheet           | `components/canvas/article/SlashMenu.tsx`                            |
+| The keys while it is open                   | `lib/article/article-slash.ts` (`SlashKey`), `article-view-mount.ts` |
+
+- **Matching.** Bands, best first: the name starts with the query, a word of it does, the name holds it, its letters
+  in order with gaps (contiguous runs and word starts preferred), a keyword. Within a band the name the query covers
+  more of ranks first (at most 10 points, never past a band's step); equals keep the catalogue's order. Groups keep
+  their entries together, ordered by each group's best match.
+- **Recent.** Each pick adds 1 to an entry's weight after halving it per day since its last pick; the three heaviest
+  head the menu while nothing is typed, the entry still in its own group below. Twelve entries are kept at most.
+  Storage refused or garbled reads as no picks. It is read once as the menu opens, never per key.
+- **The writing's look.** `articleLookOf` copies the writing's `--article-*` variables onto the menu, so the heading
+  tiles and the preview use the knowledgebase's fonts and colours.
+- **The page picker** (`usePageLinks.tsx`) draws its pages with `SlashMenu` too, `modelOf(sectionsOfItems(items))`
+  with no preview and no key hints.
+- **Cost, measured** (signed-in build, Chromium, Apple silicon, keydown to the menu in the DOM, 15 opens): median
+  3.7 ms, worst 34 ms (the first open, loading the icon modules). Typing with the menu closed: median 0.4 ms, worst
+  1.0 ms over 30 keys; nothing on the typing path changed (the plugin's closed state is one read). Filtering: 1,000
+  queries over the catalogue inside a 400 ms CPU budget (`slash-menu-model.test.ts`); 20 full renders inside 1,500
+  ms (`SlashMenu.test.tsx`).
+
 ## What a page no longer has (built)
 
 - **Stored fields.** `withoutPageLooks` (`packages/document/src/page-looks.ts`) runs in `migrateStoredTab`, which
@@ -363,21 +394,22 @@ starts in place, from their hosts in `usePageTreeChrome`, where the editor's sto
 
 ## Testing
 
-| Rule                                                                  | Test                                                                                                                            |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| The column: centred, 100% on a desktop, side room, 320 px to 3,840 px | `page-lock.test.ts`                                                                                                             |
-| The view is locked; a move is a scroll; a scroll tells nobody         | `page-viewport-store.test.ts`, `useEditorViewport.test.tsx`                                                                     |
-| The page's scroll keys                                                | `page-keys.test.ts`                                                                                                             |
-| The ground follows the appearance alone                               | `view-backdrop.test.ts`                                                                                                         |
-| No zoom chords, no Hand, no Fit                                       | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts`                                                                |
-| The bar: the slot, Undo and Redo, no canvas tool                      | `PageFormattingBar.test.tsx`                                                                                                    |
-| A short page does not scroll; the free height                         | `page-lock.test.ts` "the world's box inside the scroll container"                                                               |
-| The breadcrumb is over the paper and pressable                        | `PageSurfaceSheet.test.tsx`                                                                                                     |
-| A drawing's tools: four categories, no Selection mode, no Library     | `ToolbarPalette.test.tsx`, `CategoryBar.test.tsx`                                                                               |
-| The tools stay while reached for and used                             | `drawing-zone-store.test.ts`                                                                                                    |
-| Space is the page's; no tool keys or commands                         | `useCanvasPanAndMarquee.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts`, `shortcut-sections.test.ts` |
-| A stored background, style or lock is dropped as a tab is read        | `page-looks.test.ts`, `tab-row.test.ts`                                                                                         |
-| Templates carry no style; no Open Theme command                       | `article-templates.test.ts`, `editor-commands.test.ts`                                                                          |
+| Rule                                                                  | Test                                                                                                                                                    |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The column: centred, 100% on a desktop, side room, 320 px to 3,840 px | `page-lock.test.ts`                                                                                                                                     |
+| The view is locked; a move is a scroll; a scroll tells nobody         | `page-viewport-store.test.ts`, `useEditorViewport.test.tsx`                                                                                             |
+| The page's scroll keys                                                | `page-keys.test.ts`                                                                                                                                     |
+| The ground follows the appearance alone                               | `view-backdrop.test.ts`                                                                                                                                 |
+| No zoom chords, no Hand, no Fit                                       | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts`                                                                                        |
+| The bar: the slot, Undo and Redo, no canvas tool                      | `PageFormattingBar.test.tsx`                                                                                                                            |
+| A short page does not scroll; the free height                         | `page-lock.test.ts` "the world's box inside the scroll container"                                                                                       |
+| The breadcrumb is over the paper and pressable                        | `PageSurfaceSheet.test.tsx`                                                                                                                             |
+| A drawing's tools: four categories, no Selection mode, no Library     | `ToolbarPalette.test.tsx`, `CategoryBar.test.tsx`                                                                                                       |
+| The tools stay while reached for and used                             | `drawing-zone-store.test.ts`                                                                                                                            |
+| Space is the page's; no tool keys or commands                         | `useCanvasPanAndMarquee.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts`, `shortcut-sections.test.ts`                         |
+| A stored background, style or lock is dropped as a tab is read        | `page-looks.test.ts`, `tab-row.test.ts`                                                                                                                 |
+| Templates carry no style; no Open Theme command                       | `article-templates.test.ts`, `editor-commands.test.ts`                                                                                                  |
+| The slash menu: groups, matching, Recent, keys, placement, sheet      | `slash-menu-model.test.ts`, `slash-recent.test.ts`, `article-slash.test.ts`, `slash-menu-place.test.ts`, `SlashMenu.test.tsx`, `e2e/slash-menu.spec.ts` |
 
 Not covered by a test: `usePageSurface` (it reads layout boxes jsdom does not lay out), the scroll container's
 extent, the rail's inset, and everything a browser would show.

@@ -52,3 +52,14 @@ export function articleStyleVars(
   };
   return { vars: vars, rules: r.rules };
 }
+
+/** The writing's look as drawn on `el` (its `--article-*` variables), for chrome beside the writing that wears it
+ *  (the slash menu's tiles and preview). Read from the inline style the view writes: no layout. */
+export function articleLookOf(el: HTMLElement): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (let i = 0; i < el.style.length; i++) {
+    const name = el.style.item(i);
+    if (name.startsWith('--article-')) out[name] = el.style.getPropertyValue(name).trim();
+  }
+  return out;
+}
