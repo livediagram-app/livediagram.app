@@ -46,6 +46,8 @@ const settings = (over: Partial<KnowledgeAiSettings> = {}): KnowledgeAiSettings 
   provider: 'anthropic',
   providers: PROVIDERS,
   hasKey: false,
+  // No built-in AI on this server unless a test says so: a key is the only way.
+  builtIn: false,
   keyHint: '',
   model: 'claude-fable-5-2',
   models: MODELS,
@@ -67,7 +69,13 @@ async function open(role: Role = 'edit', over: Record<string, unknown> = {}) {
   const utils = renderInEditor(<AiSettingsHost />, chromeValue(role, over));
   act(() => openAiSettings());
   await screen.findByRole('dialog', { name: 'AI Settings' });
-  await waitFor(() => expect(screen.getByRole('status').textContent).not.toBe(''));
+  // Loaded: the key's state shows, or (on built-in AI, or a failed read) the source or the alert.
+  await waitFor(() =>
+    expect(
+      document.querySelector('[role="status"], [role="alert"], [data-ai-built-in-note]')
+        ?.textContent,
+    ).toBeTruthy(),
+  );
   return utils;
 }
 const keyField = () => document.querySelector<HTMLInputElement>('[data-ai-key-field]');
@@ -93,11 +101,62 @@ describe('the key state', () => {
     await open();
     expect(screen.getByText(/encrypted when it is saved and is never shown again/)).toBeTruthy();
     expect(
-      screen.getByText(
-        /Ask runs on your team's own key: your team pays Anthropic for what it uses/,
-      ),
+      screen.getByText(/On your own key, your team pays Anthropic for what it uses/),
     ).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/is free|paid tier/i);
+  });
+});
+
+describe('which AI', () => {
+  it('offers Built-In AI, Included and chosen with no key, or Your Own Key', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ builtIn: true }));
+    await open();
+    const group = screen.getByRole('radiogroup', { name: 'Which AI' });
+    const builtIn = within(group).getByRole<HTMLInputElement>('radio', { name: /^Built-In AI/ });
+    expect(builtIn.checked).toBe(true);
+    expect(group.textContent).toContain('Included');
+    // Nothing to fill in on built-in AI: no provider, key or model.
+    expect(keyField()).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: 'Provider' })).toBeNull();
+    expect(document.querySelector('[data-ai-built-in-note]')).not.toBeNull();
+    fireEvent.click(within(group).getByRole('radio', { name: /^Your Own Key/ }));
+    expect(keyField()).not.toBeNull();
+    expect(screen.getByRole('radiogroup', { name: 'Provider' })).toBeTruthy();
+    fireEvent.click(within(group).getByRole('radio', { name: /^Built-In AI/ }));
+    expect(keyField()).toBeNull();
+  });
+
+  it('asks before going back to built-in AI with a key saved, and removes the key', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(
+      settings({ builtIn: true, hasKey: true, keyHint: '4f2a' }),
+    );
+    await open();
+    const group = screen.getByRole('radiogroup', { name: 'Which AI' });
+    expect(
+      within(group).getByRole<HTMLInputElement>('radio', { name: /^Your Own Key/ }).checked,
+    ).toBe(true);
+    api.apiRemoveKnowledgeAiKey.mockResolvedValue(settings({ builtIn: true }));
+    fireEvent.click(within(group).getByRole('radio', { name: /^Built-In AI/ }));
+    const confirm = screen.getByRole('dialog', { name: 'Use Built-In AI Instead?' });
+    fireEvent.click(within(confirm).getByRole('button', { name: /Use Built-In AI/ }));
+    await waitFor(() => expect(api.apiRemoveKnowledgeAiKey).toHaveBeenCalled());
+    await waitFor(() => expect(keyField()).toBeNull());
+  });
+
+  it('says built-in AI is not set up on a server without it, and a key is the way', async () => {
+    await open();
+    const group = screen.getByRole('radiogroup', { name: 'Which AI' });
+    expect(group.textContent).toContain('Not set up on this server.');
+    expect(
+      within(group).getByRole<HTMLInputElement>('radio', { name: /^Your Own Key/ }).checked,
+    ).toBe(true);
+  });
+
+  it('shows a Participant which AI is in use, with no controls', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ builtIn: true }));
+    await open('participate');
+    expect(screen.queryByRole('radiogroup', { name: 'Which AI' })).toBeNull();
+    expect(document.querySelector('[data-ai-source-name]')!.textContent).toBe('Built-In AI');
   });
 });
 
@@ -115,7 +174,7 @@ describe('the provider', () => {
     expect(group.querySelector('img')).toBeNull();
     // Provider, then the key, then the model.
     const headings = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
-    expect(headings).toEqual(['Provider', 'Claude API Key', 'Model']);
+    expect(headings).toEqual(['Which AI', 'Provider', 'Claude API Key', 'Model']);
     expect(keyField()!.placeholder).toBe('sk-ant-...');
   });
 

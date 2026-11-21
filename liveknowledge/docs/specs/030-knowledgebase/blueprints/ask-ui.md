@@ -68,7 +68,7 @@ footer, the modal guard, the way back).
 | the settings, read once    | `lib/knowledge-ask/ai-settings-store.ts` |
 | the words                  | `lib/knowledge-ask/ai-settings-words.ts` |
 | how a provider is named    | `lib/knowledge-ask/provider-words.ts`    |
-| the provider's two rows    | `components/ask/AiProviderPicker.tsx`    |
+| which AI, and the provider | `components/ask/AiProviderPicker.tsx`    |
 | whether the dialog is open | `lib/knowledge-ask/ai-settings-open.ts`  |
 | the session's slices       | `components/ask/useAskSession.ts`        |
 | the dialog and its host    | `components/ask/AiSettingsDialog.tsx`    |
@@ -97,7 +97,14 @@ settings)` takes a write's answer. It has no field a key could be put in.
   "Replace the Key", **Replace**. Remove asks in a `ConfirmDialog` ("Remove the Key?").
 - **Roles.** Without `manageAi` the field, Remove and the model's select are not drawn; the model shows as text and
   one line says only an Editor can change these (or, Offline, that there is no Ask).
-- **The provider** ([Search and Ask](../search-and-ask.md) "Providers"). The first section, **Provider**: a
+- **Which AI** ([Search and Ask](../search-and-ask.md) "Built-in AI"). The first section: a `radiogroup` of two rows
+  (`AiSourcePicker`, over the same `AiChoiceRows` the provider uses): **Built-In AI** with an "Included" pill, or,
+  when `GET ai` says `builtIn: false`, "Not set up on this server." and unavailable; and **Your Own Key**. In use is
+  Your Own Key when a key is saved or the server has no built-in AI, else Built-In AI. On Built-In AI the provider,
+  key and model sections are not drawn and `BUILT_IN_NOTE` says what it is. Choosing Built-In AI with a key saved
+  asks first ("Use Built-In AI Instead?", confirm **Use Built-In AI**) and removes the key. Without `manageAi` the
+  choice is its name as text (`data-ai-source-name`).
+- **The provider** ([Search and Ask](../search-and-ask.md) "Providers"). Shown on Your Own Key, **Provider**: a
   `radiogroup` of two bordered rows (`AiProviderPicker`), each a native radio (visually hidden; the row wears the
   focus ring), a generic mark (`ProviderSparkIcon`, `ProviderRingIcon`: Lucide's sparkle and circle-dot, never a
   company's logo) and the provider's name with one line under it. `picked` is the provider chosen here and not yet
@@ -113,11 +120,12 @@ provider, key)`).
   - The key's heading names the provider ("Claude API Key", "OpenAI API Key"), as do where to make a key and who
     the team pays (`providerWords`, `teamPaysNote`); a refusal is worded for the provider the key was typed for.
   - Without `manageAi` the provider is its name as text.
-- **Words.** "Your team's AI key" wherever it does not matter which provider it is (the no-key states of Ask, AI
-  Knowledge and Describe to Set Up, sign-in); the provider's name where a failure is the provider's own
+- **Words.** "Your team's AI key" wherever it does not matter which provider it is (the no-AI state of Ask, the
+  key note under AI Knowledge's Disagreements on a server with no built-in AI); "Uses built-in AI" or "Uses your
+  team's key" (`aiInUseLine`) under Ask's field and in Describe to Set Up; the provider's name where a failure is the provider's own
   (`askFailureWords(kind, { manageAi, provider })`: "OpenAI Did Not Accept the Key"). The provider comes from the
-  settings the view already read. No AI copy says liveknowledge is free or has no paid tier: only that it pays for
-  no model and the team pays its provider for what it uses.
+  settings the view already read. No AI copy says liveknowledge is free or has no paid tier: built-in AI is
+  "Included", with daily limits, and on its own key the team pays its provider for what it uses.
 - **Telemetry:** `UI·Opened·AiSettings`, `UI·Added·AiKey`, `UI·Removed·AiKey`, `UI·Changed·AiModel`,
   `UI·Changed·AiProvider`. No value.
 
@@ -185,14 +193,40 @@ console after a save, Remove with its question, the model, and the controls per 
   at most; the oldest is reset and dropped), so the view can unmount and mount again around it. `onAsked` sends
   `UI·Used·AskQuestion` and remembers the question; `onEnded` re-reads the AI settings after `ask_unavailable`.
 
+### Chats: kept, completed, deleted
+
+- **Where they live.** This browser's `localStorage`, under the key recent questions always used,
+  `liveknowledge:ask-recent:v1:<person>:<knowledgebase>` (`lib/knowledge-ask/recent-questions.ts`). A row is
+  `{ question, askedAt, id?, turns?, completedAt? }`: a row from before chats has no `id` (its id is `asked:<askedAt>`,
+  `chatIdOf`) and no turns, and pressing it asks the question again as new. Bounded: 50 chats and 1,500,000
+  characters at most (`withChatSaved` drops the oldest first, never the one just saved). A streaming turn is saved
+  as stopped with no text; the answer is saved when it ends.
+- **`recentQuestionsStore`** (`ask-session-store.ts`): `save(who, doc, id, turns, now)` on `onAsked` and `onEnded`,
+  `accept`, `reopen`, `remove`. The conversation has `chatId()` and `open(chatId, turns)`; `reset()` starts a new chat.
+- **Accept Answer** is on the latest turn that ended `done` with text, while the chat is not completed
+  (`AskAnswerCard` `onAccept`). It sets `completedAt`, sends `UI·Used·AskAccepted`, resets the conversation and
+  focuses the field. A completed chat opens read only: a success callout with **Reopen** stands where the field was.
+  Reopen clears `completedAt` and sends `UI·Used·AskReopened`.
+- **Completed Questions** (`RecentQuestions.tsx`, `data-ask-completed`): after the dated groups, a heading button with
+  `aria-expanded`, a chevron and the count, closed by default; completed chats newest accepted first. It sits in the
+  folded list on a phone the same way.
+- **Delete** is an icon button at each row's end (a `HoverCard`, "Delete"; on hover and focus, always on a coarse
+  pointer), named `Delete “<question>”`. A `ConfirmDialog` "Delete This Question?" names the question and says "This
+  cannot be undone."; confirm removes the row, sends `UI·Removed·AskChat` and, for the open chat, resets to a fresh
+  field. AI Knowledge's counts are the server's and stay.
+
 ### Sources
 
 `shown` is `{ turnId, lit }`: a pressed chip sets both; the lit card scrolls into view, takes the focus and wears a
 brand ring for `BLOCK_HIT_MS` (1,600 ms). `markedParts(text, question)` marks words of the passage that begin with
 one of the question's content words (three or more letters, not common, twelve at most; one regular expression of
-escaped words, linear in the passage). The last line is `pagePathText` (the page's ancestors from the tab list) and
-`trustText` (the verifier's name from the page's own `knowledge.verifiedBy` through `useKnowledgePeople`; a person
-the editor cannot name is left out). `openPassage` shows Pages as a history entry and calls `goToBlock`; a page that
+escaped words, linear in the passage). A card is the number chip (none on a passage found but not used) and the
+title; the breadcrumb (`pagePath`: the parents shorten, the page's own name always shows, `data-source-path`) and the
+headings each on a line of their own; the passage; then, above a hairline, the trust line (`sourceTrust`,
+`data-source-trust`): `TrustBadge` Verified (tick) or Review Due (amber), or a quiet slate "Never Verified" pill with
+no tick, then the date and "by <name>" as whole pieces that wrap rather than cut (the verifier's name from the page's
+own `knowledge.verifiedBy` through `useKnowledgePeople`; a person the editor cannot name is left out).
+**Numbering** is the server's (search-and-ask.md "Source numbers"): 1..n in the order first cited. `openPassage` shows Pages as a history entry and calls `goToBlock`; a page that
 has gone raises "That page is no longer in this knowledgebase."
 
 ### Pages made here
@@ -206,19 +240,22 @@ draft. Telemetry: `Tab·Created·FromAnswer` and `FromGap`.
 
 ### States, in the conversation's place
 
-| State             | When                                       | Shows                                                                                                                          |
-| ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| loading           | the settings are being read                | the room held, a `status` named "Loading Ask"                                                                                  |
-| could not be read | `GET ai` failed                            | an error callout, **Try Again**                                                                                                |
-| Offline           | `askOff === 'offline'`; no request is made | "No Ask in an Offline Knowledgebase", **Search the Pages**                                                                     |
-| signed out        | `askOff === 'signed-out'`                  | "Sign In to Ask", **Sign In**, **Search the Pages**                                                                            |
-| no key            | `hasKey` false                             | "Ask Needs Your Team's AI Key"; **Open AI Settings** for an Editor, "Ask an Editor to add one" otherwise; **Search the Pages** |
-| ready, no turns   |                                            | "No Questions Yet"                                                                                                             |
+| State             | When                                       | Shows                                                                                                                        |
+| ----------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| loading           | the settings are being read                | the room held, a `status` named "Loading Ask"                                                                                |
+| could not be read | `GET ai` failed                            | an error callout, **Try Again**                                                                                              |
+| Offline           | `askOff === 'offline'`; no request is made | "No Ask in an Offline Knowledgebase", **Search the Pages**                                                                   |
+| signed out        | `askOff === 'signed-out'`                  | "Sign In to Ask", **Sign In**, **Search the Pages**                                                                          |
+| no AI             | `hasKey` and `builtIn` both false          | "Built-In AI Is Not Set Up Here"; **Open AI Settings** for an Editor, "which an Editor adds" otherwise; **Search the Pages** |
+| ready, no turns   |                                            | "No Questions Yet"                                                                                                           |
 
 `askFailureWords(kind, { manageAi })` maps `bad-key`, `no-credit`, `rate-limited`, `overloaded`,
 `model-unavailable`, `refused`, `person-limit`, `knowledgebase-limit`, `question-too-long`, `no-question`,
-`ask_unavailable`, `sign_in_required`, `network` and anything else to a title, a line and a step (`ai-settings`,
-`ask-again`, `none`). The server's own `message` is never shown.
+`ask_unavailable`, `sign_in_required`, `network`, built-in AI's `built-in-unavailable`, `built-in-limit`,
+`built-in-knowledgebase-limit`, `built-in-failed` and anything else to a title, a line and a step (`ai-settings`,
+`ask-again`, `none`). On `provider: 'built-in'` a model's failure (`bad-key`, `overloaded`, `other`, ...) is "The
+Built-In AI Could Not Answer". The server's own `message` is never shown. Under the field, `aiInUseLine` adds "Uses
+built-in AI" or "Uses your team's key" (`data-ask-ai`).
 
 ### Share roles
 
@@ -226,7 +263,8 @@ draft. Telemetry: `Tab·Created·FromAnswer` and `FromGap`.
 | --------------------------------------------------------- | ------ | ----------- | ------ |
 | Ask, Stop, Copy Answer, helpful and not helpful (account) | yes    | yes         | yes    |
 | Save as Page, Draft a Page From What We Know              | yes    | no          | no     |
-| Open AI Settings from a failure or the no-key state       | yes    | no          | no     |
+| Open AI Settings from a failure or the no-AI state        | yes    | no          | no     |
+| Accept Answer, Reopen, Delete a chat (this browser)       | yes    | yes         | yes    |
 
 Tests, a role at a time: `components/ask/AskView.test.tsx` ("when this session cannot ask", "the parts the pages do
 not cover", "the answer footer", "a failure, in words with the next step").
@@ -249,7 +287,8 @@ not cover", "the answer footer", "a failure, in words with the next step").
   answer ends ("When it ends"). Formatting each finished block as it streams is not built.
 - **The draft's Ask call** spends one of the person's 20 questions and, when the pages still do not cover the
   question, counts it again as asked under AI Knowledge.
-- **A conversation is not kept across a reload**, and feedback goes nowhere but telemetry's count.
+- **Chats are kept in this browser only**: another browser or device does not see them. Feedback goes nowhere but
+  telemetry's count.
 - **Stop** ends the request from the browser; whether the Worker's model call ends with it depends on the request's
   signal reaching the room, which no test here holds.
 - **Focus order below 1,024px** follows the page: questions, conversation, Sources.

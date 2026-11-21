@@ -23,6 +23,7 @@ import { KnowledgeGapCard } from './KnowledgeGapCard';
 import { openPassage } from './open-passage';
 import { PagePickerDialog } from './PagePickerDialog';
 import { useDraftPage } from './useDraftPage';
+import { aiInUseLine } from '@/lib/knowledge-ask/ai-settings-words';
 import { useAiSettingsState, type AskSession } from './useAskSession';
 
 const QUESTION_BUBBLE =
@@ -36,7 +37,10 @@ export function AskConversationPane({
   activePageId,
   nameOf,
   now,
+  completed,
   onNew,
+  onAccept,
+  onReopen,
 }: {
   session: AskSession;
   conversation: AskConversation;
@@ -45,14 +49,20 @@ export function AskConversationPane({
   activePageId: string;
   nameOf: (id: string | undefined) => string | undefined;
   now: number;
+  /** The chat showing was accepted: it is read here, with Reopen in place of the field. */
+  completed: boolean;
   onNew: () => void;
+  onAccept: () => void;
+  onReopen: () => void;
 }) {
   const chrome = useEditorChromeStore();
   const toast = useToast();
   const { rights } = session;
   // Whose key the knowledgebase holds, for a failure that is the provider's own.
   const ai = useAiSettingsState(session.documentId);
-  const provider = ai.status === 'ready' ? ai.settings.provider : undefined;
+  const provider =
+    ai.status === 'ready' ? (ai.settings.hasKey ? ai.settings.provider : 'built-in') : undefined;
+  const aiLine = aiInUseLine(ai.status === 'ready' ? ai.settings : null);
   const last = turns[turns.length - 1];
   const streaming = last?.status === 'streaming';
 
@@ -166,6 +176,12 @@ export function AskConversationPane({
                     onCite={cite}
                     onSave={requestSave}
                     onGrow={turn.status === 'streaming' ? keepFoot : undefined}
+                    // Accept Answer is on the latest answer, once it has ended with one.
+                    onAccept={
+                      !completed && turn === last && turn.status === 'done' && turn.text
+                        ? onAccept
+                        : undefined
+                    }
                   />
                   {turn.status === 'done'
                     ? turn.gaps.map((gap) => (
@@ -191,7 +207,16 @@ export function AskConversationPane({
         </div>
         <div className="sticky bottom-0 bg-slate-50/95 px-4 pb-4 pt-2 backdrop-blur-sm dark:bg-slate-950/95 lg:static">
           <div className="mx-auto w-full max-w-3xl">
-            {conversation.isFull() && !streaming ? (
+            {completed ? (
+              <Callout
+                tone="success"
+                size="md"
+                role="status"
+                action={{ label: 'Reopen', onSelect: onReopen }}
+              >
+                You accepted this answer. Reopen the question to keep asking.
+              </Callout>
+            ) : conversation.isFull() && !streaming ? (
               <Callout
                 tone="info"
                 size="md"
@@ -214,6 +239,12 @@ export function AskConversationPane({
             )}
             <p className="mt-1.5 text-center text-xs text-slate-600 dark:text-slate-400">
               Answers come from this knowledgebase alone. Check the sources before you rely on one.
+              {aiLine ? (
+                <span data-ask-ai="" className="whitespace-nowrap">
+                  {' '}
+                  · {aiLine}
+                </span>
+              ) : null}
             </p>
           </div>
         </div>

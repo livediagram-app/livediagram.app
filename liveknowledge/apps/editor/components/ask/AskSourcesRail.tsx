@@ -9,7 +9,8 @@ import { parseKnowledgeFields } from '@liveknowledge/knowledge';
 import { CompactEmptyState } from '@liveknowledge/ui';
 import { markedParts } from '@/lib/knowledge-ask/answer-parts';
 import type { AskTurnView } from '@/lib/knowledge-ask/ask-conversation';
-import { pagePathText, trustText } from '@/lib/knowledge-ask/source-meta';
+import { pagePath, sourceTrust, type SourceTrust } from '@/lib/knowledge-ask/source-meta';
+import { TrustBadge } from '@/components/knowledge/TrustBadge';
 import { SourcesIcon } from './ask-icons';
 import { NUMBER_CHIP } from './CitationChip';
 
@@ -39,6 +40,61 @@ function Passage({ text, question }: { text: string; question: string }) {
           part.text
         ),
       )}
+    </span>
+  );
+}
+
+// Where the page sits, on its own line: the parents shorten first, the page's own name always shows; the headings
+// above the passage follow, on a line of their own.
+function Breadcrumb({
+  path,
+  headings,
+}: {
+  path: { parents: string[]; name: string };
+  headings: string;
+}) {
+  return (
+    <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-400" data-source-path="">
+      <span className="flex min-w-0 items-center gap-1">
+        {path.parents.length > 0 ? (
+          <>
+            <span className="min-w-0 truncate">{path.parents.join(' / ')}</span>
+            <span aria-hidden className="shrink-0 text-slate-400 dark:text-slate-600">
+              /
+            </span>
+          </>
+        ) : null}
+        <span className="max-w-full shrink-0 truncate font-medium text-slate-700 dark:text-slate-300">
+          {path.name}
+        </span>
+      </span>
+      {headings ? <span className="block truncate">{headings}</span> : null}
+    </span>
+  );
+}
+
+// The source's trust at a glance, in the page's own badges: Verified with its tick, Review Due amber, Never Verified
+// quiet with no tick. The words beside it wrap whole to a second line rather than cut a name.
+function SourceTrustLine({ trust }: { trust: SourceTrust }) {
+  return (
+    <span
+      data-source-trust={trust.mark}
+      className="mt-2.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 border-t border-slate-100 pt-2 text-xs leading-5 text-slate-600 dark:border-slate-800 dark:text-slate-400"
+    >
+      {trust.mark === 'never' ? (
+        <span className="inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          {trust.label}
+        </span>
+      ) : (
+        <span className="[&>span]:text-[12px]">
+          <TrustBadge mark={trust.mark} />
+        </span>
+      )}
+      {trust.pieces.map((piece) => (
+        <span key={piece} className="min-w-0">
+          {piece}
+        </span>
+      ))}
     </span>
   );
 }
@@ -89,30 +145,27 @@ function SourceCard({
         }`}
       >
         <span className="flex items-center gap-2">
-          <span aria-hidden className={NUMBER_CHIP}>
-            <span className="text-optical-centre">{source.number}</span>
-          </span>
-          <span className="sr-only">Source {source.number}:</span>
+          {stale ? null : (
+            <>
+              <span aria-hidden className={NUMBER_CHIP}>
+                <span className="text-optical-centre">{source.number}</span>
+              </span>
+              <span className="sr-only">Source {source.number}:</span>
+            </>
+          )}
           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
             {source.title || 'Untitled Page'}
           </span>
           {stale ? <span className={STALE_PILL}>Stale</span> : null}
         </span>
-        {headings ? (
-          <span className="mt-0.5 block truncate text-xs text-slate-600 dark:text-slate-400">
-            {headings}
-          </span>
-        ) : null}
+        <Breadcrumb path={pagePath(pages, source.tab, source.title)} headings={headings} />
         <Passage text={source.text} question={question} />
         {'reason' in source && source.reason ? (
           <span className="mt-1.5 block break-words text-[13px] leading-5 text-amber-900 dark:text-amber-200">
             {source.reason}
           </span>
         ) : null}
-        <span className="mt-2 block truncate text-xs text-slate-600 dark:text-slate-400">
-          {pagePathText(pages, source.tab, source.title)} ·{' '}
-          {trustText(source.trust, source.verifiedAt, verifier, now)}
-        </span>
+        <SourceTrustLine trust={sourceTrust(source.trust, source.verifiedAt, verifier, now)} />
       </button>
     </li>
   );

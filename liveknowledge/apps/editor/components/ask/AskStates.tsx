@@ -1,8 +1,8 @@
 'use client';
 
-// What the Ask view shows when this session cannot ask (docs/specs/030-knowledgebase/search-and-ask.md "Bring your
-// own key", "Share roles"): no key yet, nobody signed in, or a knowledgebase kept Offline. Each says why in plain
-// words and what to do next; search needs no key and is always one press away.
+// What the Ask view shows when this session cannot ask (docs/specs/030-knowledgebase/search-and-ask.md "When Ask is
+// off", "Share roles"): no AI here (no built-in AI on this server and no key), nobody signed in, or a knowledgebase
+// kept Offline. Each says why in plain words and what to do next; search needs no AI and is always one press away.
 import type { ReactNode } from 'react';
 import { Button, EmptyState, buttonClassName } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
@@ -52,7 +52,8 @@ function StateShell({ children, bare = false }: { children: ReactNode; bare?: bo
 
 const ACTIONS = 'flex flex-wrap items-center justify-center gap-2';
 
-export function AskNoKey({
+/** No key, and no built-in AI on this server (a fork without the binding): only the team's key can answer. */
+export function AskNoAi({
   manageAi,
   bare = false,
   before,
@@ -67,14 +68,14 @@ export function AskNoKey({
       <EmptyState
         compact={bare}
         icon={<KeyIcon />}
-        title="Ask Needs Your Team's AI Key"
+        title="Built-In AI Is Not Set Up Here"
         description={
           manageAi
-            ? "Ask runs on your team's own key: your team pays its provider for what it uses. Add your team's AI key, from Anthropic or OpenAI, and Ask answers from these pages. Search works without one."
-            : "Ask runs on your team's own AI key, which an Editor adds. Ask an Editor to add one. Search works without it."
+            ? "This server has no built-in AI. Add your team's AI key, from Anthropic or OpenAI, and Ask answers from these pages. Search works without one."
+            : "This server has no built-in AI, so Ask runs on your team's own key, which an Editor adds. Search works without it."
         }
       >
-        <div className={ACTIONS} data-ask-state="no-key">
+        <div className={ACTIONS} data-ask-state="no-ai">
           {manageAi ? (
             <Button
               variant="primary"
@@ -105,7 +106,7 @@ export function AskSignedOut({
         compact={bare}
         icon={<SignInIcon />}
         title="Sign In to Ask"
-        description="Ask spends this team's own AI key, so it is off for anyone who is not signed in, a share link's visitor included. Search works as it is."
+        description="Every answer runs on an AI with daily limits, so Ask is off for anyone who is not signed in, a share link's visitor included. Search works as it is."
       >
         <div className={ACTIONS} data-ask-state="signed-out">
           <a href={signInHref} className={buttonClassName({ variant: 'primary', size: 'sm' })}>

@@ -4,6 +4,7 @@ import {
   lucideArrowUp,
   lucideBookOpen,
   lucideCheck,
+  lucideChevronRight,
   lucideCircleCheck,
   lucideCircleDot,
   lucideCircleHelp,
@@ -16,6 +17,7 @@ import {
   lucideLogIn,
   lucideMessagesSquare,
   lucidePlus,
+  lucideRotateCcw,
   lucideSearch,
   lucideSettings,
   lucideSparkle,
@@ -23,6 +25,7 @@ import {
   lucideSquare,
   lucideThumbsDown,
   lucideThumbsUp,
+  lucideTrash2,
   lucideTriangleAlert,
   lucideWifi,
   lucideX,
@@ -45,9 +48,15 @@ export const WarningIcon = lucideGlyph(lucideTriangleAlert, 14);
 export const HelpfulIcon = lucideGlyph(lucideThumbsUp, 14);
 export const NotHelpfulIcon = lucideGlyph(lucideThumbsDown, 14);
 export const CopyIcon = lucideGlyph(lucideCopy, 14);
+export const AcceptIcon = lucideGlyph(lucideCircleCheck, 14);
+export const ReopenIcon = lucideGlyph(lucideRotateCcw, 14);
+export const DeleteIcon = lucideGlyph(lucideTrash2, 14);
+export const ChevronIcon = lucideGlyph(lucideChevronRight, 14);
 export const CopiedIcon = lucideGlyph(lucideCheck, 14);
 export const SavePageIcon = lucideGlyph(lucideFilePlus, 14);
 export const KeyIcon = lucideGlyph(lucideKey, 16);
+// Built-in AI in AI Settings: the sparkles of AI Knowledge, liveknowledge's own.
+export const BuiltInAiIcon = lucideGlyph(lucideSparkles, 16);
 // Generic marks for the two providers of AI Settings: never a company's logo.
 export const ProviderSparkIcon = lucideGlyph(lucideSparkle, 16);
 export const ProviderRingIcon = lucideGlyph(lucideCircleDot, 16);

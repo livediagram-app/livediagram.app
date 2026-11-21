@@ -41,15 +41,24 @@ async function send(page: Page, question: string): Promise<void> {
   await field.press('Enter');
 }
 
-test('with no key, Ask says so and offers AI Settings', async ({ page, pageErrors }) => {
+test('with no key, Ask answers on built-in AI, then Accept Answer files the chat', async ({
+  page,
+  pageErrors,
+}) => {
   await signedInKnowledgebase(page);
   await openView(page, 'Ask');
-  await expect(
-    ask(page).getByRole('heading', { name: "Ask Needs Your Team's AI Key" }),
-  ).toBeVisible();
-  await expect(ask(page).getByRole('textbox')).toHaveCount(0);
-  await ask(page).getByRole('button', { name: 'Open AI Settings' }).click();
-  await expect(page.getByRole('dialog', { name: 'AI Settings' })).toBeVisible();
+  await expect(ask(page).locator('[data-ask-ai]')).toContainText('Uses built-in AI');
+  await send(page, 'What is this knowledgebase for?');
+  // No passages match a new knowledgebase: the stand-in answers it as a gap, and the chat is answered.
+  const answer = ask(page).getByRole('article', { name: 'Answer' });
+  await expect(answer).toHaveAttribute('aria-busy', 'false');
+  await ask(page).getByRole('button', { name: 'Accept Answer' }).click();
+  await expect(ask(page).getByRole('heading', { name: 'No Questions Yet' })).toBeVisible();
+  const completed = page.getByRole('region', { name: 'Completed Questions' });
+  await completed.getByRole('button', { name: /Completed Questions/ }).click();
+  await completed.getByRole('button', { name: 'What is this knowledgebase for?' }).click();
+  await ask(page).getByRole('button', { name: 'Reopen' }).click();
+  await expect(ask(page).getByRole('textbox')).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 

@@ -44,7 +44,7 @@ describe('how the two providers are named', () => {
 
   it('says who the team pays, and never that liveknowledge is free or has no paid tier', () => {
     expect(teamPaysNote('anthropic')).toBe(
-      "Ask runs on your team's own key: your team pays Anthropic for what it uses.",
+      'On your own key, your team pays Anthropic for what it uses.',
     );
     expect(teamPaysNote('openai')).toContain('pays OpenAI');
     for (const note of [teamPaysNote('anthropic'), teamPaysNote('openai'), TEAM_PAYS_ANY_NOTE])
@@ -64,15 +64,36 @@ describe('a failure names the provider where it is the provider own', () => {
     expect(askFailureWords(kind, { manageAi: true }).title).toBe(claude.title);
   });
 
-  it('says "your team\'s AI key" where the provider does not matter', () => {
+  it('says "your team\'s AI key" where the provider does not matter, and built-in AI in its own words', () => {
     for (const provider of ['anthropic', 'openai'] as const) {
-      const words = askFailureWords('sign_in_required', { manageAi: false, provider });
+      const words = askFailureWords('built-in-limit', { manageAi: true, provider });
       expect(words.text).toContain("your team's AI key");
       expect(words.title + words.text).not.toMatch(/Claude|OpenAI/);
     }
     expect(askFailureWords('no-credit', { manageAi: true, provider: 'openai' }).text).toContain(
       'the OpenAI platform',
     );
+    // On built-in AI a model's failure is that it could not answer, whatever the kind.
+    for (const kind of ['other', 'overloaded', 'built-in-failed'])
+      expect(askFailureWords(kind, { manageAi: true, provider: 'built-in' })).toEqual({
+        title: 'The Built-In AI Could Not Answer',
+        text: 'Nothing is wrong with the question. Ask again in a moment.',
+        step: 'ask-again',
+      });
+    expect(askFailureWords('built-in-unavailable', { manageAi: false }).step).toBe('none');
+    expect(askFailureWords('built-in-unavailable', { manageAi: true }).title).toBe(
+      'Built-In AI Is Not Set Up Here',
+    );
+    expect(askFailureWords('built-in-limit', { manageAi: false }).title).toBe(
+      "You Have Used Today's 30 Built-In Questions",
+    );
+    expect(askFailureWords('built-in-knowledgebase-limit', { manageAi: false }).text).toContain(
+      '100 questions',
+    );
+    // A refusal kind is the route's, whichever AI: built-in AI's limit is not a model failure.
+    expect(
+      askFailureWords('person-limit', { manageAi: true, provider: 'built-in' }).title,
+    ).toContain('This Hour');
   });
 
   it('words a refused write for the provider the key was typed for', () => {

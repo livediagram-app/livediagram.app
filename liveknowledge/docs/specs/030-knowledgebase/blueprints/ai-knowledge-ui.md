@@ -87,9 +87,11 @@ filter)` orders the rows: conflicts by `foundAt` newest first, suggestions by `c
 | Most Read          | `reads.mostRead`                        | "No Reads Yet"                                                                                                        | none (a row opens its page)                                                                                 |
 | What an Agent Sees | the read, or nothing                    | a made-up page                                                                                                        | none                                                                                                        |
 
-The key: the Disagreements filter alone carries a small `role="note"` line, "Finding pages that disagree uses your
-team's AI key." with **Open AI Settings** (a link-styled button) for `manageAi`, and "Ask an Editor to add one." for
-anyone else. Nothing else on the dashboard mentions a key.
+The key: built-in AI checks for conflicts with no key (`overview.hasAi`), so the dashboard says nothing of a key.
+Only on a server with no built-in AI and no key (`hasAi` false) does the Disagreements filter carry a small
+`role="note"` line, "This server has no built-in AI, so finding pages that disagree needs your team's AI key." with
+**Open AI Settings** (a link-styled button) for `manageAi`, and "Ask an Editor to add one." for anyone else. Draft a
+Page from a gap is offered whenever `hasAi`.
 
 ## The rows
 

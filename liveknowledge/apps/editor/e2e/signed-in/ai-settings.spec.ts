@@ -69,15 +69,14 @@ test('a saved key shows only its last four characters, is kept nowhere on the pa
   ).toHaveText(`Key Ending ${KEY.slice(-4)}`);
   expect(await heldByThePage(page)).not.toContain(KEY);
 
-  // Remove asks once, then the knowledgebase has no key.
+  // Remove asks once, then the knowledgebase has no key and is back on built-in AI.
   await again.getByRole('button', { name: 'Remove', exact: true }).click();
   const confirm = page.getByRole('dialog', { name: 'Remove the Key?' });
   await confirm.getByRole('button', { name: /^Remove/ }).click();
-  await expect(
-    again.getByRole('region', { name: 'Claude API Key' }).getByRole('status'),
-  ).toHaveText('No Key Yet');
+  await expect(again.getByRole('radio', { name: /^Built-In AI/ })).toBeChecked();
+  await expect(again.getByRole('region', { name: 'Claude API Key' })).toHaveCount(0);
   await again.getByRole('button', { name: 'Done' }).click();
-  await expect(page.getByRole('heading', { name: "Ask Needs Your Team's AI Key" })).toBeVisible();
+  await expect(page.locator('[data-ask-ai]')).toContainText('Uses built-in AI');
   expectNoPageErrors(pageErrors);
 });
 

@@ -95,7 +95,7 @@ const KIND: Record<
 };
 
 export type NeedsAttentionProps = {
-  overview: Pick<KnowledgeOverviewResponse, 'conflicts' | 'suggestions' | 'questions' | 'hasKey'>;
+  overview: Pick<KnowledgeOverviewResponse, 'conflicts' | 'suggestions' | 'questions' | 'hasAi'>;
   filter: AttentionFilter;
   onFilter: (filter: AttentionFilter) => void;
   canResolve: boolean;
@@ -140,7 +140,7 @@ export function NeedsAttention(props: NeedsAttentionProps) {
         />
       }
     >
-      {filter === 'conflicts' && !overview.hasKey ? (
+      {filter === 'conflicts' && !overview.hasAi ? (
         <ConflictKeyNote
           canManageAi={props.canManageAi}
           onOpenAiSettings={props.onOpenAiSettings}

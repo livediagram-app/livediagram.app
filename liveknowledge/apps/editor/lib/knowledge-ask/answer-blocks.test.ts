@@ -100,7 +100,9 @@ describe('what an answer can never do', () => {
     );
     const inline = (blocks[0] as Extract<AnswerBlock, { kind: 'paragraph' }>).inline;
     expect(inline.some((part) => 'href' in part)).toBe(false);
-    expect(text(inline)).toBe('docs (https://example.com/a?b=1) run data mail rel https://example.com/x');
+    expect(text(inline)).toBe(
+      'docs (https://example.com/a?b=1) run data mail rel https://example.com/x',
+    );
     expect(text(inline)).not.toContain('javascript:');
   });
 

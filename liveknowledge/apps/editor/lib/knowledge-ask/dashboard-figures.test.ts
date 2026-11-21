@@ -37,6 +37,7 @@ const base: KnowledgeOverviewResponse = {
   health: { verified: 199, reviewDue: 0, neverVerified: 1, total: 200 },
   reviewEvery: 90,
   hasKey: true,
+  hasAi: true,
   reviewEmails: { available: false },
   reads: { days: [], mostRead: [] },
 };

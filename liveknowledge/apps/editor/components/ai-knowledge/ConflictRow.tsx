@@ -127,8 +127,8 @@ export function ConflictRow({
   );
 }
 
-/** While the conflict check needs a key: one quiet line under the Disagreements filter, never a blocker (owner,
- *  2026-11-21: built-in AI is coming for a knowledgebase without one). */
+/** Where no AI can check (no key, and no built-in AI on this server): one quiet line under the Disagreements
+ *  filter, never a blocker. With built-in AI there is no line at all (search-and-ask.md "Built-in AI"). */
 export function ConflictKeyNote({
   canManageAi,
   onOpenAiSettings,
@@ -142,7 +142,8 @@ export function ConflictKeyNote({
       className={`mb-3 flex flex-wrap items-center gap-x-2 text-xs leading-5 ${AI_MUTED}`}
     >
       <span>
-        Finding pages that disagree uses your team&apos;s AI key.
+        This server has no built-in AI, so finding pages that disagree needs your team&apos;s AI
+        key.
         {canManageAi ? '' : ' Ask an Editor to add one.'}
       </span>
       {canManageAi ? (

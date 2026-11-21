@@ -72,6 +72,7 @@ const settings = (over: Partial<KnowledgeAiSettings> = {}): KnowledgeAiSettings 
     { id: 'openai', label: 'OpenAI', keyPrefix: 'sk-' },
   ],
   hasKey: true,
+  builtIn: true,
   keyHint: '4f2a',
   model: 'claude-fable-5-2',
   models: [{ id: 'claude-fable-5-2', label: 'Claude Fable 5.2' }],
@@ -98,6 +99,7 @@ const done = (
   text,
   sources: [],
   notUsed: [],
+  provider: 'anthropic',
   gaps: [],
   model: 'claude-fable-5-2',
   ...over,
@@ -144,13 +146,13 @@ const answer = async (call: Call, outcome: AskOutcome) => {
 };
 
 describe('when this session cannot ask', () => {
-  it.each(ROLES)('with no key, as %s', async (role) => {
-    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
+  it.each(ROLES)('with no key and no built-in AI on this server, as %s', async (role) => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '', builtIn: false }));
     await open(role);
-    expect(screen.getByText("Ask Needs Your Team's AI Key")).toBeTruthy();
+    expect(screen.getByText('Built-In AI Is Not Set Up Here')).toBeTruthy();
     const settingsButton = screen.queryByRole('button', { name: 'Open AI Settings' });
     expect(settingsButton !== null).toBe(role === 'edit');
-    if (role !== 'edit') expect(screen.getByText(/Ask an Editor to add one/)).toBeTruthy();
+    if (role !== 'edit') expect(screen.getByText(/which an Editor adds/)).toBeTruthy();
     expect(screen.queryByRole('textbox')).toBeNull();
     // Search needs no key.
     fireEvent.click(
@@ -161,8 +163,20 @@ describe('when this session cannot ask', () => {
     expect(knowledgeSearch.isOpen()).toBe(true);
   });
 
-  it('opens AI Settings from the no-key state', async () => {
-    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false }));
+  it('asks on built-in AI with no key, and says so under the field', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
+    await open('view');
+    expect(screen.getByRole('textbox')).toBeTruthy();
+    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain('Uses built-in AI');
+    cleanup();
+    api.apiKnowledgeAi.mockResolvedValue(settings());
+    aiSettingsStore.reset();
+    await open('view');
+    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain("Uses your team's key");
+  });
+
+  it('opens AI Settings from the no-AI state', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, builtIn: false }));
     const Open = () => <output data-testid="open">{String(useAiSettingsOpen())}</output>;
     renderInEditor(
       <>
@@ -240,10 +254,16 @@ describe('a question and its answer', () => {
     );
     const rail = within(screen.getByRole('complementary', { name: 'Sources' }));
     expect(rail.getAllByRole('button')).toHaveLength(2);
-    expect(rail.getByText(/Release Process · Verified 8 Nov/)).toBeTruthy();
-    expect(
-      rail.getByText('Release Process / Hotfixes · Review Due, Last Verified 8 Nov'),
-    ).toBeTruthy();
+    // Trust at a glance, in the page's own badges; the path on its own line.
+    const verified = document.querySelector('[data-source="1"] [data-source-trust]')!;
+    expect(verified.getAttribute('data-source-trust')).toBe('verified');
+    expect(verified.textContent).toBe('Verified8 Nov');
+    const due = document.querySelector('[data-source="2"] [data-source-trust]')!;
+    expect(due.getAttribute('data-source-trust')).toBe('review-due');
+    expect(due.textContent).toBe('Review DueLast verified 8 Nov');
+    expect(document.querySelector('[data-source="2"] [data-source-path]')!.textContent).toBe(
+      'Release Process/Hotfixes',
+    );
     // The matched word is marked by the page.
     expect([...document.querySelectorAll('mark')].map((m) => m.textContent)).toContain('release');
     expect(field().disabled).toBe(false);
@@ -279,7 +299,7 @@ describe('a question and its answer', () => {
     );
     // The newest answer's sources show.
     const rail = () => within(screen.getByRole('complementary', { name: 'Sources' }));
-    expect(rail().getByText('Hotfixes')).toBeTruthy();
+    expect(rail().getAllByText('Hotfixes').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('button', { name: 'Source 1: Release Process' }));
     const lit = document.querySelector('[data-source="1"]')!;
     expect(lit.hasAttribute('data-lit')).toBe(true);
@@ -323,6 +343,23 @@ describe('a question and its answer', () => {
     const stale = document.querySelector('[data-source="2"]')!;
     expect(stale.textContent).toContain('Stale');
     expect(stale.textContent).toContain('It says Fridays');
+    // A set-aside passage has no number of its own, so none reads as a citation.
+    expect(stale.querySelector('.sr-only')).toBeNull();
+    expect(stale.textContent).not.toMatch(/^2/);
+  });
+
+  it('says Never Verified quietly, with no tick, and with no tick', async () => {
+    await open();
+    await answer(
+      ask('Q?'),
+      done('Yes [1].', {
+        sources: [source(1, { trust: 'never-verified', verifiedAt: undefined, tab: 'p2' })],
+      }),
+    );
+    const trust = document.querySelector('[data-source="1"] [data-source-trust]')!;
+    expect(trust.getAttribute('data-source-trust')).toBe('never');
+    expect(trust.textContent).toBe('Never Verified');
+    expect(trust.querySelector('svg')).toBeNull();
   });
 
   it('keeps the conversation when the view is left and shown again', async () => {
@@ -568,27 +605,117 @@ describe('a failure, in words with the next step', () => {
 
   it('reads the settings again when the key has gone', async () => {
     await open();
-    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
+    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '', builtIn: false }));
     await answer(ask('Q?'), { type: 'error', kind: 'ask_unavailable', message: 'no key' });
-    await screen.findByText("Ask Needs Your Team's AI Key");
+    await screen.findByText('Built-In AI Is Not Set Up Here');
   });
 });
 
-describe('recent questions', () => {
-  it('keeps what was asked in this browser, for this person and knowledgebase, and asks it again as new', async () => {
+describe('chats: recent, completed and deleted', () => {
+  const mine = () => within(screen.getByRole('complementary', { name: 'Your Questions' }));
+  const stored = () =>
+    JSON.parse(localStorage.getItem(recentQuestionsKey('me', 'd1')) ?? '[]') as {
+      question: string;
+      completedAt?: number;
+      turns?: { text: string }[];
+    }[];
+
+  it('keeps each chat with its answers in this browser, and opens it again after a reload', async () => {
     await open();
-    await answer(ask('When do we release?'), done('On Thursdays.'));
-    const stored = JSON.parse(localStorage.getItem(recentQuestionsKey('me', 'd1'))!) as unknown[];
-    expect(stored).toHaveLength(1);
-    expect(JSON.stringify(stored)).not.toContain('On Thursdays');
-    const mine = within(screen.getByRole('complementary', { name: 'Your Questions' }));
-    expect(mine.getByRole('region', { name: 'Today' })).toBeTruthy();
-    fireEvent.click(mine.getByRole('button', { name: 'When do we release?' }));
-    expect(wire.calls).toHaveLength(2);
-    expect(wire.calls[1]!.request).toEqual({ question: 'When do we release?' });
-    expect(screen.queryByText('On Thursdays.')).toBeNull();
-    expect(track).toHaveBeenCalledWith('UI', 'Used', 'AskQuestion');
+    await answer(ask('When do we release?'), done('On Thursdays [1].', { sources: [source(1)] }));
+    await answer(ask('And hotfixes?'), done('Any day.'));
+    expect(stored()).toHaveLength(1);
+    expect(stored()[0]!.question).toBe('When do we release?');
+    expect(stored()[0]!.turns!.map((t) => t.text)).toEqual(['On Thursdays [1].', 'Any day.']);
+    expect(mine().getByRole('region', { name: 'Today' })).toBeTruthy();
     expect(JSON.stringify(vi.mocked(track).mock.calls)).not.toContain('release');
+    // A reload: the tab's conversation is gone, the chat is not.
+    cleanup();
+    resetAskSession();
+    await open();
+    expect(screen.getByText('No Questions Yet')).toBeTruthy();
+    fireEvent.click(mine().getByRole('button', { name: 'When do we release?' }));
+    expect(wire.calls).toHaveLength(2);
+    expect(screen.getByText('Any day.')).toBeTruthy();
+    expect(
+      mine().getByRole('button', { name: 'When do we release?' }).getAttribute('aria-current'),
+    ).toBe('true');
+    // Continued: the follow-up carries the kept turns.
+    await answer(ask('Who approves?'), done('Nobody wrote it down.'));
+    expect(wire.calls[2]!.request.turns).toHaveLength(2);
+    expect(stored()[0]!.turns).toHaveLength(3);
+  });
+
+  it('asks a question kept before chats again, as new', async () => {
+    localStorage.setItem(
+      recentQuestionsKey('me', 'd1'),
+      JSON.stringify([{ question: 'Old question?', askedAt: Date.now() }]),
+    );
+    await open();
+    fireEvent.click(mine().getByRole('button', { name: 'Old question?' }));
+    expect(wire.calls[0]!.request).toEqual({ question: 'Old question?' });
+  });
+
+  it('accepts an answer into a closed Completed Questions group, to read and reopen', async () => {
+    await open();
+    await answer(ask('One?'), done('First.'));
+    await answer(ask('Two?'), done('Second.'));
+    // Only the latest answer offers it.
+    const accepts = () => screen.queryAllByRole('button', { name: 'Accept Answer' });
+    expect(accepts()).toHaveLength(1);
+    expect(
+      screen.getAllByRole('article', { name: 'Answer' })[1]!.querySelector('[data-ask-accept]'),
+    ).not.toBeNull();
+    fireEvent.click(accepts()[0]!);
+    expect(track).toHaveBeenCalledWith('UI', 'Used', 'AskAccepted');
+    expect(screen.getByText('No Questions Yet')).toBeTruthy();
+    expect(mine().queryByRole('region', { name: 'Today' })).toBeNull();
+    const group = within(mine().getByRole('region', { name: 'Completed Questions' }));
+    const toggle = group.getByRole('button', { name: /Completed Questions/ });
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.textContent).toContain('1');
+    expect(group.queryByRole('button', { name: 'One?' })).toBeNull();
+    expect(stored()[0]!.completedAt).toBeTypeOf('number');
+    fireEvent.click(toggle);
+    fireEvent.click(group.getByRole('button', { name: 'One?' }));
+    // Read, with Reopen where the field was, and no Accept Answer.
+    expect(screen.getByText('Second.')).toBeTruthy();
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(accepts()).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Reopen' }));
+    expect(track).toHaveBeenCalledWith('UI', 'Used', 'AskReopened');
+    expect(screen.getByRole('textbox')).toBeTruthy();
+    expect(mine().getByRole('region', { name: 'Today' })).toBeTruthy();
+    expect(mine().queryByRole('region', { name: 'Completed Questions' })).toBeNull();
+    expect(accepts()).toHaveLength(1);
+  });
+
+  it('offers no Accept Answer before an answer has ended with one', async () => {
+    await open();
+    const call = ask('Q?');
+    expect(screen.queryByRole('button', { name: 'Accept Answer' })).toBeNull();
+    await answer(call, { type: 'error', kind: 'network', message: 'x' });
+    expect(screen.queryByRole('button', { name: 'Accept Answer' })).toBeNull();
+  });
+
+  it('deletes a chat after asking, naming it, and the open one gives way to a fresh field', async () => {
+    await open();
+    await answer(ask('Keep me?'), done('Kept.'));
+    fireEvent.click(screen.getByRole('button', { name: 'New Question' }));
+    await answer(ask('Delete me?'), done('Going.'));
+    fireEvent.click(mine().getByRole('button', { name: 'Delete “Delete me?”' }));
+    const confirm = screen.getByRole('dialog', { name: 'Delete This Question?' });
+    expect(confirm.textContent).toContain('“Delete me?”');
+    expect(confirm.textContent).toContain('This cannot be undone.');
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Delete' }));
+    expect(track).toHaveBeenCalledWith('UI', 'Removed', 'AskChat');
+    expect(mine().queryByRole('button', { name: 'Delete me?' })).toBeNull();
+    expect(stored().map((row) => row.question)).toEqual(['Keep me?']);
+    expect(screen.getByText('No Questions Yet')).toBeTruthy();
+    // Cancel keeps it.
+    fireEvent.click(mine().getByRole('button', { name: 'Delete “Keep me?”' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(stored()).toHaveLength(1);
   });
 
   it('starts a new question from New Question', async () => {

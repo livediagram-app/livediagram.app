@@ -295,6 +295,17 @@ in memory what the room's `questions` table groups in SQL.
    `cited` (`{ number, passageId }`, in the order first cited), `notUsed` (with `reason`), `gaps` (one line each, at
    most `ASK_MAX_GAPS`, 5, of `ASK_MAX_GAP_CHARS`, 300). A reply that ignores the form is read as an answer with no
    citations, never refused.
+6. **Numbering.** The stream and `parseAskAnswer` share one `CitationOrder`: the first passage the answer cites is
+   `[1]`, the next new one `[2]`, in order, whatever numbers were sent (a comma list `[4, 2]` is renumbered piece by
+   piece; a marker for a passage not sent is dropped). A partial marker at a piece's end is held back
+   (`/[ \t]*(?:\[[\d,\s]{0,40})?$/`) until it is known, so a streamed `[1` never shows as the sent number. `cited`
+   is `{ number, sent, passageId }`; `notUsed` passages are numbered after the cited ones, and the client shows them
+   with no number. The route sends sources by `sent` and answers them by `number`.
+7. **On built-in AI** the same request is streamed through `callModel({ provider: 'built-in', ai })`; the route
+   (`knowledge-ask-route.ts`) checks the knowledgebase's built-in day (`ask:built-in`, 100) first, then spends the
+   person's account count (`~ask-built-in:<account>`, 30, through `spendSetupDraft`), then bumps; a counter it cannot
+   reach refuses (`503 built-in-failed`), never lifts. No binding: `503 built-in-unavailable`; at a cap `429
+built-in-limit` or `built-in-knowledgebase-limit`. The done event carries `provider`.
 
 ## The Claude API
 
@@ -359,6 +370,19 @@ Derived from [Search and Ask](../search-and-ask.md) "Providers". Built in the pa
   provider's own as that provider's default, so a request never names the other provider's model.
 - **Keys are parameters.** Nothing in the package reads an environment; the key is in one header of one request
   (`x-api-key` for Claude, `Authorization: Bearer` for OpenAI) and nowhere else.
+- **Built-in AI is the third provider** ([Search and Ask](../search-and-ask.md) "Built-in AI"). `ModelCaller` is
+  `{ provider: 'built-in', ai }` or `{ provider: KeyProviderId, fetch, apiKey, model }`; `callModel` hands the first
+  to `callBuiltIn` (`built-in-client.ts`): `builtInInput(request)` (the system prompt first, then the messages,
+  `max_tokens` at most `BUILT_IN_MAX_TOKENS` 2,000, temperature 0.2, `stream: true`, thinking off), the binding's
+  event stream read as `{ response }` or chat-completion pieces through to `[DONE]` (or one object, read by
+  `builtInReplyText`), bounded by `BUILT_IN_TIMEOUT_MS` (60 s) and the caller's signal; after either, what arrives is
+  dropped. Every failure is `ModelCallError('built-in', 'other')` with `BUILT_IN_FAILED_WORDS`, never the binding's
+  own words. `BUILT_IN_MODEL` is `@cf/google/gemma-4-26b-a4b-it` (`SETUP_BUILT_IN_MODEL` is the same constant).
+  `KeyProviderId` is `anthropic | openai`; `ModelProviderId` adds `built-in`; `isModelProviderId` accepts only a key
+  provider, so a stored row can never name built-in AI.
+- **Built-in limits** (`built-in-limits.ts`): `ASK_BUILT_IN_PER_PERSON_PER_DAY` 30 (per account, every
+  knowledgebase), `ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY` 100 (`ASK_BUILT_IN_SCOPE` `ask:built-in` in
+  `usage_counters`), `CONFLICT_BUILT_IN_CHECKS_PER_DAY` 20.
 
 ### The api's door
 
@@ -507,9 +531,10 @@ reply still yields its whole pages (step 4). Raise `SETUP_MAX_TOKENS` (and the s
 
 ## Conflicts
 
-1. `conflictCheckRefusal({ hasKey, checksToday, lastCheckedAt, now })`: `no-key`, `checked-recently` (under
-   `CONFLICT_PAGE_INTERVAL_MS`, 10 minutes, since the page's last check), `daily-limit` (`CONFLICT_CHECKS_PER_DAY`,
-   50), or `undefined`.
+1. `conflictCheckRefusal({ hasAi, checksToday, perDay?, lastCheckedAt, now })`: `no-ai` (no key and no built-in
+   AI), `checked-recently` (under `CONFLICT_PAGE_INTERVAL_MS`, 10 minutes, since the page's last check),
+   `daily-limit` (`perDay`: `CONFLICT_CHECKS_PER_DAY`, 50, on a key; `CONFLICT_BUILT_IN_CHECKS_PER_DAY`, 20, on
+   built-in AI), or `undefined`. A stored key that does not open is refused, never checked on built-in AI.
 2. `conflictProbes(before, after)`: the passages of the save whose text hash is new (`before` is the page's rows as
    `{ id, textHash }`, read before the index is replaced), of at least 40 characters, longest first, at most
    `CONFLICT_MAX_PROBES` (5). When a page is verified with nothing changed, an empty `before` probes its longest five.

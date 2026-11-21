@@ -5,7 +5,7 @@
 // is formatted once it has ended (AnswerBody), from text and elements made here, never as HTML. Memoised on its turn, so an earlier answer is not drawn again when
 // a later one arrives.
 import { memo, useMemo, useState } from 'react';
-import type { KnowledgeAiProvider } from '@liveknowledge/api-schema';
+import type { KnowledgeSetupProvider } from '@liveknowledge/api-schema';
 import { Button, HoverCard } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { REVIEW_DUE_PILL, VERIFIED_PILL } from '@/components/knowledge/TrustBadge';
@@ -16,6 +16,7 @@ import { answerTrust } from '@/lib/knowledge-ask/ask-trust';
 import { track } from '@/lib/telemetry';
 import { openAiSettingsFrom } from './AiSettingsButton';
 import {
+  AcceptIcon,
   CopiedIcon,
   CopyIcon,
   HelpfulIcon,
@@ -43,13 +44,15 @@ export type AskAnswerCardProps = {
   turn: AskTurnView;
   conversation: AskConversation;
   manageAi: boolean;
-  /** Whose key the knowledgebase holds: a failure of the provider's own names it. */
-  provider?: KnowledgeAiProvider | undefined;
+  /** Which AI answers: a failure of the provider's own names it, built-in AI's says so. */
+  provider?: KnowledgeSetupProvider | undefined;
   // Save as Page is an Editor's.
   canSave: boolean;
   onCite: (turnId: string, number: number) => void;
   onSave: (turnId: string) => void;
   onGrow?: (() => void) | undefined;
+  /** Accept Answer, on the latest answer of a chat not yet accepted. */
+  onAccept?: (() => void) | undefined;
 };
 
 function AnswerText({ turn, onCite }: { turn: AskTurnView; onCite: AskAnswerCardProps['onCite'] }) {
@@ -84,7 +87,7 @@ function TrustLine({ turn }: { turn: AskTurnView }) {
   );
 }
 
-function AnswerFooter({ turn, conversation, canSave, onSave }: AskAnswerCardProps) {
+function AnswerFooter({ turn, conversation, canSave, onSave, onAccept }: AskAnswerCardProps) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -104,6 +107,23 @@ function AnswerFooter({ turn, conversation, canSave, onSave }: AskAnswerCardProp
   };
   return (
     <div className="mt-3 flex flex-wrap items-center gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
+      {onAccept ? (
+        <HoverCard
+          title="Accept Answer"
+          description="Moves this question to Completed Questions, where you can read it again or reopen it."
+        >
+          <Button
+            variant="secondary"
+            size="xs"
+            onClick={onAccept}
+            data-ask-accept=""
+            className={`${FOOT_BUTTON} mr-1 !px-2.5 text-emerald-800 dark:text-emerald-200`}
+          >
+            <AcceptIcon />
+            Accept Answer
+          </Button>
+        </HoverCard>
+      ) : null}
       <HoverCard title="Helpful" description="This answered the question.">
         <Button
           variant="ghost"

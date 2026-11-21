@@ -1,9 +1,9 @@
 'use client';
 
 // Draft a Page (docs/specs/030-knowledgebase/search-and-ask.md "It does not guess", ai-knowledge.md "Questions nobody
-// could answer"): a page titled from the question whose first line is "Draft, Not Verified". With a key it is drafted
-// by one more Ask call over the nearest passages; without one, or when that call fails, it holds the question as its
-// first heading. An Editor's: without `makePages` nothing here runs. The same for an answer's Knowledge Gap card and
+// could answer"): a page titled from the question whose first line is "Draft, Not Verified". It is drafted by one more
+// Ask call over the nearest passages, on the team's key or built-in AI; where no AI answers, or that call fails, it
+// holds the question as its first heading. An Editor's: without `makePages` nothing here runs. The same for an answer's Knowledge Gap card and
 // an unanswered question's row.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -16,7 +16,8 @@ import type { AskSession } from './useAskSession';
 
 export function useDraftPage(
   session: AskSession,
-  hasKey: boolean,
+  /** Whether any AI answers here: the team's key, or built-in AI. */
+  hasAi: boolean,
 ): {
   /** The question a page is being drafted for now. */
   drafting: string | null;
@@ -39,7 +40,7 @@ export function useDraftPage(
       setDrafting(question);
       try {
         const outcome =
-          hasKey && rights.askOff === null
+          hasAi && rights.askOff === null
             ? await apiAskKnowledge(who, documentId, { question }, { signal: abort.signal })
             : null;
         const made = draftPageForQuestion(chrome.get(), {
@@ -72,7 +73,7 @@ export function useDraftPage(
         setDrafting(null);
       }
     },
-    [session, hasKey, chrome, toast],
+    [session, hasAi, chrome, toast],
   );
   return { drafting, draft };
 }

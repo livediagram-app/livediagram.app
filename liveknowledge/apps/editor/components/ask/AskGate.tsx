@@ -1,16 +1,17 @@
 'use client';
 
 // The Ask gate (docs/specs/030-knowledgebase/search-and-ask.md "Ask"): a press on the Ask tab when this session cannot
-// ask (no AI key yet, or nobody signed in) keeps the knowledgebase where it is and says why in a dialog over it, a
+// ask (nobody signed in, or no AI at all: no key and no built-in AI on this server) keeps the knowledgebase where it is and says why in a dialog over it, a
 // sheet on a phone, with what to do next (owner 2026-11-21: "couldn't that have been a modal / drawer on mobile rather
 // than another screen entirely"). Ask's own address still shows the same words in the view, for a link followed.
 import { useSyncExternalStore } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import type { AskSession } from './useAskSession';
-import { AskNoKey, AskSignedOut } from './AskStates';
+import { AskNoAi, AskSignedOut } from './AskStates';
+import { hasAnyAi } from '@/lib/knowledge-ask/ai-settings-words';
 
-export type AskGate = 'no-key' | 'signed-out';
+export type AskGate = 'no-ai' | 'signed-out';
 
 let open: AskGate | null = null;
 const listeners = new Set<() => void>();
@@ -32,7 +33,7 @@ export const askGate = {
 
 /**
  * What stands between this session and Ask, read when the tab is pressed: nobody signed in, or (once the settings
- * are read, on the first press) no key. Null when Ask can open, or when the settings could not be read: the view says
+ * are read, on the first press) no AI at all. A knowledgebase with no key is not one: built-in AI answers. Null when Ask can open, or when the settings could not be read: the view says
  * so itself, with Try Again. An Offline knowledgebase's tab is off already (KnowledgeViewTabs).
  */
 export async function askGateFor(session: AskSession): Promise<AskGate | null> {
@@ -41,7 +42,7 @@ export async function askGateFor(session: AskSession): Promise<AskGate | null> {
   if (askOff === 'offline') return null;
   await aiSettingsStore.load(session.who, session.documentId);
   const state = aiSettingsStore.get(session.documentId);
-  return state.status === 'ready' && !state.settings.hasKey ? 'no-key' : null;
+  return state.status === 'ready' && !hasAnyAi(state.settings) ? 'no-ai' : null;
 }
 
 /** The gate's dialog, drawn by the footer's view tabs while it is open. */
@@ -51,14 +52,14 @@ export function AskGateDialog({ manageAi }: { manageAi: boolean }) {
     <Dialog
       open={gate !== null}
       onClose={askGate.close}
-      ariaLabel={gate === 'signed-out' ? 'Sign In to Ask' : "Ask Needs Your Team's AI Key"}
+      ariaLabel={gate === 'signed-out' ? 'Sign In to Ask' : 'Built-In AI Is Not Set Up Here'}
       size="sm"
       phoneSheet
     >
       {gate === 'signed-out' ? (
         <AskSignedOut bare before={askGate.close} />
-      ) : gate === 'no-key' ? (
-        <AskNoKey bare manageAi={manageAi} before={askGate.close} />
+      ) : gate === 'no-ai' ? (
+        <AskNoAi bare manageAi={manageAi} before={askGate.close} />
       ) : null}
     </Dialog>
   );

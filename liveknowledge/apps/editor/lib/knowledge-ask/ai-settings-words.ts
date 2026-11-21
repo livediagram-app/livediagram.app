@@ -12,12 +12,27 @@ export function keyStateText(settings: Pick<KnowledgeAiSettings, 'hasKey' | 'key
 
 export const KEY_ENCRYPTED_NOTE =
   'The key is encrypted when it is saved and is never shown again, here or anywhere else.';
-/** Who pays for Ask: the team, its provider, for what it uses (Describe to Set Up has built-in AI too). */
+/** Who pays on the team's own key: the team, its provider, for what it uses. */
 export const teamPaysNote = (provider: KnowledgeAiProvider): string =>
-  `Ask runs on your team's own key: your team pays ${providerWords(provider).company} for what it uses.`;
+  `On your own key, your team pays ${providerWords(provider).company} for what it uses.`;
 /** The same where no provider is chosen yet, or it does not matter which. */
-export const TEAM_PAYS_ANY_NOTE =
-  "Ask runs on your team's own key: your team pays its provider for what it uses.";
+export const TEAM_PAYS_ANY_NOTE = 'On your own key, your team pays its provider for what it uses.';
+/** What built-in AI is, in AI Settings (search-and-ask.md "Built-in AI"). */
+export const BUILT_IN_NOTE =
+  'Questions, conflict checks, drafted pages and Describe to Set Up run on built-in AI, included with liveknowledge, with daily limits: 30 questions a person a day.';
+
+/** Which AI answers here, for the quiet line under Ask's field and Describe's: none when nothing can. */
+export function aiInUseLine(
+  settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn'> | null,
+): string | null {
+  if (!settings) return null;
+  if (settings.hasKey) return "Uses your team's key";
+  return settings.builtIn ? 'Uses built-in AI' : null;
+}
+
+/** Whether any AI answers here: the team's key, or built-in AI. */
+export const hasAnyAi = (settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn'>): boolean =>
+  settings.hasKey || settings.builtIn;
 
 export type AiSettingsAction = 'save-key' | 'remove-key' | 'set-model';
 
@@ -39,8 +54,7 @@ export function aiSettingsFailureText(
       return `That is not ${/^[aeiou]/i.test(words.spoken) ? 'an' : 'a'} ${words.spoken} API key. Copy it again from ${words.console} and paste it whole.`;
     if (err.code === 'invalid_model') return 'Choose one of the listed models.';
     if (err.code === 'invalid_provider') return 'Choose Anthropic or OpenAI.';
-    if (err.code === 'ask_unavailable')
-      return 'This server is not set up to keep a key, so Ask is not available on it.';
+    if (err.code === 'ask_unavailable') return 'This server is not set up to keep a key.';
     if (err.status === 403) return 'Only an Editor can change the AI settings.';
     if (err.status === 429) return 'Too many changes at once. Wait a moment and try again.';
   }

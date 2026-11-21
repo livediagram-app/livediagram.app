@@ -38,6 +38,7 @@ const overview = (over: Partial<KnowledgeOverviewResponse> = {}): KnowledgeOverv
   health: { verified: 2, reviewDue: 1, neverVerified: 0, total: 3 },
   reviewEvery: 90,
   hasKey: true,
+  hasAi: true,
   reviewEmails: { available: false },
   reads: {
     // Seven quiet days, then a week of 3 people and 1 agent a day.

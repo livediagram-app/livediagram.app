@@ -96,6 +96,7 @@ const settings = (over: Partial<KnowledgeAiSettings> = {}): KnowledgeAiSettings 
     { id: 'openai', label: 'OpenAI', keyPrefix: 'sk-' },
   ],
   hasKey: true,
+  builtIn: true,
   keyHint: '4f2a',
   model: 'claude-fable-5-2',
   models: [{ id: 'claude-fable-5-2', label: 'Claude Fable 5.2' }],

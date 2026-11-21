@@ -60,7 +60,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
   const pages = useEditorChrome((s) => s.tabs, sameTabsForBar);
   const { state, busy, failure, refresh, run } = useKnowledgeOverview(who, documentId, !offline);
   const overview = state.status === 'ready' ? state.overview : null;
-  const { drafting, draft } = useDraftPage(session, overview?.hasKey ?? false);
+  const { drafting, draft } = useDraftPage(session, overview?.hasAi ?? false);
   const [adding, setAdding] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const agentWrite = useAgentWrite({

@@ -38,6 +38,7 @@ const done = (
   text,
   sources: [],
   notUsed: [],
+  provider: 'anthropic',
   gaps: [],
   model: 'claude-fable-5-2',
   ...over,

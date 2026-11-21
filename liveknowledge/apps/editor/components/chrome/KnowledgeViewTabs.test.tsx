@@ -22,7 +22,8 @@ import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import { askGate } from '@/components/ask/AskGate';
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
 
-const keyed = (hasKey: boolean) => aiSettingsStore.set('d1', { hasKey } as KnowledgeAiSettings);
+const keyed = (hasKey: boolean, builtIn = false) =>
+  aiSettingsStore.set('d1', { hasKey, builtIn } as KnowledgeAiSettings);
 
 afterEach(() => {
   offline.on = false;
@@ -36,11 +37,19 @@ afterEach(() => {
 const link = (name: string) => screen.getByRole('link', { name });
 
 describe('the Ask gate', () => {
-  it('with no key, stays on Pages and opens the gate over it; its Search closes it', async () => {
+  it('with no key and built-in AI, opens Ask: built-in AI answers', async () => {
+    keyed(false, true);
+    renderInEditor(<KnowledgeViewTabs />);
+    fireEvent.click(link('Ask'));
+    await waitFor(() => expect(window.location.search).toBe('?view=ask'));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('with no key and no built-in AI, stays on Pages and opens the gate over it; its Search closes it', async () => {
     keyed(false);
     renderInEditor(<KnowledgeViewTabs />);
     fireEvent.click(link('Ask'));
-    const dialog = await screen.findByRole('dialog', { name: "Ask Needs Your Team's AI Key" });
+    const dialog = await screen.findByRole('dialog', { name: 'Built-In AI Is Not Set Up Here' });
     expect(window.location.search).toBe('');
     expect(track).not.toHaveBeenCalledWith('UI', 'Opened', 'AskView');
     expect(dialog.textContent).toContain('Open AI Settings');

@@ -44,6 +44,10 @@ export type AskConversation = {
   stop: () => void;
   /** A new question: stops any answer and forgets the turns. */
   reset: () => void;
+  /** The chat these turns are (search-and-ask.md "The Ask view"): made on the first question, none before. */
+  chatId: () => string | null;
+  /** Show a kept chat: stops any answer and takes its turns, to read or to continue. */
+  open: (chatId: string, turns: readonly AskTurnView[]) => void;
   setFeedback: (turnId: string, feedback: AskFeedback | undefined) => void;
   /** Draw a streaming turn: `onText` is handed what has arrived so far at once, then each frame's new text. */
   watchStream: (turnId: string, onText: (text: string) => void) => () => void;
@@ -74,6 +78,7 @@ export function createAskConversation(deps: {
   const frame = deps.frame ?? browserFrame;
   const newId = deps.newId ?? (() => crypto.randomUUID());
   let turns: readonly AskTurnView[] = [];
+  let chat: string | null = null;
   const listeners = new Set<() => void>();
   // The answer on its way: everything that arrived, how much of it has been handed to the watchers, and the frame
   // that will hand over the rest.
@@ -157,6 +162,7 @@ export function createAskConversation(deps: {
     if (!question || question.length > ASK_MAX_QUESTION_CHARS) return false;
     if (live || turns.length >= ASK_MAX_TURNS) return false;
     const id = newId();
+    chat ??= newId();
     const earlier = turns;
     setTurns([...turns, { id, question, status: 'streaming', ...NOTHING }]);
     run(id, question, earlier);
@@ -191,7 +197,15 @@ export function createAskConversation(deps: {
     reset: () => {
       live?.abort.abort();
       endLive();
+      chat = null;
       if (turns.length > 0) setTurns([]);
+    },
+    chatId: () => chat,
+    open: (chatId, kept) => {
+      live?.abort.abort();
+      endLive();
+      chat = chatId;
+      setTurns(kept);
     },
     setFeedback: (turnId, feedback) => {
       const turn = turns.find((t) => t.id === turnId);

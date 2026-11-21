@@ -3,13 +3,19 @@ import { answerMarkdown, answerParts, answerWithoutMarkers, markedParts } from '
 import { askFailureWords } from './ask-failure-words';
 import { answerTrust } from './ask-trust';
 import {
+  CHATS_MAX_CHARS,
   RECENT_QUESTIONS_MAX,
+  chatIdOf,
+  completedQuestions,
   groupRecentQuestions,
   readRecentQuestions,
   recentQuestionsEverywhere,
   recentQuestionsKey,
-  withQuestionRemembered,
+  withChatChanged,
+  withChatRemoved,
+  withChatSaved,
   writeRecentQuestions,
+  type RecentQuestion,
 } from './recent-questions';
 
 describe('an answer cut into text and citations', () => {
@@ -178,17 +184,64 @@ describe('recent questions', () => {
   const NOW = new Date(2026, 10, 20, 15, 0).getTime();
   const DAY = 86_400_000;
 
-  it('keeps the newest first, each question once, 50 at most', () => {
-    let list = withQuestionRemembered([], 'How do we release?', 1);
-    list = withQuestionRemembered(list, 'Who is on call?', 2);
-    list = withQuestionRemembered(list, '  how do we   RELEASE? ', 3);
-    expect(list).toEqual([
-      { question: 'how do we   RELEASE?', askedAt: 3 },
-      { question: 'Who is on call?', askedAt: 2 },
+  it('keeps each chat once, the one asked in last first, 50 at most and within its characters', () => {
+    const chat = (id: string, askedAt: number, extra: Partial<RecentQuestion> = {}) => ({
+      id,
+      question: `${id}?`,
+      askedAt,
+      ...extra,
+    });
+    let list = withChatSaved([], chat('a', 1));
+    list = withChatSaved(list, chat('b', 2));
+    list = withChatSaved(list, chat('a', 3));
+    expect(list.map((row) => [row.id, row.askedAt])).toEqual([
+      ['a', 3],
+      ['b', 2],
     ]);
-    for (let i = 0; i < 60; i++) list = withQuestionRemembered(list, `Question ${i}?`, 10 + i);
+    for (let i = 0; i < 60; i++) list = withChatSaved(list, chat(`q${i}`, 10 + i));
     expect(list).toHaveLength(RECENT_QUESTIONS_MAX);
-    expect(list[0]!.question).toBe('Question 59?');
+    expect(list[0]!.id).toBe('q59');
+    // Over the characters, the oldest go first, never the one just saved.
+    const big = (id: string) =>
+      chat(id, 1, {
+        turns: [
+          {
+            id,
+            question: id,
+            status: 'done',
+            text: 'x'.repeat(CHATS_MAX_CHARS / 3),
+            sources: [],
+            notUsed: [],
+            gaps: [],
+            model: 'm',
+          },
+        ],
+      });
+    let heavy = withChatSaved([], big('h1'));
+    heavy = withChatSaved(heavy, big('h2'));
+    heavy = withChatSaved(heavy, big('h3'));
+    expect(heavy.map((row) => row.id)).toEqual(['h3', 'h2']);
+    const huge = chat('huge', 1, { question: 'y'.repeat(CHATS_MAX_CHARS + 1) });
+    expect(withChatSaved(heavy, huge).map((row) => row.id)).toEqual(['huge']);
+  });
+
+  it('accepts, reopens and deletes a chat; a question kept before chats has an id of its own', () => {
+    const list: RecentQuestion[] = [
+      { id: 'a', question: 'A?', askedAt: 5 },
+      { question: 'Old?', askedAt: 2 },
+    ];
+    expect(chatIdOf(list[1]!)).toBe('asked:2');
+    const accepted = withChatChanged(list, 'a', (row) => ({ ...row, completedAt: 9 }));
+    expect(
+      groupRecentQuestions(accepted, 10).flatMap((g) => g.questions.map((q) => q.question)),
+    ).toEqual(['Old?']);
+    expect(
+      completedQuestions([
+        ...accepted,
+        { id: 'c', question: 'C?', askedAt: 1, completedAt: 20 },
+      ]).map((r) => r.id),
+    ).toEqual(['c', 'a']);
+    expect(withChatRemoved(accepted, 'asked:2').map((row) => row.id)).toEqual(['a']);
   });
 
   it('is kept per person and per knowledgebase', () => {

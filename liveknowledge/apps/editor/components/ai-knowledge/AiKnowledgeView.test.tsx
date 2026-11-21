@@ -135,6 +135,7 @@ const full = (over: Partial<KnowledgeOverviewResponse> = {}): KnowledgeOverviewR
   reviewEvery: 90,
   health: { verified: 59, reviewDue: 3, neverVerified: 2, total: 64 },
   hasKey: true,
+  hasAi: true,
   reviewEmails: { available: true },
   reads: {
     days: Array.from({ length: 14 }, (_, at) => ({
@@ -357,8 +358,18 @@ describe('what it shows', () => {
     expect(sample).toContain('"We release on Thursdays."');
   });
 
-  it('without a key, says so quietly under Disagreements alone', async () => {
-    api.apiKnowledgeOverview.mockResolvedValue(full({ hasKey: false, conflicts: [] }));
+  it('says nothing of a key when built-in AI checks for conflicts', async () => {
+    api.apiKnowledgeOverview.mockResolvedValue(full({ hasKey: false, hasAi: true, conflicts: [] }));
+    renderInEditor(<AiKnowledgeView />);
+    await screen.findByRole('region', { name: 'Needs Attention' });
+    showDisagreements();
+    expect(screen.queryByRole('note')).toBeNull();
+  });
+
+  it('with no key and no built-in AI, says so quietly under Disagreements alone', async () => {
+    api.apiKnowledgeOverview.mockResolvedValue(
+      full({ hasKey: false, hasAi: false, conflicts: [] }),
+    );
     const Open = () => <output data-testid="open">{String(useAiSettingsOpen())}</output>;
     renderInEditor(
       <>
@@ -371,7 +382,11 @@ describe('what it shows', () => {
     expect(screen.queryByRole('note')).toBeNull();
     showDisagreements();
     const note = within(screen.getByRole('note'));
-    expect(note.getByText("Finding pages that disagree uses your team's AI key.")).toBeTruthy();
+    expect(
+      note.getByText(
+        "This server has no built-in AI, so finding pages that disagree needs your team's AI key.",
+      ),
+    ).toBeTruthy();
     fireEvent.click(note.getByRole('button', { name: 'Open AI Settings' }));
     expect(screen.getByTestId('open').textContent).toBe('true');
   });
@@ -415,7 +430,7 @@ describe.each(ROLES)('as %s', (role) => {
   });
 
   it('without a key, an Editor gets Open AI Settings and anyone else is told who can add one', async () => {
-    api.apiKnowledgeOverview.mockResolvedValue(full({ hasKey: false }));
+    api.apiKnowledgeOverview.mockResolvedValue(full({ hasKey: false, hasAi: false }));
     await open(role);
     showDisagreements();
     const note = within(screen.getByRole('note'));
@@ -462,7 +477,7 @@ describe('an Editor’s actions', () => {
   });
 
   it('drafts the page with no Ask call when there is no key', async () => {
-    api.apiKnowledgeOverview.mockResolvedValue(full({ hasKey: false }));
+    api.apiKnowledgeOverview.mockResolvedValue(full({ hasKey: false, hasAi: false }));
     const commitTabs = vi.fn();
     await open('edit', { commitTabs });
     fireEvent.click(screen.getByRole('button', { name: 'Draft a Page' }));

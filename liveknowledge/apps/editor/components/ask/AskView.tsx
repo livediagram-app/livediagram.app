@@ -9,7 +9,15 @@ import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { useKnowledgePeople } from '@/components/knowledge/usePageKnowledge';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
-import { askConversationFor, recentQuestionsStore } from '@/lib/knowledge-ask/ask-session-store';
+import { hasAnyAi } from '@/lib/knowledge-ask/ai-settings-words';
+import {
+  askConversationFor,
+  chatTurns,
+  recentQuestionsStore,
+} from '@/lib/knowledge-ask/ask-session-store';
+import { chatIdOf, type RecentQuestion } from '@/lib/knowledge-ask/recent-questions';
+import { track } from '@/lib/telemetry';
+import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/ConfirmDialog';
 import { takeArrival } from '@/lib/knowledge-home/arrival-handoff';
 import { useRelativeNow } from '@/lib/relative-time';
 import { AiSettingsButton } from './AiSettingsButton';
@@ -17,7 +25,7 @@ import { AskConversationPane } from './AskConversationPane';
 import { RecentQuestions } from './RecentQuestions';
 import {
   AskLoading,
-  AskNoKey,
+  AskNoAi,
   AskOffline,
   AskSettingsFailed,
   AskSignedOut,
@@ -50,7 +58,7 @@ export function AskView() {
       />
     );
   else if (settings.status !== 'ready') body = <AskLoading />;
-  else if (!settings.settings.hasKey) body = <AskNoKey manageAi={session.rights.manageAi} />;
+  else if (!hasAnyAi(settings.settings)) body = <AskNoAi manageAi={session.rights.manageAi} />;
   else body = <AskReady session={session} />;
 
   return (
@@ -93,11 +101,44 @@ function AskReady({ session }: { session: AskSession }) {
     conversation.ask(arrival.question);
   }, [conversation, documentId]);
 
+  const focusField = () =>
+    document.querySelector<HTMLTextAreaElement>('[data-ask-composer] textarea')?.focus();
   const askNew = (question?: string) => {
     conversation.reset();
     setRecentOpen(false);
     if (question) conversation.ask(question);
-    else document.querySelector<HTMLTextAreaElement>('[data-ask-composer] textarea')?.focus();
+    else focusField();
+  };
+  const currentId = conversation.chatId();
+  const current = currentId ? recent.find((row) => chatIdOf(row) === currentId) : undefined;
+  const completed = current?.completedAt !== undefined;
+  // A kept chat opens with its answers; a question kept before chats were is asked again.
+  const openChat = (row: RecentQuestion) => {
+    setRecentOpen(false);
+    if (row.turns?.length) conversation.open(chatIdOf(row), chatTurns(row));
+    else askNew(row.question);
+  };
+  // Accept Answer: the chat goes to Completed Questions and the field is fresh.
+  const accept = () => {
+    if (!currentId) return;
+    track('UI', 'Used', 'AskAccepted');
+    recentQuestionsStore.accept(who, documentId, currentId);
+    conversation.reset();
+    focusField();
+  };
+  const reopen = () => {
+    if (!currentId) return;
+    track('UI', 'Used', 'AskReopened');
+    recentQuestionsStore.reopen(who, documentId, currentId);
+  };
+  const [deleting, setDeleting] = useState<RecentQuestion | null>(null);
+  const remove = () => {
+    if (!deleting) return;
+    const id = chatIdOf(deleting);
+    setDeleting(null);
+    track('UI', 'Removed', 'AskChat');
+    recentQuestionsStore.remove(who, documentId, id);
+    if (conversation.chatId() === id) conversation.reset();
   };
 
   return (
@@ -114,9 +155,11 @@ function AskReady({ session }: { session: AskSession }) {
           now={now}
           canAsk
           open={recentOpen}
+          currentId={currentId}
           onToggle={() => setRecentOpen((open) => !open)}
           onNew={() => askNew()}
-          onAsk={askNew}
+          onOpen={openChat}
+          onDelete={setDeleting}
         />
       </aside>
       <AskConversationPane
@@ -127,7 +170,22 @@ function AskReady({ session }: { session: AskSession }) {
         activePageId={activePageId}
         nameOf={nameOf}
         now={now}
+        completed={completed}
         onNew={() => askNew()}
+        onAccept={accept}
+        onReopen={reopen}
+      />
+      <ConfirmDialog
+        open={deleting !== null}
+        title="Delete This Question?"
+        message={
+          deleting
+            ? `“${deleting.question}” and its answers are deleted from this browser. This cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete"
+        onConfirm={remove}
+        onCancel={() => setDeleting(null)}
       />
     </div>
   );
