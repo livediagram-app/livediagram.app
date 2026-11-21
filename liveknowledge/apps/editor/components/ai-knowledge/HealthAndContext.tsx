@@ -5,7 +5,13 @@
 // with a legend that says each count. Remind the Owners emails each owner their due and never-verified pages, once
 // a week (knowledge-email-routes.ts); in that week the section says when they were reminded in the button's place.
 // Always in Context lists the pages every agent is handed first, each with its size, against the budget.
-import type { KnowledgeContextPage, KnowledgeHealthCounts } from '@liveknowledge/api-schema';
+import type {
+  KnowledgeContextPage,
+  KnowledgeHealthCounts,
+  KnowledgeLowHealthPage,
+} from '@liveknowledge/api-schema';
+import { HEALTH_HEALTHY_MIN } from '@liveknowledge/knowledge';
+import { HealthChip } from '@/components/knowledge/HealthChip';
 import { Button, CompactEmptyState, HoverCard } from '@liveknowledge/ui';
 import { ownersEmailedText, remindedThisWeek } from '@/lib/knowledge-ask/email-words';
 import {
@@ -27,15 +33,64 @@ const HEALTH_FILL: Record<HealthPart['key'], string> = {
   neverVerified: 'bg-slate-300 dark:bg-slate-600',
 };
 
+const LOW_ROW =
+  'group flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors duration-micro hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 dark:hover:bg-slate-800/60';
+
+/** Pages With Low Health (ai-knowledge.md "Knowledge Health"): up to 5, lowest first, each opening its page. */
+function LowHealthPages({
+  pages,
+  onOpenPage,
+}: {
+  pages: readonly KnowledgeLowHealthPage[];
+  onOpenPage: (tab: string) => void;
+}) {
+  return (
+    <div data-low-health="" className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        Pages With Low Health
+      </p>
+      {pages.length === 0 ? (
+        <p className={`mt-2 text-[13px] ${AI_MUTED}`}>
+          <span className="font-medium text-slate-900 dark:text-slate-100">
+            Every Page Is Healthy
+          </span>
+          <span className="block">Every page scores {HEALTH_HEALTHY_MIN} or more.</span>
+        </p>
+      ) : (
+        <ol className="-mx-2 mt-1 flex flex-col">
+          {pages.map((page) => (
+            <li key={page.tab} data-low-health-page={page.tab}>
+              <button type="button" onClick={() => onOpenPage(page.tab)} className={LOW_ROW}>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-slate-900 underline-offset-2 group-hover:underline dark:text-slate-100">
+                    {page.title || 'Untitled Page'}
+                  </span>
+                  <span className={`block truncate text-xs ${AI_MUTED}`}>{page.reason}</span>
+                </span>
+                <HealthChip score={page.score} label={page.label} />
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 export function HealthSection({
   health,
+  lowHealth,
   canRemind,
   remindedAt,
   reminding,
   now,
   onRemind,
+  onOpenPage,
 }: {
   health: KnowledgeHealthCounts;
+  /** Absent from an older api: the list is not drawn. */
+  lowHealth: readonly KnowledgeLowHealthPage[] | undefined;
+  onOpenPage: (tab: string) => void;
   // A signed-in Editor, where this deployment sends email.
   canRemind: boolean;
   remindedAt: number | undefined;
@@ -90,6 +145,17 @@ export function HealthSection({
               of {health.total.toLocaleString('en')} {health.total === 1 ? 'page' : 'pages'}{' '}
               verified
             </span>
+            {health.average === undefined ? null : (
+              <span
+                data-health-average=""
+                className="ml-auto whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-300"
+              >
+                Average health{' '}
+                <span className="font-semibold tabular-nums text-slate-900 dark:text-white">
+                  {health.average}
+                </span>
+              </span>
+            )}
           </p>
           <div
             role="img"
@@ -119,6 +185,7 @@ export function HealthSection({
               </li>
             ))}
           </ul>
+          {lowHealth ? <LowHealthPages pages={lowHealth} onOpenPage={onOpenPage} /> : null}
         </>
       )}
     </AiSection>

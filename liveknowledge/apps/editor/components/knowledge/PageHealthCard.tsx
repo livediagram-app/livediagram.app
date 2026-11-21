@@ -53,6 +53,8 @@ export type PageHealthCardProps = {
    *  approval: Request Approval for whoever may ask, "Not Requested" for the rest. Absent once one is asked for, or
    *  while its form is open: the Approval section below holds it then. */
   approvalRow?: { onRequest: (() => void) | undefined } | undefined;
+  /** The Health Score and its breakdown (PageHealthScore), at the top (verification.md "In Page Health"). */
+  score?: ReactNode;
 };
 
 /** The section label, as On This Page's. */
@@ -391,6 +393,7 @@ export function PageHealthCard({
   onVerify,
   periodControl,
   approvalRow,
+  score,
 }: PageHealthCardProps) {
   const { owner, verifiedAt, verifiedBy } = trust.fields;
   const ownerName = nameOf(owner);
@@ -411,6 +414,7 @@ export function PageHealthCard({
       className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
     >
       <h2 className={RAIL_LABEL}>Page Health</h2>
+      {score}
       <div className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${tone.wash}`}>
         <div data-page-state={trust.state} className="flex items-center gap-3.5">
           <FreshnessRing state={trust.state} left={freshness(trust, reviewEvery, now)} />

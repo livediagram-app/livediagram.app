@@ -577,7 +577,24 @@ describe('AI Knowledge', () => {
           used: 20,
           pages: [{ tab: 'holidays', title: 'Holidays', tokens: 20 }],
         },
-        health: { verified: 1, reviewDue: 0, neverVerified: 2, total: 3 },
+        // Every page scored by the Health Score (verification.md "Health Score"): the two never verified are low.
+        health: { verified: 1, reviewDue: 0, neverVerified: 2, total: 3, average: 60 },
+        lowHealth: [
+          {
+            tab: 'holidays',
+            title: 'Holidays',
+            score: 42,
+            label: 'needs-work',
+            reason: 'Never verified',
+          },
+          {
+            tab: 'rollbacks',
+            title: 'Rollbacks',
+            score: 43,
+            label: 'needs-work',
+            reason: 'Never verified',
+          },
+        ],
         reviewEvery: 90,
         hasKey: false,
         // No key, and this deployment has no built-in AI.

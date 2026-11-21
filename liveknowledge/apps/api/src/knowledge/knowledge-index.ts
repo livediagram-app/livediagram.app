@@ -22,7 +22,9 @@ import type { ItemDbHooks, ItemSql } from '@liveworkspace/index-app';
 import {
   deletePageIndex,
   pageLinkTargets,
+  pageHeadingCount,
   pagePassages,
+  pageWords,
   parseKnowledgeFields,
   putPageTrust,
   replacePageIndex,
@@ -124,10 +126,29 @@ export function settlePage(sql: ItemSql, tab: string, indexed?: IndexedPage[]): 
     links.join(' '),
   );
   const trustHash = trustHashOf(fields);
+  // The page's shape, for the Health Score (schema step 37): kept beside it, written alone when only it moved (an
+  // owner change is a write of the tab, so it settles here).
+  const words = pageWords(blocks);
+  const headings = pageHeadingCount(blocks);
+  const owned = fields.owner === undefined ? 0 : 1;
   const was = sql
-    .exec('SELECT index_hash AS i, trust_hash AS t FROM knowledge_pages WHERE tab = ?', tab)
-    .toArray()[0] as { i: string; t: string } | undefined;
-  if (was?.i === indexHash && was.t === trustHash) return 'unchanged';
+    .exec(
+      'SELECT index_hash AS i, trust_hash AS t, words AS w, headings AS h, owned AS o FROM knowledge_pages WHERE tab = ?',
+      tab,
+    )
+    .toArray()[0] as
+    { i: string; t: string; w: number | null; h: number | null; o: number | null } | undefined;
+  if (was?.i === indexHash && was.t === trustHash) {
+    if (was.w !== words || was.h !== headings || was.o !== owned)
+      sql.exec(
+        'UPDATE knowledge_pages SET words = ?, headings = ?, owned = ? WHERE tab = ?',
+        words,
+        headings,
+        owned,
+        tab,
+      );
+    return 'unchanged';
+  }
   const trust = { verifiedAt: fields.verifiedAt };
   const writingChanged = was?.i !== indexHash;
   if (writingChanged && indexed)
@@ -142,13 +163,17 @@ export function settlePage(sql: ItemSql, tab: string, indexed?: IndexedPage[]): 
     : [putPageTrust(tab, title, trust)];
   for (const statement of statements) run(sql, statement);
   sql.exec(
-    `INSERT INTO knowledge_pages (tab, index_hash, trust_hash, chars) VALUES (?, ?, ?, ?)
+    `INSERT INTO knowledge_pages (tab, index_hash, trust_hash, chars, words, headings, owned)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (tab) DO UPDATE SET index_hash = excluded.index_hash, trust_hash = excluded.trust_hash,
-         chars = excluded.chars`,
+         chars = excluded.chars, words = excluded.words, headings = excluded.headings, owned = excluded.owned`,
     tab,
     indexHash,
     trustHash,
     chars,
+    words,
+    headings,
+    owned,
   );
   // A page first indexed with no verification has no review to wait for.
   const trustChanged =

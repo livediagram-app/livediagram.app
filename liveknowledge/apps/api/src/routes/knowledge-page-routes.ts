@@ -11,6 +11,7 @@ import { getParticipants } from '../person/profiles';
 import { readPageAuthors } from '../knowledge/page-authors';
 import { guestOwnersOf, guestStampNamer } from '../knowledge/page-writer';
 import { readPageEditors } from '../knowledge/page-editors';
+import { pageHealthRows } from '../knowledge/page-health-read';
 import { verifyMoment } from '../knowledge/model-door';
 import { pageTreeRows } from '@liveknowledge/document';
 import {
@@ -91,12 +92,15 @@ export async function handlePageHealth(
   }
   // AI Context (ai-knowledge.md "AI Context on a page") rides this read: the questions a range of their
   // table's key, the agents a range of `page_reads_tab` (schema step V19).
-  const [readRows, authors, editors, answered, agents] = await Promise.all([
+  // The Health Score's counts the editor cannot see itself (verification.md "Health Score"): one read of the page's
+  // facts row, on indexes its tables already have.
+  const [readRows, authors, editors, answered, agents, [facts]] = await Promise.all([
     rowsOf<PageReadsRow>(ctx.env, countPageReads(tab, now)),
     readPageAuthors(ctx.env, tab),
     readPageEditors(ctx.env, tab),
     rowsOf<PageAnswerRow>(ctx.env, listPageAnswers(tab, now)),
     rowsOf<PageAgentReadsRow>(ctx.env, countPageAgentReads(tab, now)),
+    pageHealthRows(ctx.env, document.id, now, [tab]),
   ]);
   const knowledge = pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now);
   // A guest's stamp holds their owner id, a credential: it never leaves here. It reads as the name on their profile,
@@ -120,6 +124,16 @@ export async function handlePageHealth(
         ? answered.map((r) => ({ question: r.question, asked: r.asked }))
         : [],
     agents: agents.map((r) => ({ agent: r.agent, reads: r.reads })),
+    ...(facts
+      ? {
+          signals: {
+            openConflicts: facts.openConflicts,
+            openThreads: facts.openThreads,
+            suggestions: facts.suggestions,
+            backlinks: facts.backlinks,
+          },
+        }
+      : {}),
   });
 }
 

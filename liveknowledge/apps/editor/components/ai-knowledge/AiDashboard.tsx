@@ -121,6 +121,8 @@ export function AiDashboard({
         <div className={CARD_SLOT}>
           <HealthSection
             health={overview.health}
+            lowHealth={overview.lowHealth}
+            onOpenPage={actions.openPage}
             canRemind={canEmailOwners}
             remindedAt={overview.reviewEmails.remindedAt}
             reminding={busy.has('remind-owners')}

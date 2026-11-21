@@ -39,6 +39,8 @@ Every module is one file under `packages/knowledge/src`, with its tests beside i
 | `writing-text.ts`     | `blockText(block)`, `writingText(flow)`: the words of a block and of a page, no Markdown syntax                                                                                                                                                                                                                     |
 | `passages.ts`         | `pagePassages(tab, flow)`, `passagePieces(text)`, `MAX_PASSAGE_CHARS`                                                                                                                                                                                                                                               |
 | `trust.ts`            | `parseKnowledgeFields`, `trustState(fields, every, now)`, `reviewDays(every)`, `verified(fields, person, now)`, `knowledgeHealth(pages, every, now)`; re-exports `KnowledgeSettings`, `parseKnowledgeSettings`, `storedKnowledgeSettings`, `isReviewEvery` from `@liveknowledge/document` (`knowledge-settings.ts`) |
+| `page-shape.ts`       | `pageWords(blocks)`, `pageHeadingCount(blocks)`: the words reading time counts and the headings On This Page lists, one definition for the editor and the index                                                                                                                                                     |
+| `page-health.ts`      | `pageHealth(facts, now)`, `wordBand(words)`, `healthFactsOf(row, every, now)`, `lowHealthPages`, `averageHealth`, `likelierRight`, the `HEALTH_*` constants and words                                                                                                                                               |
 | `changed-since.ts`    | `changedFraction(before, after)`, `changedSinceVerified(before, after)`                                                                                                                                                                                                                                             |
 | `page-links.ts`       | `PAGE_LINK_KEY`, `isPageLinkRun`, `isPageLinkTarget`, `pageLinkTargets(flow)`, `backlinks(tab, fromTabs, treeOrder)`                                                                                                                                                                                                |
 | `context-budget.ts`   | `CONTEXT_BUDGET_TOKENS`, `estimateTokens(text)`, `fitsContextBudget`, `assembleContext(pages)`                                                                                                                                                                                                                      |
@@ -241,6 +243,43 @@ CREATE TABLE IF NOT EXISTS knowledge_settings (name TEXT PRIMARY KEY, value TEXT
   only moved do not count. One pass over each version. Bounded at `CHANGED_SINCE_MAX_CHARS` (400,000): what is past
   it is compared by its length alone.
 - `knowledgeHealth(pages, every, now)`: the counts of each state and the total.
+
+## Page Health
+
+The Health Score ([Verification](../verification.md#health-score)), one pure function for the editor and the api.
+
+- **`PageHealthFacts`** is everything the score reads, each a plain value: `state`, `reviewAt`, `reviewDays`
+  (undefined under Never), `verifiedAt`, `owned`, `band` (`wordBand(words)`: `empty`, `few` under 20, `short` under
+  50, `brief` under 300, `medium` up to 2,500, `long`), `headings`, `brokenLinks`, `backlinks`, `openConflicts`,
+  `openThreads`, `suggestions`, `pendingApproval`, `reads`, `createdAt`, `updatedAt`. `backlinks` and `reads`
+  undefined (Offline, or the editor before Page Health is read) count as full; the issue counts as none.
+- **`pageHealth(facts, now)`** answers `{ score, label, reason, factors }`, each factor `{ factor, points, max,
+raise?, gain?, fix? }` (`fix`: `verify`, `owner`, `heading`), in the spec's order. Each factor is rounded to a
+  whole number before the sum, so the factors always add up to the score. Constant work: no input grows it.
+  `reviewDays` undefined (a Review Period of Never) leaves Verification out, counts Freshness from `updatedAt`
+  alone (`editedLately`) and scales each factor to `NEVER_MAX` (15, 15, 15, 15, 10, 20, 10), its gain with it.
+- **`healthFactsOf(row, every, now)`** turns one row of the api's facts read into facts: `words` NULL (a page the
+  backfill has not reached since schema step 37) reads as `chars / 6`; `headings` NULL as one heading.
+- **`lowHealthPages(pages, limit = 5)`**: under `HEALTH_HEALTHY_MIN`, lowest first, then most read, then tree order.
+  **`averageHealth(scores)`**: a whole number, undefined for none. **`likelierRight(a, b)`**: the side 10 or more
+  points higher (`HEALTH_LIKELIER_MARGIN`), else undefined.
+- **The api's facts read** (`apps/api/src/knowledge/page-health-read.ts`, `pageHealthFacts(env, documentId, now,
+tabs?)`): one statement a call (the tab set chunked at 50, under the 100 bound values), every page of the
+  knowledgebase or the given tabs, joining `tabs`, `document_tabs`, `page_trust`, `knowledge_pages` (`words`,
+  `headings`, `owned`, schema step 37) and `page_authors`, with correlated counts over `page_links` (both ways, a
+  broken link being a target not in `document_tabs`), `page_threads` (unresolved), `page_approvals` (pending),
+  `conflicts` (open, either side), `suggestions` and `page_reads` (the last 7 days, on `page_reads_tab`). Each count
+  is on an index the table already has. No page's writing is read.
+- **Schema step 37** adds `words`, `headings` and `owned` to `knowledge_pages` (asking before each ALTER) and queues
+  every indexed page for the backfill. `settlePage` writes them on every settle; a settle whose hashes match but whose
+  shape or owner moved writes those three alone (an owner change is a write of the tab, so it settles).
+- **Where it rides:** `GET pages/<tab>/health` answers `signals` (`openConflicts`, `openThreads`, `suggestions`,
+  `backlinks`); the editor scores from them and its own state. `read_page`, `get_context`, an agent's search and
+  Ask's passages carry `health` (the api scores them from one facts read for their tabs). `GET knowledge` scores
+  every page once: `health.average`, `lowHealth` (5 rows), and each conflict side's `health`.
+- **The editor** (`components/knowledge/PageHealthScore.tsx`, `usePageHealthScore.ts`): the facts are read from the
+  chrome store as primitives (the band, the heading count, the broken link count, against the editor's tab ids), so
+  a typing commit that crosses no band renders nothing; `pageHealth` runs in a `useMemo` over them and the clock.
 
 ## Links
 
@@ -852,6 +891,10 @@ Measured on an M-series Mac, Node 22, CPU time (not wall-clock), 2026-11-20:
 | `pagePassages` on a 104,573 character page (122 passages)                    | 0.5 ms median, 1.7 ms worst of 9 | a CPU budget test: 50 ms (the spec's bound)     |
 | `pagePassages` on one unbroken 400,000 character block                       | inside its budget                | a CPU budget test: 100 ms                       |
 | `replacePageIndex` for that page: 18 statements, the longest 423 bytes       | 1.8 ms in `node:sqlite`          | the fixture's statement checks                  |
+| `pageWords` and `pageHeadingCount` on a 100,000 word page (2026-11-21)       | 2.9 ms median, 6.4 ms worst      | a CPU budget test: 50 ms                        |
+| `pageHealth` for one page                                                    | about 2 µs                       | constant work, no input grows it                |
+| Every page's Health Score facts at 500 pages: one statement                  | 4.4 to 5.1 ms in `node:sqlite`   | page-health-read.test.ts (one prepare, budget)  |
+| A 20-result agent search's scores: one statement                             | one prepare                      | page-health-read.test.ts                        |
 | A search whose words match nearly every row of a 5,612 row index (500 pages) | 8.8 ms in `node:sqlite`          | `LIMIT` 20; not held by a budget test           |
 | `changedFraction` on two 104,000 character versions                          | 3.3 ms                           | a CPU budget test at 400,000 characters: 150 ms |
 

@@ -28,7 +28,7 @@ import {
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SAVE_STEP, VERSION_SCHEMA } from '../versions/version-schema';
-import { knowledgeSchemaStep } from '../knowledge/knowledge-schema';
+import { knowledgeSchemaStep, knowledgeShapeStep } from '../knowledge/knowledge-schema';
 import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
 import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
 import { agentSeenSchemaStep } from '../knowledge/agent-seen';
@@ -432,6 +432,10 @@ const V35 = automationSchemaStep('wake');
 // IF NOT EXISTS.
 const V36 = pageTrashSchemaStep;
 
+// Step 37: each page's words, headings and whether it has an owner, kept by the index beside its characters
+// (knowledge/knowledge-schema.ts knowledgeShapeStep; docs/specs/030-knowledgebase/verification.md "Health Score").
+const V37 = knowledgeShapeStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -461,6 +465,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V34,
   V35,
   V36,
+  V37,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

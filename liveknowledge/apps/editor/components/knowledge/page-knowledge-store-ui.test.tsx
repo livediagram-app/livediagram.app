@@ -144,6 +144,30 @@ describe('a page’s knowledge in the editor', () => {
     expect(screen.getByRole('button', { name: 'Ship It' })).toBeTruthy();
   });
 
+  it('the Health Score shows with Page Health, from what the editor holds; a fix only for those who may', async () => {
+    for (const [level, fixes] of [
+      ['view', 0],
+      ['edit', 2],
+    ] as const) {
+      api.apiPageHealth.mockResolvedValue({
+        ...health(),
+        signals: { openConflicts: 1, openThreads: 0, suggestions: 0, backlinks: 0 },
+      });
+      mount(level);
+      await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+      const score = document.querySelector('[data-health-score]')!;
+      expect(score.getAttribute('data-health-score')).toBe('needs-work');
+      fireEvent.click(
+        within(score as HTMLElement).getByRole('button', { name: 'Score Breakdown' }),
+      );
+      expect(within(score as HTMLElement).getByText('Resolve the conflict: +5')).toBeTruthy();
+      expect(
+        within(score as HTMLElement).queryAllByRole('button', { name: 'Verify' }),
+      ).toHaveLength(fixes);
+      cleanup();
+    }
+  });
+
   const rail = () => document.querySelector<HTMLElement>('[data-page-health]')!;
   const railButton = (name: string) => within(rail()).getByRole('button', { name });
 

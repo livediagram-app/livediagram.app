@@ -60,7 +60,11 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   Claude `claude-fable-5-2` by default (or OpenAI's most capable); AI Settings offers the provider's current models,
   since the team pays for what it uses.
 - **Answering:** the api takes the question, finds the best passages with the search index (up to 12, verified pages
-  first), and asks the model to answer only from them, citing each claim. The answer streams to the page.
+  first), and asks the model to answer only from them, citing each claim. The answer streams to the page. Each
+  passage goes with its page's Health Score and word ([Verification](verification.md#health-score)), and the model
+  is told to prefer passages from higher-scoring pages, and to say in the answer when what it relies on comes from
+  a page whose health is Needs Work ("this comes from a page with a low health score"). The passages are chosen as
+  before (verified first, then rank); the score is worked out from one read for the chosen passages' pages.
 - **What an answer shows:** the answer with numbered citations, numbered **1 to n in the order they are first
   cited** (owner, 2026-11-21: "shouldn't the source be number 1, given there is only one source?"), whatever number
   the passage was sent to the model under: the stream's pieces, the finished answer and its Sources all use the same
@@ -194,7 +198,9 @@ strangers.
   - the passage with the question's words softly marked;
   - its **trust**, in the badges and colours of the page's meta row and Page Health: **Verified** (a green tick),
     then "21 Nov by Roger Blake" on the line, wrapping to a second line rather than cutting a name; **Review Due**
-    (amber, "Last verified 8 Nov"); **Never Verified** (quiet slate, no tick, saying so).
+    (amber, "Last verified 8 Nov"); **Never Verified** (quiet slate, no tick, saying so). After it the page's
+    **Health Score** and word ("Health 42, Needs Work", [Verification](verification.md#health-score)), in the word's
+    colour, which an older answer kept in the browser without one leaves out.
     Pressing a card shows Pages at that page and passage. **Found but Not Used** follows, each card amber with a
     "Older Passage" pill and the reason under its passage, its trust in the same badges as a source, and no
     number, so it never shares one with a cited source. One with no reason (kept in the browser from before a

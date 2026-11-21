@@ -27,6 +27,8 @@ import { PageHealthApproval } from './approval/PageHealthApproval';
 import { usePageApproval } from './approval/usePageApproval';
 import { askApproval, useApprovalAsked } from '@/lib/knowledge/approval-asked';
 import { PageRailAiContext } from './PageAiContext';
+import { PageHealthScore } from './PageHealthScore';
+import { usePageHealthScore } from './usePageHealthScore';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 import { RailCollapseIcon, RailExpandIcon } from '@/components/page-tree/page-tree-icons';
 import { setPageRailCollapsed, usePageRailCollapsed } from '@/lib/page-rail-collapsed';
@@ -113,6 +115,7 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
   const writing = useEditorChrome((s) => writingOf(s.activeTab), sameWriting);
   const page = usePageKnowledge();
   const { people, nameOf } = useKnowledgePeople();
+  const score = usePageHealthScore(page);
   const current = useCurrentHeading(writing.headings);
   const go = useCallback(
     (id: string) => {
@@ -166,6 +169,9 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
         periodControl={changesPeriod ? <ReviewPeriodButton /> : undefined}
         approvalRow={approvalRow}
+        score={
+          <PageHealthScore health={score.health} fixes={score.fixes} offline={score.offline} />
+        }
       />
       {/* Page Health leads, On This Page under it (owner 2026-11-21). */}
       <OnThisPage headings={writing.headings} current={current} onGo={go} />

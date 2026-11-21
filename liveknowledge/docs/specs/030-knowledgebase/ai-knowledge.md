@@ -65,6 +65,9 @@ and the 5 pages read most in the last 7 days with each one's reads by people and
   still open the knowledgebase, the same 50 a day. The answer says what happened: sent to how many owners, already
   asked and when, nobody owns either page, the owners cannot be reached, the day's emails are spent, or this
   server sends no email.
+- **The likely right one** (owner 2026-11-21): each side carries its page's Health Score, and when one side's score
+  is higher by 10 or more, its row says "<Page> is more likely right (health 86 against 41)" and leads with that
+  side's **Is Right, Fix the Other**. Closer than 10, it suggests neither. It is a suggestion: both buttons stay.
 - A conflict closes by itself when either passage changes. Bounds: 50 checks a knowledgebase a day on a key, 20 on built-in AI;
   at most 5 candidate passages a check. Only a deployment with no built-in AI and a knowledgebase with no key has no
   check, and the section says so.
@@ -121,10 +124,21 @@ what agents and Ask make of this one page. It looks as the rest of the rail does
 
 ## Knowledge Health
 
-Counts of Verified, Review Due and Never Verified pages as one stacked bar with a legend, and **Remind the Owners**
+Counts of Verified, Review Due and Never Verified pages as one stacked bar with a legend, the knowledgebase's
+**average Health Score** ([Verification](verification.md#health-score)) beside the verified share, the pages with
+low health, and **Remind the Owners**
 (one email each, at most once a week per knowledgebase). The counts are worked out under the knowledgebase's one
 Review Period ([Verification](verification.md) "The Review Period") when the view is read: under Never no page is
 Review Due.
+
+**Pages With Low Health** (owner 2026-11-21: "Knowledge health should show up to 5 pages with low health"): the 5
+lowest-scoring pages whose score is under the Healthy line (75), lowest first, a tie the most read this week first,
+then tree order. Each row is the page's title, its score and word ("38 Needs Work", the word's colour and never
+colour alone) and its main reason ("Never verified", "Review due 40 days ago", "2 broken links"); pressing it opens
+the page. With none: "Every Page Is Healthy", saying every page scores 75 or more. The average is of every page, a
+whole number, "No pages yet" with none. Both come from the overview's one read (`GET knowledge`, still one
+request): the api scores every page with the same function from one statement over the room's tables, no read a
+page.
 
 **Remind the Owners** sends each owner one email, **Pages to Review**, listing their pages that are Review Due or
 Never Verified (each named with its state and linked; the first 100, the rest counted). It is a
@@ -144,14 +158,14 @@ rows and actions, long lists capped so the page never grows with the data.
 - **The figures band:** six tiles, each a button named by its words and its figure. Six across on a wide screen,
   three across from a tablet's width, two across on a phone.
 
-  | Tile                | Figure                                                                     | Pressed                                  |
-  | ------------------- | -------------------------------------------------------------------------- | ---------------------------------------- |
-  | Reads This Week     | page reads in the last 7 days; people and agents apart; a 14-day sparkline | brings Most Read into view               |
-  | Connected Agents    | agents seen in 30 days; how many may write                                 | brings Connected Agents into view        |
-  | Open Questions      | questions nobody could answer; how many asks in all                        | shows Needs Attention at Questions       |
-  | Pages That Disagree | open conflicts                                                             | shows Needs Attention at Disagreements   |
-  | Suggested Edits     | agents' edits waiting                                                      | shows Needs Attention at Suggested Edits |
-  | Verified            | the verified share of the pages, as a percentage; how many are Review Due  | brings Knowledge Health into view        |
+  | Tile                | Figure                                                                                              | Pressed                                  |
+  | ------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+  | Reads This Week     | page reads in the last 7 days; people and agents apart; a 14-day sparkline                          | brings Most Read into view               |
+  | Connected Agents    | agents seen in 30 days; how many may write                                                          | brings Connected Agents into view        |
+  | Open Questions      | questions nobody could answer; how many asks in all                                                 | shows Needs Attention at Questions       |
+  | Pages That Disagree | open conflicts                                                                                      | shows Needs Attention at Disagreements   |
+  | Suggested Edits     | agents' edits waiting                                                                               | shows Needs Attention at Suggested Edits |
+  | Verified            | the verified share of the pages, as a percentage; how many are Review Due; the average Health Score | brings Knowledge Health into view        |
 
   A tile whose figure asks for someone (an open question, a conflict, an edit waiting, a page Review Due) carries a
   small amber mark; a tile that filters Needs Attention shows pressed while its filter is on, and pressing it again
@@ -163,8 +177,9 @@ rows and actions, long lists capped so the page never grows with the data.
   questions nobody could answer, the most asked first. A switch above it shows **All**, **Questions**,
   **Disagreements** or **Edits** (an agent's suggested edits). Each row says what kind it is with an icon and a word, and keeps its
   actions as below. At most 4 rows show; **Show All 9** opens the rest in place and **Show Fewer** folds them.
-- **Knowledge Health:** the verified share as a large figure, the stacked bar and its legend, and **Remind the
-  Owners**.
+- **Knowledge Health:** the verified share as a large figure with the average Health Score beside it ("Average
+  health 71"), the stacked bar and its legend, **Pages With Low Health** (at most 5 rows, under the legend), and
+  **Remind the Owners**.
 - **Connected Agents:** compact cards, two across, at most 4 before **Show All**; **Connect an
   Agent** at the card's top right.
 - **Always in Context:** the budget meter, each page with its size and a remove button, at most 5 before **Show All**,
