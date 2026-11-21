@@ -12,24 +12,39 @@ the knowledgebase is for, and AI proposes a sensible structure of pages for them
 Owner, 2026-11-21: "When creating a new knowledgebase, show a start screen like the other apps." (This reverses
 the earlier "no start screen".)
 
+Owner, 2026-11-21, on the first build of it: the start "should be less about an individual page and more about the
+structure of the whole knowledgebase". So every choice on it is a whole knowledgebase's shape, never one page.
+
 - `/new`, the Explorer's New button and Home's **Make Your First Knowledgebase** make the knowledgebase straight
   away (its one page, **Start Here**, saved to the account for a signed-in person, Offline for a guest, as
   [Knowledgebases and pages](knowledgebases-and-pages.md) says) and open it on the **start screen**, the shared
   start panel every liveworkspace editor shows on a new item: titled **Start Your Knowledgebase**, with the line
-  "Start blank, from a template, from a description, or from what you already have."
+  "Pick a shape for the whole knowledgebase: its pages, already in place. Or start blank, or describe it."
 - **Its choices**, in the rail:
-  - **Start**, first: **Blank Knowledgebase** (the first card): the start closes onto Start Here, the caret in its
-    Title.
-  - Then the template categories (Engineering, Handbooks, Onboarding, Product, Support), each with its writing
-    templates and the Community's tiles for that category. A template lands on Start Here, which takes its writing
-    and its name, and the start closes onto it. Templates of writing only: no slide, infographic or canvas choice.
-  - At the rail's foot, as liveplanner's Describe a Plan and Import: **Describe to Set Up**, which opens this
-    feature's dialog over the empty knowledgebase (offered where the sidebar's control is: a signed-in Editor, not
-    Offline), and **Import**, which opens the knowledgebase's Import dialog (Markdown folder, Notion or Confluence
-    archive). Then Connect File where connecting works.
+  - **Start**, first: **Blank Knowledgebase** (the first card), which closes onto Start Here, the caret in its
+    Title; and **Describe to Set Up** (where it is offered: a signed-in Editor, not Offline), a card that closes the
+    start and opens this feature's dialog over the empty knowledgebase, so the AI proposes a structure.
+  - Then the **knowledgebase structures**, grouped by who they are for: **Team** (Team Handbook, Onboarding),
+    **Engineering** (Engineering Wiki, Runbooks and On-Call) and **Product and Support** (Product Docs, Support
+    Knowledgebase). Each card shows the structure, not a picture of a page: an outline of its page tree two levels
+    deep (each top page, and its subpages after it: "Engineering: Release Process, On-Call"), and its page count
+    ("12 Pages"). The search finds a structure by its name, its line or any of its page titles.
+  - At the rail's foot, as liveplanner's Import: **Import**, which opens the knowledgebase's Import dialog (Markdown
+    folder, Notion or Confluence archive); Describe to Set Up stays there too, as on liveplanner's start. Then
+    Connect File where connecting works.
   - Under the choices, the **Sync Knowledgebase to Server** switch ([Save locations](../006-document/save-locations.md)).
-- The start cannot be closed by itself: Blank Knowledgebase is the way past it. Choosing any foot entry closes it
-  first, so cancelling that dialog leaves the person on the empty Start Here page.
+- **Picking a structure** closes the start and creates its whole tree of pages in the knowledgebase, by the same
+  path a Describe to Set Up suggestion is created by (step 3 of "The flow"): Start Here becomes the structure's
+  first page, every page gets its title, its one italic line on what belongs on it and its headings with room to
+  write under each, and the knowledgebase opens on its first page. The knowledgebase takes the structure's name
+  ("Team Handbook") while it is still "Untitled Knowledgebase". A structure is at most 30 pages, 3 levels deep, its
+  titles unique under each parent: the bounds a suggestion keeps. It is one undo step. Whoever picks it owns its pages
+  (verification.md "The owner"): Start Here's place keeps the owner the create gave it, and each page added takes its
+  creator from the save that makes it.
+- The writing templates (Meeting Notes, Design Doc and the rest) are a page's, so they are not on this start; the
+  Community's tiles, which are pages too, are not either.
+- The start cannot be closed by itself: Blank Knowledgebase is the way past it. Describe to Set Up and Import close
+  it first, so cancelling their dialog leaves the person on the empty Start Here page.
 - **Only for a knowledgebase just made here.** The start shows on the knowledgebase `/new` made, in the browser tab
   that made it (kept for that tab's session, so a reload keeps it), while Start Here is untouched (nothing written
   beyond its Title) and the person may edit it. Nobody else, and no other knowledgebase, ever sees it: a collaborator
@@ -41,15 +56,15 @@ the earlier "no start screen".)
   `migrateStoredTab`), so it opens as an empty article page and never shows a start. Deleting a knowledgebase's
   last page from the page menu leaves an empty page to write on, not an empty tab.
 - **Share roles:** an Editor of the knowledgebase only; a Participant or a Viewer is never shown it.
-- **Telemetry:** the shared start's events as every app sends them (`Template·Used·<kind>`), plus
-  `UI·Opened·DescribeToSetUp` and `UI·Opened·KnowledgeImport` from its foot, and `UI·Used·StartBlank` for Blank
-  Knowledgebase.
+- **Telemetry:** `UI·Used·StartBlank` for Blank Knowledgebase, `Tab·Created·FromStructure` when a structure's
+  pages are made, and `UI·Opened·DescribeToSetUp` and `UI·Opened·KnowledgeImport` from its cards and foot. Which
+  structure is not sent: the event is three fixed words.
 
 ## The control
 
 - While a knowledgebase is **empty**, the sidebar shows **Describe to Set Up** directly above **New Page**: a
-  full-width button with the sparkle icon and one line under it, "Tell AI what this is for and get a page
-  structure." Empty means: at most three pages, none with any writing beyond a title. The editor answers this from
+  full-width button with the sparkle icon. What it does ("Tell AI what this is for and get a page structure.") is
+  its hover card, not a line under it. Empty means: at most three pages, none with any writing beyond a title. The editor answers this from
   the pages it already holds: a page whose writing it has not loaded is not known to be empty, and no page is
   loaded to find out. On a phone the same button sits in the Pages sheet, above New Page; the sheet closes as the
   dialog opens over the page.

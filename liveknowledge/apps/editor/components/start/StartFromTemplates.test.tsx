@@ -1,44 +1,17 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CommunityStartPost } from '@liveknowledge/api-schema';
-import { resetCommunityEnabledForTests } from '@liveworkspace/community-ui';
-import { resetCommunityStartForTests } from '@liveworkspace/community-ui/start';
-import { track } from '@/lib/telemetry';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { StartFromTemplates } from './StartFromTemplates';
-
-vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-
-// The Community's Start With read (liveworkspace/docs/specs/007-community/community.md "Start With"): none unless a
-// test gives some.
-let startTiles: Record<string, CommunityStartPost[]> = {};
-beforeEach(() => {
-  startTiles = {};
-  resetCommunityStartForTests();
-  resetCommunityEnabledForTests();
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async (url: string) =>
-      String(url).includes('/start?')
-        ? Response.json({ categories: startTiles })
-        : Response.json({ communityEnabled: true }),
-    ),
-  );
-});
 
 // docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen"
 afterEach(() => {
   cleanup();
   localStorage.clear();
   vi.unstubAllGlobals();
-  vi.mocked(track).mockClear();
 });
 
-const mount = (
-  onTemplate = vi.fn(),
-  leave = vi.fn(),
-  foot: { onDescribe?: () => void; onImport?: () => void } = {},
-) => render(<StartFromTemplates onTemplate={onTemplate} leave={leave} {...foot} />);
+const mount = (onChoose = vi.fn(), foot: { onDescribe?: () => void; onImport?: () => void } = {}) =>
+  render(<StartFromTemplates onChoose={onChoose} {...foot} />);
 const TITLE = 'Start Your Knowledgebase';
 
 describe('StartFromTemplates', () => {
@@ -47,22 +20,62 @@ describe('StartFromTemplates', () => {
     expect(screen.getByRole('heading', { name: TITLE })).toBeTruthy();
   });
 
-  it('leads with Blank Knowledgebase, and offers no slide, infographic or canvas', () => {
-    const onTemplate = vi.fn();
-    mount(onTemplate);
+  it('leads with Blank Knowledgebase, and offers whole knowledgebases, never a page kind', () => {
+    const onChoose = vi.fn();
+    mount(onChoose);
     expect(document.querySelector('[data-rail]')!.getAttribute('data-rail')).toBe('start');
-    const first = document.querySelector('[data-start-card]')!;
-    expect(first.textContent).toContain('Blank Knowledgebase');
+    expect(document.querySelector('[data-start-card]')!.textContent).toContain(
+      'Blank Knowledgebase',
+    );
     fireEvent.click(screen.getByRole('button', { name: /^Blank Knowledgebase/ }));
-    expect(onTemplate).toHaveBeenCalledWith('blank');
+    expect(onChoose).toHaveBeenCalledWith('blank');
+    expect(
+      [...document.querySelectorAll('[data-rail]')].map((r) => r.getAttribute('data-rail')),
+    ).toEqual(['start', 'team', 'engineering', 'product']);
     for (const word of ['Slide', 'Infographic', 'Canvas'])
       expect(document.body.textContent).not.toContain(`Blank ${word}`);
+  });
+
+  it('shows a structure as its outline and page count, and chooses it by id', () => {
+    const onChoose = vi.fn();
+    mount(onChoose);
+    fireEvent.click(document.querySelector('[data-rail="engineering"]')!);
+    const card = document.querySelector<HTMLElement>('[data-start-card="engineering-wiki"]')!;
+    expect(card.textContent).toContain('Engineering Wiki');
+    expect(card.textContent).toContain('13 Pages');
+    expect(card.textContent).toContain('Shipping: Release Process, On-Call');
+    fireEvent.click(card);
+    expect(onChoose).toHaveBeenCalledWith('engineering-wiki');
+  });
+
+  it('offers Describe to Set Up as a Start card where it is offered', () => {
+    const onChoose = vi.fn();
+    mount(onChoose, { onDescribe: vi.fn() });
+    const card = document.querySelector<HTMLElement>('[data-start-card="describe"]')!;
+    expect(card.textContent).toContain('Describe to Set Up');
+    fireEvent.click(card);
+    expect(onChoose).toHaveBeenCalledWith('describe');
+    cleanup();
+    mount();
+    expect(document.querySelector('[data-start-card="describe"]')).toBeNull();
+  });
+
+  it('finds a structure by a page title inside it', () => {
+    mount();
+    fireEvent.change(screen.getByRole('textbox', { name: 'Find a knowledgebase' }), {
+      target: { value: 'invoices' },
+    });
+    expect(
+      [...document.querySelectorAll('[data-start-card]')].map((c) =>
+        c.getAttribute('data-start-card'),
+      ),
+    ).toEqual(['support-knowledgebase']);
   });
 
   it('offers Describe to Set Up and Import at the rail foot when given, each opening its dialog', () => {
     const onDescribe = vi.fn();
     const onImport = vi.fn();
-    mount(vi.fn(), vi.fn(), { onDescribe, onImport });
+    mount(vi.fn(), { onDescribe, onImport });
     fireEvent.click(document.querySelector('[data-rail="describe"]')!);
     expect(onDescribe).toHaveBeenCalledTimes(1);
     fireEvent.click(document.querySelector('[data-rail="import"]')!);
@@ -79,8 +92,8 @@ describe('StartFromTemplates', () => {
     mount();
     expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
     expect(document.querySelector('[data-sheet-handle]')).toBeNull();
-    const search = screen.getByRole('textbox', { name: 'Find a template' });
-    fireEvent.change(search, { target: { value: 'slide' } });
+    const search = screen.getByRole('textbox', { name: 'Find a knowledgebase' });
+    fireEvent.change(search, { target: { value: 'wiki' } });
     fireEvent.keyDown(search, { key: 'Escape' });
     expect((search as HTMLInputElement).value).toBe('');
     fireEvent.keyDown(search, { key: 'Escape' });
@@ -123,66 +136,7 @@ describe('StartFromTemplates, switching category', () => {
     mount();
     const scroller = document.querySelector('[data-start-card]')!.closest('.overflow-y-auto')!;
     scroller.scrollTop = 300;
-    fireEvent.click(document.querySelector('[data-rail="handbooks"]')!);
+    fireEvent.click(document.querySelector('[data-rail="engineering"]')!);
     expect(scroller.scrollTop).toBe(0);
-  });
-});
-
-// docs/specs/007-editor/start-diagramming.md "From the Community".
-describe('StartFromTemplates, from the Community', () => {
-  const tile = (id: string, title: string, category = 'product'): CommunityStartPost => ({
-    id,
-    app: 'liveknowledge.app',
-    title,
-    category: category as CommunityStartPost['category'],
-    shareCode: `CODE-${id}`,
-    likeCount: 9,
-    copyCount: 1,
-    anonymous: false,
-    authorName: 'Ada',
-    line: 'How our quarter went.',
-  });
-
-  it("opens the person's own copy of a chosen tile, counted as a copy", async () => {
-    startTiles = { product: [tile('r1', 'Annual Report')] };
-    const onTemplate = vi.fn();
-    const leave = vi.fn();
-    mount(onTemplate, leave);
-    fireEvent.click(document.querySelector('[data-rail="product"]')!);
-    fireEvent.click(
-      await screen.findByRole('button', { name: /^Annual Report from the Community/ }),
-    );
-    expect(leave).toHaveBeenCalledWith('/document/shared?s=CODE-r1&copy=1');
-    expect(track).toHaveBeenCalledWith('Community', 'Copied', 'StartWith');
-    expect(onTemplate).not.toHaveBeenCalled();
-  });
-
-  it('finds a tile by its title in a search, after the templates of its group', async () => {
-    startTiles = { product: [tile('r1', 'Annual Report')] };
-    mount();
-    const search = screen.getByRole('textbox', { name: 'Find a template' });
-    fireEvent.change(search, { target: { value: 'annual report' } });
-    expect(
-      await screen.findByRole('button', { name: /^Annual Report from the Community/ }),
-    ).toBeTruthy();
-    fireEvent.change(search, { target: { value: 'zzzz nothing' } });
-    expect(screen.queryByRole('button', { name: /from the Community/ })).toBeNull();
-  });
-
-  it('shows only templates when the Community is off', async () => {
-    startTiles = { product: [tile('r1', 'Annual Report')] };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (url: string) =>
-        String(url).includes('/start?')
-          ? Response.json({ categories: startTiles })
-          : Response.json({ communityEnabled: false }),
-      ),
-    );
-    mount();
-    fireEvent.click(document.querySelector('[data-rail="product"]')!);
-    await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(screen.queryByRole('button', { name: /from the Community/ })).toBeNull();
   });
 });

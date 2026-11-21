@@ -29,10 +29,14 @@ Public) already own the word.
 ## A knowledgebase
 
 - A new knowledgebase has one page, **Start Here**. Made from `/new` (the Explorer's New, Home's Make Your First
-  Knowledgebase) it opens on the **start screen** ([Describe to set up](describe-to-set-up.md#the-start-screen)):
-  Blank Knowledgebase, the writing templates, Describe to Set Up and Import. Blank Knowledgebase, `/new?blank=1` and a
-  `/new?template=` link open Start Here with the caret in its Title. Its name is "Untitled Knowledgebase"
-  until a person names it: a page's Title names that page, never the knowledgebase.
+  Knowledgebase) it opens on the **start screen** ([Describe to set up](describe-to-set-up.md#the-start-screen)),
+  whose choices are shapes of a whole knowledgebase: Blank Knowledgebase, Describe to Set Up, and structures (Team
+  Handbook, Engineering Wiki and the rest) whose picking makes their whole page tree; Import at its foot. Blank
+  Knowledgebase, `/new?blank=1` and a `/new?template=` link open Start Here with the caret in its Title. Its name is "Untitled Knowledgebase"
+  until a person names it: a page's Title names that page, never the knowledgebase. Its creator owns every page it
+  starts with ([Verification](verification.md) "The owner"): a signed-in person's create carries their account as
+  each seeded page's `knowledge.owner` (`lib/new-page-owner.ts`), and the pages a structure adds get theirs from the
+  save that makes them. A guest's, or an Offline one's, pages have no owner.
 - **Where a new knowledgebase is saved.** A signed-in person's is saved to their account, in Private, so Verify,
   Ask, AI Knowledge and sharing work from the first page. A guest's, and a signed-out person's, is kept Offline in
   this browser, as every app's is ([Save locations](../006-document/save-locations.md)). The start's **Sync

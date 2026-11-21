@@ -57,8 +57,8 @@ test('a new knowledgebase opens on its start screen, whose Describe to Set Up tu
   const newPage = page.getByRole('button', { name: 'New Page', exact: true });
   expect((await button.boundingBox())!.y).toBeLessThan((await newPage.boundingBox())!.y);
 
-  // The start's entry closes it and opens the same dialog.
-  await start.locator('[data-rail="describe"]').click();
+  // The start's Describe to Set Up card closes it and opens the same dialog.
+  await start.locator('[data-start-card="describe"]').click();
   await expect(start).toHaveCount(0);
   const dialog = setupDialog(page);
   await expect(dialog.getByRole('listitem').filter({ hasText: 'Describe' })).toHaveAttribute(
@@ -116,6 +116,9 @@ test('with no key the dialog says why, and an OpenAI key added in AI Settings re
   pageErrors,
 }) => {
   await signedInKnowledgebase(page);
+  // What the control does is its hover card, not a line under it.
+  await setupButton(page).hover();
+  await expect(page.getByText('Tell AI what this is for and get a page structure.')).toBeVisible();
   await setupButton(page).click();
   const dialog = setupDialog(page);
   await expect(

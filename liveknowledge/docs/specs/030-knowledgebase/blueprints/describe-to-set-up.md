@@ -53,15 +53,26 @@ in `components/start/`.
   may edit, no draw tool armed, the tab not connected, no elements, its pages one article page whose writing is
   untouched (`pageIsUntouched`: nothing beyond the Title), and offered. A kindless page never qualifies.
   `useTemplateStartOpen` (the canvas holds the page back while it is up) is the same answer.
-- **The rail** (`start-template-items.ts`): a first group **Start** (`id: 'start'`) holding `blank` (Blank
-  Knowledgebase), then one group per `TEMPLATE_CATEGORIES` entry with its listed templates (every one an article).
-  The foot (`footLead`): **Describe to Set Up** where `useSetupOffered() === 'set-up'`, and **Import** for an
-  Editor; then Connect File (`useConnectStart`). The footer is `StartSaveSwitch`.
+- **The structures** (`packages/knowledge/src/setup-structures.ts`, `SETUP_STRUCTURES`): each `{ id, name, line,
+group, pages }`, its pages a nested outline (title, one-line summary, headings, subpages). `structureSuggestion`
+  flattens one into the shape a model's reply has and reads it with `parseSetupSuggestion`, the parser a reply goes
+  through, so a structure is a `SetupSuggestion` exactly as an AI one is: ids `p1`, `p2`, ... in tree order, depth
+  from 1, within `SETUP_MAX_PAGES` and `SETUP_MAX_DEPTH`, sibling titles unique. `setup-structures.test.ts` pins every
+  structure to those bounds and to its outline surviving the parser whole.
+- **The rail** (`start-structure-items.ts`): a first group **Start** (`id: 'start'`) holding `blank` (Blank
+  Knowledgebase) and, where `useSetupOffered() === 'set-up'`, `describe` (Describe to Set Up); then **Team**,
+  **Engineering** and **Product and Support** from each structure's `group`. The search matches a structure's name,
+  line and page titles (`searchStructures`). A card (`structure-card.tsx`) draws the outline (`structureOutline`:
+  each top page, then its subpages' titles after a colon, at most six lines, the rest as "and N More") with the page
+  count, in place of a picture. The foot (`footLead`): Describe to Set Up and Import (an Editor); then Connect File
+  (`useConnectStart`). The footer is `StartSaveSwitch`.
 - **Choosing** (`EditorStartPanels`): `blank` closes the offer, asks Title focus for the tab and sends
-  `UI·Used·StartBlank`; a template runs `chooseTemplate(kind)` (the tab takes the template's page, writing and name),
-  then closes the offer; Describe to Set Up closes it, sends `UI·Opened·DescribeToSetUp` and `openSetup('set-up')`;
-  Import closes it, sends `UI·Opened·KnowledgeImport` and `setImportOpen(true)`. No `StartAgainTray`: a closed
-  knowledgebase start never comes back.
+  `UI·Used·StartBlank`; `describe` closes it, sends `UI·Opened·DescribeToSetUp` and `openSetup('set-up')`; Import
+  closes it, sends `UI·Opened·KnowledgeImport` and `setImportOpen(true)`. A structure closes it and runs
+  `createStructure` (`components/setup/create-structure.ts`, loaded on the pick): `runSetup` with the structure's
+  pages all ticked and Start Here as `replaceId`, the knowledgebase named after it while untitled, the first page
+  opened, `Tab·Created·FromStructure`. Describe to Set Up's Create runs the same `createStructure`. No
+  `StartAgainTray`: a closed knowledgebase start never comes back.
 - **A kindless tab reads as a page.** `migrateStoredTab` (`packages/document/src/stored-tab.ts`) ends with
   `withKnowledgebasePage`, so a tab with no elements and one page of no kind is an empty knowledgebase page wherever
   a stored tab is read (the api's reads, the offline store, a file, a peer's tab). `removePage` on a tab's last page
@@ -93,8 +104,8 @@ the editor holds.
 ## The control
 
 - **The sidebar** (`DescribeToSetUpButton`): in the sidebar's foot, directly above New Page, a full-width primary
-  `Button` with the sparkle glyph and "Describe to Set Up", and under it "Tell AI what this is for and get a page
-  structure." (the button's `aria-describedby`). 44 px tall on a coarse pointer. It opens the dialog
+  `Button` with the sparkle glyph and "Describe to Set Up"; what it does, "Tell AI what this is for and get a page
+  structure.", is its hover card (and the button's description), not a line under it. 44 px tall on a coarse pointer. It opens the dialog
   (`openSetup('set-up')`) and sends `UI·Opened·DescribeToSetUp`. It is not drawn in the collapsed rail.
 - **Describe to Add Pages**: `useDescribeToAddPages()` answers `{ label, onSelect }` or `null`, for the
   knowledgebase menu. **That menu is not built yet**, so today the way in is the command palette's **Describe to
@@ -209,21 +220,21 @@ description, the titles and the key are never sent.
 
 ## Testing
 
-| Rule                                                                                              | Test                                                         |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Empty: three pages, nothing beyond a title, only what is loaded                                   | `lib/knowledge-setup/setup-lib.test.ts`                      |
-| The check's cost on a keystroke                                                                   | the same, "costs next to nothing"                            |
-| Ticks, renames, the limits                                                                        | the same, "the Review step"                                  |
-| The words, each failure with its next step                                                        | the same, "the words"                                        |
-| Batches of 20 in tree order; the untouched page taken over                                        | `lib/knowledge-setup/run-setup.test.ts`                      |
-| Title, italic line, headings with room to write                                                   | the same                                                     |
-| Markup from a model is text                                                                       | the same; `components/setup/Setup.test.tsx`                  |
-| `replaceId` in the save layer                                                                     | `lib/knowledge-import/save-layers.test.ts`                   |
-| Who is offered it, per role and state                                                             | `components/setup/Setup.test.tsx`                            |
-| Every state of the dialog; Cancel aborts; no key and back                                         | the same                                                     |
-| The palette's command                                                                             | `lib/editor-commands.test.ts`                                |
-| In a browser: the start screen's Describe to Set Up, describe to tree, the no-key path            | `e2e/signed-in/knowledge-setup.spec.ts`                      |
-| The start screen: shown by `/new`, Blank Knowledgebase, a template, Import; skipped by `?blank=1` | `e2e/knowledge-start.spec.ts`; `components/start/*.test.ts*` |
+| Rule                                                                                                            | Test                                                                                     |
+| --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Empty: three pages, nothing beyond a title, only what is loaded                                                 | `lib/knowledge-setup/setup-lib.test.ts`                                                  |
+| The check's cost on a keystroke                                                                                 | the same, "costs next to nothing"                                                        |
+| Ticks, renames, the limits                                                                                      | the same, "the Review step"                                                              |
+| The words, each failure with its next step                                                                      | the same, "the words"                                                                    |
+| Batches of 20 in tree order; the untouched page taken over                                                      | `lib/knowledge-setup/run-setup.test.ts`                                                  |
+| Title, italic line, headings with room to write                                                                 | the same                                                                                 |
+| Markup from a model is text                                                                                     | the same; `components/setup/Setup.test.tsx`                                              |
+| `replaceId` in the save layer                                                                                   | `lib/knowledge-import/save-layers.test.ts`                                               |
+| Who is offered it, per role and state                                                                           | `components/setup/Setup.test.tsx`                                                        |
+| Every state of the dialog; Cancel aborts; no key and back                                                       | the same                                                                                 |
+| The palette's command                                                                                           | `lib/editor-commands.test.ts`                                                            |
+| In a browser: the start screen's Describe to Set Up, describe to tree, the no-key path                          | `e2e/signed-in/knowledge-setup.spec.ts`                                                  |
+| The start screen: shown by `/new`, Blank Knowledgebase, a structure's whole tree, Import; skipped by `?blank=1` | `e2e/knowledge-start.spec.ts`; `components/start/*.test.ts*`; `setup-structures.test.ts` |
 
 ## Not built, or not known
 

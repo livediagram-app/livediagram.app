@@ -680,6 +680,11 @@ liveknowledge's categories are the five the Community files a knowledgebase unde
 Each label is **one word**, so it sits on one line in every picker's rail. The slide and infographic templates
 liveknowledge does not list keep a category in the file (its Record is over every kind) and show in no picker.
 
+liveknowledge's new-knowledgebase start lists none of these: a knowledgebase starts from a **structure**, a whole
+tree of pages (Team Handbook, Engineering Wiki and the rest, `packages/knowledge` `setup-structures.ts`), not from a
+page ([Describe to set up](../030-knowledgebase/describe-to-set-up.md#the-start-screen)). The writing templates are
+for a page: Home's Start a Page From tiles and `/new?template=` links.
+
 The blanks (Blank Tab, Blank Illustration and the blanks of a page kind) are in no category: they lead Popular, the landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the job it does; a category is added when a job has no home, rather than stretching one that reads wrong.
 
 ## Modifier hint banner

@@ -35,7 +35,6 @@ vi.mock('@/hooks/ui/useToast', () => ({
 }));
 // Each dialog's code loads on demand: here it is a marker naming that something opened.
 vi.mock('next/dynamic', () => ({ default: () => () => <div data-testid="opened" /> }));
-vi.mock('@/components/start/useTemplatePickMove', () => ({ useTemplatePickMove: () => () => {} }));
 // The hosts' own engines stand down: what is counted is whether the host renders at all.
 vi.mock('@/components/tour/TourStage', () => ({ TourStage: () => null }));
 vi.mock('@/hooks/canvas/useQuickStyle', () => ({

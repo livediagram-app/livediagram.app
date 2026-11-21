@@ -19,10 +19,10 @@ afterEach(() => {
 });
 
 function pages() {
-  const onTemplate = vi.fn();
-  render(<StartFromTemplates onTemplate={onTemplate} />);
-  const search = screen.getByRole('textbox', { name: 'Find a template' });
-  return { onTemplate, search };
+  const onChoose = vi.fn();
+  render(<StartFromTemplates onChoose={onChoose} />);
+  const search = screen.getByRole('textbox', { name: 'Find a knowledgebase' });
+  return { onChoose, search };
 }
 
 // docs/specs/007-editor/start-diagramming.md "The panel": a search with no match shows the shared empty state.
@@ -30,7 +30,7 @@ describe('a start search with no match', () => {
   it('shows the empty state', () => {
     const { search } = pages();
     fireEvent.change(search, { target: { value: 'zzzz-nothing' } });
-    expect(screen.getByText('No templates match “zzzz-nothing”')).toBeTruthy();
+    expect(screen.getByText('No knowledgebases match “zzzz-nothing”')).toBeTruthy();
     expect(screen.getByText('Try another word.')).toBeTruthy();
   });
 });
@@ -41,30 +41,30 @@ describe('a start search, best match first', () => {
   const sections = () =>
     [...document.querySelectorAll('section[aria-label]')].map((s) => s.getAttribute('aria-label'));
 
-  it('leads with the template whose name is what was typed, and lists it once', () => {
+  it('leads with the structure whose name is what was typed, and lists it once', () => {
     const { search } = pages();
-    // A writing template: liveknowledge lists no slide deck (not-in-liveknowledge.md), which the fork's test typed.
-    fireEvent.change(search, { target: { value: 'meeting notes' } });
+    fireEvent.change(search, { target: { value: 'engineering wiki' } });
     const best = screen.getByRole('region', { name: 'Best Match' });
     const first = best.querySelector('[data-start-card]')!.getAttribute('data-start-card');
-    expect(first).toBe('meeting-notes');
-    expect(document.querySelectorAll('[data-start-card="meeting-notes"]')).toHaveLength(1);
+    expect(first).toBe('engineering-wiki');
+    expect(document.querySelectorAll('[data-start-card="engineering-wiki"]')).toHaveLength(1);
     // Before every group.
     expect(sections().indexOf('Best Match')).toBe(0);
     fireEvent.keyDown(search, { key: 'ArrowDown' });
-    expect(document.activeElement?.getAttribute('data-start-card')).toBe('meeting-notes');
+    expect(document.activeElement?.getAttribute('data-start-card')).toBe('engineering-wiki');
   });
 
   it('has no Best Match when no name begins with the words', () => {
     const { search } = pages();
-    fireEvent.change(search, { target: { value: 'table' } });
+    // A page title inside structures, the name of none.
+    fireEvent.change(search, { target: { value: 'escalation' } });
     expect(screen.queryByRole('region', { name: 'Best Match' })).toBeNull();
   });
 
   it('moves between the cards with the arrow keys, Up from the first back to the search', () => {
     const { search } = pages();
-    // Several writing templates hold a table (the fork's test searched for charts, which liveknowledge lists none of).
-    fireEvent.change(search, { target: { value: 'table' } });
+    // Several structures say how.
+    fireEvent.change(search, { target: { value: 'how' } });
     fireEvent.keyDown(search, { key: 'ArrowDown' });
     const all = [...document.querySelectorAll<HTMLElement>('[data-start-card]')];
     expect(all.length).toBeGreaterThan(2);
@@ -85,7 +85,7 @@ describe('a start search, best match first', () => {
 describe('the start panel on a short window', () => {
   it('clears only the strip and lies over the bottom cluster, whatever the pointer', () => {
     pages();
-    const panel = screen.getByRole('textbox', { name: 'Find a template' }).closest('section')!;
+    const panel = screen.getByRole('textbox', { name: 'Find a knowledgebase' }).closest('section')!;
     const wrapper = panel.parentElement!;
     expect(wrapper.className).toContain('short-window:pt-16');
     // Over the bottom cluster, but on the tab bar while it shows (the measured floor).
@@ -111,7 +111,7 @@ describe('the chosen rail count', () => {
     appearance.value = surface;
     render(
       <CanvasSurfaceProvider surface={surface}>
-        <StartFromTemplates onTemplate={vi.fn()} />
+        <StartFromTemplates onChoose={vi.fn()} />
       </CanvasSurfaceProvider>,
     );
     const palette = startPalette(surface, {});
@@ -129,7 +129,7 @@ describe('the chosen rail count', () => {
     appearance.value = surface;
     render(
       <CanvasSurfaceProvider surface={surface}>
-        <StartFromTemplates onTemplate={vi.fn()} />
+        <StartFromTemplates onChoose={vi.fn()} />
       </CanvasSurfaceProvider>,
     );
     const palette = startPalette(surface, {});

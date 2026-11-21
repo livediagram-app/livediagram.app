@@ -2,16 +2,14 @@
 
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import type { TemplateKind } from '@liveknowledge/templates';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
 import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
-import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 import {
   closeKnowledgebaseStart,
   useKnowledgebaseStartOffered,
 } from '@/components/start/knowledgebase-start';
-import { BLANK_KNOWLEDGEBASE } from '@/components/start/start-template-items';
+import { BLANK_KNOWLEDGEBASE, DESCRIBE_TO_SET_UP } from '@/components/start/start-structure-items';
 import { useSetupOffered } from '@/components/setup/useSetupOffered';
 import { openSetup } from '@/lib/knowledge-setup/setup-open';
 import { pageIsUntouched } from '@/lib/knowledge-setup/setup-empty';
@@ -26,19 +24,44 @@ const StartFromTemplates = dynamic(
 );
 
 // What a new knowledgebase shows over its first page: its start screen, while /new's offer stands and the page is
-// untouched. Always mounted, so the template-pick handoff (useTemplatePickMove) keeps watching the tab.
+// untouched.
 // It reads the tab's id and whether it has content, never its elements (docs/specs/007-editor/blueprints/typing.md
 // "Performance and limits"): a typing commit renders nothing here.
+// A structure picked: its pages made in Start Here's place. The code that writes them is loaded on the pick, never
+// on the editor's first load.
+async function pickStructure(
+  chrome: ReturnType<typeof useEditorChromeStore>,
+  documentId: string,
+  replaceId: string,
+  id: string,
+) {
+  const [{ createStructure }, { reviewPages }, { setupStructure, structureSuggestion }] =
+    await Promise.all([
+      import('@/components/setup/create-structure'),
+      import('@/lib/knowledge-setup/setup-tree'),
+      import('@liveknowledge/knowledge'),
+    ]);
+  const structure = setupStructure(id);
+  if (!structure) return;
+  const suggestion = structureSuggestion(structure);
+  await createStructure({
+    chrome,
+    documentId,
+    pages: reviewPages(suggestion.pages),
+    name: suggestion.name,
+    from: 'FromStructure',
+    replaceId,
+    cancelled: () => false,
+    onProgress: () => {},
+  });
+}
+
 export function EditorStartPanels() {
   const chrome = useEditorChromeStore();
-  const documentId = useEditorChrome((s) => s.documentId);
+  const documentId = () => chrome.get().documentId;
   const tabId = useEditorChrome((s) => s.activeTab.id);
-  const tabHasContent = useEditorChrome((s) => s.activeTab.elements.length > 0);
   // Whether the page has writing (someone else wrote, an import landed): read once per page object.
   const written = useEditorChrome((s) => s.hydrated && !pageIsUntouched(s.activeTab));
-  // A template picked from it on a knowledgebase /new just made goes to its default folder
-  // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
-  const moveOnTemplatePick = useTemplatePickMove({ documentId, tabId, tabHasContent });
   const mayShow = useEditorChrome(templateStartShownOf);
   const offered = useKnowledgebaseStartOffered(tabId);
   const setup = useSetupOffered();
@@ -58,29 +81,35 @@ export function EditorStartPanels() {
     else takeTitleFocus(tabId);
     closeKnowledgebaseStart(tabId);
   };
-  const choose = (kind: TemplateKind) => {
-    if (kind === BLANK_KNOWLEDGEBASE) {
+  const describe =
+    setup === 'set-up'
+      ? () => {
+          track('UI', 'Opened', 'DescribeToSetUp');
+          close(false);
+          openSetup('set-up');
+        }
+      : undefined;
+  const choose = (id: string) => {
+    if (id === BLANK_KNOWLEDGEBASE) {
       track('UI', 'Used', 'StartBlank');
       close(true);
       return;
     }
+    if (id === DESCRIBE_TO_SET_UP) {
+      describe?.();
+      return;
+    }
+    // A structure: its whole tree, made by the path a Describe to Set Up suggestion is (create-structure.ts), in
+    // Start Here's place, the knowledgebase opening on its first page.
     close(false);
-    void chrome.get().chooseTemplate(kind);
-    moveOnTemplatePick();
+    const knowledgebase = documentId();
+    if (knowledgebase) void pickStructure(chrome, knowledgebase, tabId, id);
   };
   return (
     <StartFromTemplates
       key={tabId}
-      onTemplate={choose}
-      onDescribe={
-        setup === 'set-up'
-          ? () => {
-              track('UI', 'Opened', 'DescribeToSetUp');
-              close(false);
-              openSetup('set-up');
-            }
-          : undefined
-      }
+      onChoose={choose}
+      onDescribe={describe}
       onImport={
         editor
           ? () => {

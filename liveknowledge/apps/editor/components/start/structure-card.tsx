@@ -1,0 +1,91 @@
+'use client';
+
+// A knowledgebase structure as a start's card (StartCard): the structure itself in place of a picture, an outline of
+// its page tree two levels deep (structureOutline), with its page count beside its name. Blank Knowledgebase and
+// Describe to Set Up draw their own small outline: an empty page, and a sparkle over pages to come.
+import type { ReactNode } from 'react';
+import { setupStructure } from '@liveknowledge/knowledge';
+import type { StartPanelCard } from '@liveworkspace/workbench/components/start/StartCard';
+import {
+  BLANK_KNOWLEDGEBASE,
+  DESCRIBE_TO_SET_UP,
+  structureOutline,
+  structurePageCount,
+} from './start-structure-items';
+import { SetupSparkleIcon } from '@/components/setup/setup-icons';
+
+const plural = (n: number) => `${n} ${n === 1 ? 'Page' : 'Pages'}`;
+
+// The outline's frame: a quiet sheet of rows, like the sidebar's tree in miniature.
+function Outline({ children }: { children: ReactNode }) {
+  return (
+    <span className="preview-art-tile flex h-full w-full flex-col justify-center gap-1 overflow-hidden rounded-lg bg-slate-50 px-4 py-3 text-left text-[11px] leading-4 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
+      {children}
+    </span>
+  );
+}
+
+const Row = ({ title, under }: { title: string; under?: readonly string[] }) => (
+  <span className="block truncate">
+    <span className="font-medium text-slate-800 dark:text-slate-100">{title}</span>
+    {under && under.length > 0 ? (
+      <span className="text-slate-500 dark:text-slate-400">: {under.join(', ')}</span>
+    ) : null}
+  </span>
+);
+
+export function StructureOutline({ id }: { id: string }) {
+  const structure = setupStructure(id);
+  if (!structure) return null;
+  const { lines, more } = structureOutline(structure);
+  return (
+    <Outline>
+      {lines.map((line) => (
+        <Row key={line.title} title={line.title} under={line.under} />
+      ))}
+      {more > 0 ? (
+        <span className="text-slate-500 dark:text-slate-400">and {more} More</span>
+      ) : null}
+    </Outline>
+  );
+}
+
+export function structureCard(id: string): StartPanelCard {
+  if (id === BLANK_KNOWLEDGEBASE)
+    return {
+      id,
+      name: 'Blank Knowledgebase',
+      line: 'One empty page, Start Here, to shape the knowledgebase yourself.',
+      tag: plural(1),
+      picture: (
+        <Outline>
+          <Row title="Start Here" />
+        </Outline>
+      ),
+    };
+  if (id === DESCRIBE_TO_SET_UP)
+    return {
+      id,
+      name: 'Describe to Set Up',
+      line: 'Say what the knowledgebase is for, and AI suggests its pages for you to review.',
+      picture: (
+        <Outline>
+          <span className="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-100">
+            <SetupSparkleIcon aria-hidden />
+            Your Description
+          </span>
+          <span className="text-slate-500 dark:text-slate-400">
+            Suggested Pages, Ready to Review
+          </span>
+        </Outline>
+      ),
+    };
+  const structure = setupStructure(id)!;
+  return {
+    id,
+    name: structure.name,
+    line: structure.line,
+    tag: plural(structurePageCount(structure)),
+    picture: <StructureOutline id={id} />,
+  };
+}

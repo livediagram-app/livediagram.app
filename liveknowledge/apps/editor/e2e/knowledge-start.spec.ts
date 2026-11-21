@@ -3,9 +3,9 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 import { expectCaretInTitle, startScreen, titleOf, treeShape } from './knowledgebase';
 
 // The start screen a new knowledgebase opens on (docs/specs/030-knowledgebase/describe-to-set-up.md "The start
-// screen"; blueprints/describe-to-set-up.md): Blank Knowledgebase first, the writing templates by category, Import at
-// the rail's foot (Describe to Set Up beside it is signed-in/knowledge-setup.spec.ts's), and no slide, infographic or
-// canvas choice. Each choice closes it for good over the knowledgebase's first page.
+// screen"; blueprints/describe-to-set-up.md): shapes of a whole knowledgebase. Blank Knowledgebase first, then the
+// structures, each making its whole page tree, and Import at the rail's foot (Describe to Set Up is
+// signed-in/knowledge-setup.spec.ts's). Each choice closes it for good.
 
 async function openNew(page: Page) {
   await page.goto('/new');
@@ -41,19 +41,39 @@ test('a new knowledgebase opens on its start, which a reload keeps, and Blank Kn
   expectNoPageErrors(pageErrors);
 });
 
-test('a template from the start lands on the page, and Import opens the import dialog', async ({
+test('a structure from the start makes its whole page tree, and Import opens the import dialog', async ({
   page,
   pageErrors,
 }) => {
   const start = await openNew(page);
-  await start.getByRole('textbox', { name: 'Find a template' }).fill('meeting');
-  await start
-    .getByRole('button', { name: /^Meeting Notes/ })
-    .first()
-    .click();
+  // Each structure shows its outline and page count.
+  await start.locator('[data-rail="engineering"]').click();
+  const wiki = start.locator('[data-start-card="engineering-wiki"]');
+  await expect(wiki).toContainText('13 Pages');
+  await expect(wiki).toContainText('Shipping: Release Process, On-Call');
+  await wiki.click();
   await expect(startScreen(page)).toHaveCount(0);
-  await expect(titleOf(page)).toHaveText('Product Team Weekly');
-  await expect(page.locator('.article-flow')).toContainText('Agenda');
+  // Its tree, Start Here become its first page, which is open.
+  await expect
+    .poll(() => treeShape(page))
+    .toEqual([
+      '1 Overview',
+      '1 Architecture',
+      '2 Services',
+      '2 Data',
+      '2 Decisions',
+      '1 Development',
+      '2 Local Setup',
+      '2 Code Style',
+      '2 Code Review',
+      '2 Testing',
+      '1 Shipping',
+      '2 Release Process',
+      '2 On-Call',
+    ]);
+  await expect(titleOf(page)).toHaveText('Overview');
+  await expect(page.locator('.article-flow')).toContainText('Where to Start');
+  await expect(page.locator('[data-knowledgebase-name]:visible').first()).toHaveText('Engineering Wiki');
 
   // A second new knowledgebase: its Import closes the start and opens the dialog over the empty page.
   const second = await openNew(page);

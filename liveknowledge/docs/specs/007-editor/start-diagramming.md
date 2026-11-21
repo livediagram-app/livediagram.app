@@ -177,11 +177,9 @@ page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`
 
 ## Default folders
 
-A template picked here on a document `/new` just made goes to that template's default folder, unless the document
-was made into a folder on purpose (a `/new?folder=` or `?team=` link, [Default
-folders](../013-workspace/default-folders.md) "A template picked after creation"). The move loads only at the pick
-(`useTemplatePickMove`, with the platform's `moveOnTemplatePick` from `@liveworkspace/explorer`): only a pick on a
-noted document asks the index anything.
+Not in liveknowledge: its start picks a whole-knowledgebase structure, never a template, so nothing moves a new
+knowledgebase to a template's default folder ([Describe to set up](../030-knowledgebase/describe-to-set-up.md#the-start-screen)).
+Default folders still file it by its creation intent ([new document route](new-document-route.md)).
 
 ## The tour waits
 

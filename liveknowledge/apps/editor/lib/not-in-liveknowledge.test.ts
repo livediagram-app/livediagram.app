@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { TEMPLATES, isTemplateKind, templatePageKind } from '@liveknowledge/templates';
 import { newKnowledgebasePageContent, pagesOf, type Tab } from '@liveknowledge/document';
 import { PAGES_FORMATS } from '@/components/dialogs/export-formats';
-import { TEMPLATE_START } from '@/components/start/start-template-items';
+import { knowledgebaseStart } from '@/components/start/start-structure-items';
 import { SETTINGS_CATEGORIES } from '@/components/dialogs/settings/settings-catalogue';
 import { pageEdits } from '@/hooks/editor/page-edits';
 import { dropImportHint } from './drop-import-hint';
@@ -16,13 +16,13 @@ describe('what liveknowledge does not offer', () => {
     expect(CUT_FROM_FORK).toBe(false);
   });
 
-  it('lists only templates of writing, in the catalogue and on the start', () => {
+  it('lists only templates of writing, and starts a knowledgebase from no slide, infographic or canvas', () => {
     for (const t of TEMPLATES) expect(templatePageKind(t.kind), t.kind).toBe('article');
     for (const kind of ['slide-deck', 'blank-slide-deck', 'blank-infographic', 'event-poster'])
       expect(isTemplateKind(kind), kind).toBe(false);
-    const started = TEMPLATE_START.groups.flatMap((g) => g.kinds);
+    const started = knowledgebaseStart({ describe: true }).groups.flatMap((g) => g.ids);
     expect(started.length).toBeGreaterThan(0);
-    for (const kind of started) expect(templatePageKind(kind), kind).toBe('article');
+    for (const id of started) expect(id).not.toMatch(/slide|infographic|canvas/);
   });
 
   it('imports and exports no PowerPoint', () => {

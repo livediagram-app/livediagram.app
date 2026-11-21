@@ -348,8 +348,8 @@ by a request that failed quietly.
 
 The create also carries the new document's creation `intent` (its template), so a create with no place chosen lands in the person's
 [default folder](../013-workspace/default-folders.md) for it, resolved by the server. A blank is filed by its
-intent; the template picked later on its start screen may then move it to that template's
-default ([Default folders](../013-workspace/default-folders.md) "A template picked after creation").
+intent. liveknowledge's start picks no template after creation (it offers whole-knowledgebase structures:
+[Describe to set up](../030-knowledgebase/describe-to-set-up.md#the-start-screen)), so nothing moves it later.
 
 - **A refused placement** shows the error card with copy for the reason, eyebrow
   "Placement refused", title "Couldn't file the document there", and one action,

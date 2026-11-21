@@ -12,10 +12,10 @@ import {
   SETUP_MIN_DESCRIPTION_CHARS,
 } from '@liveknowledge/knowledge';
 import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
-import { selectPage } from '@/components/page-tree/select-page';
 import type { AskSession } from '@/components/ask/useAskSession';
 import type { ImportProgress, ImportWriteResult } from '@/lib/knowledge-import/write-plan';
-import { landingDepth, runSetup } from '@/lib/knowledge-setup/run-setup';
+import { landingDepth } from '@/lib/knowledge-setup/run-setup';
+import { createStructure, isUntitled } from './create-structure';
 import { apiSuggestSetup } from '@/lib/knowledge-setup/setup-api';
 import { untouchedOnlyPage } from '@/lib/knowledge-setup/setup-empty';
 import type { SetupMode } from '@/lib/knowledge-setup/setup-open';
@@ -32,9 +32,7 @@ import { track } from '@/lib/telemetry';
 export type SetupStep = 'describe' | 'suggesting' | 'review' | 'creating' | 'done';
 export type SetupFailure = { kind: string; provider?: KnowledgeAiProvider | undefined };
 
-export const UNTITLED_KNOWLEDGEBASE = 'Untitled Knowledgebase';
-const isUntitled = (name: string | null | undefined) =>
-  !name?.trim() || name.trim() === UNTITLED_KNOWLEDGEBASE;
+export { UNTITLED_KNOWLEDGEBASE } from './create-structure';
 
 export type SetupFlow = {
   step: SetupStep;
@@ -164,16 +162,13 @@ export function useSetupFlow(session: AskSession, mode: SetupMode, onClose: () =
     stopped.current = false;
     setStep('creating');
     setProgress({ done: 0, total: ticked });
-    const named = name?.trim();
-    void runSetup({
+    void createStructure({
+      chrome,
+      documentId: session.documentId,
       pages,
-      host: {
-        documentId: session.documentId,
-        getTabs: () => chrome.get().tabs,
-        getActiveTab: () => chrome.get().activeTab,
-        commitTabs: (mapTabs) => chrome.get().commitTabs(mapTabs),
-        markTabLoaded: (id) => chrome.get().markTabLoaded(id),
-      },
+      // The suggested name, only while the knowledgebase still has none of its own.
+      name,
+      from: 'FromSetup',
       parent,
       replaceId: replace?.id,
       cancelled: () => stopped.current,
@@ -181,13 +176,6 @@ export function useSetupFlow(session: AskSession, mode: SetupMode, onClose: () =
         if (alive.current) setProgress(next);
       },
     }).then((made) => {
-      if (made.imported > 0) {
-        track('Tab', 'Created', 'FromSetup');
-        // The suggested name, only while the knowledgebase still has none of its own.
-        if (named && isUntitled(chrome.get().documentName))
-          chrome.get().nameDocument(truncateName(named));
-        if (made.first) selectPage(chrome.get(), made.first.id);
-      }
       if (!alive.current) return;
       // Everything made: the dialog closes on the first new page. Otherwise it says what happened.
       if (made.imported === made.total && !made.stalled) onClose();
