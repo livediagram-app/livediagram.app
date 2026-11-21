@@ -1,8 +1,15 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
-import { ScreenTabs, screenPanelId, screenTabId, screenTabKey, type ScreenTab } from './ScreenTabs';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  fadeOf,
+  ScreenTabs,
+  screenPanelId,
+  screenTabId,
+  screenTabKey,
+  type ScreenTab,
+} from './ScreenTabs';
 
 // liveplanner/docs/specs/026-plan/automations.md "The Automations screen": the tabs are one Tab stop, the arrows, Home and End
 // open the next tab, the open tab names the panel, and the Runs today meter stands beside the tab list, not in it.
@@ -98,5 +105,56 @@ describe('Automations screen tabs', () => {
     ]);
     expect(screen.getByRole('tab', { name: 'Hub' }).getAttribute('aria-selected')).toBe('true');
     expect(screenTabKey('End', 'rules', ['rules', 'runs', 'view:hub'])).toBe('view:hub');
+  });
+});
+
+describe('the phone bar’s fade', () => {
+  it('fades whichever edge has more tabs past it', () => {
+    expect(fadeOf({ scrollLeft: 0, clientWidth: 300, scrollWidth: 300 })).toBe('none');
+    expect(fadeOf({ scrollLeft: 0, clientWidth: 300, scrollWidth: 420 })).toBe('end');
+    expect(fadeOf({ scrollLeft: 60, clientWidth: 300, scrollWidth: 420 })).toBe('both');
+    expect(fadeOf({ scrollLeft: 120, clientWidth: 300, scrollWidth: 420 })).toBe('start');
+  });
+
+  it('reads the bar as it scrolls, on a phone only', () => {
+    const { unmount } = render(<Screen phone />);
+    const list = screen.getByRole('tablist', { name: 'Automations' });
+    expect(list.dataset.fade).toBe('none');
+    Object.defineProperties(list, {
+      clientWidth: { value: 300, configurable: true },
+      scrollWidth: { value: 420, configurable: true },
+    });
+    fireEvent.scroll(list);
+    expect(list.dataset.fade).toBe('end');
+    expect(list.className).toContain('mask-image');
+    unmount();
+    render(<Screen />);
+    expect(screen.getByRole('tablist', { name: 'Automations' }).dataset.fade).toBeUndefined();
+  });
+
+  it('measures again as the bar resizes, and lets go as it goes', () => {
+    let heard: (() => void) | null = null;
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: () => void) {
+          heard = cb;
+        }
+        observe() {}
+        disconnect = disconnect;
+      },
+    );
+    const { unmount } = render(<Screen phone />);
+    const list = screen.getByRole('tablist', { name: 'Automations' });
+    Object.defineProperties(list, {
+      clientWidth: { value: 300, configurable: true },
+      scrollWidth: { value: 420, configurable: true },
+    });
+    act(() => heard!());
+    expect(list.dataset.fade).toBe('end');
+    unmount();
+    expect(disconnect).toHaveBeenCalled();
+    vi.unstubAllGlobals();
   });
 });

@@ -53,6 +53,7 @@ import { ScreenTabs, screenPanelId, screenTabId, type ScreenTab } from './Screen
 import { TemplatesGallery } from './TemplatesGallery';
 import type { ListedRule, RuleBody, RuleStart } from './types';
 import { readAutomations, useAutomations } from './use-automations';
+import { useCarriedRule } from './use-carried-rule';
 
 /** A template's rule over this item, named so no rule here has its name, and what it left to pick. */
 export function templateStart(
@@ -274,6 +275,8 @@ export function AutomationsDialog({
     onTarget({ view: 'rule', ruleId: null, draft: true });
   };
   const editing = target.view === 'rule' ? target : null;
+  // The rule as it was left: kept for Back to Rule, or carried across the phone breakpoint.
+  const resumeKept = useCarriedRule(phone, target, builderDraft);
   const fromDraft = editing && !editing.ruleId && editing.draft ? drafted : null;
   const editingRule = editing?.ruleId ? (rules.find((r) => r.id === editing.ruleId) ?? null) : null;
   // A rule opened by its id (a link to it) that the list lacks opens no builder, never a blank new rule.
@@ -454,9 +457,9 @@ export function AutomationsDialog({
       }
       rule={editingRule}
       initial={initial}
-      resume={editing.kept}
+      resume={resumeKept}
       blank={!editing.ruleId && !editing.kept && !fromDraft && !editing.template}
-      picks={fromDraft?.picks ?? fromTemplate?.picks ?? editing.kept?.picks}
+      picks={fromDraft?.picks ?? fromTemplate?.picks ?? resumeKept?.picks}
       notice={fromDraft ? <DraftedNote /> : undefined}
       timeZone={zone}
       scope={scope}

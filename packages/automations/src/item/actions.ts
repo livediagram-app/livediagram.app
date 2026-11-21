@@ -74,7 +74,12 @@ const revertSnapshot = defineAction<ItemRevertSnapshot & ItemPart>({
       : {}),
   }),
   defaults: () => ({ kind: 'revert_snapshot', snapshot: '' }),
-  words: (a, names) => [{ chip: `Revert to “${snapshotWords(a, names)}”` }],
+  // Not picked yet: the step's own name and the builder's unpicked word, never a quoted "a snapshot".
+  words: (a, names) => [
+    {
+      chip: a.snapshot ? `Revert to “${snapshotWords(a, names)}”` : 'Revert to Snapshot (pick one)',
+    },
+  ],
   would: (a, ctx) => `Would revert to “${snapshotWords(a, ctx.names)}”`,
   summary: () => 'Revert to Snapshot',
 });

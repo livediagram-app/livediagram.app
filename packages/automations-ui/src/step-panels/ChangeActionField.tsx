@@ -1,31 +1,40 @@
 'use client';
 
 // An action panel's Action field (liveplanner/docs/specs/026-plan/automations.md "The rule builder"): the action's
-// tile and name, and Change, which opens the Add an Action picker as Change the Action, offering what the step can
-// become (the actions an If / Else list or a branch takes), the current one badged. A message step's offers the
-// other tools alone.
+// tile and name, and Change, which opens the Add an Action picker as Change the Action, the current one badged. It
+// offers exactly what Add Action offers where the step stands: at the rule's top level every action (one nothing may
+// follow only for the last step), in an If / Else list or a branch what those take. A family the rest of the rule
+// holds all it may of is dimmed and says so, as Add Action's.
 
-import { useState } from 'react';
-import { ActionTile, AddActionDialog } from '../AddActionDialog';
+import { useMemo, useState } from 'react';
+import { ActionTile, AddActionDialog, type PickerWhere } from '../AddActionDialog';
 import { useAutomationsKit } from '../kit-context';
+import type { RuleBody } from '../types';
 import { ChangeRow, PanelField } from './panel-parts';
-
-const isMessage = (key: string) => key.startsWith('notify_');
 
 export function ChangeActionField({
   actionKey,
-  branch,
+  where,
+  rest = null,
+  last = true,
   onChange,
 }: {
   // The step's tile (types.ts stepKey).
   actionKey: string;
-  // Inside the app's branch.
-  branch: boolean;
+  // Where the step stands: the rule's top level, an If / Else list, or the app's branch.
+  where: PickerWhere;
+  // The rule without this step, for what is full (null: nothing reads as full).
+  rest?: RuleBody | null;
+  // At the top level: whether it is the rule's last step, where one nothing may follow can stand.
+  last?: boolean;
   onChange: (key: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const kit = useAutomationsKit();
-  const message = isMessage(actionKey);
+  const only = useMemo(
+    () => (last ? undefined : (k: string) => !kit.kinds.actions[k]?.last),
+    [kit, last],
+  );
   return (
     <PanelField label="Action">
       {(id) => (
@@ -40,11 +49,9 @@ export function ChangeActionField({
           />
           {open ? (
             <AddActionDialog
-              body={null}
-              // A message step sits at the top level, and becomes another tool's; any other becomes what an
-              // If / Else list or a branch takes (the plain actions alone).
-              where={message ? 'top' : branch ? 'branch' : 'list'}
-              {...(message ? { only: isMessage } : {})}
+              body={rest}
+              where={where}
+              {...(only ? { only } : {})}
               current={actionKey}
               onClose={() => setOpen(false)}
               onPick={(k) => {

@@ -10,7 +10,7 @@ export function AutomationsArt() {
       rules={[
         {
           name: 'Reset Every Night',
-          sentence: 'When Every Day at 0:00 then Revert to Snapshot',
+          sentence: 'When Every Day at Midnight then Revert to Snapshot',
           last: 'Today',
         },
         {

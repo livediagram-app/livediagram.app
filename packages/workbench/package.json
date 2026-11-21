@@ -579,6 +579,7 @@
     "./lib/move-row": "./src/lib/move-row.ts",
     "./lib/oauth-handover": "./src/lib/oauth-handover.ts",
     "./lib/offline/local-move-dismissal": "./src/lib/offline/local-move-dismissal.ts",
+    "./lib/offline/local-move-showing": "./src/lib/offline/local-move-showing.ts",
     "./lib/offline/offline-store-core": "./src/lib/offline/offline-store-core.ts",
     "./lib/online-status": "./src/lib/online-status.ts",
     "./lib/open-edit": "./src/lib/open-edit.ts",

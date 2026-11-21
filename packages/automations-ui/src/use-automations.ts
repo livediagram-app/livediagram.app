@@ -131,6 +131,14 @@ function change(
   publish(entry, { status: entry.state.status, data: { ...data, rules: fold(data.rules) } });
 }
 
+// A change only the room can tell the list about (a run): a read under way may predate it, so it reads once more;
+// otherwise a read now.
+function readAgain(client: Pick<AutomationsClient, 'list'>, scope: AutomationsScope): void {
+  const entry = entryOf(scope);
+  if (entry.reading) entry.stale = true;
+  else void readAutomations(client, scope);
+}
+
 const put = (rule: AutomationListedRule) => (rules: readonly AutomationListedRule[]) =>
   rules.some((r) => r.id === rule.id)
     ? rules.map((r) => (r.id === rule.id ? rule : r))
@@ -226,8 +234,19 @@ export function useAutomations(
         await api().remove(s, id);
         change(s, (rules) => rules.filter((r) => r.id !== id));
       },
+      // A test is a dry run: it writes nothing, so the list stays as it is.
       test: (rule, subject) => api().test(need(), rule, subject),
-      run: (id, subject) => api().run(need(), id, subject),
+      // A run changes what the list shows of it (its Last Run, This Week, the day's runs), which only the room
+      // knows: the list is read again once it settles, whether it ran or failed (a failed run is counted too).
+      run: async (id, subject) => {
+        const s = need();
+        const c = api();
+        try {
+          return await c.run(s, id, subject);
+        } finally {
+          readAgain(c, s);
+        }
+      },
     };
   }, [client, scope, state]);
 }

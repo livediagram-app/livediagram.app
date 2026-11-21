@@ -205,7 +205,7 @@ export interface ActionKind<Step, Outline> {
   name: string;
   /** What it does, in a line. */
   line: string;
-  /** Its icon, on the blue tile. */
+  /** Its icon, on the brand-tinted tile (the app's accent). */
   glyph: GlyphType;
   scene: (group: string) => ReactNode;
   /** Its first form (`personless`: the rule's trigger has nobody behind it). */

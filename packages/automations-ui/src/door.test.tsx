@@ -3,6 +3,7 @@
 // row counts the rules that are on, turns amber for one that paused, and opens whichever stands before the person.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { usePublishLocalMoveShowing } from '@liveworkspace/workbench/lib/offline/local-move-showing';
 import { useAutomationsAccess } from './AutomationsContext';
 import {
   AUTOMATIONS_FIRST_READ_MS,
@@ -157,6 +158,43 @@ describe('the host and the footer’s row', () => {
     host(fakeClient(), SCOPE);
     expect(screen.getByRole('dialog', { name: 'Automations' })).toBeTruthy();
     expect(window.location.search + window.location.hash).toBe('?x=2#t=1');
+  });
+
+  it('waits on arrival while the move prompt after signing in is up, never stacked on it', () => {
+    function MovePrompt({ up }: { up: boolean }) {
+      usePublishLocalMoveShowing(up);
+      return null;
+    }
+    window.history.replaceState(null, '', '/item/i1?automations=1');
+    const gate: AutomationsGate = { kind: 'sync', ready: true, sync: async () => {} };
+    const { plumbing } = fakeKit(fakeClient());
+    const ui = (up: boolean, scope: AutomationsScope | null) => (
+      <>
+        <MovePrompt up={up} />
+        <AutomationsHost
+          plumbing={plumbing}
+          scope={scope}
+          gate={scope ? null : gate}
+          signedIn
+          Screen={Screen}
+          Gate={Gate}
+        >
+          <Row />
+        </AutomationsHost>
+      </>
+    );
+    const { rerender } = render(ui(true, null));
+    expect(screen.queryByRole('dialog', { name: 'Gate sync' })).toBeNull();
+    // Answered (Not Now): the gate the arrival asked for opens.
+    rerender(ui(false, null));
+    expect(screen.getByRole('dialog', { name: 'Gate sync' })).toBeTruthy();
+    // Up again, then the item moved with the rest: the screen opens once it goes, not the gate.
+    rerender(ui(true, null));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    rerender(ui(true, SCOPE));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    rerender(ui(false, SCOPE));
+    expect(screen.getByRole('dialog', { name: 'Automations' })).toBeTruthy();
   });
 
   it('hands an app’s own parts the scope and the way in', () => {

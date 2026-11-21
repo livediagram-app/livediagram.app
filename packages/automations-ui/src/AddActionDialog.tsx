@@ -6,13 +6,13 @@
 // where the action goes: the steps of the top level alone only there, the kinds a branch leaves out never in one.
 // A group whose kinds the rule holds all it may of is dimmed and says so.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactElement } from 'react';
 import {
   AUTOMATION_AI_STEPS_MAX,
   AUTOMATION_OUTGOING_MAX,
   AUTOMATION_WAITS_MAX,
 } from '@liveworkspace/automations';
-import { Button, PlusIcon } from '@liveworkspace/ui';
+import { Button, HoverCard, PlusIcon } from '@liveworkspace/ui';
 import { addActionHeroArt } from './AddActionHeroArt';
 import { StepTile } from './glyphs';
 import type { AnyAutomationsKit } from './kit';
@@ -81,34 +81,69 @@ export function ActionTile({ actionKey, size = 24 }: { actionKey: string; size?:
   return <StepTile tone="action" glyph={kit.kinds.actions[actionKey]?.glyph} size={size} />;
 }
 
+/** A disabled button that says why: still focusable (aria-disabled, its press ignored), so hover and keyboard focus
+ *  both show the hover card with the reason. One with no reason is plainly disabled. */
+export function disabledProps(
+  disabled: boolean,
+  why: string | null | undefined,
+): { disabled?: boolean; 'aria-disabled'?: true } {
+  if (!disabled) return {};
+  return why ? { 'aria-disabled': true } : { disabled: true };
+}
+
+/** The hover card saying why a button is disabled; the button alone while there is no reason. */
+export function DisabledWhy({
+  title,
+  why,
+  children,
+}: {
+  title: string;
+  why: string | null | undefined;
+  children: ReactElement;
+}) {
+  if (!why) return children;
+  return (
+    <HoverCard title={title} description={why}>
+      {children}
+    </HoverCard>
+  );
+}
+
 /** The dashed + Add Action button and the picker it opens. `where`: the rule's top level, an If / Else list, or a
  *  branch. */
 export function AddActionButton({
   body,
   where,
   disabled,
+  why = null,
   onPick,
 }: {
   body: RuleBody;
   where: PickerWhere;
   disabled: boolean;
+  // Why it is disabled, said on hover and focus (DisabledWhy).
+  why?: string | null;
   onPick: (key: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button
-        variant="secondary"
-        size="xs"
-        className="border-dashed"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        disabled={disabled}
-        onClick={() => setOpen(true)}
-      >
-        <PlusIcon size={12} />
-        Add Action
-      </Button>
+      <DisabledWhy title="Add Action" why={disabled ? why : null}>
+        <Button
+          variant="secondary"
+          size="xs"
+          className="border-dashed"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          {...disabledProps(disabled, why)}
+          onClick={() => {
+            if (!disabled) setOpen(true);
+          }}
+        >
+          <PlusIcon size={12} />
+          Add Action
+        </Button>
+      </DisabledWhy>
       {open ? (
         <AddActionDialog
           body={body}
@@ -167,9 +202,8 @@ export function AddActionDialog({
     <TilePicker
       title={current ? 'Change the Action' : 'Add an Action'}
       line={
-        current
-          ? 'What should this step do instead?'
-          : `What should this rule do to the ${kit.plumbing.words.subject}?`
+        // Steps may act on the whole item (a snapshot, an email), not only the run's tab or card.
+        current ? 'What should this step do instead?' : 'What should this rule do?'
       }
       art={addActionHeroArt}
       noun="action"

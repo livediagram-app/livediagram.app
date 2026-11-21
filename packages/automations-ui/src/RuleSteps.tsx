@@ -7,7 +7,12 @@
 // step but the trigger has a ⋯ menu. A step a template left to pick says so until it is picked. The words on each
 // card are the app's (kit.sentence).
 
-import { AUTOMATION_AI_PER_DAY, waitWords, type AutomationKind } from '@liveworkspace/automations';
+import {
+  AUTOMATION_AI_PER_DAY,
+  waitWords,
+  type AutomationKind,
+  type RuleSentencePart,
+} from '@liveworkspace/automations';
 import { actionGlyph, stepGlyph } from './glyphs';
 import { useAutomationsKit } from './kit-context';
 import {
@@ -24,7 +29,14 @@ import { HolderAddButtons, TopAddButtons, type AddActions } from './StepAddButto
 import { StepCard, StepJoin } from './StepCard';
 import { StepMenu } from './StepMenu';
 import { isAi, isIf, isOutgoing, isWait, stepKey, type RuleBody } from './types';
+import { ChipText, useValueLabels, valueText } from './value-labels';
 import { ValueChipsText } from './ValueInsert';
+
+// The trigger's card is labelled When already: a kit whose trigger words open on it (liveplanner's) drops it there.
+const withoutWhen = (parts: readonly RuleSentencePart[]): readonly RuleSentencePart[] => {
+  const first = parts[0];
+  return first && 'word' in first && first.word === 'When' ? parts.slice(1) : parts;
+};
 
 export type StepsActions = AddActions & {
   select: (part: RulePart) => void;
@@ -71,6 +83,9 @@ export function RuleSteps({
   const kit = useAutomationsKit();
   const { sentence, kinds } = kit;
   const branch = kinds.branch;
+  // A value in a chip reads as its label in a token (Take Snapshot “Today”), and in the names menus read.
+  const labels = useValueLabels(outline);
+  const stepName = (a: AutomationKind) => valueText(sentence.step(a, outline), labels);
   // A step nothing may follow stays last: it never moves up, and the step before it never moves down past it.
   const endsRule = (step: AutomationKind | undefined) =>
     !!step && !!kinds.actions[stepKey(step)]?.last;
@@ -91,14 +106,18 @@ export function RuleSteps({
     if (isAi(a))
       return (
         <>
-          <span className={`${CHIP} self-start`}>{sentence.step(a, outline)}</span>
+          <span className={`${CHIP} self-start`}>
+            <ChipText text={sentence.step(a, outline)} labels={labels} />
+          </span>
           <span className={QUIET}>Uses AI: counts toward {AUTOMATION_AI_PER_DAY} a day</span>
         </>
       );
     const sub = isOutgoing(a) ? a.text : (sentence.text?.(a) ?? '');
     return (
       <>
-        <span className={`${CHIP} self-start`}>{sentence.step(a, outline)}</span>
+        <span className={`${CHIP} self-start`}>
+          <ChipText text={sentence.step(a, outline)} labels={labels} />
+        </span>
         {sub ? <ValueChipsText text={sub} className={SUB} /> : null}
       </>
     );
@@ -131,8 +150,16 @@ export function RuleSteps({
     const name = sentence.condition((holder ?? body).conditions[part.index]!, outline);
     return card(
       part,
-      { tone: 'condition', label, children: <span className={`${CHIP} self-start`}>{name}</span> },
-      name,
+      {
+        tone: 'condition',
+        label,
+        children: (
+          <span className={`${CHIP} self-start`}>
+            <ChipText text={name} labels={labels} />
+          </span>
+        ),
+      },
+      valueText(name, labels),
     );
   };
 
@@ -155,7 +182,7 @@ export function RuleSteps({
                 {card(
                   { part: 'branch', step: i, side, index: j },
                   { tone: 'action', glyph: stepGlyph(kit, a), label, children: stepBody(a) },
-                  sentence.step(a, outline),
+                  stepName(a),
                 )}
               </div>
             ))}
@@ -182,7 +209,10 @@ export function RuleSteps({
             label: 'When',
             children: (
               <>
-                <SentenceChips parts={sentence.trigger(body.trigger, outline)} />
+                <SentenceChips
+                  parts={withoutWhen(sentence.trigger(body.trigger, outline))}
+                  labels={labels}
+                />
                 {TriggerNote ? <TriggerNote body={body} compact /> : null}
               </>
             ),
@@ -200,7 +230,7 @@ export function RuleSteps({
       ))}
       {body.steps.map((step, i) => {
         const part: RulePart = { part: 'step', index: i };
-        const name = sentence.step(step, outline);
+        const name = stepName(step);
         if (isIf(step))
           return (
             <li key={`s${i}`}>
@@ -218,7 +248,7 @@ export function RuleSteps({
                       <span className="flex flex-wrap gap-1">
                         {step.conditions.map((c, j) => (
                           <span key={j} className={IF_CHIP}>
-                            {sentence.condition(c, outline)}
+                            <ChipText text={sentence.condition(c, outline)} labels={labels} />
                           </span>
                         ))}
                       </span>

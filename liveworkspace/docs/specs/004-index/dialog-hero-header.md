@@ -37,7 +37,7 @@ Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
   landmark, so every dialog wearing the hero would give the page it opens over a second banner. The `<h2>` is what
   names it.
 - **Height.** The header is exactly 100px tall in every dialog, at every width, its row centred in it. Nothing in it
-  can make it taller: from `sm` the title and its line are one line each, truncated.
+  can make it taller: from `sm` the title is one line, truncated, and its line at most two.
 - **On a phone** (below `sm`) it keeps the desktop look, so a dialog is as pretty there: the same 100px, the 36px
   mark, the 20px title and its visible line, with 16px at either side rather than 24px. A long title may wrap to a
   second line rather than lose words, and so may the line under it (Work Tracker 1092: the Export panel's "Copy this tab
@@ -49,8 +49,9 @@ Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
 - **Title.** A real `<h2>` whose id the dialog passes to its panel's `aria-labelledby` (a dialog may keep an
   `aria-label` that names more, as Share does), 20px, in the app's heading face (below), in the
   band's ink.
-- **The line.** One line from `sm`, 13px, in the band's muted ink, truncated with an ellipsis; on a phone up to two
-  lines, then the ellipsis. Words that
+- **The line.** 13px, in the band's muted ink, up to two lines at every width, then an ellipsis: beside a centre
+  piece it stops short of, a wide dialog's line wrapped rather than lost its end (Automations' "Rules this design runs
+  for you…" at 1440px). Words that
   can run long are said in fewer words, with the full sentence for screen readers, as Share's status does.
 - **Actions, then the close.** The dialog's own controls (a primary button, Show Me, Help) sit at the right, then
   the standard close (`DialogCloseButton`) last. Every control keeps its own look, pointer cursor and hover card.

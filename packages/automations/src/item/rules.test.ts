@@ -371,6 +371,20 @@ describe('words', () => {
         ),
       ),
     ).toBe('When Run by Hand then Revert to “Kept Name” and Post to Microsoft Teams Ops');
+    // Not picked yet: the step's own name and the unpicked word, never a quoted "a snapshot".
+    expect(
+      sentenceText(
+        itemRuleSentence(
+          {
+            trigger: { kind: 'manual' },
+            conditions: [],
+            steps: [{ kind: 'revert_snapshot', snapshot: '' }],
+          },
+          TEST_KINDS,
+          bare,
+        ),
+      ),
+    ).toBe('When Run by Hand then Revert to Snapshot (pick one)');
   });
 
   it('says a run’s first line: who and what, or how long it waited', () => {

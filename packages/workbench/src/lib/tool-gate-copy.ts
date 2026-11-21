@@ -15,6 +15,9 @@ export function toolGateCopy(
   }
   return {
     title: `Sync ${noun}`,
-    body: `You need to sync this ${noun.toLowerCase()} to our servers to use ${tool}, as it runs on our servers.`,
+    body: `You need to sync this ${inSentence(noun)} to our servers to use ${tool}, as it runs on our servers.`,
   };
 }
+
+// The item's word inside a sentence: lower case, but livehuddle's Space keeps its capital everywhere.
+const inSentence = (noun: string): string => (noun === 'Space' ? noun : noun.toLowerCase());

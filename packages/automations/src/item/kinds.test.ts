@@ -200,6 +200,12 @@ describe('the shared triggers', () => {
     expect(scheduledWords({ kind: 'scheduled', every: 'weekday', at: '17:45' })).toBe(
       'Every Weekday at 17:45',
     );
+    expect(scheduledWords({ kind: 'scheduled', every: 'day', at: '00:00' })).toBe(
+      'Every Day at Midnight',
+    );
+    expect(scheduledWords({ kind: 'scheduled', every: 'weekday', at: '12:00' })).toBe(
+      'Every Weekday at Noon',
+    );
     expect(scheduledWords({ kind: 'scheduled', every: 'week', days: [1, 5], at: '09:00' })).toBe(
       'Weekly on Monday, Friday at 9:00',
     );

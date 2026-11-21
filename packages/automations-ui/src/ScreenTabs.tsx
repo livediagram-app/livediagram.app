@@ -7,7 +7,14 @@
 // Right open the next tab (wrapping), Home and End the first and last, and focus follows. The meter stands beside the
 // tab list, never in it (a tab list holds only tabs).
 
-import type { KeyboardEvent, ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 
 // The four every app has; an app's own tab is `view:<id>`.
 export type ScreenTab = 'rules' | 'runs' | 'templates' | 'connections' | `view:${string}`;
@@ -47,6 +54,23 @@ const PHONE_TAB =
   'relative flex h-12 shrink-0 cursor-pointer items-center whitespace-nowrap border-y-2 border-t-transparent px-1 text-[14px] font-medium transition focus-visible:-outline-offset-2 motion-reduce:transition-none';
 const PHONE_LIST =
   '-mb-px min-w-0 items-stretch gap-6 overflow-x-auto overflow-y-hidden [scrollbar-width:none]';
+// On a phone, an edge with more tabs past it fades out, so a cut tab reads as "scroll for more", never as a clipped
+// word ("Connectio").
+const FADE: Readonly<Record<string, string>> = {
+  none: '',
+  end: '[mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)]',
+  start: '[mask-image:linear-gradient(to_left,black_calc(100%-2rem),transparent)]',
+  both: '[mask-image:linear-gradient(to_right,transparent,black_2rem,black_calc(100%-2rem),transparent)]',
+};
+type Fade = keyof typeof FADE;
+
+/** Which edges of a sideways scroller have more past them. */
+export function fadeOf(el: Pick<HTMLElement, 'scrollLeft' | 'scrollWidth' | 'clientWidth'>): Fade {
+  const start = el.scrollLeft > 1;
+  const end = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+  return start && end ? 'both' : start ? 'start' : end ? 'end' : 'none';
+}
+
 const TAB_ON = 'border-brand-600 text-brand-700 dark:border-brand-400 dark:text-brand-300';
 const TAB_OFF =
   'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100';
@@ -76,6 +100,20 @@ export function ScreenTabs({
     ...extra,
   ];
   const order = tabs.map((t) => t.tab);
+  const list = useRef<HTMLDivElement>(null);
+  const [fade, setFade] = useState<Fade>('none');
+  // Called only while the bar is drawn (its scroll, its effect, its observer).
+  const measure = useCallback(() => setFade(fadeOf(list.current!)), []);
+  // Measured as the bar lays out and as it resizes (a phone turned), and on every scroll.
+  useEffect(() => {
+    if (!phone) return;
+    const node = list.current!;
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [phone, measure, tabs.length]);
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
     const next = screenTabKey(e.key, current, order);
     if (!next) return;
@@ -88,9 +126,12 @@ export function ScreenTabs({
       className={`flex border-b border-slate-100 dark:border-slate-800 ${phone ? 'items-stretch px-4' : 'items-end px-6'}`}
     >
       <div
+        ref={list}
         role="tablist"
         aria-label="Automations"
-        className={`flex ${phone ? PHONE_LIST : 'items-end gap-5'}`}
+        data-fade={phone ? fade : undefined}
+        onScroll={phone ? measure : undefined}
+        className={`flex ${phone ? `${PHONE_LIST} ${FADE[fade]}` : 'items-end gap-5'}`}
       >
         {tabs.map((t) => {
           const on = current === t.tab;

@@ -32,6 +32,10 @@ describe('a rule time', () => {
   it('says the hour without its leading zero', () => {
     expect(clockWords('09:00')).toBe('9:00');
     expect(clockWords('17:45')).toBe('17:45');
+    // The two named times read as words in a sentence: "Every Day at Midnight", "at Noon".
+    expect(clockWords('00:00')).toBe('Midnight');
+    expect(clockWords('12:00')).toBe('Noon');
+    expect(clockWords('00:15')).toBe('0:15');
   });
 });
 

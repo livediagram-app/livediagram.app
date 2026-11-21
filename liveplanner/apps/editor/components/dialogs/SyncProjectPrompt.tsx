@@ -57,7 +57,7 @@ export function SyncProjectPrompt({
     <div className="flex flex-col items-center gap-4 px-6 py-7 text-center">
       <span
         data-prompt-glyph={signInHref ? 'person' : 'cloud-off'}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-700 ring-1 ring-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:ring-teal-500/30"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30"
       >
         {/* Cloud-off for a plan kept Offline; a person (Lucide's user) for a guest, who signs in. */}
         <Glyph size={24} units={24}>

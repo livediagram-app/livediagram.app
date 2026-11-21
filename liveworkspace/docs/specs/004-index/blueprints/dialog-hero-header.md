@@ -42,7 +42,7 @@ const titleId = useId();
     art={shareHeroArt} // HeroArt, a module constant
     titleId={titleId} // the <h2>'s id
     title="Share This Plan"
-    subtitle={<ShareStatus />} // optional: one line from sm, up to two on a phone
+    subtitle={<ShareStatus />} // optional: up to two lines at every width
     actions={<>…</>} // optional: before the close
     onClose={close} // optional: renders DialogCloseButton last
     underHandle // optional: a phoneSheet dialog

@@ -126,7 +126,8 @@ export function HeroDialogHeader({
         {subtitle ? (
           <p
             data-dialog-hero-subtitle=""
-            className={`sm:truncate max-sm:line-clamp-2 text-[13px] leading-[18px] text-[var(--hero-muted)] ${cap}`}
+            // Up to two lines at every width, then the ellipsis: wrapped, never cut at its first line's end.
+            className={`line-clamp-2 text-[13px] leading-[18px] text-[var(--hero-muted)] ${cap}`}
           >
             {subtitle}
           </p>

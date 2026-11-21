@@ -9,6 +9,7 @@ import { NoMatches } from '@liveworkspace/ui';
 import { useAutomationsKit, useAutomationsOffer } from './kit-context';
 import { RuleFilters, type OnFilter, type TriggerFilter } from './RuleFilters';
 import { RULE_GRID, RuleRow, type RuleRowActions } from './RuleRow';
+import { useValueLabels } from './value-labels';
 import type { ListedRule } from './types';
 
 type AutomationListedRule = ListedRule;
@@ -50,6 +51,8 @@ export function RulesList({
   const [query, setQuery] = useState('');
   const [trigger, setTrigger] = useState<TriggerFilter>('all');
   const [on, setOn] = useState<OnFilter>('all');
+  // The app's value labels, read once for every row's chips.
+  const labels = useValueLabels(outline);
   const shown = useMemo(() => filterRules(rules, query, trigger, on), [rules, query, trigger, on]);
   // GitHub's triggers only where the plan can use them, or a rule (or the filter) is on one.
   const { triggerOrder, triggerGroups } = useAutomationsKit().kinds;
@@ -104,6 +107,7 @@ export function RulesList({
                   key={rule.id}
                   rule={rule}
                   outline={outline}
+                  labels={labels}
                   now={now}
                   busy={busyIds.has(rule.id)}
                   phone={phone}

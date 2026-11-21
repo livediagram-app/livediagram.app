@@ -149,6 +149,27 @@ describe('an item’s screen', () => {
     expect(fakes.listWebhooks).not.toHaveBeenCalled();
   });
 
+  it('reads a value in a rule’s summary as its label in a token, in the list and the builder', async () => {
+    const dated = itemRule({
+      steps: [{ kind: 'take_snapshot', name: '{{now.date}} for {{item.name}}' }],
+    });
+    render(<Screen client={itemClient([dated])} />);
+    await screen.findByText('Nightly Snapshot');
+    expect(sentenceOf('r1')).toBe(
+      'WhenEdited, Then Quiet for 30 MinutesonRoadmapthenTake Snapshot “Today for Document Name”',
+    );
+    expect(row('r1').querySelector('[data-value-token="now.date"]')!.textContent).toBe('Today');
+    fireEvent.click(within(row('r1')).getByRole('button', { name: 'Nightly Snapshot' }));
+    await screen.findByRole('textbox', { name: 'Rule name' });
+    const step = cards()[1]!;
+    expect(step.textContent).not.toContain('{{');
+    expect(step.querySelector('[data-value-token="item.name"]')!.textContent).toBe('Document Name');
+    // The name a menu reads has the labels too.
+    expect(
+      screen.getByRole('button', { name: 'More for Take Snapshot “Today for Document Name”' }),
+    ).toBeTruthy();
+  });
+
   it('says what a rule can do here when there are none, and draws each template from its rule', async () => {
     render(<Screen client={itemClient([])} />);
     expect(

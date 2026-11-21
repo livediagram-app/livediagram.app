@@ -212,7 +212,8 @@ export function TilePicker<K extends string>({
           <div
             role="group"
             aria-label={groupsLabel}
-            className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5"
+            // Swiped sideways: no scrollbar under the chips (it drew a grey bar across the sheet).
+            className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {nav.map((n) => (
               <button

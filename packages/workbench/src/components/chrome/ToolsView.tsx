@@ -50,13 +50,12 @@ export function ToolsView({
       ref={root}
       data-tools-view={id}
       // Exactly the list's height (owner, 2026-11-17: every tool the same height as Tools, scrolling inside it with its
-      // footer pinned). Before the list has been measured, at least the room under the 100 px band (Tools' 500 px
-      // floor, less the band and the height box's 4 px pad).
+      // footer pinned), and never under the room under the 100 px band (Tools' 500 px floor, less the band and the
+      // height box's 4 px pad): a short list measured under that floor left the tool a strip of it, its own scroller
+      // squeezed to nothing (History's timeline) over a blank band.
       className="flex min-h-[calc(min(500px,100dvh-2rem)-104px)] flex-1 flex-col"
       // A phone's drawer: at least the list's height, and as tall as the drawer is dragged.
-      style={
-        floorPx ? (sheet ? { minHeight: floorPx } : { height: floorPx, minHeight: 0 }) : undefined
-      }
+      style={floorPx ? (sheet ? { minHeight: floorPx } : { height: floorPx }) : undefined}
     >
       <div data-tools-back="" className="flex shrink-0 items-center px-3 pb-2.5 pt-3">
         <div className="min-w-0 flex-1">

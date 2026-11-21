@@ -22,7 +22,8 @@ export function clockMinutes(at: unknown): number | null {
 }
 
 // "9:00", "17:45": a time as a rule's words read it.
-export const clockWords = (at: AutomationClock): string => at.replace(/^0(\d)/, '$1');
+export const clockWords = (at: AutomationClock): string =>
+  at === '00:00' ? 'Midnight' : at === '12:00' ? 'Noon' : at.replace(/^0(\d)/, '$1');
 
 // Whether the trigger has a moment on `day`.
 export function firesOn(trigger: AutomationTimed, day: string): boolean {

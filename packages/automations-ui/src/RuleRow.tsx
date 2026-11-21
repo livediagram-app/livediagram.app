@@ -14,6 +14,7 @@ import { Button, Switch, lucideGlyph } from '@liveworkspace/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { useAutomationsKit } from './kit-context';
 import { SentenceChips } from './SentenceChips';
+import type { ValueLabels } from './value-labels';
 import { RuleMenu, RunIcon } from './RuleMenu';
 import { lastRunWords, nextRunWords, runsWords } from './run-words';
 import type { ListedRule } from './types';
@@ -138,6 +139,7 @@ function RuleName({ rule, onOpen }: { rule: AutomationListedRule; onOpen: () => 
 export function RuleRow({
   rule,
   outline,
+  labels,
   now,
   busy,
   phone,
@@ -145,6 +147,8 @@ export function RuleRow({
 }: {
   rule: AutomationListedRule;
   outline: unknown;
+  // The app's value labels: a value in a chip reads as its label.
+  labels?: ValueLabels | undefined;
   now: number;
   // A switch flip on its way to the api.
   busy: boolean;
@@ -187,7 +191,7 @@ export function RuleRow({
             />
           ) : (
             <>
-              <SentenceChips parts={sentence.trigger(rule.trigger, outline)} />
+              <SentenceChips parts={sentence.trigger(rule.trigger, outline)} labels={labels} />
               <NeedsNote attention={attention} />
               <span className={`text-[12px] ${tone}`}>
                 {rule.stats.lastRunAt === null
@@ -227,7 +231,7 @@ export function RuleRow({
         ) : (
           <RuleName rule={rule} onOpen={actions.onOpen} />
         )}
-        <SentenceChips parts={sentence.rule(rule, outline)} />
+        <SentenceChips parts={sentence.rule(rule, outline)} labels={labels} />
         <NeedsNote attention={attention} />
         <PausedNote
           rule={rule}

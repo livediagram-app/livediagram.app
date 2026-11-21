@@ -2,7 +2,7 @@
 
 // The Automations glyphs (liveworkspace/docs/specs/018-automations/automations.md; blueprint ui.md "Glyphs"): the
 // lightning bolt that stands for Automation everywhere (the footer's row, the screen's badge, what a rule did), and
-// each step's icon on its tinted tile: the trigger in the brand tint, conditions in orange, actions in blue. An app's
+// each step's icon on its tinted tile: the trigger and actions in the app's brand tint, conditions in orange. An app's
 // own actions bring their icon in the kit (kinds.actions[key].glyph); the steps every app has are drawn here.
 // Imports nothing of the screen: the footer's row reads the bolt from here.
 
@@ -41,12 +41,12 @@ export type StepTone = 'trigger' | 'condition' | 'action';
 export const STEP_TILE: Record<StepTone, string> = {
   trigger: 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300',
   condition: 'bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
-  action: 'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  action: 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300',
 };
 export const STEP_KIND_TEXT: Record<StepTone, string> = {
   trigger: 'text-brand-700 dark:text-brand-300',
   condition: 'text-orange-700 dark:text-orange-300',
-  action: 'text-blue-700 dark:text-blue-300',
+  action: 'text-brand-700 dark:text-brand-300',
 };
 
 /** The icon of an action's tile, by its key (types.ts stepKey): an If / Else's fork, the app's branch's, the kit's

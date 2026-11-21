@@ -1,8 +1,8 @@
 'use client';
 
 // A message step's panel (liveworkspace/docs/specs/018-automations/automations.md "Connections"): Send to Webhook,
-// Post to Slack or Post to Microsoft Teams. The Action row changes it into another of the three (in StepPanel's
-// frame here, since the three are every app's); Connection picks one of the item's connections of its kind by name,
+// Post to Slack or Post to Microsoft Teams. The Action row changes it into another of the three (its message kept),
+// or into any other action Add Action offers where it stands (StepPanel's `change`); Connection picks one of the item's connections of its kind by name,
 // a paused one marked, one the rule names that is gone kept as "(No Longer Here)"; Add a Connection… opens the
 // screen's Connections tab, the rule kept for the way back; Message is the text, with Insert a Value. Connections
 // are an account's: a guest is told to sign in.
@@ -18,6 +18,7 @@ import { Button } from '@liveworkspace/ui';
 import { useItemConnections } from '../item-connections';
 import { useAutomationsKit } from '../kit-context';
 import { RULE_ROW_LINK } from '../RuleRow';
+import type { RuleBody } from '../types';
 import { ValueTextField } from '../ValueInsert';
 import { ChangeActionField } from './ChangeActionField';
 import { PanelField, PanelNote, PanelSelect } from './panel-parts';
@@ -131,9 +132,13 @@ export function OutgoingPanel({
   step,
   onChange,
   invalidPath,
+  change,
 }: {
   step: AutomationOutgoing;
   onChange: (next: AutomationOutgoing) => void;
+  // Where it stands, for Change: the rule without it, whether it is the last step, and a change to a kind not a
+  // message (started afresh).
+  change: { rest: RuleBody; last: boolean; onKind: (key: string) => void };
   // Where a refusal points inside the step ('webhook', 'text'), or null.
   invalidPath: string | null;
 }) {
@@ -142,8 +147,14 @@ export function OutgoingPanel({
     <div className="flex flex-col gap-4">
       <ChangeActionField
         actionKey={`notify_${step.via}`}
-        branch={false}
+        where="top"
+        rest={change.rest}
+        last={change.last}
         onChange={(key) => {
+          if (!key.startsWith('notify_')) {
+            change.onKind(key);
+            return;
+          }
           const via = key.slice('notify_'.length) as AutomationVia;
           // Another tool: its own connection to pick, the message kept.
           if (via !== step.via) onChange({ ...messages.fresh(via), text: step.text });

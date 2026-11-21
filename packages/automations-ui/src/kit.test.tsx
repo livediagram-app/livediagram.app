@@ -454,13 +454,73 @@ describe('what a kit may add', () => {
     fireEvent.click(tile('revert_snapshot'));
     // Its panel is the kit's note; nothing more is added after it.
     expect(screen.getByText('Puts the Space back. Nothing follows it.')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Add Action/ })).toHaveProperty('disabled', true);
-    expect(screen.getByRole('button', { name: /If \/ Else/ })).toHaveProperty('disabled', true);
+    // Nothing more is added, and each button says why: still focusable, described by the reason.
+    for (const name of [/Add Action/, /If \/ Else/]) {
+      const button = screen.getByRole('button', { name });
+      expect(button.getAttribute('aria-disabled')).toBe('true');
+      const why = document.getElementById(
+        button.getAttribute('aria-describedby')!.split(' ').at(-1)!,
+      )!;
+      expect(why.textContent).toBe('Revert to Snapshot is a rule’s last step');
+      fireEvent.click(button);
+    }
+    expect(screen.queryByRole('dialog', { name: /Add an Action/ })).toBeNull();
+    expect(cards().filter((c) => c.textContent?.includes('If / Else'))).toHaveLength(0);
     // It never moves up, and the step before it never moves down past it.
     fireEvent.click(screen.getByRole('button', { name: 'More for Step revert_snapshot' }));
     expect(screen.getByRole('menuitem', { name: 'Move Up' }).getAttribute('aria-disabled')).toBe(
       'true',
     );
+  });
+});
+
+describe('Change the Action', () => {
+  const tiles = () =>
+    [...document.querySelectorAll<HTMLElement>('[data-picker-tile]')].map(
+      (t) => t.dataset.pickerTile,
+    );
+  const addOffers = () => {
+    fireEvent.click(screen.getByRole('button', { name: /Add Action/ }));
+    const keys = tiles();
+    const picker = screen.getByRole('dialog', { name: /Add an Action/ });
+    fireEvent.click(within(picker).getAllByRole('button', { name: 'Close' })[0]!);
+    return keys;
+  };
+
+  it('offers exactly what Add Action offers at the step’s place, a last step’s kind only to the last step', async () => {
+    render(<Screen client={fakeClient()} initial={{ view: 'rule', ruleId: 'r1' }} />);
+    await screen.findByRole('textbox', { name: 'Rule name' });
+    const offered = addOffers();
+    expect(offered).toEqual(
+      expect.arrayContaining(['take_snapshot', 'revert_snapshot', 'wait', 'notify_slack']),
+    );
+    // A step with one after it may not become one nothing follows.
+    fireEvent.click(screen.getByRole('button', { name: /Add Action/ }));
+    fireEvent.click(tile('take_snapshot'));
+    fireEvent.click(cards()[1]!.querySelector('button')!);
+    fireEvent.click(document.querySelector('[data-change-step]')!);
+    expect(tiles()).toEqual(offered.filter((k) => k !== 'revert_snapshot'));
+    fireEvent.click(tile('take_snapshot'));
+    // The last step: its change offers the same as Add Action, Wait and the messages among them.
+    fireEvent.click(cards()[2]!.querySelector('button')!);
+    fireEvent.click(document.querySelector('[data-change-step]')!);
+    expect(screen.getByRole('dialog', { name: /Change the Action/ })).toBeTruthy();
+    expect(tiles()).toEqual(offered);
+    fireEvent.click(tile('wait'));
+    expect(cards()[2]!.querySelector('[data-step-card] button')!.textContent).toBe('Then');
+    expect(screen.getByRole('region', { name: /Wait step/ })).toBeTruthy();
+  });
+
+  it('turns a message step into any action, not only another tool', async () => {
+    render(<Screen client={fakeClient()} initial={{ view: 'rule', ruleId: 'r1' }} />);
+    await screen.findByRole('textbox', { name: 'Rule name' });
+    const offered = addOffers();
+    fireEvent.click(screen.getByRole('button', { name: /Add Action/ }));
+    fireEvent.click(tile('notify_slack'));
+    fireEvent.click(document.querySelector('[data-change-step]')!);
+    expect(tiles()).toEqual(offered);
+    fireEvent.click(tile('revert_snapshot'));
+    expect(cards()[2]!.textContent).toContain('revert_snapshot');
   });
 });
 
@@ -516,6 +576,76 @@ describe('a steady kit', () => {
     fireEvent.click(screen.getByRole('button', { name: /Unrelated/ }));
     fireEvent.click(screen.getByRole('button', { name: /Unrelated/ }));
     expect(draws).toBe(1);
+  });
+});
+
+describe('across the phone breakpoint', () => {
+  // A screen whose width the test turns: matchMedia's lists read it live and hear the turn.
+  function turnable() {
+    let isWide = true;
+    const heard = new Set<() => void>();
+    vi.stubGlobal(
+      'matchMedia',
+      (query: string) =>
+        ({
+          get matches() {
+            return query.includes('min-width') ? isWide : false;
+          },
+          media: query,
+          addEventListener: (_: string, cb: () => void) => heard.add(cb),
+          removeEventListener: (_: string, cb: () => void) => heard.delete(cb),
+        }) as unknown as MediaQueryList,
+    );
+    return (wideNow: boolean) =>
+      act(() => {
+        isWide = wideNow;
+        for (const cb of [...heard]) cb();
+      });
+  }
+
+  it('keeps a new rule’s unsaved changes as the builder moves into the drawer and back', async () => {
+    const turn = turnable();
+    const client = fakeClient();
+    render(<Screen client={client} />);
+    await screen.findByText('Nightly Snapshot');
+    fireEvent.click(screen.getByRole('button', { name: /New Rule/ }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Blank Rule' }));
+    const name = await screen.findByRole<HTMLInputElement>('textbox', { name: 'Rule name' });
+    fireEvent.change(name, { target: { value: 'Carried Across' } });
+    fireEvent.click(screen.getByRole('button', { name: /Add Action/ }));
+    fireEvent.click(tile('take_snapshot'));
+    fireEvent.change(screen.getByLabelText('Snapshot Name'), { target: { value: 'Before' } });
+    turn(false);
+    expect(await screen.findByRole('dialog', { name: 'New Rule' })).toBeTruthy();
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Rule name' }).value).toBe(
+      'Carried Across',
+    );
+    expect(cards()).toHaveLength(2);
+    // Onto the phone, the step's sheet stays shut.
+    expect(document.querySelector('[data-step-drawer]')).toBeNull();
+    turn(true);
+    expect(screen.queryByRole('dialog', { name: 'New Rule' })).toBeNull();
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Rule name' }).value).toBe(
+      'Carried Across',
+    );
+    fireEvent.click(cards()[1]!.querySelector('button')!);
+    expect(screen.getByLabelText<HTMLInputElement>('Snapshot Name').value).toBe('Before');
+    // Still unsaved: leaving asks first.
+    fireEvent.click(screen.getByRole('button', { name: 'Automations' }));
+    expect(screen.getByText('Discard Changes?')).toBeTruthy();
+    expect(client.create).not.toHaveBeenCalled();
+  });
+
+  it('keeps a saved rule’s unsaved rename across the switch', async () => {
+    const turn = turnable();
+    render(<Screen client={fakeClient()} initial={{ view: 'rule', ruleId: 'r1' }} />);
+    const name = await screen.findByRole<HTMLInputElement>('textbox', { name: 'Rule name' });
+    fireEvent.change(name, { target: { value: 'Renamed' } });
+    turn(false);
+    expect(await screen.findByRole('dialog', { name: 'Edit Rule' })).toBeTruthy();
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Rule name' }).value).toBe(
+      'Renamed',
+    );
   });
 });
 

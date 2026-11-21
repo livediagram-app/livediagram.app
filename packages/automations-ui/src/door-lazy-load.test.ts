@@ -49,7 +49,7 @@ describe('the door', () => {
     ]);
   });
 
-  it('reaches no other package but the design system’s icons and the workbench’s log', () => {
+  it('reaches no other package but the design system’s icons, the workbench’s log and its move-prompt flag', () => {
     const outside = new Set<string>();
     for (const file of reached(join(SRC, 'index.ts')))
       for (const spec of staticImports(readFileSync(join(SRC, file), 'utf8')))
@@ -58,6 +58,8 @@ describe('the door', () => {
       '@liveworkspace/icons/lucide',
       '@liveworkspace/ui',
       '@liveworkspace/workbench/lib/debug-log',
+      // A flag and two hooks over React alone: the host waits while the move prompt after signing in is up.
+      '@liveworkspace/workbench/lib/offline/local-move-showing',
       'react',
     ]);
   });

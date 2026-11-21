@@ -166,6 +166,14 @@ export function StepPanel<B extends RuleBody = RuleBody>({
   const step = part.part === 'step' ? body.steps[part.index] : actionAt(body, part);
   if (!step) return null;
   const top = part.part === 'step';
+  // Change offers what Add Action offers where the step stands: at the top level, judged against the rest of the
+  // rule (what is full), one nothing may follow only for the last step.
+  const rest = top ? { ...body, steps: body.steps.filter((_, j) => j !== part.index) } : null;
+  const last = !top || part.index === body.steps.length - 1;
+  const freshAt = (index: number) => (next: string) => {
+    const fresh = kinds.actions[next]?.fresh(outline, { personless });
+    if (fresh) onChange(setStep(body, index, fresh));
+  };
   if (isIf(step))
     return shell(
       'If / Else',
@@ -197,6 +205,7 @@ export function StepPanel<B extends RuleBody = RuleBody>({
       <>
         <OutgoingPanel
           step={step}
+          change={{ rest: rest!, last, onKind: freshAt(part.index) }}
           invalidPath={faultWithin(part, faultPath)}
           onChange={(next) => onChange(setStep(body, part.index, next))}
         />
@@ -239,7 +248,9 @@ export function StepPanel<B extends RuleBody = RuleBody>({
         {kind?.fixed ? null : (
           <ChangeActionField
             actionKey={key}
-            branch={inBranch}
+            where={top ? 'top' : inBranch ? 'branch' : 'list'}
+            rest={rest}
+            last={last}
             onChange={(next) => {
               const fresh = kinds.actions[next]?.fresh(outline, { personless });
               if (fresh) set(fresh);

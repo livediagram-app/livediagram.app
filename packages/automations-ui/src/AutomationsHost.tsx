@@ -23,6 +23,7 @@ import {
   type AutomationsDoor,
   type AutomationsTarget,
 } from './AutomationsContext';
+import { useLocalMoveShowing } from '@liveworkspace/workbench/lib/offline/local-move-showing';
 import { AUTOMATIONS_PARAM } from './automations-gate';
 import type { AutomationsPlumbing, AutomationsScope } from './kit';
 import { readAutomations } from './use-automations';
@@ -107,6 +108,9 @@ export function AutomationsHost({
     () => (stable ? { scope: stable, plumbing, open } : null),
     [stable, plumbing, open],
   );
+  // Back from signing in, the move prompt for items kept Offline may be up: the screen or its gate waits until it is
+  // answered (a move may sync this item, and the screen opens instead of the gate), never stacked on it.
+  const moveShowing = useLocalMoveShowing();
   const gateKind = gate?.kind ?? null;
   const badges = gate?.badges;
   const door = useMemo<AutomationsDoor | null>(() => {
@@ -127,7 +131,7 @@ export function AutomationsHost({
     <AutomationsDoorContext.Provider value={door}>
       <AutomationsContext.Provider value={value}>
         {children}
-        {value && target ? (
+        {value && target && !moveShowing ? (
           <Screen
             scope={value.scope}
             target={target}
@@ -136,7 +140,9 @@ export function AutomationsHost({
             signedIn={signedIn}
           />
         ) : null}
-        {gate && !stable && target ? <Gate gate={gate} onClose={() => setTarget(null)} /> : null}
+        {gate && !stable && target && !moveShowing ? (
+          <Gate gate={gate} onClose={() => setTarget(null)} />
+        ) : null}
       </AutomationsContext.Provider>
     </AutomationsDoorContext.Provider>
   );
