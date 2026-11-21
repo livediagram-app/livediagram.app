@@ -5,6 +5,8 @@
 // answer showing. Below 1,024px they stack in that order, the recent questions folded. What the session cannot do
 // is said in the conversation's place (AskStates).
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { questionKey } from '@liveknowledge/knowledge';
+import { apiDismissKnowledgeQuestion } from '@/lib/api/knowledge';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { useKnowledgePeople } from '@/components/knowledge/usePageKnowledge';
@@ -124,6 +126,15 @@ function AskReady({ session }: { session: AskSession }) {
     if (!currentId) return;
     track('UI', 'Used', 'AskAccepted');
     recentQuestionsStore.accept(who, documentId, currentId);
+    // Accepted, the chat's question and the gaps its answers named are answered: they leave Needs Attention (owner
+    // 2026-11-21), for a person who may settle them. A failure leaves them listed, nothing worse.
+    if (session.rights.resolve && current) {
+      const keys = new Set(
+        [current.question, ...(current.turns ?? []).flatMap((t) => t.gaps)].map(questionKey),
+      );
+      for (const key of keys)
+        if (key) void apiDismissKnowledgeQuestion(who, documentId, key).catch(() => undefined);
+    }
     conversation.reset();
     focusField();
   };

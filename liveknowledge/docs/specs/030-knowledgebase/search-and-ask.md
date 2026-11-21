@@ -166,7 +166,8 @@ strangers.
   Completed Questions category"): the latest answer of a chat, once it has ended with an answer, always offers
   **Accept Answer** in its footer, calm and first. Accepting moves the chat out of the dated groups into
   **Completed Questions**, a group closed by default that shows its count ("Completed Questions 3"), and the
-  conversation returns to a fresh question field. A completed chat opens to read, with **Reopen** where the field
+  conversation returns to a fresh question field. For an Editor or a Participant, accepting also takes the chat's
+  question and the gaps its answers named off AI Knowledge's unanswered questions: they are answered. A completed chat opens to read, with **Reopen** where the field
   was: Reopen moves it back among the dated groups and gives it the field again.
 - **Delete** (owner, 2026-11-21): every chat, in the dated groups and in Completed Questions, has **Delete**, an icon
   button with a tooltip at the row's end (shown on hover or focus, always on touch). It asks first ("Delete This

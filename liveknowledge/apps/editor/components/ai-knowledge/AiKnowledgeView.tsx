@@ -182,7 +182,10 @@ function AiKnowledge({ session }: { session: AskSession }) {
                     emailOwners('ask', `ask:${id}`, () =>
                       apiAskConflictOwners(who, documentId, id),
                     ),
-                  draft: (question) => void draft(question.question),
+                  draft: (question) =>
+                    void draft(question.question).then((made) => {
+                      if (made) refresh();
+                    }),
                   dismissQuestion: (key) => {
                     if (!rights.resolve) return;
                     track('UI', 'Used', 'QuestionDismissed');

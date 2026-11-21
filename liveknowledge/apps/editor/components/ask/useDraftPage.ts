@@ -4,10 +4,13 @@
 // could answer"): a page titled from the question whose first line is "Draft, Not Verified". It is drafted by one more
 // Ask call over the nearest passages, on the team's key or built-in AI; where no AI answers, or that call fails, it
 // holds the question as its first heading. An Editor's: without `makePages` nothing here runs. The same for an answer's Knowledge Gap card and
-// an unanswered question's row.
+// an unanswered question's row. Once the page is made the question has one, so its row leaves Needs Attention (owner
+// 2026-11-21). The button shows a spinner while the draft is written (the Ask call takes seconds).
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useToast } from '@/hooks/ui/useToast';
+import { questionKey } from '@liveknowledge/knowledge';
+import { apiDismissKnowledgeQuestion } from '@/lib/api/knowledge';
 import { apiAskKnowledge } from '@/lib/api/knowledge-ask';
 import { draftPageForQuestion } from '@/lib/knowledge-ask/make-page';
 import { track } from '@/lib/telemetry';
@@ -53,6 +56,10 @@ export function useDraftPage(
           return false;
         }
         track('Tab', 'Created', 'FromGap');
+        // The question has a page now: its row leaves Needs Attention. A failure here leaves the row, nothing worse.
+        const key = questionKey(question);
+        if (key && rights.resolve)
+          await apiDismissKnowledgeQuestion(who, documentId, key).catch(() => undefined);
         toast.action({
           key: `draft-page-${made.id}`,
           message: `Drafted “${made.title}”`,
