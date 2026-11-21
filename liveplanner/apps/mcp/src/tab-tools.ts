@@ -29,6 +29,7 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
+import { fileAddedTab } from './tab-folder-tools';
 import { DASHBOARD_ALONE, addOperationsFor, addToTemplateTab, getTab } from './template-elements';
 import { mcpAddTab, mcpUpdateProject } from '@liveplanner/agent-verbs/mcp';
 import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
@@ -137,15 +138,18 @@ export function registerTabTools(server: McpServer, env: Env): void {
     // A Plan template's boards bring their card types (docs/specs/026-plan/plan-agents.md "Adding a board").
     if (args.template)
       await bringBoardCardTypes(clientFor(env, token), args.projectId, tab.elements);
+    // A tab folder files the new tab (docs/specs/006-project/tab-folders.md "Agents").
+    const filed = await fileAddedTab(env, token, args.projectId, tabId, args.folder);
     return imageResult(
       {
         projectId: args.projectId,
         tabId,
         name: tab.name,
+        ...(filed.folder ? { folder: filed.folder } : {}),
         url: deepLink(env, args.projectId),
         changesetId: answer.changeset?.id ?? null,
         rev: tab.rev,
-        text: mcpResultText(answer.text),
+        text: [mcpResultText(answer.text), filed.refused].filter(Boolean).join('\n'),
         ...templateNote(args.template),
         ...dashboardLeftOffNote([{ name: tab.name, dropped: leftOff }]),
       },

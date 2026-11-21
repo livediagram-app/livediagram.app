@@ -13,7 +13,7 @@ import type { Env } from '@liveworkspace/mcp-kit/env';
 import { tabPreview } from './image-result';
 import { laidOutPagesOf, type LaidOutPage, type Tab } from '@livedocuments/document';
 import { resolvePage } from '@livedocuments/edit-operations';
-import { READ_DOCUMENT_DEFAULT_BUDGET } from '@livedocuments/agent-verbs/mcp';
+import { READ_DOCUMENT_DEFAULT_BUDGET, listedTabsOf } from '@livedocuments/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
 type ReadDocumentArgs = {
@@ -101,9 +101,7 @@ export async function readDocument(
   const tabId = summary?.id ?? args.tabId;
   if (tabId === undefined) return errorResult('That document has no tabs.');
   // Every tab, in order, so a caller can read the others (a Plan template's Board, Requests and Flow).
-  const tabs = [...document.tabs]
-    .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
-    .map((t) => ({ id: t.id, name: t.name }));
+  const tabs = listedTabsOf(document.tabs);
   if (!summary)
     return errorResult(
       `No tab "${tabId}" in this document. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,

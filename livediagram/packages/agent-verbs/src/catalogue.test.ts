@@ -119,6 +119,7 @@ describe('the catalogue', () => {
       'tab.diff',
       'tab.add',
       'tab.rename',
+      'tab.folder',
       'tab.rm',
     ]);
     expect(Object.values(COMMAND_ALIASES).every((id) => verbById(id))).toBe(true);

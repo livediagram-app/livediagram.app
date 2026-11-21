@@ -153,6 +153,26 @@ describe('readProject', () => {
   });
 });
 
+describe('readProject tab folders', () => {
+  it('lists each tab with its tab folder, in order', async () => {
+    quiet();
+    const { env } = api({
+      doc: {
+        ...LIVE_DOC,
+        tabs: [
+          { id: 't2', name: 'Risks', orderIndex: 1, folder: 'Plans' },
+          { id: 't1', name: 'Plan', orderIndex: 0 },
+        ],
+      },
+    });
+    const result = await readProject(env, 'tok', { projectId: 'd1' });
+    expect((result.structuredContent as { tabs: unknown }).tabs).toEqual([
+      { id: 't1', name: 'Plan' },
+      { id: 't2', name: 'Risks', folder: 'Plans' },
+    ]);
+  });
+});
+
 describe('readProject refusals', () => {
   const refusal = (status: number, body: unknown) => () => Response.json(body, { status });
 

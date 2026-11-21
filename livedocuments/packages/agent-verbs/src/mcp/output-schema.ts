@@ -6,6 +6,7 @@
 import { EMPTY_DOCUMENT_STALE_DAYS, TRASH_REASONS } from '@livedocuments/api-schema';
 import { z } from 'zod';
 import { foundArchived } from './archive-tools';
+import { addedTabFolder, listedTab } from './tab-folder-tools';
 
 const url = z.string().describe('Link that opens the document in the livedocuments editor.');
 const documentId = z.string().describe('The document id.');
@@ -48,7 +49,7 @@ export const readDocumentOutput = {
     })
     .describe('The tab that was read.'),
   tabs: z
-    .array(z.object({ id: tabId, name: z.string().describe('The tab name.') }))
+    .array(listedTab)
     .describe('Every tab of the document, in order: pass one as tabId to read it.'),
   url,
 };
@@ -126,6 +127,7 @@ export const addTabOutput = {
   documentId,
   tabId: tabId.describe('The new tab id.'),
   name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
+  folder: addedTabFolder,
   url,
   ...changesetAnswer,
 };

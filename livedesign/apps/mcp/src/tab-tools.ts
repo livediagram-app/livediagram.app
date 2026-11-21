@@ -27,6 +27,7 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
+import { fileAddedTab } from './tab-folder-tools';
 import { VIEW_TOOL_META } from './view-tab';
 import { mcpAddTab, mcpUpdateDesign } from '@livedesign/agent-verbs/mcp';
 
@@ -119,15 +120,18 @@ export function registerTabTools(server: McpServer, env: Env): void {
         token,
         `/designs/${encodeURIComponent(args.designId)}/tabs/${encodeURIComponent(tabId)}`,
       );
+      // A tab folder files the new tab (docs/specs/006-design/tab-folders.md "Agents").
+      const filed = await fileAddedTab(env, token, args.designId, tabId, args.folder);
       return imageResult(
         {
           designId: args.designId,
           tabId,
           name: tab.name,
+          ...(filed.folder ? { folder: filed.folder } : {}),
           url: deepLink(env, args.designId),
           changesetId: answer.changeset?.id ?? null,
           rev: tab.rev,
-          text: mcpResultText(answer.text),
+          text: [mcpResultText(answer.text), filed.refused].filter(Boolean).join('\n'),
           lint: lintLineOf(answer.lint),
         },
         tab,

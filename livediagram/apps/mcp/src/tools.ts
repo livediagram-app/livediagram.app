@@ -76,6 +76,7 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
+import { fileAddedTab, registerTabFolderTools } from './tab-folder-tools';
 import { appendTemplateDeck, deckNote, slidesForTemplateTab } from './template-deck';
 import { registerArchiveTools } from './archive-tools';
 import { registerThreadTools } from './thread-tools';
@@ -408,15 +409,18 @@ export function registerTools(server: McpServer, env: Env): void {
         ...(linkedNote ? [linkedNote] : []),
         ...(deck ? [deck] : []),
       ];
+      // A tab folder files the new tab (docs/specs/006-document/tab-folders.md "Agents").
+      const filed = await fileAddedTab(env, token, args.documentId, tabId, args.folder);
       return imageResult(
         {
           documentId: args.documentId,
           tabId,
           name: tab.name,
+          ...(filed.folder ? { folder: filed.folder } : {}),
           url: deepLink(env, args.documentId),
           changesetId: answer.changeset?.id ?? null,
           rev: tab.rev,
-          text: mcpResultText(answer.text),
+          text: [mcpResultText(answer.text), filed.refused].filter(Boolean).join('\n'),
           lint: lintLineOf(answer.lint),
           ...(notes.length ? { notes } : {}),
         },
@@ -562,6 +566,8 @@ export function registerTools(server: McpServer, env: Env): void {
       url: deepLink(env, liveDoc.id),
     });
   });
+
+  registerTabFolderTools(server, env);
 
   registerTool(server, env, mcpDeleteDocument, async (args, extra) => {
     const token = requireToken(extra);

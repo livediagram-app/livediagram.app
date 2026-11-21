@@ -94,6 +94,41 @@ Two further rules, both learned from the untyped version:
 - **A new folder emits two events**, `Folder·Created·Tab` then `Tab·Moved·Folder`, because typing a name the design hasn't used is genuinely two facts (the folder exists; this tab is in it). Emitting only the creation made "tabs filed into folders" undercount by exactly the number of folders anyone created. Listed with the other deliberate double-emits in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **The menu and the drag report identically.** Membership can change either from the ellipsis menu or from a drag that adopts the drop target's folder, and the two had drifted: leaving a folder by menu counted as `Tab·Removed`, leaving it by drag counted as `Tab·Reordered`. Which control someone reached for is not the fact being measured, so both paths go through one module (`../packages/workbench/src/hooks/persistence/tab-folder-reporting.ts`). A drag that crosses a folder boundary reports the membership change and **not** the reorder it came with; `Tab·Reordered` now means a reorder that changed nothing else.
 
+## Agents
+
+The MCP and the CLI see and use tab folders through the tab-order write the editor's save path uses (`PUT /api/designs/:id`
+with `tabs`), so a folder stays a name on the link row and nothing new is stored.
+
+- **Reading.** `read_design`'s `tabs` list, in the design's order, gives a tab in a folder its `folder` name; a loose tab has
+  none. `tab ls` prints `in "<folder>"` after such a tab. Anyone who can read the design sees its folders, a Viewer included.
+- **A new tab in a folder.** `add_tab` (and `tab add --folder`) takes an optional `folder`: an existing name adds the new tab
+  as that folder's last tab, a new name starts a folder holding it, at the end of the bar. Without it the tab is loose at
+  the end, as before. The tab is made first; if it can't then be filed, it is kept and the answer says why.
+- **Existing tabs.** `change_tabs` (and `tab folder`, one change a run) takes up to 50 changes, applied in order, each
+  seeing the ones before it:
+  - `move { tab, folder }`: a tab (its id, or a name one tab alone has) into the folder named; an existing folder takes it
+    as its last tab, a new name starts a folder where the tab stands; `folder: null` makes it loose, just outside the
+    folder it left (before it from the folder's head, else after it).
+  - `rename_folder { folder, to }`: every member takes the new name; a name another folder has merges the two, at the
+    first one's place, as the editor's rename does.
+  - `ungroup { folder }`: every member loose, where it stands.
+
+  An unknown or ambiguous tab, an unknown folder, or an empty or over-60-character name refuses the whole call in words
+  (naming the design's tabs or folders) before anything is written. A call that changes nothing writes nothing.
+
+- **Order.** The changes are planned over the tabs in order and normalised with `normalizeFolderOrder`, and nothing else
+  moves: joining an existing folder places the tab after its last member rather than pulling the folder to the tab, so
+  the other tabs keep their places. The new order is one write naming every tab's `{ id, folder }`.
+- **Open editors.** An agent's tab-order write reaches everyone with the design open as the meta op an editor's reorder
+  sends (the api relays it, as it relays an agent's rename), so their bars regroup at once. An editor's own reorder is
+  sent to the room by the editor and is not relayed again.
+- **Roles.** Only an Editor changes folders: the write is the edit-gated `PUT`, so a Participant's or a Viewer's grant
+  is refused (403, answered in words: "Only an Editor can change tab folders"), and a read-only token never reaches it
+  (`change_tabs` is a write tool). Editor, Participant and Viewer all see folders in `read_design`.
+- **One implementation.** The changes are planned once for every product (`@liveworkspace/agent-verbs/tab-folders`),
+  the tool is declared once in each product's words (`@liveworkspace/agent-verbs/mcp/tab-folder-tools`), and the CLI
+  verb is shared too (`@liveworkspace/agent-verbs/verbs/tab-folder`).
+
 ## Edge cases
 
 - **Active tab in a folder** → the folder stays open while the tab is open, and its chip won't shut it; opening a tab outside the folder returns it to this visit's open or shut state.
