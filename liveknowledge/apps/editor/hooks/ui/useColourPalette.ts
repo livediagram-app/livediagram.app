@@ -1,6 +1,7 @@
 'use client';
 
 import { getTheme, themePresetColors } from '@/lib/themes';
+import { useKnowledgeStyle } from '@/lib/knowledge-style/knowledge-style-store';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 
@@ -10,6 +11,8 @@ import type { ColourPalette } from '@/components/palette/context-menu-input-rows
 // menu, a table cell's own menu) and they must show the SAME colours. Custom colours come from the
 // document (useDocumentColours), not from here.
 export function useColourPalette(): { swatches: ColourPalette } {
-  const { activeTab } = useEditorContext();
-  return { swatches: { presets: themePresetColors(getTheme(activeTab?.theme)) } };
+  const { documentId } = useEditorContext();
+  // The knowledgebase's theme: a tab has none of its own (page-surface.md "Knowledgebase Style").
+  const themeId = useKnowledgeStyle(documentId).theme;
+  return { swatches: { presets: themePresetColors(getTheme(themeId)) } };
 }

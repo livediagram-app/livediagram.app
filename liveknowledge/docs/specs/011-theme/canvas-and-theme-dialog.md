@@ -1,5 +1,13 @@
 # Tab Style dialog
 
+> **In liveknowledge this dialog is Knowledgebase Style.** The style belongs to the knowledgebase, not to a tab:
+> [The page surface](../030-knowledgebase/page-surface.md#knowledgebase-style) says what is kept (the Looks carousel
+> with Seasonal and Mashup, Fine-tune, the chrome following the theme) and what is cut (the Canvas and Finish
+> panels, New Page Background, Apply to All Tabs, Show Me, the page Style buttons that opened it). What follows is
+> the platform dialog it is cut from, kept as the reference for the parts that are shared; where the two differ,
+> the page surface spec is the rule. "Editor chrome follows the active theme" reads here as the knowledgebase's
+> theme, and "The app's chrome" applies to the logo alone: the top row and the footer follow the theme.
+
 A focused modal for changing how the active tab looks (its **theme**, **finish**, **text** and the **background its pages start on**), reached from the Theme & canvas dock button. It opens on a home of ready-made **Looks** and a **Fine-tune** list of the four settings. The same controls live in the canvas's context menus too ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
 
 ## Why

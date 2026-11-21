@@ -14,12 +14,15 @@ export type ResyncTabList = Extract<RoomOp, { kind: 'document-meta' }>;
 export function tabListOf(document: {
   name: string;
   tabs: readonly TabSummary[];
+  knowledgeStyle?: ResyncTabList['knowledgeStyle'];
   knowledgeSettings?: ResyncTabList['knowledgeSettings'];
 }): ResyncTabList | null {
   if (document.tabs.length === 0) return null;
   return {
     kind: 'document-meta',
     name: document.name,
+    // The Knowledgebase Style as stored, in case the op that changed it was lost in the gap.
+    ...(document.knowledgeStyle ? { knowledgeStyle: document.knowledgeStyle } : {}),
     // The knowledgebase's Review Period as stored, in case the op that changed it was lost in the gap.
     ...(document.knowledgeSettings ? { knowledgeSettings: document.knowledgeSettings } : {}),
     tabs: document.tabs.map((t, i) => ({

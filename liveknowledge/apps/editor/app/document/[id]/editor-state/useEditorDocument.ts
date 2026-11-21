@@ -57,6 +57,9 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
     applyRemoteOp,
     undo: tabUndo,
     redo: tabRedo,
+    // Where the history stands, for a step that is not a snapshot of the tabs (the Knowledgebase Style's).
+    depth: historyDepth,
+    branch: historyBranch,
   } = useDocumentHistory(initialTabs);
   const canHistoryUndo = canTabUndo;
   const canHistoryRedo = canTabRedo;
@@ -187,6 +190,8 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
     canHistoryRedo,
     undoHistory,
     redoHistory,
+    historyDepth,
+    historyBranch,
     localEditSeqRef,
     pageLockGuardRef,
     activeLayerStampRef,

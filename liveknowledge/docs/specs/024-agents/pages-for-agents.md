@@ -163,8 +163,11 @@ Writes an article's text from **Markdown**.
   elements in it, and the answer says so ("Removed zone z-12 and 3 elements"). An unknown zone id is refused
   (`zone_unknown`). New zones are made in the editor, not by agents.
 - **Margin notes** live on runs; a replace keeps none and removes their markers, saying how many; append keeps them.
-- **Style**: `look` (`clean`, `classic`, `report`, `notebook`, `bold`), `accent` (a hex) and `pageNumbers` set the
-  article's style, the rest left as it is.
+- **Style**: an article write sets none. A page has no style of its own: the look is the knowledgebase's
+  ([The page surface](../030-knowledgebase/page-surface.md#knowledgebase-style)), set once for every page through
+  the document's metadata write (`PUT /api/documents/<id>` with `knowledgeStyle`,
+  [API](../015-api/api.md)). A write that names `look` or `accent` is refused `invalid_value`, with a line that
+  says the style is a knowledgebase setting and what to send instead.
 - **Limits**: the Markdown at most **400,000** characters (`ARTICLE_MARKDOWN_MAX`), the article at most
   `MAX_ARTICLE_BLOCKS` (5,000) blocks, a block at most `MAX_ARTICLE_BLOCK_TEXT` (20,000) characters; past any of
   them the call is refused (`article_too_large`) saying which. The tab's own byte cap has the last word

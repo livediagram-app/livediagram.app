@@ -72,6 +72,8 @@
   margin-bottom: calc(0.5 * var(--article-line));
   line-height: 1.15;
   letter-spacing: -0.02em;
+  /* The page's name stays in the ink in every Knowledgebase Style; the headings under it take the accent. */
+  color: var(--article-ink);
 }
 .article-flow .article-subtitle {
   font-size: calc(var(--article-size) * 20 / 16);

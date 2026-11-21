@@ -14,8 +14,11 @@ import {
 } from '@liveknowledge/document';
 
 import { pageLinkColour } from '@/lib/knowledge/page-link-colour';
+import { LIME_ACCENT } from '@/lib/knowledge-style/knowledge-accent';
 
 const MONO = resolveFontStack('roboto-mono')!;
+// WCAG 2.2 AA for text.
+const ACCENT_CONTRAST = 4.5;
 
 export type ArticleInk = { tone: string; dark: boolean };
 
@@ -26,7 +29,9 @@ export function articleStyleVars(
   ink: ArticleInk,
 ): { vars: CSSProperties; rules: string } {
   const r = resolveArticleStyle(style);
-  const accent = legibleOn(r.accent ?? themeAccent, ink.tone);
+  // Held to 4.5:1 on the page: in a knowledgebase the accent is the colour of words (headings, links, a table's
+  // header), never only of a rule or a bar.
+  const accent = legibleOn(r.accent ?? themeAccent, ink.tone, ACCENT_CONTRAST);
   const text = ink.dark ? '#e2e8f0' : '#1e293b';
   const vars: Record<string, string> = {
     '--article-body-font': resolveFontStack(r.bodyFont) ?? 'system-ui, sans-serif',
@@ -36,8 +41,9 @@ export function articleStyleVars(
     '--article-leading': String(ARTICLE_LINE_HEIGHT[r.lineSpacing]),
     '--article-para': String(ARTICLE_PARAGRAPH_SPACE[r.paragraphSpacing]),
     '--article-accent': accent,
-    // A page link is the brand's, on any paper (lib/knowledge/page-link-colour.ts).
-    '--article-page-link': pageLinkColour(ink),
+    // A page link is the brand's, on any paper (lib/knowledge/page-link-colour.ts): lime under the product's own
+    // theme, the theme's accent under any other.
+    '--article-page-link': pageLinkColour(ink, themeAccent === LIME_ACCENT ? null : themeAccent),
     '--article-ink': text,
     '--article-heading-color': r.accentHeadings ? accent : text,
     '--article-muted': ink.dark ? '#94a3b8' : '#64748b',

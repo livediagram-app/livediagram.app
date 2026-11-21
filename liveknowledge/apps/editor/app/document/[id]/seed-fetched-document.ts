@@ -1,5 +1,6 @@
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 import { setCommunityState } from '@/lib/community-state-store';
+import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
 import type {
   LastSeenCopy,
   LastSeenFirstTab,
@@ -75,6 +76,8 @@ function showDocument(
   resetTabs(tabs);
   setDocumentName(fetched.name);
   setDocumentPresentation(fetched.presentation ?? null);
+  // The Knowledgebase Style (page-surface.md "Knowledgebase Style"): what every page is drawn in.
+  knowledgeStyleStore.take(fetched.id, fetched.knowledgeStyle);
   // The knowledgebase's Review Period (verification.md): every state the editor works out reads it from here.
   knowledgeSettingsStore.take(fetched.id, fetched.knowledgeSettings);
   // Prefer the tab id pinned in the URL fragment (#t=<id>) when

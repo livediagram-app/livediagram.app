@@ -1,7 +1,7 @@
 // The editor's dialog flags (@liveworkspace/workbench/hooks/editor/useEditorDialogs), bound to this editor's
-// Canvas/Theme dialog tabs and telemetry.
+// Knowledgebase Style dialog's views (its home and its Fine-tune panels) and telemetry.
 import { createEditorDialogs } from '@liveworkspace/workbench/hooks/editor/useEditorDialogs';
-import type { CanvasThemeTab } from '@/components/dialogs/CanvasThemeDialog';
+import type { TabStyleView } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
 import { track } from '@/lib/telemetry';
 
-export const useEditorDialogs = createEditorDialogs<CanvasThemeTab>({ track });
+export const useEditorDialogs = createEditorDialogs<TabStyleView>({ track });

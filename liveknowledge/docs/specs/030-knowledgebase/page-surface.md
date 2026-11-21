@@ -88,17 +88,34 @@ Knowledgebase Style is the platform's [Tab Style dialog](../011-theme/canvas-and
 it suits writing and cut where it only suits a canvas. It styles the **whole knowledgebase at once**: there is no
 per-page and no per-tab style.
 
-- **Opening it.** **Knowledgebase Style** in the knowledgebase's menu (the sidebar header), Editor only. The dialog
-  is titled **Knowledgebase Style**, and its line reads "Pick a look for every page of this knowledgebase."
+- **Opening it.** **Knowledgebase Style** in the knowledgebase's menu (the sidebar header,
+  [Knowledgebases and pages](knowledgebases-and-pages.md#the-knowledgebases-menu)) and the command search, Editor
+  only. The dialog is titled **Knowledgebase Style**, and its line reads "Pick a look for every page of this
+  knowledgebase." It is the centred dialog (a bottom sheet on a phone), and its Fine-tune panels keep the home's
+  height, so it does not move as a panel opens. It has no Show Me: the platform's tour walks a tab's finish and
+  canvas, which are not here.
 - **Looks.** The same carousel of looks, each card a small **page of writing** drawn in that look (a title, a
   heading, two lines, a link, a quote and a small table), never a diagram: a look is a theme (its colours) and a
   font. Seasonal looks and their toggle stay, as does **Mashup** (it rolls a theme and a font). A card reads as
-  selected while the knowledgebase's theme and font are the look's.
+  selected while the knowledgebase's theme and font are the look's; a knowledgebase whose headings and body are in
+  two fonts wears no look. A card's line names the two ("Steel, Inter"); the product's own theme is named **Lime**.
+  Picking a look sets the theme and both fonts, keeps the size, spacing and heading style, and puts the accent back
+  on the theme's own.
 - **Fine-tune**, under the shared back bar, holds two panels, both about writing:
   - **Text**: the heading font and the body font, text size (Small, Medium, Large), line spacing (Compact,
     Comfortable, Relaxed) and heading style (plain, or with a rule under the largest headings).
   - **Colours**: the theme, and within it the accent the writing's headings, links, quotes, tables and code blocks
-    take.
+    take: the theme's own, or one picked with the one colour picker (the theme's own palette first). Picking a
+    theme puts the accent back on that theme's own.
+  - Text leads with a sample (a heading and a line with a link) that follows each choice as it is made. Colours
+    lists the themes six to a carousel page, each a small page of writing in that theme and the knowledgebase's own
+    fonts (never the editors' theme card, which is a diagram on a canvas), named by the theme alone; the accent is
+    one row under them, its swatch opening the picker.
+- **What the accent colours.** Headings, links, the bar beside a quote, a table's header and the caret take the
+  accent, held to 4.5:1 on the page in both appearances (deepened or lightened, hue kept, where the theme's own
+  falls short). The page's **Title stays in the ink** in every style: it is the page's name. The product's own theme
+  gives a lime accent; a multi-colour theme (Rainbow, Pastel, Tropical, and the seasonal ones) gives its first
+  branch's colour, since its own stroke is a neutral grey meant for a diagram's root.
 - **Not in liveknowledge:** the Canvas panel and everything it held (the surround, patterns, Around the Pages), New
   Page Background, the Finish filter and panel (stroke finishes belong to drawn shapes), per-shape and formal theme
   colours, margins, page numbers, and Apply to All Tabs (the style always applies to every page). A drawing or chart
@@ -106,15 +123,34 @@ per-page and no per-tab style.
 - **The chrome follows the theme**, as in every liveworkspace editor: the accent the sidebar, tabs, buttons and
   links use is the knowledgebase's theme accent, in the light and dark halves the theme defines. **Review Due** stays
   amber and errors stay red in every theme; the Verified tick takes the theme accent.
-- **Stored once**, on the knowledgebase (`knowledgeStyle` in the document's metadata: the theme, fonts, text size,
-  spacing and heading style), and every page's writing is drawn with it. Changing it changes every page at once, for
-  everyone, as one undoable edit; pages are not rewritten or re-saved, and pages not on screen are not laid out.
+  - The top row and the footer follow it too (the formatting bar's active state, Share, the footer's tabs): unlike
+    the other editors' header and tab bar, they carry no opt-out. Only the logo keeps the product's own colours.
+  - A theme whose accent is too pale to carry text (a pastel's rose, a yellow, a mid orange) is deepened, hue kept,
+    until white reads on its solid fills and its deeper step reads on its wash at 4.5:1.
+  - In the dark appearance the page's ground is the chrome's own dark surface, so under a theme that tints the dark
+    surfaces the reading column is the same ground as the top row and the sidebar.
+  - A picked accent colours the writing only, never the chrome.
+  - Page links take the theme's accent (lime under the product's own theme), held to 4.5:1.
+- **Stored once**, on the knowledgebase (`knowledgeStyle` in the document's metadata: the theme, the heading and
+  body fonts, text size, spacing and heading style, and the accent when one was picked), and every page's writing is
+  drawn with it. Changing it changes every page at once, for everyone, as one undoable edit; pages are not rewritten
+  or re-saved, and pages not on screen are not laid out. A stored style is read forgivingly (a field it cannot use
+  is the default's); a write is strict (a field it cannot take refuses the save, by name).
+- **No tab has a style.** A tab's stored theme, font, text size, finish, surround and New Page Background (an
+  imported livedocuments file carries them) are ignored and dropped as the tab is read, as a page's own looks are.
+- **Drawings and charts** inside a page are drawn in the knowledgebase's theme, in the plain finish: each colour an
+  element leaves unset is the theme's when it is drawn, and a colour someone picked is kept. Nothing is written to
+  the element, so a style change saves no page.
 - **A new knowledgebase** starts in the Everyday look with the product's lime theme.
 - Exports (PDF, Word, Markdown) use the knowledgebase's style.
-- **Agents** cannot set a page's look: the article write takes no `look` or `accent`. The style is read and set with
-  the knowledgebase's metadata, by an Editor's token with the `write` scope.
-- **Telemetry:** the Tab Style events, with `Knowledgebase` as the object (`Knowledgebase` `Changed` `Look`,
-  `SeasonalLook`, `Mashup`, `Text`, `Colours`).
+- **Agents** cannot set a page's look: the article write takes no `look` or `accent`, and one that names either is
+  refused with a line that says the style is a knowledgebase setting and what to send instead. The style is read
+  with the knowledgebase's metadata (`GET /api/documents/<id>`, every role) and set with its metadata write (`PUT
+/api/documents/<id>` with `knowledgeStyle`, any of its fields), by an Editor's token with the `write` scope. The
+  CLI's `article set` has no `--look` or `--accent`; the CLI and the MCP have no verb of their own for the style yet.
+- **Telemetry:** the Tab Style events as they are: `Tab` `Changed` `Look`, `SeasonalLook`, `Mashup`, `Text` and
+  `Colours`, and `UI` `Opened` `ThemePicker` for the dialog. `Knowledgebase` is not a category of the telemetry
+  vocabulary, and adding one is a change to the platform's schema and dashboard, so the object stays `Tab`.
 
 ## Share roles
 

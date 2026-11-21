@@ -8,6 +8,7 @@
 
 import { apiLoadDocument, apiLoadTab } from '@/lib/api-client';
 import { DOCUMENT_CONVERSION_HEADER } from '@liveknowledge/api-schema';
+import { carriedKnowledgeStyle } from '@liveknowledge/document';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
 import {
@@ -120,6 +121,8 @@ async function downloadAndRemoveCloudCopy(
     savedAt: now,
     tabs,
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
+    // Its Knowledgebase Style stays with it; the default is not written down.
+    ...carriedKnowledgeStyle(liveDoc.knowledgeStyle),
     // Its Review Period stays with it; the default is not written down.
     ...(liveDoc.knowledgeSettings && liveDoc.knowledgeSettings.reviewEvery !== 90
       ? { knowledgeSettings: liveDoc.knowledgeSettings }

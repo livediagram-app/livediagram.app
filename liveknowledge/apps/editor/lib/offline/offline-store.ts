@@ -13,6 +13,11 @@
 
 import { parseKnowledgeSettings, type KnowledgeSettings } from '@liveknowledge/document';
 import type { LiveDoc, DocumentSummary, TabSummary } from '@liveknowledge/api-schema';
+import {
+  carriedKnowledgeStyle,
+  parseKnowledgeStyle,
+  type KnowledgeStyle,
+} from '@liveknowledge/document';
 import { utcDay } from '@liveknowledge/api-schema';
 import { drawnCount, migrateStoredTab, parseTabParent } from '@liveknowledge/document';
 import type { Tab } from '@liveknowledge/document';
@@ -52,6 +57,9 @@ export type OfflineDocumentRecord = {
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
+  // The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): kept with the
+  // record so it survives a reload, and travels when the knowledgebase is synced. Absent is the default.
+  knowledgeStyle?: KnowledgeStyle;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline documents get
   // decks for the same reason they get everything else: Offline Mode is the
   // whole product minus the server, not a reduced one. Optional so records
@@ -112,6 +120,7 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
     ownerId: OFFLINE_OWNER_ID,
     name: rec.name,
     tabs: rec.tabs.map((t, i) => tabToSummary(t, rec.id, i, rec.savedAt)),
+    knowledgeStyle: parseKnowledgeStyle(rec.knowledgeStyle),
     presentation: rec.presentation ?? null,
     knowledgeSettings: parseKnowledgeSettings(rec.knowledgeSettings),
     shareable: false,
@@ -303,6 +312,20 @@ export async function offlineSaveDocumentMeta(
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => applyMeta(rec, patch, now));
+}
+
+// The Knowledgebase Style on a record kept here (page-surface.md "Knowledgebase Style"): the record's own field and
+// its last save, no tab touched. The default is not written down.
+export async function offlineSaveKnowledgeStyle(
+  id: string,
+  style: KnowledgeStyle,
+  now: number,
+): Promise<void> {
+  await writeLive(id, (rec) => {
+    const { knowledgeStyle: _was, ...rest } = rec;
+    void _was;
+    return { ...rest, ...carriedKnowledgeStyle(style), savedAt: now };
+  });
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {

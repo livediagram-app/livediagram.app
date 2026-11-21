@@ -31,8 +31,8 @@ export function KnowledgeTopRow({
   return (
     <div
       data-knowledge-top-row={rank}
-      // The app's own colours, whatever else is drawn under it.
-      data-app-chrome
+      // No `data-app-chrome`: the row follows the knowledgebase's theme (page-surface.md "The chrome follows the
+      // theme"), so the formatting bar's active state and Share take its accent.
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.stopPropagation()}
       style={{ height: TOP_ROW_HEIGHT_VAR, ...style }}

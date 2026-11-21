@@ -11,8 +11,13 @@ import {
 import { getResolvedAppearance } from '@liveknowledge/ui';
 import { resolveTabBackdrop, themeViewMap } from './themes';
 import { elementAsSeen, pageViewOf } from './stock-colour-projector';
+import { knowledgeStyleStore } from './knowledge-style/knowledge-style-store';
+import { tabInKnowledgeStyle } from './knowledge-style/styled-tab';
 
-export function tabAsSeen(tab: Tab, appearance: Appearance = getResolvedAppearance()): Tab {
+export function tabAsSeen(stored: Tab, appearance: Appearance = getResolvedAppearance()): Tab {
+  // In the knowledgebase's style first (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): its
+  // theme, its typefaces and its article style, which no tab stores.
+  const tab = tabInKnowledgeStyle(stored, knowledgeStyleStore.openStyle());
   const backdrop = resolveTabBackdrop(tab, appearance);
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in the export's half (docs/specs/011-theme/light-and-dark.md), then the stock colours;

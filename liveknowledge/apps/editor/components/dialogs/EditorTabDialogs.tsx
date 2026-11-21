@@ -8,6 +8,8 @@ import dynamic from 'next/dynamic';
 import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
+import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
+import { tabInKnowledgeStyle } from '@/lib/knowledge-style/styled-tab';
 import { importFormatsFor } from '@/lib/import-formats';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
@@ -133,7 +135,8 @@ function OpenEditorTabDialogs() {
           deck={slideDeck?.deck}
           documentName={documentName}
           // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
-          documentTabs={tabs}
+          // Every other page too, in the knowledgebase's style (page-surface.md "Knowledgebase Style").
+          documentTabs={tabs.map((t) => tabInKnowledgeStyle(t, knowledgeStyleStore.openStyle()))}
           imageContext={imageContext}
           onClose={() => setExportOpen(false)}
         />

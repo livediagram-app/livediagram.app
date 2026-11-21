@@ -93,8 +93,8 @@ export function BottomBar({
         // Every control belongs to a landmark (axe "region").
         role="region"
         aria-label="Bottom bar"
-        // The app's own colours, whatever the page's style (docs/specs/011-theme/canvas-and-theme-dialog.md).
-        data-app-chrome
+        // No `data-app-chrome`: the footer and its tabs follow the knowledgebase's theme, as the rest of the chrome
+        // does (docs/specs/030-knowledgebase/page-surface.md "The chrome follows the theme").
         // Clear of the home indicator and a landscape notch (lib/safe-area): the 48px row sits
         // above the bottom inset (the height grows by it), its sides past the side insets.
         style={{

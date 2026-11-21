@@ -14,6 +14,7 @@ import { receiveArticleCaret } from '@/lib/article/article-carets-store';
 import { receiveArticleHold } from '@/lib/article/article-holds-store';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
 import { remoteSelectionOf } from '@/lib/presence-rows';
+import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 
 type RoomOpFrom = Parameters<NonNullable<RoomHandlers['onOp']>>[0];
@@ -68,6 +69,10 @@ export function receiveRoomOp(
     // change is known to be the peer's and is never saved or broadcast
     // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
     if (op.kind === 'document-meta') setDocumentName(op.name);
+    // The Knowledgebase Style, when the api stored a new one (page-surface.md "Knowledgebase Style"): every
+    // mounted page and the chrome redraw in it; no tab is touched.
+    if (op.kind === 'document-meta' && op.knowledgeStyle && opts.documentId)
+      knowledgeStyleStore.take(opts.documentId, op.knowledgeStyle);
     // The knowledgebase's Review Period, when the api stored a new one (verification.md "The Review Period"):
     // every tick, Due pill and due date on screen follows it.
     if (op.kind === 'document-meta' && op.knowledgeSettings && opts.documentId)

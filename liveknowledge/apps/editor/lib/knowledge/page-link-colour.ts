@@ -10,7 +10,13 @@ export const PAGE_LINK_ON_DARK = '#bef264';
 // WCAG 2.2 AA for text.
 export const PAGE_LINK_CONTRAST = 4.5;
 
-/** The colour of a live page link on paper of `tone`. */
-export function pageLinkColour(ink: { tone: string; dark: boolean }): string {
+/** The colour of a live page link on paper of `tone`. `themed` is the accent of a knowledgebase whose theme is not
+ *  the product's own (docs/specs/030-knowledgebase/page-surface.md "The chrome follows the theme"): its page links
+ *  take that accent, held to the same floor, as the rest of the chrome does. */
+export function pageLinkColour(
+  ink: { tone: string; dark: boolean },
+  themed?: string | null,
+): string {
+  if (themed) return legibleOn(themed, ink.tone, PAGE_LINK_CONTRAST);
   return legibleOn(ink.dark ? PAGE_LINK_ON_DARK : PAGE_LINK_ON_LIGHT, ink.tone, PAGE_LINK_CONTRAST);
 }

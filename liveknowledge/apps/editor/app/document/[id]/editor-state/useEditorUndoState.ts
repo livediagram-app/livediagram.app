@@ -4,6 +4,9 @@ import type { EditorDocument } from './useEditorDocument';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorPages } from './useEditorPages';
 import type { EditorViewport } from './useEditorViewport';
+import type { EditorSession } from './useEditorSession';
+import { useEditorKnowledgeStyle } from './useEditorKnowledgeStyle';
+import { styleOfferedOf } from '@/lib/knowledge-style/style-offered';
 
 // Undo and redo (../useEditorHistory): the handlers over the document history, gated like every other edit.
 //
@@ -14,7 +17,9 @@ export function useEditorUndoState({
   selectionSlice,
   pagesSlice,
   viewportSlice,
+  sessionSlice,
 }: {
+  sessionSlice: EditorSession;
   documentSlice: EditorDocument;
   selectionSlice: EditorSelection;
   pagesSlice: EditorPages;
@@ -24,6 +29,24 @@ export function useEditorUndoState({
   'use no memo';
   const { canHistoryUndo, canHistoryRedo, undoHistory, redoHistory, tickTabs, tabs } =
     documentSlice;
+  // The Knowledgebase Style's changes are steps of this history too (page-surface.md "Knowledgebase Style").
+  const knowledgeStyle = useEditorKnowledgeStyle({
+    documentId: sessionSlice.documentId,
+    ownerId: sessionSlice.selfParticipant.id,
+    shareCode: sessionSlice.sessionShareCode,
+    mayStyle: styleOfferedOf({
+      can: sessionSlice.participant.can,
+      isStructureReadOnly: sessionSlice.isStructureReadOnly,
+      hydrated: sessionSlice.hydrated,
+      embedMode: documentSlice.embedMode,
+      workbench: documentSlice.workbench,
+      sessionCommunity: sessionSlice.realtime.sessionCommunity,
+      documentId: sessionSlice.documentId,
+    }),
+    depth: documentSlice.historyDepth,
+    branch: documentSlice.historyBranch,
+    markCheckpoint: documentSlice.markCheckpoint,
+  });
   const { viewport, requestFit } = viewportSlice;
   const { activeId, setSelectedId, setEditingId, setFormatSourceId } = selectionSlice;
   const { activeTabLocked, editsBlocked } = pagesSlice;
@@ -41,6 +64,8 @@ export function useEditorUndoState({
     undoHistory,
     redoHistory,
     beforeStep: importUndoView.beforeStep,
+    beforeUndo: knowledgeStyle.beforeUndo,
+    beforeRedo: knowledgeStyle.beforeRedo,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;

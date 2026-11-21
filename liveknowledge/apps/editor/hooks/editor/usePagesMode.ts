@@ -16,6 +16,7 @@ import {
 import {
   articleMarginPx,
   articlesOf,
+  knowledgeArticleStyle,
   pageFitBox,
   isContinuousPage,
   pagesOf,
@@ -23,6 +24,7 @@ import {
   pageKindOf,
   tabArrangesPages,
   withContentOnAPage,
+  type ArticleStyle,
   type Element,
   type LaidOutPage,
   type NoteCard,
@@ -36,7 +38,9 @@ import { topStripInset } from '@/lib/top-strip-inset';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
-import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';
+import { themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';
+import { knowledgeThemeAccent } from '@/lib/knowledge-style/knowledge-accent';
+import { useKnowledgeStyle } from '@/lib/knowledge-style/knowledge-style-store';
 import type { ArticlesView } from './useArticles';
 import { pageEdits, type PageEdits } from './page-edits';
 import type { PageLayoutId } from '@liveknowledge/templates';
@@ -82,6 +86,9 @@ export type PagesModeView = {
   themeBackgrounds: ThemeBackgroundPreset[];
   // The tab theme's accent: a document's accent unless it picked one of its own.
   themeAccent: string;
+  // The style every page's writing is drawn with (page-surface.md "Knowledgebase Style"): the knowledgebase's own,
+  // the same object while it holds, so a flow handed it re-lays out only when the style changes.
+  articleStyle: ArticleStyle;
   // The articles' writing on the pages (useArticles), composed in by the editor.
   articles?: ArticlesView | null;
   // The tab's default face, for what the pages draw themselves (a layout preview).
@@ -458,7 +465,9 @@ export function usePagesMode(deps: {
         y: from.offset.y + dy / from.zoom,
       });
   };
-  const theme = getTheme(activeTab.theme);
+  // The knowledgebase's theme, not a tab's (page-surface.md "Knowledgebase Style").
+  const knowledgeStyle = useKnowledgeStyle(deps.documentId);
+  const theme = getTheme(knowledgeStyle.theme);
   // Worked out once per theme, so the pages' sheets (CanvasPageSheet) keep their props while it holds.
   const themeBackgrounds = useMemo(() => themeBackgroundPresets(theme), [theme]);
   const tabFont = activeTab.font;
@@ -501,7 +510,9 @@ export function usePagesMode(deps: {
     panFrom,
     framing: () => goingTo.current !== null || motion.current.gliding,
     themeBackgrounds,
-    themeAccent: themeAccent(theme),
+    // The writing's accent: the theme's (lime for the product's own), or the one someone picked.
+    themeAccent: knowledgeThemeAccent(knowledgeStyle.theme),
+    articleStyle: knowledgeArticleStyle(knowledgeStyle),
     tabFont,
     elements: activeTab.elements,
     layoutPreview,

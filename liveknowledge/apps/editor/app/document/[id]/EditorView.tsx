@@ -50,6 +50,7 @@ import { useOfflineConversions } from '@/hooks/persistence/useOfflineConversion'
 import { useVisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
+import { useKnowledgeStyle } from '@/lib/knowledge-style/knowledge-style-store';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { EditorViewFooter, EditorViewHeader } from './editor-view-bars';
@@ -268,7 +269,7 @@ export function EditorView() {
   // actions the menus use. Empty (undefined items) for view-only sessions.
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
-  useEditorAccent(activeTab.theme);
+  useEditorAccent(useKnowledgeStyle(documentId).theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/editor-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();

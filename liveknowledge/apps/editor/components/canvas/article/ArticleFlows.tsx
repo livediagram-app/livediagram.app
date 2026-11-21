@@ -231,8 +231,12 @@ export function ArticleFlows({
                   surface,
                 )}
                 themeAccent={view.themeAccent}
+                // Every page is drawn in the knowledgebase's style (page-surface.md "Knowledgebase Style"): a
+                // flow stores none of its own.
                 styleOverride={
-                  articles.stylePreview?.flow === flow ? articles.stylePreview.style : undefined
+                  articles.stylePreview?.flow === flow
+                    ? articles.stylePreview.style
+                    : view.articleStyle
                 }
                 margin={articleMarginPx(
                   articles.stylePreview?.flow === flow ? articles.stylePreview.style : doc.style,

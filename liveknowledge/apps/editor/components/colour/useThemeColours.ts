@@ -6,6 +6,7 @@
 import { useContext, useMemo } from 'react';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';
+import { useKnowledgeStyle } from '@/lib/knowledge-style/knowledge-style-store';
 import { themeOptions, type ColourOption } from './colour-options';
 
 const NONE: readonly ColourOption[] = [];
@@ -14,7 +15,8 @@ export function useThemeColours(): readonly ColourOption[] {
   // Outside the editor (the Explorer, a test) there is no active tab, so no group.
   const editor = useContext(EditorContext);
   const inEditor = editor !== null;
-  const themeId = editor?.activeTab?.theme;
+  // The knowledgebase's theme: a tab has none of its own (page-surface.md "Knowledgebase Style").
+  const themeId = useKnowledgeStyle(editor?.documentId).theme;
   return useMemo(() => {
     if (!inEditor) return NONE;
     return themeOptions(themePresetColors(getTheme(themeId)));

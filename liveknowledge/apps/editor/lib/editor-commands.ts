@@ -18,6 +18,7 @@ import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
 import { openSetup } from '@/lib/knowledge-setup/setup-open';
 import { ADD_PAGES_BUTTON } from '@/lib/knowledge-setup/setup-words';
+import { STYLE_TITLE } from '@/lib/knowledge-style/knowledge-style-words';
 import { openKnowledgeSettings } from '@/lib/knowledge-settings/settings-open';
 import { SETTINGS_TITLE } from '@/lib/knowledge-settings/review-period-words';
 
@@ -66,6 +67,9 @@ export type CommandContext = {
   // A signed-in Editor of a knowledgebase that is no longer empty (docs/specs/030-knowledgebase/describe-to-set-up.md
   // "The control"): Describe to Add Pages is offered.
   canDescribePages?: boolean;
+  // An Editor of the whole knowledgebase (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"):
+  // Knowledgebase Style is offered.
+  canStyleKnowledgebase?: boolean;
   // An Editor of the whole knowledgebase (docs/specs/030-knowledgebase/verification.md "The Review Period"):
   // Knowledgebase Settings is offered.
   canOpenKnowledgeSettings?: boolean;
@@ -281,7 +285,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     });
   }
   // No Open Theme and no Open Canvas Options (docs/specs/030-knowledgebase/page-surface.md "What a page no longer
-  // has"): the look is the knowledgebase's, chosen in Knowledgebase Settings.
+  // has"): the look is the knowledgebase's, chosen in Knowledgebase Style (below).
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
@@ -326,6 +330,15 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
         run: h.renumberSteps,
       });
     }
+  }
+  if (ctx.canStyleKnowledgebase) {
+    out.push({
+      id: 'knowledgebase-style',
+      name: STYLE_TITLE,
+      keywords:
+        'knowledgebase style look looks theme colours colors font fonts text size spacing accent',
+      run: h.openTheme,
+    });
   }
   if (ctx.canDescribePages) {
     out.push({

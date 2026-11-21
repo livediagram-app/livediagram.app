@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours } from '@liveknowledge/document';
+import { DEFAULT_KNOWLEDGE_STYLE, penColourHex, standardColours } from '@liveknowledge/document';
+import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';
 import { ColourPicker, type ColourPickerProps } from './ColourPicker';
@@ -186,14 +187,18 @@ describe('ColourPicker', () => {
 });
 
 describe('the Theme Palette', () => {
-  const inEditor = (props: Partial<ColourPickerProps>) =>
-    render(
-      <EditorContext.Provider value={{ tabs: [], activeTab: { theme: 'ocean' } } as never}>
+  // The palette is the knowledgebase's theme's (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase
+  // Style"): a tab has no theme of its own.
+  const inEditor = (props: Partial<ColourPickerProps>) => {
+    knowledgeStyleStore.set('kb', { ...DEFAULT_KNOWLEDGE_STYLE, theme: 'ocean' });
+    return render(
+      <EditorContext.Provider value={{ tabs: [], documentId: 'kb', activeTab: {} } as never}>
         <ColourPicker label="Colour" value={null} onPick={vi.fn()} {...props} />
       </EditorContext.Provider>,
     );
+  };
 
-  it('shows the active tab’s theme colours first in the editor, whatever the surface', () => {
+  it('shows the knowledgebase’s theme colours first in the editor, whatever the surface', () => {
     inEditor({ standard: [standardGroup('strong', 'light', 'hex')] });
     const theme = within(screen.getByRole('group', { name: 'Theme Palette' })).getAllByRole(
       'button',

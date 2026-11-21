@@ -12,7 +12,7 @@ import {
   type SharedTabsSummary,
 } from '@liveknowledge/api-schema';
 import type { LiveDoc, DocumentResponse, DocumentSummary } from '@liveknowledge/api-schema';
-import type { Tab } from '@liveknowledge/document';
+import type { KnowledgeStyle, Tab } from '@liveknowledge/document';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,
@@ -197,6 +197,8 @@ export async function apiCreateDocument(
     intent?: CreationIntent;
     createdAt?: number;
     savedAt?: number;
+    // The Knowledgebase Style a knowledgebase kept Offline chose (page-surface.md "Knowledgebase Style").
+    knowledgeStyle?: KnowledgeStyle;
     presentation?: string | null;
     // The Review Period a knowledgebase kept Offline chose (verification.md "The Review Period").
     knowledgeSettings?: { reviewEvery: 30 | 90 | 180 | 365 | 'never' };
@@ -254,6 +256,7 @@ export async function apiCreateDocument(
       ...(d.createdAt !== undefined ? { createdAt: d.createdAt } : {}),
       ...(d.savedAt !== undefined ? { savedAt: d.savedAt } : {}),
       ...(d.presentation ? { presentation: d.presentation } : {}),
+      ...(d.knowledgeStyle ? { knowledgeStyle: d.knowledgeStyle } : {}),
       ...(d.knowledgeSettings ? { knowledgeSettings: d.knowledgeSettings } : {}),
     }),
   });

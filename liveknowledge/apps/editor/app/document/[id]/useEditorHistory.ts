@@ -24,6 +24,10 @@ export function useEditorHistory(opts: {
   // Told just before the person's own undo or redo steps, so an import's undo can bring its view back
   // (@liveworkspace/workbench/hooks/canvas/useImportUndoView).
   beforeStep?: () => void;
+  // Told just before an undo, and just before a redo: a step that is not a snapshot of the tabs (the Knowledgebase
+  // Style's, editor-state/useEditorKnowledgeStyle.ts) moves with the history through these.
+  beforeUndo?: () => void;
+  beforeRedo?: () => void;
   set: {
     setSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
@@ -53,6 +57,7 @@ export function useEditorHistory(opts: {
     track('Document', 'Undone');
     announce('Undid the last change');
     opts.beforeStep?.();
+    opts.beforeUndo?.();
     undoHistory();
     clearFocus();
   };
@@ -62,6 +67,7 @@ export function useEditorHistory(opts: {
     track('Document', 'Redone');
     announce('Redid the last change');
     opts.beforeStep?.();
+    opts.beforeRedo?.();
     redoHistory();
     clearFocus();
   };

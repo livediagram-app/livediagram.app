@@ -82,6 +82,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pagesSlice,
   });
   const historySlice = useEditorUndoState({
+    sessionSlice,
     documentSlice,
     selectionSlice,
     pagesSlice,

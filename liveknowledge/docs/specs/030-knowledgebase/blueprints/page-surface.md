@@ -1,7 +1,7 @@
 # Page surface blueprint
 
-Derived from [The page surface](../page-surface.md). **Nothing here is verified in a browser.** Each section says
-what is built; "Not built" at the foot is the work left, written so it can be picked up cold.
+Derived from [The page surface](../page-surface.md). Each section says what is built; "Not built" at the foot is
+the work left, written so it can be picked up cold, and says what was looked at in a browser.
 
 ## The choice: keep the canvas engine, lock it, and scroll it natively
 
@@ -235,9 +235,101 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
   bottom-right cluster, the Open Theme and Open Canvas Options commands, Article Style in the bar's More menu, and
   Lock Page in the page's menu.
 - **Not removed, and unreachable or inert:** the Map, Middle-Mouse Pan and the Pages tours' rows in Settings (their
-  catalogue is mirrored by liveworkspace.app's settings page and pinned by nineteen tests; see "Not built"), the
-  help centre's articles on them, and `write_article`'s `look` and `accent`, which are still accepted, stored and
-  then dropped on the next read.
+  catalogue is mirrored by liveworkspace.app's settings page and pinned by nineteen tests; see "Not built"), and
+  the help centre's articles on them.
+
+## Knowledgebase Style (built)
+
+Spec "Knowledgebase Style". The style is one value on the document, drawn with when a page is shown, and stored in
+no tab.
+
+| Piece                                   | File                                                                                                                             |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| the model, parser, write, article style | `packages/document/src/knowledge-style.ts`                                                                                       |
+| a tab's own style dropped on read       | `packages/document/src/page-looks.ts` (`RETIRED_TAB_STYLE_KEYS`)                                                                 |
+| the wire                                | `packages/api-schema` `knowledge.ts` (`KnowledgeStyleWire`), `LiveDoc`, `document-meta`                                          |
+| the column and its travel               | `apps/api` `document-schema.ts` (V16), `document-content.ts`, `document-file.ts`, `document-snapshots.ts`                        |
+| the metadata write                      | `apps/api` `routes/knowledge-style-write.ts`, called by `routes/documents.ts`                                                    |
+| the editor's store                      | `apps/editor/lib/knowledge-style/knowledge-style-store.ts`                                                                       |
+| the change, its save and its undo step  | `editor-state/useEditorKnowledgeStyle.ts`, `lib/knowledge-style/style-change.ts`, `style-history.ts`                             |
+| who is offered it                       | `lib/knowledge-style/style-offered.ts`, `components/knowledge-style/useStyleOffered.ts`                                          |
+| accents, the dark ground                | `lib/knowledge-style/knowledge-accent.ts`                                                                                        |
+| looks, the Mashup                       | `lib/knowledge-style/knowledge-looks.ts`                                                                                         |
+| a card's page of writing                | `lib/knowledge-style/look-page-preview.ts`                                                                                       |
+| drawings in the theme                   | `lib/knowledge-style/styled-elements.ts`                                                                                         |
+| a tab as the exports draw it            | `lib/knowledge-style/styled-tab.ts`, `lib/export-as-seen.ts`                                                                     |
+| the dialog and its panels               | `components/knowledge-style/` (`KnowledgeStyleDialog`, `knowledge-style-profile`, `KnowledgeTextPanel`, `KnowledgeColoursPanel`) |
+| the shared dialog's optional parts      | `packages/workbench` `tab-style-profile.ts` (`title`, `finishFilter`, `renderPanel`, `panelValues`)                              |
+
+- **Model.** `KnowledgeStyle` is `{ theme, headingFont, bodyFont, textSize, lineSpacing, headingStyle, accent? }`:
+  a built-in theme id (`brand` is the product's own), two typeface ids, `small | medium | large`, `compact |
+comfortable | relaxed`, `plain | ruled`, and a hex when one was picked. `DEFAULT_KNOWLEDGE_STYLE` is brand, Inter,
+  medium, comfortable, plain. `parseKnowledgeStyle` never throws and defaults each field it cannot use;
+  `knowledgeStyleWrite(stored, write)` is strict and names the field it refuses (`accent: null` clears);
+  `storedKnowledgeStyle` is null for the default. `knowledgeArticleStyle(style)` is the `ArticleStyle` every flow is
+  drawn with (Narrow margins, the accent in the headings, `single | onehalf | double` for the spacing, `headings`
+  rules for ruled), the same object for the same style.
+- **Storage.** `document.knowledge_style` (JSON, NULL for the default), read with the document's row into
+  `DocumentMeta.knowledgeStyle` and so into every document read. It travels as `knowledgeSettings` does: a create
+  (`POST /api/documents`, read forgivingly), a copy of the whole knowledgebase (never of one page), the file
+  envelope (`document.knowledgeStyle`, absent for the default), a snapshot's revert, and the Offline record
+  (`OfflineDocumentRecord.knowledgeStyle`, `offlineSaveKnowledgeStyle`) through its sync.
+- **The write.** `PUT /api/documents/<id>` with `knowledgeStyle` (any of its fields), behind the route's edit gate.
+  A field it cannot take is 400 `invalid_knowledge_style` with `field` and `message`, before anything of the save
+  is written. A style that differs writes the one row and is relayed, awaited, as a `document-meta` op with
+  `knowledgeStyle`. The room deletes `knowledgeStyle` from any session's own `document-meta`
+  (`document-room-frames.ts`), so only the api's relay carries one.
+- **The editor.** The store holds the style per knowledgebase and tells its readers only when it changes
+  (`take` from the document's read, the room's op and a resync; `set` from a change here). `useEditorKnowledgeStyle`
+  binds `changeKnowledgeStyle` for an Editor of the whole knowledgebase (`styleOfferedOf`) and for no one else: a
+  change pushes a checkpoint on the tab history (the tabs as they are), records the style before and after against
+  that step's depth and branch (`createStyleHistory`), shows it from the store and saves it
+  (`apiSaveKnowledgeStyle`); a refused save puts back what was there and says so. `useEditorHistory`'s
+  `beforeUndo` and `beforeRedo` move the style with the step.
+- **Drawing.** `usePagesMode` reads the style and hands the view `articleStyle` and the theme's accent;
+  `ArticleFlows` passes it as every flow's `styleOverride`. `EditorCanvasHost` draws the active page's elements
+  through `elementsInTheme` (each unset colour the theme's, cached per element) and the theme's view map.
+  `useThemeColours` and `useColourPalette` offer the theme's palette. Nothing subscribes for a page that is not
+  mounted, and no tab is committed.
+- **The accent.** `knowledgeThemeAccent`: lime (`#4d7c0f`, brand-600) for `brand`; a one-colour theme's stroke; a
+  multi-colour theme's first branch whose hue is outside 330 to 65 degrees (red through amber, the hues of errors
+  and Review Due). `articleStyleVars` holds it to 4.5:1 on the page. `knowledgeChromeAccent` is what the chrome's
+  ramp is spun from (`useEditorAccent`): null for `brand`, else the accent deepened 4% a step until white reads on
+  it and its 700 step reads on its 50 step at 4.5:1. `knowledgeDarkGround` is the dark appearance's ground under a
+  theme: `#131b26` (the shared dark palette's slate-900) for `brand`, the ramp's slate-900 otherwise; `globals.css`
+  paints the canvas root with `var(--color-slate-900)` in dark.
+- **The dialog.** `KnowledgeStyleDialog` renders the shared `TabStyleDialog` with `knowledgeStyleProfile(style)`:
+  `title` Knowledgebase Style, `finishFilter: false`, the looks from `KNOWLEDGE_LOOKS` (the platform's, each cut to
+  a theme and a font) with `lookPagePreview` as the card, panels `['font', 'theme']` drawn by `renderPanel`, and
+  `panelValues` for the two rows. No tour binding runs (`NO_TOUR`). Its open state is the editor's existing
+  `canvasThemeTab`; `EditorModals` draws it only while `useStyleOffered()`. The Fine-tune panels are
+  `sm:min-h-[23.375rem]`, which makes all three views 562 px tall at 1440 x 900 (measured).
+- **Exports.** `tabAsSeen` first takes the tab through `tabInKnowledgeStyle(tab, knowledgeStyleStore.openStyle())`
+  (the theme, the body font, each flow's article style, unset element colours), so the PDF, Word and image exports
+  and the print read the knowledgebase's style where they read `tab.theme` and `flow.style`; the other pages of a
+  whole export are mapped the same way in `EditorTabDialogs`. Markdown carries no style.
+- **Agents.** `parsePagesRequest` refuses `look` and `accent` by name (`STYLE_IS_THE_KNOWLEDGEBASES`);
+  `ArticleWrite` and the CLI's `article set` carry neither.
+- **Telemetry.** `Tab` `Changed` `Look` | `SeasonalLook` | `Mashup` | `Text` | `Colours`, and `UI` `Opened`
+  `ThemePicker`.
+
+Tests: `knowledge-style.test.ts` (document: the parser, the write, the article style, the retired tab keys),
+`knowledge-style-write.test.ts` (api: every role, each refusal, one row written, the relay, the travel),
+`lib/knowledge-style/knowledge-style.test.ts` (the store, the undo placement, the offer per role, the looks, the
+cards, the drawings, the exported tab), `knowledge-style-contrast.test.ts` (every theme, light and dark: the tree's
+selected row, the Verified pill, the formatting bar's active state, solid fills, the footer's tabs, the writing's
+accent and page links at 4.5:1; Review Due untouched), `useEditorKnowledgeStyle.test.tsx` (no page rewritten,
+saved or laid out; one undo step; a Participant and a Viewer never change it), `KnowledgeStyleDialog.test.tsx`.
+
+## The knowledgebase's menu (built)
+
+Spec [Knowledgebases and pages](../knowledgebases-and-pages.md) "The knowledgebase's menu".
+`components/knowledge-menu/`: `useKnowledgebaseMenu` builds the rows from the hooks that decide each feature
+(`useStyleOffered`, `useKnowledgebaseSettings`, `useDescribeToAddPages`, `useAskSession().rights.manageAi`);
+`KnowledgebaseMenu` is the name's button and the shared `PortalMenu` with `MenuHeader` and `MenuActionRow`.
+`PageTreeSidebar` and `PageTreeSheet` take it as `menu`, a render prop handed the shown name and how a rename
+starts in place, from their hosts in `usePageTreeChrome`, where the editor's store is. Tests:
+`KnowledgebaseMenu.test.tsx` (the rows in order, each row's action, the keys, every role), `PageTreeSidebar.test.tsx`.
 
 ## Performance and limits
 
@@ -276,34 +368,29 @@ Written so each can be picked up cold.
 
 ### Knowledgebase Style (spec "Knowledgebase Style")
 
-Nothing is built: no `knowledgeStyle`, no dialog. Today every page is drawn in the Clean look at the Medium size
-with the theme's accent, because a page's own style is dropped as it is read (`page-looks.ts`) and nothing takes
-its place. The spec was rewritten on 2026-11-20 (it is the platform's Tab Style dialog, cut down), and this list
-follows it:
+Built: see "Knowledgebase Style (built)" above. What is left of it:
 
-1. **Model** (`packages/document`): `KnowledgeStyle` (the theme id, heading and body font, text size, line
-   spacing, heading style), a forgiving `parseKnowledgeStyle`, the default (the Everyday look, the lime theme), and
-   `knowledgeArticleStyle(style): ArticleStyle` with Narrow margins.
-2. **Storage and sync:** a field of the document's metadata, beside the name and `knowledgeSettings` (the Review
-   Period, which another change is adding by the same path: build on it, not beside it). The metadata save
-   (`useAutosave.ts`, `PUT /api/documents/:id`), the room's `document-meta` op (`packages/api-schema`
-   `room-messages.ts`, relayed from an Editor only by `gateClientOp`), a resync, copies, snapshots and versions,
-   export, the Drive file and Offline. No page is rewritten: the style is in no tab.
-3. **Retire the per-tab style:** a tab's stored theme, fonts, finish and surround (`TAB_STYLE_KEYS`) are dropped
-   as a tab is read, as the page looks are (`withoutPageLooks`), so the knowledgebase's style is the only source.
-4. **Drawing:** hand every flow `knowledgeArticleStyle(knowledgeStyle)` (`ArticleFlows`' `styleOverride`,
-   `Canvas`' `pageMargin` and `articleTopMarginPx`) and the theme to the element layer, so only mounted pages
-   re-lay out; a test must hold that changing the style re-saves no page.
-5. **The chrome follows the theme:** feed the fork's hook that emits the accent ramp for a tab's theme the
-   knowledgebase's theme instead; Review Due stays amber and errors red.
-6. **The dialog:** `CanvasThemeDialog` (spec `011-theme/canvas-and-theme-dialog.md`) reused as Knowledgebase Style:
-   the Looks carousel with Seasonal and Mashup, each card a small page of writing; Fine-tune with Text and
-   Colours only. Cut: the Canvas panel, New Page Background, the Finish filter and panel, per-shape and formal
-   colours, margins, page numbers, Apply to All Tabs, with their tests, help keys and settings rows. Opened from
-   Knowledgebase Style in the knowledgebase's menu (the sidebar's head, which has no menu yet), Editor only.
-7. **Exports:** the PDF, Word and Markdown exporters read `flow.style`; hand them the knowledgebase's.
-8. **Agents:** the article write refuses `look` and `accent` by name (`parsePagesRequest`), in the api, MCP and
-   CLI schemas; the style is read and set with the knowledgebase's metadata.
+- **Checked in a browser at 1440 x 900 and 390 x 844, light and dark** (Everyday, Boardroom, Midnight, Spectrum,
+  the seasonal Fireside, a Mashup, the Text and Colours panels, the menu, the footer under a theme that is not
+  lime). Not checked: a second person's editor redrawing live from the room's op (the api's relay and the editor's
+  receive are each tested, not the two together in a browser), and the exports' output files.
+- **A multi-colour theme colours the writing in one branch.** Rainbow, Pastel and Tropical give every heading the
+  same accent. Headings taking the palette by level needs a variable a level in `article-pages.css` and the
+  palette handed to `articleStyleVars`, which takes one accent today.
+- **A drawing made before a style change keeps what was picked.** Elements are stored without theme colours and
+  drawn in the theme, so they follow. A colour written into an element under another theme (an imported
+  livedocuments tab) is a picked colour and stays.
+- **The tab style setters are still in the editor's state** (`setTheme`, `setTabFont`, `setTabFinish`,
+  `applyTabLook`, `applyStyleToAllTabs`, `setNewPageBackground` in `editor-state/useEditorStyle.ts` and
+  `hooks/canvas/useTabCanvas.ts`, with `lib/tab-looks.ts`, `lib/look-mashup.ts`, `lib/look-preview.ts`,
+  `lib/finish-preview.ts`, `lib/tab-theme-apply.ts` and their tests). Nothing calls them from the surface any more;
+  a tab they wrote to would have the write dropped on its next read. Removing them is a change to
+  `EditorContextValue` and its equality lists.
+- **The CLI and the MCP have no verb for the style.** It is read and set over REST (`GET` and `PUT
+/api/documents/<id>`). A `document style` verb and an MCP tool are the follow-up.
+- **Help:** the help centre's Tab Style, Finish and New Page Background articles are still in liveknowledge's scope
+  (`lib/help-articles.ts` `changingTheBackground`, `choosingAFinish`; `packages/help-registry`). The dialog links
+  `changingTheme` (the home and Colours) and `choosingFonts` (Text), whose words are a tab's.
 
 ### A column that re-wraps on a narrow window
 

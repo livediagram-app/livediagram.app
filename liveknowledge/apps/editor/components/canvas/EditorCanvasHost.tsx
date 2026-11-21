@@ -28,6 +28,8 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useKnowledgeStyle } from '@/lib/knowledge-style/knowledge-style-store';
+import { elementsInTheme } from '@/lib/knowledge-style/styled-elements';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { useTemplateStartOpen } from '@/components/start/useTemplateStartShown';
 import { canEditSankey } from '@/lib/sankey-edit';
@@ -205,7 +207,15 @@ export function EditorCanvasHost() {
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
   // A presented slide less the builds still to come (presentation-mode.md "Builds"); the step's own elements play in.
-  const shownElements = presentedElements ?? activeTab.elements;
+  // The knowledgebase's style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): every drawing
+  // and chart in a page is drawn in its theme. Nothing stored is read for the theme: a tab has none of its own.
+  const knowledgeStyle = useKnowledgeStyle(documentId);
+  const themeId = knowledgeStyle.theme;
+  const shownElements = elementsInTheme(
+    presentedElements ?? activeTab.elements,
+    themeId,
+    appearance,
+  );
   useBuildEntrance(buildEntrance, canvasMainRef);
   // A presented slide shows nobody else's selection, as it shows nobody else's cursor.
   const remoteSelectionsShown = shownRemoteSelections(
@@ -214,7 +224,7 @@ export function EditorCanvasHost() {
   );
   // On a page with a fill of its own, an element is drawn for that page rather than the chrome
   // (stock-colour-projector.ts "PageView"); off Pages mode, or with no filled page, nothing to do.
-  const pageView = usePageView(shownElements, pagesMode?.pages, activeTab.theme);
+  const pageView = usePageView(shownElements, pagesMode?.pages, themeId);
   // Tab Style's door on each page's title bar (lib/tab-style-opener.ts), for whoever may style the tab: an Editor
   // outside an embed. The page's own Style button tracks its opening.
   const tabStyleOpens = !isReadOnly && !embedMode;
@@ -227,7 +237,7 @@ export function EditorCanvasHost() {
   const canvasElements = projectStockColours(
     shownElements,
     surface,
-    themeViewMap(activeTab.theme, appearance),
+    themeViewMap(themeId, appearance),
     pageView,
     // Labels are re-inked against the plain paper (docs/specs/011-theme/light-and-dark.md "A theme never sinks a
     // label into what is behind it"): its words are made on white, the paper as stored and printed, and the dark
@@ -255,7 +265,7 @@ export function EditorCanvasHost() {
 
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
-  const activeTheme = getTheme(activeTab.theme);
+  const activeTheme = getTheme(themeId);
   // The Canvas props by concern (beside this file, in editor-canvas-host/).
   const insertProps = useInsertCanvasProps({ handleStartArrow });
   const panelProps = usePanelCanvasProps({ styleOnPages, goToRowElement });
@@ -291,7 +301,7 @@ export function EditorCanvasHost() {
                 tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
                 tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
                 tabPatternColor={backdrop.patternColor}
-                tabFont={activeTab.font}
+                tabFont={knowledgeStyle.bodyFont}
                 tabFinish={activeTab.finish}
                 mainRef={canvasMainRef}
                 isPinchingRef={isPinchingRef}
@@ -409,7 +419,7 @@ export function EditorCanvasHost() {
                 selfParticipant={selfParticipant}
                 onConfirmIdentity={confirmIdentity}
                 onCancelIdentity={cancelIdentity}
-                tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
+                tabThemeId={themeId as ThemeId}
                 onToggleAspectLock={toggleAspectLockSelected}
                 // One gesture, one answer: while the element menu is open the
                 // quick-connect pluses stand down (see deriveCanvasSelection).

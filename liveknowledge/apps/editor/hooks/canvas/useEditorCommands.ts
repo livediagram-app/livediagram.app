@@ -26,6 +26,7 @@ import type { CommandSearchItem } from '@/lib/search';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { usePublishedSetupOffered } from '@/lib/knowledge-setup/setup-open';
+import { useStyleChangeBound } from '@/lib/knowledge-style/style-change';
 import { usePublishedKnowledgeSettingsOffered } from '@/lib/knowledge-settings/settings-open';
 
 // What the catalogue is built with: which commands exist, and their words, depend on the context
@@ -127,6 +128,8 @@ export function useEditorCommands(open: boolean): {
   const isOffline = useIsOfflineDocument(documentId);
   // Describe to Add Pages, for a signed-in Editor of a knowledgebase with writing in it.
   const canDescribePages = usePublishedSetupOffered() === 'add';
+  // Knowledgebase Style, for an Editor of the whole knowledgebase.
+  const canStyleKnowledgebase = useStyleChangeBound();
   // Knowledgebase Settings, for an Editor of the whole knowledgebase.
   const canOpenKnowledgeSettings = usePublishedKnowledgeSettingsOffered();
   // Spotlight is desktop-only, so the tool commands need the same viewport
@@ -172,6 +175,7 @@ export function useEditorCommands(open: boolean): {
       isOffline,
       workbench: workbenchMode,
       canDescribePages,
+      canStyleKnowledgebase,
       canOpenKnowledgeSettings,
       canvasTool,
       // Same emptiness test the palette's tool dropdown uses to disable the
@@ -198,6 +202,7 @@ export function useEditorCommands(open: boolean): {
       isOffline,
       workbenchMode,
       canDescribePages,
+      canStyleKnowledgebase,
       canOpenKnowledgeSettings,
       canvasTool,
       canvasEmpty,
@@ -239,8 +244,9 @@ export function useEditorCommands(open: boolean): {
     renameTab: requestRenameTab,
     // Replicate the telemetry the menu/header entry points fire, since the
     // setters themselves don't track.
+    // Knowledgebase Style, on its home (the looks).
     openTheme: () => {
-      setCanvasThemeTab('theme');
+      setCanvasThemeTab('looks');
       track('UI', 'Opened', 'ThemePicker');
     },
     openCanvasOptions: () => {

@@ -8,7 +8,8 @@ import {
   penColourHex,
   type Tab,
 } from '@liveknowledge/document';
-import { canvasSurface } from '@liveknowledge/document';
+import { DEFAULT_KNOWLEDGE_STYLE, canvasSurface } from '@liveknowledge/document';
+import { knowledgeStyleStore } from './knowledge-style/knowledge-style-store';
 import { tabAsSeen } from './export-as-seen';
 import { renderTabToSvg } from './export-tab';
 
@@ -38,12 +39,20 @@ describe('tabAsSeen', () => {
     expect(tabAsSeen(tab, 'light').backgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
   });
 
-  it('draws a themed tab’s canvas in the export’s half, and a picked canvas as it is', () => {
-    const tab = { id: 't', name: 'Tab', theme: 'slate', backgroundColor: '#fdf2f8' } as Tab;
+  it('draws the canvas of a themed knowledgebase in the export’s half, and a picked canvas as it is', () => {
+    // The theme is the knowledgebase's (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): the
+    // export reads the open knowledgebase's style, and no tab stores one.
+    knowledgeStyleStore.set('kb', { ...DEFAULT_KNOWLEDGE_STYLE, theme: 'slate' });
+    knowledgeStyleStore.setOpen('kb');
+    const tab = { id: 't', name: 'Tab', backgroundColor: '#fdf2f8' } as Tab;
     expect(tabAsSeen({ ...tab, elements: [] }, 'light').backgroundColor).toBe('#fdf2f8');
     expect(canvasSurface(tabAsSeen({ ...tab, elements: [] }, 'dark').backgroundColor)).toBe('dark');
     const picked = { ...tab, backgroundColor: '#123456' };
     expect(tabAsSeen({ ...picked, elements: [] }, 'dark').backgroundColor).toBe('#123456');
+    expect(tabAsSeen({ ...tab, elements: [] }, 'light').theme).toBe('slate');
+    knowledgeStyleStore.clear();
+    // With no knowledgebase open, the product's own theme.
+    expect(tabAsSeen({ ...tab, elements: [] }, 'light').theme).toBe('brand');
   });
 
   it('exports a named marker colour in its version for the appearance, on any tab', () => {
