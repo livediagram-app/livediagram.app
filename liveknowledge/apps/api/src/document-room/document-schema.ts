@@ -23,6 +23,7 @@ import {
 } from '@liveworkspace/index-app';
 import {
   COLLAB_SEEN_SCHEMA_STEP,
+  automationSchemaStep,
   itemAutomationSchemaSteps,
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
@@ -419,6 +420,11 @@ const V33 = pageEditorsSchemaStep;
 // 006-document/version-history.md "When a version is kept"): `tab_versions` rebuilt once so its kind takes `save`.
 const V34 = VERSION_SAVE_STEP;
 
+// Step 35: the engine's failed wakes (@liveworkspace/automations/room automation-wake.ts), how many in a row and
+// when the next may try, so a wake that keeps failing backs off and gives up, over a restart too. Appended after
+// the steps before it, never among the engine's own. Without it a room's restore reads a table it never made.
+const V35 = automationSchemaStep('wake');
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -446,6 +452,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V32,
   V33,
   V34,
+  V35,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
