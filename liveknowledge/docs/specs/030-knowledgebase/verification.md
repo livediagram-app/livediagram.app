@@ -60,9 +60,13 @@ own.
 - States are worked out when read, from the fields and the clock; nothing is written when a review comes due.
 - The tick or pill sits in the page's meta row under the title, in the page tree row and on every page link's hover
   card. The meta row also says "Review due <date>" and "Edited <when> by <name>".
-- **Verify** (the Page Health card in the right rail, or behind Page Info on a narrower window, and the tree row
-  menu; never a button in the page itself, which keeps the writing clear) sets `verifiedAt` to now and `verifiedBy` to the person.
-  A page with no owner takes the verifier as its owner. Verify is one press; it never asks for confirmation.
+- **Verify** (the Page Health card in the right rail, or behind Page Info on a narrower window, the tree row menu,
+  and a quiet **Verify** in the meta row after Add Cover, owner 2026-11-21) sets `verifiedAt` to now and `verifiedBy`
+  to the person. The meta row's asks first, in a popover under it: "Verify This Page?" (or "Verify This Page Again?"),
+  what verifying means ("You are vouching that this page is right as it stands today. Readers and agents see it as
+  Verified, and it comes due for review again in 90 days."), "It has no owner yet, so you become its owner." where that
+  is so, then **Cancel** and **Verify**. The rail's and the menu's stay one press.
+  A page with no owner takes the verifier as its owner. 
 - An agent never rewrites a page that is Verified or Review Due, whatever it was granted: it suggests the edit, and
   a person accepts it ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md)). A due page is the
   one most likely to need a person's eye.
@@ -78,7 +82,9 @@ own.
   left, in the state's colour (green verified, amber due, an empty dashed ring for a page never verified), with one
   line under it: "Fresh for 80 more days", "Was due 14 Jan", "Verify it once it is right." The week's reads are two
   quiet figures (people, agents) under "Read This Week". The ring fills over 200 ms when it changes (the chrome motion budget), and not
-  at all with reduced motion.
+  at all with reduced motion. (Redesigned 2026-11-21, "it's rubbish": the state, its line and Verify sit in a soft
+  panel washed in the state's colour; the facts below each have a glyph; **Read This Week** and Created / Updated
+  are the rail's foot, held at its bottom while the rest scrolls, the Page Info card showing them last.)
 - **The meta row** under the title is drawn only when it has something to say (a tick or pill, a due date, an edit,
   how long it takes to read, who made and edited it, Add Cover): an empty page never verified has no row, so the writing starts right under the title.
 - **Reading time** sits in the meta row (owner, 2026-11-21: "1 min read should go under the page title, not the
