@@ -92,11 +92,11 @@ export type ShareTab = { id: string; name: string };
 // approvals, Approval (approvals.md).
 export type ShareView = 'passes' | 'app' | 'approval';
 
-// '' stands for every tab: All tabs, then each tab by name in order.
-export function ScopeOptions({ tabs }: { tabs: ShareTab[] }) {
+// '' stands for every tab: All tabs (All Pages on liveknowledge, scopeWords), then each tab by name in order.
+export function ScopeOptions({ tabs, all = 'All tabs' }: { tabs: ShareTab[]; all?: string }) {
   return (
     <>
-      <option value="">All tabs</option>
+      <option value="">{all}</option>
       {tabs.map((t) => (
         <option key={t.id} value={t.id}>
           {t.name}

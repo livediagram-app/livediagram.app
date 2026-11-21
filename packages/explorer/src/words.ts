@@ -41,6 +41,22 @@ export function kindWords(app: App): Words {
   return words(w.one, w.many);
 }
 
+/** What a share pass can be narrowed to: a tab, or on liveknowledge a page (a knowledgebase's tabs are its pages). */
+export type ScopeWords = { many: string; lowerOne: string; lowerMany: string; all: string };
+
+const TAB_SCOPE: ScopeWords = { many: 'Tabs', lowerOne: 'tab', lowerMany: 'tabs', all: 'All tabs' };
+const PAGE_SCOPE: ScopeWords = {
+  many: 'Pages',
+  lowerOne: 'page',
+  lowerMany: 'pages',
+  all: 'All Pages',
+};
+
+/** The share dialog's words for what a pass opens, by the item's app. */
+export function scopeWords(app?: App): ScopeWords {
+  return app && APP_KINDS[app] === 'knowledgebase' ? PAGE_SCOPE : TAB_SCOPE;
+}
+
 /** The words for a list that mixes every app's items. */
 export const FILE_WORDS = words('File', 'Files');
 
