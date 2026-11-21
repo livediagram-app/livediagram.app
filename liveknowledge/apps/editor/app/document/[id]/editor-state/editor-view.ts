@@ -109,6 +109,7 @@ export function editorView({
     activeTabLocked: pagesSlice.activeTabLocked,
     activeTabConnected: pagesSlice.activeTabConnected,
     connectedTabs: tabsSlice.connectedTabs,
+    addConnectedRow: tabsSlice.addConnectedRow,
     // Layers (docs/specs/006-document/layers.md): the normalised stack, the active layer and the
     // interaction-gate id sets.
     layers: layersSlice.layers,

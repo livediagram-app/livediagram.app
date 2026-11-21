@@ -10,8 +10,9 @@ import { BottomSheet } from '@liveworkspace/workbench/components/primitives/Bott
 import { SearchField } from '@/components/knowledge/SearchField';
 import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton';
 import { PageTree, type PageTreeProps } from './PageTree';
-import { NewPageButton, type KnowledgebaseHead } from './PageTreeSidebar';
-import { PAGE_RENAME_FIELD } from './PageTreeRow';
+import { type KnowledgebaseHead } from './PageTreeSidebar';
+import { AddToSidebar } from './AddToSidebar';
+import { PAGE_RENAME_FIELD } from './page-tree-row-styles';
 import { PagesIcon } from './page-tree-icons';
 
 export function PageTreeSheet({
@@ -43,6 +44,21 @@ export function PageTreeSheet({
       },
     }),
     [actions],
+  );
+  // Connect File opens its dialog over the page: the sheet steps aside for it.
+  const { connected } = tree;
+  const sheetConnected = useMemo(
+    () =>
+      connected
+        ? {
+            ...connected,
+            onConnect: (parent?: string) => {
+              setOpen(false);
+              connected.onConnect(parent);
+            },
+          }
+        : undefined,
+    [connected],
   );
   return (
     <>
@@ -102,13 +118,26 @@ export function PageTreeSheet({
           <p className="px-4 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Pages
           </p>
-          <PageTree {...tree} actions={sheetActions} touch className="px-2 pb-2" />
+          <PageTree
+            {...tree}
+            actions={sheetActions}
+            connected={sheetConnected}
+            touch
+            className="px-2 pb-2"
+          />
           {tree.canEdit ? (
             <div className="border-t border-slate-200 p-3 dark:border-slate-800">
               {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"): its
                   dialog opens over the page, so the sheet closes. */}
               <DescribeToSetUpButton onOpen={() => setOpen(false)} />
-              <NewPageButton tabs={tree.tabs} onAdd={() => sheetActions.onAdd()} />
+              <AddToSidebar
+                touch
+                tabs={tree.tabs}
+                onAdd={() => sheetActions.onAdd()}
+                onConnect={
+                  sheetConnected?.canConnect ? () => sheetConnected.onConnect() : undefined
+                }
+              />
             </div>
           ) : null}
         </BottomSheet>

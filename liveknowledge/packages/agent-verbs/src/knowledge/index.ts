@@ -7,8 +7,11 @@ export {
   resultTrustOf,
   reviewPeriodLine,
   reviewPeriodOf,
+  treeRowLine,
+  treeRowOf,
   trustFieldsOf,
   trustLine,
   type ReviewPeriod,
+  type TreeRowFields,
   type TrustFields,
 } from './trust';

@@ -65,8 +65,8 @@ export async function knowledgeHealthCounts(
     `SELECT COUNT(*) AS total,
             SUM(CASE WHEN p.verified_at IS NULL THEN 1 ELSE 0 END) AS never,
             SUM(CASE WHEN p.verified_at <= ? THEN 1 ELSE 0 END) AS due
-       FROM document_tabs dt LEFT JOIN page_trust p ON p.tab = dt.tab_id
-      WHERE dt.document_id = ?`,
+       FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id LEFT JOIN page_trust p ON p.tab = dt.tab_id
+      WHERE dt.document_id = ? AND t.connection IS NULL`,
   )
     .bind(dueBefore(every, now), documentId)
     .first<{ total: number; never: number | null; due: number | null }>();
@@ -100,7 +100,8 @@ export async function recentPages(
   const { results } = await env.DOCUMENT_DB.prepare(
     `SELECT t.id AS tab, t.name AS title, t.updated_at AS updatedAt
        FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.document_id = ? ORDER BY t.updated_at DESC, dt.order_index ASC LIMIT ${RECENT_PAGES}`,
+      WHERE dt.document_id = ? AND t.connection IS NULL
+      ORDER BY t.updated_at DESC, dt.order_index ASC LIMIT ${RECENT_PAGES}`,
   )
     .bind(documentId)
     .all<KnowledgeRecentPage>();

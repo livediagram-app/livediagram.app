@@ -4,7 +4,7 @@
 // indented list with a filter, one page chosen, then confirmed. The list keeps one height whatever the filter
 // leaves, so the dialog never jumps.
 import { useId, useMemo, useState, type ReactNode } from 'react';
-import { pageTreeRows } from '@liveknowledge/document';
+import { isConnectedRow, pageTreeRows } from '@liveknowledge/document';
 import {
   Button,
   DialogCloseButton,
@@ -47,7 +47,8 @@ export function PagePickerDialog({
   const titleId = useId();
   const [query, setQuery] = useState('');
   const [chosen, setChosen] = useState<string | undefined>(initial);
-  const rows = useMemo(() => pageTreeRows(pages), [pages]);
+  // Pages alone: a connected file in the tree is no page to ask about (links-and-embeds.md).
+  const rows = useMemo(() => pageTreeRows(pages.filter((p) => !isConnectedRow(p))), [pages]);
   const words = query.trim().toLowerCase();
   // Filtered, the list is flat: a match is shown without the pages above it.
   const shown = words ? rows.filter((row) => row.page.name.toLowerCase().includes(words)) : rows;

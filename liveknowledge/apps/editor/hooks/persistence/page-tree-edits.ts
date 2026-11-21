@@ -4,6 +4,7 @@
 // answer. Each answers the same list when the tree refuses the edit.
 import {
   buildPageTree,
+  isConnectedRow,
   pageParents,
   pageSubtreeIds,
   withPageAdded,
@@ -78,8 +79,16 @@ export function pageAfterDelete(tabs: readonly Tab[], id: string): string | unde
   };
   walk(buildPageTree(tabs));
   const first = order.findIndex((pageId) => gone.has(pageId));
-  const after = order.slice(first).find((pageId) => !gone.has(pageId));
-  return after ?? order[first - 1];
+  // Never a connected file's row, which is no page to open (links-and-embeds.md "Connected files in the sidebar").
+  const rows = new Set(tabs.filter(isConnectedRow).map((t) => t.id));
+  const after = order.slice(first).find((pageId) => !gone.has(pageId) && !rows.has(pageId));
+  return (
+    after ??
+    order
+      .slice(0, first)
+      .reverse()
+      .find((pageId) => !rows.has(pageId))
+  );
 }
 
 /** The delete confirmation's title, naming the count ("Delete Release Process and 3 Subpages?"). */

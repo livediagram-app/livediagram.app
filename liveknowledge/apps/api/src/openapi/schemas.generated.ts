@@ -3847,6 +3847,39 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['passageId', 'tab', 'firstBlock', 'title', 'text', 'trust'],
     type: 'object',
   },
+  KnowledgeConnectedRow: {
+    additionalProperties: false,
+    description:
+      'A connected file in the tree (links-and-embeds.md "Connected files in the sidebar"): another app\'s file placed among the pages, which is no page. It holds no subpages and no trust, and `read_page` does not read it.',
+    properties: {
+      app: {
+        description: 'The app the file is in ("livediagram", "liveplanner", ...).',
+        type: 'string',
+      },
+      depth: {
+        type: 'number',
+      },
+      kind: {
+        const: 'connected',
+        type: 'string',
+      },
+      parent: {
+        type: 'string',
+      },
+      subpages: {
+        const: 0,
+        type: 'number',
+      },
+      tab: {
+        type: 'string',
+      },
+      title: {
+        type: 'string',
+      },
+    },
+    required: ['app', 'depth', 'kind', 'subpages', 'tab', 'title'],
+    type: 'object',
+  },
   KnowledgeContextPage: {
     additionalProperties: false,
     properties: {
@@ -4258,11 +4291,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   KnowledgePagesResponse: {
     additionalProperties: false,
     description:
-      "`reviewEvery` is the knowledgebase's Review Period, said once for every page's `reviewAt`.",
+      "`reviewEvery` is the knowledgebase's Review Period, said once for every page's `reviewAt`. `pages` is the tree in order, its connected files among its pages.",
     properties: {
       pages: {
         items: {
-          $ref: '#/components/schemas/KnowledgePageRow',
+          $ref: '#/components/schemas/KnowledgeTreeRow',
         },
         type: 'array',
       },
@@ -4693,6 +4726,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   KnowledgeTextSize: {
     enum: ['small', 'medium', 'large'],
     type: 'string',
+  },
+  KnowledgeTreeRow: {
+    anyOf: [
+      {
+        $ref: '#/components/schemas/KnowledgePageRow',
+      },
+      {
+        $ref: '#/components/schemas/KnowledgeConnectedRow',
+      },
+    ],
+    description: 'One row of the tree: a page, or a connected file.',
   },
   KnowledgeTrustState: {
     description: 'A page\'s verified state, worked out when read (verification.md "States").',

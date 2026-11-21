@@ -122,17 +122,33 @@ export const listPagesOutput = {
   review_period: reviewPeriod,
   pages: z
     .array(
-      z.object({
-        ...pageRef.shape,
-        depth: z.number().describe('1 at the top level.'),
-        parent: z.string().optional().describe('The id of the page it sits under.'),
-        subpages: z.number().describe('How many pages sit under it, at every depth.'),
-        owner: z.string().optional().describe('The account id of the person answerable for it.'),
-        always_in_context: z.literal(true).optional().describe('get_context returns it.'),
-        ...trustFields,
-      }),
+      z.union([
+        z.object({
+          ...pageRef.shape,
+          depth: z.number().describe('1 at the top level.'),
+          parent: z.string().optional().describe('The id of the page it sits under.'),
+          subpages: z.number().describe('How many pages sit under it, at every depth.'),
+          owner: z.string().optional().describe('The account id of the person answerable for it.'),
+          always_in_context: z.literal(true).optional().describe('get_context returns it.'),
+          ...trustFields,
+        }),
+        z
+          .object({
+            ...pageRef.shape,
+            kind: z.literal('connected'),
+            app: z.string().describe('The app the file is in: livediagram, liveplanner, ...'),
+            depth: z.number().describe('1 at the top level.'),
+            parent: z.string().optional().describe('The id of the page it sits under.'),
+            subpages: z.literal(0),
+          })
+          .describe(
+            'A file from another app placed in the sidebar: not a page, it has no writing or trust here and read_page does not read it.',
+          ),
+      ]),
     )
-    .describe('The pages in tree order: a page, then the pages under it.'),
+    .describe(
+      'The tree in order: a page, then the rows under it. A row with kind "connected" is a file from another app.',
+    ),
   more: z.number().describe('How many rows follow these: pass offset to read them.'),
   next,
 };

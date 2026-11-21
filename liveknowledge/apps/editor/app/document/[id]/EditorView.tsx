@@ -22,7 +22,6 @@ import { documentGrant } from '@/lib/api/document-grants';
 import type { SheetLinkEvent } from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
-import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { API_BASE } from '@/lib/api-client';
@@ -486,9 +485,9 @@ export function EditorView() {
                                     value={!(embedMode && isReadOnly) && !sessionCommunity}
                                   >
                                     {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                    {/* A connected tab's page stands in the canvas's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
+                                    {/* A connected file is never the open page (links-and-embeds.md): for the moment a load lands on one, before the editor moves to the nearest page, nothing is drawn or edited. */}
                                     {ctx.activeTabConnected && !anyWelcomeOpen ? (
-                                      <ConnectedTabHost />
+                                      <div className="min-h-0 flex-1 bg-slate-50 dark:bg-slate-950" />
                                     ) : (
                                       <SuppressElementIndicators when={embedMode}>
                                         <EditorCanvasHost />

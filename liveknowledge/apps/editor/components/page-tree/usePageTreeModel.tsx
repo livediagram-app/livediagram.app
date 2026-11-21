@@ -20,6 +20,7 @@ import { pageTrust, trustMarks } from '@/lib/knowledge/page-trust';
 import { useRelativeNow } from '@/lib/relative-time';
 import type { PageTreeActions, PageTreeKnowledge, PageTreeProps } from './PageTree';
 import { selectPage } from './select-page';
+import { useConnectedRows } from './useConnectedRows';
 
 /** The link to one page of a knowledgebase: the knowledgebase's address with the page pinned in its fragment, which
  *  is where the editor reads the page to open (seed-fetched-document.ts). */
@@ -36,6 +37,8 @@ export function pageLinkOf(
 export type PageTreeModel = PageTreeProps & {
   name: string;
   onRenameKnowledgebase: ((name: string) => void) | undefined;
+  // The Connect File dialog while it is open (links-and-embeds.md "Connected files in the sidebar").
+  connectDialog: ReactNode;
 };
 
 export function usePageTreeModel(): PageTreeModel {
@@ -45,7 +48,7 @@ export function usePageTreeModel(): PageTreeModel {
   const activeId = useEditorChrome((s) => s.activeId);
   const name = useEditorChrome((s) => s.documentName);
   const documentId = useEditorChrome((s) => s.documentId);
-  // An Editor on the whole knowledgebase: never a Participant, a Viewer or a tab-scoped link
+  // A writer (an Editor or a Participant) on the whole knowledgebase: never a Viewer or a tab-scoped link
   // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles").
   const canEdit = useEditorChrome((s) => s.can.editPages && !s.isStructureReadOnly);
   const isOutOfScope = useEditorChrome((s) => s.isOutOfScope);
@@ -164,9 +167,13 @@ export function usePageTreeModel(): PageTreeModel {
     [chrome],
   );
 
+  const { connected, dialog: connectDialog } = useConnectedRows();
+
   return {
     tabs,
     activeId,
+    connected,
+    connectDialog,
     closed: closedFor.closed,
     onSetOpen,
     canEdit,

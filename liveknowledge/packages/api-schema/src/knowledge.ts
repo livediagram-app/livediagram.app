@@ -308,10 +308,26 @@ export type KnowledgePageRow = KnowledgePageRef & {
   context?: true;
   trust: KnowledgePageTrust;
 };
-/** `reviewEvery` is the knowledgebase's Review Period, said once for every page's `reviewAt`. */
+/** A connected file in the tree (links-and-embeds.md "Connected files in the sidebar"): another app's file placed
+ *  among the pages, which is no page. It holds no subpages and no trust, and `read_page` does not read it. */
+export type KnowledgeConnectedRow = KnowledgePageRef & {
+  kind: 'connected';
+  /** The app the file is in ("livediagram", "liveplanner", ...). */
+  app: string;
+  depth: number;
+  parent?: string;
+  subpages: 0;
+};
+/** One row of the tree: a page, or a connected file. */
+export type KnowledgeTreeRow = KnowledgePageRow | KnowledgeConnectedRow;
+/** Whether a tree row is a page (not a connected file). */
+export const isKnowledgePageRow = (row: KnowledgeTreeRow): row is KnowledgePageRow =>
+  (row as { kind?: string }).kind !== 'connected';
+/** `reviewEvery` is the knowledgebase's Review Period, said once for every page's `reviewAt`. `pages` is the tree in
+ *  order, its connected files among its pages. */
 export type KnowledgePagesResponse = {
   reviewEvery: KnowledgeReviewEvery;
-  pages: KnowledgePageRow[];
+  pages: KnowledgeTreeRow[];
 };
 /** `GET .../pages/<tab>`: one page as Markdown, its page links by their current titles. `heading` and `maxChars`
  *  narrow it; `leftOut` counts the characters not sent and `headings` lists the page's sections. */

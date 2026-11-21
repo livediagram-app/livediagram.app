@@ -144,7 +144,13 @@ export async function writeTabSave(
     // past the limit, or a page placed where the tree does not take it, is refused before anything is merged or
     // written. A stored page saved where it already sits reads nothing more.
     if (!existingTab || (existingTab.parent ?? undefined) !== (incoming.parent ?? undefined)) {
-      const refused = tabParentRefusal(await readStoredPages(env, id), tabId, incoming.parent);
+      // A save holding a connection is a connected row, which never meets the page limit (links-and-embeds.md).
+      const refused = tabParentRefusal(
+        await readStoredPages(env, id),
+        tabId,
+        incoming.parent,
+        sentConnection !== undefined,
+      );
       if (refused) {
         console.warn('[tab-save] page tree refused', { documentId: id, tabId, reason: refused });
         return conflict(refused);

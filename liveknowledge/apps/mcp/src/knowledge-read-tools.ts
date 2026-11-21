@@ -6,7 +6,6 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type {
   KnowledgeAgentContextResponse,
   KnowledgePageReadResponse,
-  KnowledgePageRow,
   KnowledgePagesResponse,
   KnowledgeSearchResponse,
 } from '@liveknowledge/api-schema';
@@ -27,6 +26,7 @@ import {
   pageRefOf,
   resultTrustOf,
   reviewPeriodOf,
+  treeRowOf,
   trustFieldsOf,
 } from '@liveknowledge/agent-verbs';
 import { knowledgeApi } from './knowledge-client';
@@ -36,15 +36,6 @@ import { textResult } from './tool-helpers';
 
 const ref = pageRefOf;
 
-const rowOf = (row: KnowledgePageRow) => ({
-  ...ref(row),
-  depth: row.depth,
-  ...(row.parent ? { parent: row.parent } : {}),
-  subpages: row.subpages,
-  ...(row.owner ? { owner: row.owner } : {}),
-  ...(row.context ? { always_in_context: true as const } : {}),
-  ...trustFieldsOf(row.trust),
-});
 
 export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpGetContext, async (args, extra) => {
@@ -97,7 +88,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
     return textResult({
       count: rows.length,
       review_period: reviewPeriodOf(reviewEvery),
-      pages: shown.map(rowOf),
+      pages: shown.map(treeRowOf),
       more,
       next:
         (more > 0

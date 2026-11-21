@@ -92,9 +92,11 @@ const hasAiKey = (sql: ItemSql): boolean =>
 
 /** Bring one page's index up to its stored tab. Runs inside the caller's transaction. */
 export function settlePage(sql: ItemSql, tab: string, indexed?: IndexedPage[]): SettledPage {
-  const row = sql.exec('SELECT name, data FROM tabs WHERE id = ?', tab).toArray()[0] as
-    { name: string; data: string } | undefined;
-  if (!row) {
+  const row = sql.exec('SELECT name, data, connection FROM tabs WHERE id = ?', tab).toArray()[0] as
+    { name: string; data: string; connection?: string | null } | undefined;
+  // A connected file in the tree is no page (links-and-embeds.md "Connected files in the sidebar"): nothing of it is
+  // searched, asked about, linked or trusted, so it settles as a page gone.
+  if (!row || (typeof row.connection === 'string' && row.connection !== '')) {
     for (const statement of deletePageIndex(tab)) run(sql, statement);
     sql.exec('DELETE FROM knowledge_pages WHERE tab = ?', tab);
     sql.exec("DELETE FROM knowledge_work WHERE kind = 'conflict' AND key = ?", tab);

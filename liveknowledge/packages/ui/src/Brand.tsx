@@ -16,3 +16,8 @@ export function Brand(props: Omit<BrandProps, 'app'>) {
 export function BrandMark(props: Omit<ComponentProps<typeof SharedBrandMark>, 'app'>) {
   return <SharedBrandMark app={BRAND_APP} {...props} />;
 }
+
+/** Another app's logo mark (a connected file's row: links-and-embeds.md "Connected files in the sidebar"). */
+export function AppMark(props: ComponentProps<typeof SharedBrandMark>) {
+  return <SharedBrandMark {...props} />;
+}

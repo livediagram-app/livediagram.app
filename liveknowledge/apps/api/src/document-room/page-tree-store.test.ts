@@ -195,3 +195,37 @@ describe('treeOpRefusal', () => {
     ).toBeNull();
   });
 });
+
+// links-and-embeds.md "Connected files in the sidebar": a connected row is placed like a page and is no page.
+describe('connected rows', () => {
+  const row = (id: string, parent?: string): StoredPage =>
+    parent ? { id, parent, connection: true } : { id, connection: true };
+
+  it('never meets the page limit, and never fills it', () => {
+    const full = flat(MAX_KNOWLEDGEBASE_PAGES);
+    expect(tabParentRefusal(full, 'new-row', undefined, true)).toBeNull();
+    expect(tabParentRefusal(full, 'new-page', undefined)).toBe('page_limit');
+    const rows = [...flat(MAX_KNOWLEDGEBASE_PAGES - 1), row('x'), row('y')];
+    expect(tabParentRefusal(rows, 'new-page', undefined)).toBeNull();
+  });
+
+  it('holds nothing: no page or row goes under one', () => {
+    const stored = [{ id: 'a' }, row('x')];
+    expect(tabParentRefusal(stored, 'b', 'x')).toBe('unknown_page');
+    expect(tabParentRefusal(stored, 'y', 'x', true)).toBe('unknown_page');
+    expect(tabParentRefusal(stored, 'x', 'a')).toBeNull();
+    expect(tabListRefusal(stored, [{ id: 'a', parent: 'x' }, { id: 'x', parent: null }])).toBe(
+      'unknown_page',
+    );
+    expect(tabListRefusal(stored, [{ id: 'x', parent: 'a' }])).toBeNull();
+  });
+
+  it('keeps a row a row through a tab list, and judges a room tab op by its connection', () => {
+    const { next } = treeFromEntries([{ id: 'a' }, row('x')], [{ id: 'x', parent: 'a' }]);
+    expect(next).toContainEqual({ id: 'x', parent: 'a', connection: true });
+    const full = flat(MAX_KNOWLEDGEBASE_PAGES);
+    const link = { id: 'c', app: 'livediagram', itemId: 'i' };
+    expect(treeOpRefusal(full, { kind: 'tab', tab: { id: 'r', connection: link } })).toBeNull();
+    expect(treeOpRefusal(full, { kind: 'tab', tab: { id: 'r' } })).toBe('page_limit');
+  });
+});

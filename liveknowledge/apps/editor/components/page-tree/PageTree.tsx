@@ -17,6 +17,9 @@ import {
 } from 'react';
 import { pageMoveRefusal, withPageMoved, type PageMove } from '@liveknowledge/document';
 import { PageTreeRow } from './PageTreeRow';
+import { ConnectedTreeRow } from './ConnectedTreeRow';
+import { ConnectedRowMenu, type ConnectedMenuVerb } from './ConnectedRowMenu';
+import type { PageTreeConnected } from './connected-rows';
 import type { TrustMark } from '@/lib/knowledge/page-trust';
 import { PageTreeRowMenu, type PageMenuVerb } from './PageTreeRowMenu';
 import { createPageTreeUi } from './page-tree-ui';
@@ -59,6 +62,9 @@ export type PageTreeProps = {
   actions: PageTreeActions;
   // Each page's verified state and what may be done about it (verification.md); absent, the tree shows none.
   knowledge?: PageTreeKnowledge | undefined;
+  // The connected files among the pages (links-and-embeds.md "Connected files in the sidebar"); absent, a connected
+  // row is drawn as a page.
+  connected?: PageTreeConnected | undefined;
   className?: string;
 };
 
@@ -95,6 +101,7 @@ export function PageTree({
   renameNonce = 0,
   actions,
   knowledge,
+  connected,
   className = '',
 }: PageTreeProps) {
   // Read once per change of the list or of what is closed, never per row.
@@ -110,10 +117,33 @@ export function PageTree({
     (rows.some((r) => r.id === activeId) ? activeId : (rows[0]?.id ?? null));
 
   // The handlers read the newest props when they run, so they (and the rows they are handed to) keep their identity.
-  const latest = useRef({ rows, tabs, actions, canEdit, onSetOpen, isOutOfScope, knowledge });
-  useEffect(() => {
-    latest.current = { rows, tabs, actions, canEdit, onSetOpen, isOutOfScope, knowledge };
+  const latest = useRef({
+    rows,
+    tabs,
+    actions,
+    canEdit,
+    onSetOpen,
+    isOutOfScope,
+    knowledge,
+    connected,
   });
+  useEffect(() => {
+    latest.current = {
+      rows,
+      tabs,
+      actions,
+      canEdit,
+      onSetOpen,
+      isOutOfScope,
+      knowledge,
+      connected,
+    };
+  });
+  // A connected row: pressed, it opens its file in a new tab, never as the open page.
+  const connectedId = (id: string) =>
+    latest.current.connected && latest.current.rows.some((r) => r.id === id && r.connectionId)
+      ? latest.current.connected
+      : null;
 
   // The command palette's Rename Page: each bump opens the current page's field once. The value the tree mounts
   // with is no request.
@@ -142,8 +172,12 @@ export function PageTree({
   };
 
   const onVerb = (verb: PageMenuVerb, id: string) => {
-    const { actions: act, onSetOpen: setOpen, knowledge: know } = latest.current;
+    const { actions: act, onSetOpen: setOpen, knowledge: know, connected: link } = latest.current;
     switch (verb) {
+      case 'connect-here':
+        // The new row shows: its page opens.
+        setOpen(id, true);
+        return link?.onConnect(id);
       case 'verify':
         return know?.onVerify(id);
       case 'context':
@@ -171,6 +205,28 @@ export function PageTree({
     }
   };
 
+  const onConnectedVerb = (verb: ConnectedMenuVerb, id: string) => {
+    const { actions: act, connected: link } = latest.current;
+    switch (verb) {
+      case 'open':
+        return link?.onOpen(id);
+      case 'copy-link':
+        return link?.onCopyLink(id);
+      case 'connect-again':
+        return link?.onConnectAgain(id);
+      case 'remove':
+        return link?.onRemove(id);
+      case 'up':
+        return act.onStep(id, -1);
+      case 'down':
+        return act.onStep(id, 1);
+      case 'indent':
+        return act.onIndent(id);
+      case 'outdent':
+        return act.onOutdent(id);
+    }
+  };
+
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
     if (inField(e.target)) return;
     const row = rowOf(e.target);
@@ -189,13 +245,23 @@ export function PageTree({
       return;
     }
     if (outside?.(id)) return;
+    const link = connectedId(id);
+    if (link) {
+      // Its address known, the row is a link and the browser opens it (a new tab, or what a modifier asks for);
+      // not yet known, the tree asks for it and opens it.
+      if (!(row instanceof HTMLAnchorElement && row.href)) {
+        e.preventDefault();
+        link.onOpen(id);
+      }
+      return;
+    }
     act.onSelect(id);
   };
 
   const onDoubleClick = (e: MouseEvent<HTMLDivElement>) => {
     if (!latest.current.canEdit || inField(e.target) || actionOf(e.target)) return;
     const id = rowOf(e.target)?.dataset.pageRow;
-    if (id && !latest.current.isOutOfScope?.(id)) setEditingId(id);
+    if (id && !latest.current.isOutOfScope?.(id) && !connectedId(id)) setEditingId(id);
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -221,9 +287,13 @@ export function PageTree({
         return setOpen(action.id, true);
       case 'close':
         return setOpen(action.id, false);
-      case 'select':
-        if (!outside?.(action.id)) act.onSelect(action.id);
+      case 'select': {
+        if (outside?.(action.id)) return;
+        const link = connectedId(action.id);
+        if (link) link.onOpen(action.id);
+        else act.onSelect(action.id);
         return;
+      }
       case 'rename':
         if (may && !outside?.(action.id)) setEditingId(action.id);
         return;
@@ -292,6 +362,7 @@ export function PageTree({
     act.onMove(dragged, move);
   };
 
+  const menuRow = menu ? rows.find((r) => r.id === menu.id) : undefined;
   return (
     <>
       <div
@@ -320,32 +391,57 @@ export function PageTree({
         onDragEnd={endDrag}
         className={`flex min-h-0 flex-col gap-px overflow-y-auto overscroll-contain ${className}`}
       >
-        {rows.map((row) => (
-          <PageTreeRow
-            key={row.id}
-            row={row}
-            current={row.id === activeId}
-            tabStop={row.id === tabStop}
-            editing={row.id === editingId}
-            menuOpen={menu?.id === row.id}
-            canEdit={canEdit}
-            outOfScope={isOutOfScope?.(row.id) ?? false}
-            touch={touch}
-            ui={ui}
-            people={people?.(row.id)}
-            trust={knowledge?.marks.get(row.id)}
-            onRename={onRename}
-            onRenameDone={onRenameDone}
-          />
-        ))}
+        {rows.map((row) =>
+          row.connectionId && connected ? (
+            <ConnectedTreeRow
+              key={row.id}
+              row={row}
+              tabStop={row.id === tabStop}
+              menuOpen={menu?.id === row.id}
+              canEdit={canEdit}
+              touch={touch}
+              ui={ui}
+              store={connected.store}
+            />
+          ) : (
+            <PageTreeRow
+              key={row.id}
+              row={row}
+              current={row.id === activeId}
+              tabStop={row.id === tabStop}
+              editing={row.id === editingId}
+              menuOpen={menu?.id === row.id}
+              canEdit={canEdit}
+              outOfScope={isOutOfScope?.(row.id) ?? false}
+              touch={touch}
+              ui={ui}
+              people={people?.(row.id)}
+              trust={knowledge?.marks.get(row.id)}
+              onRename={onRename}
+              onRenameDone={onRenameDone}
+            />
+          ),
+        )}
       </div>
-      {menu ? (
+      {menu && connected && menuRow?.connectionId && menuRow.app ? (
+        <ConnectedRowMenu
+          anchor={menu.anchor}
+          tabs={tabs}
+          id={menu.id}
+          app={menuRow.app}
+          state={connected.store.stateOf(menuRow.connectionId)}
+          canEdit={canEdit}
+          onVerb={onConnectedVerb}
+          onClose={() => setMenu(null)}
+        />
+      ) : menu ? (
         <PageTreeRowMenu
           anchor={menu.anchor}
           tabs={tabs}
           id={menu.id}
           canEdit={canEdit}
           knowledge={knowledge}
+          canConnect={connected?.canConnect ?? false}
           onVerb={onVerb}
           onClose={() => setMenu(null)}
         />

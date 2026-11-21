@@ -14,6 +14,11 @@ import { apiSaveTab } from '@/lib/api-client';
 import { documentGrant } from '@/lib/api/document-grants';
 import { getSessionSharePassword } from '@/lib/api/core';
 import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
+import { withConnection } from '@liveworkspace/workbench/components/connect/tab-connection';
+import type { ConnectionMade } from '@liveworkspace/index-client';
+import { withConnectedRowAdded } from '@liveknowledge/document';
+import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
+import { useActivePageNotConnected } from '@/hooks/editor/useActivePageNotConnected';
 import { createTab } from '../editor-page-helpers';
 import { useTemplateFlow } from '../useTemplateFlow';
 import type { EditorDocument } from './useEditorDocument';
@@ -162,6 +167,24 @@ export function useEditorTabs({
     },
     toast,
   });
+  // A connected file in the page tree (docs/specs/030-knowledgebase/links-and-embeds.md "Connected files in the
+  // sidebar"): a new tab holding the connection, placed under `parent` (the top level when absent), saved whole
+  // before it shows so a failed save takes the connection back (connectFile). It is no page: it never meets the page
+  // limit, and it is never the open page.
+  const addConnectedRow = async (made: ConnectionMade, tabId: string, parent?: string) => {
+    if (isStructureReadOnly) throw new Error('This knowledgebase cannot be changed here.');
+    const base = withConnection({ ...createTab(made.name), id: tabId }, made.connection);
+    const row = parent ? { ...base, parent } : base;
+    const placed = withConnectedRowAdded(tabs, row, parent);
+    if ('refused' in placed) throw new Error(pageTreeRefusalText(placed.refused));
+    await apiSaveTab(selfParticipant.id, documentId ?? '', row, sessionShareCode);
+    commitTabs((ts) => {
+      const next = withConnectedRowAdded(ts, row, parent);
+      return 'refused' in next ? [...ts, row] : next;
+    });
+    markTabLoaded(tabId);
+  };
+  useActivePageNotConnected(tabs, activeId, setActiveId);
   // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
   // useTabActions. Menu-only: drag-reorder lives above.
   const {
@@ -304,6 +327,7 @@ export function useEditorTabs({
     renameTabFromTitle,
     clearTabContent,
     connectedTabs,
+    addConnectedRow,
     moveTabToFolder,
     removeTabFromFolder,
     renameTabFolder,

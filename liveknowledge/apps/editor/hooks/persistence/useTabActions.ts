@@ -27,6 +27,7 @@ import {
   pageSubtreeIds,
   subpageCount,
   truncateName,
+  withPageDeleted,
   withPageIndented,
   withPageMoved,
   withPageOutdented,
@@ -325,8 +326,15 @@ export function useTabActions(deps: TabActionsDeps) {
     if (!deps.canEditStructure) return;
     const target = tabs.find((t) => t.id === id);
     const gone = new Set(pageSubtreeIds(tabs, id));
-    // A knowledgebase always has a page.
-    if (!target || gone.size === 0 || gone.size >= tabs.length) return;
+    // A knowledgebase always has a page: its connected rows alone are not one.
+    if (!target || gone.size === 0 || !withPageDeleted(tabs, id)) return;
+    // A connected file's row (links-and-embeds.md "Connected files in the sidebar"): Remove from Sidebar takes it
+    // away at once, with no confirm, and leaves the file as it is; Undo brings it back.
+    if (connectionOf(target)) {
+      track('Tab', 'Deleted', 'Connected');
+      commitTabs((ts) => withPageDeleted(ts, id) ?? ts);
+      return;
+    }
     // A locked page is protected: its writing can't be deleted, so the page that holds it can't be deleted out
     // from under it either, nor with a page above it. Unlock it first.
     if (tabs.some((t) => gone.has(t.id) && t.locked === true)) {

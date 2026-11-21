@@ -8,6 +8,7 @@ import type {
   KnowledgeSearchResponse,
   MovePageResponse,
 } from '@liveknowledge/api-schema';
+import { isKnowledgePageRow } from '@liveknowledge/api-schema';
 import { knowledgeKit, TOKEN_ID, type Kit, type Who } from './knowledge-test-kit';
 
 // The knowledgebase as an agent reads and shapes it (docs/specs/024-agents/knowledgebase-for-agents.md): the page
@@ -21,7 +22,8 @@ beforeEach(async () => {
 const get = async <T>(who: Who, path: string) =>
   await (await kit.call(who, 'GET', `/api/documents/kb/${path}`)).json<T>();
 const pagesOf = async (who: Who = 'editor') =>
-  (await get<KnowledgePagesResponse>(who, 'pages')).pages;
+  // Every knowledgebase here holds pages alone: no connected file (knowledge-connected-rows.test.ts has those).
+  (await get<KnowledgePagesResponse>(who, 'pages')).pages.filter(isKnowledgePageRow);
 const read = async (tab: string, query = '', who: Who = 'editor') =>
   (await get<KnowledgePageReadResponse>(who, `pages/${tab}${query}`)).page;
 const verify = (tab: string) => kit.call('editor', 'POST', `/api/documents/kb/pages/${tab}/verify`);

@@ -3,7 +3,12 @@
 // depends on where it lands (the pages already there, how deep the page above sits), so choosing another place
 // plans the archive again; only the newest answer is kept.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MAX_KNOWLEDGEBASE_PAGES, MAX_PAGE_DEPTH, pageDepth } from '@liveknowledge/document';
+import {
+  MAX_KNOWLEDGEBASE_PAGES,
+  MAX_PAGE_DEPTH,
+  pageCount,
+  pageDepth,
+} from '@liveknowledge/document';
 import { planImport, type ImportPlan, type ImportSource } from '@liveknowledge/knowledge-import';
 import type { PickedArchive } from '@/lib/knowledge-import/archive-sources';
 import type {
@@ -61,7 +66,7 @@ export function useKnowledgeImport(
       const tabs = host.getTabs();
       try {
         const made = await planImport(source, await archive.open(), {
-          existingPages: destination.kind === 'new' ? 0 : tabs.length,
+          existingPages: destination.kind === 'new' ? 0 : pageCount(tabs),
           parentDepth: destination.kind === 'new' ? 0 : pageDepth(tabs, destination.pageId),
           ...(archive.bytes !== null ? { archiveBytes: archive.bytes } : {}),
           // The knowledgebase's own limits, so there is one source for them.

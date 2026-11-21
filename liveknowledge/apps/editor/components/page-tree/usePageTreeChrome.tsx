@@ -26,31 +26,39 @@ function PageTreeSidebarHost(props: {
   top: number;
   joined: boolean;
 }) {
+  const { connectDialog, ...model } = usePageTreeModel();
   return (
-    <PageTreeSidebar
-      {...usePageTreeModel()}
-      {...props}
-      menu={(head) => <KnowledgebaseMenu name={head.name} onRename={head.onRename} />}
-    />
+    <>
+      <PageTreeSidebar
+        {...model}
+        {...props}
+        menu={(head) => <KnowledgebaseMenu name={head.name} onRename={head.onRename} />}
+      />
+      {connectDialog}
+    </>
   );
 }
 
 function PageTreeSheetHost() {
+  const { connectDialog, ...model } = usePageTreeModel();
   return (
-    <PageTreeSheet
-      {...usePageTreeModel()}
-      menu={(head) => (
-        <KnowledgebaseMenu
-          touch
-          name={head.name}
-          onRename={head.onRename}
-          // Every row but Rename opens something over the page: the sheet steps aside for it.
-          onChosen={(verb) => {
-            if (verb !== 'rename') head.close();
-          }}
-        />
-      )}
-    />
+    <>
+      <PageTreeSheet
+        {...model}
+        menu={(head) => (
+          <KnowledgebaseMenu
+            touch
+            name={head.name}
+            onRename={head.onRename}
+            // Every row but Rename opens something over the page: the sheet steps aside for it.
+            onChosen={(verb) => {
+              if (verb !== 'rename') head.close();
+            }}
+          />
+        )}
+      />
+      {connectDialog}
+    </>
   );
 }
 

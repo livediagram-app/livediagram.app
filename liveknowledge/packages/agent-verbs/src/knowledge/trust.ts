@@ -3,11 +3,13 @@
 // review that is due (under the knowledgebase's one Review Period, which the api works the dates out from), and
 // the pages an open conflict names. The MCP's tools and the CLI's commands answer the same
 // fields, so an agent reads a page the same way through either door.
-import type {
-  KnowledgePageRef,
-  KnowledgePageTrust,
-  KnowledgeReviewEvery,
-  KnowledgeSearchResult,
+import {
+  isKnowledgePageRow,
+  type KnowledgePageRef,
+  type KnowledgePageTrust,
+  type KnowledgeReviewEvery,
+  type KnowledgeSearchResult,
+  type KnowledgeTreeRow,
 } from '@liveknowledge/api-schema';
 
 /** The knowledgebase's Review Period as an answer states it, once: how long after it was last verified a page
@@ -50,6 +52,51 @@ export function trustFieldsOf(trust: KnowledgePageTrust): TrustFields {
     ...(trust.conflictsWith?.length ? { conflicts_with: trust.conflictsWith.map(pageRefOf) } : {}),
   };
 }
+
+/** One row of `list_pages` (and the CLI's `pages`): a page with its trust, or a connected file in the tree
+ *  (links-and-embeds.md "Connected files in the sidebar"), which is no page and carries no trust. */
+export type TreeRowFields =
+  | ({
+      page: string;
+      title: string;
+      depth: number;
+      parent?: string;
+      subpages: number;
+      owner?: string;
+      always_in_context?: true;
+    } & TrustFields)
+  | {
+      page: string;
+      title: string;
+      kind: 'connected';
+      app: string;
+      depth: number;
+      parent?: string;
+      subpages: 0;
+    };
+
+export function treeRowOf(row: KnowledgeTreeRow): TreeRowFields {
+  const place = {
+    ...pageRefOf(row),
+    depth: row.depth,
+    ...(row.parent ? { parent: row.parent } : {}),
+  };
+  if (!isKnowledgePageRow(row))
+    return { ...place, kind: 'connected', app: row.app, subpages: 0 };
+  return {
+    ...place,
+    subpages: row.subpages,
+    ...(row.owner ? { owner: row.owner } : {}),
+    ...(row.context ? { always_in_context: true as const } : {}),
+    ...trustFieldsOf(row.trust),
+  };
+}
+
+/** A tree row as one line of a listing: a page's trust, or "connected <app> file, not a page". */
+export const treeRowLine = (row: TreeRowFields): string =>
+  'kind' in row
+    ? `connected ${row.app} file, not a page`
+    : trustLine(row) + (row.always_in_context ? ', always in context' : '');
 
 /** A search result's trust: its page's state, and the pages its own passage conflicts with. */
 export const resultTrustOf = (result: KnowledgeSearchResult): TrustFields =>

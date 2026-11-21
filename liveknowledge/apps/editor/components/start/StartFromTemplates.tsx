@@ -18,7 +18,6 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { SetupSparkleIcon } from '@/components/setup/setup-icons';
 import { useStartPalette } from '@/components/start/useStartPalette';
-import { useConnectStart } from '@/components/connect/useConnectStart';
 import { StartPanel } from './StartPanel';
 import { StartSaveSwitch } from './StartSaveSwitch';
 import { START_GROUP_ID, knowledgebaseStart } from './start-structure-items';
@@ -56,8 +55,6 @@ export function StartFromTemplates({
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
-  // Connect File at the rail's foot, where connecting can work (useConnectStart).
-  const connect = useConnectStart();
   const start = useMemo(() => knowledgebaseStart({ describe: !!onDescribe }), [onDescribe]);
   const categories = useMemo(
     () =>
@@ -92,9 +89,8 @@ export function StartFromTemplates({
       onChoose={onChoose}
       // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(palette) => <StartSaveSwitch palette={palette} />}
-      connect={connect}
-      // Describe to Set Up then Import, above Connect File (the rail's last entry): each closes the start and opens its
-      // dialog over the empty knowledgebase.
+      // Describe to Set Up then Import at the rail's foot (Connect File is the page tree's, links-and-embeds.md): each
+      // closes the start and opens its dialog over the empty knowledgebase.
       footLead={[
         ...(onDescribe
           ? [

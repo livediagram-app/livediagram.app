@@ -12,9 +12,9 @@ import { MenuJoinBand } from '@liveworkspace/workbench/components/canvas/menu-jo
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
-import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
 import { PageTree, type PageTreeProps } from './PageTree';
-import { PAGE_RENAME_FIELD } from './PageTreeRow';
+import { AddToSidebar } from './AddToSidebar';
+import { PAGE_RENAME_FIELD } from './page-tree-row-styles';
 import { AddIcon, CollapseIcon, ExpandIcon } from './page-tree-icons';
 import { SearchField } from '@/components/knowledge/SearchField';
 import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton';
@@ -29,36 +29,7 @@ const SURFACE =
   'pointer-events-auto absolute bottom-0 z-[var(--z-panel)] flex cursor-default flex-col overflow-hidden border-r border-slate-200 bg-slate-50 text-slate-900 motion-safe:transition-[translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-x-full dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100';
 const ICON_BUTTON =
   'flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
-/** The dashed button that adds a page (the sidebar's foot, the phone sheet's). */
-export const NEW_PAGE_BUTTON =
-  'optical-edges flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-2.5 py-2 text-sm font-medium text-slate-600 motion-safe:transition-colors motion-safe:duration-micro hover:border-brand-400 hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100';
-
-/** New Page: adds a top-level page. At the page limit it is disabled and says why. */
-export function NewPageButton({ tabs, onAdd }: { tabs: PageTreeProps['tabs']; onAdd: () => void }) {
-  const refused = pageAddRefusal(tabs);
-  return (
-    <HoverCard
-      block
-      title="New Page"
-      description={
-        refused
-          ? pageTreeRefusalText(refused)
-          : 'Adds a page at the top level of this knowledgebase.'
-      }
-    >
-      <button
-        type="button"
-        data-new-page=""
-        disabled={refused !== null}
-        onClick={onAdd}
-        className={NEW_PAGE_BUTTON}
-      >
-        <AddIcon />
-        <span className="truncate">New Page</span>
-      </button>
-    </HoverCard>
-  );
-}
+export { NEW_PAGE_BUTTON, NewPageButton } from './AddToSidebar';
 
 /** What the head hands the knowledgebase's menu: the name as shown, and how a rename starts in place. */
 export type KnowledgebaseHead = { name: string; onRename: (() => void) | undefined };
@@ -261,7 +232,11 @@ export function PageTreeSidebar({
         <div className="border-t border-slate-200 p-3 dark:border-slate-800">
           {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"). */}
           <DescribeToSetUpButton />
-          <NewPageButton tabs={tree.tabs} onAdd={() => tree.actions.onAdd()} />
+          <AddToSidebar
+            tabs={tree.tabs}
+            onAdd={() => tree.actions.onAdd()}
+            onConnect={tree.connected?.canConnect ? () => tree.connected?.onConnect() : undefined}
+          />
         </div>
       ) : null}
     </>

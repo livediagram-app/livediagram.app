@@ -19,6 +19,7 @@ import { canEditMap } from '@/lib/map-edit';
 import {
   MAP_DEFAULT_ACCENT,
   chartPageGrounds,
+  isConnectedRow,
   isLightColor,
   mapPaperColour,
   resolveStockColours,
@@ -214,7 +215,8 @@ function OpenEditorElementDialogs() {
           title={linkTarget?.type === 'video' ? 'Link embed' : 'Link element'}
           urlOnly={urlOnly}
           currentLink={linkTarget?.link ?? null}
-          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
+          // Pages alone: a connected file in the tree is no page to link to (links-and-embeds.md).
+          tabs={tabs.filter((t) => !isConnectedRow(t)).map((t) => ({ id: t.id, name: t.name }))}
           currentTabId={activeId}
           initialMode={linkPickerInitialMode ?? undefined}
           recentDocuments={documentList

@@ -21,12 +21,15 @@ import {
   type KnowledgePageRef,
   type KnowledgePageRow,
   type KnowledgePagesResponse,
+  type KnowledgeTreeRow,
   type MovePageRequest,
 } from '@liveknowledge/api-schema';
 import {
   ARTICLE_MARKDOWN_MAX,
   MAX_KNOWLEDGEBASE_PAGES,
+  isConnectedRow,
   pageByTitleIn,
+  pageCount,
   pageMoveRefusal,
   pageTreeRows,
   withPageMoved,
@@ -93,12 +96,24 @@ type Summary = DocumentDTO['tabs'][number];
 const treeOf = (document: DocumentDTO) =>
   pageTreeRows(document.tabs.map((t) => ({ ...t, parent: t.parent })));
 const refOf = (t: Summary): KnowledgePageRef => ({ tab: t.id, title: t.name });
+// The pages alone: a connected file in the tree (links-and-embeds.md "Connected files in the sidebar") is no page, so
+// it is never named, placed under, linked to or counted as one.
+const pagesOf = (document: DocumentDTO) => document.tabs.filter((t) => !isConnectedRow(t));
 
 async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> {
   const now = Date.now();
   const { reviewEvery } = document.knowledgeSettings;
   const { byTab } = await openConflictPages(ctx.env, document.tabs);
-  const pages: KnowledgePageRow[] = treeOf(document).map(({ page, depth, subpages }) => {
+  const pages: KnowledgeTreeRow[] = treeOf(document).map(({ page, depth, subpages }) => {
+    if (page.connection)
+      return {
+        ...refOf(page),
+        kind: 'connected' as const,
+        app: page.connection.app,
+        depth,
+        ...(page.parent ? { parent: page.parent } : {}),
+        subpages: 0 as const,
+      };
     const fields = parseKnowledgeFields(page.knowledge);
     return {
       ...refOf(page),
@@ -110,7 +125,7 @@ async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> 
       trust: pageTrustOf(page.knowledge, reviewEvery, now, {
         conflictsWith: byTab.get(page.id),
       }),
-    };
+    } satisfies KnowledgePageRow;
   });
   // The Review Period, said once: every page's `reviewAt` is its `verifiedAt` plus this.
   return json({ reviewEvery, pages } satisfies KnowledgePagesResponse);
@@ -166,7 +181,9 @@ async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Resp
       linking.map((r) => r.fromTab),
       order,
     ).flatMap((id) => (byId.has(id) ? [refOf(byId.get(id)!)] : [])),
-    subpages: document.tabs.filter((t) => t.parent === summary.id).map(refOf),
+    subpages: pagesOf(document)
+      .filter((t) => t.parent === summary.id)
+      .map(refOf),
   };
   // The page's cover, as an agent names one (page-surface.md "The cover").
   const cover = agentCoverOf(stored.tab.cover);
@@ -213,18 +230,19 @@ async function handleContext({ ctx, document, grant }: KnowledgeRoute): Promise<
       trust: pageTrustOf(knowledgeOf.get(p.id), document.knowledgeSettings.reviewEvery, now),
     })),
     leftOut: context.leftOut.map((p) => ({ tab: p.id, title: p.title, tokens: p.tokens })),
-    pageCount: document.tabs.length,
+    pageCount: pageCount(document.tabs),
   };
   return json(answer);
 }
 
 // A page a request places another by (`parent`, `before`): its id, or its title when one page alone has it.
 function placeOf(document: DocumentDTO, ref: unknown, key = 'parent'): string | Response {
-  const found = typeof ref === 'string' && ref ? pageNamed(document.tabs, ref) : undefined;
+  const pages = pagesOf(document);
+  const found = typeof ref === 'string' && ref ? pageNamed(pages, ref) : undefined;
   if (found && found !== 'ambiguous') return found.id;
   if (typeof ref !== 'string' || !ref)
     return invalid(`invalid_${key}`, `"${key}" is a page's id or title.`);
-  return json(pageUnknownBody(document.tabs, ref, found), { status: 409 });
+  return json(pageUnknownBody(pages, ref, found), { status: 409 });
 }
 
 async function handleWrite(route: KnowledgeRoute, tab: string): Promise<Response> {
@@ -321,7 +339,7 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
   const refusal = tabParentRefusal(await readStoredPages(ctx.env, document.id), id, under);
   if (refusal) return conflict(refusal);
   const existing = pageByTitleIn(
-    document.tabs.map((t) => ({ id: t.id, name: t.name, parent: t.parent })),
+    pagesOf(document).map((t) => ({ id: t.id, name: t.name, parent: t.parent })),
   );
   const made = newPageFromMarkdown(
     { id, title, markdown, ...(under ? { parent: under } : {}) },
@@ -439,6 +457,15 @@ export function handleAgentPageRoute(
   summary: Summary,
 ): Promise<Response> | Response | null {
   const { segments, request } = route.ctx;
+  // A connected file is no page: it is not read or written here (move_page still places it).
+  if (summary.connection && !(segments.length === 6 && segments[5] === 'move'))
+    return json(
+      {
+        error: 'connected_file',
+        message: `"${summary.name}" is a connected file from another app in the sidebar, not a page: it has no writing here.`,
+      },
+      { status: 404 },
+    );
   if (segments.length === 5) {
     if (request.method === 'GET') return handleRead(route, summary);
     return request.method === 'PUT' ? handleWrite(route, summary.id) : methodNotAllowed();

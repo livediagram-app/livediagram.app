@@ -2,10 +2,20 @@
 // pages filtered by what is typed after `[[` (a title starting with it before one containing it, tree order within
 // each), then Create Page at the foot for someone who may add pages. Pure, in the slash menu's own entry shape, so
 // the same popover draws it. Also: the page a pasted address names, and a page's first lines for its hover card.
-import { articleRunsText, pageAncestors, type ArticleBlock } from '@liveknowledge/document';
+import {
+  articleRunsText,
+  isConnectedRow,
+  pageAncestors,
+  type ArticleBlock,
+} from '@liveknowledge/document';
 import type { SlashItem } from '@/lib/article/article-slash-items';
 
-export type PickPage = { id: string; name: string; parent?: string | undefined };
+export type PickPage = {
+  id: string;
+  name: string;
+  parent?: string | undefined;
+  connection?: unknown;
+};
 
 /** The most pages the picker lists at once. */
 export const PAGE_PICK_MAX = 8;
@@ -20,7 +30,8 @@ export function pagePickItems(
   const starts: PickPage[] = [];
   const contains: PickPage[] = [];
   for (const page of pages) {
-    if (page.id === opts.exclude) continue;
+    // A connected file in the tree is no page to link to (links-and-embeds.md "Connected files in the sidebar").
+    if (page.id === opts.exclude || isConnectedRow(page)) continue;
     const name = (page.name || UNTITLED).toLowerCase();
     if (!q || name.startsWith(q)) starts.push(page);
     else if (name.includes(q)) contains.push(page);

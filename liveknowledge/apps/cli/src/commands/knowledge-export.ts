@@ -12,7 +12,7 @@ import {
   tabPath,
   type VerbContext,
 } from '@liveknowledge/agent-verbs';
-import type { KnowledgePagesResponse } from '@liveknowledge/api-schema';
+import { isKnowledgePageRow, type KnowledgePagesResponse } from '@liveknowledge/api-schema';
 import { pageFilePaths, type Tab } from '@liveknowledge/document';
 import type { CliIo } from '@liveworkspace/cli-kit/io';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
@@ -42,9 +42,11 @@ export async function exportKnowledgebase(
   const root = withoutTrailingSlashes(input.dir);
   const resolved = await resolveDocument(ctx.api, input.doc, ctx.host, ctx.log);
   if (resolved.shareCode) ctx.useShareCode(resolved.shareCode);
-  const { pages } = await patiently(ctx, () =>
+  const listed = await patiently(ctx, () =>
     ctx.api.json<KnowledgePagesResponse>(knowledgePath(resolved.id, 'pages')),
   );
+  // A connected file in the tree is another app's, with no writing here: it is not exported.
+  const pages = listed.pages.filter(isKnowledgePageRow);
   const files = pageFilePaths(
     pages.map((p) => ({ id: p.tab, name: p.title, ...(p.parent ? { parent: p.parent } : {}) })),
   );

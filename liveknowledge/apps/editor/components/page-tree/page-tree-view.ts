@@ -2,6 +2,8 @@
 // rows on screen, where the arrow keys go, and where a dragged row lands. Pure, over the tree functions
 // (@liveknowledge/document page-tree.ts): the list of tabs in, rows or a move out.
 import { pageAncestors, pageTreeRows, type PageMove, type TreePage } from '@liveknowledge/document';
+import type { App } from '@liveworkspace/index-client';
+import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
 
 /** The sidebar's width, in px at the panels' UI scale. */
 export const PAGE_TREE_WIDTH = 264;
@@ -35,6 +37,10 @@ export type PageRow = {
   position: number;
   siblings: number;
   locked: boolean;
+  // A connected row (links-and-embeds.md "Connected files in the sidebar"): its connection's id and its file's app,
+  // null for a page. Plain values, so a row compares field by field.
+  connectionId: string | null;
+  app: App | null;
 };
 
 /**
@@ -70,6 +76,7 @@ export function visiblePageRows(
     if (row.depth > foldedBelow) return;
     foldedBelow = Infinity;
     const { page } = row;
+    const connection = connectionOf(page);
     const open = row.subpages > 0 && (forced.has(page.id) || !closed.has(page.id));
     if (row.subpages > 0 && !open) foldedBelow = row.depth;
     out.push({
@@ -82,6 +89,8 @@ export function visiblePageRows(
       position,
       siblings: counts.get(parent) ?? 1,
       locked: page.locked === true,
+      connectionId: connection?.id ?? null,
+      app: connection?.app ?? null,
     });
   });
   return out;
@@ -130,7 +139,8 @@ export function treeKeyAction(
     case 'Enter':
       return { kind: 'select', id: row.id };
     case 'F2':
-      return { kind: 'rename', id: row.id };
+      // A connected row is named after its file: it takes no rename.
+      return row.connectionId ? null : { kind: 'rename', id: row.id };
     case 'ContextMenu':
       return { kind: 'menu', id: row.id };
     case 'F10':

@@ -12,6 +12,7 @@ import { knowledgePath, resolveDocument, type VerbContext } from '@liveknowledge
 import { ApiError } from '@liveworkspace/api-client';
 import {
   CREATION_INTENT,
+  isKnowledgePageRow,
   type CreatePageResponse,
   type KnowledgePagesResponse,
 } from '@liveknowledge/api-schema';
@@ -169,9 +170,9 @@ export async function importKnowledge(
     const resolved = await resolveDocument(ctx.api, input.to, ctx.host, ctx.log);
     if (resolved.shareCode) ctx.useShareCode(resolved.shareCode);
     documentId = resolved.id;
-    const { pages } = await ctx.api.json<KnowledgePagesResponse>(
-      knowledgePath(documentId, 'pages'),
-    );
+    const listed = await ctx.api.json<KnowledgePagesResponse>(knowledgePath(documentId, 'pages'));
+    // The pages alone: a connected file in the tree counts toward no limit and holds no subpages.
+    const pages = listed.pages.filter(isKnowledgePageRow);
     existingPages = pages.length;
     if (input.into !== undefined) {
       const key = input.into.toLowerCase().replace(/\s+/g, ' ').trim();

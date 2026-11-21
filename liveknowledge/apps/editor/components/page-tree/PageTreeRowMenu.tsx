@@ -7,6 +7,7 @@
 import type { ReactNode } from 'react';
 import {
   pageAddRefusal,
+  pageCount,
   pageDepth,
   pageParents,
   pageSubtreeIds,
@@ -25,6 +26,7 @@ import {
 import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
 import {
   AddIcon,
+  ConnectFileIcon,
   DeleteIcon,
   DuplicateIcon,
   IndentIcon,
@@ -49,7 +51,9 @@ export type PageMenuVerb =
   | 'down'
   | 'indent'
   | 'outdent'
-  | 'delete';
+  | 'delete'
+  // Connect File Here (links-and-embeds.md "Connected files in the sidebar"): a file as this page's last row.
+  | 'connect-here';
 
 /** Why each verb cannot run on a page right now; a verb that can is absent. Pure, for the menu and its tests. */
 export function pageMenuRefusals(
@@ -60,6 +64,9 @@ export function pageMenuRefusals(
   const parent = pageParents(tabs).get(id);
   const subpage = pageAddRefusal(tabs, id);
   if (subpage) out.add = pageTreeRefusalText(subpage);
+  // A connected row goes in wherever a subpage would, but never meets the page limit.
+  if (pageDepth(tabs, id) >= MAX_PAGE_DEPTH)
+    out['connect-here'] = pageTreeRefusalText('depth_limit');
   const copy = pageAddRefusal(tabs, parent);
   if (copy) out.duplicate = pageTreeRefusalText(copy);
   if (!withPageStepped(tabs, id, -1)) out.up = 'This is the first page here.';
@@ -73,7 +80,8 @@ export function pageMenuRefusals(
   }
   if (!withPageOutdented(tabs, id)) out.outdent = 'This page is already at the top level.';
   const subtree = new Set(pageSubtreeIds(tabs, id));
-  if (subtree.size >= tabs.length) out.delete = 'A knowledgebase always has a page.';
+  if (pageCount(tabs.filter((t) => !subtree.has(t.id))) === 0)
+    out.delete = 'A knowledgebase always has a page.';
   else if (tabs.some((t) => subtree.has(t.id) && t.locked === true))
     out.delete = 'Unlock the page before deleting it.';
   return out;
@@ -85,6 +93,7 @@ export function PageTreeRowMenu({
   id,
   canEdit,
   knowledge,
+  canConnect = false,
   onVerb,
   onClose,
 }: {
@@ -94,6 +103,8 @@ export function PageTreeRowMenu({
   canEdit: boolean;
   // Verify and Always in Context (docs/specs/030-knowledgebase/verification.md, ai-knowledge.md): an Editor's.
   knowledge?: Pick<PageTreeKnowledge, 'canVerify' | 'canEditFields' | 'inContext'> | undefined;
+  // Connect File Here is offered (signed in, on the server, a session that may change the tree).
+  canConnect?: boolean;
   onVerb: (verb: PageMenuVerb, id: string) => void;
   onClose: () => void;
 }) {
@@ -129,6 +140,7 @@ export function PageTreeRowMenu({
       <MenuHeader title={page.name || 'Untitled Page'} />
       {canEdit ? row('rename', 'Rename', <RenameIcon />) : null}
       {canEdit ? row('add', 'Add Subpage', <AddIcon />) : null}
+      {canEdit && canConnect ? row('connect-here', 'Connect File Here', <ConnectFileIcon />) : null}
       {canEdit ? row('duplicate', 'Duplicate', <DuplicateIcon />) : null}
       {row('copy-link', 'Copy Link', <LinkIcon />)}
       {knowledge?.canVerify ? row('verify', 'Verify', <TickIcon />) : null}

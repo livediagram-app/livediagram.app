@@ -43,10 +43,12 @@ type OwnedPage = EmailPage & { owner: string; verifiedAt?: number };
 // the clock say (`trustState`): no page's writing is read.
 function pagesOf(document: DocumentDTO, now: number) {
   const { reviewEvery } = document.knowledgeSettings;
-  return document.tabs.map((tab) => {
+  // A connected file in the tree is no page: nobody answers for it (links-and-embeds.md).
+  return document.tabs.flatMap((tab) => {
+    if (tab.connection) return [];
     const fields = parseKnowledgeFields(tab.knowledge);
     const trust = trustState(fields, reviewEvery, now);
-    return { tab: tab.id, title: tab.name, owner: fields.owner, ...trust };
+    return [{ tab: tab.id, title: tab.name, owner: fields.owner, ...trust }];
   });
 }
 

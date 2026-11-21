@@ -263,7 +263,7 @@ describe('the current page’s tint', () => {
     const colour = (step: number) =>
       new RegExp(`--color-brand-${step}:\\s*(#[0-9a-fA-F]{6})`).exec(theme)![1]!;
     expect(contrastRatio(colour(900), colour(100))).toBeGreaterThan(4.5);
-    const row = readFileSync(resolve('components/page-tree/PageTreeRow.tsx'), 'utf8');
+    const row = readFileSync(resolve('components/page-tree/page-tree-row-styles.ts'), 'utf8');
     expect(row).toContain('bg-brand-100 font-medium text-brand-900');
   });
 });

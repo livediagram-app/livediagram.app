@@ -24,6 +24,8 @@ import {
   resultTrustOf,
   reviewPeriodLine,
   reviewPeriodOf,
+  treeRowLine,
+  treeRowOf,
   trustFieldsOf,
   trustLine,
 } from '../knowledge';
@@ -107,15 +109,7 @@ export const pages = defineVerb({
   run: async (ctx, input) => {
     const id = await knowledgebaseOf(ctx, input.doc);
     const listed = await ctx.api.json<KnowledgePagesResponse>(knowledgePath(id, 'pages'));
-    const rows = listed.pages.map((row) => ({
-      ...pageRefOf(row),
-      depth: row.depth,
-      ...(row.parent ? { parent: row.parent } : {}),
-      subpages: row.subpages,
-      ...(row.owner ? { owner: row.owner } : {}),
-      ...(row.context ? { always_in_context: true as const } : {}),
-      ...trustFieldsOf(row.trust),
-    }));
+    const rows = listed.pages.map(treeRowOf);
     const review_period = reviewPeriodOf(listed.reviewEvery);
     if (input.under === undefined) return { count: rows.length, review_period, pages: rows };
     const key = input.under.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -146,8 +140,7 @@ export const pages = defineVerb({
           `${o.count} ${o.count === 1 ? 'page' : 'pages'} · ${reviewPeriodLine(o.review_period)}`,
           ...o.pages.map(
             (p) =>
-              `${'  '.repeat(p.depth - 1)}${p.title}  (${p.page})  ${trustLine(p)}` +
-              (p.always_in_context ? ', always in context' : ''),
+              `${'  '.repeat(p.depth - 1)}${p.title}  (${p.page})  ${treeRowLine(p)}`,
           ),
         ],
   quiet: (o) => o.pages.map((p) => p.page),

@@ -285,7 +285,32 @@ there is no New Page or knowledgebase rename. Tested a role at a time in `PageTr
 
 [Links and embeds](../links-and-embeds.md) "Connected files in the sidebar". A connected row is a tab holding a
 connection (`tabs.connection`, `{ id, app, itemId }`, liveworkspace's connected-tabs.md), stored, synced and ordered
-as every tab is, with `parent` placing it. The fold-back below names the files.
+as every tab is, with `parent` placing it.
+
+- **The tree** (`packages/document/src/page-tree.ts`): `isConnectedRow` and `pageCount` (pages only, for the page
+  limit and "a knowledgebase always has a page"); `withConnectedRowAdded` places a row with no page limit; a
+  connected row is never a parent (`placeRefusal`, `pageMoveRefusal`, `pageParents`).
+- **api**: `document-room/page-tree-store.ts` marks stored rows (`t.connection IS NOT NULL`) and skips the page limit
+  for them (`tabParentRefusal`); `routes/tab-put-route.ts` passes the sent connection. Never a page to agents or
+  search: `routes/knowledge-agent-routes.ts` lists a row as `kind: "connected"` (with `app`, `depth`, `parent`) and
+  answers `404 connected_file` to a read or a write; `knowledge/knowledge-index.ts` `settlePage` indexes no row;
+  `knowledge/knowledge-reads.ts` (health, recent) and `knowledge/knowledge-emails.ts` skip rows. Tested by
+  `routes/knowledge-connected-rows.test.ts`.
+- **Contract**: `packages/api-schema/src/knowledge.ts` `KnowledgeConnectedRow`, `KnowledgeTreeRow`,
+  `isKnowledgePageRow`; `packages/agent-verbs` `treeRowOf` / `treeRowLine` and the MCP `list_pages` union; the MCP
+  server and the CLI's export and import take pages alone.
+- **Editor**: `lib/knowledge/connected-row-store.ts` asks the index where each row leads (`openConnection`, at most 4
+  at once, once a connection per session, one store per knowledgebase for the last 8). `components/page-tree/`
+  `ConnectedTreeRow.tsx` (the `<a target="_blank" rel="noopener">` row, the app's logo, the arrow-out mark, Can't
+  Open), `ConnectedRowMenu.tsx` (Open, Copy Link, Connect Again, the moves, Remove from Sidebar), `connected-rows.ts`
+  (the tree's `connected` prop, the Can't Open words), `useConnectedRows.tsx` (the store, the verbs, the names that
+  follow the files, the Connect File dialog), `AddToSidebar.tsx` (the foot's New Page and Add to Sidebar menu) and
+  Connect File Here in `PageTreeRowMenu.tsx`. `components/connect/ConnectFileDialog.tsx` wraps the shared
+  `ConnectPicker`. `useEditorTabs.addConnectedRow` saves the whole tab before it shows;
+  `hooks/editor/useActivePageNotConnected.ts` keeps the open page off a row; `useTabActions.deleteTab` removes a
+  row with no confirm. The link picker, the Ask page picker and the import count take pages alone. Tested by
+  `PageTree.connected.test.tsx` and `connected-row-store.test.ts`, and end to end by
+  `e2e/signed-in/connected-rows.spec.ts`.
 
 ## Performance and limits
 

@@ -10,6 +10,7 @@ import type {
 } from '@liveknowledge/api-schema';
 import {
   DEFAULT_MCP_SHARE_LEVEL,
+  isKnowledgePageRow,
   TRASH_RETENTION_DAYS,
   type TrashedDocument,
 } from '@liveknowledge/api-schema';
@@ -44,7 +45,8 @@ async function pageIdOf(env: Env, token: string, documentId: string, page: strin
     token,
     knowledgePath(documentId, 'pages'),
   );
-  return pageRowNamed(pages, page).tab;
+  // A connected file in the tree is no page to rename or delete (links-and-embeds.md).
+  return pageRowNamed(pages.filter(isKnowledgePageRow), page).tab;
 }
 
 export function registerTools(server: McpServer, env: Env): void {

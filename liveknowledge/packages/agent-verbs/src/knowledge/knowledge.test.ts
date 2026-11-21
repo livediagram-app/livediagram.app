@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { jsonBody, knowledgePath, pageRefOf, resultTrustOf, trustFieldsOf, trustLine } from '.';
+import {
+  jsonBody,
+  knowledgePath,
+  pageRefOf,
+  resultTrustOf,
+  treeRowLine,
+  treeRowOf,
+  trustFieldsOf,
+  trustLine,
+} from '.';
 
 const AT = Date.UTC(2026, 9, 1);
 const DUE = AT + 90 * 86_400_000;
@@ -106,5 +115,44 @@ describe('trustLine', () => {
         ],
       }),
     ).toBe('REVIEW DUE, last verified 2026-10-01, CONFLICTS WITH "Holidays", "Rollbacks"');
+  });
+});
+
+// A connected file in the tree (links-and-embeds.md "Connected files in the sidebar"): listed with its app, never a page.
+describe('a tree row', () => {
+  it('reads a connected file with its app and place, and says it is not a page', () => {
+    const row = treeRowOf({
+      tab: 'plan',
+      title: 'Launch Plan',
+      kind: 'connected',
+      app: 'liveplanner',
+      depth: 1,
+      parent: 'deploys',
+      subpages: 0,
+    });
+    expect(row).toEqual({
+      page: 'plan',
+      title: 'Launch Plan',
+      depth: 1,
+      parent: 'deploys',
+      kind: 'connected',
+      app: 'liveplanner',
+      subpages: 0,
+    });
+    expect(treeRowLine(row)).toBe('connected liveplanner file, not a page');
+  });
+
+  it('reads a page at the top level with its trust and context', () => {
+    const row = treeRowOf({
+      tab: 'deploys',
+      title: 'Deploys',
+      depth: 0,
+      subpages: 2,
+      context: true,
+      trust: { state: 'never-verified', stale: false },
+    });
+    expect(row).not.toHaveProperty('parent');
+    expect(row).toMatchObject({ page: 'deploys', subpages: 2, always_in_context: true });
+    expect(treeRowLine(row)).toContain('always in context');
   });
 });

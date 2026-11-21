@@ -6,6 +6,7 @@
 
 import {
   MAX_KNOWLEDGEBASE_PAGES,
+  pageCount,
   pageParents,
   pageTreeRefusal,
   parseTabParent,
@@ -14,25 +15,30 @@ import {
 } from '@liveknowledge/document';
 import type { DocumentEnv } from '../types';
 
-/** The stored tree: each tab's id and parent, in the tab list's order. */
-export type StoredPage = { id: string; parent?: string };
+/** The stored tree: each tab's id and parent, in the tab list's order. `connection` (true) marks a connected row
+ *  (links-and-embeds.md "Connected files in the sidebar"), which is placed like a page but is no page. */
+export type StoredPage = { id: string; parent?: string; connection?: true };
 
 // A body that does not parse reads as a top-level page (and is never rewritten): one bad tab never fails the read.
 const TREE_SQL = `SELECT t.id AS id,
-                         CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.parent') END AS parent
+                         CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.parent') END AS parent,
+                         t.connection IS NOT NULL AS connected
                     FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
                    WHERE dt.document_id = ? ORDER BY dt.order_index ASC`;
 
-const storedPage = (row: { id: unknown; parent?: unknown }): StoredPage => {
+const storedPage = (row: { id: unknown; parent?: unknown; connected?: unknown }): StoredPage => {
   const parent = parseTabParent(row.parent);
-  return parent === undefined ? { id: String(row.id) } : { id: String(row.id), parent };
+  const page: StoredPage =
+    parent === undefined ? { id: String(row.id) } : { id: String(row.id), parent };
+  if (row.connected === 1 || row.connected === true) page.connection = true;
+  return page;
 };
 
 /** The stored tree, read through the document's database. */
 export async function readStoredPages(env: DocumentEnv, documentId: string): Promise<StoredPage[]> {
   const { results } = await env.DOCUMENT_DB.prepare(TREE_SQL)
     .bind(documentId)
-    .all<{ id: string; parent: unknown }>();
+    .all<{ id: string; parent: unknown; connected: unknown }>();
   return (results ?? []).map(storedPage);
 }
 
@@ -49,7 +55,8 @@ export function readStoredPagesSync(
 // A proposed tree judged whole: every page sits where it was asked to (its parent is a page of this knowledgebase,
 // not itself, and closes no cycle), and the limits hold.
 function proposedRefusal(next: readonly TreePage[]): PageTreeRefusal | null {
-  const ids = new Set(next.map((p) => p.id));
+  // Only a page holds subpages: a parent that is a connected row is no page of this knowledgebase.
+  const ids = new Set(next.filter((p) => p.connection !== true).map((p) => p.id));
   const read = pageParents(next);
   for (const page of next) {
     if (page.parent === undefined) continue;
@@ -67,14 +74,18 @@ export function tabParentRefusal(
   stored: readonly StoredPage[],
   tabId: string,
   parent: unknown,
+  // The write holds a connection: a new tab is a connected row, which never meets the page limit.
+  connected = false,
 ): PageTreeRefusal | null {
   const asked = parent === undefined || parent === null ? undefined : parseTabParent(parent);
   // Anything that is no id (a number, an empty or overlong string) names no page.
   if (parent !== undefined && parent !== null && asked === undefined) return 'unknown_page';
   const held = stored.find((p) => p.id === tabId);
   if (held && held.parent === asked) return null;
-  if (!held && stored.length >= MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
+  const isRow = connected || held?.connection === true;
+  if (!held && !isRow && pageCount(stored) >= MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
   const placed: StoredPage = asked === undefined ? { id: tabId } : { id: tabId, parent: asked };
+  if (isRow) placed.connection = true;
   const next = held ? stored.map((p) => (p.id === tabId ? placed : p)) : [...stored, placed];
   return proposedRefusal(next);
 }
@@ -108,7 +119,10 @@ export function treeFromEntries(
     const parent = entry.parent === null ? undefined : parseTabParent(entry.parent);
     if (entry.parent !== null && parent === undefined) invalid = true;
     if ((was?.parent ?? undefined) !== parent) changed = true;
-    return parent === undefined ? { id: entry.id } : { id: entry.id, parent };
+    const placed: StoredPage = parent === undefined ? { id: entry.id } : { id: entry.id, parent };
+    // A connected row stays one, wherever the list places it.
+    if (was?.connection) placed.connection = true;
+    return placed;
   });
   // A page the list does not name keeps its place after the ones it does, where a reorder leaves it.
   const named = new Set(entries.map((entry) => entry.id));
@@ -141,7 +155,8 @@ export function treeOpRefusal(stored: readonly StoredPage[], op: unknown): PageT
   if (o.kind === 'tab') {
     const tab = (o.tab ?? {}) as Record<string, unknown>;
     const id = typeof o.tabId === 'string' ? o.tabId : tab.id;
-    return typeof id === 'string' ? tabParentRefusal(stored, id, tab.parent) : null;
+    const connected = typeof tab.connection === 'object' && tab.connection !== null;
+    return typeof id === 'string' ? tabParentRefusal(stored, id, tab.parent, connected) : null;
   }
   if (o.kind === 'tab-meta') {
     if (typeof o.tabId !== 'string') return null;
