@@ -35,13 +35,13 @@ remindedAt?: number, email: boolean }`. `people` (each `{ id, name, readAt?, rem
 Routes, `routes/knowledge-reading-routes.ts`, under `/api/documents/<id>/pages/<tab>/reading`, run after the
 knowledge router's grant and page lookup:
 
-| Method and path        | Who                                      | Answers               | Refusals                                                                                                       |
-| ---------------------- | ---------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `GET reading`          | every grant that reads the page          | `PageReadingResponse` |                                                                                                                |
-| `PUT reading`          | an Editor in person                      | `PageReadingResponse` | `forbidden` 403, `invalid_change` 400, `too_many_people` 400, `reading_pages_full` 409, `reading_too_fast` 429 |
-| `POST reading/confirm` | a signed-in person who is asked          | `PageReadingResponse` | `reading_needs_account` 403, `not_required` 409, `not_asked` 409, `reading_too_fast` 429                       |
-| `POST reading/again`   | an Editor in person                      | `PageReadingResponse` | `forbidden` 403, `not_required` 409, `reading_too_fast` 429                                                    |
-| `POST reading/remind`  | an Editor or the page's owner, in person | `ReadingRemindResult` | `forbidden` 403, `not_required` 409                                                                            |
+| Method and path       | Who                                      | Answers               | Refusals                                                                                                       |
+| --------------------- | ---------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `GET reading`         | every grant that reads the page          | `PageReadingResponse` |                                                                                                                |
+| `PUT reading`         | an Editor in person                      | `PageReadingResponse` | `forbidden` 403, `invalid_change` 400, `too_many_people` 400, `reading_pages_full` 409, `reading_too_fast` 429 |
+| `POST read`           | a signed-in person who is asked          | `PageReadingResponse` | `reading_needs_account` 403, `not_required` 409, `not_asked` 409, `reading_too_fast` 429                       |
+| `POST read-again`     | an Editor in person                      | `PageReadingResponse` | `forbidden` 403, `not_required` 409, `reading_too_fast` 429                                                    |
+| `POST remind-readers` | an Editor or the page's owner, in person | `ReadingRemindResult` | `forbidden` 403, `not_required` 409                                                                            |
 
 "In person": `pageCreatorOf(ctx)` is an account (`isAccountId`), `readerOf(ctx).kind === 'person'` and no token.
 Each method is in the OpenAPI manifest, its types in `ROOT_TYPES`.
