@@ -64,8 +64,8 @@ A page's use over time, in its right rail (and its Page Info card and sheet), fo
   served), from the same bars.
 - **Answered From This Page** moves here from AI Context: the 3 questions it answered most, as before. With none it
   is not drawn.
-- **A new page** (made in the last 7 days) shows **New This Week** and one line in place of the bars and the
-  figures: "Reads show here as people and agents open it." with no reads, else its reads so far ("3 reads so far: 2
+- **A new page** (made in the last 7 days) shows **New This Week** and one line in place of the bars (the figures
+  follow only once one is above zero): "Reads show here as people and agents open it." with no reads, else its reads so far ("3 reads so far: 2
   by people, 1 by an agent"). Never 30 days of bars mostly from before it was made: opening a page counts a read, so
   its maker would otherwise see one bar and 29 empty days. An older page with no reads in 30 days shows the empty
   bars (hairlines) and "No reads in 30 days".
@@ -204,14 +204,14 @@ rows and actions, long lists capped so the page never grows with the data.
 - **The figures band:** six tiles, each a button named by its words and its figure. Six across on a wide screen,
   three across from a tablet's width, two across on a phone.
 
-  | Tile                | Figure                                                                                              | Pressed                                  |
-  | ------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-  | Reads This Week     | page reads in the last 7 days; people and agents apart; a 14-day sparkline                          | brings Most Read into view               |
-  | Connected Agents    | agents seen in 30 days; how many may write                                                          | brings Connected Agents into view        |
-  | Open Questions      | questions nobody could answer; how many asks in all                                                 | shows Needs Attention at Questions       |
-  | Pages That Disagree | open conflicts                                                                                      | shows Needs Attention at Disagreements   |
-  | Suggested Edits     | agents' edits waiting                                                                               | shows Needs Attention at Suggested Edits |
-  | Verified            | the verified share of the pages, as a percentage; how many are Review Due; the average Health Score | brings Knowledge Health into view        |
+  | Tile                | Figure                                                                                               | Pressed                                  |
+  | ------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+  | Reads This Week     | page reads in the last 7 days; people and agents apart; a 14-day sparkline                           | brings Most Read into view               |
+  | Connected Agents    | agents seen in 30 days; how many may write                                                           | brings Connected Agents into view        |
+  | Open Questions      | questions nobody could answer; how many asks in all                                                  | shows Needs Attention at Questions       |
+  | Pages That Disagree | open conflicts                                                                                       | shows Needs Attention at Disagreements   |
+  | Suggested Edits     | agents' edits waiting                                                                                | shows Needs Attention at Suggested Edits |
+  | Verified            | the verified share of the pages, as a percentage; how many are Review Due; the average Health Score  | brings Knowledge Health into view        |
   | Average Health      | under a Review Period of Never, in Verified's place: the average Health Score; across how many pages | brings Knowledge Health into view        |
 
   A tile whose figure asks for someone (an open question, a conflict, an edit waiting, a page Review Due) carries a

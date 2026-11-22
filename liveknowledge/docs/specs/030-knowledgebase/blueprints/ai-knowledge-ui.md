@@ -248,7 +248,8 @@ Derived from [AI Knowledge](../ai-knowledge.md#page-insights): `components/knowl
   From This Page** (moved from `PageAiContext`, the same quotes).
 - **States.** Before the read: placeholder bars of the final height. A page whose `created.at` is within
   `NEW_PAGE_INSIGHT_DAYS`: a soft panel, "New This Week" and "Reads show here as people and agents open it." (no
-  reads) or `readsSoFarText` ("3 reads so far: 2 by people, 1 by an agent"); no bars, no figures. Otherwise no reads: the hairline bars and "No reads in 30 days".
+  reads) or `readsSoFarText` ("3 reads so far: 2 by people, 1 by an agent"); no bars, and the figures only once
+  Cited by Ask or Read by Agents is above zero. Otherwise no reads: the hairline bars and "No reads in 30 days".
   Offline: not drawn.
 - **Directions considered.** A heat strip of 30 cells (a calendar) lost the people and agents split; two line charts
   over 30 points at 264 px were noisy and dropped small values; the stacked bars match the dashboard's sparkline and

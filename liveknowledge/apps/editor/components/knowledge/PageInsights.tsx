@@ -173,19 +173,23 @@ export function PageInsights({ insights, answered, createdAt, now }: PageInsight
               </span>
             </li>
           </ul>
-          <dl
-            className={`mt-4 grid gap-3 border-t border-slate-100 pt-3 dark:border-slate-800/70 ${
-              insights.cited === undefined ? 'grid-cols-1' : 'grid-cols-2'
-            }`}
-          >
-            {/* A link confined to one page has no Ask: nothing cited is said. */}
-            {insights.cited === undefined ? null : (
-              <Figure icon={<CitedIcon />} label="Cited by Ask" value={timesText(insights.cited)} />
-            )}
-            <Figure icon={<AgentsIcon />} label="Read by Agents" value={timesText(agents)} />
-          </dl>
         </>
       )}
+      {/* The counts, in the first week too once there is one to say: a new page cited by Ask says so, but never a
+        row of "Not yet". */}
+      {insights !== undefined && (!fresh || agents > 0 || (insights.cited ?? 0) > 0) ? (
+        <dl
+          className={`mt-4 grid gap-3 border-t border-slate-100 pt-3 dark:border-slate-800/70 ${
+            insights.cited === undefined ? 'grid-cols-1' : 'grid-cols-2'
+          }`}
+        >
+          {/* A link confined to one page has no Ask: nothing cited is said. */}
+          {insights.cited === undefined ? null : (
+            <Figure icon={<CitedIcon />} label="Cited by Ask" value={timesText(insights.cited)} />
+          )}
+          <Figure icon={<AgentsIcon />} label="Read by Agents" value={timesText(agents)} />
+        </dl>
+      ) : null}
       {answered && answered.length > 0 ? <AnsweredQuestions answered={answered} /> : null}
     </section>
   );

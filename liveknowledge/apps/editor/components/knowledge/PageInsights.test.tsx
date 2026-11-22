@@ -78,6 +78,7 @@ describe('Page Insights', () => {
     expect(section().getByText('New This Week')).toBeTruthy();
     expect(document.querySelector('[data-page-insights-total]')).toBeNull();
     expect(section().queryByRole('img')).toBeNull();
+    expect(section().queryByText('Cited by Ask')).toBeNull();
   });
 
   it('shows New This Week with its reads so far for a page in its first week, its maker’s opening counted', () => {
@@ -90,6 +91,10 @@ describe('Page Insights', () => {
       '3 reads so far: 2 by people, 1 by an agent',
     );
     expect(section().queryByRole('img')).toBeNull();
+    // Counts that say something still show in the first week; none for a page with nothing to count.
+    expect(section().getByText('Read by Agents').closest('div')!.textContent).toBe(
+      'Read by AgentsOnce',
+    );
     expect(readsSoFarText(1, 0)).toBe('1 read so far: 1 by a person');
     expect(readsSoFarText(0, 4)).toBe('4 reads so far: 4 by agents');
   });
