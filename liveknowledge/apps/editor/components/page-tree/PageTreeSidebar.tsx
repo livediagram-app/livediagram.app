@@ -206,7 +206,7 @@ export function PageTreeSidebar({
       <div className="px-3 pt-2">
         <SearchField />
       </div>
-      <p className="px-[18px] pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <p className="px-[18px] pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
         Pages
       </p>
       {/* The pages, then the Trash as the list's last item, scrolling together (knowledgebases-and-pages.md "The page

@@ -136,7 +136,7 @@ export function PageTreeSheet({
           <div className="px-4 pb-1 pt-2">
             <SearchField />
           </div>
-          <p className="px-4 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <p className="px-4 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
             Pages
           </p>
           <PageTree

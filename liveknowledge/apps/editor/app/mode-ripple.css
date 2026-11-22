@@ -57,6 +57,15 @@
 .lk-mode-ripple-ring:nth-child(4) {
   animation-delay: 220ms;
 }
+/* Reduced motion collapses durations (globals.css), and the rings' delays with them, so nothing waits to run. */
+@media (prefers-reduced-motion: reduce) {
+  .lk-mode-ripple-ring {
+    animation-delay: 0s !important;
+  }
+}
+:root.reduce-motion .lk-mode-ripple-ring {
+  animation-delay: 0s !important;
+}
 
 @keyframes lk-click-ring {
   from {

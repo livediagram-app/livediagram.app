@@ -1,5 +1,6 @@
 import { expect, expectNoPageErrors, test } from '../fixtures';
 import {
+  addPage,
   addSubpage,
   nameOpenPage,
   pageTree,
@@ -10,9 +11,9 @@ import {
 import { signedInKnowledgebase } from './knowledge-session';
 
 // The page Trash (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page Trash"; blueprint page-tree.md
-// "The page Trash"), signed in: a delete moves the page and its subpages to the Trash, the row above New Page counts
-// them, the dialog lists them, and Restore puts them back where they were. Each is kept by the room, so each is read
-// again after a reload.
+// "The page Trash"), signed in: a delete moves the page and its subpages to the Trash, the row at the foot of the
+// page list counts them (it shows only while the Trash holds pages), the dialog lists them, and Restore puts them
+// back where they were. Each is kept by the room, so each is read again after a reload.
 
 test.use({ viewport: { width: 1440, height: 860 } });
 
@@ -25,8 +26,10 @@ test('a deleted page waits in the Trash, and Restore puts it back with its subpa
   await signedInKnowledgebase(page);
   await nameOpenPage(page, 'Guides');
   await addSubpage(page, 'Guides', 'Setup');
+  // A knowledgebase keeps one top-level page, so Delete needs a second.
+  await addPage(page, 'Notes');
   await saveAndGoOn(page);
-  await expect(trashRow(page)).toHaveAccessibleName('Trash, empty');
+  await expect(trashRow(page)).toHaveCount(0);
 
   await rowVerb(page, 'Guides', 'Delete');
   const confirm = page.getByRole('dialog', { name: 'Move Guides and 1 Subpage to the Trash?' });
@@ -51,6 +54,6 @@ test('a deleted page waits in the Trash, and Restore puts it back with its subpa
 
   await expect(pageTree(page).getByRole('treeitem', { name: /Guides/ })).toBeVisible();
   await expect.poll(() => treeShape(page)).toContain('2 Setup');
-  await expect(trashRow(page)).toHaveAccessibleName('Trash, empty');
+  await expect(trashRow(page)).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
