@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   arrivingLines,
   changeCounts,
@@ -74,9 +75,12 @@ describe('locating a passage', () => {
   it('stays fast on a long page and a long passage', () => {
     const page = Array.from({ length: 20_000 }, (_, i) => `word${i}`).join(' ');
     const passage = Array.from({ length: 3_000 }, (_, i) => `word${i + 10_000}`).join(' ');
-    const started = performance.now();
-    expect(locatePassage(page, passage)).not.toBeNull();
-    expect(performance.now() - started).toBeLessThan(250);
+    let found: ReturnType<typeof locatePassage> = null;
+    const ms = cpuMsOf(() => {
+      found = locatePassage(page, passage);
+    });
+    expect(found).not.toBeNull();
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 });
 
@@ -119,9 +123,11 @@ describe('the word diff Show in Page draws', () => {
 
   it('gives up on a word-by-word diff past its bound, all at once', () => {
     const many = Array.from({ length: 600 }, (_, i) => `w${i}`);
-    const started = performance.now();
-    const steps = wordDiff(many, many);
-    expect(performance.now() - started).toBeLessThan(100);
+    let steps: ReturnType<typeof wordDiff> = [];
+    const ms = cpuMsOf(() => {
+      steps = wordDiff(many, many);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
     expect(steps.filter((s) => s.kind === 'gone')).toHaveLength(600);
     expect(steps.filter((s) => s.kind === 'new')).toHaveLength(600);
   });
