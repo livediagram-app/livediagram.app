@@ -95,6 +95,6 @@ describe('shares in the Inbox read', () => {
     const spy = vi.spyOn(h.db.env.INDEX_DB, 'batch');
     await sharesOf(bo.auth);
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy.mock.calls[0]![0]).toHaveLength(6);
+    expect(spy.mock.calls[0]![0]).toHaveLength(7);
   });
 });
