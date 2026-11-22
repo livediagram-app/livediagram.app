@@ -22,11 +22,13 @@ export function domainsInWords(domains: readonly string[]): string {
   return `${named.slice(0, -1).join(', ')} or ${named[named.length - 1]}`;
 }
 
+// The page only renders in the browser: the gate opens after the arrival resolves the link, never on the server.
+
 /** Inside an embed's frame the accounts site can't show (it refuses framing): its links open in a new tab, and the
  *  embed opens once the frame is reloaded signed in. */
 function framed(): boolean {
   try {
-    return typeof window !== 'undefined' && window.self !== window.top;
+    return window.self !== window.top;
   } catch {
     // A cross-origin parent throws on `top`: that is a frame too.
     return true;
@@ -35,7 +37,6 @@ function framed(): boolean {
 
 /** Where the visitor comes back to after signing in: this very address, so the link opens again. */
 function here(): string {
-  if (typeof window === 'undefined') return '/';
   return window.location.pathname + window.location.search + window.location.hash;
 }
 
