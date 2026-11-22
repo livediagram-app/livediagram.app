@@ -60,32 +60,6 @@ const THREAD_VERBS: readonly InboxVerb[] = ['reply', 'resolve'];
 const DONE: readonly InboxVerb[] = ['done'];
 const SUGGESTION_VERBS: readonly InboxVerb[] = ['accept', 'dismiss'];
 
-/** A verb the app refused: its status and the error code its body named (`{ error }` or `{ code }`), null for
- *  none. */
-export class InboxActionError extends Error {
-  readonly status: number;
-  readonly code: string | null;
-  constructor(status: number, code: string | null) {
-    super(`inbox action: ${status}${code ? ` ${code}` : ''}`);
-    this.name = 'InboxActionError';
-    this.status = status;
-    this.code = code;
-  }
-}
-
-// A refusal's code, from a JSON body of `{ error }` or `{ code }`; null when it has none.
-async function refusalOf(res: Response): Promise<InboxActionError> {
-  let code: string | null = null;
-  try {
-    const b = (await res.json()) as { error?: unknown; code?: unknown } | null;
-    const said = b?.error ?? b?.code;
-    if (typeof said === 'string') code = said;
-  } catch {
-    // Not JSON: the status alone.
-  }
-  return new InboxActionError(res.status, code);
-}
-
 // An item's threads, read once and kept briefly: the pane's thread and Resolve's first comment share one read.
 const LIST_TTL_MS = 30_000;
 const LIST_MAX = 16;
@@ -154,7 +128,8 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
     const res = await c.call(`${c.base}/suggestions/${enc(t.elementId)}/${verb}`, {
       method: 'POST',
     });
-    if (!res.ok) throw await refusalOf(res);
+    // Why it was refused is read only then, from a file of its own (off the Explorer's first load).
+    if (!res.ok) throw await (await import('./inbox-refusal')).refusalOf(res);
   };
 
   return {

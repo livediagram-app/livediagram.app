@@ -7,32 +7,19 @@
 // row leaves (the pane's `onGone`) and the pane moves on as after Resolve; refused, the pane says why and the row
 // stays. Everything shown is other people's text, drawn as text, never as HTML.
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { Button, Tooltip } from '@liveworkspace/ui';
-import { InboxActionError } from '../../inbox-actions';
+import { InboxActionError } from '../../inbox-refusal';
 import type { InboxActions, InboxTelemetry } from '../../types';
 import { CheckIcon, CloseIcon } from '../../ui/icons';
-import { entryTarget } from './inbox-entry-place';
 import { KBD, PRIMARY, SECONDARY } from './pane-buttons';
+import { entryTarget } from './inbox-entry-place';
 import type { InboxEntry, InboxSuggestionEntry } from './sections';
+import { suggestionOffered } from './suggestion-answer';
 
 type Verb = 'accept' | 'dismiss';
 export type SuggestionFailureKind = 'editor' | 'stale' | Verb;
-
-/** What the pane says when a press fails: the app's 403 (not an Editor), its 409 `suggestion_stale` (the passage
- *  changed since), or anything else. */
-export function suggestionFailureText(f: SuggestionFailureKind): string {
-  switch (f) {
-    case 'editor':
-      return 'Only an Editor can accept or dismiss this.';
-    case 'stale':
-      return 'The page has changed since this was suggested. Open the page to make the change by hand, or dismiss it.';
-    case 'accept':
-      return 'The edit could not be accepted. Try again.';
-    case 'dismiss':
-      return 'The edit could not be dismissed. Try again.';
-  }
-}
 
 /** Why a press failed, from what the app answered. */
 export function suggestionFailureOf(e: unknown, verb: Verb): SuggestionFailureKind {
@@ -80,13 +67,7 @@ export function useSuggestionAnswer({
   // A new row on show: no stale press or error.
   const held = state.key === entry.key ? state : { key: entry.key, busy: null, failed: null };
   const busyRef = useRef(false);
-  const target = entry.kind === 'Suggestion' ? entryTarget(entry) : null;
-  const said = target && actions ? actions.offers(target) : [];
-  const offered =
-    target !== null &&
-    said.includes('accept') &&
-    said.includes('dismiss') &&
-    Boolean(actions?.accept && actions?.dismiss);
+  const offered = suggestionOffered(entry, actions);
   const page = entry.kind === 'Suggestion' ? entry.row.tabName || 'the page' : '';
 
   const answer = useCallback(
@@ -120,6 +101,21 @@ export function useSuggestionAnswer({
   const accept = useCallback(() => answer('accept'), [answer]);
   const dismiss = useCallback(() => answer('dismiss'), [answer]);
   return { offered, busy: held.busy, failed: held.failed, accept, dismiss };
+}
+
+/** What the pane says when a press fails: the app's 403 (not an Editor), its 409 `suggestion_stale` (the passage
+ *  changed since), or anything else. */
+export function suggestionFailureText(f: SuggestionFailureKind): string {
+  switch (f) {
+    case 'editor':
+      return 'Only an Editor can accept or dismiss this.';
+    case 'stale':
+      return 'The page has changed since this was suggested. Open the page to make the change by hand, or dismiss it.';
+    case 'accept':
+      return 'The edit could not be accepted. Try again.';
+    case 'dismiss':
+      return 'The edit could not be dismissed. Try again.';
+  }
 }
 
 /** Accept (e) and Dismiss, for the pane's verbs row. */
@@ -257,5 +253,41 @@ export function SuggestionBody({ entry }: { entry: InboxSuggestionEntry }) {
         Accepting makes this change on the page. Dismissing leaves the page as it is.
       </p>
     </div>
+  );
+}
+
+/** A suggested edit's Accept and Dismiss, and why a press failed, all loaded with this file when a suggestion is
+ *  opened: the verbs in the pane's verbs row, the failure into the reader's slot under it, and Accept handed to the
+ *  reader's `e`. */
+export function SuggestionActions({
+  entry,
+  actions,
+  onGone,
+  announce,
+  onTelemetry,
+  acceptRef,
+  failureSlot,
+}: {
+  entry: InboxSuggestionEntry;
+  actions: InboxActions | undefined;
+  onGone: (key: string) => void;
+  announce: (message: string) => void;
+  onTelemetry?: InboxTelemetry;
+  acceptRef: MutableRefObject<(() => Promise<void>) | null>;
+  failureSlot: HTMLElement | null;
+}) {
+  const answer = useSuggestionAnswer({ entry, actions, onGone, announce, onTelemetry });
+  const { accept, offered } = answer;
+  useEffect(() => {
+    acceptRef.current = offered ? accept : null;
+    return () => {
+      acceptRef.current = null;
+    };
+  }, [acceptRef, accept, offered]);
+  return (
+    <>
+      <SuggestionVerbs entry={entry} answer={answer} />
+      {failureSlot ? createPortal(<SuggestionFailure answer={answer} />, failureSlot) : null}
+    </>
   );
 }

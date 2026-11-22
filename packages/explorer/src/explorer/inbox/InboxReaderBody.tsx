@@ -2,14 +2,19 @@
 
 // The reading pane's prose (InboxReader): the byline that says who and why, and the body under the verbs (the
 // thread and its comments, an action's or a card's note, a form's unseen responses, a suggested edit's change).
+import { lazy, Suspense } from 'react';
 import type { InboxComment } from '../../types';
 import { relativeSince, useNow } from '../../time';
 import { CommentIcon } from '../../ui/icons';
 import { kindWords, siteOf } from '../../words';
 import { CardStatusChip } from '../badges';
 import { CardGlyph, Lead, reasonIcon, reasonTone, type EntryFacts } from './InboxRows';
-import { SuggestionBody } from './SuggestionPane';
 import { firstName, type InboxEntry } from './sections';
+
+// A suggested edit's body loads only when one is opened, off the Explorer's first load.
+const SuggestionBody = lazy(() =>
+  import('./SuggestionPane').then((m) => ({ default: m.SuggestionBody })),
+);
 
 /** Who and why, in a sentence: "Priya mentioned you · 25 mins ago · Task". */
 export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFacts }) {
@@ -182,7 +187,11 @@ export function Body({
       );
     }
     case 'Suggestion':
-      return <SuggestionBody entry={entry} />;
+      return (
+        <Suspense fallback={null}>
+          <SuggestionBody entry={entry} />
+        </Suspense>
+      );
     case 'FormResponses': {
       const r = entry.row;
       return (

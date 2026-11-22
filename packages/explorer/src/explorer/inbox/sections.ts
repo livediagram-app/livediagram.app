@@ -101,15 +101,8 @@ export function inboxBadge(
 /** Everything the Inbox lists: Home's pill, so "Inbox is clear" is never said over an open thread or new responses. */
 export function inboxTotal(data: InboxData | null, viewerId: string | null): number | undefined {
   if (!data) return undefined;
-  const s = inboxSections(data, viewerId);
-  return (
-    s.forMe.length +
-    s.byMe.length +
-    s.forms.length +
-    s.threads.length +
-    s.requests.length +
-    s.suggestions.length
-  );
+  // Every section's rows: each is a list.
+  return Object.values(inboxSections(data, viewerId)).reduce((n, rows) => n + rows.length, 0);
 }
 
 // ---------- Why a row is here ----------------------------------------------------------------------------------
@@ -274,7 +267,7 @@ export function entryFilter(e: InboxEntry): Exclude<InboxFilter, 'all'> {
 }
 
 // The filters offered only while they hold a row (or are the choice).
-const WHILE_LISTED: ReadonlySet<InboxFilter> = new Set(['requests', 'suggestions']);
+const WHILE_LISTED: readonly InboxFilter[] = ['requests', 'suggestions'];
 
 /** The filters the dropdown offers: Access Requests and Suggested Edits only while there is one or it is the choice,
  *  so someone who never shares, or has no agent suggesting edits, never sees them. */
@@ -282,7 +275,7 @@ export function shownFilters(
   counts: Record<InboxFilter, number>,
   chosen: InboxFilter,
 ): readonly InboxFilter[] {
-  return INBOX_FILTERS.filter((f) => !WHILE_LISTED.has(f) || counts[f] > 0 || chosen === f);
+  return INBOX_FILTERS.filter((f) => !WHILE_LISTED.includes(f) || counts[f] > 0 || chosen === f);
 }
 
 // Each row's key: unique per row and stable across reads.

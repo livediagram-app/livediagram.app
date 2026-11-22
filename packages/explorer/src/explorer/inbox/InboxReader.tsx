@@ -11,6 +11,8 @@
 // phone and in the editor's panel the pane takes the list's place, with Back.
 
 import {
+  lazy,
+  Suspense,
   forwardRef,
   useCallback,
   useEffect,
@@ -34,7 +36,12 @@ import { entryPlace, entryTarget, offeredVerbs } from './inbox-entry-place';
 import { Body, Byline } from './InboxReaderBody';
 import { AccessRequestFailure, AccessRequestVerbs, useAccessAnswer } from './AccessRequestPane';
 import { KBD, PRIMARY, SECONDARY } from './pane-buttons';
-import { SuggestionFailure, SuggestionVerbs, useSuggestionAnswer } from './SuggestionPane';
+import { suggestionOffered } from './suggestion-answer';
+
+// A suggested edit's Accept, Dismiss and failure line load only when one is opened, off the Explorer's first load.
+const SuggestionActions = lazy(() =>
+  import('./SuggestionPane').then((m) => ({ default: m.SuggestionActions })),
+);
 
 // Where a row leads lives in ./inbox-entry-place; re-exported so callers' imports stay as they were.
 export { entryPlace, entryTarget, offeredVerbs } from './inbox-entry-place';
@@ -144,14 +151,9 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
   });
   // A suggested edit's Accept and Dismiss, the app's own (./SuggestionPane).
   const suggestion = entry.kind === 'Suggestion' ? entry : null;
-  const suggestionAnswer = useSuggestionAnswer({
-    entry,
-    actions,
-    onGone,
-    announce,
-    onTelemetry: inboxHost?.onTelemetry,
-  });
-  const suggestionVerbs = suggestion !== null && suggestionAnswer.offered;
+  const suggestionVerbs = suggestion !== null && suggestionOffered(entry, actions);
+  const suggestionAccept = useRef<(() => Promise<void>) | null>(null);
+  const [suggestionFailureSlot, setSuggestionFailureSlot] = useState<HTMLDivElement | null>(null);
 
   const run = useCallback(
     async (verb: 'resolve' | 'done') => {
@@ -214,7 +216,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           return true;
         }
         if (suggestionVerbs) {
-          void suggestionAnswer.accept();
+          void suggestionAccept.current?.();
           return true;
         }
         if (!primaryVerb) return false;
@@ -224,7 +226,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
       open: () => openRef.current?.closest('a')?.click(),
       focusTitle: () => titleRef.current?.focus(),
     }),
-    [canReply, primaryVerb, run, access, answer, suggestionVerbs, suggestionAnswer],
+    [canReply, primaryVerb, run, access, answer, suggestionVerbs],
   );
 
   const team = entry.row.itemTeamId ? teamName(entry.row.itemTeamId) : null;
@@ -315,7 +317,19 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           </Button>
         ) : null}
         {access ? <AccessRequestVerbs entry={access} answer={answer} /> : null}
-        {suggestion ? <SuggestionVerbs entry={suggestion} answer={suggestionAnswer} /> : null}
+        {suggestion ? (
+          <Suspense fallback={null}>
+            <SuggestionActions
+              entry={suggestion}
+              actions={actions}
+              onGone={onGone}
+              announce={announce}
+              onTelemetry={inboxHost?.onTelemetry}
+              acceptRef={suggestionAccept}
+              failureSlot={suggestionFailureSlot}
+            />
+          </Suspense>
+        ) : null}
         <Link
           href={href}
           onClick={() => inboxHost?.onTelemetry?.('Selected', entry.kind)}
@@ -331,7 +345,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         </Link>
       </div>
       {access ? <AccessRequestFailure entry={access} answer={answer} /> : null}
-      {suggestion ? <SuggestionFailure answer={suggestionAnswer} /> : null}
+      {suggestion ? <div ref={setSuggestionFailureSlot} className="contents" /> : null}
       {failed && failed !== 'reply' ? (
         <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
           {failed === 'resolve' ? 'Couldn’t resolve this thread.' : 'Couldn’t mark this done.'} Try

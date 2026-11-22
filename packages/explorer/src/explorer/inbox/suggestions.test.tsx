@@ -174,7 +174,7 @@ describe('a suggestion in the Inbox', () => {
     expect(row.querySelector('[data-inbox-reason="suggestion"]')).toBeTruthy();
     const pane = document.querySelector('[data-inbox-reader="Suggestion"]') as HTMLElement;
     expect(within(pane).getByText('Claude suggested an edit')).toBeTruthy();
-    expect(within(pane).getByText('The rota moved to Tuesdays.')).toBeTruthy();
+    expect(await within(pane).findByText('The rota moved to Tuesdays.')).toBeTruthy();
     const removed = pane.querySelectorAll('[data-inbox-suggestion-removed]');
     const added = pane.querySelectorAll('[data-inbox-suggestion-added]');
     expect([...removed].map((l) => l.textContent)).toEqual(['−Removed: On call runs on Mondays.']);

@@ -442,7 +442,6 @@ export function Lead({
     return (
       <span
         aria-hidden
-        data-inbox-agent=""
         className={`mt-0.5 inline-flex shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600 ring-1 ring-inset ring-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:ring-violet-500/30 ${size}`}
       >
         <SparkleIcon size={compact ? 16 : 18} />
