@@ -6,6 +6,7 @@ import {
   type ExportCommentsResult,
   type ExportQuery,
   type ExportResult,
+  type PutAwayRefusal,
 } from '@liveworkspace/index-app';
 import { tellSourceChanged } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
@@ -532,7 +533,7 @@ export class DocumentRoom extends DurableObject<Env> {
     return this.standing.take(standing);
   }
 
-  takeGrantStanding(grant: StandingGrant): Promise<void> {
+  takeGrantStanding(grant: StandingGrant): Promise<PutAwayRefusal | null> {
     return this.standing.takeGrant(grant);
   }
 
