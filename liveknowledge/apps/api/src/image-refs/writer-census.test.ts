@@ -47,6 +47,10 @@ const KNOWN_WRITERS: Record<string, number> = {
   // taken off its body by the daily upkeep. It adds no image; references only the draft placed stay until the page's
   // next save replaces the set, so an image is kept a little longer, never reaped early.
   'api/src/document-room/draft-upkeep.ts': 1,
+  // The page Trash (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page Trash"): the purges, Delete
+  // Forever and Empty Trash delete trashed tabs, whose references go with them by their foreign key; a restore at the
+  // top level takes `$.parent` off a body, which changes no element.
+  'api/src/document-room/page-trash.ts': 6,
   // The test database's stand-in for a document's purge (its object deletes everything it stores); the
   // references go with the tabs by their foreign key.
   'api/src/test-sqlite-d1.ts': 1,

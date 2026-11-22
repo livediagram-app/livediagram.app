@@ -164,6 +164,22 @@ describe('Page Health', () => {
     expect(screen.getByText('1,400')).toBeTruthy();
   });
 
+  // approval.md "Where it shows" (owner 2026-11-21): under Review Period, Request Approval for a page never sent;
+  // nothing there once one is asked for (the Approval section holds it).
+  it('shows Approval under Review Period: Request Approval, Not Requested, or nothing', () => {
+    const onRequest = vi.fn();
+    const { rerender } = render(<Rail {...props({ approvalRow: { onRequest } })} />);
+    const rows = [...document.querySelectorAll('dt')].map((d) => d.textContent);
+    expect(rows.indexOf('Approval')).toBe(rows.indexOf('Review Period') + 1);
+    fireEvent.click(screen.getByRole('button', { name: 'Request Approval' }));
+    expect(onRequest).toHaveBeenCalledTimes(1);
+    rerender(<Rail {...props({ approvalRow: { onRequest: undefined } })} />);
+    expect(screen.queryByRole('button', { name: 'Request Approval' })).toBeNull();
+    expect(screen.getByText('Not Requested')).toBeTruthy();
+    rerender(<Rail {...props()} />);
+    expect(screen.queryByText('Approval')).toBeNull();
+  });
+
   it.each(['Participant', 'Viewer'])('a %s reads the card and changes nothing', () => {
     render(
       <Rail

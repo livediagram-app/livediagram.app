@@ -45,8 +45,12 @@ export function builtInAi(env: Pick<Env, 'AI' | 'E2E_CLAUDE_STAND_IN'>): BuiltIn
 
 const SLOW = Symbol('slow');
 
-/** One ask, bounded by the timeout: the reply's text (undefined when it holds none), or null when it failed. */
-async function askOnce(client: BuiltInAi, input: object): Promise<string | undefined | null> {
+/** One ask, bounded by the timeout: the reply's text (undefined when it holds none), or null when it failed.
+ *  Describe Structure asks through it too (routes/knowledge-structure-route.ts). */
+export async function askBuiltInOnce(
+  client: BuiltInAi,
+  input: object,
+): Promise<string | undefined | null> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const slow = new Promise<typeof SLOW>((resolve) => {
     timer = setTimeout(() => resolve(SLOW), SETUP_BUILT_IN_TIMEOUT_MS);
@@ -83,7 +87,7 @@ export async function suggestOnBuiltIn(
   let asks = 0;
   while (asks < SETUP_BUILT_IN_ASKS) {
     asks += 1;
-    const text = await askOnce(client, setupBuiltInInput(options, refused));
+    const text = await askBuiltInOnce(client, setupBuiltInInput(options, refused));
     if (text === null) return { answer: 'failed', asks };
     const suggestion = text === undefined ? undefined : parseSetupSuggestion(text);
     if (suggestion) return { answer: 'suggested', asks, suggestion };

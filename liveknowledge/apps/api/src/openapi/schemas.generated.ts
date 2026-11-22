@@ -1351,6 +1351,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "health": {
+        "additionalProperties": false,
+        "description": "The page's Health Score and word (search-and-ask.md \"Sources\"); absent from an older answer.",
+        "properties": {
+          "label": {
+            "$ref": "#/components/schemas/KnowledgeHealthLabel"
+          },
+          "score": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "score",
+          "label"
+        ],
+        "type": "object"
+      },
       "lastBlock": {
         "type": "string"
       },
@@ -1426,6 +1443,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "health": {
+        "additionalProperties": false,
+        "description": "The page's Health Score and word (search-and-ask.md \"Sources\"); absent from an older answer.",
+        "properties": {
+          "label": {
+            "$ref": "#/components/schemas/KnowledgeHealthLabel"
+          },
+          "score": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "score",
+          "label"
+        ],
+        "type": "object"
       },
       "lastBlock": {
         "type": "string"
@@ -5612,6 +5646,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "description": "The passage's first block on its page: where the page opens when this side is the one to fix.",
         "type": "string"
       },
+      "health": {
+        "additionalProperties": false,
+        "description": "The page's Health Score: the higher side is the likelier right (ai-knowledge.md \"Pages that disagree\").",
+        "properties": {
+          "label": {
+            "$ref": "#/components/schemas/KnowledgeHealthLabel"
+          },
+          "score": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "score",
+          "label"
+        ],
+        "type": "object"
+      },
       "passageId": {
         "type": "string"
       },
@@ -5796,6 +5847,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "KnowledgeHealthCounts": {
     "additionalProperties": false,
     "properties": {
+      "average": {
+        "description": "The average Health Score of every page, a whole number; absent with no pages, and from an older api (and on Home's summary, which does not score).",
+        "type": "number"
+      },
       "neverVerified": {
         "type": "number"
       },
@@ -5817,6 +5872,28 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgeHealthFactorName": {
+    "enum": [
+      "verification",
+      "freshness",
+      "owner",
+      "length",
+      "structure",
+      "links",
+      "issues",
+      "use"
+    ],
+    "type": "string"
+  },
+  "KnowledgeHealthLabel": {
+    "description": "A page's Health Score (verification.md \"Health Score\"), as agents and Ask read it: 0 to 100, its word, the factor that lost the most, and each factor's points of its maximum with what would raise it when short.",
+    "enum": [
+      "healthy",
+      "fair",
+      "needs-work"
+    ],
+    "type": "string"
+  },
   "KnowledgeLineSpacing": {
     "enum": [
       "compact",
@@ -5824,6 +5901,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "relaxed"
     ],
     "type": "string"
+  },
+  "KnowledgeLowHealthPage": {
+    "additionalProperties": false,
+    "description": "One of Knowledge Health's pages with low health.",
+    "properties": {
+      "label": {
+        "$ref": "#/components/schemas/KnowledgeHealthLabel"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "score": {
+        "type": "number"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tab",
+      "title",
+      "score",
+      "label",
+      "reason"
+    ],
+    "type": "object"
   },
   "KnowledgeMostRead": {
     "additionalProperties": false,
@@ -5899,6 +6005,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "health": {
         "$ref": "#/components/schemas/KnowledgeHealthCounts"
       },
+      "lowHealth": {
+        "description": "Pages With Low Health: the 5 lowest under the Healthy line; absent from an older api.",
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeLowHealthPage"
+        },
+        "type": "array"
+      },
       "questions": {
         "items": {
           "$ref": "#/components/schemas/KnowledgeQuestion"
@@ -5967,6 +6080,53 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hasAi",
       "reviewEmails",
       "reads"
+    ],
+    "type": "object"
+  },
+  "KnowledgePageHealth": {
+    "additionalProperties": false,
+    "properties": {
+      "factors": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "factor": {
+              "$ref": "#/components/schemas/KnowledgeHealthFactorName"
+            },
+            "max": {
+              "type": "number"
+            },
+            "points": {
+              "type": "number"
+            },
+            "raise": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "factor",
+            "points",
+            "max"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "label": {
+        "$ref": "#/components/schemas/KnowledgeHealthLabel"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "score": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "score",
+      "label",
+      "reason",
+      "factors"
     ],
     "type": "object"
   },
@@ -6184,6 +6344,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "health": {
+        "$ref": "#/components/schemas/KnowledgePageHealth",
+        "description": "The page's Health Score, on `read_page` and `get_context` (not the tree's rows)."
+      },
       "reviewAt": {
         "type": "number"
       },
@@ -6363,6 +6527,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "health": {
+        "$ref": "#/components/schemas/KnowledgePageHealth",
+        "description": "For an agent: the page's Health Score."
       },
       "id": {
         "type": "string"
@@ -8241,6 +8409,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "knowledge": {
         "$ref": "#/components/schemas/PageKnowledge"
       },
+      "names": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "The names of the accounts this page names (its creator, its last writer, its editors, its owner, who verified it), by account id, so every reader can name them (verification.md \"Created and Updated\"); absent when none has a name.",
+        "type": "object"
+      },
       "reads": {
         "additionalProperties": false,
         "properties": {
@@ -8257,6 +8432,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "signals": {
+        "$ref": "#/components/schemas/PageHealthSignals",
+        "description": "What the Health Score counts that the editor cannot see itself; absent from an older api."
+      },
       "updated": {
         "$ref": "#/components/schemas/PageAuthorStamp"
       }
@@ -8264,6 +8443,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "knowledge",
       "reads"
+    ],
+    "type": "object"
+  },
+  "PageHealthSignals": {
+    "additionalProperties": false,
+    "description": "The counts Page Health's read adds for the score, which the editor cannot see itself.",
+    "properties": {
+      "backlinks": {
+        "type": "number"
+      },
+      "openConflicts": {
+        "type": "number"
+      },
+      "openThreads": {
+        "type": "number"
+      },
+      "suggestions": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "openConflicts",
+      "openThreads",
+      "suggestions",
+      "backlinks"
     ],
     "type": "object"
   },
@@ -8535,6 +8739,154 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fit"
     ],
     "type": "string"
+  },
+  "PageStructureBlock": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "heading",
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              2,
+              3
+            ],
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "level",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "text",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "callout",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "enum": [
+              "bullets",
+              "numbered",
+              "checklist"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "items"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "const": "table",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "columns"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "One block of a drafted page structure. Plain text throughout."
+  },
+  "PageStructureRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../pages/<tab>/describe-structure` (describe-to-set-up.md \"Describe Structure on a page\"): what the page is for, in the person's words (may be empty when the page has a title), the draft's Title, and `ai: \"built-in\"` when the person chose built-in AI over the team's key.",
+    "properties": {
+      "ai": {
+        "$ref": "#/components/schemas/AskAiChoice"
+      },
+      "purpose": {
+        "type": "string"
+      },
+      "title": {
+        "description": "The draft's Title, when it is not yet the saved name; absent: the saved name.",
+        "type": "string"
+      }
+    },
+    "required": [
+      "purpose"
+    ],
+    "type": "object"
+  },
+  "PageStructureResponse": {
+    "additionalProperties": false,
+    "description": "A drafted structure for one empty page, and which AI answered. Nothing is written by the route.",
+    "properties": {
+      "blocks": {
+        "items": {
+          "$ref": "#/components/schemas/PageStructureBlock"
+        },
+        "type": "array"
+      },
+      "provider": {
+        "$ref": "#/components/schemas/KnowledgeSetupProvider"
+      }
+    },
+    "required": [
+      "blocks",
+      "provider"
+    ],
+    "type": "object"
   },
   "PageSummary": {
     "additionalProperties": false,

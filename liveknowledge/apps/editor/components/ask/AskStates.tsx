@@ -40,7 +40,9 @@ export function SearchPagesButton({
   );
 }
 
-function StateShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
+/** A state's frame: the view's scroll column, or nothing extra inside a gate's dialog (`bare`). Connect's states
+ *  share it (components/connect/ConnectSignedOut.tsx). */
+export function StateShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
   // Bare: inside the Ask gate's dialog (AskGate), which is its own frame.
   if (bare) return <div className="pb-2">{children}</div>;
   return (
@@ -50,7 +52,7 @@ function StateShell({ children, bare = false }: { children: ReactNode; bare?: bo
   );
 }
 
-const ACTIONS = 'flex flex-wrap items-center justify-center gap-2';
+export const STATE_ACTIONS = 'flex flex-wrap items-center justify-center gap-2';
 
 /** No key, and no built-in AI on this server (a fork without the binding): only the team's key can answer. */
 export function AskNoAi({
@@ -75,7 +77,7 @@ export function AskNoAi({
             : "This server has no built-in AI, so Ask runs on your team's own key, which an Editor adds. Search works without it."
         }
       >
-        <div className={ACTIONS} data-ask-state="no-ai">
+        <div className={STATE_ACTIONS} data-ask-state="no-ai">
           {manageAi ? (
             <Button
               variant="primary"
@@ -108,7 +110,7 @@ export function AskSignedOut({
         title="Sign In to Ask"
         description="Every answer runs on an AI with daily limits, so Ask is off for anyone who is not signed in, a share link's visitor included. Search works as it is."
       >
-        <div className={ACTIONS} data-ask-state="signed-out">
+        <div className={STATE_ACTIONS} data-ask-state="signed-out">
           <a href={signInHref} className={buttonClassName({ variant: 'primary', size: 'sm' })}>
             Sign In
           </a>
@@ -127,7 +129,7 @@ export function AskOffline() {
         title="No Ask in an Offline Knowledgebase"
         description="This knowledgebase is kept in this browser, and Ask answers on a server that holds the team's key. Search works here as it is."
       >
-        <div className={ACTIONS} data-ask-state="offline">
+        <div className={STATE_ACTIONS} data-ask-state="offline">
           <SearchPagesButton variant="ghost" />
         </div>
       </EmptyState>

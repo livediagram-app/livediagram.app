@@ -107,15 +107,71 @@ Web](publishing.md)): its "public site", never its "Public".
 - **Search** stands at the sidebar's head, under the knowledgebase's name ([Search and Ask](search-and-ask.md)).
 - **Duplicate** copies the page beside it, under the same parent, without its subpages.
 - **Copy Link** copies the page's address: the knowledgebase's, with the page in its fragment (`#t=<page>`).
-- **Delete** removes the page and its subpages after one confirmation that names the count ("Delete Release Process
-  and 3 Subpages?"). There is no page trash: Undo brings them back, and the confirmation says so. The last page is
-  never deleted, and a locked page is unlocked first. Links to a deleted page show struck through with "Deleted
-  Page" ([Links and embeds](links-and-embeds.md)).
+- **Delete** moves the page and its subpages to the knowledgebase's [Trash](#the-page-trash) after one confirmation
+  that names the count ("Move Release Process and 3 Subpages to the Trash?", its button Move to Trash). The
+  confirmation says they can be restored from the Trash for 30 days, and Undo brings them straight back. The last
+  page is never deleted, and a locked page is unlocked first. Links to a page in the Trash show struck through with
+  "In the Trash"; to a page deleted for good, "Deleted Page" ([Links and embeds](links-and-embeds.md)). An Offline
+  knowledgebase has no Trash (it has no server to keep one): its Delete removes the pages, and Undo brings them back.
 - **Breadcrumb:** the page's ancestors sit above its Title, at the head of the writing's column; each is a link. It
   shows as soon as a page with a parent opens, whether or not the page has a title yet. A top-level page has none.
   Nothing else stands in that row. Not shown on a phone, whose column has no room for it.
 - On a phone the tree is a sheet opened from a Pages button in the top bar, its rows 44 px tall.
 - Whoever is on a page shows in its row, as they showed on its tab.
+
+## The page Trash
+
+Owner 2026-11-21: "I deleted a page and expected to see a trash option above the new page section in the left
+sidebar". A deleted page waits in its knowledgebase's **Trash** for 30 days, whole, and comes back from it as it was.
+This is the knowledgebase's own Trash of pages, beside the platform's Trash of whole knowledgebases (the Explorer's),
+and the two never mix: a page is never listed in the Explorer, and a knowledgebase is never listed here.
+
+- **What it keeps.** A page in the Trash keeps everything the knowledgebase holds of it: its writing, its place
+  (its parent and its place among its siblings), its cover and icon, its owner and verification, its approval, its
+  comment threads and its versions. A connected file's row under it is not a page and is removed with it, as Remove
+  from Sidebar removes one; it is connected again after a restore. A page shared in from another knowledgebase
+  leaves as it does today, with no Trash.
+- **Where it is.** A **Trash** row with a trash icon is the last item in the page list, after the last page and
+  scrolling with the pages, in the sidebar and in the phone's Pages sheet. It shows only while the Trash holds pages
+  (owner 2026-11-21), with its count a badge at its right (the pages a person sees in the Trash, a subpage counted
+  with its page); an empty Trash shows no row, and a link to a trashed page still opens it. It is absent for a Viewer, a link confined to one page, a
+  Community visitor, an embed and an Offline knowledgebase. On the rail, it is an icon button under New Page.
+- **The Trash** opens over the page as a centred dialog (a sheet on a phone), "Trash", with a note that pages wait
+  here for 30 days and then are removed for good. Each page put in the Trash at once with its subpages is one row:
+  its name, "and 3 Subpages" under it when it took some, who moved it there and when ("Deleted by Ana, 3 Nov"), the
+  days it has left ("12 days left"), **Restore** and **Delete Forever**. Newest first. An Editor has **Empty Trash** in
+  the dialog's foot. Empty, it is an empty state with its illustration: "No Pages in the Trash", "Deleted pages wait
+  here for 30 days."
+- **Restore** puts the page and its subpages back where they stood: under their old parent, at their old place
+  among its subpages. When that parent is no longer in the knowledgebase (deleted for good, or itself in the Trash),
+  the page comes back at the top level, and a toast says so ("Restored Release Process at the top level: its parent
+  page is gone"). A restore past the 500-page limit is refused and says why. Everyone with the knowledgebase open
+  sees the pages come back.
+- **Delete Forever** removes the page and its subpages for good, after a confirmation ("Delete Release Process
+  forever?", "This cannot be undone.", its button Delete Forever, destructive). **Empty Trash** does the same to
+  every page in the Trash, after its own confirmation.
+- **How long.** A page is removed for good 30 days after it was put in the Trash (`PAGE_TRASH_DAYS`). The Trash holds
+  at most 500 pages (`MAX_TRASHED_PAGES`, the knowledgebase's own page limit): putting the 501st in removes the
+  oldest for good. Both are kept by the room as the Trash is read or written, so nothing runs on a schedule for it.
+- **Never seen elsewhere.** A page in the Trash is in no part of the knowledgebase but the Trash: not the tree, not
+  search, Ask or AI Knowledge, not Always in Context, not Home, not Linked From or a link's hover card, not an
+  export, a copy or the Community, and not to an agent (`list_pages`, `read_page`, `search_knowledge`,
+  `get_context`, the CLI). A link to it shows "In the Trash", struck through; pressing it opens the Trash with the
+  page's row marked, for a person who may restore it; for anyone else it reads as "Deleted Page" and goes nowhere.
+- **Undo** of the delete in the editor that made it still brings the pages straight back, and takes them out of the
+  Trash. A save of a trashed page from another editor still open on it (a peer who was writing in it as it went)
+  brings that page back too, with their writing, rather than losing it.
+- **Who:**
+
+  | Action                            | Editor | Participant | Viewer |
+  | --------------------------------- | ------ | ----------- | ------ |
+  | Move a page to the Trash (Delete) | yes    | yes         | no     |
+  | See the Trash, Restore a page     | yes    | yes         | no     |
+  | Delete Forever, Empty Trash       | yes    | no          | no     |
+
+  A link confined to one page and a Community visitor never see it. An agent's page delete (the MCP server's
+  `delete_document` with a page, the CLI's `tab rm`, `DELETE .../tabs/<page>`) also moves the page to the Trash, and
+  says so in its result; an agent never lists, restores or empties the Trash, which is a person's in the editor.
 
 ## The knowledgebase's menu
 
@@ -181,7 +237,9 @@ Participant never manages who has access.
 | Read pages, follow links, search                                | yes    | yes         | yes    |
 | Edit a page: Edit, co-edit the draft, Save, Cancel, Discard     | yes    | yes         | no     |
 | Comment (margin notes, threads at the page's foot)              | yes    | yes         | no     |
-| Add, rename, move, duplicate, delete pages                      | yes    | yes         | no     |
+| Add, rename, move, duplicate, delete pages (to the Trash)       | yes    | yes         | no     |
+| See the page Trash, restore a page from it                      | yes    | yes         | no     |
+| Delete a page forever, Empty Trash                              | yes    | no          | no     |
 | Set, change or remove a page's cover                            | yes    | yes         | no     |
 | Verify a page, change its owner, set Always in Context          | yes    | yes         | no     |
 | Request Approval; Approve or Reject another's request           | yes    | yes         | no     |

@@ -16,6 +16,7 @@ import {
   lucideLock,
   lucideLogIn,
   lucideMessagesSquare,
+  lucidePlug,
   lucidePlus,
   lucideRotateCcw,
   lucideSearch,
@@ -35,6 +36,7 @@ import { lucideGlyph } from '@liveknowledge/ui';
 export const PagesViewIcon = lucideGlyph(lucideFileText, 16);
 export const AskViewIcon = lucideGlyph(lucideMessagesSquare, 16);
 export const AiViewIcon = lucideGlyph(lucideSparkles, 16);
+export const ConnectViewIcon = lucideGlyph(lucidePlug, 16);
 
 export const SendIcon = lucideGlyph(lucideArrowUp, 16);
 export const StopIcon = lucideGlyph(lucideSquare, 14);

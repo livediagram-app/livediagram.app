@@ -29,6 +29,21 @@ describe('the draft bar', () => {
     expect(container.innerHTML).toBe('');
   });
 
+  // editing.md "The buttons" (owner 2026-11-21): Zen Mode to the right of Edit while reading, never while editing.
+  it('offers Zen Mode right of Edit while reading, and not while editing', () => {
+    const onZen = vi.fn();
+    const { rerender } = render(<PageEditBarView {...props({ onZen })} />);
+    const edit = screen.getByRole('button', { name: /Edit/ });
+    const zen = screen.getByRole('button', { name: 'Zen Mode' });
+    expect(edit.compareDocumentPosition(zen) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(zen);
+    expect(onZen).toHaveBeenCalled();
+    rerender(<PageEditBarView {...props({ onZen, editing: true })} />);
+    expect(screen.queryByRole('button', { name: 'Zen Mode' })).toBeNull();
+    rerender(<PageEditBarView {...props()} />);
+    expect(screen.queryByRole('button', { name: 'Zen Mode' })).toBeNull();
+  });
+
   it('shows Cancel and Save while editing, and nothing to say while the draft is the saved page', () => {
     const p = props({ editing: true });
     render(<PageEditBarView {...p} />);

@@ -71,19 +71,19 @@ export function PageTreeMenu() {
   );
 }
 
-/** The confirmation before a page with subpages is deleted: it names the count and says Undo brings them back. */
+/** The confirmation before a page with subpages is deleted: it names the count and says the Trash keeps them. */
 export function DeletePageConfirm() {
   return (
     <Scene w={W} h={130} bg="plain">
-      <DialogCard x={70} y={14} w={280} h={102} title="Delete Runbooks and 3 Subpages?">
-        <Label x={84} y={56} size={8} tone="body">
-          The page and its subpages are removed for everyone.
+      <DialogCard x={40} y={14} w={340} h={102} title="Move Runbooks and 3 Subpages to the Trash?">
+        <Label x={54} y={56} size={8} tone="body">
+          You can restore them from the Trash for 30 days.
         </Label>
-        <Label x={84} y={68} size={8} tone="body">
-          Undo (Cmd/Ctrl-Z) brings them back.
+        <Label x={54} y={68} size={8} tone="body">
+          Undo (Cmd/Ctrl-Z) brings them straight back.
         </Label>
-        <Btn x={236} y={88} w={44} label="Cancel" />
-        <Btn x={286} y={88} w={50} label="Delete" variant="primary" />
+        <Btn x={226} y={88} w={44} label="Cancel" />
+        <Btn x={276} y={88} w={90} label="Move to Trash" variant="primary" />
       </DialogCard>
     </Scene>
   );

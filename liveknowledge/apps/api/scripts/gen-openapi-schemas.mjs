@@ -48,6 +48,8 @@ export const ROOT_TYPES = [
   'AskEvent',
   'KnowledgeSetupRequest',
   'KnowledgeSetupSuggestion',
+  'PageStructureRequest',
+  'PageStructureResponse',
   'KnowledgeOverviewResponse',
   'KnowledgeEmailResult',
   'ReportGapRequest',

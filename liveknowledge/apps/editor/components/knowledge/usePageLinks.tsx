@@ -35,7 +35,14 @@ import {
   installPageLinkTitles,
   linkedPagesKey,
   pageLinkCss,
+  trashedLinkCss,
 } from '@/lib/knowledge/page-link-titles';
+import {
+  openPageTrash,
+  pageTrashStore,
+  trashedIds,
+  usePageTrashState,
+} from '@/lib/knowledge/page-trash-store';
 import { track } from '@/lib/telemetry';
 import { PageLinkHoverCard } from './PageLinkHoverCard';
 
@@ -60,15 +67,19 @@ export type PageLinks = {
 
 // Every link reads as its page's current title: one set of rules for the page list, written again only when a
 // page's id or name changed (a typing commit changes neither).
+// A page in the Trash reads "In the Trash" (knowledgebases-and-pages.md "The page Trash"), its ids from the Trash as
+// this session last read it.
 function usePageLinkTitles(store: EditorChromeStore | null): void {
   const key = useSyncExternalStore(
     store?.subscribe ?? noSubscribe,
     () => (store ? linkedPagesKey(store.get().tabs) : ''),
     () => '',
   );
+  const trashed = usePageTrashState().pages;
   useEffect(() => {
-    if (store) installPageLinkTitles(pageLinkCss(store.get().tabs));
-  }, [store, key]);
+    if (store)
+      installPageLinkTitles(pageLinkCss(store.get().tabs) + trashedLinkCss(trashedIds(trashed)));
+  }, [store, key, trashed]);
 }
 
 export function usePageLinks(
@@ -138,8 +149,16 @@ export function usePageLinks(
       },
       onOpen: (page) => {
         const now = live.current.store?.get();
-        // A link to a page that is gone goes nowhere.
-        if (!now || !now.tabs.some((t) => t.id === page)) return;
+        if (!now) return;
+        if (!now.tabs.some((t) => t.id === page)) {
+          // A link to a page in the Trash opens the Trash at it, for a session that may restore it; a link to a page
+          // that is gone goes nowhere.
+          if (pageTrashStore.holds(page)) {
+            track('UI', 'Opened', 'PageTrash');
+            openPageTrash(page);
+          }
+          return;
+        }
         track('UI', 'Used', 'PageLink');
         selectPage(now, page);
       },

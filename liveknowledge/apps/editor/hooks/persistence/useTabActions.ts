@@ -38,7 +38,9 @@ import {
 } from '@liveknowledge/document';
 import { withPageTitle } from '@liveknowledge/document';
 import { wantTitleFocus } from '@/lib/page-title-focus';
+import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import {
+  deletePageMessage,
   deletePageTitle,
   pageAfterDelete,
   pageTreeRefusalText,
@@ -342,13 +344,13 @@ export function useTabActions(deps: TabActionsDeps) {
       return;
     }
     const subpages = subpageCount(tabs, id);
+    // A saved knowledgebase keeps a Trash of pages (knowledgebases-and-pages.md "The page Trash"); an Offline one
+    // has none, so its delete is Undo's to take back.
+    const toTrash = documentId !== null && !isOfflineIdSync(documentId);
     const ok = await confirm({
-      title: deletePageTitle(target.name, subpages),
-      message:
-        subpages === 0
-          ? 'The page is removed for everyone. Undo (Cmd/Ctrl-Z) brings it back.'
-          : 'The page and its subpages are removed for everyone. Undo (Cmd/Ctrl-Z) brings them back.',
-      confirmLabel: 'Delete',
+      title: deletePageTitle(target.name, subpages, toTrash),
+      message: deletePageMessage(subpages, toTrash),
+      confirmLabel: toTrash ? 'Move to Trash' : 'Delete',
     });
     if (!ok) return;
     track('Tab', 'Deleted');

@@ -25,6 +25,17 @@ export function pageLinkCss(pages: readonly LinkedPage[]): string {
   return `${live}{color:var(--article-page-link,var(--article-accent));opacity:1;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;cursor:pointer}${titles}`;
 }
 
+/** The rules for the pages in the knowledgebase's Trash (knowledgebases-and-pages.md "The page Trash"): a link to
+ *  one reads "In the Trash", struck through, and can be pressed (it opens the Trash at the page). Only a session that
+ *  may see the Trash reads it, so for anyone else such a link keeps the base look, "Deleted Page". */
+export function trashedLinkCss(ids: readonly string[]): string {
+  if (ids.length === 0) return '';
+  const link = (id: string) => `.article-flow a.article-page-link[data-page=${cssString(id)}]`;
+  const all = ids.map(link).join(',');
+  const words = ids.map((id) => `${link(id)}::before`).join(',');
+  return `${all}{cursor:pointer}${words}{content:"In the Trash"}`;
+}
+
 /** The pages as one string a reader compares by value: a typing commit changes no page's id or name. */
 export const linkedPagesKey = (pages: readonly LinkedPage[]): string =>
   pages.map((page) => `${page.id}\u0000${page.name}`).join('\u0001');

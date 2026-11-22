@@ -298,11 +298,15 @@ describe('the site follows the knowledgebase', () => {
       page('rollbacks', 'Rollbacks', [para('Roll back with one command.')], { parent: 'deploys' }),
     );
     expect((await read(kit, '/kb/handbook')).text).toContain('href="/kb/handbook/rollbacks"');
-    // Deleted, it is gone.
+    // Deleted (to the Trash), it is gone; restored from the Trash, it comes back.
     expect((await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/holidays')).status).toBe(
       204,
     );
     expect((await read(kit, '/kb/handbook/holidays')).res.status).toBe(404);
+    expect(
+      (await kit.call('editor', 'POST', '/api/documents/kb/trash/holidays/restore')).status,
+    ).toBe(200);
+    expect((await read(kit, '/kb/handbook/holidays')).res.status).toBe(200);
   });
 
   it('moves the site to a new address and redirects the old one', async () => {

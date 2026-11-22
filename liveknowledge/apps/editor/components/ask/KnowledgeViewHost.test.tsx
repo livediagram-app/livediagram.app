@@ -1,13 +1,20 @@
 // @vitest-environment jsdom
 
-// The three views (docs/specs/030-knowledgebase/search-and-ask.md "The three views"): the view over the editor. The
+// The views (docs/specs/030-knowledgebase/search-and-ask.md "The views"): the view over the editor. The
 // way between them is the footer's tabs (components/chrome/KnowledgeViewTabs.test.tsx).
 import { act, cleanup, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/dynamic', () => ({
   default: (load: () => Promise<unknown>) => {
-    const name = String(load).includes('AiKnowledgeView') ? 'ai' : 'ask';
+    const source = String(load);
+    const name = source.includes('AiKnowledgeView')
+      ? 'ai'
+      : source.includes('ConnectView')
+        ? 'connect'
+        : source.includes('AskView')
+          ? 'ask'
+          : 'other';
     return () => <div data-testid={`view-${name}`} />;
   },
 }));
@@ -58,6 +65,13 @@ describe('the view over the editor', () => {
     // The footer, whose tabs are the way to another view, stays live.
     expect(screen.getByTestId('bars').hasAttribute('inert')).toBe(false);
     expect(anyModalOpen()).toBe(true);
+  });
+
+  it('shows Connect in its own region', () => {
+    editor();
+    act(() => showKnowledgeView('connect'));
+    expect(screen.getByRole('region', { name: 'Connect' })).toBeTruthy();
+    expect(screen.getByTestId('view-connect')).toBeTruthy();
   });
 
   it.each([

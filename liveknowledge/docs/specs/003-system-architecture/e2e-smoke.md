@@ -284,7 +284,8 @@ there instead: `/v1/messages` is answered as Anthropic's Messages API streams, `
 API does, so one var serves both. Built-in AI (Workers AI) has no door to swap, so under the same var alone the api's
 `builtInAi` posts `{ model, input }` to the stand-in's `/workers-ai/run` instead of the `AI` binding, answered as the
 binding answers (`{ response }`). A description (Describe to Set Up) is answered with a fixed structure of five
-pages (`SETUP_STRUCTURE`), or with text that is no JSON when it holds "not json".
+pages (`SETUP_STRUCTURE`), or with text that is no JSON when it holds "not json"; a page title (Describe Structure
+on a page) with a fixed structure of three headings (`PAGE_STRUCTURE`).
 The door ignores the var unless it names plain HTTP on a loopback port, the var is in no `wrangler.toml` or hosted
 var, and a unit test holds both. The stand-in answers from the request alone: a question sent with passages is
 answered citing the first, one sent with none comes back as a gap, a key containing "refused" is not accepted, and

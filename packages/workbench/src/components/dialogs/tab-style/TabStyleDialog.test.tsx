@@ -2,7 +2,7 @@
 // The shared Tab Style dialog over a fake profile (liveworkspace/docs/specs/011-workbench/tab-style.md): what the
 // profile's surfaces decide, the two frames, the looks carousel and the panels. Each editor's CanvasThemeDialog.test
 // drives it over the real profile.
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WORKBENCH_DEFAULTS, configureWorkbench } from '../../../bindings';
@@ -638,6 +638,24 @@ describe('a profile that names and cuts the dialog', () => {
     open({ tab: 'finish', profile });
     expect(screen.queryByTestId('own-text')).toBeNull();
     expect(screen.getByRole('radio', { name: /Sketch/ })).toBeTruthy();
+  });
+
+  it('draws the Text row’s sample in the font worn now, and each look’s name in its own face', () => {
+    const lora = {
+      ...look('bookish', 'flexible'),
+      font: 'lora',
+    };
+    const withLora = profileWith();
+    withLora.looks = { ...withLora.looks, all: [...LOOKS, lora] };
+    open({ font: 'poppins', profile: withLora });
+    expect(within(button(/^Text:/)).getByText('Aa').style.fontFamily).toContain('Poppins');
+    expect(screen.getByText('Bookish').style.fontFamily).toContain('Lora');
+    // A look with no font of its own keeps the app's face.
+    expect(screen.getByText('Everyday').style.fontFamily).toBe('');
+    cleanup();
+    // The product names the face (a knowledgebase's heading font): it wins over the tab font.
+    open({ font: null, profile: profileWith({ base: { ...base, textFont: 'nunito' } }) });
+    expect(within(button(/^Text:/)).getByText('Aa').style.fontFamily).toContain('Nunito');
   });
 
   it('says a Fine-tune row’s line in the product’s own words', () => {

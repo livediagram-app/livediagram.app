@@ -40,6 +40,12 @@ export function useKnowledgePeople(): {
   const selfName = useEditorChrome((s) => s.selfParticipant.name);
   const selfId = useEditorChrome((s) => s.selfParticipant.id);
   const candidates = useEditorChrome((s) => s.commentMentions.candidates);
+  // Names Page Health reads brought: a new map when one lands, so a name read after first paint shows.
+  const healthNames = useSyncExternalStore(
+    pageKnowledgeStore.subscribe,
+    pageKnowledgeStore.names,
+    pageKnowledgeStore.names,
+  );
   return useMemo(() => {
     const people: KnowledgePerson[] = [];
     if (accountUserId) people.push({ id: accountUserId, name: selfName || 'You' });
@@ -55,14 +61,14 @@ export function useKnowledgePeople(): {
       nameOf: (id) => {
         if (!id) return undefined;
         if (isGuestVerifier(id)) return guestVerifierName(id);
-        const known = names.get(id);
+        const known = names.get(id) ?? healthNames.get(id);
         if (known) return known;
         if (!accountUserId && id === selfId) return guestName(selfName);
         const seen = rosterName(id);
         return seen ? guestName(seen) : undefined;
       },
     };
-  }, [accountUserId, selfName, selfId, candidates]);
+  }, [accountUserId, selfName, selfId, candidates, healthNames]);
 }
 
 export type KnowledgeActions = {

@@ -27,6 +27,7 @@ import {
   VerifiedRowIcon,
   MakerPersonIcon,
 } from './knowledge-icons';
+import { RequestIcon } from './approval/feedback-icons';
 import type { KnowledgePerson } from './usePageKnowledge';
 
 const NO_OWNER = '';
@@ -48,6 +49,12 @@ export type PageHealthCardProps = {
   /** Change, beside the Review Period: absent for anyone who may not change it (anyone but an Editor of the whole
    *  knowledgebase). */
   periodControl?: ReactNode;
+  /** The Approval row under Review Period (approval.md "Where it shows"; owner 2026-11-21), for a page never sent for
+   *  approval: Request Approval for whoever may ask, "Not Requested" for the rest. Absent once one is asked for, or
+   *  while its form is open: the Approval section below holds it then. */
+  approvalRow?: { onRequest: (() => void) | undefined } | undefined;
+  /** The Health Score and its breakdown (PageHealthScore), at the top (verification.md "In Page Health"). */
+  score?: ReactNode;
 };
 
 /** The section label, as On This Page's. */
@@ -385,6 +392,8 @@ export function PageHealthCard({
   onSetOwner,
   onVerify,
   periodControl,
+  approvalRow,
+  score,
 }: PageHealthCardProps) {
   const { owner, verifiedAt, verifiedBy } = trust.fields;
   const ownerName = nameOf(owner);
@@ -405,6 +414,7 @@ export function PageHealthCard({
       className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
     >
       <h2 className={RAIL_LABEL}>Page Health</h2>
+      {score}
       <div className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${tone.wash}`}>
         <div data-page-state={trust.state} className="flex items-center gap-3.5">
           <FreshnessRing state={trust.state} left={freshness(trust, reviewEvery, now)} />
@@ -501,6 +511,23 @@ export function PageHealthCard({
             <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
           )}
         </Row>
+        {approvalRow ? (
+          <Row icon={<RequestIcon />} label="Approval" whole={!!approvalRow.onRequest}>
+            {approvalRow.onRequest ? (
+              <Button
+                variant="secondary"
+                size="xs"
+                data-request-approval=""
+                onClick={approvalRow.onRequest}
+                className="phone:min-h-11"
+              >
+                Request Approval
+              </Button>
+            ) : (
+              <span data-approval-none="">Not Requested</span>
+            )}
+          </Row>
+        ) : null}
       </dl>
     </section>
   );
