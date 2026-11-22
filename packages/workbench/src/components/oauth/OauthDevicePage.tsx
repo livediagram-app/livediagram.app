@@ -37,7 +37,7 @@ import {
   type OauthPagesConfig,
 } from './oauth-chrome';
 import { Callout } from '@liveworkspace/ui/callout';
-import { TokenLimitList } from './TokenLimitList';
+import { TokenLimitListLazy } from './TokenLimitListLazy';
 
 type Consent = {
   kind: 'consent';
@@ -235,7 +235,7 @@ function Device({ config, device }: { config: OauthPagesConfig; device: DeviceSe
             </Callout>
           ) : null}
           {atLimit ? (
-            <TokenLimitList
+            <TokenLimitListLazy
               onFreed={() => {
                 setFreed(true);
                 setStep({ ...step, failed: null });

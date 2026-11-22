@@ -192,6 +192,7 @@ const HELD_AT_100 = [
   'src/lib/oauth-handover.ts',
   'src/lib/oauth-replaced-tokens.ts',
   'src/components/oauth/TokenLimitList.tsx',
+  'src/components/oauth/TokenLimitListLazy.tsx',
 ];
 
 export default defineProject({

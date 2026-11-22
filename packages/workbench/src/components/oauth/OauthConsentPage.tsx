@@ -41,7 +41,7 @@ import {
   type OauthPagesConfig,
 } from './oauth-chrome';
 import { Callout } from '@liveworkspace/ui/callout';
-import { TokenLimitList } from './TokenLimitList';
+import { TokenLimitListLazy } from './TokenLimitListLazy';
 
 // The host, as the line says it: a loopback one in mono, after "back to the app on this computer".
 function Host({ host }: { host: string }) {
@@ -284,7 +284,7 @@ function Consent({ config }: { config: OauthPagesConfig }) {
         </Callout>
       ) : null}
       {atLimit ? (
-        <TokenLimitList
+        <TokenLimitListLazy
           onFreed={() => {
             setFreed(true);
             setStatus('idle');
