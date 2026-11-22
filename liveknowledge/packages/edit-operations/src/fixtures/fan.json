@@ -1,0 +1,97 @@
+{
+  "id": "t",
+  "name": "T",
+  "elements": [
+    {
+      "id": "gw",
+      "type": "shape",
+      "shape": "square",
+      "x": 118,
+      "y": 0,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Gateway"
+    },
+    {
+      "id": "b",
+      "type": "shape",
+      "shape": "square",
+      "x": 0,
+      "y": 154,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Service B"
+    },
+    {
+      "id": "c",
+      "type": "shape",
+      "shape": "square",
+      "x": 236,
+      "y": 154,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Service C"
+    },
+    {
+      "id": "480729a9-825f-4a71-b1f8-00a351be1425",
+      "type": "arrow",
+      "from": {
+        "kind": "pinned",
+        "elementId": "gw",
+        "anchor": "s"
+      },
+      "to": {
+        "kind": "pinned",
+        "elementId": "b",
+        "anchor": "n"
+      },
+      "arrowStyle": "angled",
+      "exactStart": true,
+      "exactEnd": true,
+      "curvePoints": [
+        {
+          "dx": 59,
+          "dy": 0
+        },
+        {
+          "dx": -59,
+          "dy": 0
+        }
+      ]
+    },
+    {
+      "id": "36be27aa-9c82-4755-88ff-61f476f882de",
+      "type": "arrow",
+      "from": {
+        "kind": "pinned",
+        "elementId": "gw",
+        "anchor": "s"
+      },
+      "to": {
+        "kind": "pinned",
+        "elementId": "c",
+        "anchor": "n"
+      },
+      "arrowStyle": "angled",
+      "exactStart": true,
+      "exactEnd": true,
+      "curvePoints": [
+        {
+          "dx": -59,
+          "dy": 0
+        },
+        {
+          "dx": 59,
+          "dy": 0
+        }
+      ]
+    }
+  ],
+  "theme": "brand",
+  "backgroundColor": "#fbfaf7",
+  "backgroundPattern": "grid",
+  "patternColor": "#cbd5e1"
+}

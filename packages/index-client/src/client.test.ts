@@ -35,6 +35,7 @@ describe('constants', () => {
       'document',
       'design',
       'space',
+      'knowledgebase',
     ]);
   });
 

@@ -1,0 +1,333 @@
+# End-to-end tests
+
+A **Playwright** suite that drives the real editor in a real browser, against
+the production build and the real api worker. It is the layer Vitest cannot
+reach ([Testing](testing.md)): unit tests exercise pure helpers, and jsdom
+tests render single hooks and components, but none of them runs the whole
+editor with real layout, real pointer and keyboard input, the static export
+and a round trip through the api and its Durable Objects. Every regression chased by hand in
+that layer (the "maximum update depth" pan-loop report, panel-gating bugs,
+dialog behaviour, a board losing its kind on reload) is the reason a focused
+test lives here.
+
+## When it runs
+
+The suite is a **per-PR merge gate**. It runs from the monorepo's root `e2e.yml` (named **E2E**), which calls
+`e2e-product.yml` for liveknowledge whenever a change reaches its editor, `@liveknowledge/editor` ([docs/ci.md](../../../../docs/ci.md)).
+The workflow's one result job, **E2E**, is a required check on `main` beside **CI** ([CI](testing.md#ci)), so a pull
+request whose change breaks a browser flow cannot merge, and a renamed job or a new shard count needs no ruleset
+change. A post-merge-only run let regressions land unseen and kept `main` red for hours at a time while later pull
+requests inherited the failure.
+
+The price of the gate is the run's wall time, which runs beside CI's jobs and **stays within 5 minutes**, so the
+gate never holds back a merge for longer than CI itself does. The run needs no secret, no Cloudflare account and no
+deployed environment: the stack is local to the runner ([The stack under test](#the-stack-under-test)), so every
+pull request runs it.
+
+`e2e.yml` runs on:
+
+- **`pull_request`**: every pull request, the gate;
+- **push to `main`**: the merged result, since a pull request is tested against the `main` it
+  was opened on; and
+- **`workflow_dispatch`**: by hand against any branch; such a run is not attached to a pull
+  request, so it never stands in for the required check.
+
+A new push to a pull request cancels its run in flight (`concurrency`); on `main` every commit's run goes to the end.
+
+It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in perf and WebKit projects),
+spread over parallel jobs so the wall time is the slowest job, not the sum:
+
+| Job                 | Builds                                       | Runs                                                                                                    |
+| ------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Smoke build**     | live                                         | nothing: uploads the exports the shards serve                                                           |
+| **Smoke shard i/3** | nothing: downloads the Smoke build's exports | `test:e2e:smoke --shard=i/3`: a third of the `chromium` project's tests                                 |
+| **Sites audit**     | live, help, then marketing                   | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
+| **Signed-in specs** | live with sign-in on (`build:signed-in`)     | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
+
+Only the sites audit opens help and marketing, so only its job pays for their builds. Marketing builds after the
+others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
+app's Turbopack cache, and beside the app's own build the two corrupt it.
+Locally `test:e2e` runs the `chromium` and `sites` projects together, as one run.
+
+Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
+
+- **Chromium only** (`--project=chromium`); no Firefox / WebKit.
+- **Playwright's container image** (`mcr.microsoft.com/playwright:v<version>-noble`) runs the job:
+  Chromium and its system libraries come with it, so no run downloads a browser or apt-installs its
+  dependencies. The tag is the locked `@playwright/test` version; the workflow's first check fails,
+  naming the tag to set, when a Playwright bump leaves the image behind.
+- **Focused tests, not a matrix.** Each spec file proves what only a browser
+  can show for one feature; breadth and edge cases stay in unit tests, where
+  they are cheap.
+- **A failed create resumes.** `create-retry.spec.ts` refuses the content's first `POST` on `/new?blank=1` (route interception), presses Try again and checks the document opens and survives a reload, and that the index answered the Retry's create with 409 `item_exists`: the resume in `createOrResumeItem` (`@liveworkspace/index-client`), without which the Retry fails again.
+- **Parallel everywhere** (`fullyParallel`): 4 workers in CI, one per vCPU of the GitHub runner,
+  and Playwright's default locally. Tests stay independent because each opens a fresh browser
+  context, so a fresh guest owner whose documents no other test sees.
+- **Guests as production makes them**: a spec seeds through a guest token from the stack's accounts
+  stand-in (`mintGuest`, `adoptGuest`), with the index's grant on each document (`documentGrant`, `documentHeaders`, `seedDocumentItem`;
+  `pageOwnerHeaders` for calls made inside the page, `apps/editor/e2e/fixtures.ts`).
+- **Every test opens as a returning guest.** A browser with no guest token leaves `/new` (and the Explorer and the
+  document) for the guest handoff and comes back, and a check that lands during that round trip (a `page.evaluate`,
+  `untilHydrated`, an `expect.poll` over the page) fails with "Execution context was destroyed". So the shared `test`
+  fixture mints a guest for each test's browser context and puts its token where the app keeps it before any page
+  loads, as a returning guest holds it. A spec's own `adoptGuest` (and `serverNewUrl`'s) wins over it. Contexts a spec
+  makes itself (`browser.newContext()`, a share link's visitor) stay fresh unless the spec adopts a guest there. The
+  first visit has one test of its own (`smoke.spec.ts`, under `test.use({ freshVisitor: true })`), which waits for the
+  round trip to come back before it checks the page. Signed-in and workbench runs skip it: their pages sign in.
+  `e2e/guest-first.test.ts` holds every spec that opens a page to the shared fixture, and `freshVisitor` to that one
+  test.
+- **A guest's `/new` is Offline**, as in production ([Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)).
+  A spec that needs its new document on the server (it seeds it through the api with `seedTab`, watches the api's
+  saves or responses, or shares it) opens `/new` through `serverNewUrl`, which adopts a minted guest and adds a
+  `?folder=` of theirs, the placement that makes `/new` create on liveknowledge whoever is creating.
+  `startBlankDocument` and `openBlankPage` do it for every caller. A spec that only needs a canvas takes the guest's
+  own `/new`.
+- **Sharded** (`--shard=i/3`, the matrix in `e2e-product.yml`): Playwright splits the `chromium` document's
+  tests evenly by count across three jobs; each boots its own stack on the same exports, so shards
+  share nothing but the build.
+- **Built once per run.** The Smoke build job builds the guest editor once, saves its build cache, and uploads the static exports as one
+  artifact (`liveknowledge-smoke-build`, kept a day); each shard downloads it instead of building.
+- **Shards sized to the floor, not beyond.** Every shard still pays about a minute before its first
+  test (container, install, the download), and the Sites audit, which cannot be split, takes
+  about 4.5 minutes. The shard count is the smallest that keeps the slowest shard near that floor
+  within its 5-minute budget: more shards finish little sooner, pay that minute again, and each takes
+  one of the account's 20 concurrent runner slots that every other pull request's run waits on.
+  When the suite grows past the budget, the shard count grows with it.
+- **No type check in the builds**: `e2e-product.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
+  own type check (`typescriptConfig()` in `@liveworkspace/next-config`, shared by the five Next
+  apps). CI's Checks job already type-checks every app with `tsc --noEmit` against the
+  same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
+- **A warm build cache**: each job that builds restores Turbopack's build cache (`.next/cache`) from the latest
+  run on `main` before it builds, so it compiles only what changed
+  (`.github/actions/next-cache-restore`, the one place its key is made). Only runs on `main` save it,
+  keyed by version, lockfile and commit, one copy per set of builds (`liveknowledge-live`,
+  `liveknowledge-live-signed-in`, `liveknowledge-sites`); pull requests read it and never write their own, so they cannot evict it. Turbopack
+  re-checks every input, so a cache from an older commit only ever saves work, and a lockfile change
+  starts cold. Each restore logs `[next-cache] <name>: restored <key>` or a miss. A cache only ever
+  saves time: every build runs through `scripts/next-build-cold-retry.sh`, which, when a build fails
+  on a restored cache, warns, wipes it and builds once more from cold. Bumping the key's version
+  discards every cache saved so far.
+- **No dependency cache** in the e2e jobs: in the container its store path never matches a saved
+  cache, so `setup-node`'s `cache: pnpm` only cost a 75-second save per job, while a cold
+  `pnpm install` takes about 15 seconds.
+- `retries: 1` in CI, a 30-second per-test timeout and a 10-minute job timeout (twice the budget),
+  so a hung run fails fast instead of burning minutes.
+- **Traces of first failures** in CI (`retain-on-first-failure`): a test that fails and then passes
+  on retry still keeps the trace of its failing attempt, so a flaky test can be read rather than
+  guessed at. Each invocation keeps its own artefacts (`test-results` and `playwright-report`, or
+  their `-signed-in` twins), since a run clears its output folder when it starts. `e2e-product.yml`
+  uploads them whenever any holds a trace, a timed-out run included, one artefact per job
+  (`liveknowledge-playwright-report-shard-i`, `liveknowledge-playwright-report-sites`, `liveknowledge-playwright-report-signed-in`). Locally a trace is kept for a
+  retry only.
+- **No waiting on what is not coming.** A helper waits for a thing only when the app owes it:
+  `dismissQuickTour` does nothing, since no tour offers itself (it stays so the specs that call it need not change). `seedTab` returns once the seeded elements have
+  finished popping in (`settledBox`), so a test never measures or drags a box that is still changing.
+
+## The stack under test
+
+The suite runs against the **real production build**, the editor app's
+`output: 'export'` static bundle plus the real api worker on local Durable Objects,
+so it exercises exactly what ships, not a dev-only code path.
+The stack serves whatever `apps/editor/out` holds and never rebuilds it, so locally run
+`pnpm --filter @liveknowledge/editor build` first; an old `out/` fails audits for code changed after it was built.
+
+`scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
+
+1. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
+   each document's content in its own local Durable Object (no migration to apply).
+   `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
+   events pipe).
+2. **live**: the static `apps/editor/out` served by a minimal Node
+   server that reproduces the three things the production router +
+   editor worker do (so clean routes and the document placeholder resolve
+   identically to prod):
+   - strip the `/live` `assetPrefix` so `/live/_next/*` resolves to
+     `out/_next/*`;
+   - rewrite every `/document/<id>` to the single placeholder
+     `out/document/[id].html` ([Dedicated route for new-document creation](../007-editor/new-document-route.md): one HTML backs every document
+     URL);
+   - proxy `/api/*` to the api worker, WebSocket upgrades included (the realtime room), so the app is same-origin (no CORS
+     surprises, mirroring the router);
+   - serve `liveworkspace/apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
+   - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
+     file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
+     ETag, 304 on a match), then through the router's rules, run from the router's own
+     `../packages/sites/src/cache-policy.ts` (pages `no-store`, build assets immutable, a missing asset a
+     plain-text 404). `E2E_CACHE_POLICY=off` serves without the router's rules;
+   - simulate a deploy for the stale build specs: `POST /__e2e/deploy` swaps in a copy of the
+     build whose chunk files all carry new names (every reference rewritten), and
+     `POST /__e2e/assets-out-of-cache` serves build assets `no-store` until then, so the browser
+     keeps a page but not its chunks. Both hold only for the browser context that asked (a cookie
+     each, `e2e-deploy` and `e2e-assets-out-of-cache`, which `page.request` shares with its page):
+     the suite runs in parallel, and the tests beside it keep the build they loaded.
+3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3613`),
+   since marketing owns `/` in production.
+
+The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
+`E2E_EDITOR_PORT`, `E2E_API_PORT`); see
+[Local development](../../development/local-development.md).
+
+Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
+developer with `pnpm dev` already running (live :3602 + api :9287) runs
+`pnpm --filter @liveknowledge/editor test:e2e` against that stack with no
+extra boot.
+
+## Signed-in specs
+
+Sign-in is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
+guest-mode `out/` can never show a signed-in user. The specs in `apps/editor/e2e/signed-in/` run
+against a second export, `apps/editor/.next/out-signed-in/` (inside `.next/`, so every ignore and
+source scanner already skips it), built by `pnpm build:signed-in` with sign-in on and
+`NEXT_PUBLIC_E2E_AUTH=1`, which swaps the accounts bridge for the test-only `E2EAuthBridge`. Each
+spec puts a session in `localStorage` (`installSession` in `e2e/signed-in/session.ts`) before the
+page loads, so a chosen user (name, email) is signed in with no accounts Worker, secret or network.
+
+`pnpm --filter @liveknowledge/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
+`signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
+(live `:3615`, api `:9315`, marketing `:3616`), so a guest stack already up on `:3602` is never
+reused for it. The stack also stands in for the accounts Worker (`E2E_ACCOUNTS_STUB=1`): it makes a
+signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
+starts the api worker with `ACCOUNTS_URL` and `API_RESOURCE` pointing at it, and mints an access
+token with that issuer and audience for any test account on `/e2e/token?sub=user_…`, which
+`installSession` hands the bridge. API tokens are the liveworkspace account's too: a spec seeds one at
+`POST /e2e/accounts/__seed/token` (its `secret` is the `lwt_…` an agent sends), and the api checks it through the
+account API's `tokens/verify` as in production. Display names are the account's profiles: the api writes and reads them
+through the account API's `profiles/write` and `profiles/read`, so an agent's changes and comments carry the name the
+person set (`packages/auth-client/src/e2e-token-stand-in.ts` answers both, shared by every app's stack). So a stub account is a real verified account to the api and the
+realtime room, and two or three stub browsers can collaborate in one document. A test that changes an
+account's synced settings takes a fresh id (`freshUserId`), since the stack's state outlives a test. `e2e-product.yml` builds and runs them in their own job, beside the smoke shards.
+
+The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
+tests (`apps/api/src/routes/auth.test.ts`), not here.
+
+## No uncaught errors
+
+The suite's standing assertion is that a flow produces **no uncaught
+exception, unhandled rejection or `console.error`** on the page, the class the
+pan-loop bug was in. The per-test UI checks are the vehicle that drives the
+code paths; this is the alarm.
+
+`apps/editor/e2e/fixtures.ts` exports a `test` extended with a **`pageErrors`**
+fixture, which collects every `pageerror` and `console.error` the page raises,
+minus known benign noise (a favicon or manifest 404, dev-server Fast Refresh
+chatter, Chromium's generic "Failed to load resource" line, and the blocked
+model fetches of the photo tests). A test that takes `pageErrors` ends with
+**`expectNoPageErrors(pageErrors)`**, which fails naming what leaked. A Trusted Types violation is one of them:
+the page logs `[trusted-types] violation` as an error ([Trusted Types](../016-platform/trusted-types.md)).
+
+The same `test` sets the editor's debug flag (`liveknowledge:debug` = `*`) on its browser
+context before any page loads, so the production build the suite drives writes its trace lines
+([Console logging](console-logging.md)) and a spec may wait for one (`[arrow-rebind] trigger`).
+A spec that opens its own context with `browser.newContext()` sets it there with
+`enableDebugLogs(context)`.
+
+## What the suite asserts
+
+One spec file per feature in `apps/editor/e2e/`, each linking the spec it proves:
+
+| File                                                                                                          | What only a browser can show                                                                                                                                                                                                                                                                                                                                                | Spec                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `smoke.spec.ts`                                                                                               | a guest's `/new` and `/new?blank=1` make a knowledgebase kept Offline, open on Start Here with the caret in its Title; typing the Title renames the page and never the knowledgebase, and the writing survives a reload; a first visit goes through the guest handoff; the editor's logo is a plain link; at phone width the top row keeps its buttons on screen in one row | [Knowledgebases and pages](../030-knowledgebase/knowledgebases-and-pages.md)                                                              |
+| `page-tree.spec.ts`                                                                                           | New Page and Add Subpage take the caret in the new Title, and a subpage shows its breadcrumb; the row menu's Move Up, Move Down, Indent and Outdent; Delete names its subpages and Undo brings them back; arrows, Enter and F2; the rail and back; what is open survives a reload                                                                                           | [Page tree blueprint](../030-knowledgebase/blueprints/page-tree.md)                                                                       |
+| `page-links.spec.ts`                                                                                          | the `[[` picker filters and Enter links; a link reads its page's current title after a rename and opens it; Create Page makes a subpage; a deleted target reads Deleted Page and goes nowhere; Linked From lists the pages that link to a page                                                                                                                              | [Links and embeds](../030-knowledgebase/links-and-embeds.md)                                                                              |
+| `search.spec.ts`                                                                                              | Cmd or Ctrl K opens the search panel, whose This Knowledgebase group finds a passage in an Offline knowledgebase first and Enter opens its page at it; a page is found by its title; words nothing holds say No Pages Match; the tree's Search field opens the same panel                                                                                                   | [Search and Ask](../030-knowledgebase/search-and-ask.md)                                                                                  |
+| `phone.spec.ts`                                                                                               | at 390 by 844: the Pages sheet, a row opening its page, writing with a finger, the three views within reach, and no view scrolling sideways                                                                                                                                                                                                                                 | [Knowledgebases and pages](../030-knowledgebase/knowledgebases-and-pages.md)                                                              |
+| `save-failure.spec.ts`                                                                                        | an autosave refused as unauthenticated says so, then the next edit saves again                                                                                                                                                                                                                                                                                              | [Per-tab storage](../006-document/per-tab-storage.md)                                                                                     |
+| `article-paste.spec.ts`, `article-click-type.spec.ts`, `article-undo.spec.ts`, `article-phone-tap.spec.ts`    | a rich paste keeps its text and marks with no Trusted Types refusal; a click into a paragraph and typing keeps the whole paragraph; undo straight after the first typing; a tap on a paragraph on a phone puts the caret there                                                                                                                                              | [Article pages](../007-editor/article-pages.md)                                                                                           |
+| `tab-scoped-share.spec.ts`                                                                                    | a link scoped to one page opens that page and nothing else, in the tree and in every response and frame; the owner is never scoped                                                                                                                                                                                                                                          | [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md)                                                                      |
+| `realtime-peers.spec.ts`, `realtime-peer-label.spec.ts`, `realtime-same-element.spec.ts`, `drag-live.spec.ts` | two people in one room see each other, edit live and keep both people's edits, on elements seeded through the api (no control in liveknowledge places a free element)                                                                                                                                                                                                       | [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)                                                      |
+| `quick-style-corners.spec.ts`, `quick-style-mixed.spec.ts`                                                    | on seeded elements: a small rounded square stays one; named colours on a mixed selection                                                                                                                                                                                                                                                                                    | [Canvas and palette](../008-canvas/canvas-and-palette.md)                                                                                 |
+| `appearance.spec.ts`                                                                                          | the appearance opens on the device setting and cycles, never writes to the knowledgebase, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                             | [Editor app](../007-editor/editor-app.md)                                                                                                 |
+| `chrome-defaults.spec.ts`                                                                                     | Tools offers no Editing Mode; Rename Knowledgebase from the command search (Cmd or Ctrl and `.`) opens the Explorer on the name; a stored blob with the retired power user keys loads cleanly                                                                                                                                                                               | [Power user mode](../007-editor/power-user-mode.md)                                                                                       |
+| `settings-memory.spec.ts`                                                                                     | Settings reopens on the last category and row, across a resize and deep inside a tall row                                                                                                                                                                                                                                                                                   | [User preferences](../007-editor/user-preferences.md)                                                                                     |
+| `scrollbars.spec.ts`                                                                                          | every scrolling surface is in-theme, per colour scheme                                                                                                                                                                                                                                                                                                                      | [Scrollbars](../004-interface-design/scrollbars.md)                                                                                       |
+| `motion-budget.spec.ts`                                                                                       | every chrome animation (the knowledgebase's menu, Knowledgebase Style, the Explorer, a page's row menu, the search dialog, Insert, Settings, the command search) settles within 250ms, delay included; under reduced motion each is instant                                                                                                                                 | [Motion](../004-interface-design/motion.md)                                                                                               |
+| `menu-keyboard.spec.ts`                                                                                       | the knowledgebase's menu opens on Down Arrow, takes focus and gives it back; the editor logo opens no site switcher                                                                                                                                                                                                                                                         | [Menus](../004-interface-design/menus.md)                                                                                                 |
+| `contrast-audit.spec.ts`, `optical-audit.spec.ts`                                                             | dark mode, the Join dialog a share link opens: WCAG AA on every text node, and glyphs within 0.5px of their shape's centre (the knowledgebase's own screens are audited signed in, below)                                                                                                                                                                                   | [Colour scheme](../004-interface-design/color-scheme.md#accessibility), [Optical alignment](../004-interface-design/optical-alignment.md) |
+| `optical-audit-sites.spec.ts`, `marketing-header-fit.spec.ts`                                                 | the optical audit on the help centre and the marketing site, and the marketing header on a phone (the `sites` project, which builds marketing)                                                                                                                                                                                                                              | [Optical alignment](../004-interface-design/optical-alignment.md)                                                                         |
+| `optical-clip.spec.ts`, `optical-snap.spec.ts`                                                                | a trimmed label that truncates keeps its descenders; the browser paints baselines on whole CSS pixels, which the ink audit relies on                                                                                                                                                                                                                                        | [Optical alignment](../004-interface-design/optical-alignment.md)                                                                         |
+| `create-retry.spec.ts`                                                                                        | a failed create retries and opens the knowledgebase, which survives a reload                                                                                                                                                                                                                                                                                                | [New document route](../007-editor/new-document-route.md)                                                                                 |
+| `new-version-prompt.spec.ts`                                                                                  | a newer server format offers a reload, saves the edit first, never reloads over unsaved changes, steps aside on Not now                                                                                                                                                                                                                                                     | [New version prompt](../016-platform/new-version-prompt.md)                                                                               |
+| `stale-builds.spec.ts`, `stale-html.spec.ts`                                                                  | once a newer build is live, opening another knowledgebase and going back are full page loads; Back after a deploy never shows a white screen                                                                                                                                                                                                                                | [Stale builds](../016-platform/stale-builds.md)                                                                                           |
+| `workbench-embed.spec.ts`, `workbench-workspace.spec.ts`                                                      | opt-in (`test:e2e:workbench`): a paired workbench frames the editor; a workspace frame browses the Explorer                                                                                                                                                                                                                                                                 | [Workbench embeds blueprint](../013-workspace/blueprints/workbench-embeds.md)                                                             |
+
+The signed-in specs, in `apps/editor/e2e/signed-in/` (the knowledge ones through [Search and Ask](../030-knowledgebase/search-and-ask.md), [Verification](../030-knowledgebase/verification.md), [AI Knowledge](../030-knowledgebase/ai-knowledge.md), [Knowledgebase Home](../030-knowledgebase/knowledgebase-home.md) and [Knowledgebase import](../020-import-export/knowledgebase-import.md)):
+
+| File                                                                                                                            | What only a browser can show                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `knowledge-verify.spec.ts`                                                                                                      | a signed-in person's new knowledgebase is saved to their account; Verify shows "Verified by <name>" and the tick in the tree row, across a reload; Page Health changes the owner and says the Review Period; Always in Context toggles; Page Health's pencil changes the Review Period (a shorter one asks first, with the count), and a page comes due at once, across a reload |
+| `knowledge-search.spec.ts`                                                                                                      | Cmd or Ctrl K finds a passage in the room's index in the search panel's This Knowledgebase group and opens its page at it; no results says No Pages Match                                                                                                                                                                                                                        |
+| `ai-settings.spec.ts`                                                                                                           | a saved key shows only its last four characters, the field is cleared, and the key is nowhere in the page's markup, fields, localStorage or sessionStorage; Remove; a Viewer or Participant on a share link sees no key controls and no hint                                                                                                                                     |
+| `ask.spec.ts`                                                                                                                   | with no key Ask offers AI Settings; with one, an answer streams in pieces, citation chips map to Sources cards, a card opens Pages at its passage; a gap shows the Knowledge Gap card and is listed under AI Knowledge; the hourly limit and a refused key are said in words                                                                                                     |
+| `ai-knowledge.spec.ts`                                                                                                          | every section with its empty state; an agent's read (an API token with `X-Liveknowledge-Agent`) shows as its card; an edit suggested through the api is accepted into the page                                                                                                                                                                                                   |
+| `knowledge-home.spec.ts`                                                                                                        | Home lists the knowledgebase with its page count and verified share; its search opens a result at the passage; Yours to Review lists a due page and Still Right clears it                                                                                                                                                                                                        |
+| `knowledge-import.spec.ts`                                                                                                      | a Markdown folder .zip built in the test goes through the Import dialog into a knowledgebase of its own: the review's counts, the tree, the relative link as a page link (the stack runs no media service, so its picture is reported as left out); a folder over the page limit shows no Import button                                                                          |
+| `knowledge-roles.spec.ts`                                                                                                       | on a share link, a Viewer and a Participant read, follow the tree and search, and are offered no way to write or change the tree                                                                                                                                                                                                                                                 |
+| `knowledge-audit.spec.ts`                                                                                                       | the contrast and optical audits over Pages, Ask, AI Knowledge and Home, in light and in dark, with no known failure; Home at phone width does not scroll sideways                                                                                                                                                                                                                |
+| `agent-presence.spec.ts`, `creation-use.spec.ts`, `menu-keyboard.spec.ts`, `oauth-device.spec.ts`, `workbench-contrast.spec.ts` | the platform's: an agent's presence and comments, an API client's item in Home's lists, the account menu by keyboard, the CLI's device approval, and the OAuth and pairing screens' contrast                                                                                                                                                                                     |
+
+What the fork's suite held and this one does not: slides, presenting, note cards and deck saves, paper page counts,
+the palette and its hints, the header bar's fit, and the specs of free elements placed from the palette (arrows, the
+quick style bar, selection, drags, grips). None has a control in liveknowledge
+([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md)).
+
+Not covered yet: a picture placed by an import (the stack runs no media service), a Participant's comment in a
+thread, an agent holding the `write` scope, and Notion and Confluence imports. The seeded free elements
+(`quick-style-*`) change with [Page surface](../030-knowledgebase/page-surface.md).
+
+### The model stand-in
+
+No test reaches Anthropic or OpenAI. The stack starts a stand-in on a free loopback port
+(`scripts/e2e-claude-stand-in.mjs`) and hands the api its origin as `E2E_CLAUDE_STAND_IN`; the api's one door to a
+model (`apps/api/src/knowledge/model-door.ts`, `modelDoorFor`) then sends a request for the stored provider's API
+there instead: `/v1/messages` is answered as Anthropic's Messages API streams, `/v1/responses` as OpenAI's Responses
+API does, so one var serves both. Built-in AI (Workers AI) has no door to swap, so under the same var alone the api's
+`builtInAi` posts `{ model, input }` to the stand-in's `/workers-ai/run` instead of the `AI` binding, answered as the
+binding answers (`{ response }`). A description (Describe to Set Up) is answered with a fixed structure of five
+pages (`SETUP_STRUCTURE`), or with text that is no JSON when it holds "not json".
+The door ignores the var unless it names plain HTTP on a loopback port, the var is in no `wrangler.toml` or hosted
+var, and a unit test holds both. The stand-in answers from the request alone: a question sent with passages is
+answered citing the first, one sent with none comes back as a gap, a key containing "refused" is not accepted, and
+the conflict check's request gets a reply that names no conflict. Under the same var only, `POST pages/<tab>/verify`
+takes an earlier moment from `X-E2E-Verified-At` (`verifyMoment`), so a spec can make a page due for review.
+
+A new browser-risky feature adds one focused spec file here (or a case in the
+file of the feature it extends), linked from its own spec; depth stays in unit
+tests where it's cheap.
+
+## Layout
+
+- `apps/editor/playwright.config.ts`: the `chromium` and `sites` projects (plus the opt-in ones),
+  `webServer` → `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
+- `apps/editor/e2e/*.spec.ts`: the spec files above. Playwright collects only `.spec.ts` (`testMatch`); a
+  `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),
+  which `vitest.config.ts` runs and Playwright never loads.
+- `apps/editor/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, the guests and
+  their headers, and the seeds through the api (`serverNewUrl`, `seedDocumentItem`, `seedTab`).
+- `apps/editor/e2e/knowledgebase.ts`: what the knowledgebase specs share: `newKnowledgebase` (open on Start Here,
+  the caret in the Title), the writing, the page tree and its row menu, page links, the search dialog, and
+  `expectKeptOffline` (a reload waits for the Offline store, never for time).
+- `apps/editor/e2e/`: `audit-screens.ts` and `contrast.ts`: the screens and measurements the
+  dark-mode audits share. `apps/editor/e2e/fixtures/` holds `fake-workbench.html`, the page the workbench specs frame the app in.
+- `apps/editor/e2e/perf/`: the typing and page tree probes (`knowledgebase.perf.ts`), run by
+  `perf:knowledgebase`, never by the suite
+  ([Continuous page blueprint](../030-knowledgebase/blueprints/continuous-page.md) "Performance and limits"), and
+  the reference board the unit tests of the element engine still seed.
+- `scripts/e2e-stack.mjs`: this product's settings for the stack (its ports, canvas route, accounts client and
+  the api's own vars); the root's `scripts/e2e-stack/stack.mjs` boots it and serves the static sites (live, help, marketing).
+- The root's `scripts/e2e-stack/` (shared with the other product stacks): `stack.mjs` (the boot and the static
+  server), `accounts-stand-in.mjs` (here without records: API tokens and profiles only), `processes.mjs`,
+  `proxies.mjs` (the router's forwards and the WebSocket upgrade) and `static-serving.mjs` (caching, the Trusted Types
+  header, the 404 page, the simulated deploy).
+- The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
+  `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
+- `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/editor/package.json`; `build:signed-in`
+  (`../packages/next-config/scripts/build-signed-in.mjs`) builds the export the latter runs against.
+- `apps/editor/e2e/signed-in/`: the session helper (`session.ts`), the knowledgebase's (`knowledge-session.ts`: a
+  fresh account with a new knowledgebase, a second person on a share link, the views, AI Settings) and the
+  signed-in specs.
+- `scripts/e2e-claude-stand-in.mjs`: the stand-in for the Anthropic and OpenAI APIs ("The model stand-in").
+
+Playwright is an `apps/editor` dev dependency; it is **not** wired into
+`pnpm test` / `turbo run test` (that stays the fast unit gate), so
+the E2E workflow is the only thing that runs it in CI.

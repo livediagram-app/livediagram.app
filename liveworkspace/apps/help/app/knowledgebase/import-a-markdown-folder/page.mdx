@@ -1,0 +1,109 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  ImportReviewScene,
+  ImportSourcesScene,
+} from '@/editions/liveknowledge/components/illustrations/import-export';
+
+export const metadata = helpMetadata({
+  title: 'Import From a Markdown Folder',
+  description:
+    'Bring a folder of Markdown files, or a .zip of one, into liveknowledge as pages: folders become the page tree, links become page links, pictures come too.',
+  path: '/help/knowledgebase/import-a-markdown-folder/',
+});
+
+<ArticleLayout path="knowledgebase/import-a-markdown-folder" title="Import From a Markdown Folder" description="Bring a folder or a .zip of Markdown files in as pages, with its folders as the page tree." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Docs in a repository, an Obsidian vault, an export from another wiki: if it is a folder of `.md` files, it can become a Knowledgebase. The folders become the page tree, links between files become page links, and the pictures come with them.
+
+This article walks through an import step by step. [Import From Notion](/help/knowledgebase/import-from-notion/) and [Import From Confluence](/help/knowledgebase/import-from-confluence/) work the same way, with their own export.
+
+## Import a Folder
+
+<Step n={1}>
+  Press the Knowledgebase's name at the top of the sidebar and choose **Import**.
+</Step>
+
+<Step n={2}>
+  Choose **A Whole Knowledgebase**, then **Markdown Folder**.
+</Step>
+
+<Figure caption="Import: A Whole Knowledgebase holds the three sources. Into This Page brings one file into the open page instead.">
+  <ImportSourcesScene />
+</Figure>
+
+<Step n={3}>
+  Drop the folder or the `.zip` on the drop area, or press **Choose a Folder** or **Choose a .zip**.
+  The archive is read on your device, and nothing is imported yet.
+</Step>
+
+<Step n={4}>
+  Review what was found: "320 Pages and 41 Pictures Found", the pages as a tree (the first 12, then
+  how many more), and under **Left Out or Changed** anything the import will skip or change, and
+  why.
+</Step>
+
+<Step n={5}>
+  Under **Where It Lands**, choose **A New Knowledgebase** (named after the folder, kept where this
+  one is), or **Under a Page of This Knowledgebase** and pick the page. The top pages of the
+  import become its subpages.
+</Step>
+
+<Step n={6}>
+  Press the Import button, which counts the pages, such as **Import 320 Pages**. A bar shows "Importing 140 of 320
+  Pages" as it goes. Keep the window open.
+</Step>
+
+<Step n={7}>
+  When it is done, press **Open** and the first page's name to read it.
+</Step>
+
+<Figure caption="The review: what was found, the pages as a tree, what is left out or changed, and where it lands. Nothing is imported until Import.">
+  <ImportReviewScene />
+</Figure>
+
+On a phone, **Choose a Folder** is not offered (a phone's file picker cannot choose a folder): zip the folder and choose the `.zip`.
+
+## How the Folder Becomes Pages
+
+- **The page tree** follows the folders. A folder's `README.md` or `index.md` is that folder's page, and the files beside it are its subpages. A folder with pages but neither file gets an empty page of its name, so its pages keep their place.
+- **The top folder's own `README.md`** is a top-level page, listed first.
+- **Titles** come from each file's first `#` heading, else its file name.
+- **Order:** pages sort by name as a person would (`Page 2` before `Page 10`).
+- **Links** between files (relative `.md` links, and `[[Title]]`) become page links. A link to something not in the import stays an ordinary link. See [Linking Pages](/help/knowledgebase/linking-pages/).
+- **Pictures** in the archive are uploaded and placed in the writing. A picture written inside a sentence or a list is placed after that block.
+- **Other attachments** are not stored. Each is named at the foot of its page under **Attachments**.
+- **Imported pages are Never Verified**, owned by nobody. Give them owners and verify them as you check them. See [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
+
+## Limits
+
+| Limit                        | Value                                                          |
+| ---------------------------- | -------------------------------------------------------------- |
+| An archive                   | 200 MB                                                         |
+| Pages in a Knowledgebase     | 500, counted with the pages already there                      |
+| Levels in the page tree      | 8 (deeper pages sit at the last level, with a note)            |
+| A picture                    | 10 MB (a larger one is left out; its description stays)        |
+| One file's writing           | 5 MB (a larger file is left out)                               |
+
+An archive past 200 MB, or with more pages than there is room for, is refused before anything is read in full, with both counts ("It holds 812 pages, and there is room for 488."). The dialog then offers only **Choose Another**.
+
+## Undoing an Import
+
+An import cannot be undone as one step, and the dialog says so. That is why the pages land together, in a Knowledgebase of their own or under the page you chose, so you can delete them together: delete the new Knowledgebase, or the one page they sit under (its subpages go with it). Imported under a page of this Knowledgebase, `Cmd+Z` takes back the last batch of pages.
+
+## Good to Know
+
+- **Cancel** stops after the pages being saved now. Pages already imported stay. Closing the dialog does the same.
+- A page that fails is left out and named at the end, with why. Its subpages land under the page above it. See [An Import Left Pages Out](/help/troubleshooting/an-import-left-pages-out/).
+- A link that runs something (`javascript:` and the like) keeps its words and loses its address.
+- The CLI imports a Markdown folder too: `liveknowledge import ./docs --name Handbook`. See [The liveknowledge CLI](/help/developers/liveknowledge-cli/).
+
+## Who Can Do What
+
+| Action                          | Editor | Participant | Viewer |
+| ------------------------------- | ------ | ----------- | ------ |
+| Import a whole Knowledgebase    | Yes    | No          | No     |
+
+A share link confined to one page does not offer it either: an import adds pages.
+
+</ArticleLayout>

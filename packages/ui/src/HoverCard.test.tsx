@@ -24,6 +24,30 @@ describe('HoverCard', () => {
     expect(card.className).toContain('pointer-events-auto');
   });
 
+  it('holds an action under its words that stays pressable while the pointer is on the card', () => {
+    const onSync = vi.fn();
+    render(
+      <HoverCard
+        title="Offline"
+        description="Sync first."
+        action={
+          <button type="button" onClick={onSync}>
+            Sync
+          </button>
+        }
+      >
+        <button type="button" aria-label="Ask" />
+      </HoverCard>,
+    );
+    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Ask' }), { pointerType: 'mouse' });
+    const card = screen.getByRole('tooltip');
+    fireEvent.pointerLeave(screen.getByRole('button', { name: 'Ask' }), { pointerType: 'mouse' });
+    fireEvent.pointerEnter(card);
+    fireEvent.click(screen.getByRole('button', { name: 'Sync' }));
+    expect(onSync).toHaveBeenCalledOnce();
+    expect(screen.getByRole('tooltip')).toBe(card);
+  });
+
   it('shows nothing while disabled, keeping the same control so it keeps its focus', () => {
     const { rerender } = render(
       <HoverCard title="Explorer">

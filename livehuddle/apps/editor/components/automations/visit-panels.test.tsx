@@ -3,8 +3,10 @@
 // It Was Empty, on unless the rule says off; Everyone Left takes how long, as a duration, a minute to twelve hours,
 // and a room.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ItemUiOutline } from '@liveworkspace/automations-ui/item';
+import { setFallbackAutomationsKit } from '@liveworkspace/automations-ui/kit-context';
+import { SPACE_AUTOMATIONS_KIT } from './space-kit';
 import {
   EVERYONE_LEFT_PRESETS,
   EveryoneLeftPanel,
@@ -12,7 +14,12 @@ import {
   leftMinutes,
 } from './visit-panels';
 
-afterEach(cleanup);
+// The panels read the screen's words from the kit (TabSelect), as they do inside SpaceAutomationsScreen.
+beforeEach(() => setFallbackAutomationsKit(SPACE_AUTOMATIONS_KIT));
+afterEach(() => {
+  cleanup();
+  setFallbackAutomationsKit(null);
+});
 
 const outline = {
   item: {

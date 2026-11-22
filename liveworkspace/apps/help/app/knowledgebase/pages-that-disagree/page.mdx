@@ -1,0 +1,68 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ConflictScene } from '@/editions/liveknowledge/components/illustrations/ai-knowledge';
+
+export const metadata = helpMetadata({
+  title: 'Pages That Disagree',
+  description:
+    'When two pages of a Knowledgebase state opposite facts, AI Knowledge shows both passages side by side so you can say which is right and fix the other.',
+  path: '/help/knowledgebase/pages-that-disagree/',
+});
+
+<ArticleLayout path="knowledgebase/pages-that-disagree" title="Pages That Disagree" description="When two pages state opposite facts, AI Knowledge shows both passages so you can say which is right." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Two pages that say different things are worse than one page that says nothing: whoever reads the wrong one acts on it. liveknowledge looks for such pairs as pages change, and lists each under **Pages That Disagree** in the **AI Knowledge** tab of the footer.
+
+<Figure caption="Two pages that disagree: the question both answer, each passage with its page's trust, and the ways to settle it.">
+  <ConflictScene />
+</Figure>
+
+## How a Disagreement Is Found
+
+- When a page is verified, or its writing is saved, liveknowledge finds passages on other pages that match its passages and asks the model whether any pair states opposite facts. A page is checked at most once every 10 minutes.
+- It runs on built-in AI, included, or on the team's own key if it added one. On a server with no built-in AI and no key, a line says so, and an Editor sees **Open AI Settings**. See [AI Settings](/help/knowledgebase/ai-settings/).
+- A Knowledgebase is checked at most 20 times a day on built-in AI and 50 on its own key, and each check compares at most 5 passages.
+
+Each pair shows the question both passages answer, the two passages side by side (stacked on a phone), and each page's trust: Verified and when, Review Due, or Never Verified.
+
+## Settle It
+
+<Step n={1}>
+  Read both passages. Their pages' trust is a clue: a passage on a page verified last week is more
+  likely right than one on a page whose review is due.
+</Step>
+
+<Step n={2}>
+  Press **&lt;Page&gt; Is Right, Fix the Other** on the side that is right (for example, **Deploying Is
+  Right, Fix the Other**). The other page opens, for you to correct.
+</Step>
+
+<Step n={3}>
+  Save the correction. Once either passage changes, the pair closes by itself.
+</Step>
+
+Not sure which is right? Press **Ask Both Owners**. Each owner of the two pages gets one email, "Two Pages Disagree", with the question, both pages linked, each passage (up to 280 characters) and a link to this view. Once they are asked, "Owners asked" and the date stand in the button's place. A pair's owners are asked once.
+
+Not a real disagreement (two pages about different things that only sound alike)? Press **Not a Conflict**. That pair never comes back.
+
+## Ask Both Owners, in Detail
+
+The email is one of the **Knowledgebase Reviews** emails, so it follows the same rules as [Remind the Owners](/help/knowledgebase/knowledge-health-and-reminders/): an owner who turned these emails off, or who can no longer open the Knowledgebase, is not sent one, and a Knowledgebase sends at most 50 review emails a day. The toast says what happened, for example "Sent to 2 owners.", or "Neither page has an owner to ask. Set one in Page Health." The button is shown only where this server sends email.
+
+## Good to Know
+
+- With nothing to settle, the section reads **No Disagreements Yet**.
+- Ask uses this too: a passage on an out-of-date page that disagrees with a newer verified one is shown under **Found but Not Used**, not in the answer. See [Ask](/help/knowledgebase/ask/).
+- Agents are told when a passage's page is in a disagreement, by the field `conflicts_with` in every search result.
+
+## Who Can Do What
+
+| Action                                          | Editor | Participant | Viewer |
+| ----------------------------------------------- | ------ | ----------- | ------ |
+| See pages that disagree                         | Yes    | Yes         | Yes    |
+| Fix the other, or mark it Not a Conflict        | Yes    | No          | No     |
+| Ask both owners                                 | Yes    | No          | No     |
+
+Asking the owners needs a signed-in Editor.
+
+</ArticleLayout>

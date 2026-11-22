@@ -27,7 +27,7 @@ import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { shareHeroArt } from '@liveworkspace/ui/dialog-hero-art/share';
 import { Dialog } from '../ui/Dialog';
 import type { ItemRef, ShareUrl } from '../types';
-import { kindWords } from '../words';
+import { kindWords, scopeWords } from '../words';
 import { ActivePass } from './share/ActivePass';
 import { writeClipboard } from './share/CopyMenu';
 import { ExpiredPass } from './share/ExpiredPass';
@@ -205,7 +205,7 @@ export function ShareDialog({
   // holding another (made before) keeps working and reads Legacy; a public link (a Community post's) is always `view`.
   const levels = APP_LINK_LEVELS[item.app];
   const legacy = (link: ShareLink) => !link.public && !levels.includes(link.level);
-  const shareTour = useShareTour(multiTab, word, onTelemetry);
+  const shareTour = useShareTour(multiTab, word, onTelemetry, scopeWords(item.app));
   // Show Me walks the passes, so it starts on their tab.
   const tour = {
     ...shareTour,
@@ -405,6 +405,7 @@ export function ShareDialog({
                       busy={share.busy}
                       passwordSet={share.passwordSet}
                       tabs={tabs}
+                      app={item.app}
                       handOver={handOver}
                       imageTabId={imageTabId}
                       setImageTabId={setImageTabId}

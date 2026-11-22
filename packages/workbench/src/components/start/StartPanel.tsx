@@ -50,6 +50,7 @@ import type {
   StartPanelProps,
   StartPanelResult,
 } from './start-panel-types';
+import { CHOSEN_HOVER_TINT, CHOSEN_TINT } from './start-chosen-ink';
 
 export type {
   StartPanelCardBase,
@@ -66,10 +67,6 @@ const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 const SearchGlyph = lucideGlyph(lucideSearch, 15);
 const ClearGlyph = lucideGlyph(lucideX, 13);
 const CloseGlyph = lucideGlyph(lucideX, 16);
-
-// The chosen rail row's tint and its hover, as strengths of the accent.
-const CHOSEN_TINT = 14;
-const CHOSEN_HOVER_TINT = 18;
 
 // A panel that cannot close: a drag down on its phone sheet is refused before it slides out, so it settles back.
 const STAYS_OPEN = () => false;

@@ -1,0 +1,104 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+
+// Canvas motion keeps its own pace (docs/specs/004-interface-design/motion.md): it lives
+// in canvas-motion.css, which the chrome motion budget does not read.
+const read = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
+
+describe('canvas-motion.css', () => {
+  it('declares the element entry pop at the canvas pace', () => {
+    expect(read('./canvas-motion.css')).toContain(
+      '--animate-element-pop-in: pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1);',
+    );
+  });
+
+  // docs/specs/004-interface-design/motion.md "Reduced motion": an animated element rests still and visible. The
+  // shared reduced-motion rule stops the animation and nothing else; #638 added `opacity: 0` to it for the pointer
+  // tip's pulse and so hid every animated arrow, icon, chart and concept graphic for those who asked for less motion.
+  it('stops every animation under reduced motion without hiding the elements', () => {
+    const css = read('./canvas-motion.css');
+    const shared = /\.lvd-arrow-flow,[^{]*\{([^}]*)\}/.exec(css);
+    if (!shared)
+      throw new Error('the shared reduced-motion rule is missing from canvas-motion.css');
+    expect(shared[1]).toContain('animation: none');
+    expect(shared[1]).not.toMatch(/opacity|display|visibility/);
+  });
+
+  it('is imported by the editor stylesheet', () => {
+    expect(read('./globals.css')).toContain("@import './canvas-motion.css';");
+  });
+});
+
+// Editor arrival (docs/specs/004-interface-design/motion.md): the chrome fades in, the board appears
+// at once, since fading the canvas world re-lays out the page's compositing as it starts and ends.
+describe('the editor fade-in rule', () => {
+  const rule = () => {
+    const css = read('./globals.css');
+    const match = /\{\s*((?:\[data-[a-z-]+\],?\s*)+)\{\s*animation: fade-in/.exec(css);
+    if (!match) throw new Error('the editor fade-in rule is missing from globals.css');
+    return match[1]!.split(',').map((s) => s.trim());
+  };
+
+  it('fades the chrome in, never the board', () => {
+    expect(rule()).toEqual([
+      '[data-floating-panel]',
+      '[data-editor-tabbar]',
+      '[data-zoom-cluster]',
+    ]);
+  });
+});
+
+// The element plane (docs/specs/008-canvas/blueprints/canvas-performance.md): without this rule the plane passes the
+// canvas's cursor down and a tool switch or a pan restyles every element on the board.
+describe('the element plane rule', () => {
+  it('stops the canvas cursor at the plane', () => {
+    expect(read('./globals.css')).toMatch(/\[data-element-plane\]\s*\{[^}]*cursor:\s*auto/);
+  });
+});
+
+// A Tab Style change on a busy canvas eases the canvas, not its parts (docs/specs/008-canvas/canvas-performance.md):
+// the surface always takes the colour ease, its parts only while the canvas is not busy (Canvas sets
+// `data-canvas-busy` by canvasIsBusy, @liveworkspace/workbench/lib/tab-style-ease.ts).
+describe('the Tab Style ease', () => {
+  const selectors = () => {
+    // Split into rules rather than one regex over the file: a repeated selector group in a regex can backtrack.
+    const rule = read('./globals.css')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('}')
+      .map((r) => r.split('{'))
+      .find(
+        ([sel, body]) =>
+          sel?.includes(':root.lvd-style-transition') && body?.includes('transition-property'),
+      );
+    if (!rule) throw new Error('the Tab Style ease rule is missing from globals.css');
+    return rule[0]!
+      .split(',')
+      .map((s) => s.trim())
+      .filter(
+        (s) => s.startsWith(':root.lvd-style-transition') || s.includes('[data-style-easing]'),
+      );
+  };
+
+  it('eases the canvas surface itself', () => {
+    expect(selectors()).toContain(':root.lvd-style-transition [data-canvas-root]');
+  });
+
+  // A pick on a busy canvas eases that surface alone (SURFACE_EASE_ATTR): a class on the root restyled the whole page.
+  it('eases a busy canvas by its own attribute, not the root class', () => {
+    expect(selectors()).toContain('[data-canvas-root][data-style-easing]');
+  });
+
+  it('eases the parts only on a canvas that is not busy', () => {
+    const parts = selectors().filter((s) => s.endsWith('*'));
+    expect(parts).toEqual([
+      ':root.lvd-style-transition [data-canvas-root]:not([data-canvas-busy]) *',
+    ]);
+  });
+
+  it('marks a busy canvas on its surface', () => {
+    const canvas = read('../components/canvas/Canvas.tsx');
+    expect(canvas).toContain("data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}");
+    expect(canvas).toContain("from '@liveworkspace/workbench/lib/tab-style-ease'");
+  });
+});

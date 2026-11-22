@@ -10,8 +10,9 @@ stage 1 and uses nothing here.
 
 | Word        | Means in the package                                                                                     |
 | ----------- | -------------------------------------------------------------------------------------------------------- |
-| **item**    | what rules belong to; the app's own word arrives as `itemWord` (`canvas`, `document`, `design`, `Space`) |
-| **tab**     | a tab of the item, by id                                                                                 |
+| **item**    | what rules belong to; the app's own word arrives as `itemWord` (`canvas`, `document`, `design`, `Space`, |
+|             | `knowledgebase`)                                                                                         |
+| **tab**     | a tab of the item, by id; called a **page** where the item is a `knowledgebase` (`tabWordOf`)            |
 | **subject** | what a run is about: a tab (`AutomationSubject`: id, title, url) or null for the item alone              |
 | **kind**    | one trigger, condition, step or value, as a self-describing definition                                   |
 | **settle**  | a trigger that fires after things go quiet (Edited, Then Quiet; an app's Everyone Left)                  |
@@ -27,6 +28,8 @@ packages/automations/
     kinds.ts                TriggerKind, ConditionKind, ActionKind, ValueKind, ItemKinds, defineTrigger and its kin
     define.ts               defineItemKinds: the shared kinds and an app's own
     names.ts                ItemNames: tabs, people, snapshots, connections and templates by id, gone and unpicked
+    tab-word.ts             tabWordOf(itemWord): `page` for a knowledgebase, else `tab`; inTabWords(text, itemWord)
+                            rewrites a static line's "tab", "Tab", "tabs", "Tabs" (never a name, never `format`)
     refs.ts                 what a part names (tab, snapshot, connection, template, person): mapRefs, refsOf
     triggers.ts             the shared triggers (and the collab ones); agentChangedTrigger, AGENT_CHANGED_EVENT
     conditions.ts           Tab, Who Did It, Day of Week, Text
@@ -221,6 +224,14 @@ the rule's last step, or not last in its list (`automation_step_unsupported`); a
 a file).
 
 ### Words (words.ts, summary.ts)
+
+**Tab words.** Every word for a tab a person reads comes through `inTabWords(text, itemWord)`: `defineItemKinds`
+passes the shared kinds' `name`, `line` and `group` and the shared values' `label` through it; the shared kinds'
+`words`, `said`, `would`, `summary` and `holds` pass their own fixed words through it with `names.itemWord`, never
+the names they print; `refName`'s unpicked and gone words follow it; and the room's step lines (`Added a page named
+…`) follow `kit.itemWord`. `format` keeps "tab": it spells out the JSON, whose field is `tab` in every app. The
+screen (`@liveworkspace/automations-ui`) reads the same helper with `kinds.itemWord`. Under any word but
+`knowledgebase` the text is unchanged, so no other app's words move.
 
 `itemRuleSentence(rule, kinds, names)` (When … Only If … Then … chips; a gone name reads "a tab that's gone", an
 empty one "a tab"), `itemTriggerLine(rule, event, kinds, names)` (the run's first line; "After waiting 2 days" for a

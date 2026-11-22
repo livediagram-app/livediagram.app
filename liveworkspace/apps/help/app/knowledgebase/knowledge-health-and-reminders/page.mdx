@@ -1,0 +1,89 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { KnowledgeHealthBar } from '@/editions/liveknowledge/components/illustrations/trust';
+
+export const metadata = helpMetadata({
+  title: 'Knowledge Health and Reminders',
+  description:
+    'Knowledge Health shows how many pages are Verified, Review Due and Never Verified. Remind the owners by email, and choose whether review emails reach you.',
+  path: '/help/knowledgebase/knowledge-health-and-reminders/',
+});
+
+<ArticleLayout path="knowledgebase/knowledge-health-and-reminders" title="Knowledge Health and Reminders" description="See how much of a Knowledgebase is verified, remind the owners, and choose whether review emails reach you." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+[Page Health](/help/knowledgebase/page-health/) is about one page. **Knowledge Health** is the same question for the whole Knowledgebase: how much of it does someone vouch for today? It comes with three emails that keep owners reviewing, and one setting that decides whether those emails reach you.
+
+## Knowledge Health
+
+Open the **AI Knowledge** tab in the footer and find **Knowledge Health**.
+
+<Figure caption="Knowledge Health: one bar of Verified, Review Due and Never Verified pages, their counts, and Remind the Owners.">
+  <KnowledgeHealthBar />
+</Figure>
+
+- One bar is split into **Verified**, **Review Due** and **Never Verified**, with the count of each under it.
+- The counts are worked out when you open the view, under the Knowledgebase's Review Period. Under **Never**, no page is Review Due.
+- A Knowledgebase with no pages reads "No Pages Yet".
+
+Each Knowledgebase's verified share also shows on its card on [Home](/help/getting-started/knowledgebase-home/).
+
+## Remind the Owners
+
+<Step n={1}>
+  In **Knowledge Health**, press **Remind the Owners**. It shows while at least one page is Review
+  Due or Never Verified.
+</Step>
+
+<Step n={2}>
+  Read the toast. It says what happened in words: "Sent to 2 owners.", or why nothing was sent.
+</Step>
+
+Each owner gets one email, **Pages to Review**, listing their pages that are Review Due or Never Verified, each with its state and a link (the first 100 by name, the rest counted).
+
+- The owners can be reminded **once a week**. For a week after a reminder, "Owners reminded" and the date stands in the button's place. A press that reached nobody does not use up the week.
+- A page with no owner has nobody to remind. Set one in [Page Health](/help/knowledgebase/page-health/).
+- The button is an Editor's who is signed in, and it is drawn only where the server sends email.
+
+## The Emails
+
+| Email                    | Sent when                                                                 | To                         |
+| ------------------------ | ------------------------------------------------------------------------- | -------------------------- |
+| **Pages Due for Review** | Pages you own come due for review                                         | The owner of those pages   |
+| **Pages to Review**      | An Editor presses **Remind the Owners**                                   | Each owner of a page to review |
+| **Two Pages Disagree**   | An Editor presses **Ask Both Owners** on a conflict                       | The owners of the two pages |
+
+- **Pages Due for Review** goes at most once a day to one owner for one Knowledgebase, and lists every page of theirs that is due. A page is told of once for each review: verify it again and you hear again when that review comes due.
+- **Two Pages Disagree** is sent at most once for a conflict. See [Pages That Disagree](/help/knowledgebase/pages-that-disagree/).
+- Together the three are at most **50 emails a day** for one Knowledgebase. An owner left out by that ceiling is emailed the next day.
+- Each email says the Knowledgebase's Review Period ("This knowledgebase reviews pages every 90 days.").
+
+An email goes only to someone who can still open the Knowledgebase, at the verified address of their account. A Knowledgebase kept Offline sends none, and the Knowledgebase itself keeps no email address.
+
+## Turn the Emails Off or On
+
+One switch covers all three emails, for your account.
+
+<Step n={1}>
+  Open **Settings** in the footer and go to **Account**, then **Notifications**.
+</Step>
+
+<Step n={2}>
+  Under **Email**, switch **Knowledgebase Reviews** off or on. It is on by default.
+</Step>
+
+With it off you get none of the three, from any Knowledgebase. The pages you own that are due still show under **Yours to Review** on Home. See [Email Notifications](/help/account-and-data/email-notifications/) for the other emails liveworkspace sends.
+
+## Who Can Do What
+
+| Action                                   | Editor | Participant | Viewer |
+| ---------------------------------------- | ------ | ----------- | ------ |
+| See Knowledge Health                     | Yes    | Yes         | Yes    |
+| Remind the owners                        | Yes    | No          | No     |
+| Turn your own review emails off or on    | Yes    | Yes         | Yes    |
+
+## Good to Know
+
+- When a reminder reaches only some owners, the toast says how many and why the rest were not reached: they have these emails turned off, have no verified address, or can no longer open the Knowledgebase.
+- "Every page is verified, so there is nobody to remind." means exactly that.
+
+</ArticleLayout>

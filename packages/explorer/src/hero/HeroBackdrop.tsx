@@ -32,6 +32,7 @@ export function HeroBackdrop({ kind }: { kind: HeroBackdropKind }) {
   if (kind === 'shapes') return <Shapes />;
   if (kind === 'lanes') return <Lanes />;
   if (kind === 'huddle') return <Huddle />;
+  if (kind === 'tree') return <Tree />;
   return <Dots />;
 }
 
@@ -280,6 +281,72 @@ function Shapes() {
             className="stroke-brand-300 dark:stroke-brand-700/60"
           />
           <circle cx="874" cy="386" r="9" className="fill-brand-500" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// Tree: a knowledgebase's pages. A ruled margin down the left, as an index has, and in the gap a page with the three
+// under it, joined the way a page tree joins them.
+const TREE_PAGES: readonly [x: number, y: number][] = [
+  [900, 196],
+  [900, 262],
+  [900, 328],
+];
+
+function Tree() {
+  return (
+    <div
+      aria-hidden
+      data-hero-backdrop="tree"
+      className={`${LAYER} bg-[color:color-mix(in_oklab,var(--color-brand-50)_55%,white)] dark:bg-slate-900`}
+    >
+      <span className="absolute inset-y-0 left-3 hidden w-px bg-brand-200 sm:block dark:bg-brand-800/50" />
+      <span className="absolute inset-y-0 left-[18px] hidden w-px bg-brand-200 sm:block dark:bg-brand-800/50" />
+      <div className="relative mx-auto h-full max-w-7xl">
+        <svg className={XL_ART} fill="none">
+          {/* The page the others sit under. */}
+          <rect
+            x="820"
+            y="92"
+            width="44"
+            height="56"
+            rx="6"
+            strokeWidth="1.5"
+            className="fill-brand-100 stroke-brand-500 dark:fill-brand-900/50"
+          />
+          <path
+            d="M830 108h24M830 120h24M830 132h14"
+            strokeWidth="3"
+            strokeLinecap="round"
+            className="stroke-brand-300 dark:stroke-brand-700/70"
+          />
+          {/* Its branch, and a page at each twig. */}
+          <path
+            d={`M842 148V328${TREE_PAGES.map(([x, y]) => `M842 ${y}H${x - 8}`).join('')}`}
+            strokeWidth="1.5"
+            className="stroke-brand-300 dark:stroke-brand-700/70"
+          />
+          {TREE_PAGES.map(([x, y]) => (
+            <g key={y}>
+              <rect
+                x={x - 8}
+                y={y - 18}
+                width="28"
+                height="36"
+                rx="4"
+                strokeWidth="1.5"
+                className="fill-white stroke-brand-300 dark:fill-slate-800 dark:stroke-brand-700/70"
+              />
+              <path
+                d={`M${x - 2} ${y - 6}h16M${x - 2} ${y + 4}h10`}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                className="stroke-brand-200 dark:stroke-brand-800"
+              />
+            </g>
+          ))}
         </svg>
       </div>
     </div>

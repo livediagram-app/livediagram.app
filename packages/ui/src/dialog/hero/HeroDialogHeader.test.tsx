@@ -41,9 +41,9 @@ describe('the dialog hero header', () => {
     expect(h2.className).toContain('text-[20px]');
     // The desktop's 20px on a phone too, never shrunk.
     expect(h2.className).not.toContain('max-sm:text-');
-    // One line from sm; up to two on a phone, inside the same 100px.
-    expect(h2.className).toContain('sm:truncate');
-    expect(h2.className).toContain('max-sm:line-clamp-2');
+    // Up to two lines at every width, inside the same 100px: a long title wraps, never cut short.
+    expect(h2.className).toContain('line-clamp-2');
+    expect(h2.className).not.toContain('truncate');
   });
 
   it('stands exactly 100px tall at every width, its line one row and shown on a phone too', () => {

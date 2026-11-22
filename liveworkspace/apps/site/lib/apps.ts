@@ -5,7 +5,7 @@
 import { APP_SITES, type Site, type SiteId } from '@liveworkspace/sites';
 
 // The drawing of each app's work on the home page (components/landing/AppWindow.tsx).
-export type AppArt = 'diagram' | 'board' | 'document' | 'design' | 'huddle';
+export type AppArt = 'diagram' | 'board' | 'document' | 'design' | 'huddle' | 'knowledgebase';
 
 export type AppCopy = {
   // One sentence for the card, longer than the pitch.
@@ -84,6 +84,19 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
     deep: '#047857',
     tagline: 'Get everyone in the room.',
     action: 'Start Huddling',
+  },
+  'liveknowledge.app': {
+    summary:
+      'A team knowledgebase, for people and for AI: pages your team writes together, kept in one tree, and read by the AI tools you connect.',
+    highlights: [
+      'Pages in one tree',
+      'Written and reviewed together',
+      'Answers your AI tools read',
+    ],
+    art: 'knowledgebase',
+    deep: '#3f6212',
+    tagline: 'Keep what the team knows.',
+    action: 'Start a Knowledgebase',
   },
 };
 

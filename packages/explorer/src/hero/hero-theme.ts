@@ -5,7 +5,8 @@
 
 import type { App } from '@liveworkspace/index-client';
 
-export type HeroBackdropKind = 'dots' | 'lanes' | 'blueprint' | 'typesetter' | 'shapes' | 'huddle';
+export type HeroBackdropKind =
+  'dots' | 'lanes' | 'blueprint' | 'typesetter' | 'shapes' | 'huddle' | 'tree';
 
 /** Which backdrop is each app's own. */
 export const APP_BACKDROP: Record<App, HeroBackdropKind> = {
@@ -14,6 +15,7 @@ export const APP_BACKDROP: Record<App, HeroBackdropKind> = {
   livedocuments: 'typesetter',
   livedesign: 'shapes',
   livehuddle: 'huddle',
+  liveknowledge: 'tree',
 };
 
 /** The heading's face on Home's hero: the Typesetter sets it in the system's serif, the others in the page's own. */

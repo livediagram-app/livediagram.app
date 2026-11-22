@@ -71,6 +71,14 @@ describe('Choose a File', () => {
     expect(recentList.textContent).not.toContain('This document');
   });
 
+  it('leaves out files a live embed cannot show, as a knowledgebase', async () => {
+    recent = [...recent, item('k1', 'Team Handbook', 'liveknowledge')];
+    open();
+    const recentList = await screen.findByRole('list', { name: 'Recent files' });
+    expect(recentList.textContent).toContain('Roadmap');
+    expect(recentList.textContent).not.toContain('Team Handbook');
+  });
+
   it('chooses a file with one press and closes', async () => {
     const { onChoose, onClose } = open();
     fireEvent.click(await screen.findByText('Roadmap'));

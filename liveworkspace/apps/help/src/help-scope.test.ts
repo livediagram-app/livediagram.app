@@ -21,6 +21,7 @@ const manifest: HelpManifest = {
     livedocuments: 'https://www.livedocuments.app',
     livedesign: 'https://www.livedesign.app',
     livehuddle: 'https://www.livehuddle.app',
+    liveknowledge: 'https://www.liveknowledge.app',
     all: 'https://www.liveworkspace.app',
   },
 };

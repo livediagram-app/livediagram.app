@@ -1,0 +1,39 @@
+/*
+ * The collaboration motion (the Collaborate panel's rows, a comment thread's bubbles): a press pops and a new
+ * row settles in. Every animation here collapses under the reduced-motion rules in globals.css (both the OS
+ * setting and the per-user preference).
+ */
+
+/* A press: a quick overshoot so the count feels struck. */
+@keyframes collab-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.22);
+  }
+  70% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.collab-pop {
+  animation: collab-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* A freshly added row settles into the list. */
+@keyframes collab-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.collab-enter {
+  animation: collab-enter 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}

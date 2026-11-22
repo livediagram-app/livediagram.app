@@ -1,0 +1,497 @@
+import { describe, expect, it } from 'vitest';
+import {
+  createImage,
+  createShape,
+  createText,
+  layOutPages,
+  newSlidePage,
+  type Element,
+  type Tab,
+} from '@liveknowledge/document';
+import { openOfficePackage } from '../office-import/package';
+import { readPptx } from '../office-import/pptx';
+import { openZip } from '../office-import/zip';
+import { parseXml } from '../office-import/xml';
+import { buildDeck, cutTo, deckSize, placementFor, backgroundKind } from './pptx-build';
+import { MediaStore, writePptx } from './pptx-write';
+import { themeFontsOf } from './ooxml-theme';
+import type { PptxDeck, PptxRun, PptxShape } from './pptx-types';
+import { everyKindDeck, fakeDrawer, ONE_PIXEL_PNG } from './test-tabs';
+
+// docs/specs/020-import-export/office-export.md "PowerPoint: one slide a page": the deck read back through the
+// PowerPoint import, every part well-formed XML.
+
+async function everyPart(bytes: Uint8Array): Promise<Map<string, string>> {
+  const zip = openZip(bytes);
+  const out = new Map<string, string>();
+  for (const name of zip.names()) {
+    const data = await zip.read(name, 64 * 1024 * 1024);
+    if (/\.(xml|rels)$/.test(name)) out.set(name, new TextDecoder().decode(data!));
+  }
+  return out;
+}
+
+function slideTab(
+  elements: (page: { x: number; y: number }) => Element[],
+  extra: Partial<Tab> = {},
+) {
+  const pages = [newSlidePage('p1')];
+  const laid = layOutPages(pages);
+  const tab: Tab = {
+    id: 't',
+    name: 'T',
+    elements: elements(laid[0]!.rect),
+    pages,
+    templateChosen: true,
+    ...extra,
+  };
+  return { tab, pages: laid };
+}
+
+describe('PowerPoint export', () => {
+  it('writes a slide a page, every element kind, as a deck the import reads back', async () => {
+    const { tab, pages, deck } = everyKindDeck();
+    const drawer = fakeDrawer();
+    const progress: number[] = [];
+    const built = await buildDeck({ tab, pages, deck, title: 'Doc' }, drawer, {
+      onProgress: (p) => progress.push(p),
+    });
+    expect(progress.at(-1)).toBe(1);
+    expect(progress).toHaveLength(pages.length);
+    const bytes = writePptx(built, new Date('2026-10-31T12:00:00Z'));
+
+    // Every part parses (the import's reader refuses anything malformed).
+    const parts = await everyPart(bytes);
+    for (const [name, xml] of parts) expect(() => parseXml(xml), name).not.toThrow();
+    expect(parts.get('[content_types].xml')).toContain('presentation.main+xml');
+
+    const read = await readPptx(await openOfficePackage(bytes, 'powerpoint'));
+    expect(read.slides).toHaveLength(pages.length);
+    expect(read.cx).toBe(12_192_000);
+    expect(read.cy).toBe(6_858_000);
+    expect(read.slides[0]!.notes).toBe('Open with the numbers.');
+    expect(read.slides[1]!.hidden).toBe(true);
+    // The basic shapes came back as text (their labels), the rest as pictures.
+    const labels = read.slides.flatMap((s) =>
+      s.items.flatMap((i) => (i.kind === 'text' ? [i.label] : [])),
+    );
+    for (const kind of [
+      'square',
+      'circle',
+      'diamond',
+      'triangle',
+      'hexagon',
+      'star',
+      'cloud',
+      'stadium',
+    ])
+      expect(labels).toContain(kind);
+    expect(labels.some((l) => l.startsWith('Every word'))).toBe(true);
+    // A chart or a table is a picture, drawn alone and cut to the page.
+    const pictured = new Set(drawer.regions.flatMap((r) => r.ids));
+    for (const id of tab.elements
+      .filter((e) => e.type === 'table' || e.type === 'arrow')
+      .map((e) => e.id))
+      expect(pictured.has(id)).toBe(true);
+    expect(read.pictures.length).toBe(drawer.regions.length);
+  });
+
+  it('keeps a text box’s font, size, colour, weight and alignment', async () => {
+    const { tab, pages } = slideTab((r) => [
+      {
+        ...createText(0, 0),
+        id: 'title',
+        x: r.x + 100,
+        y: r.y + 100,
+        width: 800,
+        height: 120,
+        label: 'Big title',
+        textSize: 48,
+        textBold: true,
+        textItalic: true,
+        textUnderline: true,
+        textAlignX: 'left',
+        textAlignY: 'top',
+        textColor: '#dc2626',
+        font: 'poppins',
+        rotation: 30,
+      },
+      { ...createText(0, 0), id: 'blank', x: r.x, y: r.y, label: '   ' },
+    ]);
+    const built = await buildDeck({ tab, pages, title: 'T' }, fakeDrawer(), {});
+    const shape = built.slides[0]!.items[0]!;
+    expect(built.slides[0]!.items).toHaveLength(1);
+    if (shape.kind !== 'shape') throw new Error('not native');
+    expect(shape.txBox).toBe(true);
+    expect(shape.rotation).toBe(30);
+    expect(shape.box).toEqual({ x: 635_000, y: 635_000, cx: 5_080_000, cy: 762_000 });
+    const run = shape.body!.paragraphs[0]!.runs[0]!;
+    expect(run).toMatchObject({
+      sizePt: 24,
+      bold: true,
+      italic: true,
+      underline: true,
+      font: 'Poppins',
+    });
+    expect(run.colour).toEqual({ hex: 'DC2626', alpha: 1 });
+    expect(shape.body!.paragraphs[0]!.align).toBe('l');
+    expect(shape.body!.anchor).toBe('t');
+
+    // The face carries its pitch and family, so an app without Poppins picks a sans (office-export.md "Fonts are named").
+    expect(new TextDecoder().decode(writePptx(built))).toContain('pitchFamily="34"');
+    const read = await readPptx(await openOfficePackage(writePptx(built), 'powerpoint'));
+    const item = read.slides[0]!.items[0]!;
+    expect(item).toMatchObject({
+      kind: 'text',
+      label: 'Big title',
+      sizePt: 24,
+      bold: true,
+      italic: true,
+      alignX: 'left',
+      alignY: 'top',
+    });
+  });
+
+  // docs/specs/008-canvas/text-effects.md "Rendering" and element-shadows.md: effects stay native text.
+  it('writes a highlight, a gradient and a text shadow on native runs, in the schema’s order', async () => {
+    const { tab, pages } = slideTab((r) => [
+      {
+        ...createText(0, 0),
+        id: 'headline',
+        x: r.x + 100,
+        y: r.y + 100,
+        width: 800,
+        height: 120,
+        label: 'Grow faster',
+        richText: [
+          { text: 'Grow ', highlight: '#fde68a' },
+          { text: 'faster', gradient: 'sunset' },
+        ],
+        shadow: { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 },
+      },
+    ]);
+    const built = await buildDeck({ tab, pages, title: 'T' }, fakeDrawer(), {});
+    const shape = built.slides[0]!.items[0]!;
+    if (shape.kind !== 'shape') throw new Error('a shadowed text box went to a picture');
+    const runs = shape.body!.paragraphs[0]!.runs;
+    expect(runs[0]!.highlight).toEqual({ hex: 'FDE68A', alpha: 1 });
+    expect(runs[1]!.gradient).toEqual({
+      from: { hex: 'F97316', alpha: 1 },
+      to: { hex: 'DB2777', alpha: 1 },
+    });
+    expect(runs[0]!.shadow).toMatchObject({ dir: 90, alpha: 0.25 });
+    const parts = await everyPart(writePptx(built));
+    const slide = [...parts].find(([n]) => /slides\/slide1\.xml$/.test(n))![1];
+    expect(slide).toMatch(
+      /<a:solidFill>.*<a:effectLst><a:outerShdw[^>]*dir="5400000".*<a:highlight><a:srgbClr val="FDE68A"\/>/,
+    );
+    expect(slide).toContain('<a:gsLst><a:gs pos="0"><a:srgbClr val="F97316"/></a:gs>');
+    for (const xml of parts.values()) parseXml(xml);
+  });
+
+  it('draws a shape natively with its fill, border and corner, or as a picture when it cannot', async () => {
+    const { tab, pages } = slideTab((r) => [
+      {
+        ...createShape('square', 0, 0),
+        id: 'rounded',
+        x: r.x + 100,
+        y: r.y + 100,
+        width: 200,
+        height: 100,
+        label: 'Go',
+        fillColor: '#fde68a',
+        strokeColor: 'rgb(37, 99, 235)',
+        strokeWidth: 'thick',
+        strokeStyle: 'dotted',
+        borderRadius: 'lg',
+      },
+      {
+        ...createShape('hexagon', 0, 0),
+        id: 'hex',
+        x: r.x + 400,
+        y: r.y + 100,
+        strokeStyle: 'dashed',
+      },
+      {
+        ...createShape('square', 0, 0),
+        id: 'shadowed',
+        x: r.x + 700,
+        y: r.y + 100,
+        shadow: { offsetX: 2, offsetY: 4, blur: 8, opacity: 0.3 },
+      },
+      {
+        ...createShape('square', 0, 0),
+        id: 'iconed',
+        x: r.x + 900,
+        y: r.y + 100,
+        iconId: 'server',
+      },
+      {
+        ...createShape('square', 0, 0),
+        id: 'sketch',
+        x: r.x + 1100,
+        y: r.y + 100,
+        finish: 'sketch',
+      },
+      {
+        ...createShape('square', 0, 0),
+        id: 'odd',
+        x: r.x + 1300,
+        y: r.y + 100,
+        fillColor: 'hsl(10 50% 50%)',
+      },
+      {
+        ...createShape('square', 0, 0),
+        id: 'clear',
+        x: r.x + 1500,
+        y: r.y + 100,
+        fillColor: 'transparent',
+        strokeColor: 'none',
+      },
+    ]);
+    const drawer = fakeDrawer();
+    const built = await buildDeck({ tab, pages, title: 'T' }, drawer, {});
+    const [rounded, hex, shadowed, iconed, sketch, odd, clear] = built.slides[0]!.items;
+    if (rounded?.kind !== 'shape' || hex?.kind !== 'shape' || clear?.kind !== 'shape')
+      throw new Error('not native');
+    expect(rounded.geometry).toBe('roundRect');
+    expect(rounded.adjust).toBeGreaterThan(0);
+    expect(rounded.fill).toEqual({ hex: 'FDE68A', alpha: 1 });
+    expect(rounded.line).toMatchObject({ colour: { hex: '2563EB' }, dash: 'sysDot' });
+    expect(hex.geometry).toBe('custom');
+    expect(hex.outline?.match(/L/g)).toHaveLength(5);
+    expect(hex.line?.dash).toBe('dash');
+    expect(clear.fill).toBeNull();
+    expect(clear.line).toBeNull();
+    for (const item of [shadowed, iconed, sketch, odd]) expect(item?.kind).toBe('picture');
+    expect(drawer.regions.map((r) => r.ids[0])).toEqual(['shadowed', 'iconed', 'sketch', 'odd']);
+    const xml = new TextDecoder().decode(writePptx(built));
+    expect(xml).toContain('<a:custGeom>');
+    expect(xml).toContain('prst="roundRect"');
+  });
+
+  it('paints a solid page as the slide colour and anything else as a background picture', async () => {
+    const pages = [
+      newSlidePage('plain'),
+      {
+        ...newSlidePage('solid'),
+        background: { fill: { kind: 'solid' as const, color: '#0f172a' } },
+      },
+      {
+        ...newSlidePage('grad'),
+        background: {
+          fill: { kind: 'gradient' as const, from: '#000000', to: '#ffffff', angle: 90 },
+        },
+      },
+      { ...newSlidePage('dots'), background: { pattern: 'dots' as const } },
+    ];
+    const laid = layOutPages(pages);
+    expect(laid.map(backgroundKind)).toEqual(['none', 'solid', 'picture', 'picture']);
+    const tab: Tab = { id: 't', name: 'T', elements: [], pages, templateChosen: true };
+    const drawer = fakeDrawer();
+    const built = await buildDeck({ tab, pages: laid, title: 'T' }, drawer, {});
+    expect(built.slides.map((s) => s.background?.kind ?? null)).toEqual([
+      null,
+      'solid',
+      'picture',
+      'picture',
+    ]);
+    expect(drawer.backgrounds).toEqual(['grad', 'dots']);
+    const parts = await everyPart(writePptx(built));
+    expect(parts.get('ppt/slides/slide2.xml')).toContain(
+      '<p:bg><p:bgPr><a:solidFill><a:srgbClr val="0F172A">',
+    );
+    expect(parts.get('ppt/slides/_rels/slide3.xml.rels')).toContain('../media/image1.png');
+  });
+
+  it('fits a page of another shape inside the deck’s slide, centred', () => {
+    const [wide, classic] = layOutPages([newSlidePage('a'), newSlidePage('b', 'slide-classic')]);
+    expect(deckSize([wide!])).toEqual({ cx: 12_192_000, cy: 6_858_000 });
+    expect(deckSize([classic!])).toEqual({ cx: 9_144_000, cy: 6_858_000 });
+    const place = placementFor(classic!, 12_192_000, 6_858_000);
+    expect(place.emuPerPx).toBe(6350);
+    expect(place.ox + classic!.rect.x * place.emuPerPx).toBe((12_192_000 - 9_144_000) / 2);
+    expect(deckSize([])).toEqual({ cx: 12_192_000, cy: 6_858_000 });
+  });
+
+  // docs/specs/009-elements/images.md "Alt text": PowerPoint's Alt Text pane shows the image's alt text.
+  it('writes an image’s alt text as its picture’s descr, which the import reads back', async () => {
+    const picture = (id: string, x: number, alt?: string) => ({
+      ...createImage(0, 0),
+      id,
+      x,
+      y: 100,
+      imageId: `img-${id}`,
+      ...(alt === undefined ? {} : { alt }),
+    });
+    const { tab, pages } = slideTab((r) => [
+      picture('described', r.x + 100, 'A <bar> chart'),
+      picture('bare', r.x + 600),
+    ]);
+    const built = await buildDeck({ tab, pages, title: 'Alt' }, fakeDrawer(), {});
+    const pictures = built.slides[0]!.items.filter((i) => i.kind === 'picture');
+    expect(pictures.map((p) => p.kind === 'picture' && p.descr)).toEqual([
+      'A <bar> chart',
+      undefined,
+    ]);
+    const bytes = writePptx(built, new Date('2026-10-31T12:00:00Z'));
+    const slide = (await everyPart(bytes)).get('ppt/slides/slide1.xml')!;
+    expect(slide).toContain('descr="A &lt;bar&gt; chart"');
+    expect(slide.match(/descr=/g)).toHaveLength(1);
+    const read = await readPptx(await openOfficePackage(bytes, 'powerpoint'));
+    expect(read.pictures.map((p) => p.alt)).toEqual(['A <bar> chart', undefined]);
+  });
+
+  it('cuts a picture to the page and leaves out one wholly off it', () => {
+    const page = { x: 0, y: 0, width: 100, height: 100 };
+    expect(cutTo({ x: -10.5, y: 50.2, width: 40, height: 80 }, page)).toEqual({
+      x: 0,
+      y: 50,
+      width: 30,
+      height: 50,
+    });
+    expect(cutTo({ x: 200, y: 0, width: 10, height: 10 }, page)).toBeNull();
+  });
+
+  it('stops when cancelled', async () => {
+    const { tab, pages } = everyKindDeck();
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      buildDeck({ tab, pages, title: 'T' }, fakeDrawer(), { signal: controller.signal }),
+    ).rejects.toThrow('cancelled');
+  });
+
+  it('writes a slide’s note cards a paragraph each, in a notes slide that names its slide', async () => {
+    const bytes = writePptx({
+      title: 'A & B',
+      cx: 12_192_000,
+      cy: 6_858_000,
+      slides: [
+        {
+          background: null,
+          items: [
+            {
+              kind: 'picture',
+              name: 'P',
+              box: { x: 0, y: 0, cx: 10, cy: 10 },
+              png: ONE_PIXEL_PNG,
+            },
+          ],
+          notes: ['One', 'Three <b>\nand a second line'],
+        },
+      ],
+    });
+    const xml = new TextDecoder().decode(bytes);
+    expect(xml).toContain('<dc:title>A &amp; B</dc:title>');
+    expect(xml).toContain('<a:t>Three &lt;b&gt;</a:t>');
+    expect(xml).toContain('../notesSlides/notesSlide1.xml');
+    // docs/specs/012-collaboration/speaker-note-cards.md "PowerPoint": a card is one paragraph, its line break a
+    // break inside it.
+    // The zip reader names parts in lower case.
+    const notes = (await everyPart(bytes)).get('ppt/notesslides/notesslide1.xml')!;
+    expect(notes.match(/<a:p>/g)).toHaveLength(2);
+    expect(notes).toContain('<a:t>Three &lt;b&gt;</a:t></a:r><a:br>');
+    // The import reads the page back as one card's text.
+    const read = await readPptx(await openOfficePackage(bytes, 'powerpoint'));
+    expect(read.slides[0]!.notes).toBe('One\nThree <b>\nand a second line');
+  });
+
+  it('stores a background every slide shares once, a JPEG as a JPEG', async () => {
+    const jpeg = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
+    const sameAgain = Uint8Array.from(jpeg);
+    const slide = (image: Uint8Array) => ({
+      background: { kind: 'picture' as const, image },
+      items: [
+        {
+          kind: 'picture' as const,
+          name: 'P',
+          box: { x: 0, y: 0, cx: 10, cy: 10 },
+          png: ONE_PIXEL_PNG,
+        },
+      ],
+    });
+    const bytes = writePptx({
+      title: 'T',
+      cx: 12_192_000,
+      cy: 6_858_000,
+      slides: [slide(jpeg), slide(sameAgain)],
+    });
+    const zip = openZip(bytes);
+    const media = zip.names().filter((n) => n.startsWith('ppt/media/'));
+    expect(media.sort()).toEqual(['ppt/media/image1.jpeg', 'ppt/media/image2.png']);
+    const parts = await everyPart(bytes);
+    expect(parts.get('[content_types].xml')).toContain('Extension="jpeg" ContentType="image/jpeg"');
+    expect(parts.get('ppt/slides/_rels/slide2.xml.rels')).toContain('../media/image1.jpeg');
+    // Same length and hash but other bytes stay apart.
+    const store = new MediaStore();
+    expect(store.nameOf(Uint8Array.from([1, 2])).added).toBe(true);
+    expect(store.nameOf(Uint8Array.from([1, 2])).added).toBe(false);
+    expect(store.nameOf(Uint8Array.from([2, 1])).name).toBe('image2.png');
+  });
+});
+
+// Work Tracker 906: the theme's fonts follow the deck's faces (office-export.md "Fonts are named, never embedded").
+describe('the deck theme fonts', () => {
+  const run = (text: string, sizePt: number, font?: string): PptxRun => ({
+    text,
+    sizePt,
+    colour: null,
+    bold: false,
+    italic: false,
+    underline: false,
+    strike: false,
+    ...(font ? { font } : {}),
+  });
+  const deckOf = (runs: PptxRun[]): PptxDeck => {
+    const shape: PptxShape = {
+      kind: 'shape',
+      name: 'Text',
+      box: { x: 0, y: 0, cx: 1, cy: 1 },
+      rotation: 0,
+      txBox: true,
+      geometry: 'rect',
+      fill: null,
+      line: null,
+      body: {
+        anchor: 't',
+        insets: [0, 0, 0, 0],
+        paragraphs: [{ align: 'l', runs, lineHeightPt: 12 }],
+      },
+    };
+    return {
+      title: 'T',
+      cx: 9_144_000,
+      cy: 6_858_000,
+      slides: [{ background: null, items: [shape] }],
+    };
+  };
+  const themeOf = async (deck: PptxDeck) =>
+    (await everyPart(writePptx(deck))).get('ppt/theme/theme1.xml')!;
+
+  it('names the face of most characters as the minor and the largest text as the major, with a stand-in', async () => {
+    const deck = deckOf([
+      run('Heading', 40, 'Lora'),
+      run('Body copy that runs on and on.', 12, 'Inter'),
+    ]);
+    expect(themeFontsOf(deck)).toEqual({ major: 'Lora', minor: 'Inter' });
+    const xml = await themeOf(deck);
+    expect(xml).toContain('<a:majorFont><a:latin typeface="Lora" pitchFamily="18" charset="0"/>');
+    expect(xml).toContain('<a:minorFont><a:latin typeface="Inter" pitchFamily="34" charset="0"/>');
+    expect(() => parseXml(xml)).not.toThrow();
+    // The notes master's theme is the same one.
+    expect((await everyPart(writePptx(deck))).get('ppt/theme/theme2.xml')).toBe(xml);
+  });
+
+  it('falls back to Calibri for a deck naming no face, and escapes a face name', async () => {
+    expect(themeFontsOf(deckOf([run('Plain', 18)]))).toEqual({
+      major: 'Calibri',
+      minor: 'Calibri',
+    });
+    const plain = await themeOf(deckOf([run('Plain', 18)]));
+    expect(plain).toContain('<a:minorFont><a:latin typeface="Calibri"/>');
+    const odd = await themeOf(deckOf([run('x', 12, 'A "B" & <C>')]));
+    expect(odd).toContain('typeface="A &quot;B&quot; &amp; &lt;C&gt;"');
+    expect(() => parseXml(odd)).not.toThrow();
+  });
+});

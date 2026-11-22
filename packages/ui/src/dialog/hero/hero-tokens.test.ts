@@ -83,6 +83,7 @@ describe('the hero header’s colours', () => {
       'livedesign',
       'livedocuments',
       'livehuddle',
+      'liveknowledge',
       'liveplanner',
       'platform',
     ]);

@@ -1,0 +1,72 @@
+# Media assets
+
+Binary and visual promotional assets: logos, screenshots, social cards,
+demo recordings.
+
+## Screenshots
+
+Product screenshots, split by viewport so the desktop and mobile pitches stay
+independent. Each should be captioned with what it shows so copywriters can
+match it to a claim in [`../copy/facts.md`](../copy/facts.md).
+
+They go in `desktop/` and `mobile/`, each showing a knowledgebase made for the
+shot (a page tree, a verified page, an answer with its sources), never a real
+team's pages, and captioned here.
+
+## Logo (`logo/`)
+
+The Living Prism ([Brand mark](../../docs/specs/004-interface-design/brand-mark.md)), as SVG.
+
+| File                                  | What it is                                                                    |
+| ------------------------------------- | ----------------------------------------------------------------------------- |
+| `liveknowledge-mark-{light,dark}.svg` | The full mark (inner diagram, sheen, signal pulse) for light or dark grounds. |
+| `liveknowledge-logo-{light,dark}.svg` | The horizontal lockup: mark plus `liveknowledge` wordmark, `live` accented.   |
+
+The lockup's wordmark is live text in the system UI font; outline it in a design tool before print use.
+
+## Icons (`icons/`)
+
+The brand mark as PNGs, drawn in its light palette: the compact drawing below 48px, the full one from 48px.
+
+| File                                     | Background                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `liveknowledge-icon-{256,512,1024}.png`  | White. For surfaces that show the icon as a tile, such as social previews.                 |
+| `liveknowledge-icon-transparent-<n>.png` | Transparent, at 16, 32, 64, 128, 256 and 512. For surfaces that draw their own background. |
+
+`pnpm icons:brand` (`apps/editor/scripts/brand-icons/render.mjs`) regenerates every static copy from the
+brand module in `@liveknowledge/ui`: the apps' `app/icon.svg` favicons, `logo/`, and both PNG sets (the white ones
+also into `apps/marketing/public/`), rasterised by Playwright's Chromium. A test fails if a committed SVG drifts.
+
+## Guidance
+
+- **Brand colour** is lime: accent `#4d7c0f`, dark accent `#a3e635`; the logo has its own lime prism palette. Page background
+  `#F8FAFC`, canvas white. Full palette in [Theme](../../docs/specs/004-interface-design/color-scheme.md).
+- **Show, don't tell.** A screenshot should show trust at work: a verified
+  page with its owner, or an answer with its sources, since "pages your team
+  and its AI both trust" is the pitch.
+- **Keep claims current.** When the UI changes, retake the affected screenshot:
+  a stale shot that shows a removed control is worse than none.
+- **Keep large binaries out of git where practical.** Prefer SVG for logos and
+  optimized PNG/WebP for screenshots. If files get heavy, consider storing them
+  outside the repo and linking instead.
+- Caption every asset above with what it shows so copywriters can match it to a
+  claim in [`../copy/facts.md`](../copy/facts.md).
+
+Current layout:
+
+```
+media/
+  README.md      this file
+  icons/         the brand mark as PNGs (see table above)
+  logo/          the mark and lockup as SVG, light + dark (see table above)
+```
+
+Folders for the screenshots and other assets, when they are added:
+
+```
+media/
+  desktop/       desktop product screenshots, captioned
+  mobile/        mobile product screenshots, captioned
+  social/        Open Graph (1200x630) and other share-card sizes
+  demo/          short screen recordings / GIFs
+```

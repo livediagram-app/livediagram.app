@@ -15,6 +15,10 @@ import {
   isValidTelemetryEvent as isLivehuddleEvent,
 } from '@livehuddle/api-schema';
 import {
+  isServerEmittedEvent as isLiveknowledgeServerEvent,
+  isValidTelemetryEvent as isLiveknowledgeEvent,
+} from '@liveknowledge/api-schema';
+import {
   isServerEmittedEvent as isLivedocumentsServerEvent,
   isValidTelemetryEvent as isLivedocumentsEvent,
 } from '@livedocuments/api-schema';
@@ -31,6 +35,7 @@ import { CATALOGUE as LIVEDESIGN_SETTINGS } from '@liveworkspace/settings/catalo
 import { CATALOGUE as LIVEDIAGRAM_SETTINGS } from '@liveworkspace/settings/catalogues/livediagram';
 import { CATALOGUE as LIVEDOCUMENTS_SETTINGS } from '@liveworkspace/settings/catalogues/livedocuments';
 import { CATALOGUE as LIVEHUDDLE_SETTINGS } from '@liveworkspace/settings/catalogues/livehuddle';
+import { CATALOGUE as LIVEKNOWLEDGE_SETTINGS } from '@liveworkspace/settings/catalogues/liveknowledge';
 import { CATALOGUE as LIVEPLANNER_SETTINGS } from '@liveworkspace/settings/catalogues/liveplanner';
 import {
   isExplorerTelemetryEvent,
@@ -87,6 +92,11 @@ export const VOCABULARIES: Record<TelemetrySender, Vocabulary> = {
     isValid: isLivehuddleEvent as Vocabulary['isValid'],
     isServerOnly: isLivehuddleServerEvent,
   },
+  // liveknowledge is checked against its own api-schema (forked from livedocuments', so the same events today).
+  'liveknowledge.app': {
+    isValid: isLiveknowledgeEvent as Vocabulary['isValid'],
+    isServerOnly: isLiveknowledgeServerEvent,
+  },
 };
 
 // What liveworkspace.app may report in an app's name besides the Explorer's events: a setting of the app's changed
@@ -101,6 +111,7 @@ const CATALOGUES = [
   LIVEDOCUMENTS_SETTINGS,
   LIVEDESIGN_SETTINGS,
   LIVEHUDDLE_SETTINGS,
+  LIVEKNOWLEDGE_SETTINGS,
 ];
 const SITE_SETTINGS: Partial<Record<TelemetrySender, Set<string>>> = {
   // A shared switch flipped on the settings page opened for no app: once, in liveworkspace.app's own name.
@@ -110,6 +121,7 @@ const SITE_SETTINGS: Partial<Record<TelemetrySender, Set<string>>> = {
   'livedocuments.app': settingsSet(LIVEDOCUMENTS_SETTINGS),
   'livedesign.app': settingsSet(LIVEDESIGN_SETTINGS),
   'livehuddle.app': settingsSet(LIVEHUDDLE_SETTINGS),
+  'liveknowledge.app': settingsSet(LIVEKNOWLEDGE_SETTINGS),
 };
 
 export function isSiteSettingsEvent(app: TelemetrySender, event: TelemetryWireEvent): boolean {

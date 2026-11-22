@@ -121,6 +121,8 @@ export type TabStyleFrameParts = {
   subtitle: string;
   // The help link for the view that is up.
   help: ReactNode;
+  // The dialog's name (the profile's, else "Tab Style").
+  title: string;
   // Show Me's targets: the home, the Finish panel and the tab's finish.
   tourApi: TabStyleTourApi;
   onClose: () => void;
@@ -163,6 +165,11 @@ export type TabStyleSurface<Look extends TabStyleLook, Pattern extends string> =
   copy: TabStyleCopy;
   // Rows after the panels' in Fine-tune; none when unset.
   links?: readonly TabStyleLink[];
+  // A panel's body of the product's own, in place of the shared one (a Text panel that sets a heading and a body
+  // face); the shared body for a panel it answers nothing for, and for every panel when unset.
+  renderPanel?: (panel: TabStylePanel) => ReactNode;
+  // A Fine-tune row's line of the product's own, per panel; the shared line when unset.
+  panelValues?: Partial<Record<TabStylePanel, string>>;
 };
 
 /** A surface's changes to the base: any setting, and only the copy lines it words differently. */
@@ -176,6 +183,12 @@ export type TabStyleSurfaceChanges<Look extends TabStyleLook, Pattern extends st
 };
 
 export type TabStyleProfile<Look extends TabStyleLook, Pattern extends string> = {
+  // The dialog's name, in its header, its accessible name and the back bar; "Tab Style" when unset. A product whose
+  // style belongs to something other than a tab names it (liveknowledge's Knowledgebase Style).
+  title?: string;
+  // Whether the Looks heading row holds the Finish filter; shown when unset. A product whose looks set no finish
+  // leaves it out.
+  finishFilter?: boolean;
   looks: TabStyleLooks<Look>;
   themeSummary: (themeId: string) => { label: string; swatch: ReactNode };
   ThemeBrowser: ComponentType<TabStyleThemeBrowserProps>;
@@ -194,6 +207,9 @@ export type TabStyleProfile<Look extends TabStyleLook, Pattern extends string> =
   base: TabStyleSurface<Look, Pattern>;
   surfaces?: Partial<Record<TabStyleSurfaceName, TabStyleSurfaceChanges<Look, Pattern>>>;
 };
+
+/** The dialog's name when a profile gives none. */
+export const TAB_STYLE_TITLE = 'Tab Style';
 
 /** Every Fine-tune panel, in the home's order. */
 export const TAB_STYLE_PANELS: readonly TabStylePanel[] = ['theme', 'finish', 'font', 'canvas'];

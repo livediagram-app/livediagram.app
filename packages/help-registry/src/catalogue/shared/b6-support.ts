@@ -13,7 +13,7 @@ export const articles: Article[] = [
     category: 'About',
     categorySlug: 'about',
     parentSlug: 'about',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle', 'liveknowledge'],
     byApp: {
       livediagram: { category: 'About livediagram' },
       livedocuments: { category: 'About livedocuments' },
@@ -31,7 +31,14 @@ export const articles: Article[] = [
     category: 'About',
     categorySlug: 'about',
     parentSlug: 'about',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
     byApp: {
       livediagram: { title: 'Who Is livediagram For?', category: 'About livediagram' },
       liveplanner: { title: 'Who Is liveplanner For?', category: 'About liveplanner' },
@@ -68,7 +75,14 @@ export const articles: Article[] = [
     keywords: 'sign in up anonymous login register benefits sync account',
     category: 'Getting Started',
     categorySlug: 'getting-started',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'keyboard-essentials',
@@ -88,8 +102,9 @@ export const articles: Article[] = [
       'share link collaborate invite send url realtime together diagram document meet space',
     category: 'Getting Started',
     categorySlug: 'getting-started',
-    apps: ['livediagram', 'livedocuments', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livehuddle', 'liveknowledge'],
     byApp: {
+      liveknowledge: { title: 'Sharing Your Knowledgebase' },
       livediagram: { title: 'Sharing Your Canvas' },
       livedocuments: { title: 'Sharing Your Document' },
       livehuddle: { title: 'Sharing Your Space' },
@@ -152,7 +167,14 @@ export const articles: Article[] = [
     category: 'Policies',
     categorySlug: 'policies',
     parentSlug: 'policies',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'data-privacy',
@@ -164,7 +186,14 @@ export const articles: Article[] = [
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'offline-mode',
@@ -176,7 +205,14 @@ export const articles: Article[] = [
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'open-source-trust',
@@ -187,7 +223,7 @@ export const articles: Article[] = [
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle', 'liveknowledge'],
   },
   {
     slug: 'share-link-security',
@@ -199,7 +235,14 @@ export const articles: Article[] = [
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'what-we-collect',
@@ -211,7 +254,14 @@ export const articles: Article[] = [
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'telemetry-dashboard',
@@ -223,7 +273,14 @@ export const articles: Article[] = [
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security/what-we-collect',
     parentSlug: 'what-we-collect',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'desktop',
@@ -264,6 +321,7 @@ export const articles: Article[] = [
     category: 'Tools',
     categorySlug: 'tools',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    byApp: {},
   },
   {
     slug: 'layout-cleanup',
@@ -305,6 +363,7 @@ export const articles: Article[] = [
     category: 'Tools',
     categorySlug: 'tools',
     apps: ['livediagram', 'livedocuments'],
+    byApp: {},
   },
   {
     slug: 'zen-mode',
@@ -321,10 +380,10 @@ export const articles: Article[] = [
     description:
       'Rules your work runs on its own: when something happens, if conditions hold, then do the steps.',
     keywords:
-      'automation automations automate rule rules trigger condition step workflow schedule scheduled recurring nightly reset revert snapshot slack microsoft teams connection connections webhook incoming signed hmac email notify audit trail template templates ai summarise describe zapier',
+      'automation automations automate rule rules trigger condition step workflow schedule scheduled recurring nightly reset revert snapshot slack microsoft teams connection connections webhook incoming signed hmac email notify audit trail template templates ai summarise describe zapier review due verified owner unanswered question disagree',
     category: 'Tools',
     categorySlug: 'tools',
-    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle', 'liveknowledge'],
   },
   {
     slug: 'browser-compatibility',
@@ -333,7 +392,14 @@ export const articles: Article[] = [
     keywords: 'chrome safari firefox edge supported rendering glitch display broken',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'cannot-sign-in',
@@ -343,7 +409,14 @@ export const articles: Article[] = [
     keywords: 'login failed locked out access problem cant sign in error code',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'collaboration-issues',
@@ -352,7 +425,14 @@ export const articles: Article[] = [
     keywords: 'sync realtime not working lag disconnect websocket updates stale',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'document-not-loading',
@@ -389,6 +469,13 @@ export const articles: Article[] = [
       'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data document project',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
 ];

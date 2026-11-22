@@ -90,6 +90,21 @@ const SAMPLES: Record<ArtApp, AppSamples> = {
     folders: ['Offices', 'Events'],
     element: 'Welcome',
   },
+  liveknowledge: {
+    work: [
+      'Team Handbook',
+      'Engineering Guide',
+      'Onboarding',
+      'Runbooks',
+      'Product Specs',
+      'Support Answers',
+      'Decisions',
+      'Glossary',
+    ],
+    tabs: ['Getting Started', 'How We Work'],
+    folders: ['Engineering', 'People'],
+    element: 'Heading',
+  },
 };
 
 /** The samples for the app the help is built for, the diagram's under All Apps. */

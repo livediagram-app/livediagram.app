@@ -9,6 +9,7 @@
 @source inline("dark:bg-amber-500/15");
 @source inline("dark:bg-emerald-400/10");
 @source inline("dark:bg-emerald-500");
+@source inline("dark:bg-lime-400/20");
 @source inline("dark:bg-orange-500");
 @source inline("dark:bg-red-950/40");
 @source inline("dark:bg-rose-400/10");
@@ -22,6 +23,7 @@
 @source inline("dark:bg-violet-500/20");
 @source inline("dark:border-brand-500/30");
 @source inline("dark:border-emerald-500/50");
+@source inline("dark:border-lime-300");
 @source inline("dark:fill-emerald-500/20");
 @source inline("dark:fill-sky-800");
 @source inline("dark:fill-slate-100");
@@ -40,6 +42,7 @@
 @source inline("dark:shadow-black/50");
 @source inline("dark:stroke-slate-950");
 @source inline("dark:text-brand-300/80");
+@source inline("dark:text-lime-200");
 @source inline("dark:text-red-400");
 @source inline("dark:text-slate-950");
 @source inline("dark:to-slate-950/50");

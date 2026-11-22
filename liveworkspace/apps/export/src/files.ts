@@ -32,6 +32,7 @@ export const APP_EXTENSION: Record<App, string> = {
   livedocuments: 'livedocuments',
   livedesign: 'livedesign',
   livehuddle: 'livehuddle',
+  liveknowledge: 'liveknowledge',
 };
 
 /** The tabs a whole-item envelope holds, in order: `{ kind, …, <noun>: { tabs: [{ id, name }] } }`. */
@@ -190,13 +191,13 @@ export function readme(facts: ReadmeFacts): string {
     'Your liveworkspace data',
     '=======================',
     '',
-    `Everything ${whose} owned in livediagram, liveplanner, livedocuments, livedesign and livehuddle on`,
+    `Everything ${whose} owned in livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge on`,
     `${iso(facts.madeAt).slice(0, 10)}: ${facts.items} item${facts.items === 1 ? '' : 's'}, ${facts.comments} comment${facts.comments === 1 ? '' : 's'}${facts.kind === 'personal' ? ` and ${facts.images} image${facts.images === 1 ? '' : 's'}` : ''}.`,
     '',
     'What is where',
     '-------------',
     '',
-    'livediagram/, liveplanner/, livedocuments/, livedesign/, livehuddle/',
+    'livediagram/, liveplanner/, livedocuments/, livedesign/, livehuddle/, liveknowledge/',
     '    One folder per item, named after the item and its id. In each:',
     '    - <Name>.<app>   the whole item as JSON: every tab, element and setting, exactly as',
     '                     liveworkspace keeps it. This is the file to keep, and to bring back.',
@@ -214,8 +215,8 @@ export function readme(facts: ReadmeFacts): string {
     'Bringing an item back',
     '---------------------',
     '',
-    "Each item's .livediagram, .liveplanner, .livedocuments, .livedesign or .livehuddle file is the same file",
-    'liveworkspace writes to Google Drive. To make a new item from one: put the file in your',
+    "Each item's .livediagram, .liveplanner, .livedocuments, .livedesign, .livehuddle or .liveknowledge file is the",
+    'same file liveworkspace writes to Google Drive. To make a new item from one: put the file in your',
     'Google Drive, right-click it, choose Open with > liveworkspace, then Import as a copy.',
     'The file is plain JSON, so any program can read it too.',
   ];

@@ -44,7 +44,7 @@ profile.json                        a personal export: the account, its profile,
 team.json                           a team export: the team's id and name
 comments.json, comments.csv         the comments (personal: the ones I wrote; team: every one), with their item and tab
 livediagram/<Name> (<id>)/          one folder per item, by app (liveplanner/, livedocuments/, livedesign/,
-                                    livehuddle/ alike)
+                                    livehuddle/, liveknowledge/ alike)
   <Name>.livediagram                the item's whole file, JSON, exactly as the Drive mirror writes it
   01 <Tab>.png                      a picture of each tab, in order (up to EXPORT_TAB_PICTURES_MAX)
   <Board or Sheet>.csv              liveplanner only: each Board tab's cards and each Sheet's cells
@@ -177,7 +177,8 @@ the person is ever in them. A guest id answers `403`, a wrong key `401`.
 
 ### The apps
 
-Every app has one, livehuddle's Spaces included (launched November 2026; Work Tracker #447). An app whose origin
+Every app has one, livehuddle's Spaces included (launched November 2026; Work Tracker #447) and liveknowledge's
+Knowledgebases (`DATA_EXPORT_KEY_LIVEKNOWLEDGE`, `APP_ORIGIN_LIVEKNOWLEDGE`). An app whose origin
 (`APP_ORIGIN_<APP>`) or key (`DATA_EXPORT_KEY_<APP>`) the service is not given is not reachable: its items are never
 asked for, each is named in the README's **Not included** with `its app is not part of downloads yet`, and the export
 carries on and finishes as any other. That is how livehuddle's Spaces read until its key is set on both sides.

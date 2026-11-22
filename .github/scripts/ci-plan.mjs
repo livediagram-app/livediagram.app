@@ -32,7 +32,9 @@ const [TURBO_BIN, ...TURBO] = (process.env.TURBO_CMD ?? 'pnpm dlx turbo@2.11.10'
 
 // Each group: its folders, its big editor app (sharded), its CLI (packed), and how it checks format.
 // A product forked in-tree before its launch can set `held: true` (docs/ci.md): its suites then run only on its own
-// changes, and none of its Workers deploy. None is held today (livehuddle launched with Work Tracker #189).
+// changes, and none of its Workers deploy. liveknowledge is held: the platform's lists name it, but its domain, KV
+// namespaces and secrets are the owner's to make (liveknowledge/docs/specs/016-platform/platform-registration.md
+// "DNS, domain, secrets and billing"), and a deploy before them would fail. livehuddle launched with Work Tracker #189.
 const GROUPS = [
   {
     group: 'livediagram',
@@ -70,6 +72,14 @@ const GROUPS = [
     cli: null,
   },
   {
+    group: 'liveknowledge',
+    dirs: ['liveknowledge/'],
+    editor: '@liveknowledge/editor',
+    editorDir: 'liveknowledge/apps/editor',
+    cli: 'liveknowledge/apps/cli',
+    held: true,
+  },
+  {
     group: 'platform',
     dirs: ['packages/', 'liveworkspace/'],
     editor: null,
@@ -91,7 +101,7 @@ const RUN_ALL = [
   /^prettier\.config\.js$/,
   /^\.prettierignore$/,
   /^\.npmrc$/,
-  /^(livediagram|liveplanner|livedesign|livedocuments|livehuddle)\/(package\.json|tsconfig\.base\.json|prettier\.config\.js|\.prettierignore)$/,
+  /^(livediagram|liveplanner|livedesign|livedocuments|livehuddle|liveknowledge)\/(package\.json|tsconfig\.base\.json|prettier\.config\.js|\.prettierignore)$/,
 ];
 
 // Deploys ignore what only CI and formatting read.

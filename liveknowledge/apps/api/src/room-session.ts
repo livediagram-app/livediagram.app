@@ -1,0 +1,184 @@
+// One session's state in the room (docs/specs/015-api/api.md, Realtime model): what the room pins on each
+// socket's serialized attachment at the upgrade, read from the headers only the api worker can set.
+import { isAccessLevel, type AccessLevel } from '@liveknowledge/api-schema';
+import {
+  COLLAB_KEY_HEADER,
+  REACTION_PERSON_HEADER,
+  sessionCollabKey,
+  sessionReactionPerson,
+} from '@liveworkspace/api-kit/collab-key';
+import type { ParticipantPresence } from './types';
+import type { StoredArticleHold } from './room-article-holds';
+
+// Everything the room knows about one session, persisted in the socket's
+// serialized attachment so it SURVIVES HIBERNATION (an in-memory Map
+// would silently lose it on eviction, wiping roles and presence for
+// every connected peer):
+//
+//   - `presenceId`: the server-assigned ephemeral presence id
+//     (docs/specs/015-api/public-api-and-tokens.md §6), minted once at upgrade time.
+//   - `verifiedRole`: the server-resolved role from X-Verified-Role —
+//     the trust boundary. It must never be re-derivable from anything
+//     the client sends, so it's captured at the upgrade and pinned here.
+//   - `presence`: the participant identity published via `hello` (with
+//     id / role force-stamped from the two fields above), including the
+//     `tabId` updated on every tab-focus op. `null` means "connected
+//     but hasn't said hello yet" — those clients receive presence but
+//     aren't included in the presence list.
+//
+// Size: serializeAttachment enforces a small per-socket limit (2 KB
+// historically). Worst case here is presenceId (36) + role (4) + a
+// name clamped to MAX_PARTICIPANT_NAME_LEN (120) + a color clamped to
+// MAX_COLOR_LEN (64) + a tabId clamped to MAX_TAB_ID_LEN (128) — a few
+// hundred bytes, comfortably under the limit. The clamps are what make
+// that bound hold: hello payloads arrive straight off the wire, so
+// without them a hostile frame could make serializeAttachment throw.
+export type SessionAttachment = {
+  presenceId: string;
+  verifiedRole?: AccessLevel;
+  presence: ParticipantPresence | null;
+  //   - `collabKey`: the session's collab key (docs/specs/013-workspace/share-roles.md "The collab key"), from
+  //     X-Verified-Collab-Key, or minted here for a session with no identity: what the roster's `key` is, and the
+  //     only key its answers and reactions may name. Absent on an attachment from before it existed.
+  collabKey?: string;
+  //   - `reactionPerson`: the person's public id the room stamps on each reaction this session leaves
+  //     (docs/specs/012-collaboration/comment-reactions.md), from X-Verified-Reaction-Person. Absent with no identity.
+  reactionPerson?: string;
+  //   - `multiplayer`: this session belongs to a multiplayer session the
+  //     room has already counted (Document·Used·Multiplayer, docs/specs/017-telemetry/telemetry.md). See
+  //     room-multiplayer.ts for why the mark lives here.
+  multiplayer?: boolean;
+  //   - `tabScope`: the one tab this session is confined to
+  //     (docs/specs/013-workspace/tab-scoped-share-links.md), from X-Verified-Tab-Scope. Null / absent = every tab.
+  //   - `shareCode`: the share code that admitted it, from X-Verified-Share-Code,
+  //     so revoking or rescoping that code can close exactly its sockets.
+  tabScope?: string | null;
+  shareCode?: string | null;
+  //   - `personTag`: the verified account's per-document person tag, from X-Verified-Person
+  //     (docs/specs/024-agents/agent-changesets.md "Held elements", CS39): how the room tells an
+  //     agent's owner's own sessions apart without holding an owner id. 64 hex characters.
+  personTag?: string | null;
+  //   - `account`: a signed-in account holds this session, from X-Verified-Account
+  //     (docs/specs/014-identity/profile-picture.md §2). Only such a session may put a Google picture on the
+  //     roster, and only such a session receives the pictures on it. A guest has a person tag too, so the tag
+  //     alone cannot say it.
+  account?: boolean;
+  //   - `following`: the presence id this session follows (docs/specs/012-collaboration/follow-me-viewport.md
+  //     "Who follows whom"), from its `follow` op; absent when it follows nobody.
+  following?: string;
+  //   - `workbenchPairing`: the workbench pairing that opened this session (docs/specs/013-workspace/workbench-embeds.md),
+  //     from X-Verified-Workbench-Pairing, so unpairing or revoking its token closes exactly its sockets.
+  workbenchPairing?: string | null;
+  //   - `documentId`: the document this room serves, from X-Verified-Document, so a Participant's write knows its
+  //     row. The room is named after it, so every session carries the same value.
+  documentId?: string | null;
+  //   - `apiToken`: the API token whose ticket opened it (X-Verified-Api-Token, docs/specs/015-api/public-api-and-tokens.md
+  //     "Revoking a token"), so revoking the token closes exactly its sockets. Absent for every other session.
+  apiToken?: string | null;
+  //   - `grantExp`: when the index's grant this session holds lapses (epoch ms), from X-Verified-Grant-Exp; the
+  //     room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before (`renewAsked`) and drops the socket after.
+  //     Absent for a session admitted without one (tests).
+  grantExp?: number | null;
+  renewAsked?: boolean;
+  // The paragraph (or cell) this session holds while writing (docs/specs/007-editor/article-pages.md "Holding a
+  // paragraph"): on the attachment so it survives hibernation and goes with the socket. Its ids are bounded by
+  // parseArticleHold (64 characters each, the tab 128).
+  articleHold?: StoredArticleHold;
+};
+
+// A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
+const MAX_PERSON_TAG_LEN = 64;
+// An API token id is a UUID; the clamp keeps a forged header from bloating the attachment.
+const MAX_API_TOKEN_ID_LEN = 64;
+// A workbench pairing id is a UUID.
+const MAX_PAIRING_ID_LEN = 36;
+// A document id is usually a UUID, but an API or MCP client may choose a longer one, up to the documents route's
+// bound (200): the clamp keeps a forged header from bloating the attachment and never cuts an id the api accepts,
+// since a cut id fails every later check against the real one (a grant's renewal, a participant write).
+const MAX_DOCUMENT_ID_LEN = 200;
+
+/** The server-verified facts an upgrade carries, as the api worker set them (empty header = none). */
+type VerifiedSession = {
+  verifiedRole?: AccessLevel;
+  tabScope: string | null;
+  shareCode: string | null;
+  personTag: string | null;
+  collabKey?: string | null;
+  reactionPerson?: string | null;
+  workbenchPairing: string | null;
+  documentId: string | null;
+  apiToken?: string | null;
+  grantExp?: number | null;
+  account?: boolean;
+  // The document's owner and team as the grant names them (null owner: a grant that names none). Not pinned to the
+  // session: the room takes them as its own copy (document-room.ts takeHead).
+  head?: { owner: string | null; team: string | null };
+};
+
+// The grant's `exp` (epoch seconds) as epoch ms, or null.
+function grantExpOf(header: string | null): number | null {
+  const seconds = header ? Number(header) : NaN;
+  return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : null;
+}
+
+/**
+ * Read the upgrade's verified headers. The room trusts them because only the worker can set them:
+ * clients reach the DO via env.DOCUMENT_ROOM.get(...).fetch, never directly. The role is pinned into
+ * the attachment so the hello handler can re-stamp it onto the broadcast presence even after a
+ * hibernation cycle, defeating a crafted client that lies in its own hello payload.
+ */
+export function verifiedSessionOf(request: Request): VerifiedSession {
+  const header = (name: string) => request.headers.get(name) || null;
+  const role = request.headers.get('X-Verified-Role');
+  return {
+    verifiedRole: isAccessLevel(role) ? role : undefined,
+    tabScope: header('X-Verified-Tab-Scope'),
+    shareCode: header('X-Verified-Share-Code'),
+    personTag: header('X-Verified-Person'),
+    collabKey: header(COLLAB_KEY_HEADER),
+    reactionPerson: header(REACTION_PERSON_HEADER),
+    account: request.headers.get('X-Verified-Account') === '1',
+    workbenchPairing: header('X-Verified-Workbench-Pairing'),
+    documentId: header('X-Verified-Document'),
+    apiToken: header('X-Verified-Api-Token'),
+    grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
+    head: { owner: header('X-Verified-Owner'), team: header('X-Verified-Team') },
+  };
+}
+
+/**
+ * A new session's attachment: a fresh presence id, no hello yet, and every verified fact clamped so
+ * a forged header can't bloat the attachment past serializeAttachment's limit.
+ *
+ * The presence id (docs/specs/015-api/public-api-and-tokens.md §6) is a fresh server-assigned random,
+ * NOT the connector's real owner id, so a co-present collaborator (incl. a view-only share visitor)
+ * never reads an owner id off a presence frame. Being server-random it ALSO defeats presence
+ * impersonation: a joiner can't claim another peer's id because it never sees or sets one.
+ */
+export function newSessionAttachment(v: VerifiedSession, presenceId: string): SessionAttachment {
+  const reactionPerson = sessionReactionPerson(v.reactionPerson);
+  return {
+    presenceId,
+    verifiedRole: v.verifiedRole,
+    presence: null,
+    collabKey: sessionCollabKey(v.collabKey),
+    ...(reactionPerson ? { reactionPerson } : {}),
+    tabScope: v.tabScope,
+    shareCode: v.shareCode,
+    personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
+    workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
+    documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
+    grantExp: v.grantExp ?? null,
+    ...(v.apiToken ? { apiToken: v.apiToken.slice(0, MAX_API_TOKEN_ID_LEN) } : {}),
+    account: v.account === true,
+  };
+}
+
+/** A socket's session attachment. Null means "not a session we admitted" (or a corrupt attachment). */
+export function readSessionAttachment(ws: WebSocket): SessionAttachment | null {
+  try {
+    return (ws.deserializeAttachment() as SessionAttachment | null) ?? null;
+  } catch {
+    return null;
+  }
+}

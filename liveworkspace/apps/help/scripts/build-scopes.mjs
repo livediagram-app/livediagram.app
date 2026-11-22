@@ -15,6 +15,7 @@ import {
   cpSync,
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   renameSync,
   rmSync,
@@ -24,7 +25,14 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const APP = join(dirname(fileURLToPath(import.meta.url)), '..');
-const APPS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'];
+const APPS = [
+  'livediagram',
+  'liveplanner',
+  'livedocuments',
+  'livedesign',
+  'livehuddle',
+  'liveknowledge',
+];
 const SCOPES = ['all', ...APPS];
 const DEFAULT_SCOPE = 'livediagram';
 
@@ -35,6 +43,7 @@ const THEMES = {
   livedocuments: { theme: '@livedocuments/tailwind-config', print: ['#a34a0c', '#a34a0c'] },
   livedesign: { theme: '@livedesign/tailwind-config', print: ['#be123c', '#be123c'] },
   livehuddle: { theme: '@livehuddle/tailwind-config', print: ['#047857', '#10b981'] },
+  liveknowledge: { theme: '@liveknowledge/tailwind-config', print: ['#3f6212', '#4d7c0f'] },
   all: { theme: '@liveworkspace/tailwind-config', print: ['#334155', '#64748b'] },
 };
 
@@ -92,14 +101,20 @@ function run(command, args) {
     throw new Error(`[build-scopes] ${command} ${args.join(' ')} failed (${result.status})`);
 }
 
-/** Drops from an app's export the pages of articles and landings that do not apply to it. */
-function prune(dir, scope, manifest) {
+/** Drops from an app's export the pages of articles and landings that do not apply to it: each route's own files
+ *  (its HTML and every RSC payload beside it, which the Worker never serves since it redirects the route first) and
+ *  its social card. A route's folders stay, as they hold its subpages, which may apply. Measured on a full build
+ *  (2026-11-21): the payloads alone were 5,480 of the 17,032 files in dist/. */
+export function prune(dir, scope, manifest) {
   const drop = [
     ...Object.entries(manifest.articles),
     ...Object.entries(manifest.categories),
   ].filter(([, apps]) => apps.length > 0 && !apps.includes(scope));
   for (const [route] of drop) {
-    for (const file of ['index.html', 'index.txt']) rmSync(join(dir, route, file), { force: true });
+    const folder = join(dir, route);
+    if (existsSync(folder))
+      for (const entry of readdirSync(folder, { withFileTypes: true }))
+        if (entry.isFile()) rmSync(join(folder, entry.name), { force: true });
     rmSync(join(dir, 'og', `${route}.png`), { force: true });
   }
   return drop.length;

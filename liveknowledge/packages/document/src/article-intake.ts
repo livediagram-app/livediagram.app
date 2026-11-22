@@ -1,0 +1,450 @@
+// Elements coming into an article's writing (docs/specs/007-editor/article-pages.md "Zones",
+// "Into the writing"): an element added onto an article page outside every zone goes into a new
+// zone of the writing, at the block boundary nearest it. Which kind of zone, how big, and where its
+// elements sit in it are decided here; where in the writing it goes is the editor's (it alone
+// knows where the lines fall). Pure.
+import {
+  ARTICLE_ZONE_MAX,
+  ARTICLE_ZONE_MIN,
+  articlesOf,
+  type ArticleBlock,
+  type ArticleFlow,
+  type ArticleZoneAlign,
+  type ArticleZoneBlock,
+  type ArticleZoneWrap,
+} from './article-flow';
+import { withArticleFlow, withArticlePageCount } from './article-pages';
+import { withElementsMoved, zoneAnchorOf, zoneCanvasRect, zoneMemberIds } from './article-zones';
+import { isBoxed, type Element, type Tab } from './index';
+import { pagesOf, layOutPages, type LaidOutPage, type PageRect } from './page';
+import {
+  ARTICLE_DRAWING_PAD,
+  boundsOf,
+  type ZonePlan,
+  objectZoneScale,
+  zoneHeightMax,
+  zoneSide,
+  withElementsIntoZone,
+} from './article-zone-plan';
+export {
+  isDrawingElement,
+  zonePlanFor,
+  zoneHeightMax,
+  withElementsIntoZone,
+} from './article-zone-plan';
+
+/** Of `ids` (just added), the ones on an article page and inside no zone of its article, grouped
+ *  by article. An arrow pinned at both ends to elements already in a zone is left alone, and a margin
+ *  note's marker (it sits in the page's margin beside its text, never in the writing) is never taken. */
+export function looseOnArticles(
+  elements: readonly Element[],
+  ids: readonly string[],
+  pages: readonly LaidOutPage[],
+  articles: Readonly<Record<string, ArticleFlow>>,
+): Map<string, string[]> {
+  const byId = new Map(elements.map((e) => [e.id, e]));
+  const zones = new Map<string, PageRect[]>();
+  for (const [flow, doc] of Object.entries(articles)) {
+    const own = pages.filter((p) => p.flow === flow);
+    zones.set(
+      flow,
+      doc.blocks.flatMap((b) => {
+        if (b.type !== 'zone') return [];
+        const r = zoneCanvasRect(own, b);
+        return r ? [r] : [];
+      }),
+    );
+  }
+  const out = new Map<string, string[]>();
+  for (const id of ids) {
+    const el = byId.get(id);
+    if (!el || el.type === 'article-note') continue;
+    const at = zoneAnchorOf(el, elements);
+    const page = pages.find(
+      (p) =>
+        at.x >= p.rect.x &&
+        at.x <= p.rect.x + p.rect.width &&
+        at.y >= p.rect.y &&
+        at.y <= p.rect.y + p.rect.height,
+    );
+    if (!page?.flow || !articles[page.flow]) continue;
+    const inZone = zones
+      .get(page.flow)!
+      .some((r) => at.x >= r.x && at.x <= r.x + r.width && at.y >= r.y && at.y <= r.y + r.height);
+    if (inZone) continue;
+    const list = out.get(page.flow);
+    if (list) list.push(id);
+    else out.set(page.flow, [id]);
+  }
+  return out;
+}
+
+type ArticlesTab = Pick<Tab, 'elements'> & { pages?: unknown; articles?: unknown };
+
+/** Whether the writing holds a zone (a picture, an object or a drawing set into it): writing without one has
+ *  nothing for the intake to fit. */
+export function hasZoneBlock(doc: Pick<ArticleFlow, 'blocks'>): boolean {
+  const cached = zoneBlockSeen.get(doc.blocks);
+  if (cached !== undefined) return cached;
+  const has = doc.blocks.some((b) => b.type === 'zone');
+  zoneBlockSeen.set(doc.blocks, has);
+  return has;
+}
+
+// Whether each article's blocks hold a zone, by its blocks: the intake asks of every article after each commit, and a
+// commit changes one (a typing commit on a 100-card stack), so the rest are answered from here.
+const zoneBlockSeen = new WeakMap<readonly unknown[], boolean>();
+
+/**
+ * An article's zones fitted to their elements (docs/specs/007-editor/article-pages.md "Zones"):
+ * an object zone takes its object's size and keeps it at its corner (a resize from any handle);
+ * an object zone whose object is gone leaves the writing; a drawing zone grows down and across (to
+ * the text width) to keep its elements inside with ARTICLE_DRAWING_PAD to spare, and never shrinks past
+ * them. The same tab back when nothing changes, and at once (no page laid out) for writing without a
+ * zone. `laid` is the tab's pages laid out, when the caller has them: fitting every article of a tab
+ * then lays its pages out once, not once an article.
+ */
+export function withZonesFitted<T extends ArticlesTab>(
+  tab: T,
+  flow: string,
+  textWidth: number,
+  textHeight: number = ARTICLE_ZONE_MAX,
+  laid?: readonly LaidOutPage[],
+): T {
+  const doc = articlesOf(tab)[flow];
+  if (!doc || !hasZoneBlock(doc)) return tab;
+  const pages = (laid ?? layOutPages(pagesOf(tab))).filter((p) => p.flow === flow);
+  let elements = tab.elements;
+  let changed = false;
+  const blocks: ArticleBlock[] = [];
+  for (const b of doc.blocks) {
+    if (b.type !== 'zone') {
+      blocks.push(b);
+      continue;
+    }
+    const rect = zoneCanvasRect(pages, b);
+    if (!rect) {
+      blocks.push(b);
+      continue;
+    }
+    const members = elements.filter((el) => insideRect(rect, zoneAnchorOf(el, elements)));
+    if (b.zone === 'object') {
+      const obj = members.find(isBoxed);
+      if (!obj) {
+        changed = true;
+        continue;
+      }
+      const scale = objectZoneScale(obj, textWidth, textHeight);
+      const width = Math.round(obj.width * scale);
+      const height = Math.round(obj.height * scale);
+      // The zone as the writing stores it: never past the bounds a stored zone is read back within.
+      const zoneWidth = zoneSide(width);
+      const zoneHeight = zoneSide(height);
+      const sized = Math.abs(zoneWidth - b.width) > 0.5 || Math.abs(zoneHeight - b.height) > 0.5;
+      const placed = Math.abs(obj.x - rect.x) > 0.5 || Math.abs(obj.y - rect.y) > 0.5;
+      const scaled = Math.abs(width - obj.width) > 0.5 || Math.abs(height - obj.height) > 0.5;
+      if (placed || scaled)
+        elements = elements.map((el) =>
+          el.id === obj.id ? ({ ...el, x: rect.x, y: rect.y, width, height } as Element) : el,
+        );
+      if (sized) {
+        blocks.push({ ...b, width: zoneWidth, height: zoneHeight });
+        changed = true;
+      } else blocks.push(b);
+      if (placed || scaled) changed = true;
+      continue;
+    }
+    if (members.length === 0) {
+      blocks.push(b);
+      continue;
+    }
+    const box = boundsOf(members, elements);
+    const width = Math.round(
+      Math.min(textWidth, Math.max(b.width, box.x + box.width + ARTICLE_DRAWING_PAD - rect.x)),
+    );
+    // Grown to keep its elements, but never past what a page holds (nor what a stored zone reads back as).
+    const height = Math.round(
+      Math.min(
+        Math.max(b.height, zoneHeightMax(textHeight)),
+        Math.max(b.height, box.y + box.height + ARTICLE_DRAWING_PAD - rect.y),
+      ),
+    );
+    if (width !== b.width || height !== b.height) {
+      blocks.push({ ...b, width, height });
+      changed = true;
+    } else blocks.push(b);
+  }
+  if (!changed) return tab;
+  const nextDoc: ArticleFlow = doc.style ? { blocks, style: doc.style } : { blocks };
+  return {
+    ...tab,
+    elements,
+    articles: { ...(tab.articles as Record<string, ArticleFlow>), [flow]: nextDoc },
+  };
+}
+
+/** The elements of zones that left the writing (each where it last stood) removed with them, and
+ *  any arrow pinned to one, in turn. */
+export function withZoneContentsRemoved<T extends ArticlesTab>(
+  tab: T,
+  flow: string,
+  gone: readonly ArticleZoneBlock[],
+): T {
+  const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
+  const els = tab.elements;
+  const ids = new Set<string>();
+  for (const z of gone) {
+    const rect = zoneCanvasRect(pages, z);
+    if (!rect) continue;
+    for (const id of zoneMemberIds(els, rect)) ids.add(id);
+  }
+  if (ids.size === 0) return tab;
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const el of els) {
+      if (ids.has(el.id) || el.type !== 'arrow') continue;
+      const tied = [el.from, el.to].some(
+        (ep) =>
+          (ep.kind === 'pinned' && ids.has(ep.elementId)) ||
+          (ep.kind === 'on-arrow' && ids.has(ep.arrowId)),
+      );
+      if (tied) {
+        ids.add(el.id);
+        grew = true;
+      }
+    }
+  }
+  return { ...tab, elements: els.filter((el) => !ids.has(el.id)) };
+}
+
+const insideRect = (r: PageRect, p: { x: number; y: number }) =>
+  p.x >= r.x && p.x <= r.x + r.width && p.y >= r.y && p.y <= r.y + r.height;
+
+/** A zone the editor has just put into the writing, and where it measured it landing. */
+type LandedZone = {
+  id: string;
+  blocks: ArticleBlock[];
+  index: number;
+  x: number;
+  y: number;
+};
+
+/** The tab with the writing as the editor left it after putting a zone in: the zone placed where it
+ *  landed (`at`), the article grown to the page it landed on. With the zone's canvas rect, or
+ *  null when the article is gone. */
+export function withZoneLanded<T extends ArticlesTab>(
+  tab: T,
+  flow: string,
+  landed: LandedZone,
+): { tab: T; rect: PageRect | null } {
+  const own = pagesOf(tab).filter((p) => p.flow === flow).length;
+  if (own === 0) return { tab, rect: null };
+  const grown = withArticlePageCount(tab, flow, Math.max(own, landed.index + 1));
+  const page = layOutPages(pagesOf(grown)).filter((p) => p.flow === flow)[landed.index];
+  const doc = articlesOf(grown)[flow];
+  if (!page || !doc) return { tab, rect: null };
+  const blocks = landed.blocks.map((b) =>
+    b.id === landed.id ? { ...b, at: { page: page.id, x: landed.x, y: landed.y } } : b,
+  );
+  const zone = blocks.find((b) => b.id === landed.id);
+  const next = withArticleFlow(grown, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+  const rect =
+    zone && zone.type === 'zone'
+      ? {
+          x: page.rect.x + landed.x,
+          y: page.rect.y + landed.y,
+          width: zone.width,
+          height: zone.height,
+        }
+      : null;
+  return { tab: next, rect };
+}
+
+// A wrapped zone is at most this share of the text width.
+const ARTICLE_WRAP_MAX_SHARE = 2 / 3;
+
+/**
+ * A zone's wrap or place across the text changed (docs/specs/007-editor/article-pages.md "Zones"):
+ * one wrapped to the side is scaled down (its elements with it, about its corner) to at most two
+ * thirds of the text width. The writing then lays it out anew and its elements follow.
+ */
+export function withZoneWrap<T extends ArticlesTab>(
+  tab: T,
+  flow: string,
+  zoneId: string,
+  change: { wrap?: ArticleZoneWrap; align?: ArticleZoneAlign },
+  textWidth: number,
+): T {
+  const doc = articlesOf(tab)[flow];
+  const zone = doc?.blocks.find((b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone');
+  if (!doc || !zone) return tab;
+  const wrap = change.wrap ?? zone.wrap ?? 'inline';
+  const align = change.align ?? zone.align ?? 'center';
+  // Already so: the same tab back (no edit, no undo step).
+  if (wrap === (zone.wrap ?? 'inline') && align === (zone.align ?? 'center')) return tab;
+  const max = wrap === 'inline' ? textWidth : textWidth * ARTICLE_WRAP_MAX_SHARE;
+  const scale = Math.min(1, max / zone.width);
+  let elements = tab.elements;
+  if (scale < 1) {
+    const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
+    const rect = zoneCanvasRect(pages, zone);
+    if (rect) {
+      const ids = zoneMemberIds(elements, rect);
+      const plan: ZonePlan = { zone: zone.zone, width: 0, height: 0, bounds: rect, scale };
+      elements = withElementsIntoZone(elements, ids, plan, {
+        x: rect.x,
+        y: rect.y,
+        width: rect.width * scale,
+        height: rect.height * scale,
+      });
+    }
+  }
+  const { wrap: _w, align: _a, ...rest } = zone;
+  void _w;
+  void _a;
+  const next: ArticleZoneBlock = {
+    ...rest,
+    ...(wrap !== 'inline' ? { wrap } : {}),
+    ...(align !== 'center' ? { align } : {}),
+    width: Math.round(zone.width * scale),
+    height: Math.round(zone.height * scale),
+  };
+  const blocks = doc.blocks.map((b) => (b.id === zoneId ? next : b));
+  return {
+    ...withArticleFlow(tab, flow, doc.style ? { blocks, style: doc.style } : { blocks }),
+    elements,
+  };
+}
+
+/** A zone taken out of the writing with its elements. */
+export function withZoneRemoved<T extends ArticlesTab>(tab: T, flow: string, zoneId: string): T {
+  const doc = articlesOf(tab)[flow];
+  const zone = doc?.blocks.find((b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone');
+  if (!doc || !zone) return tab;
+  const emptied = withZoneContentsRemoved(tab, flow, [zone]);
+  const blocks = doc.blocks.filter((b) => b.id !== zoneId);
+  return withArticleFlow(emptied, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+}
+
+/** A zone let go of by the writing (Float): its block leaves the writing, its elements stay where
+ *  they are, in front of the text, as loose elements of the page. */
+export function withZoneReleased<T extends ArticlesTab>(tab: T, flow: string, zoneId: string): T {
+  const doc = articlesOf(tab)[flow];
+  if (!doc || !doc.blocks.some((b) => b.id === zoneId && b.type === 'zone')) return tab;
+  const blocks = doc.blocks.filter((b) => b.id !== zoneId);
+  return withArticleFlow(tab, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+}
+
+/** A drawing zone resized (its grips dragged): `height` tall, `width` wide, never smaller than its
+ *  elements need (ARTICLE_DRAWING_PAD past the furthest) nor than ARTICLE_ZONE_MIN, never taller
+ *  than ARTICLE_ZONE_MAX nor wider than the text (a wrapped zone: ARTICLE_WRAP_MAX_SHARE of it). */
+export function withZoneSize<T extends ArticlesTab>(
+  tab: T,
+  flow: string,
+  zoneId: string,
+  size: { width?: number; height?: number },
+  textWidth: number,
+  textHeight: number = ARTICLE_ZONE_MAX,
+): T {
+  const doc = articlesOf(tab)[flow];
+  const zone = doc?.blocks.find((b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone');
+  if (!doc || !zone) return tab;
+  const pages = layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
+  const rect = zoneCanvasRect(pages, zone);
+  let leastH = ARTICLE_ZONE_MIN;
+  let leastW = ARTICLE_ZONE_MIN;
+  if (rect) {
+    const els = tab.elements;
+    const members = els.filter((el) => zoneMemberIds(els, rect).has(el.id));
+    if (members.length) {
+      const box = boundsOf(members, els);
+      leastH = Math.max(leastH, box.y + box.height + ARTICLE_DRAWING_PAD - rect.y);
+      leastW = Math.max(leastW, box.x + box.width + ARTICLE_DRAWING_PAD - rect.x);
+    }
+  }
+  const widest =
+    (zone.wrap ?? 'inline') === 'inline' ? textWidth : textWidth * ARTICLE_WRAP_MAX_SHARE;
+  const height =
+    size.height === undefined
+      ? zone.height
+      : Math.round(Math.min(zoneHeightMax(textHeight), Math.max(leastH, size.height)));
+  const width =
+    size.width === undefined
+      ? zone.width
+      : Math.round(Math.min(Math.max(widest, leastW), Math.max(leastW, size.width)));
+  if (height === zone.height && width === zone.width) return tab;
+  const blocks = doc.blocks.map((b) => (b.id === zoneId ? { ...zone, width, height } : b));
+  return withArticleFlow(tab, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+}
+
+/** An object dragged off its zone and dropped on its own article's pages: where it was dropped. */
+type ObjectDraggedOut = { flow: string; zoneId: string; elementId: string; at: Point };
+type Point = { x: number; y: number };
+
+/**
+ * The objects an edit dragged out of their object zones and dropped on the same article's pages
+ * (docs/specs/007-editor/article-pages.md "Zones"): each object zone of `before` whose object, still
+ * on the tab, now has its centre off the zone and on one of the article's pages. The writing then
+ * moves the zone to where the object was dropped, rather than the object leaving it.
+ */
+export function objectsDraggedOut(before: ArticlesTab, now: ArticlesTab): ObjectDraggedOut[] {
+  const out: ObjectDraggedOut[] = [];
+  const docsBefore = articlesOf(before);
+  const docsNow = articlesOf(now);
+  const pagesBefore = layOutPages(pagesOf(before));
+  const pagesNow = layOutPages(pagesOf(now));
+  const elsBefore = before.elements;
+  const elsNow = now.elements;
+  for (const [flow, doc] of Object.entries(docsBefore)) {
+    const stillThere = new Set((docsNow[flow]?.blocks ?? []).map((b) => b.id));
+    const ownBefore = pagesBefore.filter((p) => p.flow === flow);
+    const ownNow = pagesNow.filter((p) => p.flow === flow);
+    for (const z of doc.blocks) {
+      if (z.type !== 'zone' || z.zone !== 'object' || !stillThere.has(z.id)) continue;
+      const was = zoneCanvasRect(ownBefore, z);
+      if (!was) continue;
+      // Members found once per zone (each anchor resolved once), not once per element.
+      const members = zoneMemberIds(elsBefore, was);
+      const objId = elsBefore.find((el) => isBoxed(el) && members.has(el.id))?.id;
+      const obj = objId ? elsNow.find((el) => el.id === objId) : undefined;
+      if (!obj || !isBoxed(obj)) continue;
+      const at = zoneAnchorOf(obj, elsNow);
+      const inside = (r: { x: number; y: number; width: number; height: number }) =>
+        at.x >= r.x && at.x <= r.x + r.width && at.y >= r.y && at.y <= r.y + r.height;
+      if (inside(was)) continue;
+      if (!ownNow.some((p) => inside(p.rect))) continue;
+      out.push({ flow, zoneId: z.id, elementId: obj.id, at });
+    }
+  }
+  return out;
+}
+
+/** A zone moved in the writing (landed where the editor measured it), its elements carried from
+ *  its old place to its new one in the same edit. */
+export function withZoneMoved<T extends ArticlesTab>(
+  t: T,
+  flow: string,
+  zoneId: string,
+  res: Parameters<typeof withZoneLanded>[2],
+): T {
+  const flowPages = (tab: T) => layOutPages(pagesOf(tab)).filter((p) => p.flow === flow);
+  const zoneOf = (tab: T) =>
+    articlesOf(tab)[flow]?.blocks.find(
+      (b): b is ArticleZoneBlock => b.id === zoneId && b.type === 'zone',
+    );
+  const before = zoneOf(t);
+  const from = before ? zoneCanvasRect(flowPages(t), before) : null;
+  const landed = withZoneLanded(t, flow, res);
+  if (!from || !landed.rect) return landed.tab;
+  const ids = zoneMemberIds(t.elements, from);
+  return {
+    ...landed.tab,
+    elements: withElementsMoved(
+      landed.tab.elements,
+      ids,
+      landed.rect.x - from.x,
+      landed.rect.y - from.y,
+    ),
+  };
+}

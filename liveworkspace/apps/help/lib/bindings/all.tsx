@@ -37,7 +37,7 @@ export const renderSocialCard = /* @__PURE__ */ createSocialCard({
   domain: 'liveworkspace.app',
   headline: 'Help for every app,',
   pitch: () => 'Guides for every liveworkspace app, in one place.',
-  footer: 'livediagram, liveplanner, livedocuments, livedesign and livehuddle.',
+  footer: 'livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge.',
   colours: { ground: ['#f8fafc', '#e2e8f0'], ink: '#0f172a', accent: '#475569' },
 });
 

@@ -115,7 +115,7 @@ switch as every `dark:` class (a `.light` island included). `--hero-lift` is the
 | ------------ | --------------------------------------------------------------- |
 | Height       | `h-[100px]` at every width; `sm:px-6`, `px-4` on a phone        |
 | Mark         | `size-9`, `rounded-[11px]`, glyph 20px                          |
-| Title        | 20px, `leading-tight`, `sm:truncate`, `max-sm:line-clamp-2`     |
+| Title        | 20px, `leading-tight`, `line-clamp-2`                           |
 | Line         | 13px / 18px, `sm:truncate`, `max-sm:line-clamp-2`               |
 | Centre piece | from `@4xl` (56rem header); title and line `@4xl:max-w-[26rem]` |
 | Gaps         | 12px between mark, words and actions; 8px between actions       |

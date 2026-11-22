@@ -3,21 +3,25 @@ import * as designArt from '../../livedesign/components/category-art';
 import * as diagramArt from '../../livediagram/components/category-art';
 import * as documentsArt from '../../livedocuments/components/category-art';
 import * as huddleArt from '../../livehuddle/components/category-art';
+import * as knowledgeArt from '../../liveknowledge/components/category-art';
 import * as plannerArt from '../../liveplanner/components/category-art';
 import * as designSupport from '../../livedesign/lib/articleIcons';
 import * as diagramSupport from '../../livediagram/lib/articleIcons';
 import * as documentsSupport from '../../livedocuments/lib/articleIcons';
 import * as huddleSupport from '../../livehuddle/lib/articleIcons';
+import * as knowledgeSupport from '../../liveknowledge/lib/articleIcons';
 import * as plannerSupport from '../../liveplanner/lib/articleIcons';
 import * as designColours from '../../livedesign/lib/featureColours';
 import * as diagramColours from '../../livediagram/lib/featureColours';
 import * as documentsColours from '../../livedocuments/lib/featureColours';
 import * as huddleColours from '../../livehuddle/lib/featureColours';
+import * as knowledgeColours from '../../liveknowledge/lib/featureColours';
 import * as plannerColours from '../../liveplanner/lib/featureColours';
 import * as designIcons from '../../livedesign/lib/featureIcons';
 import * as diagramIcons from '../../livediagram/lib/featureIcons';
 import * as documentsIcons from '../../livedocuments/lib/featureIcons';
 import * as huddleIcons from '../../livehuddle/lib/featureIcons';
+import * as knowledgeIcons from '../../liveknowledge/lib/featureIcons';
 import * as plannerIcons from '../../liveplanner/lib/featureIcons';
 
 // All Apps' card art (liveworkspace/docs/specs/017-help/help-centre.md "The home pages"): every app's scenes, icons
@@ -36,6 +40,7 @@ export const ALL_APPS_ART: HelpArt = {
     documentsColours.FEATURE_ENTITY_HEX,
     designColours.FEATURE_ENTITY_HEX,
     huddleColours.FEATURE_ENTITY_HEX,
+    knowledgeColours.FEATURE_ENTITY_HEX,
   ),
   categoryHex: firstWins(
     diagramColours.FEATURE_CATEGORY_HEX,
@@ -43,6 +48,7 @@ export const ALL_APPS_ART: HelpArt = {
     documentsColours.FEATURE_CATEGORY_HEX,
     designColours.FEATURE_CATEGORY_HEX,
     huddleColours.FEATURE_CATEGORY_HEX,
+    knowledgeColours.FEATURE_CATEGORY_HEX,
   ),
   featureIcons: firstWins(
     diagramIcons.FEATURE_ICONS,
@@ -50,6 +56,7 @@ export const ALL_APPS_ART: HelpArt = {
     documentsIcons.FEATURE_ICONS,
     designIcons.FEATURE_ICONS,
     huddleIcons.FEATURE_ICONS,
+    knowledgeIcons.FEATURE_ICONS,
   ),
   categoryIcons: firstWins(
     diagramIcons.FEATURE_CATEGORY_ICONS,
@@ -57,6 +64,7 @@ export const ALL_APPS_ART: HelpArt = {
     documentsIcons.FEATURE_CATEGORY_ICONS,
     designIcons.FEATURE_CATEGORY_ICONS,
     huddleIcons.FEATURE_CATEGORY_ICONS,
+    knowledgeIcons.FEATURE_CATEGORY_ICONS,
   ),
   featureFallback: diagramIcons.FEATURE_ICONS['the-canvas'],
   supportIcons: firstWins(
@@ -65,6 +73,7 @@ export const ALL_APPS_ART: HelpArt = {
     documentsSupport.SUPPORT_ARTICLE_ICONS,
     designSupport.SUPPORT_ARTICLE_ICONS,
     huddleSupport.SUPPORT_ARTICLE_ICONS,
+    knowledgeSupport.SUPPORT_ARTICLE_ICONS,
   ),
   supportFallback: diagramSupport.SUPPORT_ARTICLE_FALLBACK,
   categoryArt: firstWins(
@@ -73,5 +82,6 @@ export const ALL_APPS_ART: HelpArt = {
     documentsArt.CATEGORY_ART,
     designArt.CATEGORY_ART,
     huddleArt.CATEGORY_ART,
+    knowledgeArt.CATEGORY_ART,
   ),
 };

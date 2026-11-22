@@ -1,0 +1,380 @@
+// The writing as it is drawn, for an export (docs/specs/007-editor/article-pages.md "Everywhere a
+// page goes"): read off the live editor's layout, so the file matches the screen to the word. The
+// browser has already broken the lines, wrapped round the zones and moved text between pages; this
+// takes each word where it landed, with its font and colour, every painted background (a highlight,
+// code) and border (a quote's bar, a heading's rule, a divider), each list marker and to-do box, as
+// draw operations in canvas coordinates. article-draw.ts paints them into an SVG or onto a canvas.
+import type { ArticleDrawOp } from '@liveknowledge/document';
+import { splitPartsOf, type PartRect } from './article-footnote-split-look';
+import { blockTagger, type BlockTag, type BlockTagger } from './article-pdf-tags';
+
+export type { ArticleDrawOp } from '@liveknowledge/document';
+
+// Fully transparent: `rgba(r, g, b, 0)` or `rgb(r g b / 0)`. Never an opaque `rgb(r, g, 0)` (black, a red),
+// whose last number is its blue.
+const transparent = (c: string) =>
+  !c || c === 'transparent' || /^rgba\([^)]*,\s*0(\.0*)?\)$/.test(c) || /\/\s*0(\.0*)?\)$/.test(c);
+
+let measureCtx: CanvasRenderingContext2D | null = null;
+// The font's ascent and descent about the baseline, as the browser lays its content area out
+// (fontBoundingBox), in the element's own px.
+function metricsOf(cs: CSSStyleDeclaration, text: string): { ascent: number; descent: number } {
+  const size = parseFloat(cs.fontSize);
+  measureCtx ??= document.createElement('canvas').getContext('2d');
+  if (!measureCtx) return { ascent: size * 0.8, descent: size * 0.2 };
+  measureCtx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const m = measureCtx.measureText(text || 'x');
+  return {
+    ascent: m.fontBoundingBoxAscent || size * 0.8,
+    descent: m.fontBoundingBoxDescent || size * 0.2,
+  };
+}
+const ascentOf = (cs: CSSStyleDeclaration, text: string) => metricsOf(cs, text).ascent;
+
+// A split row's own rules, its side rules (drawn as backgrounds on screen) on each part as cut, and a closing rule
+// where a part ends early; a split header row's tint (its outline colour carries it, resolved) likewise.
+function splitRowOps(
+  el: HTMLElement,
+  split: { rects: PartRect[]; cut: PartRect[] },
+  toCanvas: (x: number, y: number) => { x: number; y: number },
+  ops: ArticleDrawOp[],
+): void {
+  const table = el.closest('table');
+  const rule = table ? getComputedStyle(table).borderTopColor : '';
+  // A 1 px rule inside the box's edge (`dx`, `dy`: canvas px inwards), as a border is drawn.
+  const line = (x1: number, y1: number, x2: number, y2: number, dx: number, dy: number) => {
+    const a = toCanvas(x1, y1);
+    const b = toCanvas(x2, y2);
+    ops.push({
+      k: 'line',
+      x1: a.x + dx,
+      y1: a.y + dy,
+      x2: b.x + dx,
+      y2: b.y + dy,
+      stroke: rule,
+      width: 1,
+    });
+  };
+  if (el.tagName === 'TR') {
+    const tint = el.querySelector(':scope > th') ? getComputedStyle(el).outlineColor : '';
+    if (tint && !transparent(tint))
+      for (const r of split.rects) {
+        const p = toCanvas(r.left, r.top);
+        const q = toCanvas(r.right, r.bottom);
+        ops.push({ k: 'rect', x: p.x, y: p.y, w: q.x - p.x, h: q.y - p.y, fill: tint, r: 0 });
+      }
+    return;
+  }
+  if (!rule || transparent(rule)) return;
+  const first = el.parentElement?.firstElementChild === el;
+  for (const r of split.rects) {
+    line(r.right, r.top, r.right, r.bottom, -0.5, 0);
+    if (first) line(r.left, r.top, r.left, r.bottom, 0.5, 0);
+  }
+  for (const r of split.cut) line(r.left, r.bottom, r.right, r.bottom, 0, -0.5);
+}
+
+/**
+ * The writing under `root` as draw operations. `toCanvas` maps a screen point to the canvas;
+ * `scale` is screen px per canvas px. Skips the editing chrome (page break labels, placeholders).
+ */
+// What is never drawn: a page break's label, a zone (its elements are drawn by the canvas), a
+// collaborator's caret, and editing chrome (a contents block's level chips and its hint).
+const SKIP = '.article-page-break, .article-zone, .article-peer-caret, .article-chrome';
+
+export function snapshotWriting(
+  root: HTMLElement,
+  toCanvas: (x: number, y: number) => { x: number; y: number },
+  scale: number,
+  // Numbers the blocks for a PDF's tags; shared by the writing and its notes, so the notes read after it.
+  tags: BlockTagger = blockTagger(),
+): ArticleDrawOp[] {
+  const ops: ArticleDrawOp[] = [];
+  const text: ArticleDrawOp[] = [];
+  const s = (n: number) => n / scale;
+  // Every block numbered in reading order first: a list's markers are met before any word.
+  tags.scan(root);
+  const blockOf = tags.of;
+  const elements = root.querySelectorAll<HTMLElement>('*');
+  // Backgrounds and borders first, under the words.
+  for (const el of Array.from(elements)) {
+    // Collaborators' carets are someone else's live presence, never part of the writing.
+    if (el.closest(SKIP)) continue;
+    // A margin note's tint is review furniture, never printed (its words are, as written); so is the
+    // tint of cells selected by a drag.
+    if (el.classList.contains('article-note')) continue;
+    const cs = getComputedStyle(el);
+    // A table row split above a page's notes is drawn ending there (article-footnote-split-look.ts).
+    const split = splitPartsOf(el, Array.from(el.getClientRects()), scale);
+    const rects = split?.rects ?? Array.from(el.getClientRects());
+    if (split) splitRowOps(el, split, toCanvas, ops);
+    // A table's rules: its top and left edges, each cell's right and bottom; a table split across
+    // pages is ruled on each.
+    const inTable = el.closest('.article-table') !== null;
+    if (!transparent(cs.backgroundColor) && !el.classList.contains('selectedCell')) {
+      for (const r of rects) {
+        const p = toCanvas(r.left, r.top);
+        ops.push({
+          k: 'rect',
+          x: p.x,
+          y: p.y,
+          w: s(r.width),
+          h: s(r.height),
+          fill: cs.backgroundColor,
+          r: parseFloat(cs.borderTopLeftRadius) || 0,
+        });
+      }
+    }
+    const edge = (width: string, color: string, style: string) =>
+      parseFloat(width) > 0 && style !== 'none' && !transparent(color);
+    if (edge(cs.borderLeftWidth, cs.borderLeftColor, cs.borderLeftStyle)) {
+      for (const r of rects) {
+        const a = toCanvas(r.left, r.top);
+        const b = toCanvas(r.left, r.bottom);
+        const w = parseFloat(cs.borderLeftWidth);
+        ops.push({
+          k: 'line',
+          x1: a.x + w / 2,
+          y1: a.y,
+          x2: b.x + w / 2,
+          y2: b.y,
+          stroke: cs.borderLeftColor,
+          width: w,
+        });
+      }
+    }
+    if (inTable && edge(cs.borderRightWidth, cs.borderRightColor, cs.borderRightStyle)) {
+      for (const r of rects) {
+        const a = toCanvas(r.right, r.top);
+        const b = toCanvas(r.right, r.bottom);
+        const w = parseFloat(cs.borderRightWidth);
+        ops.push({
+          k: 'line',
+          x1: a.x - w / 2,
+          y1: a.y,
+          x2: b.x - w / 2,
+          y2: b.y,
+          stroke: cs.borderRightColor,
+          width: w,
+        });
+      }
+    }
+    if (edge(cs.borderBottomWidth, cs.borderBottomColor, cs.borderBottomStyle)) {
+      const r = rects[rects.length - 1];
+      if (r) {
+        const a = toCanvas(r.left, r.bottom);
+        const b = toCanvas(r.right, r.bottom);
+        const w = parseFloat(cs.borderBottomWidth);
+        // A dotted or dashed rule (a contents entry's leader) is drawn dashed.
+        const dash = cs.borderBottomStyle === 'dotted' || cs.borderBottomStyle === 'dashed';
+        ops.push({
+          k: 'line',
+          x1: a.x,
+          y1: a.y - w / 2,
+          x2: b.x,
+          y2: b.y - w / 2,
+          stroke: cs.borderBottomColor,
+          width: w,
+          ...(dash ? { dash: true as const } : {}),
+        });
+      }
+    }
+    if (inTable && edge(cs.borderTopWidth, cs.borderTopColor, cs.borderTopStyle)) {
+      for (const r of rects) {
+        const a = toCanvas(r.left, r.top);
+        const b = toCanvas(r.right, r.top);
+        const w = parseFloat(cs.borderTopWidth);
+        ops.push({
+          k: 'line',
+          x1: a.x,
+          y1: a.y + w / 2,
+          x2: b.x,
+          y2: b.y + w / 2,
+          stroke: cs.borderTopColor,
+          width: w,
+        });
+      }
+    }
+    if (el.tagName === 'HR' && edge(cs.borderTopWidth, cs.borderTopColor, cs.borderTopStyle)) {
+      const r = rects[0];
+      if (r) {
+        const a = toCanvas(r.left, r.top);
+        const b = toCanvas(r.right, r.top);
+        ops.push({
+          k: 'line',
+          x1: a.x,
+          y1: a.y,
+          x2: b.x,
+          y2: b.y,
+          stroke: cs.borderTopColor,
+          width: parseFloat(cs.borderTopWidth),
+        });
+      }
+    }
+    // A list item's marker (a number, a bullet) or a to-do's box, from its ::before.
+    // An empty cell still stands in its row in a PDF's tags: a marker where it starts.
+    if ((el.tagName === 'TD' || el.tagName === 'TH') && !el.textContent?.trim()) {
+      const cell = blockOf(el);
+      const first = rects[0];
+      if (cell && first) {
+        const p = toCanvas(first.left, first.top);
+        ops.push({ k: 'empty', x: p.x, y: p.y, ...cell });
+      }
+    }
+    if (el.classList.contains('article-list')) {
+      // The marker is its item's label, read before the item's words.
+      const item = blockOf(el);
+      markerOps(el, toCanvas, s, ops, item && tags.marker(item));
+    }
+  }
+  // Then every word, where it landed.
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+    const parent = node.parentElement;
+    if (!parent || parent.closest(SKIP)) continue;
+    const content = node.textContent ?? '';
+    if (!content.trim()) continue;
+    const cs = getComputedStyle(parent);
+    let underline = false;
+    let strike = false;
+    for (let a: HTMLElement | null = parent; a && a !== root; a = a.parentElement) {
+      const line = getComputedStyle(a).textDecorationLine;
+      if (line.includes('underline')) underline = true;
+      if (line.includes('line-through')) strike = true;
+    }
+    const ascent = ascentOf(cs, content);
+    const tagged = blockOf(parent);
+    const flushWord = (word: string, first: DOMRect | null) => {
+      if (!word.trim() || !first) return;
+      const p = toCanvas(first.left, first.top);
+      text.push({
+        k: 'text',
+        x: p.x,
+        y: p.y + ascent,
+        text: word,
+        family: cs.fontFamily,
+        size: parseFloat(cs.fontSize),
+        weight: cs.fontWeight,
+        style: cs.fontStyle,
+        color: cs.color,
+        ...(underline ? { underline: true } : {}),
+        ...(strike ? { strike: true } : {}),
+        ...(tagged ?? {}),
+      });
+    };
+    // Word by word, each where the browser put it: a justified line's spaces, a wrapped line's
+    // break and a word moved to the next page all come out as laid out.
+    let word = '';
+    let first: DOMRect | null = null;
+    let lastTop = Number.NaN;
+    for (let i = 0; i < content.length; i++) {
+      const ch = content[i]!;
+      range.setStart(node, i);
+      range.setEnd(node, i + 1);
+      const rect = range.getClientRects()[0] ?? null;
+      const newLine =
+        rect && !Number.isNaN(lastTop) && Math.abs(rect.top - lastTop) > rect.height / 2;
+      if (/\s/.test(ch) || newLine) {
+        flushWord(word, first);
+        word = '';
+        first = null;
+        if (/\s/.test(ch)) {
+          if (rect) lastTop = rect.top;
+          continue;
+        }
+      }
+      if (!rect) continue;
+      if (!first) first = rect;
+      word += ch;
+      lastTop = rect.top;
+    }
+    flushWord(word, first);
+  }
+  return [...ops, ...text];
+}
+
+function markerOps(
+  li: HTMLElement,
+  toCanvas: (x: number, y: number) => { x: number; y: number },
+  s: (n: number) => number,
+  ops: ArticleDrawOp[],
+  tagged: BlockTag | null,
+): void {
+  const before = getComputedStyle(li, '::before');
+  const box = li.getBoundingClientRect();
+  const scale = box.width / li.offsetWidth || 1;
+  const left = box.left + (parseFloat(before.left) || 0) * scale;
+  const cs = getComputedStyle(li);
+  const lineH = (parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.5) * scale;
+  if (li.classList.contains('article-list-todo')) {
+    const size = 16 * scale;
+    const top = box.top + (lineH - size) / 2;
+    const p = toCanvas(left, top);
+    ops.push({
+      k: 'check',
+      x: p.x,
+      y: p.y,
+      size: s(size),
+      stroke: before.borderTopColor || cs.color,
+      done: li.classList.contains('article-done'),
+    });
+    return;
+  }
+  const marker = li.getAttribute('data-marker');
+  if (!marker) return;
+  const width = (parseFloat(before.width) || 22) * scale;
+  // On the first line's baseline: the line's half-leading above the content area, then the ascent.
+  const m = metricsOf(cs, marker);
+  const content = (m.ascent + m.descent) * scale;
+  const p = toCanvas(left + width, box.top + (lineH - content) / 2 + m.ascent * scale);
+  ops.push({
+    k: 'text',
+    x: p.x,
+    y: p.y,
+    text: marker,
+    family: cs.fontFamily,
+    size: parseFloat(cs.fontSize),
+    weight: '400',
+    style: 'normal',
+    color: before.color || cs.color,
+    anchor: 'end',
+    ...(tagged ?? {}),
+  });
+}
+
+/**
+ * The writing as soft bars, one per line of text (docs/specs/007-editor/article-pages.md "The Map
+ * shows each page's text as soft grey lines"): what a thumbnail or the Map draws, far cheaper than
+ * the words (one rect read per text node, not per character).
+ */
+export function snapshotBars(
+  root: HTMLElement,
+  toCanvas: (x: number, y: number) => { x: number; y: number },
+  scale: number,
+  ink: string,
+): ArticleDrawOp[] {
+  const ops: ArticleDrawOp[] = [];
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+    if (!node.textContent?.trim() || node.parentElement?.closest(SKIP)) continue;
+    range.selectNodeContents(node);
+    for (const r of Array.from(range.getClientRects())) {
+      if (r.width < 1) continue;
+      const p = toCanvas(r.left, r.top + r.height * 0.25);
+      ops.push({
+        k: 'rect',
+        x: p.x,
+        y: p.y,
+        w: r.width / scale,
+        h: (r.height * 0.5) / scale,
+        fill: ink,
+        r: 2,
+      });
+    }
+  }
+  return ops;
+}

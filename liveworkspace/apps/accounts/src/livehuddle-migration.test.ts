@@ -134,7 +134,7 @@ describe('livehuddle in accounts', () => {
     expect(email.subject).toBe('123456 is your livehuddle sign-in code');
     // The "one account" line, in every app's email and liveworkspace's own.
     const line =
-      'One free liveworkspace account signs you in to livediagram, liveplanner, livedocuments, livedesign and livehuddle.';
+      'One free liveworkspace account signs you in to livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge.';
     expect(email.text).toContain(line);
     expect(codeEmail('123456', emailBrand(env, null)).html).toContain(line);
   });
@@ -142,6 +142,6 @@ describe('livehuddle in accounts', () => {
   it('has its API among the token resources in production and staging', () => {
     expect(RESOURCES.production).toContain('https://livehuddle.app/api');
     expect(RESOURCES.staging).toContain('https://staging.livehuddle.app/api');
-    expect(RESOURCES.production).toHaveLength(5);
+    expect(RESOURCES.production).toHaveLength(6);
   });
 });

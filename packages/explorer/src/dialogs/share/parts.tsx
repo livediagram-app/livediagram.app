@@ -56,9 +56,13 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
 };
 
 // An app's own words for a level's blurb, where the shared one would mislead (liveworkspace/docs/specs/004-index/
-// one-explorer-contracts.md): livehuddle's Participant walks and adds nothing.
+// one-explorer-contracts.md): livehuddle's Participant walks and adds nothing; liveknowledge's writes and verifies.
 export const APP_LEVEL_BLURBS: Partial<Record<App, Partial<Record<Level, string>>>> = {
   livehuddle: { participate: 'Walks, talks and uses the pieces; adds nothing.' },
+  // liveknowledge's Participant is an Editor less three things (its share-roles.md): nothing there to vote on.
+  liveknowledge: {
+    participate: 'Writes and verifies pages. Can’t change the style or review period.',
+  },
 };
 
 /** A level's blurb for an app: its own words, or the shared one. */
@@ -102,11 +106,11 @@ export type ShareTab = { id: string; name: string };
 // approvals, Approval (approvals.md); and, for an item in a team, Team first (one-explorer-contracts.md "Sharing and access").
 export type ShareView = 'team' | 'passes' | 'app' | 'approval';
 
-// '' stands for every tab: All tabs, then each tab by name in order.
-export function ScopeOptions({ tabs }: { tabs: ShareTab[] }) {
+// '' stands for every tab: All tabs (All Pages on liveknowledge, scopeWords), then each tab by name in order.
+export function ScopeOptions({ tabs, all = 'All tabs' }: { tabs: ShareTab[]; all?: string }) {
   return (
     <>
-      <option value="">All tabs</option>
+      <option value="">{all}</option>
       {tabs.map((t) => (
         <option key={t.id} value={t.id}>
           {t.name}

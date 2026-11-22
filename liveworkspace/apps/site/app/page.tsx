@@ -31,6 +31,7 @@ const STEPS: Partial<Record<SiteId, string>> = {
   'livedocuments.app': 'write it up',
   'livedesign.app': 'make it look right',
   'livehuddle.app': 'talk it through',
+  'liveknowledge.app': 'keep what you learn',
 };
 
 // Every app is open source (each product's LICENSE). The second one changes for someone signed in (SignUpPromise).

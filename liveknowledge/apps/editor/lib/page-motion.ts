@@ -1,0 +1,220 @@
+// A slide's animated backgrounds (docs/specs/007-editor/pages-mode.md "Animated backgrounds"):
+// the motions offered, the theme colourings they come in, and the colours a motion layer paints
+// its moving parts in. Pure: the Animated tab and the motion layer both read it.
+import {
+  hexToRgb,
+  mixHex,
+  rgbToHex,
+  pageIsDark,
+  shade,
+  tint,
+  type PageMotion,
+} from '@liveknowledge/document';
+
+type PageMotionEntry = {
+  id: PageMotion;
+  label: string;
+  // What it does, for its tooltip.
+  description: string;
+  // The colouring it starts in (a slide's background is most often deep).
+  colouring: PageMotionColouringId;
+};
+
+export const PAGE_MOTION_CATALOGUE: readonly PageMotionEntry[] = [
+  {
+    id: 'aurora',
+    label: 'Aurora',
+    description: 'Soft lights drifting across the sky',
+    colouring: 'deep',
+  },
+  {
+    id: 'mesh',
+    label: 'Mesh',
+    description: 'Colours slowly turning into each other',
+    colouring: 'bright',
+  },
+  {
+    id: 'starfield',
+    label: 'Starfield',
+    description: 'Stars twinkling as the sky drifts',
+    colouring: 'night',
+  },
+  {
+    id: 'retro-grid',
+    label: 'Retro Grid',
+    description: 'A neon grid rolling to the horizon',
+    colouring: 'night',
+  },
+  {
+    id: 'bokeh',
+    label: 'Bokeh',
+    description: 'Out-of-focus lights floating by',
+    colouring: 'deep',
+  },
+  {
+    id: 'waves',
+    label: 'Waves',
+    description: 'Layered waves rolling along the bottom',
+    colouring: 'deep',
+  },
+  {
+    id: 'spotlight',
+    label: 'Spotlight',
+    description: 'A stage light sweeping the slide',
+    colouring: 'night',
+  },
+  { id: 'beams', label: 'Beams', description: 'Shafts of light gliding past', colouring: 'deep' },
+  {
+    id: 'flow',
+    label: 'Flow',
+    description: 'Fine lines streaming on the diagonal',
+    colouring: 'deep',
+  },
+  { id: 'drift', label: 'Drift', description: 'Bubbles rising and fading', colouring: 'bright' },
+  {
+    id: 'ripple',
+    label: 'Ripple',
+    description: 'Rings spreading from the centre',
+    colouring: 'soft',
+  },
+  {
+    id: 'ribbons',
+    label: 'Ribbons',
+    description: 'Ribbons of colour flowing sideways',
+    colouring: 'soft',
+  },
+  {
+    id: 'sunburst',
+    label: 'Sunburst',
+    description: 'Rays turning slowly from below',
+    colouring: 'vivid',
+  },
+  {
+    id: 'fireflies',
+    label: 'Fireflies',
+    description: 'Small lights drifting and glowing',
+    colouring: 'night',
+  },
+  { id: 'snowfall', label: 'Snowfall', description: 'Snow falling softly past', colouring: 'deep' },
+  {
+    id: 'lava',
+    label: 'Lava',
+    description: 'Big soft blobs rising and sinking',
+    colouring: 'vivid',
+  },
+  {
+    id: 'dot-wave',
+    label: 'Dot Wave',
+    description: 'A grid of dots swelling in a wave',
+    colouring: 'deep',
+  },
+  {
+    id: 'clouds',
+    label: 'Clouds',
+    description: 'Soft clouds drifting across',
+    colouring: 'bright',
+  },
+  {
+    id: 'warp',
+    label: 'Warp',
+    description: 'Stars streaking out from the centre',
+    colouring: 'night',
+  },
+  {
+    id: 'orbits',
+    label: 'Orbits',
+    description: 'Planets circling a glowing sun',
+    colouring: 'deep',
+  },
+  {
+    id: 'radar',
+    label: 'Radar',
+    description: 'A sweep turning, lighting blips as it passes',
+    colouring: 'night',
+  },
+  {
+    id: 'equaliser',
+    label: 'Equaliser',
+    description: 'Bars rising and falling to a beat',
+    colouring: 'vivid',
+  },
+  {
+    id: 'confetti',
+    label: 'Confetti',
+    description: 'Confetti fluttering down',
+    colouring: 'bright',
+  },
+  {
+    id: 'threads',
+    label: 'Threads',
+    description: 'Fine threads of light weaving past',
+    colouring: 'deep',
+  },
+];
+
+// The theme colourings and the fills they make are the document's (page-theme-fills), shared with
+// every path that makes a page (a template's animated slides).
+export {
+  PAGE_MOTION_COLOURINGS,
+  colouringOf,
+  motionColouring,
+  motionFill,
+  type PageMotionColouringId,
+} from '@liveknowledge/document';
+import type { PageMotionColouringId } from '@liveknowledge/document';
+
+// What a motion's parts are painted with, and the seeds that place them: one copy for every product,
+// @liveworkspace/page-background/motion-paint. The paint is worked out here, from this product's colours.
+export { motionSeed, type MotionPaint } from '@liveworkspace/page-background/motion-paint';
+import type { MotionPaint } from '@liveworkspace/page-background/motion-paint';
+
+/** The colours a motion layer paints in, from its gradient. */
+export function motionPaint(fill: { from: string; to: string }): MotionPaint {
+  const mid = mixHex(fill.from, fill.to, 0.5);
+  const dark = pageIsDark({ background: { fill: { kind: 'solid', color: mid } } });
+  return {
+    a: fill.from,
+    b: fill.to,
+    hi: dark ? tint(mid, 0.72) : '#ffffff',
+    lo: dark ? shade(mid, 0.45) : shade(mid, 0.18),
+    strength: dark ? 1 : 0.7,
+    warm: hueTurned(fill.to, -42, dark ? 0.62 : 0.55),
+    cool: hueTurned(fill.to, 48, dark ? 0.6 : 0.55),
+  };
+}
+
+/** A colour turned `degrees` round the hue wheel, at saturation 0.75 and lightness `lightness`. */
+export function hueTurned(color: string, degrees: number, lightness: number): string {
+  const rgb = hexToRgb(color);
+  if (!rgb) return color;
+  const r = rgb.r / 255;
+  const g = rgb.g / 255;
+  const b = rgb.b / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  let h = 0;
+  if (d > 0) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+  }
+  h = (((h * 60 + degrees) % 360) + 360) % 360;
+  const s = 0.75;
+  const c = (1 - Math.abs(2 * lightness - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = lightness - c / 2;
+  const [r1, g1, b1] =
+    h < 60
+      ? [c, x, 0]
+      : h < 120
+        ? [x, c, 0]
+        : h < 180
+          ? [0, c, x]
+          : h < 240
+            ? [0, x, c]
+            : h < 300
+              ? [x, 0, c]
+              : [c, 0, x];
+  return rgbToHex({ r: (r1 + m) * 255, g: (g1 + m) * 255, b: (b1 + m) * 255 });
+}

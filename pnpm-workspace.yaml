@@ -20,3 +20,6 @@ packages:
   - 'livehuddle'
   - 'livehuddle/apps/*'
   - 'livehuddle/packages/*'
+  - 'liveknowledge'
+  - 'liveknowledge/apps/*'
+  - 'liveknowledge/packages/*'

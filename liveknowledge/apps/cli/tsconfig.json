@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "noEmit": true
+  },
+  // The Trusted Types globals the import engine's HTML reader is typed with (@liveknowledge/knowledge-import), which
+  // the trusted-types package declares for its own build. `import` never runs that reader: a Confluence export is
+  // refused before the engine is asked.
+  "include": ["src/**/*.ts", "../../../packages/trusted-types/src/globals.d.ts"],
+  "exclude": ["node_modules"]
+}

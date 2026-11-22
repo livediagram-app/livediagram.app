@@ -3,6 +3,7 @@
 // Which Tab? (blueprint item-ui.md "Test Rule and Run Rule"): the one pick a test or a run by hand makes, where the
 // rule is about a tab. It opens on the tab the person is on. An item with no tab says so, and offers nothing to run.
 
+import { useTabWords } from './tab-words';
 import { useState } from 'react';
 import { Button, DialogCloseButton, DialogFooter, DialogHeader } from '@liveworkspace/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -36,6 +37,7 @@ export function TabAskDialog({
   onClose: () => void;
 }) {
   const { item } = useAutomationsKit().plumbing.words;
+  const words = useTabWords();
   const [tab, setTab] = useState(() => firstTab(tabs, current));
   return (
     <Dialog open onClose={onClose} ariaLabel={title} size="sm">
@@ -45,10 +47,10 @@ export function TabAskDialog({
       <div className="px-6 py-5">
         {tabs.length === 0 ? (
           <p role="status" className="text-sm text-slate-600 dark:text-slate-300">
-            This {item} has no tabs yet. Add a tab, then try again.
+            {words(`This ${item} has no tabs yet. Add a tab, then try again.`)}
           </p>
         ) : (
-          <TabSelect label="Tab" value={tab} tabs={tabs} onChange={setTab} />
+          <TabSelect label={words('Tab')} value={tab} tabs={tabs} onChange={setTab} />
         )}
       </div>
       <DialogFooter>

@@ -20,6 +20,7 @@ workers_dev = false
 #   TELEMETRY_KEY_LIVEDOCUMENTS shared with livedocuments' api and mcp Workers as TELEMETRY_KEY
 #   TELEMETRY_KEY_LIVEDESIGN    shared with livedesign's api and mcp Workers as TELEMETRY_KEY
 #   TELEMETRY_KEY_LIVEHUDDLE    shared with livehuddle's api Worker as TELEMETRY_KEY
+#   TELEMETRY_KEY_LIVEKNOWLEDGE    shared with liveknowledge's api Worker as TELEMETRY_KEY
 [vars]
 ENVIRONMENT = "production"
 TELEMETRY_ENABLED = "true"

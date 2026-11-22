@@ -1,0 +1,409 @@
+# Dedicated route for new-document creation
+
+Creating a document has its own route, `/new`; the editor route, `/document/<id>`, only edits. `/new` handles "I want
+to create a document" end to end, so the editor's load never has to ask "do I mint an id?".
+
+## Scope
+
+- `/new` owns creating a document: identity, where it is stored and filed, the create request, and the handoff to
+  the editor.
+- The editor route hydrates only `/document/<id>` and `/document/shared?s=<code>` URLs. The editor's own empty route
+  (`/document`, `/document/placeholder`) hands off to `/new`.
+- Every **New Document** button (the Explorer, the not-found card) navigates to `/new`. Opening and share flows stay
+  on the editor route.
+- The editor route keeps the visitor's name confirmation on a share link (the `identityOnlyScreenOpen` mini-flow): it
+  is about the visitor's session, not about creating a document. An empty tab on an existing document shows its start
+  (Start Making Pages) in the editor, because the document is already loaded.
+- The router serves the editor at clean paths; a legacy `/live` prefix is stripped ([Router app](../016-platform/router-app.md)).
+
+## Route map
+
+| Route                   | Purpose                               | State                                                                                                                   |
+| ----------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `/document/<id>`        | Editor for an existing owned document | Static placeholder file fronts every id (see "Path scheme" below). Client reads the id from `window.location.pathname`. |
+| `/document/shared?s=<>` | Visitor view of a shared document     | Same placeholder file. Client reads the share code from the `s` query param.                                            |
+| `/new`                  | Create a document                     | Asks nothing: makes the document (from `?template=` or blank), POSTs it and hands it to the editor at `/document/<id>`. |
+
+## Path scheme
+
+Editor URLs use a path segment rather than a query string. `output:
+'export'` can't enumerate user-minted UUIDs at build time, so:
+
+1. Next.js builds a single placeholder at `out/document/placeholder/index.html`
+   via `generateStaticParams = [{ id: 'placeholder' }]` on the
+   dynamic-segment server page. The page wraps a client `EditorPage`
+   component that owns the editor logic.
+2. The editor worker (`apps/editor/src/worker.ts`) wraps the static-assets
+   binding and rewrites any `/document/<anything>` request to
+   `/document/placeholder/`. The browser URL stays `/document/<id>`.
+3. Client code reads `window.location.pathname` to extract the real
+   id. The placeholder id is treated as "no id".
+4. In `next dev`, Next.js resolves the dynamic segment natively so the
+   same URL works without going through the worker.
+
+There is no `?d=<id>` query scheme.
+
+### Not-found slot renders the editor
+
+`output: 'export'` forces `dynamicParams=false`. The client-side
+router compares the current URL against the static manifest on
+hydration and fires `notFound()` for any dynamic-segment value not
+enumerated in `generateStaticParams`. `placeholder` is the only
+enumerated id, so every real document URL triggers `notFound()` the
+instant the JS hydrates.
+
+The trigger cannot be prevented: Next.js's static export bakes the framework default 404 into the `notFound` slot
+of the layout's flight payload, and the client router reaches it before any URL swap could finish. So the editor
+**embraces the trigger**: `apps/editor/app/not-found.tsx`
+exports `<EditorPage />` directly. When the client router fires
+`notFound()` for an unrecognised id, the layout swaps from
+`children` to the `notFound` slot, which is the editor. The
+editor mounts, reads the real id from `window.location.pathname`
+(unchanged throughout: there is no URL swap to restore), and loads the document via the API. The address bar stays
+on `/document/<uuid>`; nothing about the URL needs to lie.
+
+### Unknown addresses
+
+A genuinely unknown address (a mistyped page, or a page another build had) reaches the editor through the same slot. It names no
+document (`documentIdFromPath` reads no id off anything but
+`/document/<id>`) and carries no share link, so the editor shows the in-app
+`<NotFound>` card at once, titled **Page Not Found**
+("There is no page at this address. Open a document from the Explorer or
+start fresh.") with its **Open Explorer** and **New Document** buttons, and asks
+the API for nothing. A document that is missing or not yours gets the same card
+titled **Document Not Found**. The card stands alone under the app header, with
+no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
+`/explorer`, New Document to `/new`). An embed shows the card with New Document
+only, opening the app in a new tab. Only the editor's own empty route (`/document`,
+`/document/placeholder`) hands off to `/new`., so a mistyped page never makes a document with no word of what went wrong.
+
+### Which not-found card
+
+Every refusal the api answers 404 is the same card; what it says depends only on what the visitor brought and who
+they are, never on whether the document exists, so a missing document and a private one always read alike. The first case that
+fits wins (`notFoundReason`, `@liveworkspace/workbench/lib/not-found-reason`, the same in every editor):
+
+- **Page Not Found**: the address names no document.
+- **No Longer Shared With You**: the document was open a moment ago and access ended.
+- **Link Not Valid** ("This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared
+  it for a new one."): the address carries a share code (`?s=`) the api refused, unknown, revoked or expired alike.
+  No "404" line.
+- **Document Not Found** with **Sign In to Request Access** ("This document doesn’t exist, or you don’t have access to it.", then on its own line "Joining a colleague on this document? Sign in to request access, and whoever runs it is asked to share it with you."): a signed-out
+  visitor. It signs in and comes back to the same address with the request's note open
+  ([Request Access](../../../../liveworkspace/docs/specs/004-index/request-access.md#on-screen)).
+- **Document Not Found** ("This document doesn’t exist or isn’t yours.", then on its own line "Joining a colleague on this document? Request access, and whoever runs it is asked to share it with you."): anyone else.
+
+**Request Access** ([Request Access](../../../../liveworkspace/docs/specs/004-index/request-access.md#on-screen)) is on the Missing card alone, on this app's own address: a signed-in visitor asks whoever runs the document to share it with them, with an optional note, and the button then says **Requested** ("If its owner shares it with you, you'll get an email."). The answer is the same for every address, so it tells them nothing about whether the document exists. Never in an embed or a workbench frame, and never to someone signed out, who signs in first. Where it is not offered (an embed) the Missing card keeps "ask them to share a URL via the Share button."
+
+In an embed a refused share code reads **No Longer Shared** ("This document is no longer shared at this link. Ask whoever
+shared it for a new one.") with no buttons, and the embed's browser tab names the card ("No Longer Shared | liveknowledge").
+An embed never offers Sign In to Request Access.
+
+### Archived
+
+A document its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
+never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
+**Document Not Found**), or this browser holds it archived ([offline-mode.md "Archived Offline"](../006-document/offline-mode.md#archived-offline)).
+Either way the editor shows the same card in place of the document, titled **Document Archived** ("This document is archived, so it
+can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
+tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
+it; **Open Explorer** goes to `/explorer`. An embed or a workbench frame shows the card with Open Explorer only (a step
+back, in a workspace frame), since nothing inside a frame moves it out. The code is
+`@liveworkspace/workbench/lib/archived` and the card's `archived` variant.
+
+The owner opening an archived document's address directly gets this card, never the load-error screen: the api relays the index's refusal as `409 archived`, which the arrival (`openOwnAddress`, `@liveworkspace/workbench/lib/editor-arrival`) takes as the archived answer (`isArchivedLoadError`), not a failed load. Only that exact answer: any other failure keeps its error screen.
+
+### The tab title
+
+The browser tab names what the page shows. An open document names it and the tab open in it ("<name> | <tab> | liveknowledge", owner 2026-11-17, `editorTabTitle`; "<name> | liveknowledge" until the tab is known), following renames and tab switches; a status screen in its place names the screen instead, in Title Case: **Document Not Found**, **Page Not Found**, **Link Not Valid**, **No Longer Shared With You**, **Document Archived**, **Document Deleted**, **Couldn’t Load Document**, **Password Required** ("Document Not Found | liveknowledge"), so a missing document's tab never reads as an empty one (`useBrowserTabTitle`'s `status`, held by the editor page's status shell). A load that ends on a status screen pins no tab on the address: the `#t=<tab>` pin waits for a tab whose content has loaded (`useTabEntryEffects`), so the placeholder tab's id never lands on the address of an item that never opened.
+
+### A failed load is not a missing document
+
+NotFound means "this document doesn't exist, or isn't yours". A load
+that fails (network down, 5xx, share link unresolvable) means
+nothing of the sort, and showing NotFound for it tells someone their
+work is gone when the server is merely unreachable. So the two are
+kept apart: only a clean 404 reaches NotFound, and a thrown request
+raises `loadError`, which renders `../packages/workbench/src/components/chrome/ApiErrorPage.tsx`
+instead. That card leads with **Retry** (a reload), because unlike a
+missing document the condition is expected to clear on its own. The
+same card serves the failed-create path on `/new`, with one exception: a
+create refused for its **placement** (`team_forbidden`, `folder_not_found`,
+`folder_scope_mismatch`, `placement_invalid`, see
+[Folders → Placement on create](../013-workspace/folders.md)) will not clear on
+a retry, so the card says why and offers **Choose another place** instead.
+On `/new`, **Retry** re-runs the same create under the same document and tab
+ids it first tried: a create that reached the server but whose answer was lost
+is then taken as the re-commit of an id the caller already owns, never a second
+document. The same holds one step earlier: the index makes the item before the api
+makes its content, so when the content's create is what failed, the Retry finds the
+item already there (`409 item_exists`). `apiCreateDocument` makes the item through
+`createOrResumeItem` (`@liveworkspace/index-client`, [One Explorer: contracts](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "A create that
+resumes"), which then asks for the item's grant and, when it is an edit grant (the caller's own item), carries
+the create on with it, so the Retry opens the new document; any other answer fails as before (Work Tracker #397).
+
+The distinction is made at every call site that can fail this way (the document load and the share-link resolve in `useIdentityBootstrap`,
+and the create in `/new`) rather than in one place, so it is worth
+knowing about when adding another.
+
+## Navigation flows
+
+### Owner creates a new document
+
+1. User clicks **New Document** in the Explorer.
+2. Browser navigates to `/new`.
+3. `/new` asks nothing: it shows the opening screen at its "Creating your document" stage and makes the
+   document at once, where new documents go by default ([What `/new` makes](#what-new-makes)).
+4. Page mints a UUID, POSTs `/api/documents` with the seeded tab(s), then hands the document to the editor in place
+   ([In-place handoff to the editor](#in-place-handoff-to-the-editor)).
+5. On the editor route, hydration extracts the id from the pathname and fetches the document + tab content. No
+   mint, no welcome gate. The empty tab opens on its start, where the Pages templates are
+   ([Template start](start-diagramming.md)).
+
+### Owner opens an existing document
+
+1. Explorer list row click → `window.location.assign('/document/<id>')`.
+2. The editor route hydrates. The create flow and identity modes never load.
+
+### Visitor follows a share link
+
+1. URL is `/document/shared?s=<code>`.
+2. Editor route hydrates via the existing `apiLoadShared` branch.
+3. Visitor identity confirmation (the `identityOnlyScreenOpen` mini-flow)
+   runs on the editor route: it is about the visitor, not the document.
+
+### Empty tab on an existing document
+
+1. User clears the active tab's content (or opens a tab that was
+   created empty).
+2. An Editor sees Start Making Pages in the middle of the canvas ([Template start](start-diagramming.md));
+   a Participant or Viewer sees the empty page ([The empty-canvas hint](#the-empty-canvas-hint)).
+
+### Document Not Found
+
+1. URL is `/document/<id>` but the API returns 404.
+2. The NotFound card renders; its **New Document** button navigates to `/new`.
+
+## The editor route's state
+
+- No welcome or template-picker state: an empty tab's templates are on its start.
+- If the pathname's id segment is the build-time placeholder and no `?s=` code is set, the editor route goes to
+  `/new` (via `window.location.assign`) and shows the opening screen until the navigation completes.
+- The visitor identity confirmation modal (`IdentityPrompt`, open while `identityPromptOpen`; its chrome flag
+  `identityOnlyScreenOpen`). Its name field takes at most `MAX_PARTICIPANT_NAME_LEN` (120) characters, the participant route's own cap, so a typed
+  name is always one the route saves.
+- Everything else: autosave, room, tab management, document metadata, the Share dialog.
+
+## `/new` state
+
+The new route owns:
+
+- The participant-identity bootstrap (same `liveknowledge:v2:self-id`
+  localStorage key, same `apiLoadSelf` / `apiSaveSelf` API).
+- The "name confirmed" persistence (same
+  `liveknowledge:v2:name-confirmed` localStorage key).
+- The create: mint a UUID, POST `/api/documents` with the
+  templated tab(s) inline (or one empty tab), and hand off to the editor.
+
+A back/forward-cache restore of `/new` never re-creates: `/new` creates as it mounts, so a restore backs out to
+the page that opened it (`history.back()` when the browser came from another page of this site, else the home
+page), logging `[new] restored, back out <target>` (`../packages/workbench/src/hooks/ui/useBackOutOnRestore.ts`).
+
+## What `/new` makes
+
+`/new` asks no question: there is one editor mode, Pages, so it makes the document as it mounts
+(`apps/editor/app/new/page.tsx`, the URL read by `apps/editor/lib/new-document-params.ts`):
+
+- **Which document:** the template `?template=<kind>` names (`newDocumentKind`), a blank for `?blank=1`, else one
+  empty tab that opens on its start (Start Making Pages), with the structure `?structure=<id>` names already picked
+  on it (`newDocumentStructure`, below). An unknown template kind is ignored rather than guessed,
+  so a stale link makes a document, not a 404; a retired kind opens its replacement.
+- **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
+  says: Offline for a guest, liveknowledge for a signed-in person (`defaultSaveLocationFor`). Decided at commit by
+  `resolveSaveLocation` (`app/new/useNewDocumentLocation.ts`): a guest never waits, and is created without waiting
+  for identity at all, a first visit's guest token aside ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open));
+  a browser that looks signed in waits for identity, so a signed-in person is never handed a document kept Offline.
+  A placement param (`folder` / `team`) names a server place, so it makes the create a cloud one whoever is
+  creating.
+- **Filed** (liveknowledge) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
+  otherwise the create carries no placement and the server files it in the person's
+  [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
+- **Named** after its template (`untitledNameForTemplate`); it is renamed in the editor.
+- **Themed** Default: the Theme and canvas controls change it later.
+- People change where documents go in **Settings > Explorer > Default Folders**, and move a document between
+  liveknowledge and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
+- Why: every answer a creation step could ask (name, store, folder, theme) has a later, better home, so asking up
+  front only slowed the first document down.
+
+### The empty-canvas hint
+
+There is no empty-canvas card or backdrop. An Editor gets the
+tab's start ([Template start](start-diagramming.md)), and an empty page offers nothing on itself ([Pages
+mode](pages-mode.md) "An empty page offers nothing on itself"); a Viewer or Participant sees the empty page.
+
+## Start Blank
+
+**Start Blank** is the name of the `?blank=1` link (Explorer Home's first-run blanks) and of the public sites'
+`/new?start=blank` ([Marketing site](../019-marketing/marketing-site.md#start-blank)). Both make a blank document
+whose start is already closed (`newDocumentStartsBlank`, `closeStartForBlank`), so whoever asked for a blank is not
+shown templates. Its telemetry token is `JustDraw` (`UI / Used / JustDraw`).
+
+- The placement context params compose with it (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a
+  caller can Start Blank straight into a folder or team library.
+- No tour is queued on this path or any other: no tour offers itself, and the
+  [Pages tour](pages-tour.md) waits on the footer's Start Pages Tour button.
+
+### The other parameters
+
+- **`/new?structure=<id>`** makes a new knowledgebase from that structure, a whole tree of pages
+  ([Describe to set up](../030-knowledgebase/describe-to-set-up.md#the-start-screen)). This is the URL the marketing
+  site's template gallery links every card to ([Marketing site](../019-marketing/marketing-site.md)), and Home's
+  Start a Knowledgebase From tiles. `/new` makes the knowledgebase as it makes any (one Start Here page, its start
+  offered) and queues the pick for that tab (`queueStructurePick`, `components/start/knowledgebase-start.ts`, kept in
+  sessionStorage beside the offer); the editor's start, once the page is loaded, takes the queued pick instead of
+  drawing itself and chooses it exactly as a click on its card does (`EditorStartPanels`): the structure's pages in
+  Start Here's place by `createStructure`, one undo step, the knowledgebase named after the structure, opening on its
+  first page. A workspace frame's create in place (`create-in-place.ts`) queues it the same way. An unknown id is
+  ignored, so the knowledgebase opens on its start as `/new` does; `blank` wins over it, and it wins over `template`.
+  It fires `UI / Used / TemplateLink`, as a template link does: a structure is the template.
+- **`/new?template=<kind>`** makes that writing template, a single page. No surface links one any more (older links
+  and the e2e suite do); it fires `UI / Used / TemplateLink`. `blank` wins when both are present.
+- **`/new?q=<words>`** (trimmed, at most 60 characters, `SEARCH_PRESET_MAX`) is handed to the new document's start
+  as its search ([Template start](start-diagramming.md) "Search handed over"). An empty `q` is ignored.
+- **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
+  ([Landing funnel](../019-marketing/landing-funnel.md)), added by a public page's CTA and
+  combinable with every param above. `useCtaAttribution` reads it once,
+  sends `Cta / Opened / <source>`, and strips it from the address bar with
+  `history.replaceState` (keeping the other params), so a reload or Back
+  can't count the arrival twice. The create then sends `Cta / Created / <source>`, once. An unknown
+  source is stripped and ignored.
+- **`?mode=`** is not read: there is one mode.
+
+### In-place handoff to the editor
+
+Every create from `/new` opens the editor **without a page load**. Once the document is persisted and
+placed, the page rewrites the address bar to `/document/<id>` with
+`history.replaceState` and renders the editor component (`EditorPage`, the
+same component `/document/<id>` and the not-found slot render) in its own
+place. The editor reads the id from `window.location.pathname` on mount, so
+it cannot tell the difference from a direct visit.
+
+- **Why:** a hard navigation would pay for a second full page load: the editor's
+  document, a second sign-in settle, a second identity round trip, and a
+  second, visually different loading screen after "Creating…". The in-place
+  swap keeps the one signed-in session, the one document, and one continuous
+  opening screen.
+- **The editor code is fetched ahead.** `/new` starts loading the editor's
+  chunk as soon as it mounts (the create needs it within a second), so the chunk downloads in
+  parallel with identity and the create request. If it is not ready at
+  handoff, the opening screen holds at the "Opening your document" stage
+  until it is.
+- **The opening screen is the editor's outermost Suspense fallback, so no lazy
+  piece inside the editor may suspend up to it.** Every `next/dynamic` import
+  in the editor app passes `ssr: false` (or a `loading` component), which gives
+  it a boundary of its own; without one, the first open of Settings or Search
+  would swap the whole editor for the opening screen until the dialog's chunk
+  landed. `lib/dynamic-has-boundary.test.ts` guards it.
+- **`replaceState`, not `pushState`:** `/new` is a one-shot creator, so the
+  editor URL takes its history entry. Reload and Back behave exactly as they
+  do after a direct `/document/<id>` visit.
+- **Nothing crosses the handoff but the URL.** No tour is queued (the [Pages tour](pages-tour.md) waits on its
+  button).
+- A failed create never hands off: the retryable error card shows instead.
+
+### The opening screen
+
+One screen covers the whole wait from the click to the editor: `/new`'s
+creating stage and the editor's own load (`DocumentLoading`) render the same
+full-screen component, so the handoff above never visibly changes screens.
+Its label moves from **"Creating your document"** (over "Setting up its first
+page") to **"Opening your document"** (over "Getting everything in place");
+everything else stays put. A document is pages (articles, slides and
+infographics), never a canvas, so the copy says page.
+
+- **Surface:** headerless and full height, on the canvas colour
+  (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
+  edges and two slowly drifting, blurred brand-tinted glows behind the
+  centre. Dark-aware like every screen ([Editor app](editor-app.md)).
+- **Centrepiece:** `PageBuildAnimation`, liveknowledge' own loader: a page
+  whose heading and paragraphs write themselves line by line behind a caret,
+  while a collaborator cursor labelled "You" drags a picture in between them;
+  then the work fans out into its other shapes, an infographic to one side
+  and a slide to the other, a sheen runs across the page, and it all
+  dissolves before the loop restarts. Each product's loader shows that product's own work.
+- **Continuity:** the loop's phase is measured from the first time the
+  animation mounts in the document, so a remount (the creating stage giving
+  way to the editor's load) continues the drawing where it was instead of
+  restarting it.
+- **Progress:** the label sits under the animation with a slim indeterminate
+  bar below it. After 10 seconds in the editor's load the screen adds
+  "This is taking longer than usual." with a Refresh button. Past that, the
+  load's watchdog takes over: one self-healing reload, then the load-error
+  screen with its recovery card ([Load recovery](load-recovery.md)).
+- **Reduced motion:** the page, infographic and slide sit finished; the
+  cursor, caret, glows and bar are still.
+- `PageBuildAnimation` is a bare illustration (no surface of its own),
+  so a card can compose it inside its own.
+- The bar is the shared `LoadingSweep`.
+
+Every create from `/new` honours the URL placement context (the `?folder` /
+`?team` pre-seed): the document files there, not silently at the personal root.
+
+### Placement rides the create
+
+The URL's placement context travels in the create body as
+`{ teamId?, folderId? }`, and the server files the document in the same write
+([Folders → Placement on create](../013-workspace/folders.md)). There is no
+follow-up placement request, so a document asked for in a team can never be left personal
+by a request that failed quietly.
+
+The create also carries the new document's creation `intent` (its template), so a create with no place chosen lands in the person's
+[default folder](../013-workspace/default-folders.md) for it, resolved by the server. A blank is filed by its
+intent. liveknowledge's start picks no template after creation (it offers whole-knowledgebase structures:
+[Describe to set up](../030-knowledgebase/describe-to-set-up.md#the-start-screen)), so nothing moves it later.
+
+- **A refused placement** shows the error card with copy for the reason, eyebrow
+  "Placement refused", title "Couldn't file the document there", and one action,
+  **Choose another place**, which reopens `/new` without the placement params, so the
+  next create goes where new documents go by default:
+  - `team_forbidden`: "You're not a member of that team, so the document can't be filed in its library."
+  - `folder_not_found`: "That folder no longer exists, or isn't yours."
+  - `folder_scope_mismatch`: "That folder belongs to a different space from the one you chose."
+  - `placement_invalid`: "That isn't a place a document can be filed."
+- **Any other failure** keeps the connection copy and **Try again**.
+- **Telemetry:** `Team / Added / Document` fires once a create into a team has succeeded,
+  never on a refused one.
+
+Telemetry: Start Blank (`/new?blank=1`) fires `UI / Used / JustDraw` alongside
+the usual `Document / Created` event, so its adoption is
+measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+
+## Themes
+
+`/new` shows no themes. Themes are picked from the Tab Style dialog (`ThemeBrowser`). The create path still
+carries a theme id (`onPick`, `commitNewDocument`, `buildTemplatedTab` take a `string`), always the caller's:
+`brand` on `/new`, the source tab's theme for a new tab.
+
+## API impact
+
+- No new endpoints. `POST /api/documents` already accepts an
+  optional `tabs` array per [Per-tab storage](../006-document/per-tab-storage.md); the route uses it,
+  and the placement `{ teamId?, folderId? }` ([Folders → Placement on create](../013-workspace/folders.md)).
+
+## Tests / sanity-check checklist
+
+- `/new` → the opening screen, then the editor on `/document/<id>`, on Start Making Pages.
+- `/document/<id>` (existing) → the editor hydrates.
+- `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
+- NotFound CTA → goes to `/new`.
+- "New Document" from Explorer → goes to `/new`.
+- `/new` → created at once on liveknowledge, filed in the person's default folder for it.
+- `/new?blank=1` → blank document created, its start closed.
+- `/new?blank=1&folder=<id>` → the blank document files into that folder.
+- `/new?template=slide-deck` → a slide deck created and the editor loads on `/document/<id>`.
+- `/new?template=not-a-kind` → a document that opens on its start.
+- `/new?q=article` → on the new document Start Making Pages opens with its search reading "article".
+
+## Out of scope
+
+- An animated transition between `/new` and the editor: the opening screen covers the wait.

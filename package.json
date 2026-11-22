@@ -28,12 +28,13 @@
     "dev:help": "turbo run dev --filter=@liveworkspace/help",
     "dev:design": "turbo run dev --filter=@livedesign/*",
     "dev:documents": "turbo run dev --filter=@livedocuments/*",
-    "dev:huddle": "turbo run dev --filter=@livehuddle/*"
+    "dev:huddle": "turbo run dev --filter=@livehuddle/*",
+    "dev:knowledge": "turbo run dev --filter=@liveknowledge/*"
   },
   "devDependencies": {
     "@liveworkspace/prettier-config": "workspace:*",
     "esbuild": "^0.28.2",
-    "oxlint": "^1.93.0",
+    "oxlint": "^1.94.0",
     "oxlint-tsgolint": "^7.0.2007",
     "prettier": "^3.10.1",
     "turbo": "^2.11.12",

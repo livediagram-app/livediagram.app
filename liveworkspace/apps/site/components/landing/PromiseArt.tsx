@@ -229,6 +229,7 @@ export function InboxArt() {
 
 // Teams across every app: one team, its people, and its work in each app.
 export function TeamsArt() {
+  const apps = listedApps();
   return (
     <ArtFrame className="flex flex-col items-center justify-center gap-3 px-3">
       <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900">
@@ -252,33 +253,38 @@ export function TeamsArt() {
           )}
         </span>
       </div>
-      {/* A line from the team to each app's column, the five columns' middles on a 320-wide grid. */}
+      {/* A line from the team to each app's column, each column's middle on a 360-wide grid. */}
       <svg
-        viewBox="0 0 320 18"
+        viewBox="0 0 360 18"
         preserveAspectRatio="none"
-        className="h-4 w-full max-w-80 text-slate-300 dark:text-slate-600"
+        className="h-4 w-full max-w-90 text-slate-300 dark:text-slate-600"
         fill="none"
       >
-        {[32, 96, 160, 224, 288].map((x) => (
-          <path
-            key={x}
-            d={`M160 1 C160 10 ${x} 8 ${x} 17`}
-            stroke="currentColor"
-            strokeWidth="1.25"
-            vectorEffect="non-scaling-stroke"
-          />
-        ))}
+        {apps
+          .map((_, i) => ((i + 0.5) * 360) / apps.length)
+          .map((x) => (
+            <path
+              key={x}
+              d={`M180 1 C180 10 ${x} 8 ${x} 17`}
+              stroke="currentColor"
+              strokeWidth="1.25"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
       </svg>
-      <div className="grid w-full max-w-80 grid-cols-5 gap-1.5">
-        {listedApps().map((app) => (
+      <div
+        className="grid w-full max-w-90 gap-1.5"
+        style={{ gridTemplateColumns: `repeat(${apps.length}, minmax(0, 1fr))` }}
+      >
+        {apps.map((app) => (
           <div
             key={app.id}
-            className="flex flex-col items-center gap-1 rounded-lg border border-slate-200 bg-white py-1.5 dark:border-slate-700 dark:bg-slate-900"
+            className="flex flex-col items-center gap-1 rounded-lg border border-slate-200 bg-white py-2 dark:border-slate-700 dark:bg-slate-900"
             style={ink(app)}
           >
             <AppMark app={app} className="size-5" />
-            <span className="text-[10px] font-semibold text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">
-              Northwind
+            <span className="flex size-3.5 items-center justify-center rounded bg-gradient-to-br from-emerald-400 to-teal-600 text-[8px] font-bold text-white">
+              N
             </span>
           </div>
         ))}
@@ -298,7 +304,7 @@ export function KeyArt() {
         ))}
         <span className="ml-2 text-[10px] text-slate-400">terminal</span>
       </div>
-      <div className="px-3 py-2.5 font-mono text-[11px] leading-relaxed">
+      <div className="px-3 py-2 font-mono text-[11px] leading-[1.35]">
         <div className="text-slate-300">
           <span className="text-emerald-400">$</span> export LW_TOKEN=lwt_
           <span className="text-slate-500">••••</span>3f9a
@@ -314,7 +320,7 @@ export function KeyArt() {
           </div>
         ))}
       </div>
-      <span className="absolute top-9 right-3 flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[10px] font-semibold text-white ring-1 ring-white/15">
+      <span className="absolute top-1 right-2 flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white ring-1 ring-white/15">
         <KeyGlyph />
         One token
       </span>

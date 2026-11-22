@@ -1,0 +1,214 @@
+// @vitest-environment jsdom
+import { renderHook } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { automaticPresenceColour } from '@liveworkspace/settings/presence';
+import { createShape, type BoxedElement, type ElementAction } from '@liveknowledge/document';
+import { elementIndicatorItems, useElementIndicators } from './useElementIndicators';
+
+// docs/specs/008-canvas/element-indicators.md: which indicators an element carries, and which
+// elements show theirs on their own face instead.
+
+const handlers = () => ({
+  onOpenComments: vi.fn(),
+  onOpenAction: vi.fn(),
+});
+const action = (status: 'open' | 'done', name: string | null = 'Sam Reed'): ElementAction => ({
+  id: 'a',
+  name: 'Follow up',
+  description: '',
+  assignee: { userId: 'u_sam', name },
+  teamId: null,
+  assignerId: 'me',
+  assignerName: null,
+  status,
+  createdAt: 0,
+  updatedAt: 0,
+});
+const thread = (n: number, resolved = false) => ({
+  resolved,
+  comments: Array.from({ length: n }, (_, i) => ({
+    id: String(i),
+    text: 'c',
+    authorId: 'me',
+    authorName: 'Me',
+    authorColor: '#000',
+    createdAt: 0,
+  })),
+});
+const kinds = (el: BoxedElement) => elementIndicatorItems(el, handlers()).map((i) => i.kind);
+
+describe('elementIndicatorItems', () => {
+  // Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): a stored one shows nothing.
+  it('lists what a shape carries, and nothing for a stored link or note', () => {
+    const el = {
+      ...createShape('square', 0, 0),
+      link: { kind: 'url', url: 'https://example.com' },
+      note: 'A note',
+      action: action('open'),
+      commentThread: thread(2),
+    } as BoxedElement;
+    expect(kinds(el)).toEqual(['action', 'comment']);
+  });
+
+  it('opens what each one stands for', () => {
+    const h = handlers();
+    const link = { kind: 'url', url: 'https://example.com' } as const;
+    const el = {
+      ...createShape('square', 0, 0),
+      link,
+      note: 'n',
+      action: action('open'),
+      commentThread: thread(1),
+    } as BoxedElement;
+    for (const item of elementIndicatorItems(el, h)) item.onClick();
+    expect(h.onOpenAction).toHaveBeenCalledWith(el.id);
+    expect(h.onOpenComments).toHaveBeenCalledWith(el.id);
+  });
+
+  it('leaves out a done action and resolved comments', () => {
+    const el = {
+      ...createShape('square', 0, 0),
+      link: { kind: 'element', elementId: 'x' },
+      action: action('done'),
+      commentThread: thread(3, true),
+    } as unknown as BoxedElement;
+    expect(kinds(el)).toEqual([]);
+  });
+
+  it('names an unnamed assignee and still colours their disc', () => {
+    const el = { ...createShape('square', 0, 0), action: action('open', '  ') } as BoxedElement;
+    const item = elementIndicatorItems(el, handlers())[0]!;
+    expect(item.hoverCard?.description).toBe('Assigned to a teammate');
+    expect(item.assignee?.initials).toBeTruthy();
+    expect(item.assignee?.color).toMatch(/^#|^hsl|^rgb/);
+  });
+
+  it('colours every assignee by their name, the one Automatic rule their avatar uses', () => {
+    const invited = {
+      ...createShape('square', 0, 0),
+      action: { ...action('open', 'Ada'), assignee: { userId: null, memberId: 'm1', name: 'Ada' } },
+    } as BoxedElement;
+    const unclaimed = {
+      ...createShape('square', 0, 0),
+      action: { ...action('open', 'Ada'), assignee: { userId: null, name: 'Ada' } },
+    } as BoxedElement;
+    const a = elementIndicatorItems(invited, handlers())[0]!.assignee!.color;
+    const b = elementIndicatorItems(unclaimed, handlers())[0]!.assignee!.color;
+    expect(a).toBe(automaticPresenceColour('Ada').value);
+    expect(b).toBe(a);
+  });
+
+  it('skips what an element already shows on its own face', () => {
+    const card = {
+      id: 'c',
+      type: 'link-card',
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 100,
+      link: { kind: 'url', url: 'https://example.com' },
+    } as unknown as BoxedElement;
+    expect(kinds(card)).toEqual([]);
+  });
+
+  it('gives a margin note nothing at all', () => {
+    const margin = {
+      id: 'n',
+      type: 'article-note',
+      articleNote: 'comment',
+      x: 0,
+      y: 0,
+      width: 24,
+      height: 24,
+      note: 'A note',
+      commentThread: thread(1),
+    } as unknown as BoxedElement;
+    expect(kinds(margin)).toEqual([]);
+  });
+
+  it('shows nothing for an element that carries only a stored link and note', () => {
+    const el = {
+      ...createShape('square', 0, 0),
+      note: 'n',
+      link: { kind: 'tab', tabId: 't2' },
+    } as BoxedElement;
+    expect(elementIndicatorItems(el, handlers())).toEqual([]);
+  });
+});
+
+describe('useElementIndicators', () => {
+  const label = {
+    text: 'Cloud',
+    textSize: 'md',
+    padding: 14,
+    alignX: 'center',
+    alignY: 'middle',
+  } as const;
+
+  it('places the cluster and moves an icon-and-label block out of its way', () => {
+    const el = {
+      ...createShape('cloud', 0, 0),
+      width: 270,
+      height: 180,
+      iconId: 'cloud',
+      iconPosition: 'above',
+      note: 'n',
+      action: action('open'),
+      commentThread: thread(2),
+      link: { kind: 'url', url: 'https://example.com' },
+    } as BoxedElement;
+    const { result } = renderHook(() =>
+      useElementIndicators(
+        el,
+        handlers(),
+        { ...label, text: 'Cloud storage for every team', inlineIcon: true },
+        8,
+      ),
+    );
+    expect(result.current.items).toHaveLength(2);
+    expect(result.current.layout?.form).toBe('top');
+    expect(result.current.layout?.inset.top).toBeGreaterThan(0);
+  });
+
+  it('treats a circle as fully round and lays out nothing without indicators', () => {
+    const el = { ...createShape('circle', 0, 0), width: 200, height: 200 } as BoxedElement;
+    const { result } = renderHook(() =>
+      useElementIndicators(el, handlers(), { ...label, inlineIcon: false }, 8),
+    );
+    expect(result.current.cornerPx).toBe(Infinity);
+    expect(result.current.items).toEqual([]);
+    expect(result.current.layout).toBeNull();
+  });
+
+  it('defaults a side icon to the left of the label', () => {
+    const el = {
+      ...createShape('square', 0, 0),
+      width: 260,
+      height: 120,
+      iconId: 'star',
+      action: action('open'),
+    } as BoxedElement;
+    const { result } = renderHook(() =>
+      useElementIndicators(el, handlers(), { ...label, text: 'Box', inlineIcon: true }, 8),
+    );
+    expect(result.current.layout?.form).toBe('top');
+  });
+
+  it('lays out indicators on an element that is not a shape', () => {
+    const text = {
+      id: 't',
+      type: 'text',
+      x: 0,
+      y: 0,
+      width: 300,
+      height: 120,
+      label: 'Notes',
+      action: action('open'),
+    } as unknown as BoxedElement;
+    const { result } = renderHook(() =>
+      useElementIndicators(text, handlers(), { ...label, text: 'Notes', inlineIcon: false }, 0),
+    );
+    expect(result.current.cornerPx).toBe(0);
+    expect(result.current.layout?.form).toBe('top');
+  });
+});

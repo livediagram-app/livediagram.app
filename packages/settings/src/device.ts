@@ -27,4 +27,5 @@ export const DEVICE_PREFERENCES = {
   'livedesign.app': keysFor('livedesign'),
   // Registered before its launch: no settings panel lists it yet, but its editor keeps its settings here.
   'livehuddle.app': keysFor('livehuddle'),
+  'liveknowledge.app': keysFor('liveknowledge'),
 } as const satisfies Record<string, DevicePreferenceKeys>;
