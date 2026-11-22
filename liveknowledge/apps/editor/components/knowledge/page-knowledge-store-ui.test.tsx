@@ -216,7 +216,7 @@ describe('a page’s knowledge in the editor', () => {
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
     const rail = () => document.querySelector('[data-page-health]')!;
     const shown = () => [
-      rail().querySelector('[data-review-due]')!.textContent,
+      rail().querySelector('[data-review-due]')?.textContent ?? null,
       rail().querySelector('[data-review-period]')!.textContent,
     ];
     expect(shown()[1]).toBe('Every 90 Days');
@@ -230,8 +230,15 @@ describe('a page’s knowledge in the editor', () => {
     expect(shown()[1]).toBe('Every 30 Days');
     expect(screen.getByText(/^Review was due /)).toBeTruthy();
     expect(pill()).toHaveLength(1);
+    // Never turns verification off: no Review Due, no Verify; the period reads Never.
     act(() => void knowledgeSettingsStore.take(documentId, { reviewEvery: 'never' }));
-    expect(shown()).toEqual(['No Review Period', 'Never']);
+    expect(shown()).toEqual([null, 'Never']);
+    expect(within(rail() as HTMLElement).queryByRole('button', { name: /^Verify/ })).toBeNull();
+    // A period set again brings it all back from the stored date.
+    act(() => void knowledgeSettingsStore.take(documentId, { reviewEvery: 90 }));
+    expect(shown()[1]).toBe('Every 90 Days');
+    expect(shown()[0]).not.toBeNull();
+    act(() => void knowledgeSettingsStore.take(documentId, { reviewEvery: 'never' }));
     expect(screen.queryByText(/^Review (was )?due /)).toBeNull();
     expect(pill()).toHaveLength(0);
     // No request a change, and no page written.

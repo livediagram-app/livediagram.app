@@ -10,7 +10,6 @@ export const CHANGE_PERIOD_HINT = 'Changes it for the whole knowledgebase: every
 export const REVIEW_PERIOD_SCOPE = 'Applies to every page in this knowledgebase.';
 export const REVIEW_PERIOD_LINE =
   'A verified page comes due for review this long after it was last verified.';
-export const NO_REVIEW_PERIOD = 'No Review Period';
 
 const LABELS: Record<ReviewEvery, string> = {
   30: 'Every 30 Days',

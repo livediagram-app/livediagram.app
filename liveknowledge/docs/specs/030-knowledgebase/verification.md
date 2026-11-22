@@ -104,7 +104,8 @@ own.
   Updated sit above Read This Week (owner 2026-11-21).) **Order** (owner 2026-11-21): Page Health first, On This Page
   under it. **AI
   Context** follows Page Health, before the foot, in the same quiet style ([AI Knowledge](ai-knowledge.md) "AI
-  Context on a page").
+  Context on a page"). **Page Insights**, the page's reads over 30 days, how often Ask cited it and the questions it
+  answered, sits just before AI Context, in the same style ([AI Knowledge](ai-knowledge.md#page-insights)).
 - **The meta row** under the title is drawn only when it has something to say (a tick or pill, a due date, an edit,
   how long it takes to read, who made and edited it, Add Cover): an empty page never verified has no row, so the writing starts right under the title.
 - **Reading time** sits in the meta row (owner, 2026-11-21: "1 min read should go under the page title, not the
@@ -142,8 +143,8 @@ Nothing is stored: it is worked out when read, as the states are.
   rounded (its gain too), so the factors still add up to the score. A page is never marked down, given a reason
   or offered a fix for not being verified: the breakdown has no Verification row and no Verify button, Freshness
   says "Bring it up to date" and "Not edited in 14 months". Knowledge Health's average and low pages, the agents'
-  `health` and Ask's passages follow the same rule, so no agent is told a page is unverified. (Hiding the rest of
-  Page Health's verification rows under Never is its own change, not this one.)
+  `health` and Ask's passages follow the same rule, so no agent is told a page is unverified. The rest of what
+  Never hides is [Under a Review Period of Never](#under-a-review-period-of-never).
 - **The word:** 75 and over is **Healthy** (green, the verified palette), 45 to 74 **Fair** (amber, Review Due's),
   under 45 **Needs Work** (rose). The word always shows beside the number: colour is never alone.
 - **Bands, not every word:** length and structure count in bands (empty, under 20, under 50, under 300, up to
@@ -217,7 +218,8 @@ points, max }` and, when short, `raise`. The CLI's `read`, `search` and `context
 - Changing it changes when every page comes due, at once: states are worked out when read, so nothing is rewritten.
   The panel says how many pages the new period makes due before it is applied when that number grows ("12 pages
   will be due for review"), and applying is one undoable edit.
-- **Never** means no page is ever Review Due: pages are Verified or Never Verified, and no review email is sent.
+- **Never** means no page is ever Review Due and verification is off: no page is marked or offered Verify, and no
+  review email is sent ([Under a Review Period of Never](#under-a-review-period-of-never)).
 - Page Health shows the page's due date and the knowledgebase's period ("Every 90 Days") to everyone; only the
   Editor sees the pencil.
 
@@ -236,8 +238,8 @@ points, max }` and, when short, `raise`. The CLI's `read`, `search` and `context
   days."): it applies the period that was replaced. The editor's own undo (Cmd or Ctrl Z) holds a page's writing,
   not the knowledgebase's Review Period, and does not reach it.
 - **A refusal** puts the period back and says why in a toast, in words.
-- **Page Health** has two rows for it: **Review Due** (the date; "Not Verified" for a page never verified; "No
-  Review Period" under Never) and **Review Period** ("Every 90 Days", with the pencil before it for an Editor).
+- **Page Health** has two rows for it: **Review Due** (the date; "Not Verified" for a page never verified; not
+  drawn under Never) and **Review Period** ("Every 90 Days", "Never", with the pencil before it for an Editor).
 - **The api:** `PUT knowledge-settings` (Editor, in person or a token granted `write`), `GET knowledge-settings`,
   and `GET knowledge-settings/preview?reviewEvery=` for the count. `PUT pages/<tab>/knowledge` refuses a
   `reviewEvery` and says where the setting lives.
@@ -246,6 +248,47 @@ points, max }` and, when short, `raise`. The CLI's `read`, `search` and `context
   told of once for each verification's review: changing the period never tells an owner twice of the same one.
 - **Kept Offline,** a knowledgebase keeps its period in this browser and takes it along when it is synced.
 - **It travels** with a copy of the whole knowledgebase, its export and Drive file, and a snapshot.
+
+## Under a Review Period of Never
+
+Owner, 2026-11-21: "if I set no review period, / never, then don't show the verification stuff, and don't include
+it in the health scorings". A knowledgebase whose Review Period is **Never** has **verification off**: no page is
+shown as Verified, Review Due or unverified anywhere, to a person or to an agent, and nobody is offered Verify.
+Nothing stored changes: each page keeps its `verifiedAt` and `verifiedBy`, so setting a period again brings every
+mark back, the pages' dates as they were. The Health Score already leaves verification out
+([Health Score](#health-score)); the rest follows the same rule, so the score and every surface agree.
+
+- **The state is `off`.** Worked out when read, as the states are: under Never a page's state is `off` (never
+  `verified` or `never-verified`), in the editor and in the api alike. Every reader of a page's trust takes `off` as
+  "say nothing of verification".
+- **Page Health** keeps the score, **Owner**, **Review Period** ("Never", with the Editor's pencil, so the period can
+  be set again from where it is turned off) and Approval. It draws no state panel (no freshness ring, no "Not
+  Verified" or "Verified"), no **Last Verified**, no **Review Due** and no **Verify** or **Verify Again**.
+- **The meta row** shows no Verified tick, no Review Due pill, no "Review due" on hover and no "Changed since
+  verified", and no **Verify**. The row is drawn only when the rest of it has something to say.
+- **The page tree** shows no tick or pill on a row, and its row menu has no **Verify**. A page link's hover card
+  and a search result show no badge.
+- **Ask:** a source card shows no trust badge, the passage's words and its Health Score only; the answer's trust line
+  ("Answered From 3 Verified Pages") is not drawn. The model is handed each passage with its health and no trust,
+  and is told nothing of verification for it. Passages are chosen by rank alone (no verified page goes first).
+- **Search** ranks by match alone (no verified page goes first), and its results carry `off`.
+- **AI Knowledge:** the figures band's sixth tile is **Average Health** (the average Health Score, "Across 24
+  pages"), not Verified; Knowledge Health leads with the average score, keeps **Pages With Low Health**, and draws no
+  verified share, no Verified / Review Due / Never Verified bar or legend and no **Remind the Owners**; a conflict's
+  sides show no trust, only their Health Scores.
+- **Agents:** the trust fields keep their shape. `verified` is `off`, `stale` is false, and there is no
+  `verified_at`, `verified_by` or `review_due`; `review_period` is `never` as before. The CLI's trust line says
+  "verification off". The tools' descriptions and the MCP server's instructions say what `off` means: this
+  knowledgebase does not verify pages, so weigh a page by its health alone.
+- **An agent's rewrite** of a page a person verified before the period was set to Never is still refused
+  (`page_verified`): a person vouched for it, and turning verification off is no grant to rewrite it. The refusal
+  says so in words: "A person verified this page before verification was turned off, so an agent does not rewrite
+  it. Suggest the change instead with suggest_edit, for a person to accept."
+- **Verify** (`POST .../verify`) still answers under Never, for an api caller that sends it; the editor offers it
+  nowhere. Approving a page still verifies it, as [Approval](approval.md) says; the mark shows once a period is set.
+- **Emails:** no Review Due email is sent (as before), and Remind the Owners has nothing to send: the route answers
+  that verification is off (`verification_off`) and sends nothing.
+- **Home:** Yours to Review is empty under Never (no page is due), as before.
 
 ## Reminders
 

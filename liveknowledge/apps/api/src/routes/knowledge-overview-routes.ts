@@ -25,6 +25,8 @@ import {
   lowHealthPages,
   questionGroups,
   questionKey,
+  notReadPages,
+  shownTrust,
   trustState,
   upsertQuestion,
   type AgentReadsRow,
@@ -40,7 +42,7 @@ import type {
   KnowledgeConflict,
   KnowledgeConflictSide,
   KnowledgeOverviewResponse,
-  KnowledgeTrustState,
+  KnowledgeTrustShown,
 } from '@liveknowledge/api-schema';
 import { seenAgents } from '../knowledge/agent-seen';
 import { readAiSettings } from '../knowledge/ai-settings';
@@ -67,8 +69,12 @@ type SideRow = {
   verifiedAt: number | null;
 };
 
-const trustOf = (row: SideRow, every: ReviewEvery, now: number): KnowledgeTrustState =>
-  trustState(row.verifiedAt === null ? {} : { verifiedAt: row.verifiedAt }, every, now).state;
+// Verification off (a Review Period of Never): a side says `off`, with no date (verification.md).
+const trustOf = (row: SideRow, every: ReviewEvery, now: number): KnowledgeTrustShown =>
+  shownTrust(
+    trustState(row.verifiedAt === null ? {} : { verifiedAt: row.verifiedAt }, every, now).state,
+    every,
+  );
 
 // The open conflicts with each side's passage and page as they stand, read in bounded statements (at most 50
 // passage ids a statement, under the 100 bound values a query may take).
@@ -105,7 +111,7 @@ export async function openConflicts(
       title: row.title ?? '',
       text: row.text,
       trust: trustOf(row, every, now),
-      ...(row.verifiedAt === null ? {} : { verifiedAt: row.verifiedAt }),
+      ...(row.verifiedAt === null || every === 'never' ? {} : { verifiedAt: row.verifiedAt }),
     };
   };
   return rows.flatMap((row) => {
@@ -210,6 +216,18 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
         reason: page.reason,
       })),
     ).map(({ tab, title, score, label, reason }) => ({ tab, title, score, label, reason })),
+    // Not Read in 90 Days (ai-knowledge.md): from the same facts rows, each with its last read day.
+    notRead: notReadPages(
+      scored.map(({ row }) => ({
+        tab: row.tab,
+        title: row.title,
+        lastRead: row.lastRead,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        order: row.order,
+      })),
+      now,
+    ),
     reviewEvery: every,
     hasKey: ai.hasKey,
     hasAi: ai.hasKey || ai.builtIn,

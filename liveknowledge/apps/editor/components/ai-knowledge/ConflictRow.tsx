@@ -33,7 +33,9 @@ function Side({
         {side.title || 'Untitled Page'}
       </button>
       <p className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${AI_MUTED}`}>
-        <span>{trustText(side.trust, side.verifiedAt, undefined, now)}</span>
+        {side.trust === 'off' ? null : (
+          <span>{trustText(side.trust, side.verifiedAt, undefined, now)}</span>
+        )}
         {side.health ? (
           <HealthChip score={side.health.score} label={side.health.label} prefix />
         ) : null}

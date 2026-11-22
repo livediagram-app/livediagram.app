@@ -1,7 +1,7 @@
 // Search over a knowledgebase's passages (docs/specs/030-knowledgebase/search-and-ask.md "Search"): the person's
 // words made into a safe FTS5 expression, and the query that ranks page titles first, verified pages before the
 // rest, then by bm25.
-import { reviewDays, type ReviewEvery, type TrustStateName } from '../trust';
+import { reviewDays, verificationOn, type ReviewEvery, type ShownTrust } from '../trust';
 import type { SqlStatement, SqlValue } from './statement';
 
 export const SEARCH_MAX_QUERY_CHARS = 200;
@@ -16,7 +16,8 @@ export const MATCH_END = '\u0003';
 const DAY_MS = 86_400_000;
 // A title match outweighs a match in the text.
 const TITLE_WEIGHT = 10;
-const TRUST_OF_RANK: readonly TrustStateName[] = ['never-verified', 'review-due', 'verified'];
+// 3 is a knowledgebase that does not verify pages (a Review Period of Never): no result is marked, none ranked first.
+const TRUST_OF_RANK: readonly ShownTrust[] = ['never-verified', 'review-due', 'verified', 'off'];
 
 /** The words of a query, as the index is asked for them: letters and digits only, lowercased, at most
  *  SEARCH_MAX_TERMS from the first SEARCH_MAX_QUERY_CHARS characters. */
@@ -94,7 +95,7 @@ export type FoundPassage = {
   snippet: string;
   firstBlock: string;
   lastBlock: string;
-  trust: TrustStateName;
+  trust: ShownTrust;
   verifiedAt?: number;
   /** bm25: lower is a better match. */
   rank: number;
@@ -115,7 +116,7 @@ export function searchByTerms(
   // A page verified at or before this is due; null (Never) is before every page, so none is.
   const days = reviewDays(options.reviewEvery);
   const dueBefore = days === undefined ? null : options.now - days * DAY_MS;
-  const params: SqlValue[] = [dueBefore, match];
+  const params: SqlValue[] = verificationOn(options.reviewEvery) ? [dueBefore, match] : [match];
   if (options.passagesOnly) where.push('p.ordinal >= 0');
   if (options.exceptTab !== undefined) {
     where.push('p.tab <> ?');
@@ -126,11 +127,15 @@ export function searchByTerms(
     sql: `SELECT p.id AS id, p.tab AS tab, p.ordinal AS ordinal, p.headings AS headings, p.text AS text,
         p.text_hash AS textHash, p.first_block AS firstBlock, p.last_block AS lastBlock,
         COALESCE(t.title, '') AS title, t.verified_at AS verifiedAt,
-        CASE
+        ${
+          verificationOn(options.reviewEvery)
+            ? `CASE
           WHEN t.verified_at IS NULL THEN 0
           WHEN t.verified_at <= ? THEN 1
           ELSE 2
-        END AS trust,
+        END`
+            : '3'
+        } AS trust,
         highlight(passages_fts, 0, char(2), char(3)) AS titleMarked,
         snippet(passages_fts, 1, char(2), char(3), '…', 24) AS snippet,
         bm25(passages_fts, ${TITLE_WEIGHT}.0, 1.0) AS rank
@@ -160,6 +165,8 @@ const parseHeadings = (json: string): string[] => {
 /** A search row as the rest of the package reads it. */
 export function foundPassage(row: SearchRow): FoundPassage {
   const isTitle = row.ordinal < 0;
+  // Verification off: no date rides with it either.
+  const trust = TRUST_OF_RANK[row.trust] ?? 'never-verified';
   return {
     id: row.id,
     tab: row.tab,
@@ -172,8 +179,8 @@ export function foundPassage(row: SearchRow): FoundPassage {
     snippet: row.snippet,
     firstBlock: row.firstBlock,
     lastBlock: row.lastBlock,
-    trust: TRUST_OF_RANK[row.trust] ?? 'never-verified',
-    ...(row.verifiedAt === null ? {} : { verifiedAt: row.verifiedAt }),
+    trust,
+    ...(row.verifiedAt === null || trust === 'off' ? {} : { verifiedAt: row.verifiedAt }),
     rank: row.rank,
   };
 }

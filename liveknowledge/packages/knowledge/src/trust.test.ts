@@ -12,7 +12,9 @@ import {
   knowledgeHealth,
   parseKnowledgeFields,
   reviewDays,
+  shownTrust,
   trustState,
+  verificationOn,
   verified,
 } from './trust';
 
@@ -58,6 +60,17 @@ describe("a page's knowledge fields", () => {
     expect(parseKnowledgeFields({ owner: 'x'.repeat(129), verifiedAt: -1 })).toEqual({});
     expect(parseKnowledgeFields({ verifiedAt: Number.NaN })).toEqual({});
     expect(parseKnowledgeFields({ verifiedAt: NOW, verifiedBy: 7 })).toEqual({ verifiedAt: NOW });
+  });
+});
+
+// verification.md "Under a Review Period of Never".
+describe('verification off', () => {
+  it('is off under Never alone, and every state then shows as off', () => {
+    expect(verificationOn('never')).toBe(false);
+    for (const every of [30, 90, 180, 365] as const) expect(verificationOn(every)).toBe(true);
+    expect(shownTrust('verified', 'never')).toBe('off');
+    expect(shownTrust('never-verified', 'never')).toBe('off');
+    expect(shownTrust('review-due', 90)).toBe('review-due');
   });
 });
 

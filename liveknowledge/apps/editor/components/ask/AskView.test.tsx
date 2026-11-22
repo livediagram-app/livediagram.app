@@ -380,6 +380,28 @@ describe('a question and its answer', () => {
     expect(trust.querySelector('svg')).toBeNull();
   });
 
+  // verification.md "Under a Review Period of Never": no badge on a source, no trust line on the answer.
+  it('says nothing of verification where it is off, and keeps the Health Score', async () => {
+    await open();
+    await answer(
+      ask('Q?'),
+      done('Yes [1].', {
+        sources: [
+          source(1, {
+            trust: 'off',
+            verifiedAt: undefined,
+            health: { score: 82, label: 'healthy' },
+          }),
+        ],
+      }),
+    );
+    const trust = document.querySelector('[data-source="1"] [data-source-trust]')!;
+    expect(trust.getAttribute('data-source-trust')).toBe('off');
+    expect(trust.textContent).not.toMatch(/Verified|Review/);
+    expect(trust.textContent).toContain('82');
+    expect(document.body.textContent).not.toMatch(/Answered From|never verified|Verified/);
+  });
+
   it('keeps the conversation when the view is left and shown again', async () => {
     const first = await open();
     await answer(ask('One?'), done('First.'));

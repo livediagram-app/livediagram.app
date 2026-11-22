@@ -1390,7 +1390,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "trust": {
-        "$ref": "#/components/schemas/KnowledgeTrustState"
+        "$ref": "#/components/schemas/KnowledgeTrustShown"
       },
       "verifiedAt": {
         "type": "number"
@@ -1480,7 +1480,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "trust": {
-        "$ref": "#/components/schemas/KnowledgeTrustState"
+        "$ref": "#/components/schemas/KnowledgeTrustShown"
       },
       "verifiedAt": {
         "type": "number"
@@ -3489,6 +3489,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "CreatePageResponse": {
     "additionalProperties": false,
+    "description": "`trust`: a new page is `never-verified`, or `off` where verification is off; absent from an older api.",
     "properties": {
       "page": {
         "additionalProperties": false,
@@ -3512,6 +3513,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "title"
         ],
         "type": "object"
+      },
+      "trust": {
+        "enum": [
+          "never-verified",
+          "off"
+        ],
+        "type": "string"
       }
     },
     "required": [
@@ -5696,7 +5704,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "trust": {
-        "$ref": "#/components/schemas/KnowledgeTrustState"
+        "$ref": "#/components/schemas/KnowledgeTrustShown"
       },
       "verifiedAt": {
         "type": "number"
@@ -5844,7 +5852,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "nothing_due",
               "unavailable",
               "daily_limit",
-              "no_recipients"
+              "no_recipients",
+              "verification_off"
             ],
             "type": "string"
           }
@@ -5976,6 +5985,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgeNotReadPage": {
+    "additionalProperties": false,
+    "description": "A page nobody read in 90 days: `touchedAt` is its last edit, else when it was made, where either was kept.",
+    "properties": {
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "touchedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "tab",
+      "title"
+    ],
+    "type": "object"
+  },
   "KnowledgeOverviewResponse": {
     "additionalProperties": false,
     "description": "`GET .../knowledge`: the AI Knowledge tab (ai-knowledge.md).",
@@ -6031,6 +6060,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/KnowledgeLowHealthPage"
         },
         "type": "array"
+      },
+      "notRead": {
+        "additionalProperties": false,
+        "description": "Not Read in 90 Days (ai-knowledge.md): the first 10, touched longest ago first, and how many; absent from an older api.",
+        "properties": {
+          "pages": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeNotReadPage"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "pages",
+          "total"
+        ],
+        "type": "object"
       },
       "questions": {
         "items": {
@@ -6375,7 +6424,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "state": {
-        "$ref": "#/components/schemas/KnowledgeTrustState"
+        "$ref": "#/components/schemas/KnowledgeTrustShown"
       },
       "verifiedAt": {
         "type": "number"
@@ -6581,7 +6630,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "trust": {
-        "$ref": "#/components/schemas/KnowledgeTrustState"
+        "$ref": "#/components/schemas/KnowledgeTrustShown"
       },
       "verifiedAt": {
         "type": "number"
@@ -6935,6 +6984,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ],
     "description": "One row of the tree: a page, or a connected file."
+  },
+  "KnowledgeTrustShown": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/KnowledgeTrustState"
+      },
+      {
+        "const": "off",
+        "type": "string"
+      }
+    ],
+    "description": "A page's trust as a reader is shown it: its state, or `off` where the knowledgebase's Review Period is Never and verification is off (verification.md \"Under a Review Period of Never\"): then no date and no `stale`."
   },
   "KnowledgeTrustState": {
     "description": "A page's verified state, worked out when read (verification.md \"States\").",
@@ -8426,6 +8487,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "insights": {
+        "$ref": "#/components/schemas/PageInsightsWire",
+        "description": "Page Insights (ai-knowledge.md \"Page Insights\"); absent from an older api."
+      },
       "knowledge": {
         "$ref": "#/components/schemas/PageKnowledge"
       },
@@ -8560,6 +8625,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "bottom"
     ],
     "type": "string"
+  },
+  "PageInsightsWire": {
+    "additionalProperties": false,
+    "description": "A page's use: its reads by day over the last 30 days, oldest first, and how many times Ask cited it in that time (absent through a link confined to one page, which has no Ask).",
+    "properties": {
+      "cited": {
+        "type": "number"
+      },
+      "days": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeReadsDay"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "days"
+    ],
+    "type": "object"
   },
   "PageKind": {
     "enum": [

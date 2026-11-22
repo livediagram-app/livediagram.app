@@ -206,7 +206,8 @@ test('Page Health’s pencil changes the Review Period, and a page comes due at 
   await expect(pageRow(page, 'Runbook, Review Due')).toBeVisible();
   await expect(health(page).locator('[data-review-period]')).toHaveText('Every 30 Days');
 
-  // Never applies at once, with no question: no page is due, and the page says it has no review period.
+  // Never applies at once, with no question, and turns verification off (verification.md "Under a Review Period of
+  // Never"): no mark, no Review Due, no Verify; the Review Period stays, reading Never.
   await change.click();
   done = stored();
   await period('Never').click();
@@ -214,7 +215,9 @@ test('Page Health’s pencil changes the Review Period, and a page comes due at 
   await page.keyboard.press('Escape');
   await expect(settings).toHaveCount(0);
   await expect(pageRow(page, 'Runbook')).toBeVisible();
-  await expect(health(page).locator('[data-review-due]')).toHaveText('No Review Period');
-  await expect(meta(page)).not.toContainText(/Review (was )?due/);
+  await expect(health(page).locator('[data-review-due]')).toHaveCount(0);
+  await expect(health(page).locator('[data-page-state]')).toHaveCount(0);
+  await expect(health(page).locator('[data-review-period]')).toHaveText('Never');
+  await expect(meta(page)).not.toContainText(/Review (was )?due|Verified/);
   expectNoPageErrors(pageErrors);
 });

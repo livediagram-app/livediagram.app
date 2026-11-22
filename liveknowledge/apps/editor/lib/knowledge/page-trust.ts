@@ -3,14 +3,17 @@
 // engine's own `trustState`. Pure.
 import {
   parseKnowledgeFields,
+  shownTrust,
   trustState,
   type KnowledgeFields,
   type ReviewEvery,
-  type TrustStateName,
+  type ShownTrust,
 } from '@liveknowledge/knowledge';
 
 export type PageTrust = {
-  state: TrustStateName;
+  /** `off` under a Review Period of Never: verification is off and nothing of it shows (verification.md "Under a
+   *  Review Period of Never"). The fields stay as stored, so a period set again brings the marks back. */
+  state: ShownTrust;
   fields: KnowledgeFields;
   /** When the review comes, or came, due; absent for a page never verified, and under a period of Never. */
   reviewAt?: number;
@@ -21,16 +24,17 @@ export function pageTrust(knowledge: unknown, every: ReviewEvery, now: number): 
   const fields = parseKnowledgeFields(knowledge);
   const trust = trustState(fields, every, now);
   return {
-    state: trust.state,
+    state: shownTrust(trust.state, every),
     fields,
     ...('reviewAt' in trust && trust.reviewAt !== undefined ? { reviewAt: trust.reviewAt } : {}),
   };
 }
 
-/** What a row or a link shows of a page: a tick, a pill, or nothing for a page never verified. */
+/** What a row or a link shows of a page: a tick, a pill, or nothing for a page never verified or where
+ *  verification is off. */
 export type TrustMark = 'verified' | 'review-due';
-export const trustMark = (state: TrustStateName): TrustMark | undefined =>
-  state === 'never-verified' ? undefined : state;
+export const trustMark = (state: ShownTrust): TrustMark | undefined =>
+  state === 'never-verified' || state === 'off' ? undefined : state;
 
 /** The marks of every page that has one, from the tab list alone (the summaries carry each page's fields): one
  *  pass, no request. */

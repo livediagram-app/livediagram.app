@@ -1,6 +1,6 @@
 // What a source card says under its passage (docs/specs/030-knowledgebase/search-and-ask.md "What an answer shows"):
 // where the page sits and who verified it when, or that it is due or was never verified.
-import type { KnowledgeTrustState } from '@liveknowledge/api-schema';
+import type { KnowledgeTrustShown } from '@liveknowledge/api-schema';
 import { pageAncestors } from '@liveknowledge/document';
 import { shortDate } from '@/lib/knowledge/page-trust';
 
@@ -26,17 +26,19 @@ export function pagePath(
 /** A source's trust as its card shows it (search-and-ask.md "The Ask view"): the badge, then the words beside it,
  *  each a piece that wraps whole ("21 Nov", "by Roger Blake"), never cut mid-name. */
 export type SourceTrust = {
-  mark: 'verified' | 'review-due' | 'never';
+  /** `off`: the knowledgebase does not verify pages, and the card shows no trust at all. */
+  mark: 'verified' | 'review-due' | 'never' | 'off';
   label: string;
   pieces: string[];
 };
 
 export function sourceTrust(
-  trust: KnowledgeTrustState,
+  trust: KnowledgeTrustShown,
   verifiedAt: number | undefined,
   verifier: string | undefined,
   now: number,
 ): SourceTrust {
+  if (trust === 'off') return { mark: 'off', label: '', pieces: [] };
   const when = verifiedAt === undefined ? [] : [shortDate(verifiedAt, now)];
   if (trust === 'verified')
     return {
@@ -53,13 +55,15 @@ export function sourceTrust(
   return { mark: 'never', label: 'Never Verified', pieces: [] };
 }
 
-/** "Verified 8 Nov by Priya Nair", "Review Due, Last Verified 8 Nov", "Never Verified". */
+/** "Verified 8 Nov by Priya Nair", "Review Due, Last Verified 8 Nov", "Never Verified"; nothing where verification is
+ *  off. */
 export function trustText(
-  trust: KnowledgeTrustState,
+  trust: KnowledgeTrustShown,
   verifiedAt: number | undefined,
   verifier: string | undefined,
   now: number,
 ): string {
+  if (trust === 'off') return '';
   const when = verifiedAt === undefined ? '' : ` ${shortDate(verifiedAt, now)}`;
   if (trust === 'verified') return `Verified${when}${verifier ? ` by ${verifier}` : ''}`;
   if (trust === 'review-due') return when ? `Review Due, Last Verified${when}` : 'Review Due';

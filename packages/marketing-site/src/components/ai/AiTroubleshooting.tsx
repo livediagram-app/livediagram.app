@@ -1,5 +1,7 @@
 // If it doesn't connect (docs/specs/019-marketing/build-with-ai.md "The page" 7): the help article's failure lines,
-// as native disclosures so every answer is in the static HTML.
+// as native disclosures so every answer is in the static HTML. The cap is the accounts Worker's own number.
+import { MAX_API_TOKENS_PER_ACCOUNT } from '@liveworkspace/api-schema/api-tokens';
+
 const issues = [
   {
     q: 'The page says the request has expired',
@@ -7,7 +9,7 @@ const issues = [
   },
   {
     q: 'It says I have reached my limit of API tokens',
-    a: 'You can have ten unexpired tokens. Revoke one in Settings › API Tokens, then connect again.',
+    a: `You can have ${MAX_API_TOKENS_PER_ACCOUNT} unexpired tokens. The approval page lists them: revoke one you no longer use there, then connect.`,
   },
   {
     q: 'My tool keeps asking me to sign in',

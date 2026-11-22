@@ -1,7 +1,7 @@
 // The Health Score's facts read (docs/specs/030-knowledgebase/verification.md "Health Score"): one statement for
 // every page or a set of them, each count from the room's own tables, and the routes that carry the score.
 import { cpuBudgetMs } from '@liveworkspace/vitest-config/cpu-time';
-import { dayOf } from '@liveknowledge/knowledge';
+import { countPageDailyReads, dayOf } from '@liveknowledge/knowledge';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { knowledgeKit, page, PAGES } from '../routes/knowledge-test-kit';
@@ -152,6 +152,49 @@ describe('the facts of each page', () => {
     // The last page links past the knowledgebase's end: one broken link.
     const broken = [...scores.values()].filter((s) => s.row.brokenLinks > 0);
     expect(broken.map((s) => s.row.tab)).toEqual(['p499']);
+  });
+
+  // ai-knowledge.md "Not Read in 90 Days", "Page Insights": both ride reads already made, at 500 pages with every
+  // page read on every one of the 90 days the room keeps (45,000 rows, the worst a busy knowledgebase holds).
+  it('answers each page’s last read in the same one read, and one page’s 30 days in one, at 500 pages', async () => {
+    const many = Array.from({ length: 500 }, (_, at) =>
+      page(`p${at}`, `Page ${at}`, [para('b1', `Page ${at}`, 'title')]),
+    );
+    const kit = await knowledgeKit({}, many);
+    const now = Date.now();
+    // Every page read by a person each day for 90 days, but the last 20 pages not since 100 days back.
+    const insert = kit.db.sql.prepare(
+      "INSERT INTO page_reads (day, tab, reader_kind, agent, reads) VALUES (?, ?, 'person', '', 1)",
+    );
+    kit.db.sql.exec('BEGIN');
+    for (let at = 0; at < 500; at++)
+      for (let back = 0; back < 90; back++)
+        insert.run(dayOf(now - (at >= 480 ? back + 100 : back) * 86_400_000), `p${at}`);
+    kit.db.sql.exec('COMMIT');
+    const prepare = vi.spyOn(kit.db.env.DOCUMENT_DB, 'prepare');
+    const started = process.cpuUsage();
+    const rows = await pageHealthRows(kit.db.env, 'kb', now);
+    const spent = process.cpuUsage(started);
+    const ms = (spent.user + spent.system) / 1000;
+    console.info(
+      '[health] 500 pages with 45,000 reads, last read each, in',
+      ms.toFixed(1),
+      'ms CPU',
+    );
+    expect(prepare).toHaveBeenCalledTimes(1);
+    expect(rows.filter((r) => r.lastRead === dayOf(now))).toHaveLength(480);
+    expect(rows.find((r) => r.tab === 'p499')!.lastRead).toBe(dayOf(now - 100 * 86_400_000));
+    expect(ms).toBeLessThan(cpuBudgetMs(400));
+    prepare.mockClear();
+    const one = process.cpuUsage();
+    const daily = kit.db.sql
+      .prepare(countPageDailyReads('p7', now).sql)
+      .all(...(countPageDailyReads('p7', now).params as string[]));
+    const oneSpent = process.cpuUsage(one);
+    const oneMs = (oneSpent.user + oneSpent.system) / 1000;
+    console.info('[insights] one page’s 30 days of 90 kept, in', oneMs.toFixed(2), 'ms CPU');
+    expect(daily).toHaveLength(30);
+    expect(oneMs).toBeLessThan(cpuBudgetMs(20));
   });
 
   it('rides Page Health’s read, the agents’ reads and searches, and AI Knowledge’s conflicts', async () => {

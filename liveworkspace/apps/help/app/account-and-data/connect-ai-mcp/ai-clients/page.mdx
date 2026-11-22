@@ -63,7 +63,9 @@ The first time your tool connects, it opens a <AppName /> page in your browser:
 </Step>
 <Step n={2}>
   Check the page. It is titled **Connect** followed by your tool's name, and it says which site the
-  access will be sent to. Only continue if you recognise that site.
+  access will be sent to. Only continue if you recognise that site. For a tool on your own computer
+  (such as Claude Code or Cursor) it says the access goes back to the app on this computer,
+  with an address such as `localhost:55884`: continue if you started the connection yourself.
 </Step>
 <Step n={3}>
   Switch on **Read-only access** if the tool should only find and read your <Noun plural />, never
@@ -73,7 +75,7 @@ The first time your tool connects, it opens a <AppName /> page in your browser:
   Choose **Connect**. The browser hands you back to your tool, and the connection is ready.
 </Step>
 
-Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke in **Settings**, **Developers**, **API Tokens** (in any liveworkspace app, or on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)) to disconnect it. It lasts six months; reconnect the tool after that.
+Approving creates an [API token](/help/account-and-data/api-tokens/) named after the tool, which you can revoke in **Settings**, **Developers**, **API Tokens** (in any liveworkspace app, or on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)) to disconnect it. It lasts six months; reconnect the tool after that. Connecting the same tool again replaces its earlier token for <AppName />, so it doesn't use up another.
 
 ## Claude
 
@@ -165,7 +167,7 @@ Switch on **Read-only** when you create the token if the tool only needs to look
 ## If It Doesn't Connect
 
 - **The page says "This link has expired" or "This request has expired"**: a connection request lasts ten minutes. Start the connection again from your tool.
-- **It says your account has reached its limit of API tokens**: you can have 20 unexpired tokens. Revoke one in **Settings**, **Developers**, **API Tokens**, then connect again.
+- **It says your account has reached its limit of API tokens**: you can have 20 unexpired tokens. The page lists them under the message: choose **Revoke** on one you no longer use (the least recently used come first), then **Connect**.
 - **The tool keeps asking you to sign in**: the token it held may have expired or been revoked. Remove the connection in the tool and add it again.
 
 </ArticleLayout>

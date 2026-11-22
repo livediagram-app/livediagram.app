@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./profile-events": "./src/profile/profile-events.ts",
-    "./connections": "./src/connections/index.ts"
+    "./connections": "./src/connections/index.ts",
+    "./token-list": "./src/token-list.ts"
   },
   "scripts": {
     "lint": "oxlint",

@@ -27,6 +27,7 @@ import { PageHealthApproval } from './approval/PageHealthApproval';
 import { usePageApproval } from './approval/usePageApproval';
 import { askApproval, useApprovalAsked } from '@/lib/knowledge/approval-asked';
 import { PageRailAiContext } from './PageAiContext';
+import { PageRailInsights } from './PageInsights';
 import { PageHealthScore } from './PageHealthScore';
 import { usePageHealthScore } from './usePageHealthScore';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
@@ -176,6 +177,8 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
       {/* Page Health leads, On This Page under it (owner 2026-11-21). */}
       <OnThisPage headings={writing.headings} current={current} onGo={go} />
       <PageHealthApproval />
+      {/* Page Insights, the page's use over time, just before AI Context (ai-knowledge.md "Page Insights"). */}
+      <PageRailInsights page={page} />
       <PageRailAiContext page={page} />
       {docked ? null : activity}
     </div>

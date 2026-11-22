@@ -904,8 +904,10 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   - done: "You're connected" / "Return to your terminal; it carries on by itself."
   - cancelled: "Connection cancelled" / "Your terminal will stop waiting."
   - error, by cause (E32): expired "This request has expired. Run the sign-in again from your terminal."; at the
-    token cap (409 `token_limit_reached`) "Your account has reached its limit of API tokens. Revoke one in Settings,
-    under Settings › API Tokens, then try again."; anything else "Something went wrong. Please try again."
+    token cap (409 `token_limit_reached`) "Your account has reached its limit of 20 API tokens. Revoke one below,
+    then connect.", with the account's live tokens listed under it, least recently used first, each with Revoke
+    (`TokenLimitList`, as on the consent page); a revoke says "There's room for one more token now." and puts the
+    keyboard on Connect; anything else "Something went wrong. Please try again."
 - **CLI notices** (stderr), final copy:
   - telemetry: `livedocuments counts which commands succeed (the command's name only: never arguments, documents or
 hosts) and sends the count to <host>. Turn it off: livedocuments telemetry off, or LIVEDOCUMENTS_TELEMETRY=0.`

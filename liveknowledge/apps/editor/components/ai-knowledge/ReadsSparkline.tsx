@@ -4,7 +4,8 @@
 import type { KnowledgeReadsDay } from '@liveknowledge/api-schema';
 import { readsSparkLabel } from '@/lib/knowledge-ask/dashboard-figures';
 
-const H = 28;
+const TILE_H = 28;
+const TALL_H = 40;
 const BAR = 6;
 const GAP = 3;
 
@@ -14,7 +15,15 @@ export const AGENT_FILL = 'fill-brand-400 dark:fill-brand-600';
 export const PEOPLE_BG = 'bg-brand-700 dark:bg-brand-300';
 export const AGENT_BG = 'bg-brand-400 dark:bg-brand-600';
 
-export function ReadsSparkline({ days }: { days: readonly KnowledgeReadsDay[] }) {
+/** `tall`: Page Insights' 40 px bars over 30 days (ai-knowledge.md "Page Insights"); the tile's are 28 px. */
+export function ReadsSparkline({
+  days,
+  tall = false,
+}: {
+  days: readonly KnowledgeReadsDay[];
+  tall?: boolean;
+}) {
+  const H = tall ? TALL_H : TILE_H;
   const most = Math.max(1, ...days.map((day) => day.people + day.agents));
   const width = days.length * (BAR + GAP) - GAP;
   return (
@@ -24,7 +33,7 @@ export function ReadsSparkline({ days }: { days: readonly KnowledgeReadsDay[] })
       viewBox={`0 0 ${width} ${H}`}
       preserveAspectRatio="none"
       data-reads-sparkline=""
-      className="block h-7 w-full"
+      className={`block w-full ${tall ? 'h-10' : 'h-7'}`}
     >
       {days.map((day, at) => {
         const x = at * (BAR + GAP);

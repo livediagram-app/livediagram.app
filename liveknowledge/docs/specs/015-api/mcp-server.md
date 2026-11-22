@@ -118,7 +118,7 @@ This implements the OAuth flow Manager Toolkit uses:
    **name** is never a trust signal either way (it is whatever was registered, kept without bidi
    controls or invisible characters at its ends and cut to 120 whole characters, "MCP client" when that leaves
    nothing, so it can neither turn the screen's words around nor look blank);
-   the host is the fact to check, which is why it must come from the server. Every client that is not built in (so every registered one) wears an **Unverified App** badge beside its name, with "{name} is not made by liveworkspace, and we can't check who made it.", and the screen puts the redirect host first, "Access will be sent to {host}"; the lookup's `verified` decides it. A
+   the host is the fact to check, which is why it must come from the server. Every client that is not built in (so every registered one) wears an **Unverified App** badge beside its name, with "{name} is not made by liveworkspace, and we can't check who made it.", and the screen puts the redirect host first, "Access will be sent to {host}"; the lookup's `verified` decides it. A loopback host (`localhost`, `127.0.0.1` or `[::1]`, on any port) is a desktop or command-line tool taking its sign-in back on the person's own computer, so it reads "Access will be sent back to the app on this computer ({host}). Only continue if you started this connection yourself."; every other host keeps "Only continue if you recognise this site and started this connection yourself." The host is parsed and matched exactly (`isLoopbackHost`, `../packages/api-kit/src/request-auth.ts`), never by prefix, so `localhost.evil.com` is still a site. A
    session that is unknown or expired is a blocking screen, never a screen with
    an approve button and a blank destination. See
    `../packages/workbench/src/lib/mcp-consent-session.ts` and `../packages/workbench/src/components/oauth/OauthConsentPage.tsx` (with its test). The screen is never frameable
@@ -136,10 +136,28 @@ This implements the OAuth flow Manager Toolkit uses:
    `DELETE /api/tokens/current`, so retries never pile up six-month tokens against
    the per-account cap. The failure line names the cause: an expired request ("This
    request has expired. Start the connection again from your app."), the token cap
-   (409 `token_limit_reached`: "Your account has reached its limit of API tokens.
-   Revoke one on liveworkspace.app, under API tokens, then try again."), or anything
-   else ("Something went wrong. Please try again."). The device page does the same
-   (`../packages/workbench/src/lib/oauth-handover.ts`).
+   (409 `token_limit_reached`: "Your account has reached its limit of 20 API tokens.
+   Revoke one below, then connect."), or anything else ("Something went wrong. Please
+   try again."). The number is `MAX_API_TOKENS_PER_ACCOUNT`
+   (`../packages/api-schema/src/api-tokens.ts`), the one the accounts Worker counts
+   against. At the cap the page lists the account's live tokens under that line,
+   least recently used first, each with Revoke (Revoke now, Keep), over the account
+   API's bearer door (`GET` and `DELETE /api/workspace/account/tokens`); a revoke
+   clears the line, says there is room now and puts the keyboard on Connect, so the
+   person connects straight away without leaving the page. The device page does the
+   same (`../packages/workbench/src/lib/oauth-handover.ts`,
+   `../packages/workbench/src/components/oauth/TokenLimitList.tsx`).
+   **A reconnect replaces the client's earlier token.** The page sends the minted
+   token's id with it to `/oauth/complete`, which keeps the ids of the last five
+   tokens handed to that registered client (`grant:<clientId>` in `OAUTH_KV`, for
+   `CLIENT_TTL`) and answers the earlier ones as `replaces`. Only after that handover
+   has succeeded does the page revoke each of them that is still among the account's
+   live tokens and has the new token's name, so a failed handover revokes nothing old,
+   and a manual token or another client's is never touched. A client is matched by its
+   id, and a registered client's id is its own (one per install, per MCP): the built-in
+   CLI's id is shared by every install, so it replaces nothing. A client that registers
+   afresh each time is a new client, and its old token stays until it expires or is
+   revoked.
 5. **Callback + token exchange**: the MCP redirects back to the client with a
    code; `POST /oauth/token` (with the PKCE `code_verifier`) exchanges it for the
    `access_token` (= the `lwt_` secret). `expires_in` reflects the token's
