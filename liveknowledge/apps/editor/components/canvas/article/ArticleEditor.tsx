@@ -53,6 +53,7 @@ import { mountArticleView } from './article-view-mount';
 import { PageLimitNotice, replaceContent } from './article-editor-parts';
 import { createPageSlots } from '@/lib/knowledge/page-slots-plugin';
 import { keepTitlePlugin } from '@/lib/article/keep-title-plugin';
+import { focusMovedSince } from '@/lib/page-title-focus';
 import { PageKnowledgeSlots } from '@/components/knowledge/PageKnowledgeSlots';
 import { usePageLinks } from '@/components/knowledge/usePageLinks';
 
@@ -397,6 +398,11 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   useEffect(() => {
     const view = viewRef.current;
     if (!view || !request || request.flow !== props.flow || !props.editable) return;
+    // A late caret leaves focus the person has moved since it was asked for (a menu opened as the page loaded).
+    if (request.from !== undefined && focusMovedSince(request.from)) {
+      props.onFocusTaken?.(request.seq);
+      return;
+    }
     view.dispatch(view.state.tr.setSelection(focusSelection(view.state.doc, request.at)));
     view.focus();
     props.onFocusTaken?.(request.seq);

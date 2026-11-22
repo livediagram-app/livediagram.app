@@ -77,19 +77,19 @@ describe('adding a page', () => {
   it('asks for the caret in the Title of the page it opens (New Page, Add Subpage)', () => {
     const s = setup();
     s.actions().addTab();
-    expect(takeTitleFocus('new')).toBe(true);
+    expect(takeTitleFocus('new')).toEqual({ from: document.body });
     s.actions().addTab('e');
-    expect(takeTitleFocus('new')).toBe(true);
+    expect(takeTitleFocus('new')).toEqual({ from: document.body });
     // Refused, or a session that may not add: nothing is asked.
     setup({ canEditStructure: false }).actions().addTab();
-    expect(takeTitleFocus('new')).toBe(false);
+    expect(takeTitleFocus('new')).toBeNull();
   });
 
   it('a page made by Create Page takes the caret in its Title when it is first opened', () => {
     const s = setup();
     expect(s.actions().addNamedSubpage('a', 'Rollback')).toBe('new');
     expect(s.deps.setActiveId).not.toHaveBeenCalled();
-    expect(takeTitleFocus('new')).toBe(true);
+    expect(takeTitleFocus('new')).toEqual({ from: document.body });
   });
 
   it('adds an Untitled Page at the top level, and opens it', () => {
