@@ -14,11 +14,16 @@ import { usePhotoDraft, type PhotoReview } from './usePhotoDraft';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 vi.mock('@/lib/reading/select', () => ({ selectReader: vi.fn() }));
+vi.mock('@liveworkspace/workbench/components/ai/WorkbenchAiSource', () => ({
+  hasOwnAiKey: vi.fn(async () => false),
+}));
 vi.mock('@/lib/photo-detect', async () => {
   const actual = await vi.importActual<typeof import('@/lib/photo-detect')>('@/lib/photo-detect');
   return { ...actual, detectAndCrop: vi.fn(), cropBoxes: vi.fn() };
 });
 
+import { hasOwnAiKey } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
+import { ReadKeyFailed } from '@/lib/api/ai';
 import { selectReader, type SelectedReader } from '@/lib/reading/select';
 
 // The hook asks `selectReader` who reads; the tests drive that reader directly.
@@ -107,7 +112,12 @@ function esNote(id: string, label: string, x = 0): StickyElement {
 }
 
 function harness(
-  opts: { elements?: Element[]; createBlocked?: boolean; aiEnabled?: boolean } = {},
+  opts: {
+    elements?: Element[];
+    createBlocked?: boolean;
+    aiEnabled?: boolean;
+    signedIn?: boolean;
+  } = {},
 ) {
   let elements = opts.elements ?? [];
   // The editor's real history semantics, minimally: a checkpoint pushes a
@@ -125,6 +135,7 @@ function harness(
       activeId: 't1',
       ownerId: 'owner-1',
       aiEnabled: opts.aiEnabled === true,
+      signedIn: opts.signedIn === true,
       createBlocked: opts.createBlocked === true,
       tick: (map) => {
         elements = map(elements);
@@ -567,6 +578,42 @@ describe('choosing the reader', () => {
     });
     expect(selectReader).toHaveBeenCalledWith(expect.objectContaining({ aiEnabled: false }));
     expect(readCrops).toHaveBeenCalled();
+    expect(hasOwnAiKey).not.toHaveBeenCalled();
+  });
+
+  // note-reader.md "On your own key": a signed-in person's own key reads where the deployment has no model.
+  it('reads on the person’s own key where the deployment has no model', async () => {
+    vi.mocked(hasOwnAiKey).mockResolvedValueOnce(true);
+    const h = harness({ signedIn: true });
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    expect(selectReader).toHaveBeenCalledWith(
+      expect.objectContaining({ aiEnabled: false, keyed: true }),
+    );
+  });
+
+  it('never asks for a key where the deployment has a model', async () => {
+    const h = harness({ signedIn: true, aiEnabled: true });
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    expect(hasOwnAiKey).not.toHaveBeenCalled();
+    expect(selectReader).toHaveBeenCalledWith(expect.objectContaining({ keyed: false }));
+  });
+
+  it('says a failed key on the review, and keeps the boxes blank', async () => {
+    vi.mocked(readCrops).mockRejectedValue(
+      new ReadKeyFailed({ source: 'account', provider: 'anthropic', kind: 'bad-key' }),
+    );
+    const h = await reviewed({ signedIn: true, aiEnabled: true });
+    expect(h.api().review?.readError).toBe('ai_key_failed');
+    expect(h.api().review?.keyFailure).toEqual({
+      source: 'account',
+      provider: 'anthropic',
+      kind: 'bad-key',
+    });
+    expect(h.toasts[0]).toMatch(/Settings › AI/);
   });
 });
 

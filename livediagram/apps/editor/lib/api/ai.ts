@@ -7,6 +7,7 @@ import type {
   ReadNotesResponse,
 } from '@livediagram/api-schema';
 import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
+import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai';
 import { createCapabilitiesClient } from '@liveworkspace/api-client';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 
@@ -49,6 +50,7 @@ export async function apiAiReadNotes(
   let readCount = 0;
   let unread = 0;
   let failure: string | undefined;
+  let keyFailed: ReadKeyFailed | undefined;
   // Two at a time: a whole wall in parallel is a burst any rate limiter will
   // refuse, and one at a time is a wait nobody enjoys.
   for (let i = 0; i < batches.length; i += READ_BATCH_CONCURRENCY) {
@@ -70,8 +72,11 @@ export async function apiAiReadNotes(
       }
       unread += slice[at]!.length;
       const reason: unknown = answer.reason;
+      if (reason instanceof ReadKeyFailed) keyFailed ??= reason;
       failure ??= reason instanceof Error ? reason.message : 'ai_error';
     });
+    // The person's own key failed: every batch would, so the run stops and says so (note-reader.md "On your own key").
+    if (keyFailed) throw keyFailed;
     // Report batch-by-batch, so the author watching the bar sees the run
     // advance instead of a spinner that never moves.
     opts.onProgress?.(readCount);
@@ -96,8 +101,27 @@ async function readBatch(
     body: JSON.stringify({ crops } satisfies ReadNotesRequest),
     ...(opts.signal ? { signal: opts.signal } : {}),
   });
-  if (!res.ok) throw new Error(await errorToken(res));
+  if (!res.ok) throw await errorOf(res);
   return (await res.json()) as ReadNotesResponse;
+}
+
+/** The person's own key failed (`ai_key_failed`): whose key and how, for the review's source line. Never the key. */
+export class ReadKeyFailed extends Error {
+  readonly aiKey: AiKeyFailure;
+  constructor(aiKey: AiKeyFailure) {
+    super('ai_key_failed');
+    this.name = 'ReadKeyFailed';
+    this.aiKey = aiKey;
+  }
+}
+
+async function errorOf(res: Response): Promise<Error> {
+  const body: unknown = await res
+    .clone()
+    .json()
+    .catch(() => null);
+  const aiKey = readAiKeyFailure(body);
+  return aiKey ? new ReadKeyFailed(aiKey) : new Error(await errorToken(res));
 }
 
 // The worker's `{ error: '<token>' }` envelope, or a status-shaped fallback

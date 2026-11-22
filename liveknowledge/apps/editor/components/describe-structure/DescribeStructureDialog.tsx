@@ -12,6 +12,8 @@ import { Callout } from '@liveworkspace/ui/callout';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useEditorChromeStore, type EditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
+import { STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY } from '@liveknowledge/knowledge';
+import { KnowledgeAiSource } from '@/components/ask/KnowledgeAiSource';
 import { useAiSettingsState, useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import { useAskAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
@@ -22,7 +24,6 @@ import {
   STRUCTURE_LABEL,
   STRUCTURE_SUBTITLE,
   purposeHint,
-  structureAiLine,
   structureFailureWords,
   structurePlaceholder,
   usesChosenBuiltIn,
@@ -93,7 +94,11 @@ function DialogBody({
   const length = purpose.trim().length;
   const hint = purposeHint(length);
   const canDescribe = !busy && hint === null && (length > 0 || title !== '');
-  const aiLine = structureAiLine(settings, choice);
+  // The person chose built-in AI over the key (search-and-ask.md "Choosing which AI answers"): the line says so.
+  const lineState =
+    settings && usesChosenBuiltIn(settings, choice)
+      ? ({ status: 'ready', settings: { ...settings, hasKey: false, uses: 'built-in' } } as const)
+      : settingsState;
   const words = failure
     ? structureFailureWords(failure.kind, {
         provider: failure.provider ?? settings?.provider,
@@ -192,7 +197,7 @@ function DialogBody({
             }
             data-describe-structure-ai=""
           >
-            {hint ?? aiLine ?? ''}
+            {hint ?? ''}
           </p>
           {length > STRUCTURE_MAX_PURPOSE_CHARS - 100 ? (
             <p
@@ -203,6 +208,13 @@ function DialogBody({
             </p>
           ) : null}
         </div>
+        <KnowledgeAiSource
+          state={lineState}
+          who={who}
+          documentId={documentId}
+          manageAi={session.rights.manageAi}
+          allowance={`${STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY} structures a person a day.`}
+        />
       </div>
       <DialogFooter>
         <Button variant="secondary" onClick={close}>

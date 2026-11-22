@@ -2,6 +2,7 @@
 // builders (detector + reader into notes, additions into draft stickies): everything usePhotoDraft holds that is
 // not the gesture itself (docs/specs/021-event-storming/event-storming.md Phase 8, Phase 9).
 
+import type { AiKeyFailure } from '@liveworkspace/ai';
 import {
   eventStormingNoteSize,
   type Element,
@@ -67,6 +68,8 @@ export type PhotoReview = {
   detection: PhotoDetection | null;
   textById: Map<number, { text: string; legible: boolean }>;
   readError: string | null;
+  // The person's own key failed (`ai_key_failed`): said on the review's source line, with Fix Key.
+  keyFailure?: AiKeyFailure | null;
 };
 // The detector measured the geometry and the kind; the model read the words.
 // Putting the two together is the only place they meet.
@@ -95,6 +98,8 @@ export type PhotoDraftDeps = {
   // the server model when there is one, the in-browser model when there is not
   // (docs/specs/021-event-storming/event-storming.md Phase 9). Never a gate on the import itself: both read.
   aiEnabled: boolean;
+  // A signed-in account, whose own AI key, when they have one, reads the notes (note-reader.md "On your own key").
+  signedIn: boolean;
   createBlocked: boolean;
   // The gesture's three history verbs, exactly as the eraser and the drag use
   // them: arm one checkpoint, write through `tick`, and either leave the step
@@ -153,6 +158,7 @@ export const ERROR_TOASTS: Record<string, string> = {
   rate_limited: 'Too many photos just now. Wait a moment and try again.',
   ai_quota: 'The model key is out of quota. Try later, or raise its limit.',
   ai_error: 'The reader could not finish. Try again in a moment.',
+  ai_key_failed: 'Your AI key could not read the notes. Fix it in Settings › AI, then try again.',
 };
 
 // Why a pick was refused. One per reason: "something is in the way" is not

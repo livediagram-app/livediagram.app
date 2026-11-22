@@ -44,8 +44,8 @@ refusal words and no request or reply ever logged.
   box ("An event RSVP asking for name, email, whether they’re coming, dietary needs and how many guests they’ll
   bring") with **Try an Example** above it: three example chips that fill the box (**Workshop Feedback**,
   **Volunteer Sign-Up**, **Equipment Request**). Under the box, its count ("120 / 500") and the source line, as
-  Describe a Plan's ([Which AI drafts it](../026-plan/describe-a-plan.md#which-ai-drafts-it)): the plan's team's key
-  for a joined member, else the person's own, else built-in AI. Then **Cancel** and **Draft Form** (also Ctrl or ⌘
+  Describe a Plan's ([Which AI drafts it](../026-plan/describe-a-plan.md#which-ai-drafts-it)): the person's own key
+  when they have one, else built-in AI. The ask names no plan, so no team key applies. Then **Cancel** and **Draft Form** (also Ctrl or ⌘
   Enter), disabled while the box is empty. While it drafts the button reads
   **Drafting…** and the box is read-only; Cancel stops waiting (the ask still counts).
 - These are Describe a Plan's own parts (the box, its count, the examples, the AI line, the sign-in nudge), shared,

@@ -162,9 +162,9 @@ opened from the dialog (over Ask or AI Knowledge the views' host draws it).
 | done       | the run did not make every page | how many were made, each page that was not with why                                                  | Done                                      |
 
 - **No key is no stop** (owner, 2026-11-21). Step 1 shows at once, whatever the AI settings say and before they
-  are read. The dialog still reads them (`aiSettingsStore.load`) for one quiet line under the field
-  (`setupAiLine(settings)`, `data-setup-ai`): **Uses built-in AI** with no key, **Uses your team's key** with one,
-  nothing while unread or unreadable. The api, not the line, decides which AI answers; the answer names it
+  are read. The dialog still reads them (`aiSettingsStore.load`) for the source line under the field
+  (`KnowledgeAiSource`, `data-setup-ai`): **Built-in AI** with no key, the key that applies with one, nothing while
+  unread or unreadable. The api, not the line, decides which AI answers; the answer names it
   (`provider`). There is no no-key state, no loading state and no "could not be read" state any more.
 - **Describe.** `TextArea`, focused on open, labelled "What Is This Knowledgebase For?" ("What Pages Should Be
   Added?" when adding). Under it the example, or what stops the description (under 20, over 1,000); the counter
@@ -294,7 +294,8 @@ reading are the [knowledge package blueprint](knowledge-package.md)'s ("Describe
   Describe to Set Up's host, and closes when its page is no longer the one open or may no longer be edited. The title
   it sends is the draft's Title block's text, else the saved name. It reads AI Settings (`aiSettingsStore`) and the
   person's Ask choice (`useAskAiChoice`): with a key and built-in AI both here and built-in chosen it sends
-  `ai: "built-in"` and says "Uses built-in AI"; otherwise the line is `aiInUseLine`.
+  `ai: "built-in"` and its source line says **Built-in AI**; otherwise the line names the key that applies
+  (`KnowledgeAiSource`).
 - **Into the draft** (`putStructureInDraft`): enters edit mode if it ended meanwhile, flushes the writing's handle and
   takes its blocks, then one `commitTabs` (through the edit lens, so the draft) that writes the page's saved flow as
   `withStructureAtTop`: the Title (and subtitle), the structure's blocks (`pageStructureArticleBlocks`, fresh ids

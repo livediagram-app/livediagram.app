@@ -50,15 +50,18 @@ but unused`) rather than left as a dead secret nobody notices.
 ## On your own key
 
 The platform's rule ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)):
-a signed-in person with their own key (Settings › AI), or the canvas's team's, has the notes read by it, on the
-key's provider and model (Claude or OpenAI, both of which read pictures), in place of the deployment's model or the
+a signed-in person with their own key (Settings › AI) has the notes read by it, on the key's provider and model (Claude or OpenAI, both of which read pictures), in place of the deployment's model or the
 device.
 
-- **The route asks accounts first.** For a signed-in person in person (their own bearer), before the provider check:
-  a key reads the crops whether or not the deployment has a model, and spends neither the deployment's daily budget
-  (`AI_DAILY_CAP`) nor anything else built-in AI counts. The origin allow-list, the sign-in gate and the per-network
-  rate limiter still run first. No key: the deployment's model, as below.
-- **The editor knows from the source line.** On a key the server reads even where `aiEnabled` is false.
+- **Only their own key.** A read names no canvas, so a team's key does not apply here; the person's personal key
+  does.
+- **The route asks accounts first.** For a signed-in person in person (their own bearer), before the gate, which
+  needs the answer: a key reads the crops whether or not the deployment has a model, and spends neither the
+  deployment's daily budget (`AI_DAILY_CAP`) nor anything else built-in AI counts. The gate's origin allow-list,
+  sign-in check and per-network rate limiter still run on a key. No key: the deployment's model, as below.
+- **The editor asks when a photo is read.** Where the deployment has no model (`aiEnabled` false), a signed-in
+  person's import asks once whether they have a key (`GET /api/workspace/account/ai-key`, never on load); on a key
+  the server reads, and a re-read in the same review goes the same way.
 - **A key that fails** (`ai_key_failed`: refused, out of credit, a model it can't use) is said in the review with
   **Fix Key**, and the notes are not sent to the deployment's model or read on the device instead.
 - **The review shows the source line** (`AiSource`) under its reading progress: **Built-in AI** (the deployment's

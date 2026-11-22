@@ -17,3 +17,4 @@ export {
 } from './useAiSource';
 // The bearer door the line reads through, so a feature's chunk need not load the Settings panel's index.
 export { bearerSettingsRequest, type SettingsRequest } from '../request';
+export type { AiKeysAnswer } from '../account-panels/ai/ai-keys';

@@ -39,8 +39,8 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
   const { request, env } = ctx;
 
   // The person's own key reads the notes when they have one (note-reader.md "On your own key"): asked of accounts only
-  // for a signed-in person in person, after the cheap checks below have run. The request names no canvas, so only
-  // their own key applies.
+  // for a signed-in person in person (a bearer, so a stranger's request never reaches accounts), before the gate,
+  // which needs the answer to skip the provider check. The request names no canvas, so only their own key applies.
   const ask = () => personAiKey(accountCredentials(env), ctx, null);
   const own: OwnKey =
     request.method === 'POST' && ctx.accountUserId ? ownKeyOf(await ask()) : { status: 'built-in' };
