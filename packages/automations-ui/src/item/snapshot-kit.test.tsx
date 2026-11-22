@@ -65,10 +65,16 @@ describe('snapshotKitActions', () => {
       top: true,
       last: true,
     });
-    expect(tiles.take_snapshot.fresh()).toEqual({ kind: 'take_snapshot', name: '{{now.date}}' });
-    expect(tiles.revert_snapshot.fresh()).toEqual({ kind: 'revert_snapshot', snapshot: '' });
+    expect(tiles.take_snapshot.fresh({} as never, { personless: false })).toEqual({
+      kind: 'take_snapshot',
+      name: '{{now.date}}',
+    });
+    expect(tiles.revert_snapshot.fresh({} as never, { personless: false })).toEqual({
+      kind: 'revert_snapshot',
+      snapshot: '',
+    });
     expect(tiles.take_snapshot.line).toMatch(/plan/);
-    expect(tiles.take_snapshot.scene()).toBeTruthy();
+    expect(tiles.take_snapshot.scene('snapshots')).toBeTruthy();
     expect(snapshotGroup()).toEqual({
       id: SNAPSHOT_GROUP_ID,
       name: 'Snapshots',

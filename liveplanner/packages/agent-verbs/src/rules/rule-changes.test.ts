@@ -349,10 +349,9 @@ describe('changing the rules', () => {
 // person's, and the refusal says so.
 describe('snapshot steps through change_rules', () => {
   it('sends Take Snapshot and Revert to Snapshot as written, and words a revert refused', async () => {
-    const steps = [
-      { kind: 'take_snapshot', name: 'Weekly {{now.date}}' },
-      { kind: 'revert_snapshot', snapshot: 'sn1' },
-    ];
+    const take = { kind: 'take_snapshot', name: 'Weekly {{now.date}}' };
+    const revert = { kind: 'revert_snapshot', snapshot: 'sn1' };
+    const steps = [take, revert];
     const w = world([listed()], (r, body) =>
       r.method === 'POST' && JSON.stringify(body).includes('revert_snapshot')
         ? refusal(403, { error: 'automation_needs_a_person', path: 'steps' })
@@ -362,13 +361,13 @@ describe('snapshot steps through change_rules', () => {
       [
         {
           op: 'add',
-          rule: { name: 'Weekly', trigger: { kind: 'card_created' }, steps: [steps[0]] },
+          rule: { name: 'Weekly', trigger: { kind: 'card_created' }, steps: [take] },
         },
       ],
       w,
     );
     expect(took.refusal).toBeUndefined();
-    expect(took.bodies[0]).toMatchObject({ steps: [steps[0]] });
+    expect(took.bodies[0]).toMatchObject({ steps: [take] });
     const r = await apply(
       [{ op: 'add', rule: { name: 'Reset', trigger: { kind: 'card_created' }, steps } }],
       w,

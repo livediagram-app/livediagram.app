@@ -26,7 +26,7 @@ afterEach(() => {
 
 const MONDAY_9 = Date.UTC(2026, 10, 23, 9, 0);
 const WEEK = 7 * 24 * 60 * 60_000;
-const weekly = { kind: 'scheduled', every: 'week', days: [1], at: '09:00' } as const;
+const weekly = { kind: 'scheduled' as const, every: 'week' as const, days: [1], at: '09:00' };
 const plan = () => w.plans.get('A')!;
 const room = () => plan().room;
 const runs = async () =>

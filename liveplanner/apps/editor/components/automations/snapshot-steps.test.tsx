@@ -14,7 +14,7 @@ import { PlanTriggerNote, TimeTriggerPanel } from './step-panels/TimeTriggerPane
 
 afterEach(cleanup);
 
-const weekly = { kind: 'scheduled', every: 'week', days: [1], at: '09:00' } as const;
+const weekly = { kind: 'scheduled' as const, every: 'week' as const, days: [1], at: '09:00' };
 const body = (steps: AutomationRuleBody['steps']): AutomationRuleBody => ({
   name: 'Monday Reset',
   trigger: weekly,
@@ -24,6 +24,7 @@ const body = (steps: AutomationRuleBody['steps']): AutomationRuleBody => ({
   timeZone: 'UTC',
 });
 const revert = { kind: 'revert_snapshot', snapshot: 'sn1', name: 'Monday Start' } as const;
+const take = { kind: 'take_snapshot', name: 'Weekly {{now.date}}' } as const;
 
 describe('the Snapshots group', () => {
   it('stands after Comments, with Take Snapshot and Revert to Snapshot', () => {
@@ -40,9 +41,7 @@ describe('the Snapshots group', () => {
   });
 
   it('previews a Take Snapshot’s name', () => {
-    expect(
-      PLAN_AUTOMATIONS_KIT.previewText?.({ kind: 'take_snapshot', name: 'Weekly {{now.date}}' }),
-    ).toBe('Weekly {{now.date}}');
+    expect(PLAN_AUTOMATIONS_KIT.previewText?.(take)).toBe('Weekly {{now.date}}');
     expect(PLAN_AUTOMATIONS_KIT.previewText?.(revert)).toBeNull();
   });
 });

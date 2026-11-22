@@ -36,7 +36,11 @@ describe('reading a snapshot step', () => {
 
   it('refuses one in For Related Cards or If / Else', () => {
     const inFor = refusal(
-      ruleBody({ steps: [{ kind: 'for', related: { kind: 'subtasks' }, then: [take as never] }] }),
+      ruleBody({
+        steps: [
+          { kind: 'for', related: { kind: 'children' }, conditions: [], then: [take as never] },
+        ],
+      }),
     );
     expect(inFor.path).toMatch(/^steps\.0/);
     const inIf = refusal(
