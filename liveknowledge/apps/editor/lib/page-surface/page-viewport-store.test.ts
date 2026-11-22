@@ -144,6 +144,7 @@ describe('createPageViewportStore', () => {
 
   it('is told apart from the shared, unlocked store', () => {
     expect(pageViewportOf(createViewportStore(1))).toBeNull();
+    expect(pageViewportOf(undefined)).toBeNull();
     const store = createPageViewportStore({ followsScroll: () => false });
     expect(pageViewportOf(store)).toBe(store);
   });
