@@ -1,14 +1,14 @@
 // The element-schema MCP resource (docs/specs/015-api/mcp-server.md §4.5) + the tools' zod input shapes.
 // Element types + anchors come from packages/document (single source of truth);
-// the design rules are curated guidance. The element STRUCTURE is carried inline
-// on every tool argument that takes elements (ELEMENT_SCHEMA_HINT) so the whole
-// format is available from the tool definition itself, with no second lookup to
-// make. It states that completeness as a fact about the tools rather than as a
-// rule for the caller: a description that tells a model how to behave, or steers
-// it away from other tools, is a connector-listing flag (docs/specs/015-api/mcp-server.md §4.15).
-// isValidTab in the document package stays the runtime guard, so
-// the structure still lives in one authoritative place (this string is guidance,
-// not a second validator).
+// the design rules are curated guidance. Every tool argument that takes elements carries the format in brief
+// (ELEMENT_SCHEMA_HINT), enough for a first call; the schema resource holds every field and value of it
+// (docs/specs/015-api/mcp-server.md §4.18 "The element format, once").
+// It states facts about the tools, never rules for the caller (§4.15). isValidTab in the document package stays
+// the runtime guard: this string is guidance, not a second validator.
+import {
+  elementFormatPointer,
+  styleFieldsBrief,
+} from '@liveworkspace/agent-verbs/mcp/element-brief';
 import { z } from 'zod';
 import { addTabFolder } from './tab-folder-tools';
 import { findArchived } from './archive-tools';
@@ -178,11 +178,9 @@ const STYLE_FIELDS =
   '"idea-box" and "temperature" are the people\u2019s, never an edit\u2019s: starter questions or ideas go on ' +
   'stickies beside them. ';
 
-// Self-contained element schema, attached to each tool's element argument so the
-// model reads it straight from the tool definition (see the comment above).
-const ELEMENT_SCHEMA_HINT =
-  'An array of element objects. This is the COMPLETE format, documented inline ' +
-  'here: the tool definition is the full reference for it. ' +
+// The element format's core: every element's fields and the shape, text, freehand and arrow types. Each tool
+// carries it whole, and the schema resource repeats it.
+const ELEMENT_CORE =
   'Each element: { "id": a unique string, "type", ' +
   '"x", "y", "width", "height", and optional "label" }. ' +
   'type "shape" is a NODE (a labelled box) and also needs "shape", one of ' +
@@ -204,9 +202,36 @@ const ELEMENT_SCHEMA_HINT =
   '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +
   'The theme owns fill, stroke, and text colour on every element except a sticky. ' +
   'Any element may carry "finish" ("flexible", "professional", "sketch" or "marker") to be drawn ' +
-  'differently from its tab. ' +
-  STYLE_FIELDS +
-  CONTENT_KINDS;
+  'differently from its tab. ';
+
+// The kinds that carry content, by their main fields (docs/specs/015-api/mcp-server.md §4.18 "The element format,
+// once"): every option of each one, and every style field's values, are in the schema resource.
+const CONTENT_BRIEF =
+  'Kinds that carry content, by their main fields: type "sticky" ("label" its text; it keeps its own ' +
+  '"fillColor" and "textColor"); type "image" ("imageId" from list_images, "objectFit" contain or cover, ' +
+  '"alt"); "esKind" on a sticky makes it an event-storming note; type "table" ("cells" rows of strings, ' +
+  '"headerRow", "headerColumn", "zebra"); shape "code-block" ("code", "codeLanguage", "codeTheme"); shape ' +
+  '"entity" ("label" its title, "entityFields" [{ "name", "type"?, "key"? }]); shape "lane" (a swimlane, ' +
+  '"label" its title); "bpmn" on a circle, square or diamond (a BPMN event, task or gateway); shape ' +
+  '"bar-chart" / "pie-chart" ("pieSlices" [{ "label", "value" }]) and "line-chart" ("lineCategories", ' +
+  '"lineSeries" [{ "name", "values" }]), with "chartVariant", "chartValues", "chartLegend", "chartAxis"; ' +
+  'shape "sankey" ("sankeyFlows" [{ "from", "to", "value" }] by node name); shape "card" ("pageTitle", ' +
+  '"pageSubtitle", "label" the body, "tags"); shape "badge" / "step" ("label", with "attachedTo" and ' +
+  '"attachAt" to sit on a node); shape "layer-stack", "pyramid", "cycle", "hub", "onion", "chevrons" or ' +
+  '"timeline-rail" ("conceptRows" [{ "label", "note"? }], drawn as one element); shape "pointer-note" ' +
+  '("pointerTip" or "attachedTo"); shape "stack" (lines up the elements inside it); shape "boundary" (a ' +
+  'titled container, "boundaryStyle"); shape "diagram-key" ("keyMeanings"); shape "sequence" ' +
+  '("sequenceParticipants", "sequenceMessages"); "session-button" ("session"), "agenda" ("agendaItems"), ' +
+  '"checklist" ("checklistItems"), a stat row ("stats"), "sticker" ("stickerId"). ';
+
+// The element argument of every tool that takes elements: the format in brief, enough for a first call, and where
+// the rest of it is.
+const ELEMENT_SCHEMA_HINT =
+  'An array of element objects. ' +
+  ELEMENT_CORE +
+  styleFieldsBrief(ELEMENT_FIELD_VALUES) +
+  CONTENT_BRIEF +
+  elementFormatPointer(SCHEMA_RESOURCE_URI);
 
 export function elementSchemaDoc(): string {
   return `# livediagram element schema
@@ -236,6 +261,12 @@ Boxed elements (shape, text, sticky, table, image, annotation) carry:
 
 ## Content-carrying kinds
 ${CONTENT_KINDS}
+
+## Style fields
+${STYLE_FIELDS}
+
+## Every element, in one paragraph
+${ELEMENT_CORE}
 
 ## Arrows
 type "arrow" with "from" and "to" endpoints. PREFER pinned endpoints so arrows
@@ -297,9 +328,8 @@ tabs in a create_document call.
 export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, archive and unarchive, delete (to the Trash) and restore the user's livediagram documents. An archived document is its owner's alone: it can't be read or changed until unarchive_document moves it out, and find_documents lists archived documents only with archived true.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
-when you ask it to (or leave nodes unplaced). The full element format is
-documented inline on each tool's element argument, so the tool definitions are
-the complete reference for it. The "graph" argument (nodes + edges by id, or the same as Mermaid text in
+when you ask it to (or leave nodes unplaced). Each tool's element argument carries the element format in
+brief; every field and value of it is in the schema resource livediagram://schema/elements. The "graph" argument (nodes + edges by id, or the same as Mermaid text in
 "mermaid") builds any node/edge diagram (flowchart, process, architecture, org chart, state machine, swimlanes, a
 cycle, a mind map) in the template look with no coordinates: template-sized boxes, elbow lines, a decision's side
 exit level beside it, loops and skipped ranks routed round the boxes, flowchart steps toned by their "shape" (a

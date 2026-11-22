@@ -1,7 +1,11 @@
 // The element-schema MCP resource and the server instructions (docs/specs/015-api/mcp-server.md §4.5): the element
-// format as facts, carried inline on every tool argument that takes elements (ELEMENT_SCHEMA_HINT). Split out of
+// format as facts, in brief on every tool argument that takes elements (ELEMENT_SCHEMA_HINT). Split out of
 // schema.ts, which re-exports SCHEMA_RESOURCE_URI, elementSchemaDoc and SERVER_INSTRUCTIONS.
 
+import {
+  elementFormatPointer,
+  styleFieldsBrief,
+} from '@liveworkspace/agent-verbs/mcp/element-brief';
 import {
   ANCHORS,
   BADGE_LABEL_MAX,
@@ -147,11 +151,9 @@ const STYLE_FIELDS =
   '"quoteLook" (card, the default, or plain); a callout its "pageTitle" over its "label" ' +
   '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). ';
 
-// Self-contained element schema, attached to each tool's element argument so the
-// model reads it straight from the tool definition (see the comment above).
-export const ELEMENT_SCHEMA_HINT =
-  'An array of element objects. This is the COMPLETE format, documented inline ' +
-  'here: the tool definition is the full reference for it. ' +
+// The element format's core: every element's fields and the shape, text, freehand and arrow types. Each tool
+// carries it whole, and the schema resource repeats it.
+const ELEMENT_CORE =
   'Each element: { "id": a unique string, "type", ' +
   '"x", "y", "width", "height", and optional "label" }. ' +
   'type "shape" is a NODE (a labelled box) and also needs "shape", one of ' +
@@ -173,9 +175,34 @@ export const ELEMENT_SCHEMA_HINT =
   '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +
   'The theme owns fill, stroke, and text colour on every element except a sticky. ' +
   'Any element may carry "finish" ("flexible", "professional", "sketch" or "marker") to be drawn ' +
-  'differently from its tab. ' +
-  STYLE_FIELDS +
-  CONTENT_KINDS;
+  'differently from its tab. ';
+
+// The kinds that carry content, by their main fields (docs/specs/015-api/mcp-server.md §4.18 "The element format,
+// once"): every option of each one, and every style field's values, are in the schema resource.
+const CONTENT_BRIEF =
+  'Kinds that carry content, by their main fields: type "sticky" ("label" its text; it keeps its own ' +
+  '"fillColor" and "textColor"); type "image" ("imageId" from list_images, "objectFit" contain or cover, ' +
+  '"alt"); type "table" ("cells" rows of strings, "headerRow", "headerColumn", "zebra"); shape ' +
+  '"code-block" ("code", "codeLanguage", "codeTheme"); shape "bar-chart" / "pie-chart" ("pieSlices" [{ ' +
+  '"label", "value" }]) and "line-chart" ("lineCategories", "lineSeries" [{ "name", "values" }]), with ' +
+  '"chartVariant", "chartValues", "chartLegend", "chartAxis"; shape "sankey" ("sankeyFlows" [{ "from", ' +
+  '"to", "value" }] by node name); shape "map" ("mapRegion" or "mapCountry", "mapHighlights", "mapPins" [{ ' +
+  '"id", "lat", "lon", "label"? }]); shape "card" ("pageTitle", "pageSubtitle", "label" the body, "tags"); ' +
+  'shape "badge" / "step" ("label", with "attachedTo" and "attachAt" to sit on a node); shape ' +
+  '"layer-stack", "pyramid", "cycle", "hub", "onion", "chevrons" or "timeline-rail" ("conceptRows" [{ ' +
+  '"label", "note"? }], drawn as one element); shape "pointer-note" ("pointerTip" or "attachedTo"); shape ' +
+  '"stack" (lines up the elements inside it); "checklist" ("checklistItems"), a stat row ("stats" [{ ' +
+  '"value", "caption", "change"? }]), "quote" ("label" its words, "pageTitle" the speaker), "sticker" ' +
+  '("stickerId"). ';
+
+// The element argument of every tool that takes elements: the format in brief, enough for a first call, and where
+// the rest of it is.
+export const ELEMENT_SCHEMA_HINT =
+  'An array of element objects. ' +
+  ELEMENT_CORE +
+  styleFieldsBrief(ELEMENT_FIELD_VALUES) +
+  CONTENT_BRIEF +
+  elementFormatPointer(SCHEMA_RESOURCE_URI);
 
 export function elementSchemaDoc(): string {
   return `# livedocuments element schema
@@ -207,6 +234,12 @@ Boxed elements (shape, text, sticky, table, image) carry:
 
 ## Content-carrying kinds
 ${CONTENT_KINDS}
+
+## Style fields
+${STYLE_FIELDS}
+
+## Every element, in one paragraph
+${ELEMENT_CORE}
 
 ## Arrows
 type "arrow" with "from" and "to" endpoints. PREFER pinned endpoints so arrows
@@ -278,9 +311,9 @@ from ready-made pages, and list_templates lists them all. A layout's elements ho
 "pages" lists each page's elements with their refs and text, to replace with update_document. It also shows each
 article as Markdown.
 The calling model produces the elements on a page AND decides their layout; this server validates, persists, and
-renders them, and only auto-arranges boxes and arrows when you ask it to (or leave nodes unplaced). The full element
-format is documented inline on each tool's element argument, so the tool definitions are the complete reference for
-it. Each element has a unique "id"; nodes are "shape" elements (a labelled box) NOT "text" (text is only for titles,
+renders them, and only auto-arranges boxes and arrows when you ask it to (or leave nodes unplaced). Each tool's element
+argument carries the element format in brief; every field and value of it is in the schema resource
+livedocuments://schema/elements. Each element has a unique "id"; nodes are "shape" elements (a labelled box) NOT "text" (text is only for titles,
 captions and running copy); pinned arrows (node -> node) track their boxes; and the theme owns colours (a sticky keeps
 its own). Stickies, tables, code blocks and charts carry content fields, documented on each tool's element argument.
 Pictures make a document its subject's own: asked about a product, a place, a team or a game, use real pictures of it,

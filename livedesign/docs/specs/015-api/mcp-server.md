@@ -467,6 +467,9 @@ code is `@liveworkspace/agent-verbs`'s `packages/agent-verbs/src/images/remove.t
 
 ### 4.6 Schema resource (not a tool)
 
+The resource is where the **whole** element format lives; each tool's element argument carries a compact,
+self-sufficient summary of it that names the resource (§4.18 "The element format, once").
+
 A static, cacheable MCP **resource** (e.g. `livedesign://schema/elements`)
 returning a compact description of the element schema: the element types
 (`shape` / `text` / `sticky` / `arrow` / `table` / …), the shape vocabulary,
@@ -667,6 +670,10 @@ Pages are named by id, place (`2`) or name. The tool goes through one api route
   `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
   takes its background), written as one edit; a refusal writes nothing and names the
   change. The answer lists each page with its rectangle on the canvas, where `update_design` puts elements.
+  An `add` with a `layout`, or a `layout` change, takes `text` by slot (`title`, `subtitle`, `bullets`, `body`), and
+  each page the call laid out answers its `texts` (`{ ref, slot, text }`), so a set of screens or a logo with real
+  words is made in two calls (`create_design`, then `change_pages`) and touched up by ref in a third if need be
+  ([Pages for agents](../024-agents/pages-for-agents.md) "Text slots", "A laid-out page's texts").
 - **Reading**: `read_design` with `view: "pages"` lists the pages, the elements on each and the layouts on
   offer.
 
@@ -871,15 +878,12 @@ point the same way: a connector-directory review rejects behavioural
 directives in a description, and a server that tries to govern a model it does
 not own is overstepping, since the client owns that.
 
-The rule bites where it's tempting to be helpful. Because the element format
-is carried inline on every element argument (§4.5), the honest thing to say is
-that the format is complete right there; earlier wording went one step
-further and instructed the model not to web-search, open the repo, or read
-another design to find it. Same information, but phrased as a rule for the
-caller, so it was rewritten as a plain statement:
+The rule bites where it's tempting to be helpful. Earlier wording instructed the model not to web-search, open
+the repo, or read anything else to find the element format. Same information, but phrased as a rule for the caller,
+so it was rewritten as a plain statement of where the format is (§4.18 "The element format, once"):
 
-> The full element format is documented inline on each tool's element
-> argument, so the tool definitions are the complete reference for it.
+> Each tool's element argument carries the element format in brief; every field and value of it is in the schema
+> resource livedesign://schema/elements.
 
 Where a genuine safety confirmation belongs, as in `delete_design` asking the
 user before an irreversible delete, it stays, and is now also carried
@@ -1089,6 +1093,28 @@ as they can be without saying less.
   (`../packages/mcp-kit/src/tool-list-compact.ts`). Nothing points from one tool to another: a host that loads
   tools one at a time would be left with a pointer to a schema it never read.
 - **An answer's text** is its structured result as one-line JSON (§4.17).
+- **The element format, once.** The full element format (every content kind's fields and options, every style field's
+  values) is the schema resource `livedesign://schema/elements` (§4.6), read once and cacheable. Each tool that takes
+  elements carries a **compact summary** of it on its element argument (`ELEMENT_SCHEMA_HINT`), self-sufficient for a
+  first call: the element's fields, the shape kinds, text, arrows and pinned ends, the theme owning colour, each
+  content kind with the fields that hold its content, and the style fields by name (one with six values or fewer with
+  them), then where the rest is (`../packages/agent-verbs/src/mcp/element-brief.ts`). It never points at another tool,
+  so a host that loads tools one at a time still has it. A field a kind does not take, or a value off its list, is
+  refused naming what it takes (§4.4 "Values checked"), so what the summary leaves out is taught on the first mistake
+  rather than spent in every session. The full format used to be repeated on every tool that takes elements, about 12
+  to 14 KB each time.
+- **Output schemas, shallow in the listing.** Every tool still declares its full output schema and the SDK still
+  checks every result against it on the way out (§4.17). The `tools/list` answer carries each output schema's top
+  level only: each property's name, type (an array's item type, a union's member types), enum or const, whether it
+  is required and its description; what lies under a property's own fields is left out
+  (`shallowOutputSchema`, `../packages/mcp-kit/src/tool-list-compact.ts`). The connector directory asks nothing of
+  output schemas (§4.16a), a client validates `structuredContent` against the listed one (which every full result
+  still matches) and none we know shows one to a model, so the nested detail was bytes every session paid for and
+  nobody read: a form's whole question format, about 6.7 KB, was listed again under each of four tools.
+- **A byte budget.** `apps/mcp/src/tool-list-budget.test.ts` lists the tools through a real MCP client, compacts the
+  answer as `/mcp` does and holds it to `TOOL_LIST_BUDGET_BYTES` (100,000); a tool that grows past it fails CI,
+  where it can be trimmed or the budget raised on purpose. Measured on the compacted answer, in characters of its JSON: 129,584 before
+  the element format moved and output schemas went shallow (2026-11-21), 92,170 after.
 - **A tab by its name.** Where a tool reads a tab (`read_design`, `update_design` and the tools that load a tab the same
   way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
   (`../packages/mcp-kit/src/tab-named.ts`). A caller that made the tabs knows them by name, and an unknown id was

@@ -404,6 +404,9 @@ size, uploadedAt, deduped }` (livediagram's answer, `uploadImageOutput`); `id` i
 
 ### 4.6 Schema resource (not a tool)
 
+The resource is where the **whole** element format lives; each tool's element argument carries a compact,
+self-sufficient summary of it that names the resource (§4.18 "The element format, once").
+
 A static, cacheable MCP **resource**, `liveplanner://schema/elements`, returning a compact description of the
 elements a liveplanner tab holds: the six Plan kinds (§4.7a), the fields common to all and each kind's own, and the
 closed values those fields take. The schema is presented once, declaratively, rather than baked verbatim into every
@@ -781,15 +784,12 @@ point the same way: a connector-directory review rejects behavioural
 directives in a description, and a server that tries to govern a model it does
 not own is overstepping, since the client owns that.
 
-The rule bites where it's tempting to be helpful. Because the element format
-is carried inline on every element argument (§4.5), the honest thing to say is
-that the format is complete right there; earlier wording went one step
-further and instructed the model not to web-search, open the repo, or read
-another project to find it. Same information, but phrased as a rule for the
-caller, so it was rewritten as a plain statement:
+The rule bites where it's tempting to be helpful. Earlier wording instructed the model not to web-search, open
+the repo, or read anything else to find the element format. Same information, but phrased as a rule for the caller,
+so it was rewritten as a plain statement of where the format is (§4.18 "The element format, once"):
 
-> The full element format is documented inline on each tool's element
-> argument, so the tool definitions are the complete reference for it.
+> Each tool's element argument carries the element format, and the schema resource
+> liveplanner://schema/elements repeats it.
 
 Where a genuine safety confirmation belongs, as in `delete_project` asking the
 user before an irreversible delete, it stays, and is now also carried
@@ -1010,6 +1010,23 @@ as they can be without saying less.
   tools one at a time would be left with a pointer to a schema it never read. Measured on liveplanner's 35 tools: 260.6 KB
   to 247.5 KB, the input schemas 150.8 KB to 138.4 KB.
 - **An answer's text** is its structured result as one-line JSON (§4.17).
+- **The element format, once.** A plan's element format is short (its Dashboard shapes and their fields, about 2 KB),
+  so each tool that takes elements still carries it whole on its element argument (`ELEMENT_SCHEMA_HINT`), and the
+  schema resource `liveplanner://schema/elements` (§4.6) repeats it with the view format. The other products, whose
+  formats run to 12 to 14 KB, carry a summary on each tool and keep the whole format in their resource; liveplanner's
+  list is cut by its output schemas instead.
+- **Output schemas, shallow in the listing.** Every tool still declares its full output schema and the SDK still
+  checks every result against it on the way out (§4.17). The `tools/list` answer carries each output schema's top
+  level only: each property's name, type (an array's item type, a union's member types), enum or const, whether it
+  is required and its description; what lies under a property's own fields is left out
+  (`shallowOutputSchema`, `../packages/mcp-kit/src/tool-list-compact.ts`). The connector directory asks nothing of
+  output schemas (§4.16a), a client validates `structuredContent` against the listed one (which every full result
+  still matches) and none we know shows one to a model, so the nested detail was bytes every session paid for and
+  nobody read: a form's whole question format, about 6.7 KB, was listed again under each of four tools.
+- **A byte budget.** `apps/mcp/src/tool-list-budget.test.ts` lists the tools through a real MCP client, compacts the
+  answer as `/mcp` does and holds it to `TOOL_LIST_BUDGET_BYTES` (215,000); a tool that grows past it fails CI,
+  where it can be trimmed or the budget raised on purpose. Measured on the compacted answer, in characters of its JSON: 250,833 before
+  the element format moved and output schemas went shallow (2026-11-21), 202,468 after.
 - **A tab by its name.** Where a tool reads a tab (`read_project`, `update_project` and the tools that load a tab the same
   way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
   (`../packages/mcp-kit/src/tab-named.ts`). A caller that made the tabs knows them by name, and an unknown id was
