@@ -53,6 +53,7 @@ export function PageWatchControl({
             {/* The number alone, so the row keeps one line in the docked rail; the hover card says what it counts. */}
             <span
               tabIndex={0}
+              role="img"
               aria-label={`${watch.watchers.toLocaleString('en')} watching`}
               data-watchers=""
               className="flex h-6 min-w-6 cursor-default items-center justify-center rounded-full bg-slate-100 px-1.5 text-xs font-semibold tabular-nums text-slate-600 focus-visible:outline-2 focus-visible:outline-brand-600 dark:bg-slate-800 dark:text-slate-300"
