@@ -30,7 +30,7 @@
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
-    "better-auth": "1.7.20",
+    "better-auth": "1.7.25",
     "jose": "^6.2.17"
   },
   "devDependencies": {
@@ -38,7 +38,7 @@
     "@liveworkspace/api-kit": "workspace:^",
     "@liveworkspace/vitest-config": "workspace:^",
     "@types/node": "^26.6.6",
-    "oxlint": "^1.93.0",
+    "oxlint": "^1.94.0",
     "tsx": "^4.20.6",
     "typescript": "^7.0.2",
     "vitest": "^5.1.1",
