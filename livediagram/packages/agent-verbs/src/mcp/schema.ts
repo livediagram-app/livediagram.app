@@ -213,7 +213,7 @@ const CONTENT_BRIEF =
   '"headerRow", "headerColumn", "zebra"); shape "code-block" ("code", "codeLanguage", "codeTheme"); shape ' +
   '"entity" ("label" its title, "entityFields" [{ "name", "type"?, "key"? }]); shape "lane" (a swimlane, ' +
   '"label" its title); "bpmn" on a circle, square or diamond (a BPMN event, task or gateway); shape ' +
-  '"bar-chart" / "pie-chart" ("pieSlices" [{ "label", "value" }]) and "line-chart" ("lineCategories", ' +
+  '"bar-chart" and "pie-chart" (each its data in "pieSlices" [{ "label", "value" }]) and "line-chart" ("lineCategories", ' +
   '"lineSeries" [{ "name", "values" }]), with "chartVariant", "chartValues", "chartLegend", "chartAxis"; ' +
   'shape "sankey" ("sankeyFlows" [{ "from", "to", "value" }] by node name); shape "card" ("pageTitle", ' +
   '"pageSubtitle", "label" the body, "tags"); shape "badge" / "step" ("label", with "attachedTo" and ' +

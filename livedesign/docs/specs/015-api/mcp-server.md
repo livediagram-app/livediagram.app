@@ -1114,7 +1114,7 @@ as they can be without saying less.
 - **A byte budget.** `apps/mcp/src/tool-list-budget.test.ts` lists the tools through a real MCP client, compacts the
   answer as `/mcp` does and holds it to `TOOL_LIST_BUDGET_BYTES` (100,000); a tool that grows past it fails CI,
   where it can be trimmed or the budget raised on purpose. Measured on the compacted answer, in characters of its JSON: 129,584 before
-  the element format moved and output schemas went shallow (2026-11-21), 92,170 after.
+  the element format moved and output schemas went shallow (2026-11-21), 92,534 after.
 - **A tab by its name.** Where a tool reads a tab (`read_design`, `update_design` and the tools that load a tab the same
   way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
   (`../packages/mcp-kit/src/tab-named.ts`). A caller that made the tabs knows them by name, and an unknown id was

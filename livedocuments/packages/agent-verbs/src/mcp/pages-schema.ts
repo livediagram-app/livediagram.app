@@ -87,10 +87,15 @@ const text = z
       .describe(
         "Every other text with words, in the layout's order (top to bottom, then the next column); fewer keeps the rest's sample.",
       ),
+    figures: slotList
+      .optional()
+      .describe(
+        "Each figure (a number, a time, a price, 73%), a stat's big number among them, in the layout's order.",
+      ),
   })
   .strict()
   .describe(
-    "Words for the layout's sample text, by slot; a slot left out keeps its sample. A figure (a number, a time, 73%) is no slot.",
+    "Words for the layout's sample text, by slot; a slot left out keeps its sample. The page's texts in the answer name each slot.",
   );
 const name = z
   .string()
@@ -201,7 +206,7 @@ const pageOut = z
           slot: z
             .string()
             .nullable()
-            .describe('Its slot (title, subtitle, bullets[0], body[2]), null for a figure.'),
+            .describe('Its slot: title, subtitle, bullets[0], body[2], figures[0].'),
           text: z.string().describe(`Its words, cut to ${PAGE_TEXT_SAMPLE_MAX} characters.`),
         }),
       )

@@ -4840,6 +4840,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "figures": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "subtitle": {
         "type": "string"
       },

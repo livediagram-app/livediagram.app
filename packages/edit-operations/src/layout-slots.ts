@@ -4,8 +4,8 @@
 // hand-marked on it, so every layout has them and a new one needs nothing: the headline (the largest words) is
 // `title`, the line straight under it `subtitle`, each line set beside a bullet dot one of `bullets`, and every other
 // text one of `body`, in the order the layout builds them (top to bottom, then the next column). A figure (a text with
-// no letter, or a number with a unit or two: a time, "73%", "3.2M", a quote mark) is no slot: it stays as the layout
-// set it, and its ref changes it.
+// no letter, or a number with a unit or two: a time, "73%", "3.2M", a quote mark) is one of `figures`, in the same
+// order, so a stat slide's big numbers are written in the same change as its words.
 
 /** The fields of an element the slots are read from: any product's element has them. */
 export type SlotElement = {
@@ -21,7 +21,7 @@ export type SlotElement = {
   readonly textBold?: unknown;
 };
 
-export const LAYOUT_SLOT_NAMES = ['title', 'subtitle', 'bullets', 'body'] as const;
+export const LAYOUT_SLOT_NAMES = ['title', 'subtitle', 'bullets', 'body', 'figures'] as const;
 export type LayoutSlotName = (typeof LAYOUT_SLOT_NAMES)[number];
 
 /** What a change gives a layout's slots: a slot left out keeps the layout's sample. */
@@ -30,13 +30,14 @@ export type LayoutText = {
   subtitle?: string;
   bullets?: string[];
   body?: string[];
+  figures?: string[];
 };
 
 // The longest text one slot takes, and the most items a list slot takes (the fullest layout has 40 texts).
 export const LAYOUT_TEXT_MAX = 2000;
 export const LAYOUT_SLOT_ITEMS_MAX = 60;
 
-/** One text of a laid-out page: its element and its slot (`title`, `bullets[2]`), or null for no slot. */
+/** One text of a laid-out page: its element and its slot (`title`, `bullets[2]`, `figures[0]`). */
 export type LayoutTextSlot = { id: string; slot: string | null };
 
 // The element kinds whose label is words on the page: a shape's icon draws no label.
@@ -92,9 +93,10 @@ export function layoutSlots(
       : undefined;
   let bullets = 0;
   let body = 0;
+  let figures = 0;
   return texts.map((t) => {
     const slot = !isWords(t.el.label)
-      ? null
+      ? `figures[${figures++}]`
       : t === title
         ? 'title'
         : t === subtitle
@@ -124,7 +126,7 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
  * given more items than the layout has (the rest are not placed), a slot the layout has none of, and body texts left
  * holding their sample. Bullets given fewer than the layout has lose the rest, each with its dot. `relabel` sets one
  * element's words (a product fits a headline's type to them). `slots` are the texts left, read from the layout as
- * built (its sample), so a figure written into a body slot keeps that slot.
+ * built (its sample), so words written into a figure's slot keep that slot.
  */
 export function fillLayoutSlots<E extends SlotElement>(
   elements: readonly E[],
@@ -146,7 +148,7 @@ export function fillLayoutSlots<E extends SlotElement>(
   };
   single('title');
   single('subtitle');
-  const list = (name: 'bullets' | 'body') => {
+  const list = (name: 'bullets' | 'body' | 'figures') => {
     const given = text[name];
     if (given === undefined) return;
     const ids = slots.filter((s) => s.slot?.startsWith(`${name}[`)).map((s) => s.id);
@@ -166,12 +168,13 @@ export function fillLayoutSlots<E extends SlotElement>(
         );
       } else
         lines.push(
-          `${plural(rest.length, 'body text keeps', 'body texts keep')} the layout's sample: change ${rest.length === 1 ? 'it' : 'them'} by ref (the page's texts list each).`,
+          `${plural(rest.length, `${name === 'body' ? 'body text' : 'figure'} keeps`, `${name === 'body' ? 'body texts' : 'figures'} keep`)} the layout's sample: change ${rest.length === 1 ? 'it' : 'them'} by ref (the page's texts list each).`,
         );
     }
   };
   list('bullets');
   list('body');
+  list('figures');
   const out: E[] = [];
   elements.forEach((el, i) => {
     if (dropped.has(el.id)) return;
@@ -190,7 +193,7 @@ export function fillLayoutSlots<E extends SlotElement>(
 /** A change's `text` read from the wire: the slots, or why not in words. */
 export function readLayoutText(v: unknown): LayoutText | { refused: string } {
   if (typeof v !== 'object' || v === null || Array.isArray(v))
-    return { refused: '"text" is an object of slots: title, subtitle, bullets, body.' };
+    return { refused: '"text" is an object of slots: title, subtitle, bullets, body, figures.' };
   const out: LayoutText = {};
   for (const [key, value] of Object.entries(v)) {
     if (!(LAYOUT_SLOT_NAMES as readonly string[]).includes(key))
@@ -211,7 +214,7 @@ export function readLayoutText(v: unknown): LayoutText | { refused: string } {
       return {
         refused: `"text.${key}" is a list of at most ${LAYOUT_SLOT_ITEMS_MAX} texts, each at most ${LAYOUT_TEXT_MAX} characters.`,
       };
-    out[key as 'bullets' | 'body'] = value as string[];
+    out[key as 'bullets' | 'body' | 'figures'] = value as string[];
   }
   return out;
 }

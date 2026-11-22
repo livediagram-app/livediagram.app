@@ -1,6 +1,6 @@
 // The tools/list answer's size (docs/specs/015-api/mcp-server.md §4.18 "A byte budget"): what a client loads each
 // session, measured as the Worker sends it (compacted, output schemas shallow). Its budget holds the cut made by
-// Work Tracker 1325 (136,821 characters before, 95,798 after); a change that grows the list past it says so
+// Work Tracker 1325 (136,821 characters before, 96,162 after); a change that grows the list past it says so
 // here, with the new number and why, rather than in silence.
 import { describe, expect, it, vi } from 'vitest';
 vi.mock('./image-result', () => ({

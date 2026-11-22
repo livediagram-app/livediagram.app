@@ -217,7 +217,7 @@ export const mcpChangePages = mcpTool('change_pages', {
     'coordinates, the ' +
     "same as an element's x and y in update_design (the layout view prints positions from the content's " +
     'corner instead). A layout fills a page with sample text; its "text" replaces it by slot in the same change ' +
-    '({"op": "add", "kind": ..., "layout": ..., "text": {"title": ..., "bullets": [...]}}), and each page a change ' +
+    '({"op": "add", "kind": ..., "layout": ..., "text": {"title": ..., "bullets": [...], "figures": [...]}}), and each page a change ' +
     'lays out answers its texts, each with its ref (for update_design), slot and words. ' +
     "A layout's colours are the tab's theme (create_design's and add_tab's theme: " +
     'mocha, ocean, forest...), a page\u2019s background its own. ' +

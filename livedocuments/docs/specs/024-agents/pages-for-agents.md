@@ -123,11 +123,13 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
     figure);
   - `subtitle`: the text straight after the title, when it is smaller, not bold, not a bullet and has words;
   - `bullets`: each line set beside a bullet dot (an empty circle just left of it, level with it), in order;
-  - `body`: every other text with words, in the order the layout builds them (top to bottom, then the next column).
+  - `body`: every other text with words, in the order the layout builds them (top to bottom, then the next column);
+  - `figures`: each figure, in the same order.
 
-  A **figure**, a text with no letter or a number with a unit or two (`09:00`, `73%`, `3.2M`, `“`, `01`), is no
-  slot: it keeps the layout's and its ref changes it. Slots are read from the layout's sample before any words go in,
-  so a figure written into a body slot keeps that slot. A slot left out keeps its sample. `bullets` given fewer items
+  A **figure**, a text with no letter or a number with a unit or two (`09:00`, `73%`, `3.2M`, `“`, `01`), is one of
+  `figures`, so a stat slide's big numbers are written in the same change as its words (an eval run of the coffee
+  pitch deck left `86k` and `4.8` as samples when figures had no slot). Slots are read from the layout's sample
+  before any words go in, so words written into a figure's slot keep that slot. A slot left out keeps its sample. `bullets` given fewer items
   than the layout has drops the rest, each with its dot ("Removed the layout's 2 unused bullets."); `body` given fewer
   keeps the rest's sample and says so ("2 body texts keep the layout's sample: change them by ref"); a list given
   more, or a slot the layout lacks, places what fits and says what was not placed. Nothing given is dropped in
@@ -145,7 +147,7 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   `update_document`, at coordinates inside its rectangle.
 - **A laid-out page's texts**: each page this call laid out (an `add` with a `layout`, or a `layout` change) also
   lists its `texts`, `{ ref, slot, text }` for every text on it in the layout's order: the ref `update_document` and
-  the views take, its slot (`title`, `subtitle`, `bullets[0]`, `body[2]`, a list's by its index; null for a figure), and its words, cut to `PAGE_TEXT_SAMPLE_MAX` (80) characters with
+  the views take, its slot (`title`, `subtitle`, `bullets[0]`, `body[2]`, `figures[0]`, a list's by its index), and its words, cut to `PAGE_TEXT_SAMPLE_MAX` (80) characters with
   an ellipsis. So the sample text left to replace, and its ref, come back in the answer rather than from a
   `read_document` call. Bounded for the 150,000-character tool result: the texts of the laid-out pages are listed in
   order while they fit `PAGE_TEXTS_BUDGET` (60,000 characters); a page past it has none, and one line says which

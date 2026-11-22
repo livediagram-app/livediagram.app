@@ -56,7 +56,7 @@ describe('the layout slots table', () => {
     '',
     'The text slots of every wireframe and logo layout, as [Pages for agents](pages-for-agents.md) "Text slots"',
     'reads them from the layout as built: `title`, `subtitle`, `bullets` and `body`, with how many items each list',
-    'holds. A layout’s figures (a number, a time, a price) are no slot. This table is written by, and checked',
+    'holds; `figures` are its numbers, times and prices. This table is written by, and checked',
     'against the layouts by, `packages/edit-operations/src/pages/layout-text.test.ts` (`UPDATE_LAYOUT_SLOTS=1`',
     'rewrites it; prettier then lines up its columns). A watch layout is read on a watch, the rest on a phone.',
     '',

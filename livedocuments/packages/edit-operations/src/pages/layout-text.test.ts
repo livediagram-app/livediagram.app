@@ -52,7 +52,7 @@ describe('the layout slots table', () => {
     '',
     'The text slots of every slide and infographic layout, as [Pages for agents](pages-for-agents.md) "Text slots"',
     'reads them from the layout as built: `title`, `subtitle`, `bullets` and `body`, with how many items each list',
-    'holds. A layout’s figures (a number, a time, a percentage) are no slot. This table is written by, and checked',
+    'holds; `figures` are its numbers, times and prices. This table is written by, and checked',
     'against the layouts by, `packages/edit-operations/src/pages/layout-text.test.ts` (`UPDATE_LAYOUT_SLOTS=1`',
     'rewrites it; prettier then lines up its columns).',
     '',
@@ -127,6 +127,22 @@ describe('a layout written by slot', () => {
     expect(
       out.lines.some((l) => l.startsWith("Page 1: 5 body texts keep the layout's sample")),
     ).toBe(true);
+  });
+
+  it('writes a stat slide’s big numbers by their own slot', () => {
+    const out = run(fresh(), [
+      {
+        op: 'add',
+        kind: 'slide',
+        layout: 'slide-three-stats',
+        text: { title: 'Traction', figures: ['120k', '4.9', '18m'] },
+      },
+    ]);
+    expect(slotIds(out.laid, 'figures').map((id) => labelOf(out.tab, id))).toEqual([
+      '120k',
+      '4.9',
+      '18m',
+    ]);
   });
 
   it('writes a layout change by slot too, the last layout of a page the one answered', () => {

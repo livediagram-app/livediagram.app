@@ -63,7 +63,7 @@ describe('layoutSlots', () => {
       { id: 'h', slot: 'title' },
       { id: 's', slot: 'subtitle' },
       { id: 'b', slot: 'bullets[0]' },
-      { id: 'n', slot: null },
+      { id: 'n', slot: 'figures[0]' },
       { id: 'f', slot: 'body[1]' },
     ]);
   });
@@ -77,17 +77,24 @@ describe('layoutSlots', () => {
     const after = (next: El[]) => layoutSlots([text('h', 'Headline', 60, 0), ...next], sizeOf);
     expect(after([text('x', 'Bold line', 30, 80, { textBold: true })])[1]!.slot).toBe('body[0]');
     expect(after([dot('d', 80), text('x', 'A bullet', 30, 80)])[1]!.slot).toBe('bullets[0]');
-    expect(after([text('x', '09:00', 30, 80)])[1]!.slot).toBeNull();
+    expect(after([text('x', '09:00', 30, 80)])[1]!.slot).toBe('figures[0]');
     expect(after([text('x', 'Same size', 60, 80)])[1]!.slot).toBe('body[0]');
     expect(after([])).toEqual([{ id: 'h', slot: 'title' }]);
   });
 
-  it('counts figures as no slot: no letter, or a number with a unit or two', () => {
+  it('reads figures apart: no letter, or a number with a unit or two', () => {
     const slots = layoutSlots(
       ['73%', '3.2M', 'Q3', '“', '10 min', 'Grow'].map((l, i) => text(`e${i}`, l, 30 - i, i * 50)),
       sizeOf,
     );
-    expect(slots.map((s) => s.slot)).toEqual([null, null, null, null, 'title', 'subtitle']);
+    expect(slots.map((s) => s.slot)).toEqual([
+      'figures[0]',
+      'figures[1]',
+      'figures[2]',
+      'figures[3]',
+      'title',
+      'subtitle',
+    ]);
   });
 
   it('reads words from texts, shapes and stickies, never an icon, an empty label or another type', () => {
@@ -131,9 +138,10 @@ describe('slotsInWords', () => {
         { id: 'a', slot: 'title' },
         { id: 'b', slot: 'subtitle' },
         { id: 'c', slot: 'body[0]' },
-        { id: 'd', slot: null },
+        { id: 'd', slot: 'figures[0]' },
+        { id: 'e', slot: null },
       ]),
-    ).toBe('title, subtitle, body ×1');
+    ).toBe('title, subtitle, body ×1, figures ×1');
     expect(slotsInWords([])).toBe('');
   });
 });
@@ -196,7 +204,7 @@ describe('fillLayoutSlots', () => {
     ]);
   });
 
-  it('keeps a figure as the layout set it, and a slot read from the sample when its new words are a figure', () => {
+  it('writes figures by their own slot, keeping the rest, and reads slots from the sample', () => {
     const els: El[] = [
       text('n', '01', 140, 0),
       text('h', 'Section', 70, 100),
@@ -204,8 +212,19 @@ describe('fillLayoutSlots', () => {
     ];
     const out = fillLayoutSlots(els, { title: 'Results', body: ['2026'] }, sizeOf, relabel);
     expect(out.elements.map((e) => e.label)).toEqual(['01', 'Results', '2026']);
+    expect(out.lines).toEqual([]);
+    const two = [
+      text('a', '86k', 140, 0),
+      text('h', 'Traction', 70, 100),
+      text('b', '4.8', 140, 200),
+    ];
+    const figures = fillLayoutSlots(two, { figures: ['120k'] }, sizeOf, relabel);
+    expect(figures.elements.map((e) => e.label)).toEqual(['120k', 'Traction', '4.8']);
+    expect(figures.lines).toEqual([
+      "1 figure keeps the layout's sample: change it by ref (the page's texts list each).",
+    ]);
     expect(out.slots).toEqual([
-      { id: 'n', slot: null },
+      { id: 'n', slot: 'figures[0]' },
       { id: 'h', slot: 'title' },
       { id: 'b', slot: 'body[0]' },
     ]);
@@ -225,12 +244,12 @@ describe('readLayoutText', () => {
 
   it('refuses what is not slots, in words', () => {
     expect(readLayoutText('Title')).toEqual({
-      refused: '"text" is an object of slots: title, subtitle, bullets, body.',
+      refused: '"text" is an object of slots: title, subtitle, bullets, body, figures.',
     });
     expect(readLayoutText(null)).toHaveProperty('refused');
     expect(readLayoutText(['a'])).toHaveProperty('refused');
     expect(readLayoutText({ heading: 'x' })).toEqual({
-      refused: '"text" takes no "heading" (it takes title, subtitle, bullets, body).',
+      refused: '"text" takes no "heading" (it takes title, subtitle, bullets, body, figures).',
     });
     expect(readLayoutText({ title: 3 })).toEqual({
       refused: `"text.title" is text of at most ${LAYOUT_TEXT_MAX} characters.`,

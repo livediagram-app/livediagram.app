@@ -196,8 +196,8 @@ const CONTENT_BRIEF =
   'Kinds that carry content, by their main fields: type "sticky" ("label" its text; it keeps its own ' +
   '"fillColor" and "textColor"); type "image" ("imageId" from list_images, "objectFit" contain or cover, ' +
   '"alt", "crop", "mask", "greyscale"); type "table" ("cells" rows of strings, "headerRow", ' +
-  '"headerColumn", "zebra"); shape "code-block" ("code", "codeLanguage", "codeTheme"); shape "bar-chart" / ' +
-  '"pie-chart" ("pieSlices" [{ "label", "value" }]) and "line-chart" ("lineCategories", "lineSeries" [{ ' +
+  '"headerColumn", "zebra"); shape "code-block" ("code", "codeLanguage", "codeTheme"); shape "bar-chart" and ' +
+  '"pie-chart" (each its data in "pieSlices" [{ "label", "value" }]) and "line-chart" ("lineCategories", "lineSeries" [{ ' +
   '"name", "values" }]), with "chartVariant", "chartValues", "chartLegend", "chartAxis"; shape "sankey" ' +
   '("sankeyFlows" [{ "from", "to", "value" }] by node name); shape "card" ("pageTitle", "pageSubtitle", ' +
   '"label" the body, "tags"); shape "badge" / "step" ("label", with "attachedTo" and "attachAt" to sit on ' +
