@@ -143,7 +143,7 @@ export function AiSource({ line, act, allowance, itemKeyName, id }: AiSourceProp
             type="button"
             aria-label={name}
             onClick={act}
-            className="relative shrink-0 cursor-pointer rounded-md px-2 py-1 text-[12px] font-semibold text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:bg-brand-100 touch-target-y dark:text-brand-200 dark:hover:bg-brand-500/15 dark:hover:text-brand-100 dark:active:bg-brand-500/25"
+            className="relative shrink-0 cursor-pointer rounded-md px-2 py-1 text-[12px] font-semibold text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:hover:bg-brand-100 touch-target-y dark:text-brand-200 dark:hover:bg-brand-500/15 dark:hover:text-brand-100 dark:active:hover:bg-brand-500/25"
           >
             {action}
           </button>
