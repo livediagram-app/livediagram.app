@@ -47,7 +47,7 @@
     "@modelcontextprotocol/sdk": "^1.32.2",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "hono": "^4.13.18",
+    "hono": "^4.13.19",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -55,7 +55,7 @@
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.1.1",
-    "oxlint": "^1.93.0",
+    "oxlint": "^1.94.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.1"
   }

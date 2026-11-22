@@ -41,12 +41,15 @@ export function usePageSurface({
   mainRef,
   page,
   margin,
+  topMargin = margin,
   hasCover = false,
 }: {
   mainRef: Ref<HTMLElement>;
   /** The open page's sheet in canvas px; absent while the tab has no page yet. */
   page: { x: number; y: number; width: number } | undefined;
   margin: number;
+  /** The open page's top margin (articleTopMarginPx), which a cover tucks under its band. */
+  topMargin?: number;
   /** The open page has a cover (page-surface.md "The cover"): its band stands over the page's top room. */
   hasCover?: boolean;
 }): PageSurface {
@@ -87,6 +90,7 @@ export function usePageSurface({
         sides: { left: sides.left, right },
         page: { x, y, width: pageWidth },
         margin,
+        topMargin,
         phone,
         cover,
       });
@@ -124,7 +128,7 @@ export function usePageSurface({
       sizes.disconnect();
       chrome.disconnect();
     };
-  }, [mainRef, pageStore, x, y, pageWidth, margin, phone, hasCover]);
+  }, [mainRef, pageStore, x, y, pageWidth, margin, topMargin, phone, hasCover]);
   // The page's own scroll keys, while the focus is on the page and not in its writing or a field.
   useEffect(() => {
     if (!pageStore) return;

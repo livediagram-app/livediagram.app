@@ -64,9 +64,15 @@ test('two Editors write one draft, a Viewer reads the saved page, and Save publi
   // A Viewer has no Edit.
   await expect(editButton(vera)).toHaveCount(0);
 
-  // Both Editors edit the page; each sees the other in the bar.
+  // Ada edits the page and Sam, an Editor on it, joins her (editing.md "Everyone joins"); each sees the other in the
+  // bar.
   await edit(page);
-  await edit(sam);
+  await expect(
+    sam.getByText(/^Ada\b.* started editing\. You're editing with them\.$/),
+  ).toBeVisible();
+  await expect(draftBar(sam)).toBeVisible();
+  await expect(writing(sam)).toHaveAttribute('contenteditable', 'true');
+  await expect(editButton(sam)).toHaveCount(0);
   await expect(draftBar(page).getByRole('img', { name: /Also editing: Sam/ })).toBeVisible();
   await expect(draftBar(sam).getByRole('img', { name: /Also editing: Ada/ })).toBeVisible();
   // The Viewer is told who is editing.
