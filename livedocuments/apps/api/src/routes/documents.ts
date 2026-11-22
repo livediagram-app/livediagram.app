@@ -12,6 +12,7 @@ import {
   itemTabsRequest,
   itemTabsResponse,
   type ItemCreateRequest,
+  forgetPutAwayGrant,
 } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import {
@@ -31,7 +32,15 @@ import {
   type CreationIntent,
 } from '@livedocuments/api-schema';
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
-import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
+import {
+  badRequest,
+  CORS_HEADERS,
+  forbidden,
+  json,
+  notFound,
+  payloadTooLarge,
+  documentTrashed,
+} from '../responses';
 import { documentDates, isDocumentSource } from '@livedocuments/api-schema';
 import {
   redactDocumentForCommunity,
@@ -164,6 +173,8 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
   }
   if (grant instanceof Response) return grant;
   const res = await documentRoom(ctx.env, documentId).route(request, identityOf({ ...ctx, grant }));
+  // A grant the room refused as put away is dropped, so the next call asks the index (Work Tracker 1323).
+  forgetPutAwayGrant(indexService, request, grantCallerOf(ctx), documentId, res);
   // Making it is a use for the caller, recorded at the index beside the create as the editor records its own open;
   // never waited on. The room's 400 for a markUsed that is not a boolean made nothing, so it records nothing.
   if (marksUse && res.status === 201) {
@@ -253,6 +264,9 @@ async function documentTabs(ctx: DocumentRouteContext, id: string): Promise<Resp
 export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'documents') return notFound();
+  // A document in the Trash answers its owner and team 410 `document_trashed`, as the index's grant says (or its
+  // room, for a grant from before the trash: Work Tracker 1323; docs/specs/013-workspace/trash.md).
+  if (ctx.grant?.trashed && segments.length >= 3) return documentTrashed();
   if (segments.length === 2) {
     if (request.method === 'POST') {
       const read = await readBody(ctx);

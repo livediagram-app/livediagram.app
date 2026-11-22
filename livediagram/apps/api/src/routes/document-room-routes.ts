@@ -14,6 +14,7 @@ import {
   requestedRoomCap,
   roomTicketLevel,
   sealRoomTicket,
+  ticketPutAwayGate,
 } from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
@@ -26,10 +27,17 @@ import {
   reactionPersonFor,
 } from '@liveworkspace/api-kit/collab-key';
 import { personTagFor } from '../person-tag';
-import { badRequest, documentTrashed, forbidden, json, notFound } from '../responses';
+import {
+  badRequest,
+  documentTrashed,
+  forbidden,
+  json,
+  notFound,
+  PUT_AWAY_ANSWERS,
+} from '../responses';
 import { networkTagFor } from '../vote-integrity';
 import { noteTokenRoom, noteWorkbenchRoom } from '../auth/workbench-session';
-import { type RouteContext } from './context';
+import { type RouteContext, grantCallerOf } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import type { Env } from '../types';
 
@@ -69,6 +77,17 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const grant = await resolveDocumentGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
+    // A grant this worker fetched and keeps, from before the canvas was archived or trashed: its room says
+    // so, and the grant is dropped (Work Tracker 1323).
+    const away = await ticketPutAwayGate(
+      indexService,
+      request,
+      grantCallerOf(ctx),
+      grant,
+      (stamp) => documentRoom(env, id).standingRefusal(stamp),
+      PUT_AWAY_ANSWERS,
+    );
+    if (away) return away;
     if (grant.trashed) return documentTrashed();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;

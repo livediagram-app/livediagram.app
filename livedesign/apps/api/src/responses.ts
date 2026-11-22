@@ -13,6 +13,7 @@ import {
   DESIGN_TRASHED_ERROR,
 } from '@livedesign/api-schema';
 import { corsHeaders, createResponses, type CorsHeaders } from '@liveworkspace/api-kit/responses';
+import type { PutAwayAnswers } from '@liveworkspace/index-app';
 
 // The headers this product's editor sends beyond every product's (`BASE_ALLOWED_HEADERS`), and the ones a page on
 // another origin may read: the server release signal (docs/specs/016-platform/new-version-prompt.md,
@@ -72,3 +73,10 @@ export function imagesUnavailable(): Response {
 export function designTrashed(): Response {
   return json({ error: DESIGN_TRASHED_ERROR }, { status: 410 });
 }
+
+// A grant from before the design was archived or trashed, as its room refuses it (Work Tracker 1323): the
+// index's `409 archived`, and the trashed answer above.
+export const PUT_AWAY_ANSWERS: PutAwayAnswers = {
+  archived: () => conflict('archived'),
+  trashed: designTrashed,
+};
