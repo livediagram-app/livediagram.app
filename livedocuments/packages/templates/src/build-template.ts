@@ -5,7 +5,7 @@
 // top (apps/editor/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
-import { settleChips, type Element } from '@livedocuments/document';
+import { fitTextWidths, settleChips, type Element } from '@livedocuments/document';
 import type { TemplateKind } from './templates';
 import { buildSlideDeck } from './template-builders-slides';
 import { buildEventPoster } from './template-builders-poster';
@@ -27,9 +27,10 @@ import { articleTemplateElements } from './article-templates';
 // point. Each template is intentionally small and editable; users grow them.
 // The output lands settled (docs/specs/009-elements/blueprints/badge.md "Settling"): a builder sizes a step
 // after making it, so its number is set to half the disc here, as a stored board reads back, and a
-// preview or an agent's create shows what the editor will.
+// preview or an agent's create shows what the editor will. Every title, caption and hint is then as wide as its words
+// (docs/specs/008-canvas/canvas-and-palette.md "Text sized to its words"), so Zoom to Fit frames the content.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
-  return settleChips([], buildUnsettled(kind, cx, cy), { attachLoose: false });
+  return fitTextWidths(settleChips([], buildUnsettled(kind, cx, cy), { attachLoose: false }));
 }
 
 function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {

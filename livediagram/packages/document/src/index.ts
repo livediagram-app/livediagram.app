@@ -259,6 +259,8 @@ export * from '@liveworkspace/model-core/rich-text';
 export * from '@liveworkspace/model-core/person-card';
 
 export * from './factories';
+// A template's text sized to its words, one copy for every product.
+export * from '@liveworkspace/element-model/text-fit';
 export * from './event-storming';
 export * from './event-storming-lanes';
 export * from './event-storming-lane-landing';

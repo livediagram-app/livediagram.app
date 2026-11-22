@@ -33,6 +33,7 @@ import { buildArtGallery, buildWellnessStudio } from './template-builders-galler
 import {
   AVATAR_PAD_DEFAULT_SIZE,
   createShape,
+  fitTextWidths,
   isFloorShape,
   snapToWallFace,
   type Element,
@@ -43,8 +44,9 @@ import { roomier } from './template-roomy';
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
-  // Opened out to roomier rooms, one rule for every Space (template-roomy.ts).
-  return floorsFirst(onWalls(roomier(buildElements(kind, cx, cy), cx, cy)));
+  // Opened out to roomier rooms, one rule for every Space (template-roomy.ts). Last, every sign and caption is as
+  // wide as its words (docs/specs/008-canvas/canvas-and-palette.md "Text sized to its words").
+  return fitTextWidths(floorsFirst(onWalls(roomier(buildElements(kind, cx, cy), cx, cy))));
 }
 
 /**

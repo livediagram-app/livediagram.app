@@ -16,7 +16,7 @@ import {
   modifierName,
 } from '@/lib/page-edit/page-edit-text';
 import { useRelativeNow } from '@/lib/relative-time';
-import { DoubleClickToEdit } from './DoubleClickToEdit';
+import { useDoubleClickToEdit } from './useDoubleClickToEdit';
 import { EditorDiscs } from './EditorDiscs';
 import { PageReactions } from '@/components/page-reactions/PageReactions';
 import { useArticleZoneCorner } from './useArticleZoneCorner';
@@ -257,26 +257,22 @@ export function PageEditBar() {
   };
   // Zen beside Edit: never in an embed or once zen is on (its way out stands at the page's foot).
   const zenOffered = useEditorChrome((s) => !s.embedMode && !s.zenMode);
-  if (inHistory || !onPages || (startMayShow && startOffered)) return null;
+  const shown = !inHistory && onPages && !(startMayShow && startOffered);
+  useDoubleClickToEdit(shown && mayEdit && !editing, () => store.get().pageEditing.start());
+  if (!shown) return null;
   return (
-    <>
-      <DoubleClickToEdit
-        active={mayEdit && !editing}
-        onEdit={() => store.get().pageEditing.start()}
-      />
-      <PageEditBarView
-        editing={editing}
-        mayEdit={mayEdit}
-        status={status}
-        agentChanges={agentChanges}
-        others={others}
-        onEdit={() => store.get().pageEditing.start()}
-        onSave={() => store.get().pageEditing.save()}
-        onCancel={() => void store.get().pageEditing.cancel()}
-        reactions={reactionsShown ? <PageReactions /> : undefined}
-        onDescribe={describe === (editing ? 'edit' : 'read') ? onDescribe : undefined}
-        onZen={zenOffered ? () => store.get().toggleZenMode() : undefined}
-      />
-    </>
+    <PageEditBarView
+      editing={editing}
+      mayEdit={mayEdit}
+      status={status}
+      agentChanges={agentChanges}
+      others={others}
+      onEdit={() => store.get().pageEditing.start()}
+      onSave={() => store.get().pageEditing.save()}
+      onCancel={() => void store.get().pageEditing.cancel()}
+      reactions={reactionsShown ? <PageReactions /> : undefined}
+      onDescribe={describe === (editing ? 'edit' : 'read') ? onDescribe : undefined}
+      onZen={zenOffered ? () => store.get().toggleZenMode() : undefined}
+    />
   );
 }

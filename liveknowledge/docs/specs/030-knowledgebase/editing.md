@@ -13,11 +13,18 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   nothing in the writing is editable (no caret, no toolbar, no slash menu, no drag handles).
 - An Editor and a Participant see **Edit** (pencil icon, primary, at the top right of the page next to Share; also
   the `E` key while reading). A Viewer, a link visitor and an agent never see it.
-- **Double-click to edit** (owner, 2026-11-21): while an Editor reads, a small quiet label rides just under the
-  pointer over the writing, "Double-click to Edit" (a dark pill, 11 px, shown after the pointer rests a moment, never
-  over a link or a control, never for touch). It stays with the pointer anywhere over the page being read, margins and
-  gaps included, and through a scroll, but never over the sidebars, the top row or the footer (owner 2026-11-21); a
-  double-click there opens edit mode.
+- **Selecting and copying** (owner, 2026-11-22): every reader (Viewer, Participant, Editor, a link visitor) can
+  select the page's writing as on any web page: drag across it, double-click a word, triple-click a paragraph,
+  long-press on a phone, and copy it with Cmd/Ctrl+C or the context menu. What is copied keeps its paragraph breaks
+  and list items as plain text, and as rich text its lists stay lists (bullets, numbers and nesting) when pasted
+  into another editor. Only the writing selects: the meta row, Linked From, the margins and the canvas round
+  the page do not, so a drag there never starts a selection; a press there lets go of a selection, as on any page.
+  Selecting never enters edit mode.
+- **Double-click to edit** (owner, 2026-11-21; label removed 2026-11-22): while an Editor or Participant reads, a
+  double-click on the page being read away from its writing (its margins, the gaps between blocks, the room under the
+  last line) opens edit mode. A double-click on the writing selects the word, like any page, and never enters edit
+  mode. No label rides under the pointer to announce it: Edit (and its `E` key) is the visible way in. Never over the
+  sidebars, the top row or the footer, nor on a link or a control.
 - **An empty page** (owner, 2026-11-21), read: a page with nothing under its title shows a drawing of a blank page,
   "Nothing Written Yet", and for whoever may edit **Start Writing** (opens edit mode, the caret in the Title on a
   desktop); a reader is told it has no

@@ -903,6 +903,29 @@ the job it does, "1:1" for the Meeting agenda, "erd" for the Database schema, "p
 `templateMatchesQuery`, decides a match for the editor and the marketing gallery alike. A word of four letters or more also finds a template one typo off one of its words (a letter missing, extra, wrong or two swapped; two typos from eight letters: "wirefrme" finds Wireframe), shared in `@liveworkspace/template-previews/template-search`; shorter words stay exact, and the hero ranks typo-only finds after the exact ones. A start shows the matches
 under its own groups, then the other modes' ([Found in other modes](../007-editor/start-diagramming.md#found-in-other-modes)); the gallery groups them under their primary category.
 
+### Text sized to its words
+
+A template's titles, subtitles, captions, hints and labels are **as wide as their words**, never laid at the
+content's width with empty space beside the words (Work Tracker 1373): Zoom to Fit, the minimap and the selection
+outline then frame the content, not a box far wider than it. Each keeps its alignment where it was: a left-aligned
+text keeps its left edge, a centred one its centre (and so the point it turns about), a right-aligned one its right
+edge. Text that wraps keeps its width, which is no wider than the content it heads.
+
+- `buildTemplate` runs its output through `fitTextWidths` (`@liveworkspace/element-model/text-fit`, one copy for
+  every product), the last step, so every path that makes a template (the editor, the api, the MCP worker) lands the
+  same boxes.
+- The width is an estimate, with no DOM to measure: the wider of Inter's advances (`textAdvanceEm`, bold widened)
+  and the flat share a headless render wraps by, plus a tenth, 8 px and the box's padding both sides, so the words
+  sit on one line on the canvas, in an export and in an agent's preview.
+- A text it cannot estimate keeps its box: rich text, arched text, a box with a fill or a border, a face other than
+  the default, Inter or Caveat, a box that already hugs its text (`sizing`), and a turned text that is not centred.
+- **Typed words, too.** When a person commits longer words into a fixed text whose words sat on one line, the box
+  re-hugs them on one line, up to 1,200 px, kept where its words sit (its left edge, centre or right edge), in
+  every editor's `useSelectionEditing` through the shared `growTextToLabel`, as an agent's edit does (EO22a). Text
+  that already wrapped keeps its width.
+- A test holds every template to it (`template-text-widths.test.ts`): every text box is already fitted, and a
+  wrapping one is no wider than the rest of the template.
+
 ### What a template shows
 
 A template is most people's first look at livediagram, so it shows the features that fit its job, not only shapes
