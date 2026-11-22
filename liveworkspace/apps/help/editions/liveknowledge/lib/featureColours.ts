@@ -31,6 +31,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'import-from-notion': '#57534e',
   'import-from-confluence': '#2563eb',
   'exporting-a-knowledgebase': '#0f766e',
+  'publishing-to-the-web': '#0891b2',
   // ---- Roles ----
   'knowledgebase-roles': '#a855f7',
   // ---- Shared with every app ----

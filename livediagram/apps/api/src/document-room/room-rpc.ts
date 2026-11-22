@@ -4,6 +4,7 @@ import {
   type ConnectedTabOutcome,
   type ExportQuery,
   type ExportResult,
+  putAwayGate,
 } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { documentHasTab } from '../db/tabs';
@@ -33,6 +34,7 @@ import type { AccessLevel } from '@livediagram/api-schema';
 import { getParticipant } from '../liveworkspace/profiles';
 import { SOMEONE, hearsEvent, queueEvent, roleOfLevel } from '@liveworkspace/automations/room';
 import type { DocumentRoom } from './document-room';
+import { PUT_AWAY_ANSWERS } from '../responses';
 
 // The bodies of what the worker asks of a document (document-room.ts "RPC", document-client.ts): the class keeps
 // each method and hands it here with the room it acts for.
@@ -51,7 +53,10 @@ export async function route(
   if (identity.grant?.item === documentId) {
     await room.takeHead(identity.grant);
     // A grant signed since the canvas was last put away says it is back (@liveworkspace/automations/room standing.ts).
-    await room.takeGrantStanding(identity.grant);
+    // A grant from before the canvas was archived or trashed (an API token's, kept by its worker until it
+    // lapses) is refused here, where every isolate's requests meet (Work Tracker 1323).
+    const away = putAwayGate(await room.takeGrantStanding(identity.grant), PUT_AWAY_ANSWERS);
+    if (away) return away;
   }
   const community = await communityOf(room, documentId);
   const writesBefore = room.writes;

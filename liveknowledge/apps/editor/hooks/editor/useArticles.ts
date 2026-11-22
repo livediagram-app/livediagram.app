@@ -74,7 +74,8 @@ export type ArticlesView = {
   undo: () => void;
   redo: () => void;
   focusRequest: FocusRequest;
-  requestFocus: (flow: string, at: FocusAt) => void;
+  // `from`: what had focus when the caret was asked for, so focus the person moved since is left alone.
+  requestFocus: (flow: string, at: FocusAt, from?: Element | null) => void;
   // The editor took the request: it is spent, so a remounted editor never takes it again.
   focusTaken: (seq: number) => void;
   // The caret, as a canvas rect, brought into sight as it is written on (the editor's onRevealCaret).
@@ -210,9 +211,11 @@ export function useArticles(deps: {
     (taken: number) => setFocusRequest((r) => (r && r.seq === taken ? null : r)),
     [],
   );
-  const requestFocus = useCallback((flow: string, at: FocusAt) => {
+  const requestFocus = useCallback((flow: string, at: FocusAt, from?: Element | null) => {
     seq.current += 1;
-    setFocusRequest({ flow, at, seq: seq.current });
+    setFocusRequest(
+      from === undefined ? { flow, at, seq: seq.current } : { flow, at, seq: seq.current, from },
+    );
   }, []);
 
   const onCommit = useCallback(

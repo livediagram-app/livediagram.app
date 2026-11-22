@@ -51,6 +51,18 @@ describe('production dispatch (service bindings)', () => {
     expect(api.urls).toEqual(['https://www.liveknowledge.app/api/documents/abc']);
   });
 
+  it("forwards a knowledgebase's public site to the api as it is, keeping the api's caching", async () => {
+    const { env, api } = makeEnv();
+    const res = await dispatch('/kb/acme-help/release-process?x=1', env);
+    await dispatch('/kb', env);
+    expect(api.urls).toEqual([
+      'https://www.liveknowledge.app/kb/acme-help/release-process?x=1',
+      'https://www.liveknowledge.app/kb',
+    ]);
+    // The page policy (no-cache) is the router's for its own sites; the api set the site's.
+    expect(res.headers.get('Cache-Control')).toBeNull();
+  });
+
   it('strips /live off the asset-prefix requests for the editor worker', async () => {
     const { env, live } = makeEnv();
     await dispatch('/live/_next/static/chunk.js', env);

@@ -1,4 +1,5 @@
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
+import type { PutAwayRefusal } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
   BELL_THROTTLE_MS,
@@ -599,7 +600,7 @@ export class DocumentRoom extends DurableObject<Env> {
     return this.standing.take(standing);
   }
 
-  takeGrantStanding(grant: StandingGrant): Promise<void> {
+  takeGrantStanding(grant: StandingGrant): Promise<PutAwayRefusal | null> {
     return this.standing.takeGrant(grant);
   }
 

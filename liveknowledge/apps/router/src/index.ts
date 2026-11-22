@@ -71,6 +71,8 @@ export interface Env extends WorkspaceBindings {
 
 const LIVE_PATH = '/live';
 const API_PATH = '/api';
+// A knowledgebase's public site (docs/specs/030-knowledgebase/publishing.md): the api draws it and sets its caching.
+const PUBLIC_SITE_PATH = '/kb';
 const INDEX_PATH = '/api/index';
 const TELEMETRY_PATH = '/telemetry';
 const HELP_PATH = '/help';
@@ -236,7 +238,7 @@ function markNoIndex(response: Response): Response {
 async function withCachePolicy(request: Request, env: Env): Promise<Response> {
   const { pathname } = new URL(request.url);
   const response = await route(request, env);
-  if (hasPrefix(pathname, API_PATH)) return response;
+  if (hasPrefix(pathname, API_PATH) || hasPrefix(pathname, PUBLIC_SITE_PATH)) return response;
   // Locally the router fronts `next dev`, whose chunks are not content-hashed (cache-policy.ts).
   return applyCachePolicy(response, pathname, { hashedAssets: env.DEPLOY_ENV !== 'local' });
 }
@@ -333,7 +335,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   // /api/* is forwarded as-is to the api worker. The API worker handles
   // the full pathname (it expects `/api/...`) so there's no prefix
   // stripping here, unlike the basePath apps.
-  if (hasPrefix(url.pathname, API_PATH)) {
+  if (hasPrefix(url.pathname, API_PATH) || hasPrefix(url.pathname, PUBLIC_SITE_PATH)) {
     return forward(request, url, env.API, env.API_ORIGIN);
   }
   // `/live/*` is ONLY the editor app's `_next` assets (its `assetPrefix`).

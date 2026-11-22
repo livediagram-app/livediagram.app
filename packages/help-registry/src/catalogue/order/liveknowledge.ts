@@ -34,6 +34,7 @@ export const ORDER: readonly string[] = [
   'knowledgebase/import-from-notion',
   'knowledgebase/import-from-confluence',
   'knowledgebase/exporting-a-knowledgebase',
+  'knowledgebase/publishing-to-the-web',
   'knowledgebase/knowledgebase-roles',
   'collaboration/sharing',
   'collaboration/sharing/share-link-expiry',
