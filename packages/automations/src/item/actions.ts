@@ -13,7 +13,7 @@ import {
 import { SUMMARY_AI_STEP } from '../summary';
 import type { AutomationOutgoing, AutomationWait } from '../types';
 import { readIf, readNotify, readWait } from '../validate';
-import { id, obj, refuse, text, unsupported } from '../validate-read';
+import { id, obj, refuse, text, unsupported, type Obj, type TextCheck } from '../validate-read';
 import { AUTOMATION_NOTIFY_NAMES, notifyChip, waitWords } from '../words';
 import { defineAction, type ActionKind } from './kinds';
 import { refName, type ItemNames } from './names';
@@ -34,20 +34,64 @@ export const STEP_NAME_MAX = 120;
 
 const NO_TOP: ReadonlySet<string> = new Set();
 
+// The snapshot steps (liveworkspace automations.md "Revert to Snapshot"), as every app's check, words and builder read
+// them: the item kinds below, and an app whose check and planning are its own (liveplanner's) through these.
+export const SNAPSHOT_KINDS = ['take_snapshot', 'revert_snapshot'] as const;
+export type ItemSnapshotStep = ItemTakeSnapshot | ItemRevertSnapshot;
+
+export const isSnapshotKind = (kind: unknown): kind is ItemSnapshotStep['kind'] =>
+  kind === 'take_snapshot' || kind === 'revert_snapshot';
+
+/** Either snapshot step read: Take Snapshot's name with the app's value check, a revert's snapshot and kept name. */
+export function readSnapshotStep(value: Obj, path: string, check: TextCheck): ItemSnapshotStep {
+  if (value['kind'] === 'take_snapshot')
+    return {
+      kind: 'take_snapshot',
+      name: text(value['name'], `${path}.name`, STEP_NAME_MAX, check),
+    };
+  return {
+    kind: 'revert_snapshot',
+    snapshot: id(value['snapshot'], `${path}.snapshot`),
+    ...(value['name'] !== undefined
+      ? { name: text(value['name'], `${path}.name`, STEP_NAME_MAX).trim() }
+      : {}),
+  };
+}
+
+/** A snapshot step's chip. `snapshot`: the revert's snapshot by the item's own name for it, where the caller has the
+ *  item's snapshots; else the name the step kept. Not picked yet: the builder's unpicked word. */
+export function snapshotStepChip(step: ItemSnapshotStep, snapshot?: string): string {
+  if (step.kind === 'take_snapshot') return `Take Snapshot “${step.name}”`;
+  if (!step.snapshot) return 'Revert to Snapshot (pick one)';
+  return `Revert to “${snapshot ?? step.name ?? 'a snapshot'}”`;
+}
+
+/** What a dry run says a snapshot step would do, its name filled in. */
+export function snapshotStepWould(
+  step: ItemSnapshotStep,
+  fill: (text: string) => string,
+  snapshot?: string,
+): string {
+  return step.kind === 'take_snapshot'
+    ? `Would take a snapshot named “${fill(step.name)}”`
+    : `Would revert to “${snapshot ?? step.name ?? 'a snapshot'}”`;
+}
+
+/** A reader's words for a snapshot step. */
+export const snapshotStepSummary = (step: Pick<ItemSnapshotStep, 'kind'>): string =>
+  step.kind === 'take_snapshot' ? 'Take Snapshot' : 'Revert to Snapshot';
+
 const takeSnapshot = defineAction<ItemTakeSnapshot & ItemPart>({
   kind: 'take_snapshot',
   name: 'Take Snapshot',
   group: 'Snapshots',
   line: 'takes a snapshot of the whole item, named by the rule',
   format: `{"kind":"take_snapshot","name":1 to ${STEP_NAME_MAX} characters, values allowed}`,
-  read: (value, path, ctx) => ({
-    kind: 'take_snapshot',
-    name: text(value['name'], `${path}.name`, STEP_NAME_MAX, ctx.text),
-  }),
+  read: (value, path, ctx) => readSnapshotStep(value, path, ctx.text) as ItemTakeSnapshot,
   defaults: () => ({ kind: 'take_snapshot', name: '{{now.date}}' }),
-  words: (a) => [{ chip: `Take Snapshot “${a.name}”` }],
-  would: (a, ctx) => `Would take a snapshot named “${ctx.fill(a.name)}”`,
-  summary: () => 'Take Snapshot',
+  words: (a) => [{ chip: snapshotStepChip(a) }],
+  would: (a, ctx) => snapshotStepWould(a, (t) => ctx.fill(t)),
+  summary: snapshotStepSummary,
 });
 
 /** The snapshot a revert names: by the item's own name for it where the caller has the item's snapshots (one it
@@ -67,23 +111,18 @@ const revertSnapshot = defineAction<ItemRevertSnapshot & ItemPart>({
     'person saves it, never an API token)',
   last: true,
   needsPerson: true,
-  read: (value, path) => ({
-    kind: 'revert_snapshot',
-    snapshot: id(value['snapshot'], `${path}.snapshot`),
-    ...(value['name'] !== undefined
-      ? { name: text(value['name'], `${path}.name`, STEP_NAME_MAX).trim() }
-      : {}),
-  }),
+  read: (value, path) => readSnapshotStep(value, path, {}) as ItemRevertSnapshot,
   defaults: () => ({ kind: 'revert_snapshot', snapshot: '' }),
   // Not picked yet: the step's own name and the builder's unpicked word, never a quoted "a snapshot".
   words: (a, names) => [
-    {
-      chip: a.snapshot ? `Revert to “${snapshotWords(a, names)}”` : 'Revert to Snapshot (pick one)',
-    },
+    { chip: snapshotStepChip(a, a.snapshot ? snapshotWords(a, names) : undefined) },
   ],
-  would: (a, ctx) => `Would revert to “${snapshotWords(a, ctx.names)}”`,
-  summary: () => 'Revert to Snapshot',
+  would: (a, ctx) => snapshotStepWould(a, (t) => ctx.fill(t), snapshotWords(a, ctx.names)),
+  summary: snapshotStepSummary,
 });
+
+/** The two snapshot steps' definitions (name, line, format, first form), for an app that lists its own kinds. */
+export const snapshotActions = (): ActionKind[] => [takeSnapshot, revertSnapshot];
 
 function readTo(value: unknown, path: string, personless: boolean): ItemEmailTo {
   const to = obj(value, path);
