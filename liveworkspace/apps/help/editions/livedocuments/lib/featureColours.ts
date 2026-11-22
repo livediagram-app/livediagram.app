@@ -26,6 +26,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'using-tabs': '#3b82f6',
   comments: '#f59e0b',
   'live-presence': '#06b6d4',
+  'send-to-plan': '#0d9488',
   images: '#ec4899',
   'explorer-page': '#64748b',
   'explorer-panel': '#64748b',

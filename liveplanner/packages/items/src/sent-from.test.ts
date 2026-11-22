@@ -8,7 +8,7 @@ const FROM = {
   kind: 'element',
   label: 'Board',
   text: 'Fix the login',
-  link: 'https://www.livediagram.app/document/D#el=e',
+  link: 'https://www.livediagram.app/d/D#el=e',
 };
 
 describe('sent-from', () => {

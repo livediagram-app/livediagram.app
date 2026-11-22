@@ -189,7 +189,7 @@ const itemChange = z.discriminatedUnion('op', [
           .min(1)
           .max(200)
           .optional()
-          .describe('The exact sticky, shape, block or thread, as read_document lists it'),
+          .describe("The exact sticky, shape, block or thread, as its own app's read lists it"),
         text: z.string().max(2000).describe('The words the card was made from'),
       })
       .optional()

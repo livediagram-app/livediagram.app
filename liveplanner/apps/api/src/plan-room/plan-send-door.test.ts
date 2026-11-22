@@ -52,7 +52,7 @@ const FROM = {
   kind: 'element' as const,
   label: 'Board',
   text: 'Fix the login',
-  link: 'https://www.livediagram.app/document/D#t=t1&el=e1',
+  link: 'https://www.livediagram.app/d/D#t=t1&el=e1',
 };
 const call = (over: Partial<PlanSendDoorCall> = {}): PlanSendDoorCall => ({
   person: USER,
