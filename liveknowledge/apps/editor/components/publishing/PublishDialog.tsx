@@ -194,7 +194,8 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
     );
   };
 
-  const host = typeof window === 'undefined' ? 'liveknowledge.app' : window.location.host;
+  // The dialog opens only from a click in the browser (a dynamic import), so it never renders at build time.
+  const host = window.location.host;
   const shownPages = preview?.pages.slice(0, PREVIEW_PAGES_SHOWN) ?? [];
   const morePages = (preview?.pages.length ?? 0) - shownPages.length;
 
@@ -289,7 +290,7 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Open the site in a new tab"
-                    className="touch-target inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-white hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                    className="touch-target relative inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-white hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                   >
                     <OpenIcon />
                   </a>
