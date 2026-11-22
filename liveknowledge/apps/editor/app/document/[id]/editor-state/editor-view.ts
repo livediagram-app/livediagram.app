@@ -59,7 +59,6 @@ export function editorView({
 }) {
   return {
     surface: documentSlice.surface,
-    tourSquare: layersSlice.tourSquare,
     addCustomColour: collaborationSlice.addCustomColour,
     setTagColour: collaborationSlice.setTagColour,
     workbenchMode: documentSlice.workbenchMode,

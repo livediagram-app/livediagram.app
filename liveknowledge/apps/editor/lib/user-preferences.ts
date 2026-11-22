@@ -23,8 +23,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // render would otherwise be undone.
 
 import { upgradeLegacyPreferences } from '@liveknowledge/api-schema';
-import type { PageKind } from '@liveknowledge/document';
-import type { ElementTourKind } from './element-tours';
+import type { KnowledgeTourId } from './knowledge-tours';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@liveknowledge/telemetry-client';
 import { apiGetPreferences } from './api-client';
@@ -172,18 +171,17 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
-  // The Pages tour's older single seen-guard (docs/specs/007-editor/pages-tour.md): written with every kind by
-  // Settings' Pages Tours switch, off; on its own it counts no kind (lib/pages-tour.ts).
+  // The Get Started tours taken (docs/specs/007-editor/knowledge-tours.md "Taken, on every device"), each once, in the
+  // order taken: the Get Started list's Done ticks, whether the button is drawn, and Settings' row per tour (inverted).
+  // Read through lib/knowledge-tours.
+  knowledgeTours?: KnowledgeTourId[];
+  // Counts every Get Started tour as taken: Settings' Get Started Tours switch, off, writes it.
+  knowledgeToursSeen?: boolean;
+  // Retired with their tours (docs/specs/007-editor/pages-tour.md, element-tours.md): read by nothing here, kept as
+  // stored. upgradeLegacyPreferences (@liveknowledge/api-schema) still folds the retired Power user mode into the first.
   pagesTourSeen?: boolean;
-  // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
-  // kind offers its own once ever. Cleared with `pagesTourSeen` when the Settings switch is turned on.
-  pagesTourKinds?: PageKind[];
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been taken,
-  // a record for Settings (it never hides the Start Tour button). Surfaced in Settings as Tours › Show Me, one switch
-  // per kind (inverted). Read through lib/element-tours.
-  elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as answered (lib/tour-tracks.ts): Settings' Show Me on Every Element, switched off,
-  // writes it, as the retired Power user mode's preset did.
+  pagesTourKinds?: string[];
+  elementTourKinds?: string[];
   elementToursSeen?: boolean;
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
   // picked with + in the document, kept with its tabs, not a per-user list. Nothing reads or writes this any

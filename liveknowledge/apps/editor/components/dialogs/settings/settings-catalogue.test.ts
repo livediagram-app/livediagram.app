@@ -80,6 +80,8 @@ describe('settings catalogue', () => {
       'pagesTourSeen-slide',
       'pagesTourSeen-infographic',
       'pagesTourSeen-article',
+      'elementToursSeen',
+      'elementTour-sankey',
       'showMinimap',
       'mapDimOutside',
       'mapSize',
@@ -90,52 +92,67 @@ describe('settings catalogue', () => {
       .map((r) => `${r.label} ${'section' in r ? (r.section ?? '') : ''}`)
       .join(' | ');
     expect(words).not.toMatch(
-      /\bMap\b|Pages Tour|Slides Tour|Infographic Tour|Article Tour|Middle-Mouse/,
+      /\bMap\b|Pages Tour|Slides Tour|Infographic Tour|Article Tour|Middle-Mouse|Show Me|Sankey|Pyramid/,
     );
   });
 
-  // docs/specs/007-editor/user-preferences.md "Getting Started": a category of its own, one switch per tour in
-  // the order the tours come.
+  // docs/specs/007-editor/knowledge-tours.md "Settings": a category of its own, one switch over every Get Started tour,
+  // then one per tour in the list's order, each linking its help article. No element tour and no Pages tour.
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
-      // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
-      // linking that element's article.
-      ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
-      ['elementTour-sankey', 'toggle', 'Sankey Diagram', 'sankeyDiagram'],
-      ['elementTour-layer-stack', 'toggle', 'Layer Stack', 'conceptGraphics'],
-      ['elementTour-pyramid', 'toggle', 'Pyramid', 'conceptGraphics'],
-      ['elementTour-funnel', 'toggle', 'Funnel', 'conceptGraphics'],
-      ['elementTour-cycle', 'toggle', 'Cycle', 'conceptGraphics'],
-      ['elementTour-hub', 'toggle', 'Hub and Spoke', 'conceptGraphics'],
-      ['elementTour-onion', 'toggle', 'Onion', 'conceptGraphics'],
-      ['elementTour-chevrons', 'toggle', 'Chevrons', 'conceptGraphics'],
-      ['elementTour-timeline', 'toggle', 'Timeline', 'conceptGraphics'],
-      ['elementTour-chart', 'toggle', 'Chart', 'dataElements'],
-      ['elementTour-stack', 'toggle', 'Stack', 'stacks'],
+      ['knowledgeToursSeen', 'toggle', 'Get Started Tours', undefined],
+      ['knowledgeTour-first-page', 'toggle', 'Your First Page', 'firstPage'],
+      ['knowledgeTour-organise', 'toggle', 'Organise Your Knowledgebase', 'pageTree'],
+      ['knowledgeTour-trust', 'toggle', 'Trust a Page', 'verifying'],
+      ['knowledgeTour-ask', 'toggle', 'Ask Your Knowledgebase', 'ask'],
+      ['knowledgeTour-connect', 'toggle', 'Connect an AI Agent', 'connectAiTool'],
+      ['knowledgeTour-share', 'toggle', 'Share and Work Together', 'sharing'],
     ]);
     // One shared explanation under the section heading, not one per row.
-    expect(tours.sectionNotes?.['Show Me']?.note).toMatch(/Start Tour/);
+    expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/Get Started in the bottom bar/);
+    expect(tours.collapsedSections ?? []).toEqual([]);
     const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
     expect(accessibility.rows.some((r) => r.key.toLowerCase().includes('tour'))).toBe(false);
+  });
+
+  // The master switch takes every tour, or forgets every record; a tour's own switch takes or forgets only it.
+  it('takes and offers again each tour, and all of them at once', () => {
+    const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
+    const toggle = (key: string) => {
+      const row = tours.rows.find((r) => r.key === key)!;
+      if (row.kind !== 'toggle') throw new Error(key);
+      return row;
+    };
+    const all = toggle('knowledgeToursSeen');
+    const trust = toggle('knowledgeTour-trust');
+    expect(all.read({})).toBe(true);
+    const none = all.write({}, false);
+    expect(all.read(none)).toBe(false);
+    expect(trust.read(none)).toBe(false);
+    // Trust offered again out of all taken: only it comes back.
+    const back = trust.write(none, true);
+    expect(trust.read(back)).toBe(true);
+    expect(toggle('knowledgeTour-ask').read(back)).toBe(false);
+    expect(all.read(back)).toBe(true);
+    const taken = trust.write({}, false);
+    expect(trust.read(taken)).toBe(false);
+    expect(toggle('knowledgeTour-ask').read(taken)).toBe(true);
+    expect(all.read(all.write(none, true))).toBe(true);
+    expect(trust.read(all.write(none, true))).toBe(true);
   });
 
   it('tracks each tour switch against its preference, as it always has', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
-        ['ElementToursSeenOff', 'ElementToursSeenOn'],
-        ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
-        ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
-        ['PyramidTourSeenOff', 'PyramidTourSeenOn'],
-        ['FunnelTourSeenOff', 'FunnelTourSeenOn'],
-        ['CycleTourSeenOff', 'CycleTourSeenOn'],
-        ['HubTourSeenOff', 'HubTourSeenOn'],
-        ['OnionTourSeenOff', 'OnionTourSeenOn'],
-        ['ChevronsTourSeenOff', 'ChevronsTourSeenOn'],
-        ['TimelineTourSeenOff', 'TimelineTourSeenOn'],
-        ['ChartTourSeenOff', 'ChartTourSeenOn'],
-        ['StackTourSeenOff', 'StackTourSeenOn'],
+        ['KnowledgeToursSeenOff', 'KnowledgeToursSeenOn'],
+        ['FirstPageTourSeenOff', 'FirstPageTourSeenOn'],
+        ['OrganiseTourSeenOff', 'OrganiseTourSeenOn'],
+        ['TrustTourSeenOff', 'TrustTourSeenOn'],
+        ['AskTourSeenOff', 'AskTourSeenOn'],
+        ['ConnectTourSeenOff', 'ConnectTourSeenOn'],
+        ['WorkTogetherTourSeenOff', 'WorkTogetherTourSeenOn'],
       ],
     );
   });
@@ -181,19 +198,14 @@ describe('settings catalogue', () => {
     const before: UserPreferences = { reduceMotion: true, telemetryEnabled: false };
     // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
     const own: Record<string, string[]> = {
-      elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
-      // One element's tour writes the answered list alone (lib/element-tours.ts).
-      'elementTour-sankey': ['elementTourKinds'],
-      'elementTour-layer-stack': ['elementTourKinds'],
-      'elementTour-pyramid': ['elementTourKinds'],
-      'elementTour-funnel': ['elementTourKinds'],
-      'elementTour-cycle': ['elementTourKinds'],
-      'elementTour-hub': ['elementTourKinds'],
-      'elementTour-onion': ['elementTourKinds'],
-      'elementTour-timeline': ['elementTourKinds'],
-      'elementTour-chevrons': ['elementTourKinds'],
-      'elementTour-chart': ['elementTourKinds'],
-      'elementTour-stack': ['elementTourKinds'],
+      knowledgeToursSeen: ['knowledgeToursSeen', 'knowledgeTours'],
+      // One tour's switch writes the taken list alone (lib/knowledge-tours.ts).
+      ...Object.fromEntries(
+        ['first-page', 'organise', 'trust', 'ask', 'connect', 'share'].map((id) => [
+          `knowledgeTour-${id}`,
+          ['knowledgeTours'],
+        ]),
+      ),
     };
     for (const row of TOGGLES) {
       const after = row.write(before, !row.read(before));
@@ -349,14 +361,14 @@ describe('settings sub-categories', () => {
     expect(panels.aliases).toEqual(['layers', 'quickStyle', 'map', 'collaborate']);
   });
 
-  // A row nested under a switch (`parent`) is offered only while that switch is on: Show Me's rows under theirs.
+  // A row nested under a switch (`parent`) is offered only while that switch is on: each tour's under Get Started Tours.
   it("offers a switch's nested rows only while it is on", () => {
     const rows = (preferences: UserPreferences) =>
       visibleCategories({ emailEnabled: false, signedIn: false, preferences })
         .find((c) => c.id === 'tours')!
         .rows.map((r) => r.key);
-    expect(rows({ elementToursSeen: true })).toEqual(['elementToursSeen']);
-    expect(rows({})).toContain('elementTour-sankey');
+    expect(rows({ knowledgeToursSeen: true })).toEqual(['knowledgeToursSeen']);
+    expect(rows({})).toContain('knowledgeTour-trust');
   });
 
   it('names a sub-category by its path', () => {

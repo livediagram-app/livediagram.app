@@ -1,4 +1,3 @@
-import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import type { Element, Tab } from '@liveknowledge/document';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import { getTheme } from '@/lib/themes';
@@ -100,9 +99,6 @@ export function useEditorLayers({
   // A layer turning hidden or locked drops its elements from the live selection (layers.md).
   usePruneInertSelection(layerInertIds, selectionStore);
 
-  // The tour's own square, with no history (TourHost).
-  const tourSquare = useTourSquare({ activeId, tickTabs });
-
   return {
     activeTheme,
     styleMemory,
@@ -117,7 +113,6 @@ export function useEditorLayers({
     layerLockedIds,
     layerInertIds,
     createBlocked,
-    tourSquare,
   };
 }
 

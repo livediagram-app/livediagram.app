@@ -93,8 +93,7 @@ test.describe('Retired power user keys', () => {
           alignmentGuides: true,
           autoRebindArrows: false,
           dockButtonNames: false,
-          pagesTourSeen: true,
-          elementToursSeen: true,
+          knowledgeToursSeen: true,
         }),
       );
     }, PREFS_KEY);
