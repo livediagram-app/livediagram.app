@@ -530,7 +530,9 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   already inside is sent to the restricted page; turning it off, or saving it unchanged, sends no one away. `GET
 /items/:id/share` answers the rule as `signIn {requireAccount, domains}` and, for a team item, `suggestedDomain`:
   the domain of the asker's own verified email, unless it is a public mail provider's (`PUBLIC_MAIL_DOMAINS`: gmail.com,
-  outlook.com, icloud.com and the like), where it is null; the dialog starts its domain box with it.
+  outlook.com, icloud.com and the like), where it is null; the dialog starts its domain box with it. A team item's
+  answer also carries `teamName`, the team's name as the asker's own token names it (its `teams` claim), or null when
+  the token names none (a delegated caller); the Team tab says it.
 - **The Share dialog's Sign In card** (`packages/explorer` `SignInSection`), under Password Protection, in the same
   settings-card look: **Require Sign In** ("Only people signed in to a liveworkspace account can open a pass. No
   guests.") with its switch, and beneath it, in the same card, **Anybody With Email Address Domain** ("Only accounts
@@ -542,7 +544,7 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   switches are locked, with the host's reason, while a Community post is listed, as Password Protection is.
 - **The Share dialog's Team tab** (Work Tracker 1338): an item in a team (`teamId`) opens the dialog on a **Team** tab,
   first in the tab row (Team, Passes, the host's, Approval); a personal item opens on Passes as before, with no Team
-  tab. The tab says everyone in the team can already open the item, with nothing to issue, shows the item's own
+  tab. The tab says everyone in the team, by name (the host's `teamName`, else the share answer's), can already open the item, with nothing to issue, shows the item's own
   address (the editor link a member opens, `itemUrl`) in a read-only field with **Copy Link**, notes that the link
   grants nothing (someone outside the team who opens it sees Not Found), and ends with **Share With Someone Outside
   the Team**, which switches to Passes in one click. The host's own start (`initialView: 'app'`, the Share legend's

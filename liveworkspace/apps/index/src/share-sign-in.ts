@@ -68,6 +68,11 @@ export function suggestedDomainOf(row: ItemRow, person: Person | null): string |
   return row.team_id ? suggestedShareDomain(person?.email) : null;
 }
 
+/** A team item's team, by the name the asker's own token gives it; null for a personal item or a token without it. */
+export function teamNameOf(row: ItemRow, person: Person | null): string | null {
+  return row.team_id ? (person?.teamNames?.[row.team_id] ?? null) : null;
+}
+
 /** The item's rule, for its share list. */
 export async function readSignIn(env: Env, itemId: string): Promise<SignInColumns | null> {
   return env.INDEX_DB.prepare(

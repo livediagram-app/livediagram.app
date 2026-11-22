@@ -2,6 +2,9 @@
 // Require Sign In and email domains, set by the item's manager, checked on every door a link opens, for every level.
 import type { Level, ShareLink, ShareSignInRule } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';
+import type { Person } from './auth';
+import type { ItemRow } from './rows';
+import { teamNameOf } from './share-sign-in';
 import { body, call, h, makeItem, person, settle, useHarness } from './test-support';
 
 useHarness();
@@ -122,6 +125,17 @@ describe('the sign-in rule: setting it', () => {
     expect(await suggested(gus.auth)).toBeNull();
     // An address accounts never verified is no one's domain.
     expect(await suggested(una.auth)).toBeNull();
+  });
+
+  it('names a team item’s team as the asker’s token does, and no team for a personal item', async () => {
+    const ada = await person('user_a', { teams: [{ id: 'team1', name: 'Acme Studio' }] });
+    const teamItem = await makeItem(ada.auth, { teamId: 'team1' });
+    const own = await makeItem(ada.auth);
+    const named = async (auth: string, id: string) =>
+      (await body<{ teamName: string | null }>(await call(`/items/${id}/share`, { auth })))
+        .teamName;
+    expect(await named(ada.auth, teamItem.id)).toBe('Acme Studio');
+    expect(await named(ada.auth, own.id)).toBeNull();
   });
 
   it('sends everyone already in back through the check when it changes, and nobody when it goes off', async () => {
@@ -278,5 +292,14 @@ describe('the sign-in rule: opening a link, for every level', () => {
     expect((await delegate(link.code)).status).toBe(200);
     await rule(ada.auth, item.id, { requireAccount: true, domains: ['acme.com'] });
     expect((await delegate(link.code)).status).toBe(403);
+  });
+});
+
+describe('teamNameOf', () => {
+  it('is null for a team its token names no name for, or with no one asking', () => {
+    const row = { team_id: 'team1' } as ItemRow;
+    const nameless: Person = { id: 'user_d', kind: 'account', teams: ['team1'] };
+    expect(teamNameOf(row, nameless)).toBeNull();
+    expect(teamNameOf(row, null)).toBeNull();
   });
 });

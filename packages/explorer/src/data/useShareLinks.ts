@@ -21,6 +21,8 @@ export type ShareLinksState = {
   signIn: ShareSignInRule;
   // A team item's domain box starts with this (the sharer's own domain), or null.
   suggestedDomain: string | null;
+  // A team item's team name, as the index read it from the asker's token; null until read or for none.
+  teamName: string | null;
   loading: boolean;
   error: boolean;
   busy: boolean;
@@ -42,6 +44,7 @@ export function useShareLinks(
   const [passwordSet, setPasswordSet] = useState(false);
   const [signIn, setSignInState] = useState<ShareSignInRule>(SHARE_SIGN_IN_OFF);
   const [suggestedDomain, setSuggestedDomain] = useState<string | null>(null);
+  const [teamName, setTeamName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -59,6 +62,7 @@ export function useShareLinks(
         setPasswordSet(res.passwordSet);
         setSignInState(res.signIn ?? SHARE_SIGN_IN_OFF);
         setSuggestedDomain(res.suggestedDomain ?? null);
+        setTeamName(res.teamName ?? null);
         setError(false);
       })
       .catch(() => live && setError(true))
@@ -217,6 +221,7 @@ export function useShareLinks(
     passwordSet,
     signIn,
     suggestedDomain,
+    teamName,
     loading,
     error,
     busy,

@@ -449,6 +449,8 @@ export type ShareLinksAnswer = {
   signIn?: ShareSignInRule;
   // A team item's: the asker's own email domain, unless a public mail provider's; null otherwise.
   suggestedDomain?: string | null;
+  // A team item's: its team's name as the asker's token gives it; null otherwise (absent from an older index).
+  teamName?: string | null;
 };
 
 // `PUT /items/:id/share-sign-in`: the rule, its domains as a list or as the text typed (parseShareDomains).

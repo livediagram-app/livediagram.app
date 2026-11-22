@@ -75,7 +75,8 @@ export type ShareDialogProps = {
   // The item's own address in its app, for the Team tab's link; left out, the item's path on this page's origin (an
   // editor, which runs on its app's site).
   itemUrl?: string;
-  // The team's name, for the Team tab's words; "the team" without it.
+  // The team's name, for the Team tab's words (the Explorer knows it); left out, the index's share answer names it
+  // (an editor), and "the team" without either.
   teamName?: string | null;
   // The item's tabs in order, so a link can open just one and a live image can draw one; omit for an app without
   // tabs. `loadTabs` reads them when the dialog opens instead (the Explorer, which holds no item's tabs).
@@ -323,7 +324,7 @@ export function ShareDialog({
         >
           <TeamPanel
             url={itemUrl ?? ownAddress(item)}
-            teamName={teamName}
+            teamName={teamName ?? share.teamName}
             word={word}
             notify={notify}
             onPasses={() => {

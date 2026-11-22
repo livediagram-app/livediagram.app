@@ -15,7 +15,13 @@ import { ShareDialog, type ShareDialogProps } from './ShareDialog';
 import { domainsProblem, domainsText } from './share/SignInSection';
 import { shareStatusShort, shareStatusText } from './share/ShareStatus';
 
-function fakeClient(seed: { signIn?: ShareSignInRule; suggestedDomain?: string | null } = {}) {
+function fakeClient(
+  seed: {
+    signIn?: ShareSignInRule;
+    suggestedDomain?: string | null;
+    teamName?: string | null;
+  } = {},
+) {
   let signIn = seed.signIn ?? SHARE_SIGN_IN_OFF;
   const set: unknown[] = [];
   let refuse: IndexError | null = null;
@@ -25,6 +31,7 @@ function fakeClient(seed: { signIn?: ShareSignInRule; suggestedDomain?: string |
       passwordSet: false,
       signIn,
       suggestedDomain: seed.suggestedDomain ?? null,
+      teamName: seed.teamName ?? null,
     }),
     setShareSignIn: async (_id: string, input: ShareSignInRule) => {
       set.push(input);
@@ -102,6 +109,21 @@ describe('the Team tab', () => {
     // And back.
     fireEvent.click(screen.getByRole('tab', { name: 'Team' }));
     expect(screen.getByText('Everyone in the team can already open this plan')).toBeTruthy();
+  });
+
+  it('names the team from the index’s share answer when the host does not (an editor)', async () => {
+    renderDialog({ item: TEAM_ITEM }, { teamName: 'Acme Studio' });
+    expect(
+      await screen.findByText('Everyone in Acme Studio can already open this plan'),
+    ).toBeTruthy();
+  });
+
+  it('keeps the host’s own team name over the index’s', async () => {
+    renderDialog({ item: TEAM_ITEM, teamName: 'Acme' }, { teamName: 'Old Name' });
+    await waitFor(() =>
+      expect(screen.queryByText(/No passes yet|Everyone in Old Name/)).toBeNull(),
+    );
+    expect(screen.getByText('Everyone in Acme can already open this plan')).toBeTruthy();
   });
 
   it('builds the item’s own address on this page when the host names none', () => {

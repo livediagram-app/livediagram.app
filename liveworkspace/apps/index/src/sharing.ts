@@ -45,6 +45,7 @@ import {
   SIGN_IN_COLUMNS,
   SIGN_IN_JOIN,
   suggestedDomainOf,
+  teamNameOf,
   type SignInColumns,
 } from './share-sign-in';
 import { eventStatements } from './events';
@@ -234,6 +235,7 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
       passwordSet: password!.results.length > 0,
       signIn: ruleOf(signIn!.results[0] as SignInColumns | undefined),
       suggestedDomain: suggestedDomainOf(row, caller.person),
+      teamName: teamNameOf(row, caller.person),
     });
   }
 
