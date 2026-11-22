@@ -39,6 +39,7 @@ import { pageThreadsSchemaStep } from '../knowledge/page-threads';
 import { publishedSchemaStep } from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
 import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
+import { pageWatchSchemaStep } from '../knowledge/page-watch';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -446,6 +447,10 @@ const V38 = knowledgeShapeStep;
 // Additive, IF NOT EXISTS.
 const V39 = pageReactionsSchemaStep;
 
+// Step 40: who watches which page, and what changed on watched pages within its hour (knowledge/page-watch.ts;
+// docs/specs/030-knowledgebase/watching.md). Additive, IF NOT EXISTS.
+const V40 = pageWatchSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -478,6 +483,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V37,
   V38,
   V39,
+  V40,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

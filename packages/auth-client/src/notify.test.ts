@@ -55,6 +55,34 @@ describe('notificationRecipients', () => {
     });
   });
 
+  it('sends an opt-in switch only to those who turned it on, and to nobody when the read fails', async () => {
+    const { fetcher } = fakeFetch((path) =>
+      path === '/emails'
+        ? Response.json({ emails: { user_0: 'a@x.test', user_1: 'b@x.test', user_2: 'c@x.test' } })
+        : Response.json({
+            settings: {
+              user_1: { all: {}, app: { notifyWatchDigest: true } },
+              user_2: { all: {}, app: { notifyWatchDigest: false } },
+            },
+          }),
+    );
+    const optIn = { ...request, setting: 'notifyWatchDigest', scope: 'app' as const, optIn: true };
+    const out = await notificationRecipients(
+      CREDENTIALS,
+      { ...optIn, ids: ['user_0', 'user_1', 'user_2'] },
+      fetcher,
+    );
+    expect([...out]).toEqual([['user_1', 'b@x.test']]);
+    const down = fakeFetch((path) =>
+      path === '/emails'
+        ? Response.json({ emails: { user_1: 'b@x.test' } })
+        : new Response(null, { status: 503 }),
+    );
+    expect(
+      (await notificationRecipients(CREDENTIALS, { ...optIn, ids: ['user_1'] }, down.fetcher)).size,
+    ).toBe(0);
+  });
+
   it('reads a failed switch read as on, and a failed address read as nobody', async () => {
     const settingsDown = fakeFetch((path) =>
       path === '/emails'

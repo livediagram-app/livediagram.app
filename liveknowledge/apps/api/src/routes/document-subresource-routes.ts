@@ -27,6 +27,7 @@ import { countRead } from '../knowledge/knowledge-reads';
 import { readsDraft } from '../knowledge/page-draft-reads';
 import { withoutDraft } from '@liveknowledge/document';
 import { readerOf } from '../knowledge/knowledge-caller';
+import { noteWatched } from '../knowledge/watch-notes';
 import {
   COMMUNITY_CONTENT,
   deniedOnTab,
@@ -220,6 +221,14 @@ export async function handleDocumentSubresources(
             : deleteTabRow(env, id, tabId, { keepLast: !!ctx.token }),
       );
       if (removed === 'last') return conflict('last_tab');
+      // A page gone to the Trash is a delete to its watchers (watching.md "Deleted"); a connected row is no page.
+      if (toTrash && removed)
+        await noteWatched(env, {
+          tabs: [tabId],
+          kind: 'deleted',
+          actor: () =>
+            owner ? { id: owner, name: ctx.token ? ctx.token.name || 'An agent' : author.name } : null,
+        });
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       return noContent();
     }

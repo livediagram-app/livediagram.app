@@ -409,6 +409,7 @@ export * from './knowledge';
 export * from './publishing';
 export * from './page-threads';
 export * from './page-reactions';
+export * from './page-watch';
 export * from './agent-scopes';
 
 // Automations on the wire (./automations.ts): a knowledgebase's rules, their runs and the Incoming Webhook door.

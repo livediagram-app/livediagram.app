@@ -34,6 +34,7 @@ import { REVIEW_DUE_EVENT } from '@liveknowledge/document/automations';
 import { hearsKnowledge } from '../document-room/automations/knowledge-events';
 import { queueReviewsDue } from '../document-room/automations/review-events';
 import type { Work } from './knowledge-work';
+import { noteReviewsLapsed } from './watch-work';
 
 const DAY_MS = 86_400_000;
 
@@ -194,14 +195,18 @@ export async function runKnowledgeEmail(
   now: number,
 ): Promise<number | null> {
   if (work.kind === 'review-email') {
-    // Review Due rules look first, whether the emails are on or not (review-events.ts); the work wakes again at the
-    // sooner of the two answers.
-    const document = hearsKnowledge(env, REVIEW_DUE_EVENT)
-      ? await getDocument(env, documentId)
-      : null;
-    const rules = document ? await queueReviewsDue(env, pagesOf(document, now), now) : null;
+    // Review Due rules and the pages' watchers (watching.md "Verification Lapsed") look first, whether the emails are
+    // on or not (review-events.ts, watch-work.ts); the work wakes again at the soonest of the answers.
+    const document = await getDocument(env, documentId);
+    const pages = document ? pagesOf(document, now) : [];
+    const rules =
+      document && hearsKnowledge(env, REVIEW_DUE_EVENT)
+        ? await queueReviewsDue(env, pages, now)
+        : null;
+    const watchers = document ? await noteReviewsLapsed(env, pages, now) : null;
     const emails = await runReviewEmails(env, documentId, now);
-    return rules === null ? emails : emails === null ? rules : Math.min(rules, emails);
+    const next = [rules, watchers, emails].filter((at): at is number => at !== null);
+    return next.length > 0 ? Math.min(...next) : null;
   }
   console.warn('[knowledge] email work unknown', { documentId, kind: work.kind });
   return null;

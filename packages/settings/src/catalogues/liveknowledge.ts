@@ -200,6 +200,25 @@ export const CATALOGUE: AppCatalogue = {
             off: 'NotifyKnowledgeReviewsOff',
           },
         },
+        {
+          kind: 'toggle',
+          id: 'notifyWatchDigest',
+          label: 'Daily Digest of Watched Pages',
+          description:
+            'One email a day listing what changed on the pages you watch. Off until you turn it on.',
+          keywords: 'email watch watching follow digest daily changes updates',
+          section: 'Email',
+          key: 'notifyWatchDigest',
+          on: true,
+          off: false,
+          // Off by default (docs/specs/030-knowledgebase/watching.md "The daily digest email").
+          fallback: false,
+          event: {
+            category: 'UI',
+            on: 'NotifyWatchDigestOn',
+            off: 'NotifyWatchDigestOff',
+          },
+        },
       ],
     },
   ],

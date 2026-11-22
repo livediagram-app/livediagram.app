@@ -55,10 +55,17 @@ export function isAccountId(id: string): boolean {
 // `false`, by id. `scope` is where the app keeps the switch: `all` for one every app shares, `app` for
 // its own. Two requests at once whatever the count (each splits past 100 ids). Guests and malformed ids
 // are dropped first. A switch read that fails counts as on, as a missing one does; an address read that
-// fails means nobody (and throws nothing).
+// fails means nobody (and throws nothing). `optIn` is for a switch that is off until turned on (liveknowledge's
+// Daily Digest of Watched Pages): only a stored `true` gets the email, and a switch read that fails reaches nobody.
 export async function notificationRecipients(
   credentials: ClientCredentials,
-  request: { app: SettingsApp; ids: readonly string[]; setting: string; scope: 'all' | 'app' },
+  request: {
+    app: SettingsApp;
+    ids: readonly string[];
+    setting: string;
+    scope: 'all' | 'app';
+    optIn?: boolean;
+  },
   fetcher: typeof fetch = fetch,
 ): Promise<Map<string, string>> {
   const ids = [...new Set(request.ids.filter(isAccountId))];
@@ -83,7 +90,8 @@ export async function notificationRecipients(
   for (const id of ids) {
     const address = emails.value[id];
     if (!address) continue;
-    if (stored[id]?.[request.scope]?.[request.setting] === false) continue;
+    const value = stored[id]?.[request.scope]?.[request.setting];
+    if (request.optIn ? value !== true : value === false) continue;
     out.set(id, address);
   }
   return out;

@@ -10,6 +10,7 @@
 //   PUT    pages/<tab>/knowledge
 //   POST   pages/<tab>/approval                             knowledge-approval-route.ts
 //   GET    pages/<tab>/threads, POST pages/<tab>/threads    knowledge-thread-routes.ts
+//   GET    pages/<tab>/watch, PUT pages/<tab>/watch         knowledge-watch-routes.ts
 //   GET    ai, PUT ai/key, DELETE ai/key, PUT ai/model      knowledge-ai-routes.ts
 //   POST   ask                                              knowledge-ask-route.ts
 //   POST   setup/suggest                                    knowledge-setup-route.ts
@@ -47,6 +48,7 @@ import { handleAiRoutes } from './knowledge-ai-routes';
 import { handleApproval } from './knowledge-approval-route';
 import { handlePageThreads } from './knowledge-thread-routes';
 import { handlePageReactions } from './knowledge-reaction-routes';
+import { handlePageWatch } from './knowledge-watch-routes';
 import { handleAsk } from './knowledge-ask-route';
 import { handleEmailRoutes } from './knowledge-email-routes';
 import { handleOverviewRoutes } from './knowledge-overview-routes';
@@ -143,6 +145,8 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
   if (segments[5] === 'threads') return handlePageThreads(ctx, document, grant, tab);
   // Every signed-in reader's, a Viewer's too (page-reactions.md "Share roles").
   if (segments[5] === 'reactions') return handlePageReactions(ctx, document, tab);
+  // Every signed-in reader's too (watching.md "Share roles").
+  if (segments[5] === 'watch') return handlePageWatch(ctx, document, grant, tab);
   // Drafted from the page's own place: a link to one page sees its tree's other pages nameless.
   if (segments[5] === 'describe-structure')
     return method === 'POST' ? handleDescribeStructure(seen, tab) : methodNotAllowed();
@@ -208,6 +212,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
           segments[5] === 'approval' ||
           segments[5] === 'threads' ||
           segments[5] === 'reactions' ||
+          segments[5] === 'watch' ||
           segments[5] === 'suggestions' ||
           segments[5] === 'describe-structure' ||
           segments[5] === 'move')) ||

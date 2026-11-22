@@ -8,6 +8,7 @@ import { SOMEONE, asTabWriter } from '@liveworkspace/automations/room';
 import { pageCreatorOf } from '../knowledge/knowledge-caller';
 import { keepStoredKnowledge, ownerPatch } from '../knowledge/page-knowledge';
 import { notePageWrite, savedPageChanged } from '../knowledge/page-authors';
+import { noteWatched, personActor } from '../knowledge/watch-notes';
 import {
   CHANGESET_MERGE_WINDOW_MS,
   CHANGESET_SEEN_HEADER,
@@ -284,6 +285,9 @@ export async function writeTabSave(
             ]
           : [],
       );
+    // A stored page saved under a new parent is a move to its watchers (watching.md "Moved").
+    if (existingTab && (existingTab.parent ?? undefined) !== (sanitised.parent ?? undefined))
+      await noteWatched(env, { tabs: [tabId], kind: 'moved', actor: personActor(env, owner) });
     // The tab holding a new connection is in: the index confirms it, or its sweep takes it back within the hour.
     const kept = connection ?? existingTab?.connection;
     if (connection && !sameConnection(connection, existingTab?.connection)) {

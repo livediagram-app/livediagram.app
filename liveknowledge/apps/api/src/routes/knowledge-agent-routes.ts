@@ -62,6 +62,7 @@ import {
 import { isTokenId, writeScopes } from '../knowledge/agent-grants';
 import { notePageWrite } from '../knowledge/page-authors';
 import { writerOf } from '../knowledge/page-writer';
+import { noteWatched, writerActor } from '../knowledge/watch-notes';
 import { readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf } from '../knowledge/knowledge-db';
 import { countRead } from '../knowledge/knowledge-reads';
@@ -449,6 +450,13 @@ async function handleMove(route: KnowledgeRoute, tab: string): Promise<Response>
       }),
     );
     await writeTabParents(ctx.env, stored, [{ id: tab, parent: parent ?? null }]);
+    // A new parent is a move to the page's watchers (watching.md "Moved"); a reorder among siblings is not.
+    if ((stored.find((p) => p.id === tab)?.parent ?? undefined) !== (parent ?? undefined))
+      await noteWatched(ctx.env, {
+        tabs: [tab],
+        kind: 'moved',
+        actor: writerActor(ctx.env, writerOf(ctx, ctx.resolveOwner() ?? '')),
+      });
   }
   const after = moved ? await relayTree(route) : document;
   const row = (after ? treeOf(after) : []).find((r) => r.page.id === tab);

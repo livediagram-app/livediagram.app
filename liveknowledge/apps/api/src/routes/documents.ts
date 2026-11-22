@@ -58,6 +58,8 @@ import {
   tabListRefusal,
   writeTabParents,
 } from '../document-room/page-tree-store';
+import { parseTabParent } from '@liveknowledge/document';
+import { noteWatched, personActor } from '../knowledge/watch-notes';
 import { documentDates, isDocumentSource } from '@liveknowledge/api-schema';
 import {
   redactDocumentForCommunity,
@@ -563,7 +565,23 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
       } else if (deck.kind === 'set') await setDocumentPresentation(env, id, deck.presentation);
       await renameDocument(env, id, name, Date.now());
       if (order) await reorderTabs(env, id, order);
-      if (places) await writeTabParents(env, storedPages, placed);
+      if (places) {
+        await writeTabParents(env, storedPages, placed);
+        // The pages given a new parent are moves to their watchers (watching.md "Moved").
+        const was = new Map(storedPages.map((p) => [p.id, p.parent]));
+        const moved = placed.flatMap((entry) =>
+          Object.hasOwn(entry, 'parent') &&
+          was.has(entry.id) &&
+          (was.get(entry.id) ?? undefined) !== (parseTabParent(entry.parent) ?? undefined)
+            ? [entry.id]
+            : [],
+        );
+        await noteWatched(env, {
+          tabs: moved,
+          kind: 'moved',
+          actor: personActor(env, ctx.resolveOwner()),
+        });
+      }
       const restyled = await writeStyle(env, existing, style);
       const liveDoc = await getDocument(env, id);
       // The style reaches every open editor from here, the one who set it included: awaited, as the Review

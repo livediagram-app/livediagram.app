@@ -319,6 +319,12 @@ export class DocumentRoom extends DurableObject<Env> {
       this.knowledge.wake(dueAt);
     };
     this.knowledge.onTrust = oweReviewCheck;
+    // A watched page changed, or a watch moved: the push to the Inbox, or the daily check, is owed
+    // (knowledge/watch-work.ts). One row a key, kept at its earliest time.
+    const oweWatch = (key: 'inbox' | 'daily', dueAt: number) => {
+      oweWork(state.storage.sql, { kind: 'watch', key, dueAt, payload: '' });
+      this.knowledge.wake(dueAt);
+    };
     this.knowledge.work = async (now) =>
       this.roomEnv && this.documentId
         ? runKnowledgeWork(this.roomEnv, state.storage.sql, this.documentId, now)
@@ -357,6 +363,7 @@ export class DocumentRoom extends DurableObject<Env> {
           ROOM_PEOPLE: () => roomPeople(this),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
           REVIEW_PERIOD_CHANGED: oweReviewCheck,
+          WATCH_OWED: oweWatch,
         }
       : undefined;
     this.drainEnv = this.roomEnv ? { ...this.roomEnv, DOCUMENT_DB: quiet } : undefined;

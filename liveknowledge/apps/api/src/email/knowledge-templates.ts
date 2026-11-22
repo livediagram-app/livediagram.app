@@ -31,12 +31,12 @@ export type EmailConflict = {
   b: { tab: string; title: string; text: string };
 };
 
-const named = (name: string, fallback: string) => name.trim() || fallback;
-const kbUrl = (env: Env, kb: EmailKnowledgebase) =>
+export const named = (name: string, fallback: string) => name.trim() || fallback;
+export const kbUrl = (env: Env, kb: EmailKnowledgebase) =>
   `${appBaseUrl(env)}/document/${encodeURIComponent(kb.id)}`;
-const pageUrl = (env: Env, kb: EmailKnowledgebase, tab: string) =>
+export const pageUrl = (env: Env, kb: EmailKnowledgebase, tab: string) =>
   `${kbUrl(env, kb)}#t=${encodeURIComponent(tab)}`;
-const link = (href: string, text: string) =>
+export const link = (href: string, text: string) =>
   `<a href="${xmlEscape(href)}" style="color:${EMAIL_BRAND};font-weight:600">${xmlEscape(text)}</a>`;
 const pagesWord = (n: number) => `${n.toLocaleString('en')} ${n === 1 ? 'page' : 'pages'}`;
 // What the knowledgebase's Review Period is, in a sentence; nothing under Never, where no page comes due.
@@ -73,7 +73,7 @@ function pageRows(env: Env, kb: EmailKnowledgebase, pages: readonly EmailPage[])
   return { points, lines };
 }
 
-const text = (env: Env, parts: readonly string[], reason: string) =>
+export const text = (env: Env, parts: readonly string[], reason: string) =>
   [...parts, '', reason, `Turn these emails off: ${profilePath(env)}`].join('\n');
 
 /** An owner's pages whose review came due: one email for them all. */

@@ -182,4 +182,7 @@ export type DocumentEnv = Env &
     // The knowledgebase's Review Period changed (document-content.ts setKnowledgeSettings): the room owes its
     // review check, since the next review to wait for moved.
     REVIEW_PERIOD_CHANGED?: () => void;
+    // The room owes its watchers' work (docs/specs/030-knowledgebase/watching.md; knowledge/watch-work.ts) at `dueAt`:
+    // `inbox` the updates' push, `daily` the reach check and the digests. Absent outside a room.
+    WATCH_OWED?: (key: 'inbox' | 'daily', dueAt: number) => void;
   };
