@@ -37,6 +37,7 @@ const ITEM_WORD: Record<App, string> = {
   livedocuments: 'document',
   livedesign: 'design',
   livehuddle: 'Space',
+  liveknowledge: 'knowledgebase',
 };
 const FULL = 'Too many messages waiting for this connection';
 const PAUSED: Record<WebhookPauseReason, (item: string) => string> = {

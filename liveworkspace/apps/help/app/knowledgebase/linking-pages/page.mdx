@@ -1,0 +1,84 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  LinkedFromScene,
+  PageLinkPicker,
+} from '@/editions/liveknowledge/components/illustrations/pages';
+
+export const metadata = helpMetadata({
+  title: 'Linking Pages',
+  description:
+    'Link one page of a Knowledgebase to another by typing two square brackets, make a new page from a link, and see every page that links here under Linked From.',
+  path: '/help/knowledgebase/linking-pages/',
+});
+
+<ArticleLayout path="knowledgebase/linking-pages" title="Linking Pages" description="Type [[ to link one page to another, make a page from a link, and see what links here under Linked From." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+A **page link** is a link in the writing to another page of the same Knowledgebase. It always shows the page's current title, and it follows the page when the page is renamed or moved in the tree.
+
+## Link to a Page
+
+<Step n={1}>
+  In the writing, type `[[`. A picker opens listing the pages of this Knowledgebase.
+</Step>
+
+<Step n={2}>
+  Keep typing to narrow it. Titles that start with what you typed come first, then titles that
+  contain it, up to 8, each with the pages above it as a hint.
+</Step>
+
+<Step n={3}>
+  Press `Enter` (or `Tab`) on the page you want. The link is put in where the brackets were.
+</Step>
+
+<Figure caption="Typing two square brackets opens the page picker. Create Page, at its foot, makes a page with the title you typed.">
+  <PageLinkPicker />
+</Figure>
+
+Two other ways do the same:
+
+- Type `/` and choose **Link to Page**, which opens the picker for you.
+- Paste a page's address, the one **Copy Link** copies in [the page tree](/help/knowledgebase/the-page-tree/#duplicate-and-copy-a-link). A pasted address of a page in this Knowledgebase becomes a page link.
+
+`Escape` closes the picker and leaves what you typed as plain text.
+
+## Make a Page From a Link
+
+Type `[[` and a title that does not exist yet, then choose **Create Page** at the foot of the picker. A subpage of the page you are writing is made with that title, and the link points at it. The new page is not opened: you carry on writing where you were.
+
+Create Page is refused, with the tree's own message, when the Knowledgebase is at 500 pages or the page you are on is already 8 levels deep.
+
+## Follow a Link
+
+Press a page link to open the page. Hold `Cmd` (or `Ctrl`) while you press to open it in a new browser tab. Hover a link for a card with the page's title, its tick or **Review Due** pill, and its first lines. The first lines show for a page you have already opened in this session; for others the card shows the title and the state.
+
+## Linked From
+
+The foot of every page lists the pages whose writing links to it.
+
+<Figure caption="A live link, a link to a deleted page, and Linked From at the foot of the page.">
+  <LinkedFromScene />
+</Figure>
+
+- **Linked From** is a row of chips, one a page, in the tree's order, headed with the count ("Linked From 3 Pages"). Press a chip to open that page.
+- A page that nothing links to shows no Linked From section at all.
+- A link someone else adds while you have the page open shows the next time you open it.
+
+## Links to Deleted Pages
+
+When a page is deleted, links to it stay in the writing, struck through. While the page waits in the Trash a link reads **In the Trash**, and pressing it opens the Trash at that page, to restore it. Once the page is gone for good the link reads **Deleted Page** and goes nowhere. Undo the delete, or restore the page, and the links come back to life. To remove a dead link, delete it as you would any text: one press of `Backspace` after it takes the whole link.
+
+## Good to Know
+
+- A page link reaches a page of the same Knowledgebase only. To link to anything else, select words and use **Link** in the formatting row.
+- Links survive Markdown: importing `[[Title]]` makes a page link to the first page with that title, and the [CLI](/help/developers/liveknowledge-cli/)'s `export` writes each page link as a relative link to the page's file. See [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/).
+- A Knowledgebase kept Offline has page links but no Linked From.
+
+## Who Can Do What
+
+| Action                                             | Editor | Participant | Viewer |
+| -------------------------------------------------- | ------ | ----------- | ------ |
+| Follow links, read Linked From, see the hover card | Yes    | Yes         | Yes    |
+| Add or remove a page link, Create Page             | Yes    | No          | No     |
+
+</ArticleLayout>

@@ -18,13 +18,14 @@ change reaches the workspaces whose dependencies moved. It then groups them by p
 | livedesign    | `livedesign/`                 | `@livedesign/live`      |
 | livedocuments | `livedocuments/`              | `@livedocuments/editor` |
 | livehuddle    | `livehuddle/`                 | `@livehuddle/editor`    |
+| liveknowledge | `liveknowledge/`              | `@liveknowledge/editor` |
 | platform      | `packages/`, `liveworkspace/` |                         |
 
 A group the change never reached runs no jobs. A product forked in-tree before its launch can be **held**
 (`held: true` on its group in `ci-plan.mjs`): its group then runs only when a change touches its folder itself or
 everything runs, never because a shared package it uses changed (its E2E the same way), and none of its Workers
-deploy. None is held today: livehuddle was until its launch (Work Tracker #189), and now runs, tests, runs its E2E
-and deploys like any product. The base is the pull request's base, or for a push to
+deploy. None is held today: livehuddle was held until its launch (Work Tracker #189) and liveknowledge until
+2026-11-22, and both now run, test, run their E2E and deploy like any product. The base is the pull request's base, or for a push to
 `main` the commit before it. Everything runs when there is no base to compare with, or when the
 change touches something every workspace leans on without turbo seeing it as theirs: `.github/`, the
 root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
@@ -289,7 +290,8 @@ The five products were forked from one another, and code two or more of them nee
 as `@liveworkspace/*` ([structure.md](structure.md), "Getting there, safest first"). The Checks job's **No
 new copies across products** step (`.github/scripts/duplicate-guard.mjs`, also the pre-push hook's first
 step) lists the non-test source files (`.ts`, `.tsx`, `.js`, `.mjs` and the rest) that are byte-identical
-in two or more of `livediagram/`, `liveplanner/`, `livedocuments/`, `livedesign/` and `livehuddle/`, and
+in two or more of `livediagram/`, `liveplanner/`, `livedocuments/`, `livedesign/`, `livehuddle/` and
+`liveknowledge/`, and
 compares them with the committed baseline, `.github/scripts/duplicate-baseline.txt` (the copies that
 existed when it came in, one group per line). It leaves out generated files, each workspace's tool configs
 (`oxlint.config.ts`, `vitest.config.ts` and the like, a few lines over the shared config packages that every

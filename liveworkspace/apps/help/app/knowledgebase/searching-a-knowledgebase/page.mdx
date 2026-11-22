@@ -1,0 +1,67 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { SearchPanelScene } from '@/editions/liveknowledge/components/illustrations/finding';
+
+export const metadata = helpMetadata({
+  title: 'Search',
+  description:
+    'Search a Knowledgebase with Cmd or Ctrl K: page titles and passages from this Knowledgebase come first, then your other work, commands, settings and help.',
+  path: '/help/knowledgebase/searching-a-knowledgebase/',
+});
+
+<ArticleLayout path="knowledgebase/searching-a-knowledgebase" title="Search" description="Press Cmd or Ctrl K to search the pages of this Knowledgebase first, then everything else you can reach." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Search finds pages by their words. It needs no AI and no key, and it works for everyone who can open the Knowledgebase, signed in or through a share link.
+
+## Search This Knowledgebase
+
+<Step n={1}>
+  Press `Cmd+K` (`Ctrl+K` on Windows and Linux), or press **Search** at the top of the sidebar.
+</Step>
+
+<Step n={2}>
+  Type. Results appear as you type, the pages of this Knowledgebase first, under **This
+  Knowledgebase**.
+</Step>
+
+<Step n={3}>
+  Use the arrow keys to choose a result and press `Enter`. The page opens at the passage that
+  matched.
+</Step>
+
+<Figure caption="Searching for deploy: a page whose title matches, then a passage with the word marked, then results from outside this Knowledgebase.">
+  <SearchPanelScene />
+</Figure>
+
+## What a Result Shows
+
+- **Titles first, then passages.** A page whose title matches comes before a page that only mentions the words.
+- Each result shows the page's title, the pages above it in the tree, a tick or **Due** if the page is verified or due for review, and the matching lines with your words marked.
+- **Nothing matches?** The group still shows, reading **No Pages Match**, so you know this Knowledgebase was searched. The other groups follow.
+- **Before you type,** This Knowledgebase lists the pages you opened most recently, up to eight. The list is kept in this browser.
+
+## Everything Else
+
+The panel is the search every liveworkspace app has, so below This Knowledgebase come your other knowledgebases, your folders and teams, commands, settings and help articles. A result from this Knowledgebase is never ranked below one from anywhere else, and the other groups never hold it up: each fills in as it answers. See [The Search Panel](/help/search-panel/the-search-panel/).
+
+To search every Knowledgebase you can open at once, use the field on [Home](/help/getting-started/knowledgebase-home/).
+
+## How It Matches
+
+Search looks at each page's title and its writing, split into passages: a heading and what is written under it. It matches words, not meaning, so search for a word the page would use. A page is searchable as soon as it is saved.
+
+Want an answer written from the pages, not a list of them? See [Ask](/help/knowledgebase/ask/).
+
+## Limits
+
+- A search is at most **200 characters**.
+- It returns at most **20 passages**.
+- Many searches in quick succession are slowed: "Too many searches at once. Wait a moment and try again."
+
+## Good to Know
+
+- Every role can search: Editor, Participant and Viewer.
+- A Knowledgebase kept Offline is searched in this browser, over the pages the browser already holds. A page you have not opened yet is found by its title alone.
+- Agents search the same passages through the MCP tool `search_pages`. See [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/).
+
+</ArticleLayout>

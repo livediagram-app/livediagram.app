@@ -9,7 +9,12 @@ import {
   type RoomNameResponse,
   type RoomTicketResponse,
 } from '@livehuddle/api-schema';
-import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
+import {
+  openRoomTicket,
+  roomTicketLevel,
+  sealRoomTicket,
+  ticketPutAwayGate,
+} from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
 import { noteTokenRoom } from '../auth/token-rooms';
 import { indexService, linkCodeOf } from '../index-service';
@@ -24,10 +29,11 @@ import { personTagFor } from '../person-tag';
 import { relayPresenceName } from '../room-client';
 import { PRESENCE_NAME_HEADER, presenceNameHeader } from '../room-session';
 import { typedPresenceName } from '../document-room-rules';
-import { documentTrashed, forbidden, json, notFound } from '../responses';
+import { documentTrashed, forbidden, json, notFound, PUT_AWAY_ANSWERS } from '../responses';
 import { isCommunityCode } from './community-link';
-import { type RouteContext } from './context';
+import { type RouteContext, grantCallerOf } from './context';
 import { resolveDocumentGrant } from './document-grant';
+import { documentRoom } from '../document-client';
 
 // A Participant's adder key (docs/specs/013-workspace/share-roles.md "Integrity"): what the room stamps on the
 // stickies and text they add. Only a Participant with an identity has one; with none, they may edit, never add.
@@ -50,6 +56,17 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const grant = await resolveDocumentGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
+    // A grant this worker fetched and keeps, from before the Space was archived or trashed: its room says
+    // so, and the grant is dropped (Work Tracker 1323).
+    const away = await ticketPutAwayGate(
+      indexService,
+      request,
+      grantCallerOf(ctx),
+      grant,
+      (stamp) => documentRoom(env, id).standingRefusal(stamp),
+      PUT_AWAY_ANSWERS,
+    );
+    if (away) return away;
     if (grant.trashed) return documentTrashed();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     // The API token minting it (a script): sealed into the ticket, so revoking the token closes the sockets it opens.

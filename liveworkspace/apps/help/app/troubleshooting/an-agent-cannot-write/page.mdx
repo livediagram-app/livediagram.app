@@ -1,0 +1,60 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { AgentCardScene } from '@/editions/liveknowledge/components/illustrations/ai-knowledge';
+
+export const metadata = helpMetadata({
+  title: 'An Agent Cannot Write',
+  description:
+    "Why an agent's write to a Knowledgebase page was refused (page_verified, page_review_due or scope_needed), and whether to allow writing or suggest it.",
+  path: '/help/troubleshooting/an-agent-cannot-write/',
+});
+
+<ArticleLayout path="troubleshooting/an-agent-cannot-write" title="An Agent Cannot Write" description="Why an agent's write was refused, and whether to allow writing or have it suggest the edit." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+
+An agent that is refused says why, in the refusal's own words. Find the code below. What each scope allows is in [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
+
+## The Page Is Verified or Due for Review
+
+| Code              | The refusal says                                                                              |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| `page_verified`   | "This page is verified, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept." |
+| `page_review_due` | "This page is due for review, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_edit, for a person to accept." |
+
+This is on purpose, and no setting changes it: a page a person vouched for changes only when a person accepts the change. Have the agent use `suggest_edit` (the CLI's `suggest`), then accept it under **Edits Suggested by Agents**. See [Suggested Edits](/help/knowledgebase/suggested-edits/).
+
+## The Connection Does Not Hold the Write Scope
+
+`scope_needed`, with "This connection holds the read and suggest scopes here, so it does not change the knowledgebase directly." A new connection reads and suggests. To let it write:
+
+<Step n={1}>
+  Open the **AI Knowledge** tab in the footer and find the agent under **Connected Agents**.
+</Step>
+
+<Step n={2}>
+  Press the More button (⋯) on its card, choose **Allow Writing**, and confirm.
+</Step>
+
+<Figure caption="An Editor allows one connection to write from its card in Connected Agents.">
+  <AgentCardScene />
+</Figure>
+
+Only an Editor can do this. The agent can then write pages that were never verified, and move pages, in this Knowledgebase only.
+
+## The Card Has No Menu
+
+The card says why the connection cannot be allowed to write:
+
+- "Its token is read-only, or its person only views this knowledgebase, so it cannot be allowed to write." Make a full API token in Settings and connect with that, or ask for the Editor or Participant role.
+- "It acts for someone who is not an Editor here, so it cannot be allowed to write." Writing is an Editor's agent's alone. Ask an Editor for the Editor role, or have the agent suggest.
+
+"This connection holds the read scope alone here" means the token is read-only: it can read and report questions, but not suggest. Connect with a full token.
+
+## The Agent Is Not Listed at All
+
+An agent shows under **Connected Agents** once it has read or written this Knowledgebase. If it is missing:
+
+- Check it is connected to this Knowledgebase's server: `https://mcp.liveknowledge.app/mcp`. See [Connecting an Agent](/help/knowledgebase/connecting-an-agent/).
+- A Knowledgebase kept Offline is in your browser only, so no agent can reach it.
+- A card stays for 30 days after the agent was last seen.
+
+</ArticleLayout>

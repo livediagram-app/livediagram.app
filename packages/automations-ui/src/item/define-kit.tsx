@@ -10,6 +10,7 @@
 // open arrives through `input.useItem()`, which must answer the same object while nothing in it changed.
 
 import {
+  inTabWords,
   conditionWords,
   itemPicksLeft,
   itemRuleSentence,
@@ -36,7 +37,7 @@ import { itemValueGroups, ruleWantsTab, summarisedBefore } from './rule-reads';
 import { ItemTemplateScene } from './scenes/ItemTemplateScene';
 import { DEFAULT_TONE } from './scenes/tones';
 import type { ItemAutomationsKitInput, ItemUiOutline } from './types';
-import { ITEM_REFUSAL_PICKS, needWords, pickWords } from './words';
+import { itemRefusalPicks, needWords, pickWords } from './words';
 
 const NO_TRIGGER: ItemPart = { kind: '' };
 const noRef = () => '';
@@ -61,6 +62,8 @@ export function templateShape(template: ItemTemplate): { trigger: string; step: 
 export function defineItemAutomationsKit(input: ItemAutomationsKitInput): AnyAutomationsKit {
   const { kinds: registry, plumbing } = input;
   const item = registry.itemWord;
+  // The screen's fixed words for a tab, in the item's (tab-word.ts).
+  const tabbed = (text: string) => inTabWords(text, item);
   const built = buildItemKinds(input);
   const useOutline = makeUseItemOutline(input);
 
@@ -113,10 +116,10 @@ export function defineItemAutomationsKit(input: ItemAutomationsKitInput): AnyAut
       // What the item lacks is known best here, where its snapshots, connections and templates are read: the api
       // checks tabs, people and snapshots alone. A list not read yet is not checked.
       attention: (rule, outline) => ruleNeeds(rule, outline.have),
-      needs: (attention: readonly ItemRef[]) => needWords(attention),
+      needs: (attention: readonly ItemRef[]) => needWords(attention, item),
       gone: (text) => text,
-      refusalPicks: ITEM_REFUSAL_PICKS,
-      pick: pickWords,
+      refusalPicks: itemRefusalPicks(item),
+      pick: (pick) => pickWords(pick, item),
       picksLeft: (body, picks) =>
         itemPicksLeft(body, picks as readonly AutomationTemplatePickAt<ItemPick>[]),
     },
@@ -126,7 +129,7 @@ export function defineItemAutomationsKit(input: ItemAutomationsKitInput): AnyAut
         trigger: body?.trigger ?? NO_TRIGGER,
         afterAi: summarisedBefore(body, step),
       }),
-    valuesLine: `Put a value of the ${item}, like its name or the tab’s, at the caret.`,
+    valuesLine: tabbed(`Put a value of the ${item}, like its name or the tab’s, at the caret.`),
     templates: {
       list: input.templates.list,
       categories: input.templates.categories,
@@ -141,34 +144,43 @@ export function defineItemAutomationsKit(input: ItemAutomationsKitInput): AnyAut
     Test: itemTestRule(registry),
     runRule: { offered: runOffered, Run: ItemRunRule },
     audit: {
-      column: 'Tab',
-      none: 'No tab',
+      column: tabbed('Tab'),
+      none: tabbed('No tab'),
       subjectOf: (run) => (run.subject ? { id: run.subject.id, title: run.subject.title } : null),
       useRef: useNoRef,
-      open: { label: 'Open Tab', useGo: () => input.useItem().openTab },
+      open: { label: tabbed('Open Tab'), useGo: () => input.useItem().openTab },
     },
     messages: {
       fresh: freshMessage,
       hints: {
-        webhook:
+        webhook: tabbed(
           'Sent as a signed JSON event with the rule and, when the run is about one, the tab.',
-        slack: `Posted with a link that opens this ${item}, at the tab when the run is about one.`,
-        teams: `Posted to the channel with a link that opens this ${item}, at the tab when the run is about one.`,
+        ),
+        slack: tabbed(
+          `Posted with a link that opens this ${item}, at the tab when the run is about one.`,
+        ),
+        teams: tabbed(
+          `Posted to the channel with a link that opens this ${item}, at the tab when the run is about one.`,
+        ),
       },
     },
     incoming: {
-      example: '{"tab": "Tab Name", "status": "green"}',
+      // The JSON's field is `tab` in every app; only its words follow the item's.
+      example: `{"tab": "${tabbed('Tab Name')}", "status": "green"}`,
       howTo: (
         <>
-          Send JSON, up to 16 KB. Name a tab in <code className={HOOK_CODE}>tab</code>, by its name
-          or its id, to run the rule on it; anything else in the body is yours to read with Webhook
-          Field values. Set <code className={HOOK_CODE}>SECRET</code> to the rule’s secret first.
+          Send JSON, up to 16 KB. {tabbed('Name a tab in')} <code className={HOOK_CODE}>tab</code>,
+          by its name or its id, to run the rule on it; anything else in the body is yours to read
+          with Webhook Field values. Set <code className={HOOK_CODE}>SECRET</code> to the rule’s
+          secret first.
         </>
       ),
       runsOn: (body) =>
-        ruleWantsTab(body)
-          ? 'The tab the call names. This rule reads the run’s tab, so the call should name one.'
-          : `The tab the call names. With none named, it runs once on the ${item} alone.`,
+        tabbed(
+          ruleWantsTab(body)
+            ? 'The tab the call names. This rule reads the run’s tab, so the call should name one.'
+            : `The tab the call names. With none named, it runs once on the ${item} alone.`,
+        ),
       signatureHeader: input.signatureHeader,
     },
     connections: { client: input.indexClient, app: input.app, useSignInHref: input.useSignInHref },

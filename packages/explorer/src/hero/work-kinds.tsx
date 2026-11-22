@@ -38,6 +38,9 @@ export type WorkKind = {
   label: string;
   /** The app's template that starts one (`/new?template=`): an existing template, never a route of its own. */
   template: string;
+  /** The New route's query name for it: `template` unless the app starts this kind another way (liveknowledge's
+   *  knowledgebase structures, `/new?structure=`). */
+  param?: 'structure';
   /** Its picture, drawn into the box a tile hands it. */
   draw: (box: WorkBox) => ReactNode;
 };
@@ -157,6 +160,38 @@ export const WORK_KINDS: Record<App, readonly WorkKind[]> = {
       label: 'All-Hands Hall',
       template: 'all-hands-hall',
       draw: (b) => <MiniAllHands {...b} />,
+    },
+  ],
+  // Knowledgebases, each a structure its start builds whole (`/new?structure=`; liveknowledge's
+  // docs/specs/016-platform/platform-registration.md "Explorer").
+  liveknowledge: [
+    {
+      id: 'company-knowledgebase',
+      label: 'Company Wiki',
+      template: 'company-knowledgebase',
+      param: 'structure',
+      draw: (b) => <MiniArticle {...fitBox(b, 0.78)} />,
+    },
+    {
+      id: 'team-handbook',
+      label: 'Team Handbook',
+      template: 'team-handbook',
+      param: 'structure',
+      draw: (b) => <MiniArticle {...fitBox(b, 0.78)} />,
+    },
+    {
+      id: 'engineering-handbook',
+      label: 'Engineering Handbook',
+      template: 'engineering-handbook',
+      param: 'structure',
+      draw: (b) => <MiniArticle {...fitBox(b, 0.78)} />,
+    },
+    {
+      id: 'runbooks',
+      label: 'Runbooks',
+      template: 'runbooks',
+      param: 'structure',
+      draw: (b) => <MiniArticle {...fitBox(b, 0.78)} />,
     },
   ],
 };

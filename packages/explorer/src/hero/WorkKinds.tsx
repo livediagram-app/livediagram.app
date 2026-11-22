@@ -11,7 +11,7 @@ import { siteOf } from '../words';
 import { workTiles, type WorkTile } from './work-kinds';
 
 /** Where a tile starts its kind: the app's New route with the template, or null for no link. */
-export type TemplateHref = (app: App, template: string) => string | null;
+export type TemplateHref = (app: App, template: string, param?: 'structure') => string | null;
 
 export const WORK_KINDS_COPY = { heading: 'What you can make', kits: 'Start a Project' } as const;
 
@@ -44,8 +44,8 @@ function rampOf(app: App): CSSProperties {
  *  editor opens another app's items there). */
 export const defaultTemplateHref =
   (host: App): TemplateHref =>
-  (app, template) =>
-    `${app === host ? '' : siteOf(app).url}${APP_ITEMS[app].newPath}?template=${encodeURIComponent(template)}`;
+  (app, template, param = undefined) =>
+    `${app === host ? '' : siteOf(app).url}${APP_ITEMS[app].newPath}?${param ?? 'template'}=${encodeURIComponent(template)}`;
 
 const TILE =
   'flex h-full min-w-0 flex-col gap-1.5 rounded-xl border border-slate-200 bg-white/90 p-1 pb-2 sm:gap-2 sm:rounded-2xl sm:p-1.5 sm:pb-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-800/80';
@@ -95,11 +95,11 @@ function Tile({ tile, all, href }: { tile: WorkTile; all: boolean; href: string 
 }
 
 // The set's grid: an app's four two by two in the hero's right column from `lg` and four across below it, a phone
-// included; All's five one row of five below `lg` and three over two from `lg`, the two centred (a six-column grid, each
-// tile two columns wide, the fourth starting at the second), so every tile keeps one size and spacing.
+// included; All's six three over three at every width, so every tile keeps one size and spacing and a long name
+// ("Knowledgebase") has room on a phone.
 const GRID = {
   app: 'grid-cols-4 gap-2 lg:grid-cols-2',
-  all: 'grid-cols-5 gap-1 lg:grid-cols-6 lg:[&>li]:col-span-2 lg:[&>li:nth-child(4)]:col-start-2',
+  all: 'grid-cols-3 gap-1',
 } as const;
 const LABEL_ALL = 'px-0 text-[11px] tracking-[-0.01em] sm:text-[13px] sm:tracking-normal';
 
@@ -138,7 +138,11 @@ export function WorkKinds({
       <ul className={`grid ${all ? GRID.all : GRID.app} sm:gap-3`}>
         {tiles.map((tile) => (
           <li key={`${tile.app}:${tile.kind.id}`} className="min-w-0">
-            <Tile tile={tile} all={all} href={hrefOf(tile.app, tile.kind.template)} />
+            <Tile
+              tile={tile}
+              all={all}
+              href={hrefOf(tile.app, tile.kind.template, tile.kind.param)}
+            />
           </li>
         ))}
       </ul>

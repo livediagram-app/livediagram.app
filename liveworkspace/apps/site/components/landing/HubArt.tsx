@@ -21,7 +21,8 @@ const HUB: Point = { x: 300, y: 250 };
 // hold on a liveplanner board (which draws no cursors), a character walking a livehuddle Space.
 type Worker = { name: string; colour: string; at: string; shows: 'cursor' | 'card' | 'character' };
 
-// Where each app sits, what it makes, and who is at work in it. `glow` places the soft wash of the app's colour
+// Where each app sits (six round the hub, clockwise from the top in the shared order), what it makes, and who is at
+// work in it. `glow` places the soft wash of the app's colour
 // behind its corner: a box twice the old blurred disc's size, centred where that disc was, that GLOW fades out.
 const PLACES: Partial<Record<SiteId, { at: Point; makes: string; glow: string; worker: Worker }>> =
   {
@@ -32,28 +33,34 @@ const PLACES: Partial<Record<SiteId, { at: Point; makes: string; glow: string; w
       worker: { name: 'Ada', colour: '#0369a1', at: 'top-[20%] left-[56%]', shows: 'cursor' },
     },
     'liveplanner.app': {
-      at: { x: 506, y: 200 },
+      at: { x: 506, y: 160 },
       makes: 'Boards · sheets · forms',
-      glow: 'top-[-3%] right-[-25%] from-violet-400/22 dark:from-violet-500/17',
-      worker: { name: 'Sam', colour: '#7c3aed', at: 'top-[55%] left-[77%]', shows: 'card' },
+      glow: 'top-[-10%] right-[-25%] from-violet-400/22 dark:from-violet-500/17',
+      worker: { name: 'Sam', colour: '#7c3aed', at: 'top-[46%] left-[78%]', shows: 'card' },
     },
     'livedocuments.app': {
-      at: { x: 430, y: 420 },
+      at: { x: 506, y: 350 },
       makes: 'Articles · slides · infographics',
-      glow: 'right-[-17%] bottom-[-25%] from-amber-400/22 dark:from-amber-500/13',
-      worker: { name: 'Lena', colour: '#b45309', at: 'top-[66%] left-[60%]', shows: 'cursor' },
+      glow: 'right-[-25%] bottom-[-12%] from-amber-400/22 dark:from-amber-500/13',
+      worker: { name: 'Lena', colour: '#b45309', at: 'top-[80%] left-[72%]', shows: 'cursor' },
     },
     'livedesign.app': {
-      at: { x: 170, y: 420 },
+      at: { x: 300, y: 440 },
       makes: 'Logos · wireframes · photos',
-      glow: 'bottom-[-25%] left-[-17%] from-rose-400/22 dark:from-rose-500/13',
-      worker: { name: 'Kai', colour: '#be123c', at: 'top-[66%] left-[22%]', shows: 'cursor' },
+      glow: 'bottom-[-30%] left-[8%] from-rose-400/22 dark:from-rose-500/13',
+      worker: { name: 'Kai', colour: '#be123c', at: 'top-[72%] left-[58%]', shows: 'cursor' },
     },
     'livehuddle.app': {
-      at: { x: 94, y: 200 },
+      at: { x: 94, y: 350 },
       makes: 'Spaces · rooms · calls',
-      glow: 'top-[-3%] left-[-25%] from-emerald-400/22 dark:from-emerald-500/17',
-      worker: { name: 'Ana', colour: '#047857', at: 'top-[52%] left-[12%]', shows: 'character' },
+      glow: 'bottom-[-12%] left-[-25%] from-emerald-400/22 dark:from-emerald-500/17',
+      worker: { name: 'Ana', colour: '#047857', at: 'top-[80%] left-[22%]', shows: 'character' },
+    },
+    'liveknowledge.app': {
+      at: { x: 94, y: 160 },
+      makes: 'Knowledgebases · pages · answers',
+      glow: 'top-[-10%] left-[-25%] from-lime-400/22 dark:from-lime-500/17',
+      worker: { name: 'Jo', colour: '#3f6212', at: 'top-[42%] left-[20%]', shows: 'cursor' },
     },
   };
 

@@ -14,7 +14,7 @@ import type {
 } from '../types';
 
 // What an app calls the thing its rules belong to, as its copy says it.
-export type ItemWord = 'document' | 'canvas' | 'design' | 'Space' | 'plan';
+export type ItemWord = 'document' | 'canvas' | 'design' | 'Space' | 'plan' | 'knowledgebase';
 
 // Who made the change a rule answers. Absent: nobody of the item (a time, an Incoming Webhook call).
 export type ItemRole = 'editor' | 'participant' | 'viewer' | 'agent' | 'automation';

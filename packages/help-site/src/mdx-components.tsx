@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { articleHref, categoryHref } from '@liveworkspace/help-registry';
 import { APP_NOTE_MARK, AppNote, type AppNoteProps } from './components/AppNote';
 import { NoteIcon, TipIcon } from './components/chrome-icons';
-import { AppName, Noun } from './components/ScopeWords';
+import { AppName, Noun, TabWord } from './components/ScopeWords';
 import { Figure, figureShowsIn } from './components/Figure';
 import { FEATURE_FALLBACK_HEX, FEATURE_TILE_CLASS, featureTileStyle } from './lib/feature-tile';
 import { headingId } from './lib/heading-id';
@@ -198,6 +198,9 @@ export function createUseMdxComponents(
   const scope = site.scope ?? 'livediagram';
   const BoundAppNote = (props: AppNoteProps) => <AppNote scope={site.scope} {...props} />;
   (BoundAppNote as unknown as Record<string, boolean>)[APP_NOTE_MARK] = true;
+  const BoundTabWord = (props: { plural?: boolean; capital?: boolean }) => (
+    <TabWord scope={scope} {...props} />
+  );
   const BoundNoun = (props: { plural?: boolean; capital?: boolean }) => (
     <Noun scope={scope} {...props} />
   );
@@ -278,6 +281,7 @@ export function createUseMdxComponents(
     Figure: BoundFigure,
     AppNote: BoundAppNote,
     Noun: BoundNoun,
+    TabWord: BoundTabWord,
     AppName: BoundAppName,
     ...components,
   });

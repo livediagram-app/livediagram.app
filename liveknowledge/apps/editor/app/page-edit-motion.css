@@ -1,0 +1,17 @@
+/* Edit, Save and Cancel say they happened (docs/specs/030-knowledgebase/editing.md "The buttons"; owner 2026-11-21:
+   "an animation when I click edit cancel or save to make it obvious it did something"): the document's white area
+   ripples inward (app/mode-ripple.css), and the buttons that take over pop in, here. Within the 250ms chrome budget
+   (motion-budget.test.ts); reduced motion collapses them (globals.css). */
+@keyframes lk-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lk-pop-in {
+  animation: lk-pop-in 220ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}

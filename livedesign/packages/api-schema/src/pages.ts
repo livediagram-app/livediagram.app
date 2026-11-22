@@ -19,6 +19,23 @@ type WireframeFields = {
   systemBars?: boolean;
 };
 
+import type { LayoutText, LayoutTextSlot } from '@liveworkspace/edit-operations/layout-slots';
+import type { PageText } from '@liveworkspace/edit-operations/laid-out-texts';
+
+export {
+  LAYOUT_SLOT_ITEMS_MAX,
+  LAYOUT_SLOT_NAMES,
+  LAYOUT_TEXT_MAX,
+  readLayoutText,
+  type LayoutText,
+  type LayoutTextSlot,
+} from '@liveworkspace/edit-operations/layout-slots';
+export {
+  PAGE_TEXTS_BUDGET,
+  PAGE_TEXT_SAMPLE_MAX,
+  type PageText,
+} from '@liveworkspace/edit-operations/laid-out-texts';
+
 // The most page changes one call takes (as change_items and change_sheet).
 export const PAGE_CHANGES_MAX = 50;
 
@@ -49,6 +66,8 @@ export type PageChange =
       name?: string;
       background?: PageBackgroundInput;
       layout?: string;
+      // The layout's sample text replaced by slot (docs/specs/024-agents/pages-for-agents.md "Text slots").
+      text?: LayoutText;
       // The 1-based place it goes to; absent is the end.
       at?: number;
       // A photo page's picture size, px (docs/specs/031-photo/photo-pages.md "Agents"); absent is
@@ -65,7 +84,7 @@ export type PageChange =
       background?: PageBackgroundInput;
       locked?: boolean;
     } & Omit<WireframeFields, 'device'>)
-  | { op: 'layout'; page: PageRef; layout: string }
+  | { op: 'layout'; page: PageRef; layout: string; text?: LayoutText }
   | { op: 'move'; page: PageRef; to: number }
   | { op: 'duplicate'; page: PageRef }
   | { op: 'delete'; page: PageRef }
@@ -87,6 +106,9 @@ export type PagesRequest = { pages: PageChange[] };
 
 export type PageRect = { x: number; y: number; width: number; height: number };
 
+/** The texts of the pages a change laid out, by page id, as the engine read them from each layout. */
+export type LaidOutTexts = ReadonlyMap<string, readonly LayoutTextSlot[]>;
+
 export type PageSummary = {
   place: number;
   id: string;
@@ -100,6 +122,8 @@ export type PageSummary = {
   locked: boolean;
   // How many elements are on it.
   elements: number;
+  // A page this call laid out: its texts in the layout's order (pages-for-agents.md "A laid-out page's texts").
+  texts?: PageText[];
   // A wireframe page's device, frame look and system bars, and its screen's safe area on the canvas
   // (where its content goes); absent on any other page.
   device?: WireframeDeviceId;

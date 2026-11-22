@@ -13,6 +13,7 @@ describe('appApiResources', () => {
       'https://livedocuments.app/api',
       'https://livedesign.app/api',
       'https://livehuddle.app/api',
+      'https://liveknowledge.app/api',
     ]);
   });
 
@@ -23,6 +24,7 @@ describe('appApiResources', () => {
       'https://staging.livedocuments.app/api',
       'https://staging.livedesign.app/api',
       'https://staging.livehuddle.app/api',
+      'https://staging.liveknowledge.app/api',
     ]);
   });
 
@@ -56,7 +58,7 @@ describe('isExplorerRead', () => {
 describe('audiencesFor', () => {
   it('widens the audience for the Explorer’s reads only', () => {
     const resource = 'https://livediagram.app/api';
-    expect(audiencesFor(get('/api/documents/abc/tabs'), resource, 'documents')).toHaveLength(5);
+    expect(audiencesFor(get('/api/documents/abc/tabs'), resource, 'documents')).toHaveLength(6);
     expect(audiencesFor(get('/api/documents/abc'), resource, 'documents')).toBe(resource);
   });
 });

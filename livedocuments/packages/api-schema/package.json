@@ -20,6 +20,7 @@
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/automations": "workspace:^",
+    "@liveworkspace/edit-operations": "workspace:*",
     "@liveworkspace/community": "workspace:^",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
@@ -27,7 +28,7 @@
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
-    "oxlint": "^1.93.0",
+    "oxlint": "^1.94.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.1"
   }

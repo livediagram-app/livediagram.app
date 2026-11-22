@@ -1,0 +1,147 @@
+import { describe, expect, it } from 'vitest';
+import {
+  ARTICLE_MARKDOWN_MAX,
+  MAX_ARTICLE_BLOCK_TEXT,
+  articleTabMarkdown,
+  articlesOf,
+  pagesOf,
+} from '@liveknowledge/document';
+import { buildTabFromMarkdown, imagesAsLinks } from './markdown-import';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { mergeImportedTab } from './import-merge';
+
+// docs/specs/020-import-export/markdown-import.md: a Markdown file imports as an article.
+
+const built = (md: string) => {
+  const result = buildTabFromMarkdown(md, { tabName: 'Notes' });
+  if (!result.ok) throw new Error(result.error);
+  return result;
+};
+
+describe('buildTabFromMarkdown', () => {
+  it('makes one article page whose writing is the Markdown', () => {
+    const { tab } = built('# Project\n\nWhy we are doing this.\n\n- Research\n- Build');
+    const pages = pagesOf(tab);
+    expect(pages).toHaveLength(1);
+    expect(pages[0]!.kind).toBe('article');
+    const article = articlesOf(tab)[pages[0]!.flow!]!;
+    const text = article.blocks.map((b) => ('runs' in b ? b.runs.map((r) => r.text).join('') : ''));
+    expect(text).toEqual(['Project', 'Why we are doing this.', 'Research', 'Build']);
+    expect(tab.elements).toEqual([]);
+    expect(tab.name).toBe('Notes');
+  });
+
+  it('gives empty Markdown an article with one empty paragraph to write in', () => {
+    const { tab } = built('');
+    const article = Object.values(articlesOf(tab))[0]!;
+    expect(article.blocks).toHaveLength(1);
+    expect(article.blocks[0]!.type).toBe('paragraph');
+  });
+
+  it('reads a pipe table as a table block and [TOC] as a contents block', () => {
+    const { tab } = built('[TOC]\n\n| A | B |\n| --- | --- |\n| 1 | 2 |');
+    const article = Object.values(articlesOf(tab))[0]!;
+    expect(article.blocks.map((b) => b.type)).toEqual(['toc', 'table']);
+    const table = article.blocks[1]!;
+    expect(table.type === 'table' && table.header).toBe(true);
+    expect(table.type === 'table' && table.rows.map((r) => r.cells.map((c) => c[0]?.text))).toEqual(
+      [
+        ['A', 'B'],
+        ['1', '2'],
+      ],
+    );
+  });
+
+  it("keeps a fenced code block's language from the file through to its Markdown export", () => {
+    const md = '# Setup\n\n```js\nconst a = 1;\n```\n\n```\nplain\n```';
+    const { tab } = built(md);
+    const code = Object.values(articlesOf(tab))[0]!.blocks.filter((b) => b.type === 'code');
+    expect(code.map((b) => b.type === 'code' && b.lang)).toEqual(['js', undefined]);
+    const out = articleTabMarkdown(tab).markdown;
+    expect(out).toContain('```js\nconst a = 1;\n```');
+    expect(out).toContain('```\nplain\n```');
+  });
+
+  it('refuses a paragraph longer than a block holds, and Markdown longer than an article takes', () => {
+    const long = buildTabFromMarkdown('x'.repeat(MAX_ARTICLE_BLOCK_TEXT + 1));
+    expect(long.ok).toBe(false);
+    const huge = buildTabFromMarkdown('a\n\n'.repeat(ARTICLE_MARKDOWN_MAX));
+    expect(huge.ok).toBe(false);
+  });
+
+  it('lands on the receiving tab with its pages and article', () => {
+    const { tab } = built('# Imported');
+    const receiving = { id: 'r', name: 'Mine', elements: [] };
+    const merged = mergeImportedTab(receiving, tab);
+    expect(merged.id).toBe('r');
+    expect(merged.name).toBe('Mine');
+    expect(pagesOf(merged)[0]!.kind).toBe('article');
+    expect(Object.keys(articlesOf(merged))).toHaveLength(1);
+  });
+});
+
+// docs/specs/020-import-export/markdown-import.md "What it reads": an image as a link named by its alt text.
+describe('imagesAsLinks', () => {
+  it('reads an image as a link named by its alt text, or its address', () => {
+    expect(imagesAsLinks('See ![Team photo](https://e.com/t.png) here')).toBe(
+      'See [Team photo](https://e.com/t.png) here',
+    );
+    expect(imagesAsLinks('![](https://e.com/t.png)')).toBe(
+      '[https://e.com/t.png](https://e.com/t.png)',
+    );
+    expect(imagesAsLinks('No images, [a link](https://e.com).')).toBe(
+      'No images, [a link](https://e.com).',
+    );
+  });
+
+  it('keeps an image address with balanced parentheses whole, and leaves no stray `!`', () => {
+    const href = 'https://e.com/Mercury_(planet).jpg';
+    expect(imagesAsLinks(`![Mercury](${href}) and ![](${href})`)).toBe(
+      `[Mercury](${href}) and [${href}](${href})`,
+    );
+    const tab = buildTabFromMarkdown(`![Mercury](${href})`);
+    if (!tab.ok) throw new Error(tab.error);
+    const [doc] = Object.values(tab.tab.articles ?? {});
+    expect(doc!.blocks[0]).toMatchObject({ runs: [{ text: 'Mercury', href }] });
+  });
+
+  it('leaves code as written: an inline span and a fence', () => {
+    expect(imagesAsLinks('Write `![x](y)` for ![a](b)')).toBe('Write `![x](y)` for [a](b)');
+    const fenced = '```md\n![x](y)\n```\n![a](b)';
+    expect(imagesAsLinks(fenced)).toBe('```md\n![x](y)\n```\n[a](b)');
+    expect(imagesAsLinks('````\n```\n![x](y)\n````\n![a](b)')).toBe(
+      '````\n```\n![x](y)\n````\n[a](b)',
+    );
+  });
+
+  it('reads code spans by CommonMark: a run closes only on one as long, and an unclosed run is text', () => {
+    // A double-backtick span holding a single one: the image after it is still an image.
+    expect(imagesAsLinks('``a`b`` ![i](u) `c`')).toBe('``a`b`` [i](u) `c`');
+    expect(imagesAsLinks('``x ![i](u) `` ![j](v)')).toBe('``x ![i](u) `` [j](v)');
+    // A run with no closer of its length is text, so the image after it is read.
+    expect(imagesAsLinks('a `` b ![i](u)')).toBe('a `` b [i](u)');
+    expect(imagesAsLinks('`a ![i](u)')).toBe('`a [i](u)');
+    expect(imagesAsLinks('`a``![i](u)``')).toBe('`a``![i](u)``');
+    // A code span opening inside the image wins over it.
+    expect(imagesAsLinks('![a`b](u) c`')).toBe('![a`b](u) c`');
+    expect(imagesAsLinks('![a`b](u) ![c](d)')).toBe('[a`b](u) [c](d)');
+  });
+
+  it('imports the image as a linked run with no stray "!"', () => {
+    const { tab } = built('![Team photo](https://e.com/t.png)');
+    const article = Object.values(articlesOf(tab))[0]!;
+    const runs = 'runs' in article.blocks[0]! ? article.blocks[0].runs : [];
+    expect(runs).toEqual([{ text: 'Team photo', href: 'https://e.com/t.png' }]);
+  });
+
+  it('reads a worst-case line in a few ms of CPU', () => {
+    const line = '!['.repeat(20_000) + '](' + '('.repeat(20_000) + '`'.repeat(5_000) + 'x';
+    // Images whose addresses open parentheses they never close, each one deep.
+    const opens = '![a](' + '(b'.repeat(20_000) + ' ' + '![a](b(c'.repeat(5_000);
+    const ms = cpuMsOf(() => {
+      imagesAsLinks(line);
+      expect(imagesAsLinks(opens)).toBe(opens);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(60));
+  });
+});

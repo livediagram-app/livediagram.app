@@ -11,7 +11,7 @@ import {
 import { BAND_LEAD, BAND_SECTION, BAND_TITLE } from '../lib/band-classes';
 import { EYEBROW } from '../lib/eyebrow';
 import { shelfScrollTarget } from '../lib/shelf-scroll';
-import { CategoryTiles } from './CategoryTiles';
+import { CategoryTiles, type StartTile } from './CategoryTiles';
 import { TemplateIndex, indexedTemplates } from './TemplateIndex';
 
 // "Browse every template" (each product's docs/specs/019-marketing/marketing-site.md), anchored #templates for the
@@ -51,6 +51,8 @@ export type TemplateGalleryProps<Id extends string, T extends GalleryItem> = {
   Card: ComponentType<{ template: T; source: 'Home.Gallery' }>;
   /** Where a template's plain link goes: the same create link as its card. */
   href: (template: T) => string;
+  /** A tile leading the categories that creates one blank at once (CategoryTiles' StartTile). */
+  start?: StartTile<T['kind']>;
 };
 
 export function TemplateGallery<Id extends string, T extends GalleryItem>({
@@ -62,6 +64,7 @@ export function TemplateGallery<Id extends string, T extends GalleryItem>({
   Preview,
   Card,
   href,
+  start,
 }: TemplateGalleryProps<Id, T>) {
   // The open shelf; the initial one until the visitor opens another.
   const [openId, setOpenId] = useState<Id>(initial);
@@ -113,9 +116,14 @@ export function TemplateGallery<Id extends string, T extends GalleryItem>({
               </Carousel>
             ))}
           </div>
-          {folded.length > 0 ? (
+          {folded.length > 0 || start ? (
             <div className="flex flex-col gap-4">
-              <CategoryTiles groups={folded} onOpen={openCategory} Preview={Preview} />
+              <CategoryTiles
+                groups={folded}
+                onOpen={openCategory}
+                Preview={Preview}
+                start={start}
+              />
               <TemplateIndex
                 templates={indexedTemplates(folded, openShelf?.templates ?? [])}
                 href={href}

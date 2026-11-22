@@ -1,0 +1,135 @@
+import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@liveknowledge/document';
+import {
+  tabArticleOps,
+  tabSaveChangesHeader,
+  type RoomOp,
+  type RoomOutgoing,
+} from '@liveknowledge/api-schema';
+import { announceTabSave } from '@liveworkspace/workbench/lib/api/tab-saved';
+import { tabBroadcastOps } from './tab-broadcast-ops';
+import { holdOwnRoomWrites, type OwnElementWrites } from './own-element-writes';
+
+// What one tab's save needs of the realtime room: read when it is used, since a reconnect replaces it.
+// `sequence` sends an op and resolves true once the room has sequenced it, false when it can't say.
+export type SaveRoom = {
+  send: (msg: RoomOutgoing) => void;
+  sequence: (op: RoomOp) => Promise<boolean>;
+};
+
+// Save one tab and tell the room what changed (docs/specs/012-collaboration/collab-race-hardening.md).
+//
+// The ops are derived NOW, against what peers have at the snapshot (`before`), not when the PUT lands:
+// by then the baseline may hold a peer's newer copy of an element, and diffing our snapshot against it
+// would broadcast our older copy over theirs.
+//
+// The ops the room's ledger records (collab-ledger's ledgerKey) go FIRST, and the write waits for the
+// room to sequence them: a peer's save that lands after ours then merges them from the ledger. Sent after
+// the write, a peer saving at the same moment wrote before the ledger had them and erased them from D1.
+// Element ops still follow the write, so peers never hold an element D1 has not.
+//
+// The save's ops, derived at the snapshot, and (with `writes`) the elements they write held from that moment
+// until the room sequences them (own-element-writes.ts), so a peer's update of one of them that the room ordered
+// first is not shown over ours. Taken when the snapshot is, not when a queued save gets to run.
+//
+// `changes` is what the save changed by id, for the PUT's `X-Save-Changes` header (tabSaveChangesHeader), so the api
+// merges this save's pages (and writing) over the stored tab rather than storing the whole tab over a peer's
+// (docs/specs/012-collaboration/collab-race-hardening.md "A save is merged with the stored tab"). `previous` is the
+// tab as this editor's last save of it took it, which may still be in flight: what it held and this one lacks is
+// removed too, so a page added and deleted across two quick saves does not come back.
+export type PreparedTabSave = {
+  ops: RoomOp[];
+  release: (() => void) | null;
+  changes: string | null;
+};
+
+export function prepareTabSave(
+  before: Tab | undefined,
+  tab: Tab,
+  writes?: OwnElementWrites,
+  previous?: Tab,
+): PreparedTabSave {
+  const ops = tabBroadcastOps(before, tab, previous);
+  const changes = tabSaveChangesHeader(before, tab, previous);
+  if (!writes) return { ops, release: null, changes };
+  return { ops, release: holdOwnRoomWrites(writes, ops), changes };
+}
+
+export async function saveTabAndRelay<R>(
+  before: Tab | undefined,
+  tab: Tab,
+  room: () => SaveRoom | null,
+  put: () => Promise<R>,
+  prepared: PreparedTabSave = prepareTabSave(before, tab),
+  digestOf?: (tabId: string, rev: number) => Promise<string | null>,
+): Promise<R> {
+  const { ops, release } = prepared;
+  const deltas = ops.filter((op) => ledgerKey(op) !== null);
+  const rest = ops.filter((op) => ledgerKey(op) === null);
+  const live = room();
+  if (live && deltas.length > 0) {
+    const confirmed = await Promise.all(deltas.map((op) => live.sequence(op)));
+    if (confirmed.includes(false)) {
+      console.warn('[autosave] room did not confirm the deltas before the save', {
+        tabId: tab.id,
+        deltas: deltas.length,
+        confirmed: confirmed.filter(Boolean).length,
+      });
+    }
+  }
+  let saved: R;
+  try {
+    saved = await put();
+  } catch (err) {
+    // Nothing was sent: the hold goes, and the retry carries the change.
+    release?.();
+    throw err;
+  }
+  relay(rest, room(), release);
+  // A save that wrote a revision announces it (`tab-saved`, docs/specs/006-document/delta-saves.md "A peer's save moves
+  // the base copy"): after its element ops on the same socket, and before the save settles.
+  if (digestOf && typeof saved === 'number') await announceTabSave(tab.id, saved, room, digestOf);
+  return saved;
+}
+
+// Sends the ops in order. Held element and article ops go through `sequence`, and the hold is released once the
+// room has answered for every one of them (sequenced, or unable to say).
+function relay(ops: RoomOp[], live: SaveRoom | null, release: (() => void) | null): void {
+  if (!live || !release) {
+    for (const op of ops) live?.send({ kind: 'op', op });
+    release?.();
+    return;
+  }
+  const answers: Promise<boolean>[] = [];
+  for (const op of ops) {
+    if (op.kind === 'el' || op.kind === 'article') answers.push(live.sequence(op));
+    else live.send({ kind: 'op', op });
+  }
+  void Promise.allSettled(answers).then(release);
+}
+
+// A Participant's save (docs/specs/013-workspace/share-roles.md "Integrity"): no tab PUT, no tab or metadata op,
+// only the element changes since `before` and its writing in the tab's articles, sent to the room, which applies
+// each through the participant rules (text only) and writes D1 itself. A reorder is never sent: a Participant never
+// restacks. With the room closed the save fails, and the autosave retries it as any failed save.
+export function participantElementOps(before: Tab | undefined, tab: Tab): ElementOp[] {
+  return diffToElementOps(before?.elements ?? [], tab.elements).filter(
+    (op) => op.kind !== 'reorder',
+  );
+}
+
+export async function relayParticipantChanges(
+  before: Tab | undefined,
+  tab: Tab,
+  room: () => SaveRoom | null,
+  writes?: OwnElementWrites,
+): Promise<null> {
+  const live = room();
+  if (!live) throw new Error('participant save: the room is not open');
+  const ops = participantElementOps(before, tab);
+  // A tab first seen in this save has no writing of the Participant's in it yet: it never sends a whole article.
+  const writing = before ? tabArticleOps(before, tab) : [];
+  const roomOps = [...ops.map((op): RoomOp => ({ kind: 'el', tabId: tab.id, op })), ...writing];
+  const release = writes ? holdOwnRoomWrites(writes, roomOps) : null;
+  relay(roomOps, live, release);
+  return null;
+}

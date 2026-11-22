@@ -19,6 +19,7 @@ import {
   articleSummaries,
   type PageChangesOutcome,
   pageSummaries,
+  pagesTextsLeftOut,
 } from '@livedocuments/edit-operations';
 import { agentVersionStatement, isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
@@ -97,7 +98,7 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     ]);
     if (!stored) return { status: 404, body: { error: 'not_found', message: 'No such tab.' } };
     // The page changes, or the write and which article it made or wrote.
-    let out: PageChangesOutcome;
+    let out: PageChangesOutcome | ReturnType<typeof applyArticleWrite>;
     let wrote: { flow: string; created: boolean } | null = null;
     if ('pages' in request) out = applyPageChanges(stored.tab, request.pages);
     else {
@@ -193,6 +194,10 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     });
     const articles = articleSummaries(next);
     const article = wrote ? articles.find((a) => a.flow === wrote.flow) : undefined;
+    // The texts of each page the changes laid out (spec "A laid-out page's texts"), within their budget.
+    const laid = 'laid' in out ? out.laid : undefined;
+    const pages = pageSummaries(next, laid);
+    const leftOut = pagesTextsLeftOut(pages, laid);
     return {
       status: 200,
       body: {
@@ -202,8 +207,10 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
               ...out.lines,
               `It takes about ${plural(article.estimatedPages, 'page', 'pages')} once laid out (estimated: the editor adds pages to hold the writing and drops any it leaves empty).`,
             ]
-          : out.lines,
-        pages: pageSummaries(next),
+          : leftOut
+            ? [...out.lines, leftOut]
+            : out.lines,
+        pages,
         articles,
         ...(article && wrote ? { article: { ...article, created: wrote.created } } : {}),
         changesetId,

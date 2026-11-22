@@ -1,0 +1,82 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { AiSettingsScene } from '@/editions/liveknowledge/components/illustrations/finding';
+
+export const metadata = helpMetadata({
+  title: 'Ask Is Not Answering',
+  description:
+    'What each Ask message means and how to fix it: a built-in AI limit, a key not accepted, an account out of credit or rate limited, or a question limit.',
+  path: '/help/troubleshooting/ask-is-not-answering/',
+});
+
+<ArticleLayout path="troubleshooting/ask-is-not-answering" title="Ask Is Not Answering" description="What to do when Ask reaches a built-in AI limit, the key was not accepted, or the account is out of credit." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+
+When Ask cannot answer, it says why in the answer's place, in words, with the next step. Find the message below. Ask runs on built-in AI unless your team added its own key; the key messages name the provider your Knowledgebase uses: "Claude" here reads "OpenAI" if that is yours. [Describe to Set Up](/help/getting-started/describe-to-set-up/) shows the same messages.
+
+## Built-In AI
+
+| Message                                                    | What it means                                           | What to do                                                    |
+| ---------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------- |
+| **You Have Used Today's 30 Built-In Questions**            | One person asks built-in AI at most 30 questions a day  | Ask again tomorrow, or an Editor adds your team's own key     |
+| **This Knowledgebase Has Used Today's Built-In Questions** | Built-in AI answers 100 questions a Knowledgebase a day | Ask again tomorrow, or an Editor adds your team's own key     |
+| **The Built-In AI Could Not Answer**                       | Nothing is wrong with the question                      | Press **Ask Again** in a moment                               |
+| **Built-In AI Is Not Set Up Here**                         | This server has no built-in AI, and no key is saved     | An Editor adds your team's key; anyone else asks an Editor to |
+
+## Your Own Key
+
+| Message                                  | What it means                                                  | What to do                                                                 |
+| ---------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Claude Did Not Accept the Key**        | The key was revoked, has expired, or was mistyped              | An Editor replaces it in AI Settings                                       |
+| **This Key Cannot Use the Chosen Model** | The provider account has no access to that model               | An Editor chooses another model in AI Settings                             |
+| **Ask Is Not Available Right Now**       | The key is missing or could not be read                        | An Editor adds it again in AI Settings                                     |
+
+<Figure caption="AI Settings, where an Editor replaces the key or chooses another model." width="narrow">
+  <AiSettingsScene />
+</Figure>
+
+To replace a key: open the **Ask** tab, press **AI Settings**, paste the new key and press **Replace**. See [AI Settings](/help/knowledgebase/ai-settings/). If you are not an Editor, the message tells you to ask one.
+
+## The Provider Account
+
+| Message                                    | What it means                                                         | What to do                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **The Claude Account Is Out of Credit**    | The account behind the key has no credit left                         | Add credit in the provider's console, then press **Ask Again**         |
+| **The Claude Account Is at Its Rate Limit** | The account is sending as much as the provider allows                | Wait a minute, then press **Ask Again**                                |
+| **Claude Is Busy Right Now**               | The provider is overloaded. Nothing is wrong with the key or question | Press **Ask Again** in a moment                                        |
+| **Claude Declined to Answer This**         | The model refused the question                                        | Asking again will not change it. Reword the question, or search the pages |
+
+Credit and rate limits are set by your provider for your team's account, not by liveknowledge. If the rate limit is reached often, raise it with the provider, or choose a model with a higher allowance.
+
+## liveknowledge's Own Limits
+
+| Message                                               | What it means                                         | What to do                         |
+| ----------------------------------------------------- | ----------------------------------------------------- | ---------------------------------- |
+| **You Have Asked 20 Questions This Hour**             | One person may ask 20 questions an hour               | Ask again later                    |
+| **This Knowledgebase Has Had Its 200 Questions Today** | One Knowledgebase answers 200 questions a day        | Ask again tomorrow                 |
+| **That Question Is Too Long**                         | A question is at most 1,000 characters                | Shorten it and ask again           |
+
+Search works in the meantime, and needs no AI.
+
+## The Connection
+
+| Message                               | What to do                                     |
+| ------------------------------------- | ---------------------------------------------- |
+| **The Question Could Not Be Sent**    | Check your connection, then press **Ask Again** |
+| **The Answer Could Not Be Made**      | Press **Ask Again**                            |
+| **Ask Could Not Be Reached**          | Check your connection, then press **Try Again** |
+
+An answer that stopped part way reads "The answer stopped before it finished. Ask again."
+
+## Ask Is Off Altogether
+
+- **Sign In to Ask:** Ask answers only people who are signed in, a share link's visitor included.
+- **No Ask in an Offline Knowledgebase:** a Knowledgebase kept in this browser has no server to ask, built-in AI or a key. See [Offline](/help/privacy-and-security/offline-mode/).
+- **There is no Ask tab:** the three tabs are not shown in an embed, in zen mode, or to someone who opened a link to one page.
+
+## Ask Answers, but Badly
+
+- **It says the Knowledgebase does not cover something you know is written down.** Ask reads the 12 passages that best match the question's words. Ask with the words the page uses, or check the page with [Search](/help/knowledgebase/searching-a-knowledgebase/).
+- **It answers from an out-of-date page.** Look under **Sources** for a page that is Review Due or Never Verified, then fix and verify that page. Verified pages are read first.
+- **Two pages disagree.** See [Pages That Disagree](/help/knowledgebase/pages-that-disagree/).
+
+</ArticleLayout>

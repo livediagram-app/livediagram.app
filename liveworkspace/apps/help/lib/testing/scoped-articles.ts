@@ -54,7 +54,7 @@ export function scopedPageFiles(scope: HelpScope = SCOPE): string[] {
 }
 
 const NOTE = /<AppNote\b([^>]*)>([\s\S]*?)<\/AppNote>/g;
-const APP_IDS = /live(?:diagram|planner|documents|design|huddle)/g;
+const APP_IDS = /live(?:diagram|planner|documents|design|huddle|knowledge)/g;
 
 const FIGURE = /<Figure\b[^>]*?\bapp="([^"]*)"[^>]*>[\s\S]*?<\/Figure>/g;
 

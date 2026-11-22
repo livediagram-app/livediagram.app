@@ -52,6 +52,12 @@ Tokens have the form `lwt_` followed by a random string, so they are easy to spo
 
 </AppNote>
 
+<AppNote app="liveknowledge">
+
+[The liveknowledge CLI](/help/developers/liveknowledge-cli/) can create its own token for you: `liveknowledge auth login` signs in through the browser, then sends that token on every request.
+
+</AppNote>
+
 <AppNote app="livedesign">
 
 [The livedesign CLI](/help/developers/cli/) can create its own token for you: `livedesign auth login` signs in through the browser or a device code, then sends that token on every request.
@@ -84,6 +90,15 @@ curl https://www.liveplanner.app/api/projects \
 
 ```bash
 curl https://www.livedocuments.app/api/documents \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="liveknowledge">
+
+```bash
+curl https://www.liveknowledge.app/api/documents \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 
@@ -125,6 +140,12 @@ Every request authenticated this way acts as your account, with the same access 
 
 </AppNote>
 
+<AppNote app="liveknowledge">
+
+Every request authenticated this way acts as your account, with the same access to your Knowledgebases, folders and content that you have in the editor. Account administration (managing teams, creating or listing tokens, deleting the account) needs a signed-in session and is refused to a token. A token's scopes narrow it further in each Knowledgebase: without the write scope it acts as a Participant at most, and a read-only token as a Viewer. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
+
+</AppNote>
+
 <AppNote app="livehuddle">
 
 Every request authenticated this way acts as your account, with the same access to your spaces, folders and content that you have in the editor. Account administration (managing teams, creating or listing tokens, deleting the account) needs a signed-in session and is refused to a token. A read-only token (one you created with **Read-only** on) can read (except a space's share-link list, which would hand it edit links), and every write is refused except revoking itself.
@@ -157,6 +178,15 @@ curl https://www.liveplanner.app/api/tokens/current \
 
 ```bash
 curl https://www.livedocuments.app/api/tokens/current \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="liveknowledge">
+
+```bash
+curl https://www.liveknowledge.app/api/tokens/current \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 

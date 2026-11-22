@@ -25,6 +25,7 @@ describe('a launched app in the Settings panel', () => {
       'livedocuments.app',
       'livedesign.app',
       'livehuddle.app',
+      'liveknowledge.app',
     ]);
     expect(isSettingsAppId('livehuddle.app')).toBe(true);
     expect(panelAppIds(null)).toBe(SETTINGS_APP_IDS);

@@ -1,0 +1,116 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  SlashMenuScene,
+  WritingOnAPage,
+} from '@/editions/liveknowledge/components/illustrations/pages';
+
+export const metadata = helpMetadata({
+  title: 'Writing on a Page',
+  description:
+    'Write on one continuous page: the formatting row, headings, lists, tables, a table of contents, footnotes, comments, pictures, charts and drawings.',
+  path: '/help/knowledgebase/writing-on-a-page/',
+});
+
+<ArticleLayout path="knowledgebase/writing-on-a-page" title="Writing on a Page" description="One continuous page of writing: the formatting row, headings, lists, tables, contents, footnotes, margin notes, pictures, charts and drawings." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+A page is one column of writing that grows as you write. It never breaks onto paper pages, and it scrolls with the window as a web page does. Every page of a Knowledgebase looks the same: a page has no background, fonts or margins of its own. The look is set once for the whole Knowledgebase. See [Knowledgebase Style](/help/knowledgebase/knowledgebase-style/).
+
+<Figure caption="A page being written: the formatting row above it, then the breadcrumb, the title, and a to-do list, a table and a chart in the writing.">
+  <WritingOnAPage />
+</Figure>
+
+## Write
+
+Press anywhere on the page to put the caret there and type. A press below the last line puts the caret at the end.
+
+- `Enter` starts a new paragraph, `Shift+Enter` a new line in the same one.
+- **Markdown shortcuts** as you type: `#`, `##` and `###` for headings, `-` or `*` for a bulleted list, `1.` for a numbered list, `[ ]` for a to-do, `>` for a quote, three backticks for code and `---` for a divider.
+- **Paste** from a web page or a document and headings, lists, links, bold and italic come with it; tables arrive as tables. Pasted Markdown becomes formatted blocks.
+- `Tab` and `Shift+Tab` indent and outdent a list item.
+- The first block is the **Title**, and it names the page. See [The Page Tree](/help/knowledgebase/the-page-tree/#rename-a-page).
+
+## Describe Structure
+
+On a page with nothing written yet, **Describe Structure** drafts the page's headings for you. It stands to the left of **Edit** while you read the page, and to the left of **Cancel** while you edit it (a page you have just made with **New Page** opens there).
+
+1. Press **Describe Structure**. Under **What Is This Page For?**, say what belongs on the page in a few words, or leave it empty to go by the page's title.
+2. Press **Describe**. In a few seconds the page gets up to 12 headings, a line in italics under each on what goes there and, where it helps, a list, a table or a callout to fill in.
+3. Change what you like, then press **Save**, or **Cancel** to throw it away. Nothing is saved until you press Save.
+
+It uses the AI the dialog names under the field: built-in AI, included, up to 10 drafts a person a day, or your team's own key. The AI is told the page's title, your words, the Knowledgebase's name and the titles of its pages, never any page's writing. You need to be signed in and able to edit the page, and it is not offered for a Knowledgebase kept Offline.
+
+## The Formatting Row
+
+While you write, the formatting controls are at the left of the row above the page. From left to right:
+
+| Control             | Does                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| **Text Style**      | Text, Title, Subtitle, Heading 1, Heading 2, Heading 3, Quote or Code                        |
+| **Bold**, **Italic**, **Underline** | Mark the selected words                                                    |
+| **Colour**          | The text colour and a highlight                                                              |
+| **Link**            | Link the selected words to a web address                                                     |
+| **Lists**           | Bulleted List, Numbered List or To-Do List, and their indent                                 |
+| **Alignment**       | Align Left, Align Centre, Align Right or Justify                                             |
+| **More Formatting** | Strikethrough, Inline Code, Superscript, Subscript, Clear Formatting, and the word count     |
+| **Insert**          | A picture, a chart or a block (below)                                                        |
+| **Table**           | While the caret is in a table: its rows, columns and header                                  |
+| **Comment**, **Assign Action** | With words selected: a margin note (below)                                        |
+
+**Undo** and **Redo** are in the same row. The row holds formatting only: on a phone it takes the top row while the caret is in the writing.
+
+## The Slash Menu
+
+Type `/` on a line to open the menu of everything you can add, then keep typing to narrow it and press `Enter`.
+
+<Figure caption="The slash menu, grouped: text styles, lists, blocks, and the things you insert.">
+  <SlashMenuScene />
+</Figure>
+
+- **Text:** Text, Title, Subtitle, Heading 1, Heading 2, Heading 3.
+- **Lists:** Bulleted List, Numbered List, To-Do List.
+- **Blocks:** Quote, Code, Divider, Table, Table of Contents, Footnote.
+- **Insert:** Link to Page, Image, Bar Chart, Pie Chart, Line Chart, Drawing, Callout, Sticky Note, Embed.
+
+**Insert** in the formatting row offers the same pictures, charts and blocks; a drawing, a callout, a sticky note, an embed and a page link are in the slash menu.
+
+## Tables, Contents and Footnotes
+
+- **Table:** rows and columns in the writing. With the caret in a cell, **Table** in the formatting row adds and removes rows and columns and sets the header row. A table wider than the column scrolls sideways inside its own box.
+- **Table of Contents:** a list of the page's headings that follows them as they change. The same headings are listed beside the page under **On This Page**. See [Page Health](/help/knowledgebase/page-health/).
+- **Footnote:** a numbered note. The number sits in the writing and the note at the foot of the page.
+
+## Pictures, Charts and Drawings
+
+A picture, a chart, a callout or a sticky note sits in the writing on a line of its own, and the text makes room for it.
+
+- Select it and the bar under it chooses how it sits: **In Line**, **Wrap Left**, **Wrap Right** or **Float**, and for one in line, **Align Left**, **Align Centre** or **Align Right**.
+- Drag it to move it between paragraphs.
+- A **Drawing** is a space between paragraphs to draw in. While you edit it, the formatting controls give way to the drawing's tools (**Shapes**, **Write**, **Concepts**, **Icons**), and come back when you press or type elsewhere. Drag its edges to resize it.
+
+Drawings and charts take the Knowledgebase's colours. To show a file from another liveworkspace app, see [Embedding From Other Apps](/help/knowledgebase/embedding-from-other-apps/).
+
+## Margin Notes
+
+Select some words and press **Comment** (`Cmd+Alt+M`, `Ctrl+Alt+M` on Windows and Linux) to start a comment thread on them, or **Assign Action** to give someone an action. The words are tinted and a marker sits in the margin beside them; press either to open the thread. Neither is available inside a table. See [Comments](/help/collaboration/comments/).
+
+## Writing Together
+
+Several people can write on a page at once, and each sees the others' carets. One person writes in a paragraph at a time: a paragraph someone is typing in is outlined in their colour until they move on, and you can still read it, select it and comment on it.
+
+## What a Page Does Not Have
+
+- **No page breaks, headers, footers or page numbers.** Export to Word paginates the writing onto Word's paper.
+- **No zoom and no panning.** The browser's own zoom is the zoom.
+- **No paper size, background or style of its own.** See [Knowledgebase Style](/help/knowledgebase/knowledgebase-style/).
+
+## Who Can Write
+
+| Action                                        | Editor | Participant | Viewer |
+| --------------------------------------------- | ------ | ----------- | ------ |
+| Read a page                                   | Yes    | Yes         | Yes    |
+| Write, format and insert                      | Yes    | No          | No     |
+| Reply in a comment thread                     | Yes    | Yes         | No     |
+| Start a margin note on words in the writing   | Yes    | No          | No     |
+
+</ArticleLayout>

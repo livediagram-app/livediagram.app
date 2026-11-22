@@ -1,82 +1,318 @@
 # Source files byte-identical in two or more products, one group per line (tab-separated).
 # Written by .github/scripts/duplicate-guard.mjs --update; it may only shrink (docs/ci.md).
-livedesign/apps/cli/src/output/cli-error.ts	livediagram/apps/cli/src/output/cli-error.ts	livedocuments/apps/cli/src/output/cli-error.ts	liveplanner/apps/cli/src/output/cli-error.ts
-livedesign/apps/cli/src/render/png.ts	livedocuments/apps/cli/src/render/png.ts	liveplanner/apps/cli/src/render/png.ts
-livedesign/apps/live/app/oauth/consent/page.tsx	livediagram/apps/editor/app/oauth/consent/page.tsx	livedocuments/apps/editor/app/oauth/consent/page.tsx	liveplanner/apps/editor/app/oauth/consent/page.tsx
-livedesign/apps/live/app/oauth/device/page.tsx	livediagram/apps/editor/app/oauth/device/page.tsx	livedocuments/apps/editor/app/oauth/device/page.tsx	liveplanner/apps/editor/app/oauth/device/page.tsx
-livedesign/apps/live/components/canvas/boxed-shared.ts	livedocuments/apps/editor/components/canvas/boxed-shared.ts
+livedesign/apps/cli/src/output/cli-error.ts	livediagram/apps/cli/src/output/cli-error.ts	livedocuments/apps/cli/src/output/cli-error.ts	liveknowledge/apps/cli/src/output/cli-error.ts	liveplanner/apps/cli/src/output/cli-error.ts
+livedesign/apps/cli/src/render/png.ts	livedocuments/apps/cli/src/render/png.ts	liveknowledge/apps/cli/src/render/png.ts	liveplanner/apps/cli/src/render/png.ts
+livedesign/apps/live/app/oauth/consent/page.tsx	livediagram/apps/editor/app/oauth/consent/page.tsx	livedocuments/apps/editor/app/oauth/consent/page.tsx	liveknowledge/apps/editor/app/oauth/consent/page.tsx	liveplanner/apps/editor/app/oauth/consent/page.tsx
+livedesign/apps/live/app/oauth/device/page.tsx	livediagram/apps/editor/app/oauth/device/page.tsx	livedocuments/apps/editor/app/oauth/device/page.tsx	liveknowledge/apps/editor/app/oauth/device/page.tsx	liveplanner/apps/editor/app/oauth/device/page.tsx
+livedesign/apps/live/components/canvas/boxed-shared.ts	livedocuments/apps/editor/components/canvas/boxed-shared.ts	liveknowledge/apps/editor/components/canvas/boxed-shared.ts
 livedesign/apps/live/components/canvas/canvas-pattern-context.ts	liveplanner/apps/editor/components/canvas/canvas-pattern-context.ts
 livedesign/apps/live/components/palette/strip-rail-items.tsx	livediagram/apps/editor/components/palette/strip-rail-items.tsx
-livedesign/apps/live/components/split/SplitViewContext.tsx	livediagram/apps/editor/components/split/SplitViewContext.tsx	livedocuments/apps/editor/components/split/SplitViewContext.tsx	livehuddle/apps/editor/components/split/SplitViewContext.tsx	liveplanner/apps/editor/components/split/SplitViewContext.tsx
-livedesign/apps/live/components/tour/EditorTours.tsx	livedocuments/apps/editor/components/tour/EditorTours.tsx
-livedesign/apps/live/components/tour/TourStage.tsx	livedocuments/apps/editor/components/tour/TourStage.tsx
-livedesign/apps/live/components/tour/chevrons-tour-steps.ts	livedocuments/apps/editor/components/tour/chevrons-tour-steps.ts
-livedesign/apps/live/components/tour/stack-tour-steps.ts	livedocuments/apps/editor/components/tour/stack-tour-steps.ts
-livedesign/apps/live/hooks/canvas/useEditorContextMenu.ts	livediagram/apps/editor/hooks/canvas/useEditorContextMenu.ts	livedocuments/apps/editor/hooks/canvas/useEditorContextMenu.ts	livehuddle/apps/editor/hooks/canvas/useEditorContextMenu.ts	liveplanner/apps/editor/hooks/canvas/useEditorContextMenu.ts
+livedesign/apps/live/components/split/SplitViewContext.tsx	livediagram/apps/editor/components/split/SplitViewContext.tsx	livedocuments/apps/editor/components/split/SplitViewContext.tsx	livehuddle/apps/editor/components/split/SplitViewContext.tsx	liveknowledge/apps/editor/components/split/SplitViewContext.tsx	liveplanner/apps/editor/components/split/SplitViewContext.tsx
+livedesign/apps/live/components/tour/EditorTours.tsx	livedocuments/apps/editor/components/tour/EditorTours.tsx	liveknowledge/apps/editor/components/tour/EditorTours.tsx
+livedesign/apps/live/components/tour/TourStage.tsx	livedocuments/apps/editor/components/tour/TourStage.tsx	liveknowledge/apps/editor/components/tour/TourStage.tsx
+livedesign/apps/live/components/tour/chevrons-tour-steps.ts	livedocuments/apps/editor/components/tour/chevrons-tour-steps.ts	liveknowledge/apps/editor/components/tour/chevrons-tour-steps.ts
+livedesign/apps/live/components/tour/stack-tour-steps.ts	livedocuments/apps/editor/components/tour/stack-tour-steps.ts	liveknowledge/apps/editor/components/tour/stack-tour-steps.ts
+livedesign/apps/live/hooks/canvas/useEditorContextMenu.ts	livediagram/apps/editor/hooks/canvas/useEditorContextMenu.ts	livedocuments/apps/editor/hooks/canvas/useEditorContextMenu.ts	livehuddle/apps/editor/hooks/canvas/useEditorContextMenu.ts	liveknowledge/apps/editor/hooks/canvas/useEditorContextMenu.ts	liveplanner/apps/editor/hooks/canvas/useEditorContextMenu.ts
 livedesign/apps/live/hooks/ui/useEditorAccent.ts	livediagram/apps/editor/hooks/ui/useEditorAccent.ts	livedocuments/apps/editor/hooks/ui/useEditorAccent.ts	livehuddle/apps/editor/hooks/ui/useEditorAccent.ts	liveplanner/apps/editor/hooks/ui/useEditorAccent.ts
-livedesign/apps/live/lib/contents-placement.ts	livedocuments/apps/editor/lib/contents-placement.ts
-livedesign/apps/live/lib/guest-identity.ts	livediagram/apps/editor/lib/guest-identity.ts	livedocuments/apps/editor/lib/guest-identity.ts	livehuddle/apps/editor/lib/guest-identity.ts	liveplanner/apps/editor/lib/guest-identity.ts
+livedesign/apps/live/lib/contents-placement.ts	livedocuments/apps/editor/lib/contents-placement.ts	liveknowledge/apps/editor/lib/contents-placement.ts
+livedesign/apps/live/lib/guest-identity.ts	livediagram/apps/editor/lib/guest-identity.ts	livedocuments/apps/editor/lib/guest-identity.ts	livehuddle/apps/editor/lib/guest-identity.ts	liveknowledge/apps/editor/lib/guest-identity.ts	liveplanner/apps/editor/lib/guest-identity.ts
 livedesign/apps/live/lib/import-images/index.ts	livediagram/apps/editor/lib/import-images/index.ts
 livedesign/apps/live/lib/live-stroke-test-utils.ts	livediagram/apps/editor/lib/live-stroke-test-utils.ts
-livedesign/apps/mcp/eval/bench/tasks/index.d.mts	livediagram/apps/mcp/eval/bench/tasks/index.d.mts	livedocuments/apps/mcp/eval/bench/tasks/index.d.mts	liveplanner/apps/mcp/eval/bench/tasks/index.d.mts
-livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/src/define.ts	livedocuments/packages/agent-verbs/src/define.ts	liveplanner/packages/agent-verbs/src/define.ts
-livedesign/packages/design/src/retired-patterns.ts	livedocuments/packages/document/src/retired-patterns.ts	liveplanner/packages/project/src/retired-patterns.ts
+livedesign/apps/mcp/eval/bench/tasks/index.d.mts	livediagram/apps/mcp/eval/bench/tasks/index.d.mts	livedocuments/apps/mcp/eval/bench/tasks/index.d.mts	liveknowledge/apps/mcp/eval/bench/tasks/index.d.mts	liveplanner/apps/mcp/eval/bench/tasks/index.d.mts
+livedesign/packages/agent-verbs/src/define.ts	livediagram/packages/agent-verbs/src/define.ts	livedocuments/packages/agent-verbs/src/define.ts	liveknowledge/packages/agent-verbs/src/define.ts	liveplanner/packages/agent-verbs/src/define.ts
+livedesign/packages/design/src/retired-patterns.ts	livedocuments/packages/document/src/retired-patterns.ts	liveknowledge/packages/document/src/retired-patterns.ts	liveplanner/packages/project/src/retired-patterns.ts
 livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-registry/src/telemetry.ts	livedocuments/packages/help-registry/src/telemetry.ts	livehuddle/packages/help-registry/src/telemetry.ts
-livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	livehuddle/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
-livedesign/packages/template-previews/src/index.ts	livedocuments/packages/template-previews/src/index.ts
+livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	livehuddle/packages/licences/src/product.ts	liveknowledge/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
+livedesign/packages/template-previews/src/index.ts	livedocuments/packages/template-previews/src/index.ts	liveknowledge/packages/template-previews/src/index.ts
 livedesign/packages/ui/src/Brand.tsx	livediagram/packages/ui/src/Brand.tsx	livedocuments/packages/ui/src/Brand.tsx	livehuddle/packages/ui/src/Brand.tsx
-livedesign/packages/ui/src/SiteSwitcher.tsx	livediagram/packages/ui/src/SiteSwitcher.tsx	livedocuments/packages/ui/src/SiteSwitcher.tsx	livehuddle/packages/ui/src/SiteSwitcher.tsx	liveplanner/packages/ui/src/SiteSwitcher.tsx
-livedesign/packages/ui/src/WebVitalsReporter.tsx	livediagram/packages/ui/src/WebVitalsReporter.tsx	livedocuments/packages/ui/src/WebVitalsReporter.tsx	livehuddle/packages/ui/src/WebVitalsReporter.tsx	liveplanner/packages/ui/src/WebVitalsReporter.tsx
-livedesign/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livediagram/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livedocuments/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livehuddle/packages/ui/src/appearance/SiteAppearanceToggle.tsx	liveplanner/packages/ui/src/appearance/SiteAppearanceToggle.tsx
-livedesign/packages/ui/src/appearance/index.ts	livediagram/packages/ui/src/appearance/index.ts	livedocuments/packages/ui/src/appearance/index.ts	livehuddle/packages/ui/src/appearance/index.ts	liveplanner/packages/ui/src/appearance/index.ts
-livedesign/packages/ui/src/appearance/useAppearance.ts	livediagram/packages/ui/src/appearance/useAppearance.ts	livedocuments/packages/ui/src/appearance/useAppearance.ts	livehuddle/packages/ui/src/appearance/useAppearance.ts	liveplanner/packages/ui/src/appearance/useAppearance.ts
-livedesign/packages/ui/src/browser-repair/index.ts	livediagram/packages/ui/src/browser-repair/index.ts	livedocuments/packages/ui/src/browser-repair/index.ts	livehuddle/packages/ui/src/browser-repair/index.ts
-livedesign/packages/ui/src/icons/index.ts	livediagram/packages/ui/src/icons/index.ts	livedocuments/packages/ui/src/icons/index.ts	livehuddle/packages/ui/src/icons/index.ts	liveplanner/packages/ui/src/icons/index.ts
+livedesign/packages/ui/src/SiteSwitcher.tsx	livediagram/packages/ui/src/SiteSwitcher.tsx	livedocuments/packages/ui/src/SiteSwitcher.tsx	livehuddle/packages/ui/src/SiteSwitcher.tsx	liveknowledge/packages/ui/src/SiteSwitcher.tsx	liveplanner/packages/ui/src/SiteSwitcher.tsx
+livedesign/packages/ui/src/WebVitalsReporter.tsx	livediagram/packages/ui/src/WebVitalsReporter.tsx	livedocuments/packages/ui/src/WebVitalsReporter.tsx	livehuddle/packages/ui/src/WebVitalsReporter.tsx	liveknowledge/packages/ui/src/WebVitalsReporter.tsx	liveplanner/packages/ui/src/WebVitalsReporter.tsx
+livedesign/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livediagram/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livedocuments/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livehuddle/packages/ui/src/appearance/SiteAppearanceToggle.tsx	liveknowledge/packages/ui/src/appearance/SiteAppearanceToggle.tsx	liveplanner/packages/ui/src/appearance/SiteAppearanceToggle.tsx
+livedesign/packages/ui/src/appearance/index.ts	livediagram/packages/ui/src/appearance/index.ts	livedocuments/packages/ui/src/appearance/index.ts	livehuddle/packages/ui/src/appearance/index.ts	liveknowledge/packages/ui/src/appearance/index.ts	liveplanner/packages/ui/src/appearance/index.ts
+livedesign/packages/ui/src/appearance/useAppearance.ts	livediagram/packages/ui/src/appearance/useAppearance.ts	livedocuments/packages/ui/src/appearance/useAppearance.ts	livehuddle/packages/ui/src/appearance/useAppearance.ts	liveknowledge/packages/ui/src/appearance/useAppearance.ts	liveplanner/packages/ui/src/appearance/useAppearance.ts
+livedesign/packages/ui/src/browser-repair/index.ts	livediagram/packages/ui/src/browser-repair/index.ts	livedocuments/packages/ui/src/browser-repair/index.ts	livehuddle/packages/ui/src/browser-repair/index.ts	liveknowledge/packages/ui/src/browser-repair/index.ts
+livedesign/packages/ui/src/icons/index.ts	livediagram/packages/ui/src/icons/index.ts	livedocuments/packages/ui/src/icons/index.ts	livehuddle/packages/ui/src/icons/index.ts	liveknowledge/packages/ui/src/icons/index.ts	liveplanner/packages/ui/src/icons/index.ts
 livediagram/apps/api/src/routes/document-shared-tabs-route.ts	livehuddle/apps/api/src/routes/document-shared-tabs-route.ts
 livediagram/apps/api/src/routes/share.ts	livehuddle/apps/api/src/routes/share.ts
-livediagram/apps/api/src/routes/tab-render-route.ts	livedocuments/apps/api/src/routes/tab-render-route.ts
-livediagram/apps/editor/app/document/[id]/page.tsx	livedocuments/apps/editor/app/document/[id]/page.tsx	livehuddle/apps/editor/app/document/[id]/page.tsx
+livediagram/apps/api/src/routes/tab-render-route.ts	livedocuments/apps/api/src/routes/tab-render-route.ts	liveknowledge/apps/api/src/routes/tab-render-route.ts
+livediagram/apps/editor/app/document/[id]/page.tsx	livedocuments/apps/editor/app/document/[id]/page.tsx	livehuddle/apps/editor/app/document/[id]/page.tsx	liveknowledge/apps/editor/app/document/[id]/page.tsx
 livediagram/apps/editor/app/document/[id]/room-refusal.ts	livehuddle/apps/editor/app/document/[id]/room-refusal.ts
-livediagram/apps/editor/app/document/[id]/useWorkbenchEnd.ts	livedocuments/apps/editor/app/document/[id]/useWorkbenchEnd.ts
-livediagram/apps/editor/app/embed/workbench/useWorkspaceNavigation.ts	livedocuments/apps/editor/app/embed/workbench/useWorkspaceNavigation.ts
-livediagram/apps/editor/app/get-started/page.tsx	livedocuments/apps/editor/app/get-started/page.tsx	livehuddle/apps/editor/app/get-started/page.tsx
+livediagram/apps/editor/app/document/[id]/useWorkbenchEnd.ts	livedocuments/apps/editor/app/document/[id]/useWorkbenchEnd.ts	liveknowledge/apps/editor/app/document/[id]/useWorkbenchEnd.ts
+livediagram/apps/editor/app/embed/workbench/useWorkspaceNavigation.ts	livedocuments/apps/editor/app/embed/workbench/useWorkspaceNavigation.ts	liveknowledge/apps/editor/app/embed/workbench/useWorkspaceNavigation.ts
+livediagram/apps/editor/app/get-started/page.tsx	livedocuments/apps/editor/app/get-started/page.tsx	livehuddle/apps/editor/app/get-started/page.tsx	liveknowledge/apps/editor/app/get-started/page.tsx
 livediagram/apps/editor/app/join/decline/page.tsx	livehuddle/apps/editor/app/join/decline/page.tsx
 livediagram/apps/editor/app/join/page.tsx	livehuddle/apps/editor/app/join/page.tsx
-livediagram/apps/editor/app/not-found.tsx	livedocuments/apps/editor/app/not-found.tsx	livehuddle/apps/editor/app/not-found.tsx
+livediagram/apps/editor/app/not-found.tsx	livedocuments/apps/editor/app/not-found.tsx	livehuddle/apps/editor/app/not-found.tsx	liveknowledge/apps/editor/app/not-found.tsx
 livediagram/apps/editor/app/page.tsx	livehuddle/apps/editor/app/page.tsx
-livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx
+livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx	liveknowledge/apps/editor/app/sign-in/page.tsx
 livediagram/apps/editor/components/chrome/EllipsisMenuButton.tsx	livedocuments/apps/editor/components/chrome/EllipsisMenuButton.tsx
-livediagram/apps/editor/components/chrome/OpeningScreen.tsx	livedocuments/apps/editor/components/chrome/OpeningScreen.tsx	livehuddle/apps/editor/components/chrome/OpeningScreen.tsx
+livediagram/apps/editor/components/chrome/OpeningScreen.tsx	livedocuments/apps/editor/components/chrome/OpeningScreen.tsx	livehuddle/apps/editor/components/chrome/OpeningScreen.tsx	liveknowledge/apps/editor/components/chrome/OpeningScreen.tsx
 livediagram/apps/editor/components/colour/useThemeColours.ts	livehuddle/apps/editor/components/colour/useThemeColours.ts
 livediagram/apps/editor/components/dialogs/ConversionHandoff.tsx	livehuddle/apps/editor/components/dialogs/ConversionHandoff.tsx
-livediagram/apps/editor/components/panels/LaserColourRow.tsx	livedocuments/apps/editor/components/panels/LaserColourRow.tsx
+livediagram/apps/editor/components/panels/LaserColourRow.tsx	livedocuments/apps/editor/components/panels/LaserColourRow.tsx	liveknowledge/apps/editor/components/panels/LaserColourRow.tsx
 livediagram/apps/editor/components/start/start-closed-key.ts	livehuddle/apps/editor/components/start/start-closed-key.ts
 livediagram/apps/editor/components/tour/TourStage.tsx	livehuddle/apps/editor/components/tour/TourStage.tsx	liveplanner/apps/editor/components/tour/TourStage.tsx
 livediagram/apps/editor/e2e/signed-in/session.ts	livehuddle/apps/editor/e2e/signed-in/session.ts
-livediagram/apps/editor/e2e/stored.ts	livedocuments/apps/editor/e2e/stored.ts	livehuddle/apps/editor/e2e/stored.ts
+livediagram/apps/editor/e2e/stored.ts	livedocuments/apps/editor/e2e/stored.ts	livehuddle/apps/editor/e2e/stored.ts	liveknowledge/apps/editor/e2e/stored.ts
 livediagram/apps/editor/hooks/persistence/useGuestId.ts	livehuddle/apps/editor/hooks/persistence/useGuestId.ts
 livediagram/apps/editor/hooks/ui/useColourPalette.ts	livedocuments/apps/editor/hooks/ui/useColourPalette.ts	livehuddle/apps/editor/hooks/ui/useColourPalette.ts
-livediagram/apps/editor/hooks/ui/useDocumentColours.ts	livedocuments/apps/editor/hooks/ui/useDocumentColours.ts	livehuddle/apps/editor/hooks/ui/useDocumentColours.ts
+livediagram/apps/editor/hooks/ui/useDocumentColours.ts	livedocuments/apps/editor/hooks/ui/useDocumentColours.ts	livehuddle/apps/editor/hooks/ui/useDocumentColours.ts	liveknowledge/apps/editor/hooks/ui/useDocumentColours.ts
 livediagram/apps/editor/hooks/ui/useImageSearch.ts	livehuddle/apps/editor/hooks/ui/useImageSearch.ts
-livediagram/apps/editor/lib/add-to-document-targets.ts	livedocuments/apps/editor/lib/add-to-document-targets.ts
+livediagram/apps/editor/lib/add-to-document-targets.ts	livedocuments/apps/editor/lib/add-to-document-targets.ts	liveknowledge/apps/editor/lib/add-to-document-targets.ts
 livediagram/apps/editor/lib/api/preferences.ts	livehuddle/apps/editor/lib/api/preferences.ts
-livediagram/apps/editor/lib/explorer-organise.ts	livedocuments/apps/editor/lib/explorer-organise.ts
+livediagram/apps/editor/lib/explorer-organise.ts	livedocuments/apps/editor/lib/explorer-organise.ts	liveknowledge/apps/editor/lib/explorer-organise.ts
 livediagram/apps/editor/lib/explorer-thumbnail.tsx	livehuddle/apps/editor/lib/explorer-thumbnail.tsx
 livediagram/apps/editor/lib/tour-tracks.ts	livehuddle/apps/editor/lib/tour-tracks.ts
 livediagram/apps/editor/lib/workbench-bindings.ts	livehuddle/apps/editor/lib/workbench-bindings.ts
-livediagram/apps/editor/test/no-document-grants.ts	livedocuments/apps/editor/test/no-document-grants.ts	livehuddle/apps/editor/test/no-document-grants.ts
+livediagram/apps/editor/test/no-document-grants.ts	livedocuments/apps/editor/test/no-document-grants.ts	livehuddle/apps/editor/test/no-document-grants.ts	liveknowledge/apps/editor/test/no-document-grants.ts
 livediagram/apps/marketing/components/art-tokens.ts	livehuddle/apps/marketing/components/art-tokens.ts
-livediagram/apps/mcp/eval/bench/score.mjs	livedocuments/apps/mcp/eval/bench/score.mjs
-livediagram/apps/mcp/src/mcp-test-client.ts	livedocuments/apps/mcp/src/mcp-test-client.ts
-livediagram/packages/agent-verbs/src/verbs/shared.ts	livedocuments/packages/agent-verbs/src/verbs/shared.ts
-livediagram/packages/api-schema/src/document-conversion.ts	livedocuments/packages/api-schema/src/document-conversion.ts	livehuddle/packages/api-schema/src/document-conversion.ts
+livediagram/apps/mcp/eval/bench/score.mjs	livedocuments/apps/mcp/eval/bench/score.mjs	liveknowledge/apps/mcp/eval/bench/score.mjs
+livediagram/apps/mcp/src/mcp-test-client.ts	livedocuments/apps/mcp/src/mcp-test-client.ts	liveknowledge/apps/mcp/src/mcp-test-client.ts
+livediagram/packages/agent-verbs/src/verbs/shared.ts	livedocuments/packages/agent-verbs/src/verbs/shared.ts	liveknowledge/packages/agent-verbs/src/verbs/shared.ts
+livediagram/packages/api-schema/src/document-conversion.ts	livedocuments/packages/api-schema/src/document-conversion.ts	livehuddle/packages/api-schema/src/document-conversion.ts	liveknowledge/packages/api-schema/src/document-conversion.ts
 livediagram/packages/api-schema/src/document-paths.ts	livehuddle/packages/api-schema/src/document-paths.ts
-livediagram/packages/api-schema/src/responses.ts	livedocuments/packages/api-schema/src/responses.ts
+livediagram/packages/api-schema/src/responses.ts	livedocuments/packages/api-schema/src/responses.ts	liveknowledge/packages/api-schema/src/responses.ts
 livediagram/packages/api-schema/src/trash.ts	livehuddle/packages/api-schema/src/trash.ts
-livediagram/packages/document-views/src/__fixtures__/golden-path.ts	livedocuments/packages/document-views/src/__fixtures__/golden-path.ts	livehuddle/packages/document-views/src/__fixtures__/golden-path.ts
+livediagram/packages/document-views/src/__fixtures__/golden-path.ts	livedocuments/packages/document-views/src/__fixtures__/golden-path.ts	livehuddle/packages/document-views/src/__fixtures__/golden-path.ts	liveknowledge/packages/document-views/src/__fixtures__/golden-path.ts
 livediagram/packages/document/src/svg-render-temperature.ts	liveplanner/packages/project/src/svg-render-temperature.ts
-livediagram/packages/licences/src/apps.ts	livedocuments/packages/licences/src/apps.ts	liveplanner/packages/licences/src/apps.ts
+livediagram/packages/licences/src/apps.ts	livedocuments/packages/licences/src/apps.ts	liveknowledge/packages/licences/src/apps.ts	liveplanner/packages/licences/src/apps.ts
 livediagram/packages/template-previews/src/index.ts	livehuddle/packages/template-previews/src/index.ts
 livediagram/scripts/stroke-points-bench.ts	livehuddle/scripts/stroke-points-bench.ts
-livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts
+livedocuments/apps/api/src/db/account.ts	liveknowledge/apps/api/src/db/account.ts
+livedocuments/apps/api/src/db/index.ts	liveknowledge/apps/api/src/db/index.ts
+livedocuments/apps/api/src/db/tab-save-document.ts	liveknowledge/apps/api/src/db/tab-save-document.ts
+livedocuments/apps/api/src/document-room/automations/kit-outline.ts	liveknowledge/apps/api/src/document-room/automations/kit-outline.ts
+livedocuments/apps/api/src/document-room/document-anonymise.ts	liveknowledge/apps/api/src/document-room/document-anonymise.ts
+livedocuments/apps/api/src/document-room/document-room-wiring.ts	liveknowledge/apps/api/src/document-room/document-room-wiring.ts
+livedocuments/apps/api/src/document-room/document-route.ts	liveknowledge/apps/api/src/document-room/document-route.ts
+livedocuments/apps/api/src/room-scope.ts	liveknowledge/apps/api/src/room-scope.ts
+livedocuments/apps/api/src/routes/automation-hook-route.ts	liveknowledge/apps/api/src/routes/automation-hook-route.ts
+livedocuments/apps/api/src/routes/document-shared-tabs-route.ts	liveknowledge/apps/api/src/routes/document-shared-tabs-route.ts
+livedocuments/apps/api/src/routes/email-optout-route.ts	liveknowledge/apps/api/src/routes/email-optout-route.ts
+livedocuments/apps/api/src/routes/notify-action-route.ts	liveknowledge/apps/api/src/routes/notify-action-route.ts
+livedocuments/apps/api/src/routes/preferences.ts	liveknowledge/apps/api/src/routes/preferences.ts
+livedocuments/apps/api/src/routes/share.ts	liveknowledge/apps/api/src/routes/share.ts
+livedocuments/apps/api/src/routes/tab-link-route.ts	liveknowledge/apps/api/src/routes/tab-link-route.ts
+livedocuments/apps/api/src/test-profiles.ts	liveknowledge/apps/api/src/test-profiles.ts
+livedocuments/apps/api/src/versions/named-store-schema.ts	liveknowledge/apps/api/src/versions/named-store-schema.ts
+livedocuments/apps/api/src/versions/telemetry.ts	liveknowledge/apps/api/src/versions/telemetry.ts
+livedocuments/apps/api/test/workerd-automations/worker.ts	liveknowledge/apps/api/test/workerd-automations/worker.ts
+livedocuments/apps/editor/app/document/[id]/deck-save.ts	liveknowledge/apps/editor/app/document/[id]/deck-save.ts
+livedocuments/apps/editor/app/document/[id]/editor-state/useEditorSelection.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorSelection.ts
+livedocuments/apps/editor/app/document/[id]/editor-state/useEditorTools.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorTools.ts
+livedocuments/apps/editor/app/document/[id]/editor-state/useEditorWorkbench.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorWorkbench.ts
+livedocuments/apps/editor/app/document/[id]/editor-ui-state.ts	liveknowledge/apps/editor/app/document/[id]/editor-ui-state.ts
+livedocuments/apps/editor/app/document/[id]/room-refusal.ts	liveknowledge/apps/editor/app/document/[id]/room-refusal.ts
+livedocuments/apps/editor/app/document/[id]/save-failure.ts	liveknowledge/apps/editor/app/document/[id]/save-failure.ts
+livedocuments/apps/editor/app/document/[id]/useDocumentTrashed.ts	liveknowledge/apps/editor/app/document/[id]/useDocumentTrashed.ts
+livedocuments/apps/editor/app/document/[id]/usePanelLayout.ts	liveknowledge/apps/editor/app/document/[id]/usePanelLayout.ts
+livedocuments/apps/editor/app/new/new-document-settings.ts	liveknowledge/apps/editor/app/new/new-document-settings.ts
+livedocuments/apps/editor/components/automations/DocumentAutomationsGate.tsx	liveknowledge/apps/editor/components/automations/DocumentAutomationsGate.tsx
+livedocuments/apps/editor/components/automations/document-item.ts	liveknowledge/apps/editor/components/automations/document-item.ts
+livedocuments/apps/editor/components/canvas/PagesClusterStrip.tsx	liveknowledge/apps/editor/components/canvas/PagesClusterStrip.tsx
+livedocuments/apps/editor/components/canvas/PresentingContext.tsx	liveknowledge/apps/editor/components/canvas/PresentingContext.tsx
+livedocuments/apps/editor/components/canvas/QuickStyleBarSlot.tsx	liveknowledge/apps/editor/components/canvas/QuickStyleBarSlot.tsx
+livedocuments/apps/editor/components/canvas/article/PageBands.tsx	liveknowledge/apps/editor/components/canvas/article/PageBands.tsx
+livedocuments/apps/editor/components/canvas/article/page-toolbar-placement.ts	liveknowledge/apps/editor/components/canvas/article/page-toolbar-placement.ts
+livedocuments/apps/editor/components/canvas/article/useTouchPagePan.ts	liveknowledge/apps/editor/components/canvas/article/useTouchPagePan.ts
+livedocuments/apps/editor/components/canvas/boxed-element-style.ts	liveknowledge/apps/editor/components/canvas/boxed-element-style.ts
+livedocuments/apps/editor/components/canvas/canvas-main-style.ts	liveknowledge/apps/editor/components/canvas/canvas-main-style.ts
+livedocuments/apps/editor/components/canvas/collab/comment/MentionContext.tsx	liveknowledge/apps/editor/components/canvas/collab/comment/MentionContext.tsx
+livedocuments/apps/editor/components/canvas/editor-canvas-host/useEditCanvasProps.ts	liveknowledge/apps/editor/components/canvas/editor-canvas-host/useEditCanvasProps.ts
+livedocuments/apps/editor/components/canvas/editor-canvas-host/usePanelCanvasProps.ts	liveknowledge/apps/editor/components/canvas/editor-canvas-host/usePanelCanvasProps.ts
+livedocuments/apps/editor/components/canvas/text-hug-measure.ts	liveknowledge/apps/editor/components/canvas/text-hug-measure.ts
+livedocuments/apps/editor/components/canvas/tool-panels.ts	liveknowledge/apps/editor/components/canvas/tool-panels.ts
+livedocuments/apps/editor/components/canvas/useCanvasHostBrush.ts	liveknowledge/apps/editor/components/canvas/useCanvasHostBrush.ts
+livedocuments/apps/editor/components/canvas/useCanvasHostMenus.ts	liveknowledge/apps/editor/components/canvas/useCanvasHostMenus.ts
+livedocuments/apps/editor/components/canvas/useCanvasPointer.tsx	liveknowledge/apps/editor/components/canvas/useCanvasPointer.tsx
+livedocuments/apps/editor/components/canvas/useCanvasToolPanels.tsx	liveknowledge/apps/editor/components/canvas/useCanvasToolPanels.tsx
+livedocuments/apps/editor/components/dialogs/ConversionHandoff.tsx	liveknowledge/apps/editor/components/dialogs/ConversionHandoff.tsx
+livedocuments/apps/editor/components/dialogs/SharePasswordGate.tsx	liveknowledge/apps/editor/components/dialogs/SharePasswordGate.tsx
+livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveknowledge/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts
+livedocuments/apps/editor/components/find/find-bar-top.ts	liveknowledge/apps/editor/components/find/find-bar-top.ts
+livedocuments/apps/editor/components/palette/ArticleDockSlot.tsx	liveknowledge/apps/editor/components/palette/ArticleDockSlot.tsx
+livedocuments/apps/editor/components/palette/CategoryBar.tsx	liveknowledge/apps/editor/components/palette/CategoryBar.tsx
+livedocuments/apps/editor/components/palette/PaletteToolRows.tsx	liveknowledge/apps/editor/components/palette/PaletteToolRows.tsx
+livedocuments/apps/editor/components/palette/bar-categories.tsx	liveknowledge/apps/editor/components/palette/bar-categories.tsx
+livedocuments/apps/editor/components/palette/palette-add-handlers.ts	liveknowledge/apps/editor/components/palette/palette-add-handlers.ts
+livedocuments/apps/editor/components/palette/palette-category-tabs.tsx	liveknowledge/apps/editor/components/palette/palette-category-tabs.tsx
+livedocuments/apps/editor/components/palette/palette-tile-defs.tsx	liveknowledge/apps/editor/components/palette/palette-tile-defs.tsx
+livedocuments/apps/editor/components/palette/strip-rail-items.tsx	liveknowledge/apps/editor/components/palette/strip-rail-items.tsx
+livedocuments/apps/editor/components/palette/useEditorTileActions.ts	liveknowledge/apps/editor/components/palette/useEditorTileActions.ts
+livedocuments/apps/editor/components/palette/usePaletteKindMotion.ts	liveknowledge/apps/editor/components/palette/usePaletteKindMotion.ts
+livedocuments/apps/editor/components/panels/Explorer.types.ts	liveknowledge/apps/editor/components/panels/Explorer.types.ts
+livedocuments/apps/editor/components/panels/ModePanel.tsx	liveknowledge/apps/editor/components/panels/ModePanel.tsx
+livedocuments/apps/editor/components/primitives/usePopoverTopClearance.ts	liveknowledge/apps/editor/components/primitives/usePopoverTopClearance.ts
+livedocuments/apps/editor/components/split/SplitViewFrame.tsx	liveknowledge/apps/editor/components/split/SplitViewFrame.tsx
+livedocuments/apps/editor/components/tour/article-tour-steps.ts	liveknowledge/apps/editor/components/tour/article-tour-steps.ts
+livedocuments/apps/editor/components/tour/cycle-tour-steps.ts	liveknowledge/apps/editor/components/tour/cycle-tour-steps.ts
+livedocuments/apps/editor/components/tour/funnel-tour-steps.ts	liveknowledge/apps/editor/components/tour/funnel-tour-steps.ts
+livedocuments/apps/editor/components/tour/hub-tour-steps.ts	liveknowledge/apps/editor/components/tour/hub-tour-steps.ts
+livedocuments/apps/editor/components/tour/infographic-tour-steps.ts	liveknowledge/apps/editor/components/tour/infographic-tour-steps.ts
+livedocuments/apps/editor/components/tour/layer-stack-tour-steps.ts	liveknowledge/apps/editor/components/tour/layer-stack-tour-steps.ts
+livedocuments/apps/editor/components/tour/menu-tour-step.ts	liveknowledge/apps/editor/components/tour/menu-tour-step.ts
+livedocuments/apps/editor/components/tour/onion-tour-steps.ts	liveknowledge/apps/editor/components/tour/onion-tour-steps.ts
+livedocuments/apps/editor/components/tour/page-tour-dom.ts	liveknowledge/apps/editor/components/tour/page-tour-dom.ts
+livedocuments/apps/editor/components/tour/page-tour-parts.ts	liveknowledge/apps/editor/components/tour/page-tour-parts.ts
+livedocuments/apps/editor/components/tour/pyramid-tour-steps.ts	liveknowledge/apps/editor/components/tour/pyramid-tour-steps.ts
+livedocuments/apps/editor/components/tour/slide-tour-steps.ts	liveknowledge/apps/editor/components/tour/slide-tour-steps.ts
+livedocuments/apps/editor/components/tour/timeline-tour-steps.ts	liveknowledge/apps/editor/components/tour/timeline-tour-steps.ts
+livedocuments/apps/editor/e2e/signed-in/session.ts	liveknowledge/apps/editor/e2e/signed-in/session.ts
+livedocuments/apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts	liveknowledge/apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts
+livedocuments/apps/editor/hooks/canvas/useDockPopovers.ts	liveknowledge/apps/editor/hooks/canvas/useDockPopovers.ts
+livedocuments/apps/editor/hooks/collab/useFollowMe.ts	liveknowledge/apps/editor/hooks/collab/useFollowMe.ts
+livedocuments/apps/editor/hooks/collab/useReleaseSelectionLock.ts	liveknowledge/apps/editor/hooks/collab/useReleaseSelectionLock.ts
+livedocuments/apps/editor/hooks/editor/document-visibility-store.ts	liveknowledge/apps/editor/hooks/editor/document-visibility-store.ts
+livedocuments/apps/editor/hooks/editor/find-shortcut.ts	liveknowledge/apps/editor/hooks/editor/find-shortcut.ts
+livedocuments/apps/editor/hooks/ui/useImageSearch.ts	liveknowledge/apps/editor/hooks/ui/useImageSearch.ts
+livedocuments/apps/editor/hooks/ui/useStripCrowdsCorners.ts	liveknowledge/apps/editor/hooks/ui/useStripCrowdsCorners.ts
+livedocuments/apps/editor/lib/action-note-open.ts	liveknowledge/apps/editor/lib/action-note-open.ts
+livedocuments/apps/editor/lib/api/document-grants.ts	liveknowledge/apps/editor/lib/api/document-grants.ts
+livedocuments/apps/editor/lib/article/article-caret.ts	liveknowledge/apps/editor/lib/article/article-caret.ts
+livedocuments/apps/editor/lib/article/article-dock.ts	liveknowledge/apps/editor/lib/article/article-dock.ts
+livedocuments/apps/editor/lib/article/article-find-plugin.ts	liveknowledge/apps/editor/lib/article/article-find-plugin.ts
+livedocuments/apps/editor/lib/article/article-footnote-rows.ts	liveknowledge/apps/editor/lib/article/article-footnote-rows.ts
+livedocuments/apps/editor/lib/article/article-footnote-split-look.ts	liveknowledge/apps/editor/lib/article/article-footnote-split-look.ts
+livedocuments/apps/editor/lib/article/article-grow-store.ts	liveknowledge/apps/editor/lib/article/article-grow-store.ts
+livedocuments/apps/editor/lib/article/article-hold-notice.ts	liveknowledge/apps/editor/lib/article/article-hold-notice.ts
+livedocuments/apps/editor/lib/article/article-holds.ts	liveknowledge/apps/editor/lib/article/article-holds.ts
+livedocuments/apps/editor/lib/article/article-open-edit.ts	liveknowledge/apps/editor/lib/article/article-open-edit.ts
+livedocuments/apps/editor/lib/article/article-pdf-tags.ts	liveknowledge/apps/editor/lib/article/article-pdf-tags.ts
+livedocuments/apps/editor/lib/article/article-peers.ts	liveknowledge/apps/editor/lib/article/article-peers.ts
+livedocuments/apps/editor/lib/article/article-schema-table.ts	liveknowledge/apps/editor/lib/article/article-schema-table.ts
+livedocuments/apps/editor/lib/article/article-table-editor.ts	liveknowledge/apps/editor/lib/article/article-table-editor.ts
+livedocuments/apps/editor/lib/article/article-table-repeat.ts	liveknowledge/apps/editor/lib/article/article-table-repeat.ts
+livedocuments/apps/editor/lib/article/article-telemetry.ts	liveknowledge/apps/editor/lib/article/article-telemetry.ts
+livedocuments/apps/editor/lib/canvas-chrome.ts	liveknowledge/apps/editor/lib/canvas-chrome.ts
+livedocuments/apps/editor/lib/editor-deferred-code.ts	liveknowledge/apps/editor/lib/editor-deferred-code.ts
+livedocuments/apps/editor/lib/editor-path.ts	liveknowledge/apps/editor/lib/editor-path.ts
+livedocuments/apps/editor/lib/explorer-landing.ts	liveknowledge/apps/editor/lib/explorer-landing.ts
+livedocuments/apps/editor/lib/explorer-thumbnail.tsx	liveknowledge/apps/editor/lib/explorer-thumbnail.tsx
+livedocuments/apps/editor/lib/find/find-highlight-store.ts	liveknowledge/apps/editor/lib/find/find-highlight-store.ts
+livedocuments/apps/editor/lib/find/find-matches.ts	liveknowledge/apps/editor/lib/find/find-matches.ts
+livedocuments/apps/editor/lib/find/find-text.ts	liveknowledge/apps/editor/lib/find/find-text.ts
+livedocuments/apps/editor/lib/office-export/docx-write.ts	liveknowledge/apps/editor/lib/office-export/docx-write.ts
+livedocuments/apps/editor/lib/office-export/ooxml-colour.ts	liveknowledge/apps/editor/lib/office-export/ooxml-colour.ts
+livedocuments/apps/editor/lib/office-export/ooxml-fonts.ts	liveknowledge/apps/editor/lib/office-export/ooxml-fonts.ts
+livedocuments/apps/editor/lib/office-export/pptx-parts.ts	liveknowledge/apps/editor/lib/office-export/pptx-parts.ts
+livedocuments/apps/editor/lib/office-export/pptx-slide-xml.ts	liveknowledge/apps/editor/lib/office-export/pptx-slide-xml.ts
+livedocuments/apps/editor/lib/office-export/pptx-types.ts	liveknowledge/apps/editor/lib/office-export/pptx-types.ts
+livedocuments/apps/editor/lib/office-export/pptx-write.ts	liveknowledge/apps/editor/lib/office-export/pptx-write.ts
+livedocuments/apps/editor/lib/office-export/progress.ts	liveknowledge/apps/editor/lib/office-export/progress.ts
+livedocuments/apps/editor/lib/office-import/limits.ts	liveknowledge/apps/editor/lib/office-import/limits.ts
+livedocuments/apps/editor/lib/office-import/package.ts	liveknowledge/apps/editor/lib/office-import/package.ts
+livedocuments/apps/editor/lib/office-import/pptx-shapes.ts	liveknowledge/apps/editor/lib/office-import/pptx-shapes.ts
+livedocuments/apps/editor/lib/office-import/store-images.ts	liveknowledge/apps/editor/lib/office-import/store-images.ts
+livedocuments/apps/editor/lib/office-import/tally.ts	liveknowledge/apps/editor/lib/office-import/tally.ts
+livedocuments/apps/editor/lib/office-import/test-fixtures.ts	liveknowledge/apps/editor/lib/office-import/test-fixtures.ts
+livedocuments/apps/editor/lib/office-import/text-fit.ts	liveknowledge/apps/editor/lib/office-import/text-fit.ts
+livedocuments/apps/editor/lib/office-import/xml.ts	liveknowledge/apps/editor/lib/office-import/xml.ts
+livedocuments/apps/editor/lib/own-picture.ts	liveknowledge/apps/editor/lib/own-picture.ts
+livedocuments/apps/editor/lib/page-tidy-check/page-tidy-check.worker.ts	liveknowledge/apps/editor/lib/page-tidy-check/page-tidy-check.worker.ts
+livedocuments/apps/editor/lib/page-tidy-guard.ts	liveknowledge/apps/editor/lib/page-tidy-guard.ts
+livedocuments/apps/editor/lib/page-tidy-index.ts	liveknowledge/apps/editor/lib/page-tidy-index.ts
+livedocuments/apps/editor/lib/presented-pages.ts	liveknowledge/apps/editor/lib/presented-pages.ts
+livedocuments/apps/editor/lib/quick-style-bar-slots.ts	liveknowledge/apps/editor/lib/quick-style-bar-slots.ts
+livedocuments/apps/editor/lib/tab-style-opener.ts	liveknowledge/apps/editor/lib/tab-style-opener.ts
+livedocuments/apps/editor/lib/thumbnail-cache.ts	liveknowledge/apps/editor/lib/thumbnail-cache.ts
+livedocuments/apps/editor/lib/version-history-store.ts	liveknowledge/apps/editor/lib/version-history-store.ts
+livedocuments/apps/editor/lib/workbench-bindings.ts	liveknowledge/apps/editor/lib/workbench-bindings.ts
+livedocuments/packages/agent-verbs/src/pages/index.ts	liveknowledge/packages/agent-verbs/src/pages/index.ts
+livedocuments/packages/api-schema/src/article-caret.ts	liveknowledge/packages/api-schema/src/article-caret.ts
+livedocuments/packages/api-schema/src/cta-sources.ts	liveknowledge/packages/api-schema/src/cta-sources.ts
+livedocuments/packages/api-schema/src/error-telemetry.ts	liveknowledge/packages/api-schema/src/error-telemetry.ts
+livedocuments/packages/api-schema/src/home.ts	liveknowledge/packages/api-schema/src/home.ts
+livedocuments/packages/api-schema/src/lint.ts	liveknowledge/packages/api-schema/src/lint.ts
+livedocuments/packages/api-schema/src/trash.ts	liveknowledge/packages/api-schema/src/trash.ts
+livedocuments/packages/diagram-lint/src/checks/flow-backwards.ts	liveknowledge/packages/diagram-lint/src/checks/flow-backwards.ts
+livedocuments/packages/diagram-lint/src/checks/index.ts	liveknowledge/packages/diagram-lint/src/checks/index.ts
+livedocuments/packages/diagram-lint/src/fixes.ts	liveknowledge/packages/diagram-lint/src/fixes.ts
+livedocuments/packages/document/scripts/build-world-map.mjs	liveknowledge/packages/document/scripts/build-world-map.mjs
+livedocuments/packages/document/src/animation-membership.ts	liveknowledge/packages/document/src/animation-membership.ts
+livedocuments/packages/document/src/arrow-rebind.ts	liveknowledge/packages/document/src/arrow-rebind.ts
+livedocuments/packages/document/src/article-bands.ts	liveknowledge/packages/document/src/article-bands.ts
+livedocuments/packages/document/src/article-draw-ops.ts	liveknowledge/packages/document/src/article-draw-ops.ts
+livedocuments/packages/document/src/article-flow-ops.ts	liveknowledge/packages/document/src/article-flow-ops.ts
+livedocuments/packages/document/src/article-footnotes.ts	liveknowledge/packages/document/src/article-footnotes.ts
+livedocuments/packages/document/src/article-intake.ts	liveknowledge/packages/document/src/article-intake.ts
+livedocuments/packages/document/src/article-layout-set.ts	liveknowledge/packages/document/src/article-layout-set.ts
+livedocuments/packages/document/src/article-markdown.ts	liveknowledge/packages/document/src/article-markdown.ts
+livedocuments/packages/document/src/article-notes.ts	liveknowledge/packages/document/src/article-notes.ts
+livedocuments/packages/document/src/article-readability.ts	liveknowledge/packages/document/src/article-readability.ts
+livedocuments/packages/document/src/article-table.ts	liveknowledge/packages/document/src/article-table.ts
+livedocuments/packages/document/src/article-toc.ts	liveknowledge/packages/document/src/article-toc.ts
+livedocuments/packages/document/src/article-zones.ts	liveknowledge/packages/document/src/article-zones.ts
+livedocuments/packages/document/src/auto-layout-sweep.ts	liveknowledge/packages/document/src/auto-layout-sweep.ts
+livedocuments/packages/document/src/auto-layout-tree.ts	liveknowledge/packages/document/src/auto-layout-tree.ts
+livedocuments/packages/document/src/build-types.ts	liveknowledge/packages/document/src/build-types.ts
+livedocuments/packages/document/src/chart-ink.ts	liveknowledge/packages/document/src/chart-ink.ts
+livedocuments/packages/document/src/collab-index-rows.ts	liveknowledge/packages/document/src/collab-index-rows.ts
+livedocuments/packages/document/src/collab-ledger.ts	liveknowledge/packages/document/src/collab-ledger.ts
+livedocuments/packages/document/src/component-factories.ts	liveknowledge/packages/document/src/component-factories.ts
+livedocuments/packages/document/src/duplicate.ts	liveknowledge/packages/document/src/duplicate.ts
+livedocuments/packages/document/src/element-action.ts	liveknowledge/packages/document/src/element-action.ts
+livedocuments/packages/document/src/element-deltas.ts	liveknowledge/packages/document/src/element-deltas.ts
+livedocuments/packages/document/src/element-fields.ts	liveknowledge/packages/document/src/element-fields.ts
+livedocuments/packages/document/src/element-images.ts	liveknowledge/packages/document/src/element-images.ts
+livedocuments/packages/document/src/element-kind-label.ts	liveknowledge/packages/document/src/element-kind-label.ts
+livedocuments/packages/document/src/element-union.ts	liveknowledge/packages/document/src/element-union.ts
+livedocuments/packages/document/src/image-alt.ts	liveknowledge/packages/document/src/image-alt.ts
+livedocuments/packages/document/src/label-box.ts	liveknowledge/packages/document/src/label-box.ts
+livedocuments/packages/document/src/layer-operations.ts	liveknowledge/packages/document/src/layer-operations.ts
+livedocuments/packages/document/src/layers.ts	liveknowledge/packages/document/src/layers.ts
+livedocuments/packages/document/src/logo-strip-size.ts	liveknowledge/packages/document/src/logo-strip-size.ts
+livedocuments/packages/document/src/logo-strip.ts	liveknowledge/packages/document/src/logo-strip.ts
+livedocuments/packages/document/src/map-geometry-ensure.ts	liveknowledge/packages/document/src/map-geometry-ensure.ts
+livedocuments/packages/document/src/map-insets.ts	liveknowledge/packages/document/src/map-insets.ts
+livedocuments/packages/document/src/map-layout.ts	liveknowledge/packages/document/src/map-layout.ts
+livedocuments/packages/document/src/nearest-towards.ts	liveknowledge/packages/document/src/nearest-towards.ts
+livedocuments/packages/document/src/page-content.ts	liveknowledge/packages/document/src/page-content.ts
+livedocuments/packages/document/src/page-default-background.ts	liveknowledge/packages/document/src/page-default-background.ts
+livedocuments/packages/document/src/page-frame.ts	liveknowledge/packages/document/src/page-frame.ts
+livedocuments/packages/document/src/page-image.ts	liveknowledge/packages/document/src/page-image.ts
+livedocuments/packages/document/src/page-ink.ts	liveknowledge/packages/document/src/page-ink.ts
+livedocuments/packages/document/src/page-theme-fills.ts	liveknowledge/packages/document/src/page-theme-fills.ts
+livedocuments/packages/document/src/pages-background-copy.ts	liveknowledge/packages/document/src/pages-background-copy.ts
+livedocuments/packages/document/src/paginate.ts	liveknowledge/packages/document/src/paginate.ts
+livedocuments/packages/document/src/participant-article.ts	liveknowledge/packages/document/src/participant-article.ts
+livedocuments/packages/document/src/participant-content.ts	liveknowledge/packages/document/src/participant-content.ts
+livedocuments/packages/document/src/quote.ts	liveknowledge/packages/document/src/quote.ts
+livedocuments/packages/document/src/shadow.ts	liveknowledge/packages/document/src/shadow.ts
+livedocuments/packages/document/src/shape-factory.ts	liveknowledge/packages/document/src/shape-factory.ts
+livedocuments/packages/document/src/shape-hit.ts	liveknowledge/packages/document/src/shape-hit.ts
+livedocuments/packages/document/src/shape-variants.ts	liveknowledge/packages/document/src/shape-variants.ts
+livedocuments/packages/document/src/slide-builds.ts	liveknowledge/packages/document/src/slide-builds.ts
+livedocuments/packages/document/src/slide-deck-pages.ts	liveknowledge/packages/document/src/slide-deck-pages.ts
+livedocuments/packages/document/src/slide-deck-patch.ts	liveknowledge/packages/document/src/slide-deck-patch.ts
+livedocuments/packages/document/src/slide-deck.ts	liveknowledge/packages/document/src/slide-deck.ts
+livedocuments/packages/document/src/slide-notes-merge.ts	liveknowledge/packages/document/src/slide-notes-merge.ts
+livedocuments/packages/document/src/stat-count.ts	liveknowledge/packages/document/src/stat-count.ts
+livedocuments/packages/document/src/svg-render-body.ts	liveknowledge/packages/document/src/svg-render-body.ts
+livedocuments/packages/document/src/svg-render-boxed.ts	liveknowledge/packages/document/src/svg-render-boxed.ts
+livedocuments/packages/document/src/svg-render-describe.ts	liveknowledge/packages/document/src/svg-render-describe.ts
+livedocuments/packages/document/src/svg-render-map.ts	liveknowledge/packages/document/src/svg-render-map.ts
+livedocuments/packages/document/src/svg-render-quote.ts	liveknowledge/packages/document/src/svg-render-quote.ts
+livedocuments/packages/document/src/svg-render-shapes.ts	liveknowledge/packages/document/src/svg-render-shapes.ts
+livedocuments/packages/document/src/svg-render-wordmark.ts	liveknowledge/packages/document/src/svg-render-wordmark.ts
+livedocuments/packages/document/src/svg-render.ts	liveknowledge/packages/document/src/svg-render.ts
+livedocuments/packages/document/src/tab-new-page-background.ts	liveknowledge/packages/document/src/tab-new-page-background.ts
+livedocuments/packages/document/src/tab-save-changes.ts	liveknowledge/packages/document/src/tab-save-changes.ts
+livedocuments/packages/document/src/tab-stats.ts	liveknowledge/packages/document/src/tab-stats.ts
+livedocuments/packages/document/src/tab-window.ts	liveknowledge/packages/document/src/tab-window.ts
+livedocuments/packages/document/src/table.ts	liveknowledge/packages/document/src/table.ts
+livedocuments/packages/document/src/validate-shape.ts	liveknowledge/packages/document/src/validate-shape.ts
+livedocuments/packages/document/src/version-changes.ts	liveknowledge/packages/document/src/version-changes.ts
+livedocuments/packages/edit-operations/src/parse-line.ts	liveknowledge/packages/edit-operations/src/parse-line.ts
 livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
+livedocuments/packages/template-previews/src/article-preview-parts.tsx	liveknowledge/packages/template-previews/src/article-preview-parts.tsx
+livedocuments/packages/templates/src/article-templates-2.ts	liveknowledge/packages/templates/src/article-templates-2.ts
+livedocuments/packages/templates/src/beside-offers.ts	liveknowledge/packages/templates/src/beside-offers.ts
+livedocuments/packages/templates/src/page-layouts-set-compare.ts	liveknowledge/packages/templates/src/page-layouts-set-compare.ts
+livedocuments/packages/templates/src/page-layouts-set-covers.ts	liveknowledge/packages/templates/src/page-layouts-set-covers.ts
+livedocuments/packages/templates/src/page-layouts-set-explainers.ts	liveknowledge/packages/templates/src/page-layouts-set-explainers.ts
+livedocuments/packages/templates/src/page-layouts-set-people.ts	liveknowledge/packages/templates/src/page-layouts-set-people.ts
+livedocuments/packages/templates/src/page-layouts-set-posters.ts	liveknowledge/packages/templates/src/page-layouts-set-posters.ts
+livedocuments/packages/templates/src/page-layouts-set-social.ts	liveknowledge/packages/templates/src/page-layouts-set-social.ts
+livedocuments/packages/templates/src/template-board-update.ts	liveknowledge/packages/templates/src/template-board-update.ts
+livedocuments/packages/templates/src/template-resume-data.ts	liveknowledge/packages/templates/src/template-resume-data.ts
+livedocuments/packages/templates/src/template-year-review-data.ts	liveknowledge/packages/templates/src/template-year-review-data.ts

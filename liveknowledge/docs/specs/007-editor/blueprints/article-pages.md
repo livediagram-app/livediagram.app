@@ -1,0 +1,977 @@
+# Article pages blueprint
+
+Derived from [Article pages](../article-pages.md). Implementation detail only; the spec owns every
+design decision. The page model, the row, page kinds and page actions are
+[Pages](pages-mode.md).
+
+## Domain and naming
+
+| Term                     | Identifier                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Article page             | `Page` with `kind: 'article'` and `flow`; `isArticlePage(page)`, `pageKindOf(page)`, `packages/document/src/page.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Article (its writing)    | `ArticleFlow` (`{ blocks, style? }`), `Tab.articles?: Record<flow, ArticleFlow>`, read through `articlesOf(tab)`, `packages/document/src/article-flow.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Flow id                  | `Page.flow`; minted by `nextArticleFlowId(taken)` (`art-` + 8 hex)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Lead page                | The flow's first page in the row (`articlePages(tab, flow)[0]`); `flowFrame(pages, margin)` measures from it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Block                    | `ArticleBlock` (union of `ArticleParagraphBlock`, `ArticleListBlock`, `ArticleCodeBlock`, `ArticleDividerBlock`, `ArticlePageBreakBlock`, `ArticleZoneBlock`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Block id                 | `nextArticleBlockId(taken)` (`b-` + 8 hex); `withFreshArticleBlockIds(flow)` on a copy                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Text block               | `ArticleParagraphBlock` or `ArticleListBlock` (the blocks with runs)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Run                      | `ArticleRun` (`text`, flags `b i u s code sup sub`, `href`, `color`, `hl`, `note`, `nk`); `normaliseRuns(v)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Paragraph style          | `ArticleParagraphStyle` (`body title subtitle h1 h2 h3 quote`), `ARTICLE_PARAGRAPH_STYLES`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| List kind, align         | `ArticleListKind`, `ARTICLE_LIST_KINDS`; `ArticleAlign` (`left center right justify`), `ARTICLE_ALIGNS`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| List markers             | `articleListMarkers(blocks)` → `Map<blockId, marker>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Zone                     | `ArticleZoneBlock` (`zone: ArticleZoneKind` `'object' \| 'drawing'`, `wrap?`, `align?`, `width`, `height`, `at?: ArticleZoneAt`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Wrap                     | `ArticleZoneWrap` (`'inline' \| 'left' \| 'right'`), `ARTICLE_ZONE_WRAPS`; Float is `ZoneFit` `'float'` in `ZoneBar.tsx`, never stored                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Zone place               | `ArticleZoneAt` (`{ page, x, y }` from the page's corner); `zoneCanvasRect(pages, zone)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Zone membership          | `zoneAnchorOf(el, elements)`, `zoneMemberIds(elements, rect)`, `withElementsMoved`, `packages/document/src/article-zones.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Drawing element          | `isDrawingElement(el)` (`DRAWING_SHAPES`, arrows, text, freehand, path), `packages/document/src/article-zone-plan.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Zone edits               | `zonePlanFor`, `withElementsIntoZone` (`article-zone-plan.ts`); `looseOnArticles`, `withZonesFitted`, `withZoneContentsRemoved`, `withZoneLanded`, `withZoneWrap`, `withZoneRemoved`, `withZoneReleased`, `withZoneSize`, `objectsDraggedOut`, `withZoneMoved` (`article-intake.ts`); `withZonesSettled`, `drawingZoneClips` (`article-zones.ts`)                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Article style            | `ArticleStyle`, `parseArticleStyle`; resolved `ResolvedArticleStyle` by `resolveArticleStyle(style)`, `packages/document/src/article-style.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Look                     | `ArticleLookId`, `ARTICLE_LOOK_IDS`, `ARTICLE_LOOKS`, `withArticleLook(style, look)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Style edit               | `withArticleStyleChanged(tab, flow, { look } \| { patch })`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Measures                 | `articleMarginPx`, `articleTopMarginPx`, `articleBodyLinePx`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Article edits (row)      | `PageUnit`, `pageUnits`, `articlePages`, `withArticleFlow`, `withArticleAdded`, `withArticleRemoved`, `withUnitMoved`, `withArticleDuplicated`, `withArticlePageCount`, `packages/document/src/article-pages.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Margin note              | `ArticleNoteElement` (`type: 'article-note'`), `articleNote: 'comment' \| 'action'` (`element-types.ts`); `ArticleNoteKind`, `ArticleNotePlace`, `packages/document/src/article-notes.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Note edits               | `articleNoteCorner`, `newArticleNote`, `withNotesSettled`, `withNoteMarksRemoved`, `articleNoteIds`, `withNoteMarkersRemoved`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Note marker face         | `ArticleNoteFace` (`components/canvas/article/ArticleNoteFace.tsx`, `data-note-face` = `comment` / `comment-resolved` / `action-open` / `action-done` / `action-wont-do`), routed by `ElementFaceRouter`; chip variant in `element-variant.ts`; look and name `noteLook`, `noteAriaLabel`, `NOTE_INK` (`lib/article/article-note-look.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Block ops                | `ArticleOp` (`put`, `remove`, `style`), `diffArticleFlow(before, after)`, `applyArticleOps(flow, ops)`, `parseArticleOps(v)`; ids `isArticleId`, `packages/document/src/article-flow-ops.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Room op                  | `RoomOp` `{ kind: 'article'; tabId; flow; ops; created?; agent? }` / `{ …; removed: true }` (mutation), `packages/api-schema/src/room-messages.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Caret on the wire        | `RoomOp` `'article-caret'` (presence), `ArticleCaret`, `parseArticleCaret`, `packages/api-schema/src/article-caret.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Broadcast / apply        | `tabArticleOps` (`packages/api-schema/src/article-frames.ts`, re-exported by `tab-broadcast-ops.ts`); `wholeTabOp`, `META_SKIP`, `mergeRemoteTab` (`tab-broadcast-ops.ts`); `applyRoomOpToTabs` case `'article'` (`room-op-apply.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| The articles view        | `ArticlesView`, `useArticles`, `ArticleInsert`, `ZoneAction`, `ArticleStyleChange`, `apps/editor/hooks/editor/useArticles.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Intake                   | `useArticleIntake`, `apps/editor/hooks/editor/useArticleIntake.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| The writing (editor)     | `ArticleEditor` (lazy), `FlowLayout`, `FocusRequest`, `apps/editor/components/canvas/article/ArticleEditor.tsx` (types in `article-editor-types.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Every article on the tab | `ArticleFlows` (`ArticleFlows.tsx`): paper press layer, editors, `PageToolbar`, `ZoneBar`, `ZoneResizeGrips`, drop carets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| A finger on a page       | `useTouchPagePan` (`useTouchPagePan.ts`), given `PagesModeView.panFrom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Editor schema            | `articleSchema` (nodes `doc paragraph list_item code_block divider page_break zone text hard_break`; marks `link bold italic underline strike code sup sub color note highlight`), `lib/article/article-schema.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Blocks ↔ editor          | `blockToNode`, `blocksToDoc`, `nodeToBlock`, `docToBlocks`, `lib/article/article-convert.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Commands                 | `lib/article/article-commands.ts` (`toggle*`, `setLink`, `setTextColor`, `setHighlight`, `clearFormatting`, `insertBlocksAfterCaret`, and re-exports the rest), `article-block-commands.ts` (`setBlockStyle`, `toggleList`, `shiftLevel`, `setAlign`), `article-key-commands.ts` (`enter`, `backspaceAtStart`, `deleteAtEnd`, `tab`, `shiftTab`, `lineBreak`, `selectAll`), `article-selection-state.ts` (`selectionStateOf`, `ArticleSelectionState`)                                                                                                                                                                                                                                                                                                    |
+| Keys, Markdown as typed  | `articleKeymap(host)`, `articleInputRules()`, `lib/article/article-keys.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Pasted Markdown          | `looksLikeMarkdown`, `parseInline`, `parseMarkdownBlocks`, `plainTextBlocks`, `packages/document/src/article-markdown.ts` (shared with agents' Markdown, `article-markdown-io.ts`; backslash escapes read as the character; a paragraph's, quote's or list item's line's trailing two spaces or backslash, found by a scan from the line's end, is a line break, a quote going on into the next `>` line and an item into the next line that opens no block, `opensBlock`)                                                                                                                                                                                                                                                                                |
+| Caps while writing       | `articleCapsPlugin`, `capPassed`, `textblockSize` in `apps/editor/lib/article/article-caps.ts` (`announceArticleCap` and the toast it goes to in `article-caps-notice.ts`, kept free of ProseMirror for the first load): a `filterTransaction` reading only the touched ranges (before and after), refusing growth past `MAX_ARTICLE_BLOCKS`, `MAX_ARTICLE_BLOCK_TEXT` or `MAX_ARTICLE_CELL_TEXT`, counted as `normaliseRuns` counts                                                                                                                                                                                                                                                                                                                      |
+| Editor plugins           | `blockIdsPlugin`, `decorationsPlugin`, `todoTogglePlugin`, `FIRST_BODY_PLACEHOLDER` (`article-plugins.ts`); `slashPlugin`, `slashKey`, `removeSlashQuery` (`article-slash.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Slash menu               | `SLASH_ITEMS`, `SLASH_GROUPS`, `SlashItem`, `SlashAction` (`article-slash-items.ts`); matching, sections and Recent (`slash-match.ts`, `slash-menu-model.ts`, `slash-recent.ts`); `SlashMenu` (`components/canvas/article/SlashMenu.tsx`); the page-surface blueprint, "The slash menu"                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Active article           | `ArticleEditorHandle`, `ActiveArticle`, `registerArticleHandle`, `articleHandleOf`, `setActiveArticle`, `blurActiveArticle`, `clearActiveArticle`, `useActiveArticle`, request signals, `markZoneReleased` / `takeZoneReleased` / `forgetZonesReleased`, `noteArticleLaidOut` / `useArticleLaidOutSeq`, `lib/article/article-editor-store.ts`                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Frame over the pages     | `FlowFrame`, `flowFrame`, `columnAt`, `pagePlaceOf`, `articleTextBox` (one column's width and height), `ARTICLE_FALLBACK_TEXT_WIDTH`, `lib/article/article-flow-geometry.ts`; `screenToCanvasBySheet` (`useZoneDrag.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Style as CSS             | `articleStyleVars(style, themeAccent, ink)`, `ArticleInk` (`lib/article/article-style-vars.ts`); stylesheet `apps/editor/app/article-pages.css`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Page toolbar             | `PageToolbar` (`PageToolbar.tsx`); placement `usePageToolbarPlacement` (`page-toolbar-placement.ts`); `useShownArticle`, `useHoveredArticlePage`, `useOffPagePressClears` (`page-toolbar-presence.ts`); menus `StylePanel`, `ListPanel`, `AlignPanel`, `ColourPanel`, `MorePanel`, `InsertPanel` (`page-toolbar-panels.tsx`); `ToolbarPopover`, `MenuRow`, `LinkField`, `Divider`, `Button` (`page-toolbar-menus.tsx`); `ColourPanel` holds two inline `ColourPicker`s (`docs/specs/004-interface-design/blueprints/colour-picker.md`), each after a `PickerTitle` (visible, `aria-hidden`, `data-picker-title`; the Highlight one `divided` by a top rule); the card `TOOLBAR_CARD` etc. (`packages/workbench/src/components/chrome/toolbar-surface.ts`) |
+| Zone chrome              | `ZoneBar`, `ZoneResizeGrips` (`ZoneBar.tsx`); `useZoneDrag`, `ZoneDragState`, `DropCaret` (`useZoneDrag.ts`); `useObjectDropCaret` (`useObjectDropCaret.ts`); `DropCaretMark` (`ArticleFlows.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Drawing zone clip        | `publishZoneClips`, `useZoneClip`, `zoneClipPolygon`, `lib/article/zone-clip-store.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Style tab                | `ArticleStyleSection` (`part: 'style' \| 'text'`), the Accent `ColourPicker`, `components/canvas/article/ArticleStyleSection.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Carets                   | `caretOf`, `resolveCaret`, `ArticleCaretPlace` (`article-caret.ts`); local and peer store (`article-carets-store.ts`); `articlePeersPlugin`, `setArticlePeers`, `onlyPeers` (`article-peers.ts`); `useArticleCaretBroadcast` (`hooks/collab/`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Export of the writing    | `ArticleDrawOp`, `snapshotWriting`, `snapshotBars` (`article-snapshot.ts`); `articleOpsToSvg`, `drawArticleOps` (`article-draw.ts`); `pageWriting`, `pageWritingBars`, `pageRulingOf` (`article-export.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Reading frame (phone)    | `computeReadingFrame(rect, page, insetTop, margin)`, `apps/editor/lib/reading-frame.ts`; `PagesModeView.readPage`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Absent-writer grow       | `markArticleGrow`, `isArticleGrowPending`, `clearArticleGrow`, `noteArticleGrown` (`lib/article/article-grow-store.ts`); `absentWriterPageCount` (`article-pages.ts`); owned by the [Pages for agents blueprint](../../024-agents/blueprints/pages-for-agents.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Project Brief template   | `packages/templates/src/article-template.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+
+"Article" in code, specs and the interface for the kind of page and its run of pages; "document"
+stays the liveknowledge file. "Writing" is the article's text as laid out; "flow" is the id that ties
+an article's pages to its `ArticleFlow`. The size limits keep a `MAX_ARTICLE_*` prefix from the earlier
+Document mode experiment; read it as "article". Headings keep with the next line and are never split
+(`break-after` / `break-inside: avoid`), a zone is never split (`break-inside: avoid`), a page break
+is `break-after: column` (`article-pages.css`).
+
+## Constants and configuration
+
+| Constant                                | Value                                  | Where / provenance                                                                            |
+| --------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `MAX_ARTICLE_BLOCKS`                    | 5000                                   | `article-flow.ts`; D34                                                                        |
+| `MAX_ARTICLE_RUNS`                      | 400 per block                          | `article-flow.ts`; D34                                                                        |
+| `MAX_ARTICLE_BLOCK_TEXT`                | 20,000 characters per block            | `article-flow.ts`; D34                                                                        |
+| `MAX_ARTICLE_HREF`                      | 2048 characters                        | `article-flow.ts`; D34                                                                        |
+| `ARTICLE_ZONE_MIN`, `ARTICLE_ZONE_MAX`  | 24, 2000 px                            | `article-flow.ts`; D35                                                                        |
+| `ARTICLE_LIST_MAX_LEVEL`                | 4 (five levels, 0 to 4)                | `article-flow.ts`; spec "Blocks"                                                              |
+| List indent                             | 28 px a level                          | `article-pages.css` (`--article-level`); spec "Blocks"                                        |
+| Id length read                          | 1 to 64 characters (block, flow, note) | `isArticleId` (`article-flow.ts`), `parsePage` flow; D33                                      |
+| `ARTICLE_TEXT_SIZE_PX`                  | 14 / 16 / 18                           | `article-style.ts`; spec "Article style"                                                      |
+| `ARTICLE_LINE_HEIGHT`                   | 1.3 / 1.5 / 2                          | `article-style.ts`; spec                                                                      |
+| `ARTICLE_PARAGRAPH_SPACE`               | 0 / 0.75 / 1.5 lines                   | `article-style.ts`; spec                                                                      |
+| `ARTICLE_MARGIN_PX`                     | 48 / 96 / 144                          | `article-style.ts`; spec                                                                      |
+| `ARTICLE_LOOKS`                         | spec "Looks"                           | `article-style.ts`; Clean is the unstyled default                                             |
+| `ARTICLE_TOP_MIN_PX`                    | 72                                     | `article-style.ts`; spec "The page toolbar"                                                   |
+| Margin cap in the frame                 | 37.5% of the page's width and height   | `flowFrame`; D49                                                                              |
+| Accent, text and highlight colours      | the standard colours, light hexes      | `standardGroup` (strong; soft "Highlights"); colour-picker.md                                 |
+| `UNDO_SETTLE_MS`                        | 400 ms                                 | `ArticleEditor.tsx`; D60                                                                      |
+| `ARTICLE_IDLE_COMMIT_MS`                | 600 ms                                 | `ArticleEditor.tsx`; spec "Commits"                                                           |
+| `WRITER_WINDOW_MS`                      | 3000 ms                                | `article-measure.ts`; D36                                                                     |
+| `SETTLE_TOLERANCE`                      | 0.75 px                                | `article-zones.ts`; D37                                                                       |
+| `ARTICLE_DRAWING_PAD`                   | 24 px                                  | `article-zone-plan.ts`; spec "Zones" (24 px to spare)                                         |
+| `ARTICLE_DRAWING_MIN_HEIGHT`            | 200 px                                 | `article-zone-plan.ts`; D38                                                                   |
+| `NEW_DRAWING_HEIGHT`                    | 240 px                                 | `useArticles.ts`; spec "Zones" (text width x 240)                                             |
+| `ARTICLE_WRAP_MAX_SHARE`                | 2/3 of the text width                  | `article-intake.ts`; spec "Zones"                                                             |
+| Wrapped zone gap                        | 14 px                                  | `article-pages.css` (`margin-left/right`); spec "Zones"                                       |
+| Object insert offset                    | 30 px under the caret's top            | `useArticles.insertObject`; D39                                                               |
+| `ARTICLE_FALLBACK_TEXT_WIDTH`           | 600 px                                 | `article-flow-geometry.ts`; D52                                                               |
+| `ARTICLE_NOTE_SIZE`, `ARTICLE_NOTE_GAP` | 32 px, 6 px                            | `article-notes.ts`; spec "Comments and actions"                                               |
+| Toolbar `MARGIN_PAD`                    | 4 screen px                            | `page-toolbar-placement.ts`; D41                                                              |
+| `TOOLBAR_MIN_SCALE`                     | 0.55                                   | `page-toolbar-placement.ts`; spec "to 55%"                                                    |
+| `PHONE_GUTTER`                          | 8 screen px                            | `page-toolbar-placement.ts`; D41                                                              |
+| `TOUCH_PAN_SLOP`                        | 8 screen px                            | `useTouchPagePan.ts`; spec "A finger on a page", D41                                          |
+| `PLACE_TRAILING_FRAMES`                 | 3 frames                               | `page-toolbar-placement.ts`; canvas-performance "At rest"                                     |
+| `LINK_CARD_GRACE_MS`                    | 250 ms                                 | `useArticleLinkHover.tsx`; as `HOVER_GRACE_MS`                                                |
+| Resize grip `GRIP_KEY_STEP`             | 8 px (Shift x10)                       | `ZoneBar.tsx`; spec "Zones" (a step), D77                                                     |
+| `HOVER_SLACK`, `HOVER_GRACE_MS`         | 12 px, 250 ms                          | `page-toolbar-presence.ts`; spec "a moment's grace", D41                                      |
+| `READING_TOP_ROOM`, `READING_SIDE_ROOM` | 104, 32 screen px                      | `lib/reading-frame.ts`; D50                                                                   |
+| `SLASH_QUERY_MAX`                       | 24 characters                          | `article-slash.ts`; D44                                                                       |
+| Slash menu list, preview, max height    | 312, 240, 380 px                       | `slash-menu-place.ts`; D44                                                                    |
+| `ARTICLE_PEER_FRESH_MS`                 | 1500 ms                                | `article-carets-store.ts`; D40                                                                |
+| `ARTICLE_HOLD_IDLE_MS`                  | 8000 ms                                | `packages/api-schema/src/article-hold.ts`; spec "Holding a paragraph" (~8 s)                  |
+| `ARTICLE_HOLD_REFRESH_MS`               | 2000 ms                                | `article-hold.ts`; a late joiner sees a hold within it                                        |
+| `ARTICLE_HOLD_EXPIRE_MS`                | 12,000 ms                              | `article-hold.ts`; idle plus a refresh plus 2 s grace (safe 10 to 30 s)                       |
+| `BROADCAST_THROTTLE_MS`                 | 33 ms (the cursor's rate)              | `useEditorBroadcast.ts`; spec "at the cursor's rate"                                          |
+| `ARTICLE_CARET_MAX_ID_LEN`              | 256                                    | `packages/api-schema/src/article-caret.ts`; D43                                               |
+| `ARTICLE_CARET_MAX_OFFSET`              | 1,000,000                              | `article-caret.ts`; D43                                                                       |
+| `ARTICLE_FRAME_CHARS`                   | 200,000 characters per `article` frame | `packages/api-schema/src/article-frames.ts`; D42, under the room's `MAX_MESSAGE_CHARS` (256K) |
+| `MAX_PAGES`                             | 100                                    | `page.ts`; spec "Limit"                                                                       |
+| Page number                             | 12 px, half the bottom margin          | `CanvasPages.tsx`, `pageWriting`; D46                                                         |
+| `MAX_ARTICLE_FOOTNOTE_TEXT`             | 1000 characters, plain, one line       | `article-footnotes.ts` (document); D106                                                       |
+| `ARTICLE_FOOTNOTE_REF`                  | `*`, one per reference                 | `article-footnotes.ts` (document); D107                                                       |
+| `FOOTNOTE_MAX_SHARE`                    | 2/3 of the text height                 | `article-footnote-layout.ts`; spec "Footnotes"                                                |
+| Footnote break `SETTLE_SLACK`           | 2 px                                   | `article-footnote-layout.ts`; D108                                                            |
+| Notes' type                             | 13/16 of the body size, muted ink      | `article-pages.css` (`.article-footnotes`); spec "Footnotes"                                  |
+
+## Data and persistence
+
+- **Stored**: `Page.kind: 'article'` and `flow` on each page of an article
+  ([Pages blueprint](pages-mode.md)), and `Tab.articles[flow] = { blocks,
+style? }`. Saved with the tab (one row in the document's store, `MAX_TAB_BYTES` has the last word), carried in the
+  OpenAPI `Tab` schema (`ArticleFlow`, generated). Defaults are absent, never stored: `style:
+'body'`, `align: 'left'`, `level: 0`, `wrap: 'inline'`, zone `align: 'center'`, an empty style.
+- **Field classes**: `blocks` and `style` are document content, synced block by block; `at` on a
+  zone is derived layout, written only by the writer's settle; margin-note markers are ordinary
+  elements (`articleNote` set). The editor's state (caret, slash menu, active article, carets,
+  zone clips, previews) is memory only.
+- **Reading** (`articlesOf` → `parseArticleFlow` → `parseArticleBlock` / `normaliseRuns` /
+  `parseArticleStyle`), defensive, cached per stored object (`WeakMap`) so readers can memo:
+  - `articles` not a plain object: none. A flow key that is not an id: dropped.
+  - A block with no id, an unknown `type`, a list with an unknown `list`, a zone with an unknown
+    `zone` or a non-finite `width` / `height`: dropped. A repeated id: dropped after the first.
+    At most `MAX_ARTICLE_BLOCKS`. An article with no block reads as one empty paragraph
+    (`<flow>-b0`), so it is never empty.
+  - Runs: non-string or empty text dropped; flags kept only when `true`; `sup` and `sub` together
+    keep `sup`; `href` kept only through `isSafeArticleHref`; `color` / `hl` only as hex; `note`
+    only as an id (`isArticleId`), `nk` only `'action'`. Neighbours of one format merge; text and
+    link addresses together capped at `MAX_ARTICLE_BLOCK_TEXT` over at most `MAX_ARTICLE_RUNS` runs; the
+    cut never falls inside a surrogate pair, so an emoji is kept whole or left out.
+  - `level` floored and capped to `ARTICLE_LIST_MAX_LEVEL`; `checked` only on a to-do; zone
+    `width` / `height` rounded and clamped to `ARTICLE_ZONE_MIN..MAX`; `at` kept only with an id
+    page and finite `x`, `y`; code text sliced to the cap, its `lang` kept only when it matches
+    `ARTICLE_CODE_LANG` (`^[A-Za-z0-9_+#.-]{1,32}$`).
+  - Markdown: `fenceLanguage(line)` reads an opening fence's first info word; `parseMarkdownBlocks` stores it as
+    `lang` when valid and `articleToMarkdown` writes it after the opening fence. The editor's `code_block` node
+    carries it as its `lang` attr (`data-lang` on its `pre`), so editing the article keeps it.
+  - Style: each field kept when valid (`look` a look id, fonts `^[a-z0-9-]{1,40}$`, `accent` hex,
+    booleans, the five enums); an empty style is dropped.
+- **Pages read**: an article page with no readable flow reads as an article of its own (its id);
+  `withArticlesTogether` puts a flow's pages in one run at its first page, each taking the
+  first's size, orientation and background ([Pages blueprint](pages-mode.md)).
+- **Sync** (`tabBroadcastOps`): `articles` is in `META_SKIP`, so never in a `tab-meta` patch; a
+  whole-tab op is sent without it (`wholeTabOp`), followed by `tabArticleOps`. `tabArticleOps`
+  compares `articles` by identity first; per flow gone: `{ kind: 'article', removed: true }`; per
+  flow changed: `diffArticleFlow(was, now)` chunked into frames under `ARTICLE_FRAME_CHARS`
+  (ops in order; frames compose), each frame of a flow the sender did not have before marked
+  `created: true`; the api's relay of an agent's write (`apps/api/src/changesets/pages.ts`)
+  builds its frames with the same `tabArticleOps(before, after, { grow: true })`, each marked
+  `grow: true`; the room relays a Participant's writing marked `grow: true` too
+  ([Share roles](../../013-workspace/share-roles.md#integrity)). Receiving (`applyRoomOpToTabs`): a flow that is not an id changes nothing; a
+  removal deletes an own-property flow; ops are read through `parseArticleOps` (each `put` block
+  parsed as a stored block, ids bounded, malformed ops dropped; a non-list frame changes nothing)
+  and applied only when the flow is known here, the frame is `created`, or one of the tab's pages
+  carries the flow (writing for an article removed meanwhile is dropped). The `articles` field is
+  dropped with its last flow. An applied frame marked `grow` calls `markArticleGrow(tabId, flow)`. `mergeRemoteTab` keeps the local `articles` through a whole-tab
+  merge.
+- **`diffArticleFlow`**: removes first, then a `put` for each block new or moved (not in the
+  longest increasing run of kept positions, O(n log n)), placed `after` its predecessor and
+  `before` its successor; a block only changed in its place is a `put` with neither (replaced
+  where it stands on the receiver, so a collaborator's block added beside it keeps its place);
+  then a `style` op when the style differs (`sameArticleValue`, key-order blind). A block whose
+  neighbour merely changed is not resent.
+- **`applyArticleOps`**: a `put` with no place replaces the block where it is (appended when
+  missing); a placed `put` removes the block if present, then inserts after `after`, else before
+  `before`, else at its old index, else at the end; a missing `remove` is a no-op; never empty
+  (`b-empty` paragraph).
+- **Snapshot, restore**: the writing is tab data, so history, undo, offline store, export JSON
+  and version restore carry it unchanged. No migration: every field is new and optional; a tab
+  without `articles` has none.
+
+## Behaviour and state
+
+### Composition (`useEditorState`)
+
+- `localEditSeqRef` counts this person's `commitTabs` (never a remote op, an undo or a tick).
+- `useArticles({ activeTab, on: pagesMode !== null || presentingPage !== null, pages:
+pagesMode?.pages ?? presentPages, localEditSeq, placeAt, canEdit: !isReadOnly, canWrite, commitTabs,
+tickTabs, undo, redo, clearSelection, openNote })` returns `ArticlesView`, or null when neither
+  Pages mode nor a presenting page slide; it is spread onto the pages view
+  (`pagesMode.articles`). `canEdit` is `!isReadOnly`, false for a Participant as for a Viewer;
+  `canWrite` is a Participant's writing (`can.writeArticle`), its commits through the participant
+  guard (`guardedCommitTabs`). The view's `editable` is `(canEdit || canWrite)` on an unlocked tab;
+  its `reshape` (inserts, the slash menu, zones, style, margin notes, the page toolbar and layout
+  consequences) is `canEdit` alone (spec "Share roles"). The room applies a Participant's
+  `article` frame through the participant writing rule ([Share roles blueprint](../../013-workspace/blueprints/share-roles.md)).
+- `openNote(id, kind)`: a comment opens `openComments(id)`; an action opens its popover when the
+  marker has actions, else `openAssignActionDialog(id)`.
+- A new article's title takes the caret: `usePagesMode({ onArticleCreated })` calls
+  `articles.requestFocus(flow, 'start')` (through `articleFocusRef`); the editor that takes it calls
+  `onFocusTaken(seq)` and `focusTaken` clears the request, so a remounted editor never takes it
+  again.
+- `placeAt` is `useElementCreation.placeIntentAt(intent, x, y)` (through `placeIntentAtRef`): an
+  element of its default size at a canvas point, refused while edits are blocked.
+
+### The writing (`ArticleEditor`)
+
+- One per flow, mounted by `ArticleFlows` under `Suspense` (`lazy(() => import('./ArticleEditor'))`),
+  keyed by flow; created once (refs for everything it reads).
+- **Box**: one `.article-flow` element positioned at `flowFrame(pages, margin)`: `x/y` the lead's
+  corner plus margin and top, `column-count` = pages, `column-gap` = `2 * margin +
+PAGE_GAP`, so the browser breaks lines between pages and wraps text round floated
+  zones; `height` the page less top and bottom margins.
+  Writing past the last column waits under the page clip (`pagesClipPath`).
+- **Commit**: `dispatchTransaction` schedules `flush` `ARTICLE_IDLE_COMMIT_MS` after a local doc
+  change; `flush` runs `docToBlocks(doc, committed.blocks)` and, when changed, `onCommit(flow,
+blocks)` → one `commitTabs` (`withArticleFlow`, the style kept); `onCommit` returns false when
+  the host refuses (`articleEditRefused`: no rights, a locked tab, any page of the article locked;
+  asked again inside the updater, so a lock that lands meanwhile holds), and the blocks then stay
+  local, uncommitted, for the
+  next commit. Also flushed on blur, on
+  Escape, before undo / redo, before every handle edit (`insertZone`, `moveZone`, `markNote`
+  take the writing as written themselves), and on unmount.
+- **Commit on leave**: `commitWritingOnLeave(mount, commit)` (`lib/article/article-open-edit.ts`) registers the
+  writing as the open edit (`registerOpenEdit`) on each `focusin` into the mount (the notes included), so the unload
+  flush (`useUnloadFlush`, `commitOpenEdit` under `flushSync`) first commits the note being typed
+  (`notes.editing()`, cleaned, `setNodeAttribute`) and then `flush`es; cleared on unmount.
+- **Merge in**: when `props.doc !== committed` (checked when `props.doc` changes, and after every
+  undo / redo from the writing, `undoSeq`: a flush and the undo of it land in one render, the
+  flow back to the very object it was), local changes since the last commit are diffed
+  (`diffArticleFlow(base, local)`, style ops dropped), applied over the incoming flow, and the
+  editor content replaced between the first and last differing positions (`replaceContent`,
+  `article-remote` meta, `addToHistory: false`), so a caret in an untouched block stays. An undo /
+  redo from the writing marks itself for `UNDO_SETTLE_MS`; writing that comes back meanwhile takes
+  the caret (at the end of what changed), and the mark lapses so a later collaborator's edit never
+  does. Remaining local ops schedule a commit.
+- **Measure** (one `requestAnimationFrame` after a doc change, a props change, `document.fonts`
+  `loadingdone`): `pagesNeeded` from the rightmost client rect's column; each `.article-zone`'s
+  page index and corner (half-px rounded); each first `[data-note-id]` rect as an
+  `ArticleNotePlace`; `local` = a local change (a local doc transaction, or the handle's
+  `claimLayout` / `markNote`) within `WRITER_WINDOW_MS`. Focus alone never makes a client the
+  writer (two clients with the caret in one article would both settle one overflow).
+  Reported as `onLayout(FlowLayout)`. The first measure (and the first after fonts land) calls
+  `noteArticleLaidOut()`, so the Map and slide thumbnails redraw.
+- **Publish**: on focus and each transaction while focused: `setLocalArticleCaret(flow,
+caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, selection, focused: true })`
+  only when the page, the selection state (`sameSelectionState`) or the active handle changed; the
+  caret's page (`caretPage`, by its column) is read in a `requestAnimationFrame` after the change,
+  never inside the transaction, and republished when it moves. On blur: an open slash menu closes; a tick later (one pending timer, cleared on
+  unmount), unless refocused, `blurActiveArticle(flow)` and the local caret cleared.
+- **Peers**: `useArticlePeers(flow)` dispatches `setArticlePeers` (meta only); `onlyPeers(tr)`
+  transactions skip commit and publish.
+- **Paste**: `clipboardTextParser` reads Markdown (`looksLikeMarkdown` → `parseMarkdownBlocks`)
+  or several plain lines (`plainTextBlocks`) as blocks, open at both text ends; into code or a
+  single plain line, as typed. `handlePaste` with plain text into an empty text block replaces
+  the block with the pasted blocks. HTML paste goes through the schema's `parseDOM` (see
+  Security). `ArticlePaste` fires for Markdown only, from whichever of the two takes the paste.
+  Both are `articlePasteProps` (`lib/article/article-paste.ts`). A paste holding an image or
+  canvas elements (`articlePasteIsCanvas`, `lib/clipboard-payload.ts`) is left to the canvas, which
+  puts it into the writing as a zone.
+- **Handle** (`ArticleEditorHandle`, registered by flow): `run`, `can`, `insert`, `flush`,
+  `takeBlocks` (the writing as typed), `undo`,
+  `redo`, `focus`, `selection`, `claimLayout` (stamps the writer window), `caretRect`,
+  `blocksByPage`, `markNote`, `boundaryNear`, `moveZone`, `insertZone`, `snapshot`, `bars`,
+  `focusAt`, `caretCanvasPoint`. Built by `createArticleHandle` (`article-editor-handle.ts`) over
+  the editor's refs; `writingScale(view, layout)` there is the one reading of the writing's frame,
+  box and screen scale, shared with the editor's own measuring.
+- **Press**: a pointerdown on `.article-flow > *` while `interactive` stops propagation and calls
+  `onWritingPress` (the canvas selection clears); the paper layer (`[data-article-paper]`, one per
+  shown page, editable and interactive only) calls `focusAt(clientX, clientY)`: into the pressed
+  page's column, then `posAtCoords`, else the end.
+- `interactive` is false while a draw is pending or the spotlight tool is in hand
+  (`Canvas`); `data-inert` then drops the writing's pointer events.
+
+### Keys, rules, slash menu
+
+- `articleKeymap` first after the slash plugin, then `baseKeymap`; bindings as the spec's
+  "Keyboard", plus `Mod-y` redo. `Mod-Enter` is `toggleTodoChecked` (`article-block-commands.ts`): the
+  selected to-do items ticked, or all unticked when every one is; false with no to-do selected, so
+  `baseKeymap`'s `Mod-Enter` (`exitCode`) still runs in code. Undo / redo go to the host history (`onUndo` / `onRedo`), never
+  ProseMirror's. Escape flushes and blurs.
+- `enter`: code takes `\n` (an empty last line leaves it for a paragraph); at the end of a heading
+  with an empty body paragraph next, the caret moves into it; an empty list item steps out
+  (`shiftLevel(-1)`); an empty quote becomes body; else `splitBlockAs` (a list item keeps kind and
+  level, unticked; after a heading at its end, body; a quote stays a quote).
+- `backspaceAtStart`: list steps out; a non-body paragraph becomes body; a divider or page break
+  before is deleted; a zone before is selected (an empty text block goes with the move); else
+  `baseKeymap` joins. `deleteAtEnd` mirrors it forwards. `Backspace` first tries
+  `undoInputRule`.
+- `tab`: list in; code two spaces; body at offset 0 becomes a bullet; otherwise swallowed (focus
+  stays). `shiftTab` list out.
+- Input rules (`articleInputRules`): block rules only at offset 0 of a paragraph; `#`/`##`/`###`,
+  `>`, `-*+`, `1.`/`1)`, `[ ]`/`[x]` followed by a space; ` ``` ` (code) and `---`/`***`/
+  `___` (divider) as the paragraph's whole text; inline closing-mark rules, never in code.
+- `blockIdsPlugin` (`appendTransaction`, no history): a missing or repeated block id gets a fresh
+  one. `decorationsPlugin`: list markers as `data-marker` node decorations; placeholders while
+  editable (title, subtitle, headings, quote, list "List", to-do "To-do", none on a ticked to-do;
+  the first body paragraph of an article of at most three blocks `FIRST_BODY_PLACEHOLDER`; else an
+  empty block holding the caret "Type / for blocks"). It keeps its set in plugin state: a transaction that keeps the
+  article's shape (the same top-level blocks, every changed one a textblock with the same markup
+  that stays empty or stays filled) and leaves the caret's empty block as it was maps the set
+  through the transaction (`set.map`) instead of working it out again; anything else, and a change
+  to whether the article is editable, works it out afresh. A block's placeholder is its `::before`
+  (`.article-empty`), except on a list item, whose `::before` is its marker: there it is the
+  `::after`, set at the start of the text column (`left` = the item's indent), so the marker stays
+  and the word is whole (`article-list-placeholder.test.ts`). Held by `article-plugins.test.ts`
+  ("keeps the markers and placeholders a fresh build gives", and "list markers after the writing is replaced from
+  outside": 1,500 seeded replaces through `replaceContentTr`, editable flipped in a third, each equal to a fresh build). `todoTogglePlugin`: a mousedown in a to-do's left padding toggles
+  `checked` (one transaction, so one commit).
+- `slashPlugin`: opens on a typed `/` at offset 1 or after whitespace (never by paste or remote);
+  closes on a selection, the caret leaving the `/`, a leading space, a newline, past
+  `SLASH_QUERY_MAX`, Escape (meta `close`). While open it takes ↑ ↓ Enter, Tab and Shift+Tab (the next
+  and previous group, `groupJump`) and Escape; `slashModel` ranks and groups the entries (page-surface
+  blueprint, "The slash menu"). A pick is noted for Recent (`noteSlashPick`), then removes the query
+  (`removeSlashQuery`) then: a style, a list, a divider or a page break (+ paragraph) via
+  `insertBlocksAfterCaret`, or `onInsert(flow, what)`. A block that went in (the command returned
+  true) is counted by `slashInsertEvent(action)` (`lib/article/article-telemetry.ts`, sharing
+  `ARTICLE_BLOCK_INSERT_EVENT` with the toolbar's Insert): divider, page break, quote, code; an
+  object is counted by `insertObject` once it lands. With no entry matching, the menu shows
+  `NoMatches` (`things="blocks"`, the query) and its keys fall through. There is no Icon entry: an icon needs a chosen
+  glyph, so it comes in from the palette.
+- While the menu is open the writing carries `aria-controls`, `aria-haspopup="listbox"` and
+  `aria-activedescendant`; never `aria-expanded` (not allowed on `role="textbox"`, ARIA 1.2).
+
+### The page toolbar (`PageToolbar`)
+
+- Shown for `useActiveArticle()`, else for the article page under the pointer
+  (`useHoveredArticlePage`: `pointermove`, rAF, `HOVER_SLACK`, `HOVER_GRACE_MS`; touch ignored;
+  over `[data-article-keep-active]` keeps it). Only while `articles.editable`. `articlePages`
+  (from `ArticleFlows`) leaves out every page of a held article (`lockedArticleFlows`), and an
+  active article whose flow is not among them is ignored, so the toolbar never shows for it.
+- `useOffPagePressClears`: a capture-phase pointerdown off the active article's sheets and off
+  every `[data-article-keep-active]` (the toolbar, its popovers, the zone bar, the page's cog row
+  and panel) runs `clearActiveArticle(flow)`.
+- Placement each frame (rAF while a page is active) against `[data-page-id]`: desktop,
+  centred in the top margin (`topRoomOf(pageId)` = `articleTopMarginPx(style) * zoom`), scaled
+  `clamp(TOOLBAR_MIN_SCALE, (room - 2 * MARGIN_PAD) / h, 1)`, kept inside the page and the canvas
+  (`maxWidth`, scrolls sideways), hidden when its page's top is out of the canvas or under the
+  Toolbar strip; phone (`useIsMobileViewport`), a bar across the top: `PHONE_GUTTER` below the
+  higher of the canvas top and the visible viewport's top (`visualViewport.offsetTop`, so a
+  keyboard that scrolls the layout viewport never carries it off), over the Toolbar strip's place.
+  While it shows, the root carries `data-article-toolbar-top` and `article-pages.css` hides
+  `[data-toolbar-palette]`; `topStripInset` reads a hidden strip as no inset, so the reading frame
+  gives its room to the page.
+- A finger on the writing or its paper (`useTouchPagePan`, given `PagesModeView.panFrom`):
+  primary touch only; past `TOUCH_PAN_SLOP` it begins `panFrom()` and a `'pan'` canvas gesture and
+  moves the view by the drag (one commit per frame); a release short of it is a tap (the paper's
+  `focusAt`, the writing's `onWritingPress` after the browser's caret); a cancel or a second
+  finger's pointerdown ends it with no tap, and so does `LONG_PRESS_MS` held short of the slop (the
+  browser's text selection). `.article-flow` restores `-webkit-touch-callout: default`. The writing and paper still stop the press reaching
+  the canvas (no marquee).
+- Buttons never take focus (`onMouseDown` preventDefault); `handle.run` refocuses the writing.
+  ⌘K (`requestArticleLink`) opens the link field; ⌘⌥M (`requestArticleComment`) adds a comment
+  when text is selected. A menu closes with the article (`!active`).
+- **More › Article Style**: flush, then `requestStylePanel(pageId)`; `CanvasPages` opens that
+  page's panel on Style.
+- **More › Word Count** (`WordCountLine`, `page-toolbar-word-count.tsx`): rendered only while More is open, it
+  reads `articleCountsOf(handle.state())` (`lib/article/article-word-count.ts`): `total` is
+  `articleWordCount({ blocks: docToBlocks(doc) })`, and `selected`, with a non-empty selection, the sum over
+  `selection.ranges` of `articleWordCount({ blocks: docToBlocks(doc.cut(from, to)) })` (a cell selection counts
+  its cells only), else null. `wordCountLabel` writes "1 word", "840 words" or "12 of 840 words" (`en` digit
+  grouping). The same blocks give `readability` (the article's) and `selectedReadability` (the selection's, else
+  null): `articleReadability(flow, words)` (`packages/document/src/article-readability.ts`), one left-to-right pass
+  per prose block (`paragraph` and `list` blocks; never code, tables or a footnote's note, a run with `fn` read as a
+  space) through `sentencesOf(text)`: no regex over the text, each character looked at once. It returns
+  `{ readingMinutes, sentences, wordsPerSentence, longSentences, ease, level }`: `readingMinutes` is
+  `max(1, round(words / READING_WORDS_PER_MINUTE))` (0 for no words); `ease` is
+  `fleschReadingEase(words, sentences, syllables)` (206.835 − 1.015 × words a sentence − 84.6 × syllables a word,
+  one decimal) or null when the prose is not English (at least `ENGLISH_SHARE` (0.15) of its first `ENGLISH_SAMPLE` (2,000) words
+  in `ENGLISH_MARKERS`) or has no sentence; `level` is `readingLevelOf(ease)`: `easy` (≥ 80), `fairlyEasy` (≥ 70),
+  `plain` (≥ 60), `fairlyHard` (≥ 50), `hard`. `wordCountLine(counts)` writes the line ("840 words · 4 min read ·
+  Easy to read") and `readabilityDetail(r)` the hover's numbers. A sentence (`sentencesOf`): its words are the
+  whitespace-separated tokens holding a letter or digit; a token ends one when, past its closing quotes and brackets,
+  it ends in `!`, `?`, `…` or `.`, except a `.` token that is in `ABBREVIATIONS`, a single letter, or has a `.`
+  inside (`e.g.`), and a `.` token followed by a token whose first letter is lower case (the decision waits for the
+  next token, so the pass never looks back). Syllables (`syllablesOf`): the groups of vowels (`aeiouy`), one fewer
+  for a silent final `e` (not `-le` after a consonant), at least one; a token with no letter is one.
+  The line (`WordCountLine`): with `readability.longSentences > 0` and an `onNextLong`, a `role="menuitem"` button,
+  `aria-label` "Word Count: <line>. Select the Next Long Sentence", that runs `selectNextLongSentence`
+  (`lib/article/article-long-sentences.ts`): it walks the doc's textblocks outside tables and code blocks, each one's
+  text with every inline leaf as one space (so offset i is position start + i), through `sentencesOf`, keeps those
+  over `LONG_SENTENCE_WORDS`, and sets a `TextSelection` over the first starting after the selection's `from` (an
+  empty selection: at or after it), else the first, with `scrollIntoView`; then the menu closes and the writing
+  takes focus (`close`), and `UI · Used · LongSentenceSelected` is sent. Otherwise a `role="group"` line under a
+  rule, `aria-label` "Word Count: <line>", no menu item. Either way a `HoverCard` titled "Readability" holds
+  `readabilityDetail`.
+- **Insert**: blocks through `handle.insert` (divider; page break + paragraph; quote paragraph;
+  code block); objects through `articles.insertObject(handle.flow, what)`, and Comment / Assign
+  Action through `articles.addNote(handle.flow, kind)`: the article the toolbar shows for, worked
+  on or hovered.
+
+### Zones
+
+- **Intake** (`useArticleIntake`, a `useLayoutEffect` on the tab): runs only after a local edit
+  (`localEditSeq` moved, or an element gesture from `ELEMENT_GESTURES` just ended, measured from
+  its start), on the same tab, in Pages mode, editable. In one `tickTabs` (folded into the
+  edit's undo step):
+  1. `objectsDraggedOut(before, now)`: each object zone whose object's centre left the zone onto
+     the same article's pages: `handle.moveZone(zoneId, at)`; landed: `withZoneLanded` and the
+     object to the new rect; not moved (dropped by its own place): the object back to its zone
+     rect.
+  2. Markers deleted: `withNoteMarksRemoved`; note text gone: `withNoteMarkersRemoved`.
+  3. Zones gone from the writing (and not `takeZoneReleased`): `withZoneContentsRemoved` (their
+     members, then arrows pinned or riding them, to a fixed point).
+  4. Elements just added and loose on an article page (`looseOnArticles`) per flow:
+     `zonePlanFor(els, all, textWidth, textHeight)` (one non-drawing box: an object zone of its size, scaled to
+     the text area, `zoneHeightMax` tall at most, and `align: 'left'` (every new object); else a drawing zone the text width, `max(ARTICLE_DRAWING_MIN_HEIGHT, h + 2 *
+ARTICLE_DRAWING_PAD)` tall), `handle.insertZone(spec, centre)` (the spec carries the plan's `align`), `withZoneLanded`,
+     `withElementsIntoZone` (centred, scaled about the box corner). `ArticleDrawing` /
+     `ArticleObject`.
+  5. `withZonesFitted` per article that holds a zone block (one without is skipped before its text box is
+     measured, and the function itself answers the same tab for one): an object zone takes its object's size
+     (capped to the text area) and pins it to its corner; an object zone with no object leaves the writing; a
+     drawing zone grows right and down to keep members `ARTICLE_DRAWING_PAD` inside, never past
+     `zoneHeightMax(textHeight)` (one page's text area, at most `ARTICLE_ZONE_MAX`), never shrinks. The intake
+     lays the pages out once per settle and hands them in (`laid`), so fitting N articles is O(N) page work,
+     not N layouts of every page.
+  6. **Nothing to settle, no tick**: when no object was dragged out, no zone left the writing, nothing was
+     taken in, no note marker or note text is gone and no unheld article holds a zone (`intakeHasWork`), the
+     intake calls no `tickTabs` at all, so a typing commit on zone-less writing (most articles) costs no second render of the editor.
+- **`insertObject`** counts `INSERT_EVENT[what]` only after the insert went in (`insertZone`
+  returned a zone, or `placeAt` was called at a caret point), never for a refused one.
+- **`insertZone(spec, near)`**: at `boundaryNear(near)` or after the caret's block; an empty
+  paragraph holding the caret beside the boundary gives its place; a paragraph is appended when the
+  zone ends the writing; the caret goes after it. Returns `LandedZone` (blocks taken as written,
+  page index, corner).
+- **`boundaryNear(point, skipId)`**: over the top-level nodes' client rects in the point's column
+  (24 screen px slack each side), nearest by vertical distance, before the block when in its upper
+  half; with the caret line across the column (`nearestDrop`). A block in several boxes (split over
+  columns) lands before or after all of it, so the caret is drawn at its first box's top or last box's foot.
+- **Settle** (`useArticles.onLayout`; a non-`local` layout goes to `growForAbsentWriter` instead,
+  which grows only a flow marked by `markArticleGrow`, then settles the pages it added, see the agents blueprint): one `tickTabs`: `withArticlePageCount(flow,
+pagesNeeded)` (adds pages like the last; removes trailing pages with no elements; never under
+  one or past the limit), then `withZonesSettled` (each zone's `at` from its measured place,
+  members read before any move so none is handed to another zone; a page index not yet present
+  waits), then `withNotesSettled`.
+- **Zone bar actions** (`zoneAction`): a choice already in force (the same tab back) is no edit;
+  else `claimLayout`, then one `commitTabs`: remove
+  (`withZoneRemoved`), float (`markZoneReleased` then `withZoneReleased`), size (`withZoneSize`:
+  height `max(least, h)` up to `zoneHeightMax(textHeight)`, width up to the text width or its wrap share,
+  never under the members' need), wrap / align (`withZoneWrap`: a wrapped zone over 2/3 of the text
+  width is scaled down with its members).
+- **Held articles** (`lib/article/article-lock.ts`): `lockedArticleFlows(pages)`,
+  `isArticleLocked(pages, pageId)` (the page locked, or any page of its article; for the page
+  panel), `articleLocked(tab, flow)`. `articleEditRefused(canEdit, tab, flow)` (`useArticles.ts`)
+  guards every entry point: `onCommit`, `onLayout`, `insertObject`, `zoneAction`, `embed`,
+  `addNote`, `moveZone`, `setStyle`. `useArticleIntake` reads the held set before touching an
+  editor: no relocation, no intake (an element dropped on an unlocked page of a held article stays
+  loose), no gone-zone cleanup and no `withZonesFitted` for a held flow. `ArticleFlows` drops held
+  flows from the paper layer, the editors' `editable`, `zoneTarget`, `floatingTarget` and
+  `articlePages`.
+- **Embed** (a floating object's In Line / Wrap): `zonePlanFor` + `insertZone` at the objects'
+  centre, landed, members moved in, then `withZoneWrap` for a side wrap.
+- **Move by grip** (`useZoneDrag`): window pointer listeners, rAF ghost and caret
+  (`boundaryNear(point, zoneId)`), `.article-zone-lifted` dims the zone; release with a caret calls
+  `moveZone` → `handle.moveZone` (`null` when dropped beside itself) → `withZoneMoved` (landed,
+  members carried by the delta). Escape or `pointercancel` drops it.
+- **Move by keys**: the grip (`ZoneBar` `onMoveStep`) maps ↑ / ← to -1 and ↓ / → to 1
+  (`zoneGripStep`), calling `moveZone(flow, zoneId, { by })` (`ZoneMoveTo`) → `handle.moveZone`,
+  whose target is `zoneStepTarget(doc, from, by)`: before the block above, or after the block
+  below; null at either end (no edit). Telemetry `ArticleZoneMoved` as a drag.
+- **Object drop caret** (`useObjectDropCaret`): while the canvas gesture is `move` with one object
+  selected in an object zone, each frame reads the element's screen box and shows
+  `boundaryNear` once its centre is off the zone and on the article's pages.
+- **Clip**: `drawingZoneClips(rowPages, flows, elements, isDrawingElement)` (a member by anchor,
+  else a box overlapping a zone), the selection removed while it moves (`selectionMoving`),
+  published by `publishZoneClips` (identity kept per rect); element views read `useZoneClip(id)`
+  and apply `zoneClipPolygon`. Exports clip the same set (`exportZoneClips`).
+- Quick-connect pluses are off for a selected non-drawing element on an article page
+  (`Canvas` `plusBlocked`, by `zoneAnchorOf`, applied by the selection derivation).
+- **Resize grips** (`ZoneResizeGrips`): height, width and size grips, each `role="separator"`,
+  `tabIndex=0`; arrow keys resize by `GRIP_KEY_STEP` (Shift: ten), one `zoneAction` size edit each;
+  a pointer drag previews, and Escape (capture) or `pointercancel` ends it with no edit.
+
+### Margin notes
+
+- `addNote(flow, kind)`: `id = crypto.randomUUID()`; `handle.markNote(id, kind)` adds the `note`
+  mark over the selection and returns blocks plus the first rect's place; one `commitTabs`: the
+  blocks written and `newArticleNote(id, kind, articleNoteCorner(page, margin, place))` appended;
+  then `openNote`.
+- Settled with the layout (`withNotesSettled`): in writing order, centred in the right margin,
+  level with the first line; a note on a page whose last marker's bottom is lower is pushed down
+  to it plus `ARTICLE_NOTE_GAP`; moved only past 0.5 px.
+- Plain click on `[data-note-id]` with a collapsed DOM selection opens it (`article-note-action`
+  class says which).
+- Look (`noteLook(element)`): a comment is `comment-resolved` when its thread is resolved, else
+  `comment` with the open count (`activeCommentCount`); an action is `action-done` /
+  `action-wont-do` by its `status`, else `action-open` (no action yet included). The chip: a
+  comment `border-radius: 50%`, an action 8 px; fill and 1.5 px rim from `NOTE_INK`; hover
+  `shadow-md`. The text: `.article-note` indigo-400 at 22% with a 2 px solid indigo-500 at 70%
+  underline, `.article-note-action` emerald-400 at 22% with a 2 px dashed emerald-500 at 70%.
+- Presenting: `html[data-presenting] [data-article-note]` is `visibility: hidden` and
+  `html[data-presenting] .article-flow .article-note` loses its background and underline.
+
+### Footnotes
+
+- **Stored**: a run's `fn` is its note's text (`cleanFootnoteText`: line breaks and tabs a space, capped at
+  `MAX_ARTICLE_FOOTNOTE_TEXT` without splitting a surrogate pair); each character of the run's text
+  (`ARTICLE_FOOTNOTE_REF`) is one reference. `sameFormat` compares `fn`, so references with one note merge. Numbers
+  are never stored: `articleFootnotes(blocks)` numbers them in order, a table's cells row by row. `articleRunsText`
+  (titles, names, contents entries, a cell's text, word counts) leaves references out.
+- **In the editor**: an inline atom `footnote` (`attrs.text`, `leafText` empty; `sup[data-footnote]` both ways, so
+  a copy within liveknowledge pastes with its note). `inlineOf` makes one per character of an `fn` run; `runsOf`
+  reads one back as `{ text: '*', fn }`, and a line break after one never takes its `fn`.
+- **Numbers** (`footnotesPlugin`, `article-footnotes.ts`): state `{ refs, breaks, pending, decorations }`. `refs`
+  (each reference's position) is mapped through a change, and counted again only when `touchesRefs` (a step's slice
+  holds a reference, or one mapped away): typing never walks the writing. A node decoration gives each its number
+  (`data-n`); `FootnoteRefView` draws it as a text node, so an export draws it, after a hidden "Footnote "
+  (`article-chrome article-sr-only`) a screen reader reads. A press on a reference calls `onRef(n)`, which puts the
+  caret in its note when the person may write.
+- **Putting one in** (`insertFootnote`): at `selection.$to`, in a block that takes inline content and is not code;
+  the caret after it and `pending` set to it. From the slash menu (`block: 'footnote'`), the toolbar's Insert
+  (`handle.run`) and ⌘⌥F (`onFootnote`, refused on a card, for a Participant or read-only); each counts
+  `Element·Added·ArticleFootnote`. A paste onto a card drops references (`cardPasteSlice`).
+- **Layout** (`layoutFootnotes`, called by `ArticleEditor.measure` after the repeated header rows settle, again a
+  frame later while the breaks move, up to `REPEAT_SETTLE_TRIES`): page by page from the first, a page's references
+  are those whose line (`lineAt`: the text beside a reference, never its raised box; a place between blocks reads
+  as the next line) is in its column. `footCut` keeps the most notes whose last reference ends above the text foot
+  with them (the notes' height capped at `FOOTNOTE_MAX_SHARE`); a reference left over goes on with its line. The
+  first place past that foot (`firstPast`, a binary search over the writing's positions) is where the page ends:
+  `breakAt` makes it a widget `span.article-foot-break` (`display: block; break-before: column`) inside a block's
+  lines, or a node decoration `.article-foot-break-before` on the block, row, or table at its first row; a block break
+  straight after a heading (not the writing's first block) moves before it (`keptWithHeading`, the spec's "never left
+  alone at the foot", which a forced break would otherwise beat), and `lineAfterBreak` reads past that heading. A cut in a
+  table, or just after one, goes to `tableCut` (`article-footnote-rows.ts`): the table's first row whose foot
+  (`rowFoot`, its cells' last lines) is past the limit, found by a binary search over the rows (cells side by side
+  are never in line order, so the writing's search alone can land past the row). A row with a line of the writing
+  above it on the page (`lineBefore` the place it would move from) moves whole (`wholeRowAt`): a block break before
+  it, or before the table at its first row or at its second under a header row. A row that starts its page splits
+  (`splitRow`): a `FootBreak` `{ block: false, pos, also }`, one inline break in every cell that runs past the limit,
+  each at the cell's first place past it (a binary search in the cell); `pos` is the first with a line above it in
+  its cell, `also` the rest (widgets keyed `foot-break:<page>:<i>`). A row already on the next page, or cuts already
+  there (the break as drawn), read as nothing to cut (`null`), so the page's later-fits check can take the break
+  back; a cut inside a table none of whose rows is past the limit is nothing to cut too. That check reads a row's
+  foot (`lineAfterBreak`), not its first line, after a block break before a row or table, and counts the notes of
+  the references in it. A box broken inside fills the rest of its page, and masks and clip paths are not drawn on
+  a broken box, so a split row is drawn ending above the notes by its look (`article-footnote-split-look.ts`):
+  `layoutFootnotes` returns each split row's `FootSplit` (`splitFoot`: its cells' lowest kept line on the page);
+  once the layout settles, `measureSplitRows` reads the row's parts (`getClientRects`, one a part) and, with
+  `hiddenSpans`, hides each part on a page it ends on from under its kept lines (plus the cell's bottom padding and
+  1 px, never past the notes' top) to the part's foot, on the parts' one background strip. `splitLookAttrs` makes
+  the row's node decoration (`setSplitRowLooks`, kept in the footnotes plugin's `looks`, mapped through edits):
+  class `article-foot-split`, the cells' side rules, a closing rule and a header row's tint as background layers
+  over the drawn stretches (`--article-foot-cell`, `--article-foot-first`, `--article-foot-tint`; the cells' own
+  side borders transparent), and `data-foot-keep` (`part:keep`) for an export, whose `snapshotWriting` cuts the
+  row's and its cells' parts there (`splitPartsOf`) and draws their rules, a closing rule and the tint (read from
+  the row's resolved outline colour). No opaque cover: a page's background can be its own. The stylesheet's `.article-table-repeat + .article-foot-break-before` drops the row's own
+  forced break: the header copy before it already starts the page, never left alone above the notes. A page's
+  break is found by where the text before it landed (`lineEnding`: before a block break, the last line before it,
+  read backwards); a spare one goes; one whose next line (with that line's references' notes, and the margin a
+  block break cuts, `gapBefore`) fits within `SETTLE_SLACK` goes. `mapBreaks` maps `also` with `pos`, a cut in a
+  changed cell dropped. Each change is one meta-only dispatch and a synchronous relayout, at most `2 x pages + 4` a
+  pass. `mapBreaks` drops a break inside a block's lines when that block changed (its lines wrap anew). The pages'
+  text feet (`limits`) feed `measureRepeats`, so a table's header row repeats above a page's notes.
+- **Notes** (`FootnoteNotes`, `article-footnote-notes.ts`): a host beside the writing carrying its CSS variables;
+  one `aside.article-footnotes` per page with notes, absolute at the text area's foot (`translateY(-100%)`), at most
+  `FOOTNOTE_MAX_SHARE` tall, overflow hidden: an `hr` a third wide, an `ol` of `li[data-n]` (number, then a
+  `contenteditable` `plaintext-only` text; for a writer `role="textbox"` and `aria-label` "Footnote n", the number hidden; placeholder "Footnote").
+  Heights are measured in a hidden probe once per text, width and look. Boxes and items are reused; the note being
+  typed in is never rewritten. Focus leaving commits (`setNodeAttribute(pos, 'text')` then a flush); Enter or Escape
+  commits and puts the caret after the reference; a line break is never typed; input past the cap is cut; a key or
+  press in a note never reaches the canvas.
+- **Removing** (spec "Removing one"). In the writing: `deleteFootnoteBackward` (Backspace, empty selection,
+  `nodeBefore` a reference) and `deleteFootnoteForward` (Delete, `nodeAfter` a reference) in `articleKeymap`, ahead of
+  `backspaceAtStart` / `deleteAtEnd`, each one `tr.delete` of the atom, so no browser's own deletion beside an
+  uneditable box decides it. On a note: `FootnoteNotes.deleteKey` takes Backspace or Delete when the note is empty or
+  its whole text is selected (`wholeSelected`: the range's text is the note's), committing what was typed first (so
+  Undo restores it), then `NotesHost.remove(n)`; Backspace with the caret at the note's start and text in it selects
+  the whole note (`caretAtStart`, `selectWhole`), the next press removing it; any other key is the browser's. Each
+  `li` carries a `button.article-footnote-remove.article-chrome` (an × made node by node, Trusted Types allowing no
+  markup; `tabIndex` -1, `aria-label` and `title` "Remove Footnote"), kept in the line's layout but hidden (by
+  `visibility`) until the line is hovered or holds the focus in a box with `data-editable`; its `pointerdown` (default
+  prevented, so the focus never enters the note) calls `remove(n)` for a writer. `removing` stops the focus-out
+  commit while the host removes (the number is about to name the next note). The host (`article-view-mount.ts`)
+  takes `removeFootnoteTr(state, n)` (the reference at `refs[n - 1]` deleted, the caret at its place), focuses the
+  writing, dispatches and flushes: one commit, one undo step. Every role that may write removes (a Participant
+  included: removing is writing).
+- **Exports**: `handle.snapshot` adds each box's `snapshotWriting` (text cut at the box's foot), so PDF, PNG and SVG
+  draw the notes; Word writes `w:footnoteReference` and `word/footnotes.xml` (office-export blueprint); Markdown
+  writes `[^n]` and the notes after the last block (pages-for-agents blueprint).
+
+### Style
+
+- `setStyle(flow, change)`: preview cleared; the look or value already in force is no edit; else
+  `claimLayout`, telemetry, one `commitTabs` (`withArticleStyleChanged`, which returns the same tab
+  for a look already chosen or a patch already so). A look writes every look field and `look`, keeping `accent`,
+  `margins`, `pageNumbers`; a patch drops `look`. Choosing Notebook adds `pattern: 'lines'` to the
+  article's pages; leaving Notebook for another look removes it.
+- Preview: `setStylePreview({ flow, style })` on hover; `ArticleEditor.styleOverride` and the
+  margin follow it; `ArticleStyleSection` clears it on pointer leave and on unmount (the panel
+  closing by Escape or a press elsewhere).
+- Ink (`ArticleFlows.inkOf`): the lead page's (preview-aware) fill tone, else the paper per
+  chrome; `articleStyleVars` makes the CSS variables; the accent goes through `legibleOn`.
+- Ruling: `pageSheetStyle(background, { pitch: articleBodyLinePx, inset: margin, top })` and the
+  export's `pageExportFrame({ ruling })` draw Lines on the body baseline pitch inside the margins.
+
+### Collaboration
+
+- Writing: commits go out as `article` ops (Data and persistence); a peer's land in `tabs`, and
+  `ArticleEditor` merges them in. Only the writer settles consequences (`FlowLayout.local`).
+- Carets: `useArticleCaretBroadcast({ roomRef, live, activeId })` subscribes to the local
+  caret; sends `{ kind: 'article-caret', tabId, flow, blockId, offset }` at most every
+  `BROADCAST_THROTTLE_MS` with the last place following; on losing the caret (or unmount) sends `{ flow: null }` once if one was shown. Sends nothing while the
+  room is not live. `setArticleCaretsTab(activeId)` scopes drawing to this tab.
+- Receiving (`useRoomConnection`): `parseArticleCaret(op)` then `receiveArticleCaret(from,
+caret)`; `syncArticlePeople(participants)` names and colours carets and drops those who left;
+  `resetArticlePeers()` when the room closes. `articlePeersOf(flow)` returns carets on this tab
+  from known people, kept by identity until a change; a caret is `fresh` for
+  `ARTICLE_PEER_FRESH_MS` after it moves.
+- The room relays `article-caret` as presence (unordered, never logged or replayed, from any
+  session); `article` as a mutation (edit role only, sequenced, in the catch-up log).
+- **Holding a paragraph** (spec "Holding a paragraph"):
+  - Wire (`packages/api-schema/src/article-hold.ts`): `{ kind: 'article-hold', tabId, flow, blockId, row?, col? }`
+    (a claim, said again while typing) or `{ kind: 'article-hold', tabId, flow: null }` (a release), a presence op.
+    `parseArticleHold(op)` checks each id (`isArticleId`, 1 to 64 characters) and that `row` and `col` come together;
+    anything else is null and dropped. `sameHoldPlace(a, b)`: same flow, block, row and column.
+  - Room (`apps/api/src/document-room/document-room-holds.ts`, the pure rule in `apps/api/src/room-article-holds.ts`):
+    a session's hold lives on its socket attachment (`articleHold: { tabId, flow, blockId, row?, col?, at }`), so it
+    survives hibernation and goes with the socket. A claim from a session below `participate` is dropped. Else
+    `judgeArticleHold(claim, others, now)` looks for another live session's hold on the same tab and place whose `at`
+    is within `ARTICLE_HOLD_EXPIRE_MS`: none, the claim is stored (`at: now`) and relayed to the others as presence;
+    one, nothing is stored or relayed, and the claimant alone is sent the holder's hold as an `op` frame from the
+    holder. Either way, a claim sent with a `ref` is then answered with a `cursor` frame echoing it (seq unchanged),
+    so `sequence(op)` resolves once the answer is in. A release clears the hold and is relayed. `GET /holds?tab=`
+    (internal) answers every live hold on the tab as `{ flow, blockId, row?, col?, name, color }`.
+  - Local claim (`apps/editor/lib/article/article-holds-store.ts`): `noteArticleTyping(flow, spot)` from the
+    writing's `dispatchTransaction` after each local doc change (`holdSpotOf(state)`: the top-level block at the
+    selection's head, and in a table cell its row's id and its column's id from the table's `cols`). A new place
+    starts a claim (`pending`), the same place refreshes `typedAt`. `noteArticleCaret(flow, spot)`, from the caret's
+    publish on every selection change, releases a hold whose place the caret left; blur and unmount call `releaseArticleHold(flow)`. A timer
+    releases `ARTICLE_HOLD_IDLE_MS` after the last typing.
+  - Broadcast (`apps/editor/hooks/collab/useArticleHoldBroadcast.ts`, `{ roomRef, live, activeId }`): a new claim goes
+    through `roomRef.current.sequence(op)`; on its answer the store takes `granted` unless a peer's hold on the same
+    place arrived first (then `refused`); an unconfirmed answer (`false`: socket down, timeout) is `granted` too. A
+    claim refreshed while granted is sent again (plain `send`) at most every `ARTICLE_HOLD_REFRESH_MS`. A release sends
+    the `flow: null` op once. While the room is not live every claim is `granted` at once and nothing is sent.
+  - Commit gate (`ArticleEditor.flush`): a block (or the table of a cell) whose claim is `pending` commits as it was
+    (`committed`'s copy) and the commit is tried again once the claim is answered; on `refused`, the writing puts the
+    block back as `committed` has it (an `article-remote` transaction, nothing committed) and says
+    `announceArticleHeld(name)`.
+  - Undo and redo (`apps/editor/lib/article/article-hold-undo.ts`, `keepHeldWriting(from, onto, heldIn)`, wired in
+    `useDocumentHistory`'s `undo` and `redo` as `historyKeepingHeld(prev, next)` with `peerHeldBlocks(tabId, flow)`
+    from the store): for each tab and article in both the present (`from`) and the restored snapshot (`onto`), each
+    block a peer holds (a held cell's table) is put back as the present has it: replaced where the snapshot has another
+    copy, put in after the nearest block before it that the snapshot keeps (else first) where the snapshot has none.
+    Nothing held, or nothing different, returns `onto` itself. An article absent from the snapshot is left absent.
+  - Peers' holds (same store): `receiveArticleHold(from, hold)`, `syncArticleHolders(participants)` (names, colours,
+    the holds of anyone who left), `resetArticleHolds()` when the room closes; a hold not said again within
+    `ARTICLE_HOLD_EXPIRE_MS` is dropped by a sweep. `useArticleHolds(flow)` answers this tab's holds in that article
+    from known people, kept by identity until a change.
+  - The writing (`apps/editor/lib/article/article-holds.ts`, `articleHoldsPlugin(onRefused)`): the holds arrive by a
+    meta transaction (`setArticleHolds`), never in the history. Decorations: `Decoration.node` on each held block (or
+    cell) with `data-held`, `--article-held: <colour>` and `title="<Name> is writing here"`, and a widget chip at its start
+    (`.article-held-chip`, aria-hidden, `data-name` the writer's name). The chip's `::after` is placed against the
+    held block (`position: relative` on a held top-level block or cell): in the left margin beside the first line,
+    `max-width` the page margin less 16 px (`--article-margin`, set on the flow from `flowFrame`) with an ellipsis,
+    joined to the outline by a `::before` tick; in a cell, on its top right corner over the padding. `filterTransaction` refuses a local transaction that changes the doc in a
+    held range: a step's range (its `from`/`to`, or `pos` for an attribute step) meeting a held block's inside, or for
+    a held cell its cell, or its table outside every cell (a change of shape); `article-remote` transactions always
+    pass. A refusal calls `onRefused(holder)`, which says `announceArticleHeld(name)` at most every 2.5 s. A new margin
+    note on held text is refused the same way (its mark is a change to the paragraph), so `markNote` makes no marker
+    and the notice names the writer; replies on existing threads are untouched.
+
+### Everywhere else
+
+- **Export** (`renderTabToCanvas` / `renderTabToSvg` with `opts.page`): `pageWriting(tab, page)`
+  takes `handle.snapshot()` ops on that page (1 px slack) plus the page number; the SVG gets
+  `articleOpsToSvg` after the font defs (fonts `headingFont`, `bodyFont`, `roboto-mono` added);
+  the canvas awaits `document.fonts.ready` then `drawArticleOps`, before the elements.
+  Margin-note markers are left out (`isArticleNoteMarker`). PDF renders each page through the
+  canvas (`exportPagesAsPdf`).
+- **The Map and slide thumbnails**: `pageWritingBars(page, ink)` (`handle.bars`) as soft rects
+  through `articleOpsToSvg`; the Map and the Contents pictures read every page's at once with
+  `writingBarsByPage` (`lib/article/page-writing-bars.ts`, [Canvas performance](../../008-canvas/blueprints/canvas-performance.md) "Pictures of every page"); the Map recomputes on `writing` identity and on
+  `useArticleLaidOutSeq()` (as do slide thumbnails, `useSlideThumbnails`).
+- **Present** (`presentedPages(view, tab, presentingPageId, articles)`, `lib/presented-pages.ts`):
+  the view narrowed to the page, `rowPages` the whole row (the writing lays out across all its
+  pages), `articles.editable: false`. Outside Pages mode the sheets are built from the tab and
+  the `ArticlesView` passed in (`useArticles` is on while a page slide presents).
+- **Phone framing**: `ArticleFlows` calls `view.readPage(pageId)` once each time the writing takes
+  focus on a phone (`computeReadingFrame` with the margin, so the column fills the width), gliding
+  there (`glideViewport`, `VIEW_GLIDE_MS`; at once under reduced motion); a finger's pan
+  (`panFrom`) stops a glide under way.
+
+## Interfaces and contracts
+
+- `articlesOf(tab): Readonly<Record<string, ArticleFlow>>`: never throws; same object per stored
+  object.
+- `parseArticleFlow(v, fallbackId?)`: never empty. `parseArticleBlock(v)`: a block or undefined.
+- `diffArticleFlow(before | undefined, after): ArticleOp[]`; `applyArticleOps(flow | undefined,
+ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArticleFlow(a, b))`
+  equals `b` by value.
+- `withArticleAdded`, `withArticleDuplicated`: null at the page limit (or a taken id);
+  `withArticleRemoved`: null for the only unit or an unknown flow; `withUnitMoved`: null when
+  nothing moves. `withArticlePageCount`, `withZonesSettled`, `withNotesSettled`,
+  `withZonesFitted`, `withZoneWrap`, `withZoneSize`, `withArticleStyleChanged`: the same tab back when nothing changes or the flow is unknown.
+- `withZoneLanded(tab, flow, landed): { tab, rect | null }`: rect null when the article or the
+  landed page is gone.
+- `ArticleEditorHandle` methods returning a landing (`insertZone`, `moveZone`, `markNote`) return
+  null when nothing happens (no selection, no boundary, dropped in place).
+- `parseArticleOps(v): ArticleOp[] | null`: null when `v` is not a list; else only well-formed
+  ops, each `put` block parsed as a stored one.
+- `parseArticleCaret(op): ArticleCaret | null`: `tabId` an id; `flow: null` allowed; else `flow`
+  and `blockId` ids (1 to 256 chars) and `offset` an integer in 0..1,000,000.
+- `ArticlesView` (null outside Pages): see `useArticles.ts`; every action is a no-op for a
+  person who cannot edit or a locked tab.
+
+## Errors and edge cases
+
+| Case                                               | Handling                                                                                                                           |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Malformed stored writing                           | Read defensively (Data and persistence); an empty article reads as one paragraph                                                   |
+| Article page with no flow                          | Its own article (flow = page id); writing created empty on first read                                                              |
+| Flow's pages split by crossed edits                | `withArticlesTogether` rejoins them at the first page, each taking its size and paint                                              |
+| Commit to an article deleted meanwhile             | `onCommit` skips the tab (no writing for a missing flow)                                                                           |
+| Commit refused (tab locked meanwhile)              | `onCommit` false: the writing stays local and goes with the next commit                                                            |
+| Malformed `article` frame from a peer              | `parseArticleOps` drops it (or its bad ops); nothing applied                                                                       |
+| Writing for an article removed here meanwhile      | Dropped unless `created` or its pages are present                                                                                  |
+| A copied article's margin notes                    | Relinked to the copied markers (`withNotesRelinked`); a note whose marker was not copied loses its mark                            |
+| An undo that touches no writing                    | The undo mark lapses after `UNDO_SETTLE_MS`; no stray caret jump                                                                   |
+| A zone or style choice already in force            | No edit, no undo step                                                                                                              |
+| Remote change while typing                         | Local block ops re-applied over it; the caret's block untouched                                                                    |
+| Two people in one paragraph                        | Last commit wins for that block (spec non-goal: no character merge)                                                                |
+| A block op naming a missing neighbour              | Placed by the other neighbour, its old index, or the end                                                                           |
+| A frame over the room's cap                        | Ops split into `ARTICLE_FRAME_CHARS` frames; a single larger block is not split                                                    |
+| Writing past the page limit                        | `withArticlePageCount` stops at `MAX_PAGES`; the rest is clipped from view                                                         |
+| A paste or key past a block, text or cell cap      | `articleCapsPlugin` (`article-caps.ts`) refuses the transaction; `announceArticleCap` (`article-caps-notice.ts`) toasts, throttled |
+| Trailing page that holds elements                  | Kept; trailing removal stops at it                                                                                                 |
+| Zone measured on a page not yet added              | Waits (`withZonesSettled` skips it) until the settle that adds the page                                                            |
+| A zone moving into another's old place             | Members read before any move: neither steals the other's elements                                                                  |
+| Object zone whose object was deleted               | `withZonesFitted` drops the zone                                                                                                   |
+| Zone floated (released)                            | `markZoneReleased` so the intake keeps its elements                                                                                |
+| Zone dropped beside itself / Escape                | `moveZone` returns null; nothing written                                                                                           |
+| Note marker deleted / note text deleted            | Tint removed / marker removed, in the same step (undo brings both)                                                                 |
+| Layout reported by a non-writer                    | Ignored (`local` false) unless the flow carries a grow mark (`growForAbsentWriter`, pages only)                                    |
+| Fonts arriving late                                | `loadingdone` re-measures                                                                                                          |
+| Export with no editor laid out                     | `pageWriting` returns null: the page exports bare                                                                                  |
+| Malformed peer caret op                            | `parseArticleCaret` null: dropped                                                                                                  |
+| Caret for a block that went                        | `resolveCaret` null: not drawn                                                                                                     |
+| Caret from someone not in the room, or another tab | Not drawn                                                                                                                          |
+| `getBoundingClientRect` / `coordsAtPos` throws     | Caught: caret page falls back to the first page, caret rect null                                                                   |
+| Stale dev bundle                                   | Not a code path; restart the dev server (wipe `.next-dev`)                                                                         |
+
+## Security and trust
+
+- No server path is added: the writing is tab data, written by the existing save and room, read
+  defensively by every client (`articlesOf`); the room enforces the edit role on `article` ops and
+  the presence rules on `article-caret` (any session; never stored or replayed).
+- **Links**: only `http:`, `https:` and `mailto:` (`isSafeArticleHref`, at most `MAX_ARTICLE_HREF`) are
+  stored, pasted (`parseDOM` `getAttrs` returns false), parsed from Markdown or set
+  (`setLink` refuses); rendered with `rel="noopener noreferrer nofollow"`. The link field
+  normalises a bare domain to `https://` and an address to `mailto:` (D45).
+- **Paste**: HTML is parsed through `articleSchema` only: headings, paragraphs, quotes, `pre`,
+  `hr`, `br`, lists and `strong b i em u s del strike code sup sub a[href]` survive; `color`,
+  `highlight` and `note` marks have no `parseDOM` (never from a paste); zones never parse. Google
+  Docs' `<b style="font-weight:normal">` wrapper is not bold.
+- **CSS injection**: colours reach style attributes only as validated hex (`isArticleHex`,
+  `safeMarkColor`); fonts resolve through the catalogue (`resolveFontStack`), stored ids match
+  `^[a-z0-9-]{1,40}$`.
+- **Export markup**: every string in `articleOpsToSvg` goes through `xmlEscape`; zone clip ids are
+  stripped to `[a-zA-Z0-9-]`.
+- **Presence trust**: a caret op is checked field by field; names and colours come from the room's
+  presence list, never the op; carets are `aria-hidden` decorations and never written.
+- `window.__articleView` (the editor view) is exposed only when `NODE_ENV !== 'production'`, and
+  removed with its editor.
+
+## Performance and limits
+
+- Worst case per article: 5000 blocks x 20,000 characters is far past `MAX_TAB_BYTES` (1.99 MB):
+  the tab cap binds first; the block caps bound parse time and op size.
+- `articlesOf` is cached per stored object; `docToBlocks` and `diffArticleFlow` keep identity for
+  unchanged blocks, so an idle commit diff is O(blocks) and sends only changed blocks.
+- `diffArticleFlow` is O(n log n) (longest increasing subsequence); `applyArticleOps` O(ops x n).
+- `article` frames stay under 200,000 characters, inside the room's 256K message cap; ops are
+  sent only on commit (at most every 600 ms while typing).
+- Carets: one op per 33 ms per writer at most; the peer store re-renders only the article whose
+  carets changed (`useSyncExternalStore`, per-flow snapshots); a caret change is a meta
+  transaction, never a commit or a canvas render.
+- Measure: once per animation frame; layout settles only for the writer and only when something
+  moved (`SETTLE_TOLERANCE`, 0.5 px for markers).
+- Zone clips: O(elements x zones) per render of `ArticleFlows`, published per element so only a
+  view whose clip changed re-renders.
+- Page toolbar and drop carets follow by rAF while shown, writing styles directly (no React
+  render per frame).
+- Holds: with nobody holding anything in an article the plugin does nothing per keystroke. With holds, each local
+  transaction walks the top-level blocks once to find the held ranges and once to redraw the outlines: O(blocks), measured
+  at 0.87 ms a keystroke in a 5,000-paragraph article with three holds (budget 8 ms, `article-holds.test.ts`). A claim
+  is one op per new paragraph, refreshed at most every 2 s; the room's judgement is O(sockets).
+- At most `MAX_PAGES` (100) pages; one editor per article, columns per page.
+- Word Count reads the article only while More Formatting is open (once on open, then once per render of the
+  toolbar while open): `docToBlocks` and `articleWordCount`, O(characters), about 25 ms of CPU for a 2,000-paragraph,
+  100,000-word article (budget 60 ms, `article-word-count.test.ts`). The total is kept per doc node (a `WeakMap`), so
+  a selection moving over unchanged writing counts only the selection (budget 5 ms). With the menu shut, typing never
+  reaches it. Readability reads the same blocks and is kept with the total per doc node: one more look at each
+  character (`sentencesOf`, linear, no backtracking, nothing allocated per token but a short marker's slice), the
+  language judged on the first `ENGLISH_SAMPLE` (2,000) words. Measured on the 100,000-word article: about 60 ms cold
+  for the count and readability together, readability about 20 ms of it on its first run and under 10 ms warm
+  (budget 90 ms, `article-word-count.test.ts`); `sentencesOf` takes 50,000 spaces, dots or digits in under 20 ms
+  (`article-readability.test.ts`). Selecting the next long sentence walks the doc once, on the pick only (budget
+  80 ms for 2,000 paragraphs, `article-long-sentences.test.ts`).
+
+## Presentation and UX
+
+Copy and layout as the spec. Labels: toolbar **Article Formatting**; buttons **Style: <style>**,
+**Bold**, **Italic**, **Underline**, **Colour**, **Link**, **Lists**, **Alignment**, **More
+Formatting**, **Insert**, **Comment**, **Assign Action** (each tooltip with its shortcut, ⌘ or
+Ctrl spelled by platform via `keyLabel`, a letter key in capitals: ⌘E); menus **Text Style**, **Lists** (with **Increase
+Indent** / **Decrease Indent** while in a list), **Alignment** (**Align Left**, **Align Centre**, **Align Right**, **Justify**), **Colour** (titles **Text Colour** / **Highlight**; pickers **Text colour** / **Highlight**,
+**Default colour** / **No highlight**), **Link** (placeholder "Paste or type a link", **Apply**,
+**Remove**), **Insert**, **More Formatting** (**Strikethrough**, **Inline Code**, **Superscript**,
+**Subscript**, **Clear Formatting**, **Article Style**, then the **Word Count** line); slash menu **Insert a block** with each
+entry's hint; zone bar **Drag to Move**, **In Line**, **Wrap Left**, **Wrap Right**, **Float**,
+**Align Left**, **Align Centre**, **Align Right**, **Delete** (**Delete Drawing** on a drawing); grips **Drawing
+height / width / size**; placeholders "Title", "Subtitle", "Heading 1..3", "Quote", "List",
+"To-do", "Start writing, or press / for blocks", "Type / for blocks"; page break "Page break"; the
+Style tab sections **Looks**, **Accent** (**Headings in the Accent**), **Page** (**Margins**,
+**Page Numbers**); the Text tab **Fonts** (**Headings**, **Body**), **Size and Spacing** (**Text
+Size**, **Line Spacing**, **Paragraph Spacing**, **Lines Under Text**). Empty states:
+a new article is a Title and an empty paragraph with placeholders; loading: the editor's chunk
+loads behind `Suspense` with no fallback (the sheets show meanwhile); errors: none surfaced (every
+failure is a silent no-op with a debug log).
+
+## Accessibility
+
+- The writing: `role="textbox"`, `aria-multiline="true"`, `aria-label="Article text"`,
+  `spellcheck`, `aria-readonly="true"` for a viewer; native caret, selection, IME, dictation and
+  emoji input; all formatting reachable by keyboard (spec "Keyboard").
+- Toolbar `role="toolbar"`; toggles `aria-pressed`; menu buttons `aria-haspopup="menu"` and
+  `aria-expanded`; names carry the shortcut; disabled Comment / Assign Action while no text is
+  selected. Popovers `role="dialog"` named; menus `role="menu"` with `menuitemradio` rows and
+  `aria-checked`; swatches `role="radiogroup"` / `role="radio"`; Escape closes (capture) and the
+  caret returns.
+- Slash menu `role="listbox"` with `role="option"` and `aria-selected`; keys stay in the writing.
+- Zone bar `role="toolbar"` named "Drawing" or "Object in the text"; its move grip is a button
+  (a focus stop with work to do: ↑ ↓ ← → step the zone, `aria-keyshortcuts`); resize grips
+  `role="separator"` with orientation and names; every control has a Tooltip naming it.
+- To-do boxes: ⌘Enter ticks the to-do at the caret, as a press on the box does.
+- Style tab: looks, accents and segmented fields are radiogroups; toggles `role="switch"` with
+  `aria-checked`.
+- A margin note's marker: the element wrapper's `aria-label` is `noteAriaLabel` (spec "Its
+  name"), not the kind label; its face SVG is `aria-hidden`. Contrast as the spec's table; the
+  chip's colours are fixed (`NOTE_INK`), never themed. Touch reach: under `@media (pointer:
+coarse)` a `::before` on `[data-article-note]` extends 6 px left and right and 3 px up and down
+  (44 x 38 at 100%).
+- Decorative parts are `aria-hidden`: page numbers, drop carets, ghosts, peer carets.
+- Contrast: the accent is passed through `legibleOn` against the page; ink is slate-800 on light
+  and slate-200 on dark (AA on paper and on Midnight).
+- Reduced motion: zone, to-do box and peer-name transitions off (`article-pages.css`); swatch
+  hover scale off (`motion-reduce:hover:scale-100`).
+
+## Web Experience
+
+- **LCP**: ProseMirror and the editor (`ArticleEditor`), and the `PageToolbar`, load only when a
+  tab shows an article (`React.lazy`); the canvas and the sheets paint first.
+- **CLS**: the writing, toolbar, zone bar and carets are absolutely positioned in canvas or
+  screen space; peer carets take no room (negative margins); the page toolbar is placed by
+  transform while `visibility: hidden` until measured. Nothing shifts surrounding chrome.
+- **INP**: typing dispatches into ProseMirror only; the tab is written at the idle commit, not per
+  key; measuring and settling run in the next frame; caret broadcasts are throttled; peer carets
+  never re-render the canvas.
+
+## Observability
+
+- `debugLog` fingerprints (all `[article]`): `writing mounted`, `writing committed`, `layout
+settled`, `zone changed`, `floating elements put in the writing`, `margin note added`, `zone
+moved`, `style changed`, `zone took elements in`, `object dropped in the writing`, `zone drag
+ended`, `articles turned into pages`. Page-level edits log `[page] …` (Pages
+  pages blueprint).
+- Telemetry as the spec's Telemetry section, charted in `../liveworkspace/apps/site/app/telemetry/liveknowledge/catalogue/features.ts`
+  (`PAGES`: `ArticleAdded`, `PageKind*`; `ARTICLE_INSERTS`;
+  `ARTICLE_FORMATTING`; `ARTICLE_LOOKS`), explained in `event-explanations.ts`. Never text.
+
+## Testing
+
+| Spec rule                                                                                                                                                                                                          | Test                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Writing read defensively, caps, style fields, cache, words, a new article                                                                                                                                          | `packages/document/src/article-flow.test.ts` "article writing: reading it"                                                    |
+| Block ops: round trip, no resend, two writers merge and converge, missing neighbours, a peer's ops read defensively                                                                                                | `article-flow.test.ts` "article writing: block ops"                                                                           |
+| Numbered lists by level, bullets restart                                                                                                                                                                           | `article-flow.test.ts` "list markers"                                                                                         |
+| Article as a unit: add, remove, move, duplicate, grow and shrink                                                                                                                                                   | `packages/document/src/article-pages.test.ts` "articles in the row"                                                           |
+| A duplicated article's notes point at the copied markers                                                                                                                                                           | `article-pages.test.ts` "a duplicated article keeps its margin notes to itself"                                               |
+| First page's choice                                                                                                                                                                                                | `article-pages.test.ts` "the first page's own choice of kind"                                                                 |
+| Holds: the wire op read defensively, one place                                                                                                                                                                     | `packages/api-schema/src/article-hold.test.ts`                                                                                |
+| The room settles a claim: first wins, the loser hears the holder, a release, a Viewer's claim dropped, expiry, `/holds`                                                                                            | `apps/api/src/document-room/document-room-holds.test.ts`                                                                      |
+| Our hold: claimed while typing, refreshed, let go on leaving, idling or blur; peers' holds named, per tab, swept                                                                                                   | `apps/editor/lib/article/article-holds-store.test.ts`                                                                         |
+| A claim through `sequence`, refreshed by `send`, released once                                                                                                                                                     | `apps/editor/hooks/collab/useArticleHoldBroadcast.test.tsx`                                                                   |
+| Held blocks outlined with a name chip; typing, cell edits and a table's shape refused; two writers in one paragraph never lose words; a keystroke's cost with holds (5,000 paragraphs, budget 8 ms)                | `apps/editor/lib/article/article-holds.test.ts`                                                                               |
+| A pending claim commits its block as it was; a refused one is put back with the notice                                                                                                                             | `article-hold-commit.test.ts`, `apps/editor/components/canvas/article/useWritingHolds.test.tsx`                               |
+| An undo or redo keeps a peer-held block as its writer has it (replaced or put back in place), and a restore during a hold keeps their words                                                                        | `article-hold-undo.test.ts`, `apps/editor/hooks/canvas/useDocumentHistory.test.ts`                                            |
+| A peer's hold arriving from the room                                                                                                                                                                               | `apps/editor/app/document/[id]/room-op-article-hold.test.ts`                                                                  |
+| Zones settle with their elements, never swap, drawing clip, objects whole                                                                                                                                          | `packages/document/src/article-zones.test.ts`                                                                                 |
+| Margin notes: place, follow, stack, untint, go with their text                                                                                                                                                     | `packages/document/src/article-notes.test.ts`                                                                                 |
+| Article pages read, flow fallback, kept together                                                                                                                                                                   | `packages/document/src/page.test.ts` "page kinds"                                                                             |
+| Blocks to editor and back, identity kept                                                                                                                                                                           | `apps/editor/lib/article/article-convert.test.ts`                                                                             |
+| Pasted Markdown, safe links only, plain text                                                                                                                                                                       | `packages/document/src/article-markdown.test.ts`                                                                              |
+| Writing synced as block ops, frames, never in tab-meta, merge keeps ours                                                                                                                                           | `apps/editor/app/document/[id]/tab-broadcast-ops.test.ts` "articles"                                                          |
+| A peer's block ops applied, malformed frames ignored, late writing for a removed article dropped, removal                                                                                                          | `apps/editor/app/document/[id]/room-op-apply.test.ts` "documents"                                                             |
+| Caret by block and offset                                                                                                                                                                                          | `apps/editor/lib/article/article-caret.test.ts`                                                                               |
+| Collaborators' carets: names, freshness, tab scope, leaving                                                                                                                                                        | `apps/editor/lib/article/article-carets-store.test.ts`                                                                        |
+| Peer carets drawn as decorations, follow their block                                                                                                                                                               | `apps/editor/lib/article/article-peers.test.ts`                                                                               |
+| Caret broadcast throttled, null on leaving, hidden by a vote                                                                                                                                                       | `apps/editor/hooks/collab/useArticleCaretBroadcast.test.tsx`                                                                  |
+| `article-caret` on the wire                                                                                                                                                                                        | `packages/api-schema/src/article-caret.test.ts`; room relay `apps/api/src/document-room.test.ts`                              |
+| Into pages never takes an article's pages                                                                                                                                                                          | `packages/document/src/paginate.test.ts` "never replaces a locked page or an article page"                                    |
+| Export cuts a drawing at its zone                                                                                                                                                                                  | `apps/editor/lib/export-tab.test.ts` "an article page export cuts a drawing off at its zone"                                  |
+| A finger on a page: pans past the slop, a tap short of it, a second finger or a cancel no tap                                                                                                                      | `apps/editor/components/canvas/article/useTouchPagePan.test.tsx`                                                              |
+| A tap on a phone puts the caret in the paragraph tapped and typing lands there, also after Add Article took the caret to a new Title (Work Tracker 978)                                                            | `apps/editor/e2e/article-phone-tap.spec.ts`                                                                                   |
+| Reading frame                                                                                                                                                                                                      | `apps/editor/lib/reading-frame.test.ts` "computeReadingFrame"                                                                 |
+| Article edits through the page panel (add, turn, paint, move, delete)                                                                                                                                              | `apps/editor/hooks/editor/page-edits.test.ts` "documents"                                                                     |
+| A locked page holds its article: every entry point refused, a lock landing mid-commit holds, inserts counted once in                                                                                               | `apps/editor/hooks/editor/useArticles.locks.test.ts`                                                                          |
+| Nothing taken into a held article's writing; an unlocked one takes a drop in                                                                                                                                       | `apps/editor/hooks/editor/useArticleIntake.locks.test.ts`                                                                     |
+| Held articles by page and by tab                                                                                                                                                                                   | `apps/editor/lib/article/article-lock.test.ts`                                                                                |
+| Slash-menu block inserts counted as the toolbar's                                                                                                                                                                  | `apps/editor/lib/article/article-telemetry.test.ts`                                                                           |
+| ⌘Enter ticks the to-do at the caret, falls through elsewhere                                                                                                                                                       | `apps/editor/lib/article/article-commands.todo.test.ts`                                                                       |
+| Zone grip arrow keys step a block up or down, nowhere past the ends                                                                                                                                                | `apps/editor/components/canvas/article/zone-step.test.ts`                                                                     |
+| Absent-writer grow: only a marked, unlocked flow; adds, then settles only what it added                                                                                                                            | `article-pages.test.ts` "growing an article for an absent writer"; the mark from an agent's frame, `room-op-apply.test.ts`    |
+| Page edits reach every page of an article; Article added on the last paper size, else A4 portrait; duplicate and delete whole, never the last unit or a locked page                                                | `packages/document/src/pages-edits.test.ts`                                                                                   |
+| An article page's panel has Page, Background, Style and Text                                                                                                                                                       | `apps/editor/components/canvas/PagePanel.tabs.test.tsx`                                                                       |
+| A page held by its article's lock: Delete disabled with the reason                                                                                                                                                 | `apps/editor/components/canvas/PagePanel.locks.test.tsx` "a page held by its article lock"                                    |
+| Toolbar Colour: each picker titled on screen (Text Colour, Highlight), Default and Accent before the strong colours, No highlight before the soft ones; the Style tab's Accent leads with Theme, previews on hover | `apps/editor/components/canvas/article/article-colours.test.tsx`                                                              |
+| A margin note's marker carries no badge strip                                                                                                                                                                      | `apps/editor/components/canvas/useElementIndicators.test.ts` "gives a margin note nothing at all"                             |
+| A comment and an action differ in glyph, outline and name; resolved and done show                                                                                                                                  | `apps/editor/components/canvas/article/ArticleNoteFace.test.tsx`, `apps/editor/lib/article/article-note-look.test.ts`         |
+| Present from any mode: an article page with its writing, read only                                                                                                                                                 | `apps/editor/lib/presented-pages.test.ts` "outside Pages, presents an article page with its writing, read only"               |
+| Every zone function of the intake, every branch; the hook's settle of an edit                                                                                                                                      | `packages/document/src/article-intake.zones.test.ts`; `apps/editor/hooks/editor/useArticleIntake.zones.test.ts`               |
+| What is drawn and what is an object (`isDrawingElement`), and elements moved and scaled into a zone (`withElementsIntoZone`)                                                                                       | `packages/document/src/article-zone-plan.test.ts`                                                                             |
+| Agents read and write an article as Markdown                                                                                                                                                                       | `packages/document/src/article-markdown-io.test.ts`; `packages/edit-operations/src/pages/article-write.test.ts`               |
+| `article` is a mutation op (never relayed from a view-role session)                                                                                                                                                | `apps/api/src/document-room.test.ts` "lets no document-mutating op kind into the presence set" (generic, every mutation kind) |
+
+**Gaps** (spec rules with no deterministic test; browser-checked only):
+
+- "Writing": keys (Enter, Backspace, Delete, Tab, the shortcut list), Markdown as you type
+  (`articleInputRules`), the slash menu (`slashPlugin`, `slashModel`'s order, the empty state),
+  links (the field's normalising, the hover card), paste into an empty block and the canvas paste
+  hand-off, commit timing (`ARTICLE_IDLE_COMMIT_MS`, flush on blur and before undo), undo's caret
+  (`UNDO_SETTLE_MS`), merging a remote change under local typing.
+- "Flowing onto pages": the measure (`pagesNeeded`, headings kept with the next line, zones never
+  split), the page-limit notice, page numbers drawn.
+- "Zones": zone drag, resize grips (pointer and
+  keys), the object drop caret, Float and embed, no quick-connect pluses (`plusBlocked`).
+- "The page toolbar": placement, scale, phone bar, hover presence and off-page clearing.
+- "Article style": looks (`withArticleLook`, Notebook's ruling added and removed),
+  `withArticleStyleChanged` returning the same tab, `resolveArticleStyle` defaults, the ink and
+  `articleStyleVars`, the preview; "Type" sizes.
+- "Comments and actions": `addNote` / `markNote`, the plain click on tinted text.
+- "Share roles": a Participant's writing and its refusals are tested in `participant-article.test.ts` and
+  `room-participant.test.ts`.
+- "Everywhere a page goes": the exported writing (`snapshotWriting`, `articleOpsToSvg`,
+  `drawArticleOps`), the Map and thumbnail bars.
+- The writer rule's `local` in
+  `ArticleEditor` (the pure grow decision is tested).
+
+## Assets and external resources
+
+| Asset                           | Source / licence                                                                                                                                                                                                            | Path                                                                |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| ProseMirror                     | npm `prosemirror-model` 1.25, `-state` 1.4, `-view` 1.42, `-commands` 1.7, `-keymap` 1.2, `-inputrules` 1.5, `-gapcursor` 1.4 (`-transform` comes in through them), MIT; listed on `/licences` by `@liveknowledge/licences` | `apps/editor/package.json`; lazy chunk with `ArticleEditor`         |
+| Writing stylesheet              | Own                                                                                                                                                                                                                         | `apps/editor/app/article-pages.css` (imported by `globals.css`)     |
+| Fonts                           | The font catalogue ([Fonts](../../004-interface-design/fonts.md)), Roboto Mono for code                                                                                                                                     | `resolveFontStack`; embedded in SVG by `svgFontDefs`                |
+| Toolbar, zone bar glyphs        | Lucide (ISC AND MIT, vendored geometry), via `@liveworkspace/icons/lucide`; listed on `/licences`                                                                                                                           | `../packages/icons/lucide-manifest.json`, `src/lucide.generated.ts` |
+| Page kind miniatures, note face | Own inline SVG                                                                                                                                                                                                              | `page-kind-cards.tsx`, `ArticleNoteFace.tsx`                        |
+
+## Defaults ledger
+
+See [DEFAULTS.md](DEFAULTS.md), rows D33 to D53, D60 and D90.

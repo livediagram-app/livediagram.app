@@ -79,6 +79,16 @@ Every path in these docs is relative to that base, so `GET /documents` means `GE
 
 </AppNote>
 
+<AppNote app="liveknowledge">
+
+```
+https://www.liveknowledge.app/api
+```
+
+Every path in these docs is relative to that base, so `GET /documents` means `GET https://www.liveknowledge.app/api/documents`, the Knowledgebases you can open.
+
+</AppNote>
+
 <AppNote app="livedesign">
 
 ```
@@ -125,6 +135,15 @@ curl https://www.liveplanner.app/api/projects \
 
 ```bash
 curl https://www.livedocuments.app/api/documents \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="liveknowledge">
+
+```bash
+curl https://www.liveknowledge.app/api/documents \
   -H "Authorization: Bearer lwt_your_token_here"
 ```
 
@@ -191,6 +210,18 @@ The token-callable surface mirrors the app:
 
 </AppNote>
 
+<AppNote app="liveknowledge">
+
+- **Knowledgebases**: list, read, create, rename, archive and delete Knowledgebases.
+- **Pages**: read the page tree, read a page as Markdown, create, write and move pages.
+- **Trust**: verify a page, read Page Health, change a page's owner and the Review Period.
+- **Search and Ask**: search a Knowledgebase, and Ask a question answered from its pages.
+- **AI Knowledge**: suggested edits, questions nobody could answer, Always in Context pages and what each agent may do.
+- **Comments**: read, add, reply to, resolve and reopen comment threads.
+- **Folders**: organise Knowledgebases into folders, personal or in a team you belong to.
+
+</AppNote>
+
 <AppNote app="livedesign">
 
 - **Designs and tabs**: list, read, create, rename, copy, archive and delete designs; read a tab as JSON, as a text view or as an SVG picture; change a tab with changesets, and revert one.
@@ -230,6 +261,12 @@ The token-callable surface mirrors the app:
 <AppNote app="livedocuments">
 
 [Working with Documents](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists the changeset vocabulary, [Images, Pages and More](/help/developers/working-with-documents/images-and-pages/) covers uploads, pages and articles, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
+
+</AppNote>
+
+<AppNote app="liveknowledge">
+
+[The Knowledge API](/help/developers/knowledge-api/) maps the routes a Knowledgebase adds, [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/) lists what an agent can call, and [The liveknowledge CLI](/help/developers/liveknowledge-cli/) does the same from a terminal.
 
 </AppNote>
 
@@ -273,6 +310,14 @@ curl https://www.liveplanner.app/api/openapi.json
 
 ```bash
 curl https://www.livedocuments.app/api/openapi.json
+```
+
+</AppNote>
+
+<AppNote app="liveknowledge">
+
+```bash
+curl https://www.liveknowledge.app/api/openapi.json
 ```
 
 </AppNote>

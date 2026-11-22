@@ -11,14 +11,22 @@ import {
 import { adderKeyFor } from '../adder-key';
 import { noteTokenRoom, noteWorkbenchRoom } from '../auth/workbench-session';
 import { linkCodeOf, indexService } from '../index-service';
-import { badRequest, designTrashed, forbidden, json, notFound } from '../responses';
+import {
+  badRequest,
+  designTrashed,
+  forbidden,
+  json,
+  notFound,
+  PUT_AWAY_ANSWERS,
+} from '../responses';
 import {
   openRoomTicket,
   requestedRoomCap,
   roomTicketLevel,
   sealRoomTicket,
+  ticketPutAwayGate,
 } from '@liveworkspace/index-app';
-import { type RouteContext } from './context';
+import { type RouteContext, grantCallerOf } from './context';
 import { resolveDesignGrant } from './design-grant';
 import {
   COLLAB_KEY_HEADER,
@@ -52,6 +60,17 @@ export async function handleDesignRoomRoutes(ctx: RouteContext): Promise<Respons
     const grant = await resolveDesignGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
+    // A grant this worker fetched and keeps, from before the design was archived or trashed: its room says
+    // so, and the grant is dropped (Work Tracker 1323).
+    const away = await ticketPutAwayGate(
+      indexService,
+      request,
+      grantCallerOf(ctx),
+      grant,
+      (stamp) => designRoom(env, id).standingRefusal(stamp),
+      PUT_AWAY_ANSWERS,
+    );
+    if (away) return away;
     // A design in the Trash opens no room (docs/specs/013-workspace/trash.md): its owner and team are told why.
     if (grant.trashed) return designTrashed();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');

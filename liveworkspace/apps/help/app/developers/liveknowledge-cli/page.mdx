@@ -1,0 +1,89 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { CliScene } from '@/editions/liveknowledge/components/illustrations/style-and-developers';
+
+export const metadata = helpMetadata({
+  title: 'The liveknowledge CLI',
+  description:
+    'Read, search, write, import and export a Knowledgebase from a terminal or a script with the liveknowledge command, and keep it as Markdown beside a repository.',
+  path: '/help/developers/liveknowledge-cli/',
+});
+
+<ArticleLayout path="developers/liveknowledge-cli" title="The liveknowledge CLI" description="Read, search, write, import and export a Knowledgebase from a terminal with the liveknowledge command." categoryTitle="Developers" categorySlug="developers">
+
+The `liveknowledge` command reads and writes a Knowledgebase from a terminal, a script or a coding agent. Its commands mirror the [MCP tools](/help/developers/liveknowledge-mcp-tools/), and it can keep a Knowledgebase as a folder of Markdown beside a repository.
+
+<Figure caption="The CLI in a terminal: the page tree with each page's trust, a search, and a page read into a file.">
+  <CliScene />
+</Figure>
+
+## Install and Sign In
+
+The CLI is the npm package `@liveknowledge/cli` and needs **Node 22 or later**. Run it without installing:
+
+```bash
+npx @liveknowledge/cli@latest --help
+```
+
+or install it, which gives you the `liveknowledge` command:
+
+```bash
+npm install -g @liveknowledge/cli
+liveknowledge auth login
+```
+
+`auth login` signs you in in your browser, once. A script can send an [API token](/help/account-and-data/api-tokens/) instead.
+
+## The Commands
+
+Every command takes the Knowledgebase first: its name, the start of its id, or its address. A page is named by its id, or by its title where one page alone has it.
+
+| Command                                     | What it does                                                                  |
+| ------------------------------------------- | ----------------------------------------------------------------------------- |
+| `context <kb>`                              | The Always in Context pages as Markdown, your role and scopes, the Review Period. Run it first |
+| `pages <kb> [--under <page>]`               | The page tree, each page with its id and trust                                |
+| `search <kb> <words…> [--limit <n>]`        | Passages that match, with their page, headings and trust (20 at most)         |
+| `read <kb> <page> [--heading <h>]`          | A page as Markdown, then its trust, backlinks and subpages                    |
+| `new <kb> <title> [<file>] [--parent <page>]` | A new page from a Markdown file, or `-` for what is piped in               |
+| `suggest <kb> <page> --reason <r> [--old <text>] --new <text>` | A suggested edit for a person to accept. Leave out `--old` to append. `--new-file` reads the Markdown from a file |
+| `write <kb> <page> <file> [--append]`       | Replaces a page's writing, or adds after it. Needs the write scope            |
+| `move <kb> <page> [--parent <page> \| --top] [--before <page>]` | Moves a page and its subpages. Needs the write scope       |
+| `gap <kb> <question…>`                      | Records a question the Knowledgebase could not answer                         |
+| `import <path> [--name <n> \| --to <kb> [--into <page>]] [--source markdown\|notion] [--dry-run]` | A Markdown folder, a `.zip` or a Notion export into a new or existing Knowledgebase |
+| `export <kb> <dir>`                         | The Knowledgebase as a folder of Markdown                                     |
+
+Add `--json` to any command for its answer as JSON, or `-q` for the bare result (ids, or the Markdown alone).
+
+## Examples
+
+```bash
+# What every agent should know first
+liveknowledge context Handbook
+
+# Find a passage, then read its page
+liveknowledge search Handbook when do we deploy
+liveknowledge read Handbook Deploying --heading "When we deploy" -q > section.md
+
+# Suggest a fix for a person to accept
+liveknowledge suggest Handbook Deploying --reason "Moved in March" --old "on Tuesdays" --new "on Mondays"
+
+# Add a page under another, from a file
+liveknowledge new Handbook Hotfixes hotfixes.md --parent Deploying
+
+# Keep the Knowledgebase beside a repository
+liveknowledge export Handbook docs/handbook
+liveknowledge import ./docs --name Handbook --dry-run
+```
+
+## Import and Export
+
+- `export <kb> <dir>` writes one `.md` file a page, a page's subpages in a folder of its name, links between pages as relative links and pictures under `pictures/`. `export --all --to <dir>` backs up every Knowledgebase you can read instead.
+- `import` reads a Markdown folder or `.zip` (the default) and a Notion export (`--source notion`). `--dry-run` prints the plan and writes nothing. A picture comes across as its caption: import in the app to bring pictures in. A Confluence export is refused: import it in the app. See [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/).
+
+## Good to Know
+
+- `write` and `move` need the write scope, which an Editor allows in AI Knowledge. Without it the command is refused and says to use `suggest`. `write` is refused on a Verified or Review Due page whatever the scopes. See [An Agent Cannot Write](/help/troubleshooting/an-agent-cannot-write/).
+- The CLI's reads are counted under "CLI" in [Connected Agents](/help/knowledgebase/connecting-an-agent/).
+- `liveknowledge --help` lists every command, and `liveknowledge <command> --help` its flags.
+
+</ArticleLayout>

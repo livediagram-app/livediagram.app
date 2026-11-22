@@ -1,0 +1,225 @@
+'use client';
+
+import { useCallback } from 'react';
+import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
+import dynamic from 'next/dynamic';
+import { hasWriting } from '@liveknowledge/document';
+
+import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { tabAsSeen } from '@/lib/export-as-seen';
+import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
+import { tabInKnowledgeStyle } from '@/lib/knowledge-style/styled-tab';
+import { importFormatsFor } from '@/lib/import-formats';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { shareUrl } from '@/lib/explorer-host';
+import { documentHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
+import { randomName } from '@/lib/identity';
+import { useToast } from '@/hooks/ui/useToast';
+import { useKnowledgeImportProps } from '@/components/dialogs/knowledge-import/useKnowledgeImportProps';
+import { SetupWhenOpen } from '@/components/setup/SetupHost';
+import { DescribeStructureWhenOpen } from '@/components/describe-structure/DescribeStructureHost';
+import { usePublishingOpen } from '@/lib/publishing/publish-open';
+
+const ExportTabDialog = dynamic(
+  () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
+  { ssr: false },
+);
+const ImportTabDialog = dynamic(
+  () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
+  { ssr: false },
+);
+// The shared Explorer's Share dialog (@liveworkspace/explorer), with liveknowledge's Community tab
+// (docs/specs/025-community/community.md "Publishing"): links are the index's, managed there.
+const ShareDialog = dynamic(
+  () =>
+    import('@/components/dialogs/community/ShareDialogWithCommunity').then(
+      (m) => m.ShareDialogWithCommunity,
+    ),
+  { ssr: false },
+);
+// Publish to the Web (docs/specs/030-knowledgebase/publishing.md): its code is fetched the first time it is opened.
+const PublishHost = dynamic(
+  () => import('@/components/publishing/PublishDialog').then((m) => m.PublishHost),
+  { ssr: false },
+);
+function PublishWhenOpen() {
+  return usePublishingOpen() ? <PublishHost /> : null;
+}
+const ShareOfflineGate = dynamic(
+  () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
+  { ssr: false },
+);
+
+// Tab-scoped export / import dialogs + the document share dialog. Each is
+// gated on its own open flag and reads everything from EditorContext, so
+// EditorView just renders <EditorTabDialogs />. Grouped because all three
+// are "act on this tab / document as a whole" modals launched from the
+// header, distinct from the global editor modals in EditorModals.
+// The tab and document dialogs, open or not.
+// Only whether one is open is read until it is (docs/specs/007-editor/blueprints/typing.md "Performance and
+// limits"): a typing commit renders nothing here.
+export function EditorTabDialogs() {
+  const open = useEditorChrome((s) => s.exportOpen || s.importOpen || s.shareDialogOpen);
+  return (
+    <>
+      {open ? <OpenEditorTabDialogs /> : null}
+      {/* Describe to Set Up (describe-to-set-up.md): it reads its own open state, and its code is fetched when it
+          is first opened. */}
+      <SetupWhenOpen />
+      {/* Describe Structure on a page (describe-to-set-up.md), the same way. */}
+      <DescribeStructureWhenOpen />
+      <PublishWhenOpen />
+    </>
+  );
+}
+
+function OpenEditorTabDialogs() {
+  const {
+    exportOpen,
+    exportScope,
+    pagesMode,
+    activeTab,
+    tabs,
+    documentName,
+    imageContext,
+    setExportOpen,
+    importOpen,
+    importIntoActiveTab,
+    importTextIntoActiveTab,
+    importFileIntoActiveTab,
+    setImportOpen,
+    shareDialogOpen,
+    shareStartView,
+    selfParticipant,
+    documentId,
+    setShareDialogOpen,
+    syncToCloud,
+    accountUserId,
+    accountDisplayName,
+    documentTeamId,
+    setSelfParticipant,
+    slideDeck,
+  } = useEditorContext();
+  const toast = useToast();
+  // The three Knowledgebase import sources, for an Editor on the whole knowledgebase only.
+  const knowledgebase = useKnowledgeImportProps();
+  // The selection the export covers, read from the store while a selection export is open
+  // (docs/specs/008-canvas/blueprints/selection-store.md).
+  const exportingSelection = exportOpen && exportScope === 'selection';
+  const multiSelectedIds = useSelectionOf(
+    useCallback(
+      (sel: Selection) =>
+        exportingSelection ? sel.multiSelectedIds : EMPTY_SELECTION.multiSelectedIds,
+      [exportingSelection],
+    ),
+  );
+
+  // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
+  // owner's account; the Share dialog says so and offers Sync Document, which converts the open document
+  // in place ("Syncing in place"), and then shows the share options. Never as the 'self' placeholder an
+  // early open runs under: the gate waits for the reader (`syncReady`).
+  const isOffline = useIsOfflineDocument(documentId);
+  const readerKnown = selfParticipant.id !== 'self';
+
+  return (
+    <>
+      {exportOpen ? (
+        <ExportTabDialog
+          // Export what the author is LOOKING at: a tab on the Default colour
+          // scheme paints in the viewer's appearance (docs/specs/007-editor/editor-app.md), so the export
+          // takes the resolved backdrop rather than the stored one — and, from
+          // it, the ink for every element that carries no colours of its own. It is the tab's
+          // canvas backdrop as the viewer sees it (docs/specs/011-theme/light-and-dark.md "What a viewer sees").
+          tab={tabAsSeen({
+            ...activeTab,
+            ...(exportScope === 'selection'
+              ? { elements: activeTab.elements.filter((el) => multiSelectedIds.has(el.id)) }
+              : {}),
+          })}
+          scope={exportScope}
+          // In Pages mode the whole tab exports as its pages
+          // (docs/specs/007-editor/pages-mode.md "Export").
+          pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
+          // The PowerPoint export's speaker notes and hidden slides (docs/specs/020-import-export/office-export.md).
+          deck={slideDeck?.deck}
+          documentName={documentName}
+          // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
+          // Every other page too, in the knowledgebase's style (page-surface.md "Knowledgebase Style").
+          documentTabs={tabs.map((t) => tabInKnowledgeStyle(t, knowledgeStyleStore.openStyle()))}
+          imageContext={imageContext}
+          onClose={() => setExportOpen(false)}
+        />
+      ) : null}
+      {importOpen ? (
+        <ImportTabDialog
+          tabName={activeTab.name}
+          onImportFile={importIntoActiveTab}
+          onImportText={importTextIntoActiveTab}
+          onImportFileFormat={importFileIntoActiveTab}
+          // Each format only on a tab of its kind, or an empty one (docs/specs/020-import-export/markdown-import.md
+          // "Where it is offered").
+          formats={importFormatsFor(activeTab)}
+          knowledgebase={knowledgebase}
+          onClose={() => setImportOpen(false)}
+        />
+      ) : null}
+      {shareDialogOpen && isOffline ? (
+        <ShareOfflineGate
+          onSyncToCloud={syncToCloud}
+          ready={readerKnown}
+          onClose={() => setShareDialogOpen(false)}
+        />
+      ) : shareDialogOpen && documentId ? (
+        <ShareDialog
+          client={indexClient}
+          item={{
+            id: documentId,
+            app: 'liveknowledge',
+            kind: 'document',
+            sharedVia: null,
+            title: documentName,
+            teamId: documentTeamId,
+          }}
+          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
+          shareUrl={shareUrl}
+          handOver={documentHandOver}
+          helpHref={shareHelpHref}
+          onTelemetry={trackShare}
+          notify={(text, tone) => toast[tone](text)}
+          // A guest's name is theirs to change here; an account's is the account's (auth-and-guest-access.md).
+          identity={
+            accountUserId
+              ? undefined
+              : {
+                  name: selfParticipant.name,
+                  color: selfParticipant.color,
+                  randomName,
+                  onSave: (name) => setSelfParticipant((p) => ({ ...p, name })),
+                }
+          }
+          ownerId={selfParticipant.id}
+          documentName={documentName}
+          signedIn={!!accountUserId}
+          author={{
+            name: (accountUserId ? accountDisplayName : null) || selfParticipant.name,
+            color: selfParticipant.color,
+          }}
+          // Known only for the open tab (the editor holds its elements); another first tab, or a first page that is
+          // empty while a later one is not, is left to the server (docs/specs/025-community/community.md "Something
+          // to show").
+          firstTabEmpty={
+            !!activeTab &&
+            tabs[0]?.id === activeTab.id &&
+            activeTab.elements.length === 0 &&
+            !hasWriting(activeTab)
+          }
+          // The Share legend's Everyone stop opens it on the Community tab (openShareOn).
+          initialView={shareStartView}
+          onClose={() => setShareDialogOpen(false)}
+        />
+      ) : null}
+    </>
+  );
+}

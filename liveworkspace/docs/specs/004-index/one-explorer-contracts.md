@@ -8,15 +8,25 @@ side imports, so a change here is a change there.
 
 | Term   | Meaning                                                                                      |
 | ------ | -------------------------------------------------------------------------------------------- |
-| item   | One Canvas, Plan, Document or Design. Its id is a UUID the index gives it when it is made.   |
-| app    | `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, or `livehuddle` (below).        |
-| kind   | `canvas`, `plan`, `document`, `design` or `space`: one per app, the word people see.         |
+| item   | One Canvas, Plan, Document, Design, Space or Knowledgebase. Its id is a UUID the index gives |
+|        | it when it is made.                                                                          |
+| app    | `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, `livehuddle` or `liveknowledge` |
+|        | (below).                                                                                     |
+| kind   | `canvas`, `plan`, `document`, `design`, `space` or `knowledgebase`: one per app, the word    |
+|        | people see.                                                                                  |
 | person | Who is asking: an account (`user_…`) or a guest (`guest_…`). The same id in every app.       |
 | index  | The service at `liveworkspace.app/api/index` and its database. The only record of everything |
 |        | about an item except its content.                                                            |
 | grant  | A short-lived token, signed by the index, saying a person (or a link visitor) may open an    |
 |        | item at a level.                                                                             |
 | level  | `view` < `participate` < `edit`, as every app uses.                                          |
+
+liveknowledge (its kind `knowledgebase`, a person's "Knowledgebase") is an app since its registration
+([liveknowledge's platform registration](../../../../liveknowledge/docs/specs/016-platform/platform-registration.md)): every link level
+(Editor, Participant, Viewer), Editor the default. The `items` table takes `liveknowledge` and `knowledgebase` since
+its second rebuild (`0026_items_liveknowledge.sql`, rehearsed like the first:
+[blueprints/items.md](blueprints/items.md#rebuilding-items)), and nothing pushes one until `INDEX_KEY_LIVEKNOWLEDGE` is
+set.
 
 livehuddle (its kind `space`, a person's "Space") was registered before its launch
 ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)) and is listed since
@@ -317,8 +327,23 @@ index nothing while it runs).
   standing too: a restore lost twice mends itself the next time anyone opens the item or renews a grant on it.
 - Every app's door is `@liveworkspace/index-app` `handleInternalItems` (the `standing` handler); the body's type and
   parser are `@liveworkspace/index-client` `standing.ts`. An app without the handler answers `200 {ok: true}` and does
-  nothing: livediagram, livedocuments, livedesign and livehuddle keep no clock of their own for an item today, so only
-  liveplanner acts on it ([automations.md](../../../../liveplanner/docs/specs/026-plan/automations.md) "Put away").
+  nothing. Every app's item room keeps the standing (liveplanner's `plan-standing.ts`, the others'
+  `@liveworkspace/automations/room` `ItemStandingKeeper`): its rules, time rules and Waits stop while it is put away
+  ([automations.md](../../../../liveplanner/docs/specs/026-plan/automations.md) "Put away"), and it keeps whether the
+  item was archived or trashed, for the refusal below.
+- **A grant from before it was put away is refused** (Work Tracker 1323). An app's worker keeps a grant it fetched
+  for an API token or a workbench session until a minute before it lapses ("Carrying a grant to the app"), and nothing
+  at the index can reach every isolate's copy. So the item's room, the one place every request about the item meets
+  whichever isolate it came through, checks each grant it is handed against its standing: while the item is put away,
+  a grant signed before the stored `at` (its `iatMs`, else `iat`) is refused, `409 archived` for an archived item and
+  the app's trashed answer (`410 <noun>_trashed`) for one in the Trash, on every REST and MCP call and on a room
+  ticket the worker mints from a grant it fetched. A grant signed after `at` is never refused (none is signed for an
+  archived item, and a trashed one carries `trashed`), and a standing that is not put away refuses nothing, so a move
+  out or a restore opens the item again on the next call. The refusal carries `X-Item-Put-Away: archived|trashed`;
+  the worker then drops the grant it holds for that caller and item, so the next call asks the index again, which
+  answers the refusal itself, or a fresh grant that mends a move out lost twice. A room that never heard the standing
+  refuses nothing (fails open), as before. The check is a comparison in the room's memory: no storage read and no
+  call to the index.
 - **Open sessions end.** Every app's handler also ends the item's live sessions when the standing puts it away: on
   `trashed: true` its room sends the product's trashed op and closes each socket with 4004; on `archived: true` (and
   not trashed) it closes each with **4010** (`ITEM_ARCHIVED_CLOSE`, reason `item-archived`) through the room's
@@ -493,7 +518,9 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   Each level's card carries a one-line blurb, the same for every app (`LEVEL_PASS` in
   `packages/explorer/src/dialogs/share/parts.tsx`) unless the app words it its own way (`APP_LEVEL_BLURBS`, keyed
   by app and level, read for the item's app): livehuddle's Participant reads "Walks, talks and uses the pieces; adds
-  nothing." ([livehuddle Share roles](../../../../livehuddle/docs/specs/013-workspace/share-roles.md#a-participant-walks)).
+  nothing." ([livehuddle Share roles](../../../../livehuddle/docs/specs/013-workspace/share-roles.md#a-participant-walks)),
+  and liveknowledge's "Writes and verifies pages. Can't change the style or review period." (an Editor less three
+  things, [liveknowledge Share roles](../../../../liveknowledge/docs/specs/013-workspace/share-roles.md)).
 - `GET /share/:code`: public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
   opens it, except through a public link (no Shared entry, no "joined" notice, no visit in its History); 401
   `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right
@@ -508,6 +535,12 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   lists), and the app is told to reload every link's sessions (`revoke`, `reason: "rescoped"`, below), so they meet
   the password; entering it records them again. Saving the same password, or removing it, sends no one away.
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
+- **Publishing is not sharing.** An app that makes an item readable on the open web (liveknowledge's
+  [Publish to the Web](../../../../liveknowledge/docs/specs/030-knowledgebase/publishing.md)) makes no share link and
+  asks the index for nothing: the public reads a published snapshot the app keeps in the item's own storage, never
+  the item, so a published reader is never a link visitor, has no grant, and appears in no Shared, Inbox or History.
+  Who may publish is the app's rule (an Editor of the item). A share password, a link's expiry and revoking links
+  leave a published snapshot as it is; deleting the item takes it down with the item.
 - A connected tab's pass is a share link like these, made by `POST /items/:id/connections` and handed out only by
   `GET /connections/:id` ([connected-tabs.md](connected-tabs.md)).
 
@@ -617,7 +650,9 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   which still says who is asking). The api checks it offline with `createGrantVerifier` (`aud` the app),
   that `item` is the plan in the path, and the level the route needs (`view` < `participate` < `edit`, a
   `tab` confining it to one tab). A caller without one, such as an API token from the CLI or an AI tool,
-  gets one from the index as a delegated caller (above), cached until a minute before it lapses.
+  gets one from the index as a delegated caller (above), cached until a minute before it lapses. The item's room
+  refuses a cached grant from before the item was archived or trashed ("Where an item stands"), and the worker then
+  drops it.
 - **WebSocket**: a socket cannot send headers, so the grant rides the upgrade as `?t=<grant>`. A session
   the app opens for a paired tool gets no grant it could read: its ticket is `rt2~<sealed>`, the grant, the pairing
   and the cap encrypted together (AES-GCM, key derived from INDEX_KEY), so the session can neither raise its limits

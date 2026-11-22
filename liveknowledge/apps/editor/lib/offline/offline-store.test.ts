@@ -1,0 +1,173 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import {
+  __setOfflineBackend,
+  applyMeta,
+  isOfflineId,
+  isOfflineIdSync,
+  offlineCreateDocument,
+  offlineDeleteIfUnchanged,
+  offlineGetRecord,
+  offlinePutRecord,
+  offlineDeleteDocument,
+  offlineDeleteTab,
+  offlineIdCount,
+  offlineListDocuments,
+  offlineLoadDocument,
+  offlineLoadTab,
+  offlineSaveDocumentMeta,
+  offlineSaveTab,
+  OFFLINE_OWNER_ID,
+  recordToDocument,
+  removeTab,
+  tabToSummary,
+  upsertTab,
+} from './offline-store';
+import { memBackend, testRecord as rec, testTab as tab } from './offline-test-utils';
+import { nextLocalOpens } from './offline-opens';
+
+afterEach(() => __setOfflineBackend(null));
+
+describe('offline transforms', () => {
+  it('projects a record into a valid, unshared document', () => {
+    const d = recordToDocument(rec({ tabs: [tab('t1', { folder: 'A' })] }));
+    expect(d).toMatchObject({
+      id: 'd1',
+      ownerId: OFFLINE_OWNER_ID,
+      shareable: false,
+      shareCode: null,
+      teamId: null,
+      source: null,
+    });
+    expect(d.tabs).toEqual([
+      { id: 't1', documentId: 'd1', name: 't1', orderIndex: 0, updatedAt: 100, folder: 'A' },
+    ]);
+  });
+
+  it("tabToSummary carries a subpage's parent, so the tree keeps its shape before the page's body loads", () => {
+    expect(tabToSummary(tab('t2', { parent: 't1' }), 'd1', 1, 5)).toMatchObject({
+      id: 't2',
+      parent: 't1',
+    });
+    expect(Object.hasOwn(tabToSummary(tab('t1'), 'd1', 0, 5), 'parent')).toBe(false);
+    const d = recordToDocument(rec({ tabs: [tab('t1'), tab('t2', { parent: 't1' })] }));
+    expect(d.tabs.map((t) => t.parent)).toEqual([undefined, 't1']);
+  });
+
+  it('tabToSummary omits folder when absent', () => {
+    expect(tabToSummary(tab('t1'), 'd1', 2, 5)).toEqual({
+      id: 't1',
+      documentId: 'd1',
+      name: 't1',
+      orderIndex: 2,
+      updatedAt: 5,
+    });
+  });
+
+  it('applyMeta renames and reorders tabs by id + refreshes folder', () => {
+    const out = applyMeta(
+      rec(),
+      { name: 'New', tabs: [{ id: 't2', folder: 'F' }, { id: 't1' }] },
+      200,
+    );
+    expect(out.name).toBe('New');
+    expect(out.savedAt).toBe(200);
+    expect(out.tabs.map((t) => t.id)).toEqual(['t2', 't1']);
+    expect(out.tabs[0]!.folder).toBe('F');
+  });
+
+  it('upsertTab appends a new tab and replaces an existing one', () => {
+    const appended = upsertTab(rec(), tab('t3'), 200);
+    expect(appended.tabs.map((t) => t.id)).toEqual(['t1', 't2', 't3']);
+    const replaced = upsertTab(rec(), tab('t1', { name: 'renamed' }), 200);
+    expect(replaced.tabs[0]!.name).toBe('renamed');
+    expect(replaced.tabs).toHaveLength(2);
+  });
+
+  it('removeTab drops the tab', () => {
+    expect(removeTab(rec(), 't1', 200).tabs.map((t) => t.id)).toEqual(['t2']);
+  });
+});
+
+describe('offline store ops (in-memory backend)', () => {
+  it('create → load → list → isOfflineId → delete round-trip', async () => {
+    __setOfflineBackend(memBackend());
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
+
+    expect(await isOfflineId('d1')).toBe(true);
+    expect(await isOfflineId('other')).toBe(false);
+    expect((await offlineLoadDocument('d1'))?.name).toBe('Doc');
+    expect((await offlineListDocuments()).map((s) => s.id)).toEqual(['d1']);
+
+    await offlineDeleteDocument('d1');
+    expect(await isOfflineId('d1')).toBe(false);
+    expect(await offlineLoadDocument('d1')).toBeNull();
+  });
+
+  it('starts the record of uses with its making (docs/specs/013-workspace/explorer-home.md)', async () => {
+    const backend = memBackend();
+    __setOfflineBackend(backend);
+    const now = Date.UTC(2026, 9, 3, 18);
+    await offlineCreateDocument({ id: 'd1', name: 'Doc' }, now);
+    expect((await backend.get('d1'))?.opens).toEqual(nextLocalOpens(undefined, now));
+    expect((await backend.get('d1'))?.opens).toEqual({ days: ['2026-10-03'], lastOpenedAt: now });
+  });
+
+  it('saves + loads + deletes individual tabs', async () => {
+    __setOfflineBackend(memBackend());
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [] }, 100);
+
+    await offlineSaveTab('d1', tab('t1', { name: 'First' }), 150);
+    expect((await offlineLoadTab('d1', 't1'))?.name).toBe('First');
+
+    await offlineSaveTab('d1', tab('t1', { name: 'Edited' }), 160);
+    expect((await offlineLoadTab('d1', 't1'))?.name).toBe('Edited');
+
+    await offlineDeleteTab('d1', 't1', 170);
+    expect(await offlineLoadTab('d1', 't1')).toBeNull();
+  });
+
+  it('saveDocumentMeta renames without touching tabs', async () => {
+    __setOfflineBackend(memBackend());
+    await offlineCreateDocument({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
+    await offlineSaveDocumentMeta('d1', { name: 'Renamed' }, 200);
+    expect((await offlineLoadDocument('d1'))?.name).toBe('Renamed');
+  });
+});
+
+describe('offlineDeleteIfUnchanged (Sync Document, docs/specs/006-document/offline-mode.md)', () => {
+  it('removes the record and forgets the id when it still matches', async () => {
+    __setOfflineBackend(memBackend());
+    await offlinePutRecord(rec({ id: 'd1', savedAt: 5 }));
+    const out = await offlineDeleteIfUnchanged('d1', (r) => r.savedAt === 5);
+    expect(out).toMatchObject({ outcome: 'deleted', rec: { savedAt: 5 } });
+    expect(await offlineGetRecord('d1')).toBeNull();
+    expect(isOfflineIdSync('d1')).toBe(false);
+  });
+
+  it('keeps a record that changed, answering it as it is now', async () => {
+    __setOfflineBackend(memBackend());
+    await offlinePutRecord(rec({ id: 'd1', savedAt: 5 }));
+    await offlineSaveTab('d1', tab('t9'), 6);
+    const out = await offlineDeleteIfUnchanged('d1', (r) => r.savedAt === 5);
+    expect(out).toMatchObject({ outcome: 'changed', rec: { savedAt: 6 } });
+    expect(await offlineGetRecord('d1')).not.toBeNull();
+    expect(isOfflineIdSync('d1')).toBe(true);
+  });
+
+  it('answers missing for a record already gone', async () => {
+    __setOfflineBackend(memBackend());
+    expect(await offlineDeleteIfUnchanged('gone', () => true)).toEqual({ outcome: 'missing' });
+  });
+});
+
+// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving documents kept Offline
+// after signing in"): a count off the cached index, never a full read.
+describe('offlineIdCount', () => {
+  it('counts the documents this browser holds', async () => {
+    __setOfflineBackend(memBackend());
+    expect(await offlineIdCount()).toBe(0);
+    await offlineCreateDocument({ id: 'a', name: 'A' }, 1);
+    await offlineCreateDocument({ id: 'b', name: 'B' }, 2);
+    expect(await offlineIdCount()).toBe(2);
+  });
+});

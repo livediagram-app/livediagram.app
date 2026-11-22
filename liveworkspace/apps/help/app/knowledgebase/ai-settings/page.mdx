@@ -1,0 +1,118 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { AiSettingsScene } from '@/editions/liveknowledge/components/illustrations/finding';
+
+export const metadata = helpMetadata({
+  title: 'AI Settings',
+  description:
+    'Choose what answers in a Knowledgebase: built-in AI, included with daily limits, or your own Claude or OpenAI key, with its provider and model.',
+  path: '/help/knowledgebase/ai-settings/',
+});
+
+<ArticleLayout path="knowledgebase/ai-settings" title="AI Settings" description="Built-in AI is included; your own Claude or OpenAI key is optional: the choice, the key, the model and the limits." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Ask, the check for pages that disagree, drafting a page from a question and Describe to Set Up run on **built-in AI** by default. It is included with liveknowledge, needs no key and has daily limits. A team may instead add **its own key**, from Anthropic (Claude) or OpenAI, and then everything runs on that key, paid to that provider. **AI Settings** is where an Editor chooses. The choice belongs to one Knowledgebase and is the same for everyone in it.
+
+<Figure caption="AI Settings with your own key: the provider, the key's state with Replace and Remove, and the model.">
+  <AiSettingsScene />
+</Figure>
+
+## What Uses AI
+
+- [Ask](/help/knowledgebase/ask/), and drafting a page from a Knowledge Gap.
+- [Describe to Set Up](/help/getting-started/describe-to-set-up/).
+- The check that finds [pages that disagree](/help/knowledgebase/pages-that-disagree/).
+
+Search, verifying, the page tree, import, export, agents connected over MCP and everything else need no AI at all.
+
+## Choose Which AI
+
+Open the **Ask** or **AI Knowledge** tab in the footer and press **AI Settings** in the top row. Under **Which AI** there are two choices:
+
+- **Built-In AI** (the default, marked **Included**): nothing to set up. Everything runs on built-in AI, within its [daily limits](#built-in-ai-limits).
+- **Your Own Key**: then choose the provider, paste the key and pick the model, as below.
+
+Choosing **Built-In AI** while a key is saved asks first (**Use Built-In AI Instead?**). Confirm with **Use Built-In AI** and the key is removed; everything goes back to built-in AI.
+
+A server someone runs themselves may have no built-in AI. There **Built-In AI** reads "Not set up on this server", and your own key is the only way to use Ask.
+
+## Add Your Own Key
+
+<Step n={1}>
+  Under **Which AI**, choose **Your Own Key**.
+</Step>
+
+<Step n={2}>
+  Under **Provider**, choose **Anthropic (Claude)** or **OpenAI**.
+</Step>
+
+<Step n={3}>
+  Make an API key in the provider's own console (the Claude Console, or the OpenAI platform), paste
+  it into the field and press **Save Key**.
+</Step>
+
+<Step n={4}>
+  Under **Model**, keep the one chosen or pick another. The list is the provider's current models,
+  and the most capable is chosen to begin with.
+</Step>
+
+The key's state now reads "Key Ending" and its last four characters, and Ask, conflict checks, drafts and Describe to Set Up run on the key for everyone in the Knowledgebase.
+
+## How the Key Is Kept
+
+- The key is sent once, over an encrypted connection, and **encrypted when it is saved**.
+- It is **never shown again**, here or anywhere else. AI Settings shows only its last four characters ("Key Ending 4f2a"), and to someone who is not an Editor just "Key Added".
+- The field is cleared as soon as the key is sent, whatever the answer. The key is not kept in the page, in your browser, in a log or in telemetry.
+- It is used only to call the provider you chose. A Claude key is never sent to OpenAI, or the other way round.
+
+## Replace or Remove the Key
+
+- **Replace:** paste a new key in the field and press **Replace**. The new key takes over from that moment.
+- **Remove:** press **Remove** beside the key's state and confirm **Remove the Key?** Ask and everything else that uses a model go back to built-in AI, with its daily limits. (On a server with no built-in AI, Ask stops answering until an Editor adds a key again.) Removing the key keeps the provider chosen.
+
+If a key may have leaked, revoke it in the provider's console first, then replace it here.
+
+## Change the Provider
+
+A Knowledgebase holds one provider and one key at a time.
+
+- With **no key saved**, choosing the other provider takes effect at once.
+- With **a key saved**, it asks first ("Replace the Claude Key With an OpenAI Key?"). Confirm with **Choose Provider**. The saved key stays in use until you save a key for the new provider. That save replaces it and sets the model to the new provider's most capable one.
+
+Everything behaves the same on either provider: the same limits, the same citations and the same words.
+
+## Built-In AI Limits
+
+Built-in AI is paid for by liveknowledge, so it has daily limits (each day runs to midnight UTC):
+
+- **30 questions a person a day**, across every Knowledgebase, and **100 questions a Knowledgebase a day**. Drafting a page from a Knowledge Gap counts as a question.
+- **20 checks for pages that disagree** a Knowledgebase a day.
+- **10 Describe to Set Up suggestions** a person a day.
+
+When a limit is reached, Ask says so and you can ask again tomorrow, or an Editor can add your own key. Search keeps working.
+
+## Who Pays, and for What
+
+Built-in AI costs your team nothing. On your own key, your team pays its provider directly, at the provider's prices, for each question asked and each structure, draft or check made. liveknowledge adds no charge. To keep spending bounded either way, a Knowledgebase answers at most 200 questions a day and one person asks at most 20 an hour. See [Ask](/help/knowledgebase/ask/#limits).
+
+What is sent for a question: the question, the conversation so far, and the passages of your pages that best match it. On built-in AI it goes to Cloudflare Workers AI, run by liveknowledge on Cloudflare. On your own key it goes to the provider you chose, whose own terms cover what it does with it.
+
+## Who Can Do What
+
+| Action                                   | Editor | Participant | Viewer |
+| ---------------------------------------- | ------ | ----------- | ------ |
+| See which AI, the provider, the key's state and the model | Yes | Yes | Yes |
+| Choose Built-In AI or Your Own Key       | Yes    | No          | No     |
+| Add, replace or remove the key           | Yes    | No          | No     |
+| Choose the provider or the model         | Yes    | No          | No     |
+
+A Participant and a Viewer see "Only an Editor of this knowledgebase can change these."
+
+## Good to Know
+
+- A key that is not the chosen provider's is refused as you save it: "That is not a Claude API key. Copy it again from the Claude Console and paste it whole."
+- A Knowledgebase kept Offline has no Ask, built-in or on a key: there is no server to ask.
+- AI Settings is not part of [Settings](/help/user-interface/settings/), which holds your own preferences. The choice and the key belong to the Knowledgebase.
+- When Ask says the key was not accepted, see [Ask Is Not Answering](/help/troubleshooting/ask-is-not-answering/).
+
+</ArticleLayout>

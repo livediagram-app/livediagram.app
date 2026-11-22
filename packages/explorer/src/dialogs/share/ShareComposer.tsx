@@ -13,6 +13,7 @@ import {
   type ShareLinkExpiry,
 } from '@liveworkspace/index-client';
 import { Button, Select } from '@liveworkspace/ui';
+import { scopeWords } from '../../words';
 import { HelpLink } from './HelpLink';
 import {
   DEFAULT_LEVEL,
@@ -49,6 +50,7 @@ export function ShareComposer({
   const [expiry, setExpiry] = useState<ShareLinkExpiry>('never');
   const [scope, setScope] = useState('');
   const multiTab = tabs.length > 1;
+  const scoped = scopeWords(app);
 
   // Arrow keys walk the lifetimes, wrapping, as in any radio group.
   const step = (e: KeyboardEvent<HTMLButtonElement>) =>
@@ -93,9 +95,9 @@ export function ShareComposer({
                 className="sm:col-span-2"
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
-                aria-label="Tabs this link opens"
+                aria-label={`${scoped.many} this link opens`}
               >
-                <ScopeOptions tabs={tabs} />
+                <ScopeOptions tabs={tabs} all={scoped.all} />
               </Select>
             </>
           ) : null}

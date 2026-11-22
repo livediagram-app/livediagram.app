@@ -65,6 +65,18 @@ describe('imageRefIds', () => {
     expect(imageRefIdsFromData(JSON.stringify({ elements: [], pages }))).toEqual(['bg', 'a']);
   });
 
+  it("counts a tab's cover picture last, once, and nothing of a cover with none", () => {
+    expect(imageRefIds([image('a')], [], { imageId: 'cov', focus: 20 })).toEqual(['a', 'cov']);
+    expect(imageRefIds([image('cov')], undefined, { imageId: 'cov' })).toEqual(['cov']);
+    expect(imageRefIds([], [], { imageId: 'data:image/png;base64,AA' })).toEqual([]);
+    expect(imageRefIds([], [], { fill: { kind: 'solid', color: '#fff' } })).toEqual([]);
+    expect(imageRefIds([], [], 'cover')).toEqual([]);
+    expect(imageRefIds([], [], null)).toEqual([]);
+    expect(
+      imageRefIdsFromData(JSON.stringify({ elements: [], cover: { imageId: 'cov' } })),
+    ).toEqual(['cov']);
+  });
+
   it('returns nothing for anything that is not an array of objects', () => {
     expect(imageRefIds(undefined)).toEqual([]);
     expect(imageRefIds({ elements: [image('a')] })).toEqual([]);

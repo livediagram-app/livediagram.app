@@ -22,5 +22,9 @@ export {
   type SlideDeckLike,
   type WalkthroughHostInput,
 } from './useWalkthroughHost';
-export { WalkthroughsPanel, WalkthroughsTools } from './ui/WalkthroughsTools';
+export {
+  WalkthroughsPanel,
+  WalkthroughsTools,
+  type WalkthroughWords,
+} from './ui/WalkthroughsTools';
 export { WalkthroughsLayer } from './ui/WalkthroughsLayer';

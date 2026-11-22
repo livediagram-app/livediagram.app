@@ -1,0 +1,78 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ExportFormatsScene } from '@/editions/liveknowledge/components/illustrations/import-export';
+
+export const metadata = helpMetadata({
+  title: 'Exporting a Knowledgebase',
+  description:
+    'Save a page of a Knowledgebase as PDF, Word, Markdown, an image or a liveknowledge file, print it, or export a whole Knowledgebase as a folder of Markdown.',
+  path: '/help/knowledgebase/exporting-a-knowledgebase/',
+});
+
+<ArticleLayout path="knowledgebase/exporting-a-knowledgebase" title="Exporting a Knowledgebase" description="Save a page as Markdown, PDF or Word, or a whole Knowledgebase as a folder of Markdown." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Your pages are yours to take anywhere. Export the page you are reading from the app, or a whole Knowledgebase as a folder of Markdown from the command line.
+
+## Export a Page
+
+<Step n={1}>
+  Open the page.
+</Step>
+
+<Step n={2}>
+  Press the Knowledgebase's name at the top of the sidebar and choose **Export**.
+</Step>
+
+<Step n={3}>
+  Choose a format.
+</Step>
+
+<Figure caption="Export: the formats the open page saves to.">
+  <ExportFormatsScene />
+</Figure>
+
+| Format       | What you get                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| **PDF**      | The page as one PDF, drawn as it stands: one tall page, not split onto paper sheets          |
+| **Print**    | The page, or the whole Knowledgebase, sent to your printer, each page its own sheet          |
+| **PNG**      | A high-resolution image of the page                                                          |
+| **SVG**      | A scalable vector image of the page                                                          |
+| **Word**     | A `.docx`, its headings as Word styles; Word lays the writing out on its own paper            |
+| **Markdown** | The page's writing as Markdown, in the form Import reads back. Copy it, or save a `.md`       |
+| **JSON**     | A liveknowledge file that imports back with everything kept                                  |
+
+Every export uses the [Knowledgebase Style](/help/knowledgebase/knowledgebase-style/).
+
+## Export a Whole Knowledgebase
+
+The CLI writes a Knowledgebase as a folder of Markdown, to keep beside a repository:
+
+```bash
+liveknowledge export Handbook docs/handbook
+```
+
+- One `.md` file a page, and a page's subpages in a folder of its name.
+- Links between pages as relative links, so they work in any Markdown viewer and import back as page links.
+- Pictures as files under `pictures/`.
+
+`liveknowledge export --all --to backup` writes every Knowledgebase you can read instead. See [The liveknowledge CLI](/help/developers/liveknowledge-cli/).
+
+## Other Copies of Your Work
+
+- **Google Drive:** keep a copy of every Knowledgebase in your own Drive. See [Google Drive](/help/account-and-data/google-drive/).
+- **Your Data:** in Settings, under Account, **Download All My Data** makes one zip of everything you own in every liveworkspace app, and emails you a link when it is ready.
+
+## Good to Know
+
+- A PDF of a page is one tall page. Splitting it onto A4 sheets is not offered yet: use **Word** or **Print** for paper.
+- Markdown export leaves out what Markdown cannot hold, and the panel names what was left out.
+- Export never changes the page.
+
+## Who Can Do What
+
+| Action                          | Editor | Participant | Viewer |
+| ------------------------------- | ------ | ----------- | ------ |
+| Export a page                   | Yes    | Yes         | Yes    |
+| Export a whole Knowledgebase (CLI) | Yes | Yes         | Yes    |
+
+</ArticleLayout>

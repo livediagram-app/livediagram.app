@@ -1,0 +1,644 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+vi.mock('../person/profiles', () => import('../test-profiles'));
+import { clearTestProfiles, setTestProfile } from '../test-profiles';
+import type { DocumentCommentsResponse } from '@liveknowledge/api-schema';
+import type { Comment, Element } from '@liveknowledge/document';
+import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import * as db from '../db';
+import { makeTestRouteContext } from './test-route-context';
+import { handleDocuments } from './documents';
+import { collabKeyFor, reactionPersonFor } from '@liveworkspace/api-kit/collab-key';
+
+// The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments", blueprint "REST"): add, delete-own,
+// reply, resolve and reopen through the tab's revision, relayed without author or token ids; the listing across
+// the document with refs and labels.
+
+let sql: SqliteD1;
+let pending: Promise<unknown>[];
+
+const shape = (id: string, extra: Record<string, unknown> = {}): Element =>
+  ({
+    id,
+    type: 'shape',
+    shape: 'square',
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 60,
+    label: id.toUpperCase(),
+    ...extra,
+  }) as unknown as Element;
+const comment = (id: string, extra: Partial<Comment> = {}): Comment => ({
+  id,
+  text: `text ${id}`,
+  createdAt: 1,
+  authorName: 'Priya',
+  authorColor: '#000',
+  authorId: 'priya',
+  ...extra,
+});
+
+function seed(t1: Element[], t2: Element[] = []) {
+  sql.sql
+    .prepare('UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = ?')
+    .run(JSON.stringify({ elements: t1 }), 't1');
+  sql.sql
+    .prepare('UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = ?')
+    .run(JSON.stringify({ elements: t2 }), 't2');
+}
+
+type Call = {
+  method?: string;
+  path: string;
+  body?: unknown;
+  owner?: string | null;
+  code?: string;
+  token?: string;
+};
+
+function call({ method = 'POST', path, body, owner = 'owner', code, token }: Call) {
+  return handleDocuments(
+    makeTestRouteContext(method, `/api/documents/d1${path}`, {
+      env: sql.env,
+      owner,
+      ...(code ? { headers: { 'X-Share-Code': code } } : {}),
+      ...(token ? { token: { id: token } } : {}),
+      ...(body === undefined ? {} : { body }),
+      waitUntil: (p) => void pending.push(p),
+    }),
+  );
+}
+
+const stored = async (tabId = 't1') => (await db.getTab(sql.env, 'd1', tabId))!;
+const threadOf = async (elementId: string, tabId = 't1') =>
+  (
+    (await stored(tabId)).elements.find((e) => e.id === elementId) as {
+      commentThread?: { resolved: boolean; comments: Comment[] };
+    }
+  ).commentThread;
+
+beforeEach(() => {
+  clearTestProfiles();
+  setTestProfile('owner', 'Webber', '#3b82f6');
+  sql = sqliteD1();
+  pending = [];
+  sql.sql.exec(`
+    INSERT INTO test_documents (id, owner_id, name, shareable, saved_at, created_at)
+      VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
+    INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES ('t1', 'Main', '{"elements":[]}', 1, 0);
+    INSERT INTO tabs (id, name, data, updated_at, element_count) VALUES ('t2', 'Detail', '{"elements":[]}', 1, 0);
+    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
+    INSERT INTO test_share_links (code, document_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO test_share_links (code, document_id, role, level, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 'participate', 't2', 1);
+    INSERT INTO test_share_links (code, document_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
+  `);
+  vi.spyOn(console, 'info').mockImplementation(() => undefined);
+});
+
+afterEach(() => vi.restoreAllMocks());
+
+describe('add', () => {
+  it('stamps the author and, for an agent, the token, and bumps the revision', async () => {
+    seed([shape('a')]);
+    const before = (await stored()).rev;
+    const res = await call({
+      path: '/tabs/t1/comments',
+      body: { elementId: 'a', text: '  hello  ' },
+      token: 'tok_1',
+    });
+    expect(res.status).toBe(201);
+    const { comment: posted } = await res.json<{ comment: Comment }>();
+    expect(posted).toMatchObject({
+      text: 'hello',
+      authorName: 'Webber',
+      authorColor: '#3b82f6',
+      authorId: 'owner',
+      tokenId: 'tok_1',
+    });
+    expect((await stored()).rev).toBe(before + 1);
+    expect((await threadOf('a'))!.comments[0]).toMatchObject({ id: posted.id, tokenId: 'tok_1' });
+  });
+
+  it('refuses a missing element, an arrow, empty or long text, and a body that is not an object', async () => {
+    seed([shape('a'), { id: 'ar', type: 'arrow' } as unknown as Element]);
+    expect(
+      (await call({ path: '/tabs/t1/comments', body: { elementId: 'zz', text: 'x' } })).status,
+    ).toBe(404);
+    expect(
+      (await call({ path: '/tabs/t1/comments', body: { elementId: 'ar', text: 'x' } })).status,
+    ).toBe(404);
+    expect(
+      (await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: '  ' } })).status,
+    ).toBe(400);
+    expect(
+      (await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: 'x'.repeat(2001) } }))
+        .status,
+    ).toBe(400);
+    expect((await call({ path: '/tabs/t1/comments', body: { text: 'x' } })).status).toBe(400);
+    expect((await call({ path: '/tabs/t1/comments', body: [1] })).status).toBe(400);
+    expect(
+      (await call({ path: '/tabs/t9/comments', body: { elementId: 'a', text: 'x' } })).status,
+    ).toBe(404);
+  });
+
+  // docs/specs/013-workspace/share-roles.md: commenting is a Participant's; a Viewer only looks.
+  it('lets a Participant link comment, refuses a view link, and keeps a tab-scoped link to its tab', async () => {
+    seed([shape('a')], [shape('b')]);
+    expect(
+      (
+        await call({
+          path: '/tabs/t1/comments',
+          body: { elementId: 'a', text: 'x' },
+          owner: 'looker',
+          code: 'LOOK',
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call({
+          path: '/tabs/t1/comments',
+          body: { elementId: 'a', text: 'x' },
+          owner: 'guest',
+          code: 'VIEW',
+        })
+      ).status,
+    ).toBe(201);
+    expect(
+      (
+        await call({
+          path: '/tabs/t1/comments',
+          body: { elementId: 'a', text: 'x' },
+          owner: 'guest',
+          code: 'TAB2',
+        })
+      ).status,
+    ).toBe(404);
+    expect(
+      (
+        await call({
+          path: '/tabs/t1/comments',
+          body: { elementId: 'a', text: 'x' },
+          owner: 'stranger',
+        })
+      ).status,
+    ).toBe(403);
+  });
+});
+
+// A Participant with no profile name (a guest) signs with the name on
+// their cursor, never "Anonymous"; a profile name wins, and an agent's sent name is never read.
+describe('the name a comment is signed with', () => {
+  it("takes the caller's cursor name when it has no profile name, and only then", async () => {
+    seed([shape('a'), shape('b'), shape('c')]);
+    const post = async (elementId: string, extra: Partial<Call>) =>
+      (
+        await (
+          await call({
+            path: '/tabs/t1/comments',
+            body: { elementId, text: 'x', name: '  Sam  ' },
+            ...extra,
+          })
+        ).json<{ comment: Comment }>()
+      ).comment.authorName;
+    expect(await post('a', { owner: 'guest', code: 'VIEW' })).toBe('Sam');
+    expect(await post('b', {})).toBe('Webber');
+    expect(
+      await post('c', { owner: 'guest', code: 'VIEW', body: { elementId: 'c', text: 'x' } }),
+    ).toBe('Anonymous');
+  });
+});
+
+describe('reply, resolve and reopen', () => {
+  it('replies on the thread holding a comment, and reopens a resolved one by replying', async () => {
+    seed([shape('a', { commentThread: { resolved: true, comments: [comment('c1')] } })]);
+    const res = await call({ path: '/tabs/t1/comments/c1/reply', body: { text: 'agreed' } });
+    expect(res.status).toBe(201);
+    const thread = await threadOf('a');
+    expect(thread!.comments.map((c) => c.text)).toEqual(['text c1', 'agreed']);
+    expect(thread!.resolved).toBe(false);
+    expect((await call({ path: '/tabs/t1/comments/nope/reply', body: { text: 'x' } })).status).toBe(
+      404,
+    );
+    expect((await call({ path: '/tabs/t1/comments/c1/reply', body: { text: '' } })).status).toBe(
+      400,
+    );
+    expect((await call({ path: '/tabs/t1/comments/c1/reply', body: 'x' })).status).toBe(400);
+  });
+
+  it('resolves and reopens, writing nothing when the thread is already so', async () => {
+    seed([shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })]);
+    expect((await call({ path: '/tabs/t1/comments/c1/resolve' })).status).toBe(204);
+    expect((await threadOf('a'))!.resolved).toBe(true);
+    const rev = (await stored()).rev;
+    expect((await call({ path: '/tabs/t1/comments/c1/resolve' })).status).toBe(204);
+    expect((await stored()).rev).toBe(rev);
+    expect((await call({ path: '/tabs/t1/comments/c1/reopen' })).status).toBe(204);
+    expect((await threadOf('a'))!.resolved).toBe(false);
+    expect((await call({ path: '/tabs/t1/comments/nope/resolve' })).status).toBe(404);
+    expect((await call({ method: 'GET', path: '/tabs/t1/comments/c1/resolve' })).status).toBe(405);
+  });
+});
+
+// docs/specs/012-collaboration/comment-reactions.md: a Participant reacts through the comment endpoints.
+describe('react', () => {
+  const react = (body: unknown, extra: Partial<Call> = {}) =>
+    call({ path: '/tabs/t1/comments/c1/react', body, ...extra });
+
+  // docs/specs/013-workspace/share-roles.md "The collab key": the server's key for the caller, never the body's.
+  it("adds and takes back a reaction under the caller's derived key and profile name, relayed once", async () => {
+    seed([shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })]);
+    expect((await react({ emoji: 'eyes', on: true, key: 'k-someone-else' })).status).toBe(204);
+    expect((await threadOf('a'))!.comments[0]!.reactions).toEqual([
+      {
+        emoji: 'eyes',
+        by: await collabKeyFor('owner'),
+        name: 'Webber',
+        person: await reactionPersonFor('owner'),
+      },
+    ]);
+    const rev = (await stored()).rev;
+    expect((await react({ emoji: 'eyes', on: true, key: 'k-me' })).status).toBe(204);
+    expect((await stored()).rev).toBe(rev);
+    expect((await react({ emoji: 'eyes', on: false })).status).toBe(204);
+    expect((await threadOf('a'))!.comments[0]!.reactions).toBeUndefined();
+  });
+
+  it('refuses a bad body, an unknown comment, a GET, an agent and a Viewer', async () => {
+    seed([shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })]);
+    expect((await react({ emoji: 'rocket', on: true, key: 'k' })).status).toBe(400);
+    expect((await react({ emoji: 'eyes', key: 'k' })).status).toBe(400);
+    expect((await react([1])).status).toBe(400);
+    expect(
+      (
+        await call({
+          path: '/tabs/t1/comments/nope/react',
+          body: { emoji: 'eyes', on: true, key: 'k' },
+        })
+      ).status,
+    ).toBe(404);
+    expect((await call({ method: 'GET', path: '/tabs/t1/comments/c1/react' })).status).toBe(405);
+    expect((await react({ emoji: 'eyes', on: true, key: 'k' }, { token: 'tok' })).status).toBe(403);
+    expect(
+      (await react({ emoji: 'eyes', on: true, key: 'k' }, { owner: 'looker', code: 'LOOK' }))
+        .status,
+    ).toBe(403);
+    expect(
+      (await react({ emoji: 'eyes', on: true, key: 'k' }, { owner: 'guest', code: 'VIEW' })).status,
+    ).toBe(204);
+  });
+});
+
+// A thread at its cap (COMMENTS_MAX) and a resolved thread's reactions (comment-reactions.md "Reacting").
+describe('a full thread and a resolved one', () => {
+  it('answers 409 thread_full to an add or a reply on a full thread, writing and emailing nothing', async () => {
+    const full = Array.from({ length: 500 }, (_, i) => comment(`c${i}`));
+    seed([shape('a', { commentThread: { resolved: false, comments: full } })]);
+    const rev = (await stored()).rev;
+    const add = await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: 'more' } });
+    expect(add.status).toBe(409);
+    expect(await add.json()).toEqual({ error: 'thread_full' });
+    const reply = await call({ path: '/tabs/t1/comments/c0/reply', body: { text: 'more' } });
+    expect(reply.status).toBe(409);
+    expect((await stored()).rev).toBe(rev);
+    expect((await threadOf('a'))!.comments).toHaveLength(500);
+    expect(pending).toEqual([]);
+  });
+
+  it('takes no new reaction on a resolved thread, but lets one be taken back', async () => {
+    const me = await collabKeyFor('owner');
+    const reacted = comment('c1', { reactions: [{ emoji: 'eyes', by: me, name: 'Webber' }] });
+    seed([shape('a', { commentThread: { resolved: true, comments: [reacted] } })]);
+    const add = await call({
+      path: '/tabs/t1/comments/c1/react',
+      body: { emoji: 'hooray', on: true, key: 'k-me' },
+    });
+    expect(add.status).toBe(409);
+    expect(await add.json()).toEqual({ error: 'thread_resolved' });
+    const off = await call({
+      path: '/tabs/t1/comments/c1/react',
+      body: { emoji: 'eyes', on: false, key: 'k-me' },
+    });
+    expect(off.status).toBe(204);
+    expect((await threadOf('a'))!.comments[0]!.reactions).toBeUndefined();
+  });
+});
+
+describe('delete-own', () => {
+  it('deletes the caller’s own comment only', async () => {
+    seed([
+      shape('a', {
+        commentThread: {
+          resolved: false,
+          comments: [comment('c1', { authorId: 'owner' }), comment('c2')],
+        },
+      }),
+    ]);
+    expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c2' })).status).toBe(403);
+    expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(204);
+    expect((await threadOf('a'))!.comments.map((c) => c.id)).toEqual(['c2']);
+    expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(404);
+  });
+});
+
+// docs/specs/013-workspace/history.md: a tab deleted whole takes every comment's words with it,
+// from the document it left only; a document still holding the tab keeps its own events.
+describe('a lost race', () => {
+  it('re-reads and repeats once, then answers 409 tab_busy', async () => {
+    seed([shape('a')]);
+    const write = vi.spyOn(db, 'upsertTabAtRev');
+    const stale = Object.assign(new Error('tab_rev_stale'), { code: 'tab_rev_stale' });
+    write.mockRejectedValueOnce(stale);
+    expect(
+      (await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: 'x' } })).status,
+    ).toBe(201);
+    write.mockRejectedValueOnce(stale).mockRejectedValueOnce(stale);
+    const busy = await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: 'x' } });
+    expect(busy.status).toBe(409);
+    expect(await busy.json()).toMatchObject({ error: 'tab_busy' });
+  });
+});
+
+describe('the thread listing', () => {
+  beforeEach(() =>
+    seed(
+      [
+        shape('a', {
+          commentThread: {
+            resolved: false,
+            comments: [comment('c1', { authorId: 'owner', tokenId: 'tok_1' })],
+          },
+        }),
+        shape('b', { commentThread: { resolved: true, comments: [comment('c2')] } }),
+        shape('c', { commentThread: { resolved: false, comments: [] } }),
+      ],
+      [shape('d', { commentThread: { resolved: false, comments: [comment('c3')] } })],
+    ),
+  );
+
+  const list = async (query = '', owner: string | null = 'owner', code?: string) => {
+    const res = await call({
+      method: 'GET',
+      path: `/comments${query}`,
+      owner,
+      ...(code ? { code } : {}),
+    });
+    return {
+      status: res.status,
+      body: await res.json<DocumentCommentsResponse & { error?: string }>(),
+    };
+  };
+
+  it('lists open threads across tabs in order, with refs, labels and the caller’s own ids only', async () => {
+    const { status, body } = await list();
+    expect(status).toBe(200);
+    expect(body.threads.map((t) => [t.tabName, t.elementId, t.label])).toEqual([
+      ['Main', 'a', 'A'],
+      ['Detail', 'd', 'D'],
+    ]);
+    expect(body.threads[0]!.ref).toBeTypeOf('string');
+    expect(body.threads[0]!.comments[0]).toMatchObject({ authorId: 'owner', tokenId: 'tok_1' });
+    expect(body.threads[1]!.comments[0]).not.toHaveProperty('authorId');
+  });
+
+  it('filters by status and refuses one it does not know', async () => {
+    expect((await list('?status=resolved')).body.threads.map((t) => t.elementId)).toEqual(['b']);
+    expect((await list('?status=all')).body.threads.map((t) => t.elementId)).toEqual([
+      'a',
+      'b',
+      'd',
+    ]);
+    expect(await list('?status=closed')).toMatchObject({
+      status: 400,
+      body: { error: 'invalid_status' },
+    });
+  });
+
+  it('leaves out a tab whose body does not parse, and says so', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    sql.sql.exec(
+      `UPDATE tabs SET data = '{"commentThread": broken', rev = rev + 1 WHERE id = 't2'`,
+    );
+    const { status, body } = await list();
+    expect(status).toBe(200);
+    expect(body.threads.map((t) => t.elementId)).toEqual(['a']);
+    expect(warn.mock.calls[0]![0]).toBe('[comments] list skipped tab');
+    expect(console.info).toHaveBeenCalledWith('[comments] listed', {
+      documentId: 'd1',
+      status: 'open',
+      tabsRead: 1,
+      threads: 1,
+    });
+  });
+
+  it('logs each refusal once, with its route and code', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await list('?status=closed');
+    await call({ path: '/tabs/t1/comments/nope/resolve', token: 'tok_1' });
+    expect(
+      warn.mock.calls.filter((c) => c[0] === '[comments] refused').map((c): unknown => c[1]),
+    ).toEqual([
+      {
+        documentId: 'd1',
+        tabId: null,
+        route: 'list',
+        agent: false,
+        status: 400,
+        code: 'invalid_status',
+      },
+      {
+        documentId: 'd1',
+        tabId: 't1',
+        route: 'resolve',
+        agent: true,
+        status: 404,
+        code: 'not_found',
+      },
+    ]);
+  });
+
+  it('keeps a tab-scoped link to its tab, hides others’ ids from a visitor, and refuses a stranger', async () => {
+    expect((await list('', 'guest', 'TAB2')).body.threads.map((t) => t.elementId)).toEqual(['d']);
+    const visitor = (await list('', 'guest', 'VIEW')).body.threads[0]!.comments[0]!;
+    expect(visitor).not.toHaveProperty('authorId');
+    expect(visitor).not.toHaveProperty('tokenId');
+    expect((await list('', 'stranger')).status).toBe(403);
+    expect((await call({ method: 'POST', path: '/comments' })).status).toBe(405);
+  });
+
+  it('answers a tab-scoped link whose tab has no comments with an empty list, not a refusal', async () => {
+    seed(
+      [shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })],
+      [shape('d')],
+    );
+    const res = await list('?status=all', 'guest', 'TAB2');
+    expect(res.status).toBe(200);
+    expect(res.body.threads).toEqual([]);
+  });
+});
+
+// Agents' comments (docs/specs/024-agents/agent-presence.md "Comments", Work Tracker 875): a token's comment is marked
+// Generated by AI, its author edits and deletes their own, a token only the ones an agent wrote, and the share roles
+// gate every write (docs/specs/013-workspace/share-roles.md).
+describe('agents’ comments', () => {
+  const ME = 'owner';
+  const listed = async () =>
+    (
+      await (
+        await call({ method: 'GET', path: '/comments?status=all' })
+      ).json<{
+        threads: { comments: { id: string; ai?: true; editedAt?: number }[] }[];
+      }>()
+    ).threads.flatMap((t) => t.comments);
+
+  it('marks a token’s comment and reply Generated by AI, and a person’s not', async () => {
+    seed([shape('a')]);
+    const add = await call({
+      path: '/tabs/t1/comments',
+      body: { elementId: 'a', text: 'from the agent', ai: false },
+      token: 'tok_1',
+    });
+    const agent = (await add.json<{ comment: Comment }>()).comment;
+    expect(agent.ai).toBe(true);
+    const person = await call({
+      path: `/tabs/t1/comments/${agent.id}/reply`,
+      body: { text: 'from a person', ai: true },
+    });
+    expect((await person.json<{ comment: Comment }>()).comment).not.toHaveProperty('ai');
+    const reply = await call({
+      path: `/tabs/t1/comments/${agent.id}/reply`,
+      body: { text: 'agent again' },
+      token: 'tok_1',
+    });
+    expect((await reply.json<{ comment: Comment }>()).comment.ai).toBe(true);
+    expect((await threadOf('a'))!.comments.map((c) => c.ai ?? false)).toEqual([true, false, true]);
+    expect((await listed()).map((c) => c.ai ?? false)).toEqual([true, false, true]);
+  });
+
+  it('edits the caller’s own comment, stamping editedAt and relaying it, and refuses anyone else’s', async () => {
+    seed([
+      shape('a', {
+        commentThread: {
+          resolved: false,
+          comments: [comment('mine', { authorId: ME }), comment('theirs')],
+        },
+      }),
+    ]);
+    const rev = (await stored()).rev;
+    const res = await call({
+      method: 'PUT',
+      path: '/tabs/t1/comments/mine',
+      body: { text: ' new ' },
+    });
+    expect(res.status).toBe(200);
+    expect((await res.json<{ comment: Comment }>()).comment).toMatchObject({ text: 'new' });
+    const edited = (await threadOf('a'))!.comments[0]!;
+    expect(edited).toMatchObject({ id: 'mine', text: 'new' });
+    expect(edited.editedAt).toBeTypeOf('number');
+    expect((await stored()).rev).toBe(rev + 1);
+    expect(pending.length).toBeGreaterThan(0);
+    expect((await listed())[0]!.editedAt).toBe(edited.editedAt);
+    // The same words again write nothing.
+    const again = await call({
+      method: 'PUT',
+      path: '/tabs/t1/comments/mine',
+      body: { text: 'new' },
+    });
+    expect(again.status).toBe(200);
+    expect((await stored()).rev).toBe(rev + 1);
+    expect(
+      (await call({ method: 'PUT', path: '/tabs/t1/comments/theirs', body: { text: 'x' } })).status,
+    ).toBe(403);
+    expect(
+      (await call({ method: 'PUT', path: '/tabs/t1/comments/nope', body: { text: 'x' } })).status,
+    ).toBe(404);
+    expect(
+      (await call({ method: 'PUT', path: '/tabs/t1/comments/mine', body: { text: ' ' } })).status,
+    ).toBe(400);
+    expect(
+      (
+        await call({
+          method: 'PUT',
+          path: '/tabs/t1/comments/mine',
+          body: { text: 'x'.repeat(2001) },
+        })
+      ).status,
+    ).toBe(400);
+    expect((await call({ method: 'PUT', path: '/tabs/t1/comments/mine', body: 'x' })).status).toBe(
+      400,
+    );
+  });
+
+  it('lets a token edit and delete only the comments an agent wrote, never its person’s own', async () => {
+    seed([
+      shape('a', {
+        commentThread: {
+          resolved: false,
+          comments: [
+            comment('byhand', { authorId: ME }),
+            comment('agent', { authorId: ME, ai: true }),
+          ],
+        },
+      }),
+    ]);
+    const edit = (id: string) =>
+      call({ method: 'PUT', path: `/tabs/t1/comments/${id}`, body: { text: 'y' }, token: 'tok_1' });
+    const refused = await edit('byhand');
+    expect(refused.status).toBe(403);
+    expect(await refused.json()).toMatchObject({ error: 'not_ai_comment' });
+    expect(
+      (await call({ method: 'DELETE', path: '/tabs/t1/comments/byhand', token: 'tok_1' })).status,
+    ).toBe(403);
+    expect((await edit('agent')).status).toBe(200);
+    expect(
+      (await call({ method: 'DELETE', path: '/tabs/t1/comments/agent', token: 'tok_1' })).status,
+    ).toBe(204);
+    expect((await threadOf('a'))!.comments.map((c) => [c.id, c.text])).toEqual([
+      ['byhand', 'text byhand'],
+    ]);
+  });
+
+  it('refuses a Viewer’s grant every write, and lets a Participant’s token comment, resolve and reopen', async () => {
+    seed([shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })]);
+    const as = (code: string) => ({ owner: 'agent-person', code, token: 'tok_2' });
+    expect(
+      (
+        await call({
+          path: '/tabs/t1/comments',
+          body: { elementId: 'a', text: 'x' },
+          ...as('LOOK'),
+        })
+      ).status,
+    ).toBe(403);
+    expect((await call({ path: '/tabs/t1/comments/c1/resolve', ...as('LOOK') })).status).toBe(403);
+    expect(
+      (await call({ path: '/tabs/t1/comments/c1/reply', body: { text: 'x' }, ...as('LOOK') }))
+        .status,
+    ).toBe(403);
+    expect(
+      (
+        await call({
+          method: 'PUT',
+          path: '/tabs/t1/comments/c1',
+          body: { text: 'x' },
+          ...as('LOOK'),
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (await call({ method: 'DELETE', path: '/tabs/t1/comments/c1', ...as('LOOK') })).status,
+    ).toBe(403);
+    const posted = await call({
+      path: '/tabs/t1/comments',
+      body: { elementId: 'a', text: 'agent here' },
+      ...as('VIEW'),
+    });
+    expect(posted.status).toBe(201);
+    expect((await posted.json<{ comment: Comment }>()).comment.ai).toBe(true);
+    expect((await call({ path: '/tabs/t1/comments/c1/resolve', ...as('VIEW') })).status).toBe(204);
+    expect((await threadOf('a'))!.resolved).toBe(true);
+    expect((await call({ path: '/tabs/t1/comments/c1/reopen', ...as('VIEW') })).status).toBe(204);
+    expect((await threadOf('a'))!.resolved).toBe(false);
+  });
+});

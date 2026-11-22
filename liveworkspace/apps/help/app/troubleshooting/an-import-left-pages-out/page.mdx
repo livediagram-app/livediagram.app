@@ -1,0 +1,66 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ImportDoneScene } from '@/editions/liveknowledge/components/illustrations/import-export';
+
+export const metadata = helpMetadata({
+  title: 'An Import Left Pages Out',
+  description:
+    'Why a Knowledgebase import skipped pages, pictures or attachments, what each message in the Import dialog means, and how to bring the rest in.',
+  path: '/help/troubleshooting/an-import-left-pages-out/',
+});
+
+<ArticleLayout path="troubleshooting/an-import-left-pages-out" title="An Import Left Pages Out" description="Why an import skipped pages, pictures or attachments, and how to bring the rest in." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+
+An import keeps every page it can, and says what it could not bring in, by name, with why. Find what you see below. How an import works is in [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/).
+
+<Figure caption="An import that left two pages out: each by name, with why.">
+  <ImportDoneScene />
+</Figure>
+
+## Nothing Was Imported
+
+| What the dialog says           | Why                                                     | What to do                                                         |
+| ------------------------------ | ------------------------------------------------------- | ------------------------------------------------------------------ |
+| **This Archive Is Too Large**  | It is over 200 MB                                       | Split it into smaller folders and import them one at a time        |
+| **Too Many Pages**             | A Knowledgebase holds 500 pages, counted with the ones already there | Import fewer pages, or import into a new Knowledgebase  |
+| **No Pages Found**             | The archive holds no pages of that source's kind        | Check it is the right export, then **Choose Another**              |
+
+A Confluence export that holds no HTML pages says "Export the space as HTML and try again."
+
+## Pages Left Out at the Review
+
+The review lists, under **Left Out or Changed**, what will not come across. Nothing is imported until you press Import, so this is the time to fix the archive and choose it again.
+
+| Group                          | What happens                                                       |
+| ------------------------------ | ------------------------------------------------------------------ |
+| **Pages Could Not Be Read**    | Left out. Links to them stay as they were written                  |
+| **Pages Over 5 MB**            | Left out. Links to them stay as they were written                  |
+| **Files Outside the Archive**  | Left out: their paths lead outside it                              |
+| **Files Not Used**             | No page shows or links to them, so they are left out               |
+| **Pages Moved Up**             | Kept. Pages nest 8 levels deep, so deeper ones sit at the last level |
+| **Pages With a Title Already Used** | Both kept. A link written by title goes to the first          |
+
+## Pages That Failed While Importing
+
+At the end, the dialog says "318 of 320 Pages Imported" and names each page that failed, with why:
+
+- **It is larger than a page may be.** Split the file into two, and import it again.
+- **It could not be saved.** The connection or the Knowledgebase stopped answering. Import that page again, or paste it in with **Import**, then **Into This Page**.
+- **The Knowledgebase filled up** while the import ran. Make room, then import the rest.
+
+A failed page's subpages land under the page above it, so nothing below it is lost.
+
+If saving stops answering altogether (the connection drops), the import stops rather than pile up pages that are not saved, and says so. What was added keeps saving.
+
+## Pictures and Attachments
+
+- **Pictures Not Found:** the archive does not hold them. Each page keeps the picture's description.
+- **Pictures Over 10 MB:** left out. Each page keeps the picture's description.
+- A picture that could not be uploaded is named at the end. Its page keeps its description: add the picture to the page by hand.
+- **Attachments Named:** files other than pictures are not stored. Each is listed by name at the foot of its page, under **Attachments**.
+
+## Bring the Rest In
+
+Import only the pages that were left out, **Under a Page of This Knowledgebase**: zip them on their own, then import that. The pages already in are not touched.
+
+</ArticleLayout>

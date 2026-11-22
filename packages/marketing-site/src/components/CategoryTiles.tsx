@@ -9,15 +9,22 @@ import type { TemplateShelf } from './TemplateGallery';
 // previews: only the front card is in the page's HTML, the other two are added when the browser is idle), its name and how many templates it holds. Hovering or
 // focusing a card fans the stack wider. Clicking opens the category's carousel above, as the chips it replaced did.
 // The folded shelves' templates themselves are plain links underneath (TemplateIndex.tsx), not cards.
+// A product may lead the row with a `start` tile (liveknowledge's Blank Knowledgebase): it looks like a category but
+// is a link that creates that one blank straight away, never a shelf that opens.
+
+/** A tile that creates one template at once rather than opening a shelf. */
+export type StartTile<K extends string> = { label: string; kind: K; href: string; note: string };
 
 export function CategoryTiles<Id extends string, T extends { kind: string }>({
   groups,
   onOpen,
   Preview,
+  start,
 }: {
   groups: readonly TemplateShelf<Id, T>[];
   onOpen: (id: Id) => void;
   Preview: ComponentType<{ kind: T['kind'] }>;
+  start?: StartTile<T['kind']> | undefined;
 }) {
   // A template cross-listed on two folded shelves counts once.
   const total = new Set(groups.flatMap((g) => g.templates.map((t) => t.kind))).size;
@@ -31,6 +38,25 @@ export function CategoryTiles<Id extends string, T extends { kind: string }>({
         </p>
       </div>
       <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {start ? (
+          <li key="start">
+            <a
+              href={start.href}
+              data-start-tile=""
+              className={`group flex h-full w-full cursor-pointer flex-col p-3 text-left ${BAND_CARD} ${BAND_CONTROL_HOVER}`}
+            >
+              <DeferredPreviewFan Preview={Preview} kinds={[start.kind]} />
+              <span className="mt-3 flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {start.label}
+                </span>
+                <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
+                  {start.note}
+                </span>
+              </span>
+            </a>
+          </li>
+        ) : null}
         {groups.map((group) => (
           <li key={group.id}>
             <button

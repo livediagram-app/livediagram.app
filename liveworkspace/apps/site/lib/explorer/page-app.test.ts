@@ -56,7 +56,8 @@ describe('where the page is', () => {
     expect(appOfPageHost('livediagram.app')).toBe('livediagram');
     // liveworkspace's own block, and ports in no block, are liveworkspace.app's page.
     expect(appOfPageHost('localhost:3000')).toBeNull();
-    expect(appOfPageHost('localhost:3650')).toBeNull();
+    expect(appOfPageHost('localhost:3602')).toBe('liveknowledge');
+    expect(appOfPageHost('localhost:3750')).toBeNull();
     expect(appOfPageHost('example.com:3102')).toBeNull();
     // Return addresses are vetted by appOfHost, which knows each router's port alone.
     expect(appOfHost('localhost:3102')).toBeNull();
@@ -68,7 +69,7 @@ describe('where the page is', () => {
     meta.content = 'livehuddle';
     document.head.appendChild(meta);
     try {
-      expect(appOfPageHost('localhost:3620')).toBe('livehuddle');
+      expect(appOfPageHost('localhost:3720')).toBe('livehuddle');
       expect(appOfPageHost('127.0.0.1:3102')).toBe('livehuddle');
       // A live host decides alone.
       expect(appOfPageHost('livediagram.app')).toBe('livediagram');
@@ -93,7 +94,14 @@ describe('where the page is', () => {
     expect(appOfHost('liveworkspace.app')).toBeNull();
     expect(appOfHost('localhost:3000')).toBeNull();
     expect(new Set(Object.values(appHosts()))).toEqual(
-      new Set(['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle']),
+      new Set([
+        'livediagram',
+        'liveplanner',
+        'livedocuments',
+        'livedesign',
+        'livehuddle',
+        'liveknowledge',
+      ]),
     );
   });
 

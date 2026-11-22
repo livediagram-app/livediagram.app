@@ -1,0 +1,71 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { QuestionsScene } from '@/editions/liveknowledge/components/illustrations/ai-knowledge';
+
+export const metadata = helpMetadata({
+  title: 'Questions Nobody Could Answer',
+  description:
+    'See the questions people and agents asked that no page of the Knowledgebase covers, how often each was asked, and draft a page to answer one.',
+  path: '/help/knowledgebase/questions-nobody-could-answer/',
+});
+
+<ArticleLayout path="knowledgebase/questions-nobody-could-answer" title="Questions Nobody Could Answer" description="The questions people and agents asked that no page covers, and how to draft a page for one." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Every question the Knowledgebase could not answer is kept, so you can see what is missing and write it. The list is in the **AI Knowledge** tab of the footer, under **Questions Nobody Could Answer**.
+
+<Figure caption="Questions Nobody Could Answer: each question, how often it was asked and by whom, Draft a Page and a dismiss button.">
+  <QuestionsScene />
+</Figure>
+
+## How a Question Gets Here
+
+A question is kept when:
+
+- [Ask](/help/knowledgebase/ask/) says the pages do not cover it, or part of it.
+- An agent's search finds nothing.
+- An agent reports it with the MCP tool `report_gap`, or the CLI's `gap`, instead of guessing.
+
+Questions asked in the same words (after small differences such as plurals are set aside) are one row. The row counts how many times it was asked, by people and by each named agent: "Asked 4 times by people and the Coding Agent". Nobody who asked is named or kept, only the count.
+
+## Draft a Page for a Question
+
+<Step n={1}>
+  Press **Draft a Page** on the question's row.
+</Step>
+
+<Step n={2}>
+  A new top-level page opens, titled from the question. Its first line reads "Draft, Not
+  Verified", then the question as a heading.
+</Step>
+
+<Step n={3}>
+  A draft written from the nearest passages follows, on built-in AI or the team's own key (see
+  [AI Settings](/help/knowledgebase/ai-settings/)). Where no AI can answer, the page holds only
+  the question, for you to answer.
+</Step>
+
+<Step n={4}>
+  Correct the page, take out the "Draft, Not Verified" line, and verify it. See
+  [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
+</Step>
+
+A draft counts as one Ask question against the limits in [Ask](/help/knowledgebase/ask/).
+
+## Dismiss a Question
+
+Press the dismiss button (×) at the right of a row to remove the question from the list. Use it for a question the Knowledgebase is not meant to answer.
+
+## Good to Know
+
+- With nothing to show, the section reads **No Unanswered Questions Yet**.
+- A question is drawn as plain text: it is other people's words.
+- A Knowledgebase kept Offline has no AI Knowledge, so nothing is kept for it.
+
+## Who Can Do What
+
+| Action                                    | Editor | Participant | Viewer |
+| ----------------------------------------- | ------ | ----------- | ------ |
+| See the questions                         | Yes    | Yes         | Yes    |
+| Draft a page, dismiss a question          | Yes    | No          | No     |
+
+</ArticleLayout>

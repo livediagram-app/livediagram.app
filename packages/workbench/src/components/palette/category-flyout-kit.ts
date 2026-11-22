@@ -71,6 +71,9 @@ export type FlyoutKit<T extends FlyoutTile<T>, A, P> = {
   opensSide: (def: T) => boolean;
   /** The footer's line for a tile without presets, in place of its description (an opener's "Browse …"). */
   footerLine?: (def: T) => string | undefined;
+  /** The footer's hint while nothing is pointed at, for a pointer and for touch; absent, "… onto the canvas.". An
+   *  editor whose drawings sit in a page says so (liveknowledge: "onto the page"). */
+  hint?: { click: string; touch: string } | undefined;
   /** The category's tiles in its named groups. */
   groups: (categoryId: string, tiles: readonly T[]) => FlyoutGroup<T>[];
   /** Picture tiles in a grid, or cards with their blurbs. */

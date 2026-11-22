@@ -92,9 +92,10 @@ export interface FormDestination {
   typeRules?: CardTypeRule[]; // §6d
 }
 // A colour background (@liveworkspace/page-background): a solid or gradient fill (a moving one included) and a
-// pattern, read with parseColourBackground; and a picture of the plan's, its vertical focus (0..100, 50 absent) and a
-// Search pick's credit (CREDIT_MAX 300).
-export type FormCover = ColourBackground & { imageId?: string; focus?: number; credit?: string };
+// pattern; and a picture of the plan's, its vertical focus (0..100, 50 absent) and a Search pick's credit (300 at
+// most). One shape with a liveknowledge page's cover: @liveworkspace/page-background's PageCover, read with
+// parsePageCover and patched with patchPageCover.
+export type FormCover = PageCover;
 export const FORM_WIDTH_PX = { narrow: 640, wide: 880 };
 export interface FormDefinition {
   v: 1;

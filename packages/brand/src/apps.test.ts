@@ -10,6 +10,7 @@ const THEME_CSS: Partial<Record<BrandApp, string>> = {
   livedocuments: '../../../livedocuments/packages/tailwind-config/theme.css',
   livedesign: '../../../livedesign/packages/tailwind-config/theme.css',
   livehuddle: '../../../livehuddle/packages/tailwind-config/theme.css',
+  liveknowledge: '../../../liveknowledge/packages/tailwind-config/theme.css',
 };
 
 /** The `--color-brand-*` declarations of the stylesheet's `@theme` block, keyed by step. */
@@ -37,6 +38,16 @@ describe('livehuddle', () => {
     const { ramp, lockup, palettes } = BRAND_APPS.livehuddle;
     expect([ramp[500], ramp[700], ramp[400]]).toEqual(['#10b981', '#047857', '#34d399']);
     expect(lockup.light.accent).toBe(ramp[700]);
+    expect(lockup.dark.accent).toBe(ramp[400]);
+    expect(palettes.dark.vivid).toBe(ramp[500]);
+  });
+});
+
+describe('liveknowledge', () => {
+  it('is lime: accent 500, deep 700 and light 400 as the site row has them, the lockup a step lighter on light', () => {
+    const { ramp, lockup, palettes } = BRAND_APPS.liveknowledge;
+    expect([ramp[500], ramp[700], ramp[400]]).toEqual(['#84cc16', '#3f6212', '#a3e635']);
+    expect(lockup.light.accent).toBe(ramp[600]);
     expect(lockup.dark.accent).toBe(ramp[400]);
     expect(palettes.dark.vivid).toBe(ramp[500]);
   });

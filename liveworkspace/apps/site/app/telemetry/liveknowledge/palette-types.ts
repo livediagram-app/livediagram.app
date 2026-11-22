@@ -1,0 +1,33 @@
+import { PALETTE_TELEMETRY_TYPES } from '@liveknowledge/api-schema';
+import type { TypeAliases } from '../_shared/rank';
+import { nonThemePick } from '../_shared/look-feel-types';
+
+// The palette's element kinds as the dashboard reads them (docs/specs/017-telemetry/telemetry.md): the
+// shared catalogue's tabs, plus the old spellings to fold in. Shared by the
+// Palette tab's rankings and the Elements Added stack's per-tab charts, so
+// both bucket an element the same way.
+
+// Element·Added types the editor used to send hyphenated, before it settled on
+// the catalogue tokens. Stored rows keep their old spelling until the 60-day
+// retention sweep drops them, so the ranking folds them into today's token
+// rather than showing each thing twice (or, for a kind the catalogue lists
+// only under its new name, not at all). Safe to delete once no stored row is
+// older than the emitter fix.
+export const PALETTE_TYPE_ALIASES: TypeAliases = {
+  'Code-block': 'CodeBlock',
+};
+
+/** An Element·Added type as the catalogue spells it today. */
+export const canonicalElementType = (type: string | null): string =>
+  type === null ? '' : (PALETTE_TYPE_ALIASES[type] ?? type);
+
+export type PaletteTab = keyof typeof PALETTE_TELEMETRY_TYPES;
+
+/** Every kind the palette catalogue lists, across its tabs. */
+export const PALETTE_KINDS: ReadonlySet<string> = new Set(
+  Object.values(PALETTE_TELEMETRY_TYPES).flat(),
+);
+
+// The Theme·Changed types that are not a theme pick, for its Themes chart and ranking
+// (../_shared/look-feel-types.ts says why `Unknown` differs between the apps).
+export const isNonThemePick = nonThemePick(false);

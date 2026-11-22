@@ -8,6 +8,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { FINISHES, type Finish } from '@liveworkspace/element-model/finish';
+import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { Select, lucideGlyph } from '@liveworkspace/ui';
 import { builtMarkup, htmlProps } from '@liveworkspace/trusted-types';
 import { lucideDices } from '@liveworkspace/icons/lucide';
@@ -39,7 +40,10 @@ export function LooksCarousel<Look extends TabStyleLook, Pattern extends string>
   onPickLook,
   headingClass,
 }: {
-  profile: Pick<TabStyleProfile<Look, Pattern>, 'looks' | 'finishLabels' | 'useAppearance'>;
+  profile: Pick<
+    TabStyleProfile<Look, Pattern>,
+    'looks' | 'finishLabels' | 'useAppearance' | 'finishFilter'
+  >;
   // The surface's filter over the catalogue; every look when unset.
   lookFilter?: (look: Look) => boolean;
   // The tab's four look settings, to tell whether it wears the Mashup card's look.
@@ -137,27 +141,29 @@ export function LooksCarousel<Look extends TabStyleLook, Pattern extends string>
             >
               Seasonal
             </button>
-            <Select
-              size="sm"
-              variant="ghost"
-              className="shrink-0"
-              aria-label="Filter looks by finish"
-              value={finish}
-              onChange={(e) => {
-                const next = e.target.value as Finish | 'all';
-                workbench.track('UI', 'Changed', 'LooksFinishFilter');
-                setFinish(next);
-                // The card's mashup rolls within the chosen finish.
-                if (next !== 'all' && mashup.finish !== next) setMashup(roll({ finish: next }));
-              }}
-            >
-              <option value="all">All finishes</option>
-              {finishes.map((f) => (
-                <option key={f} value={f}>
-                  {finishLabels[f]}
-                </option>
-              ))}
-            </Select>
+            {profile.finishFilter === false ? null : (
+              <Select
+                size="sm"
+                variant="ghost"
+                className="shrink-0"
+                aria-label="Filter looks by finish"
+                value={finish}
+                onChange={(e) => {
+                  const next = e.target.value as Finish | 'all';
+                  workbench.track('UI', 'Changed', 'LooksFinishFilter');
+                  setFinish(next);
+                  // The card's mashup rolls within the chosen finish.
+                  if (next !== 'all' && mashup.finish !== next) setMashup(roll({ finish: next }));
+                }}
+              >
+                <option value="all">All finishes</option>
+                {finishes.map((f) => (
+                  <option key={f} value={f}>
+                    {finishLabels[f]}
+                  </option>
+                ))}
+              </Select>
+            )}
           </>
         }
         renderItem={(look) => {
@@ -245,7 +251,11 @@ function LookCard({
             {eyebrow}
           </span>
         ) : null}
-        <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">
+        {/* The name in the look's own typeface (the app's for a look that names none). */}
+        <span
+          className="text-[13px] font-semibold text-slate-800 dark:text-slate-100"
+          style={{ fontFamily: resolveFontStack(look.font) }}
+        >
           {look.label}
         </span>
         {/* slate-600: slate-500 read 4.46:1 on the picked card's brand-50 tint, under AA for 11px text. */}

@@ -182,7 +182,8 @@ A toast is easy to miss. Every one is also written to a list the person can open
   2026-11-20: a centred toast 8px lower looked out of line). Where the cluster would sit beneath the centred stack, the
   stack's right edge stands 8px left of Undo, the toasts aligned to that edge; where it leaves the centre clear, the
   stack stays centred. On a phone the cluster is a floor like the
-  rest.
+  rest. Any bottom-right control a product marks `data-toast-side` counts as that cluster: liveknowledge's floating
+  Edit, Cancel and Save buttons, so a toast stands on their line, not below it (the owner, 2026-11-21).
 - **Stacking order.** Toasts sit at the top of the stacking ladder (`--z-toast`), over dialogs, so a failure shows even
   while a dialog is open.
 - **One stack per page.** A page has one toast stack and one list: the Explorer panel inside an editor raises its

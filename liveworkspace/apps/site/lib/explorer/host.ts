@@ -119,8 +119,8 @@ export function newItemHref(app: App, placement: Placement | null): string {
 
 /** A kind of work on Home's hero: the app's New flow with the template that starts it (`?template=`, the address its
  *  welcome uses), in that app. */
-export function templateHref(app: App, template: string): string {
-  return `${appUrl(app)}${APP_ITEMS[app].newPath}?template=${encodeURIComponent(template)}`;
+export function templateHref(app: App, template: string, param?: 'structure'): string {
+  return `${appUrl(app)}${APP_ITEMS[app].newPath}?${param ?? 'template'}=${encodeURIComponent(template)}`;
 }
 
 /** The app's view of what it keeps only in this browser: Offline in the Explorer on the app's address

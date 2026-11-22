@@ -2,7 +2,7 @@
 // The shared Tab Style dialog over a fake profile (liveworkspace/docs/specs/011-workbench/tab-style.md): what the
 // profile's surfaces decide, the two frames, the looks carousel and the panels. Each editor's CanvasThemeDialog.test
 // drives it over the real profile.
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WORKBENCH_DEFAULTS, configureWorkbench } from '../../../bindings';
@@ -578,5 +578,94 @@ describe('a frame of the product’s own', () => {
       surface: 'article',
     });
     expect(parts!.tourApi.panels).toEqual(['theme', 'font', 'canvas']);
+  });
+});
+
+// A product whose style belongs to something other than a tab (liveknowledge's Knowledgebase Style): the optional
+// parts of the profile. Unset, every one of them leaves the dialog exactly as it was (the tests above).
+describe('a profile that names and cuts the dialog', () => {
+  const base = profileWith().base;
+
+  it('is named by the profile, in its header, its accessible name and the back bar', () => {
+    open({ tab: 'theme', profile: profileWith({ title: 'Knowledgebase Style' }) });
+    const dialog = screen.getByRole('dialog', { name: 'Knowledgebase Style' });
+    expect(dialog.querySelector('h2')?.textContent).toBe('Knowledgebase Style');
+    expect(button(/Knowledgebase Style/)).toBeTruthy();
+    expect(screen.queryByText('Tab Style')).toBeNull();
+  });
+
+  it('hands a frame of the product’s own the name, Tab Style when the profile gives none', () => {
+    const names: string[] = [];
+    const frame = (title?: string) =>
+      profileWith({
+        ...(title ? { title } : {}),
+        frame: {
+          kind: 'custom',
+          render: (parts: TabStyleFrameParts) => {
+            names.push(parts.title);
+            return <section>{parts.children}</section>;
+          },
+        },
+      });
+    open({ profile: frame() });
+    cleanup();
+    open({ profile: frame('Knowledgebase Style') });
+    expect(names).toEqual(['Tab Style', 'Knowledgebase Style']);
+  });
+
+  it('leaves the Finish filter out when the profile says so, and keeps Seasonal', () => {
+    open({ profile: profileWith({ finishFilter: false }) });
+    expect(screen.queryByRole('combobox', { name: 'Filter looks by finish' })).toBeNull();
+    expect(button('Seasonal')).toBeTruthy();
+    cleanup();
+    open();
+    expect(screen.getByRole('combobox', { name: 'Filter looks by finish' })).toBeTruthy();
+  });
+
+  it('draws a panel of the product’s own in place of the shared one, and the shared one where it answers nothing', () => {
+    const profile = profileWith({
+      base: {
+        ...base,
+        renderPanel: (panel) =>
+          panel === 'font' ? <div data-testid="own-text">Own Text</div> : null,
+      },
+    });
+    open({ tab: 'font', profile });
+    expect(screen.getByTestId('own-text')).toBeTruthy();
+    expect(screen.queryByText('Typeface')).toBeNull();
+    cleanup();
+    // Finish is not the product's: the shared tiles.
+    open({ tab: 'finish', profile });
+    expect(screen.queryByTestId('own-text')).toBeNull();
+    expect(screen.getByRole('radio', { name: /Sketch/ })).toBeTruthy();
+  });
+
+  it('draws the Text row’s sample in the font worn now, and each look’s name in its own face', () => {
+    const lora = {
+      ...look('bookish', 'flexible'),
+      font: 'lora',
+    };
+    const withLora = profileWith();
+    withLora.looks = { ...withLora.looks, all: [...LOOKS, lora] };
+    open({ font: 'poppins', profile: withLora });
+    expect(within(button(/^Text:/)).getByText('Aa').style.fontFamily).toContain('Poppins');
+    expect(screen.getByText('Bookish').style.fontFamily).toContain('Lora');
+    // A look with no font of its own keeps the app's face.
+    expect(screen.getByText('Everyday').style.fontFamily).toBe('');
+    cleanup();
+    // The product names the face (a knowledgebase's heading font): it wins over the tab font.
+    open({ font: null, profile: profileWith({ base: { ...base, textFont: 'nunito' } }) });
+    expect(within(button(/^Text:/)).getByText('Aa').style.fontFamily).toContain('Nunito');
+  });
+
+  it('says a Fine-tune row’s line in the product’s own words', () => {
+    open({
+      profile: profileWith({
+        base: { ...base, panels: ['font', 'theme'], panelValues: { font: 'Inter, Medium' } },
+      }),
+    });
+    expect(button('Text: Inter, Medium')).toBeTruthy();
+    // A panel it names no line for keeps the shared one.
+    expect(button('Colours: Theme everyday theme')).toBeTruthy();
   });
 });

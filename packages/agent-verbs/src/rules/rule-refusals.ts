@@ -7,7 +7,11 @@ import {
   AUTOMATION_RULES_MAX,
   AUTOMATION_RUNS_PER_DAY,
 } from '@liveworkspace/automations';
-import { AUTOMATION_KEPT_SNAPSHOTS_MAX } from '@liveworkspace/automations/item';
+import {
+  AUTOMATION_KEPT_SNAPSHOTS_MAX,
+  inTabWords,
+  type ItemWord,
+} from '@liveworkspace/automations/item';
 import type { AgentProduct } from '../product';
 
 export type RuleRefusal = { code: string; message: string };
@@ -24,6 +28,14 @@ const BODY_WORDS: Readonly<Record<string, string>> = {
 };
 
 function wordsOf(word: string): Readonly<Record<string, string>> {
+  // A knowledgebase's tabs are its pages (automations.md "Naming"); every other item's stay tabs.
+  const said = rawWordsOf(word);
+  return Object.fromEntries(
+    Object.entries(said).map(([code, text]) => [code, inTabWords(text, word as ItemWord)]),
+  );
+}
+
+function rawWordsOf(word: string): Readonly<Record<string, string>> {
   return {
     automations_need_editor: `rules are an Editor’s of the whole ${word}: this token’s person must be an Editor of the whole ${word} (not through a link to one tab, a Participant or a Viewer). An Incoming Webhook’s secret is made and read only in the editor, never through a token.`,
     read_only_token:

@@ -1,0 +1,121 @@
+// Where an article's writing sits on its pages (docs/specs/007-editor/article-pages.md "Flowing
+// onto pages"): one box over the article's pages, laid in columns, one column a page's text area
+// (the page less its margins), the gap between two columns the margins and the space between the
+// pages. The browser breaks the writing into those columns; these helpers map between a place in
+// the box and a place on a page. Pure.
+import {
+  ARTICLE_TOP_MIN_PX,
+  ARTICLE_ZONE_MAX,
+  articleHeaderBandPx,
+  articleMarginPx,
+  PAGE_GAP,
+  isContinuousPage,
+  type ArticleStyle,
+  type LaidOutPage,
+} from '@liveknowledge/document';
+
+type FlowFrame = {
+  // The box's top-left on the canvas, and its size, in canvas px.
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  // A column's width, the gap between columns, and one column plus one gap.
+  columnWidth: number;
+  gap: number;
+  stride: number;
+  margin: number;
+  // The top margin: the margin, never less than ARTICLE_TOP_MIN_PX.
+  top: number;
+  // How many pages (columns) the article has.
+  count: number;
+};
+
+/** The frame over an article's pages (all one size, in a row, in order). `topMin`: the least top margin,
+ *  ARTICLE_TOP_MIN_PX, and the header's band above that when the article has a header. */
+export function flowFrame(
+  pages: readonly LaidOutPage[],
+  margin: number,
+  topMin: number = ARTICLE_TOP_MIN_PX,
+): FlowFrame {
+  const lead = pages[0]!;
+  const { width: pageW, height: pageH } = lead.rect;
+  // A margin never leaves a column narrower than a quarter of the page.
+  const m = Math.min(margin, pageW * 0.375, pageH * 0.375);
+  // The top keeps room for the page toolbar above the first line (articleTopMarginPx).
+  const top = Math.min(Math.max(m, topMin), pageH * 0.375);
+  const columnWidth = pageW - 2 * m;
+  const gap = 2 * m + PAGE_GAP;
+  const count = pages.length;
+  return {
+    x: lead.rect.x + m,
+    y: lead.rect.y + top,
+    width: count * columnWidth + (count - 1) * gap,
+    height: pageH - top - m,
+    top,
+    columnWidth,
+    gap,
+    stride: columnWidth + gap,
+    margin: m,
+    count,
+  };
+}
+
+/** The column (0 first) a point in the box lies in, by its x from the box's left. */
+export function columnAt(frame: FlowFrame, localX: number): number {
+  return Math.max(0, Math.floor((localX + frame.gap / 2) / frame.stride));
+}
+
+/** A spot in the box as a place on a page: the page's index and the spot from the page's top-left
+ *  corner (canvas px). A column past the article's pages keeps its index (the writing reaching
+ *  pages not there yet). */
+export function pagePlaceOf(
+  frame: FlowFrame,
+  local: { x: number; y: number },
+): { index: number; x: number; y: number } {
+  const index = columnAt(frame, local.x);
+  return { index, x: local.x - index * frame.stride + frame.margin, y: local.y + frame.top };
+}
+
+/** The text width before an article is laid out (no pages of its own yet), canvas px: about an A4
+ *  page's column at Normal margins. */
+const ARTICLE_FALLBACK_TEXT_WIDTH = 600;
+
+/** An article's text area (one column's width and height, a header's band taken off the top as the
+ *  writing's own frame takes it), from its pages laid out among `pages`. Before it has pages: the
+ *  fallback width, and no height but the tallest zone's. */
+export function articleTextBox(
+  pages: readonly LaidOutPage[],
+  flow: string,
+  style: ArticleStyle | undefined,
+): { width: number; height: number } {
+  const own = pages.filter((p) => p.flow === flow);
+  if (!own.length) return { width: ARTICLE_FALLBACK_TEXT_WIDTH, height: ARTICLE_ZONE_MAX };
+  const frame = flowFrame(
+    own,
+    articleMarginPx(style),
+    ARTICLE_TOP_MIN_PX + articleHeaderBandPx(style),
+  );
+  // A continuous page grows with what is put in it: a zone there is held only to the tallest a zone may be.
+  return {
+    width: frame.columnWidth,
+    height: isContinuousPage(own[0]!) ? ARTICLE_ZONE_MAX : frame.height,
+  };
+}
+
+/** Where the article's writing starts on the canvas (its first page's text area, top-left), or null when no page holds
+ *  it: where an insert goes when the writing has no caret to place it at (Work Tracker 1090). */
+export function articleTextOrigin(
+  pages: readonly LaidOutPage[],
+  flow: string,
+  style: ArticleStyle | undefined,
+): { x: number; y: number } | null {
+  const own = pages.filter((p) => p.flow === flow);
+  if (!own.length) return null;
+  const frame = flowFrame(
+    own,
+    articleMarginPx(style),
+    ARTICLE_TOP_MIN_PX + articleHeaderBandPx(style),
+  );
+  return { x: frame.x, y: frame.y };
+}

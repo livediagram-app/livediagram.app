@@ -1,0 +1,127 @@
+# Markdown import
+
+Import a Markdown document onto the current tab as an **article**, replacing the tab's contents (one undo step puts
+them back), and export an article as Markdown, or any other tab as a Markdown summary. The goal is to bring in writing from anywhere (notes, READMEs,
+outlines exported from other tools) as pages of formatted text, ready to edit.
+
+livediagram built a mind-map tree from a Markdown outline. liveknowledge has no tree diagram: the same file becomes an
+article, the way an agent's Markdown does ([Pages for agents](../024-agents/pages-for-agents.md)).
+
+## What it reads
+
+The import reads Markdown the way pasting it into an article page does, so a file and a paste give the same blocks:
+
+- **ATX headings** (`#`..`######`): `#` the largest heading, `##` the next, `###` and deeper the smallest.
+- **Lists** (`-`, `*`, `+` bulleted; `1.` numbered; `- [ ]` / `- [x]` a to-do, ticked or not), nested by indentation.
+- **Quotes** (`>`), **fenced code** (kept exactly as written, with the language its opening fence names, so ` ```js ` exports as ` ```js ` again) and **dividers** (`---`, `***`, `___`).
+- **Inline marks**: bold, italic, strikethrough, inline code and links.
+- **Pipe tables** (a header line, a `|---|` line, then rows): a table block, the header line its header row.
+- **`[TOC]`** alone on a line: a table of contents.
+- **Images** (`![alt](address)`): a link named by its alt text (the address when there is none), so nothing is
+  lost and no stray `!` is left; its address may hold parentheses balanced one deep, as a link's may. An
+  article holds no picture from an address; add the picture from Media. Only the import reads it so: an agent's
+  Markdown and an article's paste read as before. An image inside code (a fence, or a code span, which CommonMark
+  closes only on a backtick run as long as the one it opened with) stays as written.
+
+Every other line is a paragraph. The article flows onto as many pages as the writing needs, in the tab's theme.
+
+## Where it is offered
+
+Markdown always becomes an article, so the dialog offers it only where an article is what the tab already is
+or may still become: an **article tab**, and an **empty tab** (its only page still offering the choice of kind,
+the Start screen). On a slide deck or an infographic it would throw the tab's pages and their
+kind away for a different kind, so the card is not shown there (hidden, not disabled, as the Export dialog hides a
+format a tab cannot take). Checked in the editor on 2026-11-04: on a slide deck and an infographic tab the import
+left one A4 article, the deck's slides and the infographic's theme gone.
+
+Every format card the dialog shows, by the tab's kind (its first page's, [Pages](../007-editor/pages-mode.md) "One
+kind a tab"):
+
+| Tab         | JSON | Markdown | Word | PowerPoint |
+| ----------- | ---- | -------- | ---- | ---------- |
+| Empty       | yes  | yes      | yes  | yes        |
+| Article     | yes  | yes      | yes  | no         |
+| Slide deck  | yes  | no       | no   | yes        |
+| Infographic | yes  | no       | no   | no         |
+
+On an empty tab, Markdown and Word make it an article and PowerPoint makes it a slide deck
+([Word and PowerPoint import](office-import.md)). A tab offered JSON alone opens straight at the JSON panel, as
+any single format does. A Markdown, Word or PowerPoint file dropped on the canvas of a tab that does not take it is
+told which tabs do ("A Markdown file imports into an article or an empty tab."), not pointed at Import.
+
+## How it's triggered: the Import dialog
+
+The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
+dialog**, the mirror of the Export dialog. Above the format cards a warning says the import replaces the tab and Undo
+brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine pointer). The user picks the format:
+
+- **JSON**: a `.json` tab export, restored exactly.
+- **Markdown**: a `.md` document, written into an article as above.
+- **Word** and **PowerPoint**: a `.docx` as an article, a `.pptx` as slide pages
+  ([Word and PowerPoint import](office-import.md)). They are files, not text, so each opens a
+  **file panel** (`FileImportPanel`: a drop area and **Choose a File**) instead of the paste panel
+  below, behind the same `BackBar` and warning.
+
+The format cards sit two across. Every text format's card opens the **same two-step panel**
+(`TextImportPanel`): **paste or write** the
+content, or **import a file instead**. The way back to the format grid is the
+shared **`BackBar`** across the top of that step (the same control the placement
+browser uses), carrying the chosen format as its chip -
+not a small text link in the footer, which put the way back beside the way
+forward. The export dialog's two second screens (`TextExportPanel`,
+`ImageExportPanel`) use the same bar, so every second screen in both dialogs
+returns the same way. The chosen format drives the
+placeholder, the file-picker's filter, and which parser runs (no content
+auto-detection; the user said which it is). Both the paste and file
+routes go through one `importTextIntoActiveTab(format, text)` so they
+parse + replace identically.
+
+**Import replaces the current tab's contents** (its elements, theme, and
+background), keeping the tab's id and name. The dialog leads with a
+warning that says so. The replace is a single `commitTabs` step, so
+**Undo (⌘Z) restores** the previous content; the warning says that too.
+Errors render inline in the dialog; cancelling the file picker leaves the dialog
+open. Importing is disabled (menu item greyed) while the tab is locked,
+and the whole ellipsis menu is hidden for view-only visitors. Emits
+`Tab / Imported / Markdown` (or `/ JSON`) telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+
+(This replaced the earlier behaviour where import always appended a new
+tab: a format picker + an explicit "this overwrites the tab" warning is
+clearer than silently growing the tab list, and Undo makes it safe.)
+
+## Markdown export
+
+### An article tab
+
+An article tab's Export offers a **Markdown** card (after Word, before JSON). It opens the shared text panel
+(`TextExportPanel`) filled by `articleToMarkdown`, the writer an agent's `article get` uses, so the text is in the form
+this import reads: **Copy** puts it on the clipboard and **Download .md** saves it (`<document> - <tab>.md`). Edits in
+the panel's box never change the article.
+
+- A tab holding several articles writes them in page order, a `\pagebreak` line between, the later ones' title and
+  subtitle written as `#` and `##` headings (front matter belongs only at the top).
+- **What it leaves out is named, never dropped silently.** Under the text the panel says how many pictures and how
+  many other items (charts, shapes, drawings) sit beside the writing and are not in the file, and how many empty drawing
+  spots in the text (zones, not counting one that holds a counted item) were left out, since `[zone id]` names a drawing only the article it came from has. It says
+  nothing when nothing was left out. Page look, header and footer are not Markdown either; the JSON export keeps them.
+- **Round trip:** importing the file back (this page's "What it reads") gives the same blocks: types, styles, lists,
+  levels, checkboxes, marks, links, tables and footnotes (`[^1]` with the notes at the end).
+- Every role that can open Export sees it; it reads the tab and changes nothing.
+- Telemetry: `Document / Exported / Markdown`, as the outline's.
+
+### Any other tab, and a selection
+
+Slide and infographic tabs (and a canvas tab's selection) keep today's Markdown: a flat, human-readable **summary**
+(`## Elements`, the _labelled_ elements, and
+`## Connections`, every arrow that joins two elements: a labelled one as `- *label*: A → B`, an unlabelled one as
+`- A → B`, since an unlabelled arrow is usually the main path; a free line with no label stays out),
+sorted for reading, to drop into a doc, PR, or notes. It is deliberately **lossy** (no nesting, unlabelled
+elements omitted) because it's a summary, not a reconstruction; the faithful round-trip is the JSON export. A
+Pages tab's other kinds offer no Markdown card.
+
+## Implementation
+
+The dialog is `apps/editor/components/dialogs/ImportTabDialog.tsx`, and `useTabActions.importIntoActiveTab` replaces
+the active tab. The article export is `articleTabMarkdown` (`packages/document/src/article-markdown-export.ts`), shown by `ExportTabDialog` through `TextExportPanel`'s `note`. The Markdown reader is `apps/editor/lib/markdown-import.ts`, dynamically imported so it stays out of the
+initial editor bundle. See also [Document structure](../006-document/document-structure.md) (element model) and
+[Canvas and palette](../008-canvas/canvas-and-palette.md) (import/export menu).

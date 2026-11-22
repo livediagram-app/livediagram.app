@@ -1,0 +1,55 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { HomeScene } from '@/editions/liveknowledge/components/illustrations/getting-started';
+
+export const metadata = helpMetadata({
+  title: 'Knowledgebase Home',
+  description:
+    'Home is where liveknowledge starts when you are signed in: search every Knowledgebase you can open, ask one a question, and review the pages you own.',
+  path: '/help/getting-started/knowledgebase-home/',
+});
+
+<ArticleLayout path="getting-started/knowledgebase-home" title="Knowledgebase Home" description="The start of liveknowledge when you are signed in: search every Knowledgebase, ask a question, and see what changed." categoryTitle="Getting Started" categorySlug="getting-started">
+
+[Home](/home) is the start of liveknowledge for someone signed in. It gathers every Knowledgebase you can open: one field to search them all or ask one of them, a card for each, the pages that wait on you, and what changed lately. Someone not signed in is taken to a new Knowledgebase instead.
+
+<Figure caption="Home: one field that searches every Knowledgebase and asks the one in the chip, a card for each Knowledgebase, and the pages that are yours to review.">
+  <HomeScene />
+</Figure>
+
+## Search or Ask
+
+The field under "What do you need to know?" does both.
+
+- **Search:** type two characters or more. Results come from every Knowledgebase shown on Home, the best match of each first, with the matching words marked and a tick or **Review Due** beside a page that has one. Press a result to open its page.
+- **Ask:** type a question and press **Ask**, or `Enter`. The question goes to the Knowledgebase named in the **Ask goes to** chip and opens its Ask view with the question asked. Change the chip to ask a different one. See [Ask](/help/knowledgebase/ask/).
+
+Under the field, **Ask Again** lists up to three of your own recent questions once you have asked some.
+
+## Knowledgebases
+
+A card for each Knowledgebase you can open, the most recent first: its name, how many pages it holds, and the share of them that are verified as a number and a thin bar ("64 pages", "92% verified"). Home shows up to 12; **See All** opens the Explorer for the rest.
+
+## Yours to Review
+
+The pages you own that are due for review, oldest first, each with the Knowledgebase it is in and the date its review was due. Open one to read it, or press **Still Right** to verify it there and then; the row goes at once. Due means due under each Knowledgebase's own Review Period. The section is not shown when nothing is due. See [Review Due and the Review Period](/help/knowledgebase/review-due-and-the-review-period/).
+
+## Recently Updated
+
+The eight pages changed most recently across your knowledgebases, each with its Knowledgebase and the date.
+
+## Start a Knowledgebase From
+
+Three structures, **Team Handbook**, **Engineering Handbook** and **Support Knowledgebase**, each making a new Knowledgebase with its pages already in place, and **Import**, which opens Import in the Knowledgebase chosen in the chip. See [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/).
+
+## Your First Visit
+
+With no knowledgebases yet, Home shows one card, **No Knowledgebases Yet**, with **Make Your First Knowledgebase** and **Import** beside it. See [Your First Knowledgebase](/help/getting-started/your-first-knowledgebase/).
+
+## Good to Know
+
+- Home counts only the knowledgebases you can open. Search looks in all of the ones it shows; Ask goes to one at a time.
+- A card whose numbers cannot be read says so and keeps its place; the rest of Home still works.
+- A Knowledgebase kept Offline lives in one browser and is opened from the [Offline](/offline) page, not from Home.
+
+</ArticleLayout>

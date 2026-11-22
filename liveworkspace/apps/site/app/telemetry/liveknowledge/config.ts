@@ -1,0 +1,398 @@
+// liveknowledge.app's telemetry dashboard, as data (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): every
+// view is shared (../_shared); this is what makes it this app's. Its events and how they read, its
+// charts on each tab, and its name, noun and accent.
+
+import {
+  COMMUNITY_CATEGORIES,
+  ctaSurfaceOf,
+  ctaSurfaceOfPath,
+  CTA_SOURCES,
+  CTA_SURFACES,
+  isCtaSource,
+  PALETTE_TELEMETRY_TYPES,
+  pageViewApp,
+  parseTimingType,
+  type PageViewApp,
+  type TelemetryCategory,
+} from '@liveknowledge/api-schema';
+import { noun, type TelemetryAppConfig } from '../_shared/app';
+import { communityGroups } from '../_shared/community-groups';
+import { createCtaFunnel } from '../_shared/cta-funnel';
+import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
+import { LIBRARY } from '../_shared/library-metrics';
+import { createEventExplanation } from '../_shared/event-explanation';
+import type { RetiredCategory } from '../_shared/retired-explorer';
+import { cliCommandSentence } from './cli-commands';
+import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
+import {
+  ACCOUNT_ACTIVITY,
+  COMMUNITY_COPIES,
+  COMMUNITY_DISCOVERY,
+  COMMUNITY_ENGAGEMENT,
+  COMMUNITY_FILTERS,
+  COMMUNITY_LIKES,
+  COMMUNITY_MODERATION,
+  COMMUNITY_POSTS_OPENED,
+  COMMUNITY_POSTS_SHARED,
+  COMMUNITY_PUBLISHING,
+  COMMUNITY_REPORTS,
+  COMMUNITY_SEARCHES,
+  AGENT_CHANGESETS,
+  VERSION_HISTORY,
+  AGENT_VIEWED,
+  ALL_VISITORS,
+  API_TOKEN_ACTIVITY,
+  DOCUMENT_AUTOMATIONS,
+  ARTICLE_VIEWS,
+  ASSIGNED_ACTIONS,
+  CALLS_TO_ACTION,
+  FORMAT_PAINTER,
+  ASK,
+  AI_KNOWLEDGE,
+  VERIFICATION,
+  KNOWLEDGE_SEARCH,
+  PAGE_NAVIGATION,
+  PAGES_BY_SOURCE,
+  PAGE_EDITING,
+  AI_SETUP,
+  SITE_PUBLISHING,
+  AGENT_ACCESS,
+  CLIENT_EXCEPTIONS,
+  CLI_COMMANDS_STACK,
+  DISCUSSION,
+  DOCUMENTS_CREATED,
+  DOCUMENT_ACTIONS,
+  DRY_HELP_SEARCHES,
+  EDITOR_CHROME,
+  EDITOR_SEARCH,
+  EDITOR_TIMING_CHARTS,
+  ELEMENTS_ADDED,
+  ELEMENT_EDITING,
+  ELEMENT_TOURS,
+  EMAILS_SENT,
+  EXCEPTIONS,
+  EXPORT_AND_IMPORT,
+  FAILED_REQUESTS,
+  FIND_AND_REPLACE,
+  HELP_CENTRE,
+  HELP_SCOPE_SWITCHES,
+  HELP_SEARCHES,
+  JOINING,
+  LIVE_TOGETHER,
+  LOAD_RECOVERY,
+  LOOK_AND_FEEL,
+  MARKED_HELPFUL,
+  MARKED_NOT_HELPFUL,
+  MCP_TOOL_CALLS,
+  MULTIPLAYER_SESSIONS,
+  NEW_VERSION_PROMPT,
+  NEW_VISITORS,
+  OFFLINE_MODE,
+  ONBOARDING_TOURS,
+  ORGANISATION,
+  PAGE_VIEWS_BY_APP,
+  PAGE_WORK,
+  PALETTE_USE,
+  PANELS_OPENED,
+  REALTIME_RESYNCS,
+  RETURNING_VISITORS,
+  SERVER_CRASHES,
+  SETTINGS_CHANGED,
+  SETTINGS_STACKS,
+  SHARE_LINKS_MADE,
+  SHARING_AND_EMBEDS,
+  SHOW_ME_TOURS,
+  SIDE_BY_SIDE,
+  CONNECTED_TABS,
+  SIGN_IN_PROMPTS,
+  SIGN_UPS,
+  STALE_CHUNK_RELOADS,
+  TABLES,
+  TAB_ACTIONS,
+  TEAM_ACTIVITY,
+  HOME_AND_ACTIVITY,
+  TRASH,
+  UNDO_AND_REDO,
+  WEB_VITAL_CHARTS,
+  WELCOME_DIALOG_CLOSED,
+} from './metric-catalogue';
+import { isNonThemePick, PALETTE_TYPE_ALIASES } from './palette-types';
+import { isRetiredEvent } from './retired-events';
+
+const NOUN = noun('document');
+
+// Per-category colour for every chart (../_shared/event-vocab.ts). Keyed by the full
+// TelemetryCategory union less the retired ones (../_shared/retired-explorer.ts), so a new category fails the typecheck
+// until it gets its own colour.
+const CATEGORY_COLORS: Record<Exclude<TelemetryCategory, RetiredCategory>, string> = {
+  Document: '#0ea5e9',
+  Element: '#10b981',
+  Tab: '#f59e0b',
+  Theme: '#8b5cf6',
+  Canvas: '#ec4899',
+  Template: '#06b6d4',
+  Comment: '#84cc16',
+  Note: '#f97316',
+  Action: '#65a30d',
+  Search: '#6366f1',
+  UI: '#0891b2',
+  Folder: '#a855f7',
+  Layer: '#7c3aed',
+  Session: '#64748b',
+  Facilitator: '#a855f7',
+  Team: '#2563eb',
+  Participant: '#dc2626',
+  Help: '#14b8a6',
+  // Deep pink: apart from Canvas's lighter pink and every blue it sits near.
+  Page: '#9d174d',
+  // Deep green, the funnel's colour: apart from Element's emerald and the
+  // lime of Comment and Action.
+  Cta: '#15803d',
+  // Indigo-violet: the landing view, apart from Activity's amber.
+  Home: '#4f46e5',
+  // Amber, so the inbox reads apart from Home's indigo beside it.
+  Activity: '#d97706',
+  Token: '#d946ef',
+  // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
+  Trash: '#78716c',
+  Mcp: '#f43f5e',
+  // Deep pink, the heart on a Community card, apart from Canvas's lighter pink.
+  Community: '#db2777',
+  // Terminal ink: the command line, darker than Trash's stone grey.
+  Cli: '#1e293b',
+  // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
+  Agent: '#c2410c',
+  // Slate violet: looking back in time, apart from Home's indigo and Token's fuchsia.
+  Version: '#6d28d9',
+  Email: '#0d9488',
+  Error: '#dc2626',
+  // Deep cyan: the Explorer's filters, apart from UI's lighter cyan and Search's indigo.
+  Explorer: '#155e75',
+  // Deep teal-green, a stopwatch: apart from Email's teal and Cta's green.
+  Timing: '#047857',
+  // Deep fuchsia, a saved copy: apart from Token's lighter one and Page's wine.
+  Snapshot: '#a21caf',
+  // Deep rose, a recording light: apart from Error's red and MCP's pink.
+  Walkthrough: '#be123c',
+  Library: '#0f766e',
+};
+
+const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard', 'Community'];
+
+const FUNNEL = createCtaFunnel({
+  surfaces: CTA_SURFACES,
+  sources: CTA_SOURCES,
+  isSource: isCtaSource,
+  surfaceOf: ctaSurfaceOf,
+  surfaceOfPath: ctaSurfaceOfPath,
+});
+
+export const LIVEKNOWLEDGE: TelemetryAppConfig = {
+  id: 'liveknowledge.app',
+  name: 'liveknowledge',
+  // Its brand-500 (telemetry.css's [data-app='liveknowledge.app'] scale).
+  accent: '#84cc16',
+  noun: NOUN,
+  categoryColors: CATEGORY_COLORS,
+  explain: createEventExplanation({
+    name: 'liveknowledge',
+    noun: NOUN,
+    exact: EXACT,
+    byAction: BY_ACTION,
+    apiOperations: API_OPERATIONS,
+    cliCommandSentence,
+    funnel: FUNNEL,
+    parseTimingType,
+  }),
+  isRetired: isRetiredEvent,
+  funnel: FUNNEL,
+  pageViews: { apps: PAGE_VIEW_APPS, appOf: pageViewApp },
+  community: {
+    groups: communityGroups({
+      COMMUNITY_POSTS_SHARED,
+      COMMUNITY_POSTS_OPENED,
+      COMMUNITY_LIKES,
+      COMMUNITY_COPIES,
+      COMMUNITY_SEARCHES,
+      COMMUNITY_FILTERS,
+      COMMUNITY_REPORTS,
+      COMMUNITY_PUBLISHING,
+      COMMUNITY_ENGAGEMENT,
+      COMMUNITY_DISCOVERY,
+      COMMUNITY_MODERATION,
+    }),
+    categories: COMMUNITY_CATEGORIES,
+  },
+  dashboard: [
+    {
+      title: 'At a glance',
+      metrics: [
+        NEW_VISITORS,
+        RETURNING_VISITORS,
+        SIGN_UPS,
+        DOCUMENTS_CREATED,
+        MULTIPLAYER_SESSIONS,
+        FAILED_REQUESTS,
+      ],
+    },
+    {
+      title: 'Visitors',
+      metrics: [
+        ALL_VISITORS,
+        ACCOUNT_ACTIVITY,
+        PAGE_VIEWS_BY_APP,
+        SIGN_IN_PROMPTS,
+        ONBOARDING_TOURS,
+      ],
+    },
+    // What a knowledgebase is for: questions asked and answered, pages kept right, found and moved through, and the
+    // pages those make. Read Ask against Verification: an answer is only as good as the pages behind it. The team's
+    // AI key and Describe to Set Up are set up once, so they sit on the Connections tab.
+    {
+      title: 'Knowledge',
+      metrics: [
+        ASK,
+        AI_KNOWLEDGE,
+        VERIFICATION,
+        KNOWLEDGE_SEARCH,
+        PAGE_NAVIGATION,
+        PAGES_BY_SOURCE,
+        PAGE_EDITING,
+      ],
+    },
+    {
+      title: 'Content',
+      metrics: [DOCUMENT_ACTIONS, TAB_ACTIONS, ELEMENTS_ADDED, ELEMENT_EDITING],
+    },
+    {
+      title: 'Features',
+      metrics: [PAGE_WORK, PALETTE_USE, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+    },
+    // Live Together is the only stack that counts two people on one canvas at
+    // the same moment; the rest of Collaboration counts the ways in and keeping
+    // up, so read them against it.
+    {
+      title: 'Collaboration',
+      metrics: [LIVE_TOGETHER, JOINING, SHARE_LINKS_MADE, SHARING_AND_EMBEDS, HOME_AND_ACTIVITY],
+    },
+    {
+      title: 'Connections',
+      metrics: [AGENT_ACCESS, MCP_TOOL_CALLS, CLI_COMMANDS_STACK, AGENT_VIEWED],
+    },
+    // Emails Sent is written server-side by the api worker: nothing about a send
+    // reaches a browser, so this is the only place it can be counted. The
+    // onboarding series exists to bring people back, so read it against All
+    // Visitors. Failures land on Exceptions as Error·Api·Http*.SendEmail.
+    {
+      title: 'Health & support',
+      metrics: [EXCEPTIONS, HELP_CENTRE, EMAILS_SENT],
+    },
+  ],
+  editing: {
+    groups: [
+      {
+        title: 'Editing tools',
+        // Notes left with element notes (docs/specs/009-elements/links-and-notes-retired.md).
+        metrics: [ASSIGNED_ACTIONS, ORGANISATION, FORMAT_PAINTER],
+      },
+      {
+        title: 'More editing',
+        metrics: [
+          UNDO_AND_REDO,
+          EXPORT_AND_IMPORT,
+          TABLES,
+          SIDE_BY_SIDE,
+          CONNECTED_TABS,
+          SNAPSHOTS,
+          WALKTHROUGHS,
+          LIBRARY,
+          EDITOR_SEARCH,
+          FIND_AND_REPLACE,
+          EDITOR_CHROME,
+          TRASH,
+        ],
+      },
+    ],
+    exportFormats: 'Which formats pages leave in: PDF, Word, Markdown, PNG, SVG, JSON',
+    aiOptIn: false,
+  },
+  palette: {
+    tabs: PALETTE_TELEMETRY_TYPES,
+    aliases: PALETTE_TYPE_ALIASES,
+    subtitles: {
+      shapes: 'Boxes, circles, stars, speech bubbles and other primitives',
+      devices: 'Device frames: browser, phone, laptop and friends',
+    },
+  },
+  // No Selection mode (docs/specs/030-knowledgebase/page-surface.md "No Selection mode"): the format painter, the one
+  // tool kept, is charted in Editing tools, so there is no Modes section.
+  settings: [
+    { title: 'All categories', metrics: [SETTINGS_CHANGED] },
+    { title: 'By category', metrics: [...SETTINGS_STACKS] },
+  ],
+  isNonThemePick,
+  teamwork: {
+    key: 'teamwork',
+    title: 'Discussion & Teams',
+    intro: 'Comments and teams, beside the sharing on the Dashboard',
+    groups: [
+      {
+        title: 'Discussion and teams',
+        metrics: [DISCUSSION, TEAM_ACTIVITY],
+      },
+    ],
+  },
+  connections: {
+    intro:
+      'API tokens, agent changes, version history, the team’s AI key, public sites and Automations, beside agent access, the MCP and the CLI on the Dashboard',
+    groups: [
+      { title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS, VERSION_HISTORY] },
+      { title: 'AI Setup', metrics: [AI_SETUP] },
+      { title: 'Publish to the Web', metrics: [SITE_PUBLISHING] },
+      { title: 'Automations', metrics: [DOCUMENT_AUTOMATIONS] },
+    ],
+  },
+  pages: [{ title: 'Calls to action', metrics: [CALLS_TO_ACTION] }],
+  help: {
+    groups: [
+      {
+        title: 'Help engagement',
+        metrics: [
+          ARTICLE_VIEWS,
+          MARKED_HELPFUL,
+          MARKED_NOT_HELPFUL,
+          HELP_SEARCHES,
+          DRY_HELP_SEARCHES,
+          HELP_SCOPE_SWITCHES,
+        ],
+      },
+    ],
+  },
+  tours: {
+    intro: 'Each guided tour from offer to finish, then the one-off prompts',
+    groups: [
+      {
+        title: 'Tours',
+        metrics: [ELEMENT_TOURS, SHOW_ME_TOURS],
+      },
+      { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
+    ],
+  },
+  exceptions: {
+    groups: [
+      {
+        title: 'Error volume',
+        metrics: [
+          FAILED_REQUESTS,
+          SERVER_CRASHES,
+          CLIENT_EXCEPTIONS,
+          REALTIME_RESYNCS,
+          STALE_CHUNK_RELOADS,
+        ],
+      },
+    ],
+    recovery: [{ title: 'Recovery', metrics: [LOAD_RECOVERY] }],
+    warningExample: 'a document that was slow to open',
+  },
+  timings: { editor: EDITOR_TIMING_CHARTS, vitals: WEB_VITAL_CHARTS },
+};

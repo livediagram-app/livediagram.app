@@ -1,0 +1,172 @@
+// The floating WYSIWYG toolbar shown above an element while its label is
+// being edited (docs/specs/008-canvas/canvas-and-palette.md). Per-range bold / italic / underline /
+// strikethrough + list controls as plain icon buttons, whole-element
+// alignment as a dropdown, the selection colour swatch and Text Effects
+// (docs/specs/008-canvas/text-effects.md). Everything
+// else the old ⋯ overflow menu carried (Font / Size / Padding) lives in
+// the element context menu's Text flyout now, so the toolbar holds only
+// the live-selection verbs. Rendered by RichTextEditor (which owns the
+// selection + apply handlers); this component is presentation + the
+// focus-preservation detail.
+
+import { AlignmentGrid } from '@/components/palette/palette-controls';
+import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
+import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
+import {
+  runToggles,
+  TOOLBAR_DIVIDER,
+  toolbarButtonClass,
+} from '@/components/rich-text/toolbar-chrome';
+import { noFocusSteal, ToolbarDropdown } from '@/components/rich-text/ToolbarDropdown';
+import type { ActiveFormat } from '@liveworkspace/workbench/components/label-editor/rich-text-format';
+import type {
+  BoxedElement,
+  Element,
+  ListStyle,
+  RunBoolKey,
+  RunHeading,
+  TextAlignX,
+  TextAlignY,
+} from '@liveknowledge/document';
+import { useContext, useMemo, useState } from 'react';
+import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { elementRunDefaults } from './label-style';
+import { HoverCard } from '@liveknowledge/ui';
+import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
+import { standardGroup } from '@/components/colour/colour-options';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useTextContrast } from '@/hooks/ui/useTextContrast';
+import { TextEffectsButton, type TextEffectPatch } from '@/components/rich-text/TextEffectsPanel';
+
+// What the swatch shows while the selection has no colour of its own.
+const DEFAULT_TEXT_COLOUR = '#0f172a';
+const NONE: readonly Element[] = [];
+
+// Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same
+// active + hover tones) so the two toolbars read as one system.
+export function RichTextToolbar({
+  active,
+  alignX,
+  alignY,
+  onToggle,
+  onApplyList,
+  onApplyHeading,
+  onApplyTitleCaption,
+  listStyle,
+  onColor,
+  onEffect,
+  onSetAlign,
+  element,
+}: {
+  active: ActiveFormat;
+  alignX: TextAlignX;
+  alignY: TextAlignY;
+  onToggle: (key: RunBoolKey) => void;
+  onApplyList: (style: ListStyle) => void;
+  onApplyHeading: (level: RunHeading | null) => void;
+  // The label's Title and Caption preset (docs/specs/009-elements/block-type-picker.md).
+  onApplyTitleCaption?: () => void;
+  // What the current lines already are, so the picker can show it.
+  listStyle: ListStyle;
+  onColor: (color: string) => void;
+  // Highlight and gradient (docs/specs/008-canvas/text-effects.md); absent hides the control.
+  onEffect?: (patch: TextEffectPatch) => void;
+  onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
+  // The element whose label is edited: the colour is judged where it sits (colour-picker.md "Reading on its ground").
+  element?: BoxedElement;
+}) {
+  const toggles = runToggles('bold', 'italic', 'underline', 'strikethrough');
+  const appearance = useCanvasSurface();
+  const yours = useDocumentColours();
+  // Judged only while the colour picker is open, on the element as stored: the one handed to the editor is
+  // projected for the canvas (on a dark canvas its text colour is the drawn light ink, not what is saved).
+  const [colourOpen, setColourOpen] = useState(false);
+  const tab = useContext(EditorContext)?.activeTab;
+  const judged = useMemo(() => {
+    if (!colourOpen || !element || !tab) return NONE;
+    const stored = tab.elements.find((el) => el.id === element.id);
+    return stored ? [stored] : NONE;
+  }, [colourOpen, element, tab]);
+  const grounds = useTextContrast(judged, colourOpen);
+  // The selected words' colour is the one in force only when it is their own: with none, active.color is
+  // the projected element's colour, and the stored element's colour is judged instead.
+  const ownColour =
+    active.color && element && active.color !== elementRunDefaults(element).color
+      ? active.color
+      : null;
+  const contrast = useMemo(
+    () => grounds?.map((p) => (ownColour ? { ...p, current: p.colourOf(ownColour) } : p)),
+    [grounds, ownColour],
+  );
+
+  return (
+    <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">
+      {toggles.map((t) => (
+        <HoverCard key={t.key} title={t.label} description={t.description}>
+          <button
+            type="button"
+            aria-label={t.label}
+            aria-pressed={active[t.key]}
+            onMouseDown={noFocusSteal}
+            onClick={() => onToggle(t.key)}
+            className={toolbarButtonClass(active[t.key])}
+          >
+            {t.icon}
+          </button>
+        </HoverCard>
+      ))}
+      {TOOLBAR_DIVIDER}
+      {/* Block type (docs/specs/009-elements/block-type-picker.md): heading level and list style are one choice
+          to a writer, so they are one control. Applies to the selected lines,
+          or to the whole label when nothing is selected (the session's
+          collapsedScope). */}
+      <BlockTypePicker
+        heading={active.heading}
+        listStyle={listStyle}
+        onApplyHeading={onApplyHeading}
+        onApplyList={onApplyList}
+        onApplyTitleCaption={onApplyTitleCaption}
+      />
+      {TOOLBAR_DIVIDER}
+      {/* Alignment — the shared 3×3 grid, reused. The trigger is the
+          familiar word-processor glyph (stacked lines whose ends follow the
+          horizontal alignment), not the positional box-dot the grid cells
+          use, so the control reads as "alignment" at a glance. */}
+      <ToolbarDropdown
+        label="Alignment"
+        description="Align the label inside the element."
+        menuClassName="w-28 p-1.5"
+        trigger={<AlignLinesIcon dir={alignX} />}
+      >
+        <AlignmentGrid alignX={alignX} alignY={alignY} onChange={onSetAlign} />
+      </ToolbarDropdown>
+      {TOOLBAR_DIVIDER}
+      {/* The selection's colour: the one colour picker
+          (docs/specs/004-interface-design/colour-picker.md) behind a swatch button. A press
+          never takes focus from the text (the editor keeps its selection, and its onBlur ignores
+          focus landing in the picker's popover). */}
+      <HoverCard title="Text colour" description="Colour the selected text.">
+        <ColourSwatchButton
+          label="Text colour"
+          value={active.color ?? null}
+          swatch={active.color ?? DEFAULT_TEXT_COLOUR}
+          standard={[standardGroup('strong', appearance, 'hex')]}
+          yours={yours}
+          preserveFocus
+          className={`h-8 w-8 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800`}
+          onPick={onColor}
+          contrast={contrast}
+          onOpenChange={setColourOpen}
+        />
+      </HoverCard>
+      {onEffect ? (
+        <TextEffectsButton
+          highlight={active.highlight}
+          gradient={active.gradient}
+          onApply={onEffect}
+        />
+      ) : null}
+    </div>
+  );
+}

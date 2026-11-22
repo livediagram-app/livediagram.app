@@ -1,0 +1,76 @@
+'use client';
+
+// The Ask gate (docs/specs/030-knowledgebase/search-and-ask.md "Ask"): a press on the Ask tab when this session cannot
+// ask (nobody signed in, or no AI at all: no key and no built-in AI on this server) keeps the knowledgebase where it is and says why in a dialog over it, a
+// sheet on a phone, with what to do next (owner 2026-11-21: "couldn't that have been a modal / drawer on mobile rather
+// than another screen entirely"). Ask's own address still shows the same words in the view, for a link followed.
+import { useSyncExternalStore } from 'react';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
+import type { AskSession } from './useAskSession';
+import { AskNoAi, AskSignedOut } from './AskStates';
+import { hasAnyAi } from '@/lib/knowledge-ask/ai-settings-words';
+import { ConnectSignedOut } from '@/components/connect/ConnectSignedOut';
+
+// Connect's one gate shares this store and dialog (docs/specs/030-knowledgebase/mcp-connect.md "The tab").
+export type AskGate = 'no-ai' | 'signed-out' | 'connect-signed-out';
+
+const GATE_NAME: Record<AskGate, string> = {
+  'signed-out': 'Sign In to Ask',
+  'no-ai': 'Built-In AI Is Not Set Up Here',
+  'connect-signed-out': 'Sign In to Connect an AI App',
+};
+
+let open: AskGate | null = null;
+const listeners = new Set<() => void>();
+const set = (next: AskGate | null) => {
+  if (next === open) return;
+  open = next;
+  listeners.forEach((l) => l());
+};
+
+export const askGate = {
+  subscribe: (l: () => void) => {
+    listeners.add(l);
+    return () => listeners.delete(l);
+  },
+  get: (): AskGate | null => open,
+  open: (gate: AskGate) => set(gate),
+  close: () => set(null),
+};
+
+/**
+ * What stands between this session and Ask, read when the tab is pressed: nobody signed in, or (once the settings
+ * are read, on the first press) no AI at all. A knowledgebase with no key is not one: built-in AI answers. Null when Ask can open, or when the settings could not be read: the view says
+ * so itself, with Try Again. An Offline knowledgebase's tab is off already (KnowledgeViewTabs).
+ */
+export async function askGateFor(session: AskSession): Promise<AskGate | null> {
+  const { askOff } = session.rights;
+  if (askOff === 'signed-out') return 'signed-out';
+  if (askOff === 'offline') return null;
+  await aiSettingsStore.load(session.who, session.documentId);
+  const state = aiSettingsStore.get(session.documentId);
+  return state.status === 'ready' && !hasAnyAi(state.settings) ? 'no-ai' : null;
+}
+
+/** The gate's dialog, drawn by the footer's view tabs while it is open. */
+export function AskGateDialog({ manageAi }: { manageAi: boolean }) {
+  const gate = useSyncExternalStore(askGate.subscribe, askGate.get, () => null);
+  return (
+    <Dialog
+      open={gate !== null}
+      onClose={askGate.close}
+      ariaLabel={gate ? GATE_NAME[gate] : GATE_NAME['signed-out']}
+      size="sm"
+      phoneSheet
+    >
+      {gate === 'signed-out' ? (
+        <AskSignedOut bare before={askGate.close} />
+      ) : gate === 'no-ai' ? (
+        <AskNoAi bare manageAi={manageAi} before={askGate.close} />
+      ) : gate === 'connect-signed-out' ? (
+        <ConnectSignedOut bare />
+      ) : null}
+    </Dialog>
+  );
+}

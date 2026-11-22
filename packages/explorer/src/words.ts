@@ -28,6 +28,7 @@ const KIND_WORDS: Record<Kind, { one: string; many: string }> = {
   document: { one: 'Document', many: 'Documents' },
   design: { one: 'Design', many: 'Designs' },
   space: { one: 'Space', many: 'Spaces' },
+  knowledgebase: { one: 'Knowledgebase', many: 'Knowledgebases' },
 };
 
 function words(one: string, many: string): Words {
@@ -38,6 +39,22 @@ function words(one: string, many: string): Words {
 export function kindWords(app: App): Words {
   const w = KIND_WORDS[APP_KINDS[app]];
   return words(w.one, w.many);
+}
+
+/** What a share pass can be narrowed to: a tab, or on liveknowledge a page (a knowledgebase's tabs are its pages). */
+export type ScopeWords = { many: string; lowerOne: string; lowerMany: string; all: string };
+
+const TAB_SCOPE: ScopeWords = { many: 'Tabs', lowerOne: 'tab', lowerMany: 'tabs', all: 'All tabs' };
+const PAGE_SCOPE: ScopeWords = {
+  many: 'Pages',
+  lowerOne: 'page',
+  lowerMany: 'pages',
+  all: 'All Pages',
+};
+
+/** The share dialog's words for what a pass opens, by the item's app. */
+export function scopeWords(app?: App): ScopeWords {
+  return app && APP_KINDS[app] === 'knowledgebase' ? PAGE_SCOPE : TAB_SCOPE;
 }
 
 /** The words for a list that mixes every app's items. */
@@ -60,6 +77,7 @@ const HERO_WORDS: Record<Kind, HeroWords> = {
   document: { question: 'what are you writing today?', lead: LEAD },
   design: { question: 'what are you designing today?', lead: LEAD },
   space: { question: 'who are you meeting today?', lead: LEAD },
+  knowledgebase: { question: 'what are you writing down today?', lead: LEAD },
 };
 
 // The hero while the list mixes every app: no one kind's verb.

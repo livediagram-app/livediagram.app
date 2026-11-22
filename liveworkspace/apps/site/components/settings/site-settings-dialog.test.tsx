@@ -237,10 +237,10 @@ describe('the Settings panel, on All', () => {
     );
     expect(top.filter((label) => label === 'Editor')).toHaveLength(1);
     expect(top, top.join(', ')).toContain('Getting Started');
-    // The five apps' scopes, then the profile (the first category, shown).
+    // The six apps' scopes, then the profile (the first category, shown).
     const paths = fetchMock.mock.calls.map(([url]) => url.split('?')[0]!);
     expect(paths).toContain('/api/account/profile');
-    expect(paths.filter((p) => p.startsWith('/api/account/settings/'))).toHaveLength(5);
+    expect(paths.filter((p) => p.startsWith('/api/account/settings/'))).toHaveLength(6);
     expect(document.querySelector('[data-settings-pane]')?.textContent).toContain(
       'Presence colour',
     );

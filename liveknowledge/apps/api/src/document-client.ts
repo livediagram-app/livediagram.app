@@ -1,0 +1,182 @@
+// The worker's way into a document's Durable Object (docs/specs/015-api/api.md "Storage"): one typed stub per document,
+// its RPC methods with the document id filled in. Every content read and write goes through here.
+//
+// Inside the document's own Durable Object the same call is a plain method call on the room itself (document-room.ts
+// `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
+// hop there.
+
+import type { ItemStanding, SourceChange } from '@liveworkspace/index-client';
+import type { HookAnswer, HookCall } from '@liveworkspace/automations/room';
+import type { AccessLevel, CommunityShareInfo } from '@liveknowledge/api-schema';
+import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
+import type { DocumentFileImport } from './document-room/document-file';
+import type { RouteIdentity } from './document-room/document-route';
+import type {
+  Copier,
+  ExportCommentsResult,
+  ExportQuery,
+  ExportResult,
+  ShareAnswer,
+  ShareMessage,
+  SharedTabCopy,
+} from '@liveworkspace/index-app';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
+import type { Env } from './types';
+import type { PublishedAnswer, PublishedRead } from './publishing/published-reads';
+
+// The source side of a copy, and whether it went through the document's open Community post's link.
+export type CopySource = { copy: DocumentCopy; community: boolean };
+
+// The Community post a visitor through its open link is told of: its id at the service and who it shows as author.
+export type CommunityListing = CommunityShareInfo;
+
+// Whoever asked for access, as the index's notice names them.
+export type AccessRequester = { id: string; name: string | null; requestId?: string };
+
+export type DocumentRoomClient = {
+  // The tabs (no bodies) and slide deck a document read carries.
+  outline(): Promise<DocumentOutline>;
+  // A public site's read, from the published snapshot alone (publishing/published-reads.ts).
+  publishedRead(read: PublishedRead): Promise<PublishedAnswer>;
+  // One API request about this document, answered inside its Durable Object by the same handlers as before
+  // (document-route.ts), with the caller's identity as the worker resolved it.
+  route(request: Request, identity: RouteIdentity): Promise<Response>;
+  // The document drawn for liveworkspace's previews (the export door, liveworkspace/docs/specs/006-media/previews.md), where the
+  // content is.
+  exportImage(query: ExportQuery): Promise<ExportResult>;
+  // The document as its Drive file (the export door's `file` format, liveworkspace/docs/specs/005-drive/drive.md), and a new
+  // document made from one (the import door).
+  exportFile(query: ExportQuery): Promise<ExportResult>;
+  importFile(file: DocumentFileImport): Promise<void>;
+  // Every comment thread in the document, its authors unredacted (the export door's `comments` format, for the data
+  // export: liveworkspace/docs/specs/003-accounts/data-export.md).
+  exportComments(): Promise<ExportCommentsResult>;
+  // Whether the document holds this tab (a workbench ticket's check).
+  hasTab(tabId: string): Promise<boolean>;
+  // The index's reverse write of a connected tab (document-room/connected-tab.ts).
+  addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
+  // endpoint's share check.
+  servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
+  // A copy's two halves (document-content.ts): the source as `copier` may take it (anyone but the owner takes other
+  // people's comment authors redacted), and whether it went through the document's open Community post's link.
+  exportCopy(onlyTabId: string | null, copier: Copier | null): Promise<CopySource | null>;
+  importCopy(copy: DocumentCopy): Promise<void>;
+  // The document is gone for good: end every session and drop everything it stored.
+  purge(): Promise<void>;
+  // Share links revoked elsewhere (the index): their sessions end now.
+  revokeCodes(codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  // The document's Community post's link (its code, and whether it opens the document now), or null for none.
+  community(): Promise<{ code: string; open: boolean } | null>;
+  // The post's title when `code` is its open link: what a copy through it is named.
+  communityPostTitle(code: string): Promise<string | null>;
+  // The post's id and author, for a visitor through its open link; null otherwise.
+  communityListing(code: string): Promise<CommunityListing | null>;
+  // Someone opened the document through a share link for the first time (the index's notice): the owner's
+  // "someone joined" email, sent from the room, which keeps its once-per-window claim.
+  joined(personId: string, level?: AccessLevel): Promise<void>;
+  // Someone asked for access to the document (the index's notice): Access Requested, for the rules that hear it.
+  accessRequested(requester: AccessRequester): Promise<void>;
+  // Automations' doors (@liveworkspace/automations/room doors.ts): an Incoming Webhook call to one rule, and a
+  // rule email's unsubscribe (false for a token the document never made).
+  incomingHook(ruleId: string, call: HookCall): Promise<HookAnswer>;
+  emailOptOut(token: string): Promise<boolean>;
+  // Where the document stands at the index (@liveworkspace/automations/room standing.ts): put away, its rules run
+  // nothing.
+  takeStanding(standing: ItemStanding): Promise<void>;
+  // A Sheet a linked chart reads changed (the index's source-changed door): the room tells every open session.
+  sourceChanged(change: SourceChange): Promise<void>;
+  // A closed account's name off the document (document-anonymise.ts), and the guests merged into it (`guestIds`) as its
+  // own: answers the rows changed.
+  anonymise(personId: string, guestIds?: readonly string[]): Promise<number>;
+  // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the join
+  // recorded, and what another holder (`from`) sends.
+  sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
+  shareJoined(tabId: string, member: string, seenUpdatedAt: number): Promise<boolean>;
+  receiveShares(from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
+};
+
+export function documentRoom(
+  env: Pick<Env, 'DOCUMENT_ROOM'>,
+  documentId: string,
+): DocumentRoomClient {
+  const ns = env.DOCUMENT_ROOM;
+  const stub = ns.get(ns.idFromName(documentId));
+  // The stub's RPC types wrap every answer for the wire; the shapes here are the class's own.
+  const room = stub as unknown as DocumentRoomRpc;
+  return {
+    outline: () => room.outline(documentId),
+    publishedRead: (read) => room.publishedRead(documentId, read),
+    route: (request, identity) => room.route(documentId, request, identity),
+    exportImage: (query) => room.exportImage(documentId, query),
+    exportFile: (query) => room.exportFile(documentId, query),
+    importFile: (file) => room.importFile(documentId, file),
+    exportComments: () => room.exportComments(documentId),
+    hasTab: (tabId) => room.hasTab(documentId, tabId),
+    addConnectedTab: (write) => room.addConnectedTab(documentId, write),
+    servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
+    exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
+    importCopy: (copy) => room.importCopy(documentId, copy),
+    purge: () => room.purge(documentId),
+    revokeCodes: (codes, reason) => room.revokeCodes(documentId, codes, reason),
+    community: () => room.community(documentId),
+    communityPostTitle: (code) => room.communityPostTitle(documentId, code),
+    communityListing: (code) => room.communityListing(documentId, code),
+    joined: (personId, level) => room.joined(documentId, personId, level),
+    accessRequested: (requester) => room.accessRequested(documentId, requester),
+    incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
+    emailOptOut: (token) => room.emailOptOut(documentId, token),
+    takeStanding: (standing) => room.takeStanding(documentId, standing),
+    sourceChanged: (change) => room.sourceChanged(documentId, change),
+    anonymise: (personId, guestIds = []) => room.anonymise(documentId, personId, guestIds),
+    sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
+    shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
+    receiveShares: (from, messages) => room.receiveShares(documentId, from, messages),
+  };
+}
+
+// The DocumentRoom RPC surface, by the document id each call names (the room checks it is its own).
+export type DocumentRoomRpc = {
+  outline(documentId: string): Promise<DocumentOutline>;
+  publishedRead(documentId: string, read: PublishedRead): Promise<PublishedAnswer>;
+  route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response>;
+  exportImage(documentId: string, query: ExportQuery): Promise<ExportResult>;
+  exportFile(documentId: string, query: ExportQuery): Promise<ExportResult>;
+  importFile(documentId: string, file: DocumentFileImport): Promise<void>;
+  exportComments(documentId: string): Promise<ExportCommentsResult>;
+  hasTab(documentId: string, tabId: string): Promise<boolean>;
+  addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
+  exportCopy(
+    documentId: string,
+    onlyTabId: string | null,
+    copier: Copier | null,
+  ): Promise<CopySource | null>;
+  importCopy(documentId: string, copy: DocumentCopy): Promise<void>;
+  purge(documentId: string): Promise<void>;
+  revokeCodes(
+    documentId: string,
+    codes: string[],
+    reason?: 'revoked' | 'rescoped',
+  ): Promise<number>;
+  community(documentId: string): Promise<{ code: string; open: boolean } | null>;
+  communityPostTitle(documentId: string, code: string): Promise<string | null>;
+  communityListing(documentId: string, code: string): Promise<CommunityListing | null>;
+  joined(documentId: string, personId: string, level?: AccessLevel): Promise<void>;
+  accessRequested(documentId: string, requester: AccessRequester): Promise<void>;
+  incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
+  emailOptOut(documentId: string, token: string): Promise<boolean>;
+  takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
+  sourceChanged(documentId: string, change: SourceChange): Promise<void>;
+  anonymise(documentId: string, personId: string, guestIds: readonly string[]): Promise<number>;
+  sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;
+  shareJoined(
+    documentId: string,
+    tabId: string,
+    member: string,
+    seenUpdatedAt: number,
+  ): Promise<boolean>;
+  receiveShares(documentId: string, from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
+  fetch(request: Request): Promise<Response>;
+};

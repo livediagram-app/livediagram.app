@@ -1,0 +1,273 @@
+import { useState } from 'react';
+import { Glyph } from '@liveknowledge/ui';
+import { createPortal } from 'react-dom';
+import {
+  TABLE_MARK_TEXT,
+  tableCellMark,
+  type TableCellStyle,
+  type TableElement,
+} from '@liveknowledge/document';
+import {
+  ContextMenu,
+  ContextMenuDivider,
+} from '@liveworkspace/workbench/components/palette/ContextMenu';
+import { SizeButton } from '@/components/palette/palette-controls';
+import {
+  TextGlyph,
+  PaletteMenuIcon,
+  RemoveIconGlyph,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { ColourRow } from '@/components/palette/context-menu-input-rows';
+import {
+  FillColourIcon,
+  TextColourIcon,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { useColourPalette } from '@/hooks/ui/useColourPalette';
+import { useCellTextContrast } from '@/hooks/ui/useTextContrast';
+import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
+import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { AlignIcon, CellLinkIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
+
+// The per-cell context menu (docs/specs/008-canvas/canvas-and-palette.md Table): right-click / long-press a cell
+// opens THIS at the pointer — the same accordion-category menu language as
+// the element/tab context menus, replacing the old floating cell toolbar.
+// Every control applies to the WHOLE cell selection (shift-click builds a
+// multi-cell set), reading its display value off the anchor cell; Link is
+// per-cell identity, so it shows only for a single selected cell.
+//
+// Rendered through a portal: ContextMenu positions itself `fixed` at screen
+// coords, and TableView lives inside the canvas's transformed wrapper, where
+// fixed would resolve against the transform instead of the viewport.
+export function TableCellMenu({
+  element,
+  cells,
+  anchor,
+  position,
+  onClose,
+  applyStyle,
+  onPreviewStyle,
+  onClear,
+  onSetText,
+  onLinkCell,
+  textColor,
+}: {
+  element: TableElement;
+  // Every selected cell (anchor first). The menu acts on all of them.
+  cells: { r: number; c: number }[];
+  // The cell whose current values the controls display.
+  anchor: { r: number; c: number };
+  // Screen coords of the opening right-click / long-press.
+  position: { x: number; y: number };
+  onClose: () => void;
+  // Apply a style patch to every selected cell (one commit).
+  applyStyle: (patch: Partial<TableCellStyle>) => void;
+  // Show a patch over the selected cells without committing it, for the
+  // colour rows' hover preview. `null` clears it.
+  onPreviewStyle?: (patch: Partial<TableCellStyle> | null) => void;
+  // Clear text + formatting of every selected cell (one commit).
+  onClear: () => void;
+  // Write one text into every selected cell (one commit): the Marks row's Tick, Cross and Clear.
+  onSetText?: (text: string) => void;
+  // Open the link picker for the anchor cell; absent in read-only sessions.
+  onLinkCell?: (tableId: string, r: number, c: number) => void;
+  textColor: string;
+}) {
+  const [open, setOpen] = useState<string | null>(null);
+  const section = (key: string) => ({
+    open: open === key,
+    onToggle: () => setOpen((o) => (o === key ? null : key)),
+    flush: true,
+  });
+  const { swatches } = useColourPalette();
+  const [openColour, setOpenColour] = useState<string | null>(null);
+  // Whether the cells' words read on their backgrounds, judged only while the Text row's picker is open.
+  const textContrast = useCellTextContrast(element, cells, openColour === 'text');
+  const sc = element.cellStyles?.[anchor.r]?.[anchor.c] ?? null;
+  const isHeaderAnchor =
+    (element.headerRow && anchor.r === 0) || (element.headerColumn && anchor.c === 0);
+  const boldOn = sc?.bold ?? (isHeaderAnchor || (element.textBold ?? false));
+  const italicOn = sc?.italic ?? element.textItalic ?? false;
+  const underlineOn = sc?.underline ?? element.textUnderline ?? false;
+  const single = cells.length === 1;
+  const toggleCls = (on: boolean) =>
+    `flex h-7 flex-1 items-center justify-center rounded text-sm ${
+      on
+        ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/30 dark:text-brand-200'
+        : 'text-slate-600 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700'
+    }`;
+  return createPortal(
+    <ContextMenu position={position} label="Cell menu" onClose={onClose} flush>
+      <p className="px-3 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {single ? 'Selected Cell' : `${cells.length} Cells`}
+      </p>
+      <MenuAccordionSection title="Text" icon={<TextGlyph />} {...section('text')}>
+        <div className="flex gap-1 px-2 py-1.5">
+          <button
+            type="button"
+            aria-pressed={boldOn}
+            className={toggleCls(boldOn)}
+            onClick={() => applyStyle({ bold: !boldOn })}
+          >
+            <span className="font-bold">B</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={italicOn}
+            className={toggleCls(italicOn)}
+            onClick={() => applyStyle({ italic: !italicOn })}
+          >
+            <span className="italic">I</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={underlineOn}
+            className={toggleCls(underlineOn)}
+            onClick={() => applyStyle({ underline: !underlineOn })}
+          >
+            <span className="underline">U</span>
+          </button>
+        </div>
+        <TextSizeControl
+          current={sc?.textSize ?? element.textSize ?? 'md'}
+          presetPx={presetPxFor('table')}
+          onSet={(textSize) => {
+            onPreviewStyle?.(null);
+            applyStyle({ textSize });
+          }}
+          onPreview={(textSize) => onPreviewStyle?.({ textSize })}
+          onPreviewEnd={() => onPreviewStyle?.(null)}
+        />
+      </MenuAccordionSection>
+      {/* The SAME colour picker every other element gets (docs/specs/004-interface-design/colour-picker.md):
+          the theme's colours, the standard colours and Custom colours. */}
+      <MenuAccordionSection title="Colours" icon={<PaletteMenuIcon />} {...section('colours')}>
+        <ColourRow
+          label="Background"
+          tone="soft"
+          icon={<FillColourIcon />}
+          value={sc?.bg ?? 'transparent'}
+          open={openColour === 'bg'}
+          onToggle={() => setOpenColour((c) => (c === 'bg' ? null : 'bg'))}
+          onChange={(bg) => applyStyle({ bg })}
+          onPreview={(bg) => onPreviewStyle?.({ bg })}
+          onPreviewEnd={() => onPreviewStyle?.(null)}
+          onCommit={(bg) => {
+            onPreviewStyle?.(null);
+            applyStyle({ bg });
+          }}
+          {...swatches}
+        />
+        <ColourRow
+          label="Text"
+          icon={<TextColourIcon />}
+          value={sc?.textColor ?? textColor}
+          open={openColour === 'text'}
+          onToggle={() => setOpenColour((c) => (c === 'text' ? null : 'text'))}
+          contrast={textContrast}
+          onChange={(color) => applyStyle({ textColor: color })}
+          onPreview={(textColor) => onPreviewStyle?.({ textColor })}
+          onPreviewEnd={() => onPreviewStyle?.(null)}
+          onCommit={(color) => {
+            onPreviewStyle?.(null);
+            applyStyle({ textColor: color });
+          }}
+          {...swatches}
+        />
+      </MenuAccordionSection>
+      <MenuAccordionSection
+        title="Text Alignment"
+        icon={<AlignIcon dir={sc?.alignX ?? element.textAlignX ?? 'center'} />}
+        {...section('align')}
+      >
+        <div className="grid grid-cols-3 gap-1 px-2 py-1.5">
+          {(['left', 'center', 'right'] as const).map((al) => (
+            <SizeButton
+              key={al}
+              active={(sc?.alignX ?? element.textAlignX ?? 'center') === al}
+              onClick={() => applyStyle({ alignX: al })}
+            >
+              <AlignIcon dir={al} />
+            </SizeButton>
+          ))}
+        </div>
+      </MenuAccordionSection>
+      {onSetText ? (
+        <TableMarksRow
+          current={tableCellMark(element.cells[anchor.r]?.[anchor.c] ?? '')}
+          onSet={(text) => {
+            onSetText(text);
+            onClose();
+          }}
+        />
+      ) : null}
+      <ContextMenuDivider />
+      <MenuTileGrid cols={2}>
+        {onLinkCell && single ? (
+          <MenuTile
+            icon={<CellLinkIcon />}
+            label={sc?.link ? 'Edit Link' : 'Link Cell'}
+            onClick={() => {
+              onLinkCell(element.id, anchor.r, anchor.c);
+              onClose();
+            }}
+          />
+        ) : null}
+        <MenuTile
+          icon={<RemoveIconGlyph />}
+          label={single ? 'Clear Cell' : 'Clear Cells'}
+          onClick={() => {
+            onClear();
+            onClose();
+          }}
+        />
+      </MenuTileGrid>
+    </ContextMenu>,
+    document.body,
+  );
+}
+
+const MARK_BUTTONS = [
+  { id: 'tick', label: 'Tick (Yes)', path: 'M5 10.4l3 3 7-7.4' },
+  { id: 'cross', label: 'Cross (No)', path: 'M6 6l8 8M14 6l-8 8' },
+  { id: 'clear', label: 'Clear Mark', path: 'M5 10h10' },
+] as const;
+
+// Ticks and crosses (docs/specs/009-elements/comparison-tables.md): one press writes the mark into every selected cell.
+function TableMarksRow({
+  current,
+  onSet,
+}: {
+  current: 'tick' | 'cross' | null;
+  onSet: (text: string) => void;
+}) {
+  return (
+    <div className="px-2 pb-1 pt-1.5">
+      <p className="px-1 pb-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">Marks</p>
+      <div className="grid grid-cols-3 gap-1">
+        {MARK_BUTTONS.map((b) => (
+          <SizeButton
+            key={b.id}
+            active={b.id !== 'clear' && current === b.id}
+            label={b.label}
+            onClick={() => onSet(b.id === 'clear' ? '' : TABLE_MARK_TEXT[b.id])}
+          >
+            <Glyph
+              size={16}
+              units={20}
+              className={
+                b.id === 'tick'
+                  ? 'text-emerald-700 dark:text-emerald-400'
+                  : b.id === 'cross'
+                    ? 'text-rose-700 dark:text-rose-400'
+                    : undefined
+              }
+            >
+              <path d={b.path} />
+            </Glyph>
+          </SizeButton>
+        ))}
+      </div>
+    </div>
+  );
+}

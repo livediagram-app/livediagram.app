@@ -13,7 +13,8 @@ export type AppFileFormat = {
 
 // livehuddle is mirrored while it is still held from every list (liveworkspace/docs/specs/005-drive/drive.md "Who and
 // what"), so this is every registered app, not `@liveworkspace/sites`' listed `APP_NAMES`.
-export type AppName = 'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle';
+export type AppName =
+  'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle' | 'liveknowledge';
 
 export const APP_FILE_FORMATS: Record<AppName, AppFileFormat> = {
   livediagram: {
@@ -45,6 +46,12 @@ export const APP_FILE_FORMATS: Record<AppName, AppFileFormat> = {
     kind: 'livehuddle.document',
     mimeType: 'application/vnd.livehuddle+json',
     extension: '.livehuddle',
+  },
+  liveknowledge: {
+    app: 'liveknowledge',
+    kind: 'liveknowledge.document',
+    mimeType: 'application/vnd.liveknowledge+json',
+    extension: '.liveknowledge',
   },
 };
 

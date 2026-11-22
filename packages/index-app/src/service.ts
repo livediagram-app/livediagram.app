@@ -194,6 +194,12 @@ export function createIndexService<A extends App>(app: A) {
       grantCache.clear();
     },
 
+    // Drops the grant kept for this caller, item and share code: the item's room refused it as put away
+    // (request.ts forgetPutAwayGrant).
+    forgetGrant: (caller: GrantCaller, itemId: string, share: ShareAccess | null): void => {
+      grantCache.delete(cacheKey(caller, itemId, share));
+    },
+
     // The claims of a grant for this item, or null for a missing, forged, expired or misaddressed one.
     verifyGrant: async (
       env: GrantEnv,

@@ -6,9 +6,10 @@
 // the bin. livediagram's ActiveSharePass from before the Explorer split, with hover cards on its controls.
 
 import { useState } from 'react';
-import type { ShareLink } from '@liveworkspace/index-client';
+import type { App, ShareLink } from '@liveworkspace/index-client';
 import { BrandMark } from '@liveworkspace/brand';
 import { timeLeftCompact } from '../../time';
+import { scopeWords } from '../../words';
 import { Button, ConfirmPopover, HoverCard, Select, Tooltip } from '@liveworkspace/ui';
 import { CheckIcon, CopyIcon, LinkIcon, LockIcon, TrashIcon } from '../../ui/icons';
 import { CopyMenu } from './CopyMenu';
@@ -41,6 +42,7 @@ export function ActivePass({
   onRevoke,
   onRescope,
   legacy = false,
+  app,
 }: {
   link: ShareLink;
   url: string;
@@ -64,10 +66,13 @@ export function ActivePass({
   onRescope: ((tabId: string | null) => void) | null;
   // A level the item's app no longer offers a new pass: it keeps working, and its band says Legacy.
   legacy?: boolean;
+  // The item's app, for what a pass opens: tabs, or a knowledgebase's pages (scopeWords).
+  app?: App;
 }) {
   // The bin the revoke confirmation points at while it is open.
   const [revokeAnchor, setRevokeAnchor] = useState<HTMLElement | null>(null);
   const exit = usePassExit(onRevoke);
+  const scoped = scopeWords(app);
   // A link of one tab draws that tab: the server picks it, so the image's address names none.
   const imageTab = link.tabId !== null ? undefined : (imageTabId ?? undefined);
   const firstTabId = tabs[0]?.id;
@@ -118,8 +123,8 @@ export function ActivePass({
             <span className="inline-flex items-center gap-1.5">
               <span className={META}>Opens</span>
               <HoverCard
-                title="Tabs"
-                description="Which tabs this pass opens. Changing it takes effect at once: anyone using it reloads into the new choice."
+                title={scoped.many}
+                description={`Which ${scoped.lowerMany} this pass opens. Changing it takes effect at once: anyone using it reloads into the new choice.`}
               >
                 <Select
                   size="sm"
@@ -127,12 +132,12 @@ export function ActivePass({
                   value={link.tabId ?? ''}
                   onChange={(e) => onRescope(e.target.value || null)}
                   disabled={busy}
-                  aria-label="Tabs this pass opens"
+                  aria-label={`${scoped.many} this pass opens`}
                   className="max-w-36"
                   // Sized to the chosen tab, not the longest option, so the caret sits by the name.
                   selectClassName="[field-sizing:content]"
                 >
-                  <ScopeOptions tabs={tabs} />
+                  <ScopeOptions tabs={tabs} all={scoped.all} />
                 </Select>
               </HoverCard>
             </span>

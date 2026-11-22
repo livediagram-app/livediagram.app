@@ -66,6 +66,13 @@ Where an app's answer differs, it is listed here:
   change); for a comment, `thread_full`.
 </AppNote>
 
+<AppNote app="liveknowledge">
+  **`409`**: `page_verified` or `page_review_due` when an agent writes a page a person vouched for
+  (see [An Agent Cannot Write](/help/troubleshooting/an-agent-cannot-write/)), and `context_budget`
+  when a page would take Always in Context past 8,000 tokens. **`403`**: `scope_needed` when a
+  connection lacks the scope the call needs.
+</AppNote>
+
 <AppNote app="livedesign">
   **`409`**: commenting on a thread already holding 500 comments answers `thread_full`.
 </AppNote>

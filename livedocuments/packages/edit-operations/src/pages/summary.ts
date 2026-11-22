@@ -5,7 +5,12 @@
 import type { PageRef, PageSummary } from '@livedocuments/api-schema';
 import { pageHasOrientation, PAGE_SIZES, type Page } from '@livedocuments/document';
 
-export { articleSummaries, describeBackground, pageSummaries } from '@livedocuments/api-schema';
+export {
+  articleSummaries,
+  describeBackground,
+  pageSummaries,
+  pagesTextsLeftOut,
+} from '@livedocuments/api-schema';
 
 /** A page's label in lines and lists: `2 Cover (slide)`, `3 (article)`. */
 export function pageLabel(page: PageSummary): string {

@@ -9,7 +9,14 @@ import { describe, expect, it } from 'vitest';
 const REPO = fileURLToPath(new URL('../../../../', import.meta.url));
 
 const HEROES = [
-  ...['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'].map((p) => ({
+  ...[
+    'livediagram',
+    'liveplanner',
+    'livedocuments',
+    'livedesign',
+    'livehuddle',
+    'liveknowledge',
+  ].map((p) => ({
     name: p,
     hero: `${p}/apps/marketing/components/Hero.tsx`,
     css: `${p}/apps/marketing/app/globals.css`,
