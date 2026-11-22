@@ -74,6 +74,17 @@ about one.
 | **Reset a Form Letter Each Night** | Every day at 00:00 → Restore a Version (pick a tab and a version)                          |
 | **Access Requests to Slack**       | Access Requested → Post to Slack                                                           |
 
+## Steps in other apps
+
+Every step of the platform's [Steps in other apps](../../../../liveworkspace/docs/specs/018-automations/automations.md#steps-in-other-apps) is in this document's Add a Step, under **In Other Apps**:
+Create a Card in a Plan, Write a Page in a Knowledgebase, Post in a Space, Add a Tab to a Document and Notify. Each
+acts as the rule's author, with their rights alone, through the target app's own door; lost access pauses the rule,
+and a chain stops after 3 hops or on a rule it already ran. Their values are this document's own, as every step's.
+
+**As a target**, a livedocuments document takes **Add a Tab to a Document**: a tab from a chosen template, named by the rule, made as Add a Tab from a Template makes one, by the author.
+
+No starter of its own uses them yet; the starters in the other apps reach its documents.
+
 ## Agents
 
 `list_rules` and `change_rules` in the MCP server and `rule` in the CLI, as the platform spec says

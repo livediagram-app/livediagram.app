@@ -1446,6 +1446,26 @@ part at fault, the words, and the command to run next).
   or **Edited by** Deleted account, an Audit Trail run its change started names Deleted account where it named them,
   and its triggers still queued or held by a Wait run as Deleted account's.
 
+## Steps in other apps
+
+Every step of the platform's [Steps in other apps](../../../../liveworkspace/docs/specs/018-automations/automations.md#steps-in-other-apps) is in a plan's Add Action, under **In Other Apps**: Create a
+Card in a Plan, Write a Page in a Knowledgebase, Post in a Space, Add a Tab to a Document and Notify. Each acts as the
+rule's author, with their rights alone, through the target app's own door; lost access pauses the rule, and a chain
+stops after 3 hops or on a rule it already ran. Their values are the card's (`{{card.title}}`, `{{card.url}}`,
+`{{card.assignee}}`), as every card step's. They run after the card's own writes, beside the messages, and never
+inside For Related Cards or an If / Else.
+
+**As a target**, a plan takes **Create a Card in a Plan**: a card on the chosen board, in the chosen column (by
+name), its title and description the rule's, assigned to a person of the plan (one who is not is left off and said
+on the step's line), due N days after it fires, by the author, marked Automation with the rule's name. **Link the
+card back** puts the item that fired at the description's foot; **Skip if an open card already links to this item**
+answers Done ("An open card already links to it") without making one. It never targets the plan itself: Create Card
+does that.
+
+**Starter: Card Done, Write Release Note**: Card Moved to Done, then Write a Page in a Knowledgebase titled
+`{{card.title}}` under a chosen parent (Release Notes), its body the card's description, assignee and a link
+back.
+
 ## Telemetry
 
 `UI · Opened · Automations`; `Plan · Created · AutomationRule`; `Plan · Toggled · AutomationOn` /

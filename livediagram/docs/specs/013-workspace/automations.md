@@ -110,6 +110,17 @@ A document that is archived or in the Trash runs nothing, as the platform spec s
 where it stands on every archive, move out, trash and restore; a document that comes back takes up again, a held
 Wait more than a day past its time settling Skipped.
 
+## Steps in other apps
+
+Every step of the platform's [Steps in other apps](../../../../liveworkspace/docs/specs/018-automations/automations.md#steps-in-other-apps) is in this document's Add a Step, under **In Other Apps**:
+Create a Card in a Plan, Write a Page in a Knowledgebase, Post in a Space, Add a Tab to a Document and Notify. Each
+acts as the rule's author, with their rights alone, through the target app's own door; lost access pauses the rule,
+and a chain stops after 3 hops or on a rule it already ran. Their values are this document's own, as every step's.
+
+**As a target**, a livediagram document takes **Add a Tab to a Document**: a tab from a chosen livediagram template, named by the rule, made as Add a Tab from a Template makes one, by the author.
+
+**Starter: Session Ended, Summarise into Knowledgebase** (Work Tracker 1347): Edited, Then Quiet after 30 minutes, Summarise with AI, then Write a Page in a Knowledgebase titled `{{item.name}} Session, {{now.date}}` with `{{summary}}` and a link back. livediagram has no Everyone Left (its Spaces moved to livehuddle), so the session's end is the board going quiet.
+
 ## Agents
 
 `list_rules` and `change_rules` in the MCP server and `rule` in the CLI, as the platform spec says
