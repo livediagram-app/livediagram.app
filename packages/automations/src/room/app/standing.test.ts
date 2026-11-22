@@ -65,7 +65,7 @@ describe('where an item stands', () => {
     const clear = vi.spyOn(w.engine.schedule, 'clear');
     const restore = vi.spyOn(w.engine, 'restore');
     await keeper.take({ archived: true, trashed: false, at: 10 });
-    expect(stored.get('itemStanding')).toEqual({ putAway: true, at: 10 });
+    expect(stored.get('itemStanding')).toEqual({ putAway: true, trashed: false, at: 10 });
     expect(keeper.putAway).toBe(true);
     expect(sync).toHaveBeenCalledTimes(1);
     expect(clear).toHaveBeenCalledTimes(1);
@@ -74,7 +74,7 @@ describe('where an item stands', () => {
     await keeper.take({ archived: false, trashed: false, at: 9 });
     expect(keeper.putAway).toBe(true);
     await keeper.take({ archived: false, trashed: true, at: 11 });
-    expect(stored.get('itemStanding')).toEqual({ putAway: true, at: 11 });
+    expect(stored.get('itemStanding')).toEqual({ putAway: true, trashed: true, at: 11 });
     expect(armed.count).toBe(1);
     await keeper.take({ archived: false, trashed: false, at: 12 });
     expect(keeper.putAway).toBe(false);
@@ -93,7 +93,7 @@ describe('where an item stands', () => {
     expect(keeper.fromGrant({})).toBeNull();
     expect(keeper.fromGrant({ iat: 5 })).toBeNull();
     expect(keeper.fromGrant({ iat: 20, trashed: true })).toBeNull();
-    expect(keeper.fromGrant({ iat: 20 })).toEqual({ putAway: false, at: 20_000 });
+    expect(keeper.fromGrant({ iat: 20 })).toEqual({ putAway: false, trashed: false, at: 20_000 });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     fail.put = true;
     await keeper.takeGrant({ iatMs: 30_000 });
@@ -102,6 +102,28 @@ describe('where an item stands', () => {
     fail.put = false;
     await keeper.takeGrant({ iatMs: 30_000 });
     expect(keeper.putAway).toBe(false);
+  });
+
+  // Work Tracker 1323: a grant from before the item was put away (an API token's, cached by its worker) is refused.
+  it('refuses a grant signed before it was put away, as archived or trashed', async () => {
+    const w = world();
+    const { keeper } = kept(w);
+    expect(keeper.refusal({ iat: 1 })).toBeNull();
+    await keeper.take({ archived: true, trashed: false, at: 10_000 });
+    expect(keeper.refusal({ iat: 9 })).toBe('archived');
+    expect(keeper.refusal({ iat: 10 })).toBeNull();
+    // A grant handed to the room is answered the same once taken: the request's, the room-ticket door's.
+    expect(await keeper.takeGrant({ iat: 9 })).toBe('archived');
+    await keeper.take({ archived: true, trashed: true, at: 20_000 });
+    expect(keeper.refusal({ iatMs: 19_999 })).toBe('trashed');
+    // A trashed standing read back from storage keeps saying so; one stored before it was kept reads as archived.
+    keeper.restore({ putAway: true, trashed: true, at: 20_000 });
+    expect(keeper.refusal({ iat: 1 })).toBe('trashed');
+    keeper.restore({ putAway: true, at: 20_000 });
+    expect(keeper.refusal({ iat: 1 })).toBe('archived');
+    // Back: nothing is refused.
+    await keeper.take({ archived: false, trashed: false, at: 30_000 });
+    expect(keeper.refusal({ iat: 1 })).toBeNull();
   });
 
   it('skips a held run more than a day late when it comes back, and keeps a fresher one', () => {

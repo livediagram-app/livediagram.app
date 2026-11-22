@@ -56,7 +56,9 @@ The index grants a trashed canvas to its owner and team alone, and their grant s
 Every door about it answers them `410 document_trashed` (the workbench's ticket mint and session redemption among
 them), and anyone else, a share-link visitor included, as for a canvas that does not exist (404). Only its snapshot
 still serves, for the Trash's own rows. Its room admits nobody: trashing closes its sockets (`document-trashed`), an
-upgrade with a trashed grant is refused 410, and a session renewing with one is closed as the trashing closes it.
+upgrade with a trashed grant is refused 410, and a session renewing with one is closed as the trashing closes it. An API token's grant cached from before the trash is refused the same way on its next call: the room
+knows the item is in the Trash, and its ticket mint asks the room ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Where an item
+stands", Work Tracker 1323).
 
 ### Open editors
 

@@ -120,6 +120,16 @@ import { runKnowledgeWork } from '../knowledge/knowledge-turn';
 import { oweWork } from '../knowledge/knowledge-work';
 import { REVIEW_CHECK_DELAY_MS } from '../knowledge/knowledge-review-timing';
 import { spendSetupDraftIn } from '../knowledge/setup-draft-count';
+import {
+  readPublished,
+  type PublishedAnswer,
+  type PublishedRead,
+} from '../publishing/published-reads';
+import {
+  siteAddressIn,
+  type SiteAddressAnswer,
+  type SiteAddressOp,
+} from '../publishing/site-addresses';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -540,6 +550,18 @@ export class DocumentRoom extends DurableObject<Env> {
   // instance named for an account, never a document's, and it touches no document state.
   async spendSetupDraft(day: string, cap: number): Promise<boolean> {
     return spendSetupDraftIn(this.state.storage, day, cap);
+  }
+
+  // Who holds a public site's address (publishing/site-addresses.ts): only ever asked of an instance named for an
+  // address, never a document's, and it touches no document state.
+  async siteAddress(op: SiteAddressOp): Promise<SiteAddressAnswer> {
+    return siteAddressIn(this.state.storage, op);
+  }
+
+  // A public site's read (publishing/published-reads.ts): from the published snapshot alone.
+  async publishedRead(documentId: string, read: PublishedRead): Promise<PublishedAnswer> {
+    this.bindDocument(documentId);
+    return readPublished(this.requireEnv(), documentId, read);
   }
 
   async takeHead(grant: { owner?: string | null; team: string | null }): Promise<void> {

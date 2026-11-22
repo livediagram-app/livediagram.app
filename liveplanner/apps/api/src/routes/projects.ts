@@ -11,6 +11,7 @@ import {
   itemTabsRequest,
   itemTabsResponse,
   type ItemCreateRequest,
+  forgetPutAwayGrant,
 } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import {
@@ -20,7 +21,7 @@ import {
   readMarkUsed,
 } from '@liveplanner/api-schema';
 import { getProject, readReorderEntries, reorderTabs } from '../db';
-import { badRequest, CORS_HEADERS, forbidden, json, notFound } from '../responses';
+import { badRequest, CORS_HEADERS, forbidden, json, notFound, projectTrashed } from '../responses';
 import {
   redactProjectForCommunity,
   redactProjectForReader,
@@ -140,6 +141,8 @@ async function forwardToPlan(ctx: RouteContext): Promise<Response> {
   }
   if (grant instanceof Response) return grant;
   const res = await planRoom(ctx.env, planId).route(request, identityOf({ ...ctx, grant }));
+  // A grant the room refused as put away is dropped, so the next call asks the index (Work Tracker 1323).
+  forgetPutAwayGrant(indexService, request, grantCallerOf(ctx), planId, res);
   // Making it is a use for the caller, recorded at the index beside the create as the editor records its own; never
   // waited on. The room's 400 for a markUsed that is not a boolean made nothing, so it records nothing.
   if (marksUse && res.status === 201) {
@@ -245,6 +248,9 @@ async function projectTabs(ctx: PlanRouteContext, id: string): Promise<Response>
 export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'projects') return notFound();
+  // A plan in the Trash answers its owner and team 410 `project_trashed`, as the index's grant says (or its room, for a
+  // grant from before the trash: Work Tracker 1323; docs/specs/013-workspace/trash.md).
+  if (ctx.grant?.trashed && segments.length >= 3) return projectTrashed();
   if (segments.length === 2) {
     if (request.method === 'POST') return createProject(ctx);
   }

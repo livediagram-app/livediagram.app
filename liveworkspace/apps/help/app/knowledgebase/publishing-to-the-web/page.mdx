@@ -1,0 +1,91 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { PublishSiteScene } from '@/editions/liveknowledge/components/illustrations/import-export';
+
+export const metadata = helpMetadata({
+  title: 'Publishing to the Web',
+  description:
+    'Publish a Knowledgebase, or one section, as a public help centre: its address, what goes public and what never does, search engines and Unpublish.',
+  path: '/help/knowledgebase/publishing-to-the-web/',
+});
+
+<ArticleLayout path="knowledgebase/publishing-to-the-web" title="Publishing to the Web" description="Put a Knowledgebase, or one section of it, on the web as a public help centre anyone can read." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Publish to the Web turns a Knowledgebase into a public help centre: anyone with the link can read it, with no account and no sign-in. It shows your pages in the Knowledgebase's own Style, with the page tree, Previous and Next at the foot of each page, and search over the published pages. Nobody can edit it there.
+
+## Publish a Knowledgebase
+
+<Step n={1}>
+  Press the Knowledgebase's name at the top of the sidebar and choose **Publish to the Web**.
+</Step>
+
+<Step n={2}>
+  Under **What to Publish**, keep **The Whole Knowledgebase**, or choose one section: a page and its subpages. A section's first page becomes the site's front page.
+</Step>
+
+<Step n={3}>
+  Check the **Address**. It starts as the Knowledgebase's name: 3 to 48 lowercase letters, numbers and single hyphens. Each page gets its own address under it, made from its title.
+</Step>
+
+<Step n={4}>
+  Read **What Goes Public**: every page the site will hold, and every page left out with why. Then press **Publish**.
+</Step>
+
+<Figure caption="Publish to the Web: the site live at its address, and what goes public.">
+  <PublishSiteScene />
+</Figure>
+
+The site is live at once. **Copy Link** copies its address, and the button beside it opens the site in a new tab.
+
+## What Goes Public, and What Never Does
+
+The public site reads only what you published, never the Knowledgebase itself.
+
+| Goes public                                                   | Never goes public                                          |
+| ------------------------------------------------------------- | ---------------------------------------------------------- |
+| Each page's saved writing: text, headings, lists, tables, code | Drafts: only what was saved is published                    |
+| Page titles, emoji icons and the page tree                    | Comments, margin notes and actions                         |
+| Links between published pages                                 | Pages Pending Approval or Rejected                         |
+| The Knowledgebase's name and Style                            | Page Health: owners, Verified, Review Due, reviews         |
+| When each page was last updated                               | Ask, AI Knowledge, AI Settings and agents' suggestions     |
+| Who wrote each page, only if you turn it on                   | Emails, account details and share links                    |
+
+- A page with no writing yet stays private until it has some.
+- A link to a page that is not published reads as plain text on the site.
+- Pictures, drawings, charts and covers are not published yet: their place on the page shows nothing.
+
+## Keeping the Site Up to Date
+
+You don't need to publish again after an edit. A saved page, a renamed or moved page, a Style change or an approval decision reaches the site within a minute. A page that goes back to Pending Approval leaves the site the same way.
+
+Open **Publish to the Web** again to change what is published: another section, the address or the options. Then press **Update Site**.
+
+- **Changing the address:** the old address keeps working and takes readers to the new one, so links already shared still land.
+- **Renaming a page:** its old page address leads to the new one too.
+
+## Options
+
+- **Hide From Search Engines:** anyone with the link can still read the site, but search engines are asked not to list it, and its sitemap is left empty.
+- **Show Who Wrote Each Page:** each page names the people who wrote it. Off, no person's name goes public.
+
+## Unpublish
+
+Open **Publish to the Web** and press **Unpublish**, then **Unpublish** again to confirm. The site and every page address stop working within a minute, and the address is free for any Knowledgebase to use. You can publish again at any time.
+
+## Good to Know
+
+- Publishing needs a Knowledgebase saved to your account. A Knowledgebase kept Offline, or opened as a guest, can't be published.
+- Search on the site finds published pages only.
+- Each page has a title, a description and a link preview for search engines and for sharing.
+
+## Who Can Do What
+
+| Action                                       | Editor | Participant | Viewer |
+| -------------------------------------------- | ------ | ----------- | ------ |
+| Publish, change what is published, Unpublish | Yes    | No          | No     |
+| See whether the Knowledgebase is published   | Yes    | No          | No     |
+| Read the public site                         | Yes    | Yes         | Yes    |
+
+Anyone with the link can read the public site, with or without an account. An agent's token can't publish: a person decides what goes public.
+
+</ArticleLayout>

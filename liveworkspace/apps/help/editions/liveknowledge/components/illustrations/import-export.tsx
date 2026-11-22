@@ -1,9 +1,10 @@
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
-import { Btn, ChoiceRow, DialogCard, HAIR, StackedBar, Surface, TreeRows } from './kit';
+import { Btn, ChoiceRow, DialogCard, HAIR, Pill, StackedBar, Surface, TreeRows } from './kit';
 
 // The Import and Export figures (liveworkspace/docs/specs/017-help/help-centre.md "Figures and card icons"): the
 // Import dialog's three whole-Knowledgebase sources, the review of what an import found, an import that left pages
-// out, and the Export dialog's formats for a page. Every word is the dialog's own.
+// out, the Export dialog's formats for a page, and Publish to the Web's site and what goes public. Every word is the
+// dialog's own.
 
 const W = 420;
 
@@ -213,6 +214,68 @@ export function ExportFormatsScene() {
             </Surface>
           );
         })}
+      </DialogCard>
+    </Scene>
+  );
+}
+
+const PUBLIC_PAGES = ['Overview', 'Release Process', 'On-Call'] as const;
+
+/** Publish to the Web: the site live at its address, then What Goes Public with a page left out and why. */
+export function PublishSiteScene() {
+  const x = 40;
+  const w = 340;
+  return (
+    <Scene w={W} h={206} bg="plain">
+      <DialogCard
+        x={x}
+        y={8}
+        w={w}
+        h={190}
+        title="Publish to the Web"
+        line="A public help centre anyone can read, from this knowledgebase's saved pages."
+      >
+        {/* The site: live, its address, Copy Link. */}
+        <Surface
+          x={x + 14}
+          y={44}
+          w={w - 28}
+          h={40}
+          r={7}
+          className="fill-brand-50 stroke-brand-200"
+        >
+          <circle cx={x + 32} cy={64} r={10} className="fill-brand-600" />
+          <g className="fill-none stroke-white help-art-as-drawn" strokeWidth={1.1}>
+            <circle cx={x + 32} cy={64} r={5.5} />
+            <path d={`M${x + 26.5} ${64}h11M${x + 32} ${58.5}c-3 3-3 8 0 11c3-3 3-8 0-11`} />
+          </g>
+          <Label x={x + 50} y={58} size={8.5} weight={700} tone="strong">
+            Live on the Web
+          </Label>
+          <Label x={x + 50} y={70} size={7.5} weight={600} className="fill-brand-700">
+            liveknowledge.app/kb/acme-help
+          </Label>
+          <Btn x={x + w - 78} y={56} w={60} label="Copy Link" size={7.5} />
+        </Surface>
+        {/* What Goes Public. */}
+        <Label x={x + 14} y={100} size={8.5} weight={700} tone="strong">
+          What Goes Public
+        </Label>
+        <Surface x={x + 14} y={108} w={w - 28} h={64} r={7}>
+          <Label x={x + 24} y={120} size={7.5} tone="muted">
+            3 pages go public · 1 page stays private
+          </Label>
+          {PUBLIC_PAGES.map((title, i) => (
+            <Label key={title} x={x + 24} y={134 + i * 12} size={7.5} tone="strong">
+              {title}
+            </Label>
+          ))}
+          <Label x={x + 160} y={134} size={7.5} tone="muted">
+            Hotfixes
+          </Label>
+          <Pill x={x + 200} y={133.5} label="Pending Approval" />
+        </Surface>
+        <Btn x={x + w - 78} y={177} w={64} label="Update Site" variant="primary" size={7.5} />
       </DialogCard>
     </Scene>
   );
