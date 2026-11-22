@@ -76,6 +76,8 @@ export async function anonymiseDocument(
       .bind(ANONYMISED_PERSON, documentId, idList),
     // Their once-only email claims (notify-claims.ts) name them as the sender: the app drops what it keeps for them.
     db.prepare(`DELETE FROM notify_claims WHERE ${isAnySql('sender')}`).bind(idList),
+    // Their reactions on pages (docs/specs/030-knowledgebase/page-reactions.md): a tap, not content, so they go.
+    db.prepare(`DELETE FROM page_reactions WHERE ${isAnySql('person')}`).bind(idList),
   );
   const results = await db.batch(writes);
   const versionWrites: D1PreparedStatement[] = [];

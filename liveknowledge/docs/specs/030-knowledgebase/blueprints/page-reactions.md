@@ -36,16 +36,16 @@ difference: a Viewer may write here, and nowhere else.
   no token, no guest, no link visitor without an account. The role is never read: a Viewer passes.
 - The rate limit (`reactionRate`, same file): a sliding minute a person a knowledgebase, in the room's memory, at
   most `PAGE_REACTIONS_PER_MINUTE` (30) changes; the map holds at most 1,000 people and drops its oldest past that.
-  A refused change does not count. A room restart forgets it, which is fine for a courtesy limit.
+  Every change asked counts, refused or not. A room restart forgets it, which is fine for a courtesy limit.
 - The store (`knowledge/page-reactions.ts`): `togglePageReaction(env, tab, change, person)` reads the page's rows,
   checks the bounds in `reactionRefusal` (pure), inserts (`INSERT OR IGNORE`) or deletes, and answers whether a row
-  changed. Reads are ordered by `at`, then `emoji`, then `by`.
+  changed. Reads are ordered by `at`, then the order rows were written in (`rowid`).
 - Live: a change that moved a row relays one op, awaited (as page threads do), so the writer's own client hears it
   before the answer. A change that moved nothing relays nothing.
 
 ## Data and persistence
 
-- `page_reactions (tab TEXT, emoji TEXT, person TEXT, by TEXT, name TEXT, at INTEGER, PRIMARY KEY (tab, emoji,
+- `page_reactions (tab TEXT, emoji TEXT, person TEXT, by_key TEXT, name TEXT, at INTEGER, PRIMARY KEY (tab, emoji,
 person))` with an index on `(tab, at)` and a trigger deleting a page's rows when its tab is deleted. Schema step
   V36 (`pageReactionsSchemaStep`), appended after V35, additive and IF NOT EXISTS.
 - Written through `knowledgeDb(env)` (`KNOWLEDGE_DB`, the database that notes nothing): no `room.writes`, so no History
@@ -55,7 +55,7 @@ person))` with an index on `(tab, at)` and a trigger deleting a page's rows when
 
 ## Errors and edge cases
 
-- An emoji is valid when, after trimming, it is at most 32 UTF-16 units, one grapheme (`Intl.Segmenter`), and holds
+- An emoji is valid when it has no space round it, is at most 32 UTF-16 units, one grapheme (`Intl.Segmenter`), and holds
   an `Extended_Pictographic` or regional indicator code point, or is a keycap (`[0-9#*]️?⃣`).
 - Taking back a reaction that is not there, or adding one already there, answers `changed: false`.
 - A race of two adds of the same emoji by one person: the primary key keeps one row; the second answers unchanged.

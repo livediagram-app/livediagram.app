@@ -406,6 +406,7 @@ export * from '@liveworkspace/api-schema/participants';
 export * from '@liveworkspace/api-schema/image-summary';
 export * from './knowledge';
 export * from './page-threads';
+export * from './page-reactions';
 export * from './agent-scopes';
 
 // Automations on the wire (./automations.ts): a knowledgebase's rules, their runs and the Incoming Webhook door.
