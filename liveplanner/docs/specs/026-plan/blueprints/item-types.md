@@ -1256,6 +1256,12 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
   exclusions) and `statusRefusal(typeLabel, statusName)` ("{Type} cards can't be {Status}") live in
   `type-catalogue.ts`. `catalogueWithBoardTypes` gives each brought type `statuses` from `boardTypeStatuses` of
   the elements.
+- A form starter's type (`planFormStart`, `packages/templates/src/form-start.ts`): a type new to the catalogue with
+  neither `statuses` nor `excludedStatuses` is returned with `statuses` = the new Responses board's column statuses,
+  or `boardTypeStatuses([target.setup], [id])` when the starter's responses go to a board of the project. A type
+  already in the catalogue is untouched. `typeResponsesBoardSetup` names a column whose status no board names from
+  `presetColumnName(status)` (`presets.ts`: the preset column of that id, so `wont-fix~ab12` is "Won’t Fix") before
+  `statusLabel`.
 - Editor joins (`hooks/plan/useTypeStatusJoins.ts`, wired in `useEditorState` with `enabled` = hydrated, not
   structure read-only, catalogue chosen): per loaded tab, `boardTypeStatuses` of its boards. A tab first seen
   (loaded) that was in the project when the hook started only seeds the session's `seen` sets; a tab that appears

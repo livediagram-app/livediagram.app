@@ -221,6 +221,15 @@ export function presetSetupOrBlank(id: unknown): PlanBoardSetup {
   return presetSetup(isPlanBoardPresetId(id) ? id : 'blank');
 }
 
+// The name a preset's column gives a status id (its own or one made from it, "wont-fix~ab12"), or undefined: a status
+// no board names any more keeps the name it was made with ("Won’t Fix"), which its id can't spell back.
+export function presetColumnName(status: string): string | undefined {
+  const base = status.split('~')[0]!;
+  for (const preset of Object.values(PLAN_BOARD_PRESETS))
+    for (const c of preset.setup.columns) if (c.status === base) return c.name;
+  return undefined;
+}
+
 // A board placed on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): a column whose name a status the
 // project already has (`existing`: status id to name) takes that status, so one name is always one status and the
 // cards in it show here too; any other column gets a status of its own (`todo~k3f9`), so it starts empty. An

@@ -115,6 +115,13 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     (a ready-made type) starts with the statuses of the boards that bring it; any other new type (the Card Types
     panel's Add Type, the default types) starts with every status the project's boards name, in tab, board and
     column order.
+  - **A form starter's type.** A ready-made card type a form starter (Bug Report, Feature Request, Job Application,
+    Contact) brings to a project that lacks it is stored with its own statuses: those of the board its responses go to
+    (the new Responses board's columns: Bug Report's New, Confirmed, Fixing, Fixed and Won't Fix), never read as
+    every status the project's boards name, so a board made for it later (Add a Board for {Type}, Responses Go To,
+    the connect box's Cards on a Board) has only those columns, the first the type's first. A type the project already
+    has is left as it is. A project whose starter type was stored before this and so holds every status keeps it: it
+    cannot be told from a list someone chose, and its States tab turns the rest off.
   - **Types stored before the list** (with `excludedStatuses`, the statuses they left out, or neither) read as
     every status the project's boards name, in tab, board and column order (no tab first), less those they left
     out: exactly the statuses they used before. The first time someone who may edit card types opens the project

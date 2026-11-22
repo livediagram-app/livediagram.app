@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element, type Tab } from '@liveplanner/project';
 import { destinationProblem, formStarter } from '@liveplanner/forms';
-import { boardAddTypes, ITEM_TYPES, presetSetup, type ItemTypeDef } from '@liveplanner/items';
+import {
+  boardAddTypes,
+  ITEM_TYPES,
+  READY_MADE_CARD_TYPES,
+  presetSetup,
+  type ItemTypeDef,
+} from '@liveplanner/items';
 import {
   boardsOf,
   planFormStart,
@@ -36,6 +42,91 @@ describe('boardsOf', () => {
     expect(
       boardsOf({ ...boardTab('b'), elements: [createShape('plan-sheet', 0, 0) as Element] }),
     ).toEqual([]);
+  });
+});
+
+describe('a form starter’s card type keeps its own statuses', () => {
+  const plan = (
+    id: 'bug-report' | 'feature-request' | 'job-application' | 'contact',
+    tabs: Tab[],
+  ) =>
+    planFormStart({
+      starter: formStarter(id),
+      formTab,
+      tabs: [formTab, ...tabs],
+      types: ITEM_TYPES.filter((t) => ['task', 'action'].includes(t.id)),
+      statusNames: [],
+      random,
+    });
+  const kanban = boardsOf(boardTab('k'))[0]!.setup.columns.map((c) => c.status);
+
+  it.each(['bug-report', 'feature-request', 'job-application', 'contact'] as const)(
+    '%s on a Kanban plan: the type uses the new board’s columns only, then each door makes that board',
+    (id) => {
+      const made = plan(id, [boardTab('k')]);
+      expect(made.newBoardTab).not.toBeNull();
+      const own = boardsOf(made.newBoardTab!)[0]!.setup.columns.map((c) => c.status);
+      expect(made.type.statuses).toEqual(own);
+      expect(own.filter((s) => kanban.includes(s))).toEqual([]);
+      expect(made.saveType).toBe(true);
+      // Add a Board for {Type}, Responses Go To and the connect box all make it from the type: its own columns.
+      const board = boardsOf(
+        responsesBoardTab('F', formTab, [], undefined, random, {
+          typeId: made.type.id,
+          statuses: made.type.statuses,
+        }),
+      )[0]!.setup;
+      expect(board.columns.map((c) => c.status)).toEqual(own);
+      expect(board.columns.length).toBeLessThan(kanban.length + own.length);
+    },
+  );
+
+  it('names a Bug Report’s columns New, Confirmed, Fixing, Fixed, Won’t Fix once the board is gone', () => {
+    const made = plan('bug-report', []);
+    const board = boardsOf(
+      responsesBoardTab('F', formTab, [], undefined, random, {
+        typeId: 'bug',
+        statuses: made.type.statuses,
+      }),
+    )[0]!.setup;
+    expect(board.columns.map((c) => c.name)).toEqual([
+      'New',
+      'Confirmed',
+      'Fixing',
+      'Fixed',
+      'Won’t Fix',
+    ]);
+  });
+
+  it('uses the columns of the board it goes to, and leaves a type the project already has alone', () => {
+    const triage = boardTab('triage', presetSetup('bug-triage'));
+    const onBoard = plan('bug-report', [triage]);
+    expect(onBoard.newBoardTab).toBeNull();
+    expect(onBoard.type.statuses).toEqual(boardsOf(triage)[0]!.setup.columns.map((c) => c.status));
+    const has = planFormStart({
+      starter: formStarter('bug-report'),
+      formTab,
+      tabs: [formTab, boardTab('k')],
+      types: [...READY_MADE_CARD_TYPES],
+      statusNames: [],
+      random,
+    });
+    // Its own copy is the catalogue's, whatever it holds: only a type new to the catalogue is given statuses.
+    expect(has.type.statuses).toEqual(READY_MADE_CARD_TYPES.find((t) => t.id === 'bug')!.statuses);
+    const { statuses: _own, ...bug } = READY_MADE_CARD_TYPES.find((t) => t.id === 'bug')!;
+    const legacy = { ...bug, excludedStatuses: ['x'] };
+    expect(
+      planFormStart({
+        starter: formStarter('bug-report'),
+        formTab,
+        tabs: [formTab, boardTab('k')],
+        types: [legacy],
+        statusNames: [],
+        random,
+      }).type.statuses,
+    ).toBeUndefined();
+    // A type that is not on a board (Blank) gets none.
+    expect(plan('contact', [boardTab('k')]).type.statuses).toBeDefined();
   });
 });
 
@@ -304,7 +395,7 @@ describe('a responses board for a type with its own statuses', () => {
         [['known', 'Known']],
         random,
       )!.columns.map((c) => c.name),
-    ).toEqual(['New', 'Wont Fix', 'Known']);
+    ).toEqual(['New', 'Won’t Fix', 'Known']);
     const tab = responsesBoardTab('Intake', { theme: undefined }, [], undefined, random, {
       typeId: 'x',
       statuses: [],
@@ -314,6 +405,25 @@ describe('a responses board for a type with its own statuses', () => {
       'In Progress',
       'Done',
     ]);
+  });
+
+  it('keeps a preset column’s name for a status no board names any more', () => {
+    const names = (statuses: string[]) =>
+      typeResponsesBoardSetup({ typeId: 'x', statuses }, 'T', [], random)!.columns.map(
+        (c) => c.name,
+      );
+    expect(names(['wont-fix', 'wont-fix~ab12', 'in-progress~ab12'])).toEqual([
+      'Won’t Fix',
+      'Won’t Fix',
+      'In Progress',
+    ]);
+    // A project's own name for it wins; an id no preset knows is named from the id.
+    expect(
+      typeResponsesBoardSetup({ typeId: 'x', statuses: ['wont-fix~ab12'] }, 'T', [
+        ['wont-fix~ab12', 'Declined'],
+      ])!.columns[0]!.name,
+    ).toBe('Declined');
+    expect(names(['custom-one~ab12'])).toEqual(['Custom One']);
   });
 
   it('starts a form on the board’s first column its type uses', () => {

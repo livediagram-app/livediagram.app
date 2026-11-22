@@ -23,6 +23,7 @@ import {
 import {
   boardAddTypes,
   boardTakesType,
+  boardTypeStatuses,
   freshBoardSetup,
   newItemTypeId,
   planBoardHeightFor,
@@ -32,6 +33,7 @@ import {
   type ItemTypeDef,
   type PlanBoardSetup,
   type PlanColumn,
+  presetColumnName,
   statusLabel,
 } from '@liveplanner/items';
 
@@ -122,8 +124,8 @@ export type ResponsesBoardType = {
 // A responses board for a type with its own statuses: a column per status, in the type's order, named as the project
 // names it (and coloured as its first column of that status), taking that type alone. Null for a type without them.
 // A status no board names any more (the board that showed the type's cards was deleted, which is when Add a Board for
-// {Type} is offered) is named from its id, as a card's status is (statusLabel: "wont-fix~ab12" is "Wont Fix"), never
-// shown as the raw id.
+// {Type} is offered) keeps the name its preset column gave it ("Won’t Fix", which its id "wont-fix~ab12" can't spell),
+// else is named from its id, as a card's status is (statusLabel), never shown as the raw id.
 export function typeResponsesBoardSetup(
   forType: ResponsesBoardType,
   title: string,
@@ -135,10 +137,14 @@ export function typeResponsesBoardSetup(
   const kanban = freshBoardSetup('kanban', random, names);
   const columns = forType.statuses.map((status) => {
     const known = forType.columns?.find((c) => c.status === status);
-    return statusColumn(status, statusLabel(status, names), {
-      ...(known?.color ? { color: known.color } : {}),
-      ...(known?.done !== undefined ? { done: known.done } : {}),
-    });
+    return statusColumn(
+      status,
+      names.get(status) ?? presetColumnName(status) ?? statusLabel(status),
+      {
+        ...(known?.color ? { color: known.color } : {}),
+        ...(known?.done !== undefined ? { done: known.done } : {}),
+      },
+    );
   });
   const { doneColumnId: _done, ...rest } = kanban;
   // Done columns flagged as the project's are, else by their names, as every board written now is.
@@ -268,9 +274,17 @@ export function planFormStart(input: {
     tabId = newBoardTab.id;
     status = boardsOf(newBoardTab)[0]!.setup.columns[0]!.status;
   }
+  // A ready-made type new to the catalogue uses its own statuses, those of the board that takes it (item-types.md "The
+  // statuses a type uses"), never read as every status the project's boards name.
+  const own = !types.some((t) => t.id === type.id) && !type.statuses && !type.excludedStatuses;
+  const statuses = own
+    ? newBoardTab
+      ? boardsOf(newBoardTab)[0]!.setup.columns.map((c) => c.status)
+      : target && boardTypeStatuses([target.setup], [type.id]).get(type.id)
+    : undefined;
   return {
     form: { ...form, destination: { tabId, typeId: type.id, status } },
-    type,
+    type: statuses?.length ? { ...type, statuses } : type,
     saveType,
     newBoardTab,
     newSheet: null,
