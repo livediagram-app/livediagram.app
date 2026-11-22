@@ -9,8 +9,8 @@ export const PAGE_TEXT_SAMPLE_MAX = 80;
 // The characters the answer's texts may take in all; the pages past it list none, and a line says which.
 export const PAGE_TEXTS_BUDGET = 60_000;
 
-/** One text of a laid-out page: its ref, its slot (null for a figure) and its words, cut short. */
-export type PageText = { ref: string; slot: string | null; text: string };
+/** One text of a laid-out page: its ref, its slot, its words cut short, and `sample` while they are the layout's. */
+export type PageText = { ref: string; slot: string | null; text: string; sample?: true };
 
 const sample = (label: string) =>
   label.length > PAGE_TEXT_SAMPLE_MAX ? `${label.slice(0, PAGE_TEXT_SAMPLE_MAX - 1)}…` : label;
@@ -35,7 +35,14 @@ export function withLaidOutTexts<P extends { id: string }>(
     const texts = slots.flatMap((s) => {
       const label = labels.get(s.id);
       return typeof label === 'string'
-        ? [{ ref: refOf(s.id), slot: s.slot, text: sample(label) }]
+        ? [
+            {
+              ref: refOf(s.id),
+              slot: s.slot,
+              text: sample(label),
+              ...(s.sample ? { sample: true as const } : {}),
+            },
+          ]
         : [];
     });
     spent += JSON.stringify(texts).length;

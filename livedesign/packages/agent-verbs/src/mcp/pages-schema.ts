@@ -249,6 +249,10 @@ const pageOut = z
             .nullable()
             .describe('Its slot: title, subtitle, bullets[0], body[2], figures[0].'),
           text: z.string().describe(`Its words, cut to ${PAGE_TEXT_SAMPLE_MAX} characters.`),
+          sample: z
+            .literal(true)
+            .optional()
+            .describe("Still the layout's sample text: give its slot words, or change it by ref."),
         }),
       )
       .optional()

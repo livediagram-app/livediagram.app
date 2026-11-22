@@ -118,7 +118,7 @@ pushed after the change's own line, prefixed `Page <place>: `. The outcome gains
 LayoutTextSlot[]>`, the last layout each page took in the call.
 
 The answer's texts (spec "A laid-out page's texts"): `pageSummaries(tab, laid?)` (`packages/api-schema/src/pages-summary.ts`)
-gives each page in `laid` `texts: PageText[]`, `{ ref, slot, text }`: `ref` from `computeRefs` over the tab's element
+gives each page in `laid` `texts: PageText[]`, `{ ref, slot, text, sample? }` (`sample` from the slot `layoutTextOf` marks when the change gave it no words): `ref` from `computeRefs` over the tab's element
 ids (the views' refs), `text` the element's label now, cut at `PAGE_TEXT_SAMPLE_MAX` (80) with `…`; a slot whose
 element is gone is skipped. Pages in row order while the running total of `JSON.stringify(texts).length` stays within
 `PAGE_TEXTS_BUDGET` (60,000); the first page past it and every later one get no `texts`, and `pagesTextsLeftOut`

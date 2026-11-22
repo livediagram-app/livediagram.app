@@ -22,7 +22,7 @@ describe('a laid-out page’s texts', () => {
         'p2',
         [
           { id: 'a', slot: 'title' },
-          { id: 'b', slot: null },
+          { id: 'b', slot: null, sample: true as const },
           { id: 'gone', slot: 'body' },
           { id: 'pic', slot: 'body' },
         ],
@@ -36,7 +36,7 @@ describe('a laid-out page’s texts', () => {
         place: 2,
         texts: [
           { ref: 'ref-a', slot: 'title', text: 'Why now' },
-          { ref: 'ref-b', slot: null, text: '73%' },
+          { ref: 'ref-b', slot: null, text: '73%', sample: true },
         ],
       },
       { id: 'p3', place: 3 },

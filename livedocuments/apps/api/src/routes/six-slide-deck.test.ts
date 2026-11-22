@@ -85,5 +85,9 @@ describe('a six-slide deck with real text', () => {
     expect(second.map((t) => t.text)).toEqual(['Costs fell 40%', 'Demand doubled', 'Rivals left']);
     // Whatever keeps its sample comes back with its ref, so a third call could change it by ref.
     expect(answer.pages[2]!.texts!.every((t) => t.ref.length >= 4)).toBe(true);
+    // And says which still hold the layout's sample: here everything but the title given.
+    const third = answer.pages[2]!.texts!;
+    expect(third.find((t) => t.slot === 'title')!.sample).toBeUndefined();
+    expect(third.filter((t) => t.slot !== 'title').every((t) => t.sample === true)).toBe(true);
   });
 });

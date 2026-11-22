@@ -25,6 +25,11 @@ export function layoutTextOf(
   built: readonly Element[],
   text: LayoutText | undefined,
 ): { elements: Element[]; lines: string[]; slots: LayoutTextSlot[] } {
-  if (!text) return { elements: [...built], lines: [], slots: layoutSlots(built, textPxOf) };
+  if (!text)
+    return {
+      elements: [...built],
+      lines: [],
+      slots: layoutSlots(built, textPxOf).map((s) => ({ ...s, sample: true as const })),
+    };
   return fillLayoutSlots(built, text, textPxOf, relabel);
 }

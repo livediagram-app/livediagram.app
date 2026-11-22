@@ -125,7 +125,7 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   rectangle on the canvas (`x, y, width, height`) and how many elements are on it. Elements are put onto a page with
   `update_design`, at coordinates inside its rectangle.
 - **A laid-out page's texts**: each page this call laid out (an `add` with a `layout`, or a `layout` change) also
-  lists its `texts`, `{ ref, slot, text }` for every text on it in the layout's order: the ref `update_design` and the
+  lists its `texts`, `{ ref, slot, text, sample? }` for every text on it (`sample: true` on one still holding the layout's sample, given no words; an eval run of the pitch deck asked for it, to tell leftovers from its own words) in the layout's order: the ref `update_design` and the
   views take, its slot (`title`, `subtitle`, `bullets[0]`, `body[2]`, `figures[0]`, a list's by its index), and its words, cut to 80 characters with an ellipsis. So the sample
   text left to replace, and its ref, come back in the answer rather than from a `read_design` call. Bounded for the
   150,000-character tool result: texts are listed page by page while they fit 60,000 characters; a page past it has

@@ -223,8 +223,9 @@ describe('fillLayoutSlots', () => {
     expect(figures.lines).toEqual([
       "1 figure keeps the layout's sample: change it by ref (the page's texts list each).",
     ]);
+    // The figure was given no words: it still holds the layout's sample.
     expect(out.slots).toEqual([
-      { id: 'n', slot: 'figures[0]' },
+      { id: 'n', slot: 'figures[0]', sample: true },
       { id: 'h', slot: 'title' },
       { id: 'b', slot: 'body[0]' },
     ]);

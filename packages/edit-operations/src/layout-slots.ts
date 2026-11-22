@@ -37,8 +37,9 @@ export type LayoutText = {
 export const LAYOUT_TEXT_MAX = 2000;
 export const LAYOUT_SLOT_ITEMS_MAX = 60;
 
-/** One text of a laid-out page: its element and its slot (`title`, `bullets[2]`, `figures[0]`). */
-export type LayoutTextSlot = { id: string; slot: string | null };
+/** One text of a laid-out page: its element, its slot (`title`, `bullets[2]`, `figures[0]`), and `sample` when it
+ *  still holds the layout's sample text. */
+export type LayoutTextSlot = { id: string; slot: string | null; sample?: true };
 
 // The element kinds whose label is words on the page: a shape's icon draws no label.
 const isTexty = (el: SlotElement): el is SlotElement & { label: string } =>
@@ -187,7 +188,13 @@ export function fillLayoutSlots<E extends SlotElement>(
       label === undefined ? el : relabel(el, label, slots.find((s) => s.id === el.id)!.slot!),
     );
   });
-  return { elements: out, lines, slots: slots.filter((s) => !dropped.has(s.id)) };
+  return {
+    elements: out,
+    lines,
+    slots: slots
+      .filter((s) => !dropped.has(s.id))
+      .map((s) => (words.has(s.id) ? s : { ...s, sample: true as const })),
+  };
 }
 
 /** A change's `text` read from the wire: the slots, or why not in words. */

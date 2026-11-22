@@ -6203,10 +6203,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "PageText": {
     "additionalProperties": false,
-    "description": "One text of a laid-out page: its ref, its slot (null for a figure) and its words, cut short.",
+    "description": "One text of a laid-out page: its ref, its slot, its words cut short, and `sample` while they are the layout's.",
     "properties": {
       "ref": {
         "type": "string"
+      },
+      "sample": {
+        "const": true,
+        "type": "boolean"
       },
       "slot": {
         "type": [
