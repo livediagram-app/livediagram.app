@@ -55,16 +55,17 @@ PageWatchScope | null, through: { tab, name } | null, watchers: number, section:
   PUT's `writeTabParents`, an agent's move, a whole-tab save whose `parent` moved), the tab delete that trashes a
   page (`deleted`), and the review check (`review_due`, below). Never the reaction route, the thread routes or Verify.
 - **The review check**: `runKnowledgeEmail`'s `review-email` work also runs `noteReviewsLapsed(env, pages, now)`
-  (knowledge-emails.ts), which notes `review_due` for each page newly due (a `watch-review` mark a page, holding the
+  (`knowledge/watch-review.ts`), which notes `review_due` for each page newly due (a `watch-review` mark a page, holding the
   `verifiedAt` told of, as `rule-review` does) when the knowledgebase has a watch, and answers the next review's
   time so the work wakes for it with email off too.
 - **The push** (`knowledge/watch-work.ts`, work `watch` / `inbox`): reads the updates of the last `INBOX_UPDATES_MS`,
   newest first, at most `UPDATES_PUSH_MAX`; the watches and the tree (a trashed page's place is its `page_trash`
   parent); for each update its `people`: the watchers covering its page whose watch began at or before its
   `latest_at`, less anyone whose ids are all of `actor_ids`, at most `UPDATE_PEOPLE_MAX` by earliest watch. Updates
-  for nobody are left out. One `pushUpdates`; without an index it is done; a failed push is tried again after
-  `WATCH_RETRY_MS`, doubling to an hour (`attempt` in the work's payload). The push also runs after a watch is set or
-  removed (the people changed), on the same delay.
+  for nobody are left out. One `pushUpdates`; without an index it is done, and so is an item the index does not hold
+  (`pushFailureOf(error) === 'gone'`); any other failure is tried again after `WATCH_RETRY_MS` (decided: a flat
+  retry, since each push sends the whole set and a later change owes one anyway). The push also runs after a watch is
+  set or removed (the people changed), on the same delay.
 - **The daily check** (work `watch` / `daily`, owed when the first watch is made, again each day while any is
   left): (1) **reach**: the distinct watchers, at most `WATCH_REACH_CHECKS_PER_DAY` by the oldest `watch-reach`
   mark, through `ownersWhoReach`; a person who no longer reaches loses every watch here, and the push is owed;
@@ -117,37 +118,58 @@ INTEGER, first_at INTEGER, latest_at INTEGER)`, indexes `(tab, first_at)` and `(
 
 ## Presentation and UX
 
-- `components/page-watch/`: `usePageWatch` (the store slice, `canWatch`, `set(scope)` with the toasts), `PageWatchRow`
-  (the rail's row: `Watch`/`Watching` button with its menu, the count with its hover card).
-- The tree row menu: `PageTreeRowMenu` takes `watch` (`{ watching, through, section }` for the row's page, loaded
-  when the menu opens) and draws Watch / Watch This Section / Unwatch rows after Request Approval, for every role;
-  the verbs `watch`, `watch-section`, `unwatch`.
-- The rail: `PageWatchRow` at the top of the Page Health card, a 32 px row: the eye, the label, a chevron; the count
-  in muted text at its right.
-- Toasts: "Watching Deploys" with "You'll hear when it changes"; "Stopped Watching Deploys". A refusal's words come
-  from the api's message.
-- Settings: `emailSwitch('notifyWatchDigest', ...)` reads `p.notifyWatchDigest === true` (off by default).
+- `lib/page-watch/page-watch-store.ts`: each page's `PageWatchEntry` (`loading`, `ready`, `failed`; `stale`), read
+  once a session; `set` shows the press at once (`withOwnWatch`: the count moves only when the person's cover starts
+  or ends), takes the api's answer and marks the knowledgebase's other read pages `stale`, so whichever shows next
+  reads again (a section's watch changes its subpages' `through`). A refusal puts the entry back and rejects.
+- `components/page-watch/`: `usePageWatch(tab?)` (the store slice for the open page or `tab`, `canWatch`: signed in,
+  not Offline, read; `set(scope)` with the telemetry and the toasts), `PageWatchRows` (the menu rows, pure),
+  `PageWatchMenuRows` (the tree menu's, read when the menu opens), `PageWatchButton` / `PageWatchControl` (the rail's).
+- The tree row menu: `PageTreeKnowledge.watchRows(id, onClose, separated)` (from `usePageTreeModel`) draws the rows
+  after Request Approval, for every role; the menu draws a separator above them when nothing else did (a Viewer's).
+  Rows: **Watch** and, on a section, **Watch This Section**, each a checkmark row; **Unwatch** or **Unwatch This
+  Section** while watched; a greyed **Watching Through <Section>** with its hover card under a watched section. Until
+  read the rows show greyed, so the menu keeps its shape.
+- The rail: `PageWatchButton` across from Page Health's label (`PageHealthCard` `watch`): a 28 px pill (36 px on a
+  phone), the eye and **Watch** or **Watching** (brand-tinted while watched), the count before it in muted text
+  ("3 watching", nothing at 0, a hover card "3 people get updates about this page."). On a page alone a press watches
+  or stops (decided: no menu for one choice); on a section, or a page watched through one, it opens the menu of the
+  same rows, headed **Get Updates**.
+- Toasts: "Watching Deploys. You'll hear when it changes."; "Stopped watching Deploys.". A refusal's words:
+  `watchFailureText` (`lib/knowledge/page-feedback-words.ts`).
+- Settings: `emailSwitch('notifyWatchDigest', ..., { optIn: true })` reads `p.notifyWatchDigest === true` (off by
+  default), the same row as `@liveworkspace/settings`' liveknowledge catalogue.
 
 ## Accessibility
 
-- The rail's button is named "Watch Deploys" or "Watching Deploys" with `aria-haspopup="menu"`; its menu rows are
-  menu items with `aria-checked`. The count is text with its hover card on focus too.
+- The rail's button is named "Watch Deploys" or "Watching Deploys": `aria-pressed` on a page alone, `aria-haspopup=
+"menu"` and `aria-expanded` on a section. Its menu rows are menu items, the checked one with its check. The count is
+  focusable text with its hover card on focus too.
+
+## Observability
+
+- `[watch] change` (a watch set or removed: document, page, scope), `[watch] noted` (kind, pages) and
+  `[watch] note failed`, `[watch] pushed` (updates) and `[watch] push failed`, `[watch] watchers who left` (how many),
+  `[watch] digests` (owed, tried, sent). Telemetry: `UI·Toggled` `WatchPageOn/Off`, `WatchSectionOn/Off`,
+  `NotifyWatchDigestOn/Off`; the digest's sends count as the `WatchDigest` email kind.
 
 ## Testing
 
-- api `knowledge-watch-routes.test.ts`: every role (Editor, Participant, Viewer, view link with and without an
-  account, page link, guest, agent), set, change and remove, `through`, the count, the bounds and the rate.
-- api `watch-notes.test.ts`: each change kind noted from its call site, the hour's folding, own changes, nothing with
-  no watch, nothing for a reaction, a thread or Verify.
-- api `watch-work.test.ts`: the push's people (section cover, own change, watch started later, unwatched, the cap),
-  the retry, the daily reach check removing a watcher who lost access, the digest (off by default, on, once a day,
-  the ceiling).
-- api `watch-digest-email.test.ts`: the template's lines, escaping and unsubscribe.
-- editor `page-watch-store.test.ts`, `PageWatchRow.test.tsx` and `PageTree.watch.test.tsx` (each role sees the rows).
+- api `routes/knowledge-watch-routes.test.ts`: every role (Editor, Participant, Viewer, view and edit links, page
+  link, agents, a stranger), set, change and remove, `through`, the count, a confined link, the bounds and the rate;
+  and what is noted: nothing with no watch, the hour's folding with who, approvals, moves (the agent route, a page
+  save, the tab list) and deletes, never a reaction, a thread, a request or Verify.
+- api `knowledge/watch-work.test.ts`: `peopleOf` (section cover, own change, watch started later, a guest, the cap),
+  `foldChange`, the push and its retry and `gone`, a trashed page's section, the daily reach check removing a watcher
+  who lost access, the digest once a day, the review check's backlog and lapses, the prune, a failing note.
+- api `email/watch-digest-email.test.ts`: the template's lines, escaping, the cap and unsubscribe; `notifyWatchDigests`
+  opt-in, accounts only, nothing with email off.
+- editor `lib/page-watch/page-watch-store.test.ts` and `components/page-watch/page-watch-roles.test.tsx` (each role
+  sees the menu rows, a guest none, Watching Through, a refusal's words, the rail's toggle, count and menu).
 
 ## Constants and configuration
 
-`WATCH_UPDATE_WINDOW_MS` 1 h; `WATCH_PUSH_DELAY_MS` 60 s; `WATCH_RETRY_MS` 60 s (doubling to 1 h);
+`WATCH_UPDATE_WINDOW_MS` 1 h; `WATCH_PUSH_DELAY_MS` 60 s; `WATCH_RETRY_MS` 5 min;
 `WATCHES_PER_KNOWLEDGEBASE_MAX` 2,000; `WATCH_CHANGES_PER_MINUTE` 30; `WATCH_ACTOR_IDS_MAX` 50;
 `WATCH_UPDATES_KEPT` 200; `WATCH_REACH_CHECKS_PER_DAY` 200; `WATCH_DIGESTS_PER_DAY` 200; `DAY_MS` for the daily
 work; and the platform's `UPDATES_PUSH_MAX` 50, `UPDATE_ACTORS_MAX` 5, `UPDATE_PEOPLE_MAX` 200, `INBOX_UPDATES_MS` 14

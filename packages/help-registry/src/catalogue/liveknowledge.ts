@@ -220,6 +220,17 @@ export const articles: Article[] = [
     group: 'Pages',
     ...APPS,
   },
+  {
+    slug: 'watching-a-page',
+    title: 'Watching a Page',
+    description:
+      'Hear when a page, or a section of pages, changes: in your Inbox, and in a daily email if you want one.',
+    keywords:
+      'watch watching unwatch follow subscribe notify notification alert updates changes section subpages inbox daily digest email watchers',
+    ...KNOWLEDGEBASE,
+    group: 'Pages',
+    ...APPS,
+  },
   // ---- Knowledgebase: Trust ----
   {
     slug: 'owners-and-verifying',

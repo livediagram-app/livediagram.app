@@ -16,6 +16,7 @@ export const ORDER: readonly string[] = [
   'knowledgebase/writing-on-a-page',
   'knowledgebase/linking-pages',
   'knowledgebase/embedding-from-other-apps',
+  'knowledgebase/watching-a-page',
   'knowledgebase/owners-and-verifying',
   'knowledgebase/review-due-and-the-review-period',
   'knowledgebase/page-health',

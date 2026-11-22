@@ -25,13 +25,13 @@ Status: **built, not yet verified on a deployed Worker** ([blueprint](blueprints
 
 A watcher hears of a page's **changes**, each by who made it:
 
-| Change               | When                                                                                                   |
-| -------------------- | ------------------------------------------------------------------------------------------------------ |
-| **Edited**           | a save that changed the saved page ([Editing](editing.md): Save, an agent's write, an accepted suggestion, a restored version); never a draft's keystrokes or autosaves |
-| **Verification Lapsed** | the page's review came due ([Verification](verification.md#states)), once a verification        |
-| **Approved**, **Rejected** | a decision on the page's approval request ([Approval](approval.md))                            |
-| **Moved**            | the page has a new parent in the tree (reordering among its siblings is not a move)                    |
-| **Deleted**          | the page went to the knowledgebase's [page Trash](knowledgebases-and-pages.md#the-page-trash)          |
+| Change                     | When                                                                                                                                                                    |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Edited**                 | a save that changed the saved page ([Editing](editing.md): Save, an agent's write, an accepted suggestion, a restored version); never a draft's keystrokes or autosaves |
+| **Verification Lapsed**    | the page's review came due ([Verification](verification.md#states)), once a verification                                                                                |
+| **Approved**, **Rejected** | a decision on the page's approval request ([Approval](approval.md))                                                                                                     |
+| **Moved**                  | the page has a new parent in the tree (reordering among its siblings is not a move)                                                                                     |
+| **Deleted**                | the page went to the knowledgebase's [page Trash](knowledgebases-and-pages.md#the-page-trash)                                                                           |
 
 - **Never for reactions** ([Reactions on a Page](page-reactions.md#no-notifications)), comments (the Inbox already
   has threads), Verify, a request for approval, a rename alone in the tree (a rename is a save of the page's name,
@@ -77,21 +77,22 @@ A watcher hears of a page's **changes**, each by who made it:
   watched, **Unwatch** or **Unwatch This Section**; under a watched section, a greyed **Watching Through <Section>**
   whose hover card says to unwatch the section from its page. Offered to every role that reads the page, a Viewer's
   menu included (decided: the row menu's toolbar keeps Copy Link alone for a Viewer).
-- **The Page Info rail**: a **Watch** row at the top of Page Health, the eye and **Watch** (or **Watching**), a menu
-  with Watch This Page, Watch This Section (for a section) and Unwatch, and beside it how many watch the page
-  ("3 watching"; nothing at 0), a hover card saying "3 people get updates about this page". The count is everyone
-  whose watch covers the page, the page's and its sections' together, once each.
+- **The Page Info rail**: a small **Watch** button across from Page Health's label, the eye and **Watch** (or
+  **Watching**, tinted), and before it how many watch the page ("3 watching"; nothing at 0), a hover card saying
+  "3 people get updates about this page". On a page alone a press watches or stops; on a section, or a page watched
+  through one, it opens a menu of the same rows as the tree's, headed **Get Updates**. The count is everyone whose
+  watch covers the page, the page's and its sections' together, once each.
 - A press shows at once and is put back with a toast in words if the api refuses it. The toast on success:
-  "Watching <page>" ("You'll hear when it changes"), or "Stopped watching <page>".
+  "Watching <page>. You'll hear when it changes." or "Stopped watching <page>.".
 - Hidden in an embed, a published site and a knowledgebase kept Offline.
 
 ## Share roles
 
-| Action                                 | Editor | Participant | Viewer | Signed-in link visitor | Guest (no account) | Agent |
-| -------------------------------------- | ------ | ----------- | ------ | ---------------------- | ------------------ | ----- |
-| See how many watch a page              | yes    | yes         | yes    | yes                    | yes                | no    |
-| Watch or unwatch a page                | yes    | yes         | yes    | yes                    | no                 | no    |
-| Watch or unwatch a section             | yes    | yes         | yes    | not through a link to one page | no         | no    |
+| Action                     | Editor | Participant | Viewer | Signed-in link visitor         | Guest (no account) | Agent |
+| -------------------------- | ------ | ----------- | ------ | ------------------------------ | ------------------ | ----- |
+| See how many watch a page  | yes    | yes         | yes    | yes                            | yes                | no    |
+| Watch or unwatch a page    | yes    | yes         | yes    | yes                            | no                 | no    |
+| Watch or unwatch a section | yes    | yes         | yes    | not through a link to one page | no                 | no    |
 
 Watching is every signed-in reader's, Viewers included: like a reaction, it reaches one table and nothing in the
 page. A guest with no account and an agent's token are refused (`watch_needs_account`, 403): there is nobody to

@@ -266,6 +266,8 @@ points, max }` and, when short, `raise`. The CLI's `read`, `search` and `context
 - Nothing is sent when a page is written: the knowledgebase's room wakes by its own alarm when the next review
   comes due, and after a page is verified or the Review Period changes.
 - No email is sent for a knowledgebase kept Offline: it lives in one browser and has no room to send from.
+- Someone who [watches](watching.md) a page hears when its review comes due (**Verification Lapsed**), in the Inbox
+  and their digest, whoever owns it; the same check notes it, with email off too.
 
 ## Share roles
 

@@ -3,6 +3,7 @@ import {
   lucideBookOpenText,
   lucideCircleCheck,
   lucideClock,
+  lucideEye,
   lucideFileDown,
   lucideFolder,
   lucideFolderRoot,
@@ -52,6 +53,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'writing-on-a-page': lucide(lucidePencilLine),
   'linking-pages': lucide(lucideLink),
   'embedding-from-other-apps': lucide(lucidePictureInPicture2),
+  'watching-a-page': lucide(lucideEye),
   // ---- Trust ----
   'owners-and-verifying': lucide(lucideCircleCheck),
   'review-due-and-the-review-period': lucide(lucideClock),
