@@ -6,6 +6,7 @@ import {
   type ExportCommentsResult,
   type ExportQuery,
   type ExportResult,
+  putAwayGate,
 } from '@liveworkspace/index-app';
 import { documentHasTab } from '../db/tabs';
 import { documentMayServeImage } from '../db/image-grants';
@@ -39,6 +40,7 @@ import { getParticipant } from '../person/profiles';
 import { SOMEONE, hearsEvent, queueEvent, roleOfLevel } from '@liveworkspace/automations/room';
 import { closeSessionsOfChangedLink, sequenceMutation } from './document-room-sockets';
 import { clearAgentsFor } from './document-room-presence';
+import { PUT_AWAY_ANSWERS } from '../responses';
 
 // What the export door answers (exportImage).
 const SVG_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
@@ -56,7 +58,10 @@ export async function route(
     await room.takeHead(identity.grant);
     // A grant signed since the document was last put away says it is back (@liveworkspace/automations/room
     // standing.ts).
-    await room.takeGrantStanding(identity.grant);
+    // A grant from before the document was archived or trashed (an API token's, kept by its worker until it
+    // lapses) is refused here, where every isolate's requests meet (Work Tracker 1323).
+    const away = putAwayGate(await room.takeGrantStanding(identity.grant), PUT_AWAY_ANSWERS);
+    if (away) return away;
   }
   const community = await communityOf(room, documentId);
   const writesBefore = room.writes;

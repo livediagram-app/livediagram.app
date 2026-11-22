@@ -95,7 +95,9 @@ export function useEditorArticles({
   usePageTitleFocus({
     activeTab,
     editable: !isReadOnly,
-    focusTitle: requestArticleFocus ? (flow) => requestArticleFocus(flow, 'title') : null,
+    focusTitle: requestArticleFocus
+      ? (flow, from) => requestArticleFocus(flow, 'title', from)
+      : null,
   });
   // Set once element creation exists (below): an Insert at the caret places through it.
   const placeIntentAtRef = useRef<ReturnType<typeof useElementCreation>['placeIntentAt'] | null>(

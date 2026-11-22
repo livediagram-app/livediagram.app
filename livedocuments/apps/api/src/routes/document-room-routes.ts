@@ -10,14 +10,15 @@ import {
 } from '@livedocuments/api-schema';
 import { noteTokenRoom, noteWorkbenchRoom } from '../auth/workbench-session';
 import { indexService, linkCodeOf } from '../index-service';
-import { badRequest, forbidden, json, notFound } from '../responses';
+import { badRequest, forbidden, json, notFound, PUT_AWAY_ANSWERS } from '../responses';
 import {
   openRoomTicket,
   requestedRoomCap,
   roomTicketLevel,
   sealRoomTicket,
+  ticketPutAwayGate,
 } from '@liveworkspace/index-app';
-import { type RouteContext } from './context';
+import { type RouteContext, grantCallerOf } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import {
   COLLAB_KEY_HEADER,
@@ -55,6 +56,17 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const grant = await resolveDocumentGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
+    // A grant this worker fetched and keeps, from before the document was archived or trashed: its room says
+    // so, and the grant is dropped (Work Tracker 1323).
+    const away = await ticketPutAwayGate(
+      indexService,
+      request,
+      grantCallerOf(ctx),
+      grant,
+      (stamp) => documentRoom(env, id).standingRefusal(stamp),
+      PUT_AWAY_ANSWERS,
+    );
+    if (away) return away;
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;
     // The API token minting it (an MCP server's live view, a CLI), outside a workbench session (whose pairing closes
