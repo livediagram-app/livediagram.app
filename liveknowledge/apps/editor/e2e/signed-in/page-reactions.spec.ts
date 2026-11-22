@@ -43,7 +43,18 @@ test('reactions beside Edit: anyone signed in reacts, a Viewer too, live for eve
   // Reading: the capsule stands left of Edit, with only Add Reaction while nobody has reacted.
   await expect(capsule(page)).toBeVisible();
   const corner = page.locator('[data-page-read-corner]');
-  await expect(corner.locator('> *').last()).toHaveAttribute('data-page-edit', '');
+  // The corner reads the capsule, then Edit, then Zen (page-reactions.md "Beside Edit, or beside Zen"; editing.md
+  // "The buttons": Zen stands right of Edit while the page is read).
+  const order = await corner.evaluate((el) =>
+    [...el.children].map((child) => {
+      const is = (selector: string) => child.matches(selector) || !!child.querySelector(selector);
+      if (is('[data-page-reactions]')) return 'reactions';
+      if (is('[data-page-edit]')) return 'edit';
+      if (is('[data-page-zen]')) return 'zen';
+      return child.outerHTML.slice(0, 60);
+    }),
+  );
+  expect(order).toEqual(['reactions', 'edit', 'zen']);
   await pick(page, 'Clap');
   await expect(segment(page, '👏')).toHaveAttribute('aria-pressed', 'true');
   await expect(segment(page, '👏')).toHaveAccessibleName('Clap, 1');
