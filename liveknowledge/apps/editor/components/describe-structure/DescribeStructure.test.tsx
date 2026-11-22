@@ -246,8 +246,8 @@ describe('the dialog', () => {
     expect(structureApi.apiDescribeStructure.mock.calls[0]![3]).toMatchObject({ ai: 'built-in' });
   });
 
-  it("says the team's key when one is set and not chosen away from", async () => {
-    api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: true }));
+  it("says the team's key when it answers and is not chosen away from", async () => {
+    api.apiKnowledgeAi.mockResolvedValue(settings({ uses: 'team' }));
     renderInEditor(
       <DescribeStructureDialog tabId="p1" onClose={vi.fn()} />,
       chrome(EMPTY(), { editing: true }).value,
