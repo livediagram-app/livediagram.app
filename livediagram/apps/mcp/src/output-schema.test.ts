@@ -427,3 +427,25 @@ describe('share_document level', () => {
     expect(roles).toEqual(['participate', 'view']);
   });
 });
+
+// liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access": Require Sign In and email domains
+// reach the api only when the agent names them, so a plain share leaves the document's rule alone.
+describe('share_document sign-in', () => {
+  it('sends requireSignIn and domains only when named', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const recording = async (request: Request) => {
+      if (new URL(request.url).pathname.endsWith('/share'))
+        bodies.push(await request.clone().json<Record<string, unknown>>());
+      return api(request);
+    };
+    const client = await connectTestClient(recording);
+    await client.callTool({ name: 'share_document', arguments: { documentId: 'd1' } });
+    await client.callTool({
+      name: 'share_document',
+      arguments: { documentId: 'd1', requireSignIn: true, domains: ['acme.com'] },
+    });
+    expect(bodies[0]).not.toHaveProperty('requireSignIn');
+    expect(bodies[0]).not.toHaveProperty('domains');
+    expect(bodies[1]).toMatchObject({ requireSignIn: true, domains: ['acme.com'] });
+  });
+});

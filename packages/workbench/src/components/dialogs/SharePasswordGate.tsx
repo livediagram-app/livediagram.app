@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { Button, TextInput, Glyph } from '@liveworkspace/ui';
+import { ShareRestricted, type ShareRestriction } from './ShareRestricted';
+
+export type { ShareRestriction } from './ShareRestricted';
 
 const capitalised = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
@@ -20,6 +23,9 @@ export type SharePasswordGateProps = {
   // null when we don't know it yet.
   ownerName: string | null;
   onSubmit: (password: string) => void;
+  // The item's sign-in rule turned the visitor away (not a password at all): the restricted page shows instead, with
+  // Sign In, or Use Another Account for an account at another domain (ShareRestricted.tsx).
+  restricted?: ShareRestriction | null;
 };
 
 // Full-screen gate shown when a visitor opens a password-protected
@@ -34,8 +40,12 @@ export function SharePasswordGate({
   changed = false,
   ownerName,
   onSubmit,
+  restricted = null,
 }: SharePasswordGateProps) {
   const [value, setValue] = useState('');
+  if (restricted) {
+    return <ShareRestricted noun={noun} restriction={restricted} ownerName={ownerName} />;
+  }
 
   const submit = () => {
     const trimmed = value.trim();

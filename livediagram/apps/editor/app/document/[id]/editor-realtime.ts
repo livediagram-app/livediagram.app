@@ -6,6 +6,7 @@ import { mayShareDocument } from './editor-page-helpers';
 import { useChangesetSeen } from '@liveworkspace/workbench/hooks/editor/useChangesetSeen';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { createPreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
+import type { ShareGate } from '@liveworkspace/workbench/lib/share-restriction';
 
 // Sharing, session-permission and realtime-room infrastructure for the
 // editor: the shareable / team / share-code flags that decide whether
@@ -75,10 +76,7 @@ export function useEditorRealtime() {
   // points at a password-protected document and they haven't supplied a
   // valid password yet. Read early by the preferences + capabilities
   // gates.
-  const [sharePasswordGate, setSharePasswordGate] = useState<{
-    invalid: boolean;
-    changed?: boolean;
-  } | null>(null);
+  const [sharePasswordGate, setSharePasswordGate] = useState<ShareGate | null>(null);
   // The role granted to the current session. Owners always have 'edit';
   // visitors get whatever role their share code carried. Drives the
   // save / op-broadcast gates so view-only visitors can't push edits.

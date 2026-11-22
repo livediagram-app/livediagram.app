@@ -28,10 +28,12 @@ vi.mock('./CommunitySection', () => ({
     firstTabEmpty?: boolean;
     signedIn: boolean;
     signInHref: string;
+    shareSignInSet?: boolean;
   }) => (
     <button
       type="button"
       data-testid="section"
+      data-sign-in-set={String(!!p.shareSignInSet)}
       data-signed-in={String(p.signedIn)}
       data-sign-in-href={p.signInHref}
       onClick={p.onPublish}
@@ -73,11 +75,15 @@ function Share(over: Partial<CommunityShareTabInput>) {
     <div
       data-testid="share"
       data-locked={p?.passwordLockedReason ?? ''}
+      data-sign-in-locked={p?.signInLockedReason ?? ''}
       data-public={p?.publicNote ?? ''}
       data-tab={p?.appTab.label ?? ''}
       data-view={p?.initialView ?? ''}
     >
       <span data-testid="badge">{p?.appTab.badge}</span>
+      <button type="button" onClick={() => p?.onSignInChange?.(true)}>
+        Sign In On
+      </button>
       {p?.appTab.panel}
     </div>
   );
@@ -115,10 +121,21 @@ describe('useCommunityShareTab', () => {
     expect(screen.getByTestId('share').dataset.locked).toBe(
       'Remove it from the Community to set a password.',
     );
+    expect(screen.getByTestId('share').dataset.signInLocked).toBe(
+      'Remove it from the Community to choose who can open it.',
+    );
     cleanup();
     h.post = post('hidden');
     render(<Share />);
     expect(screen.getByTestId('share').dataset.locked).toBe('');
+    expect(screen.getByTestId('share').dataset.signInLocked).toBe('');
+  });
+
+  it('holds Share to Community back while a sign-in rule holds the links', () => {
+    render(<Share />);
+    expect(screen.getByTestId('section').dataset.signInSet).toBe('false');
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In On' }));
+    expect(screen.getByTestId('section').dataset.signInSet).toBe('true');
   });
 
   it('says the document is public on the status line only while the post is listed', () => {

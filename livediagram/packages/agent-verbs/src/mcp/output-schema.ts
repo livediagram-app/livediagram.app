@@ -157,7 +157,18 @@ export const updateDocumentOutput = {
 };
 
 export const shareDocumentOutput = {
-  url: z.string().describe('The share link. Opening it needs no sign-in.'),
+  url: z
+    .string()
+    .describe('The share link. Opening it needs no sign-in unless the sign-in rule says so.'),
+  signIn: z
+    .object({
+      requireAccount: z.boolean().describe('Only signed-in accounts can open a link: no guests.'),
+      domains: z
+        .array(z.string())
+        .describe('The email domains an account must be at; empty for any account.'),
+    })
+    .optional()
+    .describe('The sign-in rule now on every link, when requireSignIn or domains set it.'),
   role: z.enum(['view', 'participate', 'edit']).describe('What the link grants.'),
   expiresAt: z
     .number()

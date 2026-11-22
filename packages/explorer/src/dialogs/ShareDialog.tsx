@@ -3,7 +3,8 @@
 // Share an item through links, each drawn as a pass: a level (Editor, Participant, Viewer, as the item's app offers),
 // every tab or one, lasting forever or a while; one password guards every link at once. Top to bottom: a status line saying who can open the
 // item right now, the composer that issues (and copies) a pass, the live passes with their count, the expired ones,
-// and Password Protection; a guest's "Sharing as" name sits in the footer. It loads the item's links once when it
+// Password Protection and Sign In (who may open the passes); a guest's "Sharing as" name sits in the footer. An item in
+// a team opens on its Team tab first, since the team already reaches it without a pass. It loads the item's links once when it
 // opens and applies each change at once, taking it back if the index refuses. Everything app-specific (the links'
 // address, the embed and live image, help articles, telemetry, the guest's name) comes from the host.
 
@@ -20,6 +21,7 @@ import { ApprovalPanel } from '../approvals/ApprovalPanel';
 import { useApprovalDoor } from '../approvals/door';
 import { useShareLinks } from '../data/useShareLinks';
 import { useNow } from '../time';
+import { APP_ITEMS } from '@liveworkspace/sites';
 import { Button, CountBadge } from '@liveworkspace/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { shareHeroArt } from '@liveworkspace/ui/dialog-hero-art/share';
@@ -36,6 +38,8 @@ import { SECTION_LABEL, type ShareTab, type ShareView } from './share/parts';
 import { PasswordSection } from './share/PasswordSection';
 import { ShareComposer } from './share/ShareComposer';
 import { ShareStatus } from './share/ShareStatus';
+import { SignInSection } from './share/SignInSection';
+import { TeamPanel } from './share/TeamPanel';
 import { ShareTabs, sharePanelId, shareTabId } from './share/ShareTabs';
 import { ShareTourStage, ShowMeButton, useShareTour } from './share/ShareTour';
 import { useShareStartFocus } from './share/useShareStartFocus';
@@ -68,6 +72,11 @@ export type ShareDialogProps = {
   client: IndexClient;
   // `teamId`: the item sits in a team's library, so every member can open it (the status line says so).
   item: ItemRef & { title: string; teamId?: string | null };
+  // The item's own address in its app, for the Team tab's link; left out, the item's path on this page's origin (an
+  // editor, which runs on its app's site).
+  itemUrl?: string;
+  // The team's name, for the Team tab's words; "the team" without it.
+  teamName?: string | null;
   // The item's tabs in order, so a link can open just one and a live image can draw one; omit for an app without
   // tabs. `loadTabs` reads them when the dialog opens instead (the Explorer, which holds no item's tabs).
   tabs?: ShareTab[];
@@ -91,11 +100,17 @@ export type ShareDialogProps = {
   // Whether the item's links ask for a password, each time that is read or changed, so a host rule that hangs on it
   // (a canvas behind a password cannot be published) follows the dialog.
   onPasswordSetChange?: (set: boolean) => void;
+  // Why Sign In cannot be switched on (a listed Community post, whose link is public); null or absent, it can.
+  signInLockedReason?: string | null;
+  // Whether a sign-in rule holds the item's links, each time it is read or changed (a post can't be public behind one).
+  onSignInChange?: (on: boolean) => void;
   // A section of the host's own below Password Protection.
   appSection?: ReactNode;
   // A tab of the host's own beside Passes (livediagram's Community): its label, a badge after the label (words, such
   // as a Public pill; never a dot) and its panel. With it the dialog opens on two tabs, on `initialView`.
   appTab?: { label: string; badge?: ReactNode; panel: ReactNode } | null;
+  // Where the dialog opens. `passes` (the default) opens a team item on its Team tab instead; the host's `app` and
+  // Approval's own start always win.
   initialView?: ShareView;
   // Where the item is public, in the host's words, for the status line ("Public: …", pink); null or absent while it
   // is not (livediagram: a canvas listed in the Community).
@@ -108,6 +123,8 @@ const NO_HAND_OVER: ShareHandOver = {};
 export function ShareDialog({
   client,
   item,
+  itemUrl,
+  teamName = null,
   tabs: givenTabs,
   loadTabs,
   shareUrl,
@@ -120,6 +137,8 @@ export function ShareDialog({
   onError,
   passwordLockedReason = null,
   onPasswordSetChange,
+  signInLockedReason = null,
+  onSignInChange,
   appSection,
   appTab = null,
   initialView = 'passes',
@@ -128,26 +147,32 @@ export function ShareDialog({
   // Approval (approvals.md): for an Editor where the editor offers approvals; the badge opens the dialog on it.
   const approvals = useApprovalDoor();
   const approvalTab = Boolean(approvals?.door.canRequest);
+  // Team (one-explorer-contracts.md "Sharing and access"): first, for an item in a team's space.
+  const teamTab = Boolean(item.teamId);
   const views = useMemo<ShareView[]>(
     () => [
+      ...(teamTab ? (['team'] as const) : []),
       'passes',
       ...(appTab ? (['app'] as const) : []),
       ...(approvalTab ? (['approval'] as const) : []),
     ],
-    [appTab, approvalTab],
+    [teamTab, appTab, approvalTab],
   );
   const [view, setView] = useState<ShareView>(() =>
     approvals?.takeStartTab() && approvalTab
       ? 'approval'
-      : views.includes(initialView)
+      : initialView !== 'passes' && views.includes(initialView)
         ? initialView
-        : 'passes',
+        : teamTab
+          ? 'team'
+          : 'passes',
   );
   const tabbed = views.length > 1;
   const titleId = useId();
   useShareStartFocus(titleId, tabbed);
   const showApp = Boolean(appTab) && view === 'app';
   const showApproval = approvalTab && view === 'approval';
+  const showTeam = teamTab && view === 'team';
   const [note, setNote] = useState<{ text: string; tone: 'success' | 'info' | 'error' } | null>(
     null,
   );
@@ -166,6 +191,12 @@ export function ShareDialog({
   useEffect(() => {
     passwordSetChanged.current?.(share.passwordSet);
   }, [share.passwordSet]);
+  const signInChanged = useRef(onSignInChange);
+  signInChanged.current = onSignInChange;
+  const signInOn = share.signIn.requireAccount;
+  useEffect(() => {
+    signInChanged.current?.(signInOn);
+  }, [signInOn]);
   const tabs = useLoadedTabs(givenTabs, loadTabs);
   const multiTab = tabs.length > 1;
   const word = kindWords(item.app).lowerOne;
@@ -240,6 +271,7 @@ export function ShareDialog({
   const status = {
     passes: active.length,
     password: share.passwordSet,
+    signIn: share.signIn,
     team: Boolean(item.teamId),
     word,
     publicNote,
@@ -282,7 +314,26 @@ export function ShareDialog({
         />
       ) : null}
 
-      {showApproval ? (
+      {showTeam ? (
+        <div
+          id={sharePanelId('team')}
+          role="tabpanel"
+          aria-labelledby={shareTabId('team')}
+          className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5"
+        >
+          <TeamPanel
+            url={itemUrl ?? ownAddress(item)}
+            teamName={teamName}
+            word={word}
+            notify={notify}
+            onPasses={() => {
+              setView('passes');
+              // Focus follows to the Passes tab, so it never falls to the page when the panel goes.
+              requestAnimationFrame(() => document.getElementById(shareTabId('passes'))?.focus());
+            }}
+          />
+        </div>
+      ) : showApproval ? (
         <div
           id={sharePanelId('approval')}
           role="tabpanel"
@@ -430,6 +481,14 @@ export function ShareDialog({
               return ok;
             }}
           />
+          <SignInSection
+            signIn={share.signIn}
+            suggestedDomain={share.suggestedDomain}
+            busy={share.busy}
+            helpHref={helpHref}
+            lockedReason={signInLockedReason}
+            onSet={(rule) => share.setSignIn(rule)}
+          />
           {appSection}
           {note ? (
             <p
@@ -454,6 +513,12 @@ export function ShareDialog({
       <ShareTourStage tour={tour} helpHref={helpHref?.('sharing')} />
     </Dialog>
   );
+}
+
+/** The item's own address on this page's origin: where an editor, on its app's site, opens it. */
+function ownAddress(item: ItemRef): string {
+  const path = `${APP_ITEMS[item.app].itemPath}${encodeURIComponent(item.id)}`;
+  return typeof window === 'undefined' ? path : `${window.location.origin}${path}`;
 }
 
 /** The item's tabs: the host's, or read once when the dialog opens. A failed read leaves none (every link opens

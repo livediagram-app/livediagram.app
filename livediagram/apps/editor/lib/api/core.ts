@@ -3,6 +3,7 @@
 // the token and share-password state) with this editor's guest token, error telemetry, grants, release signal and
 // share-password cache prefix, plus the envelope types only this editor's calls read. The per-domain call
 // collections import from here; callers go through the lib/api-client.ts barrel.
+import type { ShareRestriction } from '@liveworkspace/workbench/lib/share-restriction';
 import type {
   ApiToken,
   CommunityShareInfo,
@@ -222,7 +223,12 @@ export type SharedDocumentResolution =
       tabId: string | null;
       community: CommunityShareInfo | null;
     }
-  | { passwordRequired: true; invalid: boolean };
+  | {
+      passwordRequired: true;
+      invalid: boolean;
+      // The item's sign-in rule turned the visitor away: the gate shows the restricted page.
+      restricted?: ShareRestriction;
+    };
 
 // Strip fields that ride on the Tab type for the editor's convenience
 // but must never enter the persisted tab body (`tabs.data`):

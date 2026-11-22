@@ -125,6 +125,13 @@ describe('CommunitySection, every face', () => {
     expect(
       screen.getByText('Remove the share password to share it to the Community.'),
     ).toBeTruthy();
+    cleanup();
+    // Behind Require Sign In (or domains) a post can't be public either.
+    render(withHost(<CommunitySection {...base({ shareSignInSet: true })} />));
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Share to Community' }).disabled,
+    ).toBe(true);
+    expect(screen.getByText('Turn off Require Sign In to share it to the Community.')).toBeTruthy();
   });
 
   it('asks once before removing a listed post, and Keep It changes nothing', async () => {

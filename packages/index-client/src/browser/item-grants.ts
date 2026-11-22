@@ -47,6 +47,8 @@ export type ItemGrants = {
   ) => Promise<GrantResponse | null>;
   held: (itemId: string, share?: ItemShare) => string | null;
   refusal: (itemId: string, share?: ItemShare) => string | null;
+  // The domains the last refusal named (a sign-in rule's `sign_in_required` or `domain_not_allowed`), or null.
+  refusalDomains: (itemId: string, share?: ItemShare) => string[] | null;
   passwordLink: (itemId: string) => Promise<string | null>;
   keepFresh: (itemId: string, share?: ItemShare) => () => void;
   itemIdOfPath: (apiBase: string, url: string) => string | null;
@@ -76,6 +78,8 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
   const refusals = new Map<string, string>();
   // The link a `password_required` refusal named, by key: a person reopening the item with no code.
   const refusalLinks = new Map<string, string>();
+  // The domains a sign-in refusal named, by key: what the visitor's restricted page says.
+  const refusalDomains = new Map<string, string[]>();
 
   const keyOf = (itemId: string, share: ItemShare) => `${itemId}|${share?.code ?? ''}`;
   // Requests in flight are shared per item, link and password: one sent with a password typed meanwhile never joins
@@ -125,6 +129,7 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
       if (remember(key, { grant, until: grant.expiresAt - GRANT_RENEW_BEFORE_MS, seq })) {
         refusals.delete(key);
         refusalLinks.delete(key);
+        refusalDomains.delete(key);
       }
       return grant;
     } catch (err) {
@@ -135,6 +140,8 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
         refusals.set(key, err.code);
         if (err.link) refusalLinks.set(key, err.link);
         else refusalLinks.delete(key);
+        if (err.domains) refusalDomains.set(key, err.domains);
+        else refusalDomains.delete(key);
       }
       // A network failure is not remembered: the next request asks again.
       return null;
@@ -186,6 +193,7 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
     },
     // Why the index last refused this item (`password_required`, `password_invalid`, `not_found`, ...), or null.
     refusal: (itemId, share = null) => refusals.get(keyOf(itemId, share)) ?? null,
+    refusalDomains: (itemId, share = null) => refusalDomains.get(keyOf(itemId, share)) ?? null,
     // The link to ask for the password through, when the item, asked for with no code, needs one
     // (one-explorer-contracts.md "Reopened without the code"): the held answer, else one request. Null otherwise.
     passwordLink: async (itemId) => {
@@ -247,6 +255,7 @@ export function createItemGrants(opts: ItemGrantOptions): ItemGrants {
       inflight.clear();
       refusals.clear();
       refusalLinks.clear();
+      refusalDomains.clear();
       for (const timer of renewTimers.values()) clearTimeout(timer);
       renewTimers.clear();
       freshKeepers.clear();

@@ -24,6 +24,7 @@ export function CommunitySection({
   signInHref,
   teamDocument,
   sharePasswordSet,
+  shareSignInSet = false,
   firstTabEmpty = false,
   post,
   loading,
@@ -38,6 +39,8 @@ export function CommunitySection({
   teamDocument: boolean;
   // A share password and a post exclude each other: with one set, Share to Community is disabled.
   sharePasswordSet: boolean;
+  // The Share dialog's Sign In holds its links (accounts or domains only): a public post can't sit behind it.
+  shareSignInSet?: boolean;
   // The first tab is known to have nothing on it (it is the open tab, so the editor holds it): the server refuses
   // such a post, so the button says why up front instead of after the whole form is filled in.
   firstTabEmpty?: boolean;
@@ -134,13 +137,17 @@ export function CommunitySection({
               size="xs"
               data-focus="share"
               onClick={onPublish}
-              disabled={sharePasswordSet || firstTabEmpty}
+              disabled={sharePasswordSet || shareSignInSet || firstTabEmpty}
             >
               Share to Community
             </Button>
             {sharePasswordSet ? (
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 Remove the share password to share it to the Community.
+              </span>
+            ) : shareSignInSet ? (
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Turn off Require Sign In to share it to the Community.
               </span>
             ) : firstTabEmpty ? (
               <span className="text-xs text-slate-500 dark:text-slate-400">

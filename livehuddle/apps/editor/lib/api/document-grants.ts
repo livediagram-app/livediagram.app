@@ -33,6 +33,7 @@ export const documentGrant = grants.grant;
 export const heldDocumentGrant = grants.held;
 /** Why the index last refused this document (`password_required`, `password_invalid`, `not_found`, ...), or null. */
 export const documentGrantRefusal = grants.refusal;
+export const documentGrantRefusalDomains = grants.refusalDomains;
 /** The link to ask for the password through when the document, reopened with no code, needs one, or null. */
 export const documentPasswordLink = grants.passwordLink;
 /** Keeps the open document's grant fresh while it stays open; answers the stop. */

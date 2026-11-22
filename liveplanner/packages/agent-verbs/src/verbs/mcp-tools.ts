@@ -169,8 +169,8 @@ export const mcpShareProject = mcpTool('share_project', {
   behaviour: 'write',
   title: 'Share a plan',
   description:
-    'Create a shareable link to a plan so anyone with the URL can open it — no ' +
-    'sign-in required. Choose "participate" (the default: comment, vote and work cards and Sheet cells), ' +
+    'Create a shareable link to a plan so anyone with the URL can open it, with no ' +
+    'sign-in unless requireSignIn (accounts only) or domains (accounts at those email domains) asks for one, a rule over every link. Choose "participate" (the default: comment, vote and work cards and Sheet cells), ' +
     '"view" (read-only) or "edit". Returns the ' +
     'link URL. Use after creating or finding a plan to hand it to teammates.',
   inputSchema: shareProjectShape,

@@ -168,6 +168,28 @@ describe('openShareLink', () => {
     expect(h.calls).toContain('gate:{"invalid":true}');
   });
 
+  it('shows the restricted page for a sign-in refusal, keeping the remembered password', async () => {
+    const restricted = { reason: 'domain' as const, domains: ['acme.com'] };
+    const h = harness(
+      {
+        loadShared: vi.fn(async () => ({
+          passwordRequired: true as const,
+          invalid: false,
+          restricted,
+        })),
+      },
+      { cached: 'old' },
+    );
+    expect(await openShareLink(h.product, h.run, link)).toBe(false);
+    expect(h.calls).toEqual([
+      'session:old',
+      'step:share',
+      `gate:${JSON.stringify({ invalid: false, restricted })}`,
+      'loading:false',
+      'nameConfirmed:false',
+    ]);
+  });
+
   it('shows the gate without touching an empty cache', async () => {
     const h = harness({
       loadShared: vi.fn(async () => ({ passwordRequired: true as const, invalid: false })),

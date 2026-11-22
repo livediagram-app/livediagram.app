@@ -158,6 +158,19 @@ describe('the options a product binds', () => {
   });
 });
 
+describe('sign-in screens', () => {
+  it('asks for the registration page, a fresh sign-in, or the plain sign-in', async () => {
+    const promptOf = async (query: string) => {
+      const res = await call(routes(), `/api/auth/sign-in?return_to=%2Fx${query}`);
+      return new URL(res.headers.get('location') ?? '').searchParams.get('prompt');
+    };
+    expect(await promptOf('&screen=sign-up')).toBe('create');
+    // Use Another Account, from a share link's restricted page: past the session the accounts site holds.
+    expect(await promptOf('&screen=switch')).toBe('login');
+    expect(await promptOf('')).toBeNull();
+  });
+});
+
 describe('the route table', () => {
   it('answers not found, not configured and rate limited', async () => {
     const auth = routes();

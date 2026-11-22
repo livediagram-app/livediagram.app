@@ -157,7 +157,7 @@ export const projectShare = defineVerb({
   id: 'project.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a plan: view (default) lets people open and read it, participate also lets them comment, vote and work cards and Sheet cells without reshaping a board, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a plan: view (default) lets people open and read it, participate also lets them comment, vote and work cards and Sheet cells without reshaping a board, edit lets them change anything; none needs sign-in unless --require-sign-in or --domains asks (one rule for every link). Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     project: projectArg,
@@ -169,6 +169,15 @@ export const projectShare = defineVerb({
       .enum(['never', 'week', 'month', 'sixMonths'])
       .default('never')
       .describe('never, week, month or sixMonths'),
+    requireSignIn: z
+      .boolean()
+      .optional()
+      .describe('only signed-in accounts open the plan\u2019s links, no guests'),
+    domains: z
+      .string()
+      .max(8000)
+      .optional()
+      .describe('only accounts at these email domains, space or comma separated (implies sign-in)'),
   }),
   output: z.object({
     text: z.string(),
@@ -180,7 +189,12 @@ export const projectShare = defineVerb({
     const found = await projectOf(ctx, input.project);
     const { link } = await ctx.api.json<{ link: ShareLink }>(`${docPath(found.id)}/share`, {
       method: 'POST',
-      body: JSON.stringify({ role: input.role, expiry: input.expiry }),
+      body: JSON.stringify({
+        role: input.role,
+        expiry: input.expiry,
+        ...(input.requireSignIn !== undefined ? { requireSignIn: input.requireSignIn } : {}),
+        ...(input.domains !== undefined ? { domains: input.domains } : {}),
+      }),
     });
     const url = `${ctx.host}/project/shared?s=${encodeURIComponent(link.code)}`;
     return { text: url, url, role: link.role, expiresAt: link.expiresAt };

@@ -8,7 +8,7 @@ import {
 } from '@livehuddle/api-schema';
 import { linkLevelOffered, type ShareLinkExpiry } from '@liveworkspace/index-client';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
-import { listAskedOf } from '@liveworkspace/index-app';
+import { listAskedOf, applyShareSignIn, shareSignInAskedOf } from '@liveworkspace/index-app';
 import { countCommunityCopy } from '../community-service';
 import { documentRoom } from '../document-client';
 import { capStoredName } from '../names';
@@ -83,12 +83,17 @@ export async function handleDocumentIndexRoutes(ctx: RouteContext): Promise<Resp
       return json({ error: 'level_not_offered' }, { status: 400 });
     const expiry = typeof body.expiry === 'string' ? (body.expiry as ShareLinkExpiry) : undefined;
     const tabId = typeof body.tabId === 'string' ? body.tabId : undefined;
+    // Require Sign In and email domains (one-explorer-contracts.md "Sharing and access"): the item's one rule, set before
+    // the link so it opens behind it; left as it is when the body names neither.
+    const asked = shareSignInAskedOf(body);
+    if ('error' in asked) return json(asked, { status: 400 });
+    const signIn = await applyShareSignIn(client, id, asked.rule);
     const { link } = await client.createShareLink(id, {
       ...(level ? { level } : {}),
       ...(expiry ? { expiry } : {}),
       ...(tabId ? { tabId } : {}),
     });
-    return json({ link: shareLinkOf(link) }, { status: 201 });
+    return json({ link: shareLinkOf(link), ...(signIn ? { signIn } : {}) }, { status: 201 });
   } catch (err) {
     return refusal(err);
   }
