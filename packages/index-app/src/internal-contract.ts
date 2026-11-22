@@ -5,6 +5,7 @@ import type {
   AutomationStepHandler,
   AutomationTargetHandler,
 } from './automation-step-door';
+import type { PlanSendHandler } from './plan-send-door';
 import type {
   AccessGrantedNotice,
   AccessRequestedNotice,
@@ -169,6 +170,8 @@ export type InternalItemHandlers = {
   automationStep?: AutomationStepHandler;
   // What this item offers a step's pickers (its boards, pages, templates or tabs), the author's grant checked.
   automationTarget?: AutomationTargetHandler;
+  // Send to Plan's cards made in this plan as the person (plan-send-door.ts), their grant checked. liveplanner alone.
+  planSend?: PlanSendHandler;
   // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
   // Community's sweep. An app without it answers 404.
   communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;
@@ -218,7 +221,7 @@ export type InternalItemsOptions = {
   // The app's COMMUNITY_KEY, which the Community service's sweep calls with: the community-states door alone.
   communityKey?: string | undefined;
   handlers: InternalItemHandlers;
-  // The app's grant check (its index service's `verifyGrant`, bound to its env): the automation doors alone.
+  // The app's grant check (its index service's `verifyGrant`, bound to its env): the automation doors and Send to Plan's.
   verifyGrant?: AutomationDoorGrants;
   waitUntil?: (promise: Promise<unknown>) => void;
 };

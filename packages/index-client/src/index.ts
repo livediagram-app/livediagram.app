@@ -17,4 +17,5 @@ export * from './sheet-sources';
 export * from './approvals';
 export * from './access-requests';
 export * from './automation-steps';
+export * from './plan-sends';
 export * from './updates';

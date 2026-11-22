@@ -57,6 +57,7 @@ import { type ConnectionInput, type ConnectionMade, type ConnectionOpen } from '
 import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
+import type { PlanSendAnswer, PlanSendAsk, PlanSendsRead } from './plan-sends';
 import type {
   Approval,
   ApprovalCandidate,
@@ -354,6 +355,22 @@ export function createIndexClient({
         ...(options.grant ? { grant: options.grant } : {}),
         signal: options.signal,
       }),
+
+    // Send to Plan (send-to-plan.md): cards made in a plan from places in other items, as the person; a source's sends
+    // (only those whose plan the reader can open); and New Plan, an empty Kanban plan of the person's own.
+    sendToPlan: (planId: string, ask: PlanSendAsk) =>
+      call<PlanSendAnswer>(`/items/${enc(planId)}/plan-sends`, { method: 'POST', body: ask }),
+    planSends: (
+      sourceId: string,
+      options: RequestOptions & { share?: ShareAccess | null } = {},
+    ) =>
+      call<PlanSendsRead>(`/items/${enc(sourceId)}/plan-sends`, {
+        share: options.share ?? null,
+        signal: options.signal,
+        bounded: true,
+      }),
+    newPlanForSend: (name: string) =>
+      call<{ item: Item }>('/plan-sends/plans', { method: 'POST', body: { name } }),
 
     // One item's History: its events of the last EVENT_RETENTION_MS, newest first, a page at a time (HISTORY_PAGE
     // by default, at most HISTORY_LIMIT_MAX). Its owner's and its team's only; anyone else is 404.

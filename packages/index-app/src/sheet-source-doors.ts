@@ -94,5 +94,7 @@ export function tellSourceChanged(
     app: change.app,
     itemId: change.itemId,
     sheetIds: change.sheetIds,
+    // A plan's sent cards (send-to-plan.md "The chip"): the open editors read their item's sends again.
+    ...(change.cards ? { cards: change.cards } : {}),
   });
 }

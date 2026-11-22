@@ -67,8 +67,18 @@ export type SheetRangeRead = SheetRangeDoorRead & {
 };
 export type SheetList = { itemId: string; itemName: string; sheets: SheetListing[] };
 
-// What a reader app's door is told when a watched sheet changes: ids only, never values.
-export type SourceChange = { app: SheetSourceApp; itemId: string; sheetIds: string[] };
+// What a reader app's door is told when a watched sheet changes: ids only, never values. A plan whose sent cards
+// changed (send-to-plan.md "The chip") names them in `cards`, with `sheetIds` then empty.
+export type SourceChange = {
+  app: SheetSourceApp;
+  itemId: string;
+  sheetIds: string[];
+  cards?: string[];
+};
+
+// The most cards one change names (send-to-plan.md, PLAN_CARDS_CHANGED_MAX).
+const SOURCE_CHANGE_CARDS_MAX = 100;
+const CARD_ID = /^[A-Za-z0-9_-]{1,200}$/;
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -148,14 +158,27 @@ export function isSheetListing(v: unknown): v is SheetListing {
 // A change from a door's body, or null.
 export function readSourceChange(raw: unknown): SourceChange | null {
   if (!isRecord(raw) || !isSheetSourceApp(raw.app) || !isSheetId(raw.itemId)) return null;
-  const { sheetIds } = raw;
+  const { sheetIds, cards } = raw;
   if (
     !Array.isArray(sheetIds) ||
-    sheetIds.length === 0 ||
     sheetIds.length > SHEET_CHANGE_SHEETS_MAX ||
     !sheetIds.every(isSheetId)
   ) {
     return null;
   }
-  return { app: raw.app, itemId: raw.itemId, sheetIds: [...new Set(sheetIds)] };
+  const cardIds =
+    cards === undefined
+      ? []
+      : Array.isArray(cards) &&
+          cards.length <= SOURCE_CHANGE_CARDS_MAX &&
+          cards.every((c) => typeof c === 'string' && CARD_ID.test(c))
+        ? (cards as string[])
+        : null;
+  if (cardIds === null || (sheetIds.length === 0 && cardIds.length === 0)) return null;
+  return {
+    app: raw.app,
+    itemId: raw.itemId,
+    sheetIds: [...new Set(sheetIds)],
+    ...(cardIds.length > 0 ? { cards: [...new Set(cardIds)] } : {}),
+  };
 }
