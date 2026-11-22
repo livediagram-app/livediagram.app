@@ -5512,6 +5512,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "object"
         },
         "type": "array"
+      },
+      "uses": {
+        "$ref": "#/components/schemas/KnowledgeAiUses",
+        "description": "Which key answers the asker (search-and-ask.md \"Which key answers\"), and its model's id; on `GET ai` only, never in the overview. `usesModel` and its label are absent for built-in AI and for a key that will not open."
+      },
+      "usesModel": {
+        "type": "string"
+      },
+      "usesModelLabel": {
+        "description": "`usesModel`'s name (\"Claude Fable 5.2\"), for \"Answer With\".",
+        "type": "string"
       }
     },
     "required": [
@@ -5524,6 +5535,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "builtIn"
     ],
     "type": "object"
+  },
+  "KnowledgeAiUses": {
+    "enum": [
+      "knowledgebase",
+      "team",
+      "personal",
+      "built-in"
+    ],
+    "type": "string"
   },
   "KnowledgeApprovalTrust": {
     "additionalProperties": false,

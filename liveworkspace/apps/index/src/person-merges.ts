@@ -41,6 +41,24 @@ export function recordPersonMerges(
     .bind(guest, user, now, JSON.stringify(APPS), legacy ? 1 : 0);
 }
 
+// In the same batch: rows still to tell the apps of an earlier merge into `guest` (a legacy chain: an old guest
+// re-keyed, or claimed into a guest, which is then merged on) name `user` instead. The rows have no order, so
+// without this an app told of the later merge first would be told of the earlier one after it, and move the
+// earlier guest's things onto an id nobody holds any more. A chain that comes back on itself (`user` was merged into
+// `guest`) has nothing left to tell: what the app keeps for `user` is still under `user`.
+export function redirectPersonMerges(
+  db: D1Database,
+  guest: string,
+  user: string,
+): D1PreparedStatement[] {
+  return [
+    db
+      .prepare('DELETE FROM person_app_merges WHERE user_id = ?1 AND guest_id = ?2')
+      .bind(guest, user),
+    db.prepare('UPDATE person_app_merges SET user_id = ?2 WHERE user_id = ?1').bind(guest, user),
+  ];
+}
+
 type MergeRow = { guest_id: string; user_id: string; app: App; legacy: number };
 
 // One run: up to MERGES_PER_RUN due rows, one call each. Returns the rows confirmed.

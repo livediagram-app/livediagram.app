@@ -10,12 +10,14 @@ import { AccountPanelsProvider, type AccountPanelsHost } from './host';
 // Settings (and its first load) carries only this module and the host's small context.
 const loadTokens = () => import('./tokens/TokensPanel');
 const loadDataExport = () => import('./data-export/DataExportPanel');
+const loadAi = () => import('./ai/AiKeyPanel');
+const AiKeyPanel = lazy(() => loadAi().then((m) => ({ default: m.AiKeyPanel })));
 const TokensPanel = lazy(() => loadTokens().then((m) => ({ default: m.TokensPanel })));
 const DataExportPanel = lazy(() => loadDataExport().then((m) => ({ default: m.DataExportPanel })));
 
-/** Fetches the two panels' code ahead of time (a test warming its imports, say). */
+/** Fetches the panels' code ahead of time (a test warming its imports, say). */
 export async function preloadAccountPanels(): Promise<void> {
-  await Promise.all([loadTokens(), loadDataExport()]);
+  await Promise.all([loadTokens(), loadDataExport(), loadAi()]);
 }
 
 /** A category drawn from its own chunk, with a quiet placeholder while it loads. `flush`: the panel lays out its own
@@ -50,8 +52,13 @@ function AccountPanelCell({
 /** The Account section's API Tokens and Download Your Data over `host`, for an AccountHost. */
 export function accountPanels(
   host: AccountPanelsHost,
-): Required<Pick<AccountSection, 'renderTokens' | 'renderDataExport'>> {
+): Required<Pick<AccountSection, 'renderAi' | 'renderTokens' | 'renderDataExport'>> {
   return {
+    renderAi: () => (
+      <AccountPanelCell cell="ai" host={host}>
+        <AiKeyPanel />
+      </AccountPanelCell>
+    ),
     renderTokens: () => (
       <AccountPanelCell cell="tokens" host={host}>
         <TokensPanel />

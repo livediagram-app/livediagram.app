@@ -1,4 +1,4 @@
-// The providers a team may bring a key for (docs/specs/030-knowledgebase/search-and-ask.md "Providers"), and the
+// The providers a team may bring a key for (liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md "Providers"), and the
 // one call everything that uses a model makes: Ask, the conflict check and Describe to Set Up hand `callModel` a
 // provider-neutral request, and the provider's own client writes and reads its API's shapes; built-in AI
 // ("Built-in AI", built-in-client.ts) is the third, answered through the `AI` binding with no key. The key and `fetch`

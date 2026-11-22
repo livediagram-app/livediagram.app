@@ -3,24 +3,24 @@ import {
   BUILT_IN_MAX_TOKENS,
   BUILT_IN_MODEL,
   builtInInput,
+  builtInReplyText,
   callBuiltIn,
   type BuiltInAiBinding,
 } from './built-in-client';
-import {
-  ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY,
-  ASK_BUILT_IN_PER_PERSON_PER_DAY,
-  CONFLICT_BUILT_IN_CHECKS_PER_DAY,
-} from './built-in-limits';
-import { askRequest } from './ask-request';
 import { ModelCallError, modelFailureWords, BUILT_IN_FAILED_WORDS } from './model-failure';
 import { callModel } from './model-providers';
-import { SETUP_BUILT_IN_MODEL } from './setup-built-in';
+import type { ModelRequest } from './model-request';
 
-const REQUEST = askRequest({
-  question: 'When do we deploy?',
-  passages: [],
-  turns: [{ question: 'Before?', answer: 'Earlier [1].' }],
-});
+const REQUEST: ModelRequest = {
+  system: 'Answer from the passages only.',
+  messages: [
+    { role: 'user', content: 'Before?' },
+    { role: 'assistant', content: 'Earlier [1].' },
+    { role: 'user', content: 'When do we deploy?' },
+  ],
+  maxTokens: 4000,
+  effort: 'medium',
+};
 
 /** A server-sent event stream of these payloads, as the binding answers `stream: true`. */
 function sse(payloads: readonly string[]): ReadableStream<Uint8Array> {
@@ -56,15 +56,9 @@ const failure = async (call: Promise<unknown>) => {
 };
 
 describe('built-in AI', () => {
-  it('is the one model, with caps below a key', () => {
-    expect(SETUP_BUILT_IN_MODEL).toBe(BUILT_IN_MODEL);
+  it('is the one model, with a ceiling on each call', () => {
     expect(BUILT_IN_MODEL).toBe('@cf/google/gemma-4-26b-a4b-it');
-    expect([
-      ASK_BUILT_IN_PER_PERSON_PER_DAY,
-      ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY,
-      CONFLICT_BUILT_IN_CHECKS_PER_DAY,
-      BUILT_IN_MAX_TOKENS,
-    ]).toEqual([30, 100, 20, 2000]);
+    expect(BUILT_IN_MAX_TOKENS).toBe(2000);
   });
 
   it("asks in Workers AI's chat shape: the system prompt first, streamed, thinking off", () => {
@@ -219,5 +213,33 @@ describe('built-in AI', () => {
     );
     for (const kind of ['bad-key', 'no-credit', 'other'] as const)
       expect(modelFailureWords('built-in', kind)).toBe(BUILT_IN_FAILED_WORDS);
+  });
+});
+
+describe("built-in AI's one-object reply", () => {
+  it('reads the text from every shape the binding answers', () => {
+    const structure = { name: 'Handbook', pages: [] };
+    const text = JSON.stringify(structure);
+    expect(builtInReplyText({ response: 'Plain.' })).toBe('Plain.');
+    expect(builtInReplyText({ response: structure })).toBe(text);
+    expect(builtInReplyText({ choices: [{ message: { content: 'Chat.' } }] })).toBe('Chat.');
+    expect(builtInReplyText('Bare.')).toBe('Bare.');
+  });
+
+  it('answers nothing for a shape that holds no reply', () => {
+    for (const raw of [
+      null,
+      undefined,
+      42,
+      [],
+      {},
+      { response: 7 },
+      { response: [1] },
+      { choices: [] },
+      { choices: [7] },
+      { choices: [{ message: 7 }] },
+      { choices: [{ message: { content: 7 } }] },
+    ])
+      expect(builtInReplyText(raw)).toBeUndefined();
   });
 });

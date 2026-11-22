@@ -6,7 +6,7 @@ import {
   MODEL_PROVIDERS,
   OPENAI_RESPONSES_URL,
   type KeyProviderId,
-} from '@liveknowledge/knowledge';
+} from '@liveworkspace/ai';
 import {
   E2E_VERIFIED_AT_HEADER,
   modelDoor,

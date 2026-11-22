@@ -181,7 +181,9 @@ describe('when this session cannot ask', () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ builtIn: false }));
     await open('view');
     expect(screen.queryByRole('group', { name: 'Answer With' })).toBeNull();
-    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain("Uses your team's key");
+    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain(
+      "Uses this knowledgebase's key",
+    );
   });
 
   it('opens AI Settings from the no-AI state', async () => {
@@ -795,7 +797,9 @@ describe('choosing which AI answers', () => {
   it('offers Built-In AI and the team key by its model, the key first, and asks on the choice', async () => {
     await open('view');
     expect(choice('Built-In AI').getAttribute('aria-pressed')).toBe('false');
-    expect(choice('Claude Fable 5.2 (Team Key)').getAttribute('aria-pressed')).toBe('true');
+    expect(choice('Claude Fable 5.2 (Knowledgebase Key)').getAttribute('aria-pressed')).toBe(
+      'true',
+    );
     expect(ask('When do we release?').request).toEqual({
       question: 'When do we release?',
       ai: 'key',
@@ -815,7 +819,7 @@ describe('choosing which AI answers', () => {
     expect(
       [...document.querySelectorAll('[data-ask-answered-by]')].map((el) => el.textContent),
     ).toEqual(['Answered by Claude Fable 5.2', 'Answered by Built-In AI']);
-    fireEvent.click(choice('Claude Fable 5.2 (Team Key)'));
+    fireEvent.click(choice('Claude Fable 5.2 (Knowledgebase Key)'));
     expect(track).toHaveBeenCalledWith('UI', 'Changed', 'AskAiKey');
   });
 

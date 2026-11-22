@@ -2,8 +2,8 @@
 // description of what their knowledgebase is for, and a system prompt that has the model propose a page structure
 // as JSON in one fixed shape. The description, and the titles of the pages already there, are other people's
 // writing: they are fenced, and the model is told they are material to read, never instructions. The same request
-// goes to whichever provider's model the team chose (model-providers.ts `callModel`).
-import { fenced, type ModelRequest } from './model-request';
+// goes to whichever provider's model the team chose (@liveworkspace/ai model-providers.ts `callModel`).
+import { fenced, type ModelRequest } from '@liveworkspace/ai';
 import {
   SETUP_MAX_DEPTH,
   SETUP_MAX_DESCRIPTION_CHARS,

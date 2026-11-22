@@ -58,6 +58,7 @@ export type SettingsTileId =
   | 'privacy'
   // The account's own categories, each top-level in the panel's rail beside the others, on the shared line art.
   | 'notifications'
+  | 'ai'
   | 'tokens'
   | 'data';
 
@@ -73,6 +74,7 @@ const TILE: Record<SettingsTileId, string> = {
   tours: 'bg-pink-600',
   privacy: 'bg-emerald-600',
   notifications: 'bg-red-500',
+  ai: 'bg-fuchsia-600',
   tokens: 'bg-violet-600',
   data: 'bg-slate-500',
 };
@@ -162,6 +164,13 @@ const TILE_GLYPHS: Record<SettingsTileId, ReactNode> = {
   ),
   // The shared bell, key and tray (below), the same marks an editor's own Settings nests under Account.
   notifications: <SettingsSharedGlyph id="notifications" />,
+  // Two sparkles, the mark every app's AI features carry.
+  ai: (
+    <Svg>
+      <path d="M8.5 3.5 9.8 7.2l3.7 1.3-3.7 1.3-1.3 3.7-1.3-3.7-3.7-1.3 3.7-1.3Z" />
+      <path d="M14.5 11.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7Z" />
+    </Svg>
+  ),
   tokens: <SettingsSharedGlyph id="tokens" />,
   data: <SettingsSharedGlyph id="data" />,
 };

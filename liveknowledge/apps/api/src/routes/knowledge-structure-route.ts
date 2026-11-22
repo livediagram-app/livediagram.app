@@ -1,14 +1,13 @@
 // POST /api/documents/<id>/pages/<tab>/describe-structure (docs/specs/030-knowledgebase/describe-to-set-up.md
 // "Describe Structure on a page"): an initial structure drafted for one empty page (headings, a line under each, and
-// where it helps a list, a table or a callout), on the team's own key when one is set and the person did not choose
-// built-in AI, else on built-in AI (Workers AI). Answered whole as JSON (`PageStructureResponse`); nothing is written
-// here: the editor puts it into the page's draft, which the person saves or cancels. A signed-in person who may edit
-// pages, in person: an API token is told it needs a person, a guest or a visitor without an account is refused, since
-// it spends the team's key or liveknowledge's built-in AI. What the model is told is the page's title, the person's
-// words, the knowledgebase's name and its tree's titles (never a page's writing), all fenced; its reply is read
-// strictly (`parsePageStructure`) and only ever placed as text.
+// where it helps a list, a table or a callout), on the key that answers Ask (the knowledgebase's, its team's or the
+// person's own) when one does and the person did not choose built-in AI, else on built-in AI (Workers AI). Answered
+// whole as JSON (`PageStructureResponse`); nothing is written here: the editor puts it into the page's draft, which
+// the person saves or cancels. A signed-in person who may edit pages, in person: an API token is told it needs a
+// person, a guest or a visitor without an account is refused, since it spends a key or liveknowledge's built-in AI.
+// What the model is told is the page's title, the person's words, the knowledgebase's name and its tree's titles
+// (never a page's writing), all fenced; its reply is read strictly (`parsePageStructure`) and only ever placed as text.
 import {
-  ModelCallError,
   STRUCTURE_BUILT_IN_ASKS,
   STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY,
   STRUCTURE_MAX_PURPOSE_CHARS,
@@ -18,8 +17,6 @@ import {
   STRUCTURE_PER_PERSON_PER_HOUR,
   STRUCTURE_REFUSED_NOT_JSON,
   STRUCTURE_REFUSED_NO_HEADING,
-  callModel,
-  modelFailureWords,
   pageStructureBuiltInInput,
   pageStructureRequest,
   parsePageStructure,
@@ -32,8 +29,9 @@ import {
 } from '@liveknowledge/knowledge';
 import { pageTreeRows } from '@liveknowledge/document';
 import type { KnowledgeSetupProvider, PageStructureResponse } from '@liveknowledge/api-schema';
-import { ASK_UNAVAILABLE_WORDS, openAi } from '../knowledge/ai-settings';
+import { ASK_UNAVAILABLE_WORDS, applyingAi, askerOf, isAiRefusal } from '../knowledge/ai-settings';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
+import { ModelCallError, callModel, modelFailureWords } from '@liveworkspace/ai';
 import { modelDoorFor } from '../knowledge/model-door';
 import { askBuiltInOnce, builtInAi, type BuiltInAi } from '../knowledge/setup-built-in-ai';
 import { spendSetupDraft } from '../knowledge/setup-draft-count';
@@ -144,9 +142,14 @@ export async function handleDescribeStructure(
     .map((row) => ({ title: row.page.name.trim(), depth: row.depth }));
   const input: PageStructureInput = { title, purpose, knowledgebase: document.name, tree };
   // Built-in AI when the person chose it, whatever key is kept (search-and-ask.md "Choosing which AI answers").
-  const ai = body?.ai === 'built-in' ? 'chosen' : await openAi(env, document.id);
-  // A key that is kept but does not open is refused as Ask refuses it, never swapped for built-in AI.
-  if (ai === 'unreadable') return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
+  // Otherwise the knowledgebase's key, its team's, the person's own, or built-in AI (search-and-ask.md "Which key
+  // answers").
+  const ai =
+    body?.ai === 'built-in'
+      ? 'chosen'
+      : await applyingAi(env, document.id, askerOf(ctx, document.teamId));
+  // A key that does not open, or accounts that could not answer, is refused as Ask refuses it (isAiRefusal).
+  if (isAiRefusal(ai)) return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
   const log = { documentId: document.id };
   if (typeof ai === 'string') {
     const client = builtInAi(env);
@@ -171,7 +174,7 @@ export async function handleDescribeStructure(
     console.info('[knowledge] structure drafted', { ...told, blocks: drafted.blocks.length });
     return answered(drafted.blocks, 'built-in');
   }
-  // Counted before the model is called: a draft that fails still spent a call on the team's key.
+  // Counted before the model is called: a draft that fails still spent a call on the key.
   await runAll(env, counters.bump);
   try {
     const reply = await callModel({

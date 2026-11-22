@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { isEnterActivatedTarget, isTypingTarget } from './typing-target';
+import { isEnterActivatedTarget, isTypingTarget, passesSearchChords } from './typing-target';
 
 describe('isTypingTarget', () => {
   it('counts fields, textareas, selects and contentEditable', () => {
@@ -38,5 +38,28 @@ describe('isEnterActivatedTarget', () => {
     expect(isEnterActivatedTarget(document.createElement('a'))).toBe(false);
     expect(isEnterActivatedTarget(window)).toBe(false);
     expect(isEnterActivatedTarget(null)).toBe(false);
+  });
+});
+
+describe('passesSearchChords', () => {
+  const startSearch = (value: string) => {
+    const box = document.createElement('input');
+    box.setAttribute('data-editor-history', '');
+    box.value = value;
+    return box;
+  };
+
+  it('hands Cmd+K and Cmd+. on from a start search, empty or not', () => {
+    for (const key of ['k', 'K', '.']) {
+      expect(passesSearchChords({ key }, startSearch(''))).toBe(true);
+      expect(passesSearchChords({ key }, startSearch('road'))).toBe(true);
+    }
+  });
+
+  it('keeps other chords, and any other field, to the field', () => {
+    expect(passesSearchChords({ key: 'z' }, startSearch(''))).toBe(false);
+    expect(passesSearchChords({ key: 'k' }, document.createElement('input'))).toBe(false);
+    expect(passesSearchChords({ key: 'k' }, document.createElement('textarea'))).toBe(false);
+    expect(passesSearchChords({ key: 'k' }, null)).toBe(false);
   });
 });

@@ -1,6 +1,7 @@
 // @liveknowledge/knowledge: what makes a knowledgebase's pages searchable, trusted and answerable
 // (docs/specs/030-knowledgebase/blueprints/knowledge-package.md). Pure: it writes no storage and reads no
-// environment. The room runs the SQL it makes; the caller hands in `fetch`, the key and the clock.
+// environment. The room runs the SQL it makes; the caller hands in `fetch`, the key and the clock. The model call
+// itself (`callModel`, the providers, their failures) is @liveworkspace/ai's, every app's.
 
 export * from './hash';
 export * from './writing-text';
@@ -22,17 +23,7 @@ export * from './ask-limits';
 export * from './ask-passages';
 export * from './ask-request';
 export * from './ask-answer';
-export * from './model-failure';
-export * from './model-request';
-export * from './claude-models';
-export * from './claude-request';
-export * from './claude-client';
-export * from './openai-models';
-export * from './openai-request';
-export * from './openai-client';
-export * from './model-providers';
 export * from './setup-built-in';
-export * from './built-in-client';
 export * from './built-in-limits';
 export * from './setup-limits';
 export * from './setup-request';

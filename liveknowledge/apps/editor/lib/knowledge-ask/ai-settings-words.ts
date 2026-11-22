@@ -1,6 +1,10 @@
 // What AI Settings says (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Providers"): the key's state, and
 // a refused write in words. Nothing here is handed the key, so no message can hold it.
-import type { KnowledgeAiProvider, KnowledgeAiSettings } from '@liveknowledge/api-schema';
+import type {
+  KnowledgeAiProvider,
+  KnowledgeAiSettings,
+  KnowledgeAiUses,
+} from '@liveknowledge/api-schema';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 import { providerWords } from './provider-words';
 
@@ -21,18 +25,44 @@ export const TEAM_PAYS_ANY_NOTE = 'On your own key, your team pays its provider 
 export const BUILT_IN_NOTE =
   'Questions, conflict checks, drafted pages and Describe to Set Up run on built-in AI, included with liveknowledge, with daily limits: 30 questions a person a day.';
 
-/** Which AI answers here, for the quiet line under Ask's field and Describe's: none when nothing can. */
-export function aiInUseLine(
-  settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn'> | null,
-): string | null {
-  if (!settings) return null;
-  if (settings.hasKey) return "Uses your team's key";
-  return settings.builtIn ? 'Uses built-in AI' : null;
+type UsesSettings = Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn' | 'uses'>;
+
+/** Which key answers the person (search-and-ask.md "Which key answers"): `GET ai`'s `uses`, or, read before it (the
+ *  overview), the knowledgebase's own key or built-in AI. Null when nothing can answer. */
+export function aiInUse(settings: UsesSettings): KnowledgeAiUses | null {
+  if (settings.hasKey) return 'knowledgebase';
+  if (settings.uses === 'team' || settings.uses === 'personal') return settings.uses;
+  return settings.builtIn ? 'built-in' : null;
 }
 
-/** Whether any AI answers here: the team's key, or built-in AI. */
-export const hasAnyAi = (settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn'>): boolean =>
-  settings.hasKey || settings.builtIn;
+const IN_USE_WORDS: Record<KnowledgeAiUses, string> = {
+  knowledgebase: "This Knowledgebase's Key",
+  team: "Your Team's Key",
+  personal: 'Your Key',
+  'built-in': 'Built-In AI',
+};
+
+const LINE_WORDS: Record<KnowledgeAiUses, string> = {
+  knowledgebase: "this knowledgebase's key",
+  team: "your team's key",
+  personal: 'your key',
+  'built-in': 'built-in AI',
+};
+
+/** AI Settings' line: "Uses Your Team's Key". Null when nothing can answer. */
+export function aiInUseTitle(settings: UsesSettings | null): string | null {
+  const uses = settings ? aiInUse(settings) : null;
+  return uses ? `Uses ${IN_USE_WORDS[uses]}` : null;
+}
+
+/** Which AI answers here, for the quiet line under Ask's field and Describe's: none when nothing can. */
+export function aiInUseLine(settings: UsesSettings | null): string | null {
+  const uses = settings ? aiInUse(settings) : null;
+  return uses ? `Uses ${LINE_WORDS[uses]}` : null;
+}
+
+/** Whether any AI answers here: a key (the knowledgebase's, the team's, the person's), or built-in AI. */
+export const hasAnyAi = (settings: UsesSettings): boolean => aiInUse(settings) !== null;
 
 export type AiSettingsAction = 'save-key' | 'remove-key' | 'set-model';
 

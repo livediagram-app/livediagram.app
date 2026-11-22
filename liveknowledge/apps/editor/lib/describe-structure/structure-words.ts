@@ -33,13 +33,13 @@ export const purposeHint = (length: number): string | null =>
 
 /** Whether the person's choice of built-in AI applies: a key is set, built-in AI is here, and they chose it. */
 export const usesChosenBuiltIn = (
-  settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn'> | null,
+  settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn' | 'uses'> | null,
   choice: AskAiChoice,
 ): boolean => settings !== null && offersAiChoice(settings) && choice === 'built-in';
 
 /** The quiet line under the field saying which AI answers, as Ask says it: nothing until the settings are read. */
 export function structureAiLine(
-  settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn'> | null,
+  settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn' | 'uses'> | null,
   choice: AskAiChoice,
 ): string | null {
   return usesChosenBuiltIn(settings, choice) ? 'Uses built-in AI' : aiInUseLine(settings);

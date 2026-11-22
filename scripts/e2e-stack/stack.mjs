@@ -22,7 +22,7 @@
 import { existsSync, readFileSync, rmSync, statSync } from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createAccountsStandIn } from './accounts-stand-in.mjs';
 import { run, shutdown, waitForExit, waitForPort } from './processes.mjs';
 import { createProxies } from './proxies.mjs';
@@ -47,6 +47,8 @@ const MERGE_KEY = 'e2e-merge-key';
  * - `workspace`: the paths liveworkspace's site answers on this origin (the Explorer, the Community), `appMeta` to name
  *   the app on its pages; absent where the product shows none;
  * - `media` ({ port, inspectorPort, app }) where the stack runs liveworkspace's media service;
+ * - `accountsWorker` ({ port, inspectorPort }) where the product's api reaches accounts over its ACCOUNTS binding
+ *   (the AI key door): the stack runs ./accounts-worker under the accounts Worker's name in its own registry;
  * - `editorOnly` (serve the static editor only, beside an api already up) and `editorOnlyNote` (said with it);
  * - `routes(req, res, pathname)`: the product's own answers, asked first (true when it answered);
  * - `apiVars`: the product's own `KEY:value` vars for the api, beside the stack's.
@@ -387,6 +389,32 @@ export function runE2EStack(settings) {
     );
   }
 
+  // The accounts Worker as an api's ACCOUNTS binding reaches it (./accounts-worker), where the product needs it.
+  function startAccountsWorker() {
+    const { accountsWorker } = settings;
+    console.log('[e2e] starting the accounts Worker stand-in…');
+    run(
+      'pnpm',
+      [
+        'exec',
+        'wrangler',
+        'dev',
+        '--local',
+        '-c',
+        path.join(path.dirname(fileURLToPath(import.meta.url)), 'accounts-worker', 'wrangler.toml'),
+        '--port',
+        String(accountsWorker.port),
+        '--inspector-port',
+        String(accountsWorker.inspectorPort),
+        '--var',
+        `CLIENT_ID:${ACCOUNTS_CLIENT.id}`,
+        '--var',
+        `CLIENT_SECRET:${ACCOUNTS_CLIENT.secret}`,
+      ],
+      { cwd: INDEX_DIR },
+    );
+  }
+
   async function main() {
     if (!existsSync(outDir)) {
       console.error(
@@ -406,6 +434,18 @@ export function runE2EStack(settings) {
         `[e2e] liveworkspace's site is not built (${WORKSPACE_SITE_DIR}): /explorer answers 404 until it is`,
       );
     }
+    if (
+      settings.accountsWorker &&
+      !STATE_SUFFIX &&
+      !settings.media &&
+      !process.env.WRANGLER_REGISTRY_PATH
+    ) {
+      // The stack's own registry (unless the environment names one), so the api's ACCOUNTS binding reaches this
+      // stack's stand-in, never a developer's accounts Worker or another stack's. Fresh each run.
+      const registry = path.join(INDEX_DIR, '.wrangler', `e2e-registry-${API_PORT}`);
+      rmSync(registry, { recursive: true, force: true });
+      process.env.WRANGLER_REGISTRY_PATH = registry;
+    }
     if (STATE_SUFFIX && !settings.media) {
       const registry = path.join(INDEX_DIR, '.wrangler', `e2e-registry-${STATE_SUFFIX}`);
       rmSync(registry, { recursive: true, force: true });
@@ -422,8 +462,10 @@ export function runE2EStack(settings) {
     }
     await startIndex();
     const mediaVars = settings.media ? await startMedia() : [];
+    if (settings.accountsWorker) startAccountsWorker();
     startApi(mediaVars);
     await waitForPort(INDEX_PORT, 'index');
+    if (settings.accountsWorker) await waitForPort(settings.accountsWorker.port, 'accounts Worker');
     if (settings.media) await waitForPort(settings.media.port, 'media');
     await waitForPort(API_PORT, 'api worker');
     console.log('[e2e] api worker up; starting live static server…');

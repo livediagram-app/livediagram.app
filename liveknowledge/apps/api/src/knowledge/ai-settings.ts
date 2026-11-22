@@ -4,26 +4,31 @@
 // `callModel`; no log line, error or response holds it.
 import {
   KeySealError,
-  MODEL_PROVIDERS,
   SETTING_AI_KEY,
   SETTING_AI_KEY_HINT,
   SETTING_AI_MODEL,
   SETTING_AI_PROVIDER,
-  isModelProviderId,
-  isProviderModel,
   keyHint,
-  modelProvider,
   openApiKey,
-  providerModel,
   putAiKey,
   putSetting,
   readSetting,
   removeAiKey,
   removeAiModel,
   sealApiKey,
-  type KeyProviderId,
 } from '@liveknowledge/knowledge';
+import {
+  MODEL_PROVIDERS,
+  isModelProviderId,
+  isProviderModel,
+  modelProvider,
+  providerModel,
+  type KeyProviderId,
+} from '@liveworkspace/ai';
+import { aiKeyFor, type AiKeyAnswer } from '@liveworkspace/auth-client/ai-key';
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
+import { accountCredentials } from '../auth/accounts';
+import type { RouteContext } from '../routes/context';
 import type { DocumentEnv } from '../types';
 import { rowsOf, runAll } from './knowledge-db';
 import { builtInAi } from './setup-built-in-ai';
@@ -117,6 +122,103 @@ export async function openAi(
   }
 }
 
+/** Whose request may reach a shared key (search-and-ask.md "Which key answers"): a signed-in person's own, with their
+ *  access token, in the knowledgebase's team. An API token, a workbench session, a guest and a link visitor have no
+ *  asker: they get the knowledgebase's key or built-in AI. */
+export type AiAsker = { accessToken: string; teamId: string | null };
+
+export function askerOf(
+  ctx: Pick<RouteContext, 'accountUserId' | 'token' | 'workbench' | 'bearer'>,
+  teamId: string | null | undefined,
+): AiAsker | null {
+  if (!ctx.accountUserId || ctx.token || ctx.workbench || !ctx.bearer) return null;
+  return { accessToken: ctx.bearer, teamId: teamId ?? null };
+}
+
+/** The shared key's door (tests hand in a stand-in). */
+export type SharedKeyDoor = typeof aiKeyFor;
+
+export type AiSource = 'knowledgebase' | 'team' | 'personal';
+export type AppliedAi = OpenedAi & { source: AiSource };
+export type AiUnavailable =
+  | 'no-secret'
+  | 'no-key'
+  | 'unreadable'
+  | 'team-unreadable'
+  | 'personal-unreadable'
+  | 'shared-unavailable';
+
+async function sharedKey(
+  env: DocumentEnv,
+  asker: AiAsker | null,
+  want: 'key' | 'which',
+  door: SharedKeyDoor,
+): Promise<AiKeyAnswer> {
+  const credentials = asker ? accountCredentials(env) : null;
+  // No asker, or a server with no accounts to ask (self-hosted): no shared key can apply.
+  if (!asker || !credentials) return { status: 'none' };
+  return door(credentials, { accessToken: asker.accessToken, teamId: asker.teamId, want });
+}
+
+/** The key that answers, in order (search-and-ask.md "Which key answers"): the knowledgebase's own, else the team's,
+ *  else the asker's own, else none (built-in AI). One call to accounts, and only when the knowledgebase has no key of
+ *  its own. A key that is set but does not open is refused, never passed over for the next. The plain key is for the
+ *  caller's one model call. */
+export async function applyingAi(
+  env: DocumentEnv,
+  documentId: string,
+  asker: AiAsker | null,
+  door: SharedKeyDoor = aiKeyFor,
+): Promise<AppliedAi | AiUnavailable> {
+  const own = await openAi(env, documentId);
+  if (typeof own !== 'string') return { ...own, source: 'knowledgebase' };
+  if (own === 'unreadable') return own;
+  const shared = await sharedKey(env, asker, 'key', door);
+  if (shared.status === 'unreadable') return `${sharedSource(shared.source)}-unreadable`;
+  // Accounts could not say (down, slow, rate limited): the person or their team may have chosen their own key, so
+  // their words never go to built-in AI on a guess.
+  if (shared.status === 'unavailable') return 'shared-unavailable';
+  if (shared.status !== 'key' || !shared.key) return own;
+  return {
+    provider: shared.provider,
+    apiKey: shared.key,
+    model: providerModel(shared.provider, shared.model).id,
+    source: sharedSource(shared.source),
+  };
+}
+
+/** The answers refused in words rather than passed to built-in AI: a key that is kept but does not open, and accounts
+ *  that could not say whose key applies. */
+export type AiRefusal = Exclude<AiUnavailable, 'no-secret' | 'no-key'>;
+export const isAiRefusal = (ai: AppliedAi | AiUnavailable | 'chosen'): ai is AiRefusal =>
+  ai === 'unreadable' ||
+  ai === 'team-unreadable' ||
+  ai === 'personal-unreadable' ||
+  ai === 'shared-unavailable';
+
+const sharedSource = (source: 'team' | 'account'): 'team' | 'personal' =>
+  source === 'team' ? 'team' : 'personal';
+
+/** Which key would answer the asker, and its model, without opening any: what `GET ai` says ("Uses Your Team's Key"). */
+export async function whichAi(
+  env: DocumentEnv,
+  settings: KnowledgeAiSettings,
+  asker: AiAsker | null,
+  door: SharedKeyDoor = aiKeyFor,
+): Promise<Pick<KnowledgeAiSettings, 'uses' | 'usesModel' | 'usesModelLabel'>> {
+  if (settings.hasKey) {
+    const model = providerModel(settings.provider, settings.model);
+    return { uses: 'knowledgebase', usesModel: model.id, usesModelLabel: model.name };
+  }
+  const shared = await sharedKey(env, asker, 'which', door);
+  if (shared.status === 'key') {
+    const model = providerModel(shared.provider, shared.model);
+    return { uses: sharedSource(shared.source), usesModel: model.id, usesModelLabel: model.name };
+  }
+  if (shared.status === 'unreadable') return { uses: sharedSource(shared.source) };
+  return { uses: 'built-in' };
+}
+
 /** The words for a knowledgebase no model can be called in: no key and no built-in AI (`no-secret`, `no-key`), or a
  *  stored key that does not open (never swapped for built-in AI). */
 export const ASK_UNAVAILABLE_WORDS = {
@@ -124,4 +226,8 @@ export const ASK_UNAVAILABLE_WORDS = {
   'no-key':
     "Built-in AI isn't set up on this server. An Editor can add your team's AI key in AI Settings.",
   unreadable: "Your team's stored AI key could not be read. Replace it in AI Settings.",
+  'team-unreadable':
+    "Your team's AI key could not be read. An admin can replace it in Settings, under AI.",
+  'personal-unreadable': 'Your AI key could not be read. Replace it in Settings, under AI.',
+  'shared-unavailable': "Your AI key settings couldn't be reached just now. Try again in a moment.",
 } as const;
