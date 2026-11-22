@@ -1,7 +1,8 @@
 'use client';
 
-// The Share dialog's tabs, there only when the host adds one of its own (livediagram's Community) or the editor
-// offers approvals: Passes, the links handed out, the host's, and Approval. The chosen tab draws its own underline (two tabs need no sliding bar); arrow keys
+// The Share dialog's tabs, there only when the item is in a team, the host adds one of its own (livediagram's
+// Community) or the editor offers approvals: Team (the team already reaches it), Passes, the links handed out, the
+// host's, and Approval. The chosen tab draws its own underline (two tabs need no sliding bar); arrow keys
 // move between them. livediagram's ShareTabs from before the Explorer split, with the host's badge (words, never a
 // dot) in place of its dot.
 
@@ -18,7 +19,7 @@ export function ShareTabs({
   appLabel,
   appBadge,
 }: {
-  // The tabs there are, in order: Passes, then the host's, then Approval.
+  // The tabs there are, in order: Team, Passes, then the host's, then Approval.
   views: readonly ShareView[];
   view: ShareView;
   onView: (view: ShareView) => void;
@@ -60,7 +61,13 @@ export function ShareTabs({
                 : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            {v === 'passes' ? 'Passes' : v === 'approval' ? 'Approval' : appLabel}
+            {v === 'team'
+              ? 'Team'
+              : v === 'passes'
+                ? 'Passes'
+                : v === 'approval'
+                  ? 'Approval'
+                  : appLabel}
             {on ? (
               <span
                 aria-hidden

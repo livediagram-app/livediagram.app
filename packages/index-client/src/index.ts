@@ -2,6 +2,7 @@
 // limits, the wire types, a typed client for browsers and apps' servers, and the grant check apps run.
 export * from './constants';
 export * from './types';
+export * from './share-domains';
 export * from './client';
 export * from './create-or-resume';
 export * from './grant';

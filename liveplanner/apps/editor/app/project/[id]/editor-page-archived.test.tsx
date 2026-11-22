@@ -12,7 +12,10 @@ const harness = vi.hoisted(() => ({
   refusal: null as string | null,
 }));
 vi.mock('./useEditorState', () => ({ useEditorState: () => harness.state }));
-vi.mock('@/lib/api/plan-grants', () => ({ planGrantRefusal: () => harness.refusal }));
+vi.mock('@/lib/api/plan-grants', () => ({
+  planGrantRefusal: () => harness.refusal,
+  planGrantRefusalDomains: () => null,
+}));
 vi.mock('./EditorView', () => ({ EditorView: () => <p>the editor</p> }));
 vi.mock('@/components/dialogs/LocalMovePrompt', () => ({ LocalMovePrompt: () => null }));
 vi.mock('@/components/dialogs/ConversionHandoff', () => ({ ConversionHandoff: () => null }));

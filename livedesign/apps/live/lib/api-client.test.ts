@@ -30,6 +30,7 @@ import { guestTokenFor } from './testing/guest-token';
 const grants = vi.hoisted(() => ({
   designGrant: vi.fn(),
   designGrantRefusal: vi.fn(() => null as string | null),
+  designGrantRefusalDomains: vi.fn(() => null as string[] | null),
 }));
 vi.mock('./api/design-grants', () => ({
   withDesignGrant: async (_base: string, _input: string, init?: RequestInit) => init,
@@ -37,6 +38,7 @@ vi.mock('./api/design-grants', () => ({
   seedDesignGrant: () => {},
   designGrant: grants.designGrant,
   designGrantRefusal: grants.designGrantRefusal,
+  designGrantRefusalDomains: grants.designGrantRefusalDomains,
 }));
 const index = vi.hoisted(() => ({
   recordOpen: vi.fn(async () => {}),
@@ -133,6 +135,7 @@ describe('apiLoadShared', () => {
     setSessionSharePassword(null);
     grants.designGrant.mockReset();
     grants.designGrantRefusal.mockReset().mockReturnValue(null);
+    grants.designGrantRefusalDomains.mockReset().mockReturnValue(null);
   });
 
   const GRANT = {
@@ -157,6 +160,19 @@ describe('apiLoadShared', () => {
     expect(await apiLoadShared('CODE2345', 'guest-2', 'p1')).toEqual({
       passwordRequired: true,
       invalid: true,
+    });
+  });
+
+  // liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access": the sign-in rule's refusals
+  // open the restricted page, with the domains the index named.
+  it('shows the restricted page for a sign-in refusal, with its domains', async () => {
+    grants.designGrant.mockResolvedValue(null);
+    grants.designGrantRefusal.mockReturnValue('domain_not_allowed');
+    grants.designGrantRefusalDomains.mockReturnValue(['acme.com']);
+    expect(await apiLoadShared('CODE2345', 'guest-9', 'p1')).toEqual({
+      passwordRequired: true,
+      invalid: false,
+      restricted: { reason: 'domain', domains: ['acme.com'] },
     });
   });
 

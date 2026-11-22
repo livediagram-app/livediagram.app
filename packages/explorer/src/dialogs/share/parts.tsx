@@ -83,6 +83,16 @@ export const LIFETIMES: Record<ShareLinkExpiry, string> = {
   sixMonths: '6 months',
 };
 
+// A settings card's lower part (Password Protection, Sign In), under a hairline and lined up with its words (px-4),
+// so it reads as the setting's own detail; a row in it; and its quiet note.
+export const SETTING_DETAIL =
+  'flex animate-fade-in flex-col gap-2 border-t border-slate-100 px-4 py-3 dark:border-slate-700/70';
+export const SETTING_DETAIL_ROW = 'flex min-w-0 items-center gap-2';
+export const SETTING_NOTE = 'text-xs leading-relaxed text-slate-500 dark:text-slate-400';
+// A settings card: the Settings dialog's row as a card.
+export const SETTING_CARD =
+  'rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800';
+
 export const SECTION_LABEL =
   'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
 
@@ -93,8 +103,8 @@ export const PASS_BIN =
 export type ShareTab = { id: string; name: string };
 
 // The dialog's tabs: its passes, the host's (livediagram's Community) and, for an Editor where the editor offers
-// approvals, Approval (approvals.md).
-export type ShareView = 'passes' | 'app' | 'approval';
+// approvals, Approval (approvals.md); and, for an item in a team, Team first (one-explorer-contracts.md "Sharing and access").
+export type ShareView = 'team' | 'passes' | 'app' | 'approval';
 
 // '' stands for every tab: All tabs (All Pages on liveknowledge, scopeWords), then each tab by name in order.
 export function ScopeOptions({ tabs, all = 'All tabs' }: { tabs: ShareTab[]; all?: string }) {

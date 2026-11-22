@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout path="collaboration/sharing" title="Sharing and Embeds" description="Share links for live collaboration, optional passwords and expiry, and embeds." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("sharing")}>
 
-Sharing turns a <Noun /> into something other people can open. A share link lets anyone with the URL join your <Noun /> in real time, with everyone's presence and edits flowing between them. You can protect a link with a password, give it an expiry date, or embed the <Noun /> in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account, and you can create links as a guest too.
+Sharing turns a <Noun /> into something other people can open. A share link lets anyone with the URL join your <Noun /> in real time, with everyone's presence and edits flowing between them. You can protect a link with a password, give it an expiry date, or embed the <Noun /> in another page. None of this needs the other person to sign in unless you ask for it: a share link can be handed to a guest who edits without an account, and you can create links as a guest too. When you want to know who is in, [Require Sign In](#require-sign-in-and-email-domains) asks everyone to sign in first, or only lets in people at your company's email domain.
 
 <AppNote app="liveknowledge">
   In liveknowledge, a Knowledgebase's pages are what the Share dialog calls tabs: a link opens every page unless you [scope it to one](/help/collaboration/sharing/one-tab/).
@@ -77,6 +77,10 @@ The space's owner, and every member of the [team](/help/collaboration/teams/) wh
   The plan's owner, and every member of the [team](/help/collaboration/teams/) whose library holds
   it, can manage its links. Someone who opened your plan through a link can't.
 </AppNote>
+
+## Sharing Inside a Team
+
+A <Noun /> in a [team](/help/collaboration/teams/)'s library opens the Share dialog on its **Team** tab. Everyone in the team can already open it, so they need no pass: copy its link with **Copy Link** and send it to them, and they open it with the role the team gives them. The link grants nothing by itself, so someone outside the team who opens it sees Not Found. To share with someone outside the team, press **Share With Someone Outside the Team** (or the **Passes** tab) and issue them a pass. A personal <Noun /> opens on **Passes**, as before.
 
 ## Share Links
 
@@ -213,9 +217,11 @@ Each pass shows its link with a copy button inside it. A link opens every tab un
 
 ## Controlling Access
 
-Two self-serve controls let you bound who gets in and for how long:
+Self-serve controls let you bound who gets in and for how long:
 
 - A [share password](/help/collaboration/sharing/share-passwords/) makes every link prompt for a password before it opens.
+- **Require Sign In** lets only people signed in to a liveworkspace account open a link: no guests.
+- **Anybody With Email Address Domain** lets only accounts with a verified email at the domains you name open a link, such as everyone at `@acme.com`.
 - A [share link expiry](/help/collaboration/sharing/share-link-expiry/) gives a link a lifetime (a week, a month, or six months). When it runs out the link stops working, but stays in your dialog so you can extend or delete it.
 
 <AppNote app="livediagram">
@@ -236,7 +242,17 @@ Two self-serve controls let you bound who gets in and for how long:
   At the foot of the dialog, **Password Protection** puts one password on every link to the plan.
 </AppNote>
 
-These are independent: you can use either, both, or neither. They are layered on top of the link role, not a replacement for it. [Share Link Security](/help/privacy-and-security/share-link-security/) explains what a link does and does not protect.
+These are independent: you can use any of them together, or none. They are layered on top of the link role, not a replacement for it. [Share Link Security](/help/privacy-and-security/share-link-security/) explains what a link does and does not protect.
+
+### Require Sign In and Email Domains
+
+Both sit just under **Password Protection** on the **Passes** tab, and like the password they hold every pass on the <Noun />, [embeds](/help/collaboration/sharing/embeds/) and links made by the [MCP server](/help/account-and-data/connect-ai-mcp/) and the CLI included. The <Noun />'s owner and the members of its team set them; they never need to sign in through a link themselves.
+
+- Turn on **Require Sign In** and a guest who opens a pass is asked to sign in or create an account. Once they have, they come straight back to the <Noun /> with the pass's role. Guests already inside are sent out when you turn it on.
+- Turn on **Anybody With Email Address Domain** and type one or more domains, separated by spaces or commas (the **@** is optional), then press **Save**. Only an account whose verified email is at one of them gets in. A domain matches exactly, so `acme.com` does not let in `eu.acme.com`; add both if you need both. Email domains always include Require Sign In. For a team's <Noun />, the box starts with your own email's domain (unless it is a public mail provider such as gmail.com).
+- Someone signed in with an account at another domain sees which domains the <Noun /> is restricted to and **Use Another Account**, to sign in with the right one. Nothing else of the <Noun /> is shown to them.
+
+A <Noun /> listed in the [Community](/help/collaboration/sharing/community/) is public, so it can't be behind Require Sign In: take it down from the Community first.
 
 ## Embedding
 

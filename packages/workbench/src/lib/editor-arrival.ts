@@ -8,14 +8,17 @@
 import { parseStoredLevel, type AccessLevel } from '@liveworkspace/api-schema/access-levels';
 import { isArchivedLoadError } from './archived';
 import { indexClient } from './index-client';
+import type { ShareRestriction } from './share-restriction';
 import type { LastSeenDoors, LastSeenFirstTab, LastSeenInput } from './api/last-seen-copies';
 
 /** What a load answers for an item: enough to tell its owner and to address it. */
 export type ArrivalItem = { id: string; ownerId: string };
 
-/** A share code resolved: the gate (`passwordRequired`), or the item with the level and tab the link grants. */
+/** A share code resolved: the gate (`passwordRequired`), or the item with the level and tab the link grants. The
+ *  gate is also where the item's sign-in rule turns the visitor away (`restricted`: sign in, or another domain's
+ *  account), so every editor shows it where the password gate goes. */
 export type ArrivalResolution<Item, Role, Post> =
-  | { passwordRequired: true; invalid: boolean }
+  | { passwordRequired: true; invalid: boolean; restricted?: ShareRestriction }
   | { item: Item; role: Role; tabId: string | null; community: Post | null };
 
 /** Who the reader is for this item (the product's tested session kernel answers it). */
@@ -96,8 +99,13 @@ export type ArrivalSetters<Role, Community> = {
   setSessionCommunity: (community: Community | null) => void;
   // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
   setSessionTabScope: (scope: string | null) => void;
-  // `changed`: the refused password was the one this browser remembered, so the owner changed it.
-  setSharePasswordGate: (gate: { invalid: boolean; changed?: boolean }) => void;
+  // `changed`: the refused password was the one this browser remembered, so the owner changed it. `restricted`: the
+  // item's sign-in rule turned the visitor away; the gate shows the restricted page instead.
+  setSharePasswordGate: (gate: {
+    invalid: boolean;
+    changed?: boolean;
+    restricted?: ShareRestriction;
+  }) => void;
   setIdentityPromptOpen: (open: boolean) => void;
 };
 
@@ -205,7 +213,8 @@ export async function openShareLink<
     // cached password the server just rejected goes from both buckets: cleared so the same wrong value doesn't
     // loop on the next retry, and the session attempt reset too so the gate's empty input isn't lying about what
     // is about to be sent.
-    if (cachedPassword) {
+    // The sign-in rule refusing the visitor (`restricted`) says nothing of the password: the remembered one stays.
+    if (cachedPassword && !resolution.restricted) {
       password.writeCached(shareCodeParam, null);
       password.setSession(null);
     }
@@ -215,7 +224,11 @@ export async function openShareLink<
     // with no mismatch line; only a password the visitor typed is "didn't match" (share-password.md).
     const changed = resolution.invalid && cachedPassword !== null;
     set.setSharePasswordGate(
-      changed ? { invalid: false, changed: true } : { invalid: resolution.invalid },
+      resolution.restricted
+        ? { invalid: false, restricted: resolution.restricted }
+        : changed
+          ? { invalid: false, changed: true }
+          : { invalid: resolution.invalid },
     );
     set.setLoading(false);
     set.setNameConfirmed(product.hasConfirmedName());

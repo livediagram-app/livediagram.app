@@ -60,3 +60,5 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX55 | request-access  | a team item's request email goes to its maker while they are in the team; the whole team sees it in the Inbox.                     |
 | IDX56 | webhooks        | an automation send with neither `subject` nor `card` is about the item alone, not refused.                                         |
 | IDX57 | webhooks        | a liveplanner subject is also written as `card` only when its reference ends in a number (a card's); a tab's is not.               |
+| IDX58 | sharing         | a share's email domain matches exactly; a subdomain of a listed domain is not admitted.                                            |
+| IDX59 | sharing         | any change to a share's sign-in rule but turning it off sends everyone already in back through the check.                          |

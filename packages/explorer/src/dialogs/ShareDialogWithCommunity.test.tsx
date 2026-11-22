@@ -24,6 +24,8 @@ const shareTab = (initialView: 'passes' | 'app'): CommunityShareTab => ({
   props: {
     onPasswordSetChange: () => {},
     passwordLockedReason: null,
+    onSignInChange: () => {},
+    signInLockedReason: null,
     publicNote: null,
     initialView,
     appTab: { label: 'Community', panel: null },

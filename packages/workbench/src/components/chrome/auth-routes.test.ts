@@ -190,6 +190,12 @@ describe('accountsSignInUrl', () => {
       '/api/auth/sign-in?return_to=%2Fnew&screen=sign-up',
     );
   });
+
+  it('asks for a fresh sign-in, past the session held, for Use Another Account', () => {
+    expect(accountsSignInUrl('/p?s=C', 'switch')).toBe(
+      '/api/auth/sign-in?return_to=%2Fp%3Fs%3DC&screen=switch',
+    );
+  });
 });
 
 // The header's guest way out (docs/specs/014-identity/auth-and-guest-access.md "The look: Night Band"): back where

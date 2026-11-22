@@ -145,8 +145,8 @@ export const mcpShareDesign = mcpTool('share_design', {
   behaviour: 'write',
   title: 'Share a design',
   description:
-    'Create a shareable link to a design so anyone with the URL can open it — no ' +
-    'sign-in required. Choose "participate" (the default: comment, react, and add stickies and text), ' +
+    'Create a shareable link to a design so anyone with the URL can open it, with no ' +
+    'sign-in unless requireSignIn (accounts only) or domains (accounts at those email domains) asks for one, a rule over every link. Choose "participate" (the default: comment, react, and add stickies and text), ' +
     '"view" (read-only) or "edit". Returns the ' +
     'link URL. Use after creating or finding a design to hand it to teammates.',
   inputSchema: shareDesignShape,

@@ -191,6 +191,38 @@ describe('createIndexClient', () => {
     expect(links).toEqual(['ABCDEFGHJKMNPQ', null, null, null, null]);
   });
 
+  it('reads the domains a sign-in refusal names, only as a short list of short strings', async () => {
+    const answers = [
+      { error: 'domain_not_allowed', domains: ['acme.com', 'b.org'] },
+      { error: 'sign_in_required', domains: [] },
+      { error: 'sign_in_required', domains: 'acme.com' },
+      { error: 'sign_in_required', domains: [7] },
+      { error: 'sign_in_required', domains: [''] },
+      { error: 'sign_in_required', domains: ['x'.repeat(254)] },
+      { error: 'sign_in_required', domains: Array.from({ length: 21 }, (_, i) => `d${i}.com`) },
+      { error: 'sign_in_required' },
+    ];
+    let i = 0;
+    const { doFetch } = fakeFetch(() => Response.json(answers[i++], { status: 401 }));
+    const client = createIndexClient({ getToken: () => null, fetch: doFetch });
+    const read = [];
+    for (let n = 0; n < answers.length; n++) {
+      read.push(((await client.resolveShare('C').catch((e: unknown) => e)) as IndexError).domains);
+    }
+    expect(read).toEqual([['acme.com', 'b.org'], [], null, null, null, null, null, null]);
+  });
+
+  it('sets the share sign-in rule', async () => {
+    const { seen, doFetch } = fakeFetch(() =>
+      Response.json({ signIn: { requireAccount: true, domains: ['acme.com'] } }),
+    );
+    const client = createIndexClient({ getToken: () => 't', fetch: doFetch });
+    const answer = await client.setShareSignIn('i1', { requireAccount: true, domains: 'acme.com' });
+    expect(answer.signIn).toEqual({ requireAccount: true, domains: ['acme.com'] });
+    expect(seen[0]!.url).toBe('/api/index/items/i1/share-sign-in');
+    expect(seen[0]!.method).toBe('PUT');
+  });
+
   it('answers a non-JSON failure as unknown', async () => {
     const { doFetch } = fakeFetch(() => new Response('bad gateway', { status: 502 }));
     const client = createIndexClient({ getToken: () => 't', fetch: doFetch });

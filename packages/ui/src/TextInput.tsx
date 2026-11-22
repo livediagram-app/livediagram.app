@@ -27,7 +27,10 @@ import {
 // `aria-invalid` still wins (Work Tracker 1171).
 
 const SHAPE =
-  'w-full rounded-md border bg-white text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800/60 dark:disabled:text-slate-400';
+  'w-full rounded-md border bg-white text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800/60 dark:disabled:text-slate-400';
+// Focus colours: brand, or rose while the value is wrong, so the problem mark does not turn brand blue as you type.
+const FOCUS = 'focus:border-brand-400 focus:ring-brand-100';
+const FOCUS_INVALID = 'focus:border-rose-400 focus:ring-rose-100 dark:focus:ring-rose-500/20';
 const PAD = 'px-3 py-2 text-sm';
 const PAD_COMPACT = 'px-2 py-1.5 text-[13px]';
 const BORDER = 'border-slate-200 dark:border-slate-700';
@@ -41,7 +44,7 @@ const fieldClass = (
   compact: boolean | undefined,
   className: string | undefined,
 ) =>
-  `${SHAPE} ${compact ? PAD_COMPACT : PAD} ${invalid ? FIELD_INVALID : BORDER}${className ? ` ${className}` : ''}`;
+  `${SHAPE} ${compact ? PAD_COMPACT : PAD} ${invalid ? `${FIELD_INVALID} ${FOCUS_INVALID}` : `${BORDER} ${FOCUS}`}${className ? ` ${className}` : ''}`;
 
 type FieldOptions = {
   invalid?: boolean;

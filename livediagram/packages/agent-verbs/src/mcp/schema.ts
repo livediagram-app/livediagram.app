@@ -857,12 +857,28 @@ export const shareDocumentShape = {
     .describe(
       'What the link grants. "participate" (default): recipients add stickies, write and vote ' +
         'but cannot reshape it; right for a retro or a workshop. "view": they only look, ' +
-        'with no comments or votes. "edit": they can change anything. No sign-in is needed to open any.',
+        'with no comments or votes. "edit": they can change anything. No sign-in is needed to open any unless requireSignIn or domains says so.',
     ),
   expiry: z
     .enum(['never', 'week', 'month', 'sixMonths'])
     .optional()
     .describe('When the link stops working. Defaults to "never" (until revoked).'),
+  requireSignIn: z
+    .boolean()
+    .optional()
+    .describe(
+      'Only people signed in to a liveworkspace account can open the document\u2019s links: no guests. One ' +
+        'setting for every link to the document, as in the Share dialog. Omitted: left as it is.',
+    ),
+  domains: z
+    .array(z.string().max(253))
+    .max(20)
+    .optional()
+    .describe(
+      'Only accounts with a verified email at these domains (such as "acme.com") can open the ' +
+        'document\u2019s links; implies requireSignIn. One setting for every link. An empty list removes ' +
+        'the domains. Omitted: left as it is.',
+    ),
 };
 
 export const deleteDocumentShape = {

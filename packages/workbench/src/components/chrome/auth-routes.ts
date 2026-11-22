@@ -69,9 +69,10 @@ export function guestReturnHref(searchParams: { get: (key: string) => string | n
 // brings the browser back to `destination` once it is done
 // (apps/api/src/routes/auth.ts). A full-page visit, never a fetch: the accounts
 // site's own cookie can only be read there.
-// `signUp` asks the accounts site for its registration page rather than its sign-in.
-export function accountsSignInUrl(destination: string, signUp = false): string {
-  const screen = signUp ? '&screen=sign-up' : '';
+// `signUp` asks the accounts site for its registration page rather than its sign-in; `'switch'` asks it to sign in
+// afresh past the session it holds (Use Another Account, liveworkspace/docs/specs/003-accounts/sign-in.md).
+export function accountsSignInUrl(destination: string, signUp: boolean | 'switch' = false): string {
+  const screen = signUp === 'switch' ? '&screen=switch' : signUp ? '&screen=sign-up' : '';
   return `${API_BASE}/auth/sign-in?return_to=${encodeURIComponent(destination)}${screen}`;
 }
 

@@ -169,6 +169,32 @@ describe('document rename, share, rm and restore', () => {
     expect(documentShare.quiet!(out)).toEqual([out.url]);
   });
 
+  it('sends Require Sign In and email domains only when asked', async () => {
+    const { seen, api } = docRoutes(() =>
+      Response.json({ link: { code: 'abc', role: 'view', expiresAt: null } }),
+    );
+    await documentShare.run!(
+      contextOf(api),
+      documentShare.input.parse({
+        doc: 'Auth flow',
+        role: 'view',
+        requireSignIn: true,
+        domains: 'example.com',
+      }),
+    );
+    expect(seen[0]!.body).toEqual({
+      role: 'view',
+      expiry: 'never',
+      requireSignIn: true,
+      domains: 'example.com',
+    });
+    await documentShare.run!(
+      contextOf(api),
+      documentShare.input.parse({ doc: 'Auth flow', role: 'view' }),
+    );
+    expect(seen[1]!.body).toEqual({ role: 'view', expiry: 'never' });
+  });
+
   // docs/specs/015-api/blueprints/cli.md: `document share` takes share_document's values and defaults.
   it('makes a participate link by default, as share_document does', async () => {
     const { seen, api } = docRoutes(() =>

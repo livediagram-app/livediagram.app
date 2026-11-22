@@ -523,7 +523,8 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   things, [liveknowledge Share roles](../../../../liveknowledge/docs/specs/013-workspace/share-roles.md)).
 - `GET /share/:code`: public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
   opens it, except through a public link (no Shared entry, no "joined" notice, no visit in its History); 401
-  `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right
+  `password_required`, 403 `password_invalid` (a public link: 404), and 401 `sign_in_required` or 403
+  `domain_not_allowed` through a sign-in rule (below). A password not already found right
   is a guess, limited per visitor's network (10 a minute, before it is checked) and, for a wrong one, per item (30 a
   minute) on every door that takes one (this, `POST /items/:id/grant` and any read with `X-Share-Password`): over
   either, 429 `rate_limited` with `Retry-After` in seconds. Over the visitor's limit that is so even for the right
@@ -534,6 +535,51 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   everyone who came in through a link before: their Shared with me rows go (the item leaves their Shared, Inbox and
   lists), and the app is told to reload every link's sessions (`revoke`, `reason: "rescoped"`, below), so they meet
   the password; entering it records them again. Saving the same password, or removing it, sends no one away.
+- `PUT /items/:id/share-sign-in {requireAccount, domains}`: who may open the item's links, one rule over every link
+  of the item as its password is (Work Tracker 1330, 1331). Off by default (`requireAccount: false`, no domains): a
+  link opens for anyone who holds it, guests included, exactly as before the rule existed. **Require Sign In**
+  (`requireAccount: true`) admits only a signed-in liveworkspace account: a guest token or no token is 401
+  `sign_in_required`, so no guest session ever starts through the link. **Email domains** (`domains`, up to
+  `SHARE_DOMAINS_MAX` (20) names such as `acme.com`) admit only an account whose verified email address
+  (`email` with `email_verified: true` in its access token) is at one of them, exactly (`eng.acme.com` is not
+  `acme.com`); any other account is 403 `domain_not_allowed`, and a guest or no token 401 `sign_in_required`.
+  Domains imply Require Sign In. Both refusals carry `domains` (the list, possibly empty) so the visitor's page can
+  say who the item is restricted to, and nothing else about the item. Domains arrive as a list or as typed text
+  (spaces or commas between them, a leading `@` and a trailing `.` dropped, lower-cased, repeats dropped,
+  `parseShareDomains` in `packages/index-client`); a name that is no domain (one label, a label over 63 characters or
+  starting or ending in `-`, a character outside `a-z 0-9 - .`, over 253 characters) is 400 `invalid_domain`, more
+  than 20 `too_many_domains`. A rule is checked before the password, on every door a link opens: `GET /share/:code`,
+  `POST /items/:id/grant` (so every app's room join, embed and live read), reads with `X-Share-Code`, a person's
+  Shared with me reopen and `POST /items/lookup`. The owner and every joined team member reach the item as ever, a
+  rule never touching them. An app's server acting for an API token's account (`X-Index-Person`) carries no email:
+  through a domain rule it is `domain_not_allowed`; Require Sign In alone admits it. A public link (a Community post's)
+  opens nothing (404) while a rule is set, as behind a password, and the Share dialog locks the rule while a post is
+  listed. A changed rule holds for everyone already in (any change but turning it off): the
+  item's Shared with me rows go and the app reloads every link's sessions (`revoke`, `reason: "rescoped"`), so a guest
+  already inside is sent to the restricted page; turning it off, or saving it unchanged, sends no one away. `GET
+/items/:id/share` answers the rule as `signIn {requireAccount, domains}` and, for a team item, `suggestedDomain`:
+  the domain of the asker's own verified email, unless it is a public mail provider's (`PUBLIC_MAIL_DOMAINS`: gmail.com,
+  outlook.com, icloud.com and the like), where it is null; the dialog starts its domain box with it. A team item's
+  answer also carries `teamName`, the team's name as the asker's own token names it (its `teams` claim), or null when
+  the token names none (a delegated caller); the Team tab says it.
+- **The Share dialog's Sign In card** (`packages/explorer` `SignInSection`), under Password Protection, in the same
+  settings-card look: **Require Sign In** ("Only people signed in to a liveworkspace account can open a pass. No
+  guests.") with its switch, and beneath it, in the same card, **Anybody With Email Address Domain** ("Only accounts
+  with a verified email at these domains, such as @acme.com.") with its own switch, which opens a domain box (several
+  domains, spaces or commas between them, `@` optional) with **Save**; a name that is no domain is named under the box
+  and Save waits. Once saved the box shows the domains as chips with **Change** and the switch off removes them. The
+  domain switch on turns Require Sign In on and holds it there (its switch reads on and disabled, the tooltip saying
+  why). For a team item the box starts with `suggestedDomain` (the sharer's own, likely the organisation's). Both
+  switches are locked, with the host's reason, while a Community post is listed, as Password Protection is.
+- **The Share dialog's Team tab** (Work Tracker 1338): an item in a team (`teamId`) opens the dialog on a **Team** tab,
+  first in the tab row (Team, Passes, the host's, Approval); a personal item opens on Passes as before, with no Team
+  tab. The tab says everyone in the team, by name (the host's `teamName`, else the share answer's), can already open the item, with nothing to issue, shows the item's own
+  address (the editor link a member opens, `itemUrl`) in a read-only field with **Copy Link**, notes that the link
+  grants nothing (someone outside the team who opens it sees Not Found), and ends with **Share With Someone Outside
+  the Team**, which switches to Passes in one click. The host's own start (`initialView: 'app'`, the Share legend's
+  Everyone stop) and the Approval badge still win; Show Me still starts on Passes. Sharing is the owner's and a joined
+  member's (no link level grants it), so a link visitor of any level, Editor, Participant or Viewer, never opens the
+  dialog and never sees the tab.
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
 - **Publishing is not sharing.** An app that makes an item readable on the open web (liveknowledge's
   [Publish to the Web](../../../../liveknowledge/docs/specs/030-knowledgebase/publishing.md)) makes no share link and

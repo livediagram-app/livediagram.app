@@ -23,6 +23,7 @@ import { isDesignTrashedError } from '@/lib/design-trashed';
 import { designGrant, designPasswordLink } from '@/lib/api/design-grants';
 import { resolveDesignSession } from './editor-page-helpers';
 import type { CommunitySession } from './editor-realtime';
+import type { ShareGate } from '@liveworkspace/workbench/lib/share-restriction';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -55,7 +56,7 @@ export type BootstrapSet = {
   setSessionCommunity: SetState<CommunitySession | null>;
   // The one tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = all.
   setSessionTabScope: (scope: string | null) => void;
-  setSharePasswordGate: SetState<{ invalid: boolean; changed?: boolean } | null>;
+  setSharePasswordGate: SetState<ShareGate | null>;
   setIdentityPromptOpen: SetState<boolean>;
 };
 

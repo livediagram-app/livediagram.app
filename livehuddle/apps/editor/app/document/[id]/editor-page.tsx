@@ -217,10 +217,14 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // embed the gate renders headerless inside the iframe (docs/specs/013-workspace/embeds.md).
   if (sharePasswordGate) {
     return (
-      <StatusShell title="Password Required" showHeader={!embedMode}>
+      <StatusShell
+        title={sharePasswordGate.restricted ? 'Sign In Required' : 'Password Required'}
+        showHeader={!embedMode}
+      >
         <SharePasswordGate
           invalid={sharePasswordGate.invalid}
           changed={sharePasswordGate.changed}
+          restricted={sharePasswordGate.restricted}
           ownerName={documentOwnerName}
           onSubmit={(pw) => {
             setSharePasswordGate(null);

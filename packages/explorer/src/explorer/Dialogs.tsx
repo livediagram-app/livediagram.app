@@ -51,6 +51,10 @@ const ShareDialogWithCommunity = lazy(() =>
 const defaultShareUrl: ShareUrl = (link) =>
   typeof window === 'undefined' ? `/s/${link.code}` : `${window.location.origin}/s/${link.code}`;
 
+// An address as the clipboard needs it: a host's own-app path made absolute on this page's origin.
+const absoluteHref = (href: string) =>
+  typeof window === 'undefined' ? href : new URL(href, window.location.origin).href;
+
 const pick = (f: Folder): PickerFolder => ({ id: f.id, name: f.name, parentId: f.parentId });
 
 // Change Folder's spaces of their own (one-explorer.md "Archived").
@@ -91,6 +95,7 @@ export function ExplorerDialogs() {
     toast,
     view,
     navigate,
+    itemHref,
   } = ctx;
   const { thisBrowser } = useHostExtras();
   const close = () => openDialog(null);
@@ -239,6 +244,9 @@ export function ExplorerDialogs() {
       const share = {
         client,
         item,
+        // The Team tab's link: the item's own address, absolute, as a member opens it (never through a link).
+        itemUrl: absoluteHref(itemHref({ ...item, sharedVia: null })),
+        teamName: item.teamId ? (teams.find((t) => t.id === item.teamId)?.name ?? null) : null,
         loadTabs: loadTabs ? () => loadTabs(item) : undefined,
         shareUrl: shareUrl ?? defaultShareUrl,
         handOver: shareHost?.handOver?.(item),

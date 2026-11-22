@@ -1,20 +1,28 @@
 'use client';
 
-// One item's share links and whether it has a password, for the Share dialog: one request when it opens,
-// each change applied at once and taken back on a refusal.
+// One item's share links, whether it has a password and who may open them (its sign-in rule), for the Share dialog:
+// one request when it opens, each change applied at once and taken back on a refusal.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type {
-  CreateShareLinkInput,
-  IndexClient,
-  ShareLink,
-  UpdateShareLinkInput,
+import {
+  SHARE_SIGN_IN_OFF,
+  type CreateShareLinkInput,
+  type IndexClient,
+  type ShareLink,
+  type ShareSignInRule,
+  type UpdateShareLinkInput,
 } from '@liveworkspace/index-client';
 import { failureText } from './errors';
 
 export type ShareLinksState = {
   links: ShareLink[];
   passwordSet: boolean;
+  // Who may open the item's links (one-explorer-contracts.md "Sharing and access"); off until read.
+  signIn: ShareSignInRule;
+  // A team item's domain box starts with this (the sharer's own domain), or null.
+  suggestedDomain: string | null;
+  // A team item's team name, as the index read it from the asker's token; null until read or for none.
+  teamName: string | null;
   loading: boolean;
   error: boolean;
   busy: boolean;
@@ -23,6 +31,8 @@ export type ShareLinksState = {
   revoke: (code: string) => Promise<boolean>;
   extend: (code: string) => Promise<boolean>;
   setPassword: (password: string | null) => Promise<boolean>;
+  // Resolves true once the index took it; false when it refused (said through `onError`).
+  setSignIn: (rule: ShareSignInRule) => Promise<boolean>;
 };
 
 export function useShareLinks(
@@ -32,6 +42,9 @@ export function useShareLinks(
 ): ShareLinksState {
   const [links, setLinks] = useState<ShareLink[]>([]);
   const [passwordSet, setPasswordSet] = useState(false);
+  const [signIn, setSignInState] = useState<ShareSignInRule>(SHARE_SIGN_IN_OFF);
+  const [suggestedDomain, setSuggestedDomain] = useState<string | null>(null);
+  const [teamName, setTeamName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -47,6 +60,9 @@ export function useShareLinks(
         if (!live) return;
         setLinks(res.links);
         setPasswordSet(res.passwordSet);
+        setSignInState(res.signIn ?? SHARE_SIGN_IN_OFF);
+        setSuggestedDomain(res.suggestedDomain ?? null);
+        setTeamName(res.teamName ?? null);
         setError(false);
       })
       .catch(() => live && setError(true))
@@ -183,5 +199,37 @@ export function useShareLinks(
     [client, itemId, onError],
   );
 
-  return { links, passwordSet, loading, error, busy, create, update, revoke, extend, setPassword };
+  const setSignIn = useCallback<ShareLinksState['setSignIn']>(
+    async (rule) => {
+      setBusy(true);
+      try {
+        const res = await client.setShareSignIn(itemId, rule);
+        setSignInState(res.signIn);
+        return true;
+      } catch (e) {
+        onError(failureText(e, 'Couldn’t change who can open the passes. Try again.'));
+        return false;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [client, itemId, onError],
+  );
+
+  return {
+    links,
+    passwordSet,
+    signIn,
+    suggestedDomain,
+    teamName,
+    loading,
+    error,
+    busy,
+    create,
+    update,
+    revoke,
+    extend,
+    setPassword,
+    setSignIn,
+  };
 }

@@ -273,8 +273,10 @@ export function createAppAuth<Env extends AppAuthEnv, User extends AppAuthUser =
     const state = randomState();
     const returnTo = safeReturnPath(url.searchParams.get('return_to'));
     // Create account (the Guest menu, /get-started) asks for the accounts site's registration page rather than its
-    // sign-in.
-    const prompt = url.searchParams.get('screen') === 'sign-up' ? 'create' : undefined;
+    // sign-in; Use Another Account (a share link's restricted page) asks it to sign in afresh, past the session it
+    // holds (`prompt=login`, liveworkspace/docs/specs/003-accounts/sign-in.md).
+    const screen = url.searchParams.get('screen');
+    const prompt = screen === 'sign-up' ? 'create' : screen === 'switch' ? 'login' : undefined;
     const to = authorizeUrl({
       accountsUrl: config.accountsUrl,
       clientId: config.clientId,

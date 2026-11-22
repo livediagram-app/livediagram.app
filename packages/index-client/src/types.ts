@@ -435,6 +435,27 @@ export type CreateShareLinkInput = {
 };
 export type UpdateShareLinkInput = { level?: Level; tabId?: string | null };
 
+// Who may open an item's links, one rule over every link as its password is (one-explorer-contracts.md "Sharing and
+// access"): `requireAccount`, signed-in accounts only (no guests); `domains`, only accounts with a verified email at
+// one of them (which implies `requireAccount`). Off: anyone holding a link, as before.
+export type ShareSignInRule = { requireAccount: boolean; domains: string[] };
+
+export const SHARE_SIGN_IN_OFF: ShareSignInRule = { requireAccount: false, domains: [] };
+
+// `GET /items/:id/share`. `signIn` and `suggestedDomain` are absent from an older index: off and none.
+export type ShareLinksAnswer = {
+  links: ShareLink[];
+  passwordSet: boolean;
+  signIn?: ShareSignInRule;
+  // A team item's: the asker's own email domain, unless a public mail provider's; null otherwise.
+  suggestedDomain?: string | null;
+  // A team item's: its team's name as the asker's token gives it; null otherwise (absent from an older index).
+  teamName?: string | null;
+};
+
+// `PUT /items/:id/share-sign-in`: the rule, its domains as a list or as the text typed (parseShareDomains).
+export type ShareSignInInput = { requireAccount: boolean; domains: readonly string[] | string };
+
 // A link visitor's credentials, sent as headers.
 export type ShareAccess = { code: string; password?: string | null };
 

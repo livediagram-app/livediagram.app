@@ -36,7 +36,10 @@ import type {
   PlacementDefault,
   ShareAccess,
   ShareLink,
+  ShareLinksAnswer,
   ShareResolution,
+  ShareSignInInput,
+  ShareSignInRule,
   ItemRead,
   SharedWithItem,
   TeamAuditCsv,
@@ -271,8 +274,7 @@ export function createIndexClient({
       call<void>(`/placement-defaults/${enc(key)}`, { method: 'DELETE' }),
 
     // Sharing
-    listShareLinks: (itemId: string) =>
-      call<{ links: ShareLink[]; passwordSet: boolean }>(`/items/${enc(itemId)}/share`),
+    listShareLinks: (itemId: string) => call<ShareLinksAnswer>(`/items/${enc(itemId)}/share`),
     createShareLink: (itemId: string, input: CreateShareLinkInput = {}) =>
       call<{ link: ShareLink }>(`/items/${enc(itemId)}/share`, { method: 'POST', body: input }),
     revokeAllShareLinks: (itemId: string) =>
@@ -286,6 +288,11 @@ export function createIndexClient({
       call<{ passwordSet: boolean }>(`/items/${enc(itemId)}/share-password`, {
         method: 'PUT',
         body: { password },
+      }),
+    setShareSignIn: (itemId: string, input: ShareSignInInput) =>
+      call<{ signIn: ShareSignInRule }>(`/items/${enc(itemId)}/share-sign-in`, {
+        method: 'PUT',
+        body: input,
       }),
     // What a link opens; records it under Shared for a signed-in person or guest.
     resolveShare: (code: string, password?: string | null) =>

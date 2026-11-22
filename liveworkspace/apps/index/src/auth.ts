@@ -34,6 +34,13 @@ export type Person = {
   kind: 'account' | 'guest';
   // The teams the person has joined, from their token's claim. A guest has none.
   teams: string[];
+  // Each joined team's name, by id, as the token's claim gives it: what a team item's Share dialog calls its team
+  // (sharing.ts GET). Absent where the token names no names (a guest, a delegated person).
+  teamNames?: Readonly<Record<string, string>>;
+  // The account's email address, lower-cased, only when its access token says accounts verified it
+  // (`email_verified`): what a share's email domains are checked against (share-sign-in.ts). Absent for a guest, a
+  // delegated account (an app acting for an API token's) and the Drive mirror's and export's.
+  email?: string | null;
   // Set when an app's server acts for the person: only that app's items are theirs to reach here.
   app?: App;
   // Set when the Drive mirror acts for the person: only their personal items (any app's) and their own folders
@@ -83,6 +90,10 @@ export async function personOf(request: Request, env: Env): Promise<Person | nul
     id: claims.userId,
     kind: 'account',
     teams: (claims.teams ?? []).map((team) => team.id),
+    teamNames: Object.fromEntries(
+      (claims.teams ?? []).flatMap((team) => (team.name ? [[team.id, team.name]] : [])),
+    ),
+    email: claims.emailVerified && claims.email ? claims.email.toLowerCase() : null,
   };
 }
 

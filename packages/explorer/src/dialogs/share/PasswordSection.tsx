@@ -11,14 +11,14 @@ import { SHARE_PASSWORD_MAX, SHARE_PASSWORD_MIN } from '@liveworkspace/index-cli
 import { Button, Switch } from '@liveworkspace/ui';
 import { LockIcon } from '../../ui/icons';
 import { HelpLink } from './HelpLink';
+import { SETTING_DETAIL, SETTING_DETAIL_ROW, SETTING_NOTE } from './parts';
 import type { ShareHelpHref } from './types';
 
-// The card's lower part, under a hairline and lined up with its words (px-4): why it is locked, Password Set with
-// Replace and Remove, or the field for a new one. Inside the card, so it reads as the setting's own detail.
-const DETAIL =
-  'flex animate-fade-in flex-col gap-2 border-t border-slate-100 px-4 py-3 dark:border-slate-700/70';
-const DETAIL_ROW = 'flex min-w-0 items-center gap-2';
-const NOTE = 'text-xs leading-relaxed text-slate-500 dark:text-slate-400';
+// The card's lower part (parts.tsx SETTING_DETAIL): why it is locked, Password Set with Replace and Remove, or the
+// field for a new one.
+const DETAIL = SETTING_DETAIL;
+const DETAIL_ROW = SETTING_DETAIL_ROW;
+const NOTE = SETTING_NOTE;
 
 /** What a typed password saves as: trimmed, or nothing for spaces alone. */
 export function passwordToSave(typed: string): string | null {

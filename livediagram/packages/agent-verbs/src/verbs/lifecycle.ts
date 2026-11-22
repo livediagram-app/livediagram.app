@@ -160,7 +160,7 @@ export const documentShare = defineVerb({
   id: 'document.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a document: participate (default) lets people comment, add stickies, write and vote without reshaping it, view lets them only open and read it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a document: participate (default) lets people comment, add stickies, write and vote without reshaping it, view lets them only open and read it, edit lets them change anything; none needs sign-in unless --require-sign-in or --domains asks (one rule for every link). Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -172,6 +172,15 @@ export const documentShare = defineVerb({
       .enum(['never', 'week', 'month', 'sixMonths'])
       .default('never')
       .describe('never, week, month or sixMonths'),
+    requireSignIn: z
+      .boolean()
+      .optional()
+      .describe('only signed-in accounts open the document\u2019s links, no guests'),
+    domains: z
+      .string()
+      .max(8000)
+      .optional()
+      .describe('only accounts at these email domains, space or comma separated (implies sign-in)'),
   }),
   output: z.object({
     text: z.string(),
@@ -183,7 +192,12 @@ export const documentShare = defineVerb({
     const found = await documentOf(ctx, input.doc);
     const { link } = await ctx.api.json<{ link: ShareLink }>(`${docPath(found.id)}/share`, {
       method: 'POST',
-      body: JSON.stringify({ role: input.role, expiry: input.expiry }),
+      body: JSON.stringify({
+        role: input.role,
+        expiry: input.expiry,
+        ...(input.requireSignIn !== undefined ? { requireSignIn: input.requireSignIn } : {}),
+        ...(input.domains !== undefined ? { domains: input.domains } : {}),
+      }),
     });
     const url = `${ctx.host}/document/shared?s=${encodeURIComponent(link.code)}`;
     return { text: url, url, role: link.role, expiresAt: link.expiresAt };

@@ -1,4 +1,4 @@
-import { IndexError, SHARE_PASSWORD_MIN } from '@liveworkspace/index-client';
+import { IndexError, SHARE_DOMAINS_MAX, SHARE_PASSWORD_MIN } from '@liveworkspace/index-client';
 
 // A refusal from the index, said in words a person can act on.
 export function failureText(error: unknown, fallback: string): string {
@@ -20,6 +20,10 @@ export function failureText(error: unknown, fallback: string): string {
         return 'This has as many passes as it can hold. Delete an old one first.';
       case 'password_too_short':
         return `A password needs at least ${SHARE_PASSWORD_MIN} characters.`;
+      case 'invalid_domain':
+        return 'One of those isn’t an email domain. Use names like acme.com.';
+      case 'too_many_domains':
+        return `Up to ${SHARE_DOMAINS_MAX} domains.`;
       case 'rate_limited':
         return 'Too many tries just now. Wait a minute and try again.';
       case 'unauthorized':

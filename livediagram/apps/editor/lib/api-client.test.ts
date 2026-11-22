@@ -161,6 +161,28 @@ describe('apiLoadShared password gate (docs/specs/013-workspace/share-password.m
     setSessionSharePassword(null);
   });
 
+  // liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Sharing and access": the sign-in rule's refusals
+  // open the restricted page with the domains named; a bare 401 or 403 (an older api) still opens the password gate.
+  it('opens the restricted page for a sign-in refusal, and the password gate for a bare one', async () => {
+    stubFetch(401, { error: 'sign_in_required', domains: [] });
+    expect(await apiLoadShared('CODE2345', 'guest-7')).toEqual({
+      passwordRequired: true,
+      invalid: false,
+      restricted: { reason: 'sign_in', domains: [] },
+    });
+    stubFetch(403, { error: 'domain_not_allowed', domains: ['acme.com'] });
+    expect(await apiLoadShared('CODE2345', 'guest-8')).toEqual({
+      passwordRequired: true,
+      invalid: false,
+      restricted: { reason: 'domain', domains: ['acme.com'] },
+    });
+    stubFetch(403, {});
+    expect(await apiLoadShared('CODE2345', 'guest-9')).toEqual({
+      passwordRequired: true,
+      invalid: true,
+    });
+  });
+
   it('returns passwordRequired (not invalid) on 401', async () => {
     stubFetch(401, { error: 'password_required' });
     const res = await apiLoadShared('CODE2345', 'guest-1');

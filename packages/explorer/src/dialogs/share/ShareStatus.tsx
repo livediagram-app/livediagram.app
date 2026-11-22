@@ -4,8 +4,17 @@
 // canvas listed in the Community), the widest exposure, which wins. livediagram's ShareStatus from before the
 // Explorer split, with the glyph in place of its dot.
 
+import type { ShareSignInRule } from '@liveworkspace/index-client';
 import { LinkIcon, LockIcon, TeamIcon } from '../../ui/icons';
 import { GlobeGlyph } from './glyphs';
+
+// Who a pass admits under the sign-in rule: anyone, anyone signed in, or accounts at the domains.
+function holdersOf(signIn: ShareSignInRule | undefined): string {
+  if (!signIn?.requireAccount) return 'anyone';
+  if (signIn.domains.length === 0) return 'anyone signed in';
+  const [first, ...rest] = signIn.domains;
+  return rest.length === 0 ? `anyone at ${first}` : `anyone at ${first} or ${rest.length} more`;
+}
 
 export function shareStatusText({
   passes,
@@ -13,10 +22,13 @@ export function shareStatusText({
   team,
   word,
   publicNote = null,
+  signIn,
 }: {
   passes: number;
   password: boolean;
   team: boolean;
+  // Who may open the passes (the sign-in rule); off when absent.
+  signIn?: ShareSignInRule;
   // The item's kind, lower case ("plan").
   word: string;
   // Where the item is public, in the host's words ("in the Community, where anyone can find it, ..."); null when
@@ -28,11 +40,11 @@ export function shareStatusText({
   const withPassword = password ? ', with the password' : '';
   if (team) {
     return passes > 0
-      ? `Shared: every member of the team can open this ${word}, and anyone holding ${holders} can get in${withPassword}.`
+      ? `Shared: every member of the team can open this ${word}, and ${holdersOf(signIn)} holding ${holders} can get in${withPassword}.`
       : `Team: every member of the team can open this ${word}.`;
   }
   return passes > 0
-    ? `Shared: anyone holding ${holders} can get in${withPassword}.`
+    ? `Shared: ${holdersOf(signIn)} holding ${holders} can get in${withPassword}.`
     : `Private: only you can open this ${word}.`;
 }
 
@@ -45,15 +57,22 @@ export function shareStatusShort({
   password,
   team,
   publicNote = null,
+  signIn,
 }: {
   passes: number;
   password: boolean;
   team: boolean;
   publicNote?: string | null;
+  signIn?: ShareSignInRule;
 }): string {
   if (publicNote) return `Public: ${publicNote}`;
   const count = `${passes} ${passes === 1 ? 'pass' : 'passes'}`;
-  const withPassword = password ? ', password on' : '';
+  const rule = !signIn?.requireAccount
+    ? ''
+    : signIn.domains.length > 0
+      ? `, ${signIn.domains.length > 1 ? `${signIn.domains.length} domains` : signIn.domains[0]} only`
+      : ', sign-in on';
+  const withPassword = `${password ? ', password on' : ''}${rule}`;
   if (team)
     return passes > 0 ? `Team and ${count}${withPassword}` : 'Team: every member can open it';
   return passes > 0 ? `Shared: ${count} live${withPassword}` : 'Private: only you can open it';
@@ -65,6 +84,7 @@ export function ShareStatus(props: {
   team: boolean;
   word: string;
   publicNote?: string | null;
+  signIn?: ShareSignInRule;
 }) {
   const isPublic = Boolean(props.publicNote);
   const full = shareStatusText(props);

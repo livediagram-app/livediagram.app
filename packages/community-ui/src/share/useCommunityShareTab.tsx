@@ -37,6 +37,8 @@ export type CommunityShareTabInput = {
 export type CommunityShareDialogProps = {
   onPasswordSetChange: (set: boolean) => void;
   passwordLockedReason: string | null;
+  onSignInChange: (on: boolean) => void;
+  signInLockedReason: string | null;
   publicNote: string | null;
   initialView: 'passes' | 'app';
   appTab: { label: string; badge?: ReactNode; panel: ReactNode };
@@ -53,7 +55,8 @@ export type CommunityShareTab =
 // The Community tab beside Passes. Owns the owner's post (read as the dialog opens) and swaps the Share dialog for the
 // publish dialog while a listing is being written, coming back to it, on the Community tab, afterwards. Also carries
 // the rule that a post and a share password exclude each other, in both directions: a listed post locks Password
-// Protection, and a document behind a password cannot be published.
+// Protection, and a document behind a password cannot be published. The same holds for Sign In (a post's link is
+// public, so it never sits behind Require Sign In or domains).
 export function useCommunityShareTab(input: CommunityShareTabInput): CommunityShareTab {
   const { host, ownerId, documentId, signedIn, teamDocument, communityOn } = input;
   // The tab is offered on any owner's personal document, a guest's included: a guest sees why they can't share yet
@@ -70,6 +73,7 @@ export function useCommunityShareTab(input: CommunityShareTabInput): CommunitySh
   });
   // Whether the document's links ask for a password, as the Share dialog reads and changes them.
   const [passwordSet, setPasswordSet] = useState(false);
+  const [signInSet, setSignInSet] = useState(false);
   const [publishing, setPublishing] = useState(false);
   // Back from the publish dialog, the Share dialog opens on the Community tab it was left from.
   const [backFromPublish, setBackFromPublish] = useState(false);
@@ -102,6 +106,9 @@ export function useCommunityShareTab(input: CommunityShareTabInput): CommunitySh
     props: {
       onPasswordSetChange: setPasswordSet,
       passwordLockedReason: listed ? communityCodeMessage('community_published', host.words) : null,
+      // A post's link is public: no sign-in rule while it is listed, and no post behind one.
+      onSignInChange: setSignInSet,
+      signInLockedReason: listed ? 'Remove it from the Community to choose who can open it.' : null,
       publicNote: listed ? COMMUNITY_PUBLIC_NOTE : null,
       initialView: backFromPublish ? 'app' : 'passes',
       appTab: {
@@ -115,6 +122,7 @@ export function useCommunityShareTab(input: CommunityShareTabInput): CommunitySh
               signInHref={input.signInHref}
               teamDocument={teamDocument}
               sharePasswordSet={passwordSet}
+              shareSignInSet={signInSet}
               firstTabEmpty={input.firstTabEmpty ?? false}
               post={community.post}
               loading={community.loading}

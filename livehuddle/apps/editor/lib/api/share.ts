@@ -10,6 +10,7 @@ import {
   type ShareRole,
 } from '@livehuddle/api-schema';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
+import { shareGateOf } from '@liveworkspace/workbench/lib/share-restriction';
 import {
   API_BASE,
   apiHeaders,
@@ -33,13 +34,23 @@ async function _apiLoadShared(
   const res = await apiFetch(`${API_BASE}/share/${code}`, {
     headers: await apiHeaders(ownerId, { share: null }),
   });
-  // Password gate (docs/specs/013-workspace/share-password.md): 401 = the document is protected and we sent
-  // no (or no longer-valid) password; 403 = we sent a wrong one. Both
-  // surface as `passwordRequired` so the editor shows the gate; only
-  // 403 flags `invalid` so it can show an error line. The password the
-  // visitor enters next is attached automatically by apiHeaders.
+  // The share gate (docs/specs/013-workspace/share-password.md): `password_required` (401) = the document is
+  // protected and we sent no (or no longer-valid) password; `password_invalid` (403) = we sent a wrong one; the password
+  // the visitor enters next is attached automatically by apiHeaders. `sign_in_required` (401) and
+  // `domain_not_allowed` (403) = the document's sign-in rule turned the visitor away: the restricted page, with the
+  // domains it is for. A 401 or 403 naming none of them (an older api) still opens the password gate.
   if (res.status === 401 || res.status === 403) {
-    return { passwordRequired: true, invalid: res.status === 403 };
+    const refused = (await res.json().catch(() => null)) as {
+      error?: unknown;
+      domains?: unknown;
+    } | null;
+    const code = typeof refused?.error === 'string' ? refused.error : null;
+    return (
+      shareGateOf(code, refused?.domains) ?? {
+        passwordRequired: true,
+        invalid: res.status === 403,
+      }
+    );
   }
   const body = await expectOkOrNull<
     DocumentResponse & {

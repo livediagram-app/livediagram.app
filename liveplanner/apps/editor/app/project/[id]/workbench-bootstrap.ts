@@ -23,6 +23,7 @@ import { isProjectTrashedError } from '@/lib/project-trashed';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { setLoadStep } from '@/lib/load-progress';
 import { ensureCollabKey } from '@/lib/local-identity';
+import type { ShareGate } from '@liveworkspace/workbench/lib/share-restriction';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -52,13 +53,13 @@ type WorkbenchBootstrapDeps = {
     setLoadingProject: SetState<boolean>;
     setSessionShareCode: SetState<string | null>;
     setSessionTabScope: (scope: string | null) => void;
-    setSharePasswordGate: SetState<{ invalid: boolean; changed?: boolean } | null>;
+    setSharePasswordGate: SetState<ShareGate | null>;
   };
 };
 
 type Loaded = { project: Project; role: ShareRole; tabScope: string | null };
 // The link asks for its password; `invalid` when the one sent was wrong.
-type PasswordAsked = { password: { invalid: boolean } };
+type PasswordAsked = { password: ShareGate };
 
 export async function loadWorkbenchProject({
   workbench,
@@ -147,6 +148,9 @@ async function loadByLink(
   const resolution = await apiLoadShared(shareCode, selfId, projectId);
   if (!resolution) return 'gone';
   if ('passwordRequired' in resolution) {
+    // The sign-in rule turned the visitor away, not the password: the remembered one still stands.
+    if (resolution.restricted)
+      return { password: { invalid: false, restricted: resolution.restricted } };
     if (cached) {
       writeCachedSharePassword(shareCode, null);
       setSessionSharePassword(null);

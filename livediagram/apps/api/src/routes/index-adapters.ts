@@ -46,8 +46,9 @@ export function clientFor(ctx: RouteContext): IndexClient | Response {
 
 // The index's refusal as this api answers it: its status and code.
 export function refusal(err: unknown): Response {
-  const { status, error } = indexRefusal(err);
-  return json({ error }, { status });
+  // A share's sign-in refusal carries its domains, for the visitor's restricted page.
+  const { status, ...answer } = indexRefusal(err);
+  return json(answer, { status });
 }
 
 export { allPages };

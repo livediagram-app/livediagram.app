@@ -78,11 +78,18 @@ export type TokenOptions = {
   guest?: boolean;
   aud?: string;
   exp?: string;
+  // The account's address, verified unless `emailVerified: false` (a share's email domains read it).
+  email?: string;
+  emailVerified?: boolean;
 };
 
 export function token(sub: string, options: TokenOptions = {}): Promise<string> {
   const claims: Record<string, unknown> = {};
   if (options.guest) claims.kind = 'guest';
+  if (options.email) {
+    claims.email = options.email;
+    claims.email_verified = options.emailVerified ?? true;
+  }
   if (options.teams) {
     claims.teams = options.teams.map((t) => ({
       id: t.id,

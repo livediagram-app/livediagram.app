@@ -249,16 +249,23 @@ export function registerTools(server: McpServer, env: Env): void {
     // design, and an automated share never silently grants edit. The api's own default is edit, so the role is
     // always sent.
     const role = args.role ?? DEFAULT_MCP_SHARE_LEVEL;
-    const { link } = await apiJson<ShareLinkResponse>(
-      env,
-      token,
-      `/designs/${encodeURIComponent(args.designId)}/share`,
-      { method: 'POST', body: JSON.stringify({ role, expiry: args.expiry ?? 'never' }) },
-    );
+    const { link, signIn } = await apiJson<
+      ShareLinkResponse & { signIn?: { requireAccount: boolean; domains: string[] } }
+    >(env, token, `/designs/${encodeURIComponent(args.designId)}/share`, {
+      method: 'POST',
+      body: JSON.stringify({
+        role,
+        expiry: args.expiry ?? 'never',
+        // The item's sign-in rule, set before the link (only when asked: omitted leaves it as it is).
+        ...(args.requireSignIn !== undefined ? { requireSignIn: args.requireSignIn } : {}),
+        ...(args.domains !== undefined ? { domains: args.domains } : {}),
+      }),
+    });
     return textResult({
       url: shareUrl(env, link.code),
       role: link.role,
       expiresAt: link.expiresAt,
+      ...(signIn ? { signIn } : {}),
       designUrl: deepLink(env, args.designId),
     });
   });

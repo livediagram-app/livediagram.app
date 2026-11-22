@@ -4,12 +4,19 @@
 // token's `teams` claim, and from accounts for a team the claim does not hold yet (fresh-teams.ts).
 
 import { levelAtLeast, type Level } from '@liveworkspace/index-client';
-import type { Caller } from './auth';
+import type { Caller, Person } from './auth';
 import type { Env } from './env';
 import { inTeamNow } from './fresh-teams';
 import { fail, json, notFound, unauthorized } from './http';
 import { isRememberedSharePassword, verifySharePassword } from './password-hash';
 import { guessRefusal, wrongGuessRefusal } from './share-guesses';
+import {
+  ruleIsOn,
+  signInRefusal,
+  SIGN_IN_COLUMNS,
+  SIGN_IN_JOIN,
+  type SignInColumns,
+} from './share-sign-in';
 import { directAccess, getItemRow, LIVE_LINK, type Access, type ItemRow } from './rows';
 
 type LinkRow = {
@@ -18,7 +25,7 @@ type LinkRow = {
   tab_id: string | null;
   hash: string | null;
   public: number;
-};
+} & Partial<SignInColumns>;
 
 // The live link a caller holds for an item: the code they sent, or else the one they opened it through
 // before (Shared with me). With the item's password hash, when it has one.
@@ -26,8 +33,9 @@ async function linkFor(env: Env, itemId: string, caller: Caller): Promise<LinkRo
   const now = Date.now();
   if (caller.share) {
     return env.INDEX_DB.prepare(
-      `SELECT sl.code, sl.level, sl.tab_id, sl.public, sp.hash FROM share_links sl
+      `SELECT sl.code, sl.level, sl.tab_id, sl.public, sp.hash, ${SIGN_IN_COLUMNS} FROM share_links sl
        LEFT JOIN share_passwords sp ON sp.item_id = sl.item_id
+       ${SIGN_IN_JOIN('sl')}
        WHERE sl.code = ? AND sl.item_id = ? AND ${LIVE_LINK('sl')}`,
     )
       .bind(caller.share.code, itemId, now)
@@ -35,9 +43,10 @@ async function linkFor(env: Env, itemId: string, caller: Caller): Promise<LinkRo
   }
   if (!caller.person) return null;
   return env.INDEX_DB.prepare(
-    `SELECT sl.code, sl.level, sl.tab_id, sl.public, sp.hash FROM shared_with sw
+    `SELECT sl.code, sl.level, sl.tab_id, sl.public, sp.hash, ${SIGN_IN_COLUMNS} FROM shared_with sw
      JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
      LEFT JOIN share_passwords sp ON sp.item_id = sl.item_id
+     ${SIGN_IN_JOIN('sl')}
      WHERE sw.person_id = ? AND sw.item_id = ? AND ${LIVE_LINK('sl')}`,
   )
     .bind(caller.person.id, itemId, now)
@@ -50,6 +59,8 @@ async function linkFor(env: Env, itemId: string, caller: Caller): Promise<LinkRo
 // against the item. The right one opens the item even while others' wrong guesses hold the item over its limit.
 // `nameLink`: the caller sent no code and reached the link through their own Shared with me row, so a password asked
 // of them names the link's code (and nothing else), for their editor to ask for it ("Reopened without the code").
+// The item's sign-in rule comes first (share-sign-in.ts): a guest, nobody or an account at another domain is refused
+// before any password is read, so the rule spends no guesses. Behind a rule a public link is closed, as behind a password.
 export async function linkAccess(
   env: Env,
   itemId: string,
@@ -57,8 +68,11 @@ export async function linkAccess(
   password: string | null,
   visitor: string | null,
   nameLink = false,
+  person: Person | null = null,
 ): Promise<Access | Response> {
-  if (link.hash && link.public) return notFound();
+  if ((link.hash || ruleIsOn(link)) && link.public) return notFound();
+  const outside = signInRefusal(link, person);
+  if (outside) return outside;
   if (link.hash) {
     if (!password) {
       return nameLink
@@ -103,6 +117,7 @@ export async function accessTo(env: Env, row: ItemRow, caller: Caller): Promise<
     caller.share?.visitor ?? null,
     // No code sent: the link is the person's own Shared with me row (linkFor), so they opened it before.
     !caller.share,
+    caller.person,
   );
 }
 

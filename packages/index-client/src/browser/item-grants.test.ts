@@ -68,6 +68,32 @@ describe('grant', () => {
     expect(index.grant).toHaveBeenCalledOnce();
   });
 
+  it('remembers the domains a sign-in refusal names, and forgets them on a grant or a refusal naming none', async () => {
+    const share = { code: 'C' };
+    index.grant.mockRejectedValueOnce(
+      new IndexError(403, 'domain_not_allowed', null, null, ['acme.com']),
+    );
+    await grants.grant('d1', share, { fresh: true });
+    expect(grants.refusal('d1', share)).toBe('domain_not_allowed');
+    expect(grants.refusalDomains('d1', share)).toEqual(['acme.com']);
+    index.grant.mockRejectedValueOnce(new IndexError(401, 'sign_in_required'));
+    await grants.grant('d1', share, { fresh: true });
+    expect(grants.refusalDomains('d1', share)).toBeNull();
+    index.grant.mockRejectedValueOnce(
+      new IndexError(401, 'sign_in_required', null, null, ['b.org']),
+    );
+    await grants.grant('d1', share, { fresh: true });
+    index.grant.mockResolvedValueOnce(grantOf('g'));
+    await grants.grant('d1', share, { fresh: true });
+    expect(grants.refusalDomains('d1', share)).toBeNull();
+    index.grant.mockRejectedValueOnce(
+      new IndexError(401, 'sign_in_required', null, null, ['b.org']),
+    );
+    await grants.grant('d1', share, { fresh: true });
+    grants.resetForTests();
+    expect(grants.refusalDomains('d1', share)).toBeNull();
+  });
+
   it('a request with a password never joins one in flight without it, and the older refusal does not win', async () => {
     let refuse!: (e: unknown) => void;
     index.grant.mockImplementationOnce(
