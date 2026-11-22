@@ -56,7 +56,9 @@ test('with no key, Ask answers on built-in AI, then Accept Answer files the chat
   await expect(ask(page).getByRole('heading', { name: 'No Questions Yet' })).toBeVisible();
   const completed = page.getByRole('region', { name: 'Completed Questions' });
   await completed.getByRole('button', { name: /Completed Questions/ }).click();
-  await completed.getByRole('button', { name: 'What is this knowledgebase for?' }).click();
+  await completed
+    .getByRole('button', { name: 'What is this knowledgebase for?', exact: true })
+    .click();
   await ask(page).getByRole('button', { name: 'Reopen' }).click();
   await expect(ask(page).getByRole('textbox')).toBeVisible();
   expectNoPageErrors(pageErrors);
@@ -114,7 +116,7 @@ test('an answer streams in, and each citation chip goes to its source card', asy
   await expect(
     ask(page)
       .getByRole('complementary', { name: 'Your Questions' })
-      .getByRole('button', { name: 'How do I restart the queue worker?' }),
+      .getByRole('button', { name: 'How do I restart the queue worker?', exact: true }),
   ).toBeVisible();
 
   // A source card shows Pages at that page and passage.
@@ -145,7 +147,13 @@ test('what the pages do not cover shows as a Knowledge Gap and is listed under A
   await expect(gap).toContainText(question);
 
   await openView(page, 'AI Knowledge');
-  const questions = page.getByRole('region', { name: 'Questions Nobody Could Answer' });
+  // Needs Attention, at Questions: the questions nobody could answer (ai-knowledge.md "The view, as built").
+  const questions = page.getByRole('region', { name: 'Needs Attention' });
+  const show = questions
+    .getByRole('group', { name: 'Show' })
+    .getByRole('button', { name: 'Questions', exact: true });
+  await show.click();
+  await expect(show).toHaveAttribute('aria-pressed', 'true');
   await expect(questions.locator('[data-question]')).toHaveCount(1);
   await expect(questions).toContainText(question);
   expectNoPageErrors(pageErrors);

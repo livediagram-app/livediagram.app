@@ -1,6 +1,6 @@
 'use client';
 
-import { knowledgeTabTitle } from '@/lib/knowledge-tab-title';
+import { LivePageTabTitle, knowledgeTabTitle } from '@/lib/knowledge-tab-title';
 import { EditorLibraryProvider } from '@/components/primitives/EditorLibraryProvider';
 import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -266,6 +266,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   return (
     <EditorContext.Provider value={state}>
       <EditorChromeContext.Provider value={chrome}>
+        <LivePageTabTitle knowledgebase={state.documentName?.trim() || 'Untitled Knowledgebase'} />
         {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
         <MentionContext.Provider value={state.commentMentions}>
           {/* Who reacts to comments, and how (docs/specs/012-collaboration/comment-reactions.md). */}

@@ -46,11 +46,11 @@ test('a structure from the start makes its whole page tree, and Import opens the
   pageErrors,
 }) => {
   const start = await openNew(page);
-  // Each structure shows its outline and page count.
+  // Each structure shows the knowledgebase it makes, its top pages in its tree, and its page count.
   await start.locator('[data-rail="engineering"]').click();
   const handbook = start.locator('[data-start-card="engineering-handbook"]');
   await expect(handbook).toContainText('13 Pages');
-  await expect(handbook).toContainText('Shipping: Release Process, On-Call');
+  await expect(handbook).toContainText('OverviewArchitectureServicesDataDevelopmentShipping');
   await handbook.click();
   await expect(startScreen(page)).toHaveCount(0);
   // Its tree, Start Here become its first page, which is open.

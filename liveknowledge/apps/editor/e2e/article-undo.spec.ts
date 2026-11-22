@@ -1,4 +1,5 @@
 import { expect, expectNoPageErrors, test } from './fixtures';
+import { ensureEditing } from './knowledgebase';
 
 // Undo in the writing (docs/specs/007-editor/article-pages.md "Commits"): ⌘Z first writes what was typed as its
 // own step, then undoes it. The very first typing of a session used to stay: the host decides whether there is
@@ -8,6 +9,8 @@ test('undo straight after the first typing takes it back', async ({ page, pageEr
   await page.goto('/new?template=article');
   const body = page.locator('.ProseMirror p.article-body').first();
   await body.waitFor({ timeout: 30_000 });
+  // A template's page opens to read (docs/specs/030-knowledgebase/editing.md): Edit starts the undo history.
+  await ensureEditing(page);
   const before = await body.textContent();
   await body.click();
   await page.keyboard.press('End');

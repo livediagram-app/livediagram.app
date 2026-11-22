@@ -29,17 +29,18 @@ import { useKnowledgebaseStartOffered } from '@/components/start/knowledgebase-s
 const PILL =
   'inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl text-[13px] font-semibold shadow-lg motion-safe:transition-colors motion-safe:duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 phone:h-11';
 const BRAND =
-  'bg-brand-700 pl-3 pr-2 text-white shadow-brand-900/25 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500';
+  'bg-brand-700 pr-2 text-white shadow-brand-900/25 hover:bg-brand-800 focus-visible:outline-brand-700 dark:bg-brand-600 dark:hover:bg-brand-500';
 
 const CheckIcon = lucideGlyph(lucideCheck, 14);
 const XIcon = lucideGlyph(lucideX, 14);
 
-// A key's hint inside a button, quieter than the label.
+// A key's hint inside a button, quieter than the label: its chip, not its words, is the quieter part, so the words
+// hold 4.5:1 on the accent (lighter in dark mode, where the chip darkens it rather than lightening it).
 function Kbd({ children }: { tone: 'onBrand'; children: string }) {
   return (
     <kbd
       aria-hidden
-      className="rounded-md bg-white/15 px-1.5 py-px font-sans text-[11px] font-medium text-white/85 phone:hidden"
+      className="rounded-md bg-white/15 px-1.5 py-px font-sans text-[11px] font-medium text-white phone:hidden dark:bg-black/20"
     >
       {children}
     </kbd>
@@ -87,7 +88,7 @@ export function PageEditBarView({
             type="button"
             onClick={onEdit}
             data-page-edit=""
-            className={`${PILL} ${BRAND} lk-pop-in`}
+            className={`${PILL} ${BRAND} pl-3 lk-pop-in`}
           >
             <PencilIcon size={14} />
             Edit
@@ -164,7 +165,10 @@ export function PageEditBarView({
           type="button"
           onClick={onSave}
           data-page-edit-save=""
-          className={`${PILL} ${BRAND} lk-pop-in`}
+          // A px more before the tick than before the pencil: the tick's ink stands further inside its box, and
+          // the key's chip is too faint to count, so with pl-3 the contents sat 0.6 px left of centre
+          // (optical-alignment.md).
+          className={`${PILL} ${BRAND} pl-[13px] lk-pop-in`}
         >
           <CheckIcon />
           Save

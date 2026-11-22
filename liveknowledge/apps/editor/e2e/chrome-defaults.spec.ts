@@ -100,8 +100,10 @@ test.describe('Retired power user keys', () => {
     }, PREFS_KEY);
     await openEditor(page);
 
-    // The default chrome: labelled status bar controls, a cycling Appearance control.
-    await expect(tabBar(page).getByText('Tools', { exact: true })).toBeVisible();
+    // The default chrome: the footer's controls, a cycling Appearance control. Button Labels off is kept, and the
+    // footer follows it (Settings > Appearance > Button Labels): icons, each still named.
+    await expect(tools(page)).toBeVisible();
+    await expect(tabBar(page).getByText('Tools', { exact: true })).toBeHidden();
     await expect(tabBar(page).getByRole('button', { name: /^Appearance: / })).toHaveAccessibleName(
       'Appearance: System. Switch to Light.',
     );

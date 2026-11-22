@@ -8,6 +8,7 @@ import {
   documentHeaders,
   seedDocumentItem,
 } from './fixtures';
+import { ensureEditMode } from './knowledgebase';
 
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators": while the owner drags a box,
 // a collaborator on an edit link sees it move (and the arrow on it follow) before anything is saved,
@@ -18,13 +19,15 @@ const CANVAS = '[data-canvas-a11y-root]';
 const SHOTS = process.env.E2E_SHOTS_DIR;
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
+// Both boxes sit high on the board: a page opens with the board's origin mid-canvas, and at y 300 box 'a' sat under
+// the floating Edit / Save bar, so the owner's press landed on Save rather than the box and nothing moved.
 const BOARD = [
   {
     id: 'a',
     type: 'shape',
     shape: 'square',
     x: 300,
-    y: 300,
+    y: 100,
     width: 120,
     height: 80,
     fillColor: '#ffffff',
@@ -34,7 +37,7 @@ const BOARD = [
     type: 'shape',
     shape: 'square',
     x: 800,
-    y: 300,
+    y: 100,
     width: 120,
     height: 80,
     fillColor: '#ffffff',
@@ -124,9 +127,15 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
     .first()
     .getAttribute('d');
 
+  // A drawing moves in edit mode (docs/specs/030-knowledgebase/editing.md); the collaborator, who may edit too,
+  // joins it ("Everyone joins") and sees the draft live.
+  await ensureEditMode(ownerPage);
+  // The collaborator joins on their own ("Everyone joins"); the drag starts once they are in the draft with the owner.
+  await expect(peerPage.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
   await ownerPage.keyboard.press('v');
+  // hover() fails loudly if anything (the edit bar, a panel) covers the box's middle, where the drag starts.
+  await box(ownerPage, 'a').hover();
   const r = (await box(ownerPage, 'a').boundingBox())!;
-  await ownerPage.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
   await ownerPage.mouse.down();
   for (let i = 1; i <= 15; i++)
     await ownerPage.mouse.move(r.x + r.width / 2 + i * 10, r.y + r.height / 2);
@@ -144,6 +153,8 @@ test('a collaborator sees a drag live, and where it lands', async ({ page, brows
 
   const lastSeen = await leftOf(peerPage, 'a');
   await ownerPage.mouse.up();
+  // Save is what writes the move for readers (editing.md "Save").
+  await ownerPage.getByRole('button', { name: 'Save', exact: true }).click();
   // From the release until the save lands, the collaborator keeps the box where the drag left it: it
   // never jumps back to where it started.
   const seen: number[] = [];

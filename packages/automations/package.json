@@ -15,7 +15,7 @@
   "scripts": {
     "lint": "oxlint",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage && vitest-budgets",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
