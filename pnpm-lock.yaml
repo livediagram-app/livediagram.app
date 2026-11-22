@@ -725,6 +725,9 @@ importers:
       '@liveworkspace/community':
         specifier: workspace:^
         version: link:../../../packages/community
+      '@liveworkspace/edit-operations':
+        specifier: workspace:*
+        version: link:../../../packages/edit-operations
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core
@@ -861,6 +864,9 @@ importers:
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
       '@vitest/coverage-v8':
         specifier: ^5.1.1
         version: 5.1.1(vitest@5.1.1)
@@ -2992,6 +2998,9 @@ importers:
       '@liveworkspace/community':
         specifier: workspace:^
         version: link:../../../packages/community
+      '@liveworkspace/edit-operations':
+        specifier: workspace:*
+        version: link:../../../packages/edit-operations
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core
@@ -3165,6 +3174,9 @@ importers:
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
       '@vitest/coverage-v8':
         specifier: ^5.1.1
         version: 5.1.1(vitest@5.1.1)

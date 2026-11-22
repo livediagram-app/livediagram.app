@@ -75,6 +75,50 @@ export function sayDescriptionsOnce<T>(schema: T): T {
   return walk(schema as Json, '', null) as T;
 }
 
+// What an output schema keeps of a nested schema in the listing: what kind of value it is, never what is inside it.
+const KIND_KEYS = ['type', 'enum', 'const'] as const;
+const kindOf = (node: Json | undefined): { [key: string]: Json } => {
+  if (!isObject(node)) return {};
+  const out: { [key: string]: Json } = {};
+  for (const key of KIND_KEYS) if (node[key] !== undefined) out[key] = node[key];
+  return out;
+};
+
+// One top-level property of an output schema, shallow: its kind, its description, an array's item kind and a union's
+// member kinds. Its own properties, and anything a $ref points at, are left out.
+function shallowProperty(node: Json): Json {
+  if (!isObject(node)) return node;
+  const out = kindOf(node);
+  if (typeof node.description === 'string') out.description = node.description;
+  if (node.items !== undefined) out.items = kindOf(node.items);
+  for (const key of ['anyOf', 'oneOf'] as const) {
+    const members = node[key];
+    if (Array.isArray(members)) out[key] = members.map(kindOf);
+  }
+  return out;
+}
+
+/**
+ * An output schema as the listing shows it (each product's docs/specs/015-api/mcp-server.md §4.18 "Output schemas,
+ * shallow in the listing"): its top level whole (each property's name, kind and description, and which are
+ * required), everything under a property's own fields left out. Every result the full schema accepts, this one
+ * accepts, so a client validating structuredContent against the listing still passes; the server still checks each
+ * result against the full schema.
+ */
+export function shallowOutputSchema<T>(schema: T): T {
+  const node = schema as Json;
+  if (!isObject(node)) return schema;
+  const out: { [key: string]: Json } = {};
+  for (const [key, value] of Object.entries(node)) {
+    if (key === '$defs' || key === 'definitions') continue;
+    out[key] =
+      key === 'properties' && isObject(value)
+        ? Object.fromEntries(Object.entries(value).map(([name, v]) => [name, shallowProperty(v)]))
+        : value;
+  }
+  return out as T;
+}
+
 /** A JSON-RPC tools/list answer, its tools' schemas compacted; anything else is handed back as it came. */
 export function compactToolList<T>(given: T): T {
   const body = given as Json;
@@ -84,7 +128,7 @@ export function compactToolList<T>(given: T): T {
     const compact = { ...tool };
     if (tool.inputSchema !== undefined) compact.inputSchema = sayDescriptionsOnce(tool.inputSchema);
     if (tool.outputSchema !== undefined)
-      compact.outputSchema = sayDescriptionsOnce(tool.outputSchema);
+      compact.outputSchema = sayDescriptionsOnce(shallowOutputSchema(tool.outputSchema));
     return compact;
   });
   return { ...body, result: { ...body.result, tools } } as T;

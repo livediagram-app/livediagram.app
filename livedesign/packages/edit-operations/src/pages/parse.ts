@@ -5,6 +5,7 @@ import {
   PAGES_REF_MAX,
   PAGE_CHANGES_MAX,
   PAGE_CHANGE_OPS,
+  readLayoutText,
   type PagesRefusal,
   type PagesRequest,
   type PageBackgroundInput,
@@ -160,6 +161,14 @@ function pageChange(v: unknown, i: number): PageChange {
     v.layout === undefined && !required
       ? {}
       : { layout: text(v.layout, 'layout', PAGES_REF_MAX, i) };
+  // A layout's words by slot (pages-for-agents.md "Text slots"), only beside a layout.
+  const slots = () => {
+    if (v.text === undefined) return {};
+    if (v.layout === undefined)
+      bad('"text" fills a layout\u2019s slots: give a layout with it.', i);
+    const read = readLayoutText(v.text);
+    return 'refused' in read ? bad(read.refused, i) : { text: read };
+  };
   switch (op) {
     case 'add': {
       onlyKeys(
@@ -172,6 +181,7 @@ function pageChange(v: unknown, i: number): PageChange {
           'name',
           'background',
           'layout',
+          'text',
           'at',
           ...WIREFRAME_KEYS,
           'width',
@@ -200,6 +210,7 @@ function pageChange(v: unknown, i: number): PageChange {
         ...name(),
         ...bg(),
         ...layout(false),
+        ...slots(),
         ...(v.at === undefined ? {} : { at: place(v.at, 'at', i) }),
         ...wireframe(),
       };
@@ -243,8 +254,8 @@ function pageChange(v: unknown, i: number): PageChange {
       return change;
     }
     case 'layout':
-      onlyKeys(v, [...COMMON, 'page', 'layout'], 'layout', i);
-      return { op, page: pageRef(v.page, i), layout: layout(true).layout! };
+      onlyKeys(v, [...COMMON, 'page', 'layout', 'text'], 'layout', i);
+      return { op, page: pageRef(v.page, i), layout: layout(true).layout!, ...slots() };
     case 'move':
       onlyKeys(v, [...COMMON, 'page', 'to'], 'move', i);
       return { op, page: pageRef(v.page, i), to: place(v.to, 'to', i) };

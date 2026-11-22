@@ -3,4 +3,11 @@
 export { parsePagesRequest } from './parse';
 export { applyPageChanges, backgroundPatch, type PageChangesOutcome } from './page-changes';
 export { enterPages, type PagesIds } from './enter';
-export { describeBackground, pageLabel, pageSummaries, resolvePage, sizeLabel } from './summary';
+export {
+  describeBackground,
+  pageLabel,
+  pageSummaries,
+  pagesTextsLeftOut,
+  resolvePage,
+  sizeLabel,
+} from './summary';

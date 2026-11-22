@@ -4692,6 +4692,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "LayoutText": {
+    "additionalProperties": false,
+    "description": "What a change gives a layout's slots: a slot left out keeps the layout's sample.",
+    "properties": {
+      "body": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "bullets": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "figures": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "subtitle": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
   "LayoutView": {
     "additionalProperties": false,
     "properties": {
@@ -5670,6 +5701,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "systemBars": {
             "type": "boolean"
           },
+          "text": {
+            "$ref": "#/components/schemas/LayoutText"
+          },
           "width": {
             "type": "number"
           }
@@ -5730,6 +5764,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "page": {
             "$ref": "#/components/schemas/PageRef"
+          },
+          "text": {
+            "$ref": "#/components/schemas/LayoutText"
           }
         },
         "required": [
@@ -6145,6 +6182,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "systemBars": {
         "type": "boolean"
+      },
+      "texts": {
+        "items": {
+          "$ref": "#/components/schemas/PageText"
+        },
+        "type": "array"
       }
     },
     "required": [
@@ -6158,6 +6201,34 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "background",
       "locked",
       "elements"
+    ],
+    "type": "object"
+  },
+  "PageText": {
+    "additionalProperties": false,
+    "description": "One text of a laid-out page: its ref, its slot, its words cut short, and `sample` while they are the layout's.",
+    "properties": {
+      "ref": {
+        "type": "string"
+      },
+      "sample": {
+        "const": true,
+        "type": "boolean"
+      },
+      "slot": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "ref",
+      "slot",
+      "text"
     ],
     "type": "object"
   },
@@ -6337,6 +6408,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "systemBars": {
               "type": "boolean"
+            },
+            "texts": {
+              "items": {
+                "$ref": "#/components/schemas/PageText"
+              },
+              "type": "array"
             }
           },
           "required": [

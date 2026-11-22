@@ -17,6 +17,7 @@
     "./images/upload": "./src/images/upload.ts",
     "./listing": "./src/listing.ts",
     "./mcp/archive-tools": "./src/mcp/archive-tools.ts",
+    "./mcp/element-brief": "./src/mcp/element-brief.ts",
     "./mcp/image-schema": "./src/mcp/image-schema.ts",
     "./mcp/image-tools": "./src/mcp/image-tools.ts",
     "./mcp/rule-tools": "./src/mcp/rule-tools.ts",

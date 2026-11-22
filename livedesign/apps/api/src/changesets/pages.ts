@@ -12,7 +12,7 @@ import {
   type RoomOp,
 } from '@livedesign/api-schema';
 import { diffToElementOps, pageStepsOf, type Tab } from '@livedesign/design';
-import { applyPageChanges, pageSummaries } from '@livedesign/edit-operations';
+import { applyPageChanges, pageSummaries, pagesTextsLeftOut } from '@livedesign/edit-operations';
 import { isTabRevStale, lastChangesetRev, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
 import { relayPages } from '../room-client';
@@ -151,12 +151,15 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
       changes: request.pages.length,
       rev,
     });
+    // The texts of each page the changes laid out (spec "A laid-out page's texts"), within their budget.
+    const pages = pageSummaries(next, out.laid);
+    const leftOut = pagesTextsLeftOut(pages, out.laid);
     return {
       status: 200,
       body: {
         tab: { id: tabId, rev },
-        lines: out.lines,
-        pages: pageSummaries(next),
+        lines: leftOut ? [...out.lines, leftOut] : out.lines,
+        pages,
         changesetId,
       },
     };

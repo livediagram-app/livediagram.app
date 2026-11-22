@@ -9,6 +9,7 @@ export {
   describeBackground,
   pageLabel,
   pageSummaries,
+  pagesTextsLeftOut,
   resolvePage,
   sizeLabel,
 } from './summary';

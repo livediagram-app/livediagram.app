@@ -5,6 +5,7 @@
 
 import { TRASH_RETENTION_DAYS } from '@livedocuments/api-schema';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
+import { firstPagesBrief } from '../mcp/first-page';
 import { mcpChangeThreads, mcpListThreads } from '../mcp/thread-tools';
 import { mcpChangeRules, mcpListRules } from '../mcp/rule-tools';
 import { mcpViewLive, mcpViewTab } from '../mcp/view-tool';
@@ -105,9 +106,11 @@ export const mcpCreateDocument = mcpTool('create_document', {
   description:
     'Create a new document of pages: a slide deck or presentation (a tab from the "blank-slide-deck" template, then ' +
     'change_pages adds the slides), an article or report (a tab from "blank-article", then write_article), an ' +
-    'infographic or a poster. Each tab holds pages; a tab may start from a "template" (a kind from ' +
+    'infographic or a poster (a tab from "blank-infographic"). ' +
+    firstPagesBrief() +
+    ' Each tab holds pages; a tab may start from a "template" (a kind from ' +
     'list_templates: ready-made pages with sample text) or take "elements" for its first page (the ' +
-    'full format is documented inline on the "tabs" argument below). Pass one tab, or several to build a ' +
+    'format in brief on the "tabs" argument below). Pass one tab, or several to build a ' +
     'multi-tab document in one call. The server validates, lays ' +
     "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
     "files it at the root of the user's My Work (or in their default folder for what that " +
@@ -222,8 +225,10 @@ export const mcpChangePages = mcpTool('change_pages', {
     "other page of its kind, every slide say, takes that page's background). The answer gives every page with its rectangle in canvas " +
     'coordinates, the ' +
     "same as an element's x and y in update_document (the layout view prints positions from the content's " +
-    'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
-    "list's items, to replace. A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
+    'corner instead). A layout fills a page with sample text; its "text" replaces it by slot in the same change ' +
+    '({"op": "add", "kind": ..., "layout": ..., "text": {"title": ..., "bullets": [...], "figures": [...]}}), and each page a change ' +
+    'lays out answers its texts, each with its ref (for update_document), slot and words. ' +
+    "A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
     'mocha, ocean, forest...), a page\u2019s background its own. Articles are written with write_article. ' +
     'Everyone with the document open sees it at once.',
   inputSchema: changePagesShape,
