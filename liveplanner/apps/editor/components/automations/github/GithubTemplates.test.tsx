@@ -104,7 +104,7 @@ describe('the GitHub templates', () => {
     render(<Harness initial={{ view: 'templates' }} />);
     await screen.findByRole('heading', { name: 'All Templates' });
     expect(chipNames()).not.toContain('GitHub');
-    expect(tiles()).toHaveLength(24);
+    expect(tiles()).toHaveLength(25);
     expect(ids().some((id) => GITHUB.includes(id!))).toBe(false);
   });
 
@@ -112,7 +112,7 @@ describe('the GitHub templates', () => {
     render(<Harness initial={{ view: 'templates' }} />);
     await screen.findByRole('heading', { name: 'All Templates' });
     expect(chipNames().at(-1)).toBe('GitHub');
-    expect(tiles()).toHaveLength(30);
+    expect(tiles()).toHaveLength(31);
     fireEvent.click(screen.getByRole('button', { name: 'GitHub' }));
     expect(ids()).toEqual(GITHUB);
     for (const tile of tiles()) {
