@@ -89,6 +89,9 @@ Columns: `userId` (`ON DELETE CASCADE`), `name`, `readOnly` (default 0), `create
 - 256 random bits, kept only as a SHA-256, so an indexed lookup leaks nothing a timing attack could use.
 - An app can mint only for someone signed in to it: its access token, introspected, minted for its own client.
 - Revoking a token ends the workbench pairings hanging off it.
+- A reconnect's revoke of the client's earlier token is an ordinary `DELETE /api/account/tokens/:id` over the bearer
+  door, by its owner, after the new token is live; the new token keeps the name, so `tellAssistantRevoked` sends
+  nothing for it (each app's `docs/specs/015-api/mcp-server.md` "Consent + mint").
 
 ## Testing
 
@@ -103,7 +106,7 @@ Columns: `userId` (`ON DELETE CASCADE`), `name`, `readOnly` (default 0), `create
 ## Constants and configuration
 
 `API_TOKEN_PREFIX` `lwt_`, `LEGACY_API_TOKEN_PREFIX` `lvd_`, `TOKEN_RANDOM_BYTES` 32, `MAX_API_TOKENS_PER_ACCOUNT`
-20, `TOKEN_NAME_MAX_LENGTH` 80, `LAST_USED_STAMP_WINDOW_MS` 60 s, `MAX_LIVE_TOKEN_IDS` 100 (`tokens.ts`);
+20 (from `packages/api-schema/src/api-tokens.ts`, re-exported), `TOKEN_NAME_MAX_LENGTH` 80, `LAST_USED_STAMP_WINDOW_MS` 60 s, `MAX_LIVE_TOKEN_IDS` 100 (`tokens.ts`);
 `TOKEN_EXPIRY_WARNING_MS` 7 d, `TOKEN_EXPIRY_SWEEP_LIMIT` 100, `TOKEN_EXPIRY_NOTE_LIMIT` 500 (`token-expiry.ts`);
 `BENCH_ACCOUNTS_MAX` 200 (`bench-accounts.ts`); `TOKEN_VALID_FOR_MS` 60 s, `TOKEN_INVALID_FOR_MS` 10 s
 (`packages/auth-client/src/account.ts`).

@@ -178,6 +178,16 @@ the person's access token to liveworkspace (`POST /api/account/internal/tokens`)
 token for whoever that access token belongs to and only for an access token minted for that app.
 So the connection shows among the API tokens in Settings and works on every app.
 
+Connecting the same tool to the same app again replaces its token rather than adding one: once the new token has
+been handed over, the consent page revokes the earlier token that same OAuth client was given for that app, over
+the bearer door like any revoke in Settings (each app's `docs/specs/015-api/mcp-server.md` "Consent + mint" says how
+the client is matched). Nothing is revoked when the handover fails, and a manual token or another client's is never
+touched. When the account is still at its 20, the consent page lists the live tokens with Revoke, so the person
+frees one and connects without leaving it. The 20 is `MAX_API_TOKENS_PER_ACCOUNT` in
+`@liveworkspace/api-schema/api-tokens`, the one constant every message about the cap reads (the accounts Worker's
+count, Settings' refusal line, the consent page, the marketing troubleshooting, and the help centre, whose pages a
+test holds to it).
+
 An app checks a presented token with `POST /api/account/internal/tokens/verify`, which answers
 the account, its verified email, read-only and the account's teams. `createTokenChecker` in
 `@liveworkspace/auth-client` remembers each answer per isolate for a minute (an unknown token for
