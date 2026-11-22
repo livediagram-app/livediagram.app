@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useVersionHistoryState } from '@/lib/version-history-store';
 import { useKnowledgeView } from '@/lib/knowledge-ask/useKnowledgeView';
 import { lucideCheck, lucideX } from '@liveworkspace/icons/lucide';
@@ -16,11 +17,12 @@ import {
 import { useRelativeNow } from '@/lib/relative-time';
 import { DoubleClickToEdit } from './DoubleClickToEdit';
 import { EditorDiscs } from './EditorDiscs';
+import { PageReactions } from '@/components/page-reactions/PageReactions';
 import { useArticleZoneCorner } from './useArticleZoneCorner';
 import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
 import { useKnowledgebaseStartOffered } from '@/components/start/knowledgebase-start';
 
-// Edit, in the top row before Page Info and Share, and while editing the draft bar, floating at the bottom right of the
+// Edit, with the page's reactions left of it, and while editing the draft bar, floating at the bottom right of the
 // article zone (docs/specs/030-knowledgebase/editing.md; blueprint "Presentation and UX"). Reads the chrome store a slice at a time, so typing renders it
 // only when what it says changes; its buttons call the newest handlers when pressed.
 
@@ -59,6 +61,9 @@ export type PageEditBarViewProps = {
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
+  // The page's reactions (docs/specs/030-knowledgebase/page-reactions.md): left of Edit while reading. Absent where
+  // they are not shown (Zen Mode, an embed); someone who may not edit has them left of Zen (PageReactionsBesideZen).
+  reactions?: ReactNode;
 };
 
 /** The bar itself, from plain props (tests, and the store-reading wrapper below). */
@@ -71,6 +76,7 @@ export function PageEditBarView({
   onEdit,
   onSave,
   onCancel,
+  reactions,
 }: PageEditBarViewProps) {
   const corner = useArticleZoneCorner(mayEdit);
   if (!mayEdit) return null;
@@ -81,8 +87,10 @@ export function PageEditBarView({
           style={{ right: corner.right, bottom: corner.bottom }}
           // Toasts stand on this button's line, beside it (liveworkspace toasts.md "Placement").
           data-toast-side=""
-          className="fixed z-[var(--z-toolbar)]"
+          data-page-read-corner=""
+          className="fixed z-[var(--z-toolbar)] flex items-center gap-2 phone:gap-1.5"
         >
+          {reactions}
           {/* No tooltip (owner 2026-11-21): the label and the key say it. */}
           <button
             type="button"
@@ -201,6 +209,8 @@ export function PageEditBar() {
   // A new knowledgebase's start screen covers its first page: no Cancel and Save floating beside it.
   const startMayShow = useEditorChrome(templateStartShownOf);
   const startOffered = useKnowledgebaseStartOffered(tabId);
+  // Reactions stand down in Zen Mode and in an embed (page-reactions.md "Where they show").
+  const reactionsShown = useEditorChrome((s) => !s.embedMode && !s.zenMode);
   if (inHistory || !onPages || (startMayShow && startOffered)) return null;
   return (
     <>
@@ -217,6 +227,7 @@ export function PageEditBar() {
         onEdit={() => store.get().pageEditing.start()}
         onSave={() => store.get().pageEditing.save()}
         onCancel={() => void store.get().pageEditing.cancel()}
+        reactions={reactionsShown ? <PageReactions /> : undefined}
       />
     </>
   );

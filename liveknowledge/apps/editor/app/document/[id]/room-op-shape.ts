@@ -59,6 +59,15 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
         ((isRecord(op.thread) && isText(op.thread.id) && Array.isArray(op.thread.comments)) ||
           (op.removed === true && isText(op.threadId)))
       );
+    case 'page-reaction':
+      return (
+        isText(op.tabId) &&
+        typeof op.on === 'boolean' &&
+        isRecord(op.reaction) &&
+        isText(op.reaction.emoji) &&
+        isText(op.reaction.by) &&
+        isText(op.reaction.name)
+      );
     case 'article':
       return isText(op.tabId) && isText(op.flow);
     case 'document-meta':

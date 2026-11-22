@@ -57,3 +57,20 @@ export function commentFailureText(err: unknown, action: CommentAction): string 
     return COMMENT_REFUSED[err.code]!;
   return COMMENT_FALLBACK[action];
 }
+
+const REACTION_REFUSED: Record<string, string> = {
+  invalid_emoji: 'A reaction is one emoji.',
+  reaction_needs_account: 'Sign in to react to a page.',
+  reactions_full: 'This page holds as many reactions as it can.',
+  too_many_reactions: 'You have put as many different reactions on this page as it takes.',
+  reacting_too_fast: 'That was a lot of reactions at once. Try again in a moment.',
+};
+
+/** A refused reaction (docs/specs/030-knowledgebase/page-reactions.md), in words. */
+export function reactionFailureText(err: unknown, on: boolean): string {
+  if (err instanceof ApiError && err.code && REACTION_REFUSED[err.code])
+    return REACTION_REFUSED[err.code]!;
+  return on
+    ? 'The reaction could not be added. Try again.'
+    : 'The reaction could not be taken back. Try again.';
+}

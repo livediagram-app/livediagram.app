@@ -29,6 +29,16 @@ describe('the draft bar', () => {
     expect(container.innerHTML).toBe('');
   });
 
+  it("stands the page's reactions left of Edit while reading, and drops them while editing", () => {
+    const reactions = <div data-testid="reactions" />;
+    const { rerender } = render(<PageEditBarView {...props({ reactions })} />);
+    const corner = document.querySelector('[data-page-read-corner]')!;
+    expect(corner.firstElementChild!.getAttribute('data-testid')).toBe('reactions');
+    expect(corner.lastElementChild!.hasAttribute('data-page-edit')).toBe(true);
+    rerender(<PageEditBarView {...props({ reactions, editing: true })} />);
+    expect(screen.queryByTestId('reactions')).toBeNull();
+  });
+
   it('shows Cancel and Save while editing, and nothing to say while the draft is the saved page', () => {
     const p = props({ editing: true });
     render(<PageEditBarView {...p} />);
