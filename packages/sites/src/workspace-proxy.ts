@@ -59,6 +59,7 @@ export const APP_BARE_HOSTS: ReadonlySet<string> = new Set([
   'livedocuments.app',
   'livedesign.app',
   'livehuddle.app',
+  'liveknowledge.app',
 ] satisfies `${AppName}.app`[]);
 
 /** How long a browser or cache may keep the bare domain's redirect: a day, so a change can still be undone. */

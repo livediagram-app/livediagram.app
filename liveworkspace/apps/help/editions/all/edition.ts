@@ -29,7 +29,7 @@ export const edition: Edition = {
   art: ALL_APPS_ART,
   homeLayout: HOME,
   heroLede:
-    'Guides and answers for livediagram, liveplanner, livedocuments, livedesign and livehuddle, in one place.',
+    'Guides and answers for livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge, in one place.',
 };
 
 export default edition;

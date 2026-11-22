@@ -1,0 +1,287 @@
+import type { Locator, Page } from '@playwright/test';
+import { expect, serverNewUrl } from './fixtures';
+
+// What the knowledgebase specs share (docs/specs/003-system-architecture/e2e-smoke.md "Layout"): opening a new
+// knowledgebase, the writing of the open page, the page tree and its row menu. Everything is found by role and
+// accessible name where the page gives one; the writing's blocks have no role of their own, so they are found by the
+// classes the article engine gives them.
+
+export const CANVAS = '[data-canvas-a11y-root]';
+/** The open page's writing: one article, its Title first. */
+export const WRITING = '.article-flow';
+
+export const writing = (page: Page): Locator => page.locator(WRITING);
+export const titleOf = (page: Page): Locator =>
+  page.locator(`${WRITING} > [data-article-style="title"]`);
+/** The writing's body paragraphs, in order. */
+export const paragraphs = (page: Page): Locator => page.locator(`${WRITING} > p.article-body`);
+
+export const pageTree = (page: Page): Locator => page.getByRole('tree', { name: 'Pages' });
+/** A row of the page tree by its page's name (and its verified state, when it has one: "Runbook, Verified"). */
+export const pageRow = (page: Page, name: string | RegExp): Locator =>
+  pageTree(page).getByRole('treeitem', { name, exact: true });
+/** A row by its page's name alone, whatever its verified state says after it. */
+export const pageRowNamed = (page: Page, name: string): Locator =>
+  pageTree(page).getByRole('treeitem', {
+    name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(, (Verified|Review Due))?$`),
+  });
+/** The names of the tree's rows, top to bottom, each with its level: "1 Start Here". */
+export const treeShape = (page: Page): Promise<string[]> =>
+  pageTree(page)
+    .getByRole('treeitem')
+    .evaluateAll((rows) =>
+      rows.map((row) => `${row.getAttribute('aria-level')} ${row.getAttribute('aria-label')}`),
+    );
+
+/** The style of the block the caret is in ("title", "body", ...), or null when the writing does not hold it. */
+export const caretBlock = (page: Page): Promise<string | null> =>
+  page.evaluate(() => {
+    const active = document.activeElement;
+    if (!active?.classList.contains('article-flow')) return null;
+    const anchor = getSelection()?.anchorNode;
+    const el =
+      anchor?.nodeType === Node.TEXT_NODE ? anchor.parentElement : (anchor as Element | null);
+    return el?.closest?.('[data-block-id]')?.getAttribute('data-article-style') ?? null;
+  });
+
+export async function expectCaretInTitle(page: Page): Promise<void> {
+  await expect.poll(() => caretBlock(page), 'the caret is in the Title').toBe('title');
+}
+
+/** The id of the knowledgebase the page is on. */
+export const knowledgebaseId = (page: Page): string =>
+  new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
+/** The id of the open page (the address's `#t=`). */
+export const openPageId = (page: Page): string =>
+  new URLSearchParams(new URL(page.url()).hash.slice(1)).get('t') ?? '';
+
+/** The start screen a knowledgebase made from `/new` opens on (describe-to-set-up.md "The start screen"). */
+export const startScreen = (page: Page): Locator =>
+  page.getByRole('region', { name: 'Start Your Knowledgebase' });
+
+/** Whether `/new` at this address opens on the start screen: nothing asked (no blank, no template). */
+const opensOnStart = (url: string): boolean => {
+  const params = new URL(url, 'http://x').searchParams;
+  return !params.has('template') && params.get('blank') !== '1' && params.get('start') !== 'blank';
+};
+
+/**
+ * A new knowledgebase, open on Start Here with the caret in its Title
+ * (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase"). A guest's is kept Offline; a
+ * signed-in person's is saved to their account. Plain `/new` opens on the start screen, passed by its Blank
+ * Knowledgebase; `/new?blank=1` (the default) skips it. Answers its id.
+ */
+export async function newKnowledgebase(page: Page, url = '/new?blank=1'): Promise<string> {
+  await page.goto(url);
+  await page.waitForURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
+  if (opensOnStart(url)) {
+    const start = startScreen(page);
+    await start.waitFor({ timeout: 30_000 });
+    await start.getByRole('button', { name: /^Blank Knowledgebase:/ }).click();
+    await expect(start).toHaveCount(0);
+  }
+  await titleOf(page).waitFor({ timeout: 30_000 });
+  await expectCaretInTitle(page);
+  return knowledgebaseId(page);
+}
+
+/** A guest's new knowledgebase on the server (fixtures `serverNewUrl`), for a spec that watches its saves or shares it. */
+export async function newServerKnowledgebase(page: Page): Promise<string> {
+  return newKnowledgebase(page, await serverNewUrl(page, '/new?blank=1'));
+}
+
+const editButton = (page: Page): Locator => page.getByRole('button', { name: 'Edit', exact: true });
+const saveButton = (page: Page): Locator => page.getByRole('button', { name: 'Save', exact: true });
+
+/** Edit mode on the open page (docs/specs/030-knowledgebase/editing.md): Edit pressed when the page is being read. */
+export async function ensureEditing(page: Page): Promise<void> {
+  if (await editButton(page).isVisible()) await editButton(page).click();
+  await expect(writing(page)).toHaveAttribute('contenteditable', 'true');
+}
+
+/** Edit mode on a page with no writing (a canvas-only page): Edit pressed when the page is being read, then Save shows
+ *  (docs/specs/030-knowledgebase/editing.md). */
+export async function ensureEditMode(page: Page): Promise<void> {
+  if (await editButton(page).isVisible()) await editButton(page).click();
+  await expect(saveButton(page)).toBeVisible();
+}
+
+/** Saves the open page's draft and goes on editing it, as a person pressing Save and then Edit would: readers, the
+ *  tree and the index see what was written (docs/specs/030-knowledgebase/editing.md "Save"). */
+export async function saveAndGoOn(page: Page): Promise<void> {
+  if (!(await saveButton(page).isVisible())) return;
+  await saveButton(page).click();
+  await expect(editButton(page)).toBeVisible();
+  await editButton(page).click();
+  await expect(writing(page)).toHaveAttribute('contenteditable', 'true');
+}
+
+/** Types the open page's name into its Title, where the caret is, saves it and waits for the tree to follow; the
+ *  page stays in edit mode with the caret at the end of its Title. */
+export async function nameOpenPage(page: Page, name: string): Promise<void> {
+  await expectCaretInTitle(page);
+  await page.keyboard.type(name);
+  await saveAndGoOn(page);
+  await expect(pageRow(page, name)).toBeVisible();
+  await titleOf(page).click();
+  await page.keyboard.press('End');
+}
+
+/** The key that takes the caret to the foot of the writing: Cmd and Down on a Mac, Ctrl and End elsewhere. */
+export const END_OF_WRITING = process.platform === 'darwin' ? 'Meta+ArrowDown' : 'Control+End';
+
+/** Writes lines under the Title into the page's draft, in edit mode: the caret goes to the end of the writing, and each
+ *  line is a new paragraph. Nothing is saved for readers (docs/specs/030-knowledgebase/editing.md). */
+export async function draftLines(page: Page, ...lines: string[]): Promise<void> {
+  await ensureEditing(page);
+  await writing(page).focus();
+  await page.keyboard.press(END_OF_WRITING);
+  for (const line of lines) {
+    await page.keyboard.press('Enter');
+    await page.keyboard.type(line);
+  }
+  await expect(writing(page)).toContainText(lines[lines.length - 1]!);
+}
+
+/** Writes lines under the Title and saves them for readers, the page staying in edit mode with the caret at the end. */
+export async function writeLines(page: Page, ...lines: string[]): Promise<void> {
+  await draftLines(page, ...lines);
+  await saveAndGoOn(page);
+  await writing(page).focus();
+  await page.keyboard.press(END_OF_WRITING);
+}
+
+/** New Page at the foot of the tree, named: the new page takes the caret in its Title. */
+export async function addPage(page: Page, name: string): Promise<void> {
+  await page
+    .getByRole('complementary', { name: 'Pages' })
+    .getByRole('button', { name: 'New Page' })
+    .click();
+  await expect(pageRow(page, 'Untitled Page')).toBeVisible();
+  await nameOpenPage(page, name);
+}
+
+/** Opens a page from its row and waits for its Title to show. */
+export async function openPage(page: Page, name: string): Promise<void> {
+  await pageRow(page, name).click();
+  await expect(pageRow(page, name)).toHaveAttribute('aria-current', 'page');
+  await expect(titleOf(page)).toHaveText(name);
+}
+
+/** A row's menu (its controls mount while the row is hovered or focused), ready for a verb to be pressed. */
+export async function openRowMenu(page: Page, name: string): Promise<Locator> {
+  const row = pageRowNamed(page, name);
+  await row.hover();
+  await row.getByRole('button', { name: `Page Options for ${name}` }).click();
+  const menu = page.getByRole('menu', { name: 'Page Options' });
+  await expect(menu).toBeVisible();
+  return menu;
+}
+
+/** The verbs a row's menu keeps in its closed Move section (knowledgebases-and-pages.md "Row menu"). */
+const MOVE_VERBS = new Set(['Move Up', 'Move Down', 'Indent', 'Outdent']);
+
+/** Opens a row menu's Move section, so its verbs can be pressed or read. */
+export async function openMoveSection(menu: Locator): Promise<void> {
+  const move = menu.getByRole('menuitem', { name: 'Move', exact: true });
+  if ((await move.getAttribute('aria-expanded')) !== 'true') await move.click();
+  await expect(move).toHaveAttribute('aria-expanded', 'true');
+}
+
+/** Presses a verb of a row's menu, opening its Move section first for a move. */
+export async function rowVerb(page: Page, name: string, verb: string): Promise<void> {
+  const menu = await openRowMenu(page, name);
+  if (MOVE_VERBS.has(verb)) await openMoveSection(menu);
+  await menu.getByRole('menuitem', { name: verb, exact: true }).click();
+  await expect(menu).toBeHidden();
+}
+
+/** Add Subpage from a row's menu, named. */
+export async function addSubpage(page: Page, parent: string, name: string): Promise<void> {
+  await rowVerb(page, parent, 'Add Subpage');
+  await expect(pageRow(page, 'Untitled Page')).toBeVisible();
+  await nameOpenPage(page, name);
+}
+
+/** No sideways scroll: the document is no wider than the window. */
+export async function expectNoSidewaysScroll(page: Page, where: string): Promise<void> {
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow, `${where}: the page scrolls sideways by ${overflow}px`).toBeLessThanOrEqual(0);
+}
+
+/** The page links in the open page's writing. */
+export const pageLinks = (page: Page): Locator => page.locator(`${WRITING} a.article-page-link`);
+
+/** What a page link reads as: its page's current title, or "Deleted Page". The words are drawn by a style rule a
+ *  page (lib/knowledge/page-link-titles.ts), so they are read where the browser paints them. */
+export const shownLinkText = (link: Locator): Promise<string> =>
+  link.evaluate((el) => {
+    const content = getComputedStyle(el, '::before').content;
+    return content.replace(/^"|"$/g, '').replace(/\\"/g, '"');
+  });
+
+/** The page link picker, open while `[[` is being typed. */
+export const linkPicker = (page: Page): Locator =>
+  page.getByRole('listbox', { name: 'Link to a page' });
+
+/**
+ * The editor's search panel, opened with Cmd or Ctrl K (docs/specs/030-knowledgebase/search-and-ask.md "Search"): the
+ * universal search, whose first group is This Knowledgebase.
+ */
+export async function openSearch(page: Page): Promise<Locator> {
+  await page.keyboard.press('ControlOrMeta+k');
+  const panel = searchPanel(page);
+  await expect(panel.getByRole('combobox', { name: 'Search' })).toBeFocused();
+  return panel;
+}
+
+/** The search panel, however it was opened. */
+export const searchPanel = (page: Page): Locator =>
+  page.getByRole('dialog', { name: 'Search', exact: true });
+
+/** The panel's This Knowledgebase group: this knowledgebase's pages and passages, always first. */
+export const knowledgeResults = (panel: Locator): Locator =>
+  panel
+    .getByRole('listbox', { name: 'Results' })
+    .getByRole('group', { name: 'This Knowledgebase' });
+
+/**
+ * Waits until this browser's Offline store holds a page of this name whose writing holds `text`
+ * (docs/specs/006-document/offline-mode.md): the state a reload reads back. Typing is saved after a pause, and what
+ * the page writes as it closes is best effort, so a spec that reloads waits for the save itself, never for time.
+ */
+export async function expectKeptOffline(page: Page, name: string, text = ''): Promise<void> {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          async ([wantedName, wantedText]) => {
+            const db = await new Promise<IDBDatabase>((resolve, reject) => {
+              const open = indexedDB.open('liveknowledge-offline');
+              open.onsuccess = () => resolve(open.result);
+              open.onerror = () =>
+                reject(open.error ?? new Error('the Offline store did not open'));
+            });
+            try {
+              const rows = await new Promise<{ tabs?: { name: string }[] }[]>((resolve) => {
+                const all = db.transaction('documents').objectStore('documents').getAll();
+                all.onsuccess = () => resolve(all.result as { tabs?: { name: string }[] }[]);
+                all.onerror = () => resolve([]);
+              });
+              return rows.some((row) =>
+                (row.tabs ?? []).some(
+                  (tab) => tab.name === wantedName && JSON.stringify(tab).includes(wantedText),
+                ),
+              );
+            } finally {
+              db.close();
+            }
+          },
+          [name, text] as const,
+        ),
+      { message: `the page "${name}" is kept Offline${text ? ` with "${text}"` : ''}` },
+    )
+    .toBe(true);
+}

@@ -3,7 +3,8 @@
 // help centre's own, so a page that only labels or links an app never loads a catalogue.
 
 /** An app the help centre serves, by its id (the brand's and the index's app name). */
-export type AppId = 'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle';
+export type AppId =
+  'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle' | 'liveknowledge';
 
 /** The registry's app order: how the Applies To row, the notes under All Apps and every app list read. */
 export const APP_ORDER: readonly AppId[] = [
@@ -12,6 +13,7 @@ export const APP_ORDER: readonly AppId[] = [
   'livedocuments',
   'livedesign',
   'livehuddle',
+  'liveknowledge',
 ];
 
 /** What a help page is built for: one app's help, or All Apps on liveworkspace.app. */
@@ -43,13 +45,15 @@ export interface AppWords {
 }
 
 // The words the Explorer uses for one item (@liveworkspace/sites APP_ITEMS), lower case as running text writes them,
-// except livehuddle's Space, a name the product spells with its capital. "file" is every app's at once.
+// except livehuddle's Space, a name the product spells with its capital. liveknowledge's is one word, knowledgebase
+// (never "knowledge base" or "wiki"). "file" is every app's at once.
 export const SCOPE_WORDS: Record<HelpScope, AppWords> = {
   livediagram: { noun: 'canvas', nouns: 'canvases' },
   liveplanner: { noun: 'plan', nouns: 'plans' },
   livedocuments: { noun: 'document', nouns: 'documents' },
   livedesign: { noun: 'design', nouns: 'designs' },
   livehuddle: { noun: 'Space', nouns: 'Spaces' },
+  liveknowledge: { noun: 'knowledgebase', nouns: 'knowledgebases' },
   all: { noun: 'file', nouns: 'files' },
 };
 

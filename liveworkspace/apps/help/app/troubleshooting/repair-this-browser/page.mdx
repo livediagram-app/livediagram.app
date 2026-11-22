@@ -5,6 +5,7 @@ import { BrowserRepairTool as PlannerBrowserRepairTool } from '@/editions/livepl
 import { BrowserRepairTool as DocumentsBrowserRepairTool } from '@/editions/livedocuments/components/BrowserRepairTool';
 import { BrowserRepairTool as DesignBrowserRepairTool } from '@/editions/livedesign/components/BrowserRepairTool';
 import { BrowserRepairTool as HuddleBrowserRepairTool } from '@/editions/livehuddle/components/BrowserRepairTool';
+import { BrowserRepairTool as KnowledgeBrowserRepairTool } from '@/editions/liveknowledge/components/BrowserRepairTool';
 
 export const metadata = helpMetadata({
   title: 'Repair This Browser',
@@ -35,6 +36,10 @@ If a <Noun /> opens for a colleague but not for you, something saved in your bro
 
 <Figure app="livehuddle">
   <HuddleBrowserRepairTool />
+</Figure>
+
+<Figure app="liveknowledge">
+  <KnowledgeBrowserRepairTool />
 </Figure>
 
 ## What a Repair Clears

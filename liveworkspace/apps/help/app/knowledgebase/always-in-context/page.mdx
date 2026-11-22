@@ -1,0 +1,70 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ContextBudgetScene } from '@/editions/liveknowledge/components/illustrations/ai-knowledge';
+
+export const metadata = helpMetadata({
+  title: 'Always in Context',
+  description:
+    'Choose the pages every agent is handed before it starts work on a Knowledgebase, such as how the team works and where things are, within 8,000 tokens.',
+  path: '/help/knowledgebase/always-in-context/',
+});
+
+<ArticleLayout path="knowledgebase/always-in-context" title="Always in Context" description="Choose the pages every agent is handed before it starts, within a budget of 8,000 tokens." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Some pages every agent should know before it does anything: how the team works, where things are, the words you use. Mark them **Always in Context**, and an agent that connects is handed them first, whole, before it searches for anything else.
+
+## Mark a Page
+
+From the page tree:
+
+<Step n={1}>
+  Hover the page in the tree and open its menu (⋯).
+</Step>
+
+<Step n={2}>
+  Choose **Always in Context**. A tick beside it shows the page is in. Choose it again to take the
+  page out.
+</Step>
+
+Or from AI Knowledge:
+
+<Step n={1}>
+  Press the **AI Knowledge** tab in the footer and find **Always in Context**.
+</Step>
+
+<Step n={2}>
+  Press **Add a Page** and pick the page from the tree.
+</Step>
+
+<Figure caption="Always in Context: the budget used, each page with its size, and Add a Page.">
+  <ContextBudgetScene />
+</Figure>
+
+## The Budget
+
+Agents work within a limited context, so the pages handed to every agent are held to **8,000 tokens** together.
+
+- Each page's size is shown in tokens, worked out as its characters divided by four, rounded up to the nearest 10.
+- The bar shows the total against the budget, such as "4,410 of 8,000 tokens".
+- A page that would take the total past 8,000 cannot be added. The refusal says how many tokens the page is and how many are in use. Take a page out, or shorten one, to make room.
+
+## What an Agent Gets
+
+The MCP tool `get_context` (and the CLI's `context`) answers with the Always in Context pages as Markdown, in the order of the page tree, each with how far it can be trusted, and the Knowledgebase's Review Period. Agents are told to call it first. Each page handed over counts as a read in [Connected Agents](/help/knowledgebase/connecting-an-agent/).
+
+**What an Agent Sees**, at the foot of AI Knowledge, shows a short sample of how one search result reads to an agent, built from a real passage of this Knowledgebase where it can be.
+
+## Good to Know
+
+- Choose short, stable pages that are verified. A page that is due for review is handed over with that said, which an agent is told to weigh.
+- With no pages marked, the section reads **No Pages in Context Yet**.
+- Removing a page from the list does not change or delete the page.
+
+## Who Can Do What
+
+| Action                                       | Editor | Participant | Viewer |
+| -------------------------------------------- | ------ | ----------- | ------ |
+| See the Always in Context pages and budget   | Yes    | Yes         | Yes    |
+| Add or remove a page                         | Yes    | No          | No     |
+
+</ArticleLayout>

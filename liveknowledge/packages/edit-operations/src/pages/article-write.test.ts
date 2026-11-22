@@ -1,0 +1,283 @@
+import { describe, expect, it } from 'vitest';
+import type { ArticleWrite } from '@liveknowledge/api-schema';
+import {
+  articlesOf,
+  pagesOf,
+  layOutPages,
+  MAX_ARTICLE_BLOCK_TEXT,
+  MAX_ARTICLE_BLOCKS,
+  type ArticleFlow,
+  type Element,
+  type Page,
+  type Tab,
+} from '@liveknowledge/document';
+import { applyArticleWrite } from './article-write';
+
+// docs/specs/024-agents/pages-for-agents.md "write_article".
+
+const counter = (prefix: string) => {
+  let n = 0;
+  return () => `${prefix}-${++n}`;
+};
+const ids = () => ({ page: counter('pg'), flow: counter('art') });
+
+const tabOf = (extra: Partial<Tab> = {}): Tab => ({
+  id: 't',
+  name: 'T',
+  elements: [],
+  ...extra,
+});
+const page = (id: string, extra: Partial<Page> = {}): Page => ({
+  id,
+  orientation: 'portrait',
+  ...extra,
+});
+const para = (id: string, text: string, style?: 'title'): ArticleFlow['blocks'][number] => ({
+  id,
+  type: 'paragraph',
+  ...(style ? { style } : {}),
+  runs: [{ text }],
+});
+const withArticle = (flow: string, doc: ArticleFlow, extra: Partial<Tab> = {}): Tab =>
+  tabOf({ pages: [page('a1', { kind: 'article', flow })], articles: { [flow]: doc }, ...extra });
+
+const write = (tab: Tab, w: ArticleWrite) => {
+  const out = applyArticleWrite(tab, w, ids());
+  if ('refusal' in out) throw new Error(`${out.refusal.code}: ${out.refusal.message}`);
+  return out;
+};
+const refusal = (tab: Tab, w: ArticleWrite) => {
+  const out = applyArticleWrite(tab, w, ids());
+  if (!('refusal' in out)) throw new Error('expected a refusal');
+  return out.refusal;
+};
+const texts = (doc: ArticleFlow | undefined) =>
+  (doc?.blocks ?? []).map((b) => ('runs' in b ? b.runs.map((r) => r.text).join('') : b.type));
+
+describe('a new article', () => {
+  it('takes the fresh tab’s empty first page', () => {
+    const out = write(tabOf(), { markdown: '---\ntitle: Brief\n---\nHello' });
+    expect(out.created).toBe(true);
+    expect(pagesOf(out.tab)).toHaveLength(1);
+    expect(pagesOf(out.tab)[0]).toMatchObject({ kind: 'article', flow: 'art-1' });
+    expect(texts(articlesOf(out.tab)['art-1'])).toEqual(['Brief', 'Hello']);
+    expect(out.lines).toEqual(['Started the article "Brief" (art-1): 2 blocks.']);
+  });
+
+  // docs/specs/007-editor/pages-mode.md "One kind a tab".
+  it('one kind a tab: refuses a new article on a deck or an infographic', () => {
+    const deck = tabOf({
+      pages: [page('s', { kind: 'slide', size: 'slide', orientation: 'landscape' })],
+    });
+    const r = refusal(deck, { markdown: 'x' });
+    expect(r.code).toBe('kind_not_offered');
+    expect(r.message).toBe(
+      'This tab holds slide pages: every page of a tab is one kind. Put article pages in a tab of their own (add_tab).',
+    );
+    const infographic = tabOf({ pages: [page('p', { kind: 'infographic' })] });
+    expect(refusal(infographic, { markdown: 'x' }).code).toBe('kind_not_offered');
+  });
+
+  it('appends onto a new article without its placeholder title', () => {
+    const out = write(tabOf(), { markdown: 'Only', mode: 'append' });
+    expect(texts(articlesOf(out.tab)['art-1'])).toEqual(['Only']);
+  });
+
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page".
+  it('starts on the continuous page, as tall as the writing is estimated to need', () => {
+    const out = write(tabOf(), { markdown: Array(400).fill('A line of writing.').join('\n\n') });
+    const pages = pagesOf(out.tab);
+    expect(pages).toHaveLength(1);
+    expect(pages[0]).toMatchObject({ kind: 'article', size: 'fit' });
+    expect(pages[0]!.fit!.width).toBe(856);
+    expect(pages[0]!.fit!.height).toBeGreaterThan(240);
+  });
+});
+
+describe('fresh ids', () => {
+  it('mints its own article id when none is given', () => {
+    const out = applyArticleWrite(tabOf(), { markdown: 'x' });
+    if ('refusal' in out) throw new Error('refused');
+    expect(out.flow).toMatch(/^art-/);
+    expect(pagesOf(out.tab)).toHaveLength(1);
+  });
+});
+
+describe('which article', () => {
+  const two = tabOf({
+    pages: [page('a1', { kind: 'article', flow: 'f' }), page('b1', { kind: 'article', flow: 'g' })],
+    articles: {
+      f: { blocks: [para('1', 'Brief', 'title')] },
+      g: { blocks: [para('2', 'Notes', 'title')] },
+    },
+  });
+
+  it('is the only one when not named', () => {
+    const out = write(withArticle('f', { blocks: [para('1', 'Old')] }), { markdown: 'New' });
+    expect(out.created).toBe(false);
+    expect(texts(articlesOf(out.tab).f)).toEqual(['New']);
+    expect(out.lines[0]).toBe('Wrote the article "Untitled" (f): 1 blocks.');
+  });
+
+  it('is named by flow id or title', () => {
+    expect(texts(articlesOf(write(two, { markdown: 'A', article: 'g' }).tab).g)).toEqual(['A']);
+    expect(texts(articlesOf(write(two, { markdown: 'B', article: '  brief ' }).tab).f)).toEqual([
+      'B',
+    ]);
+  });
+
+  it('refuses two unnamed, and an unknown name', () => {
+    const r = refusal(two, { markdown: 'x' });
+    expect(r.code).toBe('article_ambiguous');
+    expect(r.message).toContain('"Brief" (f), "Notes" (g)');
+    expect(refusal(two, { markdown: 'x', article: 'Plan' }).message).toContain('Articles:');
+    expect(refusal(tabOf(), { markdown: 'x', article: 'Plan' }).message).toContain('has none');
+  });
+});
+
+describe('the writing', () => {
+  it('appends after the last block, fresh ids where they would clash', () => {
+    const tab = withArticle('f', { blocks: [para('1', 'One')] });
+    const out = write(tab, { markdown: 'Two\n\nThree', mode: 'append' });
+    const doc = articlesOf(out.tab).f!;
+    expect(texts(doc)).toEqual(['One', 'Two', 'Three']);
+    expect(new Set(doc.blocks.map((b) => b.id)).size).toBe(3);
+    expect(out.lines[0]).toBe('Appended to the article "Untitled" (f): 2 blocks added, 3 blocks.');
+  });
+
+  it('sets the title and subtitle in place from an append’s front matter, never mid-article', () => {
+    const tab = withArticle('f', {
+      blocks: [para('1', 'Old title', 'title'), para('2', 'Body')],
+    });
+    const out = write(tab, {
+      markdown: '---\ntitle: New title\nsubtitle: Sub\n---\nMore',
+      mode: 'append',
+    });
+    const doc = articlesOf(out.tab).f!;
+    expect(texts(doc)).toEqual(['New title', 'Sub', 'Body', 'More']);
+    expect(doc.blocks[0]!.id).toBe('1');
+    expect(doc.blocks.map((b) => ('style' in b ? b.style : undefined))).toEqual([
+      'title',
+      'subtitle',
+      undefined,
+      undefined,
+    ]);
+    expect(out.lines[0]).toBe('Appended to the article "New title" (f): 2 blocks added, 4 blocks.');
+    // With no title yet, the title goes first; a subtitle alone goes first too.
+    const bare = withArticle('g', { blocks: [para('1', 'Body')] });
+    expect(
+      texts(
+        articlesOf(write(bare, { markdown: '---\ntitle: T\n---\nMore', mode: 'append' }).tab).g,
+      ),
+    ).toEqual(['T', 'Body', 'More']);
+    expect(
+      texts(articlesOf(write(bare, { markdown: '---\nsubtitle: S\n---\n', mode: 'append' }).tab).g),
+    ).toEqual(['S', 'Body']);
+  });
+
+  it('writes a Markdown table as a table block, and a [TOC] line as contents', () => {
+    const out = write(tabOf(), { markdown: '[TOC]\n\n| a | b |\n|---|---|\n| 1 | 2 |' });
+    const doc = Object.values(articlesOf(out.tab))[0]!;
+    expect(doc.blocks.map((b) => b.type)).toEqual(['toc', 'table']);
+    expect(out.lines.some((l) => l.includes('as lists'))).toBe(false);
+  });
+
+  it('keeps one empty paragraph when replaced by nothing', () => {
+    const out = write(withArticle('f', { blocks: [para('1', 'One')] }), { markdown: '' });
+    expect(articlesOf(out.tab).f!.blocks).toMatchObject([{ type: 'paragraph', runs: [] }]);
+  });
+
+  it('removes the zones a replace leaves out with their elements, and keeps the rest', () => {
+    const pages = [page('a1', { kind: 'article', flow: 'f' })];
+    const r = layOutPages(pages)[0]!.rect;
+    const zone = (id: string, y: number) => ({
+      id,
+      type: 'zone' as const,
+      zone: 'object' as const,
+      width: 200,
+      height: 100,
+      at: { page: 'a1', x: 100, y },
+    });
+    const inZone: Element = {
+      id: 'img',
+      type: 'shape',
+      shape: 'square',
+      x: r.x + 150,
+      y: r.y + 120,
+      width: 40,
+      height: 40,
+    };
+    const tab = tabOf({
+      pages,
+      elements: [inZone],
+      articles: { f: { blocks: [para('1', 'Text'), zone('z1', 100), zone('z2', 400)] } },
+    });
+    const out = write(tab, { markdown: 'Intro\n\n[zone z2]' });
+    expect(articlesOf(out.tab).f!.blocks.map((b) => b.type)).toEqual(['paragraph', 'zone']);
+    expect(out.tab.elements).toEqual([]);
+    expect(out.lines[1]).toBe('Removed zones and what was in them: z1.');
+    expect(refusal(tab, { markdown: '[zone z9]' }).code).toBe('zone_unknown');
+  });
+
+  it("keeps a zone where it is when an append names it: never a second block of the zone's id", () => {
+    const z = {
+      id: 'z1',
+      type: 'zone' as const,
+      zone: 'object' as const,
+      width: 200,
+      height: 100,
+    };
+    const tab = withArticle('f', { blocks: [para('1', 'Text'), z] });
+    const out = write(tab, { markdown: 'More\n\n[zone z1]', mode: 'append' });
+    const blocks = articlesOf(out.tab).f!.blocks;
+    expect(blocks.map((b) => b.id).filter((id) => id === 'z1')).toHaveLength(1);
+    expect(blocks.map((b) => b.type)).toEqual(['paragraph', 'zone', 'paragraph']);
+  });
+
+  it('removes margin-note markers whose text is gone', () => {
+    const marker = {
+      id: 'n1',
+      type: 'article-note',
+      articleNote: 'comment',
+      x: 0,
+      y: 0,
+      width: 32,
+      height: 32,
+    } as unknown as Element;
+    const tab = withArticle(
+      'f',
+      { blocks: [{ id: '1', type: 'paragraph', runs: [{ text: 'noted', note: 'n1' }] }] },
+      { elements: [marker] },
+    );
+    const out = write(tab, { markdown: 'Fresh text' });
+    expect(out.tab.elements).toEqual([]);
+    expect(out.lines).toContain('Removed margin notes whose text is gone (1).');
+    expect(write(tab, { markdown: 'More', mode: 'append' }).tab.elements).toHaveLength(1);
+  });
+
+  it('sets no look: the style is the knowledgebase’s, and what the flow holds is kept as it was', () => {
+    const tab = withArticle('f', { blocks: [para('1', 'x')], style: { margins: 'wide' } });
+    const out = write(tab, { markdown: 'y' });
+    expect(articlesOf(out.tab).f!.style).toEqual({ margins: 'wide' });
+    expect(
+      articlesOf(write(withArticle('g', { blocks: [para('1', 'x')] }), { markdown: 'y' }).tab).g,
+    ).not.toHaveProperty('style');
+  });
+
+  it('refuses a locked article and writing past the limits', () => {
+    const locked = tabOf({
+      pages: [page('a1', { kind: 'article', flow: 'f', locked: true })],
+      articles: { f: { blocks: [] } },
+    });
+    expect(refusal(locked, { markdown: 'x' }).code).toBe('page_locked');
+    const many = Array.from({ length: MAX_ARTICLE_BLOCKS + 1 }, (_, i) => `P${i}`).join('\n\n');
+    expect(refusal(tabOf(), { markdown: many }).code).toBe('article_too_large');
+    expect(
+      refusal(tabOf(), { markdown: 'x'.repeat(MAX_ARTICLE_BLOCK_TEXT + 1) }).message,
+    ).toContain('split');
+  });
+
+  it('refuses a locked tab', () => {
+    expect(refusal(tabOf({ locked: true }), { markdown: 'x' }).code).toBe('tab_locked');
+  });
+});

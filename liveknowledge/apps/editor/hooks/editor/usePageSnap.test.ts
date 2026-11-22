@@ -1,0 +1,333 @@
+// @vitest-environment jsdom
+
+// The view rests on a page (docs/specs/007-editor/pages-mode.md "Getting around the pages"): a
+// pan or a zoom letting go glides the view onto a page, and so does any other move once it rests,
+// never while a hand is on the canvas, and not while following or presenting.
+
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { pagesOf, layOutPages, type Tab } from '@liveknowledge/document';
+import {
+  beginCanvasGesture,
+  resetCanvasGesturesForTests,
+} from '@liveworkspace/workbench/lib/canvas-gesture';
+import { track } from '@/lib/telemetry';
+import { computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
+import {
+  createViewportStore,
+  type ViewportStore,
+} from '@liveworkspace/workbench/lib/viewport-store';
+import { usePagesMode } from './usePagesMode';
+import { FLICK_WINDOW_MS, VIEW_REST_MS, flickVelocity, textHasCaretIn } from './usePageSnap';
+import { setActiveArticle, type ActiveArticle } from '@/lib/article/article-editor-store';
+
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// Glides land at once, so a test reads where the view ends.
+vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
+  prefersReducedMotion: () => true,
+}));
+
+const SIZE = { width: 1200, height: 800 };
+const tab = {
+  id: 't',
+  name: 't',
+  elements: [],
+  pages: [
+    { id: 'p1', size: 'slide', orientation: 'landscape' },
+    { id: 'p2', size: 'slide', orientation: 'landscape' },
+    { id: 'p3', size: 'slide', orientation: 'landscape' },
+  ],
+} as unknown as Tab;
+const row = layOutPages(pagesOf(tab));
+const fitOf = (pageId: string) => computeFitBelow(SIZE, row.find((p) => p.id === pageId)!.rect, 0);
+
+function mount(
+  viewport: ViewportStore,
+  opts: { suspended?: () => boolean; canvas?: HTMLElement; tabLoaded?: boolean } = {},
+) {
+  const canvas = opts.canvas ?? document.createElement('main');
+  Object.defineProperty(canvas, 'offsetWidth', { value: SIZE.width });
+  Object.defineProperty(canvas, 'offsetHeight', { value: SIZE.height });
+  return renderHook(() =>
+    usePagesMode({
+      activeTab: tab,
+      canEdit: true,
+      tabLoaded: opts.tabLoaded ?? false,
+      commitTabs: vi.fn(),
+      canvasMainRef: { current: canvas },
+      setViewportZoom: viewport.setZoom,
+      setViewportOffset: viewport.setOffset,
+      getViewport: viewport.get,
+      clearSelection: vi.fn(),
+      toastInfo: vi.fn(),
+      viewport,
+      ...(opts.suspended ? { snapSuspended: opts.suspended } : {}),
+    }),
+  );
+}
+
+// The view at p2's fit, panned `dx` screen px toward the next page.
+const pannedFromP2 = (dx: number) => {
+  const fit = fitOf('p2');
+  return { zoom: fit.zoom, offset: { x: fit.offset.x - dx / fit.zoom, y: fit.offset.y } };
+};
+const nextFrame = () =>
+  act(() => {
+    vi.advanceTimersByTime(20);
+  });
+const rest = () =>
+  act(() => {
+    vi.advanceTimersByTime(VIEW_REST_MS);
+  });
+
+beforeEach(() => {
+  vi.useFakeTimers({
+    toFake: [
+      'setTimeout',
+      'clearTimeout',
+      'requestAnimationFrame',
+      'cancelAnimationFrame',
+      'performance',
+    ],
+  });
+  resetCanvasGesturesForTests();
+  vi.mocked(track).mockClear();
+});
+afterEach(() => vi.useRealTimers());
+
+describe('a pan letting go', () => {
+  it('turns to the next page after a short pan from a page seen whole', () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    viewport.setView(fitOf('p2'));
+    mount(viewport);
+    let end = () => {};
+    act(() => {
+      end = beginCanvasGesture('pan');
+    });
+    act(() => viewport.setView(pannedFromP2(300)));
+    act(() => end());
+    nextFrame();
+    expect(viewport.get()).toEqual(fitOf('p3'));
+    expect(track).toHaveBeenCalledWith('UI', 'Used', 'PageSwipe');
+  });
+
+  it('springs back onto the page after a small one', () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    viewport.setView(fitOf('p2'));
+    mount(viewport);
+    let end = () => {};
+    act(() => {
+      end = beginCanvasGesture('pan');
+    });
+    act(() => viewport.setView(pannedFromP2(60)));
+    // Held still long enough that it is no flick.
+    act(() => {
+      vi.advanceTimersByTime(FLICK_WINDOW_MS + 20);
+    });
+    act(() => end());
+    nextFrame();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+    expect(track).not.toHaveBeenCalled();
+  });
+
+  it('never snaps while a pointer is still held, then does once it lifts', () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    viewport.setView(fitOf('p2'));
+    mount(viewport);
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1 }));
+    });
+    let end = () => {};
+    act(() => {
+      end = beginCanvasGesture('pan');
+    });
+    act(() => viewport.setView(pannedFromP2(300)));
+    act(() => end());
+    nextFrame();
+    expect(viewport.get()).toEqual(pannedFromP2(300));
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1 }));
+    });
+    nextFrame();
+    expect(viewport.get()).toEqual(fitOf('p3'));
+  });
+});
+
+describe('a zoom letting go', () => {
+  it('fits the page when zoomed out past it, and never turns the page', () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    viewport.setView(fitOf('p2'));
+    mount(viewport);
+    let end = () => {};
+    act(() => {
+      end = beginCanvasGesture('zoom');
+    });
+    act(() => viewport.setView({ ...pannedFromP2(300), zoom: fitOf('p2').zoom / 2 }));
+    act(() => end());
+    nextFrame();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+  });
+});
+
+// docs/specs/007-editor/pages-mode.md "Getting around the pages": the canvas says when the view is at rest.
+describe('the view at rest', () => {
+  it('is marked once the tab has landed and no snap waits, and unmarked while one does', () => {
+    const canvas = document.createElement('main');
+    const viewport = createViewportStore(1);
+    mount(viewport, { canvas, tabLoaded: true });
+    const atRest = () => canvas.hasAttribute('data-view-at-rest');
+    expect(atRest()).toBe(false);
+    // The landing frame (a frame after the tab loads) moves the view, so a rest's snap waits.
+    nextFrame();
+    expect(viewport.get().zoom).not.toBe(1);
+    expect(atRest()).toBe(false);
+    rest();
+    expect(atRest()).toBe(true);
+    // A move by anything but a hand waits for its snap; a pointer going down calls the snap off.
+    act(() => viewport.setView(pannedFromP2(300)));
+    expect(atRest()).toBe(false);
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1 }));
+    });
+    expect(atRest()).toBe(true);
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1 }));
+    });
+    expect(atRest()).toBe(false);
+    rest();
+    rest();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+    expect(atRest()).toBe(true);
+  });
+
+  it("is marked at once for a view moved for the writing's caret, which never snaps", () => {
+    const canvas = document.createElement('main');
+    const viewport = createViewportStore(1);
+    mount(viewport, { canvas, tabLoaded: true });
+    nextFrame();
+    rest();
+    act(() => viewport.setView(pannedFromP2(300)));
+    expect(canvas.hasAttribute('data-view-at-rest')).toBe(false);
+    act(() =>
+      setActiveArticle({
+        handle: { flow: 'f' },
+        pageId: 'p2',
+        focused: true,
+      } as unknown as ActiveArticle),
+    );
+    act(() => viewport.setView(pannedFromP2(200)));
+    expect(canvas.hasAttribute('data-view-at-rest')).toBe(true);
+    act(() => setActiveArticle(null));
+  });
+});
+
+describe('a view moved by anything else', () => {
+  it('snaps once it has rested, not before', () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    mount(viewport);
+    act(() => viewport.setView({ zoom: fitOf('p2').zoom / 3, offset: fitOf('p2').offset }));
+    act(() => {
+      vi.advanceTimersByTime(VIEW_REST_MS - 10);
+    });
+    expect(viewport.get().zoom).toBe(fitOf('p2').zoom / 3);
+    rest();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+  });
+
+  it('leaves the view be while following or presenting', () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    mount(viewport, { suspended: () => true });
+    const loose = { zoom: fitOf('p2').zoom / 3, offset: fitOf('p2').offset };
+    act(() => viewport.setView(loose));
+    rest();
+    expect(viewport.get()).toEqual(loose);
+  });
+
+  it("leaves a view moved for the writing's caret where it is", () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    mount(viewport);
+    act(() =>
+      setActiveArticle({
+        handle: { flow: 'f' },
+        pageId: 'p2',
+        focused: true,
+      } as unknown as ActiveArticle),
+    );
+    // The caret kept in sight: a short pan toward the next page, as a reveal makes it.
+    const revealed = pannedFromP2(300);
+    act(() => viewport.setView(revealed));
+    rest();
+    rest();
+    expect(viewport.get()).toEqual(revealed);
+    // A hand on the canvas still lets go onto a page.
+    act(() => viewport.setView(fitOf('p2')));
+    let end = () => {};
+    act(() => {
+      end = beginCanvasGesture('pan');
+    });
+    act(() => viewport.setView(pannedFromP2(60)));
+    act(() => {
+      vi.advanceTimersByTime(FLICK_WINDOW_MS + 20);
+    });
+    act(() => end());
+    nextFrame();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+    act(() => setActiveArticle(null));
+  });
+});
+
+describe('text on the canvas with the caret', () => {
+  it("leaves a view moved for a label's caret where it is, above a phone's keyboard", () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    const canvas = document.createElement('main');
+    // A label being written on (jsdom has no isContentEditable, so a textarea stands in for it).
+    const label = document.createElement('textarea');
+    canvas.append(label);
+    document.body.append(canvas);
+    mount(viewport, { canvas });
+    label.focus();
+    // The keyboard rose and panned the label into sight: a pan up, off the page's rest.
+    const raised = {
+      ...fitOf('p2'),
+      offset: { ...fitOf('p2').offset, y: fitOf('p2').offset.y - 160 },
+    };
+    act(() => viewport.setView(raised));
+    rest();
+    rest();
+    expect(viewport.get()).toEqual(raised);
+    // Once the writing ends, the view rests on the page again.
+    label.blur();
+    act(() =>
+      viewport.setView({ ...raised, offset: { ...raised.offset, y: raised.offset.y - 1 } }),
+    );
+    rest();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+    canvas.remove();
+  });
+
+  it('reads the caret as in text only for a text field inside the canvas', () => {
+    const canvas = document.createElement('main');
+    const field = document.createElement('input');
+    const button = document.createElement('button');
+    canvas.append(field, button);
+    const outside = document.createElement('textarea');
+    expect(textHasCaretIn(canvas, field)).toBe(true);
+    expect(textHasCaretIn(canvas, button)).toBe(false);
+    expect(textHasCaretIn(canvas, outside)).toBe(false);
+    expect(textHasCaretIn(null, field)).toBe(false);
+    expect(textHasCaretIn(canvas, null)).toBe(false);
+  });
+});
+
+describe('flickVelocity', () => {
+  it('is the speed over the last window, 0 once it had stopped', () => {
+    const samples = [
+      { t: 0, x: 0 },
+      { t: 100, x: -10 },
+      { t: 150, x: -60 },
+    ];
+    expect(flickVelocity(samples, 150)).toBe(-1);
+    expect(flickVelocity(samples, 150 + FLICK_WINDOW_MS + 1)).toBe(0);
+    expect(flickVelocity([], 0)).toBe(0);
+  });
+});

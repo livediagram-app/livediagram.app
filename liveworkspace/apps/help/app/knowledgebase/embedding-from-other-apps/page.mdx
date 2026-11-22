@@ -1,0 +1,71 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  ChooseAFile,
+  EmbedInAPage,
+} from '@/editions/liveknowledge/components/illustrations/pages';
+
+export const metadata = helpMetadata({
+  title: 'Embedding From Other Apps',
+  description:
+    'Show a livediagram canvas, a liveplanner plan, a livedocuments document or a livedesign design inside a Knowledgebase page, live and read-only.',
+  path: '/help/knowledgebase/embedding-from-other-apps/',
+});
+
+<ArticleLayout path="knowledgebase/embedding-from-other-apps" title="Embedding From Other Apps" description="Show a diagram, a plan, a document or a design from another liveworkspace app inside a page." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+A page can show a file from another liveworkspace app where the writing talks about it: the architecture diagram beside the explanation, the roadmap under the plan. The embed is **live and read-only**. It follows the file as its people change it, and nobody can change the file from your page.
+
+<Figure caption="A liveplanner plan embedded in a page: the plan itself, its name, and a button that opens it in its own app.">
+  <EmbedInAPage />
+</Figure>
+
+## What You Can Embed
+
+A file from **livediagram**, **liveplanner**, **livedocuments** or **livedesign**. A livehuddle Space and another Knowledgebase cannot be embedded; link to them instead.
+
+## Embed a File
+
+<Step n={1}>
+  Put the caret on an empty line, type `/` and choose **Embed**. An empty embed is placed in the
+  writing, reading "Double-click to choose a file".
+</Step>
+
+<Step n={2}>
+  Double-click it. **Choose a File** opens.
+</Step>
+
+<Step n={3}>
+  Pick the file one of three ways: choose it from your recent files, type in **Find a file** to
+  narrow them, or paste one of its share links under **Paste a Share Link** and press **Add**.
+</Step>
+
+<Figure caption="Choose a File: paste a share link, or find the file among the ones you opened recently in any app." width="narrow">
+  <ChooseAFile />
+</Figure>
+
+The embed then shows the file, with its app's mark, its name, and a button that opens it in its own app (**Open in liveplanner**, for a plan).
+
+## Who Sees What
+
+An embed opens with **each reader's own access** to the file. Embedding a file shares it with nobody.
+
+- A reader who can open the file sees it live.
+- A reader who cannot sees "You don't have access to" and the file's name, with "Ask its owner to share it with you." and the button to open it in its own app. They never see its content.
+- If the file is deleted, the embed reads "This file is no longer there."
+
+So before you embed a file in a Knowledgebase your whole team reads, check the team can open the file. See [Sharing](/help/collaboration/sharing/).
+
+## Good to Know
+
+- An embed is for reading. To work on the file, open it in its own app.
+- A share link protected by a password has to be opened once in the browser before it can be pasted.
+
+## Who Can Do What
+
+| Action                                     | Editor | Participant | Viewer |
+| ------------------------------------------ | ------ | ----------- | ------ |
+| See an embed (with access to the file)     | Yes    | Yes         | Yes    |
+| Add, change or remove an embed             | Yes    | No          | No     |
+
+</ArticleLayout>

@@ -1,0 +1,26 @@
+# Import and export
+
+Follow the references below only as needed; never upfront.
+
+- ./markdown-import.md - when working on Markdown import: import a Markdown document onto the current tab as an article (one undo step), the Import dialog's JSON restore, and the Markdown export (an article's writing, or a summary of other tabs)
+- ./knowledgebase-import.md - when working on Knowledgebase import: a whole knowledgebase from a Markdown folder, a Notion export or a Confluence space's HTML export; the page tree, titles, page links, pictures and attachments, the Import dialog's steps and share roles, what the engine's plan answers, the bounds
+- ./office-import.md - when working on Word and PowerPoint import: a .docx (Word, Google Docs) as an article, a .pptx (PowerPoint, Google Slides) as slide pages with their speaker notes, the file panel, the bounds on untrusted files, the named errors and the report
+- ./office-export.md - when working on PowerPoint and Word export: a slide tab as an editable .pptx (text boxes, native shapes, pictures, speaker notes) and an article tab as an editable .docx (Word styles, lists, links, zones as images), the panel, its progress and errors
+- ./import-image-pipeline.md - when working on storing outside pictures (a picked image search result, an import's images): the shared browser-side resize (2048 px, WebP) + gallery upload, Offline Mode embedding, named failures (gallery full, unsupported, too large, no image storage) and the import report
+- ./export-fidelity.md - when working on Export fidelity: An exported image is a picture of the document: whatever the canvas draws, every export draws. Three renderers for the same content (canvas, SVG emitters, PNG canvas-2D drawers) had each drifted, so labels exported two thirds of their size and twenty-two kinds exported as an empty labelled box. Held by one definition per decision in @liveknowledge/document, imported by both sides, plus the list of kinds the PNG path must rasterise
+- ./print.md - when working on Print: the Export dialog's Print card, Current Page or Whole Document, each page its own sheet at its size, the sandboxed print frame
+- ./blueprints/README.md - when implementing from a blueprint: Word and PowerPoint import and export, the import image pipeline, Print and the Knowledgebase import engine
+
+## The dialogs' header
+
+The Export and Import dialogs wear the [dialog hero
+header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md), their title (**Export Tab** or **Export
+Selection**, **Import to Tab**) and its one line in the band, then **Help** and the close. Export draws the tab
+leaving as files: a page in the bottom left, a dashed line along the foot to format tiles fanned in the bottom right,
+the file going out in front in the accent; an arrow rising out of a tray is its mark. Import draws files coming in:
+two files in the bottom left, a dashed line along the foot to a dashed frame in the bottom right, a file dropping
+in over its edge; an arrow into a tray is its mark. Both arts are shared
+(`@liveworkspace/ui/dialog-hero-art/export`, `/import`), so every product's pair reads alike.
+
+An import's refusal names what it read: a picked file is "This file isn't valid JSON.", pasted text "This pasted text
+isn't valid JSON." (a JSON tab); never "File" for text that was pasted (Work Tracker 1060).

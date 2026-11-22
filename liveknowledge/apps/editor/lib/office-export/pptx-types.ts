@@ -1,0 +1,83 @@
+// What a PowerPoint export writes (docs/specs/020-import-export/blueprints/office-export.md "Domain and naming"): a
+// deck of slides, each a background, shapes in paint order and notes. Everything is already in the file's units
+// (EMU, points) and colours, so the writer only spells it out.
+
+import type { OoxmlColour } from './ooxml-colour';
+
+/** A box on the slide, in EMU. */
+export type EmuRect = { x: number; y: number; cx: number; cy: number };
+
+export type PptxRun = {
+  text: string;
+  sizePt: number;
+  colour: OoxmlColour | null;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strike: boolean;
+  font?: string;
+  // Text effects (docs/specs/008-canvas/text-effects.md "Rendering"): a marker highlight behind the run, a
+  // gradient across its letters (in place of its colour), and a text shadow (element-shadows.md).
+  highlight?: OoxmlColour;
+  gradient?: { from: OoxmlColour; to: OoxmlColour };
+  shadow?: PptxTextShadow;
+};
+
+/** An outer shadow behind a run's letters, as DrawingML measures one. */
+export type PptxTextShadow = { blurEmu: number; distEmu: number; dir: number; alpha: number };
+
+export type PptxAlign = 'l' | 'ctr' | 'r';
+
+export type PptxParagraph = { align: PptxAlign; runs: PptxRun[]; lineHeightPt: number };
+
+export type PptxTextBody = {
+  anchor: 't' | 'ctr' | 'b';
+  /** Left, top, right, bottom insets, EMU. */
+  insets: [number, number, number, number];
+  paragraphs: PptxParagraph[];
+};
+
+export type PptxLine = { colour: OoxmlColour; widthEmu: number; dash?: 'dash' | 'sysDot' };
+
+/** A native shape: a text box (`txBox`, no fill or line of its own) or a preset geometry with its text. */
+export type PptxShape = {
+  kind: 'shape';
+  name: string;
+  box: EmuRect;
+  /** Clockwise, degrees. */
+  rotation: number;
+  txBox: boolean;
+  /** A preset geometry's name, or `custom` for `polygon`. */
+  geometry: string;
+  /** A preset's first adjust value (a rounded rectangle's corner), when it has one. */
+  adjust?: number;
+  /** A custom outline: an SVG path (absolute M, L, C and Z) in a 0..100 box stretched over the shape's. */
+  outline?: string;
+  fill: OoxmlColour | null;
+  line: PptxLine | null;
+  body: PptxTextBody | null;
+};
+
+// `descr` is the picture's alt text (docs/specs/009-elements/images.md "Alt text"), absent when it has none.
+export type PptxPicture = {
+  kind: 'picture';
+  name: string;
+  box: EmuRect;
+  png: Uint8Array;
+  descr?: string;
+};
+
+export type PptxItem = PptxShape | PptxPicture;
+
+export type PptxBackground =
+  { kind: 'solid'; colour: OoxmlColour } | { kind: 'picture'; image: Uint8Array };
+
+export type PptxSlide = {
+  background: PptxBackground | null;
+  items: PptxItem[];
+  // The slide's note cards that are not blank, one notes paragraph each (speaker-note-cards.md "PowerPoint").
+  notes?: string[];
+  hidden?: boolean;
+};
+
+export type PptxDeck = { title: string; cx: number; cy: number; slides: PptxSlide[] };

@@ -29,6 +29,9 @@ export type HoverCardProps = {
   disabled?: boolean;
   // A touch long press opens the card even though the control shows text (useHint `pressWithText`).
   pressWithText?: boolean;
+  // One control under the words, for a card that explains why something is off and offers the way on ("Sync
+  // Knowledgebase"). The card stays while the pointer is on it, so the control can be reached and pressed.
+  action?: ReactNode;
   children: ReactNode;
 };
 
@@ -44,6 +47,7 @@ export function HoverCard({
   style,
   disabled = false,
   pressWithText = false,
+  action,
   children,
 }: HoverCardProps) {
   const { open, attach, anchor, triggerProps, surfaceProps } = useHint('hover-card', {
@@ -88,6 +92,7 @@ export function HoverCard({
               {description}
             </p>
           ) : null}
+          {action ? <div className="mt-2.5 flex">{action}</div> : null}
         </HintSurface>
       ) : null}
     </>

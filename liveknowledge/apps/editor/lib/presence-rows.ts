@@ -1,0 +1,275 @@
+// Pure aggregation of realtime presence state into the row shapes the
+// editor renders: per-tab presence buckets, remote cursor rows, laser-trail
+// rows, and the per-element remote-selection map. Lifted out of
+// useEditorState so this join logic (presence x tab-focus x idle, scoped
+// to the active tab and filtered to live participants) is unit-testable
+// without standing up the room. `now` and the last-seen map are passed in
+// rather than read from Date.now() / a ref, keeping the functions pure.
+import { participantKey, statusFromIdleMs, type Participant } from './identity';
+import { MAX_SELECTION_IDS } from '@liveknowledge/api-schema';
+import {
+  heldElementIds,
+  remoteSelectionOf as readRemoteSelection,
+  type RemoteSelection,
+} from '@liveworkspace/workbench/lib/remote-selection';
+import type { LaserPoint } from '@liveworkspace/workbench/lib/laser-buffer';
+import type { LaserConfig } from './laser-config';
+
+// Row shapes the builders below return. Module-private: only this file's own
+// functions name them, so they carry no `export` (consumers get the inferred
+// return types).
+type CursorRow = {
+  id: string;
+  name: string;
+  color: string;
+  x: number;
+  y: number;
+  picture?: string;
+};
+type LaserTrailRow = {
+  participantId: string;
+  color: string;
+  points: LaserPoint[];
+  // The pen this trail was drawn with (docs/specs/008-canvas/laser-panel.md). Absent for a peer on an
+  // older client, which draws the original laser.
+  config?: LaserConfig;
+};
+// `holds`: whether the selection locks the element against editing (docs/specs/013-workspace/share-roles.md): a
+// Viewer only looks, so its selection shows its badge and holds nothing. A peer with no role (an older room) holds.
+export type RemoteSelector = { id: string; name: string; color: string; holds: boolean };
+
+// Group participants by the tab they're focused on, so each TabBar entry
+// renders the right avatar dots. Always includes the local participant on
+// their active tab; remote peers without a tab-focus op yet default to the
+// first tab. Status is per-viewer (on my tab -> online, elsewhere -> away)
+// unless idle has dragged them to away/offline. Returns an empty map for
+// private (unshared) documents.
+//
+// One person, one avatar (docs/specs/012-collaboration/collaborator-enhancements.md): the room mints an id per socket, so the
+// same browser open in two tabs arrives as two peers. Every tab in a browser
+// shares one collab key (`participantKey`), so connections are collapsed on
+// it: our own other tabs are dropped (we already sit on our active tab), and
+// a peer with several keeps only their most recently active connection,
+// which is the tab they are actually looking at.
+export function buildParticipantsByTab(input: {
+  documentShareable: boolean;
+  // A team document (docs/specs/013-workspace/team-shared-documents.md) is collaborative for its members even
+  // with no share link, so tab presence shows there too.
+  documentTeamId: string | null;
+  // An agent is present (docs/specs/024-agents/agent-presence.md): a personal document's stack shows too, so its
+  // owner sees their agent.
+  agentsPresent?: boolean;
+  activeId: string;
+  selfParticipant: Participant;
+  tabs: { id: string }[];
+  remoteTabFocus: Map<string, string>;
+  // The tab in each person's other pane while they work side by side (docs/specs/007-editor/split-view.md
+  // "Presence"): they show on that tab's pill too. Peers by id; ourselves apart.
+  remoteBesideTabs?: ReadonlyMap<string, string>;
+  selfBesideTabId?: string | null;
+  livePresence: Participant[];
+  livePresenceById: Map<string, Participant>;
+  lastSeen: ReadonlyMap<string, number>;
+  now: number;
+}): Map<string, Participant[]> {
+  const {
+    documentShareable,
+    documentTeamId,
+    agentsPresent = false,
+    activeId,
+    selfParticipant,
+    tabs,
+    remoteTabFocus,
+    remoteBesideTabs,
+    selfBesideTabId = null,
+    livePresence,
+    livePresenceById,
+    lastSeen,
+    now,
+  } = input;
+  const map = new Map<string, Participant[]>();
+  if (!documentShareable && !documentTeamId && !agentsPresent) return map;
+  map.set(activeId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
+  if (selfBesideTabId && selfBesideTabId !== activeId)
+    map.set(selfBesideTabId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
+  const defaultTabId = tabs[0]?.id ?? activeId;
+  const tabFocus = new Map<string, string>(remoteTabFocus);
+  for (const p of livePresence) {
+    if (p.id === selfParticipant.id) continue;
+    if (!tabFocus.has(p.id)) tabFocus.set(p.id, defaultTabId);
+  }
+  const selfKey = participantKey(selfParticipant);
+  const newestByKey = new Map<string, string>();
+  for (const [id] of tabFocus) {
+    const p = livePresenceById.get(id);
+    if (!p || id === selfParticipant.id) continue;
+    const key = participantKey(p);
+    const held = newestByKey.get(key);
+    if (held === undefined || (lastSeen.get(id) ?? now) > (lastSeen.get(held) ?? now)) {
+      newestByKey.set(key, id);
+    }
+  }
+  for (const [id, tabId] of tabFocus) {
+    if (id === selfParticipant.id) continue;
+    const p = livePresenceById.get(id);
+    if (!p) continue;
+    const key = participantKey(p);
+    if (key === selfKey || newestByKey.get(key) !== id) continue;
+    const lastActiveAt = lastSeen.get(id) ?? now;
+    const idleStatus = statusFromIdleMs(now - lastActiveAt);
+    const status =
+      idleStatus === 'offline'
+        ? 'offline'
+        : idleStatus === 'away'
+          ? 'away'
+          : tabId === activeId
+            ? 'online'
+            : 'away';
+    const withStatus: Participant = { ...p, status, lastActiveAt };
+    const bucket = map.get(tabId);
+    if (bucket) bucket.push(withStatus);
+    else map.set(tabId, [withStatus]);
+    // On screen beside it too: the same person, with the status that tab earns from our side.
+    const besideTabId = remoteBesideTabs?.get(id);
+    if (besideTabId && besideTabId !== tabId) {
+      const besideStatus =
+        idleStatus === 'online' && besideTabId === activeId
+          ? 'online'
+          : status === 'offline'
+            ? 'offline'
+            : 'away';
+      const beside: Participant = { ...p, status: besideStatus, lastActiveAt };
+      const besideBucket = map.get(besideTabId);
+      if (besideBucket) besideBucket.push(beside);
+      else map.set(besideTabId, [beside]);
+    }
+  }
+  return map;
+}
+
+// Remote cursor rows joined with presence (fresh colour + name) and
+// filtered to the active tab, dropping self + off-canvas (null) cursors.
+export function buildRemoteCursorRows(
+  remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>,
+  livePresenceById: Map<string, Participant>,
+  selfId: string,
+  activeId: string,
+): CursorRow[] {
+  const rows: CursorRow[] = [];
+  for (const [id, pos] of remoteCursors) {
+    if (!pos) continue;
+    if (id === selfId) continue;
+    if (pos.tabId !== activeId) continue;
+    const p = livePresenceById.get(id);
+    if (!p) continue;
+    rows.push({
+      id,
+      name: p.name,
+      color: p.color,
+      x: pos.x,
+      y: pos.y,
+      ...(p.picture ? { picture: p.picture } : {}),
+    });
+  }
+  return rows;
+}
+
+// Laser-trail rows for the overlay: the local trail first, then any peers
+// whose latest sample is on the active tab and who are still present.
+export function buildLaserTrailRows(input: {
+  localLaserTrail: LaserPoint[];
+  remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[]; config?: LaserConfig }>;
+  livePresenceById: Map<string, Participant>;
+  selfId: string;
+  selfColor: string;
+  activeId: string;
+  // Our own pen (docs/specs/008-canvas/laser-panel.md). Peers' pens arrive with their samples; ours is
+  // read straight from the panel's state, so our trail never lags a change we
+  // just made.
+  selfLaserConfig?: LaserConfig;
+}): LaserTrailRow[] {
+  const {
+    localLaserTrail,
+    remoteLaserTrails,
+    livePresenceById,
+    selfId,
+    selfColor,
+    activeId,
+    selfLaserConfig,
+  } = input;
+  const rows: LaserTrailRow[] = [];
+  if (localLaserTrail.length > 0) {
+    rows.push({
+      participantId: selfId,
+      color: selfColor,
+      points: localLaserTrail,
+      config: selfLaserConfig,
+    });
+  }
+  for (const [id, entry] of remoteLaserTrails) {
+    if (id === selfId) continue;
+    if (entry.tabId !== activeId) continue;
+    const p = livePresenceById.get(id);
+    if (!p) continue;
+    rows.push({ participantId: id, color: p.color, points: entry.points, config: entry.config });
+  }
+  return rows;
+}
+
+// A peer's `select` op as the badges and lock read it (@liveworkspace/workbench/lib/remote-selection: the whole
+// selection holds, docs/specs/007-editor/editor-app.md "The whole selection holds"), capped like the sender caps it.
+export type { RemoteSelection };
+
+export const remoteSelectionOf = (op: {
+  elementId: string | null;
+  tabId?: string;
+  elementIds?: unknown;
+}): RemoteSelection => readRemoteSelection(op, MAX_SELECTION_IDS);
+
+// One empty map for every presented render, so the canvas's memoised element rows keep their props.
+const NO_REMOTE_SELECTIONS: Map<string, RemoteSelector[]> = new Map();
+
+// The remote selections a canvas draws: none on a presented slide (docs/specs/012-collaboration/presentation-mode.md
+// "Presenting broadcasts nothing"), where an outline, a badge and a recoloured border would show on a projector as
+// another person's cursor would; the selection lock there has nothing to guard, since nothing on a slide changes.
+export function shownRemoteSelections(
+  byElement: Map<string, RemoteSelector[]>,
+  presenting: boolean,
+): Map<string, RemoteSelector[]> {
+  return presenting ? NO_REMOTE_SELECTIONS : byElement;
+}
+
+// Per-element map of which remote participants have it selected (for the
+// on-element badges). Drops self + null (deselected) entries, and — like
+// cursors and lasers — entries scoped to a DIFFERENT tab: element ids
+// aren't unique across tabs in older documents (tab duplication used to
+// copy them verbatim), so an unscoped badge also LOCKED the same-id
+// element on other tabs via the docs/specs/007-editor/editor-app.md selection lock.
+export function buildRemoteSelectionsByElement(
+  remoteSelections: Map<string, RemoteSelection>,
+  livePresenceById: Map<string, Participant>,
+  selfId: string,
+  activeTabId: string,
+): Map<string, RemoteSelector[]> {
+  const out = new Map<string, RemoteSelector[]>();
+  for (const [participantId, selection] of remoteSelections) {
+    const held = heldElementIds(selection);
+    if (held.length === 0) continue;
+    if (selection.tabId !== undefined && selection.tabId !== activeTabId) continue;
+    if (participantId === selfId) continue;
+    const participant = livePresenceById.get(participantId);
+    if (!participant) continue;
+    const selector: RemoteSelector = {
+      id: participant.id,
+      name: participant.name,
+      color: participant.color,
+      holds: participant.role !== 'view',
+    };
+    for (const elementId of held) {
+      const list = out.get(elementId) ?? [];
+      list.push(selector);
+      out.set(elementId, list);
+    }
+  }
+  return out;
+}

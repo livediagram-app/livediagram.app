@@ -42,9 +42,9 @@ with you" and **Open in <App>**, and never the target's content.
 An Editor of the host (whoever may set an embed's link there) makes a live embed from the Embed element's **Live Embed** tile (or turns an empty embed into
 one) and picks the target in **Choose a File**:
 
-- **Connected**: the files this host's connected tabs stand for, first.
+- **Connected**: the files this host's connected tabs stand for, first (those a live embed can show).
 - **Recent**: the person's Recent across the apps (the index's Recent), the host left out; a file of an app that
-  serves no frame is listed, dimmed, with why.
+  serves no frame (a knowledgebase, a huddle) is not listed, as it could not be chosen (owner 2026-11-21).
 - **Paste a share link**: any share link of a target app. The editor resolves it through the index
   (`GET /api/index/share/:code`, as opening it would, which records it under the person's Shared), keeps the item's id
   and drops the code at once. A link with a share password asks the person to open it once first; a revoked or unknown

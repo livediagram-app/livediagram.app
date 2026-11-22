@@ -192,3 +192,45 @@ export const ArmchairIcon = lucide(
     <path d="M19 18v2" />
   </>,
 );
+
+// liveknowledge's competitors, team knowledge tools: shelves of books, a notebook, a checked document, a shield
+// with a tick, a branch and a folder.
+export const LibraryIcon = lucide(
+  <>
+    <path d="m16 6 4 14" />
+    <path d="M12 6v14" />
+    <path d="M8 8v12" />
+    <path d="M4 4v16" />
+  </>,
+);
+export const NotebookTextIcon = lucide(
+  <>
+    <path d="M2 6h4M2 10h4M2 14h4M2 18h4" />
+    <rect x={4} y={2} width={16} height={20} rx={2} />
+    <path d="M9.5 8h5M9.5 12H16M9.5 16H14" />
+  </>,
+);
+export const FileCheckIcon = lucide(
+  <>
+    <path d="M15 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7z" />
+    <path d="M14 2v4a2 2 0 002 2h4" />
+    <path d="m9 15 2 2 4-4" />
+  </>,
+);
+export const ShieldCheckIcon = lucide(
+  <>
+    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 01-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 011-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 011.52 0C14.51 3.81 17 5 19 5a1 1 0 011 1z" />
+    <path d="m9 12 2 2 4-4" />
+  </>,
+);
+export const GitBranchIcon = lucide(
+  <>
+    <path d="M6 3v12" />
+    <circle cx={18} cy={6} r={3} />
+    <circle cx={6} cy={18} r={3} />
+    <path d="M18 9a9 9 0 01-9 9" />
+  </>,
+);
+export const FolderIcon = lucide(
+  <path d="M20 20a2 2 0 002-2V8a2 2 0 00-2-2h-7.9a2 2 0 01-1.69-.9L9.6 3.9A2 2 0 007.93 3H4a2 2 0 00-2 2v13a2 2 0 002 2z" />,
+);

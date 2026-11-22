@@ -7,6 +7,7 @@ import {
   RUN_TAB,
   itemValueNames,
   itemValueOptions,
+  inTabWords,
   itemWordTitle,
   type ItemKinds,
   type ItemValuePlace,
@@ -55,7 +56,7 @@ type ValueGroupId = (typeof VALUE_GROUPS)[number];
 export function itemValueGroups(kinds: ItemKinds, place: ItemValuePlace): ValueGroup[] {
   const labels: Readonly<Record<ValueGroupId, string>> = {
     item: itemWordTitle(kinds.itemWord),
-    tab: 'Tab',
+    tab: inTabWords('Tab', kinds.itemWord),
     trigger: 'This Trigger',
     run: 'Who and When',
     ai: 'AI',
@@ -146,7 +147,7 @@ function tilesOf(kind: string, group: string): { group: string; key: string }[] 
 export const actionGroupsOf = (kinds: ItemKinds): KindGroup[] =>
   ordered(
     grouped(kinds.actions.flatMap((a) => tilesOf(a.kind, a.group))),
-    ['Snapshots', 'Tabs'],
+    ['Snapshots', inTabWords('Tabs', kinds.itemWord)],
     ['Messages', 'Timing', 'Other Tools', 'AI'],
     { AI: `${AUTOMATION_AI_PER_DAY} a day per ${kinds.itemWord}` },
   );

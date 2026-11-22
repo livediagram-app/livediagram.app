@@ -47,6 +47,7 @@ const APP_NAMES: Record<SettingsAppId, string> = {
   'livedocuments.app': 'livedocuments',
   'livedesign.app': 'livedesign',
   'livehuddle.app': 'livehuddle',
+  'liveknowledge.app': 'liveknowledge',
 };
 
 // The Phone section's host: the panel's request, and the app it opened in, shown beside the device it registers

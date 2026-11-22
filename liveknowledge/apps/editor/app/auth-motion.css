@@ -1,0 +1,153 @@
+/* The account and connect pages' content motion (docs/specs/014-identity/auth-and-guest-access.md "The look: Night
+ * Band"; pacing in docs/specs/004-interface-design/motion.md "Content pacing"). A content stylesheet: its durations
+ * are content reveal and content illustration, not chrome, so the motion budget guard skips it
+ * (apps/editor/motion-budget.test.ts). Both stand down under reduced motion, the OS setting and the person's own. */
+
+/* --- The entrance: the page drawn in, a beat at a time --------------------------------------------------------- */
+
+@keyframes lvd-auth-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* The card lands like a shape dropped on the canvas: a little tilt, a little overshoot. */
+@keyframes lvd-auth-card {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.94) rotate(-1.5deg);
+  }
+}
+
+/* The promise rows slide in like stickies being placed. */
+@keyframes lvd-auth-land {
+  from {
+    opacity: 0;
+    transform: translateX(-28px) rotate(-2.5deg);
+  }
+}
+
+/* Each row's icon pops once its row has landed. */
+@keyframes lvd-auth-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-20deg);
+  }
+}
+
+.lvd-auth-header,
+.lvd-auth-eyebrow,
+.lvd-auth-heading {
+  animation: lvd-auth-rise 310ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.lvd-auth-eyebrow {
+  animation-delay: 35ms;
+}
+.lvd-auth-heading {
+  animation-delay: 70ms;
+}
+.lvd-auth-card {
+  animation: lvd-auth-card 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 70ms both;
+}
+.lvd-auth-row {
+  animation: lvd-auth-land 360ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+.lvd-auth-row:nth-child(1) {
+  animation-delay: 105ms;
+}
+.lvd-auth-row:nth-child(2) {
+  animation-delay: 140ms;
+}
+.lvd-auth-row:nth-child(3) {
+  animation-delay: 175ms;
+}
+.lvd-auth-row:nth-child(4) {
+  animation-delay: 210ms;
+}
+.lvd-auth-chip {
+  animation: lvd-auth-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.lvd-auth-row:nth-child(1) .lvd-auth-chip {
+  animation-delay: 255ms;
+}
+.lvd-auth-row:nth-child(2) .lvd-auth-chip {
+  animation-delay: 290ms;
+}
+.lvd-auth-row:nth-child(3) .lvd-auth-chip {
+  animation-delay: 325ms;
+}
+.lvd-auth-row:nth-child(4) .lvd-auth-chip {
+  animation-delay: 360ms;
+}
+
+/* --- The lines: random routes that draw in, hold, then trail off the far edge -------------------------------- */
+
+@keyframes lvd-auth-trace {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  40%,
+  60% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -100;
+  }
+}
+
+.lvd-auth-trace {
+  stroke-dasharray: 100 100;
+  animation: lvd-auth-trace 14s ease-in-out 0.5s both;
+}
+/* The first round staggers the four slots a quarter of a cycle apart; after that a slot restarts as soon as it ends. */
+.lvd-auth-trace[data-wait='1'] {
+  animation-delay: 4s;
+}
+.lvd-auth-trace[data-wait='2'] {
+  animation-delay: 7.5s;
+}
+.lvd-auth-trace[data-wait='3'] {
+  animation-delay: 11s;
+}
+.lvd-auth-still {
+  display: none;
+}
+
+/* --- Reduced motion ------------------------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .lvd-auth-header,
+  .lvd-auth-eyebrow,
+  .lvd-auth-heading,
+  .lvd-auth-card,
+  .lvd-auth-row,
+  .lvd-auth-chip {
+    animation: none;
+  }
+  .lvd-auth-trace {
+    display: none;
+    animation: none;
+  }
+  .lvd-auth-still {
+    display: inline;
+  }
+}
+:root.reduce-motion
+  :is(
+    .lvd-auth-header,
+    .lvd-auth-eyebrow,
+    .lvd-auth-heading,
+    .lvd-auth-card,
+    .lvd-auth-row,
+    .lvd-auth-chip
+  ) {
+  animation: none;
+}
+:root.reduce-motion .lvd-auth-trace {
+  display: none;
+  animation: none;
+}
+:root.reduce-motion .lvd-auth-still {
+  display: inline;
+}

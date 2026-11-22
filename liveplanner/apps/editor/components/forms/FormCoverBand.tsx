@@ -4,6 +4,7 @@
 // and/or a colour background painted by pageSheetStyle (and PageMotionLayer for a moving one), a pattern over either,
 // or a thin band of the form colour without one. Pure drawing, shared by the builder, Preview and the form page.
 import type { FormCover } from '@liveplanner/forms';
+import { coverObjectPosition } from '@liveworkspace/page-background/cover';
 import { pageSheetStyle } from '@/lib/page-paint';
 import dynamic from 'next/dynamic';
 import { useFormImage } from './form-images';
@@ -48,7 +49,7 @@ export function FormCoverBand({
           alt=""
           draggable={false}
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ objectPosition: `50% ${cover.focus ?? 50}%` }}
+          style={{ objectPosition: coverObjectPosition(cover.focus) }}
         />
       ) : null}
       {picture && cover.pattern ? (

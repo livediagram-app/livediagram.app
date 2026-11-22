@@ -24,8 +24,11 @@ describe('held apps', () => {
       'livedocuments.app',
       'livedesign.app',
       'livehuddle.app',
+      'liveknowledge.app',
     ]);
     expect(TELEMETRY_SENDERS).toContain('livehuddle.app');
+    expect(TELEMETRY_APP_ORIGINS['liveknowledge.app']).toContain('https://www.liveknowledge.app');
+    expect(telemetryAppOfOrigin('https://staging.liveknowledge.app')).toBe('liveknowledge.app');
   });
 
   it('livehuddle is accepted as a sender, by its site and its origins', () => {

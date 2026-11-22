@@ -8,11 +8,16 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Button, HoverCard } from '@liveworkspace/ui';
 import { FootprintsGlyph } from './glyphs';
+import { scopeWords, type ScopeWords } from '../../words';
 import type { ShareTelemetry } from './types';
 
 export type TourStep = { id: string; title: string; body: string; target?: string };
 
-export function shareTourSteps(multiTab: boolean, word: string): TourStep[] {
+export function shareTourSteps(
+  multiTab: boolean,
+  word: string,
+  scope: ScopeWords = scopeWords(),
+): TourStep[] {
   return [
     {
       id: 'role',
@@ -24,8 +29,8 @@ export function shareTourSteps(multiTab: boolean, word: string): TourStep[] {
       ? [
           {
             id: 'scope',
-            title: 'Choose Which Tabs It Opens',
-            body: 'Share every tab, or just one.',
+            title: `Choose Which ${scope.many} It Opens`,
+            body: `Share every ${scope.lowerOne}, or just one.`,
             target: 'share-scope',
           },
         ]
@@ -77,6 +82,7 @@ export function useShareTour(
   multiTab: boolean,
   word: string,
   onTelemetry?: ShareTelemetry,
+  scope?: ScopeWords,
 ): ShareTour {
   const [steps, setSteps] = useState<TourStep[] | null>(null);
   const [index, setIndex] = useState(0);
@@ -96,7 +102,7 @@ export function useShareTour(
     count,
     start: () => {
       onTelemetry?.('Started', 'ShareTour');
-      setSteps(shareTourSteps(multiTab, word));
+      setSteps(shareTourSteps(multiTab, word, scope));
       setIndex(0);
     },
     next: () => (index + 1 >= count ? end(true) : setIndex(index + 1)),

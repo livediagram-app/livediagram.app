@@ -1,0 +1,77 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { McpResultScene } from '@/editions/liveknowledge/components/illustrations/style-and-developers';
+
+export const metadata = helpMetadata({
+  title: 'The Knowledge API',
+  description:
+    "The REST routes behind a Knowledgebase's pages, search, Ask, verification and AI Knowledge, and where to read their OpenAPI reference.",
+  path: '/help/developers/knowledge-api/',
+});
+
+<ArticleLayout path="developers/knowledge-api" title="The Knowledge API" description="The REST routes behind pages, search, Ask and AI Knowledge, and where to find their OpenAPI reference." categoryTitle="Developers" categorySlug="developers">
+
+The app, the MCP server and the CLI all use the same REST API, so anything they do, your own script can do too. This article is a map of the routes a Knowledgebase adds to the API every liveworkspace app has. For request and response shapes, read the OpenAPI document the product serves, which is always current:
+
+```bash
+curl https://www.liveknowledge.app/api/openapi.json
+```
+
+How to authenticate, the error shape and the rate limits are the same as every app's: see [API Overview](/help/developers/api-overview/), [Authentication](/help/developers/authentication/) and [Errors and Rate Limits](/help/developers/errors-and-rate-limits/).
+
+## The Routes
+
+Every route is under `/api/documents/{id}`, where `{id}` is the Knowledgebase's id. In a page route, `{tabId}` is the page's id, or its title where one page alone has it.
+
+**Pages**
+
+| Route                                   | Does                                                         | MCP tool       |
+| --------------------------------------- | ------------------------------------------------------------ | -------------- |
+| `GET pages`                             | The page tree, each page with its trust                      | `list_pages`   |
+| `POST pages`                            | A new page from Markdown                                     | `create_page`  |
+| `GET pages/{tabId}`                     | One page as Markdown, its trust, backlinks and subpages      | `read_page`    |
+| `PUT pages/{tabId}`                     | Replace a page's writing, or append to it                    | `write_page`   |
+| `POST pages/{tabId}/move`               | Move a page and its subpages                                 | `move_page`    |
+| `GET pages/{tabId}/backlinks`           | Linked From                                                  |                |
+
+**Trust**
+
+| Route                                   | Does                                                         |
+| --------------------------------------- | ------------------------------------------------------------ |
+| `POST pages/{tabId}/verify`             | Verify a page (a signed-in Editor)                           |
+| `GET pages/{tabId}/health`              | Page Health                                                  |
+| `PUT pages/{tabId}/knowledge`           | Change a page's owner or Always in Context                   |
+| `GET`, `PUT knowledge-settings`         | The Review Period                                            |
+
+**Finding things**
+
+| Route                                   | Does                                                         | MCP tool       |
+| --------------------------------------- | ------------------------------------------------------------ | -------------- |
+| `GET search`                            | Titles first, then passages, at most 20                      | `search_pages` |
+| `POST ask`                              | Ask, streamed as server-sent events                          |                |
+| `GET context`                           | The Always in Context pages within 8,000 tokens              | `get_context`  |
+| `GET ai`, `PUT ai/key`, `PUT ai/model`, `DELETE ai/key` | AI Settings                                  |                |
+
+**AI Knowledge**
+
+| Route                                   | Does                                                         | MCP tool       |
+| --------------------------------------- | ------------------------------------------------------------ | -------------- |
+| `GET knowledge`                         | The whole AI Knowledge view in one read                      |                |
+| `POST pages/{tabId}/suggestions`        | Suggest an edit                                              | `suggest_edit` |
+| `GET suggestions`                       | The suggestions waiting                                      |                |
+| `POST suggestions/{id}/accept`, `…/dismiss` | Accept or dismiss one                                    |                |
+| `POST questions`                        | Report a question nobody could answer                        | `report_gap`   |
+| `PUT agents/{tokenId}/scopes`           | Allow a connection to write, or stop it (an Editor in person) |               |
+
+<Figure caption="Every page and passage answer carries its trust, here as search_pages shows it.">
+  <McpResultScene />
+</Figure>
+
+## Good to Know
+
+- Every page and passage answer carries the trust fields described in [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/#the-trust-fields).
+- Roles are checked on the server for every route. A token acts with its person's role, narrowed by its scopes: without `write` it acts as a Participant at most, and a read-only token as a Viewer.
+- Some actions take an Editor in person, never a token: emailing the owners, and allowing a connection to write.
+- Ask, AI Knowledge's model calls and Describe to Set Up run on built-in AI (Cloudflare Workers AI, with daily limits), or on the team's own AI key once one is saved. `GET ai` answers `builtIn`: whether this server has built-in AI.
+
+</ArticleLayout>

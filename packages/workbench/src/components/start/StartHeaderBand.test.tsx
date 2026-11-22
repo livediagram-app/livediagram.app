@@ -11,7 +11,14 @@ import { startHeaderTheme, useStartHeaderTheme } from './useStartHeaderTheme';
 // Each product's start spec, "The header band": every app's start header wears its own Explorer hero backdrop.
 const INK = { card: '#ffffff', text: '#0f172a', muted: '#475569', focus: '#0284c7' };
 const band = startBandColours(INK);
-const KINDS: readonly HeroBackdropKind[] = ['lanes', 'blueprint', 'typesetter', 'shapes', 'huddle'];
+const KINDS: readonly HeroBackdropKind[] = [
+  'lanes',
+  'blueprint',
+  'typesetter',
+  'shapes',
+  'huddle',
+  'tree',
+];
 
 describe('a start header’s theme', () => {
   it('gives each app its own band, the one its Explorer hero wears', () => {

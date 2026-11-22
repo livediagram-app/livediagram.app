@@ -1,0 +1,68 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { SuggestedEditScene } from '@/editions/liveknowledge/components/illustrations/ai-knowledge';
+
+export const metadata = helpMetadata({
+  title: 'Suggested Edits',
+  description:
+    "Review an agent's suggested change to a page in AI Knowledge: read the lines it takes out and puts in, then accept it, open the page or dismiss it.",
+  path: '/help/knowledgebase/suggested-edits/',
+});
+
+<ArticleLayout path="knowledgebase/suggested-edits" title="Suggested Edits" description="Review an agent's suggested change to a page: read what it takes out and puts in, then accept or dismiss it." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+An agent that holds the suggest scope never changes a page directly. Its change arrives as a **suggestion**, with its reason, and waits for an Editor. This is also how an agent changes a page that is Verified or Review Due, which it may never write directly (see [What Agents Can Do](/help/knowledgebase/what-agents-can-do/)).
+
+## Review a Suggestion
+
+<Step n={1}>
+  Press the **AI Knowledge** tab in the footer and scroll to **Edits Suggested by Agents**.
+</Step>
+
+<Step n={2}>
+  Read the card: the page, the agent and the first line of its reason, then the lines it takes
+  out (marked − and struck through) and the lines it puts in (marked +). A suggestion that adds to
+  the end of the page takes nothing out.
+</Step>
+
+<Step n={3}>
+  Choose what to do with it:
+  - **Accept** makes the change on the page.
+  - **Open the Page** opens the page, to read the change in place or make it by hand.
+  - **Dismiss** removes the suggestion. The page is not changed.
+</Step>
+
+<Figure caption="A suggested edit: the page, the agent and its reason, the line taken out and the line put in, then Accept, Open the Page and Dismiss.">
+  <SuggestedEditScene />
+</Figure>
+
+## What Accepting Does
+
+- The change is made as one step in your name, so `Cmd+Z` (`Ctrl+Z` on Windows and Linux) on the page takes it back.
+- **It does not verify the page.** A verified page keeps its verified state and its dates. If the change matters, read the page and press **Verify Again**. See [Owners and Verifying a Page](/help/knowledgebase/owners-and-verifying/).
+
+## When a Suggestion No Longer Fits
+
+A suggestion replaces a passage by its exact words. If someone has changed those words since, accepting it says: "The page has changed since this was suggested, so it no longer fits. Open the page to make the change by hand, or dismiss it."
+
+## Limits
+
+| Limit                        | Value             |
+| ---------------------------- | ----------------- |
+| A suggestion's new writing   | 20,000 characters |
+| A suggestion's reason        | 500 characters    |
+
+## Good to Know
+
+- With nothing waiting, the section reads **No Suggested Edits Yet**.
+- A suggestion's lines are drawn as plain text: nothing in it runs.
+- An agent sends a suggestion with the MCP tool `suggest_edit` or the CLI's `suggest`. See [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/).
+
+## Who Can Do What
+
+| Action                               | Editor | Participant | Viewer |
+| ------------------------------------ | ------ | ----------- | ------ |
+| See suggested edits                  | Yes    | Yes         | Yes    |
+| Accept or dismiss a suggestion       | Yes    | No          | No     |
+
+</ArticleLayout>

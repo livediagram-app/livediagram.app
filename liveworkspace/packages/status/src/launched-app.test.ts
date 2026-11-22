@@ -38,7 +38,7 @@ describe('the MCP check, optional per app', () => {
 });
 
 describe('a launched app', () => {
-  it('is on the page, last', () => {
+  it('is on the page', () => {
     for (const env of ['production', 'staging', 'development'] as const) {
       expect(statusGroups(env).map((g) => g.id)).toEqual([
         'liveworkspace',
@@ -47,7 +47,25 @@ describe('a launched app', () => {
         'livedocuments',
         'livedesign',
         'livehuddle',
+        'liveknowledge',
       ]);
     }
+  });
+});
+
+describe('liveknowledge', () => {
+  const knowledge = APP_SITES.find((site) => site.id === 'liveknowledge.app')!;
+
+  it('is checked like every app with an MCP server: six services, its MCP on its own port locally', () => {
+    expect(hasMcp(knowledge)).toBe(true);
+    expect(appGroup(knowledge, 'production').services.map((s) => s.id)).toContain(
+      'liveknowledge:mcp',
+    );
+    expect(mcpOrigin(knowledge, 'production')).toBe('https://mcp.liveknowledge.app');
+    expect(mcpOrigin(knowledge, 'development')).toBe('http://localhost:9288');
+    expect(mcpOrigin(knowledge, 'staging')).toBeNull();
+    expect(appGroup(knowledge, 'development').services[0]!.check).toMatchObject({
+      probe: { url: 'http://localhost:3600/api/capabilities' },
+    });
   });
 });

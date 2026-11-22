@@ -55,6 +55,24 @@ describe('exportTabDialogFrame', () => {
     expect(screen.getByText('The JSON panel')).toBeTruthy();
     expect(screen.queryByTestId('icon-png')).toBeNull();
   });
+
+  it('takes an app’s own title for the whole of it (liveknowledge has no tabs)', () => {
+    render(
+      exportTabDialogFrame<Kind>({
+        isSelection: false,
+        title: 'Export',
+        titleId: 't',
+        subtitle: 'Pick a format to export the pages.',
+        help: null,
+        onClose: () => {},
+        panel: null,
+        cards: CARDS,
+        onPick: () => {},
+        FormatIcon: Icon,
+      }),
+    );
+    expect(screen.getByRole('dialog', { name: 'Export' })).toBeTruthy();
+  });
 });
 
 const isText = (f: Kind) => f === 'file';

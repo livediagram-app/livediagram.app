@@ -63,6 +63,7 @@ export const PUSH_DEVICE_APPS = [
   'livedocuments',
   'livedesign',
   'livehuddle',
+  'liveknowledge',
 ] as const;
 export type PushDeviceApp = (typeof PUSH_DEVICE_APPS)[number];
 

@@ -5,6 +5,7 @@ MEDIA_KEY_LIVEPLANNER=dev-liveplanner-media-key
 MEDIA_KEY_LIVEDOCUMENTS=dev-livedocuments-media-key
 MEDIA_KEY_LIVEDESIGN=dev-livedesign-media-key
 MEDIA_KEY_LIVEHUDDLE=dev-livehuddle-media-key
+MEDIA_KEY_LIVEKNOWLEDGE=dev-liveknowledge-media-key
 # The data export's service: the same as its MEDIA_KEY_EXPORT.
 MEDIA_KEY_EXPORT=dev-media-export-key
 # Previews (liveworkspace/docs/specs/006-media/previews.md): the local index, and where each app's router answers its export door.
@@ -14,6 +15,7 @@ APP_ORIGIN_LIVEPLANNER=http://localhost:3200
 APP_ORIGIN_LIVEDOCUMENTS=http://localhost:3300
 APP_ORIGIN_LIVEDESIGN=http://localhost:3400
 APP_ORIGIN_LIVEHUDDLE=http://localhost:3500
+APP_ORIGIN_LIVEKNOWLEDGE=http://localhost:3600
 # Deleted teams (liveworkspace/docs/specs/006-media/libraries.md "Account and guest lifecycle"): the same as accounts'
 # ACCOUNTS_KEY_MEDIA. Without it the daily run keeps every team's Library.
 ACCOUNTS_KEY_MEDIA=dev-accounts-media-key

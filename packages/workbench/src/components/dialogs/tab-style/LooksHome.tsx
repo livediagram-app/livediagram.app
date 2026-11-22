@@ -111,7 +111,7 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
             <FineTuneRow
               key={panel}
               label={titles[panel]}
-              value={rows[panel].value}
+              value={surface.panelValues?.[panel] ?? rows[panel].value}
               icon={rows[panel].icon}
               onOpen={() => onOpenPanel(panel)}
             />

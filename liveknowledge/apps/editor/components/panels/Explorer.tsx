@@ -1,0 +1,246 @@
+'use client';
+
+import { memo, useCallback, useEffect, useMemo } from 'react';
+import {
+  EXPLORER_POPOVER_HEIGHT,
+  EXPLORER_POPOVER_WIDTH,
+  ExplorerPanel,
+  explorerPath,
+  useOpenItem,
+  type RenderAppLogo,
+} from '@liveworkspace/explorer';
+import type { Item } from '@liveworkspace/index-client';
+import Link from 'next/link';
+import { BrandMark, ProductNavLinks } from '@liveknowledge/ui';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
+import { leaveArchivedItem } from '@liveworkspace/workbench/lib/archived';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
+import { SignInPrompt } from '@/components/chrome/SignInPrompt';
+import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
+import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
+import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
+import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
+import { API_BASE, getSessionSharePassword } from '@/lib/api-client';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { explorerLibrary } from '@/lib/explorer-library';
+import { explorerTeamsHost } from '@liveworkspace/workbench/lib/explorer-teams-host';
+import { itemHref, newDocumentHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
+import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
+import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
+import { trackOrganise } from '@/lib/explorer-organise';
+import { track } from '@/lib/telemetry';
+import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
+import { trashOpenDocument } from '@/lib/document-delete-undo';
+import { cloudSyncHost } from '@/components/dialogs/settings/settings-panel-host';
+import type { ExplorerProps } from './Explorer.types';
+
+// The filter's logos: this app's own, and liveworkspace's for All.
+const renderAppLogo: RenderAppLogo = (app) =>
+  app === 'all' ? <BrandMark accentColor={PLATFORM_SITE.accent} /> : <BrandMark />;
+
+// The popover hangs from its button and is never dragged.
+const NO_MOVE = () => {};
+
+// The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, drawn as this panel
+// always was, with the same lists, menus and dialogs as the /explorer page, from the index) inside the editor's
+// movable panel, opened only as the canvas menu button's popover. The open document shows on top, from the
+// index and the editor's own title; every list is one request a page, loaded only once its section is chosen.
+function ExplorerImpl({
+  currentDocumentId,
+  currentTitle = null,
+  inboxOpenAction = null,
+  currentShareCode = null,
+  onRenameCurrent,
+  renameCurrentRequest = 0,
+  onRenameCurrentHandled,
+  onNewDocument,
+  menuActions,
+  popoverOpen,
+  onPopoverClose,
+  popoverAnchor,
+}: ExplorerProps) {
+  const isMobile = useIsMobileViewport();
+  const sheet = isMobile;
+  const router = useAppNavigation();
+  const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
+  // The person: an account, or this browser's guest, as the Explorer page has them, so History and the Inbox
+  // name their own doings as theirs.
+  const guestId = useSignedGuestId(authLoaded, accountUserId);
+  const viewerId = accountUserId ?? guestId;
+  // Take Offline and Sync Document on a document's menu.
+  const itemMenu = useOfflineItemMenu(viewerId);
+  const thisBrowser = useThisBrowserHost(viewerId, !!accountUserId, currentDocumentId ?? null);
+  // The Community tab for the person's own documents (lib/explorer-community-host.ts), a guest's included (with Sign
+  // In to Share), so whether the Community is on is asked for a guest too.
+  const communityOn = useCommunityEnabled(API_BASE);
+  const shareHost = useMemo(
+    () => ({
+      ...explorerShareHost(viewerId),
+      community: explorerCommunity(
+        accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
+        communityOn,
+        guestId ?? null,
+      ),
+    }),
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
+  );
+  const inboxBase = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
+  // The pane's verbs: this app's threads, and an action on the open document's active tab.
+  const inboxActions = useMemo(
+    () =>
+      explorerInboxActions(
+        viewerId,
+        currentDocumentId && inboxOpenAction
+          ? { itemId: currentDocumentId, ...inboxOpenAction }
+          : null,
+      ),
+    [viewerId, currentDocumentId, inboxOpenAction],
+  );
+  const inboxHost = useMemo(
+    () => ({ ...inboxBase, actions: inboxActions }),
+    [inboxBase, inboxActions],
+  );
+  // The person's teams, made and run in place (New Team, a team's Members) for a signed-in person.
+  const teams = useTokenTeams(isSignedIn);
+  // Google Drive's marks on the person's items (liveworkspace/docs/specs/005-drive/drive.md "The Explorer shows each item's sync"),
+  // over the same Drive host as Settings' Cloud Sync: an account's only, made once per sign-in so the marks read keeps
+  // one client. The panel mounts only while open, so nothing is asked before it opens.
+  const drive = useMemo(() => (isSignedIn ? cloudSyncHost() : null), [isSignedIn]);
+
+  // Open, the panel reaches under the palette strip: the trays just under it step aside (PaletteTray).
+  const shown = popoverOpen === true;
+  // Kept only in this browser? Then the index is not asked and the card is Offline's, with its Offline
+  // pill, before the list has heard of it too (one-explorer.md "The Current card"). An opening asks the index again
+  // while it had nothing for the document (a new one registered since).
+  const offline = useIsOfflineDocument(currentDocumentId ?? null);
+  const current = useOpenItem(
+    indexClient,
+    currentDocumentId,
+    currentShareCode,
+    getSessionSharePassword,
+    { offline, open: shown },
+  );
+  useEffect(() => {
+    if (!shown) return;
+    document.body.setAttribute('data-explorer-open', '');
+    return () => document.body.removeAttribute('data-explorer-open');
+  }, [shown]);
+
+  const trashCurrent = useCallback((item: Item) => trashOpenDocument(item.id, item.title), []);
+  // Archived is closed: the item open here, once archived from the panel, leaves for the Explorer, which says so.
+  const archivedCurrent = useCallback(
+    (item: { id: string; title: string | null }) => leaveArchivedItem('liveknowledge', item),
+    [],
+  );
+
+  const go = (href: string) =>
+    href.startsWith('/') ? router.push(href) : window.location.assign(href);
+
+  return (
+    <>
+      <MovablePanel
+        helpArticle="explorerPanel"
+        title="Explorer"
+        dataTourId="explorer"
+        layoutChrome
+        // Never faded by Panel opacity: its menus open outside it (docs/specs/007-editor/user-preferences.md).
+        opaque
+        // Only ever the menu button's popover: never placed in a corner or dragged.
+        position={null}
+        defaultCorner="top-left"
+        // Roomy on a desktop or tablet: up to 54rem wide (kept 1rem inside the window) and 45rem tall (kept on the
+        // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size. Every editor's
+        // panel takes the one size from the package.
+        popoverWidth={EXPLORER_POPOVER_WIDTH}
+        popoverHeight={EXPLORER_POPOVER_HEIGHT}
+        popoverScrim
+        // On a phone it opens as a sheet: edge to edge, down to the tab bar.
+        popoverSheet={sheet}
+        onMoveTo={NO_MOVE}
+        headerActions={
+          sheet ? undefined : (
+            <ExplorerHeaderMenu
+              onNewDocument={onNewDocument}
+              actions={menuActions}
+              itemId={currentDocumentId}
+            />
+          )
+        }
+        popoverOpen={popoverOpen}
+        onPopoverClose={onPopoverClose}
+        popoverAnchor={popoverAnchor}
+        asPopover
+        dismissOnOutside
+      >
+        <ExplorerPanel
+          // History lives in the footer's Tools, for the open item (footer-tools-menu.md).
+          history={false}
+          renderAppLogo={renderAppLogo}
+          app="liveknowledge"
+          onOrganise={trackOrganise}
+          client={indexClient}
+          itemHref={itemHref}
+          current={currentDocumentId ? current : null}
+          currentId={currentDocumentId ?? null}
+          currentTitle={currentTitle}
+          currentOffline={offline}
+          // The open document stops saving before it goes, then the editor leaves for the Explorer and its Undo.
+          onTrashCurrent={trashCurrent}
+          onArchivedCurrent={archivedCurrent}
+          // Renamed from the Explorer's current item, the editor's one rename since the header bar went (experiment).
+          renameCurrentRequest={renameCurrentRequest}
+          onRenameCurrentHandled={onRenameCurrentHandled}
+          onRenameCurrent={
+            onRenameCurrent
+              ? (name: string) => {
+                  track('Document', 'Renamed');
+                  onRenameCurrent(name);
+                }
+              : undefined
+          }
+          onCreate={(placement) =>
+            onNewDocument && !placement.folderId && !placement.teamId
+              ? onNewDocument()
+              : go(newDocumentHref(placement))
+          }
+          onOpenExplorer={(view) => go(explorerPath(view))}
+          onOpenItem={(href) => go(href)}
+          renderThumbnail={renderDocumentThumbnail}
+          drive={drive}
+          Link={Link}
+          teams={teams}
+          viewerId={viewerId}
+          shareUrl={shareUrl}
+          share={shareHost}
+          inbox={inboxHost}
+          // The documents kept only in this browser, which no index list holds: Offline on the rail, in place.
+          thisBrowser={thisBrowser}
+          itemMenu={itemMenu}
+          // The Library section: the Image Gallery over this app's API.
+          {...explorerLibrary}
+          teamsHost={isSignedIn ? explorerTeamsHost : null}
+          // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
+          layout={sheet ? 'sheet' : 'side'}
+          open={shown}
+          // The sign-in note under the card.
+          notice={<SignInPrompt bar />}
+          // The product's surfaces, which the editor header no longer carries as a menu.
+          footer={
+            <ProductNavLinks
+              current="editor"
+              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-evenly' : ''}`}
+            />
+          }
+        />
+      </MovablePanel>
+    </>
+  );
+}
+
+export const Explorer = memo(ExplorerImpl);

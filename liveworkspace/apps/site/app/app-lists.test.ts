@@ -29,13 +29,14 @@ function namesEvery(text: string | null | undefined, form: (name: string) => str
 }
 
 describe('lists of the apps', () => {
-  it('covers five apps today', () => {
+  it('covers six apps today', () => {
     expect(NAMES).toEqual([
       'livediagram',
       'liveplanner',
       'livedocuments',
       'livedesign',
       'livehuddle',
+      'liveknowledge',
     ]);
   });
 

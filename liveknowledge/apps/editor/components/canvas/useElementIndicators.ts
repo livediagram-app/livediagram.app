@@ -1,0 +1,104 @@
+// An element's indicators (docs/specs/008-canvas/element-indicators.md), worked out for
+// BoxedElementView: which indicators it carries (open action, unresolved comments; element links and notes are
+// retired, docs/specs/009-elements/links-and-notes-retired.md, so a stored one shows nothing),
+// what each opens, and where the cluster and the content go. Its own hook so
+// the element view only wires the result in.
+import {
+  activeCommentCount,
+  isOpenAction,
+  labelFontPx,
+  labelTextScale,
+  type BoxedElement,
+  type TextAlignX,
+  type TextAlignY,
+  type TextSize,
+} from '@liveknowledge/document';
+import { initialsOf } from '@/lib/identity';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
+import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
+import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
+import {
+  buildIndicatorItems,
+  type IndicatorItem,
+} from '@liveworkspace/workbench/components/canvas/indicator-items';
+import { useIndicatorLayout, type IndicatorLayout } from './useIndicatorLayout';
+import type { BoxedElementViewProps } from './BoxedElementView.types';
+
+type Handlers = Pick<BoxedElementViewProps, 'onOpenComments' | 'onOpenAction'>;
+
+/** The element's indicator items, from its state and the view's handlers. Pure. */
+export function elementIndicatorItems(
+  element: BoxedElement,
+  handlers: Handlers,
+  // False where the reader has no comments to open (a viewer in an embed, docs/specs/013-workspace/embeds.md): no
+  // comment indicator.
+  showComments = true,
+): IndicatorItem[] {
+  // A margin note shows its count and action on its own face.
+  if (element.type === 'article-note') return [];
+  const { onOpenComments, onOpenAction } = handlers;
+  // A done action stops showing.
+  const assignee = isOpenAction(element.action) ? element.action?.assignee : undefined;
+  const assigneeName = assignee?.name?.trim() || 'a teammate';
+  return buildIndicatorItems({
+    action: assignee
+      ? {
+          onOpen: () => onOpenAction(element.id),
+          assigneeName,
+          initials: initialsOf(assigneeName),
+          // Their colour at assign time, else the one Automatic rule (@liveworkspace/settings/presence), so the dot
+          // matches the person's cursor and avatar.
+          color: presenceColourOf(assigneeName, assignee.color),
+        }
+      : undefined,
+    comments: {
+      count: showComments ? activeCommentCount(element.commentThread) : 0,
+      onOpen: () => onOpenComments(element.id),
+    },
+  });
+}
+
+export function useElementIndicators(
+  element: BoxedElement,
+  handlers: Handlers,
+  label: {
+    text: string;
+    textSize: TextSize;
+    padding: number;
+    alignX: TextAlignX;
+    alignY: TextAlignY;
+    // The element has an inline icon beside or above its label.
+    inlineIcon: boolean;
+  },
+  // The element's drawn corner radius.
+  cornerPx: number,
+): { items: IndicatorItem[]; layout: IndicatorLayout | null; cornerPx: number } {
+  const items = elementIndicatorItems(element, handlers, useCommentBadges());
+  const shape = element.type === 'shape' ? element.shape : undefined;
+  // A circle or a pill is fully round however its corner preset reads.
+  const indicatorCornerPx = shape === 'circle' || shape === 'stadium' ? Infinity : cornerPx;
+  const metrics = label.inlineIcon ? inlineIconMetrics(element, label.text, label.textSize) : null;
+  // A scaled label (docs/specs/007-editor/pages-mode.md "Sizes") takes less room than its size's own px.
+  const textScale = labelTextScale(element);
+  const position = (element.type === 'shape' && element.iconPosition) || 'left';
+  const layout = useIndicatorLayout(element, indicatorCornerPx, items, {
+    label: label.text,
+    textSize: label.textSize,
+    padding: label.padding,
+    alignX: label.alignX,
+    alignY: label.alignY,
+    ...(metrics
+      ? {
+          fontPx: metrics.fontSize,
+          icon: {
+            size: metrics.iconSize,
+            position,
+            gap: inlineIconGap(metrics.iconSize, position === 'left' || position === 'right'),
+          },
+        }
+      : textScale !== 1 && label.textSize !== 'scale'
+        ? { fontPx: labelFontPx(label.textSize) * textScale }
+        : {}),
+  });
+  return { items, layout, cornerPx: indicatorCornerPx };
+}

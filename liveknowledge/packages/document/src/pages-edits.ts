@@ -1,0 +1,402 @@
+// The edits to a Pages tab's pages, as pure tab changes (docs/specs/007-editor/pages-mode.md
+// "The page panel", "Page actions", docs/specs/007-editor/article-pages.md "An article"): turn,
+// resize, rename, paint and lock a page; add, duplicate, move, delete and lay one out. On an article
+// page the edits that reach its look (a turn, a size, its paint) and its place (a move, a delete) act
+// on every page of the article. Shared by the page panel (apps/editor page-edits) and the
+// agents' page changes (docs/specs/024-agents/pages-for-agents.md), so an agent's edit is the
+// panel's. Each answers the next tab (the same one when nothing changes) or why it was refused.
+import { cutText } from '@liveworkspace/model-core/text-cut';
+import {
+  pageUnits,
+  withArticleAdded,
+  withArticleDuplicated,
+  withArticleRemoved,
+  withUnitMoved,
+} from './article-pages';
+import type { Element, Tab } from './index';
+import {
+  pagesOf,
+  layOutPages,
+  MAX_PAGES,
+  newSlidePage,
+  PAGE_NAME_MAX,
+  pageHasOrientation,
+  pageKindOf,
+  pageSizesFor,
+  tabPageKind,
+  withPages,
+  type Page,
+  type PageBackground,
+  type PageKind,
+  type PageOrientation,
+  type PageSizeId,
+} from './page';
+import {
+  elementIdsOnPage,
+  withContentFittedToPage,
+  withDuplicatedPage,
+  withPageContentReplaced,
+} from './page-content';
+import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
+import { sameFill, withBackgroundPatch } from './page-paint';
+import { newPageBackgroundOf } from './tab-new-page-background';
+
+export type PageEditRefusal =
+  | 'unknown_page'
+  | 'locked'
+  | 'no_orientation'
+  | 'size_not_offered'
+  | 'page_limit'
+  | 'last_page'
+  | 'kind_not_offered';
+
+type PagesTab = Pick<Tab, 'elements'> & {
+  pages?: unknown;
+  pageOrientation?: unknown;
+  articles?: unknown;
+  newPageBackground?: unknown;
+};
+
+export type PageEdit<T> = { tab: T } | { refused: PageEditRefusal };
+
+const refused = (why: PageEditRefusal): { refused: PageEditRefusal } => ({ refused: why });
+
+/** The pages a page-wide change reaches: the page, or every page of its article. */
+export function pagesSharing(pages: readonly Page[], pageId: string): Set<string> {
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return new Set();
+  return new Set(
+    target.flow ? pages.filter((p) => p.flow === target.flow).map((p) => p.id) : [pageId],
+  );
+}
+
+/** Whether a lock holds an edit of this page (docs/specs/007-editor/pages-mode.md "Locking a
+ *  page"): its own lock, or, for an edit that reaches its whole article (`shared`), any lock on the
+ *  article's pages. A page's own edits (its name) reach only the page itself. */
+export function pageLockRefuses(pages: readonly Page[], pageId: string, shared = true): boolean {
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return false;
+  const reach = shared && target.flow ? pages.filter((p) => p.flow === target.flow) : [target];
+  return reach.some((p) => p.locked === true);
+}
+
+/** A page's lock set or cleared. Never refused by its own lock (unlocking is how one gets in). */
+export function pageLockSet<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  locked: boolean,
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return refused('unknown_page');
+  if ((target.locked === true) === locked) return { tab };
+  const next = pages.map((p) => {
+    if (p.id !== pageId) return p;
+    const { locked: _drop, ...rest } = p;
+    return locked ? { ...rest, locked: true as const } : rest;
+  });
+  return { tab: withPages(tab, next) };
+}
+
+/** A page's name set (trimmed, capped at PAGE_NAME_MAX); empty clears it. */
+export function pageRenamed<T extends PagesTab>(tab: T, pageId: string, raw: string): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return refused('unknown_page');
+  if (pageLockRefuses(pages, pageId, false)) return refused('locked');
+  const name = cutText(raw.trim(), PAGE_NAME_MAX);
+  if ((target.name ?? '') === name) return { tab };
+  const next = pages.map((p) => {
+    if (p.id !== pageId) return p;
+    const { name: _drop, ...rest } = p;
+    return name ? { ...rest, name } : rest;
+  });
+  return { tab: withPages(tab, next) };
+}
+
+// A turn or a new size re-fits an infographic page's content into the page as it now is
+// (withContentFittedToPage); an article's pages all change together and its writing reflows, so
+// nothing is fitted.
+function reshaped<T extends PagesTab>(tab: T, pageId: string, patch: (p: Page) => Page): T {
+  const pages = pagesOf(tab);
+  const reach = pagesSharing(pages, pageId);
+  const next = pages.map((p) => (reach.has(p.id) ? patch(p) : p));
+  if (pages.find((p) => p.id === pageId)?.flow) return withPages(tab, next);
+  const ids = elementIdsOnPage(tab.elements, layOutPages(pages), pageId);
+  return withContentFittedToPage(withPages(tab, next), ids, pageId);
+}
+
+/** A page turned. A page in a slide size has no turn. */
+export function pageTurned<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  orientation: PageOrientation,
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return refused('unknown_page');
+  if (pageLockRefuses(pages, pageId)) return refused('locked');
+  if (target.orientation === orientation) return { tab };
+  if (!pageHasOrientation(target)) return refused('no_orientation');
+  return { tab: reshaped(tab, pageId, (p) => ({ ...p, orientation })) };
+}
+
+/** A page resized to a size its kind offers (pageSizesFor). Fit to Content is never chosen: its
+ *  sides come from content. */
+export function pageResized<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  size: PageSizeId,
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return refused('unknown_page');
+  if (pageLockRefuses(pages, pageId)) return refused('locked');
+  if ((target.size ?? 'a4') === size) return { tab };
+  if (size === 'fit' || !pageSizesFor(pageKindOf(target)).includes(size))
+    return refused('size_not_offered');
+  return {
+    tab: reshaped(tab, pageId, (p) => {
+      // Leaving Fit to Content leaves its sides behind with it.
+      const { size: _drop, fit: _sides, ...rest } = p;
+      return size === 'a4' ? rest : { ...rest, size };
+    }),
+  };
+}
+
+/** A page's background patched; on an article, every page of it. A new fill re-inks what is on
+ *  the page so it still reads (pageInkFor, docs/specs/007-editor/pages-mode.md "Re-inking"),
+ *  judged from the author's own colours where `memory` recalls them; `memory` comes back as it is
+ *  after (the caller keeps it). */
+export function pageBackgroundSet<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  patch: Partial<PageBackground>,
+  memory?: InkMemory,
+): PageEdit<T> & { memory?: InkMemory } {
+  const stored = pageBackgroundStored(tab, pageId, patch);
+  if ('refused' in stored) return stored;
+  if (stored.inks.length === 0) return { tab: stored.tab };
+  return pagesInkFor(stored.tab, stored.inks, memory);
+}
+
+/** pageBackgroundSet's page half: the background written onto the page (and its article), and
+ *  the pages a new fill must re-ink, left for the caller to ink (pagesInkFor) so a spread over
+ *  many pages inks them in one walk. No inks when nothing changed or the fill was left alone. */
+export function pageBackgroundStored<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  patch: Partial<PageBackground>,
+): { tab: T; inks: PageInk[] } | { refused: PageEditRefusal } {
+  const pages = pagesOf(tab);
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return refused('unknown_page');
+  if (pageLockRefuses(pages, pageId)) return refused('locked');
+  const was = target.background;
+  const background = withBackgroundPatch(target, patch);
+  if (sameFill(was?.fill, background?.fill) && was?.pattern === background?.pattern) {
+    return { tab, inks: [] };
+  }
+  const reach = pagesSharing(pages, pageId);
+  const next = pages.map((p) => {
+    if (!reach.has(p.id)) return p;
+    const { background: _drop, ...rest } = p;
+    return background ? { ...rest, background } : rest;
+  });
+  const out = withPages(tab, next) as T;
+  if (!('fill' in patch)) return { tab: out, inks: [] };
+  return { tab: out, inks: [...reach].map((id) => ({ pageId: id, background })) };
+}
+
+/** Whether another page of this kind fits (an article's copy is all its pages). */
+const room = (pages: readonly Page[], more = 1) => pages.length + more <= MAX_PAGES;
+
+/**
+ * A new page of a kind, right after the page `after` names (its whole article, when that page is an article's; the
+ * person's current page, docs/specs/007-editor/pages-mode.md "Adding a page"), else after the last: an infographic
+ * page takes the last infographic page's size and orientation (else A4 portrait; A4 after a Fit to Content page); an
+ * article the last page's paper size and orientation when it is a paper size, else A4 portrait, its writing a new
+ * Title and paragraph (`flow` its id); a slide the last slide's size (else 16:9), landscape. It starts on the tab's
+ * new-page background, else wears the background of the page before it. Only ever of the tab's kind ("One kind a tab"): any other is refused.
+ */
+export function pageAdded<T extends PagesTab>(
+  tab: T,
+  kind: PageKind,
+  id: string,
+  flow: string,
+  after?: string,
+): PageEdit<T> {
+  const appended = pageAppended(tab, kind, id, flow, after);
+  return 'tab' in appended ? { tab: placedAfter(appended.tab, id, after) } : appended;
+}
+
+/** pageAdded's page, at the end; `after` only picks the page whose background it wears. */
+function pageAppended<T extends PagesTab>(
+  tab: T,
+  kind: PageKind,
+  id: string,
+  flow: string,
+  after: string | undefined,
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  if (pages.length > 0 && kind !== tabPageKind(pages)) return refused('kind_not_offered');
+  if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
+  // The new page starts on the tab's new-page background when it has one (the plain paper included), else wears the
+  // background of the page before it (the last page of `after`'s unit, else the last).
+  const carried = startingBackground(tab, pages, after);
+  if (kind === 'article') {
+    const last = pages[pages.length - 1];
+    const paper = last && ['a4', 'letter', 'a3'].includes(last.size ?? 'a4');
+    const out = withArticleAdded(
+      tab,
+      {
+        id,
+        orientation: paper ? last.orientation : 'portrait',
+        ...(paper && last.size ? { size: last.size } : {}),
+        ...(carried ? { background: carried } : {}),
+      },
+      flow,
+    );
+    return { tab: out as T };
+  }
+  let page: Page;
+  if (kind === 'slide') {
+    const lastSlide = [...pages].reverse().find((p) => p.kind === 'slide');
+    page = newSlidePage(id, lastSlide?.size);
+  } else {
+    const model = [...pages].reverse().find((p) => !p.flow && p.kind !== 'slide');
+    const size = model?.size === 'fit' ? undefined : model?.size;
+    page = { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) };
+  }
+  if (carried) page = { ...page, background: carried };
+  return { tab: withPages(tab, [...pages, page]) };
+}
+
+/** The background a new page starts on: the tab's own new-page background (none for the plain paper), else the
+ *  page before's. */
+function startingBackground(
+  tab: PagesTab,
+  pages: readonly Page[],
+  after: string | undefined,
+): PageBackground | undefined {
+  const own = newPageBackgroundOf(tab);
+  if (!own) return pageBefore(pages, after)?.background;
+  return own.fill || own.pattern ? own : undefined;
+}
+
+/** The page a page added after `after` follows: the last page of `after`'s unit (its article's last page), else the
+ *  last page. */
+function pageBefore(pages: readonly Page[], after: string | undefined): Page | undefined {
+  const unit = after ? pageUnits(pages).find((u) => u.pageIds.includes(after)) : undefined;
+  const id = unit?.pageIds[unit.pageIds.length - 1];
+  return (id ? pages.find((p) => p.id === id) : undefined) ?? pages[pages.length - 1];
+}
+
+/** The new page's unit (`id`'s) moved to just after `after`'s unit; as it was where `after` is unknown or last. */
+function placedAfter<T extends PagesTab>(tab: T, id: string, after: string | undefined): T {
+  if (!after) return tab;
+  const units = pageUnits(pagesOf(tab));
+  const anchor = units.findIndex((u) => u.pageIds.includes(after));
+  if (anchor < 0) return tab;
+  return (withUnitMoved(tab, id, anchor + 1) as T | null) ?? tab;
+}
+
+/**
+ * A new page like `sourceId` after `after` (else the last) (docs/specs/007-editor/pages-mode.md "Adding a page"):
+ * its kind and shape, carrying the last page's background as any new page does; never its content. An article page
+ * starts a new article on the same paper.
+ */
+export function pageAddedLike<T extends PagesTab>(
+  tab: T,
+  sourceId: string,
+  id: string,
+  flow: string,
+  after?: string,
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const source = pages.find((p) => p.id === sourceId);
+  if (!source) return refused('unknown_page');
+  const kind = pageKindOf(source);
+  if (kind !== 'infographic' || source.size === 'fit') return pageAdded(tab, kind, id, flow, after);
+  // An infographic page in the source's own size and turn (pageAdded takes the last infographic's).
+  const out = pageAdded(tab, kind, id, flow, after);
+  if (!('tab' in out)) return out;
+  const next = pagesOf(out.tab).map((p) => {
+    if (p.id !== id) return p;
+    const { size: _size, ...rest } = p;
+    return {
+      ...rest,
+      orientation: source.orientation,
+      ...(source.size && source.size !== 'a4' ? { size: source.size } : {}),
+    };
+  });
+  return { tab: withPages(out.tab, next) };
+}
+
+/** A copy after the page, content and all; an article page copies its whole article (`flow` the
+ *  copy's article id). */
+export function pageDuplicated<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  id: string,
+  flow: string,
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return refused('unknown_page');
+  if (target.flow) {
+    const out = withArticleDuplicated(tab, target.flow, flow);
+    return out ? { tab: out } : refused('page_limit');
+  }
+  if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
+  return { tab: withDuplicatedPage(tab, pageId, id) };
+}
+
+/** A page deleted with everything on it, the pages after it closing the gap; an article page
+ *  deletes its whole article, writing and all. Never the last unit. */
+export function pageRemoved<T extends PagesTab>(tab: T, pageId: string): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const target = pages.find((p) => p.id === pageId);
+  if (!target) return refused('unknown_page');
+  if (pageLockRefuses(pages, pageId)) return refused('locked');
+  if (pageUnits(pages).length <= 1) return refused('last_page');
+  if (target.flow) {
+    const out = withArticleRemoved(tab, target.flow);
+    return out ? { tab: out } : refused('last_page');
+  }
+  const emptied = withPageContentReplaced(tab, pageId, []);
+  return {
+    tab: withPages(
+      emptied,
+      pages.filter((p) => p.id !== pageId),
+    ),
+  };
+}
+
+/** A page's unit (the page, or its whole article) moved to a place among the units (0 first), its
+ *  content with it. */
+export function pageMovedTo<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  unitIndex: number,
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  const units = pageUnits(pages);
+  const from = units.findIndex((u) => u.pageIds.includes(pageId));
+  if (from < 0) return refused('unknown_page');
+  const to = Math.max(0, Math.min(units.length - 1, Math.round(unitIndex)));
+  if (from === to) return { tab };
+  return { tab: withUnitMoved(tab, pageId, to) as T };
+}
+
+/** Everything on a page replaced by a layout's elements (built for the page by buildPageLayout). */
+export function pageLaidOut<T extends PagesTab>(
+  tab: T,
+  pageId: string,
+  placed: readonly Element[],
+): PageEdit<T> {
+  const pages = pagesOf(tab);
+  if (!pages.some((p) => p.id === pageId)) return refused('unknown_page');
+  if (pageLockRefuses(pages, pageId)) return refused('locked');
+  return { tab: withPageContentReplaced(tab, pageId, [...placed]) };
+}

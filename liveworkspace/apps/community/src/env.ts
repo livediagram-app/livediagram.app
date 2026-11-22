@@ -23,6 +23,7 @@ export interface Env {
   COMMUNITY_KEY_LIVEDOCUMENTS?: string;
   COMMUNITY_KEY_LIVEDESIGN?: string;
   COMMUNITY_KEY_LIVEHUDDLE?: string;
+  COMMUNITY_KEY_LIVEKNOWLEDGE?: string;
   // Where each app answers the sweep's door (`<origin>/api/internal/items/community-states`), called with that app's
   // key above. Unset, that app is not swept (community.md "The sweep").
   APP_ORIGIN_LIVEDIAGRAM?: string;
@@ -30,6 +31,7 @@ export interface Env {
   APP_ORIGIN_LIVEDOCUMENTS?: string;
   APP_ORIGIN_LIVEDESIGN?: string;
   APP_ORIGIN_LIVEHUDDLE?: string;
+  APP_ORIGIN_LIVEKNOWLEDGE?: string;
   // The Forum's account check (community.md "Forum routes"): access tokens are checked offline against
   // `${ACCOUNTS_URL}/api/auth`'s keys, addressed to any app API in INDEX_AUDIENCES (comma separated), as the index and
   // the Drive service check them. Without the audiences every Forum write answers 401.
@@ -53,6 +55,7 @@ const APP_KEY = {
   'livedocuments.app': 'COMMUNITY_KEY_LIVEDOCUMENTS',
   'livedesign.app': 'COMMUNITY_KEY_LIVEDESIGN',
   'livehuddle.app': 'COMMUNITY_KEY_LIVEHUDDLE',
+  'liveknowledge.app': 'COMMUNITY_KEY_LIVEKNOWLEDGE',
 } as const satisfies Record<CommunityApp, keyof Env>;
 
 export function appKey(env: Env, app: CommunityApp): string | undefined {
@@ -65,6 +68,7 @@ const APP_ORIGIN = {
   'livedocuments.app': 'APP_ORIGIN_LIVEDOCUMENTS',
   'livedesign.app': 'APP_ORIGIN_LIVEDESIGN',
   'livehuddle.app': 'APP_ORIGIN_LIVEHUDDLE',
+  'liveknowledge.app': 'APP_ORIGIN_LIVEKNOWLEDGE',
 } as const satisfies Record<CommunityApp, keyof Env>;
 
 // Where the app answers the sweep's door, without a trailing slash, or undefined when it is not set.

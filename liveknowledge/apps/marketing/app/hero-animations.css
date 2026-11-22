@@ -1,0 +1,122 @@
+/* The hero illustration's motion (components/HeroIllustration.tsx; docs/specs/019-marketing/marketing-site.md
+   "Hero"), and the canvas colours the shared card art reads. CSS only: the drawing is static markup, and its box is
+   content-visibility: auto, so none of this runs while the hero is off screen. Everything is still under
+   prefers-reduced-motion (the foot of this file). Paced as content, not chrome (motion-budget.test.ts). */
+
+/* The editor's canvas for the shared kit's framed art (@liveworkspace/marketing-site feature-art/shared.tsx
+   Frame): the Default colour scheme's paper and grid, light under :root and dark under .dark. */
+:root {
+  --art-paper: #fbfaf7;
+  --art-grid: #cbd5e1;
+}
+.dark {
+  --art-paper: #0d121a;
+  --art-grid: #1c2735;
+}
+
+/* Each app's connector: its dashes run along the platform towards the knowledgebase's cube. */
+@keyframes kh-flow {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+.kh-flow {
+  animation: kh-flow 1.8s linear infinite;
+}
+
+/* Each reader's dotted line: the dots travel down into the cube (the question) or up out of it (the answer). */
+.kh-ask {
+  animation: kh-flow 2.4s linear infinite;
+}
+.kh-answer {
+  animation: kh-flow 2.4s linear infinite reverse;
+}
+
+/* The platform's dashed ring turns slowly: one dash and its gap every three seconds. */
+@keyframes kh-ring {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+.kh-ring {
+  animation: kh-ring 6s linear infinite;
+}
+
+/* The two cards float a few pixels, out of step with each other. */
+@keyframes kh-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.kh-float {
+  animation: kh-float 7s ease-in-out infinite;
+}
+.kh-float-late {
+  animation: kh-float 8s ease-in-out -3s infinite;
+}
+
+/* The other apps' cubes lift in turn (--kh-i is the cube's place in the round), as each hands something on. */
+@keyframes kh-bob {
+  0%,
+  14%,
+  100% {
+    transform: translateY(0);
+  }
+  7% {
+    transform: translateY(-5px);
+  }
+}
+.kh-bob {
+  animation: kh-bob 7.5s ease-in-out infinite;
+  animation-delay: calc(var(--kh-i, 0) * 1.5s);
+}
+
+/* The tick on the cube's face draws once as the page arrives. */
+@keyframes kh-tick {
+  from {
+    stroke-dashoffset: 64;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.kh-tick {
+  stroke-dasharray: 64;
+  animation: kh-tick 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.5s both;
+}
+
+/* The lime dots breathe. */
+@keyframes kh-dot {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.kh-dot {
+  animation: kh-dot 4s ease-in-out infinite;
+  animation-delay: calc(var(--kh-i, 0) * 0.6s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kh-flow,
+  .kh-ask,
+  .kh-answer,
+  .kh-ring,
+  .kh-float,
+  .kh-float-late,
+  .kh-bob,
+  .kh-tick,
+  .kh-dot {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}

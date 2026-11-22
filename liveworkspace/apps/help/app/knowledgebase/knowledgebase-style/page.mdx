@@ -1,0 +1,82 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { KnowledgebaseStyleScene } from '@/editions/liveknowledge/components/illustrations/style-and-developers';
+
+export const metadata = helpMetadata({
+  title: 'Knowledgebase Style',
+  description:
+    'Give every page of a Knowledgebase one look: pick a look, or fine-tune the fonts, text size, line spacing, heading style, theme and accent colour.',
+  path: '/help/knowledgebase/knowledgebase-style/',
+});
+
+<ArticleLayout path="knowledgebase/knowledgebase-style" title="Knowledgebase Style" description="Pick one look for every page of a Knowledgebase: a theme, fonts, text size, spacing and an accent colour." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+A Knowledgebase has one style, and every page is written in it. There is no style per page: change it once and every page changes, for everyone, at the same moment.
+
+<Figure caption="Knowledgebase Style: each look is a small page of writing in that look. The chosen one is ringed.">
+  <KnowledgebaseStyleScene />
+</Figure>
+
+## Open Knowledgebase Style
+
+<Step n={1}>
+  Press the Knowledgebase's name at the top of the sidebar. Its menu opens.
+</Step>
+
+<Step n={2}>
+  Choose **Knowledgebase Style**. The dialog reads "Pick a look for every page of this
+  knowledgebase."
+</Step>
+
+You can also find it by name in the search panel (`Cmd+K`, or `Ctrl+K` on Windows and Linux).
+
+## Pick a Look
+
+A look is a theme (its colours) and a font together. Each card is a small page of writing drawn in that look, named by the two, such as "Steel, Inter". The product's own theme is called **Lime**.
+
+- Press a card to wear that look. It sets the theme and both fonts, keeps your text size, spacing and heading style, and puts the accent back on the theme's own.
+- **Mashup** rolls a random theme and font.
+- Seasonal looks can be shown or hidden with their switch.
+- A Knowledgebase whose headings and body are in two different fonts wears no look, so no card reads as chosen.
+
+A new Knowledgebase starts in the **Everyday** look, with the Lime theme.
+
+## Fine-Tune
+
+Press **Fine-tune** for two panels, each with a sample that follows your choices as you make them.
+
+**Text:** "The typefaces, size and spacing every page is written in."
+
+- The heading font and the body font.
+- Text size: **Small**, **Medium** or **Large**.
+- Line spacing: **Compact**, **Comfortable** or **Relaxed**.
+- Heading style: plain, or with a rule under the largest headings.
+
+**Colours:** "The theme, and the accent the writing takes."
+
+- The theme, six to a page, each a small page of writing in that theme and your fonts.
+- The accent: the theme's own, or one you pick. Picking a theme puts the accent back on that theme's own.
+
+## What the Style Colours
+
+- Headings, links (page links included), the bar beside a quote, a table's header row and the caret take the accent. It is kept readable on the page, in light and dark mode.
+- **A page's Title stays in the ink** in every style: it is the page's name.
+- The editor's own chrome (the sidebar, the top row, the footer's tabs, buttons) follows the theme. An accent you pick colours the writing only.
+- **Review Due** stays amber, and errors stay red, in every theme.
+- Drawings and charts inside a page are drawn in the Knowledgebase's theme.
+- Exports (PDF, Word and Markdown) use the style.
+
+## Good to Know
+
+- A style change is one undoable step. Pages are not rewritten or saved again.
+- There is no canvas, page background, margin or page number to style: a Knowledgebase page is a page of writing.
+- An agent cannot set a page's look. The style is set for the whole Knowledgebase, by an Editor.
+
+## Who Can Do What
+
+| Action                        | Editor | Participant | Viewer |
+| ----------------------------- | ------ | ----------- | ------ |
+| See pages in the style        | Yes    | Yes         | Yes    |
+| Open Knowledgebase Style      | Yes    | No          | No     |
+
+</ArticleLayout>

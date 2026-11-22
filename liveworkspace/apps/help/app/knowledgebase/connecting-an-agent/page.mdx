@@ -1,0 +1,117 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  AgentCardScene,
+  ConnectAgentScene,
+} from '@/editions/liveknowledge/components/illustrations/ai-knowledge';
+
+export const metadata = helpMetadata({
+  title: 'Connecting an Agent',
+  description:
+    'Connect Claude, a coding agent or a script to a Knowledgebase over the MCP server, the liveknowledge command line or an API token.',
+  path: '/help/knowledgebase/connecting-an-agent/',
+});
+
+<ArticleLayout path="knowledgebase/connecting-an-agent" title="Connecting an Agent" description="Connect an AI agent to a Knowledgebase over the MCP server, the command line or an API token." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+A Knowledgebase is written for agents as much as for people. Connect Claude, a coding agent or your own script, and it can search the pages, read them with how far each can be trusted, and suggest edits for a person to accept.
+
+There are three ways in. Each is listed in the **Connect an Agent** dialog, with the address and the commands to copy.
+
+<Figure caption="Connect an Agent: what a new connection may do, then the MCP server's address, the command line and API tokens.">
+  <ConnectAgentScene />
+</Figure>
+
+## Open Connect an Agent
+
+<Step n={1}>
+  Press the **AI Knowledge** tab in the footer.
+</Step>
+
+<Step n={2}>
+  Press **Connect an Agent** at the top of the view.
+</Step>
+
+Anyone who can open the Knowledgebase can read the dialog. What a connection can then do depends on who it acts for (see [What Agents Can Do](/help/knowledgebase/what-agents-can-do/)).
+
+## Through the MCP Server
+
+This is the way for Claude and any other AI tool that speaks the Model Context Protocol.
+
+<Step n={1}>
+  Copy the address under **MCP Server**: `https://mcp.liveknowledge.app/mcp`.
+</Step>
+
+<Step n={2}>
+  Add it as a connector or a remote MCP server in your AI tool: in Claude, open Settings, then Connectors, and add a custom connector with this address as its URL. Other tools take it wherever they ask for a remote MCP server or a server URL.
+</Step>
+
+<Step n={3}>
+  Your AI tool opens a liveknowledge page asking you to approve the connection. Approve it. The
+  tool makes its own token, so there is nothing to paste.
+</Step>
+
+<Step n={4}>
+  Ask it something about your pages. It calls `get_context` first, then `search_pages`,
+  `read_page` and `suggest_edit`. Every tool is listed in [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/).
+</Step>
+
+## Through the Command Line
+
+The `liveknowledge` command reads and suggests from a terminal or a script.
+
+```bash
+liveknowledge auth login
+liveknowledge context Handbook
+liveknowledge search Handbook when do we deploy
+```
+
+`auth login` signs you in once in the browser. Every other command takes the Knowledgebase's name (or its id, or its address). See [The liveknowledge CLI](/help/developers/liveknowledge-cli/).
+
+## With an API Token
+
+<Step n={1}>
+  Press **Open API Tokens** in the dialog. It opens the Tokens page in Settings.
+</Step>
+
+<Step n={2}>
+  Create a token and copy it. It is shown once.
+</Step>
+
+<Step n={3}>
+  Send it to the API as `Authorization: Bearer <token>`. See [API Tokens](/help/account-and-data/api-tokens/) and [The Knowledge API](/help/developers/knowledge-api/).
+</Step>
+
+A read-only token only reads, whatever is allowed in the Knowledgebase.
+
+## See It Connected
+
+Once an agent has read or written this Knowledgebase, it has a card under **Connected Agents** in AI Knowledge.
+
+<Figure caption="A connected agent's card: its name, how it connects, what it may do, and the pages it read most. An Editor's menu on it holds Allow Writing.">
+  <AgentCardScene />
+</Figure>
+
+- **The name** is the one the AI tool gives itself, or "CLI" for the command line.
+- **How it connects:** "Through the MCP server", "Through the command line" or "With an API token", and when it was last seen.
+- **What it may do,** as chips: **Reads**, **Suggests Edits** and, once an Editor allows it, **Writes**.
+- **Pages read this week,** and the three it read most. Press one to open it.
+
+A card stays for 30 days after the agent last read or wrote here.
+
+## Good to Know
+
+- An agent acts for the person or token that connected it, and can open only what they can. A share role applies to an agent exactly as it does to a person.
+- A new connection reads and suggests. Writing is allowed one connection at a time, by an Editor. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
+- A Knowledgebase kept Offline is in your browser only, so no agent can reach it.
+
+## Who Can Do What
+
+| Action                                   | Editor | Participant | Viewer |
+| ---------------------------------------- | ------ | ----------- | ------ |
+| Open Connect an Agent, see Connected Agents | Yes | Yes         | Yes    |
+| Connect an agent that reads              | Yes    | Yes         | Yes    |
+| Connect an agent that suggests edits     | Yes    | Yes         | No     |
+| Allow an agent to write, or stop it      | Yes    | No          | No     |
+
+</ArticleLayout>

@@ -1,0 +1,88 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { RolesScene } from '@/editions/liveknowledge/components/illustrations/style-and-developers';
+
+export const metadata = helpMetadata({
+  title: 'Roles in a Knowledgebase',
+  description:
+    'What an Editor, a Participant and a Viewer can each do in a Knowledgebase, from writing and verifying pages to Ask, AI Knowledge, import and export.',
+  path: '/help/knowledgebase/knowledgebase-roles/',
+});
+
+<ArticleLayout path="knowledgebase/knowledgebase-roles" title="Roles in a Knowledgebase" description="What an Editor, a Participant and a Viewer can each do, feature by feature." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Everyone who opens a Knowledgebase has one of three roles: **Editor**, **Participant** or **Viewer**. The owner is an Editor; everyone else has the role their share link, invite or team gives them. See [Sharing and Embeds](/help/collaboration/sharing/).
+
+<Figure caption="The three roles, and a few of the things each can do.">
+  <RolesScene />
+</Figure>
+
+In short: an **Editor** writes and runs the Knowledgebase, a **Participant** reads and comments, and a **Viewer** reads. Everyone can search, Ask and export a page.
+
+## Pages and Writing
+
+| Action                                              | Editor | Participant | Viewer |
+| --------------------------------------------------- | ------ | ----------- | ------ |
+| Read pages, follow links, fold the tree             | Yes    | Yes         | Yes    |
+| Copy a page's link                                  | Yes    | Yes         | Yes    |
+| Write and format on a page                          | Yes    | No          | No     |
+| Add, rename, move, duplicate and delete pages       | Yes    | No          | No     |
+| Add or remove a page link, add an embed             | Yes    | No          | No     |
+| Reply in a comment thread                           | Yes    | Yes         | No     |
+| Start a margin note on words in the writing         | Yes    | No          | No     |
+
+## Trust
+
+| Action                                              | Editor | Participant | Viewer |
+| --------------------------------------------------- | ------ | ----------- | ------ |
+| See a page's state, owner and Page Health           | Yes    | Yes         | Yes    |
+| Verify a page, change its owner                     | Yes    | No          | No     |
+| Change the Review Period                            | Yes    | No          | No     |
+| See Knowledge Health                                | Yes    | Yes         | Yes    |
+| Remind the owners, ask both owners of a disagreement | Yes   | No          | No     |
+| Turn your own review emails off or on               | Yes    | Yes         | Yes    |
+
+## Finding Things
+
+| Action                                              | Editor | Participant | Viewer |
+| --------------------------------------------------- | ------ | ----------- | ------ |
+| Search                                              | Yes    | Yes         | Yes    |
+| Ask, copy an answer, mark it helpful or not         | Yes    | Yes         | Yes    |
+| Save an answer as a page, draft a page from a gap   | Yes    | No          | No     |
+| See AI Settings                                     | Yes    | Yes         | Yes    |
+| Add, replace or remove the key; choose the model    | Yes    | No          | No     |
+
+Ask needs you to be signed in, whatever your role.
+
+## AI Knowledge
+
+| Action                                              | Editor | Participant | Viewer |
+| --------------------------------------------------- | ------ | ----------- | ------ |
+| See every section of AI Knowledge                   | Yes    | Yes         | Yes    |
+| Accept or dismiss a suggested edit                  | Yes    | No          | No     |
+| Settle pages that disagree                          | Yes    | No          | No     |
+| Draft a page for a question, dismiss a question     | Yes    | No          | No     |
+| Add or remove an Always in Context page             | Yes    | No          | No     |
+| Allow an agent to write, or stop it                 | Yes    | No          | No     |
+
+An agent acts with its person's role, narrowed by its scopes. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
+
+## The Knowledgebase's Menu
+
+| Action                                              | Editor | Participant | Viewer |
+| --------------------------------------------------- | ------ | ----------- | ------ |
+| Rename the Knowledgebase                            | Yes    | No          | No     |
+| Knowledgebase Style                                 | Yes    | No          | No     |
+| Describe to Add Pages                               | Yes    | No          | No     |
+| Import                                              | Yes    | No          | No     |
+| Export                                              | Yes    | Yes         | Yes    |
+| Delete the Knowledgebase                            | Yes    | No          | No     |
+
+A row a person is not offered is not in their menu at all.
+
+## Good to Know
+
+- "Editor" here means an Editor of the whole Knowledgebase. A share link confined to one page, and a visitor from the Community, can read and export but not run the Knowledgebase.
+- The same rules hold for the API, the MCP server and the CLI: a role is checked on the server, not only in the app.
+
+</ArticleLayout>

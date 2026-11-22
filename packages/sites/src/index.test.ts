@@ -43,7 +43,7 @@ describe('sites', () => {
       'https://www.livediagram.app',
     );
     // One port block of a hundred per site, in the list's order.
-    expect(SITES.map((s) => LOCAL_PORTS[s.id])).toEqual([3000, 3100, 3200, 3300, 3400, 3500]);
+    expect(SITES.map((s) => LOCAL_PORTS[s.id])).toEqual([3000, 3100, 3200, 3300, 3400, 3500, 3600]);
   });
 
   it("links to a stack's own routers when it runs in another port block", () => {

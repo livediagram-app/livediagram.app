@@ -64,15 +64,22 @@ function useLatest<T>(value: T): Latest<T> {
   return store;
 }
 
+/** What the panel calls the open item and how a viewer moves round it: a canvas by default, a knowledgebase's pages
+ *  on liveknowledge (sweep 2026-11-21: its panel said "this canvas"). */
+export type WalkthroughWords = { item: string; moving: string };
+const CANVAS_WORDS: WalkthroughWords = { item: 'canvas', moving: 'move around the canvas' };
+
 // Record a Walkthrough's set-up, loaded when it first shows.
 const RecordSetup = lazy(() => import('./RecordSetup'));
 
 function WalkthroughsView({
   latest,
   onClose,
+  words,
 }: {
   latest: Latest<Walkthroughs>;
   onClose: () => void;
+  words: WalkthroughWords;
 }) {
   const walkthroughs = useSyncExternalStore(latest.subscribe, latest.get, latest.get);
   const setup = walkthroughs.recorder.phase.kind === 'setup';
@@ -101,6 +108,7 @@ function WalkthroughsView({
       <WalkthroughsPanel
         walkthroughs={walkthroughs.menu}
         bare
+        words={words}
         onClose={onClose}
         onRecord={(at) => {
           // Inside the press: Brave starts the level meter's audio only from one.
@@ -129,7 +137,13 @@ function WalkthroughsView({
   );
 }
 
-export function WalkthroughsTools({ walkthroughs }: { walkthroughs: Walkthroughs }) {
+export function WalkthroughsTools({
+  walkthroughs,
+  words = CANVAS_WORDS,
+}: {
+  walkthroughs: Walkthroughs;
+  words?: WalkthroughWords;
+}) {
   const latest = useLatest(walkthroughs);
   const menu = walkthroughs.menu;
   const { available, canRecord } = menu;
@@ -164,7 +178,9 @@ export function WalkthroughsTools({ walkthroughs }: { walkthroughs: Walkthroughs
               // covers what is being picked (a Dashboard tab's right-hand slots, Work Tracker 1287).
               keepOpen: picking,
               stepAside: picking,
-              view: ({ close }) => <WalkthroughsView latest={latest} onClose={close} />,
+              view: ({ close }) => (
+                <WalkthroughsView latest={latest} onClose={close} words={words} />
+              ),
             },
           ]
         : gate
@@ -181,7 +197,7 @@ export function WalkthroughsTools({ walkthroughs }: { walkthroughs: Walkthroughs
               },
             ]
           : [],
-    [available, canRecord, count, latest, gate, picking],
+    [available, canRecord, count, latest, gate, picking, words],
   );
   usePublishToolsItems('walkthroughs', rows);
   return null;
@@ -196,8 +212,10 @@ export function WalkthroughsPanel({
   bare = false,
   onClose,
   onRecord,
+  words = CANVAS_WORDS,
 }: {
   walkthroughs: WalkthroughsMenu;
+  words?: WalkthroughWords;
   sheet?: boolean;
   bare?: boolean;
   onClose: () => void;
@@ -235,10 +253,10 @@ export function WalkthroughsPanel({
           <ToolExplainer
             art={walkthroughsArt}
             title="No walkthroughs yet"
-            description="Record a video of this canvas while you talk it through. Anyone who can open it can watch, or share it by a link."
+            description={`Record a video of this ${words.item} while you talk it through. Anyone who can open it can watch, or share it by a link.`}
             steps={[
               'Press Record Walkthrough, then share this tab when your browser asks.',
-              'Talk it through as you move around the canvas.',
+              `Talk it through as you ${words.moving}.`,
               'Finish, and the video is saved here, ready to share.',
             ]}
             data="walkthroughs"
@@ -285,7 +303,7 @@ export function WalkthroughsPanel({
       {confirming ? (
         <ConfirmPopover
           anchor={confirming.anchor}
-          message="Delete this walkthrough? It is deleted for everyone who can open this canvas."
+          message={`Delete this walkthrough? It is deleted for everyone who can open this ${words.item}.`}
           confirmLabel="Delete"
           onCancel={() => setConfirming(null)}
           onConfirm={() => {

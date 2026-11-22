@@ -46,7 +46,14 @@ const fromMetadata = (page: string, m: Metadata): Meta => ({
   description: m.description ?? null,
 });
 
-export function describeMetaDescriptions({ articleFloor }: { articleFloor: number }) {
+export function describeMetaDescriptions({
+  articleFloor,
+  featureLandingFloor = 5,
+}: {
+  articleFloor: number;
+  /** The fewest feature-category landings the scope shows (liveknowledge has five). */
+  featureLandingFloor?: number;
+}) {
   const articles = scopedArticleSources().map(({ file, source }) => articleMeta(file, source));
   const shown = new Set(site.catalogue.categories.map((c) => c.slug));
   // The support landings' copy (lib/support-copy.ts), the home, contact and the features index.
@@ -73,7 +80,7 @@ export function describeMetaDescriptions({ articleFloor }: { articleFloor: numbe
       expect(articles.length).toBeGreaterThan(articleFloor);
       expect(articles.filter((a) => a.title === null || a.description === null)).toEqual([]);
       expect(staticPages.filter((p) => p.description !== null).length).toBeGreaterThan(3);
-      expect(featureLandings.length).toBeGreaterThan(5);
+      expect(featureLandings.length).toBeGreaterThan(featureLandingFloor);
     });
 
     it('every meta description fits a search result', () => {

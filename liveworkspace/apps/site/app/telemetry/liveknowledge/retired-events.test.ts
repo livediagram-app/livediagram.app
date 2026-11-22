@@ -1,0 +1,275 @@
+import { describe, expect, it } from 'vitest';
+import { metricKey, type TelemetrySummary } from '@liveknowledge/api-schema';
+import { dropRetiredEvents as dropRetired } from '../_shared/retired-events';
+import { isRetiredEvent } from './retired-events';
+
+const dropRetiredEvents = (summary: TelemetrySummary) => dropRetired(summary, isRetiredEvent);
+
+// docs/specs/017-telemetry/telemetry.md "Retired features": the removed Activity panel's events never
+// reach a chart.
+
+describe('isRetiredEvent', () => {
+  it('retires the Activity panel events', () => {
+    expect(isRetiredEvent('Document', 'Reverted', null)).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'Activity')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsActivity')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'ActivityPanelOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'ActivityRevertPreviewOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'reverting-changes')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'what-it-is')).toBe(true);
+    expect(isRetiredEvent('Help', 'Helpful', 'activity-panel')).toBe(true);
+  });
+
+  it('retires the isometric view, its export toggle and its help article, not the other modes', () => {
+    expect(isRetiredEvent('Canvas', 'Used', 'Isometric')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'IsometricExport')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'isometric-mode')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'isometric-mode')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'PatternExport')).toBe(false);
+    // The Isometric background pattern followed the view on 2026-10-25; the other patterns carry on.
+    expect(isRetiredEvent('Canvas', 'Changed', 'Isometric')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Changed', 'Crosshatch')).toBe(false);
+  });
+
+  it("retires element links and notes in liveknowledge, keeping link cards' Element·Linked", () => {
+    for (const action of ['Added', 'Changed', 'Deleted', 'Opened']) {
+      expect(isRetiredEvent('Note', action, null)).toBe(true);
+    }
+    expect(isRetiredEvent('Note', 'Used', 'Bold')).toBe(true);
+    expect(isRetiredEvent('Help', 'Opened', 'notes')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'links')).toBe(true);
+    expect(isRetiredEvent('Help', 'Opened', 'linking-tabs')).toBe(true);
+    expect(isRetiredEvent('Element', 'Linked', 'Url')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Linked', null)).toBe(false);
+  });
+
+  it('retires the Tab Window, its tour and its help article, not the other tours', () => {
+    expect(isRetiredEvent('Element', 'Added', 'TabWindow')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'TabWindowTab')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'TabWindowTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'TabWindowTourStepOpen')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'TabWindowTourSeenOff')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'tab-windows')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'tab-windows')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'Stack')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'StackTourOffer')).toBe(false);
+  });
+
+  it('retires the Slide Deck panel and its tour steps', () => {
+    expect(isRetiredEvent('UI', 'Opened', 'SlideDeck')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(true);
+    expect(isRetiredEvent('UI', 'Removed', 'Slide')).toBe(true);
+    expect(isRetiredEvent('UI', 'Moved', 'Slide')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'AllPageSlides')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideDeck')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideShowSettings')).toBe(true);
+  });
+
+  it('retires the in-page layout card events, not the Page Layouts it opened', () => {
+    expect(isRetiredEvent('UI', 'Closed', 'EmptyPageLayouts')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'EmptyPageInvite')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'EmptyPageLayouts')).toBe(false);
+    expect(isRetiredEvent('UI', 'Closed', 'Welcome')).toBe(false);
+  });
+
+  it('retires the palette Favourites events', () => {
+    expect(isRetiredEvent('UI', 'Added', 'PaletteFavourite')).toBe(true);
+    expect(isRetiredEvent('UI', 'Removed', 'PaletteFavourite')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'PaletteFavourite')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PaletteFavouritesEdit')).toBe(true);
+    expect(isRetiredEvent('UI', 'Searched', 'PaletteSearch')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'favourites')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'favourites')).toBe(true);
+    // The palette's other searches carry on.
+    expect(isRetiredEvent('UI', 'Searched', 'IconSearch')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);
+  });
+
+  it("retires the wizard's Location step and the Quick Start, not their successors", () => {
+    for (const type of [
+      'SkipLocationStepOn',
+      'SkipLocationStepOff',
+      'TemplateShelfExpanded',
+      'TemplateShelfCollapsed',
+      'TemplateModeAll',
+      'TemplateModeDiagram',
+      'TemplateModeDraw',
+      'TemplateModeWorkshop',
+      'TemplateModePages',
+      'TemplateModePlan',
+    ])
+      expect(isRetiredEvent('UI', 'Toggled', type)).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'StartOtherMode')).toBe(false);
+    expect(isRetiredEvent('UI', 'Closed', 'NewDocument')).toBe(false);
+    expect(isRetiredEvent('Template', 'Used', 'Kanban')).toBe(false);
+  });
+
+  it('retires the AI assistant, not the AI tools that connect over MCP', () => {
+    for (const type of ['AiOn', 'AiOff', 'AiSuggestedPromptsOn', 'AiSuggestedPromptsOff'])
+      expect(isRetiredEvent('AI', 'Toggled', type)).toBe(true);
+    expect(isRetiredEvent('AI', 'Used', 'Ask')).toBe(true);
+    expect(isRetiredEvent('AI', 'Used', 'Clean')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'ai-tools')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'ai')).toBe(true);
+    expect(isRetiredEvent('Error', 'Api', 'Network.Post.Ai')).toBe(true);
+    expect(isRetiredEvent('Mcp', 'Used', 'CreateDocument')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'ai-clients')).toBe(false);
+    expect(isRetiredEvent('Error', 'Api', 'Network.Post.Documents')).toBe(false);
+  });
+
+  it('retires Settings › Experimental and its mode switches, not the modes', () => {
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsExperimental')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'SettingsAccessibility')).toBe(false);
+  });
+
+  it('retires the custom themes, not the built-in theme picks', () => {
+    expect(isRetiredEvent('Theme', 'Created', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'Custom')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'CustomEdited')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Deleted', 'Custom')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Themes')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'ExplorerPanel.Themes')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'custom-themes')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'themes-library')).toBe(true);
+    expect(isRetiredEvent('Error', 'Api', 'Http401.ListCustomThemes')).toBe(true);
+    expect(isRetiredEvent('Error', 'Api', 'Http413.CreateCustomTheme')).toBe(true);
+    expect(isRetiredEvent('Theme', 'Changed', 'Default')).toBe(false);
+    expect(isRetiredEvent('Theme', 'Changed', 'Unknown')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'changing-theme')).toBe(false);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.ImageGallery')).toBe(false);
+    expect(isRetiredEvent('Error', 'Api', 'Http401.ListFolders')).toBe(false);
+  });
+
+  it('retires what liveknowledge cut from the fork, not the writing, the tours or the format painter', () => {
+    // docs/specs/002-project-scope/not-in-liveknowledge.md: slides, infographics, flashcards and presenting.
+    expect(isRetiredEvent('UI', 'Started', 'Presentation')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'Presentation-transitionFade')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'Presentation-loopOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'PageSlide')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'NoteCard')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'FlashcardFlip')).toBe(true);
+    expect(isRetiredEvent('Document', 'Exported', 'PagesPPTX')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Imported', 'PowerPoint')).toBe(true);
+    // The row of paper pages, a page's own look and a tab's own style.
+    expect(isRetiredEvent('Tab', 'Changed', 'PageKindSlide')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageLandscape')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'NewPageBackgroundCarried')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'Finish')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'ArticleLookClean')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'PageSwipe')).toBe(true);
+    // Zoom, the laser and the spotlight.
+    expect(isRetiredEvent('Canvas', 'Zoomed', 'In')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'SpotlightShape')).toBe(true);
+    // The Pages tour and the Show Me tours of cut surfaces.
+    expect(isRetiredEvent('UI', 'Opened', 'PagesTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideContents')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'SlideTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'Ended', 'TabStyleTourCompleted')).toBe(true);
+    // What carries on: the knowledgebase's style, the writing, the other tours, the format painter.
+    expect(isRetiredEvent('Tab', 'Changed', 'Look')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'Text')).toBe(false);
+    expect(isRetiredEvent('Element', 'Added', 'ArticleEmbed')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'ShareTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'FunnelTour')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatCopies')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Created', 'FromAnswer')).toBe(false);
+    expect(isRetiredEvent('Document', 'Exported', 'PagesPDF')).toBe(false);
+  });
+
+  it('keeps everything that still exists', () => {
+    expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'undo')).toBe(false);
+    expect(isRetiredEvent('Activity', 'Opened', null)).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'Settings')).toBe(false);
+  });
+  it('retires the Layers panel, Move to Layer, its Settings and the Hidden layers export, not smart naming', () => {
+    for (const [action, type] of [
+      ['Added', null],
+      ['Selected', null],
+      ['Renamed', 'Manual'],
+      ['Deleted', null],
+      ['Toggled', 'Hidden'],
+      ['Toggled', 'OthersHidden'],
+      ['Removed', 'MergedUp'],
+      ['Changed', 'Opacity'],
+      ['Cleared', null],
+      ['Reordered', null],
+      ['Moved', null],
+      ['Opened', 'Panel'],
+    ] as const) {
+      expect(isRetiredEvent('Layer', action, type)).toBe(true);
+    }
+    expect(isRetiredEvent('UI', 'Toggled', 'LayersPanelOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'LayerPreviewOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'LayerCountOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'LayerHoverPreviewOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'HiddenLayersExport')).toBe(true);
+    expect(isRetiredEvent('Layer', 'Renamed', 'Adopted')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'PatternExport')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'CollaboratePanelOff')).toBe(false);
+  });
+});
+
+describe('dropRetiredEvents', () => {
+  const reverted = metricKey('Document', 'Reverted', null);
+  const undone = metricKey('Document', 'Undone', null);
+  const summary = {
+    enabled: true,
+    generatedAt: 0,
+    windows: {
+      today: {
+        total: 5,
+        rows: [
+          { category: 'Document', action: 'Reverted', type: null, count: 2 },
+          { category: 'Document', action: 'Undone', type: null, count: 3 },
+        ],
+      },
+      last7: { total: 3, rows: [{ category: 'Document', action: 'Undone', type: null, count: 3 }] },
+      last30: {
+        total: 3,
+        rows: [{ category: 'Document', action: 'Undone', type: null, count: 3 }],
+      },
+    },
+    daily: {
+      days: [1, 2],
+      totals: [4, 6],
+      byCategory: { Document: [4, 6] },
+      byMetric: { [reverted]: [1, 2], [undone]: [3, 4] },
+    },
+  } as unknown as TelemetrySummary;
+
+  it('takes retired rows out of the windows and their totals', () => {
+    const out = dropRetiredEvents(summary);
+    expect(out.windows.today.rows.map((r) => r.action)).toEqual(['Undone']);
+    expect(out.windows.today.total).toBe(3);
+    expect(out.windows.last7).toBe(summary.windows.last7);
+  });
+
+  it('takes retired series out of the daily lines', () => {
+    const daily = dropRetiredEvents(summary).daily!;
+    expect(Object.keys(daily.byMetric)).toEqual([undone]);
+    expect(daily.byCategory.Document).toEqual([3, 4]);
+    expect(daily.totals).toEqual([3, 4]);
+  });
+});
+
+// docs/specs/017-telemetry/telemetry.md: a deployment with telemetry off answers `{ enabled: false }` alone, and the
+// dashboard shows that it is off. Dropping retired events from it threw, which read as a failed request.
+describe('dropRetiredEvents on a deployment with telemetry off', () => {
+  it('hands the summary back as it came', () => {
+    const off = { enabled: false } as unknown as TelemetrySummary;
+    expect(() => dropRetiredEvents(off)).not.toThrow();
+    expect(dropRetiredEvents(off)).toBe(off);
+  });
+});

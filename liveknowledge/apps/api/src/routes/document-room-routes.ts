@@ -1,0 +1,151 @@
+// /api/documents/<id>/room-ticket + /ws: joining a document's realtime room (docs/specs/015-api/api.md "Realtime
+// model"). The index's grant is the whole admission (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"): the
+// upgrade carries it as `?t=` (@liveworkspace/index-app's room tickets), the worker checks it offline and stamps what it says on the
+// headers only it can set, and the room asks for a fresh one before it lapses (document-room.ts).
+
+import {
+  capWorkbenchRole,
+  type AccessLevel,
+  type RoomTicketResponse,
+} from '@liveknowledge/api-schema';
+import { noteTokenRoom, noteWorkbenchRoom } from '../auth/workbench-session';
+import { indexService, linkCodeOf } from '../index-service';
+import { badRequest, forbidden, json, notFound } from '../responses';
+import {
+  openRoomTicket,
+  requestedRoomCap,
+  roomTicketLevel,
+  sealRoomTicket,
+} from '@liveworkspace/index-app';
+import { type RouteContext } from './context';
+import { resolveDocumentGrant } from './document-grant';
+import {
+  COLLAB_KEY_HEADER,
+  collabKeyFor,
+  REACTION_PERSON_HEADER,
+  reactionPersonFor,
+} from '@liveworkspace/api-kit/collab-key';
+import { personTagFor } from '../person-tag';
+import { isAccountOwner } from '../person/owner';
+import { documentRoom } from '../document-client';
+import type { Env } from '../types';
+
+// A Community visitor never joins the author's room (docs/specs/025-community/community.md "Viewing a post's
+// document"): no presence, no cursors, no live stream. A link visitor's code is checked against the document's post.
+async function isCommunityCode(
+  env: Env,
+  documentId: string,
+  code: string | null,
+): Promise<boolean> {
+  if (!code) return false;
+  const post = await documentRoom(env, documentId).community();
+  return post !== null && post.code === code;
+}
+
+// Returns null when the request isn't a room route.
+export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
+  const { request, env, url, segments } = ctx;
+  // POST /api/documents/<id>/room-ticket: the ticket for a caller that holds no grant of its own (an API token's
+  // CLI, a workbench session, the MCP server's interactive view): the grant the request carries or one fetched for it.
+  if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
+    const id = segments[2]!;
+    // `?cap=view` (api.md): a view-only ticket, the MCP view's (mcp-server.md "Live updates").
+    const cap = requestedRoomCap(url);
+    if (cap === 'invalid') return badRequest('invalid_cap');
+    const grant = await resolveDocumentGrant(ctx, id);
+    if (grant instanceof Response) return grant;
+    if (!grant) return notFound();
+    if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
+    const workbench = ctx.workbench ?? null;
+    // The API token minting it (an MCP server's live view, a CLI), outside a workbench session (whose pairing closes
+    // with its token already): sealed into the ticket, so revoking the token closes the sockets it opens.
+    const token = workbench ? null : (ctx.token?.id ?? null);
+    // A workbench session is sealed to its pairing at its own cap (held to view when it asks for a view-only
+    // ticket); a view-only ticket otherwise is the grant sealed with the cap alone, so its holder never has the
+    // grant bare; a token's ticket carries the token, with the cap it asked for or none.
+    const ticket = await sealRoomTicket(
+      env,
+      grant.token,
+      workbench
+        ? { pairing: workbench.pairingId, cap: cap ?? workbench.level }
+        : cap || token
+          ? { pairing: null, cap, token }
+          : null,
+    );
+    // ...and liveworkspace notes the room against the token until the ticket's grant lapses, which is how a revoke
+    // finds the rooms to close without asking every document (public-api-and-tokens.md "Revoking a token").
+    const owner = token ? ctx.resolveOwner() : null;
+    if (token && owner) {
+      const noted = noteTokenRoom(env, {
+        ownerId: owner,
+        tokenId: token,
+        itemId: id,
+        until: grant.exp * 1000,
+      });
+      if (ctx.waitUntil) ctx.waitUntil(noted);
+      else await noted;
+    }
+    // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
+    // its access closes them all (WB55).
+    if (workbench?.scope === 'workspace') {
+      const noted = noteWorkbenchRoom(env, workbench, id);
+      if (ctx.waitUntil) ctx.waitUntil(noted);
+      else await noted;
+    }
+    const answer: RoomTicketResponse = { ticket };
+    // A view-only ticket's holder cannot read the grant inside, so the answer says when it lapses, and the caller's
+    // own level (a read-only token's is view whatever the grant says). The ticket admits at view either way.
+    if (cap) {
+      answer.expiresAt = grant.exp * 1000;
+      const own = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
+      answer.level = ctx.token?.readOnly ? 'view' : own;
+    }
+    return json(answer);
+  }
+
+  if (segments.length === 4 && segments[3] === 'ws' && request.method === 'GET') {
+    const id = segments[2]!;
+    const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
+    if (!opened) return forbidden();
+    const { claims, workbench, token } = opened;
+    const role: AccessLevel = roomTicketLevel(opened);
+    const person = linkCodeOf(claims.sub) ? null : claims.sub;
+    // The share code a session came in by, from the grant the index signed (its `link` claim, set for a person who
+    // opened a link as for a link visitor; one-explorer-contracts.md "Grants"), never from the upgrade URL, which is
+    // logged and the client's to change. Revoking the link closes exactly its sockets.
+    const linkCode = linkCodeOf(claims.sub);
+    const shareCode = claims.link?.slice(0, 64) || linkCode;
+    if (linkCode && (await isCommunityCode(env, id, linkCode))) return forbidden('community_link');
+    const forwarded = new Request(request);
+    // Every trust header is stamped UNCONDITIONALLY: `new Request` copies the client's own headers, and the room
+    // believes whatever arrives under these names (room-session.ts).
+    forwarded.headers.set('X-Verified-Role', role);
+    forwarded.headers.set('X-Verified-Tab-Scope', claims.tab ?? '');
+    forwarded.headers.set('X-Verified-Share-Code', shareCode ?? '');
+    forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
+    // The session's collab key (docs/specs/013-workspace/share-roles.md "The collab key"): derived from the person,
+    // never read from the request. Empty for a link visitor: the room mints one for that socket.
+    forwarded.headers.set(COLLAB_KEY_HEADER, person ? await collabKeyFor(person) : '');
+    // And the person the room stamps on this session's reactions (docs/specs/012-collaboration/comment-reactions.md).
+    forwarded.headers.set(REACTION_PERSON_HEADER, person ? await reactionPersonFor(person) : '');
+    // Whether a signed-in account holds the session (not a guest, not a link visitor): only such a session may show
+    // a Google picture in the room and see others' (docs/specs/014-identity/profile-picture.md §2).
+    forwarded.headers.set('X-Verified-Account', person && isAccountOwner(person) ? '1' : '0');
+    forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
+    // The API token whose ticket this is (public-api-and-tokens.md "Revoking a token"), so revoking it closes the
+    // socket. Empty for every other session, over whatever the client sent.
+    forwarded.headers.set('X-Verified-Api-Token', token ?? '');
+    forwarded.headers.set('X-Verified-Document', id);
+    // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
+    // after (document-room.ts).
+    forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));
+    // The document's owner and team as the index has them now: the room keeps its copy in line
+    // (@liveworkspace/index-app item-head.ts).
+    forwarded.headers.set('X-Verified-Owner', claims.owner ?? '');
+    forwarded.headers.set('X-Verified-Team', claims.team ?? '');
+    const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
+    return stub.fetch(forwarded);
+  }
+
+  return null;
+}

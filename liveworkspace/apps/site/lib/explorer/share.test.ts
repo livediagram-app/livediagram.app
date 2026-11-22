@@ -199,6 +199,7 @@ describe('the Community tab on liveworkspace.app', () => {
       'livedocuments',
       'livedesign',
       'livehuddle',
+      'liveknowledge',
     ]);
     expect(communityShareAppsHere(null)).toEqual([
       'livediagram',
@@ -206,6 +207,7 @@ describe('the Community tab on liveworkspace.app', () => {
       'livedocuments',
       'livedesign',
       'livehuddle',
+      'liveknowledge',
     ]);
     expect(communityShareAppsHere('livehuddle')).toEqual(['livehuddle']);
     expect(communityShareAppsHere('livedocuments')).toEqual(['livedocuments']);

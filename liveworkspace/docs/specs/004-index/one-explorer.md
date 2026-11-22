@@ -163,6 +163,11 @@ All Apps.
 | livedocuments | Article (`blank-article`), Slide Deck (`blank-slide-deck`), Infographic (`blank-infographic`), Poster (`event-poster`)           |
 | livedesign    | Logo (`blank-logo`), App Wireframe (`blank-wireframe-phone`), Web Wireframe (`blank-wireframe-browser`), Photo (`photo-edit`)    |
 | livehuddle    | Virtual Office (`virtual-office`), Team Pod (`team-pod`), Coworking Space (`coworking-space`), All-Hands Hall (`all-hands-hall`) |
+| liveknowledge | Company Wiki, Team Handbook, Engineering Handbook, Runbooks: knowledgebase structures (`/new?structure=<id>`, 2026-11-21)        |
+
+liveknowledge's kinds are pages a knowledgebase is often started from, each a template the fork carries from
+livedocuments and each drawn as the article miniature until it has pictures of its own. Under All Apps the set is one
+tile per listed app, six today, laid three over three at every width.
 
 livehuddle's kinds are its four Spaces, in Popular's order: with Blank Space they are its whole catalogue
 ([templates by mode](../../../../livehuddle/docs/specs/007-editor/templates-by-mode.md)), and Blank Space is what the
@@ -188,6 +193,7 @@ header reads too ([The start header](#the-start-header-wears-the-same-theme)).
 | livedocuments | **Typesetter**: warm paper with an 8 px baseline grid, the heading set in serif, and a large pilcrow (¶) behind the tiles' edge.                                                                                                                                                                                                     |
 | livedesign    | **Shape kit**: a few bold primitives placed like a composition in progress: a circle (selected, with handles) and a square turned on its corner in the gap, a triangle beside the pills, a quarter disc in the bottom left and a ring in the bottom right.                                                                           |
 | livehuddle    | **Huddle**: a room's voice: rings every 28 px spread from the band's top right corner, fading into the paper as they go; in the gap a round table seen from above, its seats taken and the one speaking ringed, a speech bubble over them, and a pill in the bottom right ("LIVE · 5 HERE").                                         |
+| liveknowledge | **Tree**: plain paper with an index's two ruled hairlines down the left edge; in the gap a page with three pages under it, joined the way a page tree joins them. The heading keeps the page's own face. In a start header: the paper, and the page with two under it in the gap.                                                    |
 
 The textures (dots, lanes, grid, baseline grid, rings) and the corner pieces run the band's full width at every size. The pieces
 drawn in the gap between the words and the tiles show only from `xl`, where that gap is wide enough that they never
@@ -227,7 +233,7 @@ lists. Shared With You Recently is a different list (other people's items) and k
 
 - **Which.** The live items in the person's own space (My Work) and in each team they are in, by when each was made
   (`createdAt`, then id), at most four. Filtered to one app, that app's: documents in livedocuments, canvases in
-  livediagram, plans in liveplanner, designs in livedesign, Spaces in livehuddle. Under All Apps, and on
+  livediagram, plans in liveplanner, designs in livedesign, Spaces in livehuddle, Knowledgebases in liveknowledge. Under All Apps, and on
   liveworkspace.app in no app, every app's, each card wearing its app's mark as Most Used and Recent's do: the site's
   Explorer lists every app everywhere else, so its Home would be the one place where something just made in any app
   could not be found, and hiding the section there would leave the site's Home without it for no gain. Nothing in

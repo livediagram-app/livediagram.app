@@ -1,0 +1,37 @@
+{
+  "name": "liveknowledge",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build --filter=@liveknowledge/*",
+    "dev": "turbo run dev --filter=@liveknowledge/*",
+    "lint": "turbo run lint --filter=@liveknowledge/*",
+    "test": "turbo run test --filter=@liveknowledge/*",
+    "test:coverage": "turbo run test:coverage --filter=@liveknowledge/*",
+    "typecheck": "turbo run typecheck --filter=@liveknowledge/*",
+    "staging:check": "turbo run staging:check --filter=@liveknowledge/*",
+    "licences": "pnpm --filter @liveknowledge/marketing licences",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "clean": "turbo run clean --filter=@liveknowledge/* && rm -rf node_modules",
+    "icons:vendor": "pnpm --filter @liveworkspace/icons vendor:lucide",
+    "icons:sheet": "pnpm --filter @liveknowledge/editor icons:sheet",
+    "icons:brand": "pnpm --filter @liveknowledge/editor icons:brand"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/prettier-config": "workspace:*",
+    "esbuild": "^0.28.2",
+    "oxlint": "^1.94.0",
+    "oxlint-tsgolint": "^7.0.2007",
+    "prettier": "^3.10.0",
+    "turbo": "^2.11.7",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.160.0"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  }
+}

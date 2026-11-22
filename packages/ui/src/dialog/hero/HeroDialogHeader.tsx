@@ -4,7 +4,7 @@
 // brought to a dialog. A band in the host's brand ramp behind a 36px title mark, the title (a real <h2>, in the app's
 // heading face) and one muted line, then the dialog's actions and its close. Exactly 100px tall at every width, a phone
 // keeping the desktop look (the 36px mark, the 20px title, its line shown) with 16px sides; there a long title may wrap
-// to two lines inside the 100px, and the line still truncates. The band is
+// to two lines inside the 100px, as at every width (two lines of each fit, 88px). The band is
 // the art's (HeroArt): a texture, corner pieces, and from a 56rem header a centre piece. It is static: memoised on
 // the art, which is a module constant, so it paints once however often the dialog re-renders.
 import { memo, type CSSProperties, type ReactNode } from 'react';
@@ -119,7 +119,7 @@ export function HeroDialogHeader({
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <h2
           id={titleId}
-          className={`text-[20px] leading-tight sm:truncate max-sm:line-clamp-2 text-[var(--hero-ink)] ${TITLE_FACE} ${cap}`}
+          className={`text-[20px] leading-tight line-clamp-2 text-[var(--hero-ink)] ${TITLE_FACE} ${cap}`}
         >
           {title}
         </h2>

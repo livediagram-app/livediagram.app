@@ -95,6 +95,7 @@ const MCP_DEV_PORTS: Partial<Record<AppSiteId, number>> = {
   'liveplanner.app': 8888,
   'livedocuments.app': 8988,
   'livedesign.app': 8990,
+  'liveknowledge.app': 9288,
 };
 
 /** An app's address in `env`: its router's port on a dev server, its `staging.` host, else its live site. */

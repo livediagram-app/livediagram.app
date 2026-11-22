@@ -4,17 +4,23 @@ import {
   BookOpenIcon,
   CircleCheckIcon,
   DatabaseIcon,
+  FileCheckIcon,
+  FolderIcon,
+  GitBranchIcon,
   HighlighterIcon,
   type Icon,
   LayoutGridIcon,
+  LibraryIcon,
   ListChecksIcon,
   ListTodoIcon,
   ListTreeIcon,
   MapIcon,
   NetworkIcon,
+  NotebookTextIcon,
   PencilIcon,
   PenToolIcon,
   ShapesIcon,
+  ShieldCheckIcon,
   SquareKanbanIcon,
   StickyNoteIcon,
   TableIcon,
@@ -140,6 +146,40 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: ArmchairIcon,
     panel: 'from-purple-100 to-indigo-50 dark:from-purple-500/15 dark:to-indigo-500/5',
     glyph: 'text-purple-600 dark:text-purple-300',
+  },
+
+  // liveknowledge's: team knowledge tools, each drawn as what it is (a shelf of pages, a team's notebook, a
+  // checked document, verified knowledge, docs kept with the code, collections of documents). Notion's page here
+  // is `notion-wiki`: `notion` is liveplanner's, compared as a planner.
+  'notion-wiki': {
+    icon: LibraryIcon,
+    panel: 'from-zinc-100 to-stone-50 dark:from-zinc-500/15 dark:to-stone-500/5',
+    glyph: 'text-zinc-700 dark:text-zinc-300',
+  },
+  confluence: {
+    icon: NotebookTextIcon,
+    panel: 'from-blue-100 to-sky-50 dark:from-blue-500/15 dark:to-sky-500/5',
+    glyph: 'text-blue-700 dark:text-blue-300',
+  },
+  slite: {
+    icon: FileCheckIcon,
+    panel: 'from-cyan-100 to-sky-50 dark:from-cyan-500/15 dark:to-sky-500/5',
+    glyph: 'text-cyan-700 dark:text-cyan-300',
+  },
+  guru: {
+    icon: ShieldCheckIcon,
+    panel: 'from-teal-100 to-emerald-50 dark:from-teal-500/15 dark:to-emerald-500/5',
+    glyph: 'text-teal-700 dark:text-teal-300',
+  },
+  gitbook: {
+    icon: GitBranchIcon,
+    panel: 'from-slate-100 to-blue-50 dark:from-slate-500/15 dark:to-blue-500/5',
+    glyph: 'text-slate-700 dark:text-slate-300',
+  },
+  outline: {
+    icon: FolderIcon,
+    panel: 'from-indigo-100 to-violet-50 dark:from-indigo-500/15 dark:to-violet-500/5',
+    glyph: 'text-indigo-700 dark:text-indigo-300',
   },
 };
 

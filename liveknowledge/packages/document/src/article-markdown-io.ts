@@ -1,0 +1,434 @@
+// An article's writing as the Markdown agents read and write (docs/specs/024-agents/
+// pages-for-agents.md "write_article", "Reading: the pages view"): the editor's paste reading
+// (article-markdown) plus what only an agent's text carries, front matter for the title and
+// subtitle, `\pagebreak` lines and `[zone <id>]` lines standing for the article's zones. Both ways
+// are pure; reading back what was written keeps every block's type, style, list, level, check and
+// text (underline, colours, highlights, superscript and subscript have no Markdown and read as
+// plain text).
+import {
+  MAX_ARTICLE_BLOCK_TEXT,
+  nextArticleBlockId,
+  pageOfRun,
+  type ArticleBlock,
+  type ArticleFlow,
+  type ArticleRun,
+} from './article-flow';
+import {
+  closesFence,
+  escapeClosingHashes,
+  fenceOpening,
+  isTableRow,
+  parseMarkdownBlocks,
+  SPACE_REF,
+  spaceWrapped,
+  takeFootnoteDefinitions,
+  type FootnoteNotes,
+  withFootnoteRefs,
+} from './article-markdown';
+import { articleRunsText } from './article-footnotes';
+import { pageLinkMarkdown } from './article-page-links';
+import { articleTableText, type ArticleTableBlock } from './article-table';
+
+// The most Markdown one write takes: 5,000 blocks of ~80 characters, far inside a tab's row.
+export const ARTICLE_MARKDOWN_MAX = 400_000;
+
+const FRONT_MATTER = /^---[ \t]*\n([\s\S]*?)\n---[ \t]*(?:\n|$)/;
+const ZONE_LINE = /^\[zone ([^\]\s]{1,64})\]$/;
+const PAGE_BREAK_LINE = /^\\pagebreak$/;
+
+type ArticleFromMarkdown =
+  | {
+      blocks: ArticleBlock[];
+      // Zones of `current` the text keeps, and those it leaves out (to be removed with their elements).
+      keptZones: string[];
+      droppedZones: string[];
+    }
+  | { unknownZone: string }
+  // A paragraph (a run of lines with no blank line between) longer than a block holds: refused
+  // rather than cut, as the editor's reading would cut it.
+  | { tooLong: true };
+
+const unquote = (v: string) =>
+  v
+    .trim()
+    .replace(/^(["'])(.*)\1$/, '$2')
+    .trim();
+
+function frontMatterOf(text: string): { title?: string; subtitle?: string; body: string } {
+  const m = FRONT_MATTER.exec(text);
+  if (!m) return { body: text };
+  const out: { title?: string; subtitle?: string; body: string } = {
+    body: text.slice(m[0].length),
+  };
+  for (const line of m[1]!.split('\n')) {
+    const field = /^\s*(title|subtitle)\s*:\s*(.*)$/i.exec(line);
+    if (!field) continue;
+    const value = unquote(field[2]!);
+    if (value) out[field[1]!.toLowerCase() as 'title' | 'subtitle'] = value;
+  }
+  return out;
+}
+
+// A title's text in front matter: `[^`, and a backslash before a `[`, a backslash or the end, escaped with a backslash,
+// so only a footnote's own reference reads back as one. Other backslashes stay as written (`C:\docs`).
+const escapeFrontText = (text: string) => text.replace(/\\(?=[\\[]|$)|\[(?=\^)/g, '\\$&');
+const FRONT_SLASH = '\ue012';
+const FRONT_BRACKET = '\ue013';
+
+/** A front matter title's runs: its footnote references read, its `\[` and `\\` escapes taken as the characters. */
+function frontRuns(value: string, notes: FootnoteNotes): ArticleRun[] {
+  const held = value.replace(/\\([\\[])/g, (_, c: string) =>
+    c === '[' ? FRONT_BRACKET : FRONT_SLASH,
+  );
+  return withFootnoteRefs({ text: held }, notes).map((r) =>
+    r.fn !== undefined
+      ? r
+      : { ...r, text: r.text.replaceAll(FRONT_BRACKET, '[').replaceAll(FRONT_SLASH, '\\') },
+  );
+}
+
+/** Reads lines in order, answering true for each line that is a fence or inside one (as parseMarkdownBlocks reads
+ *  them), so a line of code is never read as a table, a zone or a page break. */
+function fenceTracker(): (line: string) => boolean {
+  let open = 0;
+  return (line) => {
+    if (open) {
+      if (closesFence(line, open)) open = 0;
+      return true;
+    }
+    open = fenceOpening(line);
+    return open > 0;
+  };
+}
+
+/**
+ * Markdown as an article's blocks. `current` is the article being written over: a `[zone <id>]`
+ * line keeps that zone there; a zone id it lacks answers `unknownZone`. Block ids are fresh (never
+ * one of `current`'s) except a kept zone's.
+ */
+export function articleFromMarkdown(text: string, current?: ArticleFlow): ArticleFromMarkdown {
+  const zones = new Map(
+    (current?.blocks ?? []).flatMap((b) => (b.type === 'zone' ? [[b.id, b] as const] : [])),
+  );
+  const { title, subtitle, body } = frontMatterOf(text.replace(/\r\n?/g, '\n'));
+  // Fresh ids never meet one the article has, so appended blocks sit beside its own.
+  const taken = new Set<string>((current?.blocks ?? []).map((b) => b.id));
+  const fresh = () => {
+    const id = nextArticleBlockId(taken);
+    taken.add(id);
+    return id;
+  };
+  const blocks: ArticleBlock[] = [];
+  // Footnote definitions may sit anywhere (after the last block, as written): read from the whole text first. A title's
+  // footnote is read from its front matter line too.
+  const { lines, notes } = takeFootnoteDefinitions(body.split('\n'));
+  const heading = (style: 'title' | 'subtitle', value: string | undefined) => {
+    if (value)
+      blocks.push({
+        id: fresh(),
+        type: 'paragraph',
+        style,
+        runs: frontRuns(value, notes),
+      });
+  };
+  heading('title', title);
+  heading('subtitle', subtitle);
+  const kept: string[] = [];
+  let stretch: string[] = [];
+  const flush = () => {
+    if (stretch.length === 0) return;
+    for (const b of parseMarkdownBlocks(stretch.join('\n'), notes))
+      blocks.push({ ...b, id: fresh() });
+    stretch = [];
+  };
+  let paragraph = 0;
+  const fence = fenceTracker();
+  for (const line of lines) {
+    // A table's rows are cells, not one paragraph: a long table is bounded by the table's own caps.
+    // A written `&#32;` is one space of the block's text, so kept edge spaces never make a block read back too long.
+    paragraph = line.trim() && !isTableRow(line) ? paragraph + textLength(line) + 1 : 0;
+    if (paragraph > MAX_ARTICLE_BLOCK_TEXT) return { tooLong: true };
+    const fenced = fence(line);
+    const bare = line.trim();
+    const zone = fenced ? null : ZONE_LINE.exec(bare);
+    if (zone) {
+      const block = zones.get(zone[1]!);
+      if (!block) return { unknownZone: zone[1]! };
+      flush();
+      if (!kept.includes(block.id)) {
+        blocks.push(block);
+        kept.push(block.id);
+      }
+      continue;
+    }
+    if (!fenced && PAGE_BREAK_LINE.test(bare)) {
+      flush();
+      blocks.push({ id: fresh(), type: 'pageBreak' });
+      continue;
+    }
+    stretch.push(line);
+  }
+  flush();
+  return {
+    blocks,
+    keptZones: kept,
+    droppedZones: [...zones.keys()].filter((id) => !kept.includes(id)),
+  };
+}
+
+// Markdown's own characters in plain text, escaped so the text reads back as written (a literal `&#32;` too, which
+// reads as a space).
+const escapeText = (text: string) => text.replace(/([\\`*_~[\]]|&(?=#32;))/g, '\\$1');
+
+// A block's text that would open a line as a heading, quote, list item or divider is escaped there.
+const escapeLineStart = (line: string) =>
+  line.replace(/^(\s*)([#>+-]|\d+(?=[.)]))/, (_, space: string, mark: string) =>
+    /\d/.test(mark) ? `${space}${mark}\\` : `${space}\\${mark}`,
+  );
+
+// Inline code as CommonMark writes it: fenced by one more backtick than its longest backtick run,
+// and padded with a space each side when it starts or ends in a backtick, or in a space at both
+// ends (the reader strips one such pair), so any text reads back as written.
+function codeSpan(text: string): string {
+  const longest = Math.max(0, ...(text.match(/`+/g) ?? []).map((r) => r.length));
+  const fence = '`'.repeat(longest + 1);
+  const pad = /^`|`$/.test(text) || spaceWrapped(text) ? ' ' : '';
+  return fence + pad + text + pad + fence;
+}
+
+// A link's address as the reader takes it back: its parentheses and backslashes escaped, so an address such as
+// `https://en.wikipedia.org/wiki/Mercury_(planet)` is not cut at its first `)`, and its white space percent-encoded
+// (`%20`), since Markdown ends an address at white space: written raw, the link read back as its literal text.
+// A space is the white space an address holds in practice, so it is replaced as a plain string; any other is rare.
+const encodeWhiteSpace = (href: string) =>
+  /\s/.test(href) ? href.replaceAll(' ', '%20').replace(/\s/g, (c) => encodeURIComponent(c)) : href;
+const escapeHref = (href: string) => encodeWhiteSpace(href.replace(/[\\()]/g, '\\$&'));
+
+function runMarkdown(run: ArticleRun): string {
+  // A page link is written `[[Title]]`, the form articleFromMarkdown's caller resolves back to the page
+  // (article-page-links.ts): its own marks are not written, since the brackets hold a title, never Markdown.
+  if (pageOfRun(run)) return pageLinkMarkdown(run.text);
+  // Inline code keeps its other marks around it (a linked or bold `npm i`): they were dropped with the code's text
+  // alone written. A line break inside a heading or code reads back as a space (a body paragraph's, a quote's or a
+  // list item's is held as LINE_BREAK and written as a hard break, brokenMarkdown).
+  let out = run.code
+    ? codeSpan(run.text.replace(/\n/g, ' '))
+    : escapeText(run.text).replace(/\n/g, ' ');
+  if (run.s) out = `~~${out}~~`;
+  if (run.i) out = `*${out}*`;
+  if (run.b) out = `**${out}**`;
+  if (run.href) out = `[${out}](${escapeHref(run.href)})`;
+  return out;
+}
+
+// Emphasis markers wrap the run's own text, so a run whose text starts or ends in a space keeps the
+// space outside them (`**bold** text`, never `**bold **text`).
+// A footnote is written as its number, `[^3]`, its note put in `notes` (written after the last block, articleToMarkdown).
+function runsMarkdown(runs: readonly ArticleRun[], notes: string[]): string {
+  return runs
+    .map((run) => {
+      const fn = run.fn;
+      if (fn !== undefined) return Array.from(run.text, () => `[^${notes.push(fn)}]`).join('');
+      // Code keeps its edge spaces inside its span (codeSpan pads it so they read back).
+      if (pageOfRun(run) || run.code || (!run.b && !run.i && !run.s && !run.href))
+        return runMarkdown(run);
+      // trimStart/trimEnd, not `/\s*$/`: that regex retries from every offset, quadratic in spaces.
+      const lead = run.text.slice(0, run.text.length - run.text.trimStart().length);
+      const tail = run.text.slice(run.text.trimEnd().length);
+      const inner = run.text.slice(lead.length, run.text.length - tail.length);
+      return inner ? lead + runMarkdown({ ...run, text: inner }) + tail : run.text;
+    })
+    .join('');
+}
+
+// A line break inside a table cell, held while the cell's runs are written, then written `<br>`.
+const CELL_BREAK = '\ue010';
+
+// A cell's runs as a pipe table's cell: its bars escaped, a line break as `<br>`. Backslashes are already escaped
+// (escapeText), so a bar is the one character left to escape.
+const cellMarkdown = (runs: readonly ArticleRun[], notes: string[]) =>
+  runsMarkdown(
+    runs.map((r) => ({ ...r, text: r.text.replace(/\n/g, CELL_BREAK) })),
+    notes,
+  )
+    .split('|')
+    .join('\\|')
+    .replaceAll(CELL_BREAK, '<br>');
+
+/** A table as a pipe table: its header row the header line, or an empty header line when it has
+ *  none (which reads back as no header row). */
+function tableMarkdown(t: ArticleTableBlock, notes: string[]): string[] {
+  const row = (cells: string[]) => `| ${cells.join(' | ')} |`;
+  const rows = t.rows.map((r) => r.cells.map((cell) => cellMarkdown(cell, notes)));
+  const head = t.header ? rows.shift()! : t.cols.map(() => '');
+  return [row(head), row(t.cols.map(() => '---')), ...rows.map(row)];
+}
+
+// A title or subtitle in front matter, quoted when the reader would otherwise take its own quotes off (`unquote`):
+// a title `"Quoted"` read back as `Quoted`.
+const frontValue = (value: string) =>
+  /^(["']).*\1$/.test(value) ? (value[0] === '"' ? `'${value}'` : `"${value}"`) : value;
+
+const PARAGRAPH_PREFIX: Record<string, string> = { h1: '# ', h2: '## ', h3: '### ', quote: '> ' };
+
+// A line break inside a body paragraph, a quote or a list item, held while its runs are written, then written as
+// CommonMark's backslash hard break. Each line it starts is escaped as a block's first line is, so it never reads back
+// as a heading or a list, and opens with `lead`: a quote's `> `, or a list item's indent under its text.
+const LINE_BREAK = '\ue011';
+function brokenMarkdown(runs: readonly ArticleRun[], notes: string[], lead = ''): string {
+  const held = runsMarkdown(
+    runs.map((r) => (r.code ? r : { ...r, text: r.text.replace(/\n/g, LINE_BREAK) })),
+    notes,
+  );
+  const lines = held.split(LINE_BREAK);
+  // A break at the block's end has no line after it to break to (it would read back as a literal backslash).
+  while (lines.length > 1 && !lines[lines.length - 1]!.trim()) lines.pop();
+  return lines.map((line) => escapeLineStart(keepEdgeSpaces(line))).join(`\\\n${lead}`);
+}
+
+// A line's leading and trailing spaces written `&#32;`: reading a line trims its edges (and two trailing spaces are a
+// hard break), so an indented paragraph read back flush left.
+function keepEdgeSpaces(line: string): string {
+  let start = 0;
+  while (line[start] === ' ') start++;
+  if (start === line.length) return SPACE_REF.repeat(start);
+  let end = line.length;
+  while (line[end - 1] === ' ') end--;
+  return SPACE_REF.repeat(start) + line.slice(start, end) + SPACE_REF.repeat(line.length - end);
+}
+
+// A line's length with each `&#32;` counted as the one space it reads as.
+function textLength(line: string): number {
+  let refs = 0;
+  for (let i = line.indexOf(SPACE_REF); i >= 0; i = line.indexOf(SPACE_REF, i + SPACE_REF.length))
+    refs++;
+  return line.length - refs * (SPACE_REF.length - 1);
+}
+
+/** An article's writing as Markdown, in the form articleFromMarkdown reads. */
+export function articleToMarkdown(flow: ArticleFlow): string {
+  const blocks = [...flow.blocks];
+  const front: string[] = [];
+  // The footnotes' texts, numbered as their references are written, the notes after the last block.
+  const notes: string[] = [];
+  for (const style of ['title', 'subtitle'] as const) {
+    const at = blocks.findIndex((b) => b.type === 'paragraph' && b.style === style);
+    if (at < 0) continue;
+    // Front matter is plain text, but for a footnote on a title, written `[^1]` as in the body (it comes first). The
+    // text's own `[^` is written `\[^`, so a title naming `[^1]` never reads back as a footnote (frontRuns).
+    const text = (blocks[at] as { runs: ArticleRun[] }).runs
+      .map((r) =>
+        r.fn !== undefined
+          ? Array.from(r.text, () => `[^${notes.push(r.fn!)}]`).join('')
+          : escapeFrontText(r.text),
+      )
+      .join('');
+    blocks.splice(at, 1);
+    const value = text.replace(/\n/g, ' ').trim();
+    if (value) front.push(`${style}: ${frontValue(value)}`);
+  }
+  const lines: string[] = front.length ? ['---', ...front, '---', ''] : [];
+  // Without front matter, an opening divider is written `***`: as `---` it read back as the start of front matter,
+  // and everything up to the next divider was taken for it and lost.
+  let opening = !front.length;
+  let numbers: number[] = [];
+  let prevList = false;
+  for (const b of blocks) {
+    const isList = b.type === 'list';
+    // A list's items sit together; anything else is a paragraph of its own.
+    if (prevList && !isList) lines.push('');
+    if (!isList) numbers = [];
+    switch (b.type) {
+      case 'paragraph': {
+        // A heading is one line (CommonMark's are); a quote keeps its line breaks, each line its own `> `.
+        const prefix = PARAGRAPH_PREFIX[b.style ?? ''];
+        lines.push(
+          prefix === undefined
+            ? brokenMarkdown(b.runs, notes)
+            : b.style === 'quote'
+              ? prefix + brokenMarkdown(b.runs, notes, prefix)
+              : prefix +
+                escapeClosingHashes(escapeLineStart(keepEdgeSpaces(runsMarkdown(b.runs, notes)))),
+          '',
+        );
+        break;
+      }
+      case 'list': {
+        const level = b.level ?? 0;
+        numbers = numbers.slice(0, level + 1);
+        // A bullet or to-do at a level restarts that level's count, as the editor numbers them.
+        numbers[level] = b.list === 'numbered' ? (numbers[level] ?? 0) + 1 : 0;
+        const marker =
+          b.list === 'numbered'
+            ? `${numbers[level]}.`
+            : b.list === 'todo'
+              ? `- [${b.checked ? 'x' : ' '}]`
+              : '-';
+        // A line break carries the item on to a line indented under its text.
+        const indent = '  '.repeat(level);
+        lines.push(
+          `${indent}${marker} ${brokenMarkdown(b.runs, notes, indent + ' '.repeat(marker.length + 1))}`,
+        );
+        break;
+      }
+      case 'code': {
+        // One backtick more than the longest fence-like line of the code, so none of its lines closes the fence.
+        const inner = Math.max(0, ...b.text.split('\n').map(fenceOpening));
+        const fence = '`'.repeat(Math.max(3, inner + 1));
+        lines.push(`${fence}${b.lang ?? ''}`, b.text, fence, '');
+        break;
+      }
+      case 'divider':
+        lines.push(opening ? '***' : '---', '');
+        break;
+      case 'pageBreak':
+        lines.push('\\pagebreak', '');
+        break;
+      case 'zone':
+        lines.push(`[zone ${b.id}]`, '');
+        break;
+      case 'table':
+        lines.push(...tableMarkdown(b, notes), '');
+        break;
+      case 'toc':
+        lines.push(b.depth ? `[TOC ${b.depth}]` : '[TOC]', '');
+        break;
+    }
+    prevList = isList;
+    opening = false;
+  }
+  if (prevList && notes.length) lines.push('');
+  notes.forEach((note, i) => lines.push(`[^${i + 1}]: ${escapeText(note)}`));
+  while (lines.length && lines[lines.length - 1] === '') lines.pop();
+  return lines.join('\n') + (lines.length ? '\n' : '');
+}
+
+/** The words of an article's writing (its runs and code), as the answers count them. */
+export function articleWordCount(flow: ArticleFlow): number {
+  let words = 0;
+  for (const b of flow.blocks) {
+    // A footnote's reference is no word; its note's words count.
+    const text =
+      'runs' in b
+        ? b.runs.map((r) => (r.fn === undefined ? r.text : ` ${r.fn} `)).join('')
+        : b.type === 'code'
+          ? b.text
+          : b.type === 'table'
+            ? articleTableText(b)
+            : '';
+    words += text.split(/\s+/).filter(Boolean).length;
+  }
+  return words;
+}
+
+/** An article's title: its first title block's text, else its first heading's, else "Untitled". */
+export function articleTitleOf(flow: ArticleFlow): string {
+  const textOf = (b: ArticleBlock | undefined) =>
+    b && 'runs' in b ? articleRunsText(b.runs).trim() : '';
+  const title = textOf(flow.blocks.find((b) => b.type === 'paragraph' && b.style === 'title'));
+  if (title) return title;
+  const heading = textOf(
+    flow.blocks.find((b) => b.type === 'paragraph' && (b.style === 'h1' || b.style === 'h2')),
+  );
+  return heading || 'Untitled';
+}

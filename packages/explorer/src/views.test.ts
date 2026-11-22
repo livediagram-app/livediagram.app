@@ -76,6 +76,7 @@ describe('words', () => {
       'Document',
       'Design',
       'Space',
+      'Knowledgebase',
     ]);
     expect(kindWords('livediagram').many).toBe('Canvases');
     expect(listWords('liveplanner', 'all').lowerMany).toBe('files');
