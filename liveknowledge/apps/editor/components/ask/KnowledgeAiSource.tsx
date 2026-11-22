@@ -8,7 +8,7 @@
 // the line follows with no reload.
 
 import { useEffect, useRef } from 'react';
-import { aiKeyFailureWords, type AiKeySource } from '@liveworkspace/ai';
+import { aiKeyFailureWords, type AiKeySource } from '@liveworkspace/ai/key-failure';
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
 import {
   AI_KEY_CHANGED_EVENT,
@@ -36,7 +36,15 @@ const SOURCE: Record<'knowledgebase' | 'team' | 'personal', AiKeySource> = {
 
 type LineSettings = Pick<
   KnowledgeAiSettings,
-  'hasKey' | 'builtIn' | 'uses' | 'provider' | 'usesModel' | 'usesModelLabel'
+  | 'hasKey'
+  | 'builtIn'
+  | 'uses'
+  | 'provider'
+  | 'model'
+  | 'models'
+  | 'usesModel'
+  | 'usesModelLabel'
+  | 'usesProvider'
 >;
 
 /** The line for this asker. `manageAi`: may change the knowledgebase's own key. Null where no AI answers here. */
@@ -51,6 +59,8 @@ export function knowledgeAiLine(
   if (uses === null) return null;
   if (uses === 'built-in') return { kind: 'built-in', canChange: true };
   const owner = OWNER[uses];
+  // A team's or a person's key may be another provider's than the knowledgebase's own.
+  const provider = settings.usesProvider ?? settings.provider;
   // A team's key is its admins' (Settings › AI, Teams); the knowledgebase's, its managers'; the person's, theirs.
   const canChange = uses === 'knowledgebase' ? manageAi : uses === 'personal';
   // `usesModel` is absent for a key that will not open (search-and-ask.md "Which key answers").
@@ -58,10 +68,10 @@ export function knowledgeAiLine(
     return {
       kind: 'failed',
       owner,
-      provider: settings.provider,
+      provider: null,
       words: aiKeyFailureWords({
         source: SOURCE[uses],
-        provider: settings.provider,
+        provider: null,
         kind: 'unreadable',
       }),
       canChange,
@@ -69,8 +79,13 @@ export function knowledgeAiLine(
   return {
     kind: 'key',
     owner,
-    provider: settings.provider,
-    model: settings.usesModelLabel ?? settings.usesModel ?? '',
+    provider,
+    // `GET ai` names the model that answers; the overview, read before it, the knowledgebase's own.
+    model:
+      settings.usesModelLabel ??
+      settings.models.find((m) => m.id === (settings.usesModel ?? settings.model))?.label ??
+      settings.usesModel ??
+      settings.model,
     canChange,
   };
 }

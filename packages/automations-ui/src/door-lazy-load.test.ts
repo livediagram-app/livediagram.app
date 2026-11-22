@@ -55,6 +55,8 @@ describe('the door', () => {
       for (const spec of staticImports(readFileSync(join(SRC, file), 'utf8')))
         if (!spec.startsWith('.')) outside.add(spec);
     expect([...outside].sort()).toEqual([
+      // A refusal's key failure read into words (ai-keys.md "The source line"): types and fixed words, no client.
+      '@liveworkspace/ai/key-failure',
       '@liveworkspace/icons/lucide',
       '@liveworkspace/ui',
       '@liveworkspace/workbench/lib/debug-log',
@@ -77,7 +79,10 @@ describe('the door', () => {
     for (const file of plumbing)
       for (const spec of staticImports(readFileSync(join(SRC, file), 'utf8')))
         if (!spec.startsWith('.')) outside.add(spec);
-    expect([...outside]).toEqual(['@liveworkspace/api-schema/automations']);
+    expect([...outside].sort()).toEqual([
+      '@liveworkspace/ai/key-failure',
+      '@liveworkspace/api-schema/automations',
+    ]);
   });
 
   it('builds an item’s kit only where the lazy screen asks for it', () => {

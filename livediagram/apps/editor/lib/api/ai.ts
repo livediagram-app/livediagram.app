@@ -7,7 +7,7 @@ import type {
   ReadNotesResponse,
 } from '@livediagram/api-schema';
 import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
-import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai';
+import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { createCapabilitiesClient } from '@liveworkspace/api-client';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 

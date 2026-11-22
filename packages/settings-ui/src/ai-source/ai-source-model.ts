@@ -2,7 +2,7 @@
 // line (AiSource)"): worked out in the page from the same `GET /api/account/ai-key` Settings › AI reads, by the same
 // order the servers follow (the item's team's key for a joined member, else the person's own, else built-in AI). Pure,
 // apart from the change event's two lines. Nothing here ever holds a key: the answer has none.
-import { aiKeyFailureWords, type AiKeyFailure } from '@liveworkspace/ai';
+import { aiKeyFailureWords, type AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { modelLabel, type AiKeysAnswer, type AiProviderId } from '../account-panels/ai/ai-keys';
 
 /** Whose key a line names. */

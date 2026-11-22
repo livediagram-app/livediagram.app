@@ -226,6 +226,9 @@ export type KnowledgeAiSettings = {
   usesModel?: string;
   /** `usesModel`'s name ("Claude Fable 5.2"), for "Answer With". */
   usesModelLabel?: string;
+  /** The provider of the key that answers (a team's or a person's may differ from `provider`, the knowledgebase's
+   *  own), for the source line; with `usesModel`. */
+  usesProvider?: KnowledgeAiProvider;
 };
 export type KnowledgeAiUses = 'knowledgebase' | 'team' | 'personal' | 'built-in';
 

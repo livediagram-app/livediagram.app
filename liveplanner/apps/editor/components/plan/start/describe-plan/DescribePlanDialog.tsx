@@ -24,7 +24,7 @@ import {
   DialogHeader,
   SparkleIcon,
 } from '@liveplanner/ui';
-import type { AiKeyFailure } from '@liveworkspace/ai';
+import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import {

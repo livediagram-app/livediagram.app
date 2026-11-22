@@ -2,7 +2,7 @@
 // words, answered with a draft. A refusal the api names (one of `codes`) throws a DraftRefusal carrying the api's fixed
 // words, which the dialog says as they are; anything else is a failure the dialog says in its own words.
 
-import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai';
+import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from '@/lib/api/core';
 
 export class DraftRefusal<C extends string = string> extends Error {

@@ -16,6 +16,24 @@ import { DESCRIBE_EXAMPLES } from './plan-words';
 import { forgetAutomations } from './use-automations';
 import { ANA, outline, rule } from './test-fixtures';
 
+// The source line is the workbench's (its own tests: packages/workbench WorkbenchAiSource.test.tsx); here, what the
+// dialog hands it: the allowance and the last ask's key failure.
+vi.mock('@liveworkspace/workbench/components/ai/WorkbenchAiSource', () => ({
+  WorkbenchAiSource: ({
+    allowance,
+    failure,
+    id,
+  }: {
+    allowance?: string;
+    failure?: { kind: string } | null;
+    id?: string;
+  }) => (
+    <p id={id} data-ai-source-stub={failure ? failure.kind : 'none'}>
+      {allowance}
+    </p>
+  ),
+}));
+
 const client = vi.hoisted(() => ({
   listAutomations: vi.fn(),
   draftRule: vi.fn(),
@@ -124,11 +142,38 @@ describe('the dialog', () => {
     await openFromMenu();
     expect(draftButton()).toHaveProperty('disabled', true);
     expect(screen.getByText('0 / 500')).toBeTruthy();
+    // Try an Example sits above the box (owner, 2026-11-22), and an example puts the cursor in it.
+    const examples = screen.getByRole('group', { name: 'Try an Example' });
+    expect(examples.compareDocumentPosition(box()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: DESCRIBE_EXAMPLES[2]!.label }));
     expect(box().value).toBe(DESCRIBE_EXAMPLES[2]!.text);
+    expect(document.activeElement).toBe(box());
     expect(screen.getByText(`${DESCRIBE_EXAMPLES[2]!.text.length} / 500`)).toBeTruthy();
     expect(draftButton()).toHaveProperty('disabled', false);
-    expect(screen.getByText(/counts toward this plan’s 100 AI steps a day/)).toBeTruthy();
+    expect(screen.getByText(/Counts toward this plan’s 100 AI steps a day/)).toBeTruthy();
+    expect(box().getAttribute('aria-describedby')).toBe(
+      document.querySelector('[data-ai-source-stub]')!.id,
+    );
+  });
+
+  it('hands a failed key to the source line, and clears it on the next ask', async () => {
+    client.draftRule.mockRejectedValueOnce(
+      new AutomationRefusal(422, {
+        error: 'ai_key_failed',
+        message: 'Anthropic did not accept the key.',
+        aiKey: { source: 'account', provider: 'anthropic', kind: 'bad-key' },
+      }),
+    );
+    client.draftRule.mockReturnValueOnce(new Promise(() => {}));
+    render(<Harness />);
+    await openFromMenu();
+    fireEvent.change(box(), { target: { value: 'Flag overdue cards' } });
+    fireEvent.click(draftButton());
+    expect((await screen.findByRole('alert')).textContent).toBe('Anthropic did not accept the key.');
+    const line = () => document.querySelector('[data-ai-source-stub]')!;
+    expect(line().getAttribute('data-ai-source-stub')).toBe('bad-key');
+    fireEvent.click(draftButton());
+    expect(line().getAttribute('data-ai-source-stub')).toBe('none');
   });
 
   it('opens the draft in the builder, unsaved, off and marked Drafted by AI', async () => {

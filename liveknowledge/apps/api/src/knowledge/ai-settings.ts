@@ -206,15 +206,25 @@ export async function whichAi(
   settings: KnowledgeAiSettings,
   asker: AiAsker | null,
   door: SharedKeyDoor = aiKeyFor,
-): Promise<Pick<KnowledgeAiSettings, 'uses' | 'usesModel' | 'usesModelLabel'>> {
+): Promise<Pick<KnowledgeAiSettings, 'uses' | 'usesModel' | 'usesModelLabel' | 'usesProvider'>> {
   if (settings.hasKey) {
     const model = providerModel(settings.provider, settings.model);
-    return { uses: 'knowledgebase', usesModel: model.id, usesModelLabel: model.name };
+    return {
+      uses: 'knowledgebase',
+      usesModel: model.id,
+      usesModelLabel: model.name,
+      usesProvider: settings.provider,
+    };
   }
   const shared = await sharedKey(env, asker, 'which', door);
   if (shared.status === 'key') {
     const model = providerModel(shared.provider, shared.model);
-    return { uses: sharedSource(shared.source), usesModel: model.id, usesModelLabel: model.name };
+    return {
+      uses: sharedSource(shared.source),
+      usesModel: model.id,
+      usesModelLabel: model.name,
+      usesProvider: shared.provider,
+    };
   }
   if (shared.status === 'unreadable') return { uses: sharedSource(shared.source) };
   return { uses: 'built-in' };

@@ -2,7 +2,7 @@
 // builders (detector + reader into notes, additions into draft stickies): everything usePhotoDraft holds that is
 // not the gesture itself (docs/specs/021-event-storming/event-storming.md Phase 8, Phase 9).
 
-import type { AiKeyFailure } from '@liveworkspace/ai';
+import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import {
   eventStormingNoteSize,
   type Element,

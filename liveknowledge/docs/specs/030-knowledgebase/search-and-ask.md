@@ -111,7 +111,7 @@ The knowledgebase's own key stays, and comes first.
   "Uses Built-In AI"), with **Your AI Keys** linking to the shared Settings category (`?settings=ai`), and on Ask's
   **Answer With**, whose second choice names the key's model and its source ("Claude Fable 5.2 (Team Key)", "(Your
   Key)", "(Knowledgebase Key)"). `GET ai` answers it as `uses` (`knowledgebase`, `team`, `personal`, `built-in`) with
-  `usesModel` and its name `usesModelLabel`, read for the asker; the AI Knowledge overview does not ask accounts.
+  `usesModel` and its name `usesModelLabel`, and the key's provider `usesProvider` (a team's or a person's may be another than the knowledgebase's), read for the asker; the AI Knowledge overview does not ask accounts.
 - **The source line** ([ai-keys.md "The source line"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#the-source-line-aisource)):
   Ask, Describe to Set Up and Describe the Structure show the shared `AiSource` line in place of their own "Uses …"
   words: the mark, which key ("This Knowledgebase's Key", "Your Team's Key", "Your Key", "Built-in AI") with the

@@ -8,7 +8,7 @@
 // fixed words, the text kept to change. The model's own words are never shown.
 
 import { useEffect, useRef, useState } from 'react';
-import type { AiKeyFailure } from '@liveworkspace/ai';
+import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { AI_DRAFT_PROMPT_MAX, AUTOMATION_AI_PER_DAY } from '@liveworkspace/automations';
 import {
   Button,

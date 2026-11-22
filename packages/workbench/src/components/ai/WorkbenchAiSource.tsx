@@ -7,7 +7,7 @@
 // and whether the person is signed in come from the AiSourceScope the editor sets around itself.
 
 import { createContext, useContext, type ReactNode } from 'react';
-import type { AiKeyFailure } from '@liveworkspace/ai';
+import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import {
   AiSource,
   bearerSettingsRequest,
@@ -44,8 +44,9 @@ const accountDoor = (): SettingsRequest =>
 /** Whether the person's own key applies (no item, so no team key): asked when a feature is about to run, never on
  *  load. False on any failure to read, so the feature runs as it would with no key. */
 export async function hasOwnAiKey(): Promise<boolean> {
-  const answer = await accountDoor()<AiKeysAnswer>('/ai-key').catch(() => null);
-  return answer?.ok === true && answer.data.key !== null;
+  // The door answers every failure (offline, signed out) rather than throwing.
+  const answer = await accountDoor()<AiKeysAnswer>('/ai-key');
+  return answer.ok && answer.data.key !== null;
 }
 
 const openAiSettings = () => requestOpenSettings('ai');

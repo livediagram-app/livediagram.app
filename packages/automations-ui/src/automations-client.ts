@@ -4,7 +4,7 @@
 // the api names (one of `errors`, with the `path` of the step at fault) throws AutomationRefusal, an answer the
 // builder shows rather than an error to report.
 
-import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai';
+import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import type {
   AutomationHookInfo,
   AutomationRuleSummary,

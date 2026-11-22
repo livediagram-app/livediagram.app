@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AiKeyFailure } from '@liveworkspace/ai';
+import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import type { AiKeysAnswer } from '../account-panels/ai/ai-keys';
 import type { SettingsRequest } from '../request';
 import { AI_KEY_CHANGED_EVENT, aiSourceOf, type AiSourceLine } from './ai-source-model';

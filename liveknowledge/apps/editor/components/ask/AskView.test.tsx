@@ -167,7 +167,8 @@ describe('when this session cannot ask', () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
     await open('view');
     expect(screen.getByRole('textbox')).toBeTruthy();
-    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain('Uses built-in AI');
+    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain('Built-in AI');
+    expect(screen.getByRole('button', { name: 'Use Your Own Key, in Settings › AI' })).toBeTruthy();
     cleanup();
     api.apiKnowledgeAi.mockResolvedValue(settings());
     aiSettingsStore.reset();
@@ -182,7 +183,7 @@ describe('when this session cannot ask', () => {
     await open('view');
     expect(screen.queryByRole('group', { name: 'Answer With' })).toBeNull();
     expect(document.querySelector('[data-ask-ai]')!.textContent).toContain(
-      "Uses this knowledgebase's key",
+      'This Knowledgebase’s Key',
     );
   });
 

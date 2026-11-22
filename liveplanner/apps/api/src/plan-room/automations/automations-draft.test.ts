@@ -1,3 +1,5 @@
+import { answerEvents, errorResponse, fakeFetch, streamResponse } from '@liveworkspace/ai/testing';
+import type { KeyAnswer } from '@liveworkspace/ai';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AI_CAPPED,
@@ -25,6 +27,12 @@ import type { Sql } from './automation-store';
 // Describe a Rule (docs/specs/026-plan/automations.md "Describe a Rule"), through the real worker and room, Workers
 // AI a stand-in binding: who may ask, what the model is sent, what the answer is held to, the second ask, the caps,
 // and that nothing but the count is written. No network.
+// Whose key applies (ai-keys.md "Every AI feature honours the choice"): built-in AI unless a test says otherwise.
+const keyFor = vi.hoisted(() => vi.fn(async (): Promise<unknown> => null));
+vi.mock('@liveworkspace/auth-client/ai-key', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveworkspace/auth-client/ai-key')>()),
+  personAiKey: keyFor,
+}));
 vi.mock('../../auth/accounts', async () => (await import('../test-accounts-mock')).accountsMock);
 
 type Call = { model: string; inputs: Record<string, unknown>; options?: unknown };
@@ -70,11 +78,14 @@ beforeEach(async () => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   calls = [];
   replies = [RULE];
+  keyFor.mockReset();
+  keyFor.mockResolvedValue(null);
   ai.run = run;
   w = await automationWorld();
   bind('AI', ai);
 });
 afterEach(() => {
+  vi.unstubAllGlobals();
   vi.useRealTimers();
   vi.restoreAllMocks();
   endRepeatWorld();
@@ -283,5 +294,53 @@ describe('what it refuses', () => {
     countDraftAsk(sql(), now, false);
     const rows = sql().exec('SELECT COUNT(*) AS n FROM automation_ai_drafts').toArray()[0];
     expect(rows?.['n']).toBe(1);
+  });
+});
+
+describe('on a key', () => {
+  const KEY = 'sk-ant-api03-planted-secret-key-5r5r';
+  const TEAM: KeyAnswer = {
+    status: 'key',
+    source: 'team',
+    provider: 'anthropic',
+    model: 'claude-opus-5-5',
+    key: KEY,
+  };
+  const onKey = (respond: () => Response) => {
+    keyFor.mockResolvedValue(TEAM);
+    const faked = fakeFetch(respond);
+    vi.stubGlobal('fetch', faked.fetch);
+    return faked.sent;
+  };
+
+  it('drafts on the provider past the day’s AI steps, counting nothing', async () => {
+    const sent = onKey(() => streamResponse(answerEvents([JSON.stringify(RULE)])));
+    for (let i = 0; i < AUTOMATION_AI_PER_DAY; i++) countDraftAsk(sql(), Date.now(), true);
+    const res = await draft();
+    expect(res.status).toBe(200);
+    expect(calls).toEqual([]);
+    expect(sent[0]!.headers['x-api-key']).toBe(KEY);
+    expect(aiToday(sql(), Date.now())).toBe(AUTOMATION_AI_PER_DAY);
+  });
+
+  it('says a key the provider refuses, whose it is, never drafting on built-in AI instead', async () => {
+    onKey(() => errorResponse(402, 'billing_error'));
+    const res = await draft();
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body['error']).toBe('ai_key_failed');
+    expect(body['aiKey']).toEqual({ source: 'team', provider: 'anthropic', kind: 'no-credit' });
+    expect(JSON.stringify(body)).not.toContain(KEY);
+    expect(calls).toEqual([]);
+  });
+
+  it('says the provider’s busy words, and refuses a key that will not open', async () => {
+    onKey(() => errorResponse(529, 'overloaded_error'));
+    expect(((await (await draft()).json()) as AutomationErrorBody).error).toBe(
+      'automation_ai_unavailable',
+    );
+    keyFor.mockResolvedValue({ status: 'unreadable', source: 'team' });
+    expect((await draft()).status).toBe(422);
+    expect(calls).toEqual([]);
   });
 });
