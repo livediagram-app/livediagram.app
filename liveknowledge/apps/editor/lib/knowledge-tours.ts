@@ -1,6 +1,7 @@
 import { tourTrackSeen, withTracksAnswered } from '@liveworkspace/workbench/lib/tour-tracks';
 import type { HelpArticleKey } from './help-articles';
 import { currentKnowledgeView } from './knowledge-ask/knowledge-view';
+import { pageTrashStore, trashedCount } from './knowledge/page-trash-store';
 import type { UserPreferences } from './user-preferences';
 
 // The Get Started tours (docs/specs/007-editor/knowledge-tours.md; blueprint knowledge-tours.md): their ids in the
@@ -39,6 +40,10 @@ export type PlannedStep = {
   // A control on the Pages view that may simply not be drawn here (an empty Trash, a top-level page's breadcrumb, a
   // page nobody has saved): the step is left out when the tour starts on Pages on a computer and it is not on screen.
   present?: string;
+  // What a phone's Pages sheet would draw for a tree step, read from data as the tour starts, since the sheet is shut
+  // then (the Trash row shows only while the Trash holds pages): the step is left out when it says no, so the row's
+  // count and the cards' "N of M" match the steps that run.
+  held?: () => boolean;
 };
 
 // A one-step tour is a tooltip, not a tour (blueprint D112).
@@ -67,6 +72,7 @@ export const KNOWLEDGE_TOUR_PLAN: Record<KnowledgeTourId, readonly PlannedStep[]
       needs: ['write'],
       present: '[data-page-trash-row], [data-page-trash-rail]',
       tree: true,
+      held: () => trashedCount(pageTrashStore.get().pages) > 0,
     },
   ],
   trust: [
@@ -140,6 +146,24 @@ export const KNOWLEDGE_TOUR_COPY: Record<
   },
 };
 
+// A row's line for someone without a step the full line names (a page's options, verifying, Share, Comments), or
+// null to keep the full line.
+const NARROWER_LINES: Partial<Record<KnowledgeTourId, (who: TourWho) => string | null>> = {
+  organise: (who) => (who.write ? null : 'The page tree, search and the breadcrumb.'),
+  trust: (who) => (who.write ? null : 'Who wrote a page, and its Page Health.'),
+  share: (who) =>
+    !who.write
+      ? 'See who wrote a page, and react to it.'
+      : who.share
+        ? null
+        : 'See who wrote a page, react and comment.',
+};
+
+/** A tour's Get Started row line for `who`, never naming a step they will not be shown. */
+export function knowledgeTourLine(id: KnowledgeTourId, who: TourWho): string {
+  return NARROWER_LINES[id]?.(who) ?? KNOWLEDGE_TOUR_COPY[id].line;
+}
+
 function meets(need: TourNeed, who: TourWho): boolean {
   if (need === 'write') return who.write;
   if (need === 'share') return who.share;
@@ -155,8 +179,9 @@ export function plannedFor(id: KnowledgeTourId, who: TourWho): readonly PlannedS
 
 /**
  * The steps a run shows: the plan for `who`, less a step whose control is not drawn as the tour starts. That is judged
- * only with the Pages view showing (`judge`), as elsewhere the page is not on screen yet, and never for a tree step on
- * a phone, whose tree is in its sheet: such a step is left to the engine, which skips it if it never appears.
+ * only with the Pages view showing (`judge`), as elsewhere the page is not on screen yet. A tree step on a phone, whose
+ * tree is in its shut sheet, is judged by what the sheet would draw (`held`), else left to the engine, which skips it
+ * if it never appears.
  */
 export function shownPlan(
   id: KnowledgeTourId,
@@ -164,9 +189,10 @@ export function shownPlan(
   judge: boolean,
   onScreen: (selector: string) => boolean,
 ): readonly PlannedStep[] {
-  return plannedFor(id, who).filter(
-    (s) => !judge || !s.present || (who.phone && s.tree) || onScreen(s.present),
-  );
+  return plannedFor(id, who).filter((s) => {
+    if (who.phone && s.tree) return s.held?.() ?? true;
+    return !judge || !s.present || onScreen(s.present);
+  });
 }
 
 /** Whether a run starting now may judge what is on screen: the Pages view is showing (shownPlan). */

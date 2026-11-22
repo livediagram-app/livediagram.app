@@ -41,6 +41,7 @@ import { helpArticleHref } from '@/lib/help-articles';
 import {
   KNOWLEDGE_TOUR_COPY,
   KNOWLEDGE_TOURS_RELAUNCH_EVENT,
+  knowledgeTourLine,
   knowledgeTourTaken,
   markKnowledgeTourTaken,
   judgesOnScreen,
@@ -283,7 +284,7 @@ export function KnowledgeToursHost() {
           topics={offered.map((id) => ({
             id,
             title: KNOWLEDGE_TOUR_COPY[id].title,
-            line: KNOWLEDGE_TOUR_COPY[id].line,
+            line: knowledgeTourLine(id, who),
             icon: ICONS[id],
             ...(list.lengths[id] ? { meta: list.lengths[id] } : {}),
             taken: taken(id),

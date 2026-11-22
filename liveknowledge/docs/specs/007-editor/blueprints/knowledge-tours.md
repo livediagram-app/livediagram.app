@@ -12,7 +12,7 @@ Derived from [Get Started tours](../knowledge-tours.md). Paths are under `apps/e
 | What a step needs         | `TourNeed`: `'write' \| 'share' \| 'signedIn' \| 'online' \| 'desktop'`                                                |
 | Who is looking            | `TourWho = { write, share, signedIn, online, phone }` (booleans)                                                       |
 | Taken record              | `knowledgeTours?: KnowledgeTourId[]`, `knowledgeToursSeen?: boolean` on `UserPreferences`                              |
-| A tour's words            | `KNOWLEDGE_TOUR_COPY: Record<KnowledgeTourId, { title, line, eyebrow, help, token }>`                                  |
+| A tour's words            | `KNOWLEDGE_TOUR_COPY: Record<KnowledgeTourId, { title, line, help, token }>`                                           |
 | The host                  | `KnowledgeToursHost` (`components/tour/KnowledgeToursHost.tsx`), offer id `'knowledge'`                                |
 | Steps, built at the press | `knowledgeTourSteps(id, who, api)` (`components/tour/knowledge-tour-steps.ts`)                                         |
 | Step api                  | `KnowledgeTourApi` (`components/tour/knowledge-tour-dom.ts`)                                                           |
@@ -34,13 +34,15 @@ The telemetry token of a tour (`KNOWLEDGE_TOUR_COPY[id].token`): `FirstPage`, `O
 Tours', rank: TOUR_OFFER_RANK.mode, ownPanel: true, seen: offered.every(taken), start: toggleList, onShown } : null)`.
   `ownPanel`: the button's press calls `start`, which toggles the host's own list.
 - **The list.** `list` state (`{ anchor, lengths }`, read as it opens); drawn as `GetStartedPopover` at that anchor with
-  one `TourTopic` per offered tour: `title`, `line`, `icon`, `meta: stepsLength(shownPlan(...).length)`, `taken`. `idAttribute
+  one `TourTopic` per offered tour: `title`, `line: knowledgeTourLine(id, who)` (a narrower line where the copy's
+  names a step this person lacks: Organise and Trust for a reader, Share for a reader or a Participant), `icon`, `meta: stepsLength(shownPlan(...).length)`, `taken`. `idAttribute
 'data-knowledge-tour'`. A pick closes the list and runs `begin(id)`. With no anchor (none drawn), a pick from Settings'
   rerun begins the first newly-on tour instead of opening the list.
 - **Begin(id).** Refused while `engine.active`, another tour is active (`useActiveTour()` not null and not
   `'pages'`), or a load is in flight. Imports `./knowledge-tour-steps`, builds `knowledgeTourSteps(id, who)` (the
   plan filtered by `who`, then `shownPlan`: with the Pages view showing, each step whose plan entry names a
-  `present` selector that is not on screen is dropped, except a `tree` step on a phone, whose sheet is shut), sets a fresh run api and the subject in refs (the
+  `present` selector that is not on screen is dropped, except a `tree` step on a phone, whose sheet is shut: that one is judged by its plan entry's `held()`, the Trash's
+  `trashedCount(pageTrashStore.get().pages) > 0`, and kept when it has none), sets a fresh run api and the subject in refs (the
   engine's callbacks read them in the same tick), `steps`, `engine.start()`, and records the tour taken when it was
   not.
 - **Taken.** `markKnowledgeTourTaken(prefs, id)` adds `id` (each once, in order); `knowledgeTourTaken(prefs, id)` reads
@@ -159,6 +161,7 @@ a card). The button's accessible name: "Get Started, Knowledgebase Tours".
 | Spec rule                                      | Test                                                                                                                           |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Offered per role, phone, Offline               | `lib/knowledge-tours.test.ts` (each `TourWho` against each tour)                                                               |
+| A reader's row lines; phone Trash count        | `lib/knowledge-tours.test.ts`                                                                                                  |
 | Taken record, master and per-tour switches     | `lib/knowledge-tours.test.ts`, `settings-catalogue.test.ts`                                                                    |
 | Plan and steps agree; 3 to 6 steps; outro help | `components/tour/knowledge-tour-steps.test.ts`                                                                                 |
 | Every anchor resolves, per role                | `components/tour/knowledge-tour-steps.test.ts` (each selector's attribute in the app's markup; no writer control for a reader) |

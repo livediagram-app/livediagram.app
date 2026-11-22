@@ -34,7 +34,11 @@ fork brought from livedocuments ([Pages tour](pages-tour.md), [Element tours](el
   "Get Started", "Quick tutorials to get you going."), with the tours on offer as rows in this order: **Your First
   Page**, **Organise Your Knowledgebase**, **Trust a Page**, **Ask Your Knowledgebase**, **Connect an AI Agent**,
   **Share and Work Together**. Each row has its glyph, its name, its length in a badge ("4 steps", counted for this
-  person, see "Only what is there"), one line on what it teaches and a **Done** tick once taken. Any row starts its
+  person, see "Only what is there"), one line on what it teaches and a **Done** tick once taken. The line never
+  names a step the person will not be shown: for a reader Organise reads "The page tree, search and the breadcrumb.",
+  Trust "Who wrote a page, and its Page Health." and Share "See who wrote a page, and react to it."; for a
+  Participant Share reads "See who wrote a page, react and comment." The badge and the Done tick stay whole on one line beside the name, which wraps
+  if it must. Any row starts its
   tour, a taken one again too. A second press, Escape or a press outside closes the list; nothing is recorded.
 - **On offer** while the knowledgebase is open in the full editor and usable: hydrated, no welcome overlay, the
   views offered (`useKnowledgeViewsOffered`: not an embed, not zen mode, not a workbench frame, not a Community visit,
@@ -182,8 +186,8 @@ person was going, never pointing at nothing:
 - **On a phone** (`desktop`): Connect and Add a Subpage are not on offer. The page tree is the **Pages** sheet: a tree step opens it and
   closes it again as it ends. Page Info is its button's sheet. The other steps are the same.
 - **On screen at the start:** a step on the Pages view whose control is not drawn when the tour starts (the Trash with
-  nothing in it, the breadcrumb, Who Made It on a page nobody has saved yet) is left out. On a phone the Trash is
-  judged only once its Pages sheet is open: the engine skips it there if it is not drawn.
+  nothing in it, the breadcrumb, Who Made It on a page nobody has saved yet) is left out. On a phone, where the
+  Trash row is in the shut Pages sheet, it is judged by whether the Trash holds pages, so the count matches the run.
 - **Gone mid-tour:** edit rights going, the knowledgebase closing or another knowledgebase opening ends the tour as
   skipped, closing whatever it opened.
 

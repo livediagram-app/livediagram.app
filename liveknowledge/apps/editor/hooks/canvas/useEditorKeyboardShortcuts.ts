@@ -194,7 +194,10 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (
           inText &&
           !(historyChord && passesHistoryChords(target)) &&
-          !passesSearchChords(e, target)
+          !passesSearchChords(e, target) &&
+          // The command search opens from the writing and any field too (knowledgebases-and-pages.md "Add"): the chord
+          // types nothing, and a new page's title caret had it go nowhere. Cmd or Ctrl K stays the writing's link.
+          key !== '.'
         )
           return;
         // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate, lock, z-order) is still the

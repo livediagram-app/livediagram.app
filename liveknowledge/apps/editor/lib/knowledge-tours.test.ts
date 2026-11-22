@@ -6,6 +6,7 @@ import {
   KNOWLEDGE_TOUR_PLAN,
   MIN_TOUR_STEPS,
   judgesOnScreen,
+  knowledgeTourLine,
   knowledgeTourTaken,
   markKnowledgeTourTaken,
   newlyOffered,
@@ -16,6 +17,7 @@ import {
   shownPlan,
   type TourWho,
 } from './knowledge-tours';
+import { pageTrashStore } from './knowledge/page-trash-store';
 
 // docs/specs/007-editor/knowledge-tours.md "Only what is there", "Taken, on every device" and "Settings".
 const EDITOR: TourWho = { write: true, share: true, signedIn: true, online: true, phone: false };
@@ -26,7 +28,10 @@ const GUEST_VIEWER: TourWho = { ...VIEWER, signedIn: false };
 const ids = (id: (typeof KNOWLEDGE_TOURS)[number], who: TourWho) =>
   plannedFor(id, who).map((s) => s.id);
 
-afterEach(() => window.history.replaceState(null, '', '/'));
+afterEach(() => {
+  window.history.replaceState(null, '', '/');
+  vi.restoreAllMocks();
+});
 
 describe('the step plan', () => {
   it('gives every tour 3 to 6 steps, each id once', () => {
@@ -76,11 +81,11 @@ describe('the step plan', () => {
   it('leaves out a control not drawn as a tour starts on Pages, a phone’s tree steps aside', () => {
     expect(judgesOnScreen(EDITOR)).toBe(true);
     const phone = { ...EDITOR, phone: true };
+    // An empty Trash draws no row in the shut Pages sheet: the step is left out, so "N steps" is what runs.
     expect(shownPlan('organise', phone, true, () => false).map((s) => s.id)).toEqual([
       'tree',
       'options',
       'search',
-      'trash',
     ]);
     expect(ids('first-page', phone)).toEqual(['edit', 'blocks', 'new-page']);
     window.history.replaceState(null, '', '/?view=ask');
@@ -97,6 +102,61 @@ describe('the step plan', () => {
       'reactions',
       'comments',
     ]);
+  });
+});
+
+describe('what a phone’s shut Pages sheet would draw', () => {
+  const phone: TourWho = { ...EDITOR, phone: true };
+  const held = (pages: number) =>
+    vi.spyOn(pageTrashStore, 'get').mockReturnValue({
+      ...pageTrashStore.get(),
+      pages: Array.from({ length: pages }, (_, i) => ({
+        id: `p${i}`,
+        name: `Page ${i}`,
+        trashedAt: 0,
+        trashedBy: null,
+        subpages: [],
+      })),
+    });
+
+  it('keeps the Trash step while the Trash holds pages, on any view', () => {
+    held(2);
+    expect(shownPlan('organise', phone, true, () => false).map((s) => s.id)).toContain('trash');
+    expect(shownPlan('organise', phone, false, () => false).map((s) => s.id)).toContain('trash');
+  });
+
+  it('leaves it out with the Trash empty, on any view', () => {
+    held(0);
+    expect(shownPlan('organise', phone, true, () => true).map((s) => s.id)).not.toContain('trash');
+    expect(shownPlan('organise', phone, false, () => true).map((s) => s.id)).not.toContain('trash');
+  });
+});
+
+describe('a row’s line', () => {
+  it('never names a writer’s step to a reader', () => {
+    for (const reader of [VIEWER, GUEST_VIEWER]) {
+      expect(knowledgeTourLine('organise', reader)).toBe(
+        'The page tree, search and the breadcrumb.',
+      );
+      expect(knowledgeTourLine('trust', reader)).toBe('Who wrote a page, and its Page Health.');
+      expect(knowledgeTourLine('share', reader)).toBe('See who wrote a page, and react to it.');
+      for (const id of KNOWLEDGE_TOURS) {
+        expect(knowledgeTourLine(id, reader), id).not.toMatch(/options|verifying|share|comment/i);
+      }
+    }
+  });
+
+  it('keeps the full line for a writer, less Share for a Participant', () => {
+    for (const writer of [EDITOR, PARTICIPANT]) {
+      expect(knowledgeTourLine('organise', writer)).toMatch(/a page’s options/);
+      expect(knowledgeTourLine('trust', writer)).toMatch(/verifying it/);
+    }
+    expect(knowledgeTourLine('share', EDITOR)).toBe(
+      'Share, see who wrote a page, react and comment.',
+    );
+    expect(knowledgeTourLine('share', PARTICIPANT)).toBe(
+      'See who wrote a page, react and comment.',
+    );
   });
 });
 
