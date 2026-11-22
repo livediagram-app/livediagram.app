@@ -130,6 +130,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone tried an automation rule with Test, which shows what it would do and changes nothing.',
   'Document|Ran|AutomationManual':
     'Someone ran a Run by Hand automation rule from the Automations screen.',
+  'Document|Toggled|AutomationTakenOver':
+    'Someone took over a rule paused on lost access: it now runs as them, and is on again.',
   'UI|Opened|Automations': 'Someone opened the Automations screen from the Tools menu.',
   'UI|Opened|AutomationsOffline':
     'Someone opened Automations on a document kept Offline, which asks them to sync it first.',

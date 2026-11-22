@@ -757,6 +757,14 @@ export const DESIGN_AUTOMATIONS_RAN = chart(
   { types: ['AutomationManual'] },
 );
 
+export const DESIGN_AUTOMATIONS_TAKEN_OVER = chart(
+  'Document',
+  'Toggled',
+  'Automation Rules Taken Over',
+  "A rule paused on a step in another app's lost access, saved as someone else's with Take Over Rule and turned back on.",
+  { types: ['AutomationTakenOver'], rising: 'neutral' },
+);
+
 export const DESIGN_AUTOMATION_SECRETS = chart(
   'Document',
   'Created',
@@ -791,6 +799,7 @@ export const DESIGN_AUTOMATIONS: MetricStack = {
     DESIGN_AUTOMATIONS_TOGGLED,
     DESIGN_AUTOMATIONS_TESTED,
     DESIGN_AUTOMATIONS_RAN,
+    DESIGN_AUTOMATIONS_TAKEN_OVER,
     DESIGN_AUTOMATIONS_DELETED,
     DESIGN_AUTOMATION_SECRETS,
     DESIGN_AUTOMATION_SECRETS_CHANGED,

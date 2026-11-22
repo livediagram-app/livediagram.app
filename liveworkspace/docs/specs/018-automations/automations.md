@@ -319,16 +319,16 @@ into the knowledgebase, a session that ended is summarised into a page, a page d
 Owner. Every app's rule builder offers the same five steps that act **elsewhere**, run by the platform **as the
 rule's author** ([blueprint](blueprints/cross-app.md)):
 
-| Step                                | Kind           | Does                                                                       | Needs on the target |
-| ----------------------------------- | -------------- | -------------------------------------------------------------------------- | ------------------- |
-| **Create a Card in a Plan**         | `plan_card`    | a card on a chosen board, in a chosen column: title, description, an       | Editor              |
-|                                     |                | assignee, due N days after it fires, linked back to the item that fired;   |                     |
-|                                     |                | optionally skipped while an open card already links to that item           |                     |
-| **Write a Page in a Knowledgebase** | `kb_page`      | a page under a chosen parent: title and body (Markdown, values allowed),   | Editor              |
-|                                     |                | Never Verified, its Owner the author, **Written by Automation**            |                     |
-| **Post in a Space**                 | `space_post`   | a note on a chosen tab of a livehuddle Space, signed by the rule           | Editor              |
-| **Add a Tab to a Document**         | `doc_tab`      | a tab from a chosen template in a livedocuments or livediagram document    | Editor              |
-| **Notify**                          | `inbox_notice` | an Inbox notice to chosen people of the item, in every app                 | (the item's people) |
+| Step                                | Kind           | Does                                                                     | Needs on the target |
+| ----------------------------------- | -------------- | ------------------------------------------------------------------------ | ------------------- |
+| **Create a Card in a Plan**         | `plan_card`    | a card on a chosen board, in a chosen column: title, description, an     | Editor              |
+|                                     |                | assignee, due N days after it fires, linked back to the item that fired; |                     |
+|                                     |                | optionally skipped while an open card already links to that item         |                     |
+| **Write a Page in a Knowledgebase** | `kb_page`      | a page under a chosen parent: title and body (Markdown, values allowed), | Editor              |
+|                                     |                | Never Verified, its Owner the author, **Written by Automation**          |                     |
+| **Post in a Space**                 | `space_post`   | a note on a chosen tab of a livehuddle Space, signed by the rule         | Editor              |
+| **Add a Tab to a Document**         | `doc_tab`      | a tab from a chosen template in a livedocuments or livediagram document  | Editor              |
+| **Notify**                          | `inbox_notice` | an Inbox notice to chosen people of the item, in every app               | (the item's people) |
 
 - **The same JSON in every app.** A step names its target as `{ "app", "item", "title" }` (the title as picked, for
   the sentence; the item is read again on every run) and its own fields; the values are the source app's
@@ -377,13 +377,13 @@ apps so far, and each rule that ran in it (`<app>:<item>:<rule>`).
 
 ### Limits
 
-| Limit                                                        | Value | Past it                                              |
-| ------------------------------------------------------------ | ----- | ---------------------------------------------------- |
-| Runs of one rule with a step in other apps a day (UTC)       | 100   | the step is skipped and the run Skipped              |
-| Steps in other apps one author's rules run a day, every app | 500   | the same, counted at the index                       |
-| Hops across apps in one chain                                | 3     | Skipped                                              |
-| Steps in other apps per rule                                 | 5     | refused on save (`automation_invalid`)               |
-| People one Notify reaches                                    | 10    | refused on save                                      |
+| Limit                                                       | Value | Past it                                 |
+| ----------------------------------------------------------- | ----- | --------------------------------------- |
+| Runs of one rule with a step in other apps a day (UTC)      | 100   | the step is skipped and the run Skipped |
+| Steps in other apps one author's rules run a day, every app | 500   | the same, counted at the index          |
+| Hops across apps in one chain                               | 3     | Skipped                                 |
+| Steps in other apps per rule                                | 5     | refused on save (`automation_invalid`)  |
+| People one Notify reaches                                   | 10    | refused on save                         |
 
 - **AI steps follow the shared key and credit rules**: a Summarise with AI step before a Write a Page is one of the
   item's AI asks a day (100), on the item's own key where it has one. At the cap **only the AI steps wait until
@@ -400,12 +400,12 @@ apps so far, and each rule that ran in it (`<app>:<item>:<rule>`).
 
 ### Starters
 
-| App           | Starter                                           | Does                                                                |
-| ------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
-| liveplanner   | **Card Done, Write Release Note**                 | Card Moved to Done, then Write a Page from the card's title and notes |
-| liveknowledge | **Review Due, Add a Card for the Owner**          | Review Due, then Create a Card in a Plan assigned to the Page Owner |
-| livediagram   | **Session Ended, Summarise into Knowledgebase**   | Edited, Then Quiet, Summarise with AI, Write a Page (WI-1347)       |
-| livehuddle    | **Meeting Ended, Send Actions to Plan**           | Everyone Left, Summarise with AI, Create a Card in a Plan           |
+| App           | Starter                                         | Does                                                                  |
+| ------------- | ----------------------------------------------- | --------------------------------------------------------------------- |
+| liveplanner   | **Card Done, Write Release Note**               | Card Moved to Done, then Write a Page from the card's title and notes |
+| liveknowledge | **Review Due, Add a Card for the Owner**        | Review Due, then Create a Card in a Plan assigned to the Page Owner   |
+| livediagram   | **Session Ended, Summarise into Knowledgebase** | Edited, Then Quiet, Summarise with AI, Write a Page (WI-1347)         |
+| livehuddle    | **Meeting Ended, Send Actions to Plan**         | Everyone Left, Summarise with AI, Create a Card in a Plan             |
 
 livediagram has no Everyone Left of its own (Spaces left it, Work Tracker 650): a session that ended is the board
 going quiet, Edited, Then Quiet after 30 minutes.
@@ -413,7 +413,9 @@ going quiet, Edited, Then Quiet after 30 minutes.
 ### Telemetry
 
 Under the app's item category, action `Ran`: `CrossAppDone`, `CrossAppNoAccess`, `CrossAppLoop`, `CrossAppCapped`
-and `CrossAppFailed`. Never a name, an id or a text.
+and `CrossAppFailed`. Never a name, an id or a text. Take Over Rule sends `Toggled` `AutomationTakenOver` from the
+screen. The telemetry dashboard charts both on liveplanner, whose run emits are scanned; the item apps' room runs (their
+`AutomationDone` and the rest included) are not yet scanned, so they have no chart there.
 
 ## Agents
 

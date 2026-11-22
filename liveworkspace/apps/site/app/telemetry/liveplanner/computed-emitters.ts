@@ -392,6 +392,16 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/api/src/plan-room/automations/automation-telemetry.ts Plan·Ran': {
     values: AUTOMATION_TRIGGER_KINDS.map((kind) => `AutomationTrigger.${pascalToken(kind)}`),
   },
+  // A rule's step in another app, by how it ended (plan-room/automations/automation-cross.ts EVENT).
+  'apps/api/src/plan-room/automations/automation-cross.ts Plan·Ran': {
+    values: [
+      'CrossAppDone',
+      'CrossAppNoAccess',
+      'CrossAppLoop',
+      'CrossAppCapped',
+      'CrossAppFailed',
+    ],
+  },
   'apps/editor/components/automations/plan-plumbing.ts UI·Opened': {
     values: AUTOMATION_TEMPLATE_IDS.map((id) => `AutomationTemplate.${id}`),
   },
