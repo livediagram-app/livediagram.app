@@ -8,6 +8,7 @@ import { handleApp } from './app-routes';
 import { drainAssistantNotices, handleAssistantRevoked } from './assistant-notices';
 import { handleAccessRequests } from './access-requests';
 import { handleApproval } from './approvals';
+import { handleNewPlanForSend, handlePlanSends } from './plan-sends';
 import { callerOf } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
@@ -73,6 +74,8 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   'team-audit': (ctx) => handleTeamAudit(ctx),
   // A project kit, started, finished or removed (kits.ts).
   kits: handleKits,
+  // Send to Plan's New Plan (plan-sends.ts).
+  'plan-sends': handleNewPlanForSend,
 };
 
 async function route(ctx: RouteContext): Promise<Response> {
@@ -118,6 +121,8 @@ async function route(ctx: RouteContext): Promise<Response> {
     // A chart's range read on the person's own access, and the plan's Sheets for its picker (sheet-sources.ts).
     if (segments[2] === 'sheets' && segments.length === 3) return handleSheetList(ctx, id);
     if (segments[2] === 'sheet-range' && segments.length === 3) return handleSheetRange(ctx, id);
+    // Send to Plan (plan-sends.ts): a send to this plan, or this source's sends for its chips.
+    if (segments[2] === 'plan-sends' && segments.length === 3) return handlePlanSends(ctx, id);
     // Approvals (approvals.ts): asked, decided, cancelled and read, a person in person only.
     if (segments[2] === 'approval') return handleApproval(ctx, id, segments.slice(3));
     // Request Access (access-requests.ts): asked, granted and declined, an account in person only.
@@ -205,6 +210,9 @@ const routeLabel = createApiRouteLabel(
     'decision',
     'access-requests',
     'decline',
+    'plan-sends',
+    'plan-cards',
+    'plans',
   ]),
 );
 
