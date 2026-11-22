@@ -8,7 +8,6 @@
 // words, the knowledgebase's name and its tree's titles (never a page's writing), all fenced; its reply is read
 // strictly (`parsePageStructure`) and only ever placed as text.
 import {
-  ModelCallError,
   STRUCTURE_BUILT_IN_ASKS,
   STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY,
   STRUCTURE_MAX_PURPOSE_CHARS,
@@ -18,8 +17,6 @@ import {
   STRUCTURE_PER_PERSON_PER_HOUR,
   STRUCTURE_REFUSED_NOT_JSON,
   STRUCTURE_REFUSED_NO_HEADING,
-  callModel,
-  modelFailureWords,
   pageStructureBuiltInInput,
   pageStructureRequest,
   parsePageStructure,
@@ -34,6 +31,7 @@ import { pageTreeRows } from '@liveknowledge/document';
 import type { KnowledgeSetupProvider, PageStructureResponse } from '@liveknowledge/api-schema';
 import { ASK_UNAVAILABLE_WORDS, openAi } from '../knowledge/ai-settings';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
+import { ModelCallError, callModel, modelFailureWords } from '@liveworkspace/ai';
 import { modelDoorFor } from '../knowledge/model-door';
 import { askBuiltInOnce, builtInAi, type BuiltInAi } from '../knowledge/setup-built-in-ai';
 import { spendSetupDraft } from '../knowledge/setup-draft-count';

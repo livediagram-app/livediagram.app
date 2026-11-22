@@ -4,7 +4,7 @@
 // words, the knowledgebase's name and its tree's titles are other people's writing: they are fenced, and the model is
 // told they are material, never instructions. The reply is untrusted text: every block is checked, cut to its bound
 // and placed only as text (page-structure-blocks.ts). Pure.
-import { fenced, type ModelRequest } from './model-request';
+import { fenced, type ModelRequest } from '@liveworkspace/ai';
 import { plainLine } from './setup-suggestion';
 
 export const STRUCTURE_PER_PERSON_PER_HOUR = 10;
