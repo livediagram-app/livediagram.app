@@ -68,8 +68,9 @@ Each method is in the OpenAPI manifest, its types in `ROOT_TYPES`.
   Everyone tried gets their mark (one with the switch off too: they chose), so the week holds; nothing tried takes
   none. `sent` counts those the notifier emailed.
 - **Ask again** from the editor: `lib/required-reading/read-again.ts` holds which pages have the draft bar's toggle
-  on. `useEditorPageEditing`'s `save` calls `noteOwnSave(tabId)`, which, when it is on for the page, clears it and
-  hands the page to the sender `ReadAgainToggle` registered (the store's `askAgain`, with its toast). The toggle
+  on. `useEditorPageEditing`'s `save` calls `takeReadAgain(tabId)`, which, when it is on for the page, clears it and
+  hands the page to the sender `ReadAgainToggle` registered (the store's `again`; a refusal has its own toast), and
+  the save's toast says everyone is asked again. The toggle
   clears itself when it unmounts (Save, Cancel, leaving the page). The save and the ask are two requests: the ask
   never waits on the sync.
 - **The overview** (`readingOverview(env, document)`): every requirement and its confirmers in two reads, the team
@@ -103,6 +104,8 @@ NOT NULL DEFAULT 1)`; trigger `page_required_reading_tab_removed` AFTER DELETE O
 - Names and ids of who read, or who was reminded, leave the api only in a `sees` answer. Every other answer carries
   counts and the caller's own state.
 - Confirming writes the caller's own row alone, from the request's credentials, never from the body.
+- The **Knowledgebase Reviews** switch's description (packages/settings and the editor's catalogue) names the
+  reading reminders too, and its keywords find them.
 - Abuse: `READING_CHANGES_PER_MINUTE` a person a knowledgebase for confirm, set and ask again (its own rate map);
   Remind is bounded by its weekly mark a person a page and the shared daily ceiling.
 
@@ -119,21 +122,26 @@ NOT NULL DEFAULT 1)`; trigger `page_required_reading_tab_removed` AFTER DELETE O
 
 - `lib/required-reading/reading-store.ts`: each page's `PageReadingEntry` (`loading`, `ready`, `failed`), `load`
   (once a session; concurrent asks share one request), `confirm` (shown at once: `mine.readAt` now, `done` + 1; put
-  back on a refusal), `set`, `askAgain`, `remind` (each answering the api's body).
+  back on a refusal), `set`, `again` (each replaced by the api's body) and `remind` (answering its outcome; a send
+  reads the page again, so Last Reminded shows).
 - `components/required-reading/`: `useRequiredReading(tab?)` (the slice for the open page, `shown`: signed in or not,
-  not Offline, not an embed), `RequiredReadingBanner` (above the meta row, `PageKnowledgeSlots`), `PageRailReading`
-  (the rail's section, after Page Health), `ReadingSetupPanel` (the popover; `BottomSheet` on a phone),
+  not Offline, not an embed, its state read), `RequiredReadingBanner` (above the meta row, `PageKnowledgeSlots`), `PageRailReading`
+  (the rail's section, after Page Health), `ReadingSetupPanel` (the shared `ResponsivePopover`, 340 px: a popover from `sm`, the
+  phone drawer below),
   `ReadAgainToggle` (the draft bar, left of Cancel), `reading-icons.tsx`; `components/ai-knowledge/RequiredReadingCard`.
-- The banner: `role="region"` named "Required Reading", brand-50 ground and brand-200 hairline (dark: brand-950/40
-  and brand-900/60), the book glyph in a 28 px brand chip, the words, and `Button` primary `sm` **I've Read This**
-  at the right (under the words on a phone, full width, 44 px).
-- The rail section: `RAIL_LABEL` heading **Required Reading**; a 6 px rounded bar (brand on slate-100, its share
-  done), "7 of 12 have read it" and the audience on the right ("Everyone", "4 People"); the caller's line; for
-  `sees`, **Not Yet** and **Read** groups (the rail's `Disc`, name, the date for Read; the first 8 of each with
-  "Show all 23" opening the rest in place), then **Remind** (`Button` secondary `xs`, the bell) and "Last reminded
-  <when>"; for `manages`, **Change** (a link-styled button beside the heading).
-- Toasts: "Thanks. You've confirmed you read Expenses."; "Expenses is now Required Reading."; "Expenses is no longer
-  Required Reading."; "Everyone is asked to read Expenses again."; Remind's outcomes (`remindText`). Refusals in words
+- The banner: `role="region"` named "Required Reading", brand-50 ground and brand-200 hairline (dark: brand-500/10
+  and brand-400/30), the book glyph in a 32 px white chip, the words, and `Button` primary `xs` **I've Read This**
+  at the right (under the words on a phone, full width, 44 px). It fades in with its first read.
+- The rail section: `RAIL_LABEL` heading **Required Reading**, with **Change** (a link-styled button) beside it for
+  `manages`; the audience with the people glyph ("Everyone", "4 People"); a 6 px rounded bar (brand on slate-200,
+  emerald once everyone has read it) and "7 of 12 have read it" under it; the caller's line; for `sees`, **Not Yet**
+  and **Read** groups with their counts (Page Health's `Disc`, now exported, the name, the date for Read; the first
+  8 of each with "Show all 23" opening the rest in place), then **Remind** (the rail's small ringed button, the
+  bell, as Watch's) and "Last reminded <when>". Not required, for `manages` alone: the line and **Require
+  Reading**.
+- Toasts: "Thanks. You've confirmed you read Expenses."; "Expenses is Required Reading."; "Expenses is no longer
+  Required Reading."; "Expenses Saved. Everyone is asked to read it again."; Remind's outcomes (`remindText`: a
+  send is a success toast, every other outcome an info toast). Refusals in words
   (`readingFailureText`, `lib/required-reading/reading-words.ts`).
 - Empty and loading: the rail section and the banner draw nothing until the page's state is read (no layout shift in
   the writing: the banner arrives with the page's first read, before the person scrolls); a failed read draws
@@ -163,8 +171,9 @@ again` (how many confirmations cleared), `[reading] reminded` (pending, tried, s
   the rate; the overview's counts; Remind's week, ceiling, unavailable and nobody pending; a trashed and a deleted
   page; a closed account.
 - api `email/reading-reminder-email.test.ts`: the lines, escaping, the settings link.
-- editor `lib/required-reading/reading-store.test.ts`, `components/required-reading/required-reading-roles.test.tsx`
-  (the banner for the asked only, the rail per role, the panel, the toggle and Save asking again),
+- editor `lib/required-reading/reading-store.test.ts` (the store, `takeReadAgain` and the words),
+  `components/required-reading/required-reading-roles.test.tsx` (the banner for the asked only, the rail per role,
+  Show All, an embed, the panel and its refusal, the toggle's switch),
   `components/ai-knowledge/RequiredReadingCard.test.tsx`.
 
 ## Constants and configuration
