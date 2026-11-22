@@ -14,7 +14,7 @@ import {
   SHARE_DOMAINS_TEXT_MAX,
   type ShareSignInRule,
 } from '@liveworkspace/index-client';
-import { Button, Switch } from '@liveworkspace/ui';
+import { Button, Switch, TextInput } from '@liveworkspace/ui';
 import { AtSignIcon, UserIcon } from '../../ui/icons';
 import { HelpLink } from './HelpLink';
 import { SETTING_CARD, SETTING_DETAIL, SETTING_DETAIL_ROW, SETTING_NOTE } from './parts';
@@ -224,7 +224,7 @@ export function SignInSection({
                 <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
                   <AtSignIcon size={13} />
                 </span>
-                <input
+                <TextInput
                   ref={field}
                   type="text"
                   inputMode="email"
@@ -241,12 +241,13 @@ export function SignInSection({
                   }}
                   placeholder="@acme.com @example.org"
                   aria-label="Email domains"
-                  aria-invalid={problem !== null}
-                  aria-describedby="share-domains-hint"
+                  invalid={problem !== null}
+                  hintId="share-domains-hint"
+                  compact
                   autoComplete="off"
                   autoCapitalize="none"
                   spellCheck={false}
-                  className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-2 font-mono text-sm text-slate-800 outline-none transition duration-micro placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 aria-[invalid=true]:border-rose-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-brand-500/20"
+                  className="pl-8 font-mono placeholder:font-sans"
                 />
               </div>
               <Button type="submit" size="xs" disabled={!ready} busy={busy} className="shadow-sm">

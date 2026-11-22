@@ -59,6 +59,7 @@
 @source inline("dark:fill-slate-950");
 @source inline("dark:focus-visible:outline-slate-400");
 @source inline("dark:focus-visible:ring-brand-400");
+@source inline("dark:focus:ring-brand-500/20");
 @source inline("dark:from-brand-500/20");
 @source inline("dark:from-slate-800");
 @source inline("dark:hover:bg-brand-400/[0.06]");
@@ -75,6 +76,7 @@
 @source inline("dark:hover:text-slate-300");
 @source inline("dark:hover:text-slate-50");
 @source inline("dark:placeholder:text-slate-500");
+@source inline("dark:ring-brand-400/30");
 @source inline("dark:ring-brand-400/40");
 @source inline("dark:ring-brand-400/50");
 @source inline("dark:ring-brand-400/60");

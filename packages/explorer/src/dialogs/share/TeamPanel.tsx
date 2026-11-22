@@ -7,7 +7,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@liveworkspace/ui';
-import { CheckIcon, CopyIcon, LinkIcon, TeamIcon } from '../../ui/icons';
+import { Callout } from '@liveworkspace/ui/callout';
+import { CheckIcon, CopyIcon, LinkIcon } from '../../ui/icons';
 import { writeClipboard } from './CopyMenu';
 import { SECTION_LABEL } from './parts';
 
@@ -47,27 +48,20 @@ export function TeamPanel({
   return (
     <div className="flex flex-col gap-5">
       <section aria-labelledby="share-team-heading" className="flex flex-col gap-3">
-        <div className="flex items-start gap-3 rounded-xl bg-emerald-50/80 p-4 ring-1 ring-inset ring-emerald-200/70 dark:bg-emerald-500/10 dark:ring-emerald-400/20">
-          <span
-            aria-hidden
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-400/30"
-          >
-            <TeamIcon size={17} />
-          </span>
-          <div className="min-w-0">
-            <h3
-              id="share-team-heading"
-              className="text-sm font-semibold text-slate-900 dark:text-slate-50"
-            >
+        <Callout
+          tone="success"
+          size="md"
+          role="note"
+          title={
+            <h3 id="share-team-heading">
               {teamName
                 ? `Everyone in ${teamName} can already open this ${word}`
                 : `Everyone in the team can already open this ${word}`}
             </h3>
-            <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-              {`It lives in ${team}’s space, so members need no pass. Send them its link and they open it as Editors.`}
-            </p>
-          </div>
-        </div>
+          }
+        >
+          {`It lives in ${team}’s space, so members need no pass. Send them its link and they open it as Editors.`}
+        </Callout>
       </section>
 
       <section aria-labelledby="share-team-link" className="flex flex-col gap-2">
