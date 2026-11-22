@@ -300,25 +300,26 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
 Spec "Knowledgebase Style". The style is one value on the document, drawn with when a page is shown, and stored in
 no tab.
 
-| Piece                                   | File                                                                                                                             |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| the model, parser, write, article style | `packages/document/src/knowledge-style.ts`                                                                                       |
-| a tab's own style dropped on read       | `packages/document/src/page-looks.ts` (`RETIRED_TAB_STYLE_KEYS`)                                                                 |
-| the wire                                | `packages/api-schema` `knowledge.ts` (`KnowledgeStyleWire`), `LiveDoc`, `document-meta`                                          |
-| the column and its travel               | `apps/api` `document-schema.ts` (V16), `document-content.ts`, `document-file.ts`, `document-snapshots.ts`                        |
-| the metadata write                      | `apps/api` `routes/knowledge-style-write.ts`, called by `routes/documents.ts`                                                    |
-| the editor's store                      | `apps/editor/lib/knowledge-style/knowledge-style-store.ts`                                                                       |
-| the change, its save and its undo step  | `editor-state/useEditorKnowledgeStyle.ts`, `lib/knowledge-style/style-change.ts`, `style-history.ts`                             |
-| who is offered it                       | `lib/knowledge-style/style-offered.ts`, `components/knowledge-style/useStyleOffered.ts`                                          |
-| accents, the light ground, a styled tab | `packages/document/src/knowledge-style-view.ts`                                                                                  |
-| the dark ground (and the accents again) | `lib/knowledge-style/knowledge-accent.ts`                                                                                        |
-| the Explorer's preview                  | `apps/api` `thumbnail.ts` (`drawDocument`), called by `document-room/document-room-doors.ts` `exportImage`                       |
-| looks, the Mashup                       | `lib/knowledge-style/knowledge-looks.ts`                                                                                         |
-| a card's page of writing                | `lib/knowledge-style/look-page-preview.ts`                                                                                       |
-| drawings in the theme                   | `lib/knowledge-style/styled-elements.ts`                                                                                         |
-| a tab as the exports draw it            | `packages/document/src/knowledge-style-view.ts` (`tabInKnowledgeStyle`), `lib/export-as-seen.ts`                                 |
-| the dialog and its panels               | `components/knowledge-style/` (`KnowledgeStyleDialog`, `knowledge-style-profile`, `KnowledgeTextPanel`, `KnowledgeColoursPanel`) |
-| the shared dialog's optional parts      | `packages/workbench` `tab-style-profile.ts` (`title`, `finishFilter`, `renderPanel`, `panelValues`)                              |
+| Piece                                                          | File                                                                                                                             |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| the model, parser, write, article style                        | `packages/document/src/knowledge-style.ts`                                                                                       |
+| a tab's own style dropped on read                              | `packages/document/src/page-looks.ts` (`RETIRED_TAB_STYLE_KEYS`)                                                                 |
+| the wire                                                       | `packages/api-schema` `knowledge.ts` (`KnowledgeStyleWire`), `LiveDoc`, `document-meta`                                          |
+| the column and its travel                                      | `apps/api` `document-schema.ts` (V16), `document-content.ts`, `document-file.ts`, `document-snapshots.ts`                        |
+| the metadata write                                             | `apps/api` `routes/knowledge-style-write.ts`, called by `routes/documents.ts`                                                    |
+| the editor's store                                             | `apps/editor/lib/knowledge-style/knowledge-style-store.ts`                                                                       |
+| the change, its save and its undo step                         | `editor-state/useEditorKnowledgeStyle.ts`, `lib/knowledge-style/style-change.ts`, `style-history.ts`                             |
+| who is offered it                                              | `lib/knowledge-style/style-offered.ts`, `components/knowledge-style/useStyleOffered.ts`                                          |
+| the theme's accent                                             | `packages/document/src/knowledge-accent.ts` (shared with the public site)                                                        |
+| the writing and chrome accents, the light ground, a styled tab | `packages/document/src/knowledge-style-view.ts`                                                                                  |
+| the dark ground (and the accents again)                        | `lib/knowledge-style/knowledge-accent.ts`                                                                                        |
+| the Explorer's preview                                         | `apps/api` `thumbnail.ts` (`drawDocument`), called by `document-room/document-room-doors.ts` `exportImage`                       |
+| looks, the Mashup                                              | `lib/knowledge-style/knowledge-looks.ts`                                                                                         |
+| a card's page of writing                                       | `lib/knowledge-style/look-page-preview.ts`                                                                                       |
+| drawings in the theme                                          | `lib/knowledge-style/styled-elements.ts`                                                                                         |
+| a tab as the exports draw it                                   | `packages/document/src/knowledge-style-view.ts` (`tabInKnowledgeStyle`), `lib/export-as-seen.ts`                                 |
+| the dialog and its panels                                      | `components/knowledge-style/` (`KnowledgeStyleDialog`, `knowledge-style-profile`, `KnowledgeTextPanel`, `KnowledgeColoursPanel`) |
+| the shared dialog's optional parts                             | `packages/workbench` `tab-style-profile.ts` (`title`, `finishFilter`, `renderPanel`, `panelValues`)                              |
 
 - **Model.** `KnowledgeStyle` is `{ theme, headingFont, bodyFont, textSize, lineSpacing, headingStyle, accent? }`:
   a built-in theme id (`brand` is the product's own), two typeface ids, `small | medium | large`, `compact |
@@ -350,9 +351,9 @@ comfortable | relaxed`, `plain | ruled`, and a hex when one was picked. `DEFAULT
   through `elementsInTheme` (each unset colour the theme's, cached per element) and the theme's view map.
   `useThemeColours` and `useColourPalette` offer the theme's palette. Nothing subscribes for a page that is not
   mounted, and no tab is committed.
-- **The accent.** In `@liveknowledge/document` (`knowledge-style-view.ts`), one copy for the editor and the api,
-  re-exported by the editor's `knowledge-accent.ts`. `knowledgeThemeAccent`: `LIME_ACCENT` (`#4d7c0f`, brand-600)
-  for `brand`; otherwise `writingAccentOf` the theme's light half: a multi-colour theme's first branch whose hue is
+- **The accent.** In `@liveknowledge/document`, one copy for the editor, the public site and the api: the theme's
+  accent in `knowledge-accent.ts`, the writing and chrome accents in `knowledge-style-view.ts`, all re-exported by
+  the editor's `knowledge-accent.ts`. `knowledgeThemeAccent`: `LIME_ACCENT` (`#4d7c0f`, brand-600) for `brand`; otherwise `writingAccentOf` the theme's light half: a multi-colour theme's first branch whose hue is
   outside 330 to 65 degrees (`isWarmAccent`: red through amber, the hues of errors and Review Due), else its first
   branch, else the theme's own stroke. `knowledgeWritingAccent` is the picked accent, else that.
   `articleStyleVars` holds it to 4.5:1 on the page. `knowledgeChromeAccent` is what the chrome's ramp is spun from

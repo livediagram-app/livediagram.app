@@ -6,17 +6,19 @@ import {
   type KnowledgeStyle,
 } from './knowledge-style';
 import {
-  KNOWLEDGE_LIGHT_GROUND,
   LIME_ACCENT,
   isWarmAccent,
+  knowledgeThemeAccent,
+  writingAccentOf,
+} from './knowledge-accent';
+import {
+  KNOWLEDGE_LIGHT_GROUND,
   knowledgeChromeAccent,
   knowledgeGroundWash,
   knowledgeLightGround,
-  knowledgeThemeAccent,
   knowledgeWritingAccent,
   tabInKnowledgeStyle,
   tabOnKnowledgeGround,
-  writingAccentOf,
 } from './knowledge-style-view';
 import { pagesOf } from './page';
 import type { Tab } from './index';

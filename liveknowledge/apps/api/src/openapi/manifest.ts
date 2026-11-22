@@ -627,6 +627,51 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/documents/{id}/publishing',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "The knowledgebase's public site (Publish to the Web): whether it may be published, the site as it stands, the address a first publish is offered, and a preview of the pages a publish of `root` would put on the web and those it would leave out (Pending Approval, Rejected, or with no saved writing). Editor in person only: an agent's token is refused with 403 `needs_a_person`.",
+    query: [
+      {
+        name: 'root',
+        required: false,
+        description:
+          "The section to preview: a page's id. Empty for the whole knowledgebase; left out, the site's own.",
+      },
+    ],
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    responseSchema: 'PublishingState',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/publishing',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Publish the knowledgebase, or one section of it, at `/kb/<address>`, or change what is published. The site shows saved writing alone: never drafts, comments, margin notes, Page Health or pages Pending Approval or Rejected. A renamed page or site keeps its old address as a permanent redirect. Editor in person, signed in. 409 `address_taken` when another knowledgebase holds the address; 409 `nothing_to_publish` when no page may go public.',
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    requestSchema: 'PublishingRequest',
+    responseSchema: 'PublishingState',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/publishing',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Unpublish: the site and every address it held come down at once, and every edge copy within a minute. Editor in person, signed in.',
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    responseSchema: 'PublishingState',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'GET',
     path: '/documents/{id}/knowledge-settings/preview',
     segment: 'documents',
     tag: 'Knowledge',

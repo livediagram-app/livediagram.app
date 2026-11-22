@@ -216,6 +216,7 @@ export * from './comment-thread';
 export * from './document-envelope';
 export * from './knowledge-settings';
 export * from './knowledge-style';
+export * from './knowledge-accent';
 // The style's accents, its ground and a tab drawn in it: shared by the editor's exports and the api's preview.
 export * from './knowledge-style-view';
 export * from './export-tab-text';

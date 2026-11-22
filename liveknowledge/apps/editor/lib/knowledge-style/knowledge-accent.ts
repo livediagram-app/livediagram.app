@@ -1,7 +1,7 @@
 // The accent a knowledgebase's theme gives its writing and its chrome (docs/specs/030-knowledgebase/page-surface.md
 // "Knowledgebase Style", "The chrome follows the theme"). The accents themselves are @liveknowledge/document's
-// (knowledge-style-view.ts), one copy shared with the api's preview; this adds the dark ground, which is spun from
-// the chrome's ramp (@liveworkspace/workbench).
+// (knowledge-accent.ts, knowledge-style-view.ts), one copy shared with the public site and the api's preview;
+// this adds the dark ground, which is spun from the chrome's ramp (@liveworkspace/workbench).
 import { knowledgeChromeAccent } from '@liveknowledge/document';
 import { editorAccentCss } from '@liveworkspace/workbench/hooks/ui/editor-accent';
 
