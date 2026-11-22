@@ -6,7 +6,6 @@
 // fetched. The tabs are read once, when the screen opens (PlanContext's planTabs reads them when called).
 
 import { promptOf, questionsOf, readForm } from '@liveplanner/forms';
-import { useMemo } from 'react';
 import {
   BUILT_IN_FIELD_NAMES,
   knownFieldKind,
@@ -22,6 +21,14 @@ import {
   type StatusPhase,
 } from '@liveplanner/items';
 import { tabKindOf, type Tab } from '@liveplanner/project';
+import { useAutomationsAccess } from '@liveworkspace/automations-ui/AutomationsContext';
+import type { ItemSnapshot, ItemSnapshots } from '@liveworkspace/automations-ui/item';
+import {
+  snapshotListStore,
+  useSnapshotList,
+} from '@liveworkspace/automations-ui/item/snapshot-list';
+import { useSnapshotsDoor } from '@liveworkspace/snapshots/ui';
+import { useCallback, useMemo } from 'react';
 import { usePlan } from '@/components/plan/PlanContext';
 
 export type OutlineBoard = {
@@ -45,6 +52,8 @@ export type AutomationOutline = RuleSentenceOutline & {
   forms: readonly OutlineForm[];
   boards: readonly OutlineBoard[];
   items: ReadonlyMap<string, Item>;
+  // The plan's snapshots, read once when a Revert to Snapshot panel first shows (spec "Snapshot steps").
+  snapshots: ItemSnapshots;
 };
 
 const NO_ITEMS: ReadonlyMap<string, Item> = new Map();
@@ -132,8 +141,25 @@ export function fieldChangeFields(types: readonly ItemTypeDef[]): OutlineField[]
   return outlineFields(types).filter((f) => unheardFields(types, [f.id]).length === 0);
 }
 
+// The plan's snapshots as Revert to Snapshot lists them, one read while the screen is open.
+const PLAN_SNAPSHOTS = snapshotListStore();
+const NO_DOOR = (): Promise<readonly ItemSnapshot[]> =>
+  Promise.reject(new Error('Snapshots are not offered here'));
+
+// The snapshots through the editor's door (an Editor of the whole plan, stored on the server: as the screen's own gate).
+function usePlanSnapshots(): ItemSnapshots {
+  const id = useAutomationsAccess()?.scope.itemId ?? '';
+  const api = useSnapshotsDoor()?.door.api;
+  const read = useCallback(
+    async (): Promise<readonly ItemSnapshot[]> => (api ? (await api.list()).snapshots : NO_DOOR()),
+    [api],
+  );
+  return useSnapshotList(PLAN_SNAPSHOTS, id, read, false);
+}
+
 export function useAutomationOutline(): AutomationOutline {
   const plan = usePlan();
+  const snapshots = usePlanSnapshots();
   const types = plan?.types;
   const statusNames = plan?.statusNames;
   const phases = plan?.statusPhases ?? NO_PHASES;
@@ -168,6 +194,7 @@ export function useAutomationOutline(): AutomationOutline {
       items,
       // The editor never shows an id: a gone column, card type, field or Form tab reads in words.
       goneWords: true,
+      snapshots,
     };
-  }, [types, statusNames, phases, people, labels, fromTabs, items]);
+  }, [types, statusNames, phases, people, labels, fromTabs, items, snapshots]);
 }

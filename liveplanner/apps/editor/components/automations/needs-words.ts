@@ -1,7 +1,7 @@
 // A rule's Needs Attention line as the Rules list words it (docs/specs/026-plan/automations.md "Conditions"): never an
 // id, as the step panels' gone picks never show one. Each kind of thing gone is said once, counted ("A column is gone",
-// "2 columns are gone", "Someone is gone"), in the order the rule names them; a field Field Changed never hears keeps
-// its name; a GitHub rule on a plan not connected says so, and one whose named repositories all left the connection
+// "2 columns are gone", "Someone is gone"), in the order the rule names them; a snapshot a revert names by its name;
+// a field Field Changed never hears keeps its name; a GitHub rule on a plan not connected says so, and one whose named repositories all left the connection
 // names them. Pure.
 
 import { goneIdsWords, type AutomationGone, type AutomationNeed } from '@liveplanner/items';
@@ -20,6 +20,7 @@ const GONE: Readonly<Record<GoneKind, readonly [one: string, many: string]>> = {
   board: ['A board', 'boards'],
   webhook: ['A webhook', 'webhooks'],
   card: ['A card', 'cards'],
+  snapshot: ['A snapshot', 'snapshots'],
 };
 
 /** A GitHub rule's line on a plan not connected to GitHub. */
@@ -45,6 +46,11 @@ export function needsWords(attention: readonly AutomationNeed[]): string {
       lines.push({ text: repositoriesGone(need.names) });
       continue;
     }
+    // A snapshot a revert names reads by the name the step kept, so the line says which one.
+    if (need.kind === 'snapshot' && need.name) {
+      lines.push({ text: `Snapshot “${need.name}” is gone` });
+      continue;
+    }
     const n = counts.get(need.kind) ?? 0;
     if (n === 0) lines.push({ gone: need.kind });
     counts.set(need.kind, n + 1);
@@ -66,6 +72,7 @@ const INLINE: Readonly<Record<AutomationGone['kind'], string>> = {
   field: 'a field no longer here',
   person: 'Someone No Longer Here',
   filter: 'a saved filter no longer here',
+  snapshot: 'a snapshot no longer here',
 };
 
 // The start a failed step's line or a run's reason keeps: a related card's number, or the branch's failed cards.
