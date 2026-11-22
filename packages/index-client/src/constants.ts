@@ -117,6 +117,16 @@ export const COLLAB_TEXT_MAX = 500;
 export const COLLAB_PEOPLE_MAX = 100;
 // The tab an item pushes its cards and their threads under (a card isn't on one tab): `PUT /app/items/:id/collab/~cards`.
 export const COLLAB_CARDS_TAB = '~cards';
+// A tab's suggested edits (an agent's change waiting on a page, liveknowledge): at most this many in one push (more
+// and the index refuses it), each's `before` and `after` cut to COLLAB_SUGGESTION_TEXT_MAX and its `reason` to
+// COLLAB_SUGGESTION_REASON_MAX (its `agent` to COLLAB_SUGGESTION_AGENT_MAX), so the Inbox shows the change without holding the page's writing.
+export const COLLAB_MAX_SUGGESTIONS = 50;
+export const COLLAB_SUGGESTION_TEXT_MAX = 2000;
+export const COLLAB_SUGGESTION_REASON_MAX = 500;
+// Who suggested it, as the app names them ("Claude"): cut to this, as the index cuts every name.
+export const COLLAB_SUGGESTION_AGENT_MAX = 200;
+// Suggested edits the Inbox lists at most, newest first.
+export const INBOX_SUGGESTIONS_MAX = 100;
 
 export const TITLE_MAX = 500;
 export const FOLDER_NAME_MAX = 500;

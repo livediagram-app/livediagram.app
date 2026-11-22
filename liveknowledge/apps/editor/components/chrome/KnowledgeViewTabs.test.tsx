@@ -71,14 +71,14 @@ describe('the Ask gate', () => {
 describe('the Connect tab', () => {
   it('opens Connect for someone signed in, and tells telemetry', async () => {
     renderInEditor(<KnowledgeViewTabs />);
-    fireEvent.click(link('Connect'));
+    fireEvent.click(link('Connect MCP'));
     await waitFor(() => expect(window.location.search).toBe('?view=connect'));
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'ConnectView');
   });
 
   it('for someone not signed in, stays on Pages and asks them to sign in', async () => {
     renderInEditor(<KnowledgeViewTabs />, chromeValue('edit', { accountUserId: null }));
-    fireEvent.click(link('Connect'));
+    fireEvent.click(link('Connect MCP'));
     const dialog = await screen.findByRole('dialog', { name: 'Sign In to Connect an AI App' });
     expect(dialog.querySelector('a')?.textContent).toBe('Sign In');
     expect(window.location.search).toBe('');
@@ -87,7 +87,7 @@ describe('the Connect tab', () => {
 
   it('says what it is for in its hover card', async () => {
     renderInEditor(<KnowledgeViewTabs />);
-    fireEvent.pointerEnter(link('Connect'), { pointerType: 'mouse' });
+    fireEvent.pointerEnter(link('Connect MCP'), { pointerType: 'mouse' });
     const card = await screen.findByRole('tooltip');
     expect(card.textContent).toContain('Connect an AI App');
     expect(card.textContent).toContain('so it can read and write these pages');
@@ -104,12 +104,12 @@ describe('the view tabs', () => {
       'Pages',
       'Ask',
       'AI Knowledge',
-      'Connect',
+      'Connect MCP',
     ]);
     for (const a of links) expect(a.querySelector('svg')).not.toBeNull();
     expect(link('Pages').getAttribute('href')).toBe('/document/d1#t=p1');
     expect(link('AI Knowledge').getAttribute('href')).toBe('/document/d1?view=ai#t=p1');
-    expect(link('Connect').getAttribute('href')).toBe('/document/d1?view=connect#t=p1');
+    expect(link('Connect MCP').getAttribute('href')).toBe('/document/d1?view=connect#t=p1');
     expect(link('Ask').getAttribute('aria-current')).toBe('page');
     expect(link('Pages').getAttribute('aria-current')).toBeNull();
     // The open tab alone wears the tab's card.
@@ -122,7 +122,7 @@ describe('the view tabs', () => {
     window.history.replaceState(null, '', '/document/d1#t=p1');
     renderInEditor(<KnowledgeViewTabs />);
     expect(link('Pages').getAttribute('href')).toBe('/document/d1#t=p1');
-    for (const name of ['Ask', 'AI Knowledge', 'Connect']) {
+    for (const name of ['Ask', 'AI Knowledge', 'Connect MCP']) {
       const a = link(name);
       expect(a.getAttribute('href')).toBeNull();
       expect(a.getAttribute('aria-disabled')).toBe('true');

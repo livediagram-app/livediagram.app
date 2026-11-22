@@ -7,6 +7,7 @@ import { relinkTrashedTab } from '../document-room/page-trash';
 import { SOMEONE, asTabWriter } from '@liveworkspace/automations/room';
 import { pageCreatorOf } from '../knowledge/knowledge-caller';
 import { keepStoredKnowledge, ownerPatch } from '../knowledge/page-knowledge';
+import { savedBy } from '../knowledge/page-writer';
 import { notePageWrite, savedPageChanged } from '../knowledge/page-authors';
 import { noteWatched, personActor } from '../knowledge/watch-notes';
 import {
@@ -273,7 +274,7 @@ export async function writeTabSave(
       await notePageWrite(
         env,
         tabId,
-        owner,
+        savedBy(owner, writerParticipant?.name),
         undefined,
         writerParticipant && !holdsDraft(sanitised)
           ? [

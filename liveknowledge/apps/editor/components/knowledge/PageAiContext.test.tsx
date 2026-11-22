@@ -9,45 +9,20 @@ import { PageAiContext, aboutTokens, type PageAiContextProps } from './PageAiCon
 
 afterEach(cleanup);
 
-const AGENTS = [
-  { agent: 'Coding Agent', reads: 12 },
-  { agent: 'Support Bot', reads: 1 },
-];
-
 const view = (props: Partial<PageAiContextProps> = {}) =>
-  render(
-    <PageAiContext
-      inContext={false}
-      tokens={1200}
-      agents={AGENTS}
-      onSetContext={undefined}
-      {...props}
-    />,
-  );
+  render(<PageAiContext inContext={false} tokens={1200} onSetContext={undefined} {...props} />);
 const section = () => screen.getByRole('region', { name: 'AI Context' });
 
 describe('AI Context', () => {
-  it('names the agents that read it this week, with their reads', () => {
+  it('lists no agents: they are Read This Week’s popover now', () => {
     view();
-    const agents = section().querySelectorAll('[data-page-agent]');
-    expect([...agents].map((a) => a.textContent)).toEqual([
-      'Coding Agent12 reads',
-      'Support Bot1 read',
-    ]);
-  });
-
-  it('shows no list when no agent read it, and the questions Ask answered are Page Insights’ now', () => {
-    view({ agents: [] });
-    expect(section().querySelector('[data-ai-context-answered]')).toBeNull();
-    expect(section().querySelector('[data-ai-context-agents]')).toBeNull();
+    expect(section().querySelector('[data-page-agent]')).toBeNull();
     expect(screen.getByText('Always in Context')).toBeTruthy();
   });
 
-  it('shows no size and no agents before Page Health is read', () => {
-    view({ agents: undefined, tokens: undefined });
-    expect(section().querySelector('[data-ai-context-agents]')).toBeNull();
+  it('shows no size before Page Health is read', () => {
+    view({ tokens: undefined });
     expect(section().querySelector('[data-context-size]')).toBeNull();
-    expect(screen.queryByText('No Questions Answered Yet')).toBeNull();
   });
 });
 

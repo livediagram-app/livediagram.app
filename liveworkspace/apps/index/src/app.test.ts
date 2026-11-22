@@ -198,6 +198,7 @@ describe('the Inbox', () => {
       forms: [],
       accessRequests: [],
       shares: [],
+      suggestions: [],
       updates: [],
     });
     // Given a link and having opened it, Cat sees them.

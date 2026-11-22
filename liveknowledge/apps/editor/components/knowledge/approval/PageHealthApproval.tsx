@@ -3,10 +3,11 @@
 // Approval in the Page Info rail, under Page Health (docs/specs/030-knowledgebase/approval.md "Where it shows"): the
 // same body as the meta row's popover (ApprovalPanel) in a panel washed in its state's hue, with its actions one press
 // away. Drawn for a page that has an approval, or one the person here may ask about; nothing otherwise.
+import { useId } from 'react';
 import type { PageApproval } from '@liveknowledge/knowledge';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useRelativeNow } from '@/lib/relative-time';
-import { RAIL_LABEL } from '../PageHealthCard';
 import { useKnowledgePeople } from '../usePageKnowledge';
 import { ApprovalPanel, type ApprovalPanelProps } from './ApprovalPanel';
 import { usePageApproval } from './usePageApproval';
@@ -28,28 +29,27 @@ export function PageHealthApprovalView({
   asked?: boolean;
   onPutAway?: () => void;
 }) {
+  const titleId = useId();
   // Nothing until the page has an approval, or one is asked for from its menu (owner 2026-11-21).
   if (!props.approval && !(asked && props.actions.includes('request'))) return null;
+  // Asking for the first time confirms in a centred modal, never in the rail (owner 2026-11-22).
+  if (!props.approval)
+    return (
+      <Dialog open onClose={() => onPutAway?.()} titleId={titleId} size="sm" phoneSheet>
+        <div data-health-approval="" className="p-6">
+          <ApprovalPanel {...props} titleId={titleId} onCancel={() => onPutAway?.()} />
+        </div>
+      </Dialog>
+    );
   return (
-    <section
-      aria-label="Approval"
-      data-health-approval=""
-      // Asked from the menu: brought into view.
-      ref={
-        asked ? (el) => el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }) : undefined
-      }
-    >
-      <h2 className={RAIL_LABEL}>Approval</h2>
+    <section aria-label="Approval" data-health-approval="">
+      {/* Inside Page Health, above the Verified panel (owner 2026-11-22): the panel's own heading names it. */}
       <div
         className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${WASH[props.approval?.state ?? 'none']}`}
       >
-        {/* Cancel puts away a request form asked for from the menu; a page already asked about has nothing to put
-            away (owner 2026-11-21: its Cancel did nothing), so it shows its actions alone. */}
-        <ApprovalPanel
-          {...props}
-          inPanel
-          {...(onPutAway && !props.approval ? { onCancel: onPutAway } : {})}
-        />
+        {/* A page already asked about has nothing to put away (owner 2026-11-21: its Cancel did nothing), so it
+            shows its actions alone; the first request is the modal's above. */}
+        <ApprovalPanel {...props} inPanel />
       </div>
     </section>
   );

@@ -92,6 +92,9 @@ export function createPageKnowledgeStore(
   // outside the team (a Viewer through a link) names who made, changed, owns and verified a page.
   // Replaced, never changed in place, when a read brings a new name, so a reader can key on it.
   let names: ReadonlyMap<string, string> = new Map();
+  // Each knowledgebase's pending suggested edits by page (ai-knowledge.md "On the page"), from its newest Page Health
+  // read: the tree's dots. Replaced, never changed in place.
+  const suggestionCounts = new Map<string, Readonly<Record<string, number>>>();
   const loading = new Map<string, Promise<void>>();
   const overrides = new Map<string, Override>();
   const listeners = new Set<() => void>();
@@ -151,6 +154,25 @@ export function createPageKnowledgeStore(
     fieldsOf,
     /** `_at`: the store's version the caller read (see fieldsOf). */
     healthOf: (documentId: string, tab: string, _at?: number) => health.get(keyOf(documentId, tab)),
+    /** How many suggested edits wait on each page, from the newest Page Health read; undefined before one. `_at` as
+     *  fieldsOf's. */
+    suggestionCountsOf: (documentId: string, _at?: number) => suggestionCounts.get(documentId),
+    /** A suggested edit decided here: gone from the page's health and the counts at once, before the read after it
+     *  says so (ai-knowledge.md "On the page"). */
+    dropSuggestion(documentId: string, tab: string, id: string): void {
+      const key = keyOf(documentId, tab);
+      const held = health.get(key);
+      if (!held?.suggestions?.some((s) => s.id === id)) return;
+      health.set(key, { ...held, suggestions: held.suggestions.filter((s) => s.id !== id) });
+      const counts = suggestionCounts.get(documentId);
+      const was = counts?.[tab];
+      if (counts && was) {
+        const next: Record<string, number> = { ...counts, [tab]: was - 1 };
+        if (was <= 1) delete next[tab];
+        suggestionCounts.set(documentId, next);
+      }
+      changed();
+    },
     /** An account's name, as a Page Health read gave it; undefined when none has. */
     nameOf: (id: string): string | undefined => names.get(id),
     /** Every name the reads brought, a new map each time one lands. */
@@ -174,6 +196,7 @@ export function createPageKnowledgeStore(
         .then(
           (answer) => {
             health.set(key, answer);
+            if (answer.suggestionCounts) suggestionCounts.set(documentId, answer.suggestionCounts);
             const brought = Object.entries(answer.names ?? {}).filter(
               ([id, n]) => names.get(id) !== n,
             );

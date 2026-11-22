@@ -26,7 +26,7 @@ const ConnectView = dynamic(
 );
 
 // Each view's region name, as its tab is named.
-const VIEW_LABEL = { ask: 'Ask', ai: 'AI Knowledge', connect: 'Connect' } as const;
+const VIEW_LABEL = { ask: 'Ask', ai: 'AI Knowledge', connect: 'Connect MCP' } as const;
 
 // The knowledgebase's key and model (AiSettingsDialog.tsx): its code is fetched the first time it is opened.
 const AiSettingsDialogHost = dynamic(

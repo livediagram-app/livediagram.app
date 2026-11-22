@@ -23,6 +23,7 @@ import { MostReadCard } from './MostReadCard';
 import { NotReadCard } from './NotReadCard';
 import { NeedsAttention } from './NeedsAttention';
 import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
+import { takeAskedAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
 
 /** What the dashboard's controls do: AiKnowledgeView's handlers, each checking its right again. */
 export type DashboardActions = {
@@ -91,7 +92,8 @@ export function AiDashboard({
     () => (read.reviewEvery === reviewEvery ? read : { ...read, reviewEvery }),
     [read, reviewEvery],
   );
-  const [filter, setFilter] = useState<AttentionFilter>('all');
+  // A page's rail may ask for Suggested Edits as it opens this view (attention-filter-ask.ts).
+  const [filter, setFilter] = useState<AttentionFilter>(() => takeAskedAttentionFilter() ?? 'all');
   const go = (target: TileTarget) => {
     if ('filter' in target) {
       setFilter(target.filter);
@@ -102,7 +104,7 @@ export function AiDashboard({
     <div className="flex flex-col gap-4 sm:gap-5">
       <FigureTiles
         figures={dashboardFigures(overview)}
-        days={overview.reads.days}
+        overview={overview}
         filter={filter}
         onGo={go}
       />
@@ -116,6 +118,7 @@ export function AiDashboard({
             filter={filter}
             onFilter={setFilter}
             canResolve={rights.resolve}
+            canAcceptSuggestions={rights.acceptSuggestions}
             canDraft={rights.makePages}
             canManageAi={rights.manageAi}
             canAskOwners={canEmailOwners}

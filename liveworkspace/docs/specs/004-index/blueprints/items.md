@@ -197,7 +197,8 @@ Every statement is a plain `INSERT … SELECT` or DDL: no compound SELECT, no bo
 seventeen tables that reference `items` when it runs (`access_requests`, `approvals`, `approval_people`,
 `collab_actions`, `collab_form_reads`, `collab_forms`, `collab_thread_people`, `collab_threads`, `connections`,
 `events`, `opens`, `share_links`, `share_passwords`, `shared_with`, `use_days`, `webhooks`, `webhook_deliveries`),
-each made again with the DDL it has by then; `liveknowledge-migration.test.ts` fails if a table that references
+each made again with the DDL it has by then (`collab_suggestions`, made later by `0027_collab_suggestions.sql`, joins
+the next rebuild's list); `liveknowledge-migration.test.ts` fails if a table that references
 `items` before it is not in it, and the rehearsal CLI runs this one (`LATEST_REBUILD_MIGRATION`). Before such a migration deploys it is rehearsed on a copy of
 production: `wrangler d1 export liveworkspace-index --remote --output prod.sql` (which only reads), then
 `node scripts/items-rebuild-counts.ts rehearse prod.sql` in `apps/index`, which applies the migration to the copy as

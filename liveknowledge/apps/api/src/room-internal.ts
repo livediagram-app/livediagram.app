@@ -34,6 +34,8 @@ const WORKER_MUTATION_KINDS = new Set([
   'page-thread',
   // A reaction on a page (docs/specs/030-knowledgebase/page-reactions.md "Live").
   'page-reaction',
+  // A page's suggested edits changed (docs/specs/030-knowledgebase/ai-knowledge.md "On the page").
+  'page-suggestions',
 ]);
 
 /** Answer an internal endpoint, or null when the request is none of them. */

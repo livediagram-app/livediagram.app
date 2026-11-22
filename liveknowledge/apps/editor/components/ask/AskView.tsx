@@ -25,14 +25,7 @@ import { useRelativeNow } from '@/lib/relative-time';
 import { AiSettingsButton } from './AiSettingsButton';
 import { AskConversationPane } from './AskConversationPane';
 import { RecentQuestions } from './RecentQuestions';
-import {
-  AskLoading,
-  AskNoAi,
-  AskOffline,
-  AskSettingsFailed,
-  AskSignedOut,
-  SearchPagesButton,
-} from './AskStates';
+import { AskLoading, AskNoAi, AskOffline, AskSettingsFailed, AskSignedOut } from './AskStates';
 import { KnowledgeViewHeader } from './KnowledgeViewFrame';
 import { useAiSettingsState, useAskSession, type AskSession } from './useAskSession';
 
@@ -69,7 +62,6 @@ export function AskView() {
         title="Ask"
         about="Answers in plain words from this knowledgebase's own pages, each part with where it came from."
       >
-        <SearchPagesButton />
         {askOff === 'offline' ? null : <AiSettingsButton />}
       </KnowledgeViewHeader>
       {body}

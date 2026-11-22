@@ -70,7 +70,7 @@ describe('the view over the editor', () => {
   it('shows Connect in its own region', () => {
     editor();
     act(() => showKnowledgeView('connect'));
-    expect(screen.getByRole('region', { name: 'Connect' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Connect MCP' })).toBeTruthy();
     expect(screen.getByTestId('view-connect')).toBeTruthy();
   });
 

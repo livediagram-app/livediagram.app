@@ -99,6 +99,8 @@ export type NeedsAttentionProps = {
   filter: AttentionFilter;
   onFilter: (filter: AttentionFilter) => void;
   canResolve: boolean;
+  // Accept or dismiss a suggested edit: an Editor's alone; absent reads as `canResolve` (a test's).
+  canAcceptSuggestions?: boolean;
   canDraft: boolean;
   canManageAi: boolean;
   canAskOwners: boolean;
@@ -184,7 +186,7 @@ export function NeedsAttention(props: NeedsAttentionProps) {
                   ) : item.kind === 'suggestion' ? (
                     <SuggestionRow
                       suggestion={item.suggestion}
-                      canResolve={props.canResolve}
+                      canResolve={props.canAcceptSuggestions ?? props.canResolve}
                       accepting={busy.has(`accept:${item.suggestion.id}`)}
                       dismissing={busy.has(`dismiss:${item.suggestion.id}`)}
                       onAccept={() => props.onAccept(item.suggestion)}

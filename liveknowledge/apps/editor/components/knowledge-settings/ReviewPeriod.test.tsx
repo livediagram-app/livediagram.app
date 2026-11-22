@@ -46,7 +46,7 @@ function kb(role: Role = 'edit', over: Record<string, unknown> = {}) {
   ];
   return { documentId, value: chromeValue(role, { documentId, tabs, ...over }) };
 }
-const change = () => screen.getByRole('button', { name: 'Change Review Period' });
+const change = () => screen.getByRole('button', { name: /^Change Review Period/ });
 const rows = () => screen.getAllByRole('radio');
 const row = (name: string) => screen.getByRole('radio', { name });
 const chosen = () => rows().find((r) => r.getAttribute('aria-checked') === 'true')?.textContent;
@@ -56,7 +56,7 @@ const preview = (reviewDue: number, reviewDueNow: number) =>
 
 /** Page Health's Change, pressed: the popover open once its code is in. */
 async function openPopover(value = kb().value) {
-  const utils = renderInEditor(<ReviewPeriodButton />, value);
+  const utils = renderInEditor(<ReviewPeriodButton label="Every 90 Days" />, value);
   fireEvent.click(change());
   await screen.findByRole('dialog', { name: 'Review Period' });
   return utils;
@@ -120,15 +120,15 @@ describe('who is offered the pencil', () => {
 });
 
 describe('the button and its popover', () => {
-  it('is a small bordered pencil with no label, that says it opens a popover, counted when it opens', async () => {
-    renderInEditor(<ReviewPeriodButton />, kb().value);
-    expect(change().textContent).toBe('');
-    expect(change().querySelector('svg')).toBeTruthy();
-    expect(change().className).toContain('border-slate-200');
+  it('is the period itself as a dotted link, that says it opens a popover, counted when it opens', async () => {
+    renderInEditor(<ReviewPeriodButton label="Every 90 Days" />, kb().value);
+    expect(change().textContent).toBe('Every 90 Days');
+    expect(change().querySelector('svg')).toBeNull();
+    expect(change().className).toContain('decoration-dotted');
     expect(change().getAttribute('aria-haspopup')).toBe('dialog');
     expect(change().getAttribute('aria-expanded')).toBe('false');
     expect(change().className).toContain('cursor-pointer');
-    expect(change().className).toContain('phone:size-11');
+    expect(change().className).toContain('phone:min-h-11');
     fireEvent.click(change());
     await screen.findByRole('dialog', { name: 'Review Period' });
     expect(change().getAttribute('aria-expanded')).toBe('true');

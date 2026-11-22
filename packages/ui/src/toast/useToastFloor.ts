@@ -12,6 +12,7 @@ import {
   TOAST_PHONE_FLOOR_SELECTOR,
   TOAST_RISEN_SELECTOR,
   TOAST_SIDE_SELECTOR,
+  TOAST_START_SELECTOR,
   toastFloor,
   toastPlacement,
   type FloorRect,
@@ -26,7 +27,12 @@ export function useToastFloor(active: boolean, count: number): ToastPlacement {
   useMeasure(active, count, TOAST_FLOOR_SELECTOR, (found) => {
     const floors: FloorRect[] = [];
     const sides: FloorRect[] = [];
+    let start: FloorRect | null = null;
     for (const el of found) {
+      if (el.matches(TOAST_START_SELECTOR)) {
+        start = el.getBoundingClientRect();
+        continue;
+      }
       // A fresh rect per call, so marking it is safe. Kept terse: this hook is in the Explorer's first load.
       const r: FloorRect = el.getBoundingClientRect();
       r.rises = el.matches(TOAST_RISEN_SELECTOR);
@@ -38,9 +44,12 @@ export function useToastFloor(active: boolean, count: number): ToastPlacement {
       viewportHeight: window.innerHeight,
       floors,
       sides,
+      start,
     });
     setPlacement((prev) =>
-      prev.bottom === next.bottom && prev.right === next.right ? prev : next,
+      prev.bottom === next.bottom && prev.right === next.right && prev.left === next.left
+        ? prev
+        : next,
     );
   });
   return placement;

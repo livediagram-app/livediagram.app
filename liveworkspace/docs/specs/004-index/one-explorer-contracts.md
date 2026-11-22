@@ -365,6 +365,7 @@ holds for that person:
   Shared with me rows and comment and action rows.
 - **Deleted**: their folders, opens (Recent), use
   days (Most Used), Shared with me rows, placement defaults, their calendar feeds ([Calendar feeds](#calendar-feeds)),
+  the suggested edits waiting on them by name on other people's items ([Inbox](#inbox)),
   their own old `favourited` events (what is left of Favourites, removed,
   [one-explorer.md "Favourites removed"](one-explorer.md#favourites-removed)), and the guests merged into them
   (`person_aliases`, [Becoming an account](#guests)), so no grant names those keys again (a copy stays only for
@@ -773,6 +774,19 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   still waits on me. `mentionedBy` says who mentioned each person: `{[mentionedId]: {id, name, color?}}`, keyed by
   the ids in `mentionedIds`, naming the author of the latest comment that mentioned them (a comment mentioning its
   own author names no one), so a reply in the thread, theirs or anyone's, never changes who mentioned them.
+- The same collab push carries the tab's **suggested edits** where the app has them (liveknowledge: an agent's edit
+  waiting on a page, its `030-knowledgebase/ai-knowledge.md` "Edits suggested by agents"): `suggestions?: [{id,
+ownerId, agent, reason, kind: 'replace' | 'append', before, after, createdAt}]`, at most 50
+  (`COLLAB_MAX_SUGGESTIONS`, the knowledgebase's own cap), replacing that tab's suggestion rows as `threads` replace
+  its threads; absent is none, so an app that has no suggestions never sends the field and a tab whose page is gone
+  pushes none. `ownerId` is the person the suggestion waits on: the page's owner, or null for a page with no owner,
+  which the index reads as the item's owner. `agent` is who suggested it as the app names them ("Claude"); `before` is
+  the passage it replaces (empty for `append`, Markdown added at the page's end) and `after` what it puts there, each
+  cut to 2,000 characters (`COLLAB_SUGGESTION_TEXT_MAX`) and `reason` to 500, so the Inbox shows the change without
+  holding the page's writing; the whole suggestion stays in the app, which accepts it. A suggestion leaves the Inbox
+  with the push after it is accepted or dismissed, or its page is deleted (the tab's push then holds none), and with its
+  item when the item is trashed. A suggestion makes no event, no email and no webhook: the app's own Automations hear
+  it ("Agent Suggested a Change").
 - A collab push always fits the index's body limit (512 KiB, `INDEX_BODY_MAX_BYTES`): the push replaces the tab's
   rows, so it cannot be split, and one over the limit would be refused for good and park the tab's key, stopping its
   Inbox updates. Before sending, the item (`@liveworkspace/index-app` `capCollabPush`) cuts each row as the index
@@ -1057,7 +1071,7 @@ name an app reported, or as a teammate.
 
 ## Inbox
 
-`GET /inbox?app=`: `{threads, actions, forms, accessRequests, shares, updates}` across every app: open actions and cards assigned
+`GET /inbox?app=`: `{threads, actions, forms, accessRequests, shares, suggestions, updates}` across every app: open actions and cards assigned
 to or by me; unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 mentioned; and forms with responses I haven't seen on items I own or reach through a team (not through a
 link; and open access requests on items I manage ([request-access.md](request-access.md#in-the-inbox)), and my own requests granted lately (`shares`, [inbox-notices.md](inbox-notices.md#shares-in-the-inbox-read)), which no list row draws (an access request's row is below); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
@@ -1111,6 +1125,22 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   on an item I manage, **Asked for access** by the requester, **Wants access**, counted in the badge; its pane quotes
   their note and offers **Share as Viewer** (the level menu beside it), **Decline** and Open in the app. Its verbs
   are the index's own (`grantAccessRequest`, `declineAccessRequest`), on every page with the Inbox.
+- **Suggested edits** (Work Tracker 1362): a row per
+  pending suggested edit on a page I own (`ownerId` mine, or null on an item I own), on a live item I still reach,
+  newest first, at most 100. `InboxSuggestion` is `{app, itemId, itemTitle, itemTeamId, tabId, tabName, suggestionId,
+agent, reason, kind, before, after, createdAt}`. Its row reads the agent ("Claude"), **Suggested an edit** with the
+  violet pencil, and the page (`tabName`); it is counted in the badge, as it asks something of me. Its pane names the
+  agent and when, quotes the reason, and shows the change as the lines it removes (struck, rose, a minus) and adds
+  (blue, a plus), with **Accept**, **Dismiss** and Open in the app, which opens the page with the suggestion's popover
+  open (`ItemPlace.suggestionId`, written `#t=<tab>&suggestion=<id>` by `placeHash`). Accept and Dismiss go through the
+  app's own suggestion routes, as Reply and Resolve go through its comment routes: liveknowledge's `POST
+/api/documents/:id/suggestions/:suggestionId/accept` and `…/dismiss`, a person's alone (an API token is refused
+  `needs_a_person`) and an Editor's (403 for anyone less, said in the pane: "Only an Editor can accept or dismiss
+  this."); a suggestion whose passage changed since answers 409 `suggestion_stale`, said in the pane ("The page has
+  changed since this was suggested. Open the page to make the change by hand, or dismiss it."), and the row stays. A
+  row done here leaves the list at once (`settle`), as a resolved thread does. **Suggested Edits** joins the filter
+  while one is listed (or it is the choice), as Access Requests does (`Activity·Changed` `SuggestedEdits`;
+  `Activity·Resolved` `Suggestion` on Accept and Dismiss).
 - **Updates** (liveknowledge's [Watching](../../../../liveknowledge/docs/specs/030-knowledgebase/watching.md)):
   `updates` answers the rows pushed for me (`people` holds me) in the last `INBOX_UPDATES_MS` (14 days), on items I
   reach (as a thread: owner, scope or a live link, a link scoped to one tab reaching that tab's rows alone) and not in
@@ -1182,8 +1212,9 @@ latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a
   another. The
   filter stays the header's dropdown (36 px tall; a phone's native picker opens from it); rows and Back are at least 44 px tall; the page keeps its 16 px gutter.
 
-The sidebar's badge counts what waits on me: My Actions, and the threads that ask something of me (a mention, or a
-thread on my item I have not written in myself, an agent's question with my token included). At 0 it shows no badge,
+The sidebar's badge counts what waits on me: My Actions, the threads that ask something of me (a mention, or a
+thread on my item I have not written in myself, an agent's question with my token included), and the suggested edits
+waiting on my pages. At 0 it shows no badge,
 on the sidebar and the rail alike, in every app. The editor's panel rail counts its own app's rows, as the editor's
 Explorer button does ([inbox-notices.md "The count"](inbox-notices.md#the-count)); the Explorer page's sidebar
 counts the list it shows.

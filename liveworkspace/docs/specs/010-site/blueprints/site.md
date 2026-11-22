@@ -224,6 +224,15 @@ dialog. What the view needs before the card (`useTeamDetails`, `teamHeadline`, `
 by the Explorer's idle preload with the lazy sections. Measured the same way: 380.5 to 377.5 KiB (386,555 bytes), the
 same 19 scripts. `panes-lazy-load.test.ts` keeps the card out of a static import. The budget stays at 380 KiB.
 
+**Suggested edits in the Inbox (2026-11-22, Work Tracker 1362).** The Inbox's suggested edits and the toasts' page
+column took `/explorer` to 389,325 bytes (380.2 KiB), over its budget. The Inbox pane is already its own chunk, so the
+growth was what loads up front: the sidebar's count (`sections.ts`), the Inbox's actions and the shared toast stack.
+A refused Accept or Dismiss now reads its error from `packages/explorer/src/inbox-refusal.ts`, imported only when an
+app refuses; the Inbox's total sums every section rather than naming each; and inside the Inbox's chunk, a
+suggestion's verbs, failure line and body load only when one is opened (`SuggestionPane.tsx`, with what the reader
+needs first in `suggestion-answer.ts`). Measured the same way: 389,116 bytes (380.0 KiB), the same 19 scripts, 4 bytes
+under. The budget stays at 380 KiB; the next addition to the Explorer's first load needs its own saving.
+
 **Closing a toast stays inside the budget (2026-11-20, #2058).** Closing a toast now dismisses it (it fades in place
 and leaves the notification list) and a popover risen from the bottom chrome is a toast floor. The toast provider,
 stack and floor hook are in `/explorer`'s first load, and the first cut added 135 bytes gzipped (389,052 to 389,187,

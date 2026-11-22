@@ -8,6 +8,7 @@ import { useContext, useSyncExternalStore, type ReactNode } from 'react';
 import { useMediaQuery } from '@liveknowledge/ui';
 import { EditorChromeContext } from '@/app/document/[id]/EditorContext';
 import { KnowledgeSearchHost } from './KnowledgeSearchHost';
+import { PageSuggestionsHost } from './suggestions/PageSuggestionsHost';
 import { usePageRailCollapsed } from '@/lib/page-rail-collapsed';
 import { PAGE_RAIL_STRIP_WIDTH, PAGE_RAIL_WIDTH, PageRailButton, PageRailDocked } from './PageRail';
 
@@ -61,7 +62,15 @@ export function usePageRailChrome({
   const shown = store !== null && !chromeHidden && !zenMode && !embed;
   // The search dialog's host rides here too: Cmd or Ctrl K works whether the chrome shows or not (zen), never in
   // an embed or outside the editor.
-  const search = store !== null && !embed ? <KnowledgeSearchHost /> : null;
+  // The page's suggested edits ride the same once-mounted spot (ai-knowledge.md "On the page"): hidden with the
+  // chrome in zen too, and never in an embed.
+  const search =
+    store !== null && !embed ? (
+      <>
+        <KnowledgeSearchHost />
+        {chromeHidden || zenMode ? null : <PageSuggestionsHost sheet={isMobile} />}
+      </>
+    ) : null;
   if (!shown) return { width: 0, el: search, rowButton: null };
   if (wide && !isMobile)
     return {

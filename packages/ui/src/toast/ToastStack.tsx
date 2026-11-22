@@ -51,6 +51,7 @@ export function ToastStack({ toasts, on }: { toasts: ToastEntry[]; on: ToastAnsw
   const showing = toasts.length > 0;
   const placement = useToastFloor(showing, toasts.length);
   const beside = placement.right !== null;
+  const atStart = placement.left != null;
   if (!hydrated) return null;
   return (
     <Portal>
@@ -58,10 +59,13 @@ export function ToastStack({ toasts, on }: { toasts: ToastEntry[]; on: ToastAnsw
         aria-label="Notifications"
         // Above the modal rung (z-toast) so a failure shows over an open dialog. Side padding clears a
         // landscape notch; the bottom clears the home indicator and the bottom chrome (toast-floor.ts).
-        className={`pointer-events-none fixed inset-x-0 z-[var(--z-toast)] flex flex-col gap-2 ${beside ? 'items-end' : 'items-center'}`}
+        className={`pointer-events-none fixed inset-x-0 z-[var(--z-toast)] flex flex-col gap-2 ${atStart ? 'items-start' : beside ? 'items-end' : 'items-center'}`}
         style={{
           bottom: `max(${placement.bottom}px, calc(16px + ${safeInset('bottom')}))`,
-          paddingLeft: atLeastInset('1rem', 'left'),
+          // At a start column's left edge (liveknowledge's page column), else clear of a landscape notch.
+          ...(atStart
+            ? { left: `${placement.left}px` }
+            : { paddingLeft: atLeastInset('1rem', 'left') }),
           // Beside the bottom-right cluster on desktop: the stack's right edge stands just left of Undo.
           ...(beside
             ? { right: `${placement.right}px` }

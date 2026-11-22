@@ -52,7 +52,11 @@ it; it changes nothing.
 
 ### Page Insights
 
-A page's use over time, in its right rail (and its Page Info card and sheet), for everyone who can read the page:
+A page's use over time, in its right rail (and its Page Info card and sheet), for everyone who can read the page.
+Owner 2026-11-22: it is one with **Read This Week**. The 30 days of bars sit under the week's two counts, with
+"30 days ago" and "Today" beneath (a page in its first week says its reads so far instead). The total, the key, and
+the **Cited by Ask** and **Read by Agents** figures are gone from the rail. **Answered From This Page** stays, after
+On This Page. What follows is what the read carries:
 
 - **Reads, 30 days**: a bar a day for the last 30 days, people under agents in the dashboard's two tones, scaled to
   the page's busiest day, with the total ("128 reads in 30 days") and a key ("94 people, 34 agents"). One spoken
@@ -120,7 +124,68 @@ A page's use over time, in its right rail (and its Page Info card and sheet), fo
 An agent with the Suggests Edits scope never changes a page directly: its edit arrives as a changeset
 ([Agent changesets](../024-agents/agent-changesets.md)) with its reason. The card shows the page, the agent, the
 change as removed and added lines, and **Accept**, **Open the Page**, **Dismiss**. Accepting applies it as one undo
-step in the acceptor's name and does not verify the page.
+step in the acceptor's name and does not verify the page; a page that was Verified stays Verified (its writing
+changed, so it reads Changed since verified). An appended suggestion that is only table rows (no header) joins the
+page's last table under its last row, never a paragraph of pipes (owner 2026-11-22).
+
+### On the page
+
+Built by Work Tracker 1362 to the approved mockup (owner, 2026-11-22): a suggestion is seen where it applies, not only
+on AI Knowledge. Everything a suggestion draws on a page is in the AI Knowledge violet (violet-700 on violet-50, and
+violet-300 on violet-500/15 in the dark theme), the colour AI Knowledge's own count wears, so it never reads as a
+page's trust (green and amber) or a comment.
+
+- **The page tree:** a page with suggestions waiting has an 8 px violet dot at the end of its row, before its trust
+  mark, with a tooltip and a spoken label ("1 Suggested Edit", "3 Suggested Edits"). None at 0.
+- **The meta row:** a **1 Suggested Edit** / **3 Suggested Edits** pill right after the verified badge, a pencil before
+  its words, a pointer cursor and a tooltip ("Review the edits agents suggested for this page"). Pressing it opens the
+  first suggestion's popover (below) on its marked passage, or the rail's section when no passage is marked. None at 0.
+- **The passage it replaces** is washed violet (the blocks it covers, a pale violet ground with a dashed violet
+  underline), with a **margin marker**: a 28 px violet disc with a pencil, in the left margin at the passage's first
+  line, labelled "Open the Suggested Edit". An appended suggestion (no passage, Markdown added at the end) marks the
+  page's end instead: its marker sits by the writing's last block, which is not washed. The marker opens the
+  **popover**, anchored to it: who suggested it ("Suggested by Claude") and when ("4 minutes ago"), the reason
+  ("Why: ..."), the lines taken out (rose, struck, a minus) and put in (blue, a plus), **Accept**, **Show in Page**,
+  **Dismiss**, and, on a page that is Verified now, **Stays Verified** at its right. A Close button and Escape close it.
+  Several suggestions on one page each have their own wash and marker; two on the same passage share the first one's
+  marker, which opens the newest.
+- **Show in Page:** the change drawn in the writing itself: the passage's text struck through on a rose ground, and
+  the text that arrives underlined on a blue ground right after it, under a violet bar across the top of the page:
+  "**Reviewing Claude's suggestion.** Struck text goes, underlined text arrives. Nothing changes until you accept."
+  with **Accept**, **Dismiss** and **Done**. Done (and Escape) return to reading with the page as it was; nothing is
+  stored. Accept or Dismiss end the review too. Only one suggestion is shown in the page at a time.
+- **The right rail:** a **Suggested Edits** section between Page Health and AI Context, its heading in violet with a
+  count chip: a row per suggestion (the reason's first line, then "Claude, 4 min ago · 1 removed, 2 added"), pressing
+  which opens its popover on the passage (or, with no passage marked, a popover of its own anchored to the row), and a
+  **Review All in AI Knowledge** link that opens AI Knowledge filtered to Suggested Edits. Not drawn at 0.
+- **A passage no longer found** (the page changed after the suggestion was made, so `before` is not in the page once,
+  as it now reads) is never marked: no wash, no marker, nothing struck. The suggestion shows in the rail and its
+  popover alone, which say "The page has changed since" in place of Show in Page; Accept is still offered and the api
+  answers whether it still fits (409 `suggestion_stale`, said in words). The page is never marked in the wrong place:
+  a passage is marked only where it reads, once, as the suggestion has it, its words matched with Markdown marks
+  (`**`, `_`, backticks, a heading's `#`, a list's marker, a link's address) set aside.
+- **A phone or narrow window:** the popover is a bottom sheet with the same content, its buttons 44 px tall; the
+  review bar wraps under its words.
+- **Reading once.** A page's suggestions ride its Page Health read, which a page already makes each time it opens
+  ([Verification](verification.md) "Page Health"): no read of their own, and never polled. The same read carries the
+  pending count of every page the reader may see, for the tree's dots. When a suggestion is made, accepted or
+  dismissed the room tells its open editors (`suggestions-changed`, the pages' ids only), and each reads its open
+  page's health again once: a new suggestion shows and a decided one goes without a reload. Accepting changes the
+  writing as any save does, which every open editor sees at once.
+- **The address:** `#t=<page>&suggestion=<id>` opens the page with that suggestion's popover open (the Inbox's Open,
+  below); a suggestion no longer waiting opens the page alone.
+
+### In the owner's Inbox
+
+The owner is told (owner's decision for 1362, 2026-11-22, may be overturned): each pending suggestion is a row in the
+Inbox of the person it waits on, the page's **owner**, or for a page with no owner the knowledgebase's owner
+([one-explorer-contracts.md "Inbox"](../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#inbox)). The
+row reads the agent ("Claude"), **Suggested an edit** and the page, and is counted in the Inbox's badge. Its pane
+quotes the reason, shows the change, and offers **Accept** and **Dismiss** through this app's suggestion routes and
+**Open in liveknowledge** at the page with the popover open. The knowledgebase's room pushes it with the page's comment
+threads and actions (its outbox's tab key, written by triggers on `suggestions` in the write's own transaction), so
+the row leaves the Inbox on the push after the suggestion is accepted or dismissed, or its page is deleted. Each
+suggestion's texts are cut to 2,000 characters for the Inbox; the whole suggestion stays here.
 
 ## Always in Context
 
@@ -148,7 +213,8 @@ what agents and Ask make of this one page. It looks as the rest of the rail does
   questions whose Ask answer cited this page, up to 3, most asked first, over the last 30 days, each quoted with
   "Asked 6 times" ("Asked once" for one). With none it is not shown (owner, 2026-11-21: "if no questions or read by
   agents, don't show it").
-- **Read by Agents**: the agents that read this page in the last 7 days, the 3 that read it most, each with its
+- **Read by Agents** (a pointer popover from Read This Week's "N by Agents", owner 2026-11-22; no longer in AI
+  Context): the agents that read this page in the last 7 days, the 3 that read it most, each with its
   reads. With none it is not shown.
 - No Ask About This Page (owner, 2026-11-21: "we already have Ask in the footer").
 - **What is kept.** When Ask answers a first question (not a follow-up) and cites pages, the room counts it once
@@ -206,18 +272,43 @@ rows and actions, long lists capped so the page never grows with the data.
 
   | Tile                | Figure                                                                                               | Pressed                                  |
   | ------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-  | Reads This Week     | page reads in the last 7 days; people and agents apart; a 14-day sparkline                           | brings Most Read into view               |
-  | Connected Agents    | agents seen in 30 days; how many may write                                                           | brings Connected Agents into view        |
-  | Open Questions      | questions nobody could answer; how many asks in all                                                  | shows Needs Attention at Questions       |
-  | Pages That Disagree | open conflicts                                                                                       | shows Needs Attention at Disagreements   |
-  | Suggested Edits     | agents' edits waiting                                                                                | shows Needs Attention at Suggested Edits |
-  | Verified            | the verified share of the pages, as a percentage; how many are Review Due; the average Health Score  | brings Knowledge Health into view        |
+  | Reads This Week     | page reads in the last 7 days; "9 by people, 2 by agents" (reads, not readers); a 14-day sparkline   | brings Most Read into view               |
+  | Connected Agents    | agents seen in 30 days; how many may write; a bar of who reads most                                  | brings Connected Agents into view        |
+  | Open Questions      | questions nobody could answer; how many asks in all; a bar per question                              | shows Needs Attention at Questions       |
+  | Pages That Disagree | open conflicts; the oldest conflict's two pages                                                      | shows Needs Attention at Disagreements   |
+  | Suggested Edits     | agents' edits waiting; a 14-day track of how long each has waited                                    | shows Needs Attention at Suggested Edits |
+  | Verified            | the verified share; a bar of verified, Review Due and never verified; the average Health Score       | brings Knowledge Health into view        |
   | Average Health      | under a Review Period of Never, in Verified's place: the average Health Score; across how many pages | brings Knowledge Health into view        |
 
   A tile whose figure asks for someone (an open question, a conflict, an edit waiting, a page Review Due) carries a
   small amber mark; a tile that filters Needs Attention shows pressed while its filter is on, and pressing it again
   shows All. The sparkline is the last 14 days' reads, a bar a day, people and agents stacked in two tones, with
   its words said as the tile's description ("Reads by day over the last 14 days: 60 by people, 24 by agents.").
+  Every read count names reads, never readers: no reader's identity is kept, so one person opening nine pages is
+  9 reads by people, never "9 people" (owner 2026-11-22).
+
+  **Every tile draws a picture** (owner 2026-11-22: "the other 5 need to be more amazing, visualisations that are
+  useful to look at and help me understand"), in the same 28px strip at the tile's foot as the sparkline, so the six
+  line up. Each picture is from the same overview read, and its words are said as part of the tile's description.
+
+  - **Connected Agents:** which agents lean on the knowledgebase. A bar split by each agent's share of this week's
+    agent reads (the 4 who read most, the rest as one "others" piece), in four tones of the brand, with its caption
+    naming the agent who reads most and its share ("Claude Code, 72% of reads"). With no agent reads this week, a
+    hairline and "No reads this week"; with no agents, "Connect one to start".
+  - **Open Questions:** where the gaps bite. A bar for each open question, most asked first (12 at most), its height
+    its asks, asks by people under asks by agents in the Reads tones. The line says the asks and how many were
+    agents' ("Asked 12 times, 9 by agents"). One tall bar means one gap everyone hits; many short ones, a scatter.
+  - **Pages That Disagree:** what disagrees, at a glance. The oldest open conflict's two page titles on two lines,
+    the second led by a not-equal mark, and "+2" when more are open. The line says how long the oldest has
+    been open ("Oldest found 3 days ago"). None open: a hairline.
+  - **Suggested Edits:** how long agents have waited. A track of the last 14 days, today at its right, with a dot
+    for each waiting edit on the day it was suggested (stacked on a busy day); a dot 7 days or older is amber, and
+    one older than the track sits at its left end. The line says the oldest wait ("Oldest waits 4 days"). None
+    waiting: the bare track.
+  - **Verified:** how far the pages can be trusted. A bar of every page in three parts, verified (brand), Review Due
+    (amber) and never verified (grey), with each part's count beside its colour as its caption (the words are in
+    the tile's hover card and its spoken description). The line is the
+    average Health Score ("Average health 71"). No pages: a hairline.
 
 - **Needs Attention** (the widest card, first): the work waiting for someone, in one list, most urgent first: pages
   that disagree (a wrong answer is being given now), then edits agents suggested (an agent is waiting), then
@@ -284,7 +375,8 @@ rows and actions, long lists capped so the page never grows with the data.
 - **Always in Context's meter** reads "4,410 of 8,000 tokens"; **Add a Page** opens a page picker. A page that would
   pass the budget is refused in the route's own words.
 - **What an Agent Sees:** a dark card with a short sample of how one search result reads to an agent, built from a
-  real passage of this knowledgebase when the read holds one.
+  real passage of this knowledgebase when the read holds one. It shows the trust line and the page's Health Score
+  ("health: 87 (healthy)"), as every result an agent gets carries both (owner 2026-11-22).
 - A knowledgebase kept Offline shows one empty state for the whole view and reads nothing.
 - Passages, questions, reasons and suggested lines are other people's text: drawn as text, never as HTML.
 
@@ -304,7 +396,16 @@ rows and actions, long lists capped so the page never grows with the data.
 | Action                                                  | Editor | Participant | Viewer |
 | ------------------------------------------------------- | ------ | ----------- | ------ |
 | See AI Knowledge                                        | yes    | yes         | yes    |
-| Accept or dismiss a suggestion, resolve a conflict      | yes    | yes         | no     |
+| See a page's suggestions (tree dot, pill, wash, rail)   | yes    | yes         | yes    |
+| Accept or dismiss a suggestion                          | yes    | no          | no     |
+| Suggest an edit (an agent of theirs, the api)           | yes    | yes         | no     |
+| Resolve a conflict                                      | yes    | yes         | no     |
 | Draft a page, dismiss a question, set Always in Context | yes    | yes         | no     |
 | Allow an agent to write, or stop it                     | yes    | no          | no     |
 | Ask both owners of a conflict; remind the owners        | yes    | yes         | no     |
+
+Accepting or dismissing a suggestion is an Editor's alone (Work Tracker 1362, 2026-11-22), on the page, in AI
+Knowledge, in the Inbox and over the api (`403` for anyone less; an API token is refused `needs_a_person` whatever its
+person's role): a Participant's agent suggests, and someone who may change the knowledgebase's every page decides. A
+Viewer and a Participant see the marks, the pill, the rail and the popover's reason and change, with no Accept,
+Dismiss or Show in Page's verbs (Show in Page itself, which changes nothing, is everyone's).

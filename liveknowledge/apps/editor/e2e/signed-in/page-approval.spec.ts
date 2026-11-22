@@ -30,20 +30,27 @@ async function askedForApproval(page: Page) {
   // (approval.md "Asking for approval").
   await expect(meta(page).getByRole('button', { name: 'Request Approval' })).toHaveCount(0);
   await rowVerb(page, 'Runbook', 'Request Approval');
-  await expect(rail(page)).toContainText('Request Approval?');
+  // A first request asks in a centred dialog, never inside the rail (owner 2026-11-22).
+  const ask = page.getByRole('dialog').filter({ hasText: 'Request Approval?' });
+  await expect(ask).toBeVisible();
   const asked = page.waitForResponse(
     (r) =>
       r.request().method() === 'POST' &&
       /\/pages\/[^/]+\/approval$/.test(new URL(r.url()).pathname),
   );
-  await rail(page).getByRole('button', { name: 'Request Approval' }).click();
+  await ask.getByRole('button', { name: 'Request Approval' }).click();
   expect((await asked).ok()).toBe(true);
   await expect(meta(page).locator('[data-approval-pill="pending"]')).toHaveText('Pending Approval');
   // The sidebar row carries no approval mark (approval.md "Where it shows").
   await expect(pageRow(page, 'Runbook')).toBeVisible();
   // The asker waits: no Approve for their own request.
-  await expect(rail(page)).toContainText('Waiting for someone else to approve it.');
+  // The rail's box says who asked, with Withdraw; the pill's popover says why there is no Approve.
+  await expect(rail(page)).toContainText('Requested by you');
+  await expect(rail(page).getByRole('button', { name: 'Withdraw' })).toBeVisible();
   await expect(rail(page).getByRole('button', { name: 'Approve' })).toHaveCount(0);
+  await meta(page).getByRole('button', { name: 'Pending Approval' }).click();
+  await expect(popover(page)).toContainText('Waiting for someone else to approve it.');
+  await page.keyboard.press('Escape');
   return { who, id };
 }
 

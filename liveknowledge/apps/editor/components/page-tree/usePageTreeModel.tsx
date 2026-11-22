@@ -157,6 +157,9 @@ export function usePageTreeModel(): PageTreeModel {
     return {
       marks: trustMarks(tabs, reviewEvery, now, pageKnowledgeStore.fieldsOf),
       approvalMarks: approvalMarks(tabs, pageKnowledgeStore.fieldsOf),
+      suggestionCounts: documentId
+        ? pageKnowledgeStore.suggestionCountsOf(documentId, knowledgeVersion)
+        : undefined,
       inContext,
       canVerify: knowledgeActions.rights.verify,
       canEditFields: knowledgeActions.rights.editFields,
@@ -178,7 +181,16 @@ export function usePageTreeModel(): PageTreeModel {
         <PageWatchMenuRows id={id} onClose={onClose} separated={separated} />
       ),
     };
-  }, [tabs, now, reviewEvery, knowledgeVersion, knowledgeActions, approvalCaller, chrome]);
+  }, [
+    tabs,
+    now,
+    reviewEvery,
+    knowledgeVersion,
+    knowledgeActions,
+    approvalCaller,
+    chrome,
+    documentId,
+  ]);
 
   const onRenameKnowledgebase = useCallback(
     (next: string) => {

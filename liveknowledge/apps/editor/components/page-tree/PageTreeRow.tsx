@@ -13,6 +13,7 @@ import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameE
 import { TrustBadge } from '@/components/knowledge/TrustBadge';
 import type { TrustMark } from '@/lib/knowledge/page-trust';
 import { APPROVAL_MARK_LABEL, type ApprovalMark } from '@/lib/knowledge/approval-view';
+import { suggestedEditsLabel } from '@/lib/knowledge/suggestion-passage';
 import { AddIcon, ChevronIcon, MoreIcon } from './page-tree-icons';
 import { useRowMark, type PageTreeUi } from './page-tree-ui';
 import { useLivePageTitle } from '@/lib/article/live-page-title';
@@ -58,6 +59,8 @@ export type PageTreeRowProps = {
   trust?: TrustMark | undefined;
   // Pending Approval or Rejected: a 6 px dot after the title (approval.md "Where it shows").
   approval?: ApprovalMark | undefined;
+  // Suggested edits waiting on the page: an 8 px violet dot after the title (ai-knowledge.md "On the page").
+  suggestions?: number | undefined;
   onRename: (id: string, name: string) => void;
   onRenameDone: () => void;
 };
@@ -75,6 +78,7 @@ function PageTreeRowView({
   people,
   trust,
   approval,
+  suggestions = 0,
   onRename,
   onRenameDone,
 }: PageTreeRowProps) {
@@ -132,6 +136,7 @@ function PageTreeRowView({
         name,
         ...(trust ? [trust === 'verified' ? 'Verified' : 'Review Due'] : []),
         ...(approval ? [APPROVAL_MARK_LABEL[approval]] : []),
+        ...(suggestions > 0 ? [suggestedEditsLabel(suggestions)] : []),
       ].join(', ')}
       aria-level={row.level}
       aria-posinset={row.position}
@@ -211,6 +216,14 @@ function PageTreeRowView({
           // Named in the row's own label for a screen reader; the meta row's pill says it in words.
           data-approval-dot={approval}
           className={`size-1.5 shrink-0 rounded-full ${approval === 'pending' ? 'bg-violet-500 dark:bg-violet-400' : 'bg-rose-500 dark:bg-rose-400'}`}
+        />
+      ) : null}
+      {suggestions > 0 && !editing && !outOfScope ? (
+        <span
+          aria-hidden
+          // Named in the row's own label for a screen reader; the page's pill says it in words.
+          data-suggestions-dot={suggestions}
+          className="size-2 shrink-0 rounded-full bg-violet-600 dark:bg-violet-400"
         />
       ) : null}
       {trust && !editing && !outOfScope ? <TrustBadge mark={trust} compact /> : null}

@@ -77,9 +77,9 @@ describe('attentionItems', () => {
 });
 
 describe('words', () => {
-  it('says readers and the sparkline', () => {
-    expect(readersText(1, 1)).toBe('1 person, 1 agent');
-    expect(readersText(1200, 0)).toBe('1,200 people, 0 agents');
+  it('says reads, people and agents apart, and the sparkline', () => {
+    expect(readersText(1, 1)).toBe('1 read by people, 1 by agents');
+    expect(readersText(1200, 0)).toBe('1,200 reads by people, 0 by agents');
     expect(readsSparkLabel([{ day: 'd', people: 3, agents: 1 }])).toBe(
       'Reads by day over the last 1 days: 3 by people, 1 by agents.',
     );

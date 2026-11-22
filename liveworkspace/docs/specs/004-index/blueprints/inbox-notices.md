@@ -49,7 +49,7 @@ with its last. State: `data` (the last answer, or null), `at` (its time).
   `touch()`, which counts as this page's last read so the watch's next turn waits 30 s from it.
 
 `inboxSignature(data, app)`: each row's key and time (threads `latestAt`, actions `updatedAt`, access requests
-`askedAt`, shares `sharedAt`, forms `latestAt` and `unseen`, updates `updateKey` and `latestAt`), sorted, joined; with `app`, that app's rows only. Two
+`askedAt`, shares `sharedAt`, forms `latestAt` and `unseen`, suggested edits `createdAt`, updates `updateKey` and `latestAt`), sorted, joined; with `app`, that app's rows only. Two
 answers with one signature list the same Inbox.
 
 ### Which rows notify (`rows.ts`)
@@ -66,6 +66,8 @@ answers with one signature list the same Inbox.
 - Actions, open, `assigneeId` the reader, `assignerId` not the reader: `assigned` (**assigned you a card** with
   the card's key and title, or **assigned you an action** with its name).
 - `accessRequests`: `access` (**asked for access**). `shares`: `share` (**shared it with you**, the item named on the place line).
+- `suggestions` (an agent's suggested edit on the reader's page) make no notice: the badge counts them and the Inbox
+  lists them, as a suggestion makes no event, email or webhook either (one-explorer-contracts.md "Inbox").
 - `updates`: `update` (**changed a page you watch**), who the newest actor who is not the reader (**Someone** when
   none is named); a row whose kinds are only `review_due` reads **A page you watch** **is due for review**. Its `at`
   is the row's `firstAt`, which never moves, so the row's key is seen once and later changes folded into it never

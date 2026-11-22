@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { migrateDocumentSchema } from '../document-room/document-schema';
 import {
+  savedBy,
   acceptedSuggestionWriter,
   guestOwnersOf,
   guestStampNamer,
@@ -121,5 +122,16 @@ describe('a guest on a stamp, as it leaves the api', () => {
     expect(guestOwnersOf([{ by: 'guest_abc' }, { by: 'guest_abc' }, { by: 'user_1' }])).toEqual([
       'guest_abc',
     ]);
+  });
+});
+
+describe('savedBy', () => {
+  it('stamps a guest by the name they edit under, never their id', () => {
+    expect(savedBy('guest_7cf30592', 'Bright Marlin')).toBe('guest:Bright Marlin (Guest)');
+  });
+  it('keeps a guest with no name, an account and a stamp already naming a guest as they are', () => {
+    expect(savedBy('guest_7cf30592', '')).toBe('guest_7cf30592');
+    expect(savedBy('guest_7cf30592', 'Guest')).toBe('guest_7cf30592');
+    expect(savedBy('user_abc', 'Roger')).toBe('user_abc');
   });
 });

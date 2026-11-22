@@ -42,6 +42,8 @@ import { reportOwnerActivity } from '../person/account-app';
 import type { DocumentEnv } from '../types';
 import type { AutomationPerson } from '@liveworkspace/automations';
 import { getParticipant } from '../person/profiles';
+import { isAccountIdShape } from '@liveknowledge/api-schema';
+import { pageSuggestionsOf } from '../knowledge/suggestions-inbox';
 
 type TabRow = {
   id: string;
@@ -69,8 +71,11 @@ export function collabPushOf(
   threads: readonly CollabThreadRow[],
   actions: readonly CollabActionRow[],
   by: string | null = null,
+  suggestions: CollabPush['suggestions'] = undefined,
 ): CollabPush {
   return capCollabPush({
+    // The page's suggested edits waiting (ai-knowledge.md "In the owner's Inbox"), sent only when it has some.
+    ...(suggestions && suggestions.length > 0 ? { suggestions } : {}),
     threads: threads.map((t) => ({
       elementId: t.elementId,
       elementLabel: t.elementLabel,
@@ -106,12 +111,17 @@ export function collabPushOf(
   });
 }
 
-function parseElements(data: string): Element[] {
+// A tab's elements and its page's owner (`knowledge.owner`, an account id), from one parse of its body.
+function parseTabBody(data: string): { elements: Element[]; owner: string | null } {
   try {
-    const body = JSON.parse(data) as { elements?: unknown };
-    return Array.isArray(body.elements) ? (body.elements as Element[]) : [];
+    const body = JSON.parse(data) as { elements?: unknown; knowledge?: { owner?: unknown } };
+    const owner = body.knowledge?.owner;
+    return {
+      elements: Array.isArray(body.elements) ? (body.elements as Element[]) : [],
+      owner: typeof owner === 'string' && isAccountIdShape(owner) ? owner : null,
+    };
   } catch {
-    return [];
+    return { elements: [], owner: null };
   }
 }
 
@@ -286,7 +296,8 @@ export async function drainOutbox(
         )
           .bind(documentId, tabId)
           .first<TabRow>();
-        const found = collabIndexRowsFromElements(tab ? parseElements(tab.data) : []);
+        const body = tab ? parseTabBody(tab.data) : { elements: [], owner: null };
+        const found = collabIndexRowsFromElements(body.elements);
         // The comment and action triggers read the same rows (@liveworkspace/automations/room CollabWatch): nothing
         // but a Set lookup unless a rule that is on hears one. Here the only source, since an action's change rides
         // a tab save.
@@ -294,7 +305,9 @@ export async function drainOutbox(
           await env.COLLAB.note(tabId, tab ? found : null, now, () =>
             soleEditorPerson(env, soleEditor),
           );
-        return collabPushOf(found.threads, found.actions, soleEditor);
+        // A page that is gone pushes no suggestions, so its rows leave the Inbox.
+        const suggestions = tab ? await pageSuggestionsOf(env, tabId, body.owner, now) : [];
+        return collabPushOf(found.threads, found.actions, soleEditor, suggestions);
       },
       summary: async () => {
         const { summary, savedAt, ownerId } = await readContentSummary(env, documentId);

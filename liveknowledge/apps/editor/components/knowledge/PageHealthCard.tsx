@@ -8,7 +8,7 @@
 // while the reads load and when the period changes, so nothing moves under the pointer.
 import { GUEST_DISC_TINT, isGuestName } from './guest-disc';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import type { ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { reviewDays, type ReviewEvery } from '@liveknowledge/knowledge';
 import { Button, Select, Tooltip } from '@liveknowledge/ui';
 import { reviewPeriodLabel } from '@/lib/knowledge-settings/review-period-words';
@@ -17,6 +17,7 @@ import { relativeSince } from '@/lib/relative-time';
 import {
   AgentsIcon,
   CheckIcon,
+  DisclosureIcon,
   DueIcon,
   DueRowIcon,
   OwnerIcon,
@@ -28,6 +29,9 @@ import {
   MakerPersonIcon,
 } from './knowledge-icons';
 import { RequestIcon } from './approval/feedback-icons';
+import { ReadByAgentsButton } from './ReadByAgents';
+import { Collapse } from './Collapse';
+import type { PageAgentReads } from '@liveknowledge/api-schema';
 import type { KnowledgePerson } from './usePageKnowledge';
 
 const NO_OWNER = '';
@@ -48,11 +52,13 @@ export type PageHealthCardProps = {
   onVerify: (() => void) | undefined;
   /** Change, beside the Review Period: absent for anyone who may not change it (anyone but an Editor of the whole
    *  knowledgebase). */
-  periodControl?: ReactNode;
+  periodControl?: ((label: string) => ReactNode) | undefined;
   /** The Approval row under Review Period (approval.md "Where it shows"; owner 2026-11-21), for a page never sent for
    *  approval: Request Approval for whoever may ask, "Not Requested" for the rest. Absent once one is asked for, or
    *  while its form is open: the Approval section below holds it then. */
   approvalRow?: { onRequest: (() => void) | undefined } | undefined;
+  /** The page's approval panel, above the Verified panel (owner 2026-11-22). */
+  approval?: ReactNode;
   /** The Health Score and its breakdown (PageHealthScore), at the top (verification.md "In Page Health"). */
   score?: ReactNode;
   /** The Watchers row, last in the list (watching.md "Where it shows"); it draws itself, or nothing. */
@@ -289,16 +295,18 @@ function ReadStat({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-white/80 px-2.5 py-2 ring-1 ring-inset ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-800">
-      <span className="flex text-slate-400 dark:text-slate-400/60">{icon}</span>
-      <dt className="sr-only">{label}</dt>
-      <dd className="min-w-0 truncate">
+    <span className="flex items-center gap-2 rounded-lg bg-white/80 px-2.5 py-2 ring-1 ring-inset ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-800">
+      <span aria-hidden className="flex text-slate-400 dark:text-slate-400/60">
+        {icon}
+      </span>
+      <span className="sr-only">{label}: </span>
+      <span className="min-w-0 truncate">
         <span className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">
           {value}
         </span>{' '}
         <span className="text-slate-500 dark:text-slate-400">{unit}</span>
-      </dd>
-    </div>
+      </span>
+    </span>
   );
 }
 
@@ -336,13 +344,25 @@ export type PageActivityProps = {
   updated?: PageStamp | undefined;
   /** In the docked rail's foot: the week's reads fill it to its edges. */
   fill?: boolean;
+  /** The agents that read the page this week: pressing "N by Agents" lists them (owner 2026-11-22). */
+  agentReads?: readonly PageAgentReads[] | undefined;
+  /** The page's reads over 30 days, under the week's counts (Page Insights, merged in, owner 2026-11-22). */
+  trend?: ReactNode;
 };
 
 /**
  * The rail's foot, held at the bottom of the docked rail while the rest scrolls: who created the page and who last
  * updated it, then the week's reads.
  */
-export function PageActivity({ now, reads, created, updated, fill = false }: PageActivityProps) {
+export function PageActivity({
+  now,
+  reads,
+  created,
+  updated,
+  fill = false,
+  trend,
+  agentReads,
+}: PageActivityProps) {
   // Before Page Health is read (and Offline) the week's reads count as none yet.
   const count = (n: number | undefined) => (n ?? 0).toLocaleString('en');
   return (
@@ -370,20 +390,32 @@ export function PageActivity({ now, reads, created, updated, fill = false }: Pag
       >
         <ReadWeekArt />
         <p className={RAIL_LABEL}>Read This Week</p>
-        <dl className="mt-2 grid grid-cols-2 gap-2">
+        <div className="mt-2 grid grid-cols-2 gap-2">
           <ReadStat
             icon={<PeopleIcon />}
             value={count(reads?.people)}
-            unit={reads?.people === 1 ? 'Person' : 'People'}
+            unit="by People"
             label="Reads by People This Week"
           />
-          <ReadStat
-            icon={<AgentsIcon />}
-            value={count(reads?.agents)}
-            unit={reads?.agents === 1 ? 'Agent' : 'Agents'}
-            label="Reads by Agents This Week"
-          />
-        </dl>
+          {agentReads && agentReads.length > 0 ? (
+            <ReadByAgentsButton agents={agentReads}>
+              <ReadStat
+                icon={<AgentsIcon />}
+                value={count(reads?.agents)}
+                unit="by Agents"
+                label="Reads by Agents This Week"
+              />
+            </ReadByAgentsButton>
+          ) : (
+            <ReadStat
+              icon={<AgentsIcon />}
+              value={count(reads?.agents)}
+              unit="by Agents"
+              label="Reads by Agents This Week"
+            />
+          )}
+        </div>
+        {trend}
       </div>
     </section>
   );
@@ -399,16 +431,21 @@ export function PageHealthCard({
   onVerify,
   periodControl,
   approvalRow,
+  approval,
   score,
   watch,
 }: PageHealthCardProps) {
+  // Page Details, closed by default as Score Breakdown is (owner 2026-11-22).
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const detailsId = useId();
   const { owner, verifiedAt, verifiedBy } = trust.fields;
   const ownerName = nameOf(owner);
   const verifier = nameOf(verifiedBy);
-  // An owner the editor cannot name (someone outside the team it can read) still shows as chosen.
+  // An owner outside the people the editor offers still shows as chosen, by the name the page's health read brought
+  // (owner 2026-11-22: "Someone Else" for a known teammate), else "Someone Else".
   const ownerOptions =
     owner && !people.some((p) => p.id === owner)
-      ? [...people, { id: owner, name: 'Someone Else' }]
+      ? [...people, { id: owner, name: ownerName ?? 'Someone Else' }]
       : people;
   // Verification off (a Review Period of Never, verification.md): no state panel, no Last Verified, no Review Due,
   // no Verify. Owner and the Review Period stay, so the period can be set again from here.
@@ -424,8 +461,20 @@ export function PageHealthCard({
     >
       <h2 className={RAIL_LABEL}>Page Health</h2>
       {score}
+      {/* A hairline under Score Breakdown, apart from the Verified panel (owner 2026-11-22). */}
+      <hr className="mt-3 border-slate-200/70 dark:border-slate-800/70" />
+      {approval}
       {panel ? (
-        <div className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${TONE[panel].wash}`}>
+        // Pressing anywhere on the panel but its own controls opens and closes Page Details (owner 2026-11-22); the
+        // chevron is the keyboard's and screen reader's way to it.
+        <div
+          data-page-details-panel=""
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('button, a, input, select, textarea')) return;
+            setDetailsOpen((was) => !was);
+          }}
+          className={`mt-3 cursor-pointer rounded-2xl p-4 ring-1 ring-inset ${TONE[panel].wash}`}
+        >
           <div data-page-state={panel} className="flex items-center gap-3.5">
             <FreshnessRing state={panel} left={freshness(trust, reviewEvery, now)} />
             <div className="min-w-0">
@@ -437,6 +486,21 @@ export function PageHealthCard({
               </div>
               <p className="truncate text-xs text-slate-600 dark:text-slate-400">{head.line}</p>
             </div>
+            <button
+              type="button"
+              aria-expanded={detailsOpen}
+              aria-controls={detailsId}
+              aria-label="Page Details"
+              data-page-details-toggle=""
+              onClick={() => setDetailsOpen((was) => !was)}
+              className="-mr-1 ml-auto flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-white/70 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 phone:size-11 dark:text-slate-400 dark:hover:bg-slate-900/50 dark:hover:text-slate-100"
+            >
+              <span
+                className={`flex motion-safe:transition-transform motion-safe:duration-200 ${detailsOpen ? 'rotate-180' : ''}`}
+              >
+                <DisclosureIcon />
+              </span>
+            </button>
           </div>
           {onVerify ? (
             <Button
@@ -451,96 +515,97 @@ export function PageHealthCard({
           ) : null}
         </div>
       ) : null}
-      <dl className="mt-3 flex flex-col divide-y divide-slate-100 dark:divide-slate-800/70">
-        <HealthRow icon={<OwnerIcon />} label="Owner">
-          {onSetOwner ? (
-            <Select
-              aria-label="Owner"
-              size="md"
-              value={owner ?? NO_OWNER}
-              onChange={(e) => onSetOwner(e.target.value === NO_OWNER ? null : e.target.value)}
-              className="max-w-40 cursor-pointer"
-            >
-              <option value={NO_OWNER}>Nobody</option>
-              {ownerOptions.map((person) => (
-                <option key={person.id} value={person.id}>
-                  {person.name}
-                </option>
-              ))}
-            </Select>
-          ) : (
-            <span className="inline-flex max-w-full items-center gap-2">
-              {owner ? <Disc name={ownerName} size="size-5" /> : null}
-              <span className="truncate">{ownerName ?? (owner ? 'Someone Else' : 'Nobody')}</span>
-            </span>
-          )}
-        </HealthRow>
-        {/* One line (owner 2026-11-21): the date, and the verifier as their disc, named on hover. */}
-        {panel ? (
-          <HealthRow icon={<VerifiedRowIcon />} label="Last Verified">
-            {verifiedAt === undefined ? (
-              'Never'
-            ) : (
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <span data-verified-date="">{shortDate(verifiedAt, now)}</span>
-                {verifier ? (
-                  <Tooltip label={`Verified by ${verifier}`}>
-                    <span
-                      data-verified-by=""
-                      tabIndex={0}
-                      role="img"
-                      aria-label={`Verified by ${verifier}`}
-                      className="inline-flex cursor-default rounded-full focus-visible:outline-2 focus-visible:outline-brand-600"
-                    >
-                      <Disc name={verifier} size="size-5" />
-                    </span>
-                  </Tooltip>
-                ) : null}
-              </span>
-            )}
-          </HealthRow>
-        ) : null}
-        {panel ? (
-          <HealthRow icon={<DueRowIcon />} label="Review Due">
-            <span data-review-due="">
-              {trust.reviewAt === undefined ? 'Not Verified' : shortDate(trust.reviewAt, now)}
-            </span>
-          </HealthRow>
-        ) : null}
-        {/* The knowledgebase's Review Period; an Editor changes it from the pencil before the value (owner 2026-11-21). */}
-        <HealthRow icon={<PeriodIcon />} label="Review Period" whole={!!periodControl}>
-          {periodControl ? (
-            // Tight enough that "Every 90 Days" and its pencil keep the label's line in the docked rail, a scrollbar
-            // beside it included.
-            <span className="flex items-center justify-end gap-1">
-              {periodControl}
-              <span data-review-period="" className="tracking-tight">
-                {reviewPeriodLabel(reviewEvery)}
-              </span>
-            </span>
-          ) : (
-            <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
-          )}
-        </HealthRow>
-        {approvalRow ? (
-          <HealthRow icon={<RequestIcon />} label="Approval" whole={!!approvalRow.onRequest}>
-            {approvalRow.onRequest ? (
-              <Button
-                variant="secondary"
-                size="xs"
-                data-request-approval=""
-                onClick={approvalRow.onRequest}
-                className="phone:min-h-11"
+      {/* The page's facts, Owner down to Approval, folded under the Verified panel as Page Details, closed by default
+          (owner 2026-11-22). With verification off there is no panel to press, so they show. */}
+      <Collapse open={panel ? detailsOpen : true} id={detailsId}>
+        <dl
+          data-page-facts=""
+          className="flex flex-col divide-y divide-slate-100 px-1 pt-3 dark:divide-slate-800/70"
+        >
+          <HealthRow icon={<OwnerIcon />} label="Owner">
+            {onSetOwner ? (
+              <Select
+                aria-label="Owner"
+                size="md"
+                value={owner ?? NO_OWNER}
+                onChange={(e) => onSetOwner(e.target.value === NO_OWNER ? null : e.target.value)}
+                className="max-w-40 cursor-pointer"
               >
-                Request Approval
-              </Button>
+                <option value={NO_OWNER}>Nobody</option>
+                {ownerOptions.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {person.name}
+                  </option>
+                ))}
+              </Select>
             ) : (
-              <span data-approval-none="">Not Requested</span>
+              <span className="inline-flex max-w-full items-center gap-2">
+                {owner ? <Disc name={ownerName} size="size-5" /> : null}
+                <span className="truncate">{ownerName ?? (owner ? 'Someone Else' : 'Nobody')}</span>
+              </span>
             )}
           </HealthRow>
-        ) : null}
-        {watch}
-      </dl>
+          {/* One line (owner 2026-11-21): the date, and the verifier as their disc, named on hover. */}
+          {panel ? (
+            <HealthRow icon={<VerifiedRowIcon />} label="Last Verified">
+              {verifiedAt === undefined ? (
+                'Never'
+              ) : (
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <span data-verified-date="">{shortDate(verifiedAt, now)}</span>
+                  {verifier ? (
+                    <Tooltip label={`Verified by ${verifier}`}>
+                      <span
+                        data-verified-by=""
+                        tabIndex={0}
+                        role="img"
+                        aria-label={`Verified by ${verifier}`}
+                        className="inline-flex cursor-default rounded-full focus-visible:outline-2 focus-visible:outline-brand-600"
+                      >
+                        <Disc name={verifier} size="size-5" />
+                      </span>
+                    </Tooltip>
+                  ) : null}
+                </span>
+              )}
+            </HealthRow>
+          ) : null}
+          {panel ? (
+            <HealthRow icon={<DueRowIcon />} label="Review Due">
+              <span data-review-due="">
+                {trust.reviewAt === undefined ? 'Not Verified' : shortDate(trust.reviewAt, now)}
+              </span>
+            </HealthRow>
+          ) : null}
+          {/* The knowledgebase's Review Period; for an Editor the value itself is a link that changes it (owner
+              2026-11-22, was a pencil before it). */}
+          <HealthRow icon={<PeriodIcon />} label="Review Period">
+            {periodControl ? (
+              periodControl(reviewPeriodLabel(reviewEvery))
+            ) : (
+              <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
+            )}
+          </HealthRow>
+          {approvalRow ? (
+            <HealthRow icon={<RequestIcon />} label="Approval" whole={!!approvalRow.onRequest}>
+              {approvalRow.onRequest ? (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  data-request-approval=""
+                  onClick={approvalRow.onRequest}
+                  className="phone:min-h-11"
+                >
+                  Request Approval
+                </Button>
+              ) : (
+                <span data-approval-none="">Not Requested</span>
+              )}
+            </HealthRow>
+          ) : null}
+          {watch}
+        </dl>
+      </Collapse>
     </section>
   );
 }

@@ -13,6 +13,15 @@ const HIT_CLASS = 'article-search-hit';
 const TRY_EVERY_MS = 50;
 const TRIES = 80;
 
+/** Lights a block for a moment so the eye finds it (a search hit, a heading picked in On This Page). */
+export function flashBlock(el: HTMLElement): void {
+  el.classList.remove(HIT_CLASS);
+  // Restarted when pressed again while still lit.
+  void el.offsetWidth;
+  el.classList.add(HIT_CLASS);
+  window.setTimeout(() => el.classList.remove(HIT_CLASS), BLOCK_HIT_MS);
+}
+
 export function goToBlock(editor: () => EditorContextValue, tab: string, block: string): void {
   // Picked over Ask or AI Knowledge (search opens where someone is): the page shows in Pages.
   showKnowledgeView('pages');
@@ -29,8 +38,7 @@ export function goToBlock(editor: () => EditorContextValue, tab: string, block: 
       return;
     }
     now.scrollIntoView(rect.x, rect.y, rect.w, rect.h);
-    el.classList.add(HIT_CLASS);
-    window.setTimeout(() => el.classList.remove(HIT_CLASS), BLOCK_HIT_MS);
+    flashBlock(el);
   };
   attempt(TRIES);
 }

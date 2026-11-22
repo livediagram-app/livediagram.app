@@ -37,7 +37,8 @@ export const KNOWLEDGE_VIEWS: readonly {
   },
   {
     view: 'connect',
-    label: 'Connect',
+    // Owner 2026-11-22: the tab says what it connects.
+    label: 'Connect MCP',
     short: 'Connect',
     hoverTitle: 'Connect an AI App',
     about:

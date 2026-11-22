@@ -21,8 +21,12 @@ import {
   APP_EVENTS_MAX,
   CARD_MOVES_MAX,
   COLLAB_MAX_ACTIONS,
+  COLLAB_MAX_SUGGESTIONS,
   COLLAB_MAX_THREADS,
   COLLAB_PEOPLE_MAX,
+  COLLAB_SUGGESTION_AGENT_MAX,
+  COLLAB_SUGGESTION_REASON_MAX,
+  COLLAB_SUGGESTION_TEXT_MAX,
   COLLAB_TEXT_MAX,
   INDEX_BODY_MAX_BYTES,
   IndexError,
@@ -30,6 +34,7 @@ import {
   type CardMove,
   type CollabActionInput,
   type CollabPush,
+  type CollabSuggestionInput,
   type CollabThreadInput,
   type IndexAppClient,
   type ItemSummary,
@@ -241,12 +246,14 @@ export function connectionLeftOf(key: string): ConnectionLeft | null {
 
 // ---------- The collab push ----------------------------------------------------------------------------------
 
-// A tab's threads and actions as one push the index takes whole (one-explorer-contracts.md "What an item pushes"):
-// each row cut as the index cuts it (texts to COLLAB_TEXT_MAX; id lists to their first COLLAB_PEOPLE_MAX distinct
-// ids, past which it refuses the push), the newest COLLAB_MAX_THREADS threads and COLLAB_MAX_ACTIONS actions, then
-// threads and actions together, newest first, while the push's JSON fits `maxBytes` (the index's body limit). A push
-// replaces the tab's rows, so it cannot be split: one over the limit would be refused for good and park the key, and
-// the tab's Inbox would stop updating. The order is total (time, then ids), so the same tab always pushes the same rows.
+// A tab's threads, actions and suggested edits as one push the index takes whole (one-explorer-contracts.md "What an
+// item pushes"): each row cut as the index cuts it (texts to COLLAB_TEXT_MAX; id lists to their first
+// COLLAB_PEOPLE_MAX distinct ids, past which it refuses the push; a suggestion's `before` and `after` to
+// COLLAB_SUGGESTION_TEXT_MAX, its reason and agent to theirs), the newest COLLAB_MAX_THREADS threads,
+// COLLAB_MAX_ACTIONS actions and COLLAB_MAX_SUGGESTIONS suggestions, then all three together, newest first, while the
+// push's JSON fits `maxBytes` (the index's body limit). A push replaces the tab's rows, so it cannot be split: one over
+// the limit would be refused for good and park the key, and the tab's Inbox would stop updating. The order is total
+// (time, then ids), so the same tab always pushes the same rows. A push without `suggestions` sends none.
 export function capCollabPush(
   push: CollabPush,
   maxBytes: number = INDEX_BODY_MAX_BYTES,
@@ -264,25 +271,43 @@ export function capCollabPush(
         byText(a.actionId, b.actionId),
     )
     .slice(0, COLLAB_MAX_ACTIONS);
+  const suggestions = (push.suggestions ?? [])
+    .map(cutSuggestion)
+    .sort((a, b) => b.createdAt - a.createdAt || byText(a.id, b.id))
+    .slice(0, COLLAB_MAX_SUGGESTIONS);
   // The push with no rows, then each row kept with the comma before it: the bytes the client's JSON.stringify sends.
   const kept: CollabPush = { ...push, threads: [], actions: [] };
+  if (push.suggestions !== undefined) kept.suggestions = [];
   let used = jsonBytes(kept);
-  let t = 0;
-  let a = 0;
-  while (t < threads.length || a < actions.length) {
-    const thread = threads[t];
-    const action = actions[a];
-    const isThread =
-      thread !== undefined && (action === undefined || thread.latestAt >= action.updatedAt);
-    const row = isThread ? thread : action!;
-    const list: unknown[] = isThread ? kept.threads : kept.actions;
-    const cost = jsonBytes(row) + (list.length > 0 ? 1 : 0);
+  // The three lists, each newest first, taken newest first across them (a tie: thread, action, suggestion).
+  const lists: { rows: readonly object[]; at: (row: never) => number; into: unknown[] }[] = [
+    { rows: threads, at: (r: CollabThreadInput) => r.latestAt, into: kept.threads },
+    { rows: actions, at: (r: CollabActionInput) => r.updatedAt, into: kept.actions },
+    {
+      rows: suggestions,
+      at: (r: CollabSuggestionInput) => r.createdAt,
+      into: kept.suggestions ?? [],
+    },
+  ];
+  const next = [0, 0, 0];
+  for (;;) {
+    let pick = -1;
+    for (let i = 0; i < lists.length; i++) {
+      const row = lists[i]!.rows[next[i]!];
+      if (row === undefined) continue;
+      const best = pick < 0 ? undefined : lists[pick]!.rows[next[pick]!];
+      if (best === undefined || lists[i]!.at(row as never) > lists[pick]!.at(best as never))
+        pick = i;
+    }
+    if (pick < 0) break;
+    const list = lists[pick]!;
+    const row = list.rows[next[pick]!]!;
+    const cost = jsonBytes(row) + (list.into.length > 0 ? 1 : 0);
     // The first row that does not fit ends the push: every row left out is older than every row kept.
     if (used + cost > maxBytes) break;
     used += cost;
-    list.push(row);
-    if (isThread) t++;
-    else a++;
+    list.into.push(row);
+    next[pick]!++;
   }
   return kept;
 }
@@ -290,7 +315,13 @@ export function capCollabPush(
 // A push that left rows out, in the Worker's logs: the evidence a paged push would need (one-explorer-contracts.md
 // "What an item pushes", Work Tracker 870). Two length checks on a push that kept everything.
 function noteCapped(itemId: string, tabId: string, rows: CollabPush, kept: CollabPush): void {
-  if (kept.threads.length === rows.threads.length && kept.actions.length === rows.actions.length)
+  const suggestions = rows.suggestions?.length ?? 0;
+  const suggestionsKept = kept.suggestions?.length ?? 0;
+  if (
+    kept.threads.length === rows.threads.length &&
+    kept.actions.length === rows.actions.length &&
+    suggestionsKept === suggestions
+  )
     return;
   console.warn('[outbox] collab capped', {
     itemId,
@@ -299,6 +330,7 @@ function noteCapped(itemId: string, tabId: string, rows: CollabPush, kept: Colla
     threadsKept: kept.threads.length,
     actions: rows.actions.length,
     actionsKept: kept.actions.length,
+    ...(suggestions > 0 ? { suggestions, suggestionsKept } : {}),
   });
 }
 
@@ -337,6 +369,19 @@ function cutAction(action: CollabActionInput): CollabActionInput {
   return action.description === undefined
     ? action
     : { ...action, description: cutText(action.description) };
+}
+
+const cutTo = (value: string, max: number): string =>
+  value.length > max ? value.slice(0, max) : value;
+
+function cutSuggestion(suggestion: CollabSuggestionInput): CollabSuggestionInput {
+  return {
+    ...suggestion,
+    agent: cutTo(suggestion.agent, COLLAB_SUGGESTION_AGENT_MAX),
+    reason: cutTo(suggestion.reason, COLLAB_SUGGESTION_REASON_MAX),
+    before: cutTo(suggestion.before, COLLAB_SUGGESTION_TEXT_MAX),
+    after: cutTo(suggestion.after, COLLAB_SUGGESTION_TEXT_MAX),
+  };
 }
 
 // A value's JSON as UTF-8 bytes, counted without encoding it. JSON.stringify escapes a lone surrogate, so every

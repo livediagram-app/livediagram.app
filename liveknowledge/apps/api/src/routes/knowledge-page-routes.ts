@@ -41,6 +41,11 @@ import {
   type StoredPageKnowledge,
 } from '../knowledge/page-knowledge';
 import { personCanOpen, savePageFields } from '../knowledge/page-fields-save';
+import {
+  countSuggestionsByPage,
+  listPageSuggestions,
+  suggestionOf,
+} from '../knowledge/suggestions';
 import { routeWho } from '../document-room/automations/knowledge-who';
 import { readStoredPages } from '../document-room/page-tree-store';
 import { conflict, json, notFound } from '../responses';
@@ -95,14 +100,20 @@ export async function handlePageHealth(
   // The Health Score's counts the editor cannot see itself (verification.md "Health Score"): one read of the page's
   // facts row, on indexes its tables already have. Page Insights (ai-knowledge.md) rides the reads, 30 days by day
   // (the week summed from them), and the questions, whose window total is how often Ask cited the page.
-  const [readRows, authors, editors, answered, agents, [facts]] = await Promise.all([
-    rowsOf<DailyReadsRow>(ctx.env, countPageDailyReads(tab, now)),
-    readPageAuthors(ctx.env, tab),
-    readPageEditors(ctx.env, tab),
-    rowsOf<PageAnswerRow>(ctx.env, listPageAnswers(tab, now)),
-    rowsOf<PageAgentReadsRow>(ctx.env, countPageAgentReads(tab, now)),
-    pageHealthRows(ctx.env, document.id, now, [tab]),
-  ]);
+  // The page's suggested edits and every page's count (ai-knowledge.md "On the page") ride this read too: one read
+  // on `suggestions_tab` and one grouped count of a table of at most 50 rows, so the meta row, the rail and the tree's
+  // dots make no request of their own.
+  const [readRows, authors, editors, answered, agents, [facts], pageSuggestions, counts] =
+    await Promise.all([
+      rowsOf<DailyReadsRow>(ctx.env, countPageDailyReads(tab, now)),
+      readPageAuthors(ctx.env, tab),
+      readPageEditors(ctx.env, tab),
+      rowsOf<PageAnswerRow>(ctx.env, listPageAnswers(tab, now)),
+      rowsOf<PageAgentReadsRow>(ctx.env, countPageAgentReads(tab, now)),
+      pageHealthRows(ctx.env, document.id, now, [tab]),
+      listPageSuggestions(ctx.env, tab, now),
+      countSuggestionsByPage(ctx.env, now),
+    ]);
   const knowledge = pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now);
   const use = pageInsights(readRows, now);
   // The questions are the knowledgebase's Ask, which a link confined to one page has not (search-and-ask.md).
@@ -130,6 +141,10 @@ export async function handlePageHealth(
       ...(wholeKnowledgebase ? { cited: answered[0]?.cited ?? 0 } : {}),
     },
     agents: agents.map((r) => ({ agent: r.agent, reads: r.reads })),
+    suggestions: pageSuggestions.map((sg) =>
+      suggestionOf(sg, document.tabs.find((t) => t.id === tab)?.name ?? ''),
+    ),
+    suggestionCounts: visibleCounts(document, grant, counts),
     ...(facts
       ? {
           signals: {
@@ -141,6 +156,23 @@ export async function handlePageHealth(
         }
       : {}),
   });
+}
+
+// The pending counts a reader may see: the pages of their copy of the knowledgebase (a link confined to one page has
+// that page alone), never a page out of their scope.
+function visibleCounts(
+  document: DocumentDTO,
+  grant: Pick<DocumentAccess, 'tabScope'>,
+  counts: ReadonlyMap<string, number>,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const t of document.tabs) {
+    const n = counts.get(t.id);
+    if (!n || t.outOfScope) continue;
+    if (grant.tabScope !== null && grant.tabScope !== t.id) continue;
+    out[t.id] = n;
+  }
+  return out;
 }
 
 // The write (knowledge/page-fields-save.ts): at the revision read, repeated once when the tab moved, told to every

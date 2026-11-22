@@ -93,6 +93,8 @@ export async function handleMerge(
     // The Inbox follows them too.
     db.prepare('UPDATE collab_actions SET assignee_id = ? WHERE assignee_id = ?').bind(user, guest),
     db.prepare('UPDATE collab_actions SET assigner_id = ? WHERE assigner_id = ?').bind(user, guest),
+    // The suggested edits waiting on their pages (collab_suggestions_owner).
+    db.prepare('UPDATE collab_suggestions SET owner_id = ? WHERE owner_id = ?').bind(user, guest),
     db
       .prepare(
         `INSERT OR IGNORE INTO collab_thread_people (app, item_id, tab_id, element_id, person_id)

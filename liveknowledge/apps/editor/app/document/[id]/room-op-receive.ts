@@ -19,6 +19,7 @@ import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-setti
 import { notePeerSaved } from '@/lib/page-edit/page-edit-store';
 import { pageThreadsStore } from '@/lib/page-threads/page-threads-store';
 import { pageReactionsStore } from '@/lib/page-reactions/page-reactions-store';
+import { suggestionsView } from '@/lib/knowledge/page-suggestions-view';
 
 type RoomOpFrom = Parameters<NonNullable<RoomHandlers['onOp']>>[0];
 type RoomOp = Parameters<NonNullable<RoomHandlers['onOp']>>[1];
@@ -207,5 +208,9 @@ export function receiveRoomOp(
   } else if (op.kind === 'page-reaction') {
     // A reaction on a page (docs/specs/030-knowledgebase/page-reactions.md "Live"): the api's, never a client's.
     if (from === 'system' && opts.documentId) pageReactionsStore.receive(opts.documentId, op);
+  } else if (op.kind === 'page-suggestions') {
+    // An agent suggested an edit, or one was accepted or dismissed (docs/specs/030-knowledgebase/ai-knowledge.md "On
+    // the page"): the api's, never a client's. The open page reads its health again once.
+    if (from === 'system') suggestionsView.notePushed();
   }
 }

@@ -14,7 +14,7 @@ import { knowledgeDb } from './knowledge-db';
 
 type Exec = (query: string) => unknown;
 
-/** The schema step (document-schema.ts V40). Additive, IF NOT EXISTS. */
+/** The schema step (document-schema.ts V41). Additive, IF NOT EXISTS. */
 export function pageWatchSchemaStep(exec: Exec): void {
   exec(`CREATE TABLE IF NOT EXISTS page_watchers (
     tab TEXT NOT NULL, person TEXT NOT NULL, scope TEXT NOT NULL CHECK (scope IN ('page', 'section')),

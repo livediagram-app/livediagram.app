@@ -1,12 +1,14 @@
 // The Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"): across every app, open actions and cards
 // assigned to or by me, unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 // mentioned, forms with responses I haven't seen on items I own or reach through a team, limited to items I can
-// reach, open access requests on items I manage, my own requests granted lately (`shares`, inbox-notices.md), and
-// updates on pages I watch (updates.ts). Six queries, each starting from an index on the person.
+// reach, open access requests on items I manage, my own requests granted lately (`shares`, inbox-notices.md),
+// the suggested edits waiting on my pages (`suggestions`), and updates on pages I watch (updates.ts). Seven queries,
+// each starting from an index on the person.
 
 import {
   COLLAB_CARDS_TAB,
   INBOX_SHARES_MS,
+  INBOX_SUGGESTIONS_MAX,
   isApp,
   LIST_LIMIT_MAX,
   type ActionStatus,
@@ -17,6 +19,7 @@ import {
   type InboxAction,
   type InboxForm,
   type InboxShare,
+  type InboxSuggestion,
   type InboxThread,
 } from '@liveworkspace/index-client';
 import { scopesOf } from './auth';
@@ -29,8 +32,9 @@ import { inboxUpdateOf, updatesQuery, type UpdateRow } from './updates';
 
 // Reached as owner, through a scope, or through a live link the person opened, on the tab that link opens: a link
 // scoped to one tab reaches that tab's threads and actions alone, as it opens that tab alone, and the cards on that
-// tab's boards (pushed under COLLAB_CARDS_TAB, each naming its board's tab). `row` is the thread's or action's alias.
-// An update's row (`cards` false) has no card: its tab is always a page.
+// tab's boards (pushed under COLLAB_CARDS_TAB, each naming its board's tab). `row` is the thread's or action's alias;
+// `cards` false for a table without cards (suggested edits, updates), which reaches by tab alone: an update's tab is
+// always a page.
 const reachable = (
   row: string,
   cards = true,
@@ -124,6 +128,22 @@ type ShareRow = {
   shared_at: number;
   shared_by_id: string | null;
   shared_by_name: string | null;
+};
+
+type SuggestionRow = {
+  app: App;
+  item_id: string;
+  item_title: string;
+  item_team_id: string | null;
+  tab_id: string;
+  tab_name: string;
+  suggestion_id: string;
+  agent: string;
+  reason: string;
+  kind: InboxSuggestion['kind'];
+  before_text: string;
+  after_text: string;
+  created_at: number;
 };
 
 export function inboxQueries(personId: string, scopes: string[], app: App | null, limit: number) {
@@ -222,9 +242,36 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       ORDER BY r.closed_at DESC LIMIT ?`,
     args: [personId, now - INBOX_SHARES_MS, ...(app ? [app] : []), now, limit],
   };
+  // Suggested edits waiting on my pages (one-explorer-contracts.md "Inbox"): those naming me
+  // (collab_suggestions_owner), and those naming no one on items I own (items_owner, then collab_suggestions_item's
+  // `owner_id IS NULL` range), on live items I still reach; newest first, at most INBOX_SUGGESTIONS_MAX.
+  const suggestions = {
+    sql: `WITH candidates AS (
+        SELECT s.app, s.item_id, s.tab_id, s.suggestion_id FROM collab_suggestions s WHERE s.owner_id = ?
+        UNION ALL
+        SELECT s.app, s.item_id, s.tab_id, s.suggestion_id FROM items i
+          JOIN collab_suggestions s ON s.item_id = i.id AND s.owner_id IS NULL
+          WHERE i.owner_id = ?
+      )
+      SELECT s.app, s.item_id, i.title AS item_title, i.team_id AS item_team_id, s.tab_id, s.tab_name,
+        s.suggestion_id, s.agent, s.reason, s.kind, s.before_text, s.after_text, s.created_at
+      FROM candidates c
+      JOIN collab_suggestions s ON s.app = c.app AND s.item_id = c.item_id AND s.tab_id = c.tab_id
+        AND s.suggestion_id = c.suggestion_id
+      JOIN items i ON i.id = s.item_id
+      WHERE i.trashed_at IS NULL ${app ? 'AND s.app = ?' : ''} AND ${reachable('s', false)}
+      ORDER BY s.created_at DESC, s.suggestion_id LIMIT ?`,
+    args: [
+      personId,
+      personId,
+      ...(app ? [app] : []),
+      ...reachArgs,
+      Math.min(limit, INBOX_SUGGESTIONS_MAX),
+    ],
+  };
   // Updates on pages I watch (updates.ts): from my people index, on items I reach as a thread's.
   const updates = updatesQuery(personId, app, limit, now, reachable('u', false), reachArgs);
-  return { threads, actions, forms, accessRequests, shares, updates };
+  return { threads, actions, forms, accessRequests, shares, suggestions, updates };
 }
 
 /** Who mentioned the reader, as the push said (checked when it was pushed); null when it said nothing. */
@@ -257,14 +304,16 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
   if (limit === null) return badRequest('invalid_query');
   const q = inboxQueries(person.id, scopesOf(person), app, limit);
   const db = env.INDEX_DB;
-  const [threadRes, actionRes, formRes, accessRes, shareRes, updateRes] = (await db.batch([
-    db.prepare(q.threads.sql).bind(...q.threads.args),
-    db.prepare(q.actions.sql).bind(...q.actions.args),
-    db.prepare(q.forms.sql).bind(...q.forms.args),
-    db.prepare(q.accessRequests.sql).bind(...q.accessRequests.args),
-    db.prepare(q.shares.sql).bind(...q.shares.args),
-    db.prepare(q.updates.sql).bind(...q.updates.args),
-  ])) as D1Result<Record<string, unknown>>[];
+  const [threadRes, actionRes, formRes, accessRes, shareRes, suggestionRes, updateRes] =
+    (await db.batch([
+      db.prepare(q.threads.sql).bind(...q.threads.args),
+      db.prepare(q.actions.sql).bind(...q.actions.args),
+      db.prepare(q.forms.sql).bind(...q.forms.args),
+      db.prepare(q.accessRequests.sql).bind(...q.accessRequests.args),
+      db.prepare(q.shares.sql).bind(...q.shares.args),
+      db.prepare(q.suggestions.sql).bind(...q.suggestions.args),
+      db.prepare(q.updates.sql).bind(...q.updates.args),
+    ])) as D1Result<Record<string, unknown>>[];
   const threads: InboxThread[] = (threadRes!.results as ThreadRow[]).map((r) => ({
     app: r.app,
     itemId: r.item_id,
@@ -344,6 +393,21 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     sharedByName: r.shared_by_name,
     sharedAt: r.shared_at,
   }));
+  const suggestions: InboxSuggestion[] = (suggestionRes!.results as SuggestionRow[]).map((r) => ({
+    app: r.app,
+    itemId: r.item_id,
+    itemTitle: r.item_title,
+    itemTeamId: r.item_team_id,
+    tabId: r.tab_id,
+    tabName: r.tab_name,
+    suggestionId: r.suggestion_id,
+    agent: r.agent,
+    reason: r.reason,
+    kind: r.kind,
+    before: r.before_text,
+    after: r.after_text,
+    createdAt: r.created_at,
+  }));
   const updates = (updateRes!.results as UpdateRow[]).map(inboxUpdateOf);
-  return json({ threads, actions, forms, accessRequests, shares, updates });
+  return json({ threads, actions, forms, accessRequests, shares, suggestions, updates });
 }

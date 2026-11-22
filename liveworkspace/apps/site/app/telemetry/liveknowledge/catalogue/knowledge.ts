@@ -122,6 +122,14 @@ export const SUGGESTIONS_DISMISSED = chart(
   { types: ['SuggestionDismissed'], rising: 'neutral' },
 );
 
+export const SUGGESTIONS_REVIEWED_FROM_PAGE = chart(
+  'UI',
+  'Used',
+  'Suggested Edits Reviewed From a Page',
+  "Review All pressed in a page's Suggested Edits, or a suggestion shown in the page from its card.",
+  { types: ['ReviewAllSuggestions', 'SuggestionShownInPage'] },
+);
+
 export const CONFLICTS_DISMISSED = chart(
   'UI',
   'Used',
@@ -181,6 +189,7 @@ export const AI_KNOWLEDGE: MetricStack = {
     CONNECT_COPIED,
     SUGGESTIONS_ACCEPTED,
     SUGGESTIONS_DISMISSED,
+    SUGGESTIONS_REVIEWED_FROM_PAGE,
     CONFLICTS_DISMISSED,
     QUESTIONS_DISMISSED,
     OWNERS_ASKED,
@@ -281,6 +290,14 @@ export const WATCHES_STOPPED = chart(
   { types: ['WatchPageOff', 'WatchSectionOff'], rising: 'neutral' },
 );
 
+export const ISSUES_OPENED_FROM_HEALTH = chart(
+  'UI',
+  'Used',
+  'Open Issues Shown From Health',
+  "Show Conflicts, Show Comments or Show Suggested Edits pressed in a page's Health Score breakdown.",
+  { types: ['HealthShowConflicts', 'HealthShowComments', 'HealthShowSuggestions'] },
+);
+
 export const VERIFICATION: MetricStack = {
   stack: true,
   title: 'Verification',
@@ -295,6 +312,7 @@ export const VERIFICATION: MetricStack = {
     PAGES_APPROVED,
     PAGES_REJECTED,
     HEADINGS_ADDED_FROM_HEALTH,
+    ISSUES_OPENED_FROM_HEALTH,
     PAGES_WATCHED,
     WATCHES_STOPPED,
   ],

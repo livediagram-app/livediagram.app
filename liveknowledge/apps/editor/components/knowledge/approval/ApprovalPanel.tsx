@@ -93,6 +93,8 @@ export function ApprovalPanel({
   const decided = approval ? decidedLine(approval, nameOf, self, now) : undefined;
   const Heading = inPanel ? 'h3' : 'h2';
   const tooLong = note.trim().length > APPROVAL_NOTE_MAX;
+  // A pending approval in the rail says who asked and when on one line, and nothing more (owner 2026-11-22).
+  const oneLine = inPanel && state === 'pending';
   return (
     <div data-approval-panel={state} className="flex flex-col gap-3">
       {/* The glyph beside the heading only, so the lines under it take the panel's whole width (owner 2026-11-21:
@@ -114,7 +116,9 @@ export function ApprovalPanel({
         </div>
         <div className="mt-2 min-w-0">
           {approval ? (
-            <p className="mt-0.5 text-[13px] leading-5 text-slate-600 dark:text-slate-400">
+            <p
+              className={`mt-0.5 text-[13px] leading-5 text-slate-600 dark:text-slate-400 ${oneLine ? 'truncate' : ''}`}
+            >
               {requestedLine(approval, nameOf, self, now)}
             </p>
           ) : null}
@@ -129,7 +133,7 @@ export function ApprovalPanel({
               {approval.note}
             </blockquote>
           ) : null}
-          {!rejecting && (approval || !inPanel) ? (
+          {!rejecting && !oneLine && (approval || !inPanel) ? (
             <p className="mt-2 text-[13px] leading-5 text-slate-600 dark:text-slate-400">
               {approvalPrompt(approval, actions)}
             </p>

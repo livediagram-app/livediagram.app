@@ -184,6 +184,10 @@ A toast is easy to miss. Every one is also written to a list the person can open
   stack stays centred. On a phone the cluster is a floor like the
   rest. Any bottom-right control a product marks `data-toast-side` counts as that cluster: liveknowledge's floating
   Edit, Cancel and Save buttons, so a toast stands on their line, not below it (the owner, 2026-11-21).
+- **At a start column's left edge.** From 640px, while the stack stands on a side's line, a product can mark a
+  column `data-toast-start`: the stack then aligns to that column's left edge, 16px in, its toasts left aligned, still
+  level with the side. liveknowledge marks the page itself, so toasts sit over the document at the page's left, never
+  over the page tree beside it, in line with Edit and Zen (the owner, 2026-11-22). On a phone it changes nothing.
 - **Stacking order.** Toasts sit at the top of the stacking ladder (`--z-toast`), over dialogs, so a failure shows even
   while a dialog is open.
 - **One stack per page.** A page has one toast stack and one list: the Explorer panel inside an editor raises its

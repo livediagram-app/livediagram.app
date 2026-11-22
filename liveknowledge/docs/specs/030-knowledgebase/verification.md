@@ -4,7 +4,7 @@ Status: **the states, Verify, the meta row, the tree's tick, Page Health and the
 verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md) step 7;
 [blueprint](blueprints/knowledge-ui.md)). Not built: "Edited <when> by <name>" (no route says when a page's writing
 was last edited, or by whom). The Review Due email is built and tested over
-a fake sender, not yet sent from a deployed Worker. A guest may verify too, shown by their name with "(Guest)" after it ("Verified by Bright Marlin (Guest)", or "Guest" with no name) and never made the page's owner (owner, 2026-11-21); the same name marks a guest's Created and Updated stamps, the api swapping a guest's owner id (a credential, never sent to readers) for "guest:<name> (Guest)" from their profile as the page's health is read, and a knowledgebase kept Offline has
+a fake sender, not yet sent from a deployed Worker. A guest may verify too, shown by their name with "(Guest)" after it ("Verified by Bright Marlin (Guest)", or "Guest" with no name) and never made the page's owner (owner, 2026-11-21); the same name marks a guest's Created and Updated stamps, the api swapping a guest's owner id (a credential, never sent to readers) for "guest:<name> (Guest)" from their profile as the page's health is read (a save stamps a guest by the name they edit under from the start, as Verify does, since a guest seldom has a profile; owner 2026-11-22), and the rail and the header's discs read the page again after a save, a peer's included, and a knowledgebase kept Offline has
 none.
 
 A knowledgebase is only useful, to a person or to an agent, while it is right. Each page says who vouches for it and when they
@@ -97,9 +97,9 @@ own.
   Page is. Page Health leads with the page's state beside a thin **freshness ring**, the share of the Review Period
   left, in the state's colour (green verified, amber due, an empty dashed ring for a page never verified), with one
   line under it: "Fresh for 80 more days", "Was due 14 Jan", "Verify once it's right." The week's reads are two
-  quiet figures (people, agents) under "Read This Week". The ring fills over 200 ms when it changes (the chrome motion budget), and not
+  quiet figures under "Read This Week", reads not readers ("9 by People", "2 by Agents": no reader's identity is kept). The ring fills over 200 ms when it changes (the chrome motion budget), and not
   at all with reduced motion. (Redesigned 2026-11-21, "it's rubbish": the state, its line and Verify sit in a soft
-  panel washed in the state's colour; the facts below each have a glyph; **Read This Week** (a panel on the theme's tint, a quiet open book drawn behind its two counts) and Created / Updated
+  panel washed in the state's colour; a hairline under Score Breakdown (owner 2026-11-22); the facts below (Owner down to Approval) each have a glyph and fold under the state's panel as **Page Details**, closed by default like Score Breakdown (owner 2026-11-22); **Read This Week** (a panel on the theme's tint, a quiet open book drawn behind its two counts) and Created / Updated
   are the rail's foot, held at its bottom while the rest scrolls, the Page Info card showing them last; Created /
   Updated sit above Read This Week (owner 2026-11-21).) **Order** (owner 2026-11-21): Page Health first, On This Page
   under it. **AI
@@ -165,13 +165,19 @@ Nothing is stored: it is worked out when read, as the states are.
 - **At the top of Page Health**, above the state panel: the score as a large figure in a small ring that fills to
   it (the ring's colour is the word's; the 200 ms fill follows the freshness ring's, none with reduced motion),
   then the word, then the main reason on one line.
-- **The breakdown** is a disclosure under it, **Score Breakdown**, closed by default (owner's convention: closed
-  accordions). Open, it lists the eight factors in the table's order, each with its points of its maximum
+- **The breakdown** opens under it, closed by default (owner's convention: closed accordions). The score itself is
+  the disclosure: pressing anywhere on it opens and closes the breakdown, a chevron at its end turning (owner
+  2026-11-22: no Score Breakdown row, and no "Health Score" word after the score's word). Likewise pressing the
+  Verified panel anywhere but its own controls opens and closes Page Details, its chevron the keyboard's way in. Open, it lists the eight factors in the table's order, each with its points of its maximum
   ("8 / 10") and, where it is short, what would raise it. Where a fix is a press away it is a small button on the
   row: **Verify** (Verification, and Freshness when the review is due), **Set an Owner** (opens the Owner picker
   beside it), **Add a Heading** (opens the page for editing if it is not, then puts an empty level-two heading after the block
-  the caret is in, under the title when the writing was not yet clicked into, the caret in it). The rest
-  read as text (a broken link is fixed in the writing; a conflict in AI Knowledge).
+  the caret is in, under the title when the writing was not yet clicked into, the caret in it). Open issues each
+  have a way to them for anyone who can read the page (owner 2026-11-22: a conflict could not be found from here):
+  **Show Conflicts** (AI Knowledge's Needs Attention at Disagreements), **Show Comments** (scrolls to the page's
+  comments), **Show Suggested Edits** (brings the rail's Suggested Edits into view). The rest read as text (a broken
+  link is fixed in the writing). Score Breakdown and Page Details slide open and closed (200 ms; reduced motion
+  snaps).
 - **Roles:** everyone who can read the page sees the score, its word, its reason and the breakdown. The buttons are
   only for those who may do them: Verify and Set an Owner for an Editor or a Participant (as Verify and the owner
   are), Add a Heading for anyone who may change the page's writing. A Viewer reads the same rows with no buttons.
@@ -180,6 +186,9 @@ Nothing is stored: it is worked out when read, as the states are.
   the week's reads and Created / Updated, which it already holds, and `signals` (open conflicts, unresolved
   threads, suggested edits waiting, backlinks), four counts the same read now answers. No request more: the score
   is there once Page Health is read, and before it the page's own facts give it, the read's counts as none.
+  The same read carries the page's suggested edits themselves and the pending count of every page the reader may see
+  ([AI Knowledge](ai-knowledge.md) "On the page"), so the meta row's pill, the rail's Suggested Edits and the tree's
+  dots need no request of their own.
 - **Kept Offline:** no room, so no signals and no reads: the score counts what the page itself holds (verification,
   freshness, owner, length, structure, broken links), Links' backlink point and Use as full, Open Issues as none,
   and the breakdown says "Kept in this browser: reads and open issues are not counted."
@@ -207,10 +216,10 @@ points, max }` and, when short, `raise`. The CLI's `read`, `search` and `context
 
 ## The Review Period
 
-- **Changed from Page Health**, beside the Review Period row, by an Editor of the whole knowledgebase only (never a
-  Participant, a Viewer or a link to one page): a small bordered pencil button with no label (named "Change Review
-  Period", its hover card saying it changes the period for the whole knowledgebase), so the period beside it shows
-  in full, opens a small panel, **Review Period**, that says
+- **Changed from Page Health**, in the Review Period row, by an Editor of the whole knowledgebase only (never a
+  Participant, a Viewer or a link to one page): the value itself ("Every 90 Days") is a link (owner 2026-11-22, was a
+  pencil before it), named "Change Review Period: Every 90 Days", its hover card saying it changes the period for
+  the whole knowledgebase. It opens a small panel, **Review Period**, that says
   it applies to every page in this knowledgebase, then five choices (Every 30 Days, Every 90 Days, Every 180 Days,
   Every Year, Never) with one line saying what they do: "A verified page comes due for review this long after it
   was last verified." (owner 2026-11-21: the Review Period was the only setting, so Knowledgebase Settings is gone;
@@ -221,13 +230,13 @@ points, max }` and, when short, `raise`. The CLI's `read`, `search` and `context
 - **Never** means no page is ever Review Due and verification is off: no page is marked or offered Verify, and no
   review email is sent ([Under a Review Period of Never](#under-a-review-period-of-never)).
 - Page Health shows the page's due date and the knowledgebase's period ("Every 90 Days") to everyone; only the
-  Editor sees the pencil.
+  Editor sees it as a link.
 
 ### The Review Period, as built
 
-- **The way in** is Page Health's pencil alone. No menu row and no command: the period is read where it is
+- **The way in** is Page Health's Review Period link alone. No menu row and no command: the period is read where it is
   shown, and a command would have to open a panel anchored on a rail that may be folded away.
-- **The panel** opens under the pencil (a sheet on a phone), 360 px wide and of one height whatever it shows. It is
+- **The panel** opens under the link (a sheet on a phone), 360 px wide and of one height whatever it shows. It is
   headed **Review Period** with the line that says what the period does, then a tinted line, "Applies to every
   page in this knowledgebase.", before the choices. The five
   choices are bordered single-choice rows, the chosen one ticked. A shorter period is counted first; when it

@@ -75,7 +75,9 @@ export function wordBand(words: number): WordBand {
 }
 
 /** A fix a press away, where the person may make it. */
-export type PageHealthFix = 'verify' | 'owner' | 'heading';
+// Open issues each name where they are dealt with (owner 2026-11-22: a conflict in Score Breakdown had no way to it).
+export type PageHealthFix =
+  'verify' | 'owner' | 'heading' | 'conflicts' | 'comments' | 'suggestions';
 
 export type PageHealthFactor = {
   factor: PageHealthFactorName;
@@ -256,17 +258,25 @@ function issues(f: PageHealthFacts): Part {
       cost: 5 * conflicts,
       reason: plural(conflicts, 'open conflict'),
       raise: conflicts === 1 ? 'Resolve the conflict' : 'Resolve the conflicts',
+      fix: 'conflicts' as const,
     },
-    { cost: f.pendingApproval ? 2 : 0, reason: 'Pending approval', raise: 'Approve or reject it' },
+    {
+      cost: f.pendingApproval ? 2 : 0,
+      reason: 'Pending approval',
+      raise: 'Approve or reject it',
+      fix: undefined,
+    },
     {
       cost: Math.min(3, threads),
       reason: plural(threads, 'open comment'),
       raise: `Resolve ${plural(threads, 'comment')}`,
+      fix: 'comments' as const,
     },
     {
       cost: Math.min(2, suggestions),
       reason: `${plural(suggestions, 'suggested edit')} waiting`,
       raise: `Accept or dismiss ${plural(suggestions, 'suggested edit')}`,
+      fix: 'suggestions' as const,
     },
   ];
   const total = lost.reduce((sum, l) => sum + l.cost, 0);
@@ -278,6 +288,7 @@ function issues(f: PageHealthFacts): Part {
     reason: first.reason,
     raise: first.raise,
     gain: Math.min(10 - points, first.cost),
+    ...(first.fix ? { fix: first.fix } : {}),
   };
 }
 

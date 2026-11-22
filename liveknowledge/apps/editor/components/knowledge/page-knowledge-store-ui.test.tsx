@@ -110,10 +110,17 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+// Page Details opens from the Verified panel (folded at first, owner 2026-11-22).
+function openDetails() {
+  const toggle = screen.queryByRole('button', { name: 'Page Details' });
+  if (toggle?.getAttribute('aria-expanded') === 'false') fireEvent.click(toggle);
+}
+
 describe('a page’s knowledge in the editor', () => {
   it('reads Page Health once when the page opens, counting the open, and shows the reads', async () => {
     const { documentId, pageId } = mount('view');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    openDetails();
     expect(screen.getByText('7')).toBeTruthy();
     expect(api.apiPageHealth).toHaveBeenCalledTimes(1);
     expect(api.apiPageHealth.mock.calls[0]!.slice(1)).toEqual([
@@ -128,6 +135,7 @@ describe('a page’s knowledge in the editor', () => {
   it('a typing commit renders neither and reads nothing; a new heading renders the rail alone', async () => {
     const { store, valueOf, renders, pageId } = mount('edit');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    openDetails();
     renders.meta = 0;
     renders.rail = 0;
     // A commit of body text: a new tab and block list, the same headings and fields.
@@ -155,10 +163,11 @@ describe('a page’s knowledge in the editor', () => {
       });
       mount(level);
       await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+      openDetails();
       const score = document.querySelector('[data-health-score]')!;
       expect(score.getAttribute('data-health-score')).toBe('needs-work');
       fireEvent.click(
-        within(score as HTMLElement).getByRole('button', { name: 'Score Breakdown' }),
+        within(score as HTMLElement).getByRole('button', { name: /Score Breakdown$/ }),
       );
       expect(within(score as HTMLElement).getByText('Resolve the conflict: +5')).toBeTruthy();
       expect(
@@ -176,6 +185,7 @@ describe('a page’s knowledge in the editor', () => {
     api.apiVerifyPage.mockReturnValue(new Promise((resolve) => (answer = resolve)));
     mount('edit');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    openDetails();
     // The rail's Verify is one press (the meta row's asks first, VerifyPageButton.test.tsx).
     fireEvent.click(railButton('Verify'));
     // Before the server answers.
@@ -200,6 +210,7 @@ describe('a page’s knowledge in the editor', () => {
     api.apiVerifyPage.mockRejectedValue(new Error('down'));
     mount('edit');
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    openDetails();
     fireEvent.click(railButton('Verify'));
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith('The page could not be verified. Try again.'),
@@ -214,6 +225,7 @@ describe('a page’s knowledge in the editor', () => {
     const verified = [{ ...tabs[0]!, knowledge: { verifiedAt, verifiedBy: 'u1' } }, tabs[1]!];
     act(() => store.set(valueOf({ tabs: verified, activeTab: verified[0] })));
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    openDetails();
     const rail = () => document.querySelector('[data-page-health]')!;
     const shown = () => [
       rail().querySelector('[data-review-due]')?.textContent ?? null,
@@ -246,7 +258,7 @@ describe('a page’s knowledge in the editor', () => {
     expect(pageId).toBeTruthy();
   });
 
-  it('Page Health shows the Review Period to everyone, and the pencil beside it to an Editor alone', async () => {
+  it('Page Health shows the Review Period to everyone, as a link to an Editor alone', async () => {
     for (const [level, offered] of [
       ['edit', true],
       ['participate', false],
@@ -254,10 +266,11 @@ describe('a page’s knowledge in the editor', () => {
     ] as const) {
       mount(level);
       await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
-      const change = screen.queryByRole('button', { name: 'Change Review Period' });
+      openDetails();
+      const change = screen.queryByRole('button', { name: /^Change Review Period/ });
       expect(!!change).toBe(offered);
-      // Beside the value, in the Review Period's own row.
-      if (change) expect(change.closest('dd')!.querySelector('[data-review-period]')).toBeTruthy();
+      // The value itself is the link.
+      if (change) expect(change.querySelector('[data-review-period]')).toBeTruthy();
       expect(screen.getByText('Every 90 Days')).toBeTruthy();
       cleanup();
     }
@@ -268,6 +281,7 @@ describe('a page’s knowledge in the editor', () => {
     async (level) => {
       mount(level);
       await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+      openDetails();
       expect(screen.queryByRole('button', { name: /Verify/ })).toBeNull();
       expect(screen.queryByRole('combobox')).toBeNull();
       expect(screen.getByText('Nobody')).toBeTruthy();
@@ -277,9 +291,10 @@ describe('a page’s knowledge in the editor', () => {
   it('a guest Editor (no account) verifies too, and still sets the fields', async () => {
     mount('edit', null);
     await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    openDetails();
     expect(within(rail()).getByRole('button', { name: 'Verify' })).toBeTruthy();
     // The owner is theirs to set, and so is the knowledgebase's Review Period.
     expect(screen.getByLabelText('Owner')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Change Review Period' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Change Review Period/ })).toBeTruthy();
   });
 });

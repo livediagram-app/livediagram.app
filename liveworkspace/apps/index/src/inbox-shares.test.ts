@@ -95,7 +95,7 @@ describe('shares in the Inbox read', () => {
     const spy = vi.spyOn(h.db.env.INDEX_DB, 'batch');
     await sharesOf(bo.auth);
     expect(spy).toHaveBeenCalledTimes(1);
-    // Threads, actions, forms, access requests, shares and updates.
-    expect(spy.mock.calls[0]![0]).toHaveLength(6);
+    // Threads, actions, forms, access requests, shares, suggestions and updates.
+    expect(spy.mock.calls[0]![0]).toHaveLength(7);
   });
 });

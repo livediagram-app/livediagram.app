@@ -54,7 +54,8 @@ archived_at IS NULL AND trashed_at IS NULL`.
    (`auditTeams [team]`).
 4. `DELETE` from `share_links`, `share_passwords`, `shared_with`.
 5. `DELETE` from `opens`, `use_days` for the item (every person).
-6. `DELETE` from `collab_thread_people`, `collab_threads`, `collab_actions`, `collab_form_reads`, `collab_forms`.
+6. `DELETE` from `collab_thread_people`, `collab_threads`, `collab_actions`, `collab_form_reads`, `collab_forms`,
+   `collab_suggestions`.
 7. After the standing call of step 8 is answered (or dropped), the app hears `POST /items/:id/revoke {codes}` with the
    deleted links' codes (`waitUntil`), so the link visitors' sessions end with the archive's 4010, not the revoke's
    close; the owner's Drive mirror (and, out of a team, nobody else's) is touched.

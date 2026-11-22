@@ -358,6 +358,7 @@ export function createFakeIndex(
         accessRequests: (inbox.accessRequests ?? []).filter(
           (r) => !query.app || r.app === query.app,
         ),
+        suggestions: (inbox.suggestions ?? []).filter((r) => !query.app || r.app === query.app),
         updates: (inbox.updates ?? []).filter((u) => !query.app || u.app === query.app),
       })),
     // Request Access (request-access.md): a grant or a decline closes the open request.

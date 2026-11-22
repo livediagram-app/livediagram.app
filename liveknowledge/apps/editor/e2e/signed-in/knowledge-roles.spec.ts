@@ -111,6 +111,12 @@ test('a Viewer reads, follows the tree and searches, and cannot write or change 
 
 const editButton = (page: Page) => page.getByRole('button', { name: 'Edit', exact: true });
 const health = (page: Page) => page.getByRole('region', { name: 'Page Health' });
+// Page Details (Owner down to Approval) folds under the state's panel, closed at first (owner 2026-11-22).
+async function openDetails(page: Page) {
+  const toggle = health(page).getByRole('button', { name: 'Page Details' });
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+}
 
 test('a Participant edits and saves a page, sets a cover and verifies, with no Settings or Style', async ({
   page,
@@ -158,6 +164,7 @@ test('a Participant edits and saves a page, sets a cover and verifies, with no S
   await health(visitor).getByRole('button', { name: 'Verify', exact: true }).click();
   await expect(visitor.locator('[data-page-meta]')).toContainText('Verified by Grace Hopper');
   // The Review Period is shown, with no pencil beside it (an Editor's alone).
+  await openDetails(visitor);
   await expect(health(visitor).getByRole('button', { name: 'Change Review Period' })).toHaveCount(
     0,
   );
@@ -171,6 +178,7 @@ test('a Participant edits and saves a page, sets a cover and verifies, with no S
   await visitor.keyboard.press('Escape');
 
   // The owner keeps the Review Period's pencil.
+  await openDetails(page);
   await expect(health(page).getByRole('button', { name: 'Change Review Period' })).toBeVisible();
   await visitor.context().close();
 });

@@ -12,6 +12,11 @@ import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { pageHealthFacts, pageShapeOf, sameShape } from '@/lib/knowledge/page-health-facts';
 import { track } from '@/lib/telemetry';
+import { askAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
+import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
+
+const reducedMotion = () =>
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 import type { PageHealthFixes } from './PageHealthScore';
 import type { PageKnowledgeView } from './usePageKnowledge';
 
@@ -82,6 +87,25 @@ export function usePageHealthScore(page: PageKnowledgeView): {
           }
         : {}),
       ...(mayWrite ? { heading: addHeading } : {}),
+      // Open issues, for anyone who can read the page: the conflicts in AI Knowledge's Needs Attention, at
+      // Disagreements; the comments where they sit under the page; its suggested edits in the rail.
+      conflicts: () => {
+        track('UI', 'Used', 'HealthShowConflicts');
+        askAttentionFilter('conflicts');
+        showKnowledgeView('ai');
+      },
+      comments: () => {
+        track('UI', 'Used', 'HealthShowComments');
+        document
+          .querySelector<HTMLElement>('[data-page-comments]')
+          ?.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' });
+      },
+      suggestions: () => {
+        track('UI', 'Used', 'HealthShowSuggestions');
+        document
+          .querySelector<HTMLElement>('[data-page-rail-suggestions]')
+          ?.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
+      },
     }),
     [rights.verify, rights.editFields, verify, pageId, mayWrite, addHeading],
   );

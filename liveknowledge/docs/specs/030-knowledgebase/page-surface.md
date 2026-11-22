@@ -42,7 +42,8 @@ replaces what the fork still shows around the writing.
   cursor is the plain one, and a letter typed outside the writing adds no shape.
 - **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
   has one ("The page icon") to the left of the Title, the Title (40 px,
-  bold, tight tracking), then the meta row ([Verification](verification.md)). **Beside it** on a wide window, the right rail (Page Health, then On This Page; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
+  bold, tight tracking), then the meta row ([Verification](verification.md); a **Suggested Edits** pill after its
+  verified badge while agents' edits wait, [AI Knowledge](ai-knowledge.md) "On the page"). **Beside it** on a wide window, the right rail (Page Health, then On This Page, then Suggested Edits while any wait, then AI Context, a hairline between each section, owner 2026-11-22; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
   and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
@@ -56,6 +57,10 @@ replaces what the fork still shows around the writing.
   pointer leaves it, unless a menu opened from it is still open. Touch has no hover, so a phone keeps its Pages sheet.
   The Page Info rail on the right slides the same way (owner 2026-11-21): **Hide Page Info** slides it out to the right
   as its strip takes its place, and **Show Page Info** slides it back in (200 ms; at once with reduced motion).
+- **On This Page's jump:** pressing a heading scrolls the page's own column (not the canvas) to put it near the top,
+  smoothly or at once under reduced motion, and lights it for a moment so the eye finds it (owner 2026-11-22);
+  the picked heading is marked current at once and stays so until the
+  reader scrolls themselves (WI-1359).
 - **Reading time:** On This Page's heading carries how long the page takes to read ("4 min read"), at 230 words a
   minute over its text, lists, tables and code, rounded, at least 1 minute; an empty page shows none, and a page with
   writing but no headings shows the time alone. It follows the committed writing, never each keystroke.
@@ -85,7 +90,7 @@ avatars of everybody who has created or edited that page, creator first, then al
 shows their name."
 
 - **Where.** The top row's left while the page is read (edit mode gives it to the formatting controls).
-- **What.** Overlapping 28 px discs, the creator first, then everyone else who saved the page in the order they
+- **What.** 28 px discs side by side, 4 px apart, never overlapping (owner 2026-11-22), the creator first, then everyone else who saved the page in the order they
   first did: a person by their initials in a colour of their name (a person nobody here can name is "Guest"), an
   agent as a sparkle. Six at most; past that the sixth is "+N". Hovering or focusing a disc names them: "Priya Shah,
   Created", "Claude, Edited".

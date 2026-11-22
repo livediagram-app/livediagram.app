@@ -1,7 +1,8 @@
 'use client';
 
 // The Inbox's list rows (one-explorer-contracts.md "Inbox"; each product's 013-workspace/inbox.md "How a row reads"):
-// an action, a card, an element's thread, a card's thread and a form's new responses, each three lines:
+// an action, a card, an element's thread, a card's thread, a form's new responses, an access request and a suggested
+// edit, each three lines:
 //
 //   who (semibold when it needs you)                                  when
 //   what: the action, the card's number (WI-100, else #100) and title, the element a thread is on, the form's heading
@@ -30,6 +31,7 @@ import {
   FileTextIcon,
   FormIcon,
   KeyIcon,
+  PencilIcon,
   ReplyIcon,
   SparkleIcon,
   UserIcon,
@@ -41,6 +43,7 @@ import { useExplorer } from '../context';
 import { useExtras } from '../extras';
 import {
   ACCESS_REASON,
+  SUGGESTION_REASON,
   actionReason,
   formReason,
   threadNeedsYou,
@@ -77,6 +80,8 @@ export type EntryFacts = {
   local: boolean;
   /** A thread's latest comment: who wrote it, the reader (`mine`) or someone else; null off a thread. */
   latest: { person: Person; mine: boolean } | null;
+  /** An agent is behind it (a suggested edit): its lead is the agent's glyph, not a person's disc. */
+  agent?: boolean;
 };
 
 const nameOf = (name: string | null | undefined) => name?.trim() || null;
@@ -214,6 +219,26 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         latest: null,
       };
     }
+    case 'Suggestion': {
+      // An agent's suggested edit on a page of the reader's: the agent as the app names them, the page as what.
+      const r = e.row;
+      const page = nameOf(r.tabName) ?? 'Page';
+      return {
+        person: null,
+        who: nameOf(r.agent) ?? 'An agent',
+        needsYou: true,
+        cardNumber: null,
+        title: page,
+        reason: SUGGESTION_REASON,
+        item,
+        where: [page],
+        cardType: null,
+        column: null,
+        local: false,
+        latest: null,
+        agent: true,
+      };
+    }
   }
 }
 
@@ -254,8 +279,16 @@ export function reasonIcon(kind: InboxReason['kind'], size = 12): ReactNode {
       return <KeyIcon size={size} />;
     case 'update':
       return <EyeIcon size={size} />;
+    case 'suggestion':
+      return <PencilIcon size={size} />;
   }
 }
+
+/** A reason icon's colour: a suggested edit's pencil is violet, the agent's colour; the rest are quiet. */
+export const reasonTone = (kind: InboxReason['kind']): string =>
+  kind === 'suggestion'
+    ? 'shrink-0 text-violet-600 dark:text-violet-400'
+    : 'shrink-0 text-slate-500 dark:text-slate-400';
 
 const ROW =
   'relative flex w-full cursor-pointer items-start text-left transition-colors duration-micro motion-reduce:transition-none';
@@ -315,7 +348,7 @@ export const InboxRow = memo(function InboxRow({
       onClick={() => onPick(entry.key)}
       className={`${ROW} ${ROW_DENSITY[density]} ${selected ? `${ROW_CHOSEN} ${ROW_ACTIVE}` : ROW_IDLE} [contain-intrinsic-size:auto_4.75rem] [content-visibility:auto]`}
     >
-      <Lead person={f.person} compact={compact} glyph={leadGlyph(entry)} />
+      <Lead person={f.person} compact={compact} glyph={leadGlyph(entry)} agent={f.agent} />
       <span className="min-w-0 flex-1">
         <span className="flex min-w-0 items-baseline gap-2">
           <span
@@ -370,7 +403,7 @@ export function Status({ reason }: { reason: InboxReason }) {
       data-inbox-reason={reason.kind}
       className="inline-flex shrink-0 items-center gap-1 font-medium text-slate-700 dark:text-slate-200"
     >
-      <span aria-hidden className="shrink-0 text-slate-500 dark:text-slate-400">
+      <span aria-hidden className={reasonTone(reason.kind)}>
         {reasonIcon(reason.kind)}
       </span>
       {reason.label}
@@ -426,15 +459,28 @@ export function Lead({
   person,
   compact,
   glyph = 'form',
+  agent = false,
 }: {
   person: Person | null;
   compact: boolean;
   /** The tile's glyph when nobody is behind the row: a form's, or an update's eye (a review that came due). */
   glyph?: LeadGlyph;
+  /** An agent's row (a suggested edit): the agent's sparkle on a violet tile. */
+  agent?: boolean;
 }) {
   const { people } = useExtras();
   const known = usePersonPicture(people, person && !person.picture ? person.id : null);
   const size = compact ? 'size-8 text-[11px]' : 'size-9 text-xs';
+  if (!person && agent) {
+    return (
+      <span
+        aria-hidden
+        className={`mt-0.5 inline-flex shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600 ring-1 ring-inset ring-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:ring-violet-500/30 ${size}`}
+      >
+        <SparkleIcon size={compact ? 16 : 18} />
+      </span>
+    );
+  }
   if (!person) {
     const iconSize = compact ? 16 : 18;
     return (

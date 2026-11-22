@@ -253,6 +253,15 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
              SELECT 1 FROM json_each(item_updates.actors) WHERE json_extract(value, '$.id') = ?1) LIMIT ?3)`,
         )
         .bind(person, ANONYMISED_PERSON, CHUNK),
+    // Suggested edits waiting on them by name on other people's items (their own items' went with the items): with
+    // no one to wait on, they ask nothing. Through collab_suggestions_owner.
+    () =>
+      db
+        .prepare(
+          `DELETE FROM collab_suggestions WHERE rowid IN (
+             SELECT rowid FROM collab_suggestions WHERE owner_id = ? LIMIT ?)`,
+        )
+        .bind(person, CHUNK),
     // The guests merged into them (person-aliases.ts): with the account gone, no grant names their keys again.
     byPerson('person_aliases'),
     // Their Drive mirror's flag (liveworkspace/docs/specs/005-drive/drive.md): accounts tells the service itself.

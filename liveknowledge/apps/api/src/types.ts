@@ -185,4 +185,7 @@ export type DocumentEnv = Env &
     // The room owes its watchers' work (docs/specs/030-knowledgebase/watching.md; knowledge/watch-work.ts) at `dueAt`:
     // `inbox` the updates' push, `daily` the reach check and the digests. Absent outside a room.
     WATCH_OWED?: (key: 'inbox' | 'daily', dueAt: number) => void;
+    // The outbox holds a key a quiet write's trigger wrote (a suggested edit's, knowledge/suggestions-changed.ts):
+    // the room arms its drain as after a content write, without counting an edit.
+    OUTBOX_OWED?: () => void;
   };

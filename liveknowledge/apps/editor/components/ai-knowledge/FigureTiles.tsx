@@ -3,8 +3,8 @@
 // AI Knowledge's figures band (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): six tiles, each
 // a button named by its words and its figure. Three filter Needs Attention; the others bring their card into view.
 // A figure that asks for someone carries a small amber mark.
-import { useId, type ReactNode } from 'react';
-import type { KnowledgeReadsDay } from '@liveknowledge/api-schema';
+import { useId, useState, type ReactNode } from 'react';
+import type { KnowledgeOverviewResponse } from '@liveknowledge/api-schema';
 import { HoverCard } from '@liveknowledge/ui';
 import type { AttentionFilter, DashboardFigures } from '@/lib/knowledge-ask/dashboard-figures';
 import {
@@ -16,7 +16,29 @@ import {
   SuggestionIcon,
 } from './ai-knowledge-icons';
 import { readsSparkLabel } from '@/lib/knowledge-ask/dashboard-figures';
+import {
+  agentShares,
+  agentsCaption,
+  conflictsLine,
+  conflictsSpoken,
+  oldestConflict,
+  questionBars,
+  questionsLine,
+  questionsSpoken,
+  suggestionsLine,
+  suggestionsSpoken,
+  verifiedCaption,
+  verifiedParts,
+  waitingDots,
+} from '@/lib/knowledge-ask/tile-visuals';
 import { AGENT_BG, PEOPLE_BG, ReadsSparkline } from './ReadsSparkline';
+import {
+  AgentShareBar,
+  ConflictPair,
+  QuestionBars,
+  VerifiedBar,
+  WaitingTrack,
+} from './TileVisuals';
 
 /** Where a tile leads: a card brought into view, or a Needs Attention filter. */
 export type TileTarget = { card: 'reads' | 'agents' | 'health' } | { filter: AttentionFilter };
@@ -49,7 +71,7 @@ function Tile({
   // Set on a tile that filters: whether its filter is on.
   pressed?: boolean;
   onPress: () => void;
-  // Under the line: the Reads tile's sparkline, said with the line by `spoken`.
+  // Under the line: the tile's picture (the Reads sparkline, or one of TileVisuals), said with the line by `spoken`.
   children?: ReactNode;
   spoken?: string;
 }) {
@@ -97,17 +119,27 @@ function Tile({
 
 export function FigureTiles({
   figures,
-  days,
+  overview,
   filter,
   onGo,
 }: {
   figures: DashboardFigures;
-  days: readonly KnowledgeReadsDay[];
+  overview: KnowledgeOverviewResponse;
   filter: AttentionFilter;
   onGo: (target: TileTarget) => void;
 }) {
   const toggle = (to: AttentionFilter) => onGo({ filter: filter === to ? 'all' : to });
   const { readsWeek } = figures;
+  const days = overview.reads.days;
+  // Read once when the band first draws: the waits and ages are in whole days, so a re-render needs no new clock.
+  const [now] = useState(() => Date.now());
+  const shares = agentShares(overview.agents);
+  const bars = questionBars(overview.questions);
+  const oldest = oldestConflict(overview.conflicts);
+  const dots = waitingDots(overview.suggestions, now);
+  const parts = verifiedParts(overview.health);
+  const agentsWords = agentsCaption(overview.agents, shares);
+  const partsWords = verifiedCaption(parts);
   return (
     <div
       role="group"
@@ -125,11 +157,11 @@ export function FigureTiles({
           <span className="flex min-w-0 flex-wrap items-center gap-x-2.5">
             <span className="flex items-center gap-1 whitespace-nowrap">
               <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${PEOPLE_BG}`} />
-              {count(readsWeek.people)} people
+              {count(readsWeek.people)} by people
             </span>
             <span className="flex items-center gap-1 whitespace-nowrap">
               <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${AGENT_BG}`} />
-              {count(readsWeek.agents)} agents
+              {count(readsWeek.agents)} by agents
             </span>
           </span>
         }
@@ -151,7 +183,10 @@ export function FigureTiles({
               ? 'All read and suggest'
               : `${count(figures.writers)} may write`
         }
-      />
+        spoken={`${agentsWords}.`}
+      >
+        <AgentShareBar shares={shares} caption={agentsWords} />
+      </Tile>
       <Tile
         icon={<QuestionIcon />}
         label="Open Questions"
@@ -160,12 +195,11 @@ export function FigureTiles({
         attention={figures.questions > 0}
         pressed={filter === 'questions'}
         onPress={() => toggle('questions')}
-        line={
-          figures.questions === 0
-            ? 'Every question answered'
-            : `Asked ${figures.asks === 1 ? 'once' : `${count(figures.asks)} times`}`
-        }
-      />
+        line={questionsLine(overview.questions)}
+        spoken={questionsSpoken(bars)}
+      >
+        <QuestionBars bars={bars} />
+      </Tile>
       <Tile
         icon={<ConflictIcon />}
         label="Pages That Disagree"
@@ -174,8 +208,11 @@ export function FigureTiles({
         attention={figures.conflicts > 0}
         pressed={filter === 'conflicts'}
         onPress={() => toggle('conflicts')}
-        line={figures.conflicts === 0 ? 'None found' : 'To settle'}
-      />
+        line={conflictsLine(overview.conflicts, now)}
+        spoken={conflictsSpoken(overview.conflicts)}
+      >
+        <ConflictPair oldest={oldest} />
+      </Tile>
       <Tile
         icon={<SuggestionIcon />}
         label="Suggested Edits"
@@ -184,28 +221,33 @@ export function FigureTiles({
         attention={figures.suggestions > 0}
         pressed={filter === 'suggestions'}
         onPress={() => toggle('suggestions')}
-        line={figures.suggestions === 0 ? 'None waiting' : 'Waiting for review'}
-      />
+        line={suggestionsLine(overview.suggestions, now)}
+        spoken={suggestionsSpoken(dots)}
+      >
+        <WaitingTrack dots={dots} />
+      </Tile>
       {figures.verificationOn ? (
         <Tile
           icon={<HealthIcon />}
           label="Verified"
           figure={figures.verifiedShare === null ? 'None' : `${figures.verifiedShare}%`}
-          hint="The share of pages someone vouches for. Shows Knowledge Health."
+          hint="The share of pages someone vouches for. The bar: verified, due for review, never verified. Shows Knowledge Health."
           attention={figures.reviewDue > 0}
           onPress={() => onGo({ card: 'health' })}
           line={
-            (figures.verifiedShare === null
+            // The average Health Score under the verified share (ai-knowledge.md "Every tile draws a picture").
+            figures.verifiedShare === null
               ? 'No pages to verify'
-              : figures.reviewDue > 0
-                ? `${count(figures.reviewDue)} due for review`
-                : figures.neverVerified > 0
-                  ? `${count(figures.neverVerified)} never verified`
-                  : 'Every page verified') +
-            // The average Health Score beside the verified share (ai-knowledge.md "The figures band").
-            (figures.averageHealth === undefined ? '' : `, health ${figures.averageHealth}`)
+              : figures.averageHealth === undefined
+                ? figures.reviewDue > 0
+                  ? `${count(figures.reviewDue)} due for review`
+                  : 'Every page verified'
+                : `Average health ${figures.averageHealth}`
           }
-        />
+          spoken={`${partsWords}.`}
+        >
+          <VerifiedBar parts={parts} />
+        </Tile>
       ) : (
         // Verification off (a Review Period of Never): the average Health Score in Verified's place.
         <Tile
