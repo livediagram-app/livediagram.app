@@ -7,16 +7,14 @@
 import { useState, type ReactNode } from 'react';
 import type { App, AutomationTargetDescription } from '@liveworkspace/index-client';
 import { appWord, type CrossAppTarget } from '@liveworkspace/automations/cross-app';
-import { Button, lucideGlyph } from '@liveworkspace/ui';
-import { lucideRefreshCw } from '@liveworkspace/icons/lucide';
+import { Button } from '@liveworkspace/ui';
+import { Callout } from '@liveworkspace/ui/callout';
 import { useAutomationsAccess } from '../AutomationsContext';
 import { useAutomationsKit } from '../kit-context';
 import { useMinuteClock } from '../screen-clock';
 import { PanelNote } from '../step-panels/panel-parts';
 import { TargetPicker } from './TargetPicker';
 import { useCrossTarget } from './use-cross-target';
-
-const RetryGlyph = lucideGlyph(lucideRefreshCw, 13);
 
 export function TargetField({
   target,
@@ -71,13 +69,9 @@ export function TargetField({
         </div>
       </div>
       {read.state === 'failed' ? (
-        <div className="flex items-center justify-between gap-3 rounded-lg bg-rose-50 px-3 py-2 text-[12px] text-rose-800 dark:bg-rose-500/10 dark:text-rose-200">
-          <span>{`Couldn't read this ${noun}. You may have lost access to it.`}</span>
-          <Button variant="secondary" size="xs" onClick={read.retry}>
-            <RetryGlyph />
-            Try Again
-          </Button>
-        </div>
+        <Callout tone="error" role="alert" action={{ label: 'Try Again', onSelect: read.retry }}>
+          {`Couldn't read this ${noun}. You may have lost access to it.`}
+        </Callout>
       ) : read.state === 'loading' ? (
         <PanelNote>{`Reading the ${noun}…`}</PanelNote>
       ) : read.state === 'ready' ? (
