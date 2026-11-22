@@ -490,60 +490,60 @@ waits for ("Set a field Today", "to a column"), beside the step's "Pick a field"
 
 ## Actions
 
-| Action                          | Does                                                                                              |
-| ------------------------------- | ------------------------------------------------------------------------------------------------- |
-| **Move to Column**              | sets the card's status to a column its type uses (as the Status picker offers)                    |
-| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days); a field of   |
-|                                 | fixed values to one of them, picked: Priority and a Choice field to a value, the Assignee and a   |
-|                                 | Person field to one of the plan's people (kept by id, shown by name, as Assign's), a Checkbox to  |
-|                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save and by Test  |
-|                                 | on a Card); Flagged and the Checklist are set by Flag, Unflag and Add a Checklist instead         |
-| **Clear Field**                 | empties a field                                                                                   |
-|                                 | (an Image field's or Attachments' pictures leave storage 15 minutes on when nothing else uses     |
-|                                 | them, as a person's clear does: [items.md](items.md#removed-pictures) "Removed pictures")         |
-| **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run  |
-|                                 | the next of 2 to 10 chosen people, in order, round and round                                      |
-| **Add Label**, **Remove Label** | adds or takes off one label                                                                       |
-| **Add Comment**                 | starts a new thread on the card with the comment, by Automation                                   |
-| **Flag**, **Unflag**            | flags or unflags the card                                                                         |
-| **Archive**                     | archives the card                                                                                 |
-| **Create Card**                 | adds a card of a chosen type, with a title (values allowed), to a column, optionally copying the  |
-|                                 | triggering card's assignee, labels and due date, and optionally linking it through a Card field   |
-| **Send Email**                  | emails the assignee, whoever triggered it, a chosen person, or 1 to 10 **typed-in addresses**,    |
-|                                 | with a subject and a short body (values allowed) and a link to the card; a person of the plan     |
-|                                 | gets it only with an account, and the email                                                       |
-|                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies; a typed-in    |
-|                                 | address gets it unless it unsubscribed, within the plan's 50 a day                                |
-|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches))                                        |
-| **Send to Webhook**             | sends a signed JSON event to one of the plan's own-service webhooks: the rule, the card and a     |
-|                                 | message (values allowed)                                                                          |
-| **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks |
-| **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                   |
-| **Change Card Type**            | sets the card's type to one of the plan's card types (its column must suit the new type)          |
-|                                 | and maps its custom fields by name, as every type change does                                     |
-|                                 | ([Changing a card's type](item-types.md#changing-a-cards-type)); **Map Fields** names fields      |
-|                                 | whose names differ, a source field into a field of the new type or its Description, winning over  |
-|                                 | name matching and overwriting the target's value                                                  |
-| **Set Colour**                  | sets the card's Colour to one of the standard colours, or none                                    |
-| **Restore From Archive**        | brings an archived card back                                                                      |
-| **Copy Card**                   | adds a copy of the card (its type, title and fields), in its column or a chosen one               |
-| **Add a Checklist**             | adds 1 to 20 unticked items (values allowed) to the card's checklist; an item already on it, by   |
-|                                 | its text, is not added twice; an item is cut to 200 characters once its values are filled in, as  |
-|                                 | a person's checklist item is                                                                      |
-| **Link Cards**                  | points one of the card's Card fields (a Blocked By field too) at a chosen card, or, in a branch,  |
-|                                 | at the card that started the rule; a field of several cards gains it, a single one is replaced    |
-| **Mention Someone**             | starts a thread on the card that @mentions the assignee, whoever triggered it or a chosen person, |
-|                                 | with a short message (values allowed); it reaches their Inbox and their mention email             |
-|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches)); the comment, @mention and all, keeps  |
-|                                 | within a comment's 2,000 characters, the message cut to fit                                       |
-| **Resolve Threads**             | resolves every open comment thread on the card                                                    |
+| Action                          | Does                                                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Move to Column**              | sets the card's status to a column its type uses (as the Status picker offers)                            |
+| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days); a field of           |
+|                                 | fixed values to one of them, picked: Priority and a Choice field to a value, the Assignee and a           |
+|                                 | Person field to one of the plan's people (kept by id, shown by name, as Assign's), a Checkbox to          |
+|                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save and by Test          |
+|                                 | on a Card); Flagged and the Checklist are set by Flag, Unflag and Add a Checklist instead                 |
+| **Clear Field**                 | empties a field                                                                                           |
+|                                 | (an Image field's or Attachments' pictures leave storage 15 minutes on when nothing else uses             |
+|                                 | them, as a person's clear does: [items.md](items.md#removed-pictures) "Removed pictures")                 |
+| **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run          |
+|                                 | the next of 2 to 10 chosen people, in order, round and round                                              |
+| **Add Label**, **Remove Label** | adds or takes off one label                                                                               |
+| **Add Comment**                 | starts a new thread on the card with the comment, by Automation                                           |
+| **Flag**, **Unflag**            | flags or unflags the card                                                                                 |
+| **Archive**                     | archives the card                                                                                         |
+| **Create Card**                 | adds a card of a chosen type, with a title (values allowed), to a column, optionally copying the          |
+|                                 | triggering card's assignee, labels and due date, and optionally linking it through a Card field           |
+| **Send Email**                  | emails the assignee, whoever triggered it, a chosen person, or 1 to 10 **typed-in addresses**,            |
+|                                 | with a subject and a short body (values allowed) and a link to the card; a person of the plan             |
+|                                 | gets it only with an account, and the email                                                               |
+|                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies; a typed-in            |
+|                                 | address gets it unless it unsubscribed, within the plan's 50 a day                                        |
+|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches))                                                |
+| **Send to Webhook**             | sends a signed JSON event to one of the plan's own-service webhooks: the rule, the card and a             |
+|                                 | message (values allowed)                                                                                  |
+| **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks         |
+| **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                           |
+| **Change Card Type**            | sets the card's type to one of the plan's card types (its column must suit the new type)                  |
+|                                 | and maps its custom fields by name, as every type change does                                             |
+|                                 | ([Changing a card's type](item-types.md#changing-a-cards-type)); **Map Fields** names fields              |
+|                                 | whose names differ, a source field into a field of the new type or its Description, winning over          |
+|                                 | name matching and overwriting the target's value                                                          |
+| **Set Colour**                  | sets the card's Colour to one of the standard colours, or none                                            |
+| **Restore From Archive**        | brings an archived card back                                                                              |
+| **Copy Card**                   | adds a copy of the card (its type, title and fields), in its column or a chosen one                       |
+| **Add a Checklist**             | adds 1 to 20 unticked items (values allowed) to the card's checklist; an item already on it, by           |
+|                                 | its text, is not added twice; an item is cut to 200 characters once its values are filled in, as          |
+|                                 | a person's checklist item is                                                                              |
+| **Link Cards**                  | points one of the card's Card fields (a Blocked By field too) at a chosen card, or, in a branch,          |
+|                                 | at the card that started the rule; a field of several cards gains it, a single one is replaced            |
+| **Mention Someone**             | starts a thread on the card that @mentions the assignee, whoever triggered it or a chosen person,         |
+|                                 | with a short message (values allowed); it reaches their Inbox and their mention email                     |
+|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches)); the comment, @mention and all, keeps          |
+|                                 | within a comment's 2,000 characters, the message cut to fit                                               |
+| **Resolve Threads**             | resolves every open comment thread on the card                                                            |
 | **Take Snapshot**               | takes a snapshot of the whole plan, named by the rule (values allowed; [Snapshot steps](#snapshot-steps)) |
 | **Revert to Snapshot**          | puts the whole plan back to a chosen snapshot, for everyone; the rule's last step, saved only by a person |
-| **Wait**                        | holds the rest of the rule for 1 hour to 30 days (below)                                          |
-| **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                        |
-| **Summarise Card** (AI)         | writes a short plain-text summary of the card to a comment, or to a text field (below)            |
-| **Suggest Card Type** (AI)      | picks one of the plan's card types from the card's text, and sets it or comments the suggestion   |
-| **Triage** (AI)                 | sets the priority and adds up to 3 of the plan's labels, from the card's text                     |
+| **Wait**                        | holds the rest of the rule for 1 hour to 30 days (below)                                                  |
+| **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                                |
+| **Summarise Card** (AI)         | writes a short plain-text summary of the card to a comment, or to a text field (below)                    |
+| **Suggest Card Type** (AI)      | picks one of the plan's card types from the card's text, and sets it or comments the suggestion           |
+| **Triage** (AI)                 | sets the priority and adds up to 3 of the plan's labels, from the card's text                             |
 
 ### Wait
 
@@ -1508,7 +1508,7 @@ a Scheduled rule ("Weekly on Monday at 9:00") with one step, Revert to Snapshot.
   outgoing messages, a Create Card that copies and links nothing) runs **once a moment for the plan**, with no card,
   never once for each card; the builder says "Runs once for the plan, not for each card". A snapshot step that would
   run for each card (a Scheduled rule with conditions or a card step, a Due In, Overdue or Card Stuck rule) is refused
-  on save (400 `automation_step_unsupported`, "a snapshot step on a time trigger runs once for the plan: a Scheduled
+  on save (400 `automation_invalid`, "A snapshot step on a time trigger runs once for the plan: only on a Scheduled
   rule with no conditions and no card steps"). An Incoming Webhook call that names no card runs such a rule once too.
 - **A snapshot gone**: one removed since the rule was saved (a rule copied with its plan, or read from a file, names
   a snapshot the new plan lacks) fails the run, "The snapshot is gone", and the Rules list marks the rule **Needs

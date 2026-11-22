@@ -302,13 +302,13 @@ what a rule's step tells it to.
 
 Each app's spec holds its own tables; in short:
 
-| App           | Triggers of its own                                 | Steps of its own                                                                               |
-| ------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| liveplanner   | its card, form, email, time and GitHub triggers     | its card actions, For Related Cards, its AI steps (no Summarise with AI yet)                  |
-| livediagram   | Poll Ended, Question Asked, Agent Made Changes      | Add a Tab from a Template                                                                      |
-| livedocuments | Version Named, Version Restored, Agent Made Changes | Name This Version, Restore a Version, Add a Tab from a Template                                |
-| livedesign    | Component Changed, Agent Made Changes               | Add a Tab from a Template                                                                      |
-| livehuddle    | Someone Arrived, Everyone Left, Suggestion Dropped  | Clear the Suggestion Box, Add a Tab from a Template                                            |
+| App           | Triggers of its own                                 | Steps of its own                                                             |
+| ------------- | --------------------------------------------------- | ---------------------------------------------------------------------------- |
+| liveplanner   | its card, form, email, time and GitHub triggers     | its card actions, For Related Cards, its AI steps (no Summarise with AI yet) |
+| livediagram   | Poll Ended, Question Asked, Agent Made Changes      | Add a Tab from a Template                                                    |
+| livedocuments | Version Named, Version Restored, Agent Made Changes | Name This Version, Restore a Version, Add a Tab from a Template              |
+| livedesign    | Component Changed, Agent Made Changes               | Add a Tab from a Template                                                    |
+| livehuddle    | Someone Arrived, Everyone Left, Suggestion Dropped  | Clear the Suggestion Box, Add a Tab from a Template                          |
 
 Each app also ships its own **Templates** (ready-made rules, opened in the builder to finish and save) and the
 pictures on its trigger and step tiles.

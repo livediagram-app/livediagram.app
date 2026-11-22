@@ -1672,31 +1672,33 @@ planning and run loop around them (as its steps in other apps).
 ### Shared (packages/automations, packages/automations-ui)
 
 - `item/actions.ts`: `SNAPSHOT_KINDS` (`take_snapshot`, `revert_snapshot`), `isSnapshotKind`, `readSnapshotStep(v,
-  path, check)` (the defineAction reads, for an app whose check is its own), `snapshotStepChip(step, name?)` (the
+path, check)` (the defineAction reads, for an app whose check is its own), `snapshotStepChip(step, name?)` (the
   sentence chip: `Take Snapshot “name”`, `Revert to “name”`, `Revert to Snapshot (pick one)`), `snapshotStepWould`,
-  `snapshotStepFormats()` and `snapshotStepSummary`. The item kinds' `words`, `would`, `read` and `summary` call them.
+  `snapshotActions()` (the two kinds, whose `format` rule-format.ts lists) and `snapshotStepSummary`. The item kinds'
+  `words`, `would`, `read` and `summary` call them.
 - `room/item/actions.ts`: `runTakeSnapshot(filledName, snapshots, author)` and `runRevertSnapshot(step, words,
-  snapshots, author)`, the bodies SHARED_RUNNERS ran, over a `kitSnapshots` binding (room/app/kit-snapshots.ts). The
+revert)`, the bodies SHARED_RUNNERS ran, over a `kitSnapshots` binding (room/app/kit-snapshots.ts). The
   item engine wraps the revert in `withItemWriter({ silent })` as before.
 - `automations-ui/src/item/snapshot-kit.tsx`: `snapshotKitActions<Step, Outline>(itemWord)` (each kind's name, line,
-  glyph, picture in the Snapshots tone, first form, the shared panel, `top`, revert `last`), `snapshotGroup()` and
-  `useSnapshotList(itemId, read, wanted)` (the read-once list, `ItemSnapshots`), which item/outline.ts uses too.
+  glyph, picture in the Snapshots tone, first form, the shared panel, `top`, revert `last`) and `snapshotGroup()`;
+  `item/snapshot-list.ts`: `snapshotListStore()` and `useSnapshotList(store, itemId, read, wanted)` (the read-once
+  list, `ItemSnapshots`), which item/outline.ts uses too.
 
 ### Shapes (packages/items/src/automation)
 
 - types.ts: `AutomationStep` gains `ItemTakeSnapshot | ItemRevertSnapshot`; `AutomationGone.kind` gains
   `snapshot`; `AutomationOutline.snapshots?: ReadonlySet<string>` (the plan's ids, when the caller read them).
 - validate.ts: `readStep` reads both through `readSnapshotStep`; both join NOT_IN_BRANCH and NOT_IN_IF; `checkRule`
-  refuses a revert that is not the last top-level step (`automation_step_unsupported`, "Revert to Snapshot is the
+  refuses a revert that is not the last top-level step (`automation_invalid`, "Revert to Snapshot is the
   rule's last step"), and a snapshot step on a time trigger unless `runsForPlan` (Scheduled, no conditions, every step
   runs without a card).
 - incoming.ts: `runsWithoutCard` takes the snapshot kinds; `runsForPlan(rule)`: a Scheduled rule that
-  `runsWithoutCard` and holds a snapshot step; `holdsSnapshotStep`, `ruleReverts`, `ruleSnapshotNames`.
-- plan-walk.ts `PlannedSnapshot { step, kind, name | snapshot, line }`; `PlannedWrites.snapshots?`. plan-actions.ts
-  plans each (counted, its name filled from the card, cut to 120), its line the chip.
+  `runsWithoutCard` and holds a snapshot step; `holdsSnapshotStep`, `ruleReverts`.
+- plan-walk.ts `PlannedSnapshot { step, filled, line }`; `PlannedWrites.snapshots?`. plan-actions.ts plans each
+  (counted, a take's name filled from the card), its line the chip.
 - sentence.ts, summary.ts: `snapshotStepChip`; summary words `Take Snapshot`, `Revert to Snapshot`.
 - attention.ts: `{ kind: 'snapshot', id, name? }` against `outline.snapshots` (absent: not checked); `needLine`
-  "Snapshot “name” is gone". set-value.ts `goneLine` names a snapshot by the step's name.
+  "Snapshot “name” is gone" (by id when the step kept no name). set-value.ts `GONE_WORDS` gains `Snapshot`.
 - rule-format.ts: the two shared formats. ai-draft.ts: Take Snapshot's name cleaned; a revert's snapshot always a
   hole, back to '' with a `snapshot` pick (templates.ts `AutomationTemplatePick`).
 
@@ -1704,7 +1706,7 @@ planning and run loop around them (as its steps in other apps).
 
 - plan-room/automations/automation-snapshots.ts: `planKitSnapshots(env, planId)` (the shared `kitSnapshots` over
   `listSnapshots`, `takeSnapshot`, `revertToSnapshot` and plan-snapshots.ts's door) and `runPlanSnapshotSteps(run,
-  planned, lines, offset)`: after the cross steps, each in order; a test rewrites the line "Would …"; a failure stops
+planned, lines, offset)`: after the cross steps, each in order; a test rewrites the line "Would …"; a failure stops
   there and fails the run (`gone` for a missing snapshot). Tallies `AutomationSnapshotTaken`, `Reverted`, `Failed`.
 - plan-snapshots.ts: the door's `kept` is `ruleSnapshotIds(env.AUTOMATIONS.store.list())`.
 - automation-runner.ts: a run with no card is an Incoming Webhook's with none, or a time event with none (a
@@ -1719,13 +1721,16 @@ planning and run loop around them (as its steps in other apps).
 
 - plan-kit.tsx: the shared tiles (`snapshotKitActions('plan')`) and group after Comments; `previewText` shows a Take
   Snapshot's name; `useAutomationOutline` holds `snapshots` from the editor's snapshots door (`useSnapshotList`).
-- TimeTriggerPanel `PlanTriggerNote`: "Runs once for the plan, not for each card" for a `runsForPlan` rule.
-- needs-words.ts: snapshot; plan-words.ts: the `snapshot` pick; refusal-words.ts: the two codes.
+- TimeTriggerPanel `PlanTriggerNote` and the panel's note (`ForPlanNote`, the rule read from the builder's rule
+  context): "Runs once for the plan, not for each card" for a `runsForPlan` rule, in place of the every-card warning.
+- needs-words.ts: a snapshot by its name; plan-words.ts: the `snapshot` pick; the shared refusal-words.ts already
+  words the two codes.
 
 ### Tests
 
 - items: validate (read, last, top only, time rules, kept), plan-actions (planned, filled, dry), incoming
   (`runsForPlan`), sentence, summary, attention, rule-format, ai-draft (hole and pick).
 - api: a weekly Scheduled revert on a fake clock (one run a moment, plan put back, safety snapshot, sockets closed);
-  Take Snapshot named from values; a gone snapshot fails with `gone`; token refused; snapshots full; kept ids.
+  Take Snapshot named from values; a gone snapshot fails with `gone`; token refused; snapshots full; kept ids; a
+  take and revert of 5,000 cards in one run inside a CPU budget (automations-snapshots.perf.test.ts).
 - editor and automations-ui: the tiles, panels, outline list and the plan note.
