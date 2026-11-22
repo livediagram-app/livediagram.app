@@ -61,7 +61,7 @@ export class SentCards {
   changed(op: unknown): void {
     if (!isItemsOp(op)) return;
     let any = false;
-    const upserts = op.upserts as Item[];
+    const upserts = op.upserts;
     for (const item of upserts) {
       if (typeof item?.fields?.[SENT_FROM_FIELD] !== 'string') continue;
       if (!any) this.table();
