@@ -48,14 +48,12 @@ test('a connected file sits in the page tree and opens in a new tab', async ({
   const openPageBefore = page.url();
   // liveplanner is not part of this stack: the plan's address answers a stand-in page, so the new tab lands on it
   // rather than on the browser's error page.
-  await page
-    .context()
-    .route(new RegExp(`/project/${planId}`), (route) =>
-      route.fulfill({
-        contentType: 'text/html',
-        body: '<!doctype html><title>Launch Plan</title>',
-      }),
-    );
+  await page.context().route(new RegExp(`/project/${planId}`), (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<!doctype html><title>Launch Plan</title>',
+    }),
+  );
   // `noopener`: the new tab has no handle back, so it is the context's new page rather than this page's popup.
   const popup = page.context().waitForEvent('page');
   await row.click();
