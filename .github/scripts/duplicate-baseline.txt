@@ -82,7 +82,6 @@ livedocuments/apps/api/src/db/account.ts	liveknowledge/apps/api/src/db/account.t
 livedocuments/apps/api/src/db/index.ts	liveknowledge/apps/api/src/db/index.ts
 livedocuments/apps/api/src/db/tab-save-document.ts	liveknowledge/apps/api/src/db/tab-save-document.ts
 livedocuments/apps/api/src/document-room/automations/kit-outline.ts	liveknowledge/apps/api/src/document-room/automations/kit-outline.ts
-livedocuments/apps/api/src/document-room/document-anonymise.ts	liveknowledge/apps/api/src/document-room/document-anonymise.ts
 livedocuments/apps/api/src/document-room/document-room-wiring.ts	liveknowledge/apps/api/src/document-room/document-room-wiring.ts
 livedocuments/apps/api/src/document-room/document-route.ts	liveknowledge/apps/api/src/document-room/document-route.ts
 livedocuments/apps/api/src/room-scope.ts	liveknowledge/apps/api/src/room-scope.ts

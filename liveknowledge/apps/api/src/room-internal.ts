@@ -32,6 +32,8 @@ const WORKER_MUTATION_KINDS = new Set([
   'article',
   // A page's comment thread (docs/specs/030-knowledgebase/page-comments.md "Live").
   'page-thread',
+  // A reaction on a page (docs/specs/030-knowledgebase/page-reactions.md "Live").
+  'page-reaction',
 ]);
 
 /** Answer an internal endpoint, or null when the request is none of them. */

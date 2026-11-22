@@ -47,6 +47,7 @@ export * from './plan-view-charts';
 export * from './plan-view-statuses';
 export * from './calendar-move';
 export * from './presets';
+export * from './preset-status-names';
 export * from './brought-types';
 export * from './locale-currency';
 export * from './type-statuses';

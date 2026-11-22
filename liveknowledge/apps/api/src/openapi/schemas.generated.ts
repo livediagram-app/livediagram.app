@@ -8700,6 +8700,84 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PageReaction": {
+    "additionalProperties": false,
+    "description": "One person's emoji on a page. `by` is their collab key (the platform's public id for a person), so a client knows its own without anyone's account id on the wire; `name` is their name when they reacted.",
+    "properties": {
+      "by": {
+        "type": "string"
+      },
+      "emoji": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "by",
+      "name"
+    ],
+    "type": "object"
+  },
+  "PageReactionChange": {
+    "additionalProperties": false,
+    "description": "`POST .../pages/<tab>/reactions`: add (`on`) or take back the caller's own. `name`, the name on the caller's cursor, is used only when their account has no profile name to give.",
+    "properties": {
+      "emoji": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "on": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "emoji",
+      "on"
+    ],
+    "type": "object"
+  },
+  "PageReactionChangeResponse": {
+    "additionalProperties": false,
+    "description": "The reaction as asked, and whether a row moved (false when it already stood so).",
+    "properties": {
+      "changed": {
+        "type": "boolean"
+      },
+      "on": {
+        "type": "boolean"
+      },
+      "reaction": {
+        "$ref": "#/components/schemas/PageReaction"
+      }
+    },
+    "required": [
+      "reaction",
+      "on",
+      "changed"
+    ],
+    "type": "object"
+  },
+  "PageReactionsResponse": {
+    "additionalProperties": false,
+    "description": "`GET .../pages/<tab>/reactions`: every reaction on the page, oldest first.",
+    "properties": {
+      "reactions": {
+        "items": {
+          "$ref": "#/components/schemas/PageReaction"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "reactions"
+    ],
+    "type": "object"
+  },
   "PageRect": {
     "additionalProperties": false,
     "properties": {

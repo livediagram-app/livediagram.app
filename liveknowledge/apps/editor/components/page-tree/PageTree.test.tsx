@@ -130,7 +130,7 @@ describe('the tree', () => {
     expect(a.onSelect).not.toHaveBeenCalled();
   });
 
-  it('always shows a row’s + and …, quiet until pointed at, in room that never changes', () => {
+  it('keeps a row’s + and … mounted, quiet until pointed at, in room that never changes', () => {
     mount();
     const room = (name: string) => row(name).querySelector('[data-row-controls]')!;
     const options = () =>
@@ -139,11 +139,9 @@ describe('the tree', () => {
     expect(within(row('Notes')).getByRole('button', { name: 'Add Subpage to Notes' })).toBeTruthy();
     const before = room('Notes').className;
     hover('Notes');
-    expect(
-      within(row('Notes')).getByRole('button', { name: 'Page Options for Notes' }),
-    ).toBeTruthy();
     expect(within(row('Notes')).getByRole('button', { name: 'Add Subpage to Notes' })).toBeTruthy();
     expect(options().className).not.toContain('text-slate-400/70');
+    // The hover is CSS's: the row renders nothing new into its controls' box, so nothing shifts.
     expect(room('Notes').className).toBe(before);
     expect(before).toContain('w-[50px]');
   });

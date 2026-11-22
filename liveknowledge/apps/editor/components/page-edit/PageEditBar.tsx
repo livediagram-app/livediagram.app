@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { ZenIcon } from '@/components/palette/palette-icons';
 import { useVersionHistoryState } from '@/lib/version-history-store';
 import { useKnowledgeView } from '@/lib/knowledge-ask/useKnowledgeView';
@@ -17,6 +18,7 @@ import {
 import { useRelativeNow } from '@/lib/relative-time';
 import { DoubleClickToEdit } from './DoubleClickToEdit';
 import { EditorDiscs } from './EditorDiscs';
+import { PageReactions } from '@/components/page-reactions/PageReactions';
 import { useArticleZoneCorner } from './useArticleZoneCorner';
 import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
 import { useKnowledgebaseStartOffered } from '@/components/start/knowledgebase-start';
@@ -25,7 +27,7 @@ import { useDescribeStructureOffered } from '@/components/describe-structure/use
 import { openDescribeStructure } from '@/lib/describe-structure/structure-open';
 import { track } from '@/lib/telemetry';
 
-// Edit, in the top row before Page Info and Share, and while editing the draft bar, floating at the bottom right of the
+// Edit, with the page's reactions left of it, and while editing the draft bar, floating at the bottom right of the
 // article zone (docs/specs/030-knowledgebase/editing.md; blueprint "Presentation and UX"). Reads the chrome store a slice at a time, so typing renders it
 // only when what it says changes; its buttons call the newest handlers when pressed.
 
@@ -67,6 +69,9 @@ export type PageEditBarViewProps = {
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
+  // The page's reactions (docs/specs/030-knowledgebase/page-reactions.md): left of Edit while reading. Absent where
+  // they are not shown (Zen Mode, an embed); someone who may not edit has them left of Zen (PageReactionsBesideZen).
+  reactions?: ReactNode;
   /** Describe Structure, to the left of Edit or of Cancel, while the page has nothing written; absent: not offered. */
   onDescribe?: (() => void) | undefined;
   // Zen Mode, to the right of Edit while the page is read (owner 2026-11-21): absent where zen is not offered.
@@ -83,6 +88,7 @@ export function PageEditBarView({
   onEdit,
   onSave,
   onCancel,
+  reactions,
   onDescribe,
   onZen,
 }: PageEditBarViewProps) {
@@ -95,8 +101,10 @@ export function PageEditBarView({
           style={{ right: corner.right, bottom: corner.bottom }}
           // Toasts stand on this button's line, beside it (liveworkspace toasts.md "Placement").
           data-toast-side=""
+          data-page-read-corner=""
           className="fixed z-[var(--z-toolbar)] flex items-center gap-2 phone:gap-1.5"
         >
+          {reactions}
           {onDescribe ? <DescribeStructureButton onPress={onDescribe} /> : null}
           {/* No tooltip (owner 2026-11-21): the label and the key say it. */}
           <button
@@ -233,6 +241,8 @@ export function PageEditBar() {
   // A new knowledgebase's start screen covers its first page: no Cancel and Save floating beside it.
   const startMayShow = useEditorChrome(templateStartShownOf);
   const startOffered = useKnowledgebaseStartOffered(tabId);
+  // Reactions stand down in Zen Mode and in an embed (page-reactions.md "Where they show").
+  const reactionsShown = useEditorChrome((s) => !s.embedMode && !s.zenMode);
   // Describe Structure on a page with nothing written (describe-to-set-up.md "Describe Structure on a page"): from
   // reading it opens edit mode first, so the structure lands in the draft.
   const describe = useDescribeStructureOffered();
@@ -260,6 +270,7 @@ export function PageEditBar() {
         onEdit={() => store.get().pageEditing.start()}
         onSave={() => store.get().pageEditing.save()}
         onCancel={() => void store.get().pageEditing.cancel()}
+        reactions={reactionsShown ? <PageReactions /> : undefined}
         onDescribe={describe === (editing ? 'edit' : 'read') ? onDescribe : undefined}
         onZen={zenOffered ? () => store.get().toggleZenMode() : undefined}
       />

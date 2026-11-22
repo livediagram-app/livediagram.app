@@ -9,6 +9,7 @@ brought from livedocuments ([Article pages](../007-editor/article-pages.md)) and
 - [Verification](verification.md): owners, verified pages and reviews that come due.
 - [Approval](approval.md): Pending Approval, and other members approving or rejecting a page.
 - [Comments on a page](page-comments.md): comment threads at the foot of every page.
+- [Reactions on a page](page-reactions.md): any emoji from any signed-in reader, Viewers included, beside Edit; no notifications.
 - [Search and Ask](search-and-ask.md): the search index, and answers with sources from a team's own Claude or OpenAI key.
 - [AI Knowledge](ai-knowledge.md): what agents read, what nobody could answer, pages that disagree, suggested edits.
 - [Connect](mcp-connect.md): the fourth view, a guided setup that connects an AI app over MCP and shows it connected.

@@ -144,7 +144,7 @@ describe('the parking schema step (V7)', () => {
     expect(() => outboxDueAt(nodeSql(raw))).toThrow();
     migrateDocumentSchema(exec);
     expect(outboxDueAt(nodeSql(raw))).toBeNull();
-    expect(DOCUMENT_SCHEMA_VERSION).toBe(38);
+    expect(DOCUMENT_SCHEMA_VERSION).toBe(39);
     // The Community triggers key the summary by delete-then-insert now.
     const triggers = raw
       .prepare(

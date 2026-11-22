@@ -29,6 +29,16 @@ describe('the draft bar', () => {
     expect(container.innerHTML).toBe('');
   });
 
+  it("stands the page's reactions left of Edit while reading, and drops them while editing", () => {
+    const reactions = <div data-testid="reactions" />;
+    const { rerender } = render(<PageEditBarView {...props({ reactions })} />);
+    const corner = document.querySelector('[data-page-read-corner]')!;
+    expect(corner.firstElementChild!.getAttribute('data-testid')).toBe('reactions');
+    expect(corner.lastElementChild!.hasAttribute('data-page-edit')).toBe(true);
+    rerender(<PageEditBarView {...props({ reactions, editing: true })} />);
+    expect(screen.queryByTestId('reactions')).toBeNull();
+  });
+
   // editing.md "The buttons" (owner 2026-11-21): Zen Mode to the right of Edit while reading, never while editing.
   it('offers Zen Mode right of Edit while reading, and not while editing', () => {
     const onZen = vi.fn();

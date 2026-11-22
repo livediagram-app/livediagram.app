@@ -18,6 +18,7 @@ import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
 import { notePeerSaved } from '@/lib/page-edit/page-edit-store';
 import { pageThreadsStore } from '@/lib/page-threads/page-threads-store';
+import { pageReactionsStore } from '@/lib/page-reactions/page-reactions-store';
 
 type RoomOpFrom = Parameters<NonNullable<RoomHandlers['onOp']>>[0];
 type RoomOp = Parameters<NonNullable<RoomHandlers['onOp']>>[1];
@@ -203,5 +204,8 @@ export function receiveRoomOp(
     // A thread at a page's foot changed (docs/specs/030-knowledgebase/page-comments.md "Live"): the api's, never a
     // client's, like the share ops.
     if (from === 'system' && opts.documentId) pageThreadsStore.receive(opts.documentId, op);
+  } else if (op.kind === 'page-reaction') {
+    // A reaction on a page (docs/specs/030-knowledgebase/page-reactions.md "Live"): the api's, never a client's.
+    if (from === 'system' && opts.documentId) pageReactionsStore.receive(opts.documentId, op);
   }
 }

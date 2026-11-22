@@ -46,6 +46,7 @@ import { frontDoorOf } from '../changesets/front-door';
 import { handleAiRoutes } from './knowledge-ai-routes';
 import { handleApproval } from './knowledge-approval-route';
 import { handlePageThreads } from './knowledge-thread-routes';
+import { handlePageReactions } from './knowledge-reaction-routes';
 import { handleAsk } from './knowledge-ask-route';
 import { handleEmailRoutes } from './knowledge-email-routes';
 import { handleOverviewRoutes } from './knowledge-overview-routes';
@@ -140,6 +141,8 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
   if (segments[5] === 'health')
     return method === 'GET' ? handlePageHealth(ctx, seen.document, tab, grant) : methodNotAllowed();
   if (segments[5] === 'threads') return handlePageThreads(ctx, document, grant, tab);
+  // Every signed-in reader's, a Viewer's too (page-reactions.md "Share roles").
+  if (segments[5] === 'reactions') return handlePageReactions(ctx, document, tab);
   // Drafted from the page's own place: a link to one page sees its tree's other pages nameless.
   if (segments[5] === 'describe-structure')
     return method === 'POST' ? handleDescribeStructure(seen, tab) : methodNotAllowed();
@@ -204,6 +207,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
           segments[5] === 'knowledge' ||
           segments[5] === 'approval' ||
           segments[5] === 'threads' ||
+          segments[5] === 'reactions' ||
           segments[5] === 'suggestions' ||
           segments[5] === 'describe-structure' ||
           segments[5] === 'move')) ||

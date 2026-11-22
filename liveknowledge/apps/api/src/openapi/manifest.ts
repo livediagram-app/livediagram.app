@@ -778,6 +778,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/documents/{id}/pages/{tabId}/reactions',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "The reactions on a page (docs/specs/030-knowledgebase/page-reactions.md), oldest first: each one emoji, its reactor's name and collab key (`by`), never an account id. Every role reads them.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'PageReactionsResponse',
+    statuses: [200, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/pages/{tabId}/reactions',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "Add (`on: true`) or take back (`on: false`) your own reaction on a page: any one emoji, one of each per person. Any signed-in reader, a Viewer included; a guest and an agent's token are refused. A page holds 500 reactions and 20 different emoji, a person 10 on a page, 30 changes a minute. Tells nobody but the people on the page; `changed` is false when it already stood so.",
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    requestSchema: 'PageReactionChange',
+    responseSchema: 'PageReactionChangeResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429],
+  },
+  {
+    method: 'GET',
     path: '/documents/{id}/ai',
     segment: 'documents',
     tag: 'Knowledge',

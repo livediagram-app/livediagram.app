@@ -49,6 +49,7 @@ import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 import type { CanvasChromeProps } from './CanvasChrome.types';
 import { PageEditBar } from '@/components/page-edit/PageEditBar';
+import { PageReactionsBesideZen } from '@/components/page-reactions/PageReactions';
 import { PageMakersStack } from '@/components/knowledge/PageMakersStack';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 
@@ -513,6 +514,8 @@ function CanvasChromeView(props: CanvasChromeProps) {
             ) : null}
             {/* No zoom cluster (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"). Zen keeps
                 its way out here, and a session with no formatting bar its way in. */}
+            {/* A Viewer's reactions, left of Zen (docs/specs/030-knowledgebase/page-reactions.md "Where they show"). */}
+            {!zenMode && readOnly ? <PageReactionsBesideZen /> : null}
             {onToggleZen && (zenMode || readOnly) ? (
               <ZenControl active={zenMode === true} onToggle={onToggleZen} />
             ) : null}

@@ -30,7 +30,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   is on (zen's way out stands at the page's foot).
   While editing, one capsule holds the draft's status only when there is one (an amber dot and "Unsaved changes
   since ...", or an agent's change; no "Editing" label, owner 2026-11-21), then Cancel and Save, floating 24 px inside the bottom right corner of the document's white area (left of the rail, above the footer;
-  owner 2026-11-21), where Edit floats too while reading. Edit, Cancel (with an X) and Save are one size, each standing
+  owner 2026-11-21), where Edit floats too while reading. The page's reactions stand left of Edit while reading, and left
+  of Zen for a Viewer ([Reactions on a page](page-reactions.md)); the draft bar replaces them while editing. Edit, Cancel (with an X) and Save are one size, each standing
   on its own, no capsule round them. No tooltips on them (owner 2026-11-21). Each says it happened: Edit, Save and
   Cancel ripple inward round the document area a person sees, clear of the page tree and the Page Info rail (owner
   2026-11-21): its edge glows and three rings travel in from the edge and fade, one after another, in about 0.9 s
@@ -42,7 +43,7 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   which can be a moment after the page shows, so it never takes focus the person has already moved: if, since the
   page was asked for, focus has gone to a control of their choosing (the knowledgebase's menu, the account menu, the
   sidebar), the Title is left alone and focus stays where they put it. Only focus on nothing, the canvas surface the editor
-  opens on (not the panels floating over it), or the control that made the page gives way to the Title. A keyboard user who tabs or opens a menu while
+  opens on (not the panels floating over it), or the control that made the page gives way to the Title (for an item in a menu, the button that opened the menu, which takes the focus back as it closes). A keyboard user who tabs or opens a menu while
   the page loads keeps their place.
 - While anyone is editing, a Viewer (or someone who left with Cancel) sees a quiet "Being edited by Priya" note (their
   discs) in the meta row, and keeps seeing the saved page: the draft never reaches them.

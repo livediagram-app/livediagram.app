@@ -13,7 +13,16 @@ import { REVIEW_DUE_PILL } from '@/components/knowledge/TrustBadge';
 import type { ConnectedRowStore } from '@/lib/knowledge/connected-row-store';
 import { cantOpenWords } from './connected-rows';
 import { ArrowOutIcon, MoreIcon } from './page-tree-icons';
-import { INSERT_LINE, QUIET, ROW, ROW_BUTTON, ROW_INSET, ROW_REST } from './page-tree-row-styles';
+import {
+  INSERT_LINE,
+  QUIET,
+  ROW,
+  ROW_BUTTON,
+  ROW_CONTROLS_HIDDEN,
+  ROW_CONTROLS_SHOWN,
+  ROW_INSET,
+  ROW_REST,
+} from './page-tree-row-styles';
 import { useRowMark, type PageTreeUi } from './page-tree-ui';
 import {
   PAGE_TREE_INDENT,
@@ -57,6 +66,8 @@ function ConnectedTreeRowView({
   const dragging = mark.includes('d');
   const zone = mark.endsWith('before') ? 'before' : mark.endsWith('after') ? 'after' : null;
   const active = menuOpen || mark.startsWith('h') || mark.includes('f');
+  // Mounted on the Tab stop row too, so its button, which takes Tab, never re-mounts under the focus (PageTreeRow).
+  const cards = active || tabStop;
   const name = row.name || 'Untitled File';
   const indent = ROW_INSET + (row.level - 1) * PAGE_TREE_INDENT;
   const broken = state.kind === 'broken';
@@ -66,7 +77,7 @@ function ConnectedTreeRowView({
   const menuButton = (
     <button
       type="button"
-      tabIndex={-1}
+      tabIndex={tabStop ? 0 : -1}
       data-row-action="menu"
       aria-label={`File Options for ${name}`}
       aria-haspopup="menu"
@@ -145,9 +156,10 @@ function ConnectedTreeRowView({
       ) : null}
       <span
         data-row-controls
-        className={`flex shrink-0 items-center justify-end gap-0.5 ${touch ? 'w-9' : 'w-[50px]'}`}
+        // With a mouse, shown on hover or focus as a page's are (ROW_CONTROLS_HIDDEN); always on touch.
+        className={`${menuOpen ? ROW_CONTROLS_SHOWN : ROW_CONTROLS_HIDDEN} ${touch ? 'w-9' : 'w-[50px]'}`}
       >
-        {active && !touch ? (
+        {cards && !touch ? (
           <HoverCard
             title="File Options"
             description={

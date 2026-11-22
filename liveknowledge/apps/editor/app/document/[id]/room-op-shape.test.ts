@@ -33,6 +33,12 @@ const WELL_FORMED: Record<string, unknown>[] = [
   { kind: 'tab-meta', tabId: 't1', patch: { name: 'x' }, clear: ['background'] },
   { kind: 'article', tabId: 't1', flow: 'f', removed: true },
   { kind: 'document-meta', name: 'Doc', tabs: [{ id: 't1', name: 'T', orderIndex: 0 }] },
+  {
+    kind: 'page-reaction',
+    tabId: 't1',
+    reaction: { emoji: '👏', by: 'k', name: 'Priya' },
+    on: true,
+  },
   // Presence, and a kind this build does not know, pass as they always have.
   { kind: 'cursor', x: 1, y: 2 },
   { kind: 'from-a-newer-build', anything: true },
@@ -67,6 +73,11 @@ describe('roomOpIsWellFormed', () => {
     ['a tab-meta without its patch', { kind: 'tab-meta', tabId: 't1' }],
     ['a document-meta without its tab list', { kind: 'document-meta', name: 'n' }],
     ['a document-meta tab without an id', { kind: 'document-meta', name: 'n', tabs: [null] }],
+    ['a page-reaction without its reaction', { kind: 'page-reaction', tabId: 't1', on: true }],
+    [
+      'a page-reaction without on',
+      { kind: 'page-reaction', tabId: 't1', reaction: { emoji: '👏', by: 'k', name: 'P' } },
+    ],
     ['no kind at all', { tabId: 't1' }],
     ['not an object', 'el'],
   ])('refuses %s', (_why, op) => {

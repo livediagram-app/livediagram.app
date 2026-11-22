@@ -38,6 +38,7 @@ import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
 import { pageThreadsSchemaStep } from '../knowledge/page-threads';
 import { publishedSchemaStep } from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
+import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -441,6 +442,10 @@ const V37 = pageTrashSchemaStep;
 // (knowledge/knowledge-schema.ts knowledgeShapeStep; docs/specs/030-knowledgebase/verification.md "Health Score").
 const V38 = knowledgeShapeStep;
 
+// Step 39: the reactions on each page (knowledge/page-reactions.ts; docs/specs/030-knowledgebase/page-reactions.md).
+// Additive, IF NOT EXISTS.
+const V39 = pageReactionsSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -472,6 +477,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V36,
   V37,
   V38,
+  V39,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

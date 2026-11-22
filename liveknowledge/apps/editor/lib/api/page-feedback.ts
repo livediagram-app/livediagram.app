@@ -1,10 +1,14 @@
-// Approval and the comments at a page's foot from the editor (docs/specs/030-knowledgebase/approval.md,
-// page-comments.md): one request each through the knowledge funnel (lib/api/knowledge.ts), the refusals the
+// Approval, the comments at a page's foot and its reactions from the editor (docs/specs/030-knowledgebase/approval.md,
+// page-comments.md, page-reactions.md): one request each through the knowledge funnel (lib/api/knowledge.ts), the refusals the
 // interface words itself kept out of the failure report.
 import type {
   PageApprovalAction,
   PageKnowledge,
   PageKnowledgeResponse,
+  PageReaction,
+  PageReactionChange,
+  PageReactionChangeResponse,
+  PageReactionsResponse,
   PageThread,
   PageThreadChange,
   PageThreadChangeResponse,
@@ -32,6 +36,12 @@ const EXPECTED = new Set([
   'not_your_comment',
   'thread_full',
   'thread_busy',
+  // Reactions (knowledge-reaction-routes.ts).
+  'invalid_emoji',
+  'reaction_needs_account',
+  'reactions_full',
+  'too_many_reactions',
+  'reacting_too_fast',
 ]);
 const expected = (code: string | null) => code !== null && EXPECTED.has(code);
 
@@ -85,4 +95,29 @@ export async function apiChangePageThread(
 ): Promise<PageThreadChangeResponse> {
   const res = await post(who, pageUrl(documentId, tab, 'threads'), change);
   return expectOk<PageThreadChangeResponse>(res, `${change.op} page comment`, expected);
+}
+
+/** The page's reactions, oldest first. */
+export async function apiPageReactions(
+  who: KnowledgeCaller,
+  documentId: string,
+  tab: string,
+  signal?: AbortSignal,
+): Promise<PageReaction[]> {
+  const res = await apiFetch(pageUrl(documentId, tab, 'reactions'), {
+    headers: await knowledgeHeaders(who),
+    signal: knowledgeSignal(signal),
+  });
+  return (await expectOk<PageReactionsResponse>(res, 'read page reactions', expected)).reactions;
+}
+
+/** Add or take back the caller's own reaction. Answers the reaction and whether it moved. */
+export async function apiChangePageReaction(
+  who: KnowledgeCaller,
+  documentId: string,
+  tab: string,
+  change: PageReactionChange,
+): Promise<PageReactionChangeResponse> {
+  const res = await post(who, pageUrl(documentId, tab, 'reactions'), change);
+  return expectOk<PageReactionChangeResponse>(res, 'react to page', expected);
 }

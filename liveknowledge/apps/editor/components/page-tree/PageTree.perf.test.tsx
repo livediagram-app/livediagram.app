@@ -103,6 +103,28 @@ describe('500 pages', { timeout: 30_000 }, () => {
     expect(rowRenders.get('t11')).toBe(1);
   });
 
+  // The keyboard (knowledgebases-and-pages.md "The page tree"): an arrow key moves the focus and the Tab stop, which
+  // renders the row left and the row reached, never the list; type-ahead reads the 500 names once a key.
+  it('render only the rows the keyboard leaves and reaches, and type-ahead within budget', () => {
+    mount();
+    row(0).focus();
+    rowRenders.clear();
+    const start = cpuNowMs();
+    for (let i = 0; i < 100; i++) {
+      const before = total();
+      fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+      expect(total() - before).toBeLessThanOrEqual(4);
+    }
+    expect(document.activeElement).toBe(row(100));
+    // "Page 7" is reached from row 100 only after wrapping round the whole list: the worst a search walks.
+    for (const key of 'Page 7') fireEvent.keyDown(document.activeElement!, { key });
+    const spent = cpuNowMs() - start;
+    expect(document.activeElement).toBe(row(7));
+    // Measured 2026-11-22: about 490 ms CPU in jsdom, nearly all of it the 100 focus moves (5 ms a key).
+    expect(spent).toBeLessThan(cpuBudgetMs(1200));
+    console.info(`[page-tree] 100 arrow keys and a 6-letter search: ${spent.toFixed(0)} ms CPU`);
+  });
+
   it('render at most two rows a pointer move while a row is dragged across the list', () => {
     mount();
     const dataTransfer = { setData: vi.fn(), getData: vi.fn(), effectAllowed: '', dropEffect: '' };

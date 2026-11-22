@@ -376,7 +376,18 @@ per-page and no per-tab style.
   element leaves unset is the theme's when it is drawn, and a colour someone picked is kept. Nothing is written to
   the element, so a style change saves no page.
 - **A new knowledgebase** starts in the Everyday look with the product's lime theme.
-- Exports (PDF, Word, Markdown) use the knowledgebase's style.
+- Exports (PDF, Word, Markdown) use the knowledgebase's style, with the writing's accent as the page shows it (lime
+  under the product's own theme, a multi-colour theme's branch, or the one picked).
+- **The preview follows the style** (owner, 2026-11-21: "Make sure that the preview for a knowledge base follows its
+  theme"). A knowledgebase's picture in the Explorer, Drive, Recent and a share card
+  ([previews](../../../../liveworkspace/docs/specs/006-media/previews.md)) is its first page drawn in its style, as
+  its readers see it in the light appearance: the theme's light ground (white under the product's own theme, the
+  theme's pale wash under any other), the heading and body fonts, the text size, spacing and heading style, the
+  writing's accent, and drawings in the theme with the plain finish. There is no finish, surround or pattern to
+  draw (they are not in liveknowledge). A picture cannot load a web font, so each typeface falls back to its
+  family's generic stack (serif, sans-serif, monospace) where the font is not installed on the viewer's device. A
+  style change is an edit: the knowledgebase's last save moves, so the Explorer shows the new look the next time it
+  asks for the picture. The preview is the same in either appearance.
 - **Agents** cannot set a page's look: the article write takes no `look` or `accent`, and one that names either is
   refused with a line that says the style is a knowledgebase setting and what to send instead. The style is read
   with the knowledgebase's metadata (`GET /api/documents/<id>`, every role) and set with its metadata write (`PUT

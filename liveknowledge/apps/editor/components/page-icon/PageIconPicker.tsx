@@ -48,7 +48,11 @@ export function loadEmojiCatalogue(): Promise<Catalogue> {
   return loading;
 }
 
-function useEmojiCatalogue(active: boolean): Catalogue | null {
+/** An emoji's name from the list, when the list has been fetched (a picker opened this session); null before. */
+export const loadedEmojiName = (emoji: string): string | null =>
+  catalogue?.entry(emoji)?.name ?? null;
+
+export function useEmojiCatalogue(active: boolean): Catalogue | null {
   const [loaded, setLoaded] = useState<Catalogue | null>(catalogue);
   useEffect(() => {
     if (!active || loaded) return;
@@ -69,8 +73,8 @@ const KIND_OPTIONS = [
 ] as const;
 
 /** One choice in the grid: what it sets and its name. */
-type Choice = { icon: TabIcon; name: string; key: string };
-type Section = { id: string; label: string; choices: Choice[] };
+export type Choice = { icon: TabIcon; name: string; key: string };
+export type Section = { id: string; label: string; choices: Choice[] };
 
 const emojiChoice = (e: EmojiEntry): Choice => ({
   icon: { emoji: e.emoji },
@@ -157,8 +161,9 @@ export function gridStep(key: string, at: number, count: number): number | null 
 const CHOICE =
   'flex aspect-square w-full cursor-pointer items-center justify-center rounded-lg text-slate-700 transition-colors duration-micro hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 motion-reduce:transition-none dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800';
 
-// The grid: drawn again only when its sections or the current icon change, never for the hover line under it.
-const PickerGrid = memo(function PickerGrid({
+// The grid: drawn again only when its sections or the current icon change, never for the hover line under it. Page
+// reactions' picker draws the same grid (components/page-reactions/PageReactionPicker.tsx).
+export const PickerGrid = memo(function PickerGrid({
   sections,
   current,
   onPick,

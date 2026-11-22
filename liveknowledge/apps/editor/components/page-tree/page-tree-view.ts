@@ -160,6 +160,46 @@ export function treeKeyAction(
   }
 }
 
+/** How long after the last letter typed on the tree the next one starts a new search (WAI-ARIA tree view
+ *  type-ahead). */
+export const TYPE_AHEAD_RESET_MS = 500;
+
+/** A key that types a character for the tree's type-ahead: a printable one, and a space only once a search has
+ *  begun (`searching`), since Space alone is no search. */
+export function isTypeAheadKey(key: string, searching = false): boolean {
+  return [...key].length === 1 && (key !== ' ' || searching);
+}
+
+/**
+ * The row type-ahead jumps to: the next row, after the focused one and wrapping round, whose name (`nameOf`, as the
+ * row shows it) starts with `typed`, ignoring case. While `typed` is one letter repeated (a, a, a), each press moves
+ * on to the next row starting with that letter; a longer search may match the focused row itself, so typing on
+ * through its name stays on it. Null when no row matches.
+ */
+export function typeAheadMatch(
+  rows: readonly PageRow[],
+  focusedId: string | null,
+  typed: string,
+  nameOf: (row: PageRow) => string,
+): string | null {
+  if (!typed || rows.length === 0) return null;
+  const query = typed.toLocaleLowerCase();
+  const chars = [...query];
+  const repeated = chars.every((c) => c === chars[0]);
+  const search = repeated ? chars[0]! : query;
+  const at = Math.max(
+    0,
+    rows.findIndex((r) => r.id === focusedId),
+  );
+  // A single (or repeated) letter starts at the row after the focused one; a longer search at the focused row.
+  const start = repeated ? at + 1 : at;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[(start + i) % rows.length]!;
+    if (nameOf(row).toLocaleLowerCase().startsWith(search)) return row.id;
+  }
+  return null;
+}
+
 /** Where on a row the pointer is while dragging: its top edge, its bottom edge, or the row itself. */
 export type DropZone = 'before' | 'after' | 'inside';
 
