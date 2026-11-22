@@ -12,6 +12,7 @@ import {
   itemTabsRequest,
   itemTabsResponse,
   type ItemCreateRequest,
+  forgetPutAwayGrant,
 } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import { MAX_TAB_BYTES, TabTooLargeError, logTabRefused, tabDataBytes } from '../limits';
@@ -161,6 +162,8 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
   }
   if (grant instanceof Response) return grant;
   const res = await designRoom(ctx.env, designId).route(request, identityOf({ ...ctx, grant }));
+  // A grant the room refused as put away is dropped, so the next call asks the index (Work Tracker 1323).
+  forgetPutAwayGrant(indexService, request, grantCallerOf(ctx), designId, res);
   // Making it is a use for the caller, recorded at the index beside the create as the editor records its own; never
   // waited on. The room's 400 for a markUsed that is not a boolean made nothing, so it records nothing.
   if (marksUse && res.status === 201) {

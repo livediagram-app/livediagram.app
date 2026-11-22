@@ -54,6 +54,10 @@ app's own clock stops in the Trash and starts again on restore (a call that fail
 daily empty clean-up tells nobody ([one-explorer-contracts.md](../one-explorer-contracts.md) "Where an item
 stands").
 
+An API token's grant fetched before the trash is never cached once trashed, but one cached before it is: the item's
+room refuses it as trashed on the next call, as it refuses an archived item's (Work Tracker 1323, [archive.md](archive.md)
+"Other paths"), so every app answers its own `410 <noun>_trashed` at once. A restore's standing opens it again.
+
 ### The Trash routes
 
 - `GET /trash`: the `trash` view ([items.md](items.md)).

@@ -32,7 +32,12 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   take over pop in; a double-click to edit sends a ring out from the pointer. Reduced motion turns them off. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
   the buttons are named Edit and Save.
 - A page made here (New Page, Add Subpage) opens straight into edit mode with the caret in its Title: it was made
-  to be written.
+  to be written. So does a new blank knowledgebase's first page. The caret comes once the page's writing is on screen,
+  which can be a moment after the page shows, so it never takes focus the person has already moved: if, since the
+  page was asked for, focus has gone to a control of their choosing (the knowledgebase's menu, the account menu, the
+  sidebar), the Title is left alone and focus stays where they put it. Only focus on nothing, the canvas surface the editor
+  opens on (not the panels floating over it), or the control that made the page gives way to the Title. A keyboard user who tabs or opens a menu while
+  the page loads keeps their place.
 - While anyone is editing, a Viewer (or someone who left with Cancel) sees a quiet "Being edited by Priya" note (their
   discs) in the meta row, and keeps seeing the saved page: the draft never reaches them.
 

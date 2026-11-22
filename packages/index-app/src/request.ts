@@ -13,12 +13,17 @@
 import {
   IndexError,
   ITEM_GRANT_HEADER,
+  ITEM_PUT_AWAY_HEADER,
+  putAwayRefusal,
   SHARE_CODE_HEADER,
   SHARE_PASSWORD_HEADER,
   type CreateItemInput,
   type Item,
   type ItemSource,
+  type KeptStanding,
+  type PutAwayRefusal,
   type ShareAccess,
+  type StandingGrant,
 } from '@liveworkspace/index-client';
 import {
   itemGrantOf,
@@ -30,6 +35,16 @@ import {
 
 // The headers every app's editor sends (@liveworkspace/index-client), for the apps' servers.
 export { ITEM_GRANT_HEADER, SHARE_CODE_HEADER, SHARE_PASSWORD_HEADER };
+
+// A room's refusal of a grant from before its item was put away (one-explorer-contracts.md "Where an item stands",
+// Work Tracker 1323), for the rooms (@liveworkspace/automations/room standing.ts, liveplanner's plan-standing.ts).
+export {
+  ITEM_PUT_AWAY_HEADER,
+  putAwayRefusal,
+  type KeptStanding,
+  type PutAwayRefusal,
+  type StandingGrant,
+};
 
 // The refusals the caller can act on, answered as the index's: the item's password, and an archived item (its owner
 // moves it out of Archived first, one-explorer-contracts.md "Archived").
@@ -80,6 +95,65 @@ export async function resolveItemGrant(
   }
   const claims = await service.verifyGrant(env, outcome.grant.grant, itemId);
   return claims ? itemGrantOf(claims, share?.code ?? null, outcome.grant.grant) : null;
+}
+
+// The room's answer to a request whose grant it refused as put away: marked, so the worker drops the grant it holds.
+export function putAwayAnswer(response: Response, refusal: PutAwayRefusal): Response {
+  const marked = new Response(response.body, response);
+  marked.headers.set(ITEM_PUT_AWAY_HEADER, refusal);
+  return marked;
+}
+
+// How an app answers a refused grant: `409 archived`, and its own trashed answer (`410 <noun>_trashed`).
+export type PutAwayAnswers = { archived: () => Response; trashed: () => Response };
+
+// The room's gate on a request's grant: the marked answer for one it refuses as put away, or null to go on.
+export function putAwayGate(
+  refusal: PutAwayRefusal | null,
+  answers: PutAwayAnswers,
+): Response | null {
+  if (!refusal) return null;
+  return putAwayAnswer(refusal === 'archived' ? answers.archived() : answers.trashed(), refusal);
+}
+
+// The room-ticket door's gate (the ticket is minted in the worker, so the room is asked: one call, per ticket): only
+// for a grant the worker fetched for its caller, which is the one it keeps. The editor's own grant (X-Index-Grant) is
+// its own, and the archive closed its sessions for good. A refusal drops the kept grant, as forgetPutAwayGrant does.
+export async function ticketPutAwayGate(
+  service: IndexService,
+  request: Request,
+  caller: GrantCaller,
+  grant: ItemGrant,
+  ask: (grant: StandingGrant) => Promise<PutAwayRefusal | null>,
+  answers: PutAwayAnswers,
+): Promise<Response | null> {
+  if (request.headers.has(ITEM_GRANT_HEADER)) return null;
+  const refused = putAwayGate(await ask(standingOfGrant(grant)), answers);
+  if (refused) service.forgetGrant(caller, grant.item, shareAccessOf(request));
+  return refused;
+}
+
+// What a grant says of where its item stands, and nothing else, for a call to its room.
+export function standingOfGrant(grant: StandingGrant): StandingGrant {
+  return {
+    ...(grant.iat === undefined ? {} : { iat: grant.iat }),
+    ...(grant.iatMs === undefined ? {} : { iatMs: grant.iatMs }),
+    ...(grant.trashed ? { trashed: true } : {}),
+  };
+}
+
+// The room's answer as the worker passes it on: a put-away refusal drops the grant the worker keeps for this caller
+// and item (requestGrant's cache), so the next call asks the index, which answers the refusal itself, or signs a
+// fresh grant when the item came back and the room missed hearing so. Anything else changes nothing.
+export function forgetPutAwayGrant(
+  service: IndexService,
+  request: Request,
+  caller: GrantCaller,
+  itemId: string,
+  response: Response,
+): void {
+  if (!response.headers.has(ITEM_PUT_AWAY_HEADER)) return;
+  service.forgetGrant(caller, itemId, shareAccessOf(request));
 }
 
 // What an API client's create (an MCP server's, the CLI's, a script's) names besides its id: its title, where it
