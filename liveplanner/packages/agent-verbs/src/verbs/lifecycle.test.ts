@@ -168,6 +168,32 @@ describe('project rename, share, rm and restore', () => {
     expect(projectShare.quiet!(out)).toEqual([out.url]);
   });
 
+  it('sends Require Sign In and email domains only when asked', async () => {
+    const { seen, api } = docRoutes(() =>
+      Response.json({ link: { code: 'abc', role: 'view', expiresAt: null } }),
+    );
+    await projectShare.run!(
+      contextOf(api),
+      projectShare.input.parse({
+        project: 'Auth flow',
+        role: 'view',
+        requireSignIn: true,
+        domains: 'example.com',
+      }),
+    );
+    expect(seen[0]!.body).toEqual({
+      role: 'view',
+      expiry: 'never',
+      requireSignIn: true,
+      domains: 'example.com',
+    });
+    await projectShare.run!(
+      contextOf(api),
+      projectShare.input.parse({ project: 'Auth flow', role: 'view' }),
+    );
+    expect(seen[1]!.body).toEqual({ role: 'view', expiry: 'never' });
+  });
+
   it('moves a project to the Trash, naming how to restore it; a refusal throws', async () => {
     const { seen, api } = docRoutes(() => undefined);
     const out = await projectRm.run!(contextOf(api), { project: 'Auth flow' });

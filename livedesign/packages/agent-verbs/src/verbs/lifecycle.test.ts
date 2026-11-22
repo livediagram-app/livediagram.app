@@ -86,10 +86,7 @@ describe('design create', () => {
   it('says how many tabs landed', async () => {
     const api = fakeApi({
       '/designs': () =>
-        Response.json(
-          { design: { id: 'abcdef1234', name: 'X', tabs: [{}, {}] } },
-          { status: 201 },
-        ),
+        Response.json({ design: { id: 'abcdef1234', name: 'X', tabs: [{}, {}] } }, { status: 201 }),
     });
     expect((await designCreate.run!(contextOf(api), { name: 'X' })).text).toBe(
       '+ design abcdef12 "X" · 2 tabs · https://livedesign.app/design/abcdef1234',
@@ -143,9 +140,7 @@ describe('design rename, share, rm and restore', () => {
   it('renames through the design route', async () => {
     const { seen, api } = docRoutes(() => Response.json({ design: { name: 'Sign-in' } }));
     const out = await designRename.run!(contextOf(api), { doc: 'Auth flow', name: 'Sign-in' });
-    expect(seen).toEqual([
-      { method: 'PUT', path: `/designs/${DOC_A}`, body: { name: 'Sign-in' } },
-    ]);
+    expect(seen).toEqual([{ method: 'PUT', path: `/designs/${DOC_A}`, body: { name: 'Sign-in' } }]);
     expect(designRename.text!(out)).toEqual(['~ design aaaa1111 "Auth flow"→"Sign-in"']);
     expect(designRename.quiet!(out)).toEqual([DOC_A]);
   });
@@ -169,6 +164,32 @@ describe('design rename, share, rm and restore', () => {
     expect(designShare.quiet!(out)).toEqual([out.url]);
   });
 
+  it('sends Require Sign In and email domains only when asked', async () => {
+    const { seen, api } = docRoutes(() =>
+      Response.json({ link: { code: 'abc', role: 'view', expiresAt: null } }),
+    );
+    await designShare.run!(
+      contextOf(api),
+      designShare.input.parse({
+        doc: 'Auth flow',
+        role: 'view',
+        requireSignIn: true,
+        domains: 'example.com',
+      }),
+    );
+    expect(seen[0]!.body).toEqual({
+      role: 'view',
+      expiry: 'never',
+      requireSignIn: true,
+      domains: 'example.com',
+    });
+    await designShare.run!(
+      contextOf(api),
+      designShare.input.parse({ doc: 'Auth flow', role: 'view' }),
+    );
+    expect(seen[1]!.body).toEqual({ role: 'view', expiry: 'never' });
+  });
+
   it('moves a design to the Trash, naming how to restore it; a refusal throws', async () => {
     const { seen, api } = docRoutes(() => undefined);
     const out = await designRm.run!(contextOf(api), { doc: 'Auth flow' });
@@ -177,9 +198,9 @@ describe('design rename, share, rm and restore', () => {
       `- design aaaa1111 "Auth flow" · in the Trash for 30 days · restore: livedesign design restore ${DOC_A}`,
     );
     const refused = docRoutes(() => Response.json({ error: 'forbidden' }, { status: 403 }));
-    await expect(
-      designRm.run!(contextOf(refused.api), { doc: 'Auth flow' }),
-    ).rejects.toMatchObject({ status: 403 });
+    await expect(designRm.run!(contextOf(refused.api), { doc: 'Auth flow' })).rejects.toMatchObject(
+      { status: 403 },
+    );
   });
 
   it('restores from the Trash by name, id or prefix, refusing none and several', async () => {
