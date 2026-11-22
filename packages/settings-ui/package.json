@@ -9,7 +9,8 @@
     "./profile-events": "./src/profile/profile-events.ts",
     "./connections": "./src/connections/index.ts",
     "./token-list": "./src/token-list.ts",
-    "./ai-source": "./src/ai-source/index.ts"
+    "./ai-source": "./src/ai-source/index.ts",
+    "./request": "./src/request.ts"
   },
   "scripts": {
     "lint": "oxlint",

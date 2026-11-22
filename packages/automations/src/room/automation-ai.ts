@@ -3,7 +3,12 @@
 // secret), bounded by a timeout. An item asks at most AUTOMATION_AI_PER_DAY a day, counted as each call is asked
 // (`automation_ai_days`, one row a day, bumped by markAiAsked) and from Describe a Rule's asks: two indexed reads. No binding, a model that errs or takes too long: the
 // ask answers its reason and never throws. What is asked and what an answer writes are each app's.
-import { ModelCallError, isKeyFailureKind, type AiKeyFailureKind, type KeyProviderId } from '@liveworkspace/ai';
+import {
+  ModelCallError,
+  isKeyFailureKind,
+  type AiKeyFailureKind,
+  type KeyProviderId,
+} from '@liveworkspace/ai';
 import { AI_FAILED, AI_SLOW, type AiRequest } from '../ai';
 import type { Sql } from './sql';
 
@@ -85,8 +90,7 @@ const SLOW = Symbol('slow');
 export type AskKeyFailure = { provider: KeyProviderId; kind: AiKeyFailureKind };
 
 export type Asked =
-  | { ok: true; raw: unknown }
-  | { ok: false; reason: string; keyFailure?: AskKeyFailure };
+  { ok: true; raw: unknown } | { ok: false; reason: string; keyFailure?: AskKeyFailure };
 
 // One call, bounded by the timeout; the model's own error and a gateway's refusal are the same failure to a rule.
 // A call on a key fails in the provider's fixed words (model-failure.ts), and says which failure a person fixes.

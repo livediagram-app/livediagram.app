@@ -54,7 +54,7 @@ export function keyedRunner(caller: KeyCaller): {
 } {
   return {
     async run(_model, input) {
-      const reply = await callModel({ ...caller, request: keyedRequest(input as WorkersAiAsk) });
+      const reply = await callModel({ ...caller, request: keyedRequest(input) });
       return { response: reply.text };
     },
   };

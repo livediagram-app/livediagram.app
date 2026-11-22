@@ -327,7 +327,7 @@ describe('on a key', () => {
     onKey(() => errorResponse(402, 'billing_error'));
     const res = await draft();
     expect(res.status).toBe(422);
-    const body = (await res.json()) as Record<string, unknown>;
+    const body = await res.json<Record<string, unknown>>();
     expect(body['error']).toBe('ai_key_failed');
     expect(body['aiKey']).toEqual({ source: 'team', provider: 'anthropic', kind: 'no-credit' });
     expect(JSON.stringify(body)).not.toContain(KEY);
@@ -336,7 +336,7 @@ describe('on a key', () => {
 
   it('says the provider’s busy words, and refuses a key that will not open', async () => {
     onKey(() => errorResponse(529, 'overloaded_error'));
-    expect(((await (await draft()).json()) as AutomationErrorBody).error).toBe(
+    expect((await (await draft()).json<AutomationErrorBody>()).error).toBe(
       'automation_ai_unavailable',
     );
     keyFor.mockResolvedValue({ status: 'unreadable', source: 'team' });

@@ -33,10 +33,21 @@ export type KeyAnswer =
   | { status: 'unavailable' };
 
 /** The call on a key: the provider's client with the key, through the provider's own address. */
-export type KeyCaller = { provider: KeyProviderId; fetch: typeof fetch; apiKey: string; model: string };
+export type KeyCaller = {
+  provider: KeyProviderId;
+  fetch: typeof fetch;
+  apiKey: string;
+  model: string;
+};
 
 export type OwnKey =
-  | { status: 'key'; source: AiKeySource; provider: KeyProviderId; model: string; caller: KeyCaller }
+  | {
+      status: 'key';
+      source: AiKeySource;
+      provider: KeyProviderId;
+      model: string;
+      caller: KeyCaller;
+    }
   | { status: 'built-in' }
   | { status: 'refused'; reason: 'unreadable'; failure: AiKeyFailure; words: string }
   | { status: 'refused'; reason: 'unavailable'; words: string };
@@ -55,7 +66,8 @@ export function ownKeyOf(answer: KeyAnswer | null, through: typeof fetch = fetch
     const failure: AiKeyFailure = { source: answer.source, provider: null, kind: 'unreadable' };
     return { status: 'refused', reason: 'unreadable', failure, words: aiKeyFailureWords(failure) };
   }
-  if (!answer.key) return { status: 'refused', reason: 'unavailable', words: AI_KEY_UNREACHABLE_WORDS };
+  if (!answer.key)
+    return { status: 'refused', reason: 'unavailable', words: AI_KEY_UNREACHABLE_WORDS };
   const model = providerModel(answer.provider, answer.model).id;
   return {
     status: 'key',

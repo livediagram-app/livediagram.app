@@ -4,50 +4,14 @@
 // @liveworkspace/settings-ui's AiSource, bound once for every editor. It reads the account's AI keys over the app's
 // bearer door (`/api/workspace/account`), opens Settings on its AI category through the editor's own Settings host
 // (lib/open-settings.ts), so the dialog it sits in stays open underneath, and counts its two events. The item's team
-// and whether the person is signed in come from the AiSourceScope the editor sets around itself.
+// and whether the person is signed in come from the editor, which says them once (ai-source-scope.ts).
 
-import { createContext, useContext, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
-import {
-  AiSource,
-  bearerSettingsRequest,
-  useAiSource,
-  type AiKeysAnswer,
-  type AiSourceEvent,
-  type SettingsRequest,
-} from '@liveworkspace/settings-ui/ai-source';
+import { AiSource, useAiSource, type AiSourceEvent } from '@liveworkspace/settings-ui/ai-source';
 import { workbench } from '../../bindings';
 import { requestOpenSettings } from '../../lib/open-settings';
-
-type Scope = {
-  // The item's team, for its key; null for an item in no team, or before one exists.
-  teamId: string | null;
-  // A signed-in account (a guest sees no line: the features are for accounts).
-  signedIn: boolean;
-};
-
-const AiSourceScopeContext = createContext<Scope>({ teamId: null, signedIn: false });
-
-/** Says, once for an editor, which team its item is in and whether the person is signed in. */
-export function AiSourceScope({ children, teamId, signedIn }: Scope & { children: ReactNode }) {
-  return <AiSourceScopeContext value={{ teamId, signedIn }}>{children}</AiSourceScopeContext>;
-}
-
-// One door for the page, made when a line first shows.
-let door: SettingsRequest | null = null;
-const accountDoor = (): SettingsRequest =>
-  (door ??= bearerSettingsRequest({
-    baseUrl: '/api/workspace/account',
-    token: () => workbench.api.currentBearer(),
-  }));
-
-/** Whether the person's own key applies (no item, so no team key): asked when a feature is about to run, never on
- *  load. False on any failure to read, so the feature runs as it would with no key. */
-export async function hasOwnAiKey(): Promise<boolean> {
-  // The door answers every failure (offline, signed out) rather than throwing.
-  const answer = await accountDoor()<AiKeysAnswer>('/ai-key');
-  return answer.ok && answer.data.key !== null;
-}
+import { accountDoor, useEditorAiScope } from './ai-source-scope';
 
 const openAiSettings = () => requestOpenSettings('ai');
 const track = (event: AiSourceEvent) =>
@@ -74,11 +38,11 @@ export function WorkbenchAiSource({
   teamId,
   signedIn,
 }: WorkbenchAiSourceProps) {
-  const scope = useContext(AiSourceScopeContext);
-  const signed = signedIn ?? scope.signedIn;
+  const editor = useEditorAiScope();
+  const signed = signedIn ?? editor.signedIn;
   const { line, act } = useAiSource({
     request: signed ? accountDoor() : null,
-    teamId: teamId === undefined ? scope.teamId : teamId,
+    teamId: teamId === undefined ? editor.teamId : teamId,
     failure,
     openSettings: openAiSettings,
     track,

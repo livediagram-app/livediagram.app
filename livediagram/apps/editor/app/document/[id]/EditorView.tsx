@@ -1,6 +1,6 @@
 'use client';
 
-import { AiSourceScope } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
+import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
@@ -157,6 +157,8 @@ export function EditorView() {
   useEffect(() => registerUnsavedWork(hasUnsavedChanges), [hasUnsavedChanges]);
   // F6 moves between the header, palette, canvas, controls and tab bar (canvas-accessibility.md).
   useRegionCycle();
+  // Which team the item is in, for every AI feature's source line (ai-keys.md "The source line").
+  useAiSourceScope(ctx.documentTeamId ?? null, !!ctx.accountUserId);
   const {
     slideDeck,
     boardSceneInsert,
@@ -335,7 +337,6 @@ export function EditorView() {
     // menus, so a swatch in a menu can't disagree with the shape it describes.
     // Subscribing to the appearance is what re-renders this on a mode switch:
     // a Default tab's paper is the viewer's, not the tab's.
-    <AiSourceScope teamId={ctx.documentTeamId ?? null} signedIn={!!ctx.accountUserId}>
     <DocumentAutomationsHost {...automations}>
       <SnapshotsDoorProvider door={snapshotsDoor}>
         <ApprovalDoorProvider door={approvalDoor}>
@@ -588,6 +589,5 @@ export function EditorView() {
         </ApprovalDoorProvider>
       </SnapshotsDoorProvider>
     </DocumentAutomationsHost>
-    </AiSourceScope>
   );
 }

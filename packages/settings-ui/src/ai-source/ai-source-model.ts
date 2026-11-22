@@ -22,7 +22,13 @@ export type AiSourceLine =
       canChange: boolean;
     }
   // A key that failed on the last call, in the failure's fixed words.
-  | { kind: 'failed'; owner: AiSourceOwner; provider: AiProviderId | null; words: string; canChange: boolean };
+  | {
+      kind: 'failed';
+      owner: AiSourceOwner;
+      provider: AiProviderId | null;
+      words: string;
+      canChange: boolean;
+    };
 
 /** The window event Settings › AI raises after each change it makes, so every mounted line reads again. No payload. */
 export const AI_KEY_CHANGED_EVENT = 'liveworkspace:ai-key-changed';

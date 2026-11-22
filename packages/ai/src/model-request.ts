@@ -5,8 +5,7 @@
 export type ModelEffort = 'low' | 'medium' | 'high';
 /** One part of a message: text, or a picture (livediagram's photo reader) as its media type and base64 bytes. */
 export type ModelPart =
-  | { type: 'text'; text: string }
-  | { type: 'image'; mediaType: string; data: string };
+  { type: 'text'; text: string } | { type: 'image'; mediaType: string; data: string };
 export type ModelMessage = { role: 'user' | 'assistant'; content: string | ModelPart[] };
 
 export type ModelRequest = {

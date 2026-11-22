@@ -35,7 +35,12 @@ const PROVIDERS: AiKeysAnswer['providers'] = [
     models: [{ id: 'gpt-6.2-astra', label: 'GPT-6.2 Astra' }],
   },
 ];
-const MINE: AiKeyState = { provider: 'anthropic', model: 'claude-fable-5-2', hint: '4f2a', setAt: 1 };
+const MINE: AiKeyState = {
+  provider: 'anthropic',
+  model: 'claude-fable-5-2',
+  hint: '4f2a',
+  setAt: 1,
+};
 const TEAMS: AiKeyState = { provider: 'openai', model: 'gpt-6.2-astra', hint: '9b9b', setAt: 2 };
 const answer = (over: Partial<AiKeysAnswer> = {}): AiKeysAnswer => ({
   available: true,
@@ -137,7 +142,9 @@ const button = () => host.querySelector('button');
 describe('the line', () => {
   it('says built-in AI with its allowance, and Use Your Own Key', () => {
     const act_ = vi.fn();
-    render(<AiSource line={{ kind: 'built-in', canChange: true }} act={act_} allowance="10 a day." />);
+    render(
+      <AiSource line={{ kind: 'built-in', canChange: true }} act={act_} allowance="10 a day." />,
+    );
     expect(host.textContent).toContain('Built-in AI');
     expect(host.textContent).toContain('10 a day.');
     expect(button()?.textContent).toBe('Use Your Own Key');
@@ -159,19 +166,36 @@ describe('the line', () => {
     expect(host.textContent).toContain('Your Key');
     expect(host.textContent).toContain('Anthropic · Claude Fable 5.2 · No daily limits');
     expect(button()?.textContent).toBe('Change');
-    render(<AiSource line={{ ...key, owner: 'team', provider: 'openai', canChange: false }} act={null} />);
+    render(
+      <AiSource
+        line={{ ...key, owner: 'team', provider: 'openai', canChange: false }}
+        act={null}
+      />,
+    );
     expect(host.textContent).toContain('Your Team’s Key');
     expect(host.textContent).toContain('OpenAI');
     expect(host.textContent).toContain('Only the team’s admins can change it.');
     expect(button()).toBeNull();
-    render(<AiSource line={{ ...key, owner: 'item' }} act={null} itemKeyName="This Knowledgebase’s Key" />);
+    render(
+      <AiSource
+        line={{ ...key, owner: 'item' }}
+        act={null}
+        itemKeyName="This Knowledgebase’s Key"
+      />,
+    );
     expect(host.textContent).toContain('This Knowledgebase’s Key');
   });
 
   it('says a failed key in its words, with Fix Key', () => {
     render(
       <AiSource
-        line={{ kind: 'failed', owner: 'you', provider: 'anthropic', words: 'Anthropic refused it.', canChange: true }}
+        line={{
+          kind: 'failed',
+          owner: 'you',
+          provider: 'anthropic',
+          words: 'Anthropic refused it.',
+          canChange: true,
+        }}
         act={() => {}}
         id="src"
       />,
@@ -269,11 +293,19 @@ describe('the line as a feature shows it', () => {
 
   it('offers no action to a team member on the team’s key, nor where keys are not kept', async () => {
     const teams = [{ id: 'team-1', name: 'Design', canManage: false, key: TEAMS }];
-    render(<Line request={accountApi(answer({ teams })).request} teamId="team-1" openSettings={() => {}} />);
+    render(
+      <Line
+        request={accountApi(answer({ teams })).request}
+        teamId="team-1"
+        openSettings={() => {}}
+      />,
+    );
     await settle();
     expect(host.textContent).toContain('Your Team’s Key');
     expect(button()).toBeNull();
-    render(<Line request={accountApi(answer({ available: false })).request} openSettings={() => {}} />);
+    render(
+      <Line request={accountApi(answer({ available: false })).request} openSettings={() => {}} />,
+    );
     await settle();
     expect(button()).toBeNull();
   });

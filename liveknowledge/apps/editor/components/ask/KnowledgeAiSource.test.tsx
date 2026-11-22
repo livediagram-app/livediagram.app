@@ -7,7 +7,9 @@ import { announceAiKeyChanged } from '@liveworkspace/settings-ui/ai-source';
 // The source line in liveknowledge (docs/specs/030-knowledgebase/search-and-ask.md "The source line"): which key
 // answers, from `GET ai`, who may change it, a key that will not open, and a fresh read when Settings changes a key.
 const opened = vi.hoisted(() => ({ settings: vi.fn(), ai: vi.fn() }));
-vi.mock('@liveworkspace/workbench/lib/open-settings', () => ({ requestOpenSettings: opened.settings }));
+vi.mock('@liveworkspace/workbench/lib/open-settings', () => ({
+  requestOpenSettings: opened.settings,
+}));
 vi.mock('./AiSettingsButton', () => ({ openAiSettingsFrom: opened.ai }));
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
@@ -70,7 +72,10 @@ describe('which AI answers here', () => {
       canChange: false,
     });
     expect(
-      knowledgeAiLine(ready({ uses: 'personal', ...shared, usesModelLabel: 'GPT-6.2 Astra' }), false),
+      knowledgeAiLine(
+        ready({ uses: 'personal', ...shared, usesModelLabel: 'GPT-6.2 Astra' }),
+        false,
+      ),
     ).toMatchObject({ owner: 'you', model: 'GPT-6.2 Astra', canChange: true });
   });
 

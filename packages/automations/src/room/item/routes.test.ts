@@ -758,7 +758,10 @@ describe('Describe a Rule', () => {
   // ai-keys.md "Every AI feature honours the choice": the caller's key, or the item's team's, drafts it.
   describe('on a key', () => {
     const KEY = 'sk-ant-api03-planted-secret-key-9z9z';
-    const keyed = (answer: KeyAnswer | null): ItemCaller => ({ ...EDITOR, aiKey: async () => answer });
+    const keyed = (answer: KeyAnswer | null): ItemCaller => ({
+      ...EDITOR,
+      aiKey: async () => answer,
+    });
     const teamKey: KeyAnswer = {
       status: 'key',
       source: 'team',
@@ -797,7 +800,11 @@ describe('Describe a Rule', () => {
       const { w, asked } = drafting(drafted);
       const answer = await call(w, 'POST', '/draft', ask, keyed(teamKey));
       expect(error(answer)).toEqual([422, 'ai_key_failed']);
-      expect(answer.body['aiKey']).toEqual({ source: 'team', provider: 'anthropic', kind: 'bad-key' });
+      expect(answer.body['aiKey']).toEqual({
+        source: 'team',
+        provider: 'anthropic',
+        kind: 'bad-key',
+      });
       expect(JSON.stringify(answer.body)).not.toContain(KEY);
       expect(asked).toHaveLength(0);
     });

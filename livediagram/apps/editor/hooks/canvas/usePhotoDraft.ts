@@ -1,6 +1,6 @@
 'use client';
 
-import { hasOwnAiKey } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
+import { hasOwnAiKey } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import { ReadKeyFailed } from '@/lib/api/ai';
 import { useCallback, useRef, useState } from 'react';
 import {

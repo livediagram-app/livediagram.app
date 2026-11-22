@@ -248,7 +248,12 @@ describe('the dialog', () => {
 
   it("says the team's key when it answers and is not chosen away from", async () => {
     api.apiKnowledgeAi.mockResolvedValue(
-      settings({ uses: 'team', usesModel: 'gpt-6.2-astra', usesModelLabel: 'GPT-6.2 Astra', usesProvider: 'openai' }),
+      settings({
+        uses: 'team',
+        usesModel: 'gpt-6.2-astra',
+        usesModelLabel: 'GPT-6.2 Astra',
+        usesProvider: 'openai',
+      }),
     );
     renderInEditor(
       <DescribeStructureDialog tabId="p1" onClose={vi.fn()} />,

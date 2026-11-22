@@ -448,7 +448,10 @@ describe('on the person’s own key', () => {
     const sent = onKey(() => streamResponse(answerEvents([JSON.stringify(reply)])));
     const spend = vi.fn();
     const res = await handleAiReadNotes(
-      signedIn({ AI_DAILY_CAP: '0', PERSON_STORE: { idFromName: spend } as unknown as Env['PERSON_STORE'] }),
+      signedIn({
+        AI_DAILY_CAP: '0',
+        PERSON_STORE: { idFromName: spend } as unknown as Env['PERSON_STORE'],
+      }),
     );
     expect(res.status).toBe(200);
     expect((await answer(res)).texts).toEqual(reply.texts);

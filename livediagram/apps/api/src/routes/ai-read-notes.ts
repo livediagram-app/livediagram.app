@@ -271,11 +271,18 @@ async function readOnKey(
     });
     text = reply.text;
   } catch (err) {
-    if (err instanceof ModelCallError && err.provider !== 'built-in' && isKeyFailureKind(err.kind)) {
+    if (
+      err instanceof ModelCallError &&
+      err.provider !== 'built-in' &&
+      isKeyFailureKind(err.kind)
+    ) {
       const aiKey = { source: own.source, provider: err.provider, kind: err.kind };
       return json({ error: AI_KEY_FAILED, message: err.message, aiKey }, { status: 422 });
     }
-    console.error('[ai/read-notes] key call failed', { provider: own.provider, crops: crops.length });
+    console.error('[ai/read-notes] key call failed', {
+      provider: own.provider,
+      crops: crops.length,
+    });
     return aiError();
   }
   const payload = extractJson(text);

@@ -14,11 +14,7 @@ import { KnowledgeAiSource } from '@/components/ask/KnowledgeAiSource';
 import { useAiSettingsState, useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import type { SetupMode } from '@/lib/knowledge-setup/setup-open';
-import {
-  createLabel,
-  setupFailureWords,
-  setupTitle,
-} from '@/lib/knowledge-setup/setup-words';
+import { createLabel, setupFailureWords, setupTitle } from '@/lib/knowledge-setup/setup-words';
 import { DescribeStep } from './DescribeStep';
 import { ReviewStep } from './ReviewStep';
 import { SetupCreating, SetupDone, SetupSuggesting } from './SetupStates';

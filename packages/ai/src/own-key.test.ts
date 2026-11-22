@@ -22,7 +22,7 @@ describe('which AI a person’s call runs on', () => {
     const through = vi.fn(async () => new Response('ok'));
     const own = ownKeyOf(
       { status: 'key', source: 'team', provider: 'openai', model: 'not-a-model', key: KEY },
-      through as unknown as typeof fetch,
+      through,
     );
     if (own.status !== 'key') throw new Error('expected a key');
     expect(own.source).toBe('team');
@@ -79,16 +79,20 @@ describe('a key’s failure', () => {
   });
 
   it('knows the kinds a person fixes in Settings', () => {
-    expect(['bad-key', 'no-credit', 'model-unavailable', 'unreadable'].every(isKeyFailureKind)).toBe(
-      true,
+    expect(
+      ['bad-key', 'no-credit', 'model-unavailable', 'unreadable'].every(isKeyFailureKind),
+    ).toBe(true);
+    expect(['rate-limited', 'overloaded', 'refused', 'other', 7].some(isKeyFailureKind)).toBe(
+      false,
     );
-    expect(['rate-limited', 'overloaded', 'refused', 'other', 7].some(isKeyFailureKind)).toBe(false);
   });
 
   it('is read back from a refusal’s body, and nothing else is', () => {
     const failure: AiKeyFailure = { source: 'account', provider: 'openai', kind: 'no-credit' };
     expect(readAiKeyFailure({ error: AI_KEY_FAILED, aiKey: failure })).toEqual(failure);
-    expect(readAiKeyFailure({ error: AI_KEY_FAILED, aiKey: { ...failure, source: 'item' } })).toEqual({
+    expect(
+      readAiKeyFailure({ error: AI_KEY_FAILED, aiKey: { ...failure, source: 'item' } }),
+    ).toEqual({
       ...failure,
       source: 'item',
     });

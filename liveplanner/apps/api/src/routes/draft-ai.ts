@@ -39,7 +39,10 @@ export async function draftAi(
   const own = ownKeyOf(await personAiKey(accountCredentials(ctx.env), ctx, teamId));
   if (own.status === 'refused')
     return {
-      refused: own.reason === 'unreadable' ? keyFailedResponse(own.failure, own.words) : unavailable(own.words),
+      refused:
+        own.reason === 'unreadable'
+          ? keyFailedResponse(own.failure, own.words)
+          : unavailable(own.words),
     };
   if (own.status === 'key')
     return {

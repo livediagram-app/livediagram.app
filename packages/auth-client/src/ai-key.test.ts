@@ -165,8 +165,8 @@ describe('asking for the key of the person a request is from', () => {
       expect(await personAiKey(c, caller, 'team_1', door)).toBeNull();
     expect(door).not.toHaveBeenCalled();
     // The real door, with no binding: unavailable, never a throw.
-    expect(
-      await personAiKey({ ...creds, accounts: undefined }, person, null),
-    ).toEqual({ status: 'unavailable' });
+    expect(await personAiKey({ ...creds, accounts: undefined }, person, null)).toEqual({
+      status: 'unavailable',
+    });
   });
 });

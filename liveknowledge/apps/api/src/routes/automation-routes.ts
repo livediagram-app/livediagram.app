@@ -57,8 +57,7 @@ export async function handleAutomationRoutes(ctx: DocumentRouteContext): Promise
         reader: grantOn(ctx, id) !== null,
         // Describe a Rule on the knowledgebase's own key, its team's or the caller's (search-and-ask.md "Which key
         // answers").
-        aiKey: async () =>
-          keyAnswerOf(await applyingAi(env, id, askerOf(ctx, existing.teamId))),
+        aiKey: async () => keyAnswerOf(await applyingAi(env, id, askerOf(ctx, existing.teamId))),
       });
     },
   });

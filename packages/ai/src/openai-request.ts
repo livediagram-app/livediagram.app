@@ -12,8 +12,7 @@ export const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
  *  default, and a team's passages are not left on another service longer than the call needs. */
 /** A content part of the Responses API's input: text, or an image as a data URL. */
 export type OpenAiPart =
-  | { type: 'input_text'; text: string }
-  | { type: 'input_image'; image_url: string };
+  { type: 'input_text'; text: string } | { type: 'input_image'; image_url: string };
 export type OpenAiInput = { role: 'user' | 'assistant'; content: string | OpenAiPart[] };
 
 const openAiPart = (part: ModelPart): OpenAiPart =>

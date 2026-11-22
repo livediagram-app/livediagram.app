@@ -142,7 +142,7 @@ describe('the AI panels', () => {
   it('writes a summary to a comment or one of the plan’s text fields', () => {
     expect(summaryFields(withNotes()).map((f) => f.name)).toEqual(['Notes', 'Line']);
     render(<Panel start={summarise} />);
-    expect(screen.getByText(/Uses AI: counts toward this plan’s 100 AI steps a day/)).toBeTruthy();
+    expect(screen.getByText(/Rules run on built-in AI: counts toward this plan’s 100 AI steps a day/)).toBeTruthy();
     pick('Where It Goes', 'f-notes');
     expect(latest.steps[0]).toEqual({ kind: 'ai', task: 'summarise', field: 'f-notes' });
     pick('Where It Goes', '');

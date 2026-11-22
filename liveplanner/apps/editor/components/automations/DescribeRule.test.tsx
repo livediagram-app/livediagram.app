@@ -169,7 +169,9 @@ describe('the dialog', () => {
     await openFromMenu();
     fireEvent.change(box(), { target: { value: 'Flag overdue cards' } });
     fireEvent.click(draftButton());
-    expect((await screen.findByRole('alert')).textContent).toBe('Anthropic did not accept the key.');
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      'Anthropic did not accept the key.',
+    );
     const line = () => document.querySelector('[data-ai-source-stub]')!;
     expect(line().getAttribute('data-ai-source-stub')).toBe('bad-key');
     fireEvent.click(draftButton());

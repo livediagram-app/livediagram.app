@@ -14,7 +14,7 @@ import { usePhotoDraft, type PhotoReview } from './usePhotoDraft';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 vi.mock('@/lib/reading/select', () => ({ selectReader: vi.fn() }));
-vi.mock('@liveworkspace/workbench/components/ai/WorkbenchAiSource', () => ({
+vi.mock('@liveworkspace/workbench/components/ai/ai-source-scope', () => ({
   hasOwnAiKey: vi.fn(async () => false),
 }));
 vi.mock('@/lib/photo-detect', async () => {
@@ -22,7 +22,7 @@ vi.mock('@/lib/photo-detect', async () => {
   return { ...actual, detectAndCrop: vi.fn(), cropBoxes: vi.fn() };
 });
 
-import { hasOwnAiKey } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
+import { hasOwnAiKey } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import { ReadKeyFailed } from '@/lib/api/ai';
 import { selectReader, type SelectedReader } from '@/lib/reading/select';
 

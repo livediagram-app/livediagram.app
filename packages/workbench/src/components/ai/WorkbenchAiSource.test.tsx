@@ -17,7 +17,21 @@ vi.mock('../../bindings', () => ({
 }));
 vi.mock('../../lib/open-settings', () => ({ requestOpenSettings: hoisted.open }));
 
-import { AiSourceScope, WorkbenchAiSource, hasOwnAiKey } from './WorkbenchAiSource';
+import { WorkbenchAiSource } from './WorkbenchAiSource';
+import { hasOwnAiKey, useAiSourceScope } from './ai-source-scope';
+
+function Editor({
+  teamId,
+  signedIn,
+  children,
+}: {
+  teamId: string | null;
+  signedIn: boolean;
+  children: React.ReactNode;
+}) {
+  useAiSourceScope(teamId, signedIn);
+  return <>{children}</>;
+}
 
 const KEY = { provider: 'anthropic', model: 'claude-fable-5-2', hint: '4f2a', setAt: 1 };
 const PROVIDERS = [
@@ -46,7 +60,11 @@ const settle = () => act(async () => {});
 
 describe('WorkbenchAiSource', () => {
   it('shows nothing, and reads nothing, for a guest', async () => {
-    render(<WorkbenchAiSource />);
+    render(
+      <Editor teamId={null} signedIn={false}>
+        <WorkbenchAiSource />
+      </Editor>,
+    );
     await settle();
     expect(document.querySelector('[data-ai-source]')).toBeNull();
     expect(fetchSpy).not.toHaveBeenCalled();
@@ -54,9 +72,9 @@ describe('WorkbenchAiSource', () => {
 
   it('reads Your Key once a key is added in the Settings it opened, with no reload, counting both', async () => {
     render(
-      <AiSourceScope teamId={null} signedIn>
+      <Editor teamId={null} signedIn>
         <WorkbenchAiSource allowance="10 a day." id="src" />
-      </AiSourceScope>,
+      </Editor>,
     );
     await settle();
     expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -84,10 +102,10 @@ describe('WorkbenchAiSource', () => {
       teams: [{ id: 't1', name: 'Design', canManage: false, key: KEY }],
     };
     render(
-      <AiSourceScope teamId="t1" signedIn>
+      <Editor teamId="t1" signedIn>
         <WorkbenchAiSource />
         <WorkbenchAiSource teamId={null} />
-      </AiSourceScope>,
+      </Editor>,
     );
     await settle();
     expect(screen.getByText('Your Team’s Key')).toBeTruthy();

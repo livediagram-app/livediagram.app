@@ -248,7 +248,8 @@ export const ASK_UNAVAILABLE_WORDS = {
  *  not say are unavailable. No key and no secret: none, so built-in AI. */
 export function keyAnswerOf(ai: AppliedAi | AiUnavailable): KeyAnswer {
   if (typeof ai !== 'string') {
-    const source = ai.source === 'knowledgebase' ? 'item' : ai.source === 'team' ? 'team' : 'account';
+    const source =
+      ai.source === 'knowledgebase' ? 'item' : ai.source === 'team' ? 'team' : 'account';
     return { status: 'key', source, provider: ai.provider, model: ai.model, key: ai.apiKey };
   }
   switch (ai) {

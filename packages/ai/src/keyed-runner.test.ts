@@ -16,7 +16,10 @@ const draftAsk = {
     { role: 'system', content: 'You draft plans.' },
     { role: 'user', content: 'A hiring pipeline' },
   ],
-  response_format: { type: 'json_schema', json_schema: { name: 'plan', schema: SCHEMA, strict: true } },
+  response_format: {
+    type: 'json_schema',
+    json_schema: { name: 'plan', schema: SCHEMA, strict: true },
+  },
   max_tokens: 2000,
   temperature: 0,
 };
@@ -46,7 +49,9 @@ describe('a Workers AI request asked on a key', () => {
       ],
       response_format: { type: 'json_object' },
     });
-    expect(request.system).toBe('{"a":1}\n\nReply with one JSON object only, no prose and no code fence.');
+    expect(request.system).toBe(
+      '{"a":1}\n\nReply with one JSON object only, no prose and no code fence.',
+    );
     expect(request.messages).toEqual([
       { role: 'assistant', content: '' },
       { role: 'user', content: 'go' },
@@ -55,8 +60,15 @@ describe('a Workers AI request asked on a key', () => {
   });
 
   it('answers in the binding’s `{ response }` shape, on Claude', async () => {
-    const { fetch, sent } = fakeFetch(() => streamResponse(answerEvents(['{"name":', '"Hiring"}'])));
-    const runner = keyedRunner({ provider: 'anthropic', fetch, apiKey: KEY, model: 'claude-opus-5-5' });
+    const { fetch, sent } = fakeFetch(() =>
+      streamResponse(answerEvents(['{"name":', '"Hiring"}'])),
+    );
+    const runner = keyedRunner({
+      provider: 'anthropic',
+      fetch,
+      apiKey: KEY,
+      model: 'claude-opus-5-5',
+    });
     expect(await runner.run('@cf/ignored', draftAsk)).toEqual({ response: '{"name":"Hiring"}' });
     expect(sent[0]!.body['model']).toBe('claude-opus-5-5');
     expect(sent[0]!.headers['x-api-key']).toBe(KEY);
@@ -88,7 +100,13 @@ describe('a message with a picture', () => {
   };
 
   it('goes to Claude as an image block with its bytes inline', () => {
-    const body = claudeRequest({ model: 'x', system: 's', messages: [picture], maxTokens: 10, effort: 'low' });
+    const body = claudeRequest({
+      model: 'x',
+      system: 's',
+      messages: [picture],
+      maxTokens: 10,
+      effort: 'low',
+    });
     expect(body.messages[0]!.content).toEqual([
       { type: 'text', text: 'Crop 1:' },
       { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: 'AAAA' } },
@@ -96,7 +114,12 @@ describe('a message with a picture', () => {
   });
 
   it('goes to OpenAI as an input image with a data URL', () => {
-    const body = openAiRequest('x', { system: 's', messages: [picture], maxTokens: 10, effort: 'low' });
+    const body = openAiRequest('x', {
+      system: 's',
+      messages: [picture],
+      maxTokens: 10,
+      effort: 'low',
+    });
     expect(body.input[0]!.content).toEqual([
       { type: 'input_text', text: 'Crop 1:' },
       { type: 'input_image', image_url: 'data:image/jpeg;base64,AAAA' },

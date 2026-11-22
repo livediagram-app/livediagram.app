@@ -1,6 +1,6 @@
 'use client';
 
-import { AiSourceScope } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
+import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import { CanvasFocusProvider } from '@/hooks/canvas/useCanvasFocus';
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
@@ -137,6 +137,8 @@ export function EditorView() {
   useEffect(() => registerUnsavedWork(hasUnsavedChanges), [hasUnsavedChanges]);
   // F6 moves between the header, palette, canvas, controls and tab bar (canvas-accessibility.md).
   useRegionCycle();
+  // Which team the item is in, for every AI feature's source line (ai-keys.md "The source line").
+  useAiSourceScope(ctx.projectTeamId ?? null, !!ctx.accountUserId);
   const {
     activeId,
     activeTab,
@@ -308,7 +310,6 @@ export function EditorView() {
     // a Default tab's paper is the viewer's, not the tab's.
     // Only a Dashboard draws participant cursors (plan-cursors.ts), so only there do Settings, the Collaborators
     // modal and search offer Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md).
-    <AiSourceScope teamId={ctx.projectTeamId ?? null} signedIn={!!accountUserId}>
     <PlanAutomationsHost
       scope={automationsScope}
       plan={ctx.plan.context}
@@ -521,7 +522,6 @@ export function EditorView() {
         </CalendarFeedHost>
       </SnapshotsDoorProvider>
     </PlanAutomationsHost>
-    </AiSourceScope>
   );
   // The approvals door around the whole view: the corner card's badge, the banner and the Share dialog read it.
   return <ApprovalDoorProvider door={approvalDoor}>{view}</ApprovalDoorProvider>;
