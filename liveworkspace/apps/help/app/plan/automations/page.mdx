@@ -33,7 +33,7 @@ At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs
 
 ## Start From a Template
 
-The **Templates** tab, and the empty Rules list, show ready-made rules: **Stamp the Finish Date**, **Assign on Start**, **Overdue Nudge**, **Share Out Form Responses**, **Post Shipped Work to Slack**, **Triage New Bugs**, **Unblock the Next Card**, **Due Soon Reminder**, **Clean Up Done**, **Escalate Urgent Work**, **Reopen on New Comment**, **Route Reviews**, **Give It a Due Date**, **Flag Blocked Cards**, **Verify the Fix**, **Back to the Backlog**, **Close the Parent**, **Tell Them It’s Unblocked**, **Nudge Stuck Cards**, **Done When Feedback Is Resolved**, **Flag Cards Due Soon**, **Done When the Checklist Is Complete**, two that use AI: **Sort Incoming Cards** and **Summarise Form Requests**, and six for GitHub pull requests ([Connect GitHub](/help/plan/connect-github/)). The chips above them (**Status**, **Assigning**, **Due Dates**, **Forms**, **Telling People**, **AI**, and **GitHub** where it is set up) narrow the list. Hover a template to watch it at work on a small board.
+The **Templates** tab, and the empty Rules list, show ready-made rules: **Stamp the Finish Date**, **Assign on Start**, **Overdue Nudge**, **Share Out Form Responses**, **Card Done, Write Release Note** (a page in a knowledgebase you pick when a card moves to Done), **Post Shipped Work to Slack**, **Triage New Bugs**, **Unblock the Next Card**, **Due Soon Reminder**, **Clean Up Done**, **Escalate Urgent Work**, **Reopen on New Comment**, **Route Reviews**, **Give It a Due Date**, **Flag Blocked Cards**, **Verify the Fix**, **Back to the Backlog**, **Close the Parent**, **Tell Them It’s Unblocked**, **Nudge Stuck Cards**, **Done When Feedback Is Resolved**, **Flag Cards Due Soon**, **Done When the Checklist Is Complete**, two that use AI: **Sort Incoming Cards** and **Summarise Form Requests**, and six for GitHub pull requests ([Connect GitHub](/help/plan/connect-github/)). The chips above them (**Status**, **Assigning**, **Due Dates**, **Forms**, **Telling People**, **AI**, and **GitHub** where it is set up) narrow the list. Hover a template to watch it at work on a small board.
 
 Pick one and it opens in the builder, filled in from your plan: its done columns, its In Progress and Review columns, a date field named like Completed On, a Bug card type. Whatever your plan doesn't have, or the rule leaves to you (a label, the people in turn, a Slack channel), is marked on its step ("Pick a label") until you pick it. Nothing is saved, and the rule stays off, until you press **Save Rule**. **New Rule** offers **Start From a Template** too.
 
@@ -174,6 +174,10 @@ A rule's changes are by **Automation**, with the rule's name beside it:
 ## Run Rule
 
 A rule whose trigger is **Run from a Card** is started by hand: open the card, press **⋯**, then **Run Rule** and pick it. A message says it ran, or why it couldn't.
+
+## Steps in Other Apps
+
+**Add an Action** has an **In Other Apps** group: **Create a Card in a Plan** (in another plan), **Write a Page in a Knowledgebase**, **Post in a Space**, **Add a Tab** (to a livedocuments or livediagram item) and **Notify**. They act as the person who last saved the rule, only on items they can edit, and a rule that loses that access pauses until someone presses **Take Over Rule**. They work as in every app: see [Steps in Other Apps](/help/tools/automations/#steps-in-other-apps).
 
 ## Rules and Other Rules
 

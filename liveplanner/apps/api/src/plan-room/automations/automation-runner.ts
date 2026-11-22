@@ -69,6 +69,7 @@ import type { AutomationSchedule } from './automation-queue';
 import type { AutomationStore, Sql } from './automation-store';
 import { applyPlannedRun, type WriteDeps } from './automation-writes';
 import { heldSends, sendMessages, sendsClient } from './automation-sends';
+import { runPlanCrossSteps } from './automation-cross';
 import { aiClient, heldCardSteps, runAiSteps } from './automation-ai';
 import { tallyRun, type AutomationTally } from './automation-telemetry';
 
@@ -433,9 +434,24 @@ export async function runRule(
         offset,
         after,
       );
+    // Steps in other apps (automation-cross.ts): sent as the rule's author after the card writes, in the run's chain.
+    const crossRun = {
+      env: deps.env,
+      planId: deps.planId,
+      sql,
+      rule,
+      plan,
+      carried: event.cross,
+      runId: id,
+      url: ctx.url,
+      dry: opts.dry === true,
+      now: at,
+      tally: state.tally,
+    };
     if (opts.dry) {
       await ai(true);
       await sendMessages(messages, live.sends, lines, offset);
+      await runPlanCrossSteps(crossRun, writes.cross ?? [], lines, offset);
       const related = writes.related.filter((r) => r.failed);
       const reason = live.failed ?? (related.length ? relatedFailure(related, plan.types) : null);
       return end(
@@ -540,6 +556,17 @@ export async function runRule(
     if (failed === null && sent.failed !== undefined) {
       failed = sent.failed;
       webhook = sent.webhook;
+    }
+    if (failed === null) {
+      const crossed = await runPlanCrossSteps(crossRun, writes.cross ?? [], lines, offset);
+      // The author lost access: the rule stops now, whatever its failures so far (spec "Who a step acts as").
+      if (crossed.pause) {
+        if (deps.store.pauseNow(rule.id, crossed.pause, Date.now()))
+          state.tally?.track('Plan', 'Ran', 'AutomationPaused');
+        return end('failed', crossed.pause);
+      }
+      failed = crossed.failed ?? null;
+      capped ??= crossed.skipped;
     }
     if (failed !== null) return end('failed', failed, gone);
     turns = live.turns;

@@ -142,6 +142,35 @@ export const AUTOMATION_TEMPLATES: readonly AutomationTemplate[] = [
     },
   },
   {
+    // A step in another app (liveworkspace automations.md "Steps in other apps"): the knowledgebase is the person's
+    // to pick, as they can edit it.
+    id: 'release-note',
+    name: 'Card Done, Write Release Note',
+    description:
+      'When a card moves to Done, write a release note page in a knowledgebase, linked back to the card.',
+    category: 'telling_people',
+    build(plan) {
+      const { trigger, picks } = movedToDone(plan);
+      return {
+        body: rule(
+          plan,
+          this.name,
+          trigger,
+          [],
+          [
+            {
+              kind: 'kb_page',
+              target: { app: 'liveknowledge', item: '', title: '' },
+              title: '{{card.title}}',
+              body: 'Shipped {{now.date}} by {{card.assignee}}.\n\nCard: {{card.url}}',
+            },
+          ],
+        ),
+        picks: [...picks, { path: 'steps.0', pick: 'target' }],
+      };
+    },
+  },
+  {
     id: 'shipped-to-slack',
     name: 'Post Shipped Work to Slack',
     description:
@@ -668,6 +697,8 @@ function stillEmpty(part: unknown, pick: AutomationPick): boolean {
       return p.kind === 'assign' && 'rotate' in p.to && p.to.rotate.length < 2;
     case 'webhook':
       return p.kind === 'notify' && p.webhook === '';
+    case 'target':
+      return 'target' in p && !(p as { target: { item: string } }).target.item;
   }
 }
 

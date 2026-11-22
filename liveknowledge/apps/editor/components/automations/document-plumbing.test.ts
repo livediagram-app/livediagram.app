@@ -28,6 +28,7 @@ const SAID: Record<Event, [string, string, string]> = {
   secret_copied: ['Document', 'Copied', 'AutomationSecret'],
   rule_on: ['Document', 'Toggled', 'AutomationOn'],
   rule_off: ['Document', 'Toggled', 'AutomationOff'],
+  rule_taken_over: ['Document', 'Toggled', 'AutomationTakenOver'],
   rule_deleted: ['Document', 'Deleted', 'AutomationRule'],
   rule_tested: ['Document', 'Tested', 'AutomationRule'],
   rule_run: ['Document', 'Ran', 'AutomationManual'],

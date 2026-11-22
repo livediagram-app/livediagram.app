@@ -110,6 +110,29 @@ export const DOCUMENT_TEMPLATES: readonly Template[] = [
     [toSlack('{{tab.name}} is due for review ({{page.owner}} owns it): {{tab.url}}')],
     SLACK_PICK,
   ),
+  // A step in another app: the plan and its board are the person's to pick.
+  template(
+    'review-card',
+    'trust',
+    'Review Due, Add a Card for the Owner',
+    'When a verified page comes due for review, add a card to a plan for its owner, due in a week and linked back.',
+    { kind: REVIEW_DUE_EVENT },
+    [
+      {
+        kind: 'plan_card',
+        target: { app: 'liveplanner', item: '', title: '' },
+        board: '',
+        column: '',
+        title: 'Review {{tab.name}}',
+        description: '{{tab.name}} in {{item.name}} is due for review: {{tab.url}}',
+        assignee: '{{page.owner}}',
+        dueDays: 7,
+        linkBack: true,
+        skipIfOpen: true,
+      },
+    ],
+    [{ path: 'steps.0', pick: 'target' }],
+  ),
   template(
     'agent-check',
     'trust',

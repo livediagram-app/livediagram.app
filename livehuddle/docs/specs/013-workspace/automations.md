@@ -86,6 +86,17 @@ room back as it was, chairs, whiteboard and all, once the room has emptied.
 **Reset Every Night** leads: a workshop Space put back to a snapshot every night is what the Automations screen is
 for here. A Scheduled time is on the quarter hour, so the stand-up reminder goes at 09:45 for a 10:00 stand-up.
 
+## Steps in other apps
+
+Every step of the platform's [Steps in other apps](../../../../liveworkspace/docs/specs/018-automations/automations.md#steps-in-other-apps) is in this Space's Add a Step, under **In Other Apps**:
+Create a Card in a Plan, Write a Page in a Knowledgebase, Post in a Space, Add a Tab to a Document and Notify. Each
+acts as the rule's author, with their rights alone, through the target app's own door; lost access pauses the rule,
+and a chain stops after 3 hops or on a rule it already ran. Their values are this Space's own, as every step's.
+
+**As a target**, a Space takes **Post in a Space**: a sticky note on a chosen tab, its text the rule's, signed "Automation · <rule>", by the author. livehuddle has no chat, so a note on a tab is the post.
+
+**Starter: Meeting Ended, Send Actions to Plan**: Everyone Left, Summarise with AI, then Create a Card in a Plan titled `Actions from {{tab.name}}, {{now.date}}` with `{{summary}}`, linked back to the Space.
+
 ## The screen
 
 The platform's screen, as every item's is ([ui.md](../../../../liveworkspace/docs/specs/018-automations/blueprints/ui.md)),

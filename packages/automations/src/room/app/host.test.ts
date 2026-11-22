@@ -3,6 +3,7 @@ import { queued, rowsOf, world, ANA } from '../item/test-kit';
 import { ITEM_WRITER_MS, withItemWriter } from '../item/writer';
 import {
   SOMEONE,
+  asCrossAppStep,
   asTabWriter,
   cutTo,
   hearsEvent,
@@ -34,6 +35,29 @@ describe('a call site', () => {
     expect(hearsEvent(host, 'snapshot_taken')).toBe(true);
     expect(queueEvent(host, { ...taken('a'), by: ANA, role: 'editor' })).toBe(true);
     expect(queued(w.sql)).toMatchObject([{ id: 'a', kind: 'snapshot_taken', by: { id: ANA.id } }]);
+  });
+
+  it('queues what a step from another app’s route writes in its chain, as the automation’s', async () => {
+    const w = world();
+    w.rule({ trigger: { kind: 'snapshot_taken' } });
+    w.rule({ trigger: { kind: 'tab_added' } });
+    const host = { AUTOMATIONS: w.engine };
+    const chain = { id: 'c1', hops: 1, rules: ['liveplanner:p:r'] };
+    const own = { id: 'b', kind: 'snapshot_taken', at: 1, cross: { id: 'c0', hops: 2, rules: [] } };
+    await asCrossAppStep(host, { author: ANA, chain }, async () => {
+      queueEvent(host, { ...taken('a'), by: ANA, role: 'editor' });
+      queueEvent(host, own);
+      w.addTab('t1');
+    });
+    queueEvent(host, taken('c'));
+    expect(queued(w.sql).map((e) => [e.id.slice(0, 1), e.role, e.cross?.id])).toEqual([
+      ['a', 'automation', 'c1'],
+      ['b', undefined, 'c0'],
+      ['t', 'automation', 'c1'],
+      ['c', undefined, undefined],
+    ]);
+    // Outside a room it is the write alone.
+    await expect(asCrossAppStep({}, { author: ANA, chain }, async () => 7)).resolves.toBe(7);
   });
 
   it('queues Agent Made Changes by the token’s name, only while a rule hears it', () => {

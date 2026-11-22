@@ -5,6 +5,11 @@
 // `localNamespace`), so code shared by the worker and the room (getProject's outline, the room relays) costs no
 // hop there.
 
+import type {
+  AutomationStepAnswer,
+  AutomationStepDoorCall,
+  AutomationTargetDescription,
+} from '@liveworkspace/index-client';
 import type { IntakeDelivery, IntakeOutcome } from './email-intake/intake-delivery';
 import type { Item } from '@liveplanner/items';
 import type { CardThread } from '@liveplanner/project';
@@ -124,6 +129,10 @@ export type PlanRoomClient = {
   // An Incoming Webhook call to one of the plan's rules (plan-room/automations/automation-incoming.ts): the room checks
   // the secret, the limits and the body, and queues the runs. An id nothing has written answers 401 and stays empty.
   incomingHook(ruleId: string, call: HookCall): Promise<HookAnswer>;
+  // A rule's step from another app on this plan, its author's grant checked (automations/cross-app-door.ts), and what
+  // the step's pickers may name here.
+  automationStep(call: AutomationStepDoorCall): Promise<AutomationStepAnswer>;
+  automationTarget(): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
   // A rule email's unsubscribe (plan-room/automations/automation-addresses.ts): false for a token the plan never made.
   emailOptOut(token: string): Promise<boolean>;
   // A GitHub connect's callback or a verified delivery (plan-room/github/github-room.ts): the plan checks its own
@@ -183,6 +192,8 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     threadWrite: (threadId, op, via) => room.threadWrite(planId, threadId, op, via),
     threadsRelayed: (relay) => room.threadsRelayed(planId, relay),
     incomingHook: (ruleId, call) => room.incomingHook(planId, ruleId, call),
+    automationStep: (call) => room.automationStep(planId, call),
+    automationTarget: () => room.automationTarget(planId),
     emailOptOut: (token) => room.emailOptOut(planId, token),
     github: (call) => room.github(planId, call),
     // One RPC, two calls (calendar/feed-room.ts): the answer's shape follows the call's kind.
@@ -251,6 +262,8 @@ export type PlanRoomRpc = {
   ): Promise<ThreadWriteResult>;
   threadsRelayed(planId: string, relay: ThreadsRelay): Promise<string[]>;
   incomingHook(planId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
+  automationStep(planId: string, call: AutomationStepDoorCall): Promise<AutomationStepAnswer>;
+  automationTarget(planId: string): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
   emailOptOut(planId: string, token: string): Promise<boolean>;
   github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer>;
   calendarFeed(planId: string, call: FeedRoomCall): Promise<FeedRoomAnswer>;

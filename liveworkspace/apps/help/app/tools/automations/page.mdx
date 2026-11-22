@@ -163,7 +163,7 @@ The **Templates** tab, and the empty Rules list, show ready-made rules in groups
 
 <AppNote app="livediagram">
   The groups are **Keep It Safe**, **Stay in the Loop**, **Workshops** and **Agents and Tools**:
-  **Reset Every Night**, **Snapshot Every Friday**, **Tell Slack When This Changes**, **Comments to
+  **Reset Every Night**, **Snapshot Every Friday**, **Tell Slack When This Changes**, **Session Ended, Summarise into Knowledgebase** (half an hour after the edits stop, an AI summary written up as a page in a knowledgebase you pick), **Comments to
   Slack**, **Review Finished** (an email once every thread is resolved), **A Fresh Retro Each
   Sprint** (a new Retrospective tab every Monday), **Poll Results to Slack**, **Questions to
   Slack**, **Is This Still Right?** (an email after 90 days untouched), **Weekly Summary by Email**,
@@ -181,7 +181,8 @@ The **Templates** tab, and the empty Rules list, show ready-made rules in groups
 
 <AppNote app="liveknowledge">
   The groups are **Keep Pages Trusted**, **AI Knowledge**, **Stay in the Loop** and **Keep It
-  Safe**: **Review Due to Slack**, **Ask the Owner to Check an Agent’s Edit**, **Agents’ New Pages
+  Safe**: **Review Due to Slack**, **Review Due, Add a Card for the Owner** (a card in a plan you
+  pick, assigned to the page's owner and due in a week), **Ask the Owner to Check an Agent’s Edit**, **Agents’ New Pages
   Get an Owner**, **A Restored Page Needs Verifying Again**, **Name a Version When Verified**,
   **Unanswered Questions to Slack**, **Pages That Disagree to Slack**, **Tell the Owner About a
   Suggested Edit**, **Announce Verified Pages**, **Comments to Slack**, **Access Requests to
@@ -200,7 +201,8 @@ The **Templates** tab, and the empty Rules list, show ready-made rules in groups
   In four groups. **Keep It Safe**: **Reset Every Night** (a workshop Space back to a snapshot at
   midnight, so it starts clean each day), **Tidy Up When Everyone Leaves** (back to a snapshot 10
   minutes after the last person leaves) and **Snapshot Every Friday**. **Rooms and Meetings**: **The
-  Office Is Open** (a Slack post when the first person arrives), **Stand-Up in Fifteen** and
+  Office Is Open** (a Slack post when the first person arrives), **Stand-Up in Fifteen**, **Meeting
+  Ended, Send Actions to Plan** (an AI summary of the meeting as a card in a plan you pick) and
   **Meeting Wrap-Up** (an email of who came and for how long). **The Suggestion Box**: **Suggestions
   to Slack** and **Empty the Suggestion Box Weekly**. **Stay in the Loop**: **A Visitor Arrived**
   and **Access Requests to Slack**.
@@ -443,6 +445,22 @@ A snapshot a rule took, and the safety snapshot its revert takes first, show in 
 ## Email From a Rule
 
 **Send Email** to a person of the <Noun /> (its owner, a person you pick, or whoever started the rule) goes to their verified address, and only while they haven't turned off email about work on a <Noun />. You can also type in up to 10 **Email Addresses** for people outside the <Noun />. Each of those emails says which rule and which <Noun /> sent it, and carries a link to unsubscribe: it opens a page with one **Unsubscribe** button, so a mail scanner that follows the link unsubscribes nobody. An address that unsubscribes gets no more email from this <Noun />'s rules. A <Noun /> sends at most 50 emails a day to typed-in addresses.
+
+## Steps in Other Apps
+
+**Add a Step** has an **In Other Apps** group: steps that act on another of your items, in another app.
+
+- **Create a Card in a Plan**: a card on a board and column you pick, with a title, a description, an assignee and a due date in so many days. It links back to what started the rule, and can skip itself while an open card already links there.
+- **Write a Page in a Knowledgebase**: a page under a parent you pick, from a title and a body. The page says **Written by the rule** and the rule's name, and reads **Never verified** until someone presses **Mark Verified**.
+- **Post in a Space**: a note on a Space's tab you pick.
+- **Add a Tab**: a tab from a template you pick, in a livedocuments or livediagram item.
+- **Notify**: a line in the Inbox of the people you pick, in every app.
+
+Each text box takes values with **Insert a Field**, and the **Preview** under it shows what will land as you type. A rule holds up to 5 of these steps, at its top level.
+
+**Who it acts as.** A step in another app acts as the person who last saved the rule, and only on items they can edit: the picker shows the rest as **View Only**, with a lock. The rule's side panel says **Runs As**, what it **Reaches** and its **Limits**. If that person loses access, the run stops with **Stopped: no access**, and the rule pauses. Anyone who can edit the <Noun />'s rules can press **Take Over Rule**, on its row or in the Audit Trail: the rule is saved as theirs and turned back on.
+
+**Limits.** A rule makes up to 100 of these steps a day, and a person's rules up to 500 a day across every app. A rule in another app that a step starts is part of the same chain: the chain stops after 3 hops, and the same rule never fires twice in one chain (**Skipped: would loop back to this rule**). AI steps keep their own daily allowance: at it, only the AI steps wait.
 
 ## Rules and Other Rules
 

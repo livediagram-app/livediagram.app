@@ -133,7 +133,7 @@ export interface AutomationDraftRequest {
 
 export interface AutomationDraftPick {
   path: string;
-  pick: 'column' | 'type' | 'field' | 'label' | 'people' | 'webhook';
+  pick: 'column' | 'type' | 'field' | 'label' | 'people' | 'webhook' | 'target';
 }
 
 export interface AutomationDraftResponse {

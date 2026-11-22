@@ -16,6 +16,7 @@ import {
   TEAM_AUDIT_NEXT_CURSOR_HEADER,
   type App,
 } from './constants';
+import type { AutomationTargetDescription } from './automation-steps';
 import type {
   CreateFolderInput,
   CreateItemInput,
@@ -198,6 +199,12 @@ export function createIndexClient({
     // the order asked; those it would refuse are left out.
     lookupItems: (ids: readonly string[]) =>
       call<{ items: Item[] }>('/items/lookup', { method: 'POST', body: { ids } }),
+    // What an item offers a rule's step in another app (its boards, pages, templates or tabs), read through its own
+    // app as the caller: an Editor's alone (automation-steps.ts).
+    automationTarget: (id: string, options: RequestOptions = {}) =>
+      call<AutomationTargetDescription>(`/items/${enc(id)}/automation-target`, {
+        signal: options.signal,
+      }),
     updateItem: (id: string, input: UpdateItemInput) =>
       call<{ item: Item }>(`/items/${enc(id)}`, { method: 'PATCH', body: input }),
     // To the Trash, or with `permanent` gone for good.

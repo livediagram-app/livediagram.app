@@ -858,6 +858,17 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone tried an automation rule with Test on a Card, which shows what it would do and changes nothing.',
   'Plan|Ran|AutomationManual':
     "Someone ran a Run from a Card automation rule from a card's menu, under Run Rule.",
+  'Plan|Ran|CrossAppDone':
+    "A rule's step in another app landed: a card, a page, a post, a tab or a notice.",
+  'Plan|Ran|CrossAppNoAccess':
+    "A rule's step in another app stopped because its author can no longer edit the target; the rule paused.",
+  'Plan|Ran|CrossAppLoop':
+    "A rule's step in another app was skipped: it would loop back to a rule in its chain, or pass the chain's 3 hops.",
+  'Plan|Ran|CrossAppCapped':
+    "A rule's step in another app was skipped at the rule's or the author's daily cap.",
+  'Plan|Ran|CrossAppFailed': "A rule's step in another app failed in the other app.",
+  'Plan|Toggled|AutomationTakenOver':
+    'Someone took over a rule paused on lost access: it now runs as them, and is on again.',
   'Plan|Ran|AutomationAiSummarise':
     "An automation rule's Summarise Card asked the AI for a summary of a card, written as a comment or into a text field.",
   'Plan|Ran|AutomationAiCardType':

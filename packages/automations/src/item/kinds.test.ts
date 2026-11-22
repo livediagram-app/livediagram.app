@@ -87,6 +87,11 @@ describe('the registry', () => {
       'ai',
       'wait',
       'if',
+      'plan_card',
+      'kb_page',
+      'space_post',
+      'doc_tab',
+      'inbox_notice',
       'clear_box',
       'unwired',
     ]);

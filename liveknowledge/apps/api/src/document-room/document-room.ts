@@ -8,6 +8,9 @@ import {
   type ExportResult,
   type PutAwayRefusal,
 } from '@liveworkspace/index-app';
+import type { DocumentGrant } from '../index-service';
+import * as crossApp from './automations/cross-app-door';
+import { roomFetch } from './room-fetch';
 import { tellSourceChanged } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveknowledge/api-schema';
@@ -27,9 +30,8 @@ import type { DocumentEnv, Env, ServerMessage } from '../types';
 import { type LoggedOp } from '../document-room-rules';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
-import { answerInternal, type InternalRoom } from '../room-internal';
-import { readSessionAttachment, verifiedSessionOf, type SessionAttachment } from '../room-session';
-import { tokenRoomRole } from '../knowledge/agent-grants';
+import type { InternalRoom } from '../room-internal';
+import { readSessionAttachment, type SessionAttachment } from '../room-session';
 import { documentHasTab } from '../db/tabs';
 import {
   documentShares,
@@ -524,6 +526,20 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // ---------- RPC: Automations' doors (@liveworkspace/automations/room doors.ts, standing.ts) --------------------
 
+  // A rule's step from another app here (its author's grant checked by the internal door), and what its pickers may
+  // name here (automations/cross-app-door.ts).
+  automationStep(
+    id: string,
+    call: crossApp.StepCall,
+    grant: DocumentGrant,
+  ): Promise<crossApp.StepAnswer> {
+    return crossApp.itemAutomationStep(this, id, call, grant);
+  }
+
+  automationTarget(documentId: string): Promise<crossApp.TargetHere> {
+    return crossApp.itemAutomationTarget(this, documentId);
+  }
+
   // An Incoming Webhook call to one rule, proved by the rule's secret.
   incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer> {
     this.bindDocument(documentId);
@@ -615,50 +631,9 @@ export class DocumentRoom extends DurableObject<Env> {
     return this.roomEnv;
   }
 
-  // The room's own doors: its internal endpoints (room-internal.ts) and the WebSocket upgrade. Takes what a
-  // stub's fetch takes, so the worker's relays (room-client.ts) call it the same way here as through a stub.
-  override async fetch(input: Request | string, init?: RequestInit): Promise<Response> {
-    const request = typeof input === 'string' || init ? new Request(input, init) : input;
-    const url = new URL(request.url);
-    const internal = await answerInternal(this.internal, request, url);
-    if (internal) return internal;
-    if (request.headers.get('Upgrade') !== 'websocket') {
-      return new Response('Expected WebSocket', { status: 426 });
-    }
-    const pair = new WebSocketPair();
-    // WebSocketPair is a 2-property record keyed `0`/`1`. The "client"
-    // side is returned to the connecting peer; the "server" side is
-    // owned by this Durable Object.
-    const client = pair[0];
-    const server = pair[1];
-    // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
-    const v = verifiedSessionOf(request);
-    // A token's socket writes only with `write` granted here (knowledge/agent-grants.ts tokenRoomRole).
-    const role = this.roomEnv
-      ? await tokenRoomRole(this.roomEnv, v.verifiedRole, v.apiToken)
-      : v.apiToken
-        ? 'view'
-        : v.verifiedRole;
-    this.acceptSession(
-      server,
-      role,
-      v.tabScope,
-      v.shareCode,
-      v.personTag,
-      v.workbenchPairing,
-      v.documentId,
-      v.grantExp ?? null,
-      v.account === true,
-      v.collabKey ?? null,
-      v.reactionPerson ?? null,
-      v.apiToken ?? null,
-    );
-    if (v.documentId) {
-      this.bindDocument(v.documentId);
-      if (v.head) await this.takeHead(v.head);
-    }
-    this.armAlarm();
-    return new Response(null, { status: 101, webSocket: client });
+  // The room's own doors: its internal endpoints and the WebSocket upgrade (room-fetch.ts).
+  override fetch(input: Request | string, init?: RequestInit): Promise<Response> {
+    return roomFetch(this, this.internal, input, init);
   }
 
   renewGrant(ws: WebSocket, ticket: unknown): Promise<void> {

@@ -1962,6 +1962,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationStamp": {
     "additionalProperties": false,
     "properties": {
+      "account": {
+        "type": "string"
+      },
       "ai": {
         "const": true,
         "type": "boolean"
@@ -5172,7 +5175,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "ItemPick": {
-    "$ref": "#/components/schemas/ItemRefKind"
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/ItemRefKind"
+      },
+      {
+        "const": "target",
+        "type": "string"
+      }
+    ]
   },
   "ItemRef": {
     "additionalProperties": false,
@@ -8135,12 +8146,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "PageAuthorVia": {
-    "description": "The door an agent's write came through; `suggestion` is an agent's suggestion a person accepted.",
+    "description": "The door an agent's write came through; `suggestion` is an agent's suggestion a person accepted; `automation` a rule's step from another app, its `agent` the rule and the item it came from.",
     "enum": [
       "mcp",
       "cli",
       "api",
-      "suggestion"
+      "suggestion",
+      "automation"
     ],
     "type": "string"
   },

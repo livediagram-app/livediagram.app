@@ -37,6 +37,7 @@ import {
   type RulePart,
 } from './rule-draft';
 import { RuleDetails } from './RuleDetails';
+import { CrossAppRuleCard } from './cross-app/CrossAppRuleCard';
 import { RuleSteps, type StepsActions } from './RuleSteps';
 import { StepPanel } from './StepPanel';
 import type { ListedRule, RuleBody } from './types';
@@ -328,10 +329,19 @@ export function RuleBuilder({
       onMovedFocused={() => setMoved(null)}
     />
   );
+  // Steps in other apps: who they act as, what they reach, their limits (cross-app/CrossAppRuleCard.tsx).
+  const crossCard = (
+    <CrossAppRuleCard
+      body={body}
+      author={rule ? rule.edited.by.name : null}
+      onRuns={rule && screen?.openRuns ? () => screen.openRuns?.(rule.id) : undefined}
+    />
+  );
   const steps = (
     <div className="flex flex-col gap-5">
       {notice}
       {ruleSteps}
+      {crossCard}
       <RuleDetails chain={body.chain} onChain={(chain) => change({ ...body, chain })} />
     </div>
   );
@@ -400,6 +410,7 @@ export function RuleBuilder({
           <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto overscroll-contain bg-slate-50/60 px-4 py-4 dark:bg-slate-950/40">
             {notice}
             {ruleSteps}
+            {crossCard}
           </div>
           <PhoneRuleFoot
             details={

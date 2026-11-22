@@ -30,6 +30,8 @@ import type {
 } from '../kit';
 import { ScheduledPanel } from '../step-panels/ScheduledPanel';
 import { TONES, TileStage, type SceneTone } from '../tile-picker/tile-scene';
+import { isCrossAppKind } from '@liveworkspace/automations/cross-app';
+import { crossAppKitActions } from '../cross-app/cross-app-kit';
 import { ITEM_ACTION_GLYPHS } from './glyphs';
 import { AddTabPanel, ItemEmailPanel, summarisePanel } from './panels/action-panels';
 import {
@@ -268,8 +270,13 @@ export function buildItemKinds(
       ...over,
     };
   };
+  const cross = crossAppKitActions<ItemPart, ItemUiOutline>();
   for (const def of registry.actions) {
     if (def.kind === 'if') continue;
+    if (isCrossAppKind(def.kind)) {
+      actions[def.kind] = cross[def.kind];
+      continue;
+    }
     if (def.kind === 'notify')
       for (const key of MESSAGE_KEYS) {
         const via = key.slice('notify_'.length) as AutomationVia;

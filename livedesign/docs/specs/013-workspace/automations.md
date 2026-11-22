@@ -70,6 +70,17 @@ The [blueprint](blueprints/automations.md) holds how livedesign wires the platfo
 
 Each Post to Slack leaves its connection to pick; nothing else is left to the person.
 
+## Steps in other apps
+
+Every step of the platform's [Steps in other apps](../../../../liveworkspace/docs/specs/018-automations/automations.md#steps-in-other-apps) is in this design's Add a Step, under **In Other Apps**:
+Create a Card in a Plan, Write a Page in a Knowledgebase, Post in a Space, Add a Tab to a Document and Notify. Each
+acts as the rule's author, with their rights alone, through the target app's own door; lost access pauses the rule,
+and a chain stops after 3 hops or on a rule it already ran. Their values are this design's own, as every step's.
+
+**As a target**, a design takes no step yet: livedesign is a source only.
+
+No starter of its own uses them yet.
+
 ## Agents
 
 `list_rules` and `change_rules` in the MCP server and `rule` in the CLI, as the platform spec says

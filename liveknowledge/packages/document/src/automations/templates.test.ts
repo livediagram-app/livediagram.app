@@ -13,6 +13,8 @@ const ITEM = {
 
 // What each template leaves to the person, by template: a connection for each Slack post.
 const LEFT: Record<string, string[]> = {
+  // A step in another app: its target is the person's.
+  'review-card': ['steps.0:target'],
   'review-slack': ['steps.0:connection'],
   'agent-check': [],
   'agent-owner': [],
@@ -38,6 +40,12 @@ function filled(
   const copy = structuredClone(body);
   for (const { path, pick } of picks) {
     const step = copy.steps[Number(path.split('.')[1])] as Record<string, unknown>;
+    if (pick === 'target') {
+      // The target picked, and what the step then picks from it (a board, a column).
+      step['target'] = { ...(step['target'] as object), item: 'x1', title: 'Picked' };
+      if ('board' in step) Object.assign(step, { board: 'b1', column: 'To Do' });
+      continue;
+    }
     const [field, id] = PICKED[pick as keyof typeof PICKED];
     step[field] = id;
     if (step['kind'] === 'restore_version') step['version'] = 'v1';
@@ -46,9 +54,10 @@ function filled(
 }
 
 describe('the Templates gallery', () => {
-  it('holds the spec’s thirteen, by name', () => {
+  it('holds the spec’s fourteen, by name', () => {
     expect(DOCUMENT_TEMPLATES.map((t) => t.name)).toEqual([
       'Review Due to Slack',
+      'Review Due, Add a Card for the Owner',
       'Ask the Owner to Check an Agent’s Edit',
       'Agents’ New Pages Get an Owner',
       'A Restored Page Needs Verifying Again',

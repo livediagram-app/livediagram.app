@@ -200,6 +200,7 @@ describe('the Inbox', () => {
       shares: [],
       suggestions: [],
       updates: [],
+      notices: [],
     });
     // Given a link and having opened it, Cat sees them.
     const { link } = await body<{ link: { code: string } }>(

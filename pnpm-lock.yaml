@@ -7938,6 +7938,9 @@ importers:
       '@liveworkspace/index-app':
         specifier: workspace:^
         version: link:../index-app
+      '@liveworkspace/index-client':
+        specifier: workspace:^
+        version: link:../index-client
       '@liveworkspace/model-core':
         specifier: workspace:^
         version: link:../model-core

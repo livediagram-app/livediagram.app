@@ -12,6 +12,8 @@ import {
   type ItemKinds,
   type ItemValuePlace,
 } from '@liveworkspace/automations/item';
+import { CROSS_APP_GROUP } from '@liveworkspace/automations/cross-app';
+import { crossAppGroupMarks } from '../cross-app/cross-app-group';
 import type { KindGroup } from '../kit';
 import { isHolder, type RuleBody } from '../types';
 import { WEBHOOK_VALUE_GROUP, type ValueGroup, type ValueOption } from '../value-groups';
@@ -142,15 +144,15 @@ function tilesOf(kind: string, group: string): { group: string; key: string }[] 
   return [{ group, key: kind }];
 }
 
-/** Add an Action's sections: Snapshots, Tabs, the app's own groups, then Messages, Timing, Other Tools and AI (with
- *  its daily allowance). */
+/** Add an Action's sections: Snapshots, Tabs, the app's own groups, then Messages, Timing, Other Tools, In Other
+ *  Apps (New, with who its steps act as) and AI (with its daily allowance). */
 export const actionGroupsOf = (kinds: ItemKinds): KindGroup[] =>
   ordered(
     grouped(kinds.actions.flatMap((a) => tilesOf(a.kind, a.group))),
     ['Snapshots', inTabWords('Tabs', kinds.itemWord)],
-    ['Messages', 'Timing', 'Other Tools', 'AI'],
+    ['Messages', 'Timing', 'Other Tools', CROSS_APP_GROUP, 'AI'],
     { AI: `${AUTOMATION_AI_PER_DAY} a day per ${kinds.itemWord}` },
-  );
+  ).map((g) => (g.name === CROSS_APP_GROUP ? { ...g, ...crossAppGroupMarks() } : g));
 
 /** Every tile key Add an Action offers, in order. */
 export const actionKeysOf = (kinds: ItemKinds): string[] =>

@@ -18,11 +18,13 @@ async function sendToApp(
   path: string,
   body: unknown,
   timeoutMs: number,
+  extra: Readonly<Record<string, string>> = {},
 ): Promise<Response | { error: string }> {
   const origin = appOrigin(env, app);
   const key = appKey(env, app);
   if (!origin || !key) return { error: 'app_not_configured' };
   const headers: Record<string, string> = {
+    ...extra,
     Authorization: `Bearer ${key}`,
     [INDEX_APP_HEADER]: app,
   };
@@ -64,8 +66,10 @@ export async function callAppForJson(
   path: string,
   body: unknown,
   timeoutMs: number,
+  // Headers of the call's own (a step in another app's grant, X-Index-Grant).
+  extra: Readonly<Record<string, string>> = {},
 ): Promise<{ ok: true; body: Record<string, unknown> } | { ok: false; error: string }> {
-  const res = await sendToApp(env, app, 'POST', path, body, timeoutMs);
+  const res = await sendToApp(env, app, 'POST', path, body, timeoutMs, extra);
   if (!(res instanceof Response)) return { ok: false, error: res.error };
   if (!res.ok) {
     await res.body?.cancel();

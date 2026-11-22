@@ -62,6 +62,9 @@ export type AutomationsScreen = {
   openView: (id: string, arrival?: unknown) => void;
   /** Add a Connection…: the Connections tab, the rule being built kept as it stands for Back to Rule. */
   openConnections: () => void;
+  /** A rule's runs on the Audit Trail, asking Discard Changes? first while a rule has unsaved changes. Absent where
+   *  the screen has none (a test's). */
+  openRuns?: (ruleId: string) => void;
   /** The rule the builder holds now (null outside the builder), for an app's round trip to keep. */
   draft: () => KeptRule | null;
   /** The builder's word of what it holds (null as it leaves). */

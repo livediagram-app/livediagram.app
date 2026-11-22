@@ -707,6 +707,14 @@ export const SPACE_AUTOMATIONS_RAN = chart(
   { types: ['AutomationManual'] },
 );
 
+export const SPACE_AUTOMATIONS_TAKEN_OVER = chart(
+  'Document',
+  'Toggled',
+  'Automation Rules Taken Over',
+  "A rule paused on a step in another app's lost access, saved as someone else's with Take Over Rule and turned back on.",
+  { types: ['AutomationTakenOver'], rising: 'neutral' },
+);
+
 export const SPACE_AUTOMATION_SECRETS = chart(
   'Document',
   'Created',
@@ -741,6 +749,7 @@ export const SPACE_AUTOMATIONS: MetricStack = {
     SPACE_AUTOMATIONS_TOGGLED,
     SPACE_AUTOMATIONS_TESTED,
     SPACE_AUTOMATIONS_RAN,
+    SPACE_AUTOMATIONS_TAKEN_OVER,
     SPACE_AUTOMATIONS_DELETED,
     SPACE_AUTOMATION_SECRETS,
     SPACE_AUTOMATION_SECRETS_CHANGED,

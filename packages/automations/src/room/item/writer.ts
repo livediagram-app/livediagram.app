@@ -15,7 +15,7 @@ export const ITEM_WRITER_MS = 60_000;
 
 export interface ItemWriter {
   // Merged into each event the triggers queue.
-  who?: Pick<ItemEvent, 'by' | 'role' | 'rule' | 'chain'>;
+  who?: Pick<ItemEvent, 'by' | 'role' | 'rule' | 'chain' | 'cross'>;
   // A rule's own write: not an edit.
   own?: boolean;
   // Nothing is queued or stamped (a revert).
@@ -48,6 +48,23 @@ export function clearItemWriter(sql: Sql): void {
   sql.exec('DELETE FROM automation_writer');
 }
 
+// A write inside a step from another app (cross-app.md "The door": the target's own route run in a window that
+// carries the chain) stays that step's: its events keep the chain, as the automation's, and are no edit, whatever
+// window the route opens for its person. A silent window stays silent.
+function inChain(windows: readonly OpenWindow[], writer: ItemWriter): ItemWriter {
+  if (writer.silent || writer.who?.cross) return writer;
+  const outer = windows.findLast((w) => w.writer.who?.cross)?.writer.who;
+  if (!outer?.cross) return writer;
+  return { ...writer, own: true, who: { ...writer.who, role: 'automation', cross: outer.cross } };
+}
+
+/** The chain of the step from another app whose window is open now, if any: an event queued by hand inside it (not
+ *  through the SQL triggers) carries it too. */
+export function openChain(sql: Sql): ItemWriter['who'] | undefined {
+  const outer = open.get(sql)?.findLast((w) => w.writer.who?.cross && w.until > Date.now());
+  return outer?.writer.who;
+}
+
 /** `write` run inside the writer's window, closed whatever comes of it. `fed` false (no rule hears a kind the SQL
  *  triggers feed, so nothing would read the window): `write` alone, no statement run. */
 export async function withItemWriter<T>(
@@ -57,11 +74,11 @@ export async function withItemWriter<T>(
   fed = true,
 ): Promise<T> {
   if (!fed) return write();
-  const mine: OpenWindow = { writer, until: Date.now() + ITEM_WRITER_MS };
   let windows = open.get(sql);
   if (!windows) open.set(sql, (windows = []));
+  const mine: OpenWindow = { writer: inChain(windows, writer), until: Date.now() + ITEM_WRITER_MS };
   windows.push(mine);
-  writeRow(sql, writer, mine.until);
+  writeRow(sql, mine.writer, mine.until);
   try {
     return await write();
   } finally {

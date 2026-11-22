@@ -5,6 +5,11 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
+import type {
+  AutomationStepAnswer,
+  AutomationStepDoorCall,
+  AutomationTargetDescription,
+} from '@liveworkspace/index-client';
 import type { AccessLevel, CommunityAuthor } from '@livehuddle/api-schema';
 import type { HookAnswer, HookCall } from '@liveworkspace/automations/room';
 import type {
@@ -75,6 +80,10 @@ export type DocumentRoomClient = {
   // Automations' doors (@liveworkspace/automations/room doors.ts): an Incoming Webhook call to one rule, and a
   // rule email's unsubscribe (false for a token the Space never made).
   incomingHook(ruleId: string, call: HookCall): Promise<HookAnswer>;
+  // A rule's step from another app on this item, its author's grant checked (cross-app-door.ts), and what
+  // the step's pickers may name here.
+  automationStep(call: AutomationStepDoorCall): Promise<AutomationStepAnswer>;
+  automationTarget(): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
   emailOptOut(token: string): Promise<boolean>;
   // Where the Space stands at the index (@liveworkspace/automations/room standing.ts): put away, its rules run nothing.
   takeStanding(standing: ItemStanding): Promise<void>;
@@ -127,6 +136,8 @@ export function documentRoom(
     joined: (personId, level) => room.joined(documentId, personId, level),
     accessRequested: (requester) => room.accessRequested(documentId, requester),
     incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
+    automationStep: (call) => room.automationStep(documentId, call),
+    automationTarget: () => room.automationTarget(documentId),
     emailOptOut: (token) => room.emailOptOut(documentId, token),
     takeStanding: (standing) => room.takeStanding(documentId, standing),
     standingRefusal: (grant) => room.takeGrantStanding(grant),
@@ -172,6 +183,8 @@ export type DocumentRoomRpc = {
   joined(documentId: string, personId: string, level?: AccessLevel): Promise<void>;
   accessRequested(documentId: string, requester: AccessRequester): Promise<void>;
   incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
+  automationStep(documentId: string, call: AutomationStepDoorCall): Promise<AutomationStepAnswer>;
+  automationTarget(documentId: string): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
   emailOptOut(documentId: string, token: string): Promise<boolean>;
   takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
   takeGrantStanding(grant: StandingGrant): Promise<PutAwayRefusal | null>;

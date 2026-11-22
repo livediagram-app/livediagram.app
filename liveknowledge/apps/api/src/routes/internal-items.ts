@@ -38,7 +38,7 @@ import {
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
 import { documentFromTemplate } from './internal-template';
-import { indexAppClient } from '../index-service';
+import { documentGrantOf, indexAppClient, indexService } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
 
@@ -55,6 +55,7 @@ export function handleInternalItems(
     // The Community's sweep calls its door with the same key this api publishes with (liveworkspace community.md).
     communityKey: env.COMMUNITY_KEY,
     waitUntil,
+    verifyGrant: (grant, id) => indexService.verifyGrant(env, grant, id),
     handlers: {
       // Where Community posts' items stand, as the index reads them, for the Community's sweep.
       communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),
@@ -148,6 +149,11 @@ export function handleInternalItems(
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the document's tab bar.
       connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),
+      // A rule's step from another app on this item, and what its pickers may name here: the author's grant is
+      // checked first (`verifyGrant` below), then the room runs it in the step's chain.
+      automationStep: (id, call, claims, grant) =>
+        documentRoom(env, id).automationStep(call, documentGrantOf(claims, null, grant)),
+      automationTarget: (id) => documentRoom(env, id).automationTarget(),
       copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them
         // to them, other people's authors redacted; through the document's Community post's link, without its

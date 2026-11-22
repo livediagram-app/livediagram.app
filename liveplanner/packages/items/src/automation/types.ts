@@ -19,6 +19,7 @@ import {
   type AutomationWait,
 } from '@liveworkspace/automations';
 import type { ItemPerson } from '../item';
+import type { CrossAppStep } from '@liveworkspace/automations/cross-app';
 
 // The limits every app's rules share, the rule shell and the steps every app has (Wait, a message through a webhook)
 // are @liveworkspace/automations' (liveworkspace/docs/specs/018-automations/automations.md); the card kinds are here.
@@ -332,7 +333,9 @@ export type AutomationStep =
   | AutomationIf
   | AutomationBranch
   | AutomationAi
-  | AutomationWait;
+  | AutomationWait
+  // Steps in other apps (liveworkspace automations.md "Steps in other apps"): the shared kinds, at the top level only.
+  | CrossAppStep;
 
 // ---- A rule ------------------------------------------------------------------------------------------------------
 

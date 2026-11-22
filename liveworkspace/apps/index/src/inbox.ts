@@ -5,6 +5,7 @@
 // the suggested edits waiting on my pages (`suggestions`), and updates on pages I watch (updates.ts). Seven queries,
 // each starting from an index on the person.
 
+import { noticeOf, noticesQuery } from './automation-step-notices';
 import {
   COLLAB_CARDS_TAB,
   INBOX_SHARES_MS,
@@ -304,7 +305,8 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
   if (limit === null) return badRequest('invalid_query');
   const q = inboxQueries(person.id, scopesOf(person), app, limit);
   const db = env.INDEX_DB;
-  const [threadRes, actionRes, formRes, accessRes, shareRes, suggestionRes, updateRes] =
+  const notices = noticesQuery(person.id, Date.now());
+  const [threadRes, actionRes, formRes, accessRes, shareRes, suggestionRes, updateRes, noticeRes] =
     (await db.batch([
       db.prepare(q.threads.sql).bind(...q.threads.args),
       db.prepare(q.actions.sql).bind(...q.actions.args),
@@ -313,6 +315,8 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
       db.prepare(q.shares.sql).bind(...q.shares.args),
       db.prepare(q.suggestions.sql).bind(...q.suggestions.args),
       db.prepare(q.updates.sql).bind(...q.updates.args),
+      // A Notify step's notices (automation-step-notices.ts), in every app's Inbox.
+      db.prepare(notices.sql).bind(...notices.args),
     ])) as D1Result<Record<string, unknown>>[];
   const threads: InboxThread[] = (threadRes!.results as ThreadRow[]).map((r) => ({
     app: r.app,
@@ -409,5 +413,14 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     createdAt: r.created_at,
   }));
   const updates = (updateRes!.results as UpdateRow[]).map(inboxUpdateOf);
-  return json({ threads, actions, forms, accessRequests, shares, suggestions, updates });
+  return json({
+    threads,
+    actions,
+    forms,
+    accessRequests,
+    shares,
+    suggestions,
+    updates,
+    notices: noticeRes!.results.map(noticeOf),
+  });
 }

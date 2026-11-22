@@ -7,7 +7,13 @@ import {
   COMPONENT_REF,
   KINDS,
 } from '@livedesign/design/automations';
-import { aiClient, itemHookUrl, kitSends, type ItemRoomKit } from '@liveworkspace/automations/room';
+import {
+  aiClient,
+  itemHookUrl,
+  kitCrossApp,
+  kitSends,
+  type ItemRoomKit,
+} from '@liveworkspace/automations/room';
 import { readComponentsById } from '../../db/components';
 import { appBaseUrl } from '../../email/client';
 import { indexAppClient } from '../../index-service';
@@ -42,6 +48,8 @@ export function designKit(room: DesignRoom): ItemRoomKit | null {
     addTab: (template, name) => addTemplateTab(room, env, designId, template, name),
     mail: kitMail(env, designId),
     sends: kitSends(indexAppClient(env)),
+    // Steps in other apps (liveworkspace automations.md "Steps in other apps"): through the index, as the author.
+    crossApp: { client: kitCrossApp(indexAppClient(env)), app: 'livedesign' },
     ai: { client: aiClient(env), ...(env.AI_GATEWAY ? { gateway: env.AI_GATEWAY } : {}) },
     // livedesign has no step of its own: Add a Tab from a Template is the shared step (`addTab` above).
     run: {},

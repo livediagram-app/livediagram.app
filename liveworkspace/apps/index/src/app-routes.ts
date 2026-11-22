@@ -19,6 +19,7 @@ import { handleAppPeople } from './notices';
 import { pushAppEvents } from './event-push';
 import { FUTURE_SLACK_MS } from './events';
 import { pushAutomationSends } from './webhooks/automation-sends';
+import { pushAutomationStep } from './automation-steps';
 
 const isTime = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -65,6 +66,9 @@ export async function handleApp(
   // /app/items/:id/automation-sends: an automation rule's messages through the item's own connections (a POST).
   const automationSends =
     request.method === 'POST' && segments.length === 4 && segments[3] === 'automation-sends';
+  // /app/items/:id/automation-steps: one step of a rule acting on another app's item as its author (a POST).
+  const automationSteps =
+    request.method === 'POST' && segments.length === 4 && segments[3] === 'automation-steps';
   // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events, /app/items/:id/card-moves,
   // /app/items/:id/forms/:tabId
   if (segments[1] !== 'items' || !isId(segments[2])) return notFound();
@@ -76,7 +80,8 @@ export async function handleApp(
   if (segments.length === 4 && segments[3] === 'sheet-changed') {
     return handleSheetChanged(request, env, app, segments[2]);
   }
-  if (request.method !== 'PUT' && !seenRead && !automationSends) return notFound();
+  if (request.method !== 'PUT' && !seenRead && !automationSends && !automationSteps)
+    return notFound();
   const itemId = segments[2];
   const item = await env.INDEX_DB.prepare(
     'SELECT app, owner_id, team_id, updated_at, scope FROM items WHERE id = ?',
@@ -93,6 +98,7 @@ export async function handleApp(
   if (item.app !== app) return fail(403, 'wrong_app');
   if (seenRead) return formSeen(env, itemId, segments[4]!, segments[6]!);
   if (automationSends) return pushAutomationSends(env, itemId, app, request);
+  if (automationSteps) return pushAutomationStep(env, itemId, app, request);
 
   if (segments.length === 4 && segments[3] === 'summary') {
     const body = await readObject(request);

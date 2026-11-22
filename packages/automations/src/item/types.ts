@@ -2,6 +2,7 @@
 // item-engine.md "Shapes"): the event a rule answers, the rule with open kinds, and the shapes of the kinds every app
 // has. Plain JSON throughout.
 
+import type { CrossAppChain } from '@liveworkspace/index-client';
 import type {
   AutomationClock,
   AutomationIf,
@@ -32,6 +33,9 @@ export interface ItemEvent {
   // The rule whose change this is, and how many rules deep the chain is.
   rule?: string;
   chain?: number;
+  // The chain across apps a step in another app's rule started this with (cross-app/chain.ts): a rule here that
+  // acts elsewhere carries it on, so a loop through other apps stops.
+  cross?: CrossAppChain;
   tab?: string;
   data?: ItemEventData;
   // The one rule to run (Run Rule, a time, a call, a settle, a run going on after its Wait).

@@ -258,4 +258,14 @@ export class AutomationStore<Rule extends StoredRule, EventKind extends string =
     console.info('[automations] paused', { failures });
     return true;
   }
+
+  /** Turns the rule off now with the reason on it, whatever its failures: a step in another app whose author lost
+   *  access (cross-app.ts). False when it is gone or off already. */
+  pauseNow(id: string, reason: string, now: number): boolean {
+    const rule = this.get(id);
+    if (!rule || !rule.enabled) return false;
+    this.update({ ...rule, enabled: false, paused: { reason, at: now } });
+    console.info('[automations] paused', { cause: 'access' });
+    return true;
+  }
 }

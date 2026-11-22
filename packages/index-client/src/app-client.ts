@@ -18,6 +18,7 @@ import type {
 } from './types';
 import type { UpdatePush } from './updates';
 import type { AutomationSend, AutomationSendResult, CardMove } from './webhooks';
+import type { AutomationStepAnswer, AutomationStepPush } from './automation-steps';
 import { appConnectionPath } from './connections';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { enc, IndexError, refusal } from './index-error';
@@ -117,6 +118,10 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       sends: readonly AutomationSend[],
     ): Promise<{ results: AutomationSendResult[] }> =>
       post(`/items/${enc(itemId)}/automation-sends`, { sends }),
+    // One step of a rule acting on another app's item as its author (automation-steps.ts): the index checks the
+    // author's access, signs their grant and asks the target's app; its answer, Done or refused, is the step's line.
+    pushAutomationStep: (itemId: string, push: AutomationStepPush): Promise<AutomationStepAnswer> =>
+      post(`/items/${enc(itemId)}/automation-steps`, push),
     // Connected tabs (connected-tabs.md): the tab holding a connection is in the host now (confirm), or has left it
     // (remove, which deletes the connection's pass). Each answers 204 whether or not it matched.
     confirmConnection: (hostId: string, connectionId: string, tabId: string) =>

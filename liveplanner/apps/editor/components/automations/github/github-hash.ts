@@ -41,6 +41,7 @@ const PICKS: Readonly<Record<AutomationPick, true>> = {
   label: true,
   people: true,
   webhook: true,
+  target: true,
 };
 const isPickAt = (p: unknown): p is AutomationTemplatePickAt => {
   const at = p as Partial<AutomationTemplatePickAt> | null;

@@ -51,6 +51,8 @@ function trackAutomations(event: Parameters<AutomationsPlumbing['track']>[0], de
       return track('Plan', 'Toggled', 'AutomationOn');
     case 'rule_off':
       return track('Plan', 'Toggled', 'AutomationOff');
+    case 'rule_taken_over':
+      return track('Plan', 'Toggled', 'AutomationTakenOver');
     case 'rule_deleted':
       return track('Plan', 'Deleted', 'AutomationRule');
     case 'rule_tested':

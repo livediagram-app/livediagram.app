@@ -25,6 +25,7 @@ import {
   type AutomationsHook as Hook,
 } from '@liveworkspace/automations/room';
 import { PLAN_RULES, type Sql } from './automation-store';
+import type { CrossAppChain } from '@liveworkspace/automations/cross-app';
 
 // The wake a plan's queue asks for, over its events.
 export type AutomationSchedule = Schedule<AutomationEvent>;
@@ -36,6 +37,8 @@ export type HistorySource = {
   // The rule that made the change, and the chain so far (its run's).
   rule?: string;
   chain?: number;
+  // A rule's step in another app that made the change: the chain across apps (cross-app-door.ts).
+  cross?: CrossAppChain;
   // The Form tab whose response made the card, and that response's answers as text by question.
   form?: string;
   answers?: Record<string, string>;
@@ -68,6 +71,7 @@ export async function eventsOfWrites(
   const base = {
     role: 'editor' as AutomationRole,
     ...(source.rule !== undefined ? { rule: source.rule, chain: source.chain ?? 0 } : {}),
+    ...(source.cross !== undefined ? { cross: source.cross } : {}),
     ...(source.form !== undefined ? { form: source.form } : {}),
     ...(source.answers !== undefined ? { answers: source.answers } : {}),
     ...(source.email !== undefined ? { email: source.email } : {}),

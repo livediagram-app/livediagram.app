@@ -892,6 +892,24 @@ export const PLAN_AUTOMATIONS_RAN = chart(
   { types: ['AutomationManual'] },
 );
 
+export const PLAN_AUTOMATIONS_CROSS_APP = chart(
+  'Plan',
+  'Ran',
+  'Automation Steps in Other Apps',
+  "A rule's step in another app (a card, a page, a post, a tab, a notice), by how it ended: done, stopped on lost access, skipped on a loop or the chain's hops, skipped at a day's cap, or failed.",
+  {
+    types: ['CrossAppDone', 'CrossAppNoAccess', 'CrossAppLoop', 'CrossAppCapped', 'CrossAppFailed'],
+  },
+);
+
+export const PLAN_AUTOMATIONS_TAKEN_OVER = chart(
+  'Plan',
+  'Toggled',
+  'Automation Rules Taken Over',
+  "A rule paused on a step in another app's lost access, saved as someone else's with Take Over Rule and turned back on.",
+  { types: ['AutomationTakenOver'], rising: 'neutral' },
+);
+
 export const PLAN_AUTOMATIONS_AI = chart(
   'Plan',
   'Ran',
@@ -1660,6 +1678,8 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATIONS_TOGGLED,
   PLAN_AUTOMATIONS_TESTED,
   PLAN_AUTOMATIONS_RAN,
+  PLAN_AUTOMATIONS_CROSS_APP,
+  PLAN_AUTOMATIONS_TAKEN_OVER,
   PLAN_AUTOMATIONS_AI,
   PLAN_AUTOMATIONS_AI_FAILED,
   PLAN_AUTOMATION_RUN_RESULTS,

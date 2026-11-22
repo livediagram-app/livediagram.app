@@ -12,6 +12,7 @@
 // file for liveworkspace's Drive mirror, which calls it and the import door with DRIVE_KEY
 // (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", routes/internal-file.ts), and its comment threads
 // for liveworkspace's data export, which calls with DATA_EXPORT_KEY (liveworkspace/docs/specs/003-accounts/data-export.md).
+import { indexService } from '../index-service';
 import {
   askIndexCommunityStates,
   JOINED_TELEMETRY_TYPE,
@@ -59,6 +60,7 @@ export function handleInternalItems(
     // The Community's sweep calls its door with the same key this api publishes with (liveworkspace community.md).
     communityKey: env.COMMUNITY_KEY,
     waitUntil,
+    verifyGrant: (grant, id) => indexService.verifyGrant(env, grant, id),
     handlers: {
       // Where Community posts' items stand, as the index reads them, for the Community's sweep.
       communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),
@@ -158,6 +160,10 @@ export function handleInternalItems(
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the document's tab bar.
       connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),
+      // A rule's step from another app on this item, and what its pickers may name here: the author's grant is
+      // checked first (`verifyGrant` below), then the room runs it in the step's chain.
+      automationStep: (id, call) => documentRoom(env, id).automationStep(call),
+      automationTarget: (id) => documentRoom(env, id).automationTarget(),
       copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them
         // to them, other people's authors redacted; through the document's Community post's link, without its

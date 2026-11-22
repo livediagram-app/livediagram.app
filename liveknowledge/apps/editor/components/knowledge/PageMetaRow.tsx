@@ -24,6 +24,7 @@ import { useCoverEditable, usePageHasCover } from '@/components/page-cover/page-
 import { AddIconButton } from '@/components/page-icon/AddIconButton';
 import { usePageIcon } from '@/components/page-icon/page-icon-state';
 import { PageMakersBadges, type PageMakers } from './PageMakersBadges';
+import { AutomationWrittenBanner } from './AutomationWrittenBanner';
 import { useCurrentApprovalMeta } from './approval/PageApprovalMeta';
 import { SuggestedEditsPill } from './suggestions/SuggestedEditsPill';
 
@@ -208,29 +209,36 @@ export function PageMetaRow() {
   const approval = useCurrentApprovalMeta();
   const suggestionCount = page.health?.suggestions?.length ?? 0;
   return (
-    <PageMetaRowView
-      minutes={minutes}
-      trust={page.trust}
-      now={page.now}
-      verifiedBy={nameOf(page.trust.fields.verifiedBy)}
-      changedSinceVerified={page.health?.knowledge.changedSinceVerified === true}
-      editors={editingHere ? NO_EDITORS : editors}
-      addCover={addCover}
-      addIcon={addIcon}
-      {...(health ? { makers: makersOf(health) } : {})}
-      nameOf={nameOf}
-      approval={approval}
-      suggestions={suggestionCount > 0 ? <SuggestedEditsPill /> : undefined}
-      verify={
-        page.rights.verify
-          ? {
-              again: page.trust.fields.verifiedAt !== undefined,
-              period: periodPhrase(page.reviewEvery),
-              becomesOwner: !page.trust.fields.owner,
-              onVerify: () => page.verify(page.pageId),
-            }
-          : undefined
-      }
-    />
+    <>
+      <AutomationWrittenBanner
+        stamp={health?.created}
+        verified={page.trust.fields.verifiedAt !== undefined}
+        onVerify={page.rights.verify ? () => page.verify(page.pageId) : undefined}
+      />
+      <PageMetaRowView
+        minutes={minutes}
+        trust={page.trust}
+        now={page.now}
+        verifiedBy={nameOf(page.trust.fields.verifiedBy)}
+        changedSinceVerified={page.health?.knowledge.changedSinceVerified === true}
+        editors={editingHere ? NO_EDITORS : editors}
+        addCover={addCover}
+        addIcon={addIcon}
+        {...(health ? { makers: makersOf(health) } : {})}
+        nameOf={nameOf}
+        approval={approval}
+        suggestions={suggestionCount > 0 ? <SuggestedEditsPill /> : undefined}
+        verify={
+          page.rights.verify
+            ? {
+                again: page.trust.fields.verifiedAt !== undefined,
+                period: periodPhrase(page.reviewEvery),
+                becomesOwner: !page.trust.fields.owner,
+                onVerify: () => page.verify(page.pageId),
+              }
+            : undefined
+        }
+      />
+    </>
   );
 }

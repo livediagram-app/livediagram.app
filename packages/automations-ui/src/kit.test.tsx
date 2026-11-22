@@ -334,6 +334,30 @@ describe('Connections', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Fix Connection' }));
     expect(shown()).toEqual({ view: 'connections' });
   });
+  it('offers Take Over Rule on a rule paused on a step in another app’s lost access', async () => {
+    const client = fakeClient([
+      fakeRule({
+        enabled: false,
+        paused: { reason: 'Stopped: no access to “Launch Board”', at: 1 },
+      }),
+    ]);
+    render(<Screen client={client} />);
+    await screen.findByRole('button', { name: 'Take Over Rule' });
+    expect(screen.queryByRole('button', { name: 'Resume' })).toBeNull();
+    // The Audit Trail on its runs says the same, with the same way back.
+    fireEvent.click(screen.getByRole('tab', { name: 'Audit Trail' }));
+    fireEvent.change(screen.getByRole('combobox', { name: 'Rule' }), { target: { value: 'r1' } });
+    const banner = document.querySelector<HTMLElement>('[data-run-paused]')!;
+    expect(banner.textContent).toContain('Stopped: no access to “Launch Board”');
+    fireEvent.click(within(banner).getByRole('button', { name: 'Take Over Rule' }));
+    // Saved as the person's own (the save stamps them as its author), then turned back on.
+    await waitFor(() => expect(client.toggle).toHaveBeenCalledWith(expect.anything(), 'r1', true));
+    expect(client.update).toHaveBeenCalledWith(
+      expect.anything(),
+      'r1',
+      expect.objectContaining({ name: 'Nightly Snapshot' }),
+    );
+  });
 });
 
 describe('what a kit may add', () => {

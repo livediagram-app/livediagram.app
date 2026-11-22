@@ -6,6 +6,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./cross-app": "./src/cross-app/index.ts",
     "./item": "./src/item/index.ts",
     "./room": "./src/room/index.ts",
     "./testing/room-world": "./src/testing/room-world.ts",
@@ -23,6 +24,7 @@
     "@liveworkspace/email": "workspace:^",
     "@liveworkspace/icons": "workspace:^",
     "@liveworkspace/index-app": "workspace:^",
+    "@liveworkspace/index-client": "workspace:^",
     "@liveworkspace/model-core": "workspace:^",
     "@liveworkspace/telemetry": "workspace:^"
   },

@@ -36,6 +36,7 @@ import {
   type StepTone,
 } from '@liveworkspace/automations-ui/glyphs';
 import type { GlyphType } from '@liveworkspace/automations-ui/kit';
+import { CROSS_APP_GLYPHS } from '@liveworkspace/automations-ui/cross-app/cross-app-glyphs';
 
 export {
   AutomationDisc,
@@ -85,7 +86,8 @@ export const glyphOf = (
     ? NOTIFY_GLYPHS[via ?? 'webhook']
     : kind === 'ai'
       ? SparkleIcon
-      : ACTION_GLYPHS[kind ?? 'move'];
+      : ((CROSS_APP_GLYPHS as Readonly<Record<string, GlyphType>>)[kind ?? ''] ??
+        ACTION_GLYPHS[(kind ?? 'move') as keyof typeof ACTION_GLYPHS]);
 
 /** A step's icon on its tile: the bolt for the trigger (a clock for a time), the funnel for conditions, the action's
  *  own, an outgoing action's by where it posts, and the sparkle for an AI action. */

@@ -73,6 +73,7 @@ import {
   type CommunityStateAsk,
   type IndexAppClient,
 } from '@liveworkspace/index-client';
+import { automationStepDoor, automationTargetDoor } from './automation-step-door';
 import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
@@ -203,6 +204,7 @@ export async function handleInternalItems(
     migrationKey,
     communityKey,
     handlers,
+    verifyGrant,
     waitUntil = (p) => void p,
   }: InternalItemsOptions,
 ): Promise<Response> {
@@ -371,6 +373,17 @@ export async function handleInternalItems(
     handlers.connectedTab
   ) {
     return connectedTab(request, id, handlers.connectedTab);
+  }
+
+  if (rest.length === 2 && rest[1] === 'automation-step' && request.method === 'POST') {
+    return handlers.automationStep && verifyGrant
+      ? automationStepDoor(request, id, verifyGrant, handlers.automationStep)
+      : notFound();
+  }
+  if (rest.length === 2 && rest[1] === 'automation-target' && request.method === 'POST') {
+    return handlers.automationTarget && verifyGrant
+      ? automationTargetDoor(request, id, verifyGrant, handlers.automationTarget)
+      : notFound();
   }
 
   if (rest.length === 3 && rest[1] === 'copy-to' && request.method === 'POST' && handlers.copy) {

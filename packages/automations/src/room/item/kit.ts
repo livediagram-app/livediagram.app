@@ -1,6 +1,7 @@
 // What an app's room hands the item engine (liveworkspace/docs/specs/018-automations/automations.md "Built once";
 // blueprint item-engine.md "The kit"): its kinds, how to read the item, and how to do what the shared steps and its
 // own steps do. Everything a run touches outside the item's own Automations tables goes through here.
+import type { App, CrossAppChain } from '@liveworkspace/index-client';
 import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import type {
   ItemEvent,
@@ -16,11 +17,18 @@ import type { AutomationGone, AutomationPerson } from '../../types';
 import type { AutomationsAi } from '../automation-ai';
 import type { AutomationSendsClient } from '../automation-sends';
 import type { AutomationStore } from '../automation-store';
+import type { CrossAppClient } from '../cross-app';
 import type { Sql } from '../sql';
 
 // How a step went, as its line on the Audit Trail says it. `gone`: what a failure names that the item lacks.
 export type StepOutcome =
   { ok: true; text: string } | { ok: false; text: string; gone?: AutomationGone };
+
+// The steps in other apps (cross-app.ts): how the room reaches the index, and which app the item is.
+export interface ItemCrossApp {
+  client: CrossAppClient | null;
+  app: App;
+}
 
 // What a run's message is about, as the index takes it: a tab's title and link.
 export type ItemSendSubject = { title: string; url: string };
@@ -46,7 +54,13 @@ export interface ItemMailer {
 }
 
 // What a rule's own change is tagged with, so the events it queues obey the chain rules.
-export type ItemSource = { role: 'automation'; rule: string; chain: number };
+export type ItemSource = {
+  role: 'automation';
+  rule: string;
+  chain: number;
+  // The chain across apps the run goes on in, for what its writes queue.
+  cross?: CrossAppChain;
+};
 
 // What an app's own step is run with.
 export interface ItemActionContext {
@@ -89,6 +103,8 @@ export interface ItemRoomKit {
   ): Promise<{ id: string; name: string } | { failed: string }>;
   mail: ItemMailer | null;
   sends: AutomationSendsClient<ItemSendSubject> | null;
+  // Steps in other apps; absent, they fail with "Steps in other apps aren't set up here".
+  crossApp?: ItemCrossApp;
   ai: { client: AutomationsAi | null; gateway?: string };
   // The app's own steps, by kind.
   run: Readonly<Record<string, ItemActionRunner>>;

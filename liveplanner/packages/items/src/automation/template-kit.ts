@@ -49,7 +49,15 @@ export const AUTOMATION_TEMPLATE_CATEGORY_NAMES: Readonly<
 };
 
 // What a person picks before the rule can be saved, and how its step says so.
-export type AutomationPick = 'column' | 'type' | 'field' | 'label' | 'people' | 'webhook';
+export type AutomationPick =
+  | 'column'
+  | 'type'
+  | 'field'
+  | 'label'
+  | 'people'
+  | 'webhook'
+  // A step in another app's target: the plan, knowledgebase, Space or other item it acts on.
+  | 'target';
 export const AUTOMATION_PICK_WORDS: Readonly<Record<AutomationPick, string>> = {
   column: 'Pick a column',
   type: 'Pick a card type',
@@ -57,6 +65,7 @@ export const AUTOMATION_PICK_WORDS: Readonly<Record<AutomationPick, string>> = {
   label: 'Pick a label',
   people: 'Pick people',
   webhook: 'Pick a connection',
+  target: 'Pick where it goes',
 };
 
 // A template, its fill and its picks are @liveworkspace/automations' shapes, over a plan's rule and picks.
@@ -70,6 +79,7 @@ export const AUTOMATION_TEMPLATE_IDS = [
   'assign-on-start',
   'overdue-nudge',
   'form-responses',
+  'release-note',
   'shipped-to-slack',
   'triage-bugs',
   'unblock-next',

@@ -75,6 +75,23 @@ describe('the SQL triggers', () => {
     expect(rowsOf(w.sql, 'SELECT * FROM automation_writer')).toEqual([]);
   });
 
+  it('keep a step from another app’s chain on the windows its route opens inside', async () => {
+    const w = world();
+    w.rule({ trigger: { kind: 'tab_added' } });
+    const cross = { id: 'c1', hops: 1, rules: ['liveplanner:p:r'] };
+    await withItemWriter(w.sql, { who: { by: ANA, role: 'automation', cross }, own: true }, () =>
+      withItemWriter(w.sql, { who: { by: ANA, role: 'editor' } }, async () => {
+        w.addTab('t1');
+        await withItemWriter(w.sql, { silent: true }, () => w.addTab('t2'));
+      }),
+    );
+    await withItemWriter(w.sql, { who: { by: ANA, role: 'editor' } }, () => w.addTab('t3'));
+    expect(queued(w.sql).map((e) => [e.tab, e.role, e.cross])).toEqual([
+      ['t1', 'automation', cross],
+      ['t3', 'editor', undefined],
+    ]);
+  });
+
   it('do nothing inside a silent window, and ignore a window a crash left open', () => {
     const w = world();
     w.rule({ trigger: { kind: 'tab_added' } });

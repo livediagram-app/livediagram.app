@@ -394,6 +394,7 @@ export const INDEX_ERRORS = [
   'invalid_moves',
   // An automation send malformed, or more than AUTOMATION_SENDS_MAX.
   'invalid_sends',
+  'invalid_step',
   // Calendar feeds (one-explorer-contracts.md "Calendar feeds"): a caller that is not an app acting for an account, a
   // token hash malformed.
   'calendar_feed_app_only',

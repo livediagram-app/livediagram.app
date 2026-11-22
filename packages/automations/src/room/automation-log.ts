@@ -54,6 +54,19 @@ export function runsToday(sql: Sql, now: number): number {
   return Number(row?.['n'] ?? 0);
 }
 
+// One rule's runs today (UTC) that were not No Match, this one's pending row too: what the cap on its steps in other
+// apps counts (cross-app.ts). One read of the (rule_id, at) index.
+export function ruleRunsToday(sql: Sql, ruleId: string, now: number): number {
+  const row = sql
+    .exec(
+      `SELECT COUNT(*) AS n FROM automation_runs WHERE rule_id = ? AND at >= ? AND result != 'no_match' AND ${NO_LINE}`,
+      ruleId,
+      utcMidnight(now),
+    )
+    .toArray()[0]!;
+  return Number(row['n']);
+}
+
 // The run's row, held as pending: false when it is there already (it ran, or is running).
 export function claimRun(sql: Sql, id: string, ruleId: string, at: number): boolean {
   return (
