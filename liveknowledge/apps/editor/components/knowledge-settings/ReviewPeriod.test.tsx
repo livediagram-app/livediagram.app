@@ -297,11 +297,18 @@ describe('the button and its popover', () => {
   ])(
     'puts the period back and says why in words when the change is refused',
     async (err, words) => {
-      api.apiSetReviewPeriod.mockRejectedValue(err);
+      // Held until the choice shows, so the revert can't land first on a loaded runner.
+      let refuse!: (e: unknown) => void;
+      api.apiSetReviewPeriod.mockReturnValue(
+        new Promise((_, reject) => {
+          refuse = reject;
+        }),
+      );
       const { documentId, value } = kb();
       await openPopover(value);
       fireEvent.click(row('Never'));
-      expect(chosen()).toBe('Never');
+      await waitFor(() => expect(chosen()).toBe('Never'));
+      refuse(err);
       await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
       expect(toast.error.mock.calls[0]![0]).toContain(words);
       expect(toast.error.mock.calls[0]![0]).not.toMatch(/403|forbidden/);
