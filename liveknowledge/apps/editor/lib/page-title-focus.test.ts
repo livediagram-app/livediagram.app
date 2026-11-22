@@ -27,6 +27,41 @@ describe('the Title focus ask', () => {
     expect(takeTitleFocus('a')).toEqual({ from: made });
     made.remove();
   });
+
+  it("keeps a menu's trigger, not its item, when the page was asked for from a menu", () => {
+    const trigger = document.createElement('button');
+    trigger.setAttribute('aria-haspopup', 'menu');
+    trigger.setAttribute('aria-controls', 'row-menu');
+    const menu = document.createElement('div');
+    menu.id = 'row-menu';
+    menu.setAttribute('role', 'menu');
+    const item = document.createElement('button');
+    item.setAttribute('role', 'menuitem');
+    menu.append(item);
+    document.body.append(trigger, menu);
+    item.focus();
+    wantTitleFocus('a');
+    // The menu closes and hands focus back to its trigger: the Title may still take the caret.
+    menu.remove();
+    trigger.focus();
+    const ask = takeTitleFocus('a');
+    expect(ask).toEqual({ from: trigger });
+    expect(focusMovedSince(ask!.from)).toBe(false);
+    trigger.remove();
+  });
+
+  it('keeps the item itself when its menu names no trigger', () => {
+    const menu = document.createElement('div');
+    menu.id = 'lone-menu';
+    menu.setAttribute('role', 'menu');
+    const item = document.createElement('button');
+    menu.append(item);
+    document.body.append(menu);
+    item.focus();
+    wantTitleFocus('a');
+    expect(takeTitleFocus('a')).toEqual({ from: item });
+    menu.remove();
+  });
 });
 
 // A late caret never takes focus the person has moved (docs/specs/030-knowledgebase/editing.md "Edit mode").

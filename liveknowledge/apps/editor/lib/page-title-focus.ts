@@ -17,9 +17,23 @@ export function newKnowledgebaseTakesCaret(kind: TemplateKind | null): boolean {
   return !kind || isBlankTemplate(kind);
 }
 
+/** The control that made the page: what has focus, or for an item of an open menu the button that opened it, which
+ *  the menu hands focus back to as it closes (@liveworkspace/ui useMenu points that button at the menu with
+ *  aria-controls while it is open). A row menu's Add Subpage leaves focus on the row's ..., which is not the person's
+ *  own move. */
+function controlThatAsked(doc: Document): Element | null {
+  const active = doc.activeElement;
+  const menu = active?.closest('[role="menu"][id]');
+  if (!menu) return active;
+  for (const trigger of doc.querySelectorAll('[aria-controls]')) {
+    if (trigger.getAttribute('aria-controls') === menu.id) return trigger;
+  }
+  return active;
+}
+
 /** Asks that the page's Title take the caret when it opens. */
 export function wantTitleFocus(pageId: string): void {
-  wanted.set(pageId, typeof document === 'undefined' ? null : document.activeElement);
+  wanted.set(pageId, typeof document === 'undefined' ? null : controlThatAsked(document));
 }
 
 /** The page's ask, or null when it was not asked for; the ask is spent by the answer. */

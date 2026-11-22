@@ -36,7 +36,7 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   which can be a moment after the page shows, so it never takes focus the person has already moved: if, since the
   page was asked for, focus has gone to a control of their choosing (the knowledgebase's menu, the account menu, the
   sidebar), the Title is left alone and focus stays where they put it. Only focus on nothing, the canvas surface the editor
-  opens on (not the panels floating over it), or the control that made the page gives way to the Title. A keyboard user who tabs or opens a menu while
+  opens on (not the panels floating over it), or the control that made the page gives way to the Title (for an item in a menu, the button that opened the menu, which takes the focus back as it closes). A keyboard user who tabs or opens a menu while
   the page loads keeps their place.
 - While anyone is editing, a Viewer (or someone who left with Cancel) sees a quiet "Being edited by Priya" note (their
   discs) in the meta row, and keeps seeing the saved page: the draft never reaches them.
