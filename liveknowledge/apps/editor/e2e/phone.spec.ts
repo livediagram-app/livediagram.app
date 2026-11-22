@@ -100,7 +100,7 @@ test('the view switch is within reach, and no view scrolls sideways', async ({
 }) => {
   await newKnowledgebase(page);
   const views = page.getByRole('navigation', { name: 'Knowledgebase Views' });
-  for (const view of ['Pages', 'Ask', 'AI Knowledge', 'Connect']) {
+  for (const view of ['Pages', 'Ask', 'AI Knowledge', 'Connect MCP']) {
     const link = views.getByRole('link', { name: view, exact: true });
     await expect(link).toBeInViewport({ ratio: 1 });
     const box = (await link.boundingBox())!;
