@@ -7,8 +7,7 @@
 //     turned the digest on gets one email of what changed since their last one. Owed again each day while any watch
 //     is left.
 //
-// Also the review check's part (`noteReviewsLapsed`, from knowledge-emails.ts): a page whose review came due is
-// noted once a verification, as `review_due`.
+// The review check's part, a page whose review came due, is watch-review.ts.
 import { isAccountId } from '@liveworkspace/auth-client';
 import { pushFailureOf } from '@liveworkspace/index-app';
 import {
@@ -31,7 +30,7 @@ import { knowledgeDb } from './knowledge-db';
 import { ownersWhoReach } from './knowledge-emails';
 import type { Work } from './knowledge-work';
 import { allWatches, coveringWatchers, dropWatchers, type WatchRow } from './page-watch';
-import { noteWatched, WATCH_PUSH_DELAY_MS } from './watch-notes';
+import { WATCH_PUSH_DELAY_MS } from './watch-notes';
 
 export const DAY_MS = 86_400_000;
 /** How long a failed push waits before it is tried again. */
@@ -252,35 +251,6 @@ export function runWatchWork(
   return work.key === 'daily'
     ? runWatchDaily(env, documentId, now)
     : pushWatchUpdates(env, documentId, now);
-}
-
-const REVIEW_BASELINE = '';
-
-/**
- * The review check's part: each page newly due is noted for its watchers once a verification (`watch-review`
- * marks); the first check marks the backlog without telling anyone. Answers the next review's time, so the check
- * wakes for it with email off too; null when nobody watches here.
- */
-export async function noteReviewsLapsed(
-  env: DocumentEnv,
-  pages: readonly { tab: string; state: string; verifiedAt?: number | undefined; reviewAt?: number | undefined }[],
-  now: number,
-): Promise<number | null> {
-  const watches = await allWatches(env);
-  if (watches.length === 0) return null;
-  const told = await marksOf(env, 'watch-review');
-  const baseline = !told.has(REVIEW_BASELINE);
-  const fresh = pages.filter(
-    (p) => p.state === 'review-due' && p.verifiedAt !== undefined && told.get(p.tab) !== p.verifiedAt,
-  );
-  if (!baseline && fresh.length > 0)
-    await noteWatched(env, { tabs: fresh.map((p) => p.tab), kind: 'review_due', actor: () => null, now });
-  await putMarks(env, 'watch-review', [
-    ...(baseline ? [{ key: REVIEW_BASELINE, at: now }] : []),
-    ...fresh.map((p) => ({ key: p.tab, at: p.verifiedAt ?? 0 })),
-  ]);
-  const upcoming = pages.flatMap((p) => (p.state === 'verified' && p.reviewAt ? [p.reviewAt] : []));
-  return upcoming.length > 0 ? Math.min(...upcoming) : null;
 }
 
 /** The daily prune: updates past INBOX_UPDATES_MS, and past the newest WATCH_UPDATES_KEPT. */

@@ -34,7 +34,7 @@ import { REVIEW_DUE_EVENT } from '@liveknowledge/document/automations';
 import { hearsKnowledge } from '../document-room/automations/knowledge-events';
 import { queueReviewsDue } from '../document-room/automations/review-events';
 import type { Work } from './knowledge-work';
-import { noteReviewsLapsed } from './watch-work';
+import { noteReviewsLapsed } from './watch-review';
 
 const DAY_MS = 86_400_000;
 
