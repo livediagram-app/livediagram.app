@@ -3,7 +3,6 @@ import {
   DEFAULT_KNOWLEDGE_STYLE,
   type Element,
   type KnowledgeStyle,
-  type Tab,
 } from '@liveknowledge/document';
 import { TAB_STYLE_KEYS } from '@liveworkspace/workbench/lib/tab-style-to-all';
 import { RETIRED_TAB_STYLE_KEYS } from '@liveknowledge/document';
@@ -20,12 +19,11 @@ import {
   withKnowledgeLook,
 } from './knowledge-looks';
 import { lookPagePreview } from './look-page-preview';
-import { knowledgeDarkGround, knowledgeThemeAccent } from './knowledge-accent';
+import { knowledgeDarkGround } from './knowledge-accent';
 import { createStyleHistory } from './style-history';
 import { bindStyleChange, changeKnowledgeStyle } from './style-change';
 import { styleOfferedOf, type StyleOfferedInput } from './style-offered';
 import { elementsInTheme } from './styled-elements';
-import { tabInKnowledgeStyle } from './styled-tab';
 
 // docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style".
 const STEEL: KnowledgeStyle = { ...DEFAULT_KNOWLEDGE_STYLE, theme: 'steel' };
@@ -264,20 +262,8 @@ describe('a look’s card', () => {
   });
 });
 
-describe('a theme’s accent', () => {
-  it('is lime for the product’s own, the stroke for a one-colour theme', () => {
-    expect(knowledgeThemeAccent('brand')).toBe('#4d7c0f');
-    expect(knowledgeThemeAccent('forest')).toMatch(/^#[0-9a-f]{6}$/);
-  });
-
-  it('is a multi-colour theme’s first branch that is neither red nor amber', () => {
-    // Rainbow: red, orange, amber, then green. Tropical leads with teal. Yuletide: red, then green.
-    expect(knowledgeThemeAccent('rainbow')).toBe('#16a34a');
-    expect(knowledgeThemeAccent('tropical')).toBe('#0d9488');
-    expect(knowledgeThemeAccent('yuletide')).toBe('#15803d');
-    expect(knowledgeThemeAccent('pumpkin')).not.toBe('#fb923c');
-  });
-
+// The accents themselves are tested beside them (@liveknowledge/document knowledge-style-view.test.ts).
+describe('a theme’s dark ground', () => {
   it('stands on the theme’s own dark surface in the dark, the shared dark ground under lime', () => {
     expect(knowledgeDarkGround('brand')).toBe('#131b26');
     expect(knowledgeDarkGround('steel')).toMatch(/^#[0-9a-f]{6}$/);
@@ -328,47 +314,6 @@ describe('a page’s drawings in the knowledgebase’s theme', () => {
     expect(next[1]).not.toBe(first[1]);
     expect(elementsInTheme([a, b], 'ocean', 'light')[0]).not.toBe(first[0]);
     expect(elementsInTheme([a, b], 'steel', 'dark')[0]).not.toBe(first[0]);
-  });
-});
-
-describe('a tab as the exports draw it', () => {
-  const tab = {
-    id: 't1',
-    name: 'Release Process',
-    elements: [],
-    pages: [
-      {
-        id: 'p1',
-        orientation: 'portrait',
-        size: 'fit',
-        fit: { width: 856, height: 400 },
-        kind: 'article',
-        flow: 'art-1',
-      },
-    ],
-    articles: {
-      'art-1': { blocks: [{ id: 'b1', type: 'paragraph', runs: [{ text: 'Ship on Tuesdays.' }] }] },
-    },
-  } as unknown as Tab;
-
-  it('wears the knowledgebase’s theme, typeface and article style, and leaves the stored tab as it was', () => {
-    const style: KnowledgeStyle = { ...OCEAN, textSize: 'large', headingStyle: 'ruled' };
-    const frozen = JSON.stringify(tab);
-    const styled = tabInKnowledgeStyle(tab, style);
-    expect(styled.theme).toBe('ocean');
-    expect(styled.font).toBe('lora');
-    const flow = (styled.articles as Record<string, { style?: Record<string, unknown> }>)['art-1']!;
-    expect(flow.style).toMatchObject({
-      bodyFont: 'lora',
-      textSize: 'large',
-      rules: 'headings',
-      margins: 'narrow',
-    });
-    expect(JSON.stringify(tab)).toBe(frozen);
-    expect(tab).not.toHaveProperty('theme');
-    // The same tab and style: the same view, so nothing downstream redraws.
-    expect(tabInKnowledgeStyle(tab, style)).toBe(styled);
-    expect(tabInKnowledgeStyle(tab, STEEL)).not.toBe(styled);
   });
 });
 

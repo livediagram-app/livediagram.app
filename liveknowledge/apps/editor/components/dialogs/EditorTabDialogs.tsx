@@ -10,7 +10,7 @@ import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorCon
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store';
-import { tabInKnowledgeStyle } from '@/lib/knowledge-style/styled-tab';
+import { tabInKnowledgeStyle } from '@liveknowledge/document';
 import { importFormatsFor } from '@/lib/import-formats';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
