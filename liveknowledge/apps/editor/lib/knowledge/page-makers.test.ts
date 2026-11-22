@@ -97,17 +97,22 @@ describe('a page a rule in another app wrote', () => {
     via: 'automation' as const,
   };
 
-  it('names the rule and the item it came from, never the person', () => {
+  it('names the rule and the item it came from, as the banner does, writing as its author', () => {
     expect(makerWords(stamp, 'created', nameOf, NOW)).toEqual({
       kind: 'human',
-      label: 'Written by Automation',
-      description: 'Written by the rule Release Note in Launch on 12 Nov',
+      label: 'Written by a Rule',
+      description: 'Written by the rule Release Note in Launch as Priya Shah on 12 Nov',
     });
     expect(
-      makerWords({ ...stamp, agent: undefined, at: NOW - HOUR }, 'updated', nameOf, NOW),
+      makerWords(
+        { ...stamp, by: 'gone', agent: undefined, at: NOW - HOUR },
+        'updated',
+        nameOf,
+        NOW,
+      ),
     ).toMatchObject({
-      label: 'Edited by Automation',
-      description: expect.stringMatching(/^Last edited by the rule a rule, /),
+      label: 'Edited by a Rule',
+      description: expect.stringMatching(/^Last edited by a rule in another app, /),
     });
   });
 
@@ -115,7 +120,7 @@ describe('a page a rule in another app wrote', () => {
     const person = { by: 'u1', at: NOW, kind: 'human' as const };
     expect(
       makerPills({ created: stamp, updated: person }, nameOf, NOW).map((p) => p.label),
-    ).toEqual(['Written by Automation', 'Human Edited']);
+    ).toEqual(['Written by a Rule', 'Human Edited']);
     expect(makerPills({ created: stamp, updated: stamp }, nameOf, NOW)).toHaveLength(2);
   });
 });

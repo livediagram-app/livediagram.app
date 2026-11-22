@@ -5,9 +5,11 @@
 // Verified for whoever may verify. Amber like Changed since verified: something to read before trusting, never an
 // error. Gone once the page is verified.
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
+import { automationRuleWords } from '@/lib/knowledge/page-makers';
 
+// The writer in the same words as the meta row's Written by a Rule pill (page-makers.ts).
 export function automationBannerText(stamp: PageAuthorStamp): string {
-  return `Written by the rule ${stamp.agent ?? 'in another app'}. Never verified.`;
+  return `Written by ${automationRuleWords(stamp)}. Never verified.`;
 }
 
 export function AutomationWrittenBanner({

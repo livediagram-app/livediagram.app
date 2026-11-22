@@ -5,7 +5,7 @@ import type { DocumentGrant } from '../../index-service';
 import { ANA, DOC, box, identityOf, roomWorld, type RoomWorld } from './test-automation-world';
 
 // Write a Page in a Knowledgebase, a rule's step from another app (docs/specs/013-workspace/automations.md "Steps in
-// other apps"): the page is made through the knowledgebase's own route as the author, stamped Written by Automation
+// other apps"): the page is made through the knowledgebase's own route as the author, stamped Written by a Rule
 // with the rule and where it lives, owned by the author and never verified.
 
 afterEach(() => {
