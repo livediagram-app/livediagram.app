@@ -55,7 +55,7 @@ export type PageHealthCardProps = {
   approvalRow?: { onRequest: (() => void) | undefined } | undefined;
   /** The Health Score and its breakdown (PageHealthScore), at the top (verification.md "In Page Health"). */
   score?: ReactNode;
-  /** Watch, across from the section's label (watching.md "Where it shows"). */
+  /** The Watchers row, last in the list (watching.md "Where it shows"); it draws itself, or nothing. */
   watch?: ReactNode;
 };
 
@@ -162,7 +162,8 @@ function FreshnessRing({ state, left }: { state: PageTrust['state']; left: numbe
 // that are each read in full, on two lines, where a one-part value truncates. `whole`: a value never cut short (the
 // Review Period beside its pencil): it stays on the label's line when it fits, and takes a line of its own, at the
 // right, when it does not.
-function Row({
+/** One row of Page Health's list: its icon and label, and what it holds at the right. */
+export function HealthRow({
   icon,
   label,
   wrap = false,
@@ -416,10 +417,7 @@ export function PageHealthCard({
       data-page-health=""
       className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
     >
-      <div className="flex min-h-7 items-center justify-between gap-2">
-        <h2 className={RAIL_LABEL}>Page Health</h2>
-        {watch}
-      </div>
+      <h2 className={RAIL_LABEL}>Page Health</h2>
       {score}
       <div className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${tone.wash}`}>
         <div data-page-state={trust.state} className="flex items-center gap-3.5">
@@ -447,7 +445,7 @@ export function PageHealthCard({
         ) : null}
       </div>
       <dl className="mt-3 flex flex-col divide-y divide-slate-100 dark:divide-slate-800/70">
-        <Row icon={<OwnerIcon />} label="Owner">
+        <HealthRow icon={<OwnerIcon />} label="Owner">
           {onSetOwner ? (
             <Select
               aria-label="Owner"
@@ -469,9 +467,9 @@ export function PageHealthCard({
               <span className="truncate">{ownerName ?? (owner ? 'Someone Else' : 'Nobody')}</span>
             </span>
           )}
-        </Row>
+        </HealthRow>
         {/* One line (owner 2026-11-21): the date, and the verifier as their disc, named on hover. */}
-        <Row icon={<VerifiedRowIcon />} label="Last Verified">
+        <HealthRow icon={<VerifiedRowIcon />} label="Last Verified">
           {verifiedAt === undefined ? (
             'Never'
           ) : (
@@ -492,8 +490,8 @@ export function PageHealthCard({
               ) : null}
             </span>
           )}
-        </Row>
-        <Row icon={<DueRowIcon />} label="Review Due">
+        </HealthRow>
+        <HealthRow icon={<DueRowIcon />} label="Review Due">
           <span data-review-due="">
             {reviewEvery === 'never'
               ? NO_REVIEW_PERIOD
@@ -501,9 +499,9 @@ export function PageHealthCard({
                 ? 'Not Verified'
                 : shortDate(trust.reviewAt, now)}
           </span>
-        </Row>
+        </HealthRow>
         {/* The knowledgebase's Review Period; an Editor changes it from the pencil before the value (owner 2026-11-21). */}
-        <Row icon={<PeriodIcon />} label="Review Period" whole={!!periodControl}>
+        <HealthRow icon={<PeriodIcon />} label="Review Period" whole={!!periodControl}>
           {periodControl ? (
             // Tight enough that "Every 90 Days" and its pencil keep the label's line in the docked rail, a scrollbar
             // beside it included.
@@ -516,9 +514,9 @@ export function PageHealthCard({
           ) : (
             <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
           )}
-        </Row>
+        </HealthRow>
         {approvalRow ? (
-          <Row icon={<RequestIcon />} label="Approval" whole={!!approvalRow.onRequest}>
+          <HealthRow icon={<RequestIcon />} label="Approval" whole={!!approvalRow.onRequest}>
             {approvalRow.onRequest ? (
               <Button
                 variant="secondary"
@@ -532,8 +530,9 @@ export function PageHealthCard({
             ) : (
               <span data-approval-none="">Not Requested</span>
             )}
-          </Row>
+          </HealthRow>
         ) : null}
+        {watch}
       </dl>
     </section>
   );

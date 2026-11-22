@@ -77,9 +77,10 @@ A watcher hears of a page's **changes**, each by who made it:
   watched, **Unwatch** or **Unwatch This Section**; under a watched section, a greyed **Watching Through <Section>**
   whose hover card says to unwatch the section from its page. Offered to every role that reads the page, a Viewer's
   menu included (decided: the row menu's toolbar keeps Copy Link alone for a Viewer).
-- **The Page Info rail**: a small **Watch** button across from Page Health's label, the eye and **Watch** (or
-  **Watching**, tinted), and before it how many watch the page ("3 watching"; nothing at 0), a hover card saying
-  "3 people get updates about this page". On a page alone a press watches or stops; on a section, or a page watched
+- **The Page Info rail**: a **Watchers** row, last in Page Health's list after Approval: how many watch the page (a
+  number, nothing at 0, its hover card "3 watching", "3 people get updates about this page.") and a small **Watch**
+  button (the eye; **Watching**, tinted, while watched). Decided: a row like Approval's rather than a button beside
+  Page Health's label, which the docked rail's collapse button covers and which could not hold the count. On a page alone a press watches or stops; on a section, or a page watched
   through one, it opens a menu of the same rows as the tree's, headed **Get Updates**. The count is everyone whose
   watch covers the page, the page's and its sections' together, once each.
 - A press shows at once and is put back with a toast in words if the api refuses it. The toast on success:

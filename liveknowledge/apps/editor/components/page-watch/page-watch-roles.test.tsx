@@ -192,7 +192,7 @@ describe('Watch in the rail', () => {
     render(<PageWatchButton />);
     const button = await screen.findByRole('button', { name: 'Watch Notes' });
     await waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
-    expect(screen.getByText('3 watching')).toBeTruthy();
+    expect(screen.getByLabelText('3 watching').textContent).toBe('3');
     expect(button.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(button);
     const pressed = await screen.findByRole('button', { name: 'Watching Notes' });

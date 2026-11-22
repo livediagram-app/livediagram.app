@@ -130,9 +130,10 @@ INTEGER, first_at INTEGER, latest_at INTEGER)`, indexes `(tab, first_at)` and `(
   Rows: **Watch** and, on a section, **Watch This Section**, each a checkmark row; **Unwatch** or **Unwatch This
   Section** while watched; a greyed **Watching Through <Section>** with its hover card under a watched section. Until
   read the rows show greyed, so the menu keeps its shape.
-- The rail: `PageWatchButton` across from Page Health's label (`PageHealthCard` `watch`): a 28 px pill (36 px on a
-  phone), the eye and **Watch** or **Watching** (brand-tinted while watched), the count before it in muted text
-  ("3 watching", nothing at 0, a hover card "3 people get updates about this page."). On a page alone a press watches
+- The rail: `PageWatchButton`, a `HealthRow` (exported from `PageHealthCard`) passed as its `watch`, drawn last in the
+  list: the eye and **Watchers**; at the right the count as a 24 px number chip (nothing at 0; named "3 watching",
+  hover card "3 people get updates about this page.") and a 28 px button (36 px on a phone), the eye and **Watch** or
+  **Watching** (brand-tinted while watched). On a page alone a press watches
   or stops (decided: no menu for one choice); on a section, or a page watched through one, it opens the menu of the
   same rows, headed **Get Updates**.
 - Toasts: "Watching Deploys. You'll hear when it changes."; "Stopped watching Deploys.". A refusal's words:
