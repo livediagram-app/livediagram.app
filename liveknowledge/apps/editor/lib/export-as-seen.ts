@@ -5,6 +5,7 @@ import {
   canvasSurface,
   layOutPages,
   pagesOf,
+  tabInKnowledgeStyle,
   type Appearance,
   type Tab,
 } from '@liveknowledge/document';
@@ -12,7 +13,6 @@ import { getResolvedAppearance } from '@liveknowledge/ui';
 import { resolveTabBackdrop, themeViewMap } from './themes';
 import { elementAsSeen, pageViewOf } from './stock-colour-projector';
 import { knowledgeStyleStore } from './knowledge-style/knowledge-style-store';
-import { tabInKnowledgeStyle } from './knowledge-style/styled-tab';
 
 export function tabAsSeen(stored: Tab, appearance: Appearance = getResolvedAppearance()): Tab {
   // In the knowledgebase's style first (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): its

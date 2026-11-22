@@ -11,6 +11,7 @@
 // <style> scoped to the light appearance. Text greys (slate-300 and darker) stay neutral and legible.
 import { useEffect } from 'react';
 import { mixHex } from '@liveworkspace/model-core/color-wash';
+import { knowledgeGroundWash } from '@liveknowledge/document';
 import { useEditorAccentStroke } from '@liveworkspace/workbench/hooks/ui/useEditorAccent';
 import { knowledgeChromeAccent } from '@/lib/knowledge-style/knowledge-accent';
 
@@ -19,7 +20,8 @@ const LIGHT_STYLE_ID = 'lk-light-ground';
 /** The light appearance's ground and palest surfaces under a theme's accent: white and slate-50/100/200 washed with
  *  the accent, pale enough that every text colour keeps its contrast. */
 export function knowledgeLightGroundCss(accent: string): string {
-  const ground = mixHex('#ffffff', accent, 0.94);
+  // The same ground the Explorer's preview paints a page in (knowledgeLightGround).
+  const ground = knowledgeGroundWash(accent);
   const slate50 = mixHex('#f8fafc', accent, 0.9);
   const slate100 = mixHex('#f1f5f9', accent, 0.88);
   const slate200 = mixHex('#e2e8f0', accent, 0.86);

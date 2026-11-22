@@ -1,5 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_KNOWLEDGE_STYLE, PEN_INK, penColourHex } from '@liveknowledge/document';
+import {
+  DEFAULT_KNOWLEDGE_STYLE,
+  KNOWLEDGE_LIGHT_GROUND,
+  LIME_ACCENT,
+  PEN_INK,
+  knowledgeLightGround,
+  knowledgeThemeAccent,
+  penColourHex,
+  type KnowledgeStyle,
+} from '@liveknowledge/document';
 import type { DocumentDTO, DocumentEnv, Env } from './types';
 
 // A document drawn for liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): the platform stores and serves it,
@@ -288,5 +297,66 @@ describe('a drawing of named stock colours', () => {
     const out = await draw(liveDoc());
     expect(out).toContain(penColourHex('blue', 'light'));
     expect(out).toContain(PEN_INK.light);
+  });
+});
+
+// A knowledgebase previews in its Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase
+// Style"; liveworkspace/docs/specs/006-media/previews.md "The export door"): no tab stores a style, so the drawing
+// reads it from the document.
+describe('a drawing in the Knowledgebase Style', () => {
+  const page = { id: 'p1', kind: 'article', flow: 'art-1' };
+  const WRITING = JSON.stringify({
+    elements: [],
+    pages: [page],
+    articles: {
+      'art-1': {
+        blocks: [
+          { id: 't', type: 'paragraph', style: 'title', runs: [{ text: 'Team Handbook' }] },
+          { id: 'h', type: 'paragraph', style: 'h1', runs: [{ text: 'How We Work' }] },
+          {
+            id: 'b',
+            type: 'paragraph',
+            runs: [{ text: 'Write it down once, where everyone looks.' }],
+          },
+        ],
+      },
+    },
+  });
+  const drawIn = async (knowledgeStyle: KnowledgeStyle) => {
+    db.getTabBody.mockResolvedValue(stored(WRITING));
+    return (await draw(liveDoc({ knowledgeStyle })))!;
+  };
+
+  it('draws each look in its own ground, accent and typeface', async () => {
+    const everyday = await drawIn(DEFAULT_KNOWLEDGE_STYLE);
+    const steel: KnowledgeStyle = {
+      ...DEFAULT_KNOWLEDGE_STYLE,
+      theme: 'steel',
+      headingFont: 'lora',
+      bodyFont: 'lora',
+    };
+    const styled = await drawIn(steel);
+    // The ground: white paper under the product's own theme, the theme's pale wash under another.
+    expect(everyday).toContain(`fill="${KNOWLEDGE_LIGHT_GROUND}"`);
+    expect(styled).toContain(`fill="${knowledgeLightGround('steel')}"`);
+    expect(knowledgeLightGround('steel')).not.toBe(KNOWLEDGE_LIGHT_GROUND);
+    // The heading in the writing's accent: lime, then the theme's own.
+    expect(everyday).toContain(LIME_ACCENT);
+    expect(styled).not.toContain(LIME_ACCENT);
+    expect(styled.toLowerCase()).toContain(knowledgeThemeAccent('steel').toLowerCase());
+    // The typeface, by its family's stack: a Worker's picture cannot load a web font, so it falls back to serif.
+    expect(styled).toMatch(/font-family="[^"]*Lora[^"]*serif/);
+    expect(everyday).not.toMatch(/Lora/);
+  });
+
+  it('draws a picked accent over the theme’s own', async () => {
+    const out = await drawIn({ ...DEFAULT_KNOWLEDGE_STYLE, theme: 'ocean', accent: '#7c3aed' });
+    expect(out).toContain('#7c3aed');
+  });
+
+  it('draws the Everyday look for a document that carries no style', async () => {
+    db.getTabBody.mockResolvedValue(stored(WRITING));
+    const out = (await drawDocument(ENV, { id: 'd1', name: 'Document' }, null))!;
+    expect(out).toContain(LIME_ACCENT);
   });
 });

@@ -172,7 +172,12 @@ export async function exportImage(
   if (query.tabId !== null && !(await documentHasTab(env, documentId, query.tabId))) {
     return { status: 'not_found' };
   }
-  const svg = await drawDocument(env, { id: documentId, name: meta.name }, query.tabId, community);
+  const svg = await drawDocument(
+    env,
+    { id: documentId, name: meta.name, knowledgeStyle: meta.knowledgeStyle },
+    query.tabId,
+    community,
+  );
   return svg === null
     ? { status: 'empty', version: savedAt }
     : { status: 'ok', body: svg, contentType: SVG_CONTENT_TYPE, version: savedAt };

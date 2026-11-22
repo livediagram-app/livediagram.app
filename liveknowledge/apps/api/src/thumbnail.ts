@@ -6,6 +6,7 @@
 
 import { embedTabImages } from '@liveknowledge/api-schema';
 import {
+  DEFAULT_KNOWLEDGE_STYLE,
   elementsOnPage,
   ensureMapGeometry,
   laidOutPagesOf,
@@ -13,6 +14,9 @@ import {
   pagesOf,
   renderElementsToSvg,
   renderPageToSvg,
+  tabInKnowledgeStyle,
+  tabOnKnowledgeGround,
+  type KnowledgeStyle,
   type Tab,
 } from '@liveknowledge/document';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
@@ -35,8 +39,9 @@ import type { DocumentEnv } from './types';
 // budget fall back to their placeholder instead.
 const IMAGE_EMBED_BUDGET_BYTES = 3 * 1024 * 1024;
 
-// The document fields a drawing needs.
-export type DrawSubject = { id: string; name: string };
+// The document fields a drawing needs. `knowledgeStyle` is the Knowledgebase Style every page is drawn in
+// (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"); absent is the Everyday look.
+export type DrawSubject = { id: string; name: string; knowledgeStyle?: KnowledgeStyle };
 
 // The first tab (or `tabId`) drawn, or null when there is nothing to draw: no tab, an empty or unparseable one.
 // `community`: a Community visitor's drawing (docs/specs/025-community/community.md "Viewing a post's document"),
@@ -122,12 +127,16 @@ async function renderTabBodyToSvg(
   // A knowledgebase page is writing (an article) with no elements: it has something to draw too.
   if (parsed.elements.length === 0 && !hasWriting(parsed)) return null;
   // `tabs.data` is the tab body minus id + name (see db/tabs.ts
-  // upsertTab); re-attach them so the value is a complete Tab. The
-  // renderer only reads `elements` + `backgroundColor`, both already in
-  // the parsed body.
+  // upsertTab); re-attach them so the value is a complete Tab.
   // Settled like every other stored-tab read (docs/specs/011-theme/retired-schemes.md "Where a stored tab is settled").
   const stored = migrateStoredTab({ id: liveDoc.id, name: liveDoc.name, ...parsed } as Tab);
-  const tab = community ? redactTabForCommunity(stored) : stored;
+  // In the knowledgebase's style, as its readers see the page (docs/specs/030-knowledgebase/page-surface.md
+  // "Knowledgebase Style"): its theme's colours, its typefaces and article style, its writing accent, and the
+  // theme's light ground, all read from @liveknowledge/document as the editor's exports read them. No tab stores
+  // a style, so without this every knowledgebase previewed in the Everyday look.
+  const style = liveDoc.knowledgeStyle ?? DEFAULT_KNOWLEDGE_STYLE;
+  const styled = tabOnKnowledgeGround(tabInKnowledgeStyle(stored, style), style);
+  const tab = community ? redactTabForCommunity(styled) : styled;
   // A Pages tab previews as its first page alone, drawn as an export draws it
   // (docs/specs/006-document/document-snapshots.md "Pages tabs"): every page side by
   // side on the canvas shrinks to a row of slivers nobody can read at preview size.
