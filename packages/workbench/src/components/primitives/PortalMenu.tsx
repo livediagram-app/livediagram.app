@@ -19,6 +19,7 @@ import { useMenuItemProps } from './menu-item-props';
 import {
   PLACEMENT_TRANSFORM,
   usePortalMenuPlacement,
+  type MenuPoint,
   type PortalMenuPlacement,
 } from './usePortalMenuPlacement';
 
@@ -28,6 +29,9 @@ type PortalMenuBase = {
   // The card the menu belongs to: it opens beside that card, out of its way, when there is room
   // (usePortalMenuPlacement).
   beside?: HTMLElement | null;
+  // A right-click or a long press: the menu opens at this point (its corner there, flipped and clamped as an
+  // anchored menu is) rather than at the anchor, which stays its trigger (menus.md "Opening at the pointer").
+  point?: MenuPoint | null;
   onClose: () => void;
   children: ReactNode;
   // The name of the region a command menu stands in (axe "region": a menu portalled to the body belongs to no
@@ -67,6 +71,7 @@ function CommandPortalMenu({
   anchor,
   placement = 'below',
   beside,
+  point,
   onClose,
   children,
   label,
@@ -81,7 +86,7 @@ function CommandPortalMenu({
     label,
     initialFocus,
   });
-  const at = usePortalMenuPlacement(anchor, placement, element, onClose, beside);
+  const at = usePortalMenuPlacement(anchor, placement, element, onClose, beside, point);
   return (
     <PortalMenuFrame
       at={at}
@@ -102,6 +107,7 @@ function ControlPortalMenu({
   anchor,
   placement = 'below',
   beside,
+  point,
   onClose,
   children,
   label,
@@ -114,7 +120,7 @@ function ControlPortalMenu({
     trigger: anchor,
     label,
   });
-  const at = usePortalMenuPlacement(anchor, placement, element, onClose, beside);
+  const at = usePortalMenuPlacement(anchor, placement, element, onClose, beside, point);
   return (
     <PortalMenuFrame
       at={at}

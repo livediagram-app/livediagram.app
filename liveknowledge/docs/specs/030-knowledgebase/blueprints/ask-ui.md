@@ -40,8 +40,11 @@ the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verif
     made `inert` for as long as the frame shows, and given back after. The child that holds the footer is left
     live: its tabs are the way to another view. Dialogs, toasts and hover cards are portals outside the column.
   - `useModalGuard(true)`: the editor's window-level shortcut and paste listeners stand down, as behind a dialog.
-  - `KnowledgeViewHeader` is the top row every view shares (`KnowledgeTopRow`, rank `view`): the view's name, its
-    one line from `lg` up, its buttons, then Share and the account button in the row's slot.
+  - `KnowledgeViewHeader` is the top row every view shares (`KnowledgeTopRow`, rank `view`): the view's name with
+    its one line under it from `lg` up, in one column with one left edge (`data-view-heading`, `flex-col
+justify-center`: 20 px and 16 px lines, 36 px in the 48 px row), its buttons centred in the row after it, then
+    Share and the account button in the row's slot. The line once stood beside the name, each centred on its own
+    line height, so its baseline sat a pixel off the name's (WI-1337, `KnowledgeViewHeader.test.tsx`).
 - **Loading:** each view is `next/dynamic` with `ssr: false`, fetched when first shown, and so is the AI Settings
   dialog, fetched when first opened: the editor's first load carries the tabs, the host and the two small stores. A view's render crash stays
   in the `KnowledgeView` error area.

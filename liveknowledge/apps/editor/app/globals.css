@@ -40,6 +40,15 @@
   }
 }
 
+/* A mouse or a trackpad: a pointer that hovers and is precise. Controls that wait for a hover (the page tree's + and
+ * ..., docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A row's + and ...") hide only here; a touch screen
+ * cannot hover, so there they always show. */
+@custom-variant fine-pointer {
+  @media (hover: hover) and (pointer: fine) {
+    @slot;
+  }
+}
+
 /* The dialog hero header's title in the Typesetter's face (liveworkspace/docs/specs/004-index/dialog-hero-header.md
  * "The title's face"), the start header's own (startHeadingFace): the system's serif, so nothing is fetched. */
 :root {

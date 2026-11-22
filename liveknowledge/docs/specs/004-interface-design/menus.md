@@ -114,6 +114,13 @@ out from the control's place and the menu's own height (held to the screen, as a
 flips it back and forth; a menu taller than the room on its side (the roomier one when it fits on neither) is held to that room and
 scrolls inside itself, so it never covers the control either.
 
+## Opening at the pointer
+
+A menu opened by a right-click or a long press on a row (the page tree's rows) opens at the pointer rather than at
+the row's ... button: its top-left corner at the point, then flipped to open upwards and nudged inside the screen as
+an anchored menu is. Its trigger is still the row's ... button, which names it and takes the focus back when it
+closes (`PortalMenu`'s `point`).
+
 ## Focus ring
 
 Every item and control in either kind of menu shows the keyboard focus ring **inside** its own edge

@@ -3,8 +3,10 @@
 // One row of the page tree (docs/specs/030-knowledgebase/blueprints/page-tree.md "The sidebar"). Memoised on plain
 // props, with no handler of its own: the tree listens once for every row (PageTree), and the row reads its own part
 // of the pointer's state from the tree's store (page-tree-ui.ts), so a hover or a drag across 500 rows renders the
-// rows it leaves and enters and no others. The row's buttons and its tooltip are mounted only while the row is under
-// the pointer, holds focus or has its menu open; their room is always kept, so nothing shifts.
+// rows it leaves and enters and no others. With a mouse the row's + and ... show only while it is pointed at, holds
+// focus, has its menu open or is the current page (CSS alone, ROW_CONTROLS_HIDDEN); their hover cards and the title's
+// tooltip mount only while it is pointed at, holds focus or has its menu open. Their room is always kept, so nothing
+// shifts.
 import { memo, type ReactNode } from 'react';
 import { HoverCard, Tooltip } from '@liveknowledge/ui';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
@@ -22,6 +24,8 @@ import {
   QUIET,
   ROW,
   ROW_BUTTON,
+  ROW_CONTROLS_HIDDEN,
+  ROW_CONTROLS_SHOWN,
   ROW_CURRENT,
   ROW_INSET,
   ROW_NEST,
@@ -37,7 +41,7 @@ import {
 export type PageTreeRowProps = {
   row: PageRow;
   current: boolean;
-  // The one row the Tab key lands on (roving tabindex).
+  // The one row the Tab key lands on (roving tabindex); its own + and ... are the next Tab stops.
   tabStop: boolean;
   editing: boolean;
   menuOpen: boolean;
@@ -83,8 +87,11 @@ function PageTreeRowView({
       : mark.endsWith('inside')
         ? 'inside'
         : null;
-  // Under the pointer, holding focus, or its menu open: the row's controls are there.
+  // Under the pointer, holding focus, or its menu open: the row's controls take full strength.
   const active = menuOpen || mark.startsWith('h') || mark.includes('f');
+  // Their hover cards are mounted on the active row and on the Tab stop row. Mounting them re-mounts the buttons they
+  // wrap, so the one row whose buttons take Tab keeps them mounted: a button never loses the focus to its own card.
+  const cards = active || tabStop;
   // The open page is named from its Title as it is typed (knowledgebases-and-pages.md "Name").
   const live = useLivePageTitle(current);
   const name = outOfScope ? 'Not Shared' : (live ?? row.name) || 'Untitled Page';
@@ -95,7 +102,8 @@ function PageTreeRowView({
   const menuButton = (
     <button
       type="button"
-      tabIndex={-1}
+      // Only the Tab stop row's buttons take Tab: the tree stays one stop, and the focused row's are in reach.
+      tabIndex={tabStop ? 0 : -1}
       data-row-action="menu"
       aria-label={`Page Options for ${name}`}
       aria-haspopup="menu"
@@ -108,7 +116,7 @@ function PageTreeRowView({
   const addButton = (
     <button
       type="button"
-      tabIndex={-1}
+      tabIndex={tabStop ? 0 : -1}
       data-row-action="add"
       aria-label={`Add Subpage to ${name}`}
       className={`${ROW_BUTTON} ${control} ${active ? '' : QUIET}`}
@@ -207,20 +215,19 @@ function PageTreeRowView({
       ) : null}
       {trust && !editing && !outOfScope ? <TrustBadge mark={trust} compact /> : null}
       {people}
-      {/* The row's buttons: their room is kept whether they are there or not, so a hover moves nothing. */}
+      {/* The row's buttons: their room is kept whether they show or not, so a hover moves nothing. */}
       <span
         data-row-controls
-        className={`flex shrink-0 items-center justify-end gap-0.5 ${touch ? 'w-9' : 'w-[50px]'}`}
+        className={`${current || menuOpen ? ROW_CONTROLS_SHOWN : ROW_CONTROLS_HIDDEN} ${touch ? 'w-9' : 'w-[50px]'}`}
       >
         {editing || outOfScope ? null : touch ? (
           menuButton
         ) : (
-          // Always there (owner, 2026-11-21: "always keep the + and ... visible"), quiet until the row is pointed
-          // at or current. Their hover cards are drawn on the active row only, so 500 rows carry 1,000 plain buttons
-          // and no extra cards.
+          // Shown on hover with a mouse, always on touch (owner, 2026-11-21), quiet until the row is active. Their
+          // hover cards are drawn on the active row only, so 500 rows carry 1,000 plain buttons and no extra cards.
           <>
             {canEdit ? (
-              active ? (
+              cards ? (
                 <HoverCard title="Add Subpage" description="Adds a new page under this one.">
                   {addButton}
                 </HoverCard>
@@ -228,7 +235,7 @@ function PageTreeRowView({
                 addButton
               )
             ) : null}
-            {active ? (
+            {cards ? (
               <HoverCard
                 title="Page Options"
                 description={

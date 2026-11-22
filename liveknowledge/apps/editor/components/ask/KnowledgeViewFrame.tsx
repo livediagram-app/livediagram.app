@@ -117,12 +117,16 @@ export function KnowledgeViewHeader({
           aria-hidden
           className="mx-3 h-5 w-px shrink-0 bg-slate-200 phone:mx-2 dark:bg-slate-700"
         />
-        <h1 id={titleId} className="shrink-0 truncate text-sm font-semibold tracking-tight">
-          {title}
-        </h1>
-        <p className="ml-2 hidden min-w-0 flex-1 truncate text-xs text-slate-600 lg:block dark:text-slate-400">
-          {about}
-        </p>
+        {/* The name over its line, in one column with one left edge (WI-1337): set side by side, the 12px line
+            and the 14px name were each centred in the row, so their baselines missed by a pixel and read crooked. */}
+        <div data-view-heading="" className="flex min-w-0 flex-1 flex-col justify-center">
+          <h1 id={titleId} className="truncate text-sm font-semibold leading-5 tracking-tight">
+            {title}
+          </h1>
+          <p className="hidden truncate text-xs leading-4 text-slate-600 lg:block dark:text-slate-400">
+            {about}
+          </p>
+        </div>
         {children ? (
           <div className="ml-auto flex shrink-0 items-center gap-1.5 pl-2">{children}</div>
         ) : null}
