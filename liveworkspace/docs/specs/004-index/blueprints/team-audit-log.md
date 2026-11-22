@@ -27,13 +27,13 @@ Scope, by file:
 
 ## Domain and naming
 
-| Kind                                                                                                           | Written by                                         | Row id                 | Team                                 |
-| -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------- | ------------------------------------ |
+| Kind                                                                                                                                  | Written by                                         | Row id                 | Team                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------- | ------------------------------------ |
 | `team_invite_sent`, `team_joined`, `team_declined`, `team_role_changed`, `team_member_removed`, `team_renamed`, `team_ai_key_changed` | `bulkEventStatements` (`POST /internal/events`)    | the event's            | the event's `detail.teamId`          |
-| `shared`, `unshared`, `trashed`, `restored`                                                                    | `eventStatements` (sharing, connected tabs, items) | the event's            | the item's team, read in the batch   |
-| `moved`                                                                                                        | `eventStatements` (`PATCH /items/:id`)             | the event's            | `auditTeams`: the old and new team   |
-| `deleted` (`reason: offline` for an owner's Take Offline)                                                      | `purgeRows` (Delete Forever, Empty Trash)          | `del:<item>:<at>`      | the item's team, read before it goes |
-| `webhook_added`, `webhook_removed` (`webhookId`, `kind`, `host`)                                               | `POST /webhooks`, `DELETE /webhooks/:id`           | `wh+:<id>`, `wh-:<id>` | the webhook's `t:<team>` scope       |
+| `shared`, `unshared`, `trashed`, `restored`                                                                                           | `eventStatements` (sharing, connected tabs, items) | the event's            | the item's team, read in the batch   |
+| `moved`                                                                                                                               | `eventStatements` (`PATCH /items/:id`)             | the event's            | `auditTeams`: the old and new team   |
+| `deleted` (`reason: offline` for an owner's Take Offline)                                                                             | `purgeRows` (Delete Forever, Empty Trash)          | `del:<item>:<at>`      | the item's team, read before it goes |
+| `webhook_added`, `webhook_removed` (`webhookId`, `kind`, `host`)                                                                      | `POST /webhooks`, `DELETE /webhooks/:id`           | `wh+:<id>`, `wh-:<id>` | the webhook's `t:<team>` scope       |
 
 `subject_id` is `json_extract(detail, '$.personId')`: the person a team event is about. A connected tab's pass
 (`connections.ts`) is a share link, so its `shared` and `unshared` on a team item are logged too.
