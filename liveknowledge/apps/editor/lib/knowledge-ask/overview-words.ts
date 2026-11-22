@@ -137,13 +137,17 @@ export function agentSample(overview: KnowledgeOverviewResponse | null, now: num
   const text =
     side?.text.replace(/\s+/g, ' ').trim().slice(0, 220) ??
     'We release on Thursdays, after the checks pass.';
-  const trust = side
-    ? side.trust === 'verified'
-      ? `verified${side.verifiedAt ? ` ${shortDate(side.verifiedAt, now)}` : ''}`
-      : side.trust === 'review-due'
-        ? 'review due (stale)'
-        : 'never verified'
-    : 'verified';
+  // Verification off (a Review Period of Never): agents are told so, whatever page the sample shows.
+  const trust =
+    overview?.reviewEvery === 'never' || side?.trust === 'off'
+      ? 'verification off'
+      : side
+        ? side.trust === 'verified'
+          ? `verified${side.verifiedAt ? ` ${shortDate(side.verifiedAt, now)}` : ''}`
+          : side.trust === 'review-due'
+            ? 'review due (stale)'
+            : 'never verified'
+        : 'verified';
   return [
     `search_knowledge("${page.toLowerCase()}")`,
     '',
@@ -155,3 +159,16 @@ export function agentSample(overview: KnowledgeOverviewResponse | null, now: num
     'so it can say where an answer came from.',
   ].join('\n');
 }
+
+/** Not Read in 90 Days' line under a page (ai-knowledge.md): "Last edited 95 days ago", "Last edited 5 months ago",
+ *  "Last edited 2 years ago", or "Last edit not kept" where page_authors kept neither the edit nor the making. */
+export function lastEditedText(touchedAt: number | undefined, now: number): string {
+  if (touchedAt === undefined) return 'Last edit not kept';
+  const days = Math.max(0, Math.floor((now - touchedAt) / 86_400_000));
+  if (days < 120) return `Last edited ${count(days)} ${days === 1 ? 'day' : 'days'} ago`;
+  if (days < 730) return `Last edited ${count(Math.floor(days / 30))} months ago`;
+  return `Last edited ${count(Math.floor(days / 365))} years ago`;
+}
+
+/** "4 more not listed". */
+export const moreNotListedText = (n: number): string => `${count(n)} more not listed`;

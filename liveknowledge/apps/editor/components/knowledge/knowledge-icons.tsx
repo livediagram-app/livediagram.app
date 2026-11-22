@@ -15,9 +15,11 @@ import {
   lucideFilePlus,
   lucideFileText,
   lucideLayers,
+  lucideMessagesSquare,
   lucidePanelRight,
   lucideSearch,
   lucideSparkles,
+  lucideSprout,
   lucideUser,
   lucideUsers,
   lucideX,
@@ -40,6 +42,8 @@ export const DueRowIcon = lucideGlyph(lucideCalendarClock, 14);
 export const PeriodIcon = lucideGlyph(lucideHistory, 14);
 export const PeopleIcon = lucideGlyph(lucideUsers, 14);
 export const AgentsIcon = lucideGlyph(lucideSparkles, 14);
+export const CitedIcon = lucideGlyph(lucideMessagesSquare, 14);
+export const NewPageSproutIcon = lucideGlyph(lucideSprout, 16);
 // The meta row's maker pills: a sparkle for an agent's, a person for a person's, at the pill's size.
 export const MakerAgentIcon = lucideGlyph(lucideSparkles, 12);
 export const MakerPersonIcon = lucideGlyph(lucideUser, 12);

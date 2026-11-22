@@ -260,6 +260,58 @@ describe('the cards', () => {
     expect(card.getByText('No Reads Yet')).toBeTruthy();
   });
 
+  it('Not Read in 90 Days: each page oldest first, its last edit, opening its page, and the rest counted', () => {
+    const now = Date.UTC(2026, 10, 20);
+    const actions = draw(
+      overview({
+        notRead: {
+          pages: [
+            { tab: 'n1', title: 'Old Onboarding' },
+            { tab: 'n2', title: '', touchedAt: now - 150 * 86_400_000 },
+            { tab: 'n3', title: 'Vendors', touchedAt: now - 100 * 86_400_000 },
+          ],
+          total: 7,
+        },
+      }),
+    );
+    const card = within(screen.getByRole('region', { name: 'Not Read in 90 Days' }));
+    const rows = card.getAllByRole('listitem').filter((li) => li.dataset.notRead);
+    expect(rows.map((li) => li.textContent)).toEqual([
+      'Old OnboardingLast edit not kept',
+      'Untitled PageLast edited 5 months ago',
+      'VendorsLast edited 100 days ago',
+    ]);
+    expect(card.getByText('4 more not listed')).toBeTruthy();
+    expect(card.getByText('7')).toBeTruthy();
+    fireEvent.click(within(rows[2]!).getByRole('button'));
+    expect(actions.openPage).toHaveBeenCalledWith('n3');
+  });
+
+  it('Not Read in 90 Days says every page was read, and is not drawn from an older api', () => {
+    draw(overview({ notRead: { pages: [], total: 0 } }));
+    expect(screen.getByText('Every Page Was Read')).toBeTruthy();
+    cleanup();
+    draw();
+    expect(screen.queryByRole('region', { name: 'Not Read in 90 Days' })).toBeNull();
+  });
+
+  // verification.md "Under a Review Period of Never": the band shows Average Health in Verified's place, and
+  // Knowledge Health leads with the average.
+  it('under a Review Period of Never shows Average Health, and no verified share', () => {
+    draw(
+      overview({
+        reviewEvery: 'never',
+        health: { verified: 2, reviewDue: 1, neverVerified: 0, total: 3, average: 74 },
+      }),
+    );
+    expect(tile(/^Average Health/).getAttribute('aria-label')).toBe('Average Health: 74');
+    expect(tile(/^Average Health/).textContent).toContain('Across 3 pages');
+    expect(screen.queryByRole('button', { name: /^Verified/ })).toBeNull();
+    const health = within(screen.getByRole('region', { name: 'Knowledge Health' }));
+    expect(health.queryByText('of 3 pages verified')).toBeNull();
+    expect(health.getByText('74')).toBeTruthy();
+  });
+
   it('shows Knowledge Health as a verified share', () => {
     draw();
     const health = within(screen.getByRole('region', { name: 'Knowledge Health' }));

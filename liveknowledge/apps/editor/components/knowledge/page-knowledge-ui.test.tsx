@@ -59,6 +59,18 @@ describe('the meta row', () => {
     expect(screen.getByText(/^Edited .* by Marcus Oyelaran$/)).toBeTruthy();
   });
 
+  it('shows no tick, pill or Changed since verified under a Review Period of Never', () => {
+    const { container } = render(
+      <PageMetaRowView
+        trust={pageTrust({ verifiedAt: NOW - 400 * DAY, verifiedBy: 'u1' }, 'never', NOW)}
+        now={NOW}
+        verifiedBy="Priya Nair"
+        changedSinceVerified
+      />,
+    );
+    expect(container.querySelector('[data-page-meta]')!.textContent).toBe('');
+  });
+
   it('shows nothing for a page never verified, and keeps its height', () => {
     const { container } = render(
       <PageMetaRowView
@@ -220,11 +232,11 @@ describe('Page Health', () => {
     expect(screen.getByRole('button', { name: 'Verify' })).toBeTruthy();
   });
 
-  it('says when the review is due under the knowledgebase’s period, and No Review Period under Never', () => {
+  it('says when the review is due under the knowledgebase’s period, and draws no verification under Never', () => {
     const dueOf = (over: Partial<RailProps>) => {
       const { container, unmount } = render(<Rail {...props(over)} />);
       const shown = [
-        container.querySelector('[data-review-due]')!.textContent,
+        container.querySelector('[data-review-due]')?.textContent ?? null,
         container.querySelector('[data-review-period]')!.textContent,
       ];
       const rows = container.querySelectorAll('dt').length;
@@ -240,11 +252,49 @@ describe('Page Health', () => {
     expect(dueOf({}).shown[0]).toContain(at(90).split(' ')[0]);
     const yearly = dueOf({ trust: pageTrust(fields, 365, NOW), reviewEvery: 365 });
     expect(yearly.shown).toEqual([expect.stringContaining('2027'), 'Every Year']);
+    // The same rows whatever period is set: nothing in the card moves when it changes.
+    expect(new Set([dueOf({}).rows, yearly.rows])).toEqual(new Set([6]));
+    // Never (verification.md "Under a Review Period of Never"): Last Verified and Review Due go; Owner and the Review
+    // Period, reading Never, stay so the period can be set again from here.
     const never = dueOf({ trust: pageTrust(fields, 'never', NOW), reviewEvery: 'never' });
-    expect(never.shown).toEqual(['No Review Period', 'Never']);
-    // The same rows whatever the period: nothing in the card moves when it changes.
-    expect(new Set([dueOf({}).rows, yearly.rows, never.rows])).toEqual(new Set([6]));
+    expect(never.shown).toEqual([null, 'Never']);
+    expect(never.rows).toBe(4);
   });
+
+  it.each([
+    ['an Editor', true],
+    ['a Participant', false],
+    ['a Viewer', false],
+  ] as const)(
+    'under Never, %s sees no state, no Last Verified, no Review Due and no Verify',
+    (_who, edits) => {
+      const fields = { verifiedAt: NOW - 10 * DAY, verifiedBy: 'u1', owner: 'u1' };
+      const { container } = render(
+        <Rail
+          {...props({
+            trust: pageTrust(fields, 'never', NOW),
+            reviewEvery: 'never',
+            ...(edits ? {} : { onSetOwner: undefined, periodControl: undefined }),
+          })}
+        />,
+      );
+      expect(container.querySelector('[data-page-state]')).toBeNull();
+      const rows = [...container.querySelectorAll('dt')].map((d) => d.textContent);
+      expect(rows).not.toContain('Last Verified');
+      expect(rows).not.toContain('Review Due');
+      expect(rows).toContain('Owner');
+      expect(rows).toContain('Review Period');
+      expect(screen.queryByRole('button', { name: /^Verify/ })).toBeNull();
+      expect(screen.queryByText(/Verified|Not Verified/)).toBeNull();
+      // Set a period again and the same stored date shows, with its state.
+      cleanup();
+      const back = render(<Rail {...props({ trust: pageTrust(fields, 90, NOW) })} />);
+      expect(
+        back.container.querySelector('[data-page-state]')!.getAttribute('data-page-state'),
+      ).toBe('verified');
+      expect(back.container.querySelector('[data-review-due]')).not.toBeNull();
+    },
+  );
 
   it('keeps an owner it cannot name as the chosen one', () => {
     render(<Rail {...props({ trust: pageTrust({ owner: 'u9' }, 90, NOW) })} />);

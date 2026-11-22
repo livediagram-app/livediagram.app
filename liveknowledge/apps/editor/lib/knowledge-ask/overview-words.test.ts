@@ -5,6 +5,8 @@ import {
   agentScopeChips,
   agentWriteChoice,
   lastSeenText,
+  lastEditedText,
+  moreNotListedText,
   askedByText,
   budgetText,
   healthParts,
@@ -126,6 +128,28 @@ describe('what AI Knowledge says', () => {
   it('a refusal in words', () => {
     expect(overviewFailureText(new Error('x'), 'dismiss-question')).toBe(
       'The question could not be dismissed. Try again.',
+    );
+  });
+});
+
+describe('Not Read in 90 Days in words', () => {
+  const NOW = Date.UTC(2026, 10, 20);
+  const ago = (days: number) => NOW - days * 86_400_000;
+  it('says how long ago the page was last edited, in days, months or years', () => {
+    expect(lastEditedText(undefined, NOW)).toBe('Last edit not kept');
+    expect(lastEditedText(ago(1), NOW)).toBe('Last edited 1 day ago');
+    expect(lastEditedText(ago(95), NOW)).toBe('Last edited 95 days ago');
+    expect(lastEditedText(ago(150), NOW)).toBe('Last edited 5 months ago');
+    expect(lastEditedText(ago(800), NOW)).toBe('Last edited 2 years ago');
+    expect(moreNotListedText(1234)).toBe('1,234 more not listed');
+  });
+});
+
+describe('the agent sample under a Review Period of Never', () => {
+  it('says verification is off', () => {
+    const overview = { reviewEvery: 'never', conflicts: [], context: { pages: [] }, agents: [] };
+    expect(agentSample(overview as never, Date.UTC(2026, 10, 20))).toContain(
+      'trust: verification off',
     );
   });
 });

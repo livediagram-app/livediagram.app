@@ -15,6 +15,7 @@ import {
   guestVerifier,
   guestVerifierName,
   isGuestVerifier,
+  verificationOn,
   type ReviewEvery,
 } from '@liveknowledge/knowledge';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -85,9 +86,17 @@ export function useKnowledgeActions(): KnowledgeActions {
   const offline = useIsOfflineDocument(documentId);
   const editPages = useEditorChrome((s) => s.can.editPages);
   const isStructureReadOnly = useEditorChrome((s) => s.isStructureReadOnly);
+  // Under a Review Period of Never nobody is offered Verify, anywhere it is offered.
+  const verifies = verificationOn(useReviewEvery(documentId));
   const rights = useMemo(
-    () => knowledgeRights({ can: { editPages }, isStructureReadOnly, offline }),
-    [editPages, isStructureReadOnly, offline],
+    () =>
+      knowledgeRights({
+        can: { editPages },
+        isStructureReadOnly,
+        offline,
+        verificationOn: verifies,
+      }),
+    [editPages, isStructureReadOnly, offline, verifies],
   );
   const callerOf = useCallback((): { who: KnowledgeCaller; documentId: string } | null => {
     const editor = chrome.get();

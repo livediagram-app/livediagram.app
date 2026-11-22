@@ -21,10 +21,14 @@ describe('a page’s state, worked out when read', () => {
     const fresh = pageTrust({ verifiedAt: NOW - 10 * DAY, verifiedBy: 'u1' }, 90, NOW);
     expect(fresh).toMatchObject({ state: 'verified', reviewAt: NOW + 80 * DAY });
     expect(pageTrust({ verifiedAt: NOW - 91 * DAY }, 90, NOW).state).toBe('review-due');
-    // Under a period of Never a page is verified with no review date.
+    // Under a period of Never verification is off: no state shows, and the stored date is kept for a period set
+    // again (verification.md "Under a Review Period of Never").
     const never = pageTrust({ verifiedAt: NOW - 900 * DAY }, 'never', NOW);
-    expect(never.state).toBe('verified');
+    expect(never.state).toBe('off');
     expect(never.reviewAt).toBeUndefined();
+    expect(never.fields.verifiedAt).toBe(NOW - 900 * DAY);
+    expect(pageTrust(undefined, 'never', NOW).state).toBe('off');
+    expect(pageTrust({ verifiedAt: NOW - 900 * DAY }, 365, NOW).state).toBe('review-due');
   });
 
   it('follows the knowledgebase’s Review Period, never one a page once stored', () => {
@@ -40,7 +44,7 @@ describe('a page’s state, worked out when read', () => {
     });
     const pages = [{ id: 'a', knowledge: { verifiedAt: NOW - 40 * DAY } }];
     expect([...trustMarks(pages, 30, NOW)]).toEqual([['a', 'review-due']]);
-    expect([...trustMarks(pages, 'never', NOW)]).toEqual([['a', 'verified']]);
+    expect([...trustMarks(pages, 'never', NOW)]).toEqual([]);
   });
 
   it('marks only pages that were verified, in one pass over the list', () => {
@@ -84,6 +88,15 @@ describe('who may verify and change the fields', () => {
   it('an Editor with no account (a guest) verifies too: it reads "Guest"', () => {
     expect(rights('edit')).toEqual({ editFields: true, verify: true });
   });
+  it.each(['edit', 'participate', 'view'] as const)(
+    'under a Review Period of Never, a %s session is offered no Verify, and an Editor still sets the fields',
+    (level) => {
+      expect(rights(level, { verificationOn: false })).toEqual({
+        editFields: level === 'edit',
+        verify: false,
+      });
+    },
+  );
   it('an Editor on one page of the knowledgebase, or on one kept Offline, changes nothing', () => {
     expect(rights('edit', { isStructureReadOnly: true }).verify).toBe(false);
     expect(rights('edit', { offline: true })).toEqual({ editFields: false, verify: false });

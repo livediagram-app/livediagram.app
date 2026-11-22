@@ -25,6 +25,10 @@ export type DashboardFigures = {
   neverVerified: number;
   /** The average Health Score; undefined with no pages, or from an older api. */
   averageHealth: number | undefined;
+  /** How many pages the knowledgebase has. */
+  pages: number;
+  /** False under a Review Period of Never: the band shows Average Health, not Verified (verification.md). */
+  verificationOn: boolean;
 };
 
 export function dashboardFigures(overview: KnowledgeOverviewResponse): DashboardFigures {
@@ -45,6 +49,8 @@ export function dashboardFigures(overview: KnowledgeOverviewResponse): Dashboard
     reviewDue: health.reviewDue,
     neverVerified: health.neverVerified,
     averageHealth: health.average,
+    pages: health.total,
+    verificationOn: overview.reviewEvery !== 'never',
   };
 }
 

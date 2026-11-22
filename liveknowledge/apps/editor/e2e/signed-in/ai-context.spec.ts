@@ -33,6 +33,8 @@ const KEY = 'sk-ant-e2e-not-a-real-key-0000';
 const QUESTION = 'How do I restart the queue worker?';
 const rail = (page: Page) => page.getByRole('complementary', { name: 'Page Info' });
 const aiContext = (page: Page) => rail(page).getByRole('region', { name: 'AI Context' });
+// The questions Ask answered from the page are Page Insights' (ai-knowledge.md "Page Insights").
+const insights = (page: Page) => rail(page).getByRole('region', { name: 'Page Insights' });
 
 async function runbook(page: Page) {
   const made = await signedInKnowledgebase(page);
@@ -45,7 +47,7 @@ async function runbook(page: Page) {
   return made;
 }
 
-test('a question Ask answered from the page shows under Answered From This Page', async ({
+test('a question Ask answered from the page shows under Answered From This Page, and counts as cited', async ({
   page,
   pageErrors,
 }) => {
@@ -55,7 +57,9 @@ test('a question Ask answered from the page shows under Answered From This Page'
   await expect(always).toHaveAttribute('aria-checked', 'false');
   await expect(aiContext(page).getByText(/^About [\d,]+ tokens?$/)).toBeVisible();
   // A list with nothing in it is not shown.
-  await expect(aiContext(page).getByText('Answered From This Page')).toHaveCount(0);
+  await expect(insights(page).getByText('Answered From This Page')).toHaveCount(0);
+  // A page made today with no reads but its own opening: its 30 days, or New This Week.
+  await expect(insights(page)).toBeVisible();
   await expect(aiContext(page).getByText('Read by Agents')).toHaveCount(0);
 
   for (let i = 0; i < 2; i++) {
@@ -72,11 +76,13 @@ test('a question Ask answered from the page shows under Answered From This Page'
   // Page Health is read once a page a session: a reload reads it anew.
   await openView(page, 'Pages');
   await page.reload();
-  const answered = aiContext(page).locator('[data-answered-question]');
+  const answered = insights(page).locator('[data-answered-question]');
   await expect(answered).toHaveCount(1);
   await expect(answered).toContainText(QUESTION);
   await expect(answered).toContainText('Asked 2 times');
-  await expect(aiContext(page).getByText('Answered From This Page')).toBeVisible();
+  await expect(insights(page).getByText('Answered From This Page')).toBeVisible();
+  await expect(insights(page).getByText('Cited by Ask').locator('..')).toContainText('2 times');
+  await expect(aiContext(page).locator('[data-answered-question]')).toHaveCount(0);
 
   // Always in Context: on, then the tree row menu agrees.
   await always.click();

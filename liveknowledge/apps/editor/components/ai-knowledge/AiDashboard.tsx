@@ -20,6 +20,7 @@ import { AgentsSection } from './AgentsSection';
 import { FigureTiles, type TileTarget } from './FigureTiles';
 import { AgentSampleCard, ContextSection, HealthSection } from './HealthAndContext';
 import { MostReadCard } from './MostReadCard';
+import { NotReadCard } from './NotReadCard';
 import { NeedsAttention } from './NeedsAttention';
 
 /** What the dashboard's controls do: AiKnowledgeView's handlers, each checking its right again. */
@@ -128,6 +129,15 @@ export function AiDashboard({
             onAskWrite={actions.askWrite}
           />
           <MostReadCard pages={overview.reads.mostRead} onOpenPage={actions.openPage} />
+          {/* Absent from an older api: not drawn. */}
+          {overview.notRead ? (
+            <NotReadCard
+              pages={overview.notRead.pages}
+              total={overview.notRead.total}
+              now={now}
+              onOpenPage={actions.openPage}
+            />
+          ) : null}
         </div>
         <div className={COLUMN}>
           <HealthSection
@@ -139,6 +149,7 @@ export function AiDashboard({
             reminding={busy.has('remind-owners')}
             now={now}
             onRemind={actions.remindOwners}
+            verificationOn={overview.reviewEvery !== 'never'}
           />
           <ContextSection
             context={overview.context}
