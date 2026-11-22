@@ -74,6 +74,8 @@ export function pageSummaries(tab: PagesTab, laidOut?: LaidOutTexts): PageSummar
         }
       : {}),
   }));
+  // The refs are worked out only when a page was laid out: most answers list no texts.
+  if (!laidOut?.size) return pages;
   return withLaidOutTexts(
     pages,
     laidOut,

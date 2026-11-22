@@ -7,6 +7,7 @@ import type { PageKind, Tab } from '@livedocuments/document';
 import { layoutCatalogueFor } from '@livedocuments/templates';
 import { applyPageChanges } from './page-changes';
 import { pageSummaries, pagesTextsLeftOut } from './summary';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/024-agents/pages-for-agents.md "Text slots" and "A laid-out page's texts".
 
@@ -189,6 +190,7 @@ describe('the answer’s texts', () => {
       .sort((a, b) => b.n - a.n)[0]!;
     expect(fullest.n).toBeGreaterThanOrEqual(30);
     for (const pages of [40, 50]) {
+      const started = cpuNowMs();
       const out = run(
         fresh(),
         Array.from({ length: pages }, (): PageChange => ({
@@ -203,6 +205,9 @@ describe('the answer’s texts', () => {
         lines: leftOut ? [...out.lines, leftOut] : out.lines,
         pages: summaries,
       });
+      // Measured 52 ms (40 pages, 69,898 characters) and 57 ms (50 pages, 72,678) at load average 6; held at
+      // 3,000 ms for CI under load.
+      expect(cpuNowMs() - started, `${pages} pages`).toBeLessThan(cpuBudgetMs(3000));
       expect(answer.length, `${pages} pages`).toBeLessThan(150_000);
       if (pages === 50) expect(leftOut).toMatch(/^Texts of pages \d+-50 are left out/);
     }
