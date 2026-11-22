@@ -29,7 +29,11 @@ import {
 } from './editor-shortcut-keys';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { arrowPageDir } from '@liveworkspace/workbench/lib/page-step';
-import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
+import {
+  isTypingTarget,
+  passesHistoryChords,
+  passesSearchChords,
+} from '@liveworkspace/workbench/lib/typing-target';
 import { altGraphHeld } from '@liveworkspace/workbench/lib/composed-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
@@ -187,7 +191,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (mod) {
         // An empty start search hands undo and redo on (start-diagramming.md): it has no typing of its own to undo.
         const historyChord = lower === 'z' || lower === 'y';
-        if (inText && !(historyChord && passesHistoryChords(target))) return;
+        if (
+          inText &&
+          !(historyChord && passesHistoryChords(target)) &&
+          !passesSearchChords(e, target)
+        )
+          return;
         // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate, lock, z-order) is still the
         // canvas's, as on a covered canvas: left to the browser, Cmd+A selected the page's text and Cmd+D bookmarked it.
         if (!runModShortcut(e, live) && live.isReadOnly && coveredKeyRole(e) === 'swallow') {

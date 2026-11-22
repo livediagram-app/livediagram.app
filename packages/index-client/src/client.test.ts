@@ -282,6 +282,18 @@ describe('createIndexClient reads', () => {
     await expect(garbled.listItems({ q: 'road' })).rejects.toBeInstanceOf(SyntaxError);
   });
 
+  it('reads a 204 as nothing, and an empty 200 as the broken answer it is', async () => {
+    // The index answers a call with nothing to say as 204 (noContent, liveworkspace/apps/index/src/http.ts); a 2xx is
+    // otherwise its JSON body, so an empty one rejects rather than resolve null for the caller to read.
+    const answering = (status: number) =>
+      createIndexClient({
+        getToken: () => null,
+        fetch: (async () => new Response(null, { status })) as typeof fetch,
+      });
+    await expect(answering(204).recordOpen('i1')).resolves.toBeUndefined();
+    await expect(answering(200).listItems({ q: 'road' })).rejects.toBeInstanceOf(SyntaxError);
+  });
+
   it("reads a team's audit log as pages and as CSV, with where the next file starts", async () => {
     const { seen, doFetch } = fakeFetch((s) =>
       s.url.includes('format=csv')
