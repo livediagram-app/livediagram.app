@@ -163,6 +163,9 @@ export type UserPreferences = {
   // "A page I own is due for review, disagrees with another page, or an Editor reminds the owners"
   // (docs/specs/030-knowledgebase/verification.md "Reminders").
   notifyKnowledgeReviews?: boolean;
+  // "Once a day, what changed in the pages I watch" (docs/specs/030-knowledgebase/watching.md): the one opt-in
+  // switch, sent only when explicitly true.
+  notifyWatchDigest?: boolean;
   // "Someone accepted / declined a team invite I sent" (to the team's admins).
   notifyInviteResponse?: boolean;
   notifyComments?: boolean;

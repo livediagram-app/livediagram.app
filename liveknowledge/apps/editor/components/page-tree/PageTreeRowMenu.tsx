@@ -3,8 +3,9 @@
 // A page's menu in the tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Row menu"; owner 2026-11-21:
 // "some items should be a toolbar, some should be sub items of a category"): a toolbar of Rename, Duplicate, Copy Link
 // and Delete under the page's name, then rows: Add Subpage, Connect File Here, Verify, Request Approval, Always in
-// Context (a checkmark row), and a closed Move section (Move Up, Move Down, Indent, Outdent). A verb that cannot run
-// stays, greyed, and says why in its hover card. A Viewer or a Participant has Copy Link alone.
+// Context (a checkmark row), Watch (watching.md, every signed-in reader's) and a closed Move section (Move Up, Move
+// Down, Indent, Outdent). A verb that cannot run stays, greyed, and says why in its hover card. A Viewer or a
+// Participant has Copy Link and Watch alone.
 import { useState, type ReactNode } from 'react';
 import {
   pageAddRefusal,
@@ -116,7 +117,10 @@ export function PageTreeRowMenu({
   canEdit: boolean;
   // Verify and Always in Context (docs/specs/030-knowledgebase/verification.md, ai-knowledge.md): an Editor's.
   knowledge?:
-    | Pick<PageTreeKnowledge, 'canVerify' | 'canEditFields' | 'inContext' | 'canRequestApproval'>
+    | Pick<
+        PageTreeKnowledge,
+        'canVerify' | 'canEditFields' | 'inContext' | 'canRequestApproval' | 'watchRows'
+      >
     | undefined;
   // Connect File Here is offered (signed in, on the server, a session that may change the tree).
   canConnect?: boolean;
@@ -127,6 +131,7 @@ export function PageTreeRowMenu({
   const page = tabs.find((t) => t.id === id);
   if (!page || pageDepth(tabs, id) === 0) return null;
   const refusals = canEdit ? pageMenuRefusals(tabs, id) : {};
+  const separated = canEdit || !!knowledge?.canVerify || !!knowledge?.canEditFields;
   const row = (verb: PageMenuVerb, label: string, icon: ReactNode, aside?: ReactNode) => {
     const why = refusals[verb];
     const item = (
@@ -187,13 +192,15 @@ export function PageTreeRowMenu({
           ? tool('delete', 'Delete', <DeleteIcon />, 'Delete this page and its subpages.')
           : null}
       </MenuToolbar>
-      {canEdit || knowledge?.canVerify || knowledge?.canEditFields ? <MenuGroupSeparator /> : null}
+      {separated ? <MenuGroupSeparator /> : null}
       {canEdit ? row('add', 'Add Subpage', <AddIcon />) : null}
       {canEdit && canConnect ? row('connect-here', 'Connect File Here', <ConnectFileIcon />) : null}
       {knowledge?.canVerify ? row('verify', 'Verify', <TickIcon />) : null}
       {knowledge?.canRequestApproval?.(id)
         ? row('approval', 'Request Approval', <RequestIcon />)
         : null}
+      {/* Watch, Watch This Section, Unwatch: every role that reads the page (watching.md "Where it shows"). */}
+      {knowledge?.watchRows?.(id, onClose, !separated)}
       {knowledge?.canEditFields
         ? row(
             'context',

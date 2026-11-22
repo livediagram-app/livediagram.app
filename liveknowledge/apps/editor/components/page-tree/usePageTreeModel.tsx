@@ -20,6 +20,7 @@ import { pageTrust, trustMarks } from '@/lib/knowledge/page-trust';
 import { approvalActionsOf, approvalMarks, approvalOfFields } from '@/lib/knowledge/approval-view';
 import { useApprovalDoor } from '@/components/knowledge/approval/usePageApproval';
 import { askApproval } from '@/lib/knowledge/approval-asked';
+import { PageWatchMenuRows } from '@/components/page-watch/PageWatchMenuRows';
 import { useRelativeNow } from '@/lib/relative-time';
 import type { PageTreeActions, PageTreeKnowledge, PageTreeProps } from './PageTree';
 import { selectPage } from './select-page';
@@ -173,6 +174,9 @@ export function usePageTreeModel(): PageTreeModel {
         selectPage(chrome.get(), id);
         askApproval(id);
       },
+      watchRows: (id, onClose, separated) => (
+        <PageWatchMenuRows id={id} onClose={onClose} separated={separated} />
+      ),
     };
   }, [tabs, now, reviewEvery, knowledgeVersion, knowledgeActions, approvalCaller, chrome]);
 

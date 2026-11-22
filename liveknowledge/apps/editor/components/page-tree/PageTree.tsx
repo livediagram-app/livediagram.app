@@ -92,6 +92,9 @@ export type PageTreeKnowledge = {
   // Request Approval, from the page's menu (approval.md "Asking").
   canRequestApproval?: (id: string) => boolean;
   onRequestApproval?: (id: string) => void;
+  // Watch, Watch This Section and Unwatch, for every signed-in reader (watching.md "Where it shows"): the rows for the
+  // page, read when its menu opens, a separator above them when `separated`.
+  watchRows?: (id: string, onClose: () => void, separated: boolean) => ReactNode;
 };
 
 const rowOf = (target: EventTarget | null): HTMLElement | null =>

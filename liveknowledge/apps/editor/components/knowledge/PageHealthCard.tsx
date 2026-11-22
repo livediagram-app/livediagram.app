@@ -55,6 +55,8 @@ export type PageHealthCardProps = {
   approvalRow?: { onRequest: (() => void) | undefined } | undefined;
   /** The Health Score and its breakdown (PageHealthScore), at the top (verification.md "In Page Health"). */
   score?: ReactNode;
+  /** Watch, across from the section's label (watching.md "Where it shows"). */
+  watch?: ReactNode;
 };
 
 /** The section label, as On This Page's. */
@@ -394,6 +396,7 @@ export function PageHealthCard({
   periodControl,
   approvalRow,
   score,
+  watch,
 }: PageHealthCardProps) {
   const { owner, verifiedAt, verifiedBy } = trust.fields;
   const ownerName = nameOf(owner);
@@ -413,7 +416,10 @@ export function PageHealthCard({
       data-page-health=""
       className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
     >
-      <h2 className={RAIL_LABEL}>Page Health</h2>
+      <div className="flex min-h-7 items-center justify-between gap-2">
+        <h2 className={RAIL_LABEL}>Page Health</h2>
+        {watch}
+      </div>
       {score}
       <div className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${tone.wash}`}>
         <div data-page-state={trust.state} className="flex items-center gap-3.5">

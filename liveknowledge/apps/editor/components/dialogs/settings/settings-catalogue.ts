@@ -43,11 +43,14 @@ type EmailKey =
   | 'notifyActionAssigned'
   | 'notifyMentions'
   | 'notifyTips'
-  | 'notifyMilestones';
+  | 'notifyMilestones'
+  | 'notifyWatchDigest';
 
+// `optIn`: off until turned on (the Daily Digest of Watched Pages, watching.md); the rest are on until turned off.
 function emailSwitch(
   key: EmailKey,
   copy: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'keywords' | 'event'>,
+  { optIn = false }: { optIn?: boolean } = {},
 ): SettingsToggleRowSpec {
   return {
     kind: 'toggle',
@@ -55,7 +58,7 @@ function emailSwitch(
     section: 'Email',
     ...copy,
     available: (ctx) => ctx.emailEnabled && ctx.signedIn,
-    read: (p) => p[key] !== false,
+    read: (p) => (optIn ? p[key] === true : p[key] !== false),
     write: (p, v) => ({ ...p, [key]: v }),
   };
 }
@@ -806,6 +809,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'A page you own is due for review, disagrees with another page, or an Editor reminds its owners.',
       }),
+      emailSwitch(
+        'notifyWatchDigest',
+        {
+          event: { category: 'UI', on: 'NotifyWatchDigestOn', off: 'NotifyWatchDigestOff' },
+          keywords: 'email watch watching follow digest daily changes updates',
+          label: 'Daily Digest of Watched Pages',
+          description:
+            'One email a day listing what changed on the pages you watch. Off until you turn it on.',
+        },
+        { optIn: true },
+      ),
       emailSwitch('notifyTips', {
         event: { category: 'UI', on: 'NotifyTipsOn', off: 'NotifyTipsOff' },
         keywords: 'email tips onboarding nudge newsletter',
