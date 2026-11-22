@@ -325,7 +325,7 @@ in the knowledgebase (they all join `document_tabs`) no longer sees it.
 
 | Term                | Identifier                                                                                                  |
 | ------------------- | ----------------------------------------------------------------------------------------------------------- |
-| the Trash's table   | `page_trash` (room schema step 36, `pageTrashSchemaStep` in `document-room/page-trash.ts`)                  |
+| the Trash's table   | `page_trash` (room schema step 37, `pageTrashSchemaStep` in `document-room/page-trash.ts`)                  |
 | a trashed page      | a `page_trash` row: `tab_id`, `parent`, `order_index`, `trashed_at`, `trashed_by`, `trashed_by_name`        |
 | a Trash row (shown) | `TrashedPage` (`packages/api-schema/src/page-trash.ts`): `id`, `name`, `trashedAt`, `trashedBy`, `subpages` |
 | retention, cap      | `PAGE_TRASH_DAYS` (30), `MAX_TRASHED_PAGES` (500), in `page-trash.ts`                                       |
@@ -334,7 +334,7 @@ in the knowledgebase (they all join `document_tabs`) no longer sees it.
 
 ### Data and persistence
 
-- **Schema (step 36, additive, IF NOT EXISTS):** `page_trash (tab_id TEXT PRIMARY KEY REFERENCES tabs (id) ON DELETE
+- **Schema (step 37, additive, IF NOT EXISTS):** `page_trash (tab_id TEXT PRIMARY KEY REFERENCES tabs (id) ON DELETE
 CASCADE, parent TEXT NULL, order_index INTEGER NOT NULL, trashed_at INTEGER NOT NULL, trashed_by TEXT NOT NULL
 DEFAULT '', trashed_by_name TEXT NOT NULL DEFAULT '')`, `page_trash_at` on `trashed_at`; three triggers:
   `page_trash_relinked` (AFTER INSERT ON `document_tabs`: the tab's trash row goes, so an Undo's save, a restore,

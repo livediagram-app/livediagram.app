@@ -35,7 +35,7 @@ const markLinked = (row: 'NEW' | 'OLD') =>
   `INSERT INTO knowledge_dirty (tab)
      SELECT ${row}.tab_id WHERE NOT EXISTS (SELECT 1 FROM knowledge_dirty WHERE tab = ${row}.tab_id)`;
 
-/** The schema step (document-schema.ts STEPS, step 36). Additive, IF NOT EXISTS. */
+/** The schema step (document-schema.ts STEPS, step 37). Additive, IF NOT EXISTS. */
 export function pageTrashSchemaStep(exec: Exec): void {
   exec(`CREATE TABLE IF NOT EXISTS page_trash (
     tab_id          TEXT    PRIMARY KEY REFERENCES tabs (id) ON DELETE CASCADE,

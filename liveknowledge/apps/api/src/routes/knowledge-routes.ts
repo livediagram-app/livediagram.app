@@ -24,6 +24,7 @@
 //                                                           knowledge-agent-routes.ts
 // The gate is the caller's grant (routes/context.ts): reading is every role's, a share link's visitor included; a
 // write is an Editor's. A link confined to one page reaches that page's own routes and search, nothing else.
+import { handlePublishingRoutes } from '../publishing/publishing-routes';
 import { getDocument } from '../db';
 import { redactDocumentForScope } from '../redact-document';
 import { knowledgeHealthCounts, ownDuePages, recentPages } from '../knowledge/knowledge-reads';
@@ -179,6 +180,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
       segments[3] === 'ask' ||
       segments[3] === 'knowledge' ||
       segments[3] === 'knowledge-settings' ||
+      segments[3] === 'publishing' ||
       segments[3] === 'questions' ||
       segments[3] === 'pages' ||
       segments[3] === 'context' ||
@@ -249,6 +251,7 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   if (segments[3] === 'setup')
     return request.method === 'POST' ? handleSetupSuggest(route) : methodNotAllowed();
   return (
+    (await handlePublishingRoutes(route)) ??
     (await handleSettingsRoutes(route)) ??
     (await handleAgentRoutes(route)) ??
     (await handleSuggestionRoutes(route)) ??

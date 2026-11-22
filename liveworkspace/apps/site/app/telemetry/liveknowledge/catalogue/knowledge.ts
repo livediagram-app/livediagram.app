@@ -536,6 +536,22 @@ export const AI_KEYS_REMOVED = chart(
   { types: ['AiKey'], rising: 'neutral' },
 );
 
+export const SITES_PUBLISHED = chart(
+  'UI',
+  'Used',
+  'Sites Published',
+  'A knowledgebase, or one section of it, published to the web, or what is published changed (Publish to the Web).',
+  { types: ['PublishSite'] },
+);
+
+export const SITES_UNPUBLISHED = chart(
+  'UI',
+  'Removed',
+  'Sites Unpublished',
+  "A knowledgebase's public site taken down with Unpublish.",
+  { types: ['PublishSite'], rising: 'neutral' },
+);
+
 export const AI_PROVIDERS_CHANGED = chart(
   'UI',
   'Changed',
@@ -575,6 +591,14 @@ export const AI_SETUP: MetricStack = {
     ASK_AI_CHOSEN,
   ],
   headline: [SETUPS_SUGGESTED, AI_KEYS_ADDED],
+};
+
+export const SITE_PUBLISHING: MetricStack = {
+  stack: true,
+  title: 'Publish to the Web',
+  blurb: 'Knowledgebases put on the web as public help centres, and taken down again.',
+  members: [SITES_PUBLISHED, SITES_UNPUBLISHED],
+  headline: [SITES_PUBLISHED],
 };
 
 // ---- Agents' access, for Connections (ai-knowledge.md "Agents") -------------------------------------------------

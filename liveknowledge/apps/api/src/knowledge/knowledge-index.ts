@@ -126,7 +126,7 @@ export function settlePage(sql: ItemSql, tab: string, indexed?: IndexedPage[]): 
     links.join(' '),
   );
   const trustHash = trustHashOf(fields);
-  // The page's shape, for the Health Score (schema step 37): kept beside it, written alone when only it moved (an
+  // The page's shape, for the Health Score (schema step 38): kept beside it, written alone when only it moved (an
   // owner change is a write of the tab, so it settles here).
   const words = pageWords(blocks);
   const headings = pageHeadingCount(blocks);

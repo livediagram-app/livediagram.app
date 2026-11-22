@@ -63,7 +63,7 @@ export function knowledgeSchemaStep(exec: Exec): void {
   exec('INSERT OR IGNORE INTO knowledge_dirty (tab, queued) SELECT id, 1 FROM tabs');
 }
 
-/** Schema step 37 (docs/specs/030-knowledgebase/verification.md "Health Score"): `knowledge_pages` keeps each page's
+/** Schema step 38 (docs/specs/030-knowledgebase/verification.md "Health Score"): `knowledge_pages` keeps each page's
  *  words, headings and whether it has an owner, so the score of every page is one read with no page's writing in
  *  it. Asks before each ALTER, so a rerun is safe; every page already indexed is queued for the alarm's backfill,
  *  whose settle writes the three alone when the page's writing has not changed. */

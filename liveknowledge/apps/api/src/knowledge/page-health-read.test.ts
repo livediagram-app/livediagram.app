@@ -96,7 +96,7 @@ describe('the facts of each page', () => {
     const [deploys, rollbacks] = await pageHealthRows(kit.db.env, 'kb', Date.now());
     expect(deploys).toMatchObject({ owned: 1, words: null, headings: null });
     expect(rollbacks).toMatchObject({ owned: 0 });
-    // Schema step 37, run again, adds nothing and queues the pages; the settle writes the shape alone.
+    // Schema step 38, run again, adds nothing and queues the pages; the settle writes the shape alone.
     knowledgeShapeStep((query) => {
       // As a Durable Object's `exec` does: the statement runs at once.
       const statement = kit.db.sql.prepare(query);

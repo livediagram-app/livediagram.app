@@ -518,6 +518,12 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   lists), and the app is told to reload every link's sessions (`revoke`, `reason: "rescoped"`, below), so they meet
   the password; entering it records them again. Saving the same password, or removing it, sends no one away.
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
+- **Publishing is not sharing.** An app that makes an item readable on the open web (liveknowledge's
+  [Publish to the Web](../../../../liveknowledge/docs/specs/030-knowledgebase/publishing.md)) makes no share link and
+  asks the index for nothing: the public reads a published snapshot the app keeps in the item's own storage, never
+  the item, so a published reader is never a link visitor, has no grant, and appears in no Shared, Inbox or History.
+  Who may publish is the app's rule (an Editor of the item). A share password, a link's expiry and revoking links
+  leave a published snapshot as it is; deleting the item takes it down with the item.
 - A connected tab's pass is a share link like these, made by `POST /items/:id/connections` and handed out only by
   `GET /connections/:id` ([connected-tabs.md](connected-tabs.md)).
 

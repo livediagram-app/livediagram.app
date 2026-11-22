@@ -24,7 +24,8 @@ the blueprint's "Not built" lists.
 
 **Knowledgebase** is one word (owner, 2026-11-20), never "wiki" and never "knowledge base", in the interface, the
 help and the marketing. "Space" is never used for one either: the Explorer's Spaces (Offline, Private, Shared, Team,
-Public) already own the word.
+Public) already own the word. A knowledgebase made readable by anyone is **published** ([Publish to the
+Web](publishing.md)): its "public site", never its "Public".
 
 ## A knowledgebase
 
@@ -178,14 +179,15 @@ The knowledgebase's name in the sidebar's head is a button with a chevron beside
 menu: the name is the thing the menu is about, so the name is what is pressed, and no second button stands beside
 it. The menu is icon-left verb rows under the knowledgebase's name:
 
-| Row                   | Does                                                                                      | Who                      |
-| --------------------- | ----------------------------------------------------------------------------------------- | ------------------------ |
-| Rename                | The name becomes a field where it stands; Enter keeps it, Escape leaves it                | Editor                   |
-| Describe to Add Pages | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                  | Writer, signed in        |
-| Import                | Opens Import                                                                              | Writer                   |
-| Export                | Opens Export                                                                              | everyone                 |
-| AI Settings           | Opens AI Settings ([Search and Ask](search-and-ask.md))                                   | Editor, not kept Offline |
-| Delete                | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator | Editor                   |
+| Row                   | Does                                                                                         | Who                                 |
+| --------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Rename                | The name becomes a field where it stands; Enter keeps it, Escape leaves it                   | Editor                              |
+| Describe to Add Pages | Opens [Describe to Set Up](describe-to-set-up.md), once it holds writing                     | Writer, signed in                   |
+| Import                | Opens Import                                                                                 | Writer                              |
+| Export                | Opens Export                                                                                 | everyone                            |
+| Publish to the Web    | Opens [Publish to the Web](publishing.md): the knowledgebase, or a section, as a public site | Editor, signed in, not kept Offline |
+| AI Settings           | Opens AI Settings ([Search and Ask](search-and-ask.md))                                      | Editor, not kept Offline            |
+| Delete                | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator    | Editor                              |
 
 - Knowledgebase Style is not a row: it opens from the footer's Style ([Knowledgebase Style](page-surface.md#knowledgebase-style)).
 - "Editor" is an Editor of the whole knowledgebase; "Writer" is an Editor or a Participant of the whole
@@ -248,6 +250,7 @@ Participant never manages who has access.
 | Automations (none built yet; the rule stands for when they are) | yes    | no          | no     |
 | AI Settings (the key and the model), allow an agent to write    | yes    | no          | no     |
 | Rename or delete the knowledgebase, share it, change roles      | yes    | no          | no     |
+| Publish to the Web, change what is published, Unpublish         | yes    | no          | no     |
 | Export, from the knowledgebase's menu                           | yes    | yes         | yes    |
 | Copy a page's link, fold the tree                               | yes    | yes         | yes    |
 

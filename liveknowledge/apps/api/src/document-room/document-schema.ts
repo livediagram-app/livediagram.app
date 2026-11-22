@@ -36,6 +36,7 @@ import { emailMarksSchemaStep } from '../knowledge/email-marks';
 import { pageAnswersSchemaStep } from '../knowledge/page-answers';
 import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
 import { pageThreadsSchemaStep } from '../knowledge/page-threads';
+import { publishedSchemaStep } from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
@@ -426,15 +427,19 @@ const V34 = VERSION_SAVE_STEP;
 // the steps before it, never among the engine's own. Without it a room's restore reads a table it never made.
 const V35 = automationSchemaStep('wake');
 
-// Step 36: the knowledgebase's page Trash (document-room/page-trash.ts; docs/specs/030-knowledgebase/
+// Step 36: the published snapshot of a knowledgebase's public site and its marks (publishing/published-schema.ts;
+// docs/specs/030-knowledgebase/publishing.md). Additive, IF NOT EXISTS.
+const V36 = publishedSchemaStep;
+
+// Step 37: the knowledgebase's page Trash (document-room/page-trash.ts; docs/specs/030-knowledgebase/
 // knowledgebases-and-pages.md "The page Trash"): where each trashed page stood and who put it there, and the
 // triggers that take a relinked page out of it and mark a page's index when its link comes or goes. Additive,
 // IF NOT EXISTS.
-const V36 = pageTrashSchemaStep;
+const V37 = pageTrashSchemaStep;
 
-// Step 37: each page's words, headings and whether it has an owner, kept by the index beside its characters
+// Step 38: each page's words, headings and whether it has an owner, kept by the index beside its characters
 // (knowledge/knowledge-schema.ts knowledgeShapeStep; docs/specs/030-knowledgebase/verification.md "Health Score").
-const V37 = knowledgeShapeStep;
+const V38 = knowledgeShapeStep;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -466,6 +471,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V35,
   V36,
   V37,
+  V38,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

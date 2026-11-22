@@ -259,18 +259,18 @@ raise?, gain?, fix? }` (`fix`: `verify`, `owner`, `heading`), in the spec's orde
   `reviewDays` undefined (a Review Period of Never) leaves Verification out, counts Freshness from `updatedAt`
   alone (`editedLately`) and scales each factor to `NEVER_MAX` (15, 15, 15, 15, 10, 20, 10), its gain with it.
 - **`healthFactsOf(row, every, now)`** turns one row of the api's facts read into facts: `words` NULL (a page the
-  backfill has not reached since schema step 37) reads as `chars / 6`; `headings` NULL as one heading.
+  backfill has not reached since schema step 38) reads as `chars / 6`; `headings` NULL as one heading.
 - **`lowHealthPages(pages, limit = 5)`**: under `HEALTH_HEALTHY_MIN`, lowest first, then most read, then tree order.
   **`averageHealth(scores)`**: a whole number, undefined for none. **`likelierRight(a, b)`**: the side 10 or more
   points higher (`HEALTH_LIKELIER_MARGIN`), else undefined.
 - **The api's facts read** (`apps/api/src/knowledge/page-health-read.ts`, `pageHealthFacts(env, documentId, now,
 tabs?)`): one statement a call (the tab set chunked at 50, under the 100 bound values), every page of the
   knowledgebase or the given tabs, joining `tabs`, `document_tabs`, `page_trust`, `knowledge_pages` (`words`,
-  `headings`, `owned`, schema step 37) and `page_authors`, with correlated counts over `page_links` (both ways, a
+  `headings`, `owned`, schema step 38) and `page_authors`, with correlated counts over `page_links` (both ways, a
   broken link being a target not in `document_tabs`), `page_threads` (unresolved), `page_approvals` (pending),
   `conflicts` (open, either side), `suggestions` and `page_reads` (the last 7 days, on `page_reads_tab`). Each count
   is on an index the table already has. No page's writing is read.
-- **Schema step 37** adds `words`, `headings` and `owned` to `knowledge_pages` (asking before each ALTER) and queues
+- **Schema step 38** adds `words`, `headings` and `owned` to `knowledge_pages` (asking before each ALTER) and queues
   every indexed page for the backfill. `settlePage` writes them on every settle; a settle whose hashes match but whose
   shape or owner moved writes those three alone (an owner change is a write of the tab, so it settles).
 - **Where it rides:** `GET pages/<tab>/health` answers `signals` (`openConflicts`, `openThreads`, `suggestions`,
