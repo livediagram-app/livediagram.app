@@ -59,3 +59,13 @@ The page is public marketing, outside any document, so Editor, Participant and V
 ## Performance
 
 The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).
+
+## Your own AI key
+
+Build with AI runs no model of livediagram's: the person's own AI tool does the thinking over the MCP server. The
+shared **AI** setting ([liveworkspace/docs/specs/003-accounts/ai-keys.md](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md))
+shows in livediagram's Settings like every app's, and livediagram calls no model on it yet. When livediagram calls a
+model itself (Automations' Describe a Rule and Summarise with AI, on Workers AI today, or a prompt in the editor),
+it adopts the key the same way liveknowledge did: its api asks `aiKeyFor` (`@liveworkspace/auth-client`) with the
+signed-in person's access token and the item's team, calls `callModel` (`@liveworkspace/ai`) on the key answered,
+and falls back to Workers AI when none applies. Work with no person behind it (a scheduled rule) stays on Workers AI.

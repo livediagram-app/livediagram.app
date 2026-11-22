@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answerEvents, fakeFetch, streamResponse } from './__fixtures__/claude';
+import { answerEvents, fakeFetch, streamResponse } from '@liveworkspace/ai/testing';
 import { knowledgeDb } from './__fixtures__/db';
 import { flowOf, para } from './__fixtures__/writing';
 import { askAnswerStream, parseAskAnswer, ASK_MAX_GAPS } from './ask-answer';
@@ -14,7 +14,7 @@ import {
 } from './ask-limits';
 import { askSearch, chooseAskPassages, type AskPassage } from './ask-passages';
 import { ASK_SYSTEM, askMessage, askRequest } from './ask-request';
-import { callModel } from './model-providers';
+import { callModel } from '@liveworkspace/ai';
 import { pagePassages } from './passages';
 import { replacePageIndex } from './sql/page-index';
 import { foundPassage, type FoundPassage, type SearchRow } from './sql/search';

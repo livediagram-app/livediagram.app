@@ -1,4 +1,4 @@
-// The Claude models a team may choose in Settings > AI (docs/specs/030-knowledgebase/search-and-ask.md "Model"):
+// The Claude models a team may choose in Settings > AI (liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md "Model"):
 // the current generation of each line, as Anthropic's model table listed them on 2026-11-03. The ids are complete
 // as written; none takes a date suffix.
 

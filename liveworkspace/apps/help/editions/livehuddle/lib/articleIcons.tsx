@@ -57,6 +57,13 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
   // ---- Account and data ----
   // A ticket with the secret punched into it. The key belongs to
   // `authentication`, which is the article about using one.
+  // Two sparkles: the AI key every app's AI features use.
+  'ai-keys': (
+    <Glyph>
+      <path d="M10 4l1.6 4.4L16 10l-4.4 1.6L10 16l-1.6-4.4L4 10l4.4-1.6Z" />
+      <path d="M17.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8Z" />
+    </Glyph>
+  ),
   'api-tokens': (
     <Glyph>
       <path d="M3 7.5A1.5 1.5 0 014.5 6h15A1.5 1.5 0 0121 7.5v2a2.5 2.5 0 000 5v2a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 16.5z" />

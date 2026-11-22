@@ -7,7 +7,6 @@
 // text to the model and the reply untrusted text to the app: one is fenced, the other is validated field by field
 // (`parseSetupSuggestion`) and only ever placed as text.
 import {
-  ModelCallError,
   SETUP_BUILT_IN_PER_PERSON_PER_DAY,
   SETUP_MAX_DESCRIPTION_CHARS,
   SETUP_MAX_EXISTING_PAGES,
@@ -15,8 +14,6 @@ import {
   SETUP_MIN_DESCRIPTION_CHARS,
   SETUP_PER_KNOWLEDGEBASE_PER_DAY,
   SETUP_PER_PERSON_PER_HOUR,
-  callModel,
-  modelFailureWords,
   parseSetupSuggestion,
   setupCounters,
   setupRefusal,
@@ -26,8 +23,9 @@ import {
   type SetupSuggestion,
   type SqlStatement,
 } from '@liveknowledge/knowledge';
+import { ModelCallError, callModel, modelFailureWords } from '@liveworkspace/ai';
 import type { KnowledgeSetupProvider, KnowledgeSetupSuggestion } from '@liveknowledge/api-schema';
-import { ASK_UNAVAILABLE_WORDS, openAi } from '../knowledge/ai-settings';
+import { ASK_UNAVAILABLE_WORDS, applyingAi, askerOf, isAiRefusal } from '../knowledge/ai-settings';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { modelDoorFor } from '../knowledge/model-door';
 import { builtInAi, suggestOnBuiltIn } from '../knowledge/setup-built-in-ai';
@@ -120,9 +118,10 @@ export async function handleSetupSuggest({
     knowledgebaseToday: await usedOf(env, counters.readKnowledgebase),
   });
   if (refusal) return refused(REFUSAL[refusal].status, refusal, REFUSAL[refusal].message);
-  const ai = await openAi(env, document.id);
-  // A key that is kept but does not open is refused as Ask refuses it, never swapped for built-in AI.
-  if (ai === 'unreadable') return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
+  // The knowledgebase's key, its team's, the person's own, or built-in AI (search-and-ask.md "Which key answers").
+  const ai = await applyingAi(env, document.id, askerOf(ctx, document.teamId));
+  // A key that does not open, or accounts that could not answer, is refused as Ask refuses it (isAiRefusal).
+  if (isAiRefusal(ai)) return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
   const existing = existingOf(body?.existing);
   if (typeof ai === 'string') {
     // No key (or no secret to keep one under): built-in AI.

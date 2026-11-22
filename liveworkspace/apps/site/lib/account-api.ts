@@ -32,7 +32,7 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; 
 
 export async function accountApi<T>(
   path: string,
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET',
   body?: unknown,
   // `keepalive`: sent as the page goes (Settings › Profile's name still waiting), so it outlives the page.
   options?: { keepalive?: boolean },

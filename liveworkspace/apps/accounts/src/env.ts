@@ -69,6 +69,16 @@ export interface Env {
   VAPID_PUBLIC_KEY?: string;
   VAPID_PRIVATE_KEY?: string;
 
+  // AI keys (liveworkspace/docs/specs/003-accounts/ai-keys.md "Sealing"): the master secret every key is sealed under,
+  // `<version>:<secret>` (a bare secret is version 1), and the one before it while a rotation runs. Unset, no key is
+  // kept or answered: every AI key route fails closed.
+  AI_KEY_SECRET?: string;
+  AI_KEY_SECRET_PREVIOUS?: string;
+  // Their limits per account: the internal door's reads, and the writes (each calls a provider). Absent (tests), not
+  // limited.
+  AI_KEY_LIMITER?: RateLimit;
+  AI_KEY_WRITE_LIMITER?: RateLimit;
+
   AUTH_DB: D1Database;
   // Workbench pairings, tickets and sessions (liveworkspace/docs/specs/011-workbench/workbench.md): one store per person, and the limit
   // on a token's mints and pairing requests. Absent (tests that don't need them), the workbench routes answer 503.

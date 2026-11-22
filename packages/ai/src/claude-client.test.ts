@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answerEvents, errorResponse, fakeFetch, streamResponse } from './__fixtures__/claude';
+import { answerEvents, errorResponse, fakeFetch, streamResponse } from './testing/claude';
 import {
   CLAUDE_FAILURE_WORDS,
   ClaudeCallError,

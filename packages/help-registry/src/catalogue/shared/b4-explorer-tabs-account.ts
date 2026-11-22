@@ -54,6 +54,24 @@ export const articles: Article[] = [
     ],
   },
   {
+    slug: 'ai-keys',
+    title: 'Your AI Keys',
+    description:
+      'Use your own Anthropic or OpenAI key, or your team’s, for every app’s AI features instead of built-in AI.',
+    keywords:
+      'ai key api key anthropic claude openai gpt chatgpt model provider built-in own key team admin billing encrypted remove replace settings',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
+  },
+  {
     slug: 'connect-ai-mcp',
     title: 'Connect an AI Tool (MCP)',
     description:

@@ -1,8 +1,8 @@
-// A failed model call, whichever provider answered (docs/specs/030-knowledgebase/search-and-ask.md "Providers"):
+// A failed model call, whichever provider answered (liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md "Providers"):
 // one of a few kinds a person can be told in words. The error's message is the kind's fixed words for the provider;
 // it holds no key, no request and nothing the provider's API said.
 
-/** Whose API a knowledgebase's key is for. */
+/** Whose API a key is for: a person's, a team's or a knowledgebase's. */
 export type KeyProviderId = 'anthropic' | 'openai';
 /** Which AI answers a call: built-in AI (Workers AI, liveknowledge's; search-and-ask.md "Built-in AI") with no key,
  *  else the provider the team's key is for. No key can be saved for `built-in`. */

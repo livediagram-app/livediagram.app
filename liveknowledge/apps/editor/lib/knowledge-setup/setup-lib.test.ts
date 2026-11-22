@@ -316,7 +316,9 @@ describe('the words', () => {
   it("says which AI answers: built-in with no key, the team's with one, nothing unread", () => {
     expect(setupAiLine(null)).toBeNull();
     expect(setupAiLine({ hasKey: false })).toBe('Uses built-in AI');
-    expect(setupAiLine({ hasKey: true })).toBe("Uses your team's key");
+    expect(setupAiLine({ hasKey: true })).toBe("Uses this knowledgebase's key");
+    expect(setupAiLine({ hasKey: false, uses: 'team' })).toBe("Uses your team's key");
+    expect(setupAiLine({ hasKey: false, uses: 'personal' })).toBe('Uses your key');
   });
 
   it('names Claude when that is the provider, or none is known', () => {

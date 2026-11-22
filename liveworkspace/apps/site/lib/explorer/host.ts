@@ -208,6 +208,7 @@ const ACCOUNT_CATEGORIES: Readonly<Record<string, string>> = {
   data: 'data',
   privacy: 'privacy',
   accessibility: 'accessibility',
+  ai: 'ai',
 };
 
 /** Where the Settings panel opens: the app it is opened for (its side of the switch), the side (`all`, `app`, or null
