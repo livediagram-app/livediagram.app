@@ -9345,6 +9345,179 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PublishedSiteWire": {
+    "additionalProperties": false,
+    "description": "The site as it is published.",
+    "properties": {
+      "address": {
+        "type": "string"
+      },
+      "noindex": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "root": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "showWriters": {
+        "type": "boolean"
+      },
+      "url": {
+        "description": "The site's front page, `https://<host>/kb/<address>`.",
+        "type": "string"
+      }
+    },
+    "required": [
+      "address",
+      "url",
+      "root",
+      "noindex",
+      "showWriters",
+      "publishedAt"
+    ],
+    "type": "object"
+  },
+  "PublishingLeftOutReason": {
+    "description": "Why a page in scope stays private.",
+    "enum": [
+      "pending",
+      "rejected",
+      "empty"
+    ],
+    "type": "string"
+  },
+  "PublishingPreview": {
+    "additionalProperties": false,
+    "description": "What a publish of `root` would put on the web, and what it would leave out.",
+    "properties": {
+      "leftOut": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "reason": {
+              "$ref": "#/components/schemas/PublishingLeftOutReason"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "title",
+            "reason"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "pages": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "title"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "root": {
+        "description": "The section's first page, or null for the whole knowledgebase.",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "root",
+      "pages",
+      "leftOut"
+    ],
+    "type": "object"
+  },
+  "PublishingRequest": {
+    "additionalProperties": false,
+    "description": "PUT /api/documents/<id>/publishing: every field required.",
+    "properties": {
+      "address": {
+        "type": "string"
+      },
+      "noindex": {
+        "type": "boolean"
+      },
+      "root": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "showWriters": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "address",
+      "root",
+      "noindex",
+      "showWriters"
+    ],
+    "type": "object"
+  },
+  "PublishingState": {
+    "additionalProperties": false,
+    "description": "GET, PUT and DELETE /api/documents/<id>/publishing.",
+    "properties": {
+      "defaultAddress": {
+        "description": "The address a first publish is offered.",
+        "type": "string"
+      },
+      "offered": {
+        "description": "Whether this knowledgebase may be published at all (the capability check).",
+        "type": "boolean"
+      },
+      "preview": {
+        "$ref": "#/components/schemas/PublishingPreview"
+      },
+      "published": {
+        "type": "boolean"
+      },
+      "site": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PublishedSiteWire"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "offered",
+      "published",
+      "site",
+      "defaultAddress",
+      "preview"
+    ],
+    "type": "object"
+  },
   "PyramidVariant": {
     "enum": [
       "pyramid",

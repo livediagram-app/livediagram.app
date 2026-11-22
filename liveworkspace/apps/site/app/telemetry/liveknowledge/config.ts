@@ -55,6 +55,7 @@ import {
   PAGES_BY_SOURCE,
   PAGE_EDITING,
   AI_SETUP,
+  SITE_PUBLISHING,
   AGENT_ACCESS,
   CLIENT_EXCEPTIONS,
   CLI_COMMANDS_STACK,
@@ -343,10 +344,11 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
   },
   connections: {
     intro:
-      'API tokens, agent changes, version history, the team’s AI key and Automations, beside agent access, the MCP and the CLI on the Dashboard',
+      'API tokens, agent changes, version history, the team’s AI key, public sites and Automations, beside agent access, the MCP and the CLI on the Dashboard',
     groups: [
       { title: 'Connections', metrics: [API_TOKEN_ACTIVITY, AGENT_CHANGESETS, VERSION_HISTORY] },
       { title: 'AI Setup', metrics: [AI_SETUP] },
+      { title: 'Publish to the Web', metrics: [SITE_PUBLISHING] },
       { title: 'Automations', metrics: [DOCUMENT_AUTOMATIONS] },
     ],
   },

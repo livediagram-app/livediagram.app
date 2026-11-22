@@ -36,6 +36,7 @@ import { emailMarksSchemaStep } from '../knowledge/email-marks';
 import { pageAnswersSchemaStep } from '../knowledge/page-answers';
 import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
 import { pageThreadsSchemaStep } from '../knowledge/page-threads';
+import { publishedSchemaStep } from '../publishing/published-schema';
 import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
@@ -426,9 +427,13 @@ const V34 = VERSION_SAVE_STEP;
 // the steps before it, never among the engine's own. Without it a room's restore reads a table it never made.
 const V35 = automationSchemaStep('wake');
 
-// Step 36: the reactions on each page (knowledge/page-reactions.ts; docs/specs/030-knowledgebase/page-reactions.md).
+// Step 36: the published snapshot of a knowledgebase's public site and its marks (publishing/published-schema.ts;
+// docs/specs/030-knowledgebase/publishing.md). Additive, IF NOT EXISTS.
+const V36 = publishedSchemaStep;
+
+// Step 37: the reactions on each page (knowledge/page-reactions.ts; docs/specs/030-knowledgebase/page-reactions.md).
 // Additive, IF NOT EXISTS.
-const V36 = pageReactionsSchemaStep;
+const V37 = pageReactionsSchemaStep;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -459,6 +464,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V34,
   V35,
   V36,
+  V37,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

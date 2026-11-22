@@ -16,3 +16,8 @@ One row per default applied where a spec is silent or qualitative.
 | D10 | editing         | Where the draft bar stands                                | In the top row, in Edit's place before Page Info and Share                                             |
 | D11 | editing         | How fresh "Unsaved changes from X, <when>" is             | The record moves at most once a minute (`DRAFT_TOUCH_MS`)                                              |
 | D12 | editing         | An agent's write and the draft's change to the same block | The draft's wins; the agent's other blocks stay (`mergeDraftOverSaved`)                                |
+| D13 | publishing      | Who may publish                                           | An Editor of the whole knowledgebase, in person and signed in; never a Participant or an agent's token |
+| D14 | publishing      | What of a page goes public                                | Its saved writing, title, emoji icon and place; pictures, drawings, charts and covers are not built    |
+| D15 | publishing      | A Pending or Rejected page's subpages                     | Published under the nearest published ancestor                                                         |
+| D16 | publishing      | How fresh the public site is                              | 60 seconds at the edge, refreshed from the knowledgebase on the next read after a change               |
+| D17 | publishing      | A renamed page's or site's old address                    | A permanent redirect to the new one while the site stays published                                     |

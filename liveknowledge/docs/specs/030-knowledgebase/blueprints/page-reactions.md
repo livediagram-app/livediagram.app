@@ -47,7 +47,7 @@ difference: a Viewer may write here, and nowhere else.
 
 - `page_reactions (tab TEXT, emoji TEXT, person TEXT, by_key TEXT, name TEXT, at INTEGER, PRIMARY KEY (tab, emoji,
 person))` with an index on `(tab, at)` and a trigger deleting a page's rows when its tab is deleted. Schema step
-  V36 (`pageReactionsSchemaStep`), appended after V35, additive and IF NOT EXISTS.
+  V37 (`pageReactionsSchemaStep`), appended after V36, additive and IF NOT EXISTS.
 - Written through `knowledgeDb(env)` (`KNOWLEDGE_DB`, the database that notes nothing): no `room.writes`, so no History
   entry, no Most Used day, no outbox, no revision, no Updated stamp, no version.
 - A closed account (`document-anonymise.ts`): `DELETE FROM page_reactions WHERE person` is any of their ids.
