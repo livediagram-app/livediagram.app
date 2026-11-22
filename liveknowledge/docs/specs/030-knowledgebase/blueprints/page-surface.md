@@ -416,8 +416,10 @@ Derived from [The page surface](../page-surface.md) "The cover".
 - **An agent's cover** rides the Pages route (`POST tabs/<tab>/pages`, and `PUT pages/<tab>` behind `write_page`):
   `PagesRequest` takes `cover` beside `article`, or alone. `submitPages` sets or removes `next.cover` and
   `pagesRoomOps` sends it as `tab-meta`, so open editors follow. A cover alone skips the verified-page refusal.
-- **The lock** takes the band: `computePageLock({ ..., top })` puts the page's top `PAGE_TOP_ROOM + coverHeight`
-  under the top of what scrolls, and `pageFreeHeight` takes the band off, so a short page's paper does not grow.
+- **The lock** takes the band: `computePageLock({ ..., cover, topMargin })` puts the page's top
+  `PAGE_TOP_ROOM + coverHeight` under the top of what scrolls, less the tuck (`PAGE_TOP_ROOM + topMargin -
+COVER_TITLE_GAP`, the page's own top margin from `articleTopMarginPx`, never its side margin), so the Title stands
+  `COVER_TITLE_GAP` under the band; `pageFreeHeight` takes the band off, so a short page's paper does not grow.
   `usePageSurface` writes `--page-cover-left` (the tree's inset) on the scroll container with the lock, so the band
   starts where the column's room starts and follows the tree without a render.
 - **States of the band:** `idle` (hover or focus shows the controls), `menu` (the cover menu open), `reposition`

@@ -50,14 +50,13 @@ test('a question Ask answered from the page shows under Answered From This Page'
   pageErrors,
 }) => {
   await runbook(page);
-  await expect(
-    aiContext(page).getByText('No questions answered from this page yet.'),
-  ).toBeVisible();
-  await expect(aiContext(page).getByText('No agent has read this page this week.')).toBeVisible();
   // The owner is an Editor: the switch is theirs, off, with the page's size.
   const always = aiContext(page).getByRole('switch', { name: 'Always in Context' });
   await expect(always).toHaveAttribute('aria-checked', 'false');
   await expect(aiContext(page).getByText(/^About [\d,]+ tokens?$/)).toBeVisible();
+  // A list with nothing in it is not shown.
+  await expect(aiContext(page).getByText('Answered From This Page')).toHaveCount(0);
+  await expect(aiContext(page).getByText('Read by Agents')).toHaveCount(0);
 
   for (let i = 0; i < 2; i++) {
     await openView(page, 'Ask');
@@ -77,6 +76,7 @@ test('a question Ask answered from the page shows under Answered From This Page'
   await expect(answered).toHaveCount(1);
   await expect(answered).toContainText(QUESTION);
   await expect(answered).toContainText('Asked 2 times');
+  await expect(aiContext(page).getByText('Answered From This Page')).toBeVisible();
 
   // Always in Context: on, then the tree row menu agrees.
   await always.click();

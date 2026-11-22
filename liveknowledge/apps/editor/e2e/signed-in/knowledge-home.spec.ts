@@ -104,6 +104,6 @@ test('Yours to Review lists a page of yours that is due, and Still Right clears 
   // And it stays cleared: the page is verified as of now.
   await page.goto(`/document/${id}`);
   await expect(page.locator('[data-page-meta]')).toContainText('Verified by');
-  await expect(pageRow(page, 'Runbook, Verified')).toBeVisible();
+  await expect(pageRow(page, 'Runbook')).toBeVisible();
   expectNoPageErrors(pageErrors);
 });

@@ -38,6 +38,13 @@ test('a saved key shows only its last four characters, is kept nowhere on the pa
   await signedInKnowledgebase(page);
   await openView(page, 'Ask');
   const dialog = await openAiSettings(page);
+  // Built-In AI is chosen while there is no key: the key's field is behind Your Own Key.
+  const which = dialog.getByRole('radiogroup', { name: 'Which AI' });
+  await expect(which.getByRole('radio', { name: /^Built-In AI/ })).toBeChecked();
+  await expect(dialog.getByRole('region', { name: 'Claude API Key' })).toHaveCount(0);
+  // The radio is drawn as its card: the card's words are what a person presses.
+  await which.getByText('Your Own Key', { exact: true }).click();
+  await expect(which.getByRole('radio', { name: /^Your Own Key/ })).toBeChecked();
   const keyRegion = dialog.getByRole('region', { name: 'Claude API Key' });
   await expect(keyRegion.getByRole('status')).toHaveText('No Key Yet');
 
