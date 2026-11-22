@@ -275,7 +275,7 @@ tabs?)`): one statement a call (the tab set chunked at 50, under the 100 bound v
   each page `{ tab, title, lastRead, createdAt, updatedAt, order }`; keeps a page whose `lastRead` is NULL or on or
   before `daysBefore(now, NOT_READ_DAYS)` (90, `READS_KEPT_DAYS`) and whose `createdAt` is NULL or at least 90 days
   back; sorts by `updatedAt ?? createdAt` ascending (none first), then `order`; answers `{ pages: first
-  NOT_READ_LISTED (10), total }`, each page `{ tab, title, touchedAt? }`. One pass and one sort, O(n log n) in the
+NOT_READ_LISTED (10), total }`, each page `{ tab, title, touchedAt? }`. One pass and one sort, O(n log n) in the
   pages.
 - **Schema step 38** adds `words`, `headings` and `owned` to `knowledge_pages` (asking before each ALTER) and queues
   every indexed page for the backfill. `settlePage` writes them on every settle; a settle whose hashes match but whose
@@ -293,9 +293,9 @@ tabs?)`): one statement a call (the tab set chunked at 50, under the 100 bound v
 [AI Knowledge](../ai-knowledge.md#page-insights). In `sql/reads.ts` and `sql/page-answers.ts`:
 
 - `countPageDailyReads(tab, now, days = PAGE_INSIGHT_DAYS)`: `SELECT day, reader_kind, SUM(reads) FROM page_reads
-  WHERE tab = ? AND day > ? GROUP BY day, reader_kind`, a range of `page_reads_tab`, at most 2 rows a day (60).
+WHERE tab = ? AND day > ? GROUP BY day, reader_kind`, a range of `page_reads_tab`, at most 2 rows a day (60).
   It replaces `countPageReads` in Page Health's read: `pageInsights(rows, now)` answers `days` (30 `{ day, people,
-  agents }`, oldest first, through `dailyReads(rows, now, days)`) and `week` (the last 7 days summed, what Read This
+agents }`, oldest first, through `dailyReads(rows, now, days)`) and `week` (the last 7 days summed, what Read This
   Week showed), so the read runs no statement more.
 - `listPageAnswers(tab, now)` gains `SUM(times) OVER () AS cited`, the window total of every group's asks in 30
   days, computed before the `LIMIT`: Cited by Ask rides the statement AI Context already ran. No rows is 0.
