@@ -256,6 +256,44 @@ describe('createIndexClient reads', () => {
     expect(signals[1]?.aborted).toBe(true);
   });
 
+  it('rejects a read cancelled after its headers came, never resolving null', async () => {
+    // A superseded search: the answer's headers are in, then the caller aborts before its body is read.
+    const controller = new AbortController();
+    const doFetch = (async (_input: RequestInfo | URL, init: RequestInit = {}) => {
+      const body = new ReadableStream<Uint8Array>({
+        start(stream) {
+          init.signal?.addEventListener('abort', () =>
+            stream.error(new DOMException('aborted', 'AbortError')),
+          );
+        },
+      });
+      queueMicrotask(() => controller.abort());
+      return new Response(body, { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }) as typeof fetch;
+    const client = createIndexClient({ getToken: () => null, fetch: doFetch });
+    await expect(
+      client.listItems({ view: 'search', q: 'road' }, { signal: controller.signal }),
+    ).rejects.toMatchObject({ name: 'AbortError' });
+    // A 2xx whose body is not JSON rejects as well.
+    const garbled = createIndexClient({
+      getToken: () => null,
+      fetch: (async () => new Response('<html>', { status: 200 })) as typeof fetch,
+    });
+    await expect(garbled.listItems({ q: 'road' })).rejects.toBeInstanceOf(SyntaxError);
+  });
+
+  it('reads a 204 as nothing, and an empty 200 as the broken answer it is', async () => {
+    // The index answers a call with nothing to say as 204 (noContent, liveworkspace/apps/index/src/http.ts); a 2xx is
+    // otherwise its JSON body, so an empty one rejects rather than resolve null for the caller to read.
+    const answering = (status: number) =>
+      createIndexClient({
+        getToken: () => null,
+        fetch: (async () => new Response(null, { status })) as typeof fetch,
+      });
+    await expect(answering(204).recordOpen('i1')).resolves.toBeUndefined();
+    await expect(answering(200).listItems({ q: 'road' })).rejects.toBeInstanceOf(SyntaxError);
+  });
+
   it("reads a team's audit log as pages and as CSV, with where the next file starts", async () => {
     const { seen, doFetch } = fakeFetch((s) =>
       s.url.includes('format=csv')
