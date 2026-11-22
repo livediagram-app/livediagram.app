@@ -315,6 +315,17 @@ planView={…}` or a changeset, and the api refuses a range outside 14, 30, 90 a
   change_board"), so a write never reads as done when no board shows the card.
 - An assignee named for the first time on the project is said to be a new name, not linked to anyone's account.
 
+## Cards from another app
+
+An agent working across apps (reading a retro in livediagram, a page in liveknowledge) makes a card that links back to
+where the work was found, as a person's [Send to Plan](../../../../liveworkspace/docs/specs/004-index/send-to-plan.md)
+does: `change_items`' `add` takes `sentFrom`, `{app, itemId, tabId?, elementId?, text}` (the source's app and item id
+as its own MCP gave them, the tab and element when it has them, and the words). The plan keeps it on the card as
+[Sent From](items.md#sent-from), with the source's title and link filled in by the index, and asks the index to record
+the send so the source shows the card's chip. The index records it only when the token's person can read the source;
+otherwise the card keeps its Sent From and the source shows nothing. `list_items` shows a card's Sent From as one line,
+"Sent from <title> (<app>)".
+
 ## Adding many cards
 
 A plan built by an assistant is mostly new cards: a backlog of fifty was fifty requests to the api, fifty ops in

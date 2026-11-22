@@ -128,6 +128,23 @@ they are the same family: filled in automatically, never typed.
 - **Dates** read as the viewer's local calendar day ("31 Oct") on a card, the full date and time in its spoken label
   (and in the panel's tooltip on the last edit's "2h ago"); lanes and filters group by that day (`2026-10-31`), sorts by the moment itself.
 
+### Sent From
+
+A card made by [Send to Plan](../../../../liveworkspace/docs/specs/004-index/send-to-plan.md) from another app's
+sticky, words, thread or action, or by an agent naming where it came from, holds **Sent From** (`sentFrom`): the source
+item's app, id and title, the kind of place, its label (a tab's or page's name), the words sent, and the link to the
+exact place. It is kept in `fields` as any unknown field is (as an email's sender is), so no card face draws it.
+
+- **In the card's footer**, above Created by: the source app's logo, "Sent from" and the source's title and place, a
+  link that opens the place in its app in a new browser tab, at whatever the reader's own access gives there. Its
+  words are the card's description already, so the row shows only where it came from.
+- **Set once, by the platform.** liveplanner's Send to Plan door and an agent's `sentFrom` set it; nothing else does,
+  and no edit changes it. A write naming it is refused (`field_key_invalid`), apart from an agent's create. Copying a
+  card, duplicating it or Save as Template leaves it behind; an undo of the card's delete keeps it.
+- **Live on the source.** While a card holds Sent From, every change to its title, column, done state or Trash is told
+  to the index, gathered for 1.5 s, so the source's chip follows it (the platform spec, "The chip").
+- **Community copies and exports** leave it out, as they leave out an email's sender: it names another item.
+
 ### Attachments
 
 Screenshots, mock-ups and photos kept on the card itself. **Attachments** (`attachments`) is a built-in field any card
