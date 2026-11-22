@@ -11,14 +11,15 @@ import {
 import { adderKeyFor } from '../adder-key';
 import { noteTokenRoom, noteWorkbenchRoom } from '../auth/workbench-session';
 import { linkCodeOf, indexService } from '../index-service';
-import { badRequest, forbidden, json, notFound } from '../responses';
+import { badRequest, forbidden, json, notFound, PUT_AWAY_ANSWERS } from '../responses';
 import {
   openRoomTicket,
   requestedRoomCap,
   roomTicketLevel,
   sealRoomTicket,
+  ticketPutAwayGate,
 } from '@liveworkspace/index-app';
-import { type RouteContext } from './context';
+import { type RouteContext, grantCallerOf } from './context';
 import { resolvePlanGrant } from './plan-grant';
 import {
   COLLAB_KEY_HEADER,
@@ -53,6 +54,17 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     const grant = await resolvePlanGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
+    // A grant this worker fetched and keeps, from before the plan was archived or trashed: its room says
+    // so, and the grant is dropped (Work Tracker 1323).
+    const away = await ticketPutAwayGate(
+      indexService,
+      request,
+      grantCallerOf(ctx),
+      grant,
+      (stamp) => planRoom(env, id).standingRefusal(stamp),
+      PUT_AWAY_ANSWERS,
+    );
+    if (away) return away;
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;
     // The caller's own level, and the level the ticket admits at: view for a view-only ticket.

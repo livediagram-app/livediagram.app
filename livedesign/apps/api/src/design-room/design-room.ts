@@ -1,5 +1,5 @@
 import { ItemDb, type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
-import { tellSourceChanged } from '@liveworkspace/index-app';
+import { type PutAwayRefusal, tellSourceChanged } from '@liveworkspace/index-app';
 import type { SourceChange } from '@liveworkspace/index-client';
 import { DurableObject } from 'cloudflare:workers';
 import { grantOwnImages } from '../db/image-grants';
@@ -479,7 +479,7 @@ export class DesignRoom extends DurableObject<Env> {
     return this.standing.take(standing);
   }
 
-  takeGrantStanding(grant: StandingGrant): Promise<void> {
+  takeGrantStanding(grant: StandingGrant): Promise<PutAwayRefusal | null> {
     return this.standing.takeGrant(grant);
   }
 

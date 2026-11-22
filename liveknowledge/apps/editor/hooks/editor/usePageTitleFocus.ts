@@ -12,8 +12,9 @@ export function usePageTitleFocus(deps: {
   activeTab: Tab;
   // Whether this session may write on the page: a reader's page takes no caret.
   editable: boolean;
-  // Puts the caret at the end of the Title of the article `flow`; null while the articles are not up.
-  focusTitle: ((flow: string) => void) | null;
+  // Puts the caret at the end of the Title of the article `flow`, unless focus has moved since `from` had it (when
+  // the page was asked for); null while the articles are not up.
+  focusTitle: ((flow: string, from: Element | null) => void) | null;
 }) {
   const { activeTab, editable, focusTitle } = deps;
   const flow = pageFlowOf(activeTab);
@@ -23,7 +24,8 @@ export function usePageTitleFocus(deps: {
   const ready = editable && !!focusTitle && !!flow && activeTab.locked !== true && !startUp;
   useEffect(() => {
     if (!ready || !flow || !focusTitle) return;
-    if (takeTitleFocus(activeTab.id)) focusTitle(flow);
+    const ask = takeTitleFocus(activeTab.id);
+    if (ask) focusTitle(flow, ask.from);
     // oxlint-disable-next-line react/exhaustive-deps -- once per page opened and made ready, not per render
   }, [activeTab.id, flow, ready]);
 }
