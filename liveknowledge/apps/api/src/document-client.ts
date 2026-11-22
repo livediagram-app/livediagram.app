@@ -23,6 +23,7 @@ import type {
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { Env } from './types';
+import type { PublishedAnswer, PublishedRead } from './publishing/published-reads';
 
 // The source side of a copy, and whether it went through the document's open Community post's link.
 export type CopySource = { copy: DocumentCopy; community: boolean };
@@ -36,6 +37,8 @@ export type AccessRequester = { id: string; name: string | null; requestId?: str
 export type DocumentRoomClient = {
   // The tabs (no bodies) and slide deck a document read carries.
   outline(): Promise<DocumentOutline>;
+  // A public site's read, from the published snapshot alone (publishing/published-reads.ts).
+  publishedRead(read: PublishedRead): Promise<PublishedAnswer>;
   // One API request about this document, answered inside its Durable Object by the same handlers as before
   // (document-route.ts), with the caller's identity as the worker resolved it.
   route(request: Request, identity: RouteIdentity): Promise<Response>;
@@ -104,6 +107,7 @@ export function documentRoom(
   const room = stub as unknown as DocumentRoomRpc;
   return {
     outline: () => room.outline(documentId),
+    publishedRead: (read) => room.publishedRead(documentId, read),
     route: (request, identity) => room.route(documentId, request, identity),
     exportImage: (query) => room.exportImage(documentId, query),
     exportFile: (query) => room.exportFile(documentId, query),
@@ -135,6 +139,7 @@ export function documentRoom(
 // The DocumentRoom RPC surface, by the document id each call names (the room checks it is its own).
 export type DocumentRoomRpc = {
   outline(documentId: string): Promise<DocumentOutline>;
+  publishedRead(documentId: string, read: PublishedRead): Promise<PublishedAnswer>;
   route(documentId: string, request: Request, identity: RouteIdentity): Promise<Response>;
   exportImage(documentId: string, query: ExportQuery): Promise<ExportResult>;
   exportFile(documentId: string, query: ExportQuery): Promise<ExportResult>;

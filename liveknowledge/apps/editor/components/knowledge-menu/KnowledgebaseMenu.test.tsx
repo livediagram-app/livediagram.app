@@ -12,22 +12,26 @@ import { KnowledgebaseMenu } from './KnowledgebaseMenu';
 
 // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The knowledgebase's menu".
 // The rows other features decide are theirs to test; here each is offered as its feature would offer an Editor.
-const offered = { describe: true, ai: true };
+const offered = { describe: true, ai: true, publish: true };
 const openDescribe = vi.fn();
 const openAi = vi.fn<() => void>();
+const openPublish = vi.fn<() => void>();
 vi.mock('@/components/setup/SetupHost', () => ({
   useDescribeToAddPages: () =>
     offered.describe ? { label: 'Describe to Add Pages', onSelect: openDescribe } : null,
 }));
 vi.mock('@/components/ask/useAskSession', () => ({
-  useAskSession: () => ({ rights: { manageAi: offered.ai } }),
+  useAskSession: () => ({
+    rights: { manageAi: offered.ai, askOff: offered.publish ? null : 'offline' },
+  }),
 }));
 vi.mock('@/lib/knowledge-ask/ai-settings-open', () => ({ openAiSettings: () => openAi() }));
+vi.mock('@/lib/publishing/publish-open', () => ({ openPublishing: () => openPublish() }));
 
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  Object.assign(offered, { describe: true, ai: true });
+  Object.assign(offered, { describe: true, ai: true, publish: true });
   document.body.innerHTML = '';
 });
 
@@ -95,6 +99,7 @@ describe('the knowledgebase’s menu', () => {
       'Describe to Add Pages',
       'Import',
       'Export',
+      'Publish to the Web',
       'AI Settings',
       'Delete',
     ]);
@@ -119,6 +124,8 @@ describe('the knowledgebase’s menu', () => {
     expect(handlers.setImportOpen).toHaveBeenCalledWith(true);
     choose('Export');
     expect(handlers.setExportOpen).toHaveBeenCalledWith(true);
+    choose('Publish to the Web');
+    expect(openPublish).toHaveBeenCalledTimes(1);
     choose('AI Settings');
     expect(openAi).toHaveBeenCalledTimes(1);
     choose('Delete');
@@ -149,7 +156,7 @@ describe('the knowledgebase’s menu', () => {
   });
 
   it('leaves out a row its feature does not offer', () => {
-    Object.assign(offered, { describe: false, ai: false });
+    Object.assign(offered, { describe: false, ai: false, publish: false });
     open();
     fireEvent.click(button());
     expect(rows()).toEqual(['Rename', 'Import', 'Export', 'Delete']);
@@ -157,7 +164,7 @@ describe('the knowledgebase’s menu', () => {
 
   // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant is an Editor minus the
   // Review Period, the style and automations; renaming and deleting the knowledgebase stay an Editor's.
-  it('participate: Describe to Add Pages, Import and Export, never Rename, AI Settings or Delete', () => {
+  it('participate: Describe to Add Pages, Import and Export, never Rename, Publish, AI Settings or Delete', () => {
     Object.assign(offered, { ai: false });
     const { handlers } = open({ level: 'participate' });
     fireEvent.click(button());

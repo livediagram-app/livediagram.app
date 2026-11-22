@@ -423,6 +423,17 @@ export const articles: Article[] = [
     group: 'Import and Export',
     ...APPS,
   },
+  {
+    slug: 'publishing-to-the-web',
+    title: 'Publishing to the Web',
+    description:
+      'Put a Knowledgebase, or one section of it, on the web as a public help centre anyone can read.',
+    keywords:
+      'publish publishing to the web public site help centre center docs website share publicly anyone link address url slug seo search engines noindex sitemap unpublish take down read only',
+    ...KNOWLEDGEBASE,
+    group: 'Import and Export',
+    ...APPS,
+  },
   // ---- Knowledgebase: Roles ----
   {
     slug: 'knowledgebase-roles',
