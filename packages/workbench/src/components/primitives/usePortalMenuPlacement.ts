@@ -8,6 +8,9 @@ import { besideSpot } from './beside-placement';
 
 export type PortalMenuPlacement = 'above' | 'below' | 'above-start' | 'below-start';
 
+/** A point on the screen (client px) a menu opens at: a right-click's or a long press's. */
+export type MenuPoint = { x: number; y: number };
+
 // Right-align the menu's right edge with the anchor's right edge (or, `-start`, its left edge
 // with the anchor's left edge, for a wide trigger such as a board's Add Card row) and place
 // it above or below, with a small gap.
@@ -69,6 +72,7 @@ export function usePortalMenuPlacement(
   node: HTMLElement | null,
   onClose: () => void,
   beside?: HTMLElement | null,
+  point?: MenuPoint | null,
 ) {
   const [pos, setPos] = useState<{
     left: number;
@@ -99,7 +103,10 @@ export function usePortalMenuPlacement(
       );
       if (spot) return setPos({ ...spot, flat: true, side: placement });
     }
-    const r = anchor.getBoundingClientRect();
+    // At a point, the menu hangs off a zero-size box there, so the flip and the clamp below treat it as any anchor.
+    const r = point
+      ? { left: point.x, right: point.x, top: point.y, bottom: point.y }
+      : anchor.getBoundingClientRect();
     const side = node
       ? flipSide(
           placement,
@@ -118,7 +125,7 @@ export function usePortalMenuPlacement(
       setCap(node.scrollHeight > room ? room : null);
     }
     setPos({ left: start ? r.left : r.right, top: below ? r.bottom : r.top, side });
-  }, [anchor, placement, beside, node]);
+  }, [anchor, placement, beside, node, point]);
   useReposition(reposition);
 
   useLayoutEffect(() => {

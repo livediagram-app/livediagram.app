@@ -129,6 +129,50 @@ describe('usePortalMenuPlacement near the bottom of the screen', () => {
   });
 });
 
+// docs/specs/004-interface-design/menus.md "Opening at the pointer": a right-click's menu opens at the point, not at
+// its anchor, and still flips when there is no room below the point.
+describe('usePortalMenuPlacement at a point', () => {
+  const lowAnchor = () => {
+    const anchor = el();
+    anchor.getBoundingClientRect = () =>
+      ({ top: 500, bottom: 524, left: 500, right: 524 }) as DOMRect;
+    return anchor;
+  };
+  const menuOf = (height: number) => {
+    const node = el();
+    Object.defineProperty(node, 'scrollHeight', { configurable: true, value: height });
+    // Inside the screen, so the edge clamp leaves it where it was put.
+    node.getBoundingClientRect = () =>
+      ({ top: 300, bottom: 300 + height, left: 300, right: 524 }) as DOMRect;
+    return node;
+  };
+
+  it('puts the menu’s corner at the point, whatever the anchor’s box', () => {
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(900);
+    const point = { x: 120, y: 200 };
+    const anchor = lowAnchor();
+    const menu = menuOf(200);
+    const onClose = vi.fn();
+    const { result } = renderHook(() =>
+      usePortalMenuPlacement(anchor, 'below-start', menu, onClose, null, point),
+    );
+    expect(result.current).toMatchObject({ left: 120, top: 200, placement: 'below-start' });
+  });
+
+  it('opens upwards from a point low on the screen', () => {
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(900);
+    const point = { x: 40, y: 880 };
+    const anchor = lowAnchor();
+    const menu = menuOf(300);
+    const onClose = vi.fn();
+    const { result } = renderHook(() =>
+      usePortalMenuPlacement(anchor, 'below-start', menu, onClose, null, point),
+    );
+    expect(result.current?.placement).toBe('above-start');
+    expect(result.current?.left).toBe(40);
+  });
+});
+
 describe('sideRoom', () => {
   it('is the height between the anchor and the screen edge, less the gap and margin', () => {
     expect(sideRoom('below', { top: 100, bottom: 128 }, 900, 8)).toBe(760);
