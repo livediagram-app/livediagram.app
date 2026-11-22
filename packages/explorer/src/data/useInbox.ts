@@ -22,7 +22,8 @@ import type {
 } from '@liveworkspace/index-client';
 import type { InboxHost, InboxLocalRows, Located } from '../types';
 import type { AppFilter } from '../words';
-import { settledOf, withoutSettled, type InboxEntry } from '../explorer/inbox/sections';
+import { settledOf, withoutSettled } from '../explorer/inbox/inbox-keys';
+import type { InboxEntry } from '../explorer/inbox/sections';
 import { isAbort } from './errors';
 import { settledStoreFor } from './inbox-settled';
 import { useReturnToTab } from './useReturnToTab';
@@ -227,4 +228,4 @@ export function useInbox(
   );
 }
 
-export { inboxCount } from '../explorer/inbox/sections';
+export { inboxCount } from '../explorer/inbox/inbox-count';

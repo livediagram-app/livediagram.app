@@ -6,7 +6,7 @@
 // so every tab of the address shares it, heard across tabs through the `storage` event; bounded, and each mark let go
 // after SETTLED_HOLD_MS, by when the index has long caught up (a push still failing then shows the row again).
 
-import type { InboxSettled } from '../explorer/inbox/sections';
+import type { InboxSettled } from '../explorer/inbox/inbox-keys';
 
 /** The most rows held per person; past it, the oldest are let go. */
 export const SETTLED_MAX = 200;
