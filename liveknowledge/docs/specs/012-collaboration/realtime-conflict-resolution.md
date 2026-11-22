@@ -1,0 +1,300 @@
+# Realtime conflict resolution
+
+Simultaneous multi-user editing is **robust**: two people working the same tab at the same time do not clobber each
+other, and a dropped connection recovers cleanly. Two mechanisms do this: element-level ops, and an ordered room with
+reconnect catch-up. A full field-level CRDT for concurrent edits to the _same_ element is deliberately not built (see
+the decision at the end), so same-element collisions are last-writer-wins; the advisory selection lock makes them
+rare, it does not prevent them. The lock lasts until the holder's change to an element has
+landed, not just while it is selected ([Editor app](../007-editor/editor-app.md) "Held until the holder's
+change lands"): a peer's label typed just after the owner moved and let go of a box would otherwise be replaced by
+the owner's save of the move, because the lock was gone before that save reached the room
+(Work Tracker 862, `realtime-peer-label.spec.ts`).
+
+## The problem
+
+If the conflict unit were a whole tab (editing anything broadcasting the tab's entire element array, receivers
+replacing their copy), then A moving element X and B moving element Y on the same tab within the sync window would
+lose one edit: whichever op landed last would overwrite the other's whole element set. The **selection lock**
+([Editor app](../007-editor/editor-app.md)) soft-locks an element for peers while someone has it selected, heading off
+most _same-element_ collisions; the common case is _same-tab, different-element_ edits, plus recovery when a socket
+drops.
+
+## The mechanisms
+
+### Element-level ops
+
+Changes travel as granular, id-addressed element ops, so
+different elements merge instead of clobbering. The room orders element ops and
+relays them; it does not merge them.
+
+- Wire (`packages/api-schema/src/room-messages.ts`): `{ kind: 'el'; tabId;
+op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
+  `tab` op (for a new tab or a bulk change). `ElementOp` (add / update / remove / reorder)
+  lives in `@liveknowledge/document` so it's shared and unit-tested off-socket.
+- Derivation: `diffToElementOps(before, after)` diffs the tab's
+  elements before and after each commit. Apply
+  is `applyElementOp(elements, op)` by id; an op for an already-removed id is a
+  safe no-op.
+- `update` replaces the whole element by id (simple + correct). Two peers editing
+  the same element are still last-writer-wins per element, in room order, on every screen
+  ([Same-element edits converge](#same-element-edits-converge)). The
+  selection lock makes that rare; it is advisory and client-only, so it does not
+  prevent it. Only the multi-writer fields (checklist ticks and
+  comments) survive a same-element collision, because they travel as
+  `el-delta` deltas and receivers keep their own copy of them
+  ([Collaboration race hardening](collab-race-hardening.md)).
+- The emit side is `tabBroadcastOps` (in the autosave path); it falls back to a
+  whole-`tab` op for a new tab or a bulk change. A meta field that was
+  _cleared_ serialises to `undefined`, which JSON drops on the wire, so it
+  travels by name in the `tab-meta` op's `clear` list rather than forcing a
+  whole-`tab` op that would replace every element on every receiver
+  ([Collaboration race hardening](collab-race-hardening.md)).
+
+### Same-element edits converge
+
+Last-writer-wins in room order holds on every screen, including the writer's own. A save derives its element ops at
+its snapshot, writes the tab, then sends them, so the room orders them after any peer op it already had. A peer's
+`update` or `patch` of an element this editor is writing, arriving before the room confirms our op, is therefore
+ordered first, and our op replaces it on every other screen. So it is not applied here: from the snapshot until the
+room confirms the element ops (they go through `sequence`, its `ref` echoed in the `cursor` frame), the elements a
+save writes are **held** (`own-element-writes.ts`), and a peer's update of a held element is left out of the screen
+and the save baseline alike. A peer's `remove` is never held back (our later update of a removed element is a no-op
+everywhere), and a hold ends when the room confirms, when the write fails (the retry still carries the change, since
+the skipped op never reached the baseline) or when the room cannot say (a closed socket, the confirm timeout).
+
+So two people dragging one element at once both end on the same position (`realtime-same-element.spec.ts` locks it).
+
+An article's writing is held the same way, block by block and cell by cell: a save's `article` ops go through
+`sequence` too, and until the room confirms them a peer's put of one of the blocks they write (in its place; a put
+that moves the block is applied, its place being theirs) or text of one of their cells is left out of the screen and
+the save baseline. So two people committing one paragraph (or one cell) at once both end on the room's last commit;
+before, each saw the other's text until a reload, and the next edit to the paragraph wrote that over the room's.
+
+In an article that collision no longer happens between people in the room: the paragraph or cell someone types in
+is **held** by them, and the room arbitrates the hold, first claim wins
+([Article pages](../007-editor/article-pages.md#holding-a-paragraph)). A claim's commit waits for the room's answer,
+so the loser of a race never commits over the winner; the room-order rule above is what remains when the room
+cannot answer.
+
+### Live drags
+
+A drag writes nothing until it ends; while it lasts, the dragger's preview travels as presence (a
+`drag-preview` op: unordered, never logged or replayed) and collaborators draw it without writing
+it. The real change follows on release as ordinary element ops ([Drag preview](../008-canvas/drag-preview.md)).
+
+### Ordered room + reconnect catch-up
+
+The room stamps every **mutation** op with a monotonic `seq` inside an `epoch`
+(a random id minted when the room is first created, then kept in its storage)
+and rebroadcasts
+`{ op, seq, epoch }`. Because every mutation passes through one single-threaded
+DO that assigns a total order, all peers converge. Ephemeral presence ops
+(cursor / select / laser / tab-focus) stay unordered.
+
+**Which an op is has one definition.** `PRESENCE_OP_KINDS`,
+`MUTATION_OP_KINDS` and `SYSTEM_OP_KINDS` live in `@liveknowledge/api-schema`
+beside the room message types, because the classification decides three things
+at once: an op's ordering, its role gate ([API app](../015-api/api.md) drops non-presence ops from a
+view-role sender), and whether a client may originate it at all. The wire payload
+itself stays `unknown`, so this shares the vocabulary without coupling the room
+to the editor's op shapes.
+
+The mutation branch is the fall-through, so a presence kind nobody classified would become a logged, ordered,
+replayed mutation: a camera position published on every pan (`viewport`, [Follow-me viewport](follow-me-viewport.md))
+would fill the log and push the replay floor past every real mutation, and a view-only visitor could not be followed,
+since the role gate drops non-presence ops. Two tests bracket it: the room's suite compares the presence and mutation
+lists directly (a mutation kind in the presence set hands read-only visitors a write path), and
+`room-op-vocabulary.test.ts` in the editor checks the third list (every kind the editor sends or handles) against the
+schema.
+
+- The DO keeps a bounded in-memory op log. On reconnect a client sends
+  `{ epoch, lastSeq }`; the DO replays the delta or answers `resync: true` when
+  it can't bridge the gap (behind the trimmed log floor, or a stale epoch), and
+  the client re-fetches its loaded tabs from the server in place (`useRoomResync`), with
+  a `RealtimeResync` telemetry ping ([Resync without reloading the page](resync-without-reload.md)).
+- `epoch` and `seq` are persisted in Durable Object storage and restored on
+  every wake, so hibernation does not strand a reconnecting client. The op log
+  lives in memory only: a client that fell behind across a wake finds the log
+  empty and re-fetches, which is the safe path and never loses data.
+- The client (`apps/editor/lib/api/room.ts`, a door over the room client it shares with livedesign,
+  `packages/workbench/src/lib/room-client.ts`) has auto-reconnect with capped
+  backoff + seq/epoch tracking. The backoff's six attempts span about 30
+  seconds; once they are used up the client waits for the browser to come back
+  online or the tab to be shown again and starts a fresh round then, so an
+  outage longer than the attempts (a laptop asleep, wifi gone a while) does not
+  end live collaboration for the rest of the session.
+- **A ticket mint that gets no answer opens no socket.** Each reconnect mints a fresh room ticket first. When
+  that mint never reaches the api (no response after its own retries, or a 5xx or 429 each time), the client
+  spends one reconnect attempt and waits out the backoff, without opening a socket. A socket with no ticket
+  is always refused, and the editor reads a refused join as a reason to ask whether the document was trashed,
+  so a laptop waking before its wifi used to send the mint three times, a doomed upgrade and a trash check
+  on every attempt. A mint the api refuses (a 4xx) still opens the socket, so the refusal path runs as before.
+- **The cursor includes the client's own ops.** The relay skips the sender, so without help a client would learn
+  seqs only from other people's ops, and a reconnect would ask for its own ops back. The room sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
+  sender of each ordered op, and the client folds it into its cursor (ignoring
+  a different epoch, which the `sync` / `catchup` exchange reconciles). An op
+  frame may carry a `ref` (a positive integer the client picks); the room echoes
+  it on that op's `cursor` frame, which is how a save knows the room has
+  sequenced the deltas it sent before writing ([Collaboration race hardening](collab-race-hardening.md#saves)).
+- **The save baseline follows remote ops** ([Collaboration race hardening](collab-race-hardening.md)). `lastSavedTabsRef` is
+  the "before" for both the save diff and the broadcast diff, so it must
+  hold what peers already have. Every applied remote op is folded into it
+  through the same pure `applyRoomOpToTabs` the receiver uses, and a save
+  that lands re-folds any op that arrived while it was in flight. The save
+  diff compares tab content when identity differs, so a remote-only change
+  is not mistaken for a local one, and no remote op cancels a local save.
+
+**The document's store stays the system of record.** Tab content is persisted by clients (each
+editor PUTs its whole copy of a changed tab); the op log is a warm catch-up
+cache, not a second writer. One rule puts the room on the
+persistence path without making it hold the document: the tab PUT merges the
+room's collaboration ledger in before writing
+([Collaboration race hardening](collab-race-hardening.md) "The store keeps multi-writer fields").
+
+### A malformed op
+
+The room relays an Editor's op as it was sent and keeps it in the catch-up log, so every receiver checks a
+document-changing op's envelope before applying it (`roomOpIsWellFormed`, `room-op-shape.ts`): a `tab` carries a
+tab with its elements, an `el` an element op (an add or update an element with an id and a type, a remove an id, a
+reorder a list, a patch an id and its fields), an `el-delta` an element id and a delta, a `changeset` a list of
+element ops if any, a `tab-meta` a patch, an `article` a flow, a `document-meta`
+a name and a list of tabs with ids and names; each but `document-meta` names its tab. One that does not is dropped
+and logged (`[room] malformed op dropped`), so it never stops every editor in the room, or each one that
+reconnects, from rendering. What an element or a patch holds is the stored-element migrations' to settle; a kind
+this build does not apply passes, and is ignored.
+
+### An invalid element
+
+The envelope check above leaves what an element holds to the receivers' migrations, and a migration repairs only
+the shapes it knows. So the room checks every element an Editor's op carries before relaying it: each element of a
+`tab` op's tab, and the element of an `el` add or update (`judgeRoomElementOp` in
+`@liveworkspace/api-kit/room-element-ops`, bound to this product's validator in `apps/api/src/room-element-rules.ts`).
+It judges an element as the tab save does, migrated first (`migrateIncomingTab`, `migrateIncomingElements`), then by
+`elementValidationIssue` (`packages/document/src/validate.ts`). It relays the op as it was sent, since every receiver runs the
+same migrations.
+
+- Whatever its kind, an element needs an `id` (a non-empty string) and a `type` (a string). A tab's element ids are
+  unique, and a tab holds at most `MAX_ELEMENTS_PER_TAB` elements.
+- **An unknown kind passes.** A `type` the room's build does not know is relayed unjudged, so a newer client's new
+  kind reaches its peers during a deploy as it always has.
+- **An unknown field passes.** The validator checks only the fields it names, so a field it does not name is never
+  judged and a newer build's new field on a known kind relays unchanged. A named field that breaks its rule is
+  refused: the tab save refuses it too, so the room drops exactly what would make each peer's next save fail.
+- **A refused op goes nowhere.** It is not relayed, sequenced or kept for catch-up. The sender gets an `op-refused`
+  frame naming the op's kind, the reason (`invalid-element`, `duplicate-element`, `too-many-elements` or `room-made-op`), the
+  element and the field, and echoing the op's `ref`, so a save waiting on that op stops waiting. The editor logs
+  `[room] op refused`.
+- **The log is bounded.** The room logs `[room] element op refused` with the op's kind, the reason and the field,
+  never the element: at most 10 lines a minute per room, the first line after a full minute counting the lines held
+  back (`suppressed`), so a client sending bad ops in a loop cannot flood the logs.
+- A Participant's `el` op is unchanged: it goes through the participant content rule and never relays as sent.
+  `tab-meta`, `el-delta`, a `remove` and a `reorder` carry no element and are not judged.
+- **A patch is the room's alone.** An `el` op of kind `patch` (some fields of one element) is what the room relays
+  for a Participant's change, made from the stored element it has just written. No editor sends one, so a patch that
+  arrives on a socket, an Editor's included, is refused (`room-made-op`, field `kind`) and goes nowhere. The room
+  needs no element state to judge it: there is nothing a client's patch may say.
+- **What the room still cannot judge.** It keeps no copy of the elements, so it judges each element op on its own:
+  an `update` is checked as a whole element, never against the one it replaces (a change of `type` under the same
+  id passes when the new element is valid), and a `remove` or `reorder` naming an id the tab does not hold is relayed
+  and is a no-op on every peer. Each peer's next save and the tab save's own checks still apply.
+
+One case is accepted. A newer build that widens a named field's rule (a new value in a closed list) is refused by
+an older room. Each product's api deploys before its editor (docs/ci.md "Order"), so the room learns the wider rule
+first; only a rollback runs the older rule, and then the older api's tab save refuses the same element anyway.
+
+### Keepalive
+
+A socket can die without a close event: a laptop asleep, a NAT or proxy that dropped an idle
+connection. It then reads as open while nothing arrives, so collaborators' changes stop reaching
+the editor until a reload, and nothing says so. The client therefore checks its socket:
+
+- After 20 seconds with nothing heard (`ROOM_KEEPALIVE_IDLE_MS`, `packages/workbench/src/lib/room-client.ts`) it
+  sends the bare text `ping` (`ROOM_PING`, `@liveworkspace/api-schema/room-wire`, re-exported by `room-messages.ts`). Any traffic resets the clock, so
+  a busy room sends none.
+- The room answers `pong` through the runtime's `setWebSocketAutoResponse`, which never wakes a
+  hibernating room, so a keepalive costs the room nothing.
+- A ping with no answer at all within 10 seconds (`ROOM_KEEPALIVE_TIMEOUT_MS`) ends the socket as a
+  drop, and the reconnect and catch-up above take over. Only an unanswered ping counts, never
+  silence alone: a background tab whose timers the browser slows to once a minute is never dropped
+  for being quiet.
+- `ping` and `pong` are plain text, never JSON, so neither side's message handler reads them as ops.
+
+## Locked decisions
+
+1. **Undo is local, not global.** Undo/redo affects the current user's own
+   changes only, never a peer's edit. Every peer op (and every
+   agent changeset) is applied to each undo and redo snapshot as well as to
+   what is on screen, so a restored snapshot already holds the peer's change:
+   undoing takes back your own edits alone, never a collaborator's element or a
+   tab they added, and the resulting element ops are broadcast as yours. A
+   resync's re-read content replaces only what is on screen.
+   A snapshot takes the ops when it is restored, not when they arrive: the history keeps the peer ops in
+   arrival order (`@liveworkspace/workbench/lib/remote-op-log`) and the log position each snapshot was
+   taken at, and Undo, Redo or a cancelled gesture applies only the ops that snapshot lacks, in order, which
+   is exactly what applying them on arrival gave. A run of element ops on one tab (peers' `el` ops, a
+   changeset that creates no tab) is applied in one pass over the tab. The log reaches back only to the
+   oldest snapshot still held and keeps at most `REMOTE_OP_LOG_LIMIT` (500) ops; past that, the snapshots
+   behind take its oldest half and it is dropped. So a peer op costs one pass over the present however deep
+   the history, snapshots keep sharing their unchanged tabs, and a restore replays at most 500 ops.
+2. **The document's store is the system of record.** It is the SQLite of the document's Durable Object; the room's
+   realtime part holds ordering and collaboration state (epoch + seq, the op log, the collaboration ledger), never a
+   live copy of the document. REST reads, exports, and
+   offline durability read the store.
+3. **The selection lock stays advisory.** The [Editor app](../007-editor/editor-app.md) lock soft-locks a
+   selected element for peers on the client. (An article's paragraph hold is the room's, not advisory: see
+   [Holding a paragraph](../007-editor/article-pages.md#holding-a-paragraph).) It makes same-element concurrent
+   editing rare, not impossible: the room does not enforce it between people.
+   Such collisions stay last-writer-wins over the whole element, which is the
+   cost accepted in dropping the field-level CRDT below. An agent is the
+   exception: a changeset targeting an element a person holds is refused
+   ([Agent changesets](../024-agents/agent-changesets.md#held-elements)), so
+   people outrank agents.
+
+## Not built: a full field-level CRDT
+
+A field-level CRDT (such as Yjs) would let two people editing _different fields of the same element_ at the same
+instant (one moves a box while another recolours it) both survive, merged field by field. It is not built, because
+the cost outweighs the benefit:
+
+- **The benefit is narrow.** The selection lock (decision 3) makes two people
+  grabbing the same element at once rare, though it does not prevent it, and the
+  fields many people write at once already merge as deltas. So the case the CRDT
+  uniquely rescues is uncommon. And it can't help when two people change the
+  _same_ field: someone's value still has to win.
+- **The cost is paid by everyone, always.** A CRDT library (tens of KB gzipped) in the editor bundle regardless of
+  use, a permanent second sync path beside the element-op path, and a room holding a live copy of the whole document
+  in memory beside the store, which the room otherwise never holds.
+
+If same-element field-level merge becomes a real need, it is built then, verified end to end with two live clients.
+
+## Implementation map
+
+- `packages/document`: `element-ops.ts`: `ElementOp`, `diffToElementOps`,
+  `applyElementOp` (pure, unit-tested).
+- `packages/api-schema/src/room-messages.ts`: `el` / `tab-meta` ops; `seq` /
+  `epoch` on the op frame; the `sync` + `catchup` frames.
+- `packages/api-schema/src/room-messages.ts`: `PRESENCE_OP_KINDS` /
+  `MUTATION_OP_KINDS` / `SYSTEM_OP_KINDS`, the one classification of every op.
+- `packages/document`: `element-deltas.ts` (`applyElementDelta`,
+  `mergeIncomingElement`), `collab-ledger.ts` (the ledger's entries and the
+  save merge), `comments.ts` (`opForTheWire`, `stampCommentAuthor`).
+- `apps/api/src/document-room/document-room.ts`: the role / class gate, seq + epoch
+  (persisted as `order-state`), the bounded in-memory op log and the
+  `sync` → `catchup` handler (`resolveCatchup` in `document-room-rules.ts`). It
+  rewrites comment authors in every mutation it relays and keeps collaboration
+  state in Durable Object storage: the per-element ledger
+  (`@liveworkspace/api-kit/room-ledger-store`). The full description is
+  [API app → Realtime model](../015-api/api.md#realtime-model).
+- `apps/api/src/room-client.ts`: the worker's calls into the room: the ledger
+  merge on a tab PUT (`fetchRoomLedger` + `applyRoomLedger`, driven by `X-Room-Cursor`), the
+  view-role comment relay (`relayElementDelta`) and share-link broadcasts.
+- `apps/editor`: `tab-broadcast-ops.ts` (emit), `tab-save-flow.ts` (a save's
+  ledger deltas sequenced before its PUT, its element ops after) + the room
+  `onOp` handler (apply); `lib/api/room.ts` (auto-reconnect, seq/epoch
+  tracking, the outbox, `sequence` and its `ref`);
+  `useRoomConnection` (`onResync` → `useRoomResync`, an in-place re-fetch, +
+  telemetry).
+
+See also [Editor app](../007-editor/editor-app.md) (selection lock),
+[API app](../015-api/api.md) (api + room), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
+[Auth + guest access](../014-identity/auth-and-guest-access.md) (guest access).

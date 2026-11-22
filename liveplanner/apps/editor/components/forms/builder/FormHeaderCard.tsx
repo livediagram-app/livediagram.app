@@ -14,6 +14,7 @@ import {
 import { ArrowDownIcon, ArrowUpIcon, TrashIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideGripVertical, lucideImage } from '@liveworkspace/icons/lucide';
 import { patchForm, deleteSection, moveSection, updateSection } from '@liveplanner/forms';
+import { patchPageCover } from '@liveworkspace/page-background/cover';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
 import { EditorContext } from '@/app/project/[id]/EditorContext';
@@ -34,27 +35,6 @@ const PictureIcon = lucideGlyph(lucideImage, 18);
 // Wide enough for the motion tiles and their names to sit three across with room.
 const COVER_POPOVER_W = 380;
 
-// The cover with a patch laid over it (a background's, or its picture's); none once it holds no fill, pattern or
-// picture. A picture's focus and credit go with it.
-function patchedCover(
-  cover: FormCover | undefined,
-  patch: Partial<FormCover>,
-): FormCover | undefined {
-  const merged = { ...cover, ...patch };
-  const next: FormCover = {
-    ...(merged.fill ? { fill: merged.fill } : {}),
-    ...(merged.pattern ? { pattern: merged.pattern } : {}),
-    ...(merged.imageId
-      ? {
-          imageId: merged.imageId,
-          ...(merged.focus !== undefined && merged.focus !== 50 ? { focus: merged.focus } : {}),
-          ...(merged.credit ? { credit: merged.credit } : {}),
-        }
-      : {}),
-  };
-  return next.fill || next.pattern || next.imageId ? next : undefined;
-}
-
 export function FormHeaderCard() {
   const b = useFormBuilder();
   const { form } = b;
@@ -64,7 +44,7 @@ export function FormHeaderCard() {
   const [picking, setPicking] = useState(false);
   // A hovered choice, shown on the band until it is picked or left.
   const [preview, setPreview] = useState<Partial<FormCover> | null>(null);
-  const shownCover = preview ? patchedCover(form.cover, preview) : form.cover;
+  const shownCover = preview ? patchPageCover(form.cover, preview) : form.cover;
   // The tab theme's own gradients lead the Gradient choices.
   // Read as the colour picker reads it (useThemeColours): no editor around it (a test) is the default theme.
   const themeId = useContext(EditorContext)?.activeTab?.theme;
@@ -125,7 +105,7 @@ export function FormHeaderCard() {
                 onRemove={() =>
                   b.actions.changeForm((f) =>
                     patchForm(f, {
-                      cover: patchedCover(f.cover, {
+                      cover: patchPageCover(f.cover, {
                         imageId: undefined,
                         focus: undefined,
                         credit: undefined,
@@ -135,7 +115,7 @@ export function FormHeaderCard() {
                 }
                 onFocus={(focus) =>
                   b.actions.changeForm((f) =>
-                    patchForm(f, { cover: patchedCover(f.cover, { focus }) }),
+                    patchForm(f, { cover: patchPageCover(f.cover, { focus }) }),
                   )
                 }
                 onFocusPreview={(focus) => setPreview(focus === null ? null : { focus })}
@@ -146,7 +126,7 @@ export function FormHeaderCard() {
                 onBackground={(patch) => {
                   setPreview(null);
                   b.actions.changeForm((f) =>
-                    patchForm(f, { cover: patchedCover(f.cover, patch) }),
+                    patchForm(f, { cover: patchPageCover(f.cover, patch) }),
                   );
                 }}
                 onPreview={setPreview}
@@ -163,7 +143,7 @@ export function FormHeaderCard() {
             setPicking(false);
             b.actions.changeForm((f) =>
               patchForm(f, {
-                cover: patchedCover(f.cover, { imageId: id, focus: undefined, credit }),
+                cover: patchPageCover(f.cover, { imageId: id, focus: undefined, credit }),
               }),
             );
           }}

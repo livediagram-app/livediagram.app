@@ -11,7 +11,7 @@ Implements [help-centre.md](../help-centre.md).
 | Production routes | `www.liveworkspace.app/help*`, `liveworkspace.app/help*`; staging `staging.liveworkspace.app/help*` |
 | Apps' routers     | their `HELP` service binding names `liveworkspace-help`, and the forward adds `x-help-app: <app>`   |
 | Local port        | 3020 (liveworkspace's block); the routers' `HELP_ORIGIN` and the site's dev server point at it      |
-| Deploy            | with the sites (tier 1, before the routers), from full history, with room for six builds            |
+| Deploy            | with the sites (tier 1, before the routers), from full history, with room for seven builds          |
 
 `scripts/build-scopes.mjs` builds each scope in turn: it writes `lib/scope.generated.ts` (`SCOPE`),
 `lib/bindings.generated.ts` (the scope's appearance key, viewport, boots, social card and telemetry, from
@@ -34,7 +34,8 @@ static, with no client-side filtering of a page's content.
 `@liveworkspace/help-registry` holds the one catalogue (it holds the types and helpers today):
 
 ```ts
-type AppId = 'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle';
+type AppId =
+  'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle' | 'liveknowledge';
 type HelpScope = AppId | 'all';
 
 interface Article {
@@ -123,7 +124,7 @@ asks sites not to track (Global Privacy Control or Do Not Track).
   index in bytes. The article layout reads its URL and its parent's off the route and imports only
   `@liveworkspace/help-registry/hrefs`, so a page that only builds links never bundles the catalogue.
 - `BrandGlyph` rows are stateless SVG with no gradients or motion; a results list of 50 rows pays for paths only.
-- Six static exports multiply build time and output size by six: the build is timed in CI, and a test caps
+- Seven static exports multiply build time and output size by seven: the build is timed in CI, and a test caps
   `out/` size.
 
 ## Pages, art and checks carried from the product help apps

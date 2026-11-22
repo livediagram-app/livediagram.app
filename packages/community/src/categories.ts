@@ -358,6 +358,40 @@ export const COMMUNITY_APP_CATEGORIES = {
     },
     OTHER,
   ],
+  // A team knowledgebase (liveknowledge/docs/specs/016-platform/platform-registration.md "Community").
+  'liveknowledge.app': [
+    {
+      id: 'engineering',
+      label: 'Engineering',
+      blurb: 'Runbooks, architecture notes and how the code works.',
+      type: 'Engineering',
+    },
+    {
+      id: 'handbooks',
+      label: 'Handbooks',
+      blurb: 'How a team works: its policies, habits and values.',
+      type: 'Handbooks',
+    },
+    {
+      id: 'onboarding',
+      label: 'Onboarding',
+      blurb: 'First weeks: what to read, set up and who to meet.',
+      type: 'Onboarding',
+    },
+    {
+      id: 'product',
+      label: 'Product',
+      blurb: 'Specs, decisions and research behind a product.',
+      type: 'Product',
+    },
+    {
+      id: 'support',
+      label: 'Support',
+      blurb: 'Answers, how-tos and fixes for the people you help.',
+      type: 'Support',
+    },
+    OTHER,
+  ],
 } as const satisfies Record<CommunityApp, readonly CommunityCategoryDef[]>;
 
 type AppCategories = typeof COMMUNITY_APP_CATEGORIES;
@@ -371,10 +405,12 @@ export type CommunityCategory =
   | 'careers'
   | 'decisions'
   | 'education'
+  | 'engineering'
   | 'events'
   | 'finance'
   | 'games'
   | 'goals'
+  | 'handbooks'
   | 'health'
   | 'hiring'
   | 'home'

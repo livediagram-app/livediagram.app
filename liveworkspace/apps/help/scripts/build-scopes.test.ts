@@ -1,8 +1,16 @@
-import { existsSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { generatedFiles, iconSources } from './build-scopes.mjs';
+import { generatedFiles, iconSources, prune } from './build-scopes.mjs';
 
 // The checked-in generated files are exactly what the build script writes for livediagram, so `next dev` without a
 // predev step serves livediagram and a build leaves the tree as it found it.
@@ -34,6 +42,7 @@ describe('build-scopes', () => {
       'livedocuments',
       'livedesign',
       'livehuddle',
+      'liveknowledge',
       'all',
     ]) {
       for (const source of Object.values(iconSources(scope) as Record<string, string>)) {
@@ -41,5 +50,27 @@ describe('build-scopes', () => {
         expect(existsSync(join(APP, source)), source).toBe(true);
       }
     }
+  });
+
+  it("prunes a route that is not the scope's whole: its page, its payloads and its card, never its subpages", () => {
+    const dir = mkdtempSync(join(tmpdir(), 'help-prune-'));
+    const put = (path: string) => {
+      mkdirSync(join(dir, path, '..'), { recursive: true });
+      writeFileSync(join(dir, path), '');
+    };
+    for (const file of ['index.html', 'index.txt', '__next.canvas.__PAGE__.txt'])
+      put(`canvas/${file}`);
+    put('canvas/links/index.html');
+    put('og/canvas.png');
+    put('about/index.html');
+    const manifest = {
+      articles: { 'canvas/links': ['liveknowledge'], about: ['liveknowledge', 'livediagram'] },
+      categories: { canvas: ['livediagram'] },
+    };
+    expect(prune(dir, 'liveknowledge', manifest)).toBe(1);
+    expect(readdirSync(join(dir, 'canvas'))).toEqual(['links']);
+    expect(existsSync(join(dir, 'canvas/links/index.html'))).toBe(true);
+    expect(existsSync(join(dir, 'og/canvas.png'))).toBe(false);
+    expect(existsSync(join(dir, 'about/index.html'))).toBe(true);
   });
 });

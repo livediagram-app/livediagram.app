@@ -1,0 +1,298 @@
+import { describe, expect, it } from 'vitest';
+import { layOutPages, pagesOf, withArticleFlow } from '@liveknowledge/document';
+import { readDocx, type DocxBlock as ReadBlock } from '../office-import/docx';
+import { openOfficePackage } from '../office-import/package';
+import { openZip } from '../office-import/zip';
+import { parseXml } from '../office-import/xml';
+import { articleFlowsInOrder, buildDocx, docxLook, zoneCount } from './docx-build';
+import { docxBody } from './docx-body';
+import type { DocxBlock } from './docx-types';
+import { writeDocx } from './docx-write';
+import { everyBlockArticle, fakeDrawer } from './test-tabs';
+
+// docs/specs/020-import-export/office-export.md "Word: the article as a document": the file read back through the
+// Word import, every part well-formed XML.
+
+const WHEN = new Date('2026-10-31T12:00:00Z');
+
+async function partsOf(bytes: Uint8Array): Promise<Map<string, string>> {
+  const zip = openZip(bytes);
+  const out = new Map<string, string>();
+  for (const name of zip.names()) {
+    const data = await zip.read(name, 64 * 1024 * 1024);
+    if (/\.(xml|rels)$/.test(name)) out.set(name, new TextDecoder().decode(data!));
+  }
+  return out;
+}
+
+const textOf = (b: ReadBlock) =>
+  b.type === 'picture'
+    ? '[picture]'
+    : b.type === 'code'
+      ? b.text
+      : 'runs' in b
+        ? b.runs.map((r) => r.text).join('')
+        : `[${b.type}]`;
+
+async function everyBlockFile(pageNumbers = true) {
+  const { tab, pages } = everyBlockArticle();
+  const drawer = fakeDrawer();
+  const progress: number[] = [];
+  const doc = await buildDocx(
+    { tab, pages, title: 'Every block', themeAccent: '#d97706' },
+    drawer,
+    {
+      onProgress: (p) => progress.push(p),
+    },
+  );
+  const bytes = writeDocx({ ...doc, look: { ...doc.look, pageNumbers } }, WHEN);
+  return { tab, doc, drawer, progress, bytes };
+}
+
+describe('Word export', () => {
+  it('writes every block kind as a document the import reads back, with Word’s own styles', async () => {
+    const { bytes, drawer, progress } = await everyBlockFile();
+    const parts = await partsOf(bytes);
+    for (const [name, xml] of parts) expect(() => parseXml(xml), name).not.toThrow();
+    expect(parts.get('[content_types].xml')).toContain('document.main+xml');
+    expect(parts.get('word/footer1.xml')).toContain('PAGE');
+
+    const read = await readDocx(await openOfficePackage(bytes, 'word'));
+    const byText = new Map(read.blocks.map((b) => [textOf(b), b]));
+    expect(byText.get('The Report')).toMatchObject({ type: 'paragraph', style: 'title' });
+    expect(byText.get('A subtitle')).toMatchObject({ style: 'subtitle' });
+    expect(byText.get('Heading one')).toMatchObject({ style: 'h1' });
+    expect(byText.get('Heading two')).toMatchObject({ style: 'h2' });
+    expect(byText.get('Heading three')).toMatchObject({ style: 'h3' });
+    expect(byText.get('A quote')).toMatchObject({ style: 'quote' });
+    expect(byText.get('Bullet')).toMatchObject({ type: 'list', list: 'bullet' });
+    expect(byText.get('Nested bullet')).toMatchObject({ type: 'list', list: 'bullet', level: 1 });
+    expect(byText.get('First')).toMatchObject({ type: 'list', list: 'numbered' });
+    expect(byText.get('const a = 1;\n  return a;')).toMatchObject({ type: 'code' });
+    expect(read.blocks.some((b) => b.type === 'pageBreak')).toBe(true);
+    // A divider is a paragraph's rule (the import does not read rules back).
+    expect(parts.get('word/document.xml')).toContain('<w:pBdr><w:bottom w:val="single"');
+
+    // Inline formatting survives as run properties, the link as a hyperlink.
+    const formatted = read.blocks.find(
+      (b) => 'runs' in b && b.runs.some((r) => r.text.startsWith('Bold')),
+    );
+    if (!formatted || !('runs' in formatted)) throw new Error('no formatted paragraph');
+    const run = (t: string) => formatted.runs.find((r) => r.text.includes(t));
+    expect(run('Bold')).toMatchObject({ b: true });
+    expect(run('italic')).toMatchObject({ i: true });
+    expect(run('under')).toMatchObject({ u: true });
+    expect(run('struck')).toMatchObject({ s: true });
+    expect(run('a link')).toMatchObject({ href: 'https://example.com/a?b=1&c=2' });
+    expect(run('up')).toMatchObject({ sup: true });
+    // Colour and highlight are written though the import keeps the theme's own (it drops them).
+    expect(parts.get('word/document.xml')).toContain('<w:color w:val="DC2626"/>');
+    expect(parts.get('word/document.xml')).toContain(
+      '<w:shd w:val="clear" w:color="auto" w:fill="FEF08A"/>',
+    );
+
+    // The two laid-out zones are pictures; the zone never laid out draws nothing.
+    expect(read.pictures).toHaveLength(2);
+    expect(drawer.regions.map((r) => r.ids)).toEqual([['zone-image'], ['zone-shape']]);
+    expect(progress.at(-1)).toBe(1);
+    // An empty heading leaves no stray Heading 1 behind.
+    expect(read.blocks.filter((b) => 'style' in b && b.style === 'h1')).toHaveLength(1);
+  });
+
+  it('marks to-dos with a box, ticked and struck when done', async () => {
+    const { bytes } = await everyBlockFile(false);
+    const doc = (await partsOf(bytes)).get('word/document.xml')!;
+    expect(doc).toContain('☐ </w:t>');
+    expect(doc).toMatch(/☒ <\/w:t><\/w:r><w:r><w:rPr><w:strike\/>/);
+    expect(doc).not.toContain('footerReference');
+  });
+
+  it('reads its to-dos back as to-dos, ticked and at their level, with no box or strike in the text', async () => {
+    const { bytes } = await everyBlockFile(false);
+    const read = await readDocx(await openOfficePackage(bytes, 'word'));
+    const byText = new Map(read.blocks.map((b) => [textOf(b), b]));
+    expect(byText.get('To do')).toMatchObject({ type: 'list', list: 'todo' });
+    expect(byText.get('To do')).not.toHaveProperty('checked');
+    expect(byText.get('Done')).toMatchObject({ type: 'list', list: 'todo', checked: true });
+    expect(byText.get('Done')).toMatchObject({ runs: [{ text: 'Done' }] });
+    expect(byText.get('Nested to do')).toMatchObject({ type: 'list', list: 'todo', level: 2 });
+  });
+
+  it('floats a zone that wraps beside the text and centres one that does not', async () => {
+    const { doc, bytes } = await everyBlockFile();
+    const images = doc.blocks.filter((b) => b.type === 'image');
+    expect(images.map((b) => b.type === 'image' && [b.wrap, b.align])).toEqual([
+      ['inline', 'center'],
+      ['left', 'center'],
+    ]);
+    const xml = (await partsOf(bytes)).get('word/document.xml')!;
+    expect(xml).toContain('<wp:inline');
+    expect(xml).toContain('<wp:wrapSquare wrapText="right"/>');
+  });
+
+  // docs/specs/009-elements/images.md "Alt text": a zone's pictures describe it in Word's Alt Text.
+  it('writes a zone’s alt text as its descr, which the import reads back, and none without any', async () => {
+    const { tab, pages } = everyBlockArticle();
+    const described = {
+      ...tab,
+      elements: tab.elements.map((el) =>
+        el.type === 'image' ? { ...el, alt: 'Sales by quarter & "trend"' } : el,
+      ),
+    };
+    const doc = await buildDocx(
+      { tab: described, pages, title: 'Alt', themeAccent: '#d97706' },
+      fakeDrawer(),
+      {},
+    );
+    const bytes = writeDocx(doc, WHEN);
+    const xml = (await partsOf(bytes)).get('word/document.xml')!;
+    expect(xml).toContain(
+      '<wp:docPr id="1" name="Picture 1" descr="Sales by quarter &amp; &quot;trend&quot;"/>',
+    );
+    expect(xml).toContain('<pic:cNvPr id="1" name="Picture 1" descr="Sales by quarter');
+    // The second zone holds only a shape: no description.
+    expect(xml).toContain('<wp:docPr id="2" name="Picture 2"/>');
+    const read = await readDocx(await openOfficePackage(bytes, 'word'));
+    expect(read.pictures.map((p) => p.alt)).toEqual(['Sales by quarter & "trend"', undefined]);
+  });
+
+  it('restarts numbering after anything but a list item, and keeps it through a nested one', () => {
+    const look = docxLook(undefined, '#2563eb');
+    const blocks: DocxBlock[] = [
+      { id: '1', type: 'list', list: 'numbered', runs: [{ text: 'a' }] },
+      { id: '2', type: 'list', list: 'bullet', level: 1, runs: [{ text: 'nested' }] },
+      { id: '3', type: 'list', list: 'numbered', runs: [{ text: 'b' }] },
+      { id: '4', type: 'paragraph', runs: [{ text: 'break' }] },
+      { id: '5', type: 'list', list: 'numbered', runs: [{ text: 'c' }] },
+    ];
+    const body = docxBody(blocks, look, 10);
+    const nums = [...body.xml.matchAll(/<w:numId w:val="(\d+)"\/>/g)].map((m) => m[1]);
+    // a and b share a run; c starts its own; the bullet uses the bullet list.
+    expect(nums).toEqual(['2', '1', '2', '3']);
+    expect(body.numberedRuns).toBe(2);
+  });
+
+  it('gives a list run’s last item a paragraph’s space after it, as the canvas does', () => {
+    const look = docxLook(undefined, '#2563eb');
+    const blocks: DocxBlock[] = [
+      { id: '1', type: 'list', list: 'bullet', runs: [{ text: 'a' }] },
+      { id: '2', type: 'list', list: 'todo', runs: [{ text: 'b' }] },
+      { id: '3', type: 'paragraph', runs: [{ text: 'after' }] },
+      { id: '4', type: 'list', list: 'numbered', runs: [{ text: 'last' }] },
+    ];
+    const paras = docxBody(blocks, look, 10).xml.split('</w:p>');
+    const para = Math.round(look.paragraphSpace * look.bodyPx * look.lineHeight * 15);
+    // Only the item a paragraph follows: not one inside the run, nor the article's last block.
+    expect(paras[0]).not.toContain('w:spacing');
+    expect(paras[1]).toContain(`<w:spacing w:after="${para}"/>`);
+    expect(paras[3]).not.toContain('w:spacing');
+  });
+
+  it('writes a second article on a new page, in the row’s order', async () => {
+    const { tab: base } = everyBlockArticle();
+    const first = pagesOf(base)[0]!;
+    const tab = withArticleFlow(
+      { ...base, pages: [...pagesOf(base), { ...first, id: 'a-2', flow: 'flow-2' }] },
+      'flow-2',
+      { blocks: [{ id: 'second', type: 'paragraph', runs: [{ text: 'Second article' }] }] },
+    );
+    const pages = layOutPages(pagesOf(tab));
+    expect(articleFlowsInOrder(tab)).toEqual(['flow-1', 'flow-2']);
+    expect(zoneCount(tab)).toBe(3);
+    const doc = await buildDocx(
+      { tab, pages, title: 'T', themeAccent: '#000000' },
+      fakeDrawer(),
+      {},
+    );
+    const last = doc.blocks.slice(-2);
+    expect(last[0]!.type).toBe('pageBreak');
+    expect(last[1]).toMatchObject({ runs: [{ text: 'Second article' }] });
+  });
+
+  it('takes the article’s look: its accent, faces and A4 page', async () => {
+    const { doc, bytes } = await everyBlockFile();
+    // A continuous page is no paper size: the file is an A4 sheet, whatever the page's stored height.
+    expect([doc.page.widthPx, doc.page.heightPx, doc.page.landscape]).toEqual([794, 1123, false]);
+    const parts = await partsOf(bytes);
+    expect(parts.get('word/document.xml')).toMatch(/<w:pgSz w:w="\d+" w:h="\d+"\/>/);
+    expect(parts.get('word/numbering.xml')).toContain('D97706');
+    expect(parts.get('word/styles.xml')).toContain('w:styleId="Heading1"');
+    expect(parts.get('docprops/core.xml')).toContain('<dc:title>Every block</dc:title>');
+  });
+
+  // docs/specs/020-import-export/office-export.md "Fonts are named, never embedded" (Work Tracker 230).
+  it('names a safe stand-in for each face in the font table, code falling back to a fixed-width face', async () => {
+    const { bytes } = await everyBlockFile();
+    const parts = await partsOf(bytes);
+    const table = [...parts.entries()].find(([k]) => k.toLowerCase() === 'word/fonttable.xml')?.[1];
+    expect(table).toBeDefined();
+    expect(() => parseXml(table!)).not.toThrow();
+    expect(table).toMatch(
+      /<w:font w:name="Roboto Mono"><w:altName w:val="Courier New"\/>[^]*?<w:pitch w:val="fixed"\/>/,
+    );
+    expect(table).toContain('<w:altName w:val="Arial"/>');
+    expect(parts.get('word/_rels/document.xml.rels')).toContain('fontTable.xml');
+  });
+
+  // docs/specs/007-editor/article-pages.md "Footnotes" (Work Tracker #219).
+  it('writes footnotes as Word footnotes, read back as footnotes', async () => {
+    const { doc } = await everyBlockFile();
+    const blocks: DocxBlock[] = [
+      {
+        id: 'p',
+        type: 'paragraph',
+        runs: [{ text: 'Sales rose' }, { text: '*', fn: 'Q3 figures & more.' }, { text: '.' }],
+      },
+      {
+        id: 't',
+        type: 'table',
+        header: true,
+        cols: [{ id: 'c', w: 1 }],
+        rows: [{ id: 'r', cells: [[{ text: 'Cell' }, { text: '**', fn: 'Twice' }]] }],
+      },
+    ];
+    const bytes = writeDocx({ ...doc, blocks, bands: undefined }, WHEN);
+    const parts = await partsOf(bytes);
+    for (const [name, xml] of parts) expect(() => parseXml(xml), name).not.toThrow();
+    expect(parts.get('[content_types].xml')).toContain('footnotes+xml');
+    expect(parts.get('word/_rels/document.xml.rels')).toContain('footnotes.xml');
+    expect(parts.get('word/settings.xml')).toContain('<w:footnotePr>');
+    expect(parts.get('word/styles.xml')).toContain('w:styleId="FootnoteText"');
+    const refs = [...parts.get('word/document.xml')!.matchAll(/w:footnoteReference w:id="(\d+)"/g)];
+    expect(refs.map((m) => m[1])).toEqual(['1', '2', '3']);
+    const read = await readDocx(await openOfficePackage(bytes, 'word'));
+    expect(read.blocks[0]).toMatchObject({
+      runs: [{ text: 'Sales rose' }, { text: '*', fn: 'Q3 figures & more.' }, { text: '.' }],
+    });
+    expect(read.blocks[1]).toMatchObject({
+      rows: [
+        {
+          cells: [
+            [
+              { text: 'Cell', b: true },
+              { text: '**', fn: 'Twice' },
+            ],
+          ],
+        },
+      ],
+    });
+    expect(read.tally).toEqual({});
+  });
+
+  it('writes no footnotes part for an article with none', async () => {
+    const parts = await partsOf((await everyBlockFile()).bytes);
+    expect(parts.has('word/footnotes.xml')).toBe(false);
+    expect(parts.get('word/settings.xml')).not.toContain('footnotePr');
+  });
+
+  it('stops when cancelled', async () => {
+    const { tab, pages } = everyBlockArticle();
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      buildDocx({ tab, pages, title: 'T', themeAccent: '#000' }, fakeDrawer(), {
+        signal: controller.signal,
+      }),
+    ).rejects.toThrow('cancelled');
+  });
+});

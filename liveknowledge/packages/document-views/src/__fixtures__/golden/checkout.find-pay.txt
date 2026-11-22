@@ -1,0 +1,6 @@
+tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 1 page: 1 infographic (view pages) · threads 1 open/2 · rev 41
+stack c991 "Services"
+  square e4a8 "Payments service" icon=credit-card comments=1 resolved → e6d7 "HTTPS" ~dashed
+table 480a 4x3 Service | p99 latency | Availability
+sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
+3 matches: 2 labels, 1 cell

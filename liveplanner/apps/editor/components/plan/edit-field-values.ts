@@ -122,17 +122,19 @@ export function useEditFieldPlan(opts: {
     const ctx = { people: people ?? [], items };
     // Counted once per shape, until the cards change (a new `items` makes a new plan).
     const counted = new Map<string, KindChangeOutcome>();
-    let options: string[] | null = null;
-    let filters: number | null = null;
+    const memo: { options: string[] | null; filters: number | null } = {
+      options: null,
+      filters: null,
+    };
     const filtersOn = (field: string) =>
-      (filters ??= planTabs
+      (memo.filters ??= planTabs
         ? countFieldFilters(planTabs(), [{ field, builtIn: false, typesAfter: types }])
         : 0);
     return {
       refusalOf: (pick) => (stored ? kindChangeRefusal(stored, shapeOf(pick)) : null),
       optionsFor: (pick) => {
         if (!stored || !on || !hasOptions(storedKindOf(pick))) return undefined;
-        options ??= optionsFromValues(stored, fieldValues(all, on), ctx);
+        const options = (memo.options ??= optionsFromValues(stored, fieldValues(all, on), ctx));
         return options.length ? options : undefined;
       },
       lossOf: (field, pickLabel) => {

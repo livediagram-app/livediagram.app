@@ -1,4 +1,4 @@
-// What the items rebuild (migrations/0009_items_livehuddle.sql) must leave unchanged, read from an index database:
+// What an items rebuild (migrations/0009_items_livehuddle.sql, 0026_items_liveknowledge.sql) must leave unchanged, read from an index database:
 // every table's rows (a count and a SHA-256 of them in key order), its columns, foreign keys and CHECKs, and every
 // index's SQL (liveworkspace/docs/specs/004-index/blueprints/items.md "Rebuilding items"). The migration test and the
 // rehearsal CLI (items-rebuild-counts.ts) both compare a snapshot from before with one from after.
@@ -6,6 +6,10 @@ import { createHash } from 'node:crypto';
 import type { DatabaseSync } from 'node:sqlite';
 
 export const REBUILD_MIGRATION = '0009_items_livehuddle.sql';
+
+// The newest rebuild, the one the rehearsal CLI (items-rebuild-counts.ts) runs: liveknowledge's Knowledgebases. It carries
+// whatever references items when it runs (liveknowledge-migration.test.ts checks), so it has no table list here.
+export const LATEST_REBUILD_MIGRATION = '0026_items_liveknowledge.sql';
 
 // The tables the rebuild drops and makes again: items, its twelve children, and timeline_events' two.
 export const REBUILT_TABLES = [

@@ -4,6 +4,7 @@ import { TELEMETRY_CATEGORIES as LIVEDESIGN_CATEGORIES } from '@livedesign/api-s
 import { TELEMETRY_CATEGORIES as LIVEDIAGRAM_CATEGORIES } from '@livediagram/api-schema';
 import { TELEMETRY_CATEGORIES as LIVEDOCUMENTS_CATEGORIES } from '@livedocuments/api-schema';
 import { TELEMETRY_CATEGORIES as LIVEHUDDLE_CATEGORIES } from '@livehuddle/api-schema';
+import { TELEMETRY_CATEGORIES as LIVEKNOWLEDGE_CATEGORIES } from '@liveknowledge/api-schema';
 import { TELEMETRY_CATEGORIES as LIVEPLANNER_CATEGORIES } from '@liveplanner/api-schema';
 import { LIVEDESIGN } from '../livedesign/config';
 import * as LIVEDESIGN_CATALOGUE from '../livedesign/metric-catalogue';
@@ -13,6 +14,8 @@ import { LIVEDOCUMENTS } from '../livedocuments/config';
 import * as LIVEDOCUMENTS_CATALOGUE from '../livedocuments/metric-catalogue';
 import { LIVEHUDDLE } from '../livehuddle/config';
 import * as LIVEHUDDLE_CATALOGUE from '../livehuddle/metric-catalogue';
+import { LIVEKNOWLEDGE } from '../liveknowledge/config';
+import * as LIVEKNOWLEDGE_CATALOGUE from '../liveknowledge/metric-catalogue';
 import { LIVEPLANNER } from '../liveplanner/config';
 import * as LIVEPLANNER_CATALOGUE from '../liveplanner/metric-catalogue';
 import type { TelemetryAppConfig } from './app';
@@ -59,6 +62,12 @@ export const TEST_APPS: TestApp[] = [
     config: LIVEHUDDLE,
     categories: charted(LIVEHUDDLE_CATEGORIES),
     catalogue: LIVEHUDDLE_CATALOGUE,
+  },
+  {
+    name: 'liveknowledge',
+    config: LIVEKNOWLEDGE,
+    categories: charted(LIVEKNOWLEDGE_CATEGORIES),
+    catalogue: LIVEKNOWLEDGE_CATALOGUE,
   },
 ];
 

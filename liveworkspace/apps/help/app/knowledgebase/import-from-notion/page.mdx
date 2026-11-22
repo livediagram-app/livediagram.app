@@ -1,0 +1,77 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ImportSourcesScene } from '@/editions/liveknowledge/components/illustrations/import-export';
+
+export const metadata = helpMetadata({
+  title: 'Import From Notion',
+  description:
+    'Bring a Notion workspace into liveknowledge from its Markdown & CSV export: pages keep their nesting, databases become tables, and links become page links.',
+  path: '/help/knowledgebase/import-from-notion/',
+});
+
+<ArticleLayout path="knowledgebase/import-from-notion" title="Import From Notion" description="Bring a Notion export in as pages: what comes across, what changes and what is left out." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Moving from Notion? Export your pages from Notion as Markdown, and liveknowledge reads the export as a page tree.
+
+## Export From Notion
+
+<Step n={1}>
+  In Notion, open **Settings**, then **Export**.
+</Step>
+
+<Step n={2}>
+  Choose the format **Markdown & CSV**, include subpages, and export. Notion gives you a `.zip`.
+  Keep it zipped.
+</Step>
+
+## Import It
+
+<Step n={1}>
+  In liveknowledge, press the Knowledgebase's name at the top of the sidebar and choose **Import**.
+</Step>
+
+<Step n={2}>
+  Choose **A Whole Knowledgebase**, then **Notion**.
+</Step>
+
+<Step n={3}>
+  Drop the `.zip` on the drop area, or press **Choose a .zip**.
+</Step>
+
+<Step n={4}>
+  Review what was found, choose where it lands, and press the Import button, which counts the pages (such as **Import 320 Pages**). The review and
+  the choices are the same for every source: see [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/#import-a-folder).
+</Step>
+
+<Figure caption="Import, A Whole Knowledgebase: Notion is one of the three sources.">
+  <ImportSourcesScene />
+</Figure>
+
+## What Comes Across
+
+| In Notion                       | In liveknowledge                                              |
+| ------------------------------- | ------------------------------------------------------------- |
+| Pages and their nesting         | Pages and subpages, without Notion's 32-character ids         |
+| A page's title                  | Its first `#` heading, else the file name, id removed          |
+| Links between pages             | Page links                                                    |
+| A database                      | A table on its page                                           |
+| A callout                       | A quote                                                       |
+| A toggle                        | A heading with its content under it                           |
+| Pictures in the export          | Pictures in the writing                                       |
+| Other attachments               | Named at the foot of the page under **Attachments**           |
+
+## Good to Know
+
+- A toggle comes across as a heading only where Notion's export writes it as a toggle. One it writes as a plain list item stays a list item: nothing in the export tells the two apart.
+- A link to a page you did not export stays an ordinary link.
+- Imported pages are Never Verified, owned by nobody.
+- The limits are the same for every source: 200 MB an archive, 500 pages in a Knowledgebase, 8 levels, 10 MB a picture. See [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/#limits).
+- The CLI imports a Notion export too: `liveknowledge import notion-export.zip --source notion --to Handbook`.
+
+## Who Can Do What
+
+| Action                          | Editor | Participant | Viewer |
+| ------------------------------- | ------ | ----------- | ------ |
+| Import from Notion              | Yes    | No          | No     |
+
+</ArticleLayout>

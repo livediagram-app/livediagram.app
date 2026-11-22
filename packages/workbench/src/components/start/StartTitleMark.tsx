@@ -61,6 +61,22 @@ function glyph(kind: HeroBackdropKind, ink: string): ReactNode {
         <circle cx="3" cy="10" r="2.3" opacity="0.6" />
       </g>
     );
+  if (kind === 'tree')
+    // A page and the two under it, joined as a page tree joins them.
+    return (
+      <g fill={ink}>
+        <rect x="2.5" y="2" width="7" height="5.5" rx="1.2" />
+        <rect x="10.5" y="8.5" width="7" height="4" rx="1.2" opacity="0.6" />
+        <rect x="10.5" y="14" width="7" height="4" rx="1.2" opacity="0.6" />
+        <path
+          d="M5 7.5V16H10.5M5 10.5H10.5"
+          fill="none"
+          stroke={ink}
+          strokeWidth="1.4"
+          opacity="0.6"
+        />
+      </g>
+    );
   // Dots: nine of them.
   return (
     <g fill={ink}>

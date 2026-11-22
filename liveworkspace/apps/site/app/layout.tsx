@@ -23,7 +23,7 @@ const APPEARANCE_BOOT = trustedConstant(siteAppearanceBootScript());
 
 const TITLE = 'liveworkspace: Live apps for every kind of work';
 const DESCRIPTION =
-  'liveworkspace is a set of real-time apps, each built for one kind of work: livediagram for diagrams and whiteboards, liveplanner for boards, sheets and forms, livedocuments for articles, slides and infographics, livedesign for logos, wireframes and photos, and livehuddle for meetings in Spaces, with an avatar for everyone. Completely free, shared by link, no trackers.';
+  'liveworkspace is a set of real-time apps, each built for one kind of work: livediagram for diagrams and whiteboards, liveplanner for boards, sheets and forms, livedocuments for articles, slides and infographics, livedesign for logos, wireframes and photos, livehuddle for meetings in Spaces, with an avatar for everyone, and liveknowledge for a team knowledgebase, for people and for AI. Completely free, shared by link, no trackers.';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.liveworkspace.app'),

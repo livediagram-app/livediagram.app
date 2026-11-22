@@ -13,12 +13,13 @@ import {
 // The file each app's item becomes in Drive (liveworkspace/docs/specs/005-drive/drive.md "The file").
 
 describe('APP_FILE_FORMATS', () => {
-  it('names the five apps (held livehuddle included) with the spec table’s kind, MIME type and extension', () => {
+  it('names the six apps with the spec table’s kind, MIME type and extension', () => {
     expect(APP_NAMES.toSorted()).toEqual([
       'livedesign',
       'livediagram',
       'livedocuments',
       'livehuddle',
+      'liveknowledge',
       'liveplanner',
     ]);
     expect(APP_FILE_FORMATS).toEqual({
@@ -52,6 +53,12 @@ describe('APP_FILE_FORMATS', () => {
         mimeType: 'application/vnd.livehuddle+json',
         extension: '.livehuddle',
       },
+      liveknowledge: {
+        app: 'liveknowledge',
+        kind: 'liveknowledge.document',
+        mimeType: 'application/vnd.liveknowledge+json',
+        extension: '.liveknowledge',
+      },
     });
   });
 
@@ -68,7 +75,7 @@ describe('APP_FILE_FORMATS', () => {
 });
 
 describe('isAppName', () => {
-  it('accepts the five apps', () => {
+  it('accepts the six apps', () => {
     for (const app of APP_NAMES) expect(isAppName(app)).toBe(true);
   });
 

@@ -15,11 +15,13 @@ export interface Env {
   APP_ORIGIN_LIVEDOCUMENTS?: string;
   APP_ORIGIN_LIVEDESIGN?: string;
   APP_ORIGIN_LIVEHUDDLE?: string;
+  APP_ORIGIN_LIVEKNOWLEDGE?: string;
   DATA_EXPORT_KEY_LIVEDIAGRAM?: string;
   DATA_EXPORT_KEY_LIVEPLANNER?: string;
   DATA_EXPORT_KEY_LIVEDOCUMENTS?: string;
   DATA_EXPORT_KEY_LIVEDESIGN?: string;
   DATA_EXPORT_KEY_LIVEHUDDLE?: string;
+  DATA_EXPORT_KEY_LIVEKNOWLEDGE?: string;
   INDEX?: Fetcher;
   MEDIA?: Fetcher;
   ACCOUNTS?: Fetcher;
@@ -41,6 +43,7 @@ const ORIGIN_OF: Record<App, keyof Env> = {
   livedocuments: 'APP_ORIGIN_LIVEDOCUMENTS',
   livedesign: 'APP_ORIGIN_LIVEDESIGN',
   livehuddle: 'APP_ORIGIN_LIVEHUDDLE',
+  liveknowledge: 'APP_ORIGIN_LIVEKNOWLEDGE',
 };
 
 const KEY_OF: Record<App, keyof Env> = {
@@ -49,6 +52,7 @@ const KEY_OF: Record<App, keyof Env> = {
   livedocuments: 'DATA_EXPORT_KEY_LIVEDOCUMENTS',
   livedesign: 'DATA_EXPORT_KEY_LIVEDESIGN',
   livehuddle: 'DATA_EXPORT_KEY_LIVEHUDDLE',
+  liveknowledge: 'DATA_EXPORT_KEY_LIVEKNOWLEDGE',
 };
 
 export function appOrigin(env: Env, app: App): string | undefined {

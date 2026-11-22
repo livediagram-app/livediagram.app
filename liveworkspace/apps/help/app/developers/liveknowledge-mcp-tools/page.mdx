@@ -1,0 +1,77 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { McpResultScene } from '@/editions/liveknowledge/components/illustrations/style-and-developers';
+
+export const metadata = helpMetadata({
+  title: 'The liveknowledge MCP Tools',
+  description:
+    'Every tool the liveknowledge MCP server gives an AI agent, from get_context and search_pages to suggest_edit and write_page, and the trust each answer carries.',
+  path: '/help/developers/liveknowledge-mcp-tools/',
+});
+
+<ArticleLayout path="developers/liveknowledge-mcp-tools" title="The liveknowledge MCP Tools" description="The tools an AI agent gets from the liveknowledge MCP server, what each returns and which scope it needs." categoryTitle="Developers" categorySlug="developers">
+
+The liveknowledge MCP server, at `https://mcp.liveknowledge.app/mcp`, speaks in pages. Every answer about a page or a passage says how far it can be trusted, so an agent can tell a verified answer from a stale one. To connect a client, see [Connecting an Agent](/help/knowledgebase/connecting-an-agent/).
+
+## The Page Tools
+
+| Tool           | What it does                                                                                                        | Scope     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- | --------- |
+| `get_context`  | The Always in Context pages, whole, as Markdown, in tree order and within 8,000 tokens; the caller's role and scopes; the Review Period. Call it first | `read`    |
+| `list_pages`   | The page tree: each page's id, title, depth, parent, subpage count, owner and trust, and the Review Period once     | `read`    |
+| `search_pages` | Passages that match a query: titles first, then passages, verified pages before others, each with its page and headings | `read`    |
+| `read_page`    | One page as Markdown, with the pages that link to it and its subpages                                               | `read`    |
+| `report_gap`   | Records a question the Knowledgebase does not answer, for Questions Nobody Could Answer. Changes no page            | `read`    |
+| `create_page`  | A new page from Markdown, under a parent or at the top level. Never Verified                                        | `suggest` |
+| `suggest_edit` | A change to a page, with a reason: replace a passage (`old_text` with `new_text`) or append. Waits for a person      | `suggest` |
+| `write_page`   | Replaces a page's writing with Markdown, or appends to it, at once. Never on a Verified or Review Due page          | `write`   |
+| `move_page`    | Moves a page and its subpages to another parent or the top level, before a named sibling or last                    | `write`   |
+
+A page is named by its id, or by its title where one page alone has that title. `[[Title]]` in Markdown is a link to the page of that title.
+
+## The Trust Fields
+
+Every page and passage in an answer carries:
+
+| Field            | Means                                                                    |
+| ---------------- | ------------------------------------------------------------------------ |
+| `verified`       | `verified`, `review-due` or `never-verified`                             |
+| `verified_at`    | When it was last verified                                                |
+| `verified_by`    | Who verified it (on `read_page`)                                         |
+| `review_due`     | When its review comes due, from the Knowledgebase's Review Period        |
+| `stale`          | `true` when the review is due                                            |
+| `conflicts_with` | The pages it disagrees with, while a disagreement is open                |
+
+`get_context` and `list_pages` also give the Review Period once, as `review_period`: `30 days`, `90 days`, `180 days`, `365 days` or `never`. No tool sets it.
+
+<Figure caption="What an agent reads back from search_pages: the passage, its page and heading, and its trust.">
+  <McpResultScene />
+</Figure>
+
+## Small Answers
+
+Answers are small unless the agent asks for more, and each names the tool to call next.
+
+| Tool           | By default                      | At most                 |
+| -------------- | ------------------------------- | ----------------------- |
+| `search_pages` | 8 passages                      | 20                      |
+| `list_pages`   | 100 pages                       | 500                     |
+| `read_page`    | The first 6,000 characters      | Pass `heading` for one section, or a larger `max_chars` |
+
+A search is at most 200 characters, a gap's question 1,000, a suggestion 20,000 characters with a reason of 500.
+
+## The Scopes
+
+`read` covers the five read tools; `suggest` adds `create_page` and `suggest_edit`; `write` adds `write_page` and `move_page`. A connection your AI tool makes holds `read` and `suggest`. Only an Editor grants `write`, for one connection in one Knowledgebase. A person's role still bounds the agent: a Viewer's agent only reads. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
+
+## The Knowledgebase Tools
+
+Besides the page tools, the server has the tools every liveworkspace app has, in a Knowledgebase's words: `find_documents`, `create_document`, `rename_document`, `share_document`, `archive_document`, `unarchive_document`, `delete_document`, `restore_document`, `list_trash` and `list_templates`, the comment tools `list_threads` and `change_threads`, and the picture tools `list_images`, `upload_image` and `delete_image`. Sharing, archiving and deleting a whole Knowledgebase need a full token, whatever the scopes.
+
+## Good to Know
+
+- Every read an agent makes is counted for [Connected Agents](/help/knowledgebase/connecting-an-agent/), under the name its client gives.
+- A search that finds nothing is recorded as a question nobody could answer.
+- The tool descriptions tell an agent what to do: call `get_context` first, prefer a verified passage, say so when it relies on a stale one, and report a gap rather than guess.
+
+</ArticleLayout>

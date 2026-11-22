@@ -21,18 +21,18 @@ the apps' old `events` tables are no longer read or written.
 
 The same three fields as before, plus the app it came from:
 
-| Field      | What it is                                                                                                                                                                               |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app`      | The app's site: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app` or `livehuddle.app` (`TELEMETRY_APPS`), or a held app's (`HELD_TELEMETRY_APPS`, empty today) |
-| `category` | The parent, such as `Document` or `Element`                                                                                                                                              |
-| `action`   | The verb, such as `Created` or `Added`                                                                                                                                                   |
-| `type`     | Optional. One short reference token, such as `Square`; never user content                                                                                                                |
-| `ts`       | Stamped by the service when the batch arrives                                                                                                                                            |
+| Field      | What it is                                                                                                                                                                                                    |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app`      | The app's site: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, `livehuddle.app` or `liveknowledge.app` (`TELEMETRY_APPS`), or a held app's (`HELD_TELEMETRY_APPS`, empty today) |
+| `category` | The parent, such as `Document` or `Element`                                                                                                                                                                   |
+| `action`   | The verb, such as `Created` or `Added`                                                                                                                                                                        |
+| `type`     | Optional. One short reference token, such as `Square`; never user content                                                                                                                                     |
+| `ts`       | Stamped by the service when the batch arrives                                                                                                                                                                 |
 
 There is no identity, IP address, owner id or document id. Each app keeps its own closed vocabulary
 in its own api-schema (`telemetry-schema.ts`), because its editors and its vocabulary change
 together. The service imports each sending app's vocabulary (livediagram's, liveplanner's,
-livedocuments', livedesign's and livehuddle's), and only stores an event that its app could have sent. The check
+livedocuments', livedesign's, livehuddle's and liveknowledge's), and only stores an event that its app could have sent. The check
 itself is one copy (`@liveworkspace/telemetry` `telemetryEventCheck`): each api-schema binds it to its categories,
 actions and its page-view, call-to-action and timing checks.
 
@@ -176,7 +176,7 @@ the app's to report, so each change is counted once.
 ## The dashboard
 
 `https://www.liveworkspace.app/telemetry` shows **All Apps**. `?app=livediagram.app`,
-`?app=liveplanner.app`, `?app=livedocuments.app`, `?app=livedesign.app` or `?app=livehuddle.app` opens one app's own dashboard, with all of
+`?app=liveplanner.app`, `?app=livedocuments.app`, `?app=livedesign.app`, `?app=livehuddle.app` or `?app=liveknowledge.app` opens one app's own dashboard, with all of
 its tabs, catalogues and explanations. Picking an app on the page updates the link.
 
 - **All Apps** adds every app's events together, in the shape of an app's own dashboard: the three windows (today,
@@ -376,9 +376,9 @@ the repo root runs the site with this Worker behind it, at http://localhost:3000
 
 ## Which apps send
 
-livediagram, liveplanner, livedocuments, livedesign and livehuddle send events, and each has its own dashboard
-data under `apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`,
-`livedesign/`, `livehuddle/`). Each folder's tests read that app's source: every event an emitter can send must be
+livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge send events, and each has its own
+dashboard data under `apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`,
+`livedesign/`, `livehuddle/`, `liveknowledge/`). Each folder's tests read that app's source: every event an emitter can send must be
 in its vocabulary and have a chart (`metric-emitters.test.ts`, `computed-emitters.ts`), and every
 event has an explanation (`event-explanation.test.ts`). An event of a removed feature goes in the app's
 `retired-events.ts`, and the dashboard drops it before any chart (`_shared/retired-events.ts`). livehuddle's checks also
@@ -433,7 +433,9 @@ Workers' `TELEMETRY_KEY`. The apps reach the service over HTTPS, not a service b
 An app registered before its launch ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch))
 goes in `HELD_TELEMETRY_APPS` instead of `TELEMETRY_APPS` for step 1: the service stores its events and takes its
 key, and the dashboard's app picker and All Apps view, which read `TELEMETRY_APPS`, leave it out, so step 3 waits
-for its launch. No app is held today. livehuddle was: it launched (Work Tracker #189) before its dashboard was
+for its launch. No app is held today. liveknowledge was never held: it joined `TELEMETRY_APPS` at its registration,
+with a dashboard started from livedocuments' (its fork emits the same events today), checked against its own
+api-schema's vocabulary (`@liveknowledge/api-schema`); its checks read no help edition, as it has none yet. livehuddle was: it launched (Work Tracker #189) before its dashboard was
 built, and moved into `TELEMETRY_APPS` with its dashboard (Work Tracker #400). It is checked against its own
 api-schema's vocabulary (`@livehuddle/api-schema`). Its dashboard has no MCP or CLI views, and its checks leave
 out livehuddle's `apps/mcp`, `apps/cli` and `packages/agent-verbs`: livehuddle drops its MCP server and CLI

@@ -14,7 +14,8 @@
     "liveplanner/tsconfig.base.json",
     "livedesign/tsconfig.base.json",
     "livedocuments/tsconfig.base.json",
-    "livehuddle/tsconfig.base.json"
+    "livehuddle/tsconfig.base.json",
+    "liveknowledge/tsconfig.base.json"
   ],
   "tasks": {
     "build": {
@@ -39,6 +40,7 @@
         "$TURBO_ROOT$/liveplanner/packages/**",
         "$TURBO_ROOT$/livedocuments/packages/**",
         "$TURBO_ROOT$/livedesign/packages/**",
+        "$TURBO_ROOT$/liveknowledge/packages/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -120,6 +122,8 @@
         "$TURBO_ROOT$/livedocuments/packages/**",
         "$TURBO_ROOT$/livedesign/apps/**",
         "$TURBO_ROOT$/livedesign/packages/**",
+        "$TURBO_ROOT$/liveknowledge/apps/**",
+        "$TURBO_ROOT$/liveknowledge/packages/**",
         "$TURBO_ROOT$/liveworkspace/apps/accounts/src/**",
         "$TURBO_ROOT$/packages/help-site/src/**",
         "$TURBO_ROOT$/packages/telemetry-client/src/**",
@@ -141,6 +145,7 @@
         "$TURBO_ROOT$/liveplanner/apps/marketing/**",
         "$TURBO_ROOT$/livedocuments/apps/marketing/**",
         "$TURBO_ROOT$/livedesign/apps/marketing/**",
+        "$TURBO_ROOT$/liveknowledge/apps/marketing/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
@@ -326,6 +331,39 @@
         "!$TURBO_ROOT$/**/next-env.d.ts",
         "!$TURBO_ROOT$/livedocuments/apps/marketing/generated/**",
         "!$TURBO_ROOT$/livedocuments/apps/marketing/public/licences/**"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
+    },
+    // liveknowledge: the same per-package rules as livediagram above, on its own paths.
+    "@liveknowledge/marketing#build": {
+      "dependsOn": [
+        "^build",
+        "@liveknowledge/editor#build",
+        "@liveknowledge/api#build",
+        "@liveknowledge/mcp#build",
+        "@liveknowledge/router#build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "$TURBO_ROOT$/pnpm-lock.yaml",
+        "$TURBO_ROOT$/liveknowledge/apps/**",
+        "$TURBO_ROOT$/liveknowledge/packages/**",
+        // The shared @liveworkspace/* packages ship in these bundles too.
+        "$TURBO_ROOT$/packages/**",
+        // Explicit root globs ignore .gitignore: keep build output out.
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results/**",
+        "!$TURBO_ROOT$/**/playwright-report/**",
+        "!$TURBO_ROOT$/**/next-env.d.ts",
+        "!$TURBO_ROOT$/liveknowledge/apps/marketing/generated/**",
+        "!$TURBO_ROOT$/liveknowledge/apps/marketing/public/licences/**"
       ],
       "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
     },

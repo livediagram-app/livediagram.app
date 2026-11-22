@@ -3,7 +3,7 @@
 liveworkspace.app is one static website. Every page is in it: the front door that says what
 liveworkspace is and sends people on to the app that fits their work, the public telemetry
 dashboard, and the sign-in, registration and consent pages every app sends people to. The apps
-(livediagram.app, liveplanner.app, livedocuments.app, livedesign.app, livehuddle.app) each keep their own marketing site for the
+(livediagram.app, liveplanner.app, livedocuments.app, livedesign.app, livehuddle.app, liveknowledge.app) each keep their own marketing site for the
 detail.
 
 ```
@@ -125,7 +125,8 @@ moves between them, and the one account that joins them.
    clockwise in the
    order work moves through them, and someone at work in each, drawn as that app shows them: a cursor in
    livediagram, livedocuments and livedesign, a ring and name on the card they hold in liveplanner (whose boards and
-   sheets draw no cursors), and a character in livehuddle. Each app there is a link to its
+   sheets draw no cursors), a character in livehuddle and a cursor in liveknowledge. The six sit round the hub as a
+   hexagon, clockwise from the top in the shared order. Each app there is a link to its
    site that lifts and rings in its accent on hover, and holds still while pointed at. On phones (below
    `sm`) it is left out, and the hero's words, calls to action and promises are centred. **Height:** from `sm`
    it fills the first screen under the 64px header, capped at 72rem and never shorter than its content, the words
@@ -157,7 +158,9 @@ moves between them, and the one account that joins them.
    selection and size, a home page in the brand, the palette, a photo Kai is cropping, and the inspector); livehuddle,
    the Space's **Team Pod** (an oak floor, a back wall with windows and a screen, the team round a meeting table with
    laptops and mugs, Maya talking inside her hearing ring, the Timer on the wall, Jo walking up from the plants and
-   the Call dock below, with no cursor).
+   the Call dock below, with no cursor); liveknowledge, a **Team Handbook** (the knowledgebase's pages as a tree, the
+   page "How we ship" with its trail, a line Jo is editing, a link to another page and a decision called out, and in
+   the margin an AI tool's question answered with the pages it read).
    Every logo is the app's own UI package `Brand`, with its hover
    shimmer, "live" in the app's deep shade on light and its own 400 on dark, which reads at AA on a dark card where its 500
    accent does not (`components/landing/AppLogo.tsx`). The three things are each app's headline features as it stands (livediagram's workshops, liveplanner's
@@ -221,7 +224,7 @@ sentence is that calls are never recorded, and livehuddle's "Relayed, never reco
 The terms have a Calls section saying the same in a sentence, and that calls may be limited to audio or paused (the
 [calls kill switch](../../../../livehuddle/docs/specs/016-platform/calls-kill-switch.md)). Every app is MIT-licensed, and the terms say so app by app. Wherever
 either page names all the apps (each page's description, the terms' opening and The software), it names every listed
-app, five today (livediagram, liveplanner, livedocuments, livedesign and livehuddle), and so do the site's own
+app, six today (livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge), and so do the site's own
 description (`app/layout.tsx`) and its install manifest; `app/app-lists.test.ts` fails when a listed app is missing from
 any of them. Each listed app has its own part under App by app, if only to say it does nothing beyond the rest. A
 sentence about a feature only some apps have (Image search: every app, but in liveplanner only its Forms builder) names just those. Both share

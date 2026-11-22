@@ -1,0 +1,82 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { TrustStates, VerifyAPage } from '@/editions/liveknowledge/components/illustrations/trust';
+
+export const metadata = helpMetadata({
+  title: 'Owners and Verifying a Page',
+  description:
+    'Give a Knowledgebase page an owner and verify it with one press. A verified page shows a tick, who vouched for it, and when its review comes due.',
+  path: '/help/knowledgebase/owners-and-verifying/',
+});
+
+<ArticleLayout path="knowledgebase/owners-and-verifying" title="Owners and Verifying a Page" description="Give a page an owner and press Verify to say it is right. Everyone sees who vouched for it and when." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+A Knowledgebase is only useful, to a person or to an AI agent, while it is right. So each page can say who vouches for it and when they last did. **Verifying** a page is how you say "I have read this and it is right today."
+
+<Figure caption="Before and after Verify: the row under the title gains a tick, who vouched for the page, and when its review comes due.">
+  <VerifyAPage />
+</Figure>
+
+## Verify a Page
+
+<Step n={1}>
+  Open the page and read it.
+</Step>
+
+<Step n={2}>
+  Press **Verify** in the row under the title. It is one press, with no confirmation.
+</Step>
+
+The row now shows a tick with "Verified by" and your name, and the date the review comes due. The page's row in the tree shows a tick too. If the page had no owner, you become its owner.
+
+**Verify** is also in the page's menu in [the page tree](/help/knowledgebase/the-page-tree/) and on the [Page Health](/help/knowledgebase/page-health/) card. On a page already verified, the button reads **Verify Again**: press it after re-reading the page to start a fresh review period.
+
+## The Three States
+
+<Figure caption="The three states a page can be in, as the row under its title shows each.">
+  <TrustStates />
+</Figure>
+
+| State              | When                                              | Shows as                                  |
+| ------------------ | ------------------------------------------------- | ----------------------------------------- |
+| **Verified**       | Verified, and the review is not yet due           | A tick and "Verified by" the verifier     |
+| **Review Due**     | The Review Period has passed since it was verified | An amber **Review Due** pill             |
+| **Never Verified** | Nobody has verified it                            | Nothing on the page; grey in the counts   |
+
+The state shows in three places: the row under the page's title, the page's row in the tree, and the card that shows when you hover a link to the page. Agents get it with every answer too. See [Review Due and the Review Period](/help/knowledgebase/review-due-and-the-review-period/).
+
+## The Owner
+
+A page's **owner** is the person answerable for it being right. It is not the same as the person who made the Knowledgebase.
+
+- Set or change the owner in **Owner** on the [Page Health](/help/knowledgebase/page-health/) card, or choose **No Owner**.
+- The owner must be someone who can open the Knowledgebase.
+- The owner is who gets the email when the page comes due for review, and who is asked when two pages disagree. See [Knowledge Health and Reminders](/help/knowledgebase/knowledge-health-and-reminders/).
+
+The owner and the verifier can be different people: anyone who is an Editor can verify a page they have checked.
+
+## Editing a Verified Page
+
+Writing on a verified page does not clear its tick: fixing a typo should not undo someone's review. When more than a fifth of the writing has changed since it was verified, "Changed since verified" shows beside the tick until someone verifies the page again.
+
+## Verified Pages and Agents
+
+An agent never rewrites a page that is **Verified** or **Review Due**, even when an Editor has allowed it to write. It suggests the edit and a person accepts it. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
+
+## Who Can Do What
+
+| Action                              | Editor | Participant | Viewer |
+| ----------------------------------- | ------ | ----------- | ------ |
+| See a page's state and its verifier | Yes    | Yes         | Yes    |
+| Verify a page                       | Yes    | No          | No     |
+| Change a page's owner               | Yes    | No          | No     |
+
+Verify needs an account, because it says who vouches for the page: an Editor who is not signed in has no **Verify** button.
+
+## Good to Know
+
+- A new page, an imported page and a page an agent made are all **Never Verified** with no owner.
+- A Knowledgebase kept Offline has no Verify. See [Offline](/help/privacy-and-security/offline-mode/).
+- Accepting an agent's suggested edit does not verify the page.
+
+</ArticleLayout>

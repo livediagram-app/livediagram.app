@@ -2,7 +2,7 @@ name = "liveworkspace-help"
 # The liveworkspace Cloudflare account, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 compatibility_date = "2026-05-29"
-# The one help centre (liveworkspace/docs/specs/017-help/help-centre.md, blueprint "The Worker"): six static
+# The one help centre (liveworkspace/docs/specs/017-help/help-centre.md, blueprint "The Worker"): seven static
 # exports in ./dist (one per scope, written by scripts/build-scopes.mjs) behind a small Worker that picks the scope
 # (the x-help-app header an app's router sends, else All Apps), answers the redirect map and the 308 for an article
 # outside the scope, and serves the scope's files.

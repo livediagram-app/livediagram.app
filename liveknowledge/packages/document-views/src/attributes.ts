@@ -1,0 +1,101 @@
+// The attributes of one element's line, in order (docs/specs/024-agents/blueprints/document-views.md
+// "Attributes", VW14): draft, icon, link, alt, locked, action, comments, then style. Element links and notes are
+// retired (docs/specs/009-elements/links-and-notes-retired.md): a stored note is never printed, and a link only on a
+// link card or a video, whose link is their content.
+import type { Element } from '@liveknowledge/document';
+import { ACTION_CUT_CHARS, ALT_CUT_CHARS } from './constants';
+import {
+  flagField,
+  objectField,
+  stringField,
+  textField,
+  threadOf,
+} from '@liveworkspace/document-views/fields';
+import { styleAttributesOf, type StyleBaselines } from './style-attributes';
+import { attrValue, jsonString } from '@liveworkspace/document-views/text';
+import {
+  countAttribute,
+  flagAttribute,
+  type ViewAttribute,
+} from '@liveworkspace/document-views/view-attribute';
+
+export type AttributeContext = {
+  tabRefOf: (tabId: string) => string;
+  // Present when the request asks for style.
+  style: StyleBaselines | null;
+};
+
+function linkAttribute(el: Element, tabRefOf: (tabId: string) => string): ViewAttribute[] {
+  const link = el.type === 'link-card' || el.type === 'video' ? objectField(el, 'link') : null;
+  if (link === null) return [];
+  const tabId = stringField(link, 'tabId');
+  const target = ((): string | null => {
+    switch (stringField(link, 'kind')) {
+      case 'url':
+        return stringField(link, 'url');
+      case 'tab':
+        return tabId === null ? null : `tab:${tabRefOf(tabId)}`;
+      case 'element': {
+        const elementId = stringField(link, 'elementId');
+        return tabId === null || elementId === null ? null : `tab:${tabRefOf(tabId)}#${elementId}`;
+      }
+      case 'document': {
+        const documentId = stringField(link, 'documentId');
+        return documentId === null ? null : `doc:${documentId}`;
+      }
+      default:
+        return null;
+    }
+  })();
+  return target === null ? [] : [{ key: 'link', value: target, text: `link=${attrValue(target)}` }];
+}
+
+function cutAttribute(key: string, text: string | null, max: number): ViewAttribute[] {
+  return text === null ? [] : [{ key, value: text, text: `${key}=${jsonString(text, max)}` }];
+}
+
+function actionAttributes(el: Element): ViewAttribute[] {
+  const action = objectField(el, 'action');
+  if (action === null) return [];
+  const name = stringField(action, 'name') ?? '';
+  const assignee = objectField(action, 'assignee');
+  const who = assignee === null ? null : textField(assignee, 'name');
+  const text = `action=${jsonString(name, ACTION_CUT_CHARS)}${who === null ? '' : ` @${attrValue(who)}`}`;
+  const done = stringField(action, 'status') === 'done';
+  return [{ key: 'action', value: name, text }, ...(done ? [flagAttribute('done')] : [])];
+}
+
+function commentsAttribute(el: Element): ViewAttribute[] {
+  const thread = threadOf(el);
+  if (thread === null) return [];
+  return [
+    countAttribute(
+      'comments',
+      `${thread.comments.length} ${thread.resolved ? 'resolved' : 'open'}`,
+    ),
+  ];
+}
+
+export function attributesOf(el: Element, context: AttributeContext): ViewAttribute[] {
+  const iconId = textField(el, 'iconId');
+  return [
+    ...(iconId === null ? [] : [{ key: 'icon', value: iconId, text: `icon=${attrValue(iconId)}` }]),
+    ...linkAttribute(el, context.tabRefOf),
+    // A picture frame with no picture in it, said: a layout's frames start empty, and unmarked they read as done.
+    ...(el.type === 'image' && textField(el, 'imageId') === null && textField(el, 'src') === null
+      ? [flagAttribute('no-picture')]
+      : []),
+    ...(el.type === 'image' ? cutAttribute('alt', textField(el, 'alt'), ALT_CUT_CHARS) : []),
+    ...(flagField(el, 'locked') ? [flagAttribute('locked')] : []),
+    ...actionAttributes(el),
+    ...commentsAttribute(el),
+    ...(context.style === null ? [] : styleAttributesOf(el, context.style)),
+  ];
+}
+
+// Whether the budget's "attributes dropped" state keeps this one: only an open comment count (VW38).
+export function isOpenCommentsAttribute(attribute: ViewAttribute): boolean {
+  return (
+    attribute.key === 'comments' && attribute.value !== null && attribute.value.endsWith(' open')
+  );
+}

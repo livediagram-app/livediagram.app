@@ -1,0 +1,193 @@
+name = "liveknowledge-router"
+# The liveworkspace Cloudflare account, which also hosts liveknowledge.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+# The public hostnames (docs/specs/016-platform/deployment.md "Custom domain"), attached by
+# `wrangler deploy` with their DNS records and certificates. www is the canonical origin
+# links are built from (APP_BASE_URL in apps/api/hosted-vars.json), so it is attached too.
+routes = [
+  { pattern = "liveknowledge.app", custom_domain = true },
+  { pattern = "www.liveknowledge.app", custom_domain = true },
+]
+# No public *.workers.dev address or preview URLs: a copy there would skip the zone's WAF and
+# rate-limit rules. The Worker is reached only at its custom domain or over a service binding
+# (docs/specs/016-platform/deployment.md "Custom domain").
+workers_dev = false
+preview_urls = false
+
+# Service bindings to the marketing and live apps.
+# The `service` values must match the deployed Worker names of each downstream app.
+# Production wiring is TBD — these placeholders will be revisited when the apps
+# are first deployed. See docs/specs/016-platform/router-app.md.
+
+[[services]]
+binding = "MARKETING"
+service = "liveknowledge-marketing"
+
+[[services]]
+binding = "EDITOR"
+service = "liveknowledge-editor"
+
+[[services]]
+binding = "API"
+service = "liveknowledge-api"
+
+[[services]]
+binding = "HELP"
+service = "liveworkspace-help"
+
+# liveworkspace's Workers, reached over bindings rather than their public routes, which can stall Worker to
+# Worker (liveworkspace/docs/specs/002-architecture/blueprints/architecture.md "Which Worker a forward reaches").
+# Each name must be a deployed Worker on this account, or the deploy fails.
+
+# the Explorer, the Community page, the sign-in pages and /_liveworkspace
+[[services]]
+binding = "WORKSPACE_SITE"
+service = "liveworkspace-site"
+
+# the sign-in, account and workbench calls (/api/auth/*, /api/account/*)
+[[services]]
+binding = "WORKSPACE_ACCOUNTS"
+service = "liveworkspace-accounts"
+
+# /api/index/*
+[[services]]
+binding = "WORKSPACE_INDEX"
+service = "liveworkspace-index"
+
+# /api/drive/*
+[[services]]
+binding = "WORKSPACE_DRIVE"
+service = "liveworkspace-drive"
+
+# previews, the share doors and /oembed's card
+[[services]]
+binding = "WORKSPACE_MEDIA"
+service = "liveworkspace-media"
+
+# the Community page's head and sitemap reads
+[[services]]
+binding = "WORKSPACE_COMMUNITY"
+service = "liveworkspace-community"
+
+
+# Local dev (`wrangler dev --env local --port 3600`, the workspace `dev`
+# script): service bindings can't reach the local Next dev servers, so this
+# environment defines none and sets plain HTTP origins instead. The worker
+# falls back to proxying these when a binding is absent. See docs/specs/016-platform/router-app.md.
+[env.local]
+workers_dev = false
+preview_urls = false
+
+[env.local.vars]
+# Tells the router it fronts `next dev`, whose chunks are not content-hashed, so their own
+# no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
+DEPLOY_ENV = "local"
+# liveworkspace.app, run locally by liveworkspace/apps/site: its Explorer is served at /explorer while the app's
+# switch is on (liveworkspace/docs/specs/004-index/one-explorer.md); production's (https://www.liveworkspace.app) needs no var.
+WORKSPACE_ORIGIN = "http://localhost:3000"
+# liveworkspace's Community service behind the local site (it forwards /api/community): the Community page's head
+# and its sitemap read it (liveworkspace/docs/specs/007-community/community.md "Search engines").
+COMMUNITY_URL = "http://localhost:3000/api/community"
+MARKETING_ORIGIN = "http://127.0.0.1:3601"
+EDITOR_ORIGIN = "http://127.0.0.1:3602"
+API_ORIGIN = "http://127.0.0.1:9287"
+# /telemetry redirects to the central dashboard (liveworkspace/docs/specs/008-telemetry/telemetry.md), run locally by
+# liveworkspace/apps/site; production's needs no var.
+TELEMETRY_DASHBOARD_URL = "http://localhost:3000/telemetry"
+HELP_ORIGIN = "http://127.0.0.1:3020"
+# The central index `/api/index/*` forwards to (liveworkspace/docs/specs/004-index/one-explorer.md), run locally by
+# liveworkspace/apps/index; production's (https://www.liveworkspace.app) needs no var.
+INDEX_ORIGIN = "http://127.0.0.1:8793"
+# liveworkspace's Google Drive mirror (`pnpm dev` in liveworkspace/apps/drive): `/api/drive/*` goes there.
+DRIVE_ORIGIN = "http://127.0.0.1:3011"
+# liveworkspace's media service (`pnpm dev` in liveworkspace/apps/media), which serves every app's previews:
+# `/api/previews/*` and a share link's image.svg, image.png and card go there (liveworkspace/docs/specs/006-media/previews.md).
+PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
+
+# ---------------------------------------------------------------------------
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `liveknowledge-router-staging` and fronts
+# https://staging.liveknowledge.app, its custom domain declared below (routes are
+# non-inheritable, so production's two never reach staging).
+#
+# EVERY `service` below carries the `-staging` suffix. Service bindings are
+# non-inheritable, so these ten are the staging router's only downstreams,
+# but a suffix dropped from one of them is the worst failure this repo can
+# produce: a staging frontend writing to the PRODUCTION database, with
+# nothing in the UI to say so. Read them against the ten above before
+# changing anything here; `pnpm staging:check` prints the resolved binding table.
+# ---------------------------------------------------------------------------
+
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "liveknowledge-router-staging"
+routes = [{ pattern = "staging.liveknowledge.app", custom_domain = true }]
+workers_dev = false
+preview_urls = false
+
+[[env.staging.services]]
+binding = "MARKETING"
+service = "liveknowledge-marketing-staging"
+
+[[env.staging.services]]
+binding = "EDITOR"
+service = "liveknowledge-editor-staging"
+
+[[env.staging.services]]
+binding = "API"
+service = "liveknowledge-api-staging"
+
+[[env.staging.services]]
+binding = "HELP"
+service = "liveworkspace-help-staging"
+
+# liveworkspace's Workers, reached over bindings rather than their public routes, which can stall Worker to
+# Worker (liveworkspace/docs/specs/002-architecture/blueprints/architecture.md "Which Worker a forward reaches").
+# Each name must be a deployed Worker on this account, or the deploy fails.
+
+# the Explorer, the Community page, the sign-in pages and /_liveworkspace
+[[env.staging.services]]
+binding = "WORKSPACE_SITE"
+service = "liveworkspace-site-staging"
+
+# the sign-in, account and workbench calls (/api/auth/*, /api/account/*)
+[[env.staging.services]]
+binding = "WORKSPACE_ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+# /api/index/*
+[[env.staging.services]]
+binding = "WORKSPACE_INDEX"
+service = "liveworkspace-index-staging"
+
+# /api/drive/*
+[[env.staging.services]]
+binding = "WORKSPACE_DRIVE"
+service = "liveworkspace-drive-staging"
+
+# previews, the share doors and /oembed's card
+[[env.staging.services]]
+binding = "WORKSPACE_MEDIA"
+service = "liveworkspace-media-staging"
+
+# the Community page's head and sitemap reads
+[[env.staging.services]]
+binding = "WORKSPACE_COMMUNITY"
+service = "liveworkspace-community-staging"
+
+
+# Marks this router as the staging one. The worker reads it to stamp
+# `X-Robots-Tag: noindex, nofollow` on every response, which is what keeps a
+# public staging mirror out of search results (docs/specs/016-platform/staging-environment.md). Set ONLY here —
+# production's router has no DEPLOY_ENV, so the header is impossible there.
+[env.staging.vars]
+DEPLOY_ENV = "staging"
+WORKSPACE_ORIGIN = "https://staging.liveworkspace.app"
+COMMUNITY_URL = "https://staging.liveworkspace.app/api/community"
+TELEMETRY_DASHBOARD_URL = "https://staging.liveworkspace.app/telemetry"
+INDEX_ORIGIN = "https://staging.liveworkspace.app"
+DRIVE_ORIGIN = "https://staging.liveworkspace.app"
+PREVIEWS_ORIGIN = "https://staging.liveworkspace.app"

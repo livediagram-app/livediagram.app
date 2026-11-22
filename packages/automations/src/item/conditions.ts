@@ -1,6 +1,7 @@
 // The conditions every app has (liveworkspace/docs/specs/018-automations/automations.md "Conditions every app has";
 // blueprint item-engine.md "The shared kinds"): Tab, Who Did It, Day of Week and Text. Pure.
 
+import { inTabWords } from './tab-word';
 import { localDay, weekdayOf } from '../dates';
 import {
   AUTOMATION_LIST_MAX,
@@ -52,13 +53,16 @@ const tab = defineCondition<ItemTabCondition & ItemPart>({
   }),
   defaults: () => ({ kind: 'tab', tabs: [] }),
   words: (c, names) => [
-    { word: `tab ${isOrNot(c.not)}` },
+    { word: `${inTabWords('tab', names.itemWord)} ${isOrNot(c.not)}` },
     { chip: sentenceOrList(c.tabs.map((t) => refName(names, 'tab', t))) },
   ],
   holds: (c, ctx) => {
     const among = ctx.event.tab !== undefined && c.tabs.includes(ctx.event.tab);
     const named = sentenceOrList(c.tabs.map((t) => refName(ctx.names, 'tab', t)));
-    return { ok: c.not ? !among : among, text: `Tab ${isOrNot(c.not)} ${named}` };
+    return {
+      ok: c.not ? !among : among,
+      text: `${inTabWords('Tab', ctx.names.itemWord)} ${isOrNot(c.not)} ${named}`,
+    };
   },
 });
 

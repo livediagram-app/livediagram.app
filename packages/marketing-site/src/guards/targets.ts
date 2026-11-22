@@ -6,7 +6,13 @@ import { fileURLToPath } from 'node:url';
 // pages they render. One guard, one rule, for all five, so a product can never drift from another.
 const REPO = fileURLToPath(new URL('../../../../', import.meta.url));
 
-export const PRODUCTS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'] as const;
+export const PRODUCTS = [
+  'livediagram',
+  'liveplanner',
+  'livedocuments',
+  'livedesign',
+  'liveknowledge',
+] as const;
 
 export type GuardTarget = {
   name: string;

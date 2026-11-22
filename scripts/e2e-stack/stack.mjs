@@ -65,7 +65,17 @@ export function runE2EStack(settings) {
 
   const INDEX_DIR = path.resolve(root, '..', 'liveworkspace', 'apps', 'index');
   // The index's local D1 for this stack, apart from a developer's `wrangler dev` state.
-  const INDEX_STATE = path.join(INDEX_DIR, '.wrangler', 'e2e-state');
+  // E2E_STATE_SUFFIX names a second stack's own state (the index's D1, the api's Durable Objects, the wrangler dev
+  // registry), so a stack kept up for a person to look at never shares or wipes the state of a test run beside it.
+  // Unset, the paths are the ones every suite and doc names.
+  const STATE_SUFFIX = /^[a-z0-9-]{1,24}$/.test(process.env.E2E_STATE_SUFFIX ?? '')
+    ? process.env.E2E_STATE_SUFFIX
+    : null;
+  const INDEX_STATE = path.join(
+    INDEX_DIR,
+    '.wrangler',
+    STATE_SUFFIX ? `e2e-state-${STATE_SUFFIX}` : 'e2e-state',
+  );
 
   // liveworkspace's site, whose Explorer production serves at the product's own /explorer (the router's
   // routeToWorkspace, @liveworkspace/sites/workspace-proxy): its static export, when built. E2E_WORKSPACE_SITE_OUT
@@ -351,6 +361,7 @@ export function runE2EStack(settings) {
         String(API_PORT),
         '--inspector-port',
         String(ports.apiInspector),
+        ...(STATE_SUFFIX ? ['--persist-to', `.wrangler/e2e-state-${STATE_SUFFIX}`] : []),
         // Verify access and guest tokens against the stack's own key (the accounts stand-in above), never a
         // real accounts Worker a developer's .dev.vars may name. The client id and secret also turn the
         // guest handoff (/api/auth/guest) on, to the stand-in's.
@@ -394,6 +405,11 @@ export function runE2EStack(settings) {
       console.warn(
         `[e2e] liveworkspace's site is not built (${WORKSPACE_SITE_DIR}): /explorer answers 404 until it is`,
       );
+    }
+    if (STATE_SUFFIX && !settings.media) {
+      const registry = path.join(INDEX_DIR, '.wrangler', `e2e-registry-${STATE_SUFFIX}`);
+      rmSync(registry, { recursive: true, force: true });
+      process.env.WRANGLER_REGISTRY_PATH = registry;
     }
     if (settings.media) {
       // The stack's own wrangler dev registry, so a service binding (media's INDEX) reaches this stack's Workers,

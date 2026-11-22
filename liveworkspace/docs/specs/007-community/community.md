@@ -1,7 +1,8 @@
 # Community
 
 Every liveworkspace product has a Community: **livediagram**, **liveplanner**, **livedocuments**,
-**livedesign** and **livehuddle** (owner, 2026-11-02; launched with Work Tracker #189). Each keeps its listings in one service, whose API is **liveworkspace.app/api/community**. The
+**livedesign**, **livehuddle** (owner, 2026-11-02; launched with Work Tracker #189) and **liveknowledge** (since its
+registration, [liveknowledge's platform registration](../../../../liveknowledge/docs/specs/016-platform/platform-registration.md)). Each keeps its listings in one service, whose API is **liveworkspace.app/api/community**. The
 service stores them in its own D1 database. The pages are liveworkspace.app's too: one Community page, built once in
 the site and served under every app's address by that app's router, the way the Explorer is (owner, 2026-11-06; "One
 page for every app" below). On an app's address it shows that app's posts first, with All Apps a click away; on
@@ -170,6 +171,7 @@ posts to the closest new id (below), so a retired id is only a row the migration
 | `livedocuments.app` | `careers`: Careers, `events`: Events, `home`: Home, `learning`: Learning, `marketing`: Marketing, `pitches`: Pitches, `plans`: Plans, `reports`: Reports, `speeches`: Talks, `team`: Teams                                                                                          |
 | `livedesign.app`    | `branding`: Branding, `health`: Health and Fitness, `media`: Music and Video, `photos`: Photos, `shopping`: Shopping, `onboarding`: Sign Up and Onboarding, `social`: Social and Messaging, `travel`: Travel and Transport, `websites`: Websites, `work`: Work and Productivity     |
 | `livehuddle.app`    | `campus`: Campus, `events`: Events, `games`: Games Rooms, `homes`: Homes, `office`: Office, `outdoor`: Outdoor, `recreation`: Recreation, `venues`: Venues                                                                                                                          |
+| `liveknowledge.app` | `engineering`: Engineering, `handbooks`: Handbooks, `onboarding`: Onboarding, `product`: Product, `support`: Support                                                                                                                                                                |
 
 ### Moving to the template categories
 
@@ -261,7 +263,7 @@ only the Question category speaks of questions and answers (owner, 2026-11-16).
 
 - **Category**, what kind of post it is (`FORUM_CATEGORIES`): **Question**, **Tips & Tricks**, **Feature Request**,
   **Bug Report**, **Show & Tell** and **General**. A new post starts as a Question.
-- **App**, which app it is about: one of `COMMUNITY_APPS` (`livediagram.app` … `livehuddle.app`), or none (**Any
+- **App**, which app it is about: one of `COMMUNITY_APPS` (`livediagram.app` … `liveknowledge.app`), or none (**Any
   App**, a post about liveworkspace or every app). On an app's address a new post starts on that app; on
   liveworkspace.app, on Any App. Wherever an app is shown (the list's rows, the topic, the composer's picker, the
   list's App filter) it is shown by its logo and wordmark, as the site's header draws it; Any App by the words alone.
@@ -430,7 +432,7 @@ Every route is under `/api/community`. Answers are JSON; errors are `{ "error": 
 ### Public routes
 
 Each one names its app with `?app=livediagram.app` (or `liveplanner.app`, `livedocuments.app`, `livedesign.app`,
-`livehuddle.app`); without one the answer is
+`livehuddle.app`, `liveknowledge.app`); without one the answer is
 `400 invalid_app`, and another app's post answers `404`. The gallery's two reads also take `?app=all`, the Community
 page's All Apps: `GET /posts` lists every app's public posts (each naming its `app`) and `GET /facets` counts them;
 any other route with `app=all` answers `400 invalid_app`. Likes and reports carry the browser's
@@ -596,8 +598,9 @@ local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local
 `corepack pnpm dev:workspace` from the repo root runs it behind the site at
 http://localhost:3000/api/community, and `corepack pnpm dev:community` runs it alone. Point livediagram's
 api at it with `COMMUNITY_URL=http://localhost:8791/api/community` and
-`COMMUNITY_KEY=dev-livediagram-community-key` in `apps/api/.dev.vars` (livedocuments', livedesign's and livehuddle's apis
-the same, with `dev-livedocuments-community-key`, `dev-livedesign-community-key` and `dev-livehuddle-community-key`). The
+`COMMUNITY_KEY=dev-livediagram-community-key` in `apps/api/.dev.vars` (livedocuments', livedesign's, livehuddle's and liveknowledge's apis
+the same, with `dev-livedocuments-community-key`, `dev-livedesign-community-key`, `dev-livehuddle-community-key` and
+`dev-liveknowledge-community-key`). The
 Community page is the site's (http://localhost:3000/community, and each app's router's `/community`), which reads the
 service through the site's own `/api/community`. Development accepts writes from any
 `localhost` page and skips the edge cache.

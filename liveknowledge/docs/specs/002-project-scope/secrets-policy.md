@@ -1,0 +1,93 @@
+# Secrets policy
+
+**This repository is public.** Source code is visible to the world. Therefore:
+
+> **No secret may ever live in source code.** No API keys, no tokens, no passwords, no OAuth client secrets, no signing keys, no service-account JSON.
+
+This is non-negotiable. The same rule applies to README examples, test fixtures, comments, and commit history.
+
+## Where secrets go
+
+| Environment            | Mechanism                                                         |
+| ---------------------- | ----------------------------------------------------------------- |
+| Local development      | `.env.local` (gitignored) per app/worker                          |
+| Cloudflare Workers     | `wrangler secret put`, never in `wrangler.toml`                   |
+| CI / Deploy            | The monorepo's GitHub repository secret, below                    |
+| Client-side JS bundles | **Only** values prefixed `NEXT_PUBLIC_*` that are safe to publish |
+
+### GitHub Actions secrets
+
+The monorepo's deploy ([Deployment](../016-platform/deployment.md) "Credentials") holds one:
+
+| Secret                 | Purpose                                                                                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN` | A Cloudflare API token for the liveworkspace account (pinned as `account_id` in every `wrangler.toml`), with Workers Scripts edit rights. |
+
+A deploy writes code and plain vars only: the worker secrets below are set on each Worker and survive every deploy.
+
+## Worker secrets
+
+Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([Staging environment](../016-platform/staging-environment.md): worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored), **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking (local dev, staging; see [03](open-source-and-business-model.md)).
+
+| Secret                                          | Worker          | Absent means                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | Guest-only mode: nobody can sign in and no guest token can be had, so documents stay Offline ([04](../014-identity/auth-and-guest-access.md))                                                                                                                                                                                |
+| `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                                                                                                                                                            |
+| `INDEX_KEY`                                     | api             | The document rooms cannot push summaries to the index, and API tokens cannot be given grants ([One Explorer](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#reaching-the-index))                                                                                                                   |
+| `TELEMETRY_KEY`                                 | api **and** mcp | The workers send no telemetry ([22](../017-telemetry/telemetry.md))                                                                                                                                                                                                                                                          |
+| `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                                                                                                                                                                                                 |
+| `AI_KEY_SECRET`                                 | api             | No knowledgebase can keep its own AI key (Claude's or OpenAI's): setting one and Ask answer `ask_unavailable`; search and everything else work ([Search and Ask](../030-knowledgebase/search-and-ask.md)). Generate with `openssl rand -hex 32`. Changing it makes every stored key unreadable: each team sets its key again |
+| `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export documents as files or import them ([drive.md](../../../../liveworkspace/docs/specs/005-drive/drive.md#the-apps))                                                                                                                                                                  |
+| `DATA_EXPORT_KEY`                               | api             | liveworkspace's data export cannot read documents' comment threads with its own key (the index's key still opens the export door) ([data-export.md](../../../../liveworkspace/docs/specs/003-accounts/data-export.md))                                                                                                       |
+
+Email needs no secret: the api sends through Cloudflare Email Service's `send_email` binding `EMAIL`, declared in `wrangler.toml`, and without it all transactional email is inert ([64](../014-identity/transactional-email.md), [liveworkspace/docs/specs/003-accounts/email.md](../../../../liveworkspace/docs/specs/003-accounts/email.md)).
+
+`TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and as liveworkspace's telemetry service's `TELEMETRY_KEY_LIVEKNOWLEDGE`). A mismatch is silent (the posts are simply not stored), so verify with `wrangler secret list` on both rather than assuming. `MEDIA_KEY` likewise matches liveworkspace's media service's `MEDIA_KEY_LIVEKNOWLEDGE`; a mismatch there is loud, as every image route answers 503. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
+
+Non-secret configuration (`TELEMETRY_ENABLED`, `TELEMETRY_URL`, `MEDIA_URL`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only liveknowledge.app runs with (`TELEMETRY_ENABLED`, its liveworkspace service URLs) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile").
+
+`ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are set the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
+
+## What is "safe to publish" client-side
+
+Some keys are designed to be public; they go in `NEXT_PUBLIC_*` vars and end up in the bundle:
+
+- Public URLs (`NEXT_PUBLIC_API_BASE`, etc.).
+
+If a value's documentation calls it "public", "publishable", or "client", it's fine for client bundles.
+
+## What must stay server-side
+
+Never imported in client code, never bundled into the static export:
+
+- Every secret in the table above.
+- Durable Object storage (always via a Worker; the browser never holds storage credentials).
+- Any signing / encryption key.
+
+Workers and server-only code read these from `env` bindings, not from `process.env`-style imports in shared code.
+
+## `.env.example`
+
+Each app or worker that needs env vars ships a `.env.example` documenting **which variables are required** with placeholder values:
+
+```
+# Where the editor's api lives; empty means same-origin /api
+NEXT_PUBLIC_API_BASE=
+# (no secret keys here; those go in the Cloudflare dashboard)
+```
+
+`.env.local` is gitignored. `.env.example` is committed.
+
+## If a secret leaks
+
+1. **Rotate immediately** in the relevant provider (the accounts Worker's client secret, Cloudflare, etc.).
+2. Update the secret in the env-var store (`wrangler secret put`, Pages dashboard).
+3. Force-push and `git filter-repo` are **not** sufficient: rotation comes first because Git history is forever public.
+4. Open a tracking note in specs (or wherever incidents live, TBD) to document what leaked, when, and what was rotated.
+
+## Tooling
+
+**Status: Planned.** Not built yet; no secret scanner or bundle check runs today.
+
+- Pre-commit hook scanning for likely secrets (`gitleaks` or similar), once there are enough secrets in dev that scanning earns its keep.
+- CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`).

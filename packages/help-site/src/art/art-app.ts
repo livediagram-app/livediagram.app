@@ -2,7 +2,8 @@
 // (liveworkspace/apps/help/lib/scope.generated.ts), so the shared primitives draw that app's canvas: livehuddle's
 // tiled floor and sticky notes, the dot grid elsewhere. Read at call time so a test can switch it.
 
-export type ArtApp = 'livediagram' | 'livedesign' | 'livedocuments' | 'liveplanner' | 'livehuddle';
+export type ArtApp =
+  'livediagram' | 'livedesign' | 'livedocuments' | 'liveplanner' | 'livehuddle' | 'liveknowledge';
 
 const APPS: readonly string[] = [
   'livediagram',
@@ -10,6 +11,7 @@ const APPS: readonly string[] = [
   'livedocuments',
   'liveplanner',
   'livehuddle',
+  'liveknowledge',
 ];
 
 /** The app the help is built for, or undefined under All Apps (and in a test that sets none). */

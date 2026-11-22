@@ -1,0 +1,336 @@
+'use client';
+
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
+import { pageImageBlurSigma } from '@liveknowledge/document';
+import { useBlurredPageImage } from '@liveworkspace/workbench/hooks/canvas/useBlurredPageImage';
+import { pageImageSrc } from '@/lib/page-image-paint';
+import { memo } from 'react';
+import { FirstPageChoice } from './FirstPageChoice';
+import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/EmptyPageInvite';
+import { layoutInviteShows } from '@/lib/layout-invite';
+import { track } from '@/lib/telemetry';
+import { PageMotionLayer } from './PageMotionLayer';
+import { PageBreadcrumb, usePageHasAncestors } from '@/components/page-tree/PageBreadcrumb';
+import { PageSheetTitleBar, steady } from './PageSheetTitleBar';
+import { useQuickStyleBarRoom } from '@/lib/quick-style-bar-slots';
+import {
+  appearanceNamed,
+  BREADCRUMB_MIN,
+  LABEL_MIN,
+  titleBarFixedRoom,
+  titleBarNamed,
+} from './page-title-bar-room';
+import {
+  articleBodyLinePx,
+  articleMarginPx,
+  articleTopMarginPx,
+  pageIsDark,
+  pageKindOf,
+  type ArticleStyle,
+  type LaidOutPage,
+  type PageBackground,
+  type PageKind,
+  type ThemeBackgroundPreset,
+} from '@liveknowledge/document';
+import type { PageLayoutId } from '@liveknowledge/templates';
+import type { PageDeckControls, PageEdits } from '@/hooks/editor/usePagesMode';
+import { pageSheetStyle } from '@/lib/page-paint';
+import type { ArticleStyleChange } from '@/hooks/editor/useArticles';
+import { pageBandLayout } from '@/lib/article/article-band-layout';
+import { PageBands } from './article/PageBands';
+
+// Canvas px the letterbox's black reaches past the presented sheet: past any screen at any zoom.
+const LETTERBOX_SPREAD = 100_000;
+
+/** What a page's sheet does, through handles that keep their identity across the editor's renders (CanvasPages'
+ *  useStableCallbacks): each runs the newest version when called, never during render. */
+export type PageSheetActions = {
+  goToPage: (page: LaidOutPage) => void;
+  toggle: (pageId: string) => void;
+  ask: (pageId: string, row: string) => void;
+  cogRef: (pageId: string, el: HTMLButtonElement | null) => void;
+  layoutsOpenChange: (pageId: string, open: boolean) => void;
+  requestLayouts: (pageId: string) => void;
+  applyLayout: (pageId: string, layout: PageLayoutId) => void;
+  previewLayout: (pageId: string, layout: PageLayoutId | null) => void;
+  setBackground: (pageId: string, patch: Partial<PageBackground>) => void;
+  previewBackground: (pageId: string, patch: Partial<PageBackground> | null) => void;
+  applyBackgroundToAll: (pageId: string) => void;
+  setLocked: (pageId: string, locked: boolean) => void;
+  choosePageKind: (pageId: string, kind: PageKind) => void;
+  setArticleStyle: (flow: string, change: ArticleStyleChange) => void;
+  previewArticleStyle: (flow: string, style: ArticleStyle | null) => void;
+  focusPage: (pageId: string) => void;
+};
+
+/** One page's sheet and chrome, from what that page shows alone (canvas-performance.md "A render of the pages
+ *  re-renders only the pages it changed"). Every prop is a value or a handle that keeps its identity, so a render of
+ *  the row that leaves this page as it was skips it. */
+export type PageSheetProps = {
+  page: LaidOutPage;
+  // The row's pages (one array per change of the stored pages): an article page's header and footer number it
+  // among its article's own.
+  pages: readonly LaidOutPage[];
+  // More than one page: an unnamed page's cog names its number.
+  many: boolean;
+  zoom: number;
+  bare: boolean;
+  placing: boolean;
+  mobile: boolean;
+  letterbox: boolean;
+  background: PageBackground | undefined;
+  pictureOf: (imageId: string) => string | undefined;
+  // Its name (its own, else its article's title).
+  shownName: string | undefined;
+  // An article page's style as shown (a hover in its Style tab previews one), and as stored (for its Style section).
+  // Absent off an article, or where the page's article is not on the tab.
+  articleStyle: ArticleStyle | undefined;
+  storedArticleStyle: ArticleStyle | undefined;
+  hasArticle: boolean;
+  documentName: string;
+  themeAccent: string;
+  themePresets: ThemeBackgroundPreset[];
+  // May edit the pages (not bare): the title bar and its buttons show.
+  editable: boolean;
+  tabStyle: boolean;
+  tidy: boolean;
+  choosing: boolean;
+  // Set only when its button shows, so a page without one never re-renders for them.
+  deck: PageDeckControls | undefined;
+  tidyEdit: Pick<PageEdits, 'tidyPage' | 'previewTidy'> | undefined;
+  applyReach: number;
+  open: boolean;
+  styleRequest: number;
+  textRequest: number;
+  layoutsRequest: number;
+  backgroundRequest: number;
+  empty: boolean;
+  previewing: boolean;
+  layoutsOpen: boolean;
+  act: PageSheetActions;
+};
+
+export const CanvasPageSheet = memo(function CanvasPageSheet({
+  page,
+  pages,
+  many,
+  zoom,
+  bare,
+  placing,
+  mobile,
+  letterbox,
+  background,
+  pictureOf,
+  shownName,
+  articleStyle,
+  storedArticleStyle,
+  hasArticle,
+  documentName,
+  themeAccent,
+  themePresets,
+  editable,
+  tabStyle,
+  tidy,
+  choosing,
+  deck,
+  tidyEdit,
+  applyReach,
+  open,
+  styleRequest,
+  textRequest,
+  layoutsRequest,
+  backgroundRequest,
+  empty,
+  previewing,
+  layoutsOpen,
+  act,
+}: PageSheetProps) {
+  const id = page.id;
+  // An article page's Lines pattern ruled on its writing's baselines, inside its margins.
+  const ruling =
+    page.flow && hasArticle
+      ? {
+          pitch: articleBodyLinePx(articleStyle),
+          inset: articleMarginPx(articleStyle),
+          top: articleTopMarginPx(articleStyle),
+        }
+      : undefined;
+  // An article page's header and footer (its page number among them), when its article has them.
+  const bands =
+    page.flow && hasArticle
+      ? pageBandLayout(
+          articleStyle,
+          pages.filter((p) => p.flow === page.flow),
+          page,
+          documentName,
+        )
+      : null;
+  // No label card names the page here (the fork's "Release Process · Fit to Content · Article"): the breadcrumb and
+  // the Title already do, and a knowledgebase page has one size and one kind
+  // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Breadcrumb").
+  // The breadcrumb fits the page's on-screen width, less the title bar's buttons; too narrow, it
+  // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
+  // corner.
+  const room = page.rect.width * zoom;
+  // A locked page offers nothing to add (docs/specs/007-editor/pages-mode.md
+  // "Locking a page"): no Layouts, no layout invite, no kind choice.
+  const locked = page.locked === true;
+  // An infographic or slide page's Layouts and Background sit beside its cog, always; a
+  // locked page offers neither.
+  const pageButtons =
+    editable &&
+    !locked &&
+    !page.flow &&
+    (page.kind === 'slide' || pageKindOf(page) === 'infographic');
+  // An infographic or slide page's Tidy, left of its Background, shown only while it would
+  // change something.
+  const tidyButton = pageButtons && tidy;
+  // An article page's Style, Text and Background sit beside its cog (PageArticleButtons); a locked page
+  // offers none.
+  const articleButtons = editable && !locked && !!page.flow && hasArticle;
+  // Notes, first, once the deck has a slide of the page (PageNotesButton), on a phone too,
+  // so note cards can be written anywhere (docs/specs/012-collaboration/speaker-note-cards.md
+  // "Writing note cards"). Its place in the deck is in Contents' ⋯ menu (page-row-slides).
+  const notesButton = editable && !!deck;
+  // Tab Style, first in the looks group; an article page's own Style leads with it instead.
+  const styleButton = editable && tabStyle && !articleButtons;
+  // The title bar's fixed buttons (the cog, the lock, Notes and an infographic or slide
+  // page's): the label has what they leave.
+  const buttons = {
+    edit: editable,
+    locked,
+    notes: notesButton,
+    page: pageButtons,
+    article: articleButtons,
+    style: styleButton,
+    tidy: tidyButton,
+  };
+  // The buttons name themselves on a desktop while the page is wide enough on screen to hold
+  // them named; zoomed out further they drop to their icons, as a phone shows them.
+  // A page with ancestors keeps room for them first: the buttons drop to their icons before the breadcrumb is
+  // squeezed to nothing (BREADCRUMB_MIN), where a top-level page has nothing to keep room for.
+  const hasAncestors = usePageHasAncestors();
+  const labelled = titleBarNamed(room, buttons, mobile, hasAncestors ? BREADCRUMB_MIN : 0);
+  // A phone's Appearance is named while the page on screen holds it (appearanceNamed).
+  const appearanceLabelled = mobile && appearanceNamed(room, buttons);
+  const fixedRoom = titleBarFixedRoom(buttons, mobile ? appearanceLabelled : labelled, mobile);
+  // The Quick Style bar, while it sits left of this page's title bar (docs/specs/008-canvas/quick-style-panel.md
+  // "Where it sits"), takes its room from the label too.
+  const quickStyleRoom = useQuickStyleBarRoom(id);
+  const labelRoom = room - fixedRoom - quickStyleRoom;
+  // A blurred picture paints from its blurred copy, the tone showing until it is ready (pages-mode.md "Image
+  // backgrounds", Blur); a hover preview (an Openverse thumbnail) shows sharp.
+  const imageFill = background?.fill?.kind === 'image' ? background.fill : undefined;
+  const blurSigma = imageFill && !imageFill.preview ? pageImageBlurSigma(imageFill, page.rect) : 0;
+  const blurredSrc = useBlurredPageImage(
+    blurSigma > 0 && imageFill ? pageImageSrc(imageFill, pictureOf) : undefined,
+    page.rect,
+    blurSigma,
+  );
+  return (
+    <div
+      data-page={page.orientation}
+      data-page-id={id}
+      // The Pages tour picks its track from the page's kind (docs/specs/007-editor/pages-tour.md).
+      data-page-kind={pageKindOf(page)}
+      data-page-locked={locked ? '' : undefined}
+      className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
+        background?.fill ? '' : 'bg-white text-slate-900/10 dark:bg-slate-900 dark:text-white/10'
+      }`}
+      style={{
+        left: page.rect.x,
+        top: page.rect.y,
+        width: page.rect.width,
+        height: page.rect.height,
+        // Presenting a page slide, a spread shadow blacks out the whole surround.
+        boxShadow: letterbox
+          ? `0 0 0 ${LETTERBOX_SPREAD}px #000`
+          : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
+        ...pageSheetStyle(background, ruling, pictureOf, blurSigma > 0 ? blurredSrc : undefined),
+      }}
+    >
+      {/* A slide's animated background, over its gradient and under all on it. */}
+      {background?.fill?.kind === 'gradient' && background.fill.motion ? (
+        <PageMotionLayer
+          motion={background.fill.motion}
+          fill={background.fill}
+          width={page.rect.width}
+          height={page.rect.height}
+        />
+      ) : null}
+      <div
+        data-page-title-row=""
+        // As tall as the title bar beside it, so the two sit on one line.
+        // None on a phone ("Beside the cog"): its title row has no room for the breadcrumb.
+        className={`absolute left-0 flex h-[34px] items-center gap-1 ${labelRoom < LABEL_MIN || bare || mobile ? 'hidden' : ''}`}
+        style={{
+          bottom: '100%',
+          marginBottom: 6 / zoom,
+          maxWidth: labelRoom,
+          ...steady(zoom, 'bottom left'),
+        }}
+      >
+        {/* The page's ancestors, each a link; nothing for a top-level page (PageBreadcrumb). */}
+        <PageBreadcrumb />
+      </div>
+      {editable ? (
+        <PageSheetTitleBar
+          page={page}
+          zoom={zoom}
+          mobile={mobile}
+          labelled={labelled}
+          appearanceLabelled={appearanceLabelled}
+          locked={locked}
+          pageButtons={pageButtons}
+          articleButtons={articleButtons}
+          styleButton={styleButton}
+          notesButton={notesButton}
+          tidyButton={tidyButton}
+          tabStyle={tabStyle}
+          hasArticle={hasArticle}
+          storedArticleStyle={storedArticleStyle}
+          themeAccent={themeAccent}
+          themePresets={themePresets}
+          deck={deck}
+          tidyEdit={tidyEdit}
+          applyReach={applyReach}
+          open={open}
+          styleRequest={styleRequest}
+          textRequest={textRequest}
+          layoutsRequest={layoutsRequest}
+          backgroundRequest={backgroundRequest}
+          shownName={shownName}
+          many={many}
+          act={act}
+        />
+      ) : null}
+      {CUT_FROM_FORK &&
+      pageButtons &&
+      layoutInviteShows(page, {
+        editable,
+        placing,
+        empty,
+        choosing,
+        previewing,
+        layoutsOpen,
+        zoom,
+      }) ? (
+        <EmptyPageInvite
+          pageId={id}
+          zoom={zoom}
+          label="Use a Layout"
+          onOpen={() => {
+            track('UI', 'Opened', 'EmptyPageInvite');
+            act.requestLayouts(id);
+          }}
+        />
+      ) : null}
+      {CUT_FROM_FORK && choosing && editable ? (
+        <FirstPageChoice zoom={zoom} onChoose={(kind) => act.choosePageKind(id, kind)} />
+      ) : null}
+      {bands ? (
+        <PageBands layout={bands} {...(page.background?.fill ? { dark: pageIsDark(page) } : {})} />
+      ) : null}
+    </div>
+  );
+});

@@ -1,0 +1,17 @@
+{
+  "TELEMETRY_ENABLED": "true",
+  "environments": {
+    "production": {
+      "APP_BASE_URL": "https://www.liveknowledge.app",
+      "TELEMETRY_URL": "https://www.liveworkspace.app/api/telemetry",
+      "COMMUNITY_URL": "https://www.liveworkspace.app/api/community",
+      "MEDIA_URL": "https://www.liveworkspace.app/api/media"
+    },
+    "staging": {
+      "APP_BASE_URL": "https://staging.liveknowledge.app",
+      "TELEMETRY_URL": "https://staging.liveworkspace.app/api/telemetry",
+      "COMMUNITY_URL": "https://staging.liveworkspace.app/api/community",
+      "MEDIA_URL": "https://staging.liveworkspace.app/api/media"
+    }
+  }
+}

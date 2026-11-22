@@ -203,4 +203,18 @@ describe('Add a Tab from a Template', () => {
     expect(await failed({ tooLarge: () => true })).toEqual({ failed: TAB_TOO_LARGE });
     expect(written).toHaveLength(before);
   });
+
+  it('says page, never tab, for a knowledgebase', async () => {
+    const failed = async (over: Partial<AddTemplateTabInput<Tab>>) =>
+      addTemplateTab(input({ itemWord: 'knowledgebase', ...over }), 'retro', 'Retro');
+    expect(await failed({ tabCount: async () => RULE_TABS_MAX })).toEqual({
+      failed: 'This knowledgebase has 200 pages, the most a rule adds to',
+    });
+    expect(await failed({ build: () => null })).toEqual({
+      failed: "Couldn't make a page from that template",
+    });
+    expect(await failed({ tooLarge: () => true })).toEqual({
+      failed: 'The page came out too large to store',
+    });
+  });
 });

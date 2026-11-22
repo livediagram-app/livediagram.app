@@ -22,6 +22,7 @@ export interface Env {
   MEDIA_KEY_LIVEDOCUMENTS?: string;
   MEDIA_KEY_LIVEDESIGN?: string;
   MEDIA_KEY_LIVEHUDDLE?: string;
+  MEDIA_KEY_LIVEKNOWLEDGE?: string;
   // The data export's service (liveworkspace/docs/specs/003-accounts/data-export.md): with X-Media-App: export, it
   // reads an owner's gallery and an image's bytes, nothing else.
   MEDIA_KEY_EXPORT?: string;
@@ -40,6 +41,7 @@ export interface Env {
   APP_ORIGIN_LIVEDOCUMENTS?: string;
   APP_ORIGIN_LIVEDESIGN?: string;
   APP_ORIGIN_LIVEHUDDLE?: string;
+  APP_ORIGIN_LIVEKNOWLEDGE?: string;
 }
 
 const KEY_OF: Record<MediaApp, keyof Env> = {
@@ -48,6 +50,7 @@ const KEY_OF: Record<MediaApp, keyof Env> = {
   'livedocuments.app': 'MEDIA_KEY_LIVEDOCUMENTS',
   'livedesign.app': 'MEDIA_KEY_LIVEDESIGN',
   'livehuddle.app': 'MEDIA_KEY_LIVEHUDDLE',
+  'liveknowledge.app': 'MEDIA_KEY_LIVEKNOWLEDGE',
 };
 
 export function appKey(env: Env, app: MediaApp): string | undefined {
@@ -81,6 +84,7 @@ const MEDIA_APP_OF: Record<App, MediaApp> = {
   livedocuments: 'livedocuments.app',
   livedesign: 'livedesign.app',
   livehuddle: 'livehuddle.app',
+  liveknowledge: 'liveknowledge.app',
 };
 
 const ORIGIN_OF: Record<App, keyof Env> = {
@@ -89,6 +93,7 @@ const ORIGIN_OF: Record<App, keyof Env> = {
   livedocuments: 'APP_ORIGIN_LIVEDOCUMENTS',
   livedesign: 'APP_ORIGIN_LIVEDESIGN',
   livehuddle: 'APP_ORIGIN_LIVEHUDDLE',
+  liveknowledge: 'APP_ORIGIN_LIVEKNOWLEDGE',
 };
 
 // Where an app's export door is, with the key it takes, or null when either is not configured.

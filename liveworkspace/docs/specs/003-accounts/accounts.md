@@ -548,7 +548,7 @@ background request one day, but neither works in every browser, so the bounce st
 
 Beside its HttpOnly refresh cookie (on `/api/auth`), each app's API keeps four readable cookies on its
 whole site, so its public pages can tell who is signed in without loading the session. Every app has a prefix of its own (`ld_` livediagram, `lp_` liveplanner, `ldoc_`
-livedocuments, `ldes_` livedesign, `lh_` livehuddle), on these and on its refresh, PKCE and silent sign-in cookies,
+livedocuments, `ldes_` livedesign, `lh_` livehuddle, `lkb_` liveknowledge), on these and on its refresh, PKCE and silent sign-in cookies,
 because cookies ignore the port: every app on `localhost` in development shares one cookie jar, and two apps with one
 name would read and overwrite each other's session:
 
@@ -1391,6 +1391,18 @@ the devices, the `push…` switches and the VAPID key, and sends what an app han
 - **What happened.** The index tells an item's app that someone made a share link on it or opened it
   through one for the first time, and counts the items a person has made in it
   ([one-explorer-contracts.md](../004-index/one-explorer-contracts.md) "Notices").
+- **An app's own notices.** An app may send notification emails no other app has (liveknowledge's reviews: a
+  page's review come due, two pages that disagree, a reminder to a page's owner). Each such group is one switch
+  of the app's own: a `notify…` key in the app's scope, declared in the app's Settings catalogue under Account ›
+  Notifications › Email beside its join switch, on unless stored `false`, and read with the same
+  `settings/notify` question. Nothing is added at accounts: the keys' pattern already takes it and settings are
+  JSON, so there is no migration, and every other app's switches and emails are as they were. The app sends
+  them through the notifier every app shares (`createNotifier`'s `notifyAccounts`, `@liveworkspace/index-app`):
+  handed the switch and one email per account id, it drops anyone who is not an account, asks
+  `notificationRecipients` once for them all, and sends to each verified address whose switch is not off,
+  answering the ids it emailed. So an app never holds an address and cannot send past a switch. How often such an
+  email goes (its caps, its once-only marks) is the app's to keep, where its item lives. The first is
+  `notifyKnowledgeReviews` (liveknowledge.app, **Knowledgebase Reviews**).
 
 ## Onboarding emails
 

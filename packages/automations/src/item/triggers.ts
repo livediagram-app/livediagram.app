@@ -1,6 +1,7 @@
 // The triggers every app has (liveworkspace/docs/specs/018-automations/automations.md "Triggers every app has";
 // blueprint item-engine.md "The shared kinds"), each one definition. Pure.
 
+import { inTabWords } from './tab-word';
 import { DAY_MS } from '../dates';
 import { clockWords } from '../schedule';
 import type { AutomationScheduled } from '../types';
@@ -50,7 +51,7 @@ export const eventWho = (event: ItemEvent): string => event.by?.name ?? 'Someone
 export function eventTabName(event: ItemEvent, names: ItemNames): string {
   const kept = event.data?.['tab.name'];
   const held = event.tab ? names.tabs?.get(event.tab) : undefined;
-  return held ?? (typeof kept === 'string' && kept ? kept : 'a tab');
+  return held ?? (typeof kept === 'string' && kept ? kept : inTabWords('a tab', names.itemWord));
 }
 
 const tabOf = (value: Obj, path: string): { tab?: string } =>

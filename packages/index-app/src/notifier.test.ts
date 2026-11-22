@@ -403,3 +403,55 @@ describe('notifyAccessGranted', () => {
     expect(sent).toEqual([]);
   });
 });
+
+// accounts.md "Notification emails", "An app's own notices": one email per account behind the app's own switch.
+describe('notifyAccounts', () => {
+  const emails = () =>
+    new Map<string, NotifierEmail>([
+      ['user_anna', { subject: 'for anna', html: 'a', text: 'a' }],
+      ['guest_g', { subject: 'for a guest', html: 'g' }],
+      ['user_bo', { subject: 'for bo', html: 'b' }],
+      ['user_off', { subject: 'for off', html: 'o' }],
+    ]);
+
+  it('sends each account its own email at its verified address, in one recipients read', async () => {
+    // user_off turned the switch off (or has no verified address): the recipients read leaves it out.
+    const { notifier, deps, sent } = setup({
+      reachable: { user_anna: 'anna@x.test', user_bo: 'bo@x.test' },
+    });
+    const emailed = await notifier.notifyAccounts(on, {
+      setting: 'notifyKnowledgeReviews',
+      emails: emails(),
+    });
+    expect(emailed).toEqual(['user_anna', 'user_bo']);
+    expect(deps.recipients).toHaveBeenCalledTimes(1);
+    // A guest is never asked about: it has no address.
+    expect(deps.recipients).toHaveBeenCalledWith(
+      on,
+      ['user_anna', 'user_bo', 'user_off'],
+      'notifyKnowledgeReviews',
+    );
+    expect(sent).toEqual([
+      { subject: 'for anna', html: 'a', text: 'a', to: 'anna@x.test' },
+      { subject: 'for bo', html: 'b', to: 'bo@x.test' },
+    ]);
+  });
+
+  it('sends nothing with email off, nobody named, or only guests', async () => {
+    const { notifier, deps, sent } = setup({ reachable: { user_anna: 'anna@x.test' } });
+    expect(await notifier.notifyAccounts(off, { setting: 'notifyX', emails: emails() })).toEqual(
+      [],
+    );
+    expect(await notifier.notifyAccounts(on, { setting: 'notifyX', emails: new Map() })).toEqual(
+      [],
+    );
+    expect(
+      await notifier.notifyAccounts(on, {
+        setting: 'notifyX',
+        emails: new Map([['guest_g', { subject: 's', html: '' }]]),
+      }),
+    ).toEqual([]);
+    expect(deps.recipients).not.toHaveBeenCalled();
+    expect(sent).toEqual([]);
+  });
+});
