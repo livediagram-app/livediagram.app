@@ -181,6 +181,22 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
 - **Read mode**: the top row's left is empty (no formatting bar). At its right, before Page Info and Share: **Edit**
   (`Button` primary, `sm`, the pencil glyph, `HoverCard` "Edit / Change this page with anyone else editing it. E"),
   for an Editor only. Nothing else changes on the page.
+- **Selecting in read mode**: the read-only writing (`.article-flow[data-readonly]`, ProseMirror with
+  `contenteditable="false"`) carries `select-text` (`articleFlowClass`, `components/canvas/article/read-mode-selection.ts`) and `user-select: text` (`app/article-pages.css`), so the
+  canvas's two guards against text selection pass it: `<main>`'s `select-none`, which a non-editable element
+  otherwise inherits, and `useNoCanvasTextSelection`'s `selectstart` cancel, which spares only fields, editable
+  content and `.select-text`. Both guards stay for the rest of the canvas. The meta row and Linked From
+  (`.article-page-slot`) stay `user-select: none`. Copy is ProseMirror's own (`text/plain` blocks joined by blank
+  lines) and the browser's: the canvas's Cmd/Ctrl+C steps aside while page text is selected
+  (`hasPageTextSelection`). The canvas takes a press on the margins for itself, so the browser never collapses a
+  selection there: `[data-page-scroller]`'s capture `pointerdown` calls `releaseReadSelection`
+  (`lib/page-surface/read-selection.ts`), which clears a non-collapsed selection anchored in a read flow when the
+  press lands off the writing's blocks.
+- **Double-click to edit**: `useDoubleClickToEdit` (`components/page-edit/useDoubleClickToEdit.ts`, called by
+  `PageEditBar` while `mayEdit && !editing`) listens for `dblclick` on the document; one inside
+  `[data-page-scroller]` with a read-only flow in it, outside the writing's blocks (`.article-flow > *`) and any
+  link or control, sends the ring (`ringAt`) and starts edit mode. A double-click on the writing is the browser's
+  word selection. No pointer label (removed 2026-11-22).
 - **Being edited**: in the meta row, after the other items, a quiet line: up to three discs (the editors' colours and
   initials, `TabPresenceStack`'s look) and "Being edited by Priya", "by Priya and Sam", "by Priya and 2 others". Shown
   to everyone not editing, Editors included.
@@ -216,18 +232,19 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
 
 ## Testing
 
-| Rule                                                                                                                 | Test                                                                                                                                                                  |
-| -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| the draft's helpers, merge, prints, upkeep cut-off                                                                   | `packages/document/src/page-draft.test.ts`                                                                                                                            |
-| entering edit and Save on a 5,000 word page under budget                                                             | `packages/document/src/page-draft.perf.test.ts`, `apps/editor/lib/page-edit/lens.perf.test.ts`                                                                        |
-| lift and lower: the draft written, the saved flow untouched, no-op identity, a peer's save                           | `apps/editor/lib/page-edit/lens.test.ts`                                                                                                                              |
-| the mode switch, the bar's states, Cancel's three cases, the keys                                                    | `apps/editor/components/page-edit/PageEditBar.test.tsx`, `lib/page-edit/page-edit-keys.test.ts`, the e2e                                                              |
-| role gate: Editor edits, Participant and Viewer and a link read                                                      | `apps/editor/lib/page-edit/page-edit-roles.test.ts`, `apps/api/src/document-room.test.ts` "DocumentRoom page editing", `apps/api/src/routes/page-draft-route.test.ts` |
-| the room withholds the draft from a Viewer                                                                           | `apps/api/src/room-draft-filter.test.ts`                                                                                                                              |
-| the draft never reaches the index, agent reads or the tab GET of a Viewer or token                                   | `apps/api/src/knowledge/page-draft-reads.test.ts`                                                                                                                     |
-| Created and Updated move on Save only                                                                                | `apps/api/src/knowledge/page-draft-reads.test.ts`                                                                                                                     |
-| upkeep drops a 30 day old draft                                                                                      | `apps/api/src/document-room/draft-upkeep.test.ts`                                                                                                                     |
-| two contexts co-edit one draft, a third reads the saved page, Save publishes, Cancel/Discard, reload keeps the draft | `apps/editor/e2e/signed-in/page-editing.spec.ts`                                                                                                                      |
+| Rule                                                                                                                 | Test                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the draft's helpers, merge, prints, upkeep cut-off                                                                   | `packages/document/src/page-draft.test.ts`                                                                                                                                                   |
+| entering edit and Save on a 5,000 word page under budget                                                             | `packages/document/src/page-draft.perf.test.ts`, `apps/editor/lib/page-edit/lens.perf.test.ts`                                                                                               |
+| lift and lower: the draft written, the saved flow untouched, no-op identity, a peer's save                           | `apps/editor/lib/page-edit/lens.test.ts`                                                                                                                                                     |
+| the mode switch, the bar's states, Cancel's three cases, the keys                                                    | `apps/editor/components/page-edit/PageEditBar.test.tsx`, `lib/page-edit/page-edit-keys.test.ts`, the e2e                                                                                     |
+| double-click to edit off the writing only, no pointer label; read-only writing selectable                            | `apps/editor/components/page-edit/useDoubleClickToEdit.test.tsx`, `apps/editor/components/canvas/article/read-mode-selection.test.ts`, `apps/editor/lib/page-surface/read-selection.test.ts` |
+| role gate: Editor edits, Participant and Viewer and a link read                                                      | `apps/editor/lib/page-edit/page-edit-roles.test.ts`, `apps/api/src/document-room.test.ts` "DocumentRoom page editing", `apps/api/src/routes/page-draft-route.test.ts`                        |
+| the room withholds the draft from a Viewer                                                                           | `apps/api/src/room-draft-filter.test.ts`                                                                                                                                                     |
+| the draft never reaches the index, agent reads or the tab GET of a Viewer or token                                   | `apps/api/src/knowledge/page-draft-reads.test.ts`                                                                                                                                            |
+| Created and Updated move on Save only                                                                                | `apps/api/src/knowledge/page-draft-reads.test.ts`                                                                                                                                            |
+| upkeep drops a 30 day old draft                                                                                      | `apps/api/src/document-room/draft-upkeep.test.ts`                                                                                                                                            |
+| two contexts co-edit one draft, a third reads the saved page, Save publishes, Cancel/Discard, reload keeps the draft | `apps/editor/e2e/signed-in/page-editing.spec.ts`                                                                                                                                             |
 
 ## Constants and configuration
 
