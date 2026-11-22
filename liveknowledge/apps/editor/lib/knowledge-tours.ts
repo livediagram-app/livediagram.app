@@ -62,9 +62,9 @@ export const KNOWLEDGE_TOUR_PLAN: Record<KnowledgeTourId, readonly PlannedStep[]
   ],
   trust: [
     { id: 'meta', needs: [] },
-    { id: 'verify', needs: ['write'] },
-    { id: 'health', needs: ['online'] },
-    { id: 'approval', needs: ['write', 'online'] },
+    { id: 'verify', needs: ['write', 'signedIn', 'online'] },
+    { id: 'health', needs: [] },
+    { id: 'approval', needs: ['write', 'signedIn', 'online'] },
   ],
   ask: [
     { id: 'tab', needs: ASK },
@@ -83,7 +83,7 @@ export const KNOWLEDGE_TOUR_PLAN: Record<KnowledgeTourId, readonly PlannedStep[]
     { id: 'share', needs: ['share'] },
     { id: 'makers', needs: ['online'], present: '[data-page-makers]' },
     { id: 'reactions', needs: ['signedIn', 'online'] },
-    { id: 'comments', needs: ['write'] },
+    { id: 'comments', needs: ['write', 'online'] },
   ],
 };
 

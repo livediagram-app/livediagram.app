@@ -60,15 +60,16 @@ describe('the step plan', () => {
 
   it('keeps Ask and Connect for the signed in, and a one-step tour off the list', () => {
     expect(offeredTours(GUEST_VIEWER)).toEqual(['organise', 'trust']);
+    expect(ids('trust', { ...EDITOR, signedIn: false })).toEqual(['meta', 'health']);
     expect(ids('share', GUEST_VIEWER)).toHaveLength(1);
     expect(MIN_TOUR_STEPS).toBe(2);
   });
 
   it('drops what needs the server Offline, and Connect on a phone', () => {
     const offline = { ...EDITOR, online: false };
-    expect(offeredTours(offline)).toEqual(['first-page', 'organise', 'trust', 'share']);
-    expect(ids('trust', offline)).toEqual(['meta', 'verify']);
-    expect(ids('share', offline)).toEqual(['share', 'comments']);
+    expect(offeredTours(offline)).toEqual(['first-page', 'organise', 'trust']);
+    expect(ids('trust', offline)).toEqual(['meta', 'health']);
+    expect(ids('share', offline)).toEqual(['share']);
     expect(offeredTours({ ...EDITOR, phone: true })).not.toContain('connect');
   });
 

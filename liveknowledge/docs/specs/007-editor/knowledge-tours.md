@@ -122,11 +122,12 @@ For everyone; the Verify step for a writer. Help: **Owners and Verifying**.
 
 1. **Who Wrote It** (the page's meta row): who made the page and last changed it, a person or an agent, and how long
    it takes to read.
-2. **Verify** (the meta row's Verify): says the page is right today. It asks before it does anything. For a writer.
+2. **Verify** (the meta row's Verify): says the page is right today. It asks before it does anything. For a writer,
+   signed in and Online (a guest's Offline page has no Verify).
 3. **Page Health** (Page Info's Page Health, its panel opened where it is folded away): how fresh the page is, its
-   owner, when it was verified and when it comes due for review. Not Offline (an Offline knowledgebase has no Page
-   Health).
-4. **Request Approval** (Page Health's approval row): ask another member to approve the page. For a writer, Online.
+   owner, when it was verified and when it comes due for review. Shown Offline too: Page Info draws it there.
+4. **Request Approval** (Page Health's approval row): ask another member to approve the page. For a writer, signed
+   in and Online.
 5. Closing card: **Pages people can rely on**.
 
 ### Ask Your Knowledgebase
@@ -173,9 +174,10 @@ row's length badge are right from the first step; one whose control still never 
 person was going, never pointing at nothing:
 
 - **By role** (`needs`): `write` (an Editor or a Participant: New Page, Add a Subpage, Edit, Page Options, the Trash,
-  Verify, Request Approval, Comments), `share` (an Editor: Share), `signedIn` (Ask, Reactions, Connect), and a
+  Verify, Request Approval, Comments), `share` (an Editor: Share), `signedIn` (Ask, Reactions, Connect, Verify, Request Approval), and a
   Viewer's own words where a step reads differently for one (The Page Tree).
-- **Offline** (`online`): Ask, AI Knowledge, Connect, Page Health and Request Approval need the room on the server.
+- **Offline** (`online`): Ask, AI Knowledge, Connect, Verify, Request Approval, Who Made It, Reactions and Comments
+  need the room on the server (found in the browser check: an Offline page draws none of them). Page Health stays.
 - **On a phone** (`desktop`): Connect is not on offer. The page tree is the **Pages** sheet: a tree step opens it and
   closes it again as it ends. Page Info is its button's sheet. The other steps are the same.
 - **On screen at the start:** a step on the Pages view whose control is not drawn when the tour starts (the Trash with
