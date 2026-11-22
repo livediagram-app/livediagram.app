@@ -51,11 +51,20 @@ describe('withStructureAtTop', () => {
 });
 
 describe('the words', () => {
-  it("says the person's choice of built-in AI over the team's key, else what Ask says", () => {
+  it("says the person's choice of built-in AI over a key, else what Ask says", () => {
     const keyed = { hasKey: true, builtIn: true };
     expect(structureAiLine(null, 'key')).toBeNull();
     expect(structureAiLine(keyed, 'built-in')).toBe('Uses built-in AI');
-    expect(structureAiLine(keyed, 'key')).toBe("Uses your team's key");
+    expect(structureAiLine(keyed, 'key')).toBe("Uses this knowledgebase's key");
+    expect(structureAiLine({ hasKey: false, builtIn: true, uses: 'team' }, 'key')).toBe(
+      "Uses your team's key",
+    );
+    expect(structureAiLine({ hasKey: false, builtIn: true, uses: 'personal' }, 'key')).toBe(
+      'Uses your key',
+    );
+    expect(structureAiLine({ hasKey: false, builtIn: true, uses: 'team' }, 'built-in')).toBe(
+      'Uses built-in AI',
+    );
     expect(structureAiLine({ hasKey: false, builtIn: true }, 'built-in')).toBe('Uses built-in AI');
     expect(structureAiLine({ hasKey: false, builtIn: false }, 'key')).toBeNull();
   });

@@ -81,6 +81,7 @@ export const EVENT_GLYPH_PATHS: Record<EventType, string> = {
   team_role_changed: SHIELD,
   team_member_removed: USER_MINUS,
   team_renamed: PENCIL_SQUARE,
+  team_ai_key_changed: SPARKLES,
   approval_requested: PAPER_PLANE,
   approval_approved: DOCUMENT_CHECK,
   approval_changes_requested: FLAG,

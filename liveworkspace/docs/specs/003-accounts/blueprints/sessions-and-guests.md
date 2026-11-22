@@ -20,6 +20,7 @@ Scope, by file:
 | `liveworkspace/apps/accounts/src/own-sessions.ts`                                                                        | The bearer's Where You're Signed In: list, end one, end the others                        |
 | `liveworkspace/apps/accounts/src/link-google.ts`                                                                         | The bearer's Sign-in Methods, and `GET /api/auth/link-google`, the hop to Google          |
 | `liveworkspace/apps/accounts/src/legacy-guests.ts`                                                                       | `POST /api/account/internal/legacy-guests/claim`                                          |
+| `liveworkspace/apps/accounts/src/legacy-guest-rekey.ts`                                                                  | `POST /api/auth/internal/legacy-guests/rekey`                                             |
 | `liveworkspace/apps/accounts/src/guest-sweep.ts`                                                                         | `noteGuestSeen`, `sweepIdleGuests`                                                        |
 | `liveworkspace/apps/accounts/src/account-api/signed-in.ts`, `liveworkspace/apps/accounts/src/account-api/bearer-door.ts` | `GET /api/account/people` on each door                                                    |
 | `liveworkspace/apps/accounts/src/profiles.ts`                                                                            | `withSessionColour` on `GET /api/auth/get-session`                                        |
@@ -27,15 +28,15 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term            | Identifier                                                                  | Meaning                                                                |
-| --------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Guest cookie    | `lw_guest=<guest id>.<HMAC>`                                                | HMAC-SHA-256 of `lw_guest:<id>` under `BETTER_AUTH_SECRET`, base64url  |
-| Guest token     | JWT `{ iss, aud: <resource>, sub: <guest>, kind: 'guest', iat, exp, oiat }` | Signed by the jwt plugin, 45 days; `oiat` when the cookie last vouched |
-| Guest proof     | `lw_guest_proof=<guest token>`, `Path=/api/auth/guest`, 120 s               | Set only by an Origin-checked `POST /api/auth/guest`                   |
-| Workspace token | JWT `{ iss, aud: RESOURCES, azp: 'liveworkspace.app', sub, … }`             | liveworkspace.app's Explorer, 15 minutes                               |
-| Legacy guest    | `guest_<old uuid>`, `legacy_guest` row                                      | Copied work of the old livediagram.app                                 |
-| Seen            | `guest_seen (guest_id, seen_at)`                                            | When an id was last handed out                                         |
-| Sign-out ticket | `<base64url JSON { c: client, s: account, e: exp }>.<HMAC>`                 | HMAC-SHA-256 of `end-session:<payload>`, base64url; five minutes       |
+| Term            | Identifier                                                                                             | Meaning                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Guest cookie    | `lw_guest=<guest id>.<HMAC>`                                                                           | HMAC-SHA-256 of `lw_guest:<id>` under `BETTER_AUTH_SECRET`, base64url  |
+| Guest token     | JWT `{ iss, aud: <resource>, sub: <guest>, kind: 'guest', iat, exp, oiat }`                            | Signed by the jwt plugin, 45 days; `oiat` when the cookie last vouched |
+| Guest proof     | `lw_guest_proof=<guest token>`, `Path=/api/auth/guest`, 120 s                                          | Set only by an Origin-checked `POST /api/auth/guest`                   |
+| Workspace token | JWT `{ iss, aud: RESOURCES, azp: 'liveworkspace.app', sub, … }`                                        | liveworkspace.app's Explorer, 15 minutes                               |
+| Legacy guest    | `guest_<old uuid>` (from before signing, once re-keyed: `rekeyedLegacyGuestOwner`), `legacy_guest` row | Copied work of the old livediagram.app                                 |
+| Seen            | `guest_seen (guest_id, seen_at)`                                                                       | When an id was last handed out                                         |
+| Sign-out ticket | `<base64url JSON { c: client, s: account, e: exp }>.<HMAC>`                                            | HMAC-SHA-256 of `end-session:<payload>`, base64url; five minutes       |
 
 ## Behaviour and state
 
@@ -228,16 +229,34 @@ Off (`404`) without `LEGACY_GUEST_ID_HMAC_SECRET`; only livediagram.app's client
 `LEGACY_GUEST_LIMITER` keyed `claim:<into, ≤ 100 chars>` (10 a minute, `429`). Body `{ legacyId, signature?, into }`:
 
 1. `legacyId` a lower-case v4 UUID (`400 invalid_legacy_id`); `signature` a string or null (`400
-invalid_signature`); `into` an account or guest id other than the legacy owner `guest_<legacyId>` (`400
+invalid_signature`); `into` an account or guest id other than `guest_<legacyId>` and its re-keyed id (`400
 invalid_into`).
 2. A signature (43 base64url characters) is checked first: HMAC-SHA-256 of the bare id (`403 bad_signature`).
-3. No row: `200 { merged: false, reason: 'unknown' }`. Unsigned and first seen after `LEGACY_GUEST_SIGNING_LIVE_AT`:
+3. One read: `legacy_guest WHERE id IN (guest_<legacyId>, rekeyedLegacyGuestOwner(legacyId))` (the second only with
+   `LEGACY_GUEST_REKEY_SECRET`). The row is the re-keyed one with `rekeyedAt` set, else the plain one with it null.
+4. No row: `200 { merged: false, reason: 'unknown' }`. Unsigned and first seen after `LEGACY_GUEST_SIGNING_LIVE_AT`:
    `403 signature_required`. Claimed: `{ merged: true }` for the same `into`, else `{ merged: false, reason: 'claimed' }`.
-   Unsigned, unclaimed and first seen before it: `503 unsigned_claims_paused`, nothing held or merged.
-4. Held in one conditional update (`claimingBy`, `claimingUntil = now + 60 s`), taking over a lapsed or own hold;
+   Unsigned, unclaimed, first seen before it and not re-keyed: `503 unsigned_claims_paused`, nothing held or merged.
+5. Held in one conditional update (`claimingBy`, `claimingUntil = now + 60 s`), taking over a lapsed or own hold;
    none: claimed answers as above, else `503 claim_in_progress`.
-5. `mergeGuestInto(…, { legacy: true })`; failing releases the hold, `502 merge_failed`.
-6. Stamped `claimedAt`, `claimedBy`; a race lost answers `claimed`. Logged `[accounts] legacy guest claimed { into }`.
+6. `mergeGuestInto(<the row's id>, …, { legacy: true })`; a plain row from before signing, with the re-key secret set,
+   then merges its re-keyed id too. Failing releases the hold, `502 merge_failed`.
+7. Stamped `claimedAt`, `claimedBy`; a race lost answers `claimed`. Logged `[accounts] legacy guest claimed { into }`.
+
+### Re-keying the guests from before signing (`POST /api/auth/internal/legacy-guests/rekey`)
+
+`404` without `LEGACY_GUEST_REKEY_SECRET`; `401` without `Bearer ADMIN_TOKEN` (`sameSecret`). Body `{ dryRun?, limit? }`
+(`limit` 1 to `REKEY_BATCH_MAX` 50, default 25; else `400 invalid_limit`). Candidates: `claimedAt IS NULL AND rekeyedAt
+IS NULL AND firstSeenAt < LEGACY_GUEST_SIGNING_LIVE_AT`, by `id`.
+
+- Dry run: one read of every row's `firstSeenAt`, `claimedAt`, `claimingUntil`, `rekeyedAt`; answers `{ rows, claimed,
+unclaimed, signedOnly, rekeyed, toRekey, held, sample }` (`sample`: up to 5 `{ from: 'guest_<8 chars>…', to }`).
+- A run, per candidate up to `limit`, one at a time: hold (`claimingBy = 'rekey:<run uuid>'`, a minute, only with no
+  live hold and still unclaimed and unmarked; none: `skipped`); `mergeGuestInto(old, re-keyed, { legacy: true })`
+  (false: the hold released, `failed`); one batch: `settings` and `profile` `owner_id` to the re-keyed id, then the
+  row's `id`, `rekeyedAt = now`, the hold cleared, `WHERE id = old AND claimingBy = <run> AND claimedAt IS NULL`.
+  Answer `{ rekeyed, skipped, failed, remaining }` (`remaining`: candidates left after the run). Logged
+  `[accounts] legacy guests re-keyed { rekeyed, skipped, failed }`.
 
 Closing the account that claimed (`legacyGuestCloseStatements`, in `leaveAllTeams`' batch): `claimedBy` naming it
 becomes `deleted`; a hold it has (`claimingBy`) goes, `claimingUntil` with it.
@@ -259,23 +278,26 @@ well above the sweep's 500.
 | `guest_seen`   | `guest_id` | `guest_seen_at (seen_at)` | `noteGuestSeen`; profile merge deletes          | `sweepIdleGuests` |
 | `legacy_guest` | `id`       |                           | the migration's copy (`firstSeenAt`); the claim | the claim         |
 
-`legacy_guest` columns: `firstSeenAt`, `claimedAt`, `claimedBy`, `claimingBy`, `claimingUntil` (0013).
+`legacy_guest` columns: `firstSeenAt`, `claimedAt`, `claimedBy`, `claimingBy`, `claimingUntil` (0013), `rekeyedAt`
+(0024: when its id was re-keyed, null for an id still `guest_<old uuid>`).
 
 ## Errors and edge cases
 
-| Case                                                                  | Answer                                           |
-| --------------------------------------------------------------------- | ------------------------------------------------ |
-| A forged or another site's guest cookie                               | a new guest                                      |
-| A guest proof with the cookie there too                               | the cookie's guest                               |
-| A guest proof from another origin                                     | no proof cookie; the cookie's guest or a new one |
-| A forged, expired, another app's, an account's or a 180-day-old proof | no proof cookie; the cookie's guest or a new one |
-| A redirect URI not registered                                         | `400`, never a redirect                          |
-| The index down at sign-in                                             | signed in; the guest cookie kept for next time   |
-| A cross-site workspace token request                                  | `403 cross_site`                                 |
-| A sign-out hop to an unregistered origin                              | `400 invalid_redirect_uri`, never a redirect     |
-| A sign-out hop with no or a bad ticket                                | back to the app; no session ended                |
-| A sign-out hop for another account                                    | back to the app; that session kept               |
-| Two legacy claims at once                                             | one merges; the other `503` or `claimed`         |
+| Case                                                                  | Answer                                                   |
+| --------------------------------------------------------------------- | -------------------------------------------------------- |
+| A forged or another site's guest cookie                               | a new guest                                              |
+| A guest proof with the cookie there too                               | the cookie's guest                                       |
+| A guest proof from another origin                                     | no proof cookie; the cookie's guest or a new one         |
+| A forged, expired, another app's, an account's or a 180-day-old proof | no proof cookie; the cookie's guest or a new one         |
+| A redirect URI not registered                                         | `400`, never a redirect                                  |
+| The index down at sign-in                                             | signed in; the guest cookie kept for next time           |
+| A cross-site workspace token request                                  | `403 cross_site`                                         |
+| A sign-out hop to an unregistered origin                              | `400 invalid_redirect_uri`, never a redirect             |
+| A sign-out hop with no or a bad ticket                                | back to the app; no session ended                        |
+| A sign-out hop for another account                                    | back to the app; that session kept                       |
+| Two legacy claims at once                                             | one merges; the other `503` or `claimed`                 |
+| A re-key stopped between the index and accounts                       | the next run finishes it; a signed claim merges both ids |
+| A share link's visitor sends the re-keyed owner id as a `legacyId`    | `unknown`, nothing merged                                |
 
 ## Security and trust
 
@@ -285,7 +307,10 @@ well above the sweep's 500.
   token alone carries `oiat` forward and ends 180 days after the cookie last vouched, so a stolen token can't live for
   ever; the sign-in merge still reads only the signed cookie.
 - Guest tokens are signed by the same keys as access tokens and addressed to one app's API.
-- The legacy claim checks possession before it reads the row, so a forged signature learns nothing.
+- The legacy claim checks possession before it reads the row, so a forged signature learns nothing. An unsigned
+  claim merges only a re-keyed row, reached by deriving its id from the bare id: the stored owner id no longer reveals
+  the bare id, and a stored id sent back is refused (`unknown`). Ids someone noted before the re-key still lead to the
+  work: the re-key ends the exposure, it does not undo it.
 - Ending a session needs the app's client secret and a live refresh token of that client; the browser's hop ends a
   session only with a ticket from that call, for the same account, so a link from another site signs nobody out and
   can only send the browser to an origin the client registered.
@@ -299,7 +324,8 @@ well above the sweep's 500.
 | `packages/auth-client/src/app-auth.test.ts`, `packages/index-client/src/browser/guest-token.test.ts` | the renewal cookie, the api's posting page, its headers and escaping, and the plain hand-off otherwise                               |
 | `liveworkspace/apps/accounts/src/workspace-token.test.ts` (4)                                        | the workspace token for an account, a guest, cross-site, the limit                                                                   |
 | `liveworkspace/apps/accounts/src/end-session.test.ts` (20)                                           | ending a session from an app, the browser's hop, liveworkspace.app and Security: every app's tokens gone, tickets, redirects refused |
-| `liveworkspace/apps/accounts/src/legacy-guests.test.ts` (14)                                         | claiming a returning guest of the old livediagram.app                                                                                |
+| `liveworkspace/apps/accounts/src/legacy-guests.test.ts` (24)                                         | claiming a returning guest of the old livediagram.app, re-keyed ids among them                                                       |
+| `liveworkspace/apps/accounts/src/legacy-guest-rekey.test.ts` (9)                                     | re-keying the guests from before signing: the dry run, a run, holds, failures, resuming                                              |
 | `liveworkspace/apps/accounts/src/guest-sweep.test.ts` (6)                                            | noting a guest seen; sweeping guests who can never come back, and queueing their items' purge                                        |
 | `liveworkspace/apps/accounts/src/account-api.test.ts` (43)                                           | the people door and bearers among the rest, sessions, tokens                                                                         |
 | `liveworkspace/apps/accounts/src/link-google.test.ts` (10)                                           | connecting Google from an app: the hop, the state cookie alone, Better Auth's callback, tickets, return addresses                    |
@@ -315,7 +341,7 @@ well above the sweep's 500.
 `WORKSPACE_TOKEN_TTL_SECONDS` 900 (`workspace-token.ts`); `END_SESSION_PATH` `/end-session`, `TICKET_TTL_SECONDS` 300,
 `REDIRECT_MAX_LENGTH` 2,000, `SESSIONS_PER_STATEMENT` 40 (`end-session.ts`); `KEYS_TTL_MS` 5 min (`bearer.ts`);
 `LINK_GOOGLE_PATH` `/link-google`, `LINK_TICKET_TTL_SECONDS` 300 (`link-google.ts`); `LEGACY_CLAIM_HOLD_MS`
-60 s (`legacy-guests.ts`); `GUEST_IDLE_MS` 400 d, `GUEST_SWEEP_LIMIT` 500 (`guest-sweep.ts`); `MAX_PROFILE_IDS` 100.
+60 s (`legacy-guests.ts`); `REKEY_BATCH_MAX` 50, `REKEY_BATCH_DEFAULT` 25 (`legacy-guest-rekey.ts`); `GUEST_IDLE_MS` 400 d, `GUEST_SWEEP_LIMIT` 500 (`guest-sweep.ts`); `MAX_PROFILE_IDS` 100.
 Rate limiters: `GUEST_LIMITER` `1003` (`2003`), 60 per 60 s; `TEAM_LINK_LIMITER` `1004` (`2004`), 20 per 60 s;
 `LEGACY_GUEST_LIMITER` `1105` (`2105`), 10 per 60 s.
 

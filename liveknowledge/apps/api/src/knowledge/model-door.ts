@@ -3,7 +3,7 @@
 // team's key and their pages' passages ride on these requests, so the address is checked where the request leaves.
 // The provider is the one stored beside the key (ai-settings.ts), never anything a client sent: a key therefore
 // reaches only its own provider's host, and never the other's. Tests stub the global `fetch`.
-import { modelProvider, type KeyProviderId } from '@liveknowledge/knowledge';
+import { modelProvider, type KeyProviderId } from '@liveworkspace/ai';
 
 const addressOf = (input: RequestInfo | URL): string =>
   typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;

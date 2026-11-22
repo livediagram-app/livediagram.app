@@ -9,9 +9,7 @@ import {
   CONFLICT_BUILT_IN_CHECKS_PER_DAY,
   CONFLICT_CHECK_SCOPE,
   CONFLICT_PAGE_INTERVAL_MS,
-  ModelCallError,
   bumpCounter,
-  callModel,
   chooseConflictCandidates,
   closeChangedConflicts,
   conflictCheckRefusal,
@@ -26,10 +24,10 @@ import {
   parseConflictVerdicts,
   probeSearch,
   readCounter,
-  type ModelCaller,
   type Passage,
   type SearchRow,
 } from '@liveknowledge/knowledge';
+import { ModelCallError, callModel, type ModelCaller } from '@liveworkspace/ai';
 import type { DocumentEnv } from '../types';
 import { readDocumentMeta } from '../document-room/document-content';
 import { openAi } from './ai-settings';

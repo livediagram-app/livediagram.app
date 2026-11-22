@@ -51,16 +51,6 @@ Every module is one file under `packages/knowledge/src`, with its tests beside i
 | `ask-passages.ts`     | `askSearch(question, options)`, `chooseAskPassages(found)`                                                                                                                                                                                                                                                          |
 | `ask-request.ts`      | `ASK_SYSTEM`, `askMessage`, `askRequest({ question, passages, turns })`: a `ModelRequest`, the same for both providers                                                                                                                                                                                              |
 | `ask-answer.ts`       | `parseAskAnswer(reply, passages)`, `askAnswerStream(passages)` (`push`, `finish`)                                                                                                                                                                                                                                   |
-| `claude-models.ts`    | `CLAUDE_MODELS`, `DEFAULT_CLAUDE_MODEL`, `claudeModel(id)`                                                                                                                                                                                                                                                          |
-| `model-failure.ts`    | `ModelProviderId`, `ModelFailureKind`, `modelFailureWords(provider, kind)`, `ModelCallError`                                                                                                                                                                                                                        |
-| `model-request.ts`    | `ModelRequest`, `ModelMessage`, `ModelEffort`, `fenced(text)`                                                                                                                                                                                                                                                       |
-| `sse.ts`              | `eventData(body)`, `parseEvent(data)`: a server-sent event stream as its `data:` payloads, for both clients                                                                                                                                                                                                         |
-| `claude-request.ts`   | `claudeRequest(...)`, the URL, API version and beta header                                                                                                                                                                                                                                                          |
-| `claude-client.ts`    | `callClaude({ fetch, apiKey, request, onText, signal })`, `ClaudeCallError`, `claudeFailureKind`, `CLAUDE_FAILURE_WORDS`                                                                                                                                                                                            |
-| `openai-models.ts`    | `OPENAI_MODELS`, `DEFAULT_OPENAI_MODEL`, `openAiModel(id)`                                                                                                                                                                                                                                                          |
-| `openai-request.ts`   | `OPENAI_RESPONSES_URL`, `openAiRequest(model, request)`                                                                                                                                                                                                                                                             |
-| `openai-client.ts`    | `callOpenAi({ fetch, apiKey, request, onText, signal })`, `OpenAiCallError`, `openAiFailureKind`, `openAiHeaders`                                                                                                                                                                                                   |
-| `model-providers.ts`  | `MODEL_PROVIDERS`, `modelProvider(id)`, `isModelProviderId`, `isProviderModel`, `providerModel`, `callModel(...)`                                                                                                                                                                                                   |
 | `setup-limits.ts`     | the `SETUP_*` constants, `setupRefusal(description, used)`                                                                                                                                                                                                                                                          |
 | `setup-request.ts`    | `SETUP_SYSTEM`, `setupMessage(description, existing)`, `setupRequest({ description, existing })`                                                                                                                                                                                                                    |
 | `setup-suggestion.ts` | `parseSetupSuggestion(reply)`, `SetupPage`, `SetupSuggestion`, `SETUP_MAX_REPLY_CHARS`                                                                                                                                                                                                                              |
@@ -389,6 +379,14 @@ is made in a Worker with an injected `fetch`; no SDK is a dependency.
 ## Providers
 
 Derived from [Search and Ask](../search-and-ask.md) "Providers". Built in the package, the api and AI Settings.
+
+**The model call lives in `@liveworkspace/ai`** (`packages/ai`, owner 2026-11-21: one key setting for every app,
+[liveworkspace/docs/specs/003-accounts/ai-keys.md](../../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md)):
+the providers and their models, `ModelRequest` and `fenced`, the failures, the server-sent event reader, both
+providers' request builders and clients, built-in AI's client and `callModel`, moved whole with their tests and the
+fake responses (`@liveworkspace/ai/testing`). This package keeps what is liveknowledge's: the prompts and their
+requests (`askRequest`, `conflictRequest`, `setupRequest`), the answer readers, the limits and the key seal of a
+knowledgebase's own key. The names below are unchanged; they are imported from `@liveworkspace/ai`.
 **No real model was called for either provider**: every test runs on faked `fetch`.
 
 - **One interface.** `callModel({ provider, fetch, apiKey, model, request, onText, signal })` is the only call Ask,
@@ -412,7 +410,7 @@ Derived from [Search and Ask](../search-and-ask.md) "Providers". Built in the pa
   (`x-api-key` for Claude, `Authorization: Bearer` for OpenAI) and nowhere else.
 - **Built-in AI is the third provider** ([Search and Ask](../search-and-ask.md) "Built-in AI"). `ModelCaller` is
   `{ provider: 'built-in', ai }` or `{ provider: KeyProviderId, fetch, apiKey, model }`; `callModel` hands the first
-  to `callBuiltIn` (`built-in-client.ts`): `builtInInput(request)` (the system prompt first, then the messages,
+  to `callBuiltIn` (`@liveworkspace/ai` `built-in-client.ts`): `builtInInput(request)` (the system prompt first, then the messages,
   `max_tokens` at most `BUILT_IN_MAX_TOKENS` 2,000, temperature 0.2, `stream: true`, thinking off), the binding's
   event stream read as `{ response }` or chat-completion pieces through to `[DONE]` (or one object, read by
   `builtInReplyText`), bounded by `BUILT_IN_TIMEOUT_MS` (60 s) and the caller's signal; after either, what arrives is

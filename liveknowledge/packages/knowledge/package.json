@@ -17,7 +17,8 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@liveknowledge/document": "workspace:*"
+    "@liveknowledge/document": "workspace:*",
+    "@liveworkspace/ai": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

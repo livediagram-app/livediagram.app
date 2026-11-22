@@ -114,6 +114,8 @@ const CALLERS: Record<
 export async function knowledgeKit(
   base: Partial<Env> = {},
   pages: unknown[] = PAGES,
+  // Each signed-in caller presents `jwt-<their id>` as their bearer, as a browser does (the AI key tests).
+  { bearers = false }: { bearers?: boolean } = {},
 ): Promise<Kit> {
   const db = sqliteD1({ DOCUMENT_ROOM: roomBinding(), ...base } as unknown as Partial<Env>);
   const call: Kit['call'] = (who, method, path, body) => {
@@ -125,6 +127,7 @@ export async function knowledgeKit(
         accountUserId: caller.account,
         verifiedUserId: caller.token ? caller.owner : caller.account,
         token: caller.token ? { id: TOKEN_ID, readOnly: caller.readOnly === true } : null,
+        ...(bearers && caller.account ? { bearer: `jwt-${caller.account}` } : {}),
         ...(caller.stored ? { agent: 'stored' as const } : {}),
         body,
         headers: {

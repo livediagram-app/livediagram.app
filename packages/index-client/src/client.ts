@@ -134,9 +134,10 @@ export function createIndexClient({
   async function call<T>(path: string, options: CallOptions = {}): Promise<T> {
     const res = await send(path, { ...options, bounded: (options.method ?? 'GET') === 'GET' });
     if (res.status === 204) return undefined as T;
-    const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
-    if (!res.ok) throw refusal(res, parsed);
-    return parsed as T;
+    if (!res.ok) throw refusal(res, await res.json().catch(() => null));
+    // A 2xx is its body: one that can't be read (the caller cancelled after the headers came, or the connection cut
+    // mid-body) rejects with why, never resolves as null for the caller to read `.items` of.
+    return (await res.json()) as T;
   }
 
   // A read answered as text (a CSV file), with its response for the headers.

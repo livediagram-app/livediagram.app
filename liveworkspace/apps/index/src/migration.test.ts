@@ -120,6 +120,39 @@ describe('the legacy guest merge', () => {
   });
 });
 
+// A chain (an old guest re-keyed into a new id, which is then claimed): the rows have no order, so the earlier merge
+// must reach the apps as a merge into the final owner (blueprints/guest-merge.md step 7).
+describe('a chain of merges the apps have not heard of yet', () => {
+  const REKEYED = 'guest_ab2f3550-78a9-4ab2-b8b4-b0efdabf31ac';
+  const pending = () =>
+    h.db.sql
+      .prepare('SELECT DISTINCT guest_id, user_id FROM person_app_merges ORDER BY guest_id')
+      .all();
+
+  it('points the earlier merge at the final owner', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    h.appAnswer = () => new Response(null, { status: 503 });
+    seedLegacy();
+    await merge({ guestId: LEGACY, userId: REKEYED, legacy: true });
+    await merge({ guestId: REKEYED, userId: 'user_ada', legacy: true });
+    await settle();
+    expect(pending()).toEqual([
+      { guest_id: LEGACY, user_id: 'user_ada' },
+      { guest_id: REKEYED, user_id: 'user_ada' },
+    ]);
+    expect(itemRow('i-old')).toMatchObject({ owner_id: 'user_ada' });
+  });
+
+  it('drops the earlier merge of a chain that comes back on itself', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    h.appAnswer = () => new Response(null, { status: 503 });
+    await merge({ guestId: LEGACY, userId: NEW_GUEST, legacy: true });
+    await merge({ guestId: NEW_GUEST, userId: LEGACY, legacy: true });
+    await settle();
+    expect(pending()).toEqual([{ guest_id: NEW_GUEST, user_id: LEGACY }]);
+  });
+});
+
 describe('the migration handoff', () => {
   const payload = (patch: Partial<MigrationRoomPayload> = {}): MigrationRoomPayload => ({
     v: 1,

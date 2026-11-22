@@ -18,6 +18,17 @@ const MESSAGES: Record<string, string> = {
   rate_limited: 'Too many tries just now. Wait a minute and try again.',
   signed_out: 'You’ve been signed out. Sign in again to carry on.',
   offline: 'Couldn’t reach liveworkspace. Check your connection and try again.',
+  // AI keys (liveworkspace/docs/specs/003-accounts/ai-keys.md "The account API").
+  invalid_provider: 'Choose Anthropic or OpenAI.',
+  invalid_model: 'Choose one of the listed models.',
+  invalid_key: 'That doesn’t look like an API key. Paste it again, with nothing around it.',
+  key_rejected: 'The provider didn’t accept that key. Check it and try again.',
+  key_no_credit: 'That key works, but its account has no credit left. Add some with the provider.',
+  key_model_unavailable:
+    'That key can’t use this model. Choose another, or check the key’s access.',
+  key_check_failed: 'Couldn’t reach the provider to check the key. Try again in a moment.',
+  no_key: 'There’s no key there any more. It may have changed elsewhere.',
+  ai_keys_unavailable: 'AI keys can’t be kept here just now. Built-in AI still works.',
 };
 
 /** What to tell the person when the accounts API says no. */

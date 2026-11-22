@@ -221,8 +221,9 @@ will sit under, a line under each on what goes there, and where it helps a list,
   page is for and AI drafts its headings. Nothing is saved until you press Save." One field, **What Is This Page For?**
   (up to 500 characters, optional when the page has a title), its placeholder built from the title ("What goes on
   Deploys, in your own words."), and under it the quiet line saying which AI answers, as Ask and Describe to Set Up say
-  it (**Uses built-in AI** / **Uses your team's key**; where a key is set and built-in AI is here, the person's choice
-  in Ask's picker applies here too). Buttons: Cancel and **Describe** (primary; `Mod-Enter` in the field). While it
+  it (**Uses built-in AI**, or the key that answers Ask: the knowledgebase's, the team's or the person's own,
+  [Which key answers](search-and-ask.md); where a key answers and built-in AI is here, the person's choice in Ask's
+  picker applies here too). Buttons: Cancel and **Describe** (primary; `Mod-Enter` in the field). While it
   works the field is locked and Describe reads "Drafting..."; Cancel stops the request.
 - **What it writes.** The structure lands in the page's **draft** at the top, under the Title: never saved, so it is the
   person's to change, Save or Cancel as any edit (Cancel on the bar asks before throwing it away, as it does for any
@@ -235,7 +236,7 @@ will sit under, a line under each on what goes there, and where it helps a list,
   link to one page sends that page's title alone. All of it is fenced as material, never instructions, and the reply is
   read as JSON of blocks in one fixed shape, every field checked and cut to its bound; anything else is dropped.
 - **The route:** `POST .../pages/<tab>/describe-structure` with `{ purpose, ai? }` (`ai: "built-in"` when the person
-  chose built-in AI over the team's key) answers `{ blocks, provider }`; it writes nothing. A signed-in person in
+  chose built-in AI over a key) answers `{ blocks, provider }`; it writes nothing. A signed-in person in
   person who may edit pages; an API token is refused with 403 `needs_a_person`; a person without an account, 403.
 - **Limits.** 10 a person an hour and 50 a knowledgebase a day, whichever AI answers (`STRUCTURE_*`, the room's
   counters). On built-in AI also **10 a person a UTC day** across every knowledgebase, counted apart from Describe to

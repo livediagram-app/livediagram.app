@@ -307,9 +307,19 @@ describe('closing an account needs the code', () => {
 
   it('closes the account with the right code, and spends it', async () => {
     await storeDeletionCode(db, 'user_ada', '123456');
+    // Their own AI key goes with it (ai-keys.md "Deletion and export"); someone else's stays.
+    for (const owner of ['user_ada', 'user_bea']) {
+      sql
+        .prepare(
+          `INSERT INTO ai_key (owner_kind, owner_id, provider, model, sealed, key_version, hint, set_by, set_at)
+           VALUES ('account', ?, 'anthropic', 'claude-fable-5-2', '1.a.b.c', 1, '', ?, 1)`,
+        )
+        .run(owner, owner);
+    }
     const res = await close({ token: 't', code: '123456' });
     expect(await res.json()).toEqual({ deleted: true });
     expect(users()).toEqual([{ id: 'user_bea' }]);
     expect(rows()).toEqual([]);
+    expect(sql.prepare('SELECT owner_id FROM ai_key').all()).toEqual([{ owner_id: 'user_bea' }]);
   });
 });
