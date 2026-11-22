@@ -20,6 +20,7 @@ import { TextPanel } from './TextPanel';
 import { tabStyleFontLabel } from './tab-style-fonts';
 import {
   TAB_STYLE_HELP,
+  TAB_STYLE_TITLE,
   resolveTabStyleSurface,
   shownTabStyleView,
   type TabStyleFrameParts,
@@ -86,8 +87,10 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
     onTabChange(next);
   };
   const resolvedFinish = resolveFinish(finish, undefined);
+  const title = profile.title ?? TAB_STYLE_TITLE;
   const parts: Omit<TabStyleFrameParts, 'children'> = {
     view,
+    title,
     subtitle: surface.copy.viewLines[view],
     help: profile.renderHelp(TAB_STYLE_HELP[view]),
     // Show Me's tour of the home, run on this dialog.
@@ -109,7 +112,7 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
         {/* Inside a panel: the shared breadcrumb back to the home, the panel named in its chip. */}
         {view !== 'looks' ? (
           <BackBar
-            label="Tab Style"
+            label={title}
             current={surface.copy.panelTitles[view]}
             onClick={() => go('looks')}
           />
@@ -189,6 +192,9 @@ function TabStyleViewBody<Look extends TabStyleLook, Pattern extends string>({
       </>
     );
   }
+  // A panel the product draws itself.
+  const own = surface.renderPanel?.(view);
+  if (own !== undefined && own !== null) return own;
   if (view === 'font')
     return (
       <TextPanel

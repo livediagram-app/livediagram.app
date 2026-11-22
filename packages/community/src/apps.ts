@@ -10,6 +10,7 @@ export const COMMUNITY_APPS = [
   'livedocuments.app',
   'livedesign.app',
   'livehuddle.app',
+  'liveknowledge.app',
 ] as const;
 
 export type CommunityApp = (typeof COMMUNITY_APPS)[number];
@@ -33,6 +34,7 @@ export const COMMUNITY_APP_ORIGINS: Record<CommunityApp, readonly string[]> = {
   'livedocuments.app': originsOf('livedocuments.app'),
   'livedesign.app': originsOf('livedesign.app'),
   'livehuddle.app': originsOf('livehuddle.app'),
+  'liveknowledge.app': originsOf('liveknowledge.app'),
 };
 
 // The app an origin belongs to, or null for one no app serves.

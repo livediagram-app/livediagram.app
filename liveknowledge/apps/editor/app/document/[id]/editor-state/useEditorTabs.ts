@@ -1,0 +1,366 @@
+import { usePageNameFromTitle } from '@/hooks/editor/usePageNameFromTitle';
+import { useRef } from 'react';
+import type { Tab } from '@liveknowledge/document';
+import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
+import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBurstCheckpoint';
+import { track } from '@/lib/telemetry';
+import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
+import { withStyleOfTab } from '@/lib/tab-theme-apply';
+import { useTabActions } from '@/hooks/persistence/useTabActions';
+import { useTabFolders } from '@/hooks/persistence/useTabFolders';
+import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
+import { markNameConfirmed } from '@/lib/local-identity';
+import { apiSaveTab } from '@/lib/api-client';
+import { documentGrant } from '@/lib/api/document-grants';
+import { getSessionSharePassword } from '@/lib/api/core';
+import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
+import { withConnection } from '@liveworkspace/workbench/components/connect/tab-connection';
+import type { ConnectionMade } from '@liveworkspace/index-client';
+import { withConnectedRowAdded } from '@liveknowledge/document';
+import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
+import { useActivePageNotConnected } from '@/hooks/editor/useActivePageNotConnected';
+import { createTab } from '../editor-page-helpers';
+import { useTemplateFlow } from '../useTemplateFlow';
+import type { EditorDocument } from './useEditorDocument';
+import type { EditorSelection } from './useEditorSelection';
+import type { EditorSession } from './useEditorSession';
+import type { EditorCollaboration } from './useEditorCollaboration';
+import type { EditorViewport } from './useEditorViewport';
+import type { EditorPages } from './useEditorPages';
+import type { EditorHistory } from './useEditorUndoState';
+
+// Tabs and the document around them: the tab actions, connected tabs, the active tab's name in the menu box, tab
+// folders, document actions, naming and the template / identity flow, and the tab canvas actions.
+//
+// One slice of useEditorState (../useEditorState.ts), which calls the slices in order and passes each the ones
+// before it.
+export function useEditorTabs({
+  documentSlice,
+  selectionSlice,
+  sessionSlice,
+  collaborationSlice,
+  viewportSlice,
+  pagesSlice,
+  historySlice,
+}: {
+  documentSlice: EditorDocument;
+  selectionSlice: EditorSelection;
+  sessionSlice: EditorSession;
+  collaborationSlice: EditorCollaboration;
+  viewportSlice: EditorViewport;
+  pagesSlice: EditorPages;
+  historySlice: EditorHistory;
+}) {
+  // Unmemoised by the React Compiler, as the one hook it was cut from was (see ../useEditorState.ts).
+  'use no memo';
+  const { tabs, tickTabs, commitTabs, markCheckpoint, nameConfirmed, setNameConfirmed } =
+    documentSlice;
+  const {
+    activeId,
+    setActiveId,
+    setSelectedId,
+    setEditingId,
+    setFormatSourceId,
+    setIdentityPromptOpen,
+  } = selectionSlice;
+  const {
+    selfParticipant,
+    setSelfParticipant,
+    copying,
+    setCopying,
+    sessionShareCode,
+    confirm,
+    toast,
+    documentName,
+    setDocumentName,
+    setImportError,
+    loadedTabIdsRef,
+    markTabLoaded,
+    documentId,
+    documentList,
+    refreshDocumentList,
+    isStructureReadOnly,
+  } = sessionSlice;
+  const { loadAllTabs, activeTab } = collaborationSlice;
+  const { getViewportCenter, slideDeck, requestFit } = viewportSlice;
+  const { structureBlocked, commit } = pagesSlice;
+  // --- Tab actions ---------------------------------------------------------
+
+  // Tab-lifecycle actions (add / import / rename / duplicate / delete /
+  // reorder, active-tab lock, link-into-document, clear content). They
+  // touch history, selection, telemetry, confirm / toast and the
+  // document list; see
+  // useTabActions. Document-level lifecycle + the template flow stay in
+  // the page below.
+  const {
+    addTab,
+    addNamedSubpage,
+    importIntoActiveTab,
+    importTextIntoActiveTab,
+    importFileIntoActiveTab,
+    toggleActiveTabLock,
+    renameTab,
+    linkActiveTabTo,
+    duplicateTab,
+    deleteTab,
+    movePage,
+    stepPage,
+    indentPage,
+    outdentPage,
+    renameTabFromTitle,
+    clearTabContent,
+  } = useTabActions({
+    tabs,
+    activeId,
+    canEditStructure: !isStructureReadOnly,
+    documentList,
+    ownerId: selfParticipant.id,
+    documentId,
+    createTab,
+    commit,
+    commitTabs,
+    tickTabs,
+    markTabLoaded,
+    isTabLoaded: (id: string) => loadedTabIdsRef.current.has(id),
+    setActiveId,
+    setSelectedId,
+    setEditingId,
+    setFormatSourceId,
+    setImportError,
+    requestFit,
+    noteImport: historySlice.importUndoView.noteImport,
+    onSlidesImported: slideDeck.adoptImportedSlides,
+    refreshDocumentList: () => refreshDocumentList(),
+    confirm,
+    toast,
+  });
+  // The page's name follows its Title as it is typed (usePageNameFromTitle).
+  usePageNameFromTitle({
+    activeTab,
+    // In edit mode the Title is the draft's: the name follows it on Save (docs/specs/030-knowledgebase/editing.md).
+    canEdit: !isStructureReadOnly && documentSlice.editingTabId !== activeTab.id,
+    localEditSeq: documentSlice.localEditSeqRef,
+    rename: renameTabFromTitle,
+  });
+  // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): the Connect list's add and the move to the new
+  // tab, the host's grant for opening one, and Connect Again.
+  const connectedTabs = useConnectedTabActions({
+    tabs,
+    hostKind: 'document',
+    hostId: documentId,
+    // The share code and its password, as the room asks with: a renewal without the password is refused.
+    grantFor: async (id) =>
+      (
+        await documentGrant(
+          id,
+          sessionShareCode ? { code: sessionShareCode, password: getSessionSharePassword() } : null,
+        )
+      )?.grant ?? null,
+    createTab,
+    saveTab: (tab) => apiSaveTab(selfParticipant.id, documentId ?? '', tab, sessionShareCode),
+    commitTabs,
+    markTabLoaded,
+    openTab: (id) => {
+      setActiveId(id);
+      setSelectedId(null);
+      setEditingId(null);
+    },
+    toast,
+  });
+  // A connected file in the page tree (docs/specs/030-knowledgebase/links-and-embeds.md "Connected files in the
+  // sidebar"): a new tab holding the connection, placed under `parent` (the top level when absent), saved whole
+  // before it shows so a failed save takes the connection back (connectFile). It is no page: it never meets the page
+  // limit, and it is never the open page.
+  const addConnectedRow = async (made: ConnectionMade, tabId: string, parent?: string) => {
+    if (isStructureReadOnly) throw new Error('This knowledgebase cannot be changed here.');
+    const base = withConnection({ ...createTab(made.name), id: tabId }, made.connection);
+    const row = parent ? { ...base, parent } : base;
+    const placed = withConnectedRowAdded(tabs, row, parent);
+    if ('refused' in placed) throw new Error(pageTreeRefusalText(placed.refused));
+    await apiSaveTab(selfParticipant.id, documentId ?? '', row, sessionShareCode);
+    commitTabs((ts) => {
+      const next = withConnectedRowAdded(ts, row, parent);
+      return 'refused' in next ? [...ts, row] : next;
+    });
+    markTabLoaded(tabId);
+  };
+  useActivePageNotConnected(tabs, activeId, setActiveId);
+  // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
+  // useTabActions. Menu-only: drag-reorder lives above.
+  const {
+    moveTabToFolder,
+    removeTabFromFolder,
+    renameFolder: renameTabFolder,
+  } = useTabFolders({
+    tabs,
+    commitTabs,
+  });
+
+  // Document-level lifecycle + navigation (delete / duplicate /
+  // move-to-folder / delete-folder, and the new / open / make-a-copy
+  // full-page-load helpers). Operates on whole documents + the Explorer
+  // list, distinct from per-tab lifecycle in useTabActions. See
+  // useDocumentActions.
+  const { deleteDocument, newDocument, openDocument, makeCopy } = useDocumentActions({
+    documentId,
+    documentName,
+    confirm,
+    copying,
+    setCopying,
+    sessionShareCode,
+  });
+
+  // Mark the participant's name as "confirmed" — they explicitly
+  // dismissed at least one modal that prompted for it. Persisted in
+  // localStorage so a returning visitor isn't re-prompted, and clears
+  // the in-memory flag so the modal closes immediately.
+  const confirmName = () => {
+    // Welcome / identity-only modal is dismissed by confirming the
+    // user's name. The closure check on the previous state means we
+    // only emit on the transition, not every render that re-runs
+    // this callback after the welcome flow.
+    const wasOpen = !nameConfirmed;
+    markNameConfirmed();
+    setNameConfirmed(true);
+    if (wasOpen) track('UI', 'Closed', 'Welcome');
+  };
+
+  // Name the open document: its own name, and its row in the Explorer panel's in-memory list, which would otherwise
+  // show the old name until a reload (autosave persists the name). Shared by the header's rename and a template naming
+  // a still-untitled document after itself.
+  const nameDocument = (name: string) => {
+    setDocumentName(name);
+  };
+
+  // Template and identity actions. See useTemplateFlow. confirmName
+  // stays in the page (also wired into useShareLinks) and is passed in.
+  // The draw slice comes later in this hook, so the template flow reaches its cancel through a ref.
+  const putToolDownRef = useRef<() => void>(() => {});
+  const {
+    chooseTemplate,
+    confirmIdentity,
+    cancelIdentity,
+    clearExampleContent,
+    keepExampleContent,
+  } = useTemplateFlow({
+    activeId,
+    tabs,
+    selfParticipant,
+    documentName,
+    nameDocument,
+    getViewportCenter,
+    commitTabs,
+    confirmName,
+    setSelectedId,
+    setEditingId,
+    setSelfParticipant,
+    setIdentityPromptOpen,
+    requestFit,
+    putToolDown: () => putToolDownRef.current(),
+    markTabLoaded,
+  });
+
+  // One undo step per burst of a continuous control: the background
+  // sliders (useTabCanvas) and the element colour / opacity pickers
+  // (useElementStyle). See useBurstCheckpoint.
+  const checkpointBurst = useBurstCheckpoint(markCheckpoint);
+
+  // Tab-level appearance + layout actions (theme switch, background
+  // pattern / colour / opacity / pattern-colour, reset-to-theme,
+  // auto-align). All mutate the active tab; see useTabCanvas.
+  const {
+    autoAlignTab,
+    autoLayoutTab,
+    setTabFinish,
+    applyTabLook,
+    setTabFont,
+    setTabDefaultTextSize,
+    setBackgroundPattern,
+    setTheme,
+    setBackgroundColor,
+    setBackgroundOpacity,
+    setPatternColor,
+    setBackgroundPatternScale,
+    setBackgroundAnimationSpeed,
+    setNewPageBackground,
+    applyNewPageBackgroundToEveryPage,
+  } = useTabCanvas({
+    notify: (message) => toast.info(message),
+    editsBlocked: structureBlocked,
+    activeId,
+    activeTab,
+    commit,
+    commitTabs,
+    tickTabs,
+    checkpointBurst,
+  });
+
+  // Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): the open tab's style on every tab, as one
+  // undo step, an Editor's of the whole document only.
+  const { applyToAllTabs: applyStyleToAllTabs, applying: applyingStyleToAllTabs } =
+    useApplyStyleToAllTabs<Tab>({
+      canApply: !structureBlocked && !isStructureReadOnly,
+      activeId,
+      loadAllTabs,
+      isTabLoaded: (id) => loadedTabIdsRef.current.has(id),
+      commitTabs,
+      restyle: withStyleOfTab,
+      notify: (message) => toast.info(message),
+      onApplied: () => track('Tab', 'Changed', 'AllTabs'),
+    });
+
+  return {
+    addTab,
+    addNamedSubpage,
+    importIntoActiveTab,
+    importTextIntoActiveTab,
+    importFileIntoActiveTab,
+    toggleActiveTabLock,
+    renameTab,
+    linkActiveTabTo,
+    duplicateTab,
+    deleteTab,
+    movePage,
+    stepPage,
+    indentPage,
+    outdentPage,
+    renameTabFromTitle,
+    clearTabContent,
+    connectedTabs,
+    addConnectedRow,
+    moveTabToFolder,
+    removeTabFromFolder,
+    renameTabFolder,
+    deleteDocument,
+    newDocument,
+    openDocument,
+    makeCopy,
+    nameDocument,
+    putToolDownRef,
+    chooseTemplate,
+    clearExampleContent,
+    keepExampleContent,
+    confirmIdentity,
+    cancelIdentity,
+    checkpointBurst,
+    autoAlignTab,
+    autoLayoutTab,
+    setTabFinish,
+    applyTabLook,
+    setTabFont,
+    setTabDefaultTextSize,
+    setBackgroundPattern,
+    setTheme,
+    setBackgroundColor,
+    setBackgroundOpacity,
+    setPatternColor,
+    setBackgroundPatternScale,
+    setBackgroundAnimationSpeed,
+    setNewPageBackground,
+    applyNewPageBackgroundToEveryPage,
+    applyStyleToAllTabs,
+    applyingStyleToAllTabs,
+  };
+}
+
+export type EditorTabs = ReturnType<typeof useEditorTabs>;

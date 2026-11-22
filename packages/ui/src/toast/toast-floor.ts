@@ -12,7 +12,7 @@ export const BOTTOM_CHROME_SELECTOR =
 
 /** Bottom chrome the stack clears: the editor's, a template start's foot row (the Save switch, on a phone sheet), plus
  *  anything that opts in with `data-toast-floor` (the Explorer's bottom bar, a popover opened up from the bottom chrome). */
-export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], [data-start-footer], ${BOTTOM_CHROME_SELECTOR}`;
+export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], [data-start-footer], [data-toast-side], ${BOTTOM_CHROME_SELECTOR}`;
 
 /** The stack's distance from the bottom edge with nothing beneath it, and from the screen's sides on a phone. */
 export const TOAST_EDGE_PX = 16;
@@ -82,8 +82,9 @@ export function toastFloor(input: {
   return Math.round(floor);
 }
 
-/** Bottom chrome the stack sits beside, not above, from 640px: the canvas's bottom-right cluster (Undo, Redo, Zoom). */
-export const TOAST_SIDE_SELECTOR = '[data-zoom-cluster]';
+/** Bottom chrome the stack sits beside, not above, from 640px: the canvas's bottom-right cluster (Undo, Redo, Zoom), and
+ *  anything that opts in with `data-toast-side` (liveknowledge's Edit, Cancel and Save buttons). */
+export const TOAST_SIDE_SELECTOR = '[data-zoom-cluster], [data-toast-side]';
 
 export type ToastPlacement = {
   /** The stack's CSS `bottom`, in px. */

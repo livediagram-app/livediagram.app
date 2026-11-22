@@ -1,0 +1,536 @@
+import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
+import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
+import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
+import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
+import type { CollabKeyMessage } from '@liveworkspace/api-schema/collab-key';
+import type { IdListStep } from '@liveworkspace/model-core/id-list-steps';
+import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@liveknowledge/document';
+import type { ParticipantPresence } from './index';
+import type { DragPreviewPatch } from './drag-preview';
+import type { KnowledgeSettingsWire, KnowledgeStyleWire } from './knowledge';
+import type { PageThreadOp } from './page-threads';
+import type { ChangesetRoomOp } from './changesets';
+import type {
+  CursorMessage,
+  FormatMessage,
+  GrantMessage,
+  GrantRenewMessage,
+} from '@liveworkspace/api-schema/room-wire';
+
+// ---------------------------------------------------------------------
+// Realtime room messages
+// ---------------------------------------------------------------------
+
+// Room op kinds that are ephemeral signals: they mutate no document state,
+// so they relay unordered (no seq) and from any role.
+// This classification used to live inside the room worker while the editor kept
+// its own list of the kinds it sends and handles, in another app, with nothing
+// comparing them. That is how `viewport` shipped absent from here (see its note
+// below): the mutation branch is the fall-through, so a presence kind nobody
+// classified silently becomes a logged, ordered, replayed mutation. The
+// dangerous direction is worse — a MUTATION kind added to this list hands
+// view-role visitors a write path, because the role gate only stops non-presence
+// ops. So the whole vocabulary lives here now, in the package both ends already
+// import, split into exactly three kinds with no room for a fourth.
+export const PRESENCE_OP_KINDS = [
+  'cursor',
+  'select',
+  'laser',
+  'tab-focus',
+  // Where the sender is looking, for anyone following them (docs/specs/012-collaboration/follow-me-viewport.md). Its
+  // own wire contract calls it "ephemeral presence exactly like cursor /
+  // laser: throttled, never logged, never ordered (no `seq`), never
+  // replayed to a reconnecting client" — and while it was missing from this
+  // set it was all four of those things, because the mutation branch is the
+  // fall-through.
+  //
+  // The client publishes it on every pan or zoom, throttled to 10 Hz, so ~26
+  // seconds of one editor navigating filled all 256 slots of the catch-up log
+  // with camera positions and pushed `floor` past every real mutation. The
+  // next peer whose socket blipped then failed the `lastSeq + 1 >= floor`
+  // check and was sent `resync`, re-hydrating every loaded tab from D1 —
+  // exactly the storm the comment below this block says was hunted down once
+  // already, reopened by somebody merely scrolling. It also cost a
+  // `storage.put` per frame, 10 a second per navigating editor.
+  //
+  // And because the role gate drops any non-presence op from a view-role
+  // sender, a view-only visitor could not be FOLLOWED at all, contradicting
+  // docs/specs/012-collaboration/follow-me-viewport.md's "the audience on a view link is exactly who most needs it".
+  'viewport',
+  // A dragger's preview (docs/specs/008-canvas/drag-preview.md): where the elements they are moving are
+  // right now, at cursor rates, writing nothing; the real change follows on release as element ops.
+  // The room relays it only from an editor (receivers check too): a viewer must never make others'
+  // elements appear to move.
+  'drag-preview',
+  // Where someone is writing in an article (docs/specs/007-editor/article-pages.md "Collaboration"):
+  // their caret, as a block id and a character offset, at cursor rates, writing nothing. From any
+  // session, like the cursor: a viewer's writing takes no caret, so a viewer never sends one.
+  'article-caret',
+  // The paragraph (or table cell) the sender is typing in, held for them (docs/specs/007-editor/article-pages.md
+  // "Holding a paragraph"). Presence, but the room arbitrates it rather than relaying it as sent: first claim wins,
+  // the claimant alone hears the answer, and only a given hold is relayed. Never from a Viewer, who holds nothing.
+  'article-hold',
+  // Who the sender is following (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"). The room
+  // keeps it on the session and is the only one who reads it: it tells each person, on their own socket, who
+  // follows them (`followers`). Never relayed, from any session (a viewer follows too).
+  'follow',
+  // The page the sender is editing (docs/specs/030-knowledgebase/editing.md "Edit mode"), or none: the room keeps it on
+  // the session's presence (`editing`) and sends the roster again, so a late joiner sees who is editing; never relayed
+  // as sent. Only from an Editor or a Participant (knowledgebases-and-pages.md "Share roles").
+  'page-editing',
+  // The sender just saved a page's draft (editing.md "Save"): relayed to the others, who say "<name> saved the page".
+  // Writes nothing (the save's own frames do). Only from an Editor or a Participant.
+  'page-saved',
+] as const;
+
+// Room op kinds that DO change the document: they get a monotonic `seq` within
+// the room's epoch, land in the bounded catch-up log so a reconnecting peer can
+// replay them (docs/specs/012-collaboration/realtime-conflict-resolution.md), and are refused from a view-role sender.
+export const MUTATION_OP_KINDS = [
+  'tab',
+  'tab-meta',
+  'el',
+  // One checklist tick or comment change on one element (docs/specs/012-collaboration/collab-race-hardening.md).
+  'el-delta',
+  // An Editor's save landed, its revision and digest (docs/specs/006-document/delta-saves.md "A peer's save moves the
+  // base copy"). A mutation for its ORDER: it must reach peers after the save's element ops, and a reconnecting peer
+  // replays it after them. It writes nothing; a forged one only fails a peer's digest check.
+  'tab-saved',
+  'document-meta',
+  // One article's writing changing, block by block (docs/specs/007-editor/article-pages.md
+  // "Collaboration"): two people writing different paragraphs merge, as `el` does for elements.
+  'article',
+] as const;
+
+// Op kinds only the WORKER may originate, stamped `from: 'system'` and pushed
+// through the room's /broadcast endpoint. The room drops them outright when they
+// arrive on a client socket: without that, any edit-role peer could forge
+// `share-revoked` carrying the code from their own URL and force-redirect every
+// collaborator out of the session (docs/specs/013-workspace/share-password.md).
+//
+// `share-rescoped` (docs/specs/013-workspace/tab-scoped-share-links.md) for the same reason as
+// `share-revoked`: a forged one would reload every holder of a code.
+//
+// `document-trashed` (docs/specs/013-workspace/trash.md): the document went to the
+// Trash, so every session ends with the deleted state. A forged one would end
+// everyone's session.
+//
+// `changeset` (docs/specs/024-agents/agent-changesets.md): one write the api applied and recorded,
+// sequenced through /mutation. A forged one would show people a change nobody made (CS24).
+export const SYSTEM_OP_KINDS = [
+  'share-revoked',
+  'share-rescoped',
+  'document-trashed',
+  'changeset',
+  // A page's comment thread changed (docs/specs/030-knowledgebase/page-comments.md "Live"): the api wrote it and
+  // sends it through /mutation. A forged one would show people a comment nobody wrote.
+  'page-thread',
+] as const;
+
+// The whole vocabulary. Every op the editor sends or handles is one of these
+// three kinds of thing, and which one it is decides its ordering, its role gate,
+// and whether it may come from a client at all.
+export const ROOM_OP_KINDS = [
+  ...PRESENCE_OP_KINDS,
+  ...MUTATION_OP_KINDS,
+  ...SYSTEM_OP_KINDS,
+] as const;
+
+type PresenceOpKind = (typeof PRESENCE_OP_KINDS)[number];
+
+// Membership test for the room's ordering + role gate. Takes a loose string
+// because it reads `op.kind` off an `unknown` wire payload (see ServerMessage
+// below on why the op itself stays untyped).
+export function isMutationOpKind(kind: unknown): kind is (typeof MUTATION_OP_KINDS)[number] {
+  return typeof kind === 'string' && (MUTATION_OP_KINDS as readonly string[]).includes(kind);
+}
+
+export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
+  return typeof kind === 'string' && (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
+}
+
+export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[number] {
+  return typeof kind === 'string' && (SYSTEM_OP_KINDS as readonly string[]).includes(kind);
+}
+
+// ---------------------------------------------------------------------
+// Freeing a held element (docs/specs/007-editor/editor-app.md)
+// ---------------------------------------------------------------------
+
+// Free an element somebody else is holding through the concurrent-selection lock, so the room can get on. A
+// MESSAGE to the room rather than a relayed op: relayed, it would be a command any peer could issue against any
+// other; the room alone knows which socket holds what. It keeps the `facilitator` frame it once shared with the
+// facilitator baton.
+//
+// `target` is the holder's presence id, `elementId` what they are holding.
+export type FacilitatorAction = { action: 'unlock'; target: string; elementId: string };
+
+// Outgoing WebSocket frames the room sends to clients.
+// `presence` is the full participant list refreshed on join / leave;
+// `op` is an arbitrary document change rebroadcast from another client.
+// `op` is intentionally `unknown` so the room itself stays agnostic
+// of the client's op union — clients narrow it via their own
+// `RoomOp` type and ignore frames they don't recognise.
+export type ServerMessage =
+  // `agents`: agent presence, apart from `participants` so no session reader counts one (agent-presence PR14).
+  | { kind: 'presence'; participants: ParticipantPresence[]; agents: AgentPresence[] }
+  // `seq`/`epoch` ride mutation ops only (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): the room
+  // assigns each mutation a monotonic sequence within an `epoch` (a random
+  // id minted per DO instantiation) so a reconnecting client can ask what
+  // it missed. Presence ops (cursor/select/laser/tab-focus) carry neither —
+  // they're ephemeral and unordered. Both fields absent = an older room or
+  // a presence op; clients treat that as "no ordering info", unchanged.
+  | { kind: 'op'; from: string; op: unknown; seq?: number; epoch?: string }
+  // Reply to a client `sync` (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). Either a replayable delta
+  // (`ops` the client missed, in seq order, `resync: false`) or an
+  // instruction to fully re-hydrate (`resync: true`, `ops` empty) when the
+  // gap can't be bridged from the room's bounded in-memory op log.
+  | {
+      kind: 'catchup';
+      epoch: string;
+      seq: number;
+      ops: { from: string; op: unknown; seq: number }[];
+      resync: boolean;
+    }
+  // "Your hold on this element has been released" (docs/specs/007-editor/editor-app.md), sent
+  // to the HOLDER'S SOCKET ALONE. Being sent it is the whole of the addressing:
+  // the room mints a presence id per socket and never tells a client which one
+  // is its own (docs/specs/015-api/public-api-and-tokens.md §6), so a broadcast carrying a target id would reach
+  // nobody able to recognise themselves in it.
+  //
+  // The receiver drops the selection and re-broadcasts its own `select` op, so
+  // every other peer's lock clears through the ordinary path and the room needs
+  // to tell nobody else anything.
+  | { kind: 'selection-released'; elementId: string; by: string }
+  // Who is following you (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): their presence
+  // ids, sent to YOUR SOCKET ALONE whenever the list changes, the same addressing as `selection-released`. It is
+  // how a client counts its followers and refuses to follow one of them back.
+  | { kind: 'followers'; ids: string[] }
+  // A Sheet a chart in this document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md "Keeping in
+  // step"): ids only, never values. Each session reads the range again with its own access.
+  | { kind: 'source-changed'; app: 'liveplanner'; itemId: string; sheetIds: string[] }
+  // The ordering cursor this session has reached (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1), sent on
+  // `hello` and to the SENDER of each ordered op, which the relay skips. Without
+  // it a client only learned seqs from other people's ops, so a reconnect
+  // replayed its own ops back at it (and, having heard nothing, the whole log).
+  // Harmless for idempotent element ops; an `el-delta` op is a change, so every
+  // replayed tick was applied twice.
+  | CursorMessage
+  | FormatMessage
+  | GrantRenewMessage
+  // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+  // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab key").
+  | CollabKeyMessage
+  | OpRefusedMessage
+  | PageTreeRefusedMessage;
+
+// The room's answer to an Editor's op that would break the page tree
+// (docs/specs/030-knowledgebase/blueprints/page-tree.md "The room's check"): the same frame an element refusal is,
+// to the sender's socket alone, with the tree's own reason. The op was not relayed.
+export type PageTreeRefusedMessage = {
+  kind: 'op-refused';
+  op: string;
+  reason: 'page_limit' | 'depth_limit' | 'own_subtree' | 'unknown_page';
+  tabId?: string;
+  ref?: number;
+};
+
+// The room's wire pieces every product's room shares (@liveworkspace/api-schema/room-wire): the op `ref` echo,
+// the format frame, grant renewal, the close codes, the index grant header and the keepalive.
+export {
+  ACCESS_CHANGED_CLOSE,
+  GRANT_LAPSED_CLOSE,
+  INDEX_GRANT_HEADER,
+  ROOM_GRANT_ASK_BEFORE_MS,
+  ROOM_PING,
+  ROOM_PONG,
+  SNAPSHOT_REVERTED_CLOSE,
+  WORKBENCH_ENDED_CLOSE,
+  isRoomOpRef,
+  type CursorMessage,
+  type FormatMessage,
+  type GrantMessage,
+  type GrantRenewMessage,
+} from '@liveworkspace/api-schema/room-wire';
+
+// Incoming WebSocket frames clients send to the room.
+// `hello` identifies the participant on connect; `op` is any local
+// mutation the client wants rebroadcast to peers.
+export type ClientMessage =
+  | { kind: 'hello'; participant: ParticipantPresence }
+  // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
+  | { kind: 'op'; op: unknown; ref?: number }
+  // Ask the room to free an element somebody else holds (FacilitatorAction).
+  | ({ kind: 'facilitator' } & FacilitatorAction)
+  // Sent right after re-connecting (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): "here's the last
+  // epoch+seq I applied — tell me what I missed, or that I must re-hydrate".
+  // `epoch` is null on a client that hasn't seen an ordered op yet.
+  | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  // An identity update over an open socket (docs/specs/014-identity/profile-picture.md §2): the hello's participant
+  // again, read by the same rules, without re-joining. Today it carries a picture switched on or off. Ignored
+  // before the session's hello.
+  | { kind: 'identity'; participant: ParticipantPresence }
+  | GrantMessage;
+
+// ---------------------------------------------------------------------
+// Realtime room — op vocabulary (client view)
+// ---------------------------------------------------------------------
+
+// The set of `op` kinds the live editor knows how to send + receive
+// inside the room's `op` envelopes. The api worker's view
+// (`ClientMessage` / `ServerMessage` above) keeps `op` as `unknown`
+// so the Durable Object stays agnostic of editor evolution — it just
+// rebroadcasts. The union below is what the editor narrows to on the
+// receive side, and what it constructs on the send side. New op
+// kinds grow this union (and matching handlers in the editor) —
+// nothing in the api worker changes.
+export type RoomOp =
+  // The sender just switched to (or initially focused) a tab. Drives
+  // the per-tab avatar dots in the TabBar so collaborators can see at
+  // a glance which tab each peer is working on.
+  // `besideTabId`: the tab in the sender's other pane while they work side by side
+  // (docs/specs/007-editor/split-view.md "Presence"); absent or null with no split.
+  | { kind: 'tab-focus'; tabId: string; besideTabId?: string | null }
+  // A single tab's content changed. The post-refactor replacement for
+  // the heavyweight `tabs` op below — sender ships only the one tab
+  // they edited. Receivers merge by id. Kept as a fallback for bulk
+  // changes and older peers; the granular `el` op (docs/specs/012-collaboration/realtime-conflict-resolution.md) supersedes it
+  // for the common single-element edit so concurrent different-element
+  // edits stop clobbering.
+  // `pageSteps` (on this and on `tab-meta`): how the sender's change moved its pages, by id
+  // (docs/specs/012-collaboration/collab-race-hardening.md "Pages"). A receiver applies them over its own pages, so
+  // two Editors adding a page at once both keep it; absent (an older sender), the sent pages stand whole.
+  | { kind: 'tab'; tabId: string; tab: Tab; pageSteps?: IdListStep[] }
+  // A single element on a tab changed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0): add / update /
+  // remove / reorder, applied by id so a peer editing a DIFFERENT element
+  // on the same tab merges instead of overwriting the whole tab. `op`
+  // carries the element payload (see @liveknowledge/document ElementOp).
+  | { kind: 'el'; tabId: string; op: RoomElementOp }
+  // A tab's non-element metadata changed (name, background, font, …) —
+  // the element array is untouched, so this rides alongside `el` ops
+  // without shipping the whole tab.
+  //
+  // `clear` names fields the sender REMOVED (a reset background). A removed field serialises to nothing inside `patch`, so it
+  // used to force a whole-`tab` op, which replaced every element on every
+  // receiver and wiped their unsaved presses (docs/specs/012-collaboration/collab-race-hardening.md).
+  | {
+      kind: 'tab-meta';
+      tabId: string;
+      patch: Partial<Omit<Tab, 'elements'>>;
+      clear?: string[];
+      pageSteps?: IdListStep[];
+    }
+  // ONE change to a field many people write at once: a checklist tick, a comment
+  // (docs/specs/012-collaboration/collab-race-hardening.md). It carries the CHANGE rather than the state: a
+  // whole-element `el` update replaced a peer's copy with the sender's snapshot, so two people pressing the same
+  // done check lost a mark.
+  | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // An Editor's save of a tab landed (docs/specs/006-document/delta-saves.md "A peer's save moves the base copy"): the
+  // revision it wrote and the digest of the elements now stored, sent after the save's element ops. Changes no content.
+  | TabSavedOp
+  // An article's writing on a tab changed (docs/specs/007-editor/article-pages.md
+  // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
+  // `Tab.articles` never rides a `tab-meta` patch, which would replace every document wholesale.
+  // `created`: the article is new (its first frames): a receiver without it takes it, where puts
+  // for an article it no longer has (removed meanwhile) are dropped. `grow`: its writer lays out no
+  // pages (an agent, or a Participant; set by the server alone), so an editor that is not its writer
+  // still grows them (docs/specs/024-agents/pages-for-agents.md "Pages for the writing").
+  | {
+      kind: 'article';
+      tabId: string;
+      flow: string;
+      ops: ArticleOp[];
+      created?: true;
+      grow?: true;
+    }
+  | { kind: 'article'; tabId: string; flow: string; removed: true }
+  // Document-level metadata changed: rename, tab reorder, tab add /
+  // delete. Carries the new ordered list of tab summaries (id + name
+  // + order) so receivers can update the TabBar without fetching the
+  // full tab payloads.
+  | {
+      kind: 'document-meta';
+      name: string;
+      // The knowledgebase's settings (docs/specs/030-knowledgebase/verification.md "The Review Period"), when they
+      // changed: an op without the key leaves them as they are.
+      knowledgeSettings?: KnowledgeSettingsWire;
+      // The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"), when it
+      // changed: sent by the api after it stored one, never relayed from a session.
+      knowledgeStyle?: KnowledgeStyleWire;
+      // `folder` (docs/specs/006-document/tab-folders.md) is the per-document folder name, optional so
+      // an older peer that omits it is treated as loose — no parse break.
+      // `outOfScope` marks a tab outside a tab-scoped session's scope
+      // (docs/specs/013-workspace/tab-scoped-share-links.md): its name is blanked by the room.
+      // `connection`: a connected tab's (liveworkspace/docs/specs/004-index/connected-tabs.md), as the room sends when
+      // the index adds one (the reverse tab of a connection made both ways).
+      tabs: {
+        id: string;
+        name: string;
+        orderIndex: number;
+        folder?: string;
+        // The page it sits under (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree"): a
+        // string, or null at the top level. A summary that carries the key sets the tab's parent, loaded or not; one
+        // without it (the room's rename relay) leaves the tab's own.
+        parent?: string | null;
+        outOfScope?: true;
+        connection?: TabConnectionWire;
+      }[];
+    }
+  // `tabId` scopes the selection to the tab it lives on: element ids
+  // are only unique per tab in older documents (tab duplication used to
+  // copy ids verbatim), so an unscoped selection rendered — and, via
+  // the docs/specs/007-editor/editor-app.md concurrent-selection lock, LOCKED — the same-id element
+  // on every other tab too. Optional for wire compatibility: a frame
+  // without it is treated as tab-unknown and shown everywhere (the old
+  // behaviour).
+  //
+  // `elementIds` is the whole selection (the multi-selection, or the single one), capped at
+  // MAX_SELECTION_IDS: the room records it so the api can refuse an agent changeset on an element a
+  // person holds (docs/specs/024-agents/agent-changesets.md "Held elements"). A sender that omits it
+  // holds `[elementId]`.
+  | { kind: 'select'; elementId: string | null; tabId?: string; elementIds?: string[] }
+  // Cursor position in canvas coordinates. `null` means the cursor
+  // left the canvas surface so peers can hide their indicator. The
+  // active tab id is included so we only render cursors of
+  // participants who are looking at the same tab as us.
+  | { kind: 'cursor'; tabId: string; x: number | null; y: number | null }
+  // The sender's caret in an article's writing (docs/specs/007-editor/article-pages.md
+  // "Collaboration"): the top-level block it is in, by id, and how many characters into that
+  // block's text it sits, so a receiver places it in their own copy of the writing whatever they
+  // typed elsewhere. `flow: null` means the sender's writing lost the caret, so peers drop it.
+  // Throttled like the cursor; parsed with parseArticleCaret.
+  | { kind: 'article-caret'; tabId: string; flow: string; blockId: string; offset: number }
+  | { kind: 'article-caret'; tabId: string; flow: null }
+  // The sender's hold on a paragraph or a table cell (docs/specs/007-editor/article-pages.md "Holding a paragraph"),
+  // or (`flow: null`) the sender letting go. Parsed with parseArticleHold.
+  | {
+      kind: 'article-hold';
+      tabId: string;
+      flow: string;
+      blockId: string;
+      row?: string;
+      col?: string;
+    }
+  | { kind: 'article-hold'; tabId: string; flow: null }
+  // One sample of the sender's laser-pointer trail (canvas-coords).
+  // Sent on every pointer move while the sender is in laser tool
+  // mode, throttled like cursor. Receivers append to a per-
+  // participant buffer and fade the trail out over ~1 s — see
+  // LaserOverlay. The active tab id scopes the rendering so peers on
+  // a different tab don't see the laser.
+  | {
+      kind: 'laser';
+      tabId: string;
+      x: number;
+      y: number;
+      // The sender's pen (docs/specs/008-canvas/laser-panel.md): width / colour / trail / effect, each a
+      // preset token. Optional, so a packet from an older client still parses
+      // and simply draws the original laser. It rides the sample rather than a
+      // separate op because a second packet would need ordering against the
+      // samples it describes, for a couple of dozen bytes on a frame that is
+      // already throttled to ~30 Hz. Receivers parse it field by field.
+      look?: {
+        width: 'fine' | 'medium' | 'bold';
+        // 'presence', a standard colour's name ('red', 'grey'...) or a custom '#rrggbb'
+        // (docs/specs/004-interface-design/colour-picker.md); older clients sent
+        // 'cyan' and 'white', which receivers read as 'teal' and 'ink'.
+        colour: string;
+        trail: 'quick' | 'normal' | 'long';
+        effect: 'beam' | 'glow' | 'comet' | 'spark';
+      };
+    }
+  // A dragger's live preview (docs/specs/008-canvas/drag-preview.md): one geometry patch per changed
+  // element; `end` says the preview is over, `landed` that it was written (the real change follows as
+  // element ops, after the autosave's wait), so receivers keep drawing it until then.
+  | { kind: 'drag-preview'; tabId: string; patches?: DragPreviewPatch[]; end?: true; landed?: true }
+  // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
+  // has chosen to follow them can mirror it. Ephemeral presence exactly like
+  // cursor / laser: throttled, never logged, never ordered (no
+  // `seq`), never replayed to a reconnecting client.
+  //
+  // Sent by everyone on change rather than on request. The alternative — a
+  // follower asks, the presenter starts publishing — needs a second op kind, a
+  // re-request on every reconnect, and a rule for what happens when the
+  // presenter reloads mid-follow, all for three numbers on an
+  // already-throttled channel. The cost is accepted and written down: a room
+  // where nobody follows anybody still carries these while people scroll.
+  //
+  // `size` is the sender's canvas. Optional: a client from before it sends
+  // none, and a viewport without one counts as unknown.
+  | {
+      kind: 'viewport';
+      tabId: string;
+      pan: { x: number; y: number };
+      zoom: number;
+      size?: { width: number; height: number };
+    }
+  // Who the sender follows (a presence id), or null when they stop: to the room, never relayed.
+  | { kind: 'follow'; target: string | null }
+  // The page the sender is editing, or none (docs/specs/030-knowledgebase/editing.md): to the room, kept on presence.
+  | { kind: 'page-editing'; tabId: string | null }
+  // The sender saved this page's draft (editing.md "Save"): peers say who.
+  | { kind: 'page-saved'; tabId: string }
+  // A share link was revoked by the document owner. Every connected
+  // peer using that share code (the `X-Share-Code` they handed in to
+  // hydrate) should hard-redirect to a "share revoked" surface so
+  // they don't continue to read or hold open a stale connection.
+  // Carries only the revoked code; viewers compare against their own
+  // sessionShareCode and act only if it matches.
+  | { kind: 'share-revoked'; code: string }
+  // The named share link changed scope (docs/specs/013-workspace/tab-scoped-share-links.md). Sessions that
+  // hydrated with that code reload into the new scope; the room closes their
+  // sockets. Worker-originated, like share-revoked.
+  | { kind: 'share-rescoped'; code: string }
+  // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
+  // Worker-originated through /mutation.
+  | ChangesetRoomOp
+  // A page's comment thread, whole, or its removal (docs/specs/030-knowledgebase/page-comments.md "Live").
+  // Worker-originated through /mutation.
+  | PageThreadOp
+  // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
+  // session shows the deleted state; the room then closes every socket (4004).
+  // Worker-originated, like share-revoked.
+  | { kind: 'document-trashed' };
+
+// Client-side narrowings of `ClientMessage` / `ServerMessage` that
+// pin `op` to `RoomOp` for type-safe send/receive in the editor.
+// The room itself still operates on `op: unknown` — the agnosticism
+// stays at the worker boundary.
+export type RoomOutgoing =
+  | { kind: 'hello'; participant: ParticipantPresence }
+  | { kind: 'op'; op: RoomOp; ref?: number }
+  | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  | { kind: 'identity'; participant: ParticipantPresence }
+  | ({ kind: 'facilitator' } & FacilitatorAction)
+  | GrantMessage;
+
+export type RoomIncoming =
+  | { kind: 'presence'; participants: ParticipantPresence[]; agents?: AgentPresence[] }
+  | { kind: 'op'; from: string; op: RoomOp; seq?: number; epoch?: string }
+  | {
+      kind: 'catchup';
+      epoch: string;
+      seq: number;
+      ops: { from: string; op: RoomOp; seq: number }[];
+      resync: boolean;
+    }
+  // Addressed by being sent at all — see ServerMessage above.
+  | { kind: 'selection-released'; elementId: string; by: string }
+  | { kind: 'followers'; ids: string[] }
+  | CursorMessage
+  | FormatMessage
+  | GrantRenewMessage
+  // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+  | CollabKeyMessage
+  | OpRefusedMessage
+  | PageTreeRefusedMessage;
+
+// The room's size (ROOM_MAX_CONNECTIONS) and the close code past it (ROOM_FULL_CLOSE), shared by every product's room.
+export {
+  ROOM_MAX_CONNECTIONS,
+  ROOM_FULL_CLOSE,
+  ROOM_FULL_MESSAGE,
+  ROOM_FULL_REASON,
+  ROOM_FULL_RETRY_MS,
+  roomIsFull,
+} from '@liveworkspace/api-schema/room-capacity';

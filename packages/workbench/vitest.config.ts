@@ -8,6 +8,8 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // (docs/specs/007-editor/pages-mode.md "Contents" in each). The editors' door tests drive them with real pages; these
 // gates keep the package's own tests covering every branch. A new file joins the list on the commit that adds it.
 const HELD_AT_100 = [
+  // The chosen rail row's label in a start panel, read at AA on its tint (each product's start spec, "Rail").
+  'src/components/start/start-chosen-ink.ts',
   // Organise in Tab Folder, the list and the folder colour (each product's 006 tab-folders.md, Work Tracker 1328).
   'src/components/chrome/TabFolderDialog.tsx',
   'src/components/chrome/TabFolderList.tsx',

@@ -4,6 +4,7 @@
 // Did It, Day of Week and Text. Chips for what is picked from the item (a tab or a person no longer here stays as a
 // pressed chip until unpicked), selects for a single choice.
 
+import { useTabWords } from '../tab-words';
 import {
   TEXT_CONDITION_MAX,
   itemValueOptions,
@@ -35,15 +36,16 @@ export function withNot<T extends { not?: true }>(condition: T, not: boolean): T
 
 export function TabConditionPanel({ condition, onChange, outline }: Props<ItemTabCondition>) {
   const { item } = useAutomationsKit().plumbing.words;
+  const words = useTabWords();
   return (
     <div className="flex flex-col gap-4">
       <IsNotPicker not={!!condition.not} onChange={(not) => onChange(withNot(condition, not))} />
       <ChipToggles
-        label="Tabs"
+        label={words('Tabs')}
         options={outline.item.tabs.map((t) => ({ value: t.id, label: t.name }))}
         value={condition.tabs}
-        hint="Pick at least one tab."
-        empty={`This ${item} has no tabs yet.`}
+        hint={words('Pick at least one tab.')}
+        empty={words(`This ${item} has no tabs yet.`)}
         gone="No Longer Here"
         onChange={(tabs) => onChange({ ...condition, tabs })}
       />

@@ -17,7 +17,12 @@ export type { SettingsApiResult, SettingsRequest } from './request';
 // registered before its launch (`HELD_APP_SITES`: liveworkspace/docs/specs/002-architecture/integrating-an-app.md
 // "Registered before launch"), whose own editor's panel shows its own settings.
 export type SettingsAppId =
-  'livediagram.app' | 'liveplanner.app' | 'livedocuments.app' | 'livedesign.app' | 'livehuddle.app';
+  | 'livediagram.app'
+  | 'liveplanner.app'
+  | 'livedocuments.app'
+  | 'livedesign.app'
+  | 'livehuddle.app'
+  | 'liveknowledge.app';
 
 // Each app's catalogue, as its own chunk: fetched only when that app's settings are first shown here.
 const CATALOGUES: Record<SettingsAppId, () => Promise<{ CATALOGUE: AppCatalogue }>> = {
@@ -26,6 +31,7 @@ const CATALOGUES: Record<SettingsAppId, () => Promise<{ CATALOGUE: AppCatalogue 
   'livedocuments.app': () => import('@liveworkspace/settings/catalogues/livedocuments'),
   'livedesign.app': () => import('@liveworkspace/settings/catalogues/livedesign'),
   'livehuddle.app': () => import('@liveworkspace/settings/catalogues/livehuddle'),
+  'liveknowledge.app': () => import('@liveworkspace/settings/catalogues/liveknowledge'),
 };
 
 const hasCatalogue = (id: string): id is SettingsAppId => Object.hasOwn(CATALOGUES, id);

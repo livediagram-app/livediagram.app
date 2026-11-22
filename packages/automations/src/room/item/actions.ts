@@ -5,6 +5,7 @@
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import { addressWords } from '../../email-addresses';
 import {
+  inTabWords,
   STEP_NAME_MAX,
   emailToWords,
   snapshotWords,
@@ -144,11 +145,14 @@ async function addTab(
   run: SharedRun,
 ): Promise<StepOutcome> {
   const { kit } = run.deps;
-  if (!kit.addTab) return failed(`This ${kit.itemWord} can't add a tab from a template`);
+  if (!kit.addTab)
+    return failed(inTabWords(`This ${kit.itemWord} can't add a tab from a template`, kit.itemWord));
   const name = cutText(ctx.fill(action.name).trim(), STEP_NAME_MAX);
   if (!name) return failed(NAME_EMPTY);
   const added = await kit.addTab(action.template, name);
-  return 'failed' in added ? failed(added.failed) : ok(`Added a tab named “${added.name}”`);
+  return 'failed' in added
+    ? failed(added.failed)
+    : ok(`${inTabWords('Added a tab named', kit.itemWord)} “${added.name}”`);
 }
 
 /** The shared steps' runners, by kind. */

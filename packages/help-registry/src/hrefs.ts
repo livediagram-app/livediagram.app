@@ -44,6 +44,7 @@ const SITE_OF_SCOPE: Record<HelpScope, SiteId> = {
   livedocuments: 'livedocuments.app',
   livedesign: 'livedesign.app',
   livehuddle: 'livehuddle.app',
+  liveknowledge: 'liveknowledge.app',
   all: 'liveworkspace.app',
 };
 

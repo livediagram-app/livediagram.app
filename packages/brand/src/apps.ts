@@ -4,7 +4,7 @@ import type { PrismPalette, PrismScheme } from './prism';
 // (every product's docs/specs/004-interface-design/brand-mark.md). The class strings are literal so
 // Tailwind finds them when an app sources this package.
 export type BrandApp =
-  'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle';
+  'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle' | 'liveknowledge';
 
 export type BrandIdentity = {
   // The wordmark after "live".
@@ -234,6 +234,49 @@ export const BRAND_APPS: Record<BrandApp, BrandIdentity> = {
       800: '#065f46',
       900: '#064e3b',
       950: '#022c22',
+    },
+  },
+  // Lime (liveknowledge/docs/specs/016-platform/platform-registration.md "Brand"): its editor and sites paint with it
+  // through @liveknowledge/tailwind-config.
+  liveknowledge: {
+    word: 'knowledge',
+    // Lime into green.
+    palettes: {
+      light: {
+        light: '#a3e635',
+        vivid: '#65a30d',
+        primary: '#16a34a',
+        deep: '#15803d',
+        dark: '#052e16',
+        highlight: '#ecfccb',
+      },
+      dark: {
+        light: '#a3e635',
+        vivid: '#84cc16',
+        primary: '#22c55e',
+        deep: '#15803d',
+        dark: '#0f172a',
+        highlight: '#d9f99d',
+      },
+    },
+    lockup: {
+      light: { accent: '#4d7c0f', ink: INK.light },
+      dark: { accent: '#a3e635', ink: INK.dark },
+    },
+    liveClass: 'text-brand-700 dark:text-lime-400',
+    shineClass: 'dark:[--ldm-shine:#bef264]',
+    ramp: {
+      50: '#f7fee7',
+      100: '#ecfccb',
+      200: '#d9f99d',
+      300: '#bef264',
+      400: '#a3e635',
+      500: '#84cc16',
+      600: '#4d7c0f',
+      700: '#3f6212',
+      800: '#365314',
+      900: '#2b4310',
+      950: '#1a2e05',
     },
   },
 };

@@ -1,0 +1,29 @@
+# Docs
+
+Follow the references below only as needed; never upfront.
+
+Documentation for liveknowledge, the open-source real-time editor for documents made of pages.
+
+liveknowledge is a multiplayer page editor in the browser: teams write articles, build slide decks and lay out infographics together in real time, with shared cursors and live selections, then present them full screen. The editor works without signing in, so starting is "open the link, start writing". The hosted product runs free at [liveknowledge.app](https://www.liveknowledge.app), and the codebase is MIT-licensed. Who it is for lives in [Purpose](./specs/001-project-vision/purpose.md), what is built and still ahead in [Build phase](./specs/005-project-roadmap/prototype-scope.md).
+
+These docs are the practical guide: what the app does, how to run it locally, and how to contribute. For the why-behind-the-what (product decisions, constraints, behaviour contracts), read the [specs](specs/). Specs are normative; these docs explain.
+
+## Contents
+
+- ./specs/README.md - when building or changing product behaviour: the specs are the source of truth
+- ./instructions/README.md - when repeating a known process, such as registering a help article
+- ./development/architecture.md - when you need the repo shape: seven apps (six Workers and the CLI), thirteen packages, Cloudflare-only deploys
+- ./development/local-development.md - when cloning, installing, and running the apps locally
+- ./development/contributing.md - when proposing a change: specs-first workflow, code style, tests, PRs
+- ./research/README.md - when you need measurements and experiment reports
+
+## How docs relate to specs
+
+- **Docs** (this folder): user-facing + contributor-facing instructions. How to do things.
+- **[Specs](specs/)**: product source of truth. Why the app behaves the way it does, what the contracts are, what's in scope.
+
+If a doc disagrees with a spec, the spec wins (and the doc is the bug). Docs link out to specs when readers should go deeper.
+
+## License
+
+[MIT](../LICENSE). Fork, embed, modify, commercial or otherwise. The hosted version at [liveknowledge.app](https://www.liveknowledge.app) runs alongside the open-source codebase; see [Open source + distribution](./specs/002-project-scope/open-source-and-business-model.md) for the OSS / hosted split.

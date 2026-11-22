@@ -185,6 +185,7 @@ describe('SettingsPanel', () => {
       '/settings/livediagram.app',
       '/settings/livedocuments.app',
       '/settings/livehuddle.app',
+      '/settings/liveknowledge.app',
     ]);
     // Account, Apps and Developers; no app has a group of its own.
     expect(headings()).toEqual(['Account', 'Apps', 'Developers']);
@@ -203,12 +204,15 @@ describe('SettingsPanel', () => {
     expect(top).not.toContain('Privacy');
     expect(top).not.toContain('Common');
     // Editor: the common settings as the editor's own rows (changed through it), marked with every app that has
-    // them (all five here, so liveworkspace's one mark); liveplanner's own row beside them with its logo, never under
-    // an app's heading.
+    // them (liveworkspace's one mark when every app does; Alignment Guides names the five canvas apps, since
+    // liveknowledge has no canvas to snap on); liveplanner's own row beside them with its logo, never under an
+    // app's heading.
     fireEvent.click(within(apps).getByRole('button', { name: /^Editor/ }));
     expect(pane().querySelector('[data-settings-app-heading]')).toBeNull();
     const guides = within(pane()).getByRole('switch', { name: 'Alignment Guides' });
-    expect(marksOf(guides)).toBe('Every App');
+    expect(marksOf(guides)).toBe(
+      'livediagram, liveplanner, livedocuments, livedesign and livehuddle',
+    );
     fireEvent.click(guides);
     const ownGuides = own[0]!.rows[0] as Extract<SettingsRow, { kind: 'toggle' }>;
     expect(ownGuides.onChange).toHaveBeenCalledWith(true);
@@ -247,7 +251,7 @@ describe('SettingsPanel', () => {
     renderWithKit(<Host request={request} initial="all" />);
     await waitFor(() => expect(screen.getByRole('group', { name: 'Account' })).toBeTruthy());
     // No editor here: all five apps are read.
-    expect(calls.filter((c) => c.method === 'GET' && c.path !== '/push/devices')).toHaveLength(5);
+    expect(calls.filter((c) => c.method === 'GET' && c.path !== '/push/devices')).toHaveLength(6);
     const account = () => within(rail()).getByRole('group', { name: 'Account' });
     fireEvent.click(within(account()).getByRole('button', { name: /^Notifications/ }));
     await act(async () => {

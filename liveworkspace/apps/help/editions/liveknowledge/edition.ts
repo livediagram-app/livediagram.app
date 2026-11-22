@@ -1,0 +1,54 @@
+import type { HelpArt } from '@liveworkspace/help-site/site';
+import {
+  cardSubtitle,
+  CONTACT_FORM_URL,
+  pageMetadata,
+  REPO_URL,
+  SITE_NAME,
+  SITE_URL,
+} from '@liveknowledge/ui';
+import { CATEGORY_ART } from './components/category-art';
+import { Footer } from './components/Footer';
+import { Header } from './components/Header';
+import { SUPPORT_ARTICLE_FALLBACK, SUPPORT_ARTICLE_ICONS } from './lib/articleIcons';
+import { FEATURE_CATEGORY_HEX, FEATURE_ENTITY_HEX } from './lib/featureColours';
+import { FEATURE_CATEGORY_ICONS, FEATURE_ICONS } from './lib/featureIcons';
+import { HOME } from './lib/home-sections';
+import type { Edition } from '../types';
+
+// The liveknowledge edition of the one help centre (liveworkspace/docs/specs/017-help/help-centre.md
+// "liveknowledge"): what is liveknowledge's alone. The framework's `editions/index.ts` picks it when the build's
+// scope is `liveknowledge`. A Knowledgebase has no canvas, so a feature card that has no glyph of its own falls back
+// to the page tree's, never a canvas frame.
+const art: HelpArt = {
+  featureHex: FEATURE_ENTITY_HEX,
+  categoryHex: FEATURE_CATEGORY_HEX,
+  featureIcons: FEATURE_ICONS,
+  categoryIcons: FEATURE_CATEGORY_ICONS,
+  featureFallback: FEATURE_ICONS['the-page-tree'],
+  supportIcons: SUPPORT_ARTICLE_ICONS,
+  supportFallback: SUPPORT_ARTICLE_FALLBACK,
+  categoryArt: CATEGORY_ART,
+};
+
+export const edition: Edition = {
+  app: 'liveknowledge',
+  header: Header,
+  footer: Footer,
+  uiFacts: {
+    siteName: SITE_NAME,
+    siteUrl: SITE_URL,
+    contactFormUrl: CONTACT_FORM_URL,
+    pageMetadata,
+    cardSubtitle,
+  },
+  art,
+  homeLayout: HOME,
+  heroLede: 'Guides and answers for every part of liveknowledge, from your first page onwards.',
+  issuesUrl: `${REPO_URL}/issues`,
+};
+
+export default edition;
+
+// The name the generated pick (current.generated.ts) exports, so a test can alias this file in its place.
+export { edition as EDITION };

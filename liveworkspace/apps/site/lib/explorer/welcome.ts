@@ -25,6 +25,7 @@ const FILES: Partial<Record<AppName, () => Promise<{ default: unknown }>>> = {
   liveplanner: () => import('@liveplanner/templates/welcome.json'),
   livedocuments: () => import('@livedocuments/templates/welcome.json'),
   livedesign: () => import('@livedesign/templates/welcome.json'),
+  liveknowledge: () => import('@liveknowledge/templates/welcome.json'),
 };
 
 /** A file's addresses, made the app's own. */

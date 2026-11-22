@@ -2,6 +2,7 @@
 // connections and templates by id. A list the caller lacks reads as its plain noun; an id the list lacks reads as
 // gone; an empty id as not picked yet. Pure.
 
+import { inTabWords } from './tab-word';
 import type { ItemOutline, ItemWord } from './types';
 
 export type ItemRefKind = 'tab' | 'snapshot' | 'connection' | 'template' | 'person';
@@ -42,8 +43,8 @@ export const GONE_NAMES: Readonly<Record<ItemRefKind, string>> = {
 /** The name `id` has among the item's `kind`s. */
 export function refName(names: ItemNames, kind: ItemRefKind, id: string): string {
   const list = names[LISTS[kind]];
-  if (id === '' || !list) return UNPICKED_NAMES[kind];
-  return list.get(id) ?? GONE_NAMES[kind];
+  if (id === '' || !list) return inTabWords(UNPICKED_NAMES[kind], names.itemWord);
+  return list.get(id) ?? inTabWords(GONE_NAMES[kind], names.itemWord);
 }
 
 /** The names a run reads: the outline's tabs and people, and whatever else the caller knows. */

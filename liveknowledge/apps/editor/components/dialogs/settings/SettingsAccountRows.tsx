@@ -1,0 +1,120 @@
+'use client';
+
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
+import { Button } from '@liveknowledge/ui';
+import { resetSettingsBlob } from '@liveworkspace/settings';
+import {
+  resetAccountSettings,
+  resetBrowserSettings,
+  ResetSettingsRow,
+  SettingsRowShell,
+  type SettingsRequest,
+} from '@liveworkspace/settings-ui';
+import { SettingsIdentityRow as SharedSettingsIdentityRow } from '@liveworkspace/workbench/components/dialogs/settings/SettingsIdentityRow';
+import { SettingsSignInLink } from '@liveworkspace/workbench/components/dialogs/settings/SettingsSignInLink';
+import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
+import { useOwnPicture } from '@/lib/own-picture';
+import type { UserPreferences } from '@/lib/user-preferences';
+import type {
+  SettingsDeleteAccountRowSpec,
+  SettingsIdentityRowSpec,
+  SettingsResetSettingsRowSpec,
+} from './settings-catalogue';
+
+// The account rows, moved here from the Explorer's /explorer/profile page
+// (docs/specs/014-identity/profile-and-email-notifications.md) when that page was retired: everything it held now lives in
+// Settings, so a second account home was a second place to look.
+//
+// Lazy: almost nobody deletes, so it only loads on first click.
+const DeleteAccountDialog = dynamic(
+  () => import('@/components/dialogs/DeleteAccountDialog').then((m) => m.DeleteAccountDialog),
+  { ssr: false },
+);
+
+// Identity: the shared card (@liveworkspace/workbench SettingsIdentityRow), its avatar your own Google picture from the
+// own-picture store, as the header's account control draws it, whatever Show My Google Picture says.
+export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
+  const { picture } = useOwnPicture();
+  return <SharedSettingsIdentityRow row={row} things="documents" picture={picture} />;
+}
+
+// Reset All Settings, directly above Delete Account (docs/specs/007-editor/user-preferences.md; the row is the shared
+// one, @liveworkspace/settings-ui ResetSettingsRow). With an account, one request resets every app's settings on it
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Resetting every setting"); either way this editor's own copy then
+// goes back to its defaults through the same change every row makes: no stored value is what a default means, so the
+// change is the keys dropped (all but RESET_KEEPS), written and synced as any change is.
+export function SettingsResetSettingsRow({
+  row,
+  settings,
+  onChange,
+  accountRequest,
+}: {
+  row: SettingsResetSettingsRowSpec;
+  settings: UserPreferences;
+  onChange: (next: UserPreferences) => void;
+  accountRequest: SettingsRequest | null;
+}) {
+  const reset = () => {
+    const apply = () => onChange(resetSettingsBlob(settings));
+    return accountRequest
+      ? resetAccountSettings(accountRequest, apply)
+      : resetBrowserSettings(apply);
+  };
+  return (
+    <ResetSettingsRow row={row} reach={accountRequest ? 'account' : 'browser'} reset={reset} />
+  );
+}
+
+// Delete account. Signed-in only, and not because of the UI: the api's
+// DELETE /api/account is signed-in only by design (docs/specs/014-identity/profile-and-email-notifications.md), since the whole
+// point is wiping data bound to a VERIFIED identity. A guest's owner id is an
+// unverified header, so honouring it would let anyone wipe anyone's documents.
+// The row still renders for guests, saying why, rather than vanishing, so the
+// answer to "can I delete my data?" is in the panel either way.
+export const DELETE_ACCOUNT_SIGNED_IN =
+  'Permanently deletes your liveworkspace account and everything you own in every liveworkspace app.';
+export const DELETE_ACCOUNT_GUEST =
+  'Available once you sign in: a guest browser has no verified account to delete.';
+
+export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRowSpec }) {
+  const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
+  const signedIn = Boolean(authLoaded && isSignedIn && user);
+  const [open, setOpen] = useState(false);
+
+  // One row, the button beside the label and what it does under it.
+  const described = {
+    ...row,
+    description: signedIn ? DELETE_ACCOUNT_SIGNED_IN : DELETE_ACCOUNT_GUEST,
+  };
+
+  return (
+    <SettingsRowShell
+      row={described}
+      control={
+        signedIn ? (
+          <Button variant="secondary" size="sm" onClick={() => setOpen(true)} className="shrink-0">
+            Delete Account
+          </Button>
+        ) : (
+          // A guest is offered the way in, beside the label.
+          <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
+            <SettingsSignInLink />
+          </span>
+        )
+      }
+    >
+      {open ? (
+        <DeleteAccountDialog
+          open={open}
+          onClose={() => setOpen(false)}
+          onDeleted={async () => {
+            // The data delete already completed inside the dialog;
+            // sign out to clear client state and land on marketing.
+            await signOut({ redirectUrl: '/', accountClosed: true });
+          }}
+        />
+      ) : null}
+    </SettingsRowShell>
+  );
+}

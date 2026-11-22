@@ -110,6 +110,7 @@ it('finds the products’ palettes', () => {
     'livedesign',
     'livedocuments',
     'livehuddle',
+    'liveknowledge',
     'liveplanner',
   ]);
 });

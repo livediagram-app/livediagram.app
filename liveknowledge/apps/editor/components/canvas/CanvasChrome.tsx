@@ -1,0 +1,529 @@
+import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
+import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
+import { ZenControl } from '@/components/chrome/ZenControl';
+import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
+import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
+import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
+import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
+// Lazy-load the visitor name prompt the same way ExportTabDialog + ShareDialog already are. It is gated on
+// `showIdentityPrompt`, false on the common path (the owner opening their own document); for a visitor the empty
+// canvas underneath has already rendered, so the prompt fades in a frame later rather than blocking the route on its JS.
+import dynamic from 'next/dynamic';
+const IdentityPrompt = dynamic(
+  () => import('@/components/palette/IdentityPrompt').then((m) => m.IdentityPrompt),
+  { ssr: false },
+);
+
+import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
+import { PageFormattingBar } from '@/components/page-surface/PageFormattingBar';
+import { KnowledgeTopRow } from '@/components/chrome/KnowledgeTopRow';
+import { useTopRowShown } from '@/components/chrome/useTopRowShown';
+import { useDrawingZoneEditing } from '@/lib/page-surface/drawing-zone-store';
+import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
+import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
+import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
+import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
+import { pageTreeClearancePx } from '@/components/page-tree/page-tree-view';
+import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
+import { PagesClusterStrip } from './PagesClusterStrip';
+import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
+import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
+import { Fragment, useCallback, useRef } from 'react';
+import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
+import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
+import { useRenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor/useRenameCurrentRequest';
+import { useCanvasChromePanels } from './useCanvasChromePanels';
+import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
+import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
+import { atLeastInset } from '@liveknowledge/ui';
+import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
+import { PHONE_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
+import { PHONE_CLUSTER_BUTTON_WIDTH } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
+import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
+import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
+import { kindCounts } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
+import { panelEnabled } from '@/lib/user-preferences';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
+import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
+import type { CanvasChromeProps } from './CanvasChrome.types';
+import { PageEditBar } from '@/components/page-edit/PageEditBar';
+import { PageMakersStack } from '@/components/knowledge/PageMakersStack';
+import { useEditorChrome } from '@/app/document/[id]/EditorContext';
+
+export type { CanvasChromeProps } from './CanvasChrome.types';
+
+// Per-corner stack container classes (docs/specs/007-editor/panel-docking.md). Each is an absolute,
+// pointer-inert flex column pinned to one corner of the dock layer
+// (inset 16px = the `*-4` resting inset). Top corners stack downward,
+// bottom corners upward (flex-col-reverse) so the first panel always
+// sits flush to the corner and the rest flow away from it.
+// When the Toolbar strip reaches the top corners (always on a phone, docs/specs/007-editor/toolbar-layout.md
+// "On a phone"; on a desktop window too narrow for a centred strip to clear a
+// docked panel, stripCrowdsTopCorners) the TOP corner stacks start below it
+// rather than at the 16px inset, or a panel docked there (the Collaborate
+// banner) renders underneath the strip where it can't be reached
+// (toolbarTopClearancePx, lib/canvas-chrome.ts).
+
+const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
+  // Under the top row, as the top right is.
+  'top-left': 'left-4 top-[4.25rem] flex-col items-start',
+  // Experiment (no header bar): below the Share and account card at the top right.
+  'top-right': 'right-4 top-[4.25rem] flex-col items-end',
+  'bottom-left': 'left-4 bottom-4 flex-col-reverse items-start',
+  // bottom-right omits `bottom-4`; its bottom is set inline to clear the
+  // fixed zoom controls (cornerBottomInset), so panels docked there sit
+  // above the zoom bar instead of overlapping it.
+  'bottom-right': 'right-4 flex-col-reverse items-end',
+};
+
+// The chrome layer of the canvas: empty-state prompt, template picker,
+// multi-select toolbar, mode banners, the menu button and Explorer, the
+// corner panels, the palette strip, and the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
+// Canvas's props plus the computed ChromeExtras.
+
+function CanvasChromeView(props: CanvasChromeProps) {
+  const {
+    activeDockPanel,
+    canRedo,
+    canUndo,
+    documentName,
+    drawDrag,
+    drawHover,
+    elements,
+    handleDockButtonClick,
+    marquee,
+    commentRows,
+    actionRows,
+    onConfirmIdentity,
+    onRedo,
+    onCancelIdentity,
+    onUndo,
+    pendingDraw,
+    polygonVertices,
+    polygonCursor,
+    readOnly,
+    selfParticipant,
+    settings,
+    snapGuideStore,
+    showIdentityPrompt,
+    tabThemeId,
+    identityLockedName,
+    welcomeOpen,
+    wrapperRef,
+    zenMode,
+    onToggleZen,
+  } = props;
+  // The view is not a prop here: the parts that show it read it from the viewport store, so a pan or
+  // zoom renders them and not this chrome or its panels (docs/specs/008-canvas/blueprints/viewport-store.md).
+  const viewport = useViewportStore();
+  const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
+  // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
+  // folds it in next to the welcome-flow gate that already suppresses
+  // the same panels, so each panel stays hidden in either state.
+  const chromeHidden = welcomeOpen || zenMode === true;
+  // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
+  // buttons with them (Undo / Redo stay). Read once here and handed to
+  // useCanvasChromePanels, so a button and its panel share one value.
+  const panelsOn = {
+    collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
+  };
+
+  // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
+  const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
+    useCornerDocking({ zenMode: zenMode === true });
+  // Alignment guides while a palette tile is being dragged in (docs/specs/010-palette/palette-drag-ghost.md):
+  // the same faint lines a move shows, BEFORE the element exists. The hook
+  // also publishes the snap the ghost + drop read, so all three agree.
+  const paletteDrag = usePaletteDragGuides({
+    elements,
+    pages: props.pagesMode?.pages,
+    readZoom,
+    wrapperRef,
+  });
+  // The drag's snap guides, from the editor's store: a new set renders this chrome only.
+  const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
+  // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
+  useSnapHaptic(snapGuides.length > 0);
+  const { alignGuides, allSnapTargets } = computeDrawGuides({
+    drawDrag,
+    pendingDraw,
+    elements,
+    drawHover,
+    snapGuides,
+    snapTargets,
+  });
+
+  // The palette strip: an editor's (not read-only), on every mode. A Participant adds nothing, so it has none
+  // (docs/specs/013-workspace/share-roles.md).
+  // The fork's strip (Selection mode, the palette, the Library) is not a knowledgebase page's bar
+  // (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"). It shows only while a drawing zone is being
+  // edited, as that drawing's tools, in the formatting bar's place.
+  const drawingZone = useDrawingZoneEditing();
+  // Edit mode on the open page (docs/specs/030-knowledgebase/editing.md): the formatting controls are its alone.
+  const pageEditing = useEditorChrome((s) => s.pageEditing.editing);
+  // A shape picked from them and still to be drawn keeps them up: the press that draws it is outside the strip.
+  // Only while editing: a zone still selected as Save or Cancel ended edit mode keeps no tools in the row.
+  const paletteShown = !readOnly && pageEditing && (drawingZone || !!pendingDraw);
+  // The strip only renders with the chrome up.
+  const stripShown = paletteShown && !chromeHidden;
+  // The top row of the content area (docs/specs/030-knowledgebase/page-surface.md "The footer"): there for every
+  // role, with the chrome.
+  const topRowShown = useTopRowShown(!readOnly) && !chromeHidden;
+  // Rename <Kind> from the search opens the Explorer panel from its menu button, on the open item's name
+  // field (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search").
+  const explorerButtonRef = useRef<HTMLButtonElement>(null);
+  const renameCurrent = useRenameCurrentRequest({
+    nonce: props.renameCurrentNonce ?? 0,
+    explorerOpen: activeDockPanel === 'explorer',
+    available: !zenMode && !props.explorerHidden && !props.workbenchBack,
+    openExplorer: () => {
+      const button = explorerButtonRef.current;
+      if (button) handleDockButtonClick('explorer', button);
+    },
+  });
+  // Panel elements + their wiring live in useCanvasChromePanels.
+  const { panelEls, explorerEl, collaborateEl, pageTree, pageRail, paletteTint } =
+    useCanvasChromePanels({
+      props,
+      renameCurrent,
+      chromeHidden,
+      isMobile,
+      panelWiringFor,
+      panelsOn,
+    });
+
+  // Measured against the real top-corner stacks (useStripCrowdsCorners). A
+  // stack only renders while it holds a panel, so which top corners are
+  // occupied is part of what re-measures. A phone's strip always spans the top.
+  const topCornersKey = (['top-left', 'top-right'] as const)
+    .map((c) => dock.cornerStacks[c].filter((id) => panelEls[id] != null).join('+'))
+    .join('|');
+  // UI scale (docs/specs/007-editor/ui-scale.md): the strip, the panels and the
+  // bottom-right cluster are drawn at it, so the clearances around them follow.
+  const toolbarScale = useUiScale('toolbar');
+  const panelScale = useUiScale('panels');
+  // Heading the page tree's sidebar while it is docked beneath it (docs/specs/007-editor/pages-mode.md "Joined to
+  // the menu box"). Where nothing is joined to it (a phone, which has no sidebar, and the tree's rail) the menu
+  // button leads the top row instead, so no card floats over the writing.
+  const { docked: contentsDocked, menuJoined } = pageTree;
+  const menuInStrip = topRowShown && !menuJoined;
+  const menuJoin = menuJoined && !menuInStrip ? { joinedWidth: pageTree.width * panelScale } : {};
+  // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
+  const { workbenchBack } = props;
+  const explorerMenuButton = workbenchBack ? (
+    <WorkbenchBackButton
+      onBack={workbenchBack.back}
+      backTitle={workbenchBack.backTitle}
+      inline={menuInStrip}
+      {...menuJoin}
+    />
+  ) : props.explorerHidden ? null : (
+    <ToolbarExplorerButton
+      open={activeDockPanel === 'explorer'}
+      onToggle={(button) => handleDockButtonClick('explorer', button)}
+      buttonRef={explorerButtonRef}
+      inline={menuInStrip}
+      {...menuJoin}
+    />
+  );
+
+  const cornerScale = useUiScale('cornerButtons');
+  // Beside Pages mode's Contents sidebar, never under it (useContentsChrome): short of it, where the cluster wraps
+  // upward instead (contentsClusterLeft).
+  const clusterLeft =
+    !isMobile && contentsDocked ? pageTreeClearancePx(pageTree.width, panelScale) : null;
+  // The bar across the top that the top corners give way to: the strip.
+  const topBar = isMobile ? null : stripShown ? STRIP_SELECTOR : null;
+  const topBarCrowds = useStripCrowdsCorners(
+    cornerRefs,
+    topBar,
+    topCornersKey,
+    `${toolbarScale}/${panelScale}`,
+  );
+  const stripSpansTop = stripShown && (isMobile || topBarCrowds);
+  // Bucketing keys off the persisted placement ONLY (not which panel is
+  // mid-drag): a dragged panel must stay in the same DOM parent for the
+  // whole gesture — reparenting it would remount the component and drop
+  // the in-flight drag. While lifted it just renders `position: absolute`
+  // in place (MovablePanel), and its corner siblings reflow into the gap.
+  // The persisted corner/free placement only changes on pointer-up.
+  const freePanelIds = PANEL_IDS.filter(
+    (id) => panelEls[id] != null && dock.placementOf(id).mode === 'free',
+  );
+  const snapCorner = dock.drag?.candidate ?? null;
+  const snapHeight = dock.drag?.height ?? 0;
+  const dockedLayer = dockingActive ? (
+    <div ref={dockLayerRef} className="pointer-events-none absolute inset-0 z-[var(--z-panel)]">
+      {PANEL_CORNERS.map((corner) => {
+        const children = dock.cornerStacks[corner].filter((id) => panelEls[id] != null);
+        // Show the live landing slot at the end of the candidate corner's
+        // stack (flexbox places it where the panel will actually land).
+        const showSlot = snapCorner === corner;
+        if (children.length === 0 && !showSlot) return null;
+        return (
+          <div
+            key={corner}
+            ref={(el) => {
+              cornerRefs.current[corner] = el;
+            }}
+            style={{
+              ...(corner === 'bottom-right'
+                ? { bottom: cornerBottomInset(corner, cornerScale) }
+                : stripSpansTop && corner.startsWith('top')
+                  ? { top: toolbarTopClearancePx(toolbarScale) }
+                  : undefined),
+              // Beside Pages mode's Contents sidebar, never under it.
+              ...(contentsDocked && corner.endsWith('left')
+                ? { left: pageTreeClearancePx(pageTree.width, panelScale) }
+                : undefined),
+              // Beside the docked page rail, never under it.
+              ...(pageRail.width > 0 && corner.endsWith('right')
+                ? { right: pageRail.width + 16 }
+                : undefined),
+            }}
+            className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
+          >
+            {children.map((id) => (
+              <Fragment key={id}>{panelEls[id]}</Fragment>
+            ))}
+            {showSlot ? <PanelSnapSlot height={snapHeight} /> : null}
+          </div>
+        );
+      })}
+      {freePanelIds.map((id) => (
+        <Fragment key={id}>{panelEls[id]}</Fragment>
+      ))}
+    </div>
+  ) : null;
+
+  return (
+    <>
+      {/* The menu button's card at the top left (or a workspace frame's Back), first of the canvas's controls in the
+          keyboard order (docs/specs/007-editor/toolbar-layout.md); on a phone it rides in the strip's row instead.
+          Zen hides it with the rest of the chrome. */}
+      {zenMode || menuInStrip ? null : explorerMenuButton}
+
+      {showIdentityPrompt ? (
+        <IdentityPrompt
+          participant={selfParticipant}
+          documentName={documentName}
+          lockedName={identityLockedName}
+          onJoin={onConfirmIdentity}
+          onCancel={onCancelIdentity}
+        />
+      ) : null}
+
+      <CanvasGuideOverlay
+        alignGuides={paletteDrag.guides.length > 0 ? paletteDrag.guides : alignGuides}
+        allSnapTargets={allSnapTargets}
+        distGuides={paletteDrag.distGuides.length > 0 ? paletteDrag.distGuides : distGuides}
+        drawHover={drawHover}
+        marquee={marquee}
+        tabThemeId={tabThemeId}
+        wrapperRef={wrapperRef}
+        mainSize={props.mainSize}
+      />
+
+      <CanvasDrawPreview
+        drawDrag={drawDrag}
+        polygonVertices={polygonVertices}
+        polygonCursor={polygonCursor}
+        pendingDraw={pendingDraw}
+        wrapperRef={wrapperRef}
+        mainSize={props.mainSize}
+      />
+
+      {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
+          active editor-mode banner and multi-selection toolbar — laid out as one non-overlapping stack. */}
+      <TopCenterChrome {...props} />
+
+      {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
+          (zen hides it, the welcome flow doesn't). */}
+      {!zenMode ? explorerEl : null}
+      {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
+          against the canvas, so it renders outside the corner layer. */}
+      {zenMode ? null : collaborateEl}
+      {pageTree.sidebarEl}
+      {/* On This Page and Page Health: docked down the right, or a Page Info button below 1,280 px. */}
+      {pageRail.el}
+      {topRowShown ? (
+        <KnowledgeTopRow
+          rank="page"
+          // Beside the page tree, across the rest of the canvas: over the docked rail too, which starts under it.
+          className="absolute right-0 top-0 z-[var(--z-panel)]"
+          style={{
+            // From the sidebar's own edge, so the row's hairline meets it.
+            left: contentsDocked && menuJoined ? pageTree.width * panelScale : 0,
+          }}
+          leading={
+            menuInStrip ? (
+              <>
+                {explorerMenuButton}
+                {/* The page tree on a phone: a sheet opened from the top row. */}
+                {pageTree.phoneButton}
+              </>
+            ) : undefined
+          }
+          trailing={
+            <>
+              {/* Edit, or the draft bar while editing (docs/specs/030-knowledgebase/editing.md). */}
+              <PageEditBar />
+              {/* A phone's row is too narrow for Cancel, Save and Page Info together: writing comes first. */}
+              {isMobile && pageEditing ? null : pageRail.rowButton}
+            </>
+          }
+        >
+          {/* Read mode's left is who made the page; the formatting controls are edit mode's. */}
+          {!readOnly && !isMobile && pageEditing ? (
+            <PageFormattingBar
+              canUndo={canUndo === true}
+              canRedo={canRedo === true}
+              onUndo={onUndo}
+              onRedo={onRedo}
+              drawing={
+                paletteShown ? (
+                  // A drawing zone being edited: its tools, in the formatting controls' place.
+                  <ToolbarPalette
+                    {...pickPaletteAddHandlers(props)}
+                    pendingDraw={pendingDraw}
+                    themeTint={paletteTint}
+                  />
+                ) : undefined
+              }
+            />
+          ) : paletteShown ? (
+            // A phone has no formatting controls in the row: the drawing's tools alone.
+            <ToolbarPalette
+              {...pickPaletteAddHandlers(props)}
+              pendingDraw={pendingDraw}
+              themeTint={paletteTint}
+            />
+          ) : !pageEditing ? (
+            // Reading: who made the page, creator first (page-surface.md "Who made the page").
+            <PageMakersStack />
+          ) : null}
+        </KnowledgeTopRow>
+      ) : null}
+      {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
+          containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
+          Each element carries its own visibility gate, so the welcome-flow / read-only / zen
+          suppression is unchanged. */}
+      {dockingActive ? (
+        dockedLayer
+      ) : (
+        <>
+          {panelEls.collaborate}
+          {panelEls.minimap}
+          {panelEls.laser}
+          {panelEls.spotlight}
+          {panelEls.format}
+        </>
+      )}
+
+      {/* Bottom-right cluster. Order, left to right: the Undo / Redo
+          strip, the mode's own strip (Contents), the
+          Collaborate button (only while the tab has a thread or an action), the
+          Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
+          above them (docs/specs/007-editor/editor-app.md). */}
+      <div
+        // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
+        // as its one way back out, and a deck has its own way out plus no
+        // zoom to offer.
+        data-zoom-cluster=""
+        data-region="controls"
+        // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
+        style={
+          cornerScale === 1
+            ? {
+                // Clear of the docked page rail, which stands down the canvas's right.
+                right: atLeastInset(`${16 + pageRail.width}px`, 'right'),
+                ...(clusterLeft === null ? {} : { left: clusterLeft }),
+              }
+            : {
+                ...uiScaleStyle(cornerScale),
+                right: atLeastInset(`${toSurfacePx(16 + pageRail.width, cornerScale)}px`, 'right'),
+                ...(clusterLeft === null ? {} : { left: toSurfacePx(clusterLeft, cornerScale) }),
+                bottom: toSurfacePx(16, cornerScale),
+              }
+        }
+        // On a phone the cluster stays one row: its buttons share the width there is, PHONE_CLUSTER_BUTTON_WIDTH,
+        // from 36px up to their usual 44px (always 44px tall to tap), so Undo, Contents, Theme and Fit fill the
+        // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
+        // pushed off the screen.
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${clusterLeft === null ? '' : 'flex-wrap-reverse justify-end'} ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
+      >
+        {welcomeOpen ? null : (
+          <>
+            {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own writing too
+                (docs/specs/013-workspace/share-roles.md); a Viewer has nothing to undo. */}
+            {/* An Editor's Undo and Redo are in the formatting bar; here for a Participant, never on a phone, where the
+                edit bar stands over them (owner 2026-11-21). */}
+            {!zenMode && !isMobile && readOnly && !!props.takePart ? (
+              <UndoRedoClusterStrip
+                onUndo={onUndo}
+                onRedo={onRedo}
+                canUndo={canUndo}
+                canRedo={canRedo}
+              />
+            ) : null}
+            {/* The page navigator (docs/specs/007-editor/pages-mode.md "Getting around the pages"): right of Undo /
+                Redo, for every role, while the tab has two pages or more and Contents is minimised (the docked
+                sidebar already shows every page); not on a phone, whose row has no room for it (a swipe moves
+                between pages there). */}
+            {!zenMode &&
+            !isMobile &&
+            !contentsDocked &&
+            props.pagesMode &&
+            // A stack flips from the page in front's own Previous and Next (StackNav).
+            !props.pagesMode.cardStage &&
+            props.pagesMode.pages.length > 1 ? (
+              <PageNavigatorClusterStrip
+                pageIds={props.pagesMode.pages.map((p) => p.id)}
+                onGo={props.pagesMode.focusPage}
+              />
+            ) : null}
+            {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode,
+                for every role and on a phone too. The deck is built from its rows' menus ("Slides"). */}
+            {CUT_FROM_FORK && !zenMode && props.pagesMode ? (
+              <PagesClusterStrip
+                contents={
+                  // Docked as the sidebar, Contents has no button (useContentsChrome).
+                  contentsDocked ? null : (
+                    <ContentsClusterSegment
+                      popoverOpen={activeDockPanel === 'contents'}
+                      onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
+                    />
+                  )
+                }
+              />
+            ) : null}
+            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before the brush, only while
+                the tab has a comment thread or an action. A view-role visitor
+                gets it too: they read threads and answer them. */}
+            {!zenMode &&
+            panelsOn.collaborate &&
+            (commentRows.length > 0 || actionRows.length > 0) ? (
+              <CollaborateClusterButton
+                openCount={kindCounts('open', commentRows, actionRows).all}
+                popoverOpen={activeDockPanel === 'collaborate'}
+                onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
+              />
+            ) : null}
+            {/* No zoom cluster (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"). Zen keeps
+                its way out here, and a session with no formatting bar its way in. */}
+            {onToggleZen && (zenMode || readOnly) ? (
+              <ZenControl active={zenMode === true} onToggle={onToggleZen} />
+            ) : null}
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+
+/** Behind a memo boundary that forwards its `on…` props (docs/specs/007-editor/blueprints/typing.md "Performance
+ *  and limits"): the Canvas hands it only the props it reads (pickCanvasChromeProps), the pages' view without the
+ *  writing (useChromePagesView) and the writing as a store, so a typing commit renders none of it. */
+export const CanvasChrome = withStableEventProps(CanvasChromeView);

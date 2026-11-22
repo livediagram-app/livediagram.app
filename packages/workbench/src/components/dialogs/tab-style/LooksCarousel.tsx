@@ -39,7 +39,10 @@ export function LooksCarousel<Look extends TabStyleLook, Pattern extends string>
   onPickLook,
   headingClass,
 }: {
-  profile: Pick<TabStyleProfile<Look, Pattern>, 'looks' | 'finishLabels' | 'useAppearance'>;
+  profile: Pick<
+    TabStyleProfile<Look, Pattern>,
+    'looks' | 'finishLabels' | 'useAppearance' | 'finishFilter'
+  >;
   // The surface's filter over the catalogue; every look when unset.
   lookFilter?: (look: Look) => boolean;
   // The tab's four look settings, to tell whether it wears the Mashup card's look.
@@ -137,27 +140,29 @@ export function LooksCarousel<Look extends TabStyleLook, Pattern extends string>
             >
               Seasonal
             </button>
-            <Select
-              size="sm"
-              variant="ghost"
-              className="shrink-0"
-              aria-label="Filter looks by finish"
-              value={finish}
-              onChange={(e) => {
-                const next = e.target.value as Finish | 'all';
-                workbench.track('UI', 'Changed', 'LooksFinishFilter');
-                setFinish(next);
-                // The card's mashup rolls within the chosen finish.
-                if (next !== 'all' && mashup.finish !== next) setMashup(roll({ finish: next }));
-              }}
-            >
-              <option value="all">All finishes</option>
-              {finishes.map((f) => (
-                <option key={f} value={f}>
-                  {finishLabels[f]}
-                </option>
-              ))}
-            </Select>
+            {profile.finishFilter === false ? null : (
+              <Select
+                size="sm"
+                variant="ghost"
+                className="shrink-0"
+                aria-label="Filter looks by finish"
+                value={finish}
+                onChange={(e) => {
+                  const next = e.target.value as Finish | 'all';
+                  workbench.track('UI', 'Changed', 'LooksFinishFilter');
+                  setFinish(next);
+                  // The card's mashup rolls within the chosen finish.
+                  if (next !== 'all' && mashup.finish !== next) setMashup(roll({ finish: next }));
+                }}
+              >
+                <option value="all">All finishes</option>
+                {finishes.map((f) => (
+                  <option key={f} value={f}>
+                    {finishLabels[f]}
+                  </option>
+                ))}
+              </Select>
+            )}
           </>
         }
         renderItem={(look) => {

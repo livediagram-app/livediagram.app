@@ -94,6 +94,7 @@ describe('parsing', () => {
       'livedocuments',
       'livedesign',
       'livehuddle',
+      'liveknowledge',
     ]);
     const match = compileLens(lens, 0, { text: false });
     expect(match(itemSubject(makeItem(1, { app: 'livediagram' }), null))).toBe(true);

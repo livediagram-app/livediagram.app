@@ -28,7 +28,8 @@
     "dev:help": "turbo run dev --filter=@liveworkspace/help",
     "dev:design": "turbo run dev --filter=@livedesign/*",
     "dev:documents": "turbo run dev --filter=@livedocuments/*",
-    "dev:huddle": "turbo run dev --filter=@livehuddle/*"
+    "dev:huddle": "turbo run dev --filter=@livehuddle/*",
+    "dev:knowledge": "turbo run dev --filter=@liveknowledge/*"
   },
   "devDependencies": {
     "@liveworkspace/prettier-config": "workspace:*",

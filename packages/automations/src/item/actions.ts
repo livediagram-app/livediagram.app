@@ -3,6 +3,7 @@
 // the ones that only stand at a rule's top level: a message through a connection, Summarise with AI, Wait and
 // If / Else. What each does when a rule runs is the room's (room/item/actions.ts). Pure.
 
+import { inTabWords } from './tab-word';
 import { addressWords, automationAddress } from '../email-addresses';
 import {
   AUTOMATION_EMAIL_ADDRESSES_MAX,
@@ -152,10 +153,13 @@ const addTab = defineAction<ItemAddTab & ItemPart>({
   }),
   defaults: () => ({ kind: 'add_tab', template: '', name: '' }),
   words: (a, names) => [
-    { chip: `Add a Tab “${a.name}” from ${refName(names, 'template', a.template)}` },
+    {
+      chip: `${inTabWords('Add a Tab', names.itemWord)} “${a.name}” from ${refName(names, 'template', a.template)}`,
+    },
   ],
-  would: (a, ctx) => `Would add a tab named “${ctx.fill(a.name)}”`,
-  summary: () => 'Add a Tab from a Template',
+  would: (a, ctx) =>
+    `${inTabWords('Would add a tab named', ctx.names.itemWord)} “${ctx.fill(a.name)}”`,
+  summary: (_a, names) => inTabWords('Add a Tab from a Template', names.itemWord),
 });
 
 const notify = defineAction<AutomationOutgoing & ItemPart>({
@@ -229,7 +233,7 @@ const summarise = defineAction<ItemSummarise & ItemPart>({
       chip:
         a.tab === undefined
           ? 'Summarise with AI'
-          : `Summarise ${a.tab === RUN_TAB ? 'the Tab' : refName(names, 'tab', a.tab)} with AI`,
+          : `Summarise ${a.tab === RUN_TAB ? inTabWords('the Tab', names.itemWord) : refName(names, 'tab', a.tab)} with AI`,
     },
   ],
   would: () => 'Would summarise with AI',

@@ -1,0 +1,88 @@
+/* liveknowledge's palette (docs/specs/016-platform/platform-registration.md "Brand"): the shared theme, then its brand
+ * ramps in lime in place of the platform's sky, in every block the shared theme paints one in. Everything
+ * else (motion tokens, utilities, the focus ring, scrollbars, forced colours, the slate surfaces) is the shared
+ * theme's; @liveworkspace/tailwind-config's theme-budget.test.ts keeps these blocks complete and equal where
+ * they must be. */
+@import '@liveworkspace/tailwind-config/theme.css';
+
+/* Light: the brand ramp every light surface paints with. */
+@theme {
+  /* liveknowledge lime. Tailwind's lime to brand-500, then a step deeper, as lime runs much lighter than sky at the
+   * same step (white on lime-600 is 3.1:1): brand-600, the focus ring and the fill under white text, is lime-700 and
+   * holds white at 5.0:1 (4.6:1 on slate-100 and brand-100), and brand-700, all light brand ink, is lime-800 and holds
+   * white at 7.1:1. brand-800 is lime-900, and brand-900 sits between it and lime-950. */
+  --color-brand-50: #f7fee7;
+  --color-brand-100: #ecfccb;
+  --color-brand-200: #d9f99d;
+  --color-brand-300: #bef264;
+  --color-brand-400: #a3e635;
+  --color-brand-500: #84cc16;
+  --color-brand-600: #4d7c0f;
+  --color-brand-700: #3f6212;
+  --color-brand-800: #365314;
+  --color-brand-900: #2b4310;
+  --color-brand-950: #1a2e05;
+}
+
+/* Dark, Steel: the accent at Steel's saturation and luminance, so every Steel contrast holds (white on brand-600
+ * 6.0:1, brand-400 on slate-900 8.2:1). Lime at Steel's HSL lightness would be far brighter than blue. */
+.dark {
+  --color-brand-50: #edf6df;
+  --color-brand-100: #daecbf;
+  --color-brand-200: #b8d985;
+  --color-brand-300: #97c64f;
+  --color-brand-400: #89c035;
+  --color-brand-500: #6c8f37;
+  --color-brand-600: #516b29;
+  --color-brand-700: #435a20;
+  --color-brand-800: #36491a;
+  --color-brand-900: #2a3913;
+  --color-brand-950: #1d280e;
+}
+
+/* The app's chrome keeps the light ramp whatever a tab's style (equal to @theme). */
+[data-app-chrome] {
+  --color-brand-50: #f7fee7;
+  --color-brand-100: #ecfccb;
+  --color-brand-200: #d9f99d;
+  --color-brand-300: #bef264;
+  --color-brand-400: #a3e635;
+  --color-brand-500: #84cc16;
+  --color-brand-600: #4d7c0f;
+  --color-brand-700: #3f6212;
+  --color-brand-800: #365314;
+  --color-brand-900: #2b4310;
+  --color-brand-950: #1a2e05;
+}
+
+/* And the dark one (equal to .dark). */
+.dark [data-app-chrome] {
+  --color-brand-50: #edf6df;
+  --color-brand-100: #daecbf;
+  --color-brand-200: #b8d985;
+  --color-brand-300: #97c64f;
+  --color-brand-400: #89c035;
+  --color-brand-500: #6c8f37;
+  --color-brand-600: #516b29;
+  --color-brand-700: #435a20;
+  --color-brand-800: #36491a;
+  --color-brand-900: #2a3913;
+  --color-brand-950: #1d280e;
+}
+
+/* Explorer: Midnight, the marketing site's night section in this accent: light mode's lime ramp as it is: its
+ * brand-600 is already a step deeper than Tailwind's (white on it 5.0:1, and 3.9:1 on Midnight's slate-950 track,
+ * where a step deeper again would fall to 2.8:1). */
+.dark[data-palette='midnight'] {
+  --color-brand-50: #f7fee7;
+  --color-brand-100: #ecfccb;
+  --color-brand-200: #d9f99d;
+  --color-brand-300: #bef264;
+  --color-brand-400: #a3e635;
+  --color-brand-500: #84cc16;
+  --color-brand-600: #4d7c0f;
+  --color-brand-700: #3f6212;
+  --color-brand-800: #365314;
+  --color-brand-900: #2b4310;
+  --color-brand-950: #1a2e05;
+}

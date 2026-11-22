@@ -2,7 +2,7 @@
 
 The liveworkspace monorepo. Read README.md and docs/structure.md first.
 
-- Each product folder (`livediagram/`, `liveplanner/`, `livedocuments/`, `livedesign/`) and
+- Each product folder (`livediagram/`, `liveplanner/`, `livedocuments/`, `livedesign/`, `livehuddle/`, `liveknowledge/`) and
   `liveworkspace/` has its own AGENTS.md with its rules. They apply, but read their `apps/…` and `packages/…` paths as relative
   to the product folder.
 - One pnpm workspace and lockfile at the root. Add dependencies with
@@ -32,6 +32,7 @@ The liveworkspace monorepo. Read README.md and docs/structure.md first.
   | livedocuments (was livepages) | 3300 onward |
   | livedesign                    | 3400 onward |
   | livehuddle                    | 3500 onward |
+  | liveknowledge                 | 3600 onward |
 
   Each product's router (or the liveworkspace site) takes the first port of its block, and its
   other apps the next ones. The one help centre (`liveworkspace/apps/help`) serves every product's

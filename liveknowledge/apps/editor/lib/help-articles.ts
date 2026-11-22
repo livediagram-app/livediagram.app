@@ -1,0 +1,345 @@
+// Single source for help-centre deep links used by the editor (docs/specs/018-help/contextual-help-links.md).
+//
+// This map is the editor app's one source for help article slugs: surfaces
+// reference a symbolic key, never a hand-written `/help/...` URL, so a slug
+// change is a one-line edit here. (Search is different: the SearchPanel's
+// Help group derives from the full @liveknowledge/help-registry catalogue in
+// help-search.ts; this map exists for the surfaces that link ONE article.)
+//
+// Each value is the NESTED slug (the path under /help): usually an
+// article's categorySlug/slug (matching its page.mdx path in apps/help),
+// but it may also be a category LANDING path (e.g. `palette` points at the
+// palette overview page.tsx) when the editor links to a whole section
+// rather than one article. A key pointing at a path that resolves to no
+// help page is a bug, the same way an unregistered help article is - keep
+// these in sync with @liveknowledge/help-registry.
+
+import { COMMUNITY_HELP } from '@liveknowledge/help-registry/community';
+import { helpPathTelemetryId } from '@liveknowledge/help-registry/telemetry';
+
+export const HELP_ARTICLES = {
+  // Sharing
+  sharing: 'collaboration/sharing',
+  shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
+  sharePasswords: 'collaboration/sharing/share-passwords',
+  requestApproval: 'collaboration/sharing/request-approval',
+  // The Community's own help map holds the path (the public sites link it too).
+  community: COMMUNITY_HELP.sharing.path,
+  // Palette behaviour
+  // The embed's article is linked from the link picker, when it is restricted to a URL
+  // (docs/specs/009-elements/embed-providers.md).
+  embedElements: 'knowledgebase/embedding-from-other-apps',
+  panelOpacity: 'knowledgebase/writing-on-a-page',
+  // One key per tool panel, so every mode's panel can point at the article
+  // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
+  // pointing at nothing is a bug, the same way an unregistered article is.
+  laser: 'knowledgebase/writing-on-a-page',
+  spotlight: 'knowledgebase/writing-on-a-page',
+  formatPainter: 'knowledgebase/writing-on-a-page',
+  // AI
+  connectAiTool: 'knowledgebase/connecting-an-agent',
+  // The page rail's `?`s (docs/specs/030-knowledgebase/verification.md, ai-knowledge.md "AI Context on a page").
+  verifying: 'knowledgebase/owners-and-verifying',
+  aiContext: 'knowledgebase/always-in-context',
+  // Tabs / import-export
+  exportingDiagrams: 'knowledgebase/exporting-a-knowledgebase',
+  apiTokens: 'account-and-data/api-tokens',
+  trash: 'account-and-data/trash',
+  importTabs: 'knowledgebase/import-a-markdown-folder',
+  markdownImport: 'knowledgebase/import-a-markdown-folder',
+  // The Find bar's `?` (docs/specs/007-editor/find-and-replace.md "The bar").
+  findAndReplace: 'knowledgebase/writing-on-a-page',
+  // The Automations screen's How Rules Work and its gate (docs/specs/013-workspace/automations.md "The screen").
+  automations: 'tools/automations',
+  // Teams
+  // Canvas / themes
+  changingTheBackground: 'knowledgebase/knowledgebase-style',
+  changingTheme: 'knowledgebase/knowledgebase-style',
+  choosingAFinish: 'knowledgebase/knowledgebase-style',
+  choosingFonts: 'knowledgebase/knowledgebase-style',
+  // Activity / comments
+  comments: 'collaboration/comments',
+  livePresence: 'collaboration/live-presence',
+  assignedActions: 'collaboration/comments',
+  // Explorer / data
+  // Standing panels.
+  explorerPanel: 'explorer/home',
+  layers: 'knowledgebase/writing-on-a-page',
+  minimap: 'knowledgebase/writing-on-a-page',
+  home: 'explorer/home',
+  folders: 'explorer/folders',
+  defaultFolders: 'explorer/folders/default-folders',
+  // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
+  myWork: 'explorer/personal-space',
+  recent: 'explorer/recent',
+  sharedWithYou: 'explorer/shared-with-you',
+  inbox: 'explorer/activity',
+  teamSpaces: 'explorer/team-spaces',
+  explorerFilters: 'explorer/filters',
+  dataElements: 'knowledgebase/writing-on-a-page',
+  sankeyDiagram: 'knowledgebase/writing-on-a-page',
+  maps: 'knowledgebase/writing-on-a-page',
+  // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
+  stacks: 'knowledgebase/writing-on-a-page',
+  conceptGraphics: 'knowledgebase/writing-on-a-page',
+  palette: 'knowledgebase',
+  // Settings
+  whatWeCollect: 'privacy-and-security/what-we-collect',
+  offlineMode: 'privacy-and-security/offline-mode',
+  // Onboarding / empty states
+  templates: 'getting-started/your-first-knowledgebase',
+  // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
+  slidePages: 'knowledgebase/writing-on-a-page',
+  infographicLayouts: 'knowledgebase/writing-on-a-page',
+  articlePages: 'knowledgebase/writing-on-a-page',
+  keyboardShortcuts: 'knowledgebase/writing-on-a-page',
+  guestVsAccount: 'getting-started/guest-vs-account',
+  // Load recovery (docs/specs/007-editor/load-recovery.md).
+  documentNotLoading: 'troubleshooting',
+} as const;
+
+export type HelpArticleKey = keyof typeof HELP_ARTICLES;
+
+// The hover card every help link shows for an article unless a surface passes
+// its own (docs/specs/018-help/contextual-help-links.md): a "Learn about …" title naming the thing the reader is
+// looking at, and one line saying what the article will do for them. One
+// table, so a panel, a dialog header and a settings row that all point at
+// the same article say the same thing, and a `?` never falls back to a bare
+// "Learn More" that tells the reader nothing about where it goes.
+export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
+  sharing: {
+    title: 'Learn about sharing',
+    description: 'Roles, live collaboration, and how share links work.',
+  },
+  shareLinkExpiry: {
+    title: 'Learn about link expiry',
+    description: 'How long a share link lasts and where expired links go.',
+  },
+  sharePasswords: {
+    title: 'Learn about share passwords',
+    description: 'One password that guards every link to a knowledgebase, embeds included.',
+  },
+  verifying: {
+    title: 'Learn about verifying a page',
+    description: 'What Verified, Review Due and Not Verified mean, and who can verify.',
+  },
+  aiContext: {
+    title: 'Learn about AI Context',
+    description: 'What agents are handed first, and which answers came from this page.',
+  },
+  requestApproval: {
+    title: 'Learn about requesting approval',
+    description: 'Who can approve, what they see and how answers come back.',
+  },
+  findAndReplace: {
+    title: 'Learn about Find and Replace',
+    description: 'What Find searches, Match Case and Whole Word, and who may replace.',
+  },
+  automations: {
+    title: 'Learn about Automations',
+    description:
+      'Rules a knowledgebase runs on its own: triggers, steps, templates and the Audit Trail.',
+  },
+  community: {
+    title: 'Learn about the Community',
+    description: 'Sharing a knowledgebase publicly, and how people find and copy it.',
+  },
+
+  embedElements: {
+    title: 'Learn about embeds',
+    description: 'Which services can be embedded, and how they load.',
+  },
+  panelOpacity: {
+    title: 'Learn about panel opacity',
+    description: 'Make the panels translucent so the canvas shows through.',
+  },
+  laser: {
+    title: 'Learn about the Laser',
+    description: 'Tips for pointing things out to the room without touching the knowledgebase.',
+  },
+  spotlight: {
+    title: 'Learn about the Spotlight',
+    description: 'Tips for dimming everything but the part you are talking about.',
+  },
+  formatPainter: {
+    title: 'Learn about the Format Painter',
+    description: "Tips for copying one element's look onto others.",
+  },
+  connectAiTool: {
+    title: 'Learn about connecting AI tools',
+    description: 'Drive your knowledgebases from Claude, Cursor, and other AI tools over MCP.',
+  },
+  exportingDiagrams: {
+    title: 'Learn about exporting',
+    description: 'What each export format is for and how to use it.',
+  },
+  apiTokens: {
+    title: 'Learn about API tokens',
+    description: 'Create tokens to call the liveknowledge API from your own scripts.',
+  },
+  trash: {
+    title: 'Learn about the Trash',
+    description: 'How long deleted knowledgebases wait, and how to restore one.',
+  },
+  importTabs: {
+    title: 'Learn about importing pages',
+    description: 'What you can import and how it replaces the page.',
+  },
+  markdownImport: {
+    title: 'Learn about Markdown import',
+    description: 'How a Markdown file becomes an article.',
+  },
+  changingTheBackground: {
+    title: 'Learn about the canvas',
+    description: 'Tips for the background, patterns and the canvas behind what you draw.',
+  },
+  changingTheme: {
+    title: 'Learn about changing the theme',
+    description: "Tips for restyling a page's colours in one go.",
+  },
+  choosingAFinish: {
+    title: 'Learn about finishes',
+    description: 'Drawing a page crisp and print-ready, sketched by hand, or in bold marker.',
+  },
+  choosingFonts: {
+    title: 'Learn about fonts',
+    description: 'Tips for choosing a typeface and text size for a page.',
+  },
+  comments: {
+    title: 'Learn about comments',
+    description: 'Tips and tricks for discussing a knowledgebase right on the page.',
+  },
+  assignedActions: {
+    title: 'Learn about assigned actions',
+    description: 'Assign work on an element to yourself or a teammate and track it until done.',
+  },
+  explorerPanel: {
+    title: 'Learn about the Explorer',
+    description: 'Tips and tricks to help you get the most out of the Explorer.',
+  },
+  layers: {
+    title: 'Learn about layers',
+    description: 'Tips and tricks for stacking, hiding and locking parts of a page.',
+  },
+  minimap: {
+    title: 'Learn about the Map',
+    description: 'Tips for finding your way around a big canvas.',
+  },
+  home: {
+    title: 'Learn about Home',
+    description: 'Most Used, Recent and what was shared with you recently.',
+  },
+  myWork: {
+    title: 'Learn about My Work',
+    description: 'Your own knowledgebases and folders, in one place.',
+  },
+  recent: {
+    title: 'Learn about Recent',
+    description: 'Your most recently opened knowledgebases, personal and team, in one list.',
+  },
+  sharedWithYou: {
+    title: 'Learn about Shared With Me',
+    description: 'Knowledgebases other people have shared with you, collected here.',
+  },
+  inbox: {
+    title: 'Learn about the Inbox',
+    description: 'Comments and actions that wait on you, from every app.',
+  },
+  folders: {
+    title: 'Learn about folders',
+    description: 'Tips for organising knowledgebases into a nestable tree of folders.',
+  },
+  defaultFolders: {
+    title: 'Learn about default folders',
+    description: 'Where new knowledgebases land when you pick no place.',
+  },
+  explorerFilters: {
+    title: 'Learn about search and filters',
+    description: 'Narrow any list with words, chips or typed filters like made-by:ai.',
+  },
+  teamSpaces: {
+    title: 'Learn about team spaces',
+    description: 'A team’s shared library of knowledgebases and folders.',
+  },
+  dataElements: {
+    title: 'Learn about data elements',
+    description: 'Charts and data-driven elements, and how to edit their data.',
+  },
+  sankeyDiagram: {
+    title: 'Learn about Sankey diagrams',
+    description: 'Writing flows, reading the bands, and styling nodes and labels.',
+  },
+  maps: {
+    title: 'Learn about maps',
+    description: 'Regions and countries, highlighting places and pinning cities.',
+  },
+  stacks: {
+    title: 'Learn about stacks',
+    description: 'Rows, columns and grids that lay out what you drop in them.',
+  },
+  conceptGraphics: {
+    title: 'Learn about concept graphics',
+    description:
+      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons, and editing their rows.',
+  },
+  palette: {
+    title: 'Learn about the Palette',
+    description: 'Tips and tricks to help you get the most out of the Palette.',
+  },
+  whatWeCollect: {
+    title: 'Learn about what we collect',
+    description: "Exactly which anonymous events are sent, and what isn't.",
+  },
+  offlineMode: {
+    title: 'Learn about Offline Mode',
+    description: 'Knowledgebases saved only in this browser, and how to sync them.',
+  },
+  templates: {
+    title: 'Learn about templates',
+    description: 'How templates give you a themed starting point.',
+  },
+  slidePages: {
+    title: 'Learn about slide pages',
+    description: 'Slide layouts, backgrounds, the deck and presenting.',
+  },
+  infographicLayouts: {
+    title: 'Learn about infographic layouts',
+    description: 'Starting a page from a layout, its theme, and making it your own.',
+  },
+  articlePages: {
+    title: 'Learn about articles',
+    description: 'Writing, the page toolbar, article style and how pages flow.',
+  },
+  livePresence: {
+    title: 'Learn about live presence',
+    description: 'Who is in the knowledgebase, where they are, and following them.',
+  },
+  keyboardShortcuts: {
+    title: 'Learn about keyboard shortcuts',
+    description: 'The full shortcut reference and tips for faster editing.',
+  },
+  guestVsAccount: {
+    title: 'Learn about guest vs account',
+    description: 'What changes when you sign in, and what stays the same.',
+  },
+  documentNotLoading: {
+    title: 'Learn about loading problems',
+    description: 'Steps to try when a knowledgebase will not open.',
+  },
+};
+
+/** Absolute in-app path to a help article, opened in a new tab. */
+export function helpArticleHref(key: HelpArticleKey): string {
+  return `/help/${HELP_ARTICLES[key]}/`;
+}
+
+/**
+ * The article's telemetry id, used as the `type` on a help-link click
+ * (`UI·Opened`). The full nested slug contains slashes, which
+ * TELEMETRY_TYPE_PATTERN rejects; the registry's per-article id (docs/specs/017-telemetry/telemetry.md) is
+ * a bounded token that, unlike the bare leaf segment, is unique per article
+ * and matches what the help centre itself reports for the same page.
+ */
+export function helpArticleTelemetryId(key: HelpArticleKey): string {
+  return helpPathTelemetryId(HELP_ARTICLES[key]);
+}

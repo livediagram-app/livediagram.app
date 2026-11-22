@@ -19,7 +19,7 @@ import { ALL_APPS_APPEARANCE_STORE } from '../lib/appearance-store';
 // the page's deployment.
 
 const SHARE_TEXT =
-  'liveworkspace help: guides for livediagram, liveplanner, livedocuments, livedesign and livehuddle, in one place.';
+  'liveworkspace help: guides for livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge, in one place.';
 
 /** The logo. Below 360px (a 320px phone) the mark alone, as every app's bar does, its name kept in the label. */
 export function Brand({

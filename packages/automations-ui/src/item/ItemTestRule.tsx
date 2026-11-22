@@ -4,6 +4,7 @@
 // Rule"): a rule whose trigger is about a tab asks which tab first, on the one the person is on, then shows stage
 // 3's result with the tab's name and Another Tab; any other rule runs at once on the item alone.
 
+import { useTabWords } from './tab-words';
 import type { ItemKinds } from '@liveworkspace/automations/item';
 import { useState, type ComponentType } from 'react';
 import type { TestDialogProps } from '../kit';
@@ -17,13 +18,16 @@ type Props = TestDialogProps<RuleBody, ItemUiOutline>;
 function TabbedTest(props: Props) {
   const { outline, onClose } = props;
   const { tabs, currentTabId } = outline.item;
+  const words = useTabWords();
   const [tab, setTab] = useState<string | null>(null);
   const { phase, run, reset } = useTestRun(props);
   if (tab === null || phase.at === 'idle')
     return (
       <TabAskDialog
         title="Test Rule"
-        line="Pick a tab to try this rule on. It shows what the rule would do and changes nothing."
+        line={words(
+          'Pick a tab to try this rule on. It shows what the rule would do and changes nothing.',
+        )}
         action="Test Rule"
         tabs={tabs}
         current={tab ?? currentTabId}
@@ -37,10 +41,10 @@ function TabbedTest(props: Props) {
   return (
     <TestRuleResult
       title="Test Rule"
-      subject={tabs.find((t) => t.id === tab)?.name ?? 'A tab'}
-      running="Trying the rule on this tab…"
+      subject={tabs.find((t) => t.id === tab)?.name ?? words('A tab')}
+      running={words('Trying the rule on this tab…')}
       phase={phase}
-      again={{ label: 'Another Tab', onSelect: reset }}
+      again={{ label: words('Another Tab'), onSelect: reset }}
       onClose={onClose}
     />
   );

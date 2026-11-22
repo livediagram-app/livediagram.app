@@ -1,0 +1,550 @@
+// @vitest-environment jsdom
+import { renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { LastSeenCopy } from '@liveworkspace/workbench/lib/api/last-seen-copies';
+
+// docs/specs/006-document/offline-mode.md "Warm open of a cloud document": a cloud document this browser opened before
+// paints its last seen copy before auth settles, read-only, for the reader this browser expects; the ordinary load
+// catches up behind it, replaces it in place and applies its role, or swaps it for the screen it ends on.
+
+const { api, copies, fallback, hint, identity, paint, seed, seedDeps, timing } = vi.hoisted(() => ({
+  fallback: { reload: vi.fn(), warn: vi.fn() },
+  api: {
+    apiLoadSelf: vi.fn(),
+    apiSaveSelf: vi.fn(),
+    apiLoadDocument: vi.fn(),
+    apiLoadShared: vi.fn(),
+  },
+  copies: {
+    held: null as LastSeenCopy<unknown, unknown> | null,
+    read: vi.fn(),
+    readVia: vi.fn(),
+    remember: vi.fn(async () => {}),
+    forget: vi.fn(async () => {}),
+    forgetVia: vi.fn(async () => {}),
+  },
+  hint: { signedIn: false },
+  identity: { guestId: 'guest-1' } as { guestId: string | null },
+  paint: vi.fn(),
+  seed: vi.fn(async () => null),
+  seedDeps: {
+    current: null as { warmFirstTab?: () => unknown; keepActiveId?: () => string | null } | null,
+  }, // Each timing started, by metric: the handle the bootstrap ends.
+  timing: {
+    started: [] as { metric: string; from: number | undefined; endAfterPaint: () => void }[],
+  },
+}));
+vi.mock('@/lib/api-client', () => ({
+  ...api,
+  getSessionSharePassword: () => null,
+  readCachedSharePassword: () => null,
+  setSessionSharePassword: () => {},
+  writeCachedSharePassword: () => {},
+}));
+// What the warm paint waits for (offline-mode.md "The code it draws is in first"), answered at once unless a test holds it.
+const warmCode = vi.hoisted(() => ({ preload: vi.fn(async () => {}) }));
+vi.mock('@/lib/editor-deferred-code', () => ({ WARM_PAINT_CODE: [() => warmCode.preload()] }));
+vi.mock('@/lib/last-seen', () => ({ lastSeenCopies: copies }));
+// The not-found fallback's reload, watched rather than run (offline-mode.md "Never a wrong not found").
+vi.mock('@liveworkspace/workbench/lib/warm-open', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveworkspace/workbench/lib/warm-open')>()),
+  browserWarmOpenFallbackDeps: (forget: () => Promise<unknown>) => ({
+    storage: () => window.sessionStorage,
+    forget,
+    reload: fallback.reload,
+    warn: fallback.warn,
+  }),
+}));
+vi.mock('@/lib/signed-in-hint', () => ({ readSignedInHint: () => hint.signedIn }));
+vi.mock('@/lib/guest-identity', () => ({ ensureGuestIdentity: async () => ({ id: 'guest-1' }) }));
+const offline = vi.hoisted(() => ({ isOfflineId: vi.fn(async () => false) }));
+vi.mock('@/lib/offline/offline-store', () => ({
+  isOfflineId: () => offline.isOfflineId(),
+  OFFLINE_OWNER_ID: '__offline__',
+}));
+vi.mock('@/lib/api/document-grants', () => ({
+  documentGrant: async () => ({ level: 'edit' }),
+  documentPasswordLink: async () => null,
+}));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: { getItem: async () => ({ item: { trashedAt: null } }) },
+}));
+vi.mock('@/lib/local-identity', () => ({
+  ensureCollabKey: () => 'collab',
+  hasConfirmedName: () => true,
+  getGuestSelfId: () => identity.guestId,
+}));
+vi.mock('@/lib/daily-return', () => ({ trackDailyReturn: () => {} }));
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+vi.mock('@/lib/timing', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/timing')>()),
+  startEditorTiming: (metric: string, opts: { from?: number } = {}) => {
+    const handle = { metric, from: opts.from, endAfterPaint: vi.fn() };
+    timing.started.push(handle);
+    return { end: vi.fn(), cancel: vi.fn(), endAfterPaint: handle.endAfterPaint };
+  },
+}));
+vi.mock('./seed-fetched-document', () => ({
+  makeSeedFetchedDocument: (deps: {
+    warmFirstTab?: () => unknown;
+    keepActiveId?: () => string | null;
+  }) => {
+    seedDeps.current = deps;
+    return seed;
+  },
+  makePaintLastSeen: () => paint,
+}));
+
+import { useIdentityBootstrap } from './useIdentityBootstrap';
+import { resetLoadProgressForTests } from '@/lib/load-progress';
+
+const DOC = { id: 'doc-1', ownerId: 'owner-1', name: 'Payments', tabs: [{ id: 't1' }] };
+
+const copyFor = (
+  over: Partial<LastSeenCopy<unknown, unknown>> = {},
+): LastSeenCopy<unknown, unknown> => ({
+  reader: 'guest-1',
+  itemId: 'doc-1',
+  seenAt: 1,
+  item: DOC,
+  firstTab: { id: 't1', rev: 2, tab: { id: 't1', elements: [] } },
+  via: null,
+  access: { role: 'edit', isOwner: true, sessionShareCode: null, tabScope: null },
+  ...over,
+});
+
+type Props = { authLoaded: boolean; accountUserId: string | null; activeId?: string };
+function render(initial: Props, reactStrictMode = false) {
+  const fns: Record<string, ReturnType<typeof vi.fn>> = {};
+  const set = new Proxy(fns, { get: (t, k: string) => (t[k] ??= vi.fn()) });
+  const hook = renderHook(
+    ({ authLoaded, accountUserId, activeId = 't1' }: Props) =>
+      useIdentityBootstrap({
+        authLoaded,
+        passwordRetry: 0,
+        hydrated: false,
+        accountUserId,
+        accountDisplayName: null,
+        embed: false,
+        workbench: null,
+        activeId,
+        selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
+        resetTabs: () => {},
+        refs: {
+          lastPersistedSelfRef: { current: null },
+          lastSavedTabsRef: { current: [] },
+          lastSavedNameRef: { current: '' },
+          loadedTabIdsRef: { current: new Set() },
+          noteChangesetSeen: () => {},
+        },
+        set: set as never,
+      }),
+    { initialProps: initial, reactStrictMode },
+  );
+  return { hook, set: fns };
+}
+const flush = () => new Promise((r) => setTimeout(r, 0));
+const lastRole = (set: Record<string, ReturnType<typeof vi.fn>>): unknown =>
+  set.setSessionRole!.mock.calls.at(-1)?.[0] as unknown;
+
+beforeEach(() => {
+  resetLoadProgressForTests();
+  warmCode.preload.mockImplementation(async () => {});
+  window.sessionStorage.clear();
+  window.history.replaceState(null, '', '/document/doc-1');
+  hint.signedIn = false;
+  offline.isOfflineId.mockImplementation(async () => false);
+  identity.guestId = 'guest-1';
+  copies.held = copyFor();
+  copies.read.mockImplementation(async (reader: string, itemId: string) =>
+    copies.held && copies.held.reader === reader && copies.held.itemId === itemId
+      ? copies.held
+      : null,
+  );
+  copies.readVia.mockImplementation(async (reader: string, code: string) =>
+    copies.held && copies.held.reader === reader && copies.held.via === code ? copies.held : null,
+  );
+  api.apiLoadDocument.mockResolvedValue(DOC);
+  api.apiLoadSelf.mockImplementation(async (id: string) => ({
+    id,
+    name: 'Reader',
+    color: '#111',
+    status: 'online',
+  }));
+  api.apiSaveSelf.mockResolvedValue(undefined);
+});
+afterEach(() => {
+  vi.clearAllMocks();
+  timing.started.length = 0;
+});
+
+describe('useIdentityBootstrap warm open', () => {
+  it("paints an Editor's copy read-only before auth, then catches up and lets them edit", async () => {
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+    expect(lastRole(set)).toBe('view');
+    expect(set.setIsOwner).toHaveBeenCalledWith(true);
+    // The painted tab is the one with a body: the others show the tab loader until the load catches up.
+    expect(set.setWarmTabId).toHaveBeenCalledWith('t1');
+    expect(set.setLoadingDocument).toHaveBeenCalledWith(false);
+    // Nothing waits on the server, and nothing is saved or connected: those need `hydrated`.
+    expect(api.apiLoadDocument).not.toHaveBeenCalled();
+    expect(set.setHydrated).toBeUndefined();
+
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(api.apiLoadDocument).toHaveBeenCalledExactlyOnceWith('guest-1', 'doc-1');
+    expect(lastRole(set)).toBe('edit');
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
+    // The catch-up's seed keeps the painted first tab when its revision is unchanged.
+    expect(seedDeps.current?.warmFirstTab?.()).toBe(copies.held!.firstTab);
+    // Replaced in place: the opening screen never comes back between.
+    expect(set.setLoadingDocument).not.toHaveBeenCalledWith(true);
+    expect(copies.remember).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ['view', 'Viewer'],
+    ['participate', 'Participant'],
+  ] as const)(
+    "paints a %s link's copy read-only, then gives the %s their role",
+    async (role, _who) => {
+      window.history.replaceState(null, '', '/document/doc-1?s=CODE');
+      copies.held = copyFor({
+        via: 'CODE',
+        access: { role, isOwner: false, sessionShareCode: 'CODE', tabScope: null },
+      });
+      api.apiLoadShared.mockResolvedValue({ document: DOC, role, tabId: null, community: null });
+      const { hook, set } = render({ authLoaded: false, accountUserId: null });
+      await flush();
+      expect(paint).toHaveBeenCalledOnce();
+      expect(lastRole(set)).toBe('view');
+      expect(set.setIsOwner).toHaveBeenCalledWith(false);
+      hook.rerender({ authLoaded: true, accountUserId: null });
+      await flush();
+      expect(api.apiLoadShared).toHaveBeenCalledWith('CODE', 'guest-1', 'doc-1');
+      expect(lastRole(set)).toBe(role);
+    },
+  );
+
+  // A warm-painted open that ends on not found reloads once, cold, without the copy: the ordinary load may have read
+  // the wrong reader (the Thomas HQ open, offline-mode.md "Never a wrong not found"). Only the second shows it.
+  it('reloads once without the copy rather than show not found after a warm paint', async () => {
+    api.apiLoadDocument.mockResolvedValue(null);
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(paint).toHaveBeenCalledOnce();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setDocumentNotFound?.mock.calls ?? []).not.toContainEqual([true]);
+    expect(copies.forget).toHaveBeenCalledWith('guest-1', 'doc-1');
+    expect(fallback.reload).toHaveBeenCalledOnce();
+    expect(fallback.warn).toHaveBeenCalledWith(
+      expect.stringContaining('[load] warm-open-fallback not-found'),
+    );
+  });
+
+  it('swaps the copy for not found when access was lost, and forgets it', async () => {
+    window.sessionStorage.setItem('warm-open-fallback:doc-1', 'not-found');
+    api.apiLoadDocument.mockResolvedValue(null);
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(paint).toHaveBeenCalledOnce();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setDocumentNotFound).toHaveBeenCalledWith(true);
+    expect(copies.forget).toHaveBeenCalledWith('guest-1', 'doc-1');
+  });
+
+  it('takes the copy off the screen when the session names someone else after all', async () => {
+    copies.held = copyFor();
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(paint).toHaveBeenCalledOnce();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_b' });
+    await flush();
+    expect(set.setLoadingDocument).toHaveBeenCalledWith(true);
+    expect(set.setWarmTabId).toHaveBeenLastCalledWith(null);
+    expect(api.apiLoadDocument).toHaveBeenCalledWith('user_b', 'doc-1');
+  });
+
+  // Work Tracker 955: the signed-in hint says whether, never who, so an account's copy is read only once the session
+  // has named the account.
+  it('reads nothing under a signed-in hint until the session answers, then paints the copy of the account it names', async () => {
+    hint.signedIn = true;
+    copies.held = copyFor({ reader: 'user_a' });
+    let landed: (found: unknown) => void = () => {};
+    api.apiLoadDocument.mockImplementation(() => new Promise((r) => (landed = r)));
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(copies.read).not.toHaveBeenCalled();
+    expect(paint).not.toHaveBeenCalled();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_a' });
+    await flush();
+    expect(copies.read).toHaveBeenCalledExactlyOnceWith('user_a', 'doc-1');
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+    expect(lastRole(set)).toBe('view');
+    landed(DOC);
+    await flush();
+    expect(lastRole(set)).toBe('edit');
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
+  });
+
+  it("never paints another account's copy: the read is for the account the session names", async () => {
+    hint.signedIn = true;
+    copies.held = copyFor({ reader: 'user_a' });
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_b' });
+    await flush();
+    expect(copies.read).toHaveBeenCalledWith('user_b', 'doc-1');
+    expect(paint).not.toHaveBeenCalled();
+    expect(api.apiLoadDocument).toHaveBeenCalledWith('user_b', 'doc-1');
+  });
+
+  // A sign-out in another app leaves this app's hint saying signed in, over a session that is gone.
+  it('paints no copy on the next load after a sign-out in another app', async () => {
+    hint.signedIn = true;
+    copies.held = copyFor({ reader: 'user_a' });
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(copies.read).not.toHaveBeenCalled();
+    expect(copies.readVia).not.toHaveBeenCalled();
+    expect(paint).not.toHaveBeenCalled();
+    expect(api.apiLoadDocument).toHaveBeenCalledWith('guest-1', 'doc-1');
+  });
+
+  it('reads at once when the session answered while the local index loaded', async () => {
+    hint.signedIn = true;
+    copies.held = copyFor({ reader: 'user_a' });
+    let indexed: (found: boolean) => void = () => {};
+    offline.isOfflineId.mockImplementation(() => new Promise((r) => (indexed = r)));
+    api.apiLoadDocument.mockImplementation(() => new Promise(() => {}));
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_a' });
+    await flush();
+    expect(copies.read).not.toHaveBeenCalled();
+    indexed(false);
+    await flush();
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+  });
+
+  it("never shows an account's copy to a signed-out browser", async () => {
+    copies.held = copyFor({ reader: 'user_a' });
+    render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(copies.read).toHaveBeenCalledWith('guest-1', 'doc-1');
+    expect(paint).not.toHaveBeenCalled();
+  });
+
+  it('paints nothing once sign-out has cleared the copies', async () => {
+    hint.signedIn = true;
+    copies.held = null;
+    const { set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(paint).not.toHaveBeenCalled();
+    expect(set.setLoadingDocument).toBeUndefined();
+  });
+
+  // A guest's auth settles from the local token almost at once, so the load often starts before the copy read answers.
+  it('paints when auth settles before the copy read answers, while the load has not landed', async () => {
+    let answer: (copy: unknown) => void = () => {};
+    copies.read.mockImplementation(() => new Promise((r) => (answer = r)));
+    let landed: (doc: unknown) => void = () => {};
+    api.apiLoadDocument.mockImplementation(() => new Promise((r) => (landed = r)));
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    answer(copies.held);
+    await flush();
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+    expect(lastRole(set)).toBe('view');
+    landed(DOC);
+    await flush();
+    expect(lastRole(set)).toBe('edit');
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
+    expect(seedDeps.current?.warmFirstTab?.()).toBe(copies.held!.firstTab);
+  });
+
+  it('paints no late copy once the load resolved someone else as reading', async () => {
+    let answer: (copy: unknown) => void = () => {};
+    copies.read.mockImplementation(() => new Promise((r) => (answer = r)));
+    api.apiLoadDocument.mockImplementation(() => new Promise(() => {}));
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_b' });
+    await flush();
+    answer(copies.held);
+    await flush();
+    expect(paint).not.toHaveBeenCalled();
+  });
+
+  it('reads and paints once when the layout effect runs twice (StrictMode in dev)', async () => {
+    render({ authLoaded: false, accountUserId: null }, true);
+    await flush();
+    expect(copies.read).toHaveBeenCalledOnce();
+    expect(paint).toHaveBeenCalledOnce();
+  });
+
+  it('paints nothing when the ordinary load landed first', async () => {
+    let answer: (copy: unknown) => void = () => {};
+    copies.read.mockImplementation(() => new Promise((r) => (answer = r)));
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
+    answer(copyFor());
+    await flush();
+    expect(paint).not.toHaveBeenCalled();
+    expect(api.apiLoadDocument).toHaveBeenCalledOnce();
+  });
+
+  it('opens as always when the copy store fails', async () => {
+    copies.read.mockRejectedValue(new Error('gone'));
+    hint.signedIn = true;
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(paint).not.toHaveBeenCalled();
+    hook.rerender({ authLoaded: true, accountUserId: 'user_a' });
+    await flush();
+    expect(copies.read).toHaveBeenCalledWith('user_a', 'doc-1');
+    expect(paint).not.toHaveBeenCalled();
+    expect(api.apiLoadDocument).toHaveBeenCalledOnce();
+  });
+  it('keeps the tab the person moved to during the warm paint when the load catches up', async () => {
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: false, accountUserId: null, activeId: 't2' });
+    hook.rerender({ authLoaded: true, accountUserId: null, activeId: 't2' });
+    await flush();
+    expect(seedDeps.current?.keepActiveId?.()).toBe('t2');
+  });
+
+  it('keeps no tab for a load with nothing warm-painted', async () => {
+    copies.held = null;
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null, activeId: 't2' });
+    await flush();
+    expect(seedDeps.current?.keepActiveId?.()).toBeNull();
+  });
+
+  // The Share dialog's links are /document/shared?s=<code>: a Viewer or Participant reloading theirs warm-opens.
+  it("paints a link's own address from the copy kept under its code", async () => {
+    window.history.replaceState(null, '', '/document/shared?s=CODE');
+    copies.held = copyFor({
+      via: 'CODE',
+      access: { role: 'view', isOwner: false, sessionShareCode: 'CODE', tabScope: null },
+    });
+    const { set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(copies.readVia).toHaveBeenCalledWith('guest-1', 'CODE');
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+    expect(lastRole(set)).toBe('view');
+    // The address is left as it is.
+    expect(window.location.pathname).toBe('/document/shared');
+  });
+
+  it("forgets a revoked link's copies by its code", async () => {
+    window.sessionStorage.setItem('warm-open-fallback:doc-1', 'not-found');
+    window.history.replaceState(null, '', '/document/shared?s=CODE');
+    copies.held = copyFor({
+      via: 'CODE',
+      access: { role: 'view', isOwner: false, sessionShareCode: 'CODE', tabScope: null },
+    });
+    api.apiLoadShared.mockResolvedValue(null);
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(paint).toHaveBeenCalledOnce();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setDocumentNotFound).toHaveBeenCalledWith(true);
+    expect(copies.forgetVia).toHaveBeenCalledWith('guest-1', 'CODE');
+  });
+
+  // timing-telemetry.md "WarmPaint": the warm paint is a timing of its own, so production shows it.
+  it('times the warm paint as WarmPaint from the read, and the catch-up as DocumentLoad', async () => {
+    const before = performance.now(); // wall-clock: the timing origin itself is a performance clock reading
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    const warm = timing.started.filter((t) => t.metric === 'WarmPaint');
+    expect(warm).toHaveLength(1);
+    // No navigation entry names this page in the test, so it times from the read's start, never from undefined.
+    expect(warm[0]!.from).toBeGreaterThanOrEqual(before);
+    expect(warm[0]!.endAfterPaint).toHaveBeenCalledOnce();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(timing.started.map((t) => t.metric)).toEqual(['WarmPaint', 'DocumentLoad']);
+  });
+
+  it('times no WarmPaint for an open with no copy to paint', async () => {
+    copies.held = null;
+    const { hook } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(timing.started.map((t) => t.metric)).toEqual(['DocumentLoad']);
+  });
+
+  // offline-mode.md "The code it draws is in first": the paint waits for the code of what it mounts first.
+  const holdCode = () => {
+    let codeIn: () => void = () => {};
+    warmCode.preload.mockImplementation(() => new Promise<void>((r) => (codeIn = r)));
+    return () => codeIn();
+  };
+
+  it('has the code the paint draws in before it paints', async () => {
+    const codeIn = holdCode();
+    render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(warmCode.preload).toHaveBeenCalledOnce();
+    expect(paint).not.toHaveBeenCalled();
+    codeIn();
+    await flush();
+    expect(paint).toHaveBeenCalledExactlyOnceWith(copies.held);
+  });
+
+  it('asks for no code when there is no copy to paint', async () => {
+    copies.held = null;
+    render({ authLoaded: false, accountUserId: null });
+    await flush();
+    expect(warmCode.preload).not.toHaveBeenCalled();
+  });
+
+  it('paints nothing when the load landed while the code loaded', async () => {
+    const codeIn = holdCode();
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    expect(set.setHydrated).toHaveBeenCalledWith(true);
+    codeIn();
+    await flush();
+    expect(paint).not.toHaveBeenCalled();
+  });
+
+  // The warm-open 404 race (Work Tracker 890, PR #1804) stays fixed with the wait in front of the paint: auth settles and
+  // the load starts while the code loads, the copy then paints, and the load's not found reloads cold instead of showing.
+  it('still reloads once rather than show not found when the paint waited for its code', async () => {
+    const codeIn = holdCode();
+    let answer: (found: unknown) => void = () => {};
+    api.apiLoadDocument.mockImplementation(() => new Promise((r) => (answer = r)));
+    const { hook, set } = render({ authLoaded: false, accountUserId: null });
+    await flush();
+    hook.rerender({ authLoaded: true, accountUserId: null });
+    await flush();
+    codeIn();
+    await flush();
+    expect(paint).toHaveBeenCalledOnce();
+    answer(null);
+    await flush();
+    expect(set.setDocumentNotFound?.mock.calls ?? []).not.toContainEqual([true]);
+    expect(fallback.reload).toHaveBeenCalledOnce();
+  });
+});

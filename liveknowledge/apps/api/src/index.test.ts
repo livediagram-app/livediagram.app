@@ -1,0 +1,475 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock the async deps the request path touches before dispatch, so the worker's front-door gates run alone.
+vi.mock('./auth/accounts', () => ({ getPersonIdentity: async () => null }));
+const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn() }));
+vi.mock('./db', () => ({
+  resolveApiToken: resolveApiTokenMock,
+  listDocumentsByOwner: async () => [],
+}));
+
+const { resolveWorkbenchSessionMock, handleDocumentsMock } = vi.hoisted(() => ({
+  resolveWorkbenchSessionMock: vi.fn(),
+  handleDocumentsMock: vi.fn(async () => new Response(null, { status: 204 })),
+}));
+vi.mock('./auth/workbench-session', async (original) => ({
+  ...(await original<typeof import('./auth/workbench-session')>()),
+  resolveWorkbenchSession: resolveWorkbenchSessionMock,
+}));
+vi.mock('./routes/documents', () => ({ handleDocuments: handleDocumentsMock }));
+
+import worker from './index';
+import type { RouteContext, WorkbenchContext } from './routes/context';
+import type { Env } from './types';
+
+function env(): Env {
+  return {} as unknown as Env;
+}
+function get(path: string, headers: Record<string, string> = {}): Request {
+  return new Request(`https://api.test${path}`, { method: 'GET', headers });
+}
+
+const LVD = `lwt_${'a'.repeat(40)}`;
+
+describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.11)', () => {
+  beforeEach(() => {
+    resolveApiTokenMock.mockReset();
+    resolveApiTokenMock.mockResolvedValue({
+      ownerId: 'user_ro',
+      tokenId: 'tok-ro',
+      readOnly: true,
+    });
+  });
+
+  const RO = { Authorization: `Bearer ${LVD}` };
+  const req = (method: string) =>
+    new Request('https://api.test/api/documents', { method, headers: RO });
+
+  it('403s a POST from a read-only token', async () => {
+    const res = await worker.fetch(req('POST'), env());
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'read_only_token' });
+  });
+
+  it('403s a PUT from a read-only token', async () => {
+    const res = await worker.fetch(
+      new Request('https://api.test/api/documents/d1', { method: 'PUT', headers: RO }),
+      env(),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('403s a DELETE from a read-only token', async () => {
+    const res = await worker.fetch(
+      new Request('https://api.test/api/documents/d1', { method: 'DELETE', headers: RO }),
+      env(),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('lets a read-only token revoke itself, and only itself', async () => {
+    const self = await worker.fetch(
+      new Request('https://api.test/api/tokens/current', { method: 'DELETE', headers: RO }),
+      env(),
+    );
+    expect(self.status).not.toBe(403);
+    const other = await worker.fetch(
+      new Request('https://api.test/api/tokens/tok-other', { method: 'DELETE', headers: RO }),
+      env(),
+    );
+    expect(other.status).toBe(403);
+  });
+
+  // docs/specs/015-api/api.md: the MCP view's view-only ticket writes nothing and admits only a watcher.
+  it('lets a read-only token mint a view-only room ticket, and no other', async () => {
+    const mint = (query: string) =>
+      worker.fetch(
+        new Request(`https://api.test/api/documents/d1/room-ticket${query}`, {
+          method: 'POST',
+          headers: RO,
+        }),
+        env(),
+      );
+    expect((await mint('?cap=view')).status).not.toBe(403);
+    for (const query of ['', '?cap=edit', '?cap=participate']) {
+      const res = await mint(query);
+      expect(res.status, query).toBe(403);
+      expect(await res.json()).toEqual({ error: 'read_only_token' });
+    }
+  });
+
+  // Workbenches are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api forwards them as liveknowledge,
+  // before any token check of its own, and accounts checks the credential.
+  it('forwards /api/workbench/* to liveworkspace untouched, read-only token and all', async () => {
+    const seen: Request[] = [];
+    vi.stubGlobal('fetch', async (request: Request) => {
+      seen.push(request);
+      return new Response(null, { status: 201 });
+    });
+    try {
+      const res = await worker.fetch(
+        new Request('https://api.test/api/workbench/tickets?x=1', {
+          method: 'POST',
+          headers: { ...RO, Cookie: 'a=b' },
+          body: '{}',
+        }),
+        { ACCOUNTS_URL: 'https://accounts.test' } as unknown as Env,
+      );
+      expect(res.status).toBe(201);
+      expect(resolveApiTokenMock).not.toHaveBeenCalled();
+      expect(seen[0]!.url).toBe('https://accounts.test/api/account/workbench/tickets?x=1');
+      expect(seen[0]!.headers.get('X-Liveworkspace-Proxy')).toBe('liveknowledge');
+      expect(seen[0]!.headers.get('Authorization')).toBe(RO.Authorization);
+      expect(seen[0]!.headers.get('Cookie')).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    // Without accounts there is no workbench.
+    const off = await worker.fetch(
+      new Request('https://api.test/api/workbench/pairings', { headers: RO }),
+      env(),
+    );
+    expect(off.status).toBe(503);
+  });
+
+  // Work Tracker 1070: over the API's own ACCOUNTS binding when it has one, the whole request, the public route untouched.
+  it('forwards /api/workbench/* over env.ACCOUNTS with its method, headers and body', async () => {
+    const publicRoute = vi.fn(async () => new Response(null, { status: 500 }));
+    vi.stubGlobal('fetch', publicRoute);
+    const seen: Request[] = [];
+    const ACCOUNTS = {
+      fetch: async (request: Request) => {
+        seen.push(request);
+        return Response.json({ ticket: 't1' }, { status: 201 });
+      },
+    };
+    try {
+      const res = await worker.fetch(
+        new Request('https://api.test/api/workbench/tickets?x=1', {
+          method: 'POST',
+          headers: { ...RO, 'Content-Type': 'application/json', Cookie: 'a=b' },
+          body: '{"documentId":"d1"}',
+        }),
+        { ACCOUNTS_URL: 'https://accounts.test', ACCOUNTS } as unknown as Env,
+      );
+      expect(res.status).toBe(201);
+      expect(await res.json()).toEqual({ ticket: 't1' });
+      expect(publicRoute).not.toHaveBeenCalled();
+      const sent = seen[0]!;
+      expect(sent.url).toBe('https://accounts.test/api/account/workbench/tickets?x=1');
+      expect(sent.method).toBe('POST');
+      expect(await sent.text()).toBe('{"documentId":"d1"}');
+      expect(sent.headers.get('Authorization')).toBe(RO.Authorization);
+      expect(sent.headers.get('Content-Type')).toBe('application/json');
+      expect(sent.headers.get('X-Liveworkspace-Proxy')).toBe('liveknowledge');
+      expect(sent.headers.get('Cookie')).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('lets a GET through (reads are allowed)', async () => {
+    const res = await worker.fetch(req('GET'), env());
+    expect(res.status).not.toBe(403);
+  });
+
+  it('does NOT block a full (read+write) token', async () => {
+    resolveApiTokenMock.mockResolvedValue({
+      ownerId: 'user_rw',
+      tokenId: 'tok-rw',
+      readOnly: false,
+    });
+    const res = await worker.fetch(req('POST'), env());
+    expect(res.status).not.toBe(403);
+  });
+});
+
+// An `lwt_` bearer is a claim to be a token; one that resolves to no live row (unknown, revoked or expired) is
+// refused at the front door with 401 `invalid_token`, never treated as a guest or as nobody
+// (docs/specs/015-api/public-api-and-tokens.md §3.3).
+describe('worker refusal of an unknown API token', () => {
+  const noEnforcement = () => ({}) as unknown as Env;
+  const TOKEN = `lwt_${'x'.repeat(43)}`;
+  beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
+
+  it('401s an lwt_ bearer that resolves to no live token, on owner-scoped and token routes alike', async () => {
+    for (const path of ['/api/documents', '/api/tokens/current', '/api/teams']) {
+      const res = await worker.fetch(
+        get(path, { Authorization: `Bearer ${TOKEN}` }),
+        noEnforcement(),
+      );
+      expect(res.status, path).toBe(401);
+      expect(await res.json(), path).toEqual({ error: 'invalid_token' });
+      expect(res.headers.get('WWW-Authenticate'), path).toBe('Bearer error="invalid_token"');
+    }
+  });
+
+  it('refuses it even beside a guest header, so a dead token never falls back to a guest', async () => {
+    const res = await worker.fetch(
+      get('/api/documents', { Authorization: `Bearer ${TOKEN}`, 'X-Owner-Id': 'guest-1' }),
+      noEnforcement(),
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it('refuses a token cut short or mistyped as a token, not as a request with no credential', async () => {
+    for (const bearer of ['lwt_', 'lwt_notreal', `lwt_${'x'.repeat(12)}`]) {
+      const res = await worker.fetch(
+        get('/api/documents', { Authorization: `Bearer ${bearer}`, 'X-Owner-Id': 'guest-1' }),
+        noEnforcement(),
+      );
+      expect(res.status, bearer).toBe(401);
+      expect(await res.json(), bearer).toEqual({ error: 'invalid_token' });
+    }
+  });
+
+  it('takes an lvd_ bearer carried over from the old livediagram.app down the token path too', async () => {
+    const legacy = `lvd_${'x'.repeat(43)}`;
+    resolveApiTokenMock.mockClear();
+    for (const bearer of [legacy, 'lvd_short']) {
+      const res = await worker.fetch(
+        get('/api/tokens/current', { Authorization: `Bearer ${bearer}` }),
+        noEnforcement(),
+      );
+      expect(res.status, bearer).toBe(401);
+      expect(await res.json(), bearer).toEqual({ error: 'invalid_token' });
+    }
+    // Only the well-formed one is looked up.
+    expect(resolveApiTokenMock).toHaveBeenCalledTimes(1);
+    expect(resolveApiTokenMock.mock.calls[0]![1]).toBe(legacy);
+  });
+
+  it('leaves a bearer that is not token-shaped to the account path', async () => {
+    const res = await worker.fetch(
+      get('/api/documents', { Authorization: 'Bearer eyJ.jwt.sig' }),
+      noEnforcement(),
+    );
+    expect(res.status).not.toBe(401);
+  });
+});
+
+// Room-ticket mints skip the per-owner write budget (autosave shares it), but
+// each is a write, so they have their own bucket keyed on the network.
+describe('worker room-ticket throttle', () => {
+  beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
+
+  it('429s a mint once the per-network bucket is spent, keyed on the /64', async () => {
+    const limit = vi.fn(async () => ({ success: false }));
+    const res = await worker.fetch(
+      new Request('https://api.test/api/documents/d1/room-ticket', {
+        method: 'POST',
+        headers: { 'CF-Connecting-IP': '2001:db8:0:1::9' },
+      }),
+      { WRITE_RATE_LIMITER: { limit } } as unknown as Env,
+    );
+    expect(res.status).toBe(429);
+    expect(limit).toHaveBeenCalledWith({ key: 'room-ticket:2001:0db8:0000:0001::/64' });
+  });
+
+  // api.md "Rate limiting" (Work Tracker 1103): an MCP server's mint arrives over the service binding with no
+  // CF-Connecting-IP, so it keys on its token, never on the `anonymous` bucket every MCP view would share.
+  it('keys a token’s mint on the token, with no client address', async () => {
+    resolveApiTokenMock.mockResolvedValue({
+      ownerId: 'user_1',
+      tokenId: 'tok-mcp',
+      readOnly: false,
+    });
+    const limit = vi.fn(async () => ({ success: false }));
+    const res = await worker.fetch(
+      new Request('https://api.test/api/documents/d1/room-ticket?cap=view', {
+        method: 'POST',
+        headers: { Authorization: `Bearer lwt_${'x'.repeat(43)}` },
+      }),
+      { WRITE_RATE_LIMITER: { limit } } as unknown as Env,
+    );
+    expect(res.status).toBe(429);
+    expect(limit).toHaveBeenCalledWith({ key: 'room-ticket:token:tok-mcp' });
+    expect(limit).not.toHaveBeenCalledWith({ key: 'room-ticket:anonymous' });
+  });
+});
+
+// docs/specs/013-workspace/workbench-embeds.md: a `Bearer lvw_` is a person's editor on one document, confined at
+// the front door before any route runs.
+describe('workbench sessions at the front door', () => {
+  const LVW = `lvw_${'w'.repeat(43)}.${'0f'.repeat(32)}`;
+  const SESSION: WorkbenchContext = {
+    sessionId: 'abcdef12-0000-4000-8000-000000000000',
+    ownerId: 'user_1',
+    tokenId: 'tok1',
+    pairingId: 'pair1',
+    scope: 'document',
+    documentId: 'doc1',
+    folderId: null,
+    tabId: null,
+    origin: 'https://w.example',
+    level: 'edit',
+    expiresAt: 1,
+  };
+  const call = (method: string, path: string, headers: Record<string, string> = {}, e = {}) =>
+    worker.fetch(
+      new Request(`https://api.test${path}`, {
+        method,
+        headers: { Authorization: `Bearer ${LVW}`, ...headers },
+      }),
+      e as unknown as Env,
+    );
+
+  beforeEach(() => {
+    resolveApiTokenMock.mockReset();
+    resolveWorkbenchSessionMock.mockReset();
+    handleDocumentsMock.mockClear();
+    resolveWorkbenchSessionMock.mockResolvedValue({ ok: true, workbench: SESSION });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  it('401s a session cut short or mistyped, without looking it up', async () => {
+    resolveWorkbenchSessionMock.mockClear();
+    const res = await call('GET', '/api/documents/doc1', {
+      Authorization: 'Bearer lvw_short',
+      'X-Owner-Id': 'guest-1',
+    });
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: 'invalid_session' });
+    expect(resolveWorkbenchSessionMock).not.toHaveBeenCalled();
+  });
+
+  it('401s a session that does not resolve, never reading it as a guest', async () => {
+    resolveWorkbenchSessionMock.mockResolvedValue({
+      ok: false,
+      reason: 'expired',
+      sessionPrefix: 'abcdef12',
+    });
+
+    const res = await call('GET', '/api/documents/doc1', { 'X-Owner-Id': 'guest-1' });
+
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: 'invalid_session' });
+    expect(res.headers.get('WWW-Authenticate')).toBe('Bearer error="invalid_token"');
+    expect(console.warn).toHaveBeenCalledWith('[workbench] bearer-refused', {
+      reason: 'expired',
+      sessionPrefix: 'abcdef12',
+    });
+  });
+
+  it('confines the library, answers another document as absent, and refuses an ambient share code', async () => {
+    const library = await call('GET', '/api/documents');
+    const other = await call('GET', '/api/documents/doc2');
+    const ambient = await call('GET', '/api/documents/doc1', { 'X-Share-Code': 'CODE2345' });
+
+    expect([library.status, other.status, ambient.status]).toEqual([403, 404, 403]);
+    expect(await library.json()).toEqual({ error: 'workbench_confined' });
+  });
+
+  it('refuses a view session its writes', async () => {
+    resolveWorkbenchSessionMock.mockResolvedValue({
+      ok: true,
+      workbench: { ...SESSION, level: 'view' },
+    });
+
+    const res = await call('PUT', '/api/documents/doc1/tabs/t1');
+
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'workbench_read_only' });
+  });
+
+  it('hands an allowed route the owner as a person: no account id, no token, writes keyed on the session', async () => {
+    const limit = vi.fn(async () => ({ success: true }));
+
+    const res = await call('PUT', '/api/documents/doc1', {}, { WRITE_RATE_LIMITER: { limit } });
+    const ctx = (handleDocumentsMock.mock.calls[0] as unknown as [RouteContext])[0];
+
+    expect(res.status).toBe(204);
+    expect(ctx.workbench).toEqual(SESSION);
+    expect(ctx.accountUserId).toBeNull();
+    expect(ctx.token).toBeNull();
+    expect(ctx.resolveOwner()).toBe('user_1');
+    expect(ctx.verifiedUserId).toBe('user_1');
+    expect(limit).toHaveBeenCalledWith({ key: `workbench:${SESSION.sessionId}` });
+  });
+
+  it('leaves a token bearer to the token path', async () => {
+    resolveApiTokenMock.mockResolvedValue({ ownerId: 'user_1', tokenId: 'tok1', readOnly: false });
+
+    await worker.fetch(
+      new Request('https://api.test/api/documents/doc1', {
+        method: 'PUT',
+        headers: { Authorization: `Bearer lwt_${'x'.repeat(43)}` },
+      }),
+      {} as unknown as Env,
+    );
+    const ctx = (handleDocumentsMock.mock.calls[0] as unknown as [RouteContext])[0];
+
+    expect(resolveWorkbenchSessionMock).not.toHaveBeenCalled();
+    expect(ctx.workbench).toBeNull();
+    expect(ctx.token).toEqual({ id: 'tok1', readOnly: false });
+  });
+});
+
+// The body cap (docs/specs/015-api/api.md "Rate limiting") holds whatever the headers say: a chunked body declares
+// no Content-Length (Number(null) is 0, which used to pass), so the gate counts the bytes it reads.
+describe('the write body cap', () => {
+  // A body of `chunks` pieces of `size` bytes that declares no length, as a chunked upload does.
+  const chunkedPut = (chunks: number, size: number, extra: Record<string, string> = {}) => {
+    let sent = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (sent === chunks) return controller.close();
+        sent++;
+        controller.enqueue(new TextEncoder().encode('x'.repeat(size)));
+      },
+    });
+    return new Request('https://api.test/api/documents/doc1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...extra },
+      body,
+      duplex: 'half',
+    } as RequestInit);
+  };
+
+  beforeEach(() => {
+    resolveApiTokenMock.mockResolvedValue(null);
+    handleDocumentsMock.mockClear();
+  });
+
+  it('refuses a chunked body past MAX_BODY_BYTES with 413 before any route reads it', async () => {
+    const request = chunkedPut(9, 1024 * 1024);
+    expect(request.headers.get('content-length')).toBeNull();
+    const res = await worker.fetch(request, env());
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ error: 'payload_too_large' });
+    expect(handleDocumentsMock).not.toHaveBeenCalled();
+  });
+
+  it('still refuses a declared Content-Length past the cap without reading', async () => {
+    const res = await worker.fetch(
+      new Request('https://api.test/api/documents/doc1', {
+        method: 'PUT',
+        headers: { 'Content-Length': String(9 * 1024 * 1024) },
+        body: '{}',
+      }),
+      env(),
+    );
+    expect(res.status).toBe(413);
+    expect(handleDocumentsMock).not.toHaveBeenCalled();
+  });
+
+  it('hands a body under the cap to the route unchanged, chunked or not', async () => {
+    const seen: string[] = [];
+    handleDocumentsMock.mockImplementation((async (ctx: RouteContext) => {
+      seen.push(await ctx.request.text());
+      return new Response(null, { status: 204 });
+    }) as never);
+    const chunked = await worker.fetch(chunkedPut(3, 4), env());
+    const declared = await worker.fetch(
+      new Request('https://api.test/api/documents/doc1', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Roadmap' }),
+      }),
+      env(),
+    );
+    expect([chunked.status, declared.status]).toEqual([204, 204]);
+    expect(seen).toEqual(['x'.repeat(12), JSON.stringify({ name: 'Roadmap' })]);
+    handleDocumentsMock.mockImplementation(async () => new Response(null, { status: 204 }));
+  });
+});

@@ -1,0 +1,54 @@
+/* The formatting bar in the top row (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"), owner
+   2026-11-21: "a bit bigger, hard to see, space them out nicely over the space they have". The page toolbar's
+   controls are shared with the floating card, so the row sizes them here: 40 px targets, 18 px glyphs, slate-700
+   ink at rest, and a gap that grows with the row's width (a container query on the scroll box), so a wide window
+   spreads them across the top instead of huddling them on the left. */
+[data-formatting-scroll] {
+  container-type: inline-size;
+  flex: 1 1 auto;
+}
+[data-article-dock] {
+  flex: 1 1 auto;
+}
+[data-article-dock] [data-page-toolbar] {
+  gap: clamp(2px, 0.9cqi, 12px);
+}
+[data-article-dock] [data-page-toolbar] button {
+  height: 2.5rem;
+}
+[data-article-dock] [data-page-toolbar] button:not([aria-haspopup]):not([data-anchor='style']) {
+  width: 2.5rem;
+}
+[data-article-dock] [data-page-toolbar] button > svg:first-child {
+  width: 18px;
+  height: 18px;
+}
+[data-article-dock] [data-page-toolbar] button[data-anchor='style'] {
+  font-size: 0.8125rem;
+  padding-inline: 0.625rem;
+}
+[data-article-dock]
+  [data-page-toolbar]
+  button:not([aria-pressed='true']):not([aria-expanded='true']) {
+  color: var(--color-slate-700);
+}
+.dark
+  [data-article-dock]
+  [data-page-toolbar]
+  button:not([aria-pressed='true']):not([aria-expanded='true']) {
+  color: var(--color-slate-200);
+}
+[data-article-dock]
+  [data-page-toolbar]
+  button:not([aria-pressed='true']):not([aria-expanded='true']):hover {
+  color: var(--color-slate-950);
+}
+.dark
+  [data-article-dock]
+  [data-page-toolbar]
+  button:not([aria-pressed='true']):not([aria-expanded='true']):hover {
+  color: var(--color-white);
+}
+[data-article-dock] [data-page-toolbar] button:disabled {
+  color: var(--color-slate-400);
+}

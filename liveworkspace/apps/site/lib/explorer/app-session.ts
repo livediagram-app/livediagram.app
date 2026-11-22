@@ -10,6 +10,7 @@ import { SIGNED_IN_HINT_COOKIE as PLANNER_HINT } from '@liveplanner/api-schema';
 import { SIGNED_IN_HINT_COOKIE as DOCUMENTS_HINT } from '@livedocuments/api-schema';
 import { SIGNED_IN_HINT_COOKIE as DESIGN_HINT } from '@livedesign/api-schema';
 import { SIGNED_IN_HINT_COOKIE as HUDDLE_HINT } from '@livehuddle/api-schema';
+import { SIGNED_IN_HINT_COOKIE as KNOWLEDGE_HINT } from '@liveknowledge/api-schema';
 import type { AppName } from '@liveworkspace/sites';
 import { fullNameOf } from '../accounts';
 import { pageApp } from './page-app';
@@ -22,6 +23,7 @@ export const SIGNED_IN_HINTS: Partial<Record<AppName, string>> = {
   livedocuments: DOCUMENTS_HINT,
   livedesign: DESIGN_HINT,
   livehuddle: HUDDLE_HINT,
+  liveknowledge: KNOWLEDGE_HINT,
 };
 
 // ---------- The app's own session, on its address ----------------------------------------------------------------

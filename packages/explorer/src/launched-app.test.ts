@@ -7,7 +7,14 @@ import { heroWords, kindWords, siteOf } from './words';
 // and offers it in its lists, as any app.
 describe('a launched app (livehuddle) in the Explorer', () => {
   it('is an Opens in choice', () => {
-    expect(OPENS_IN_VALUES).toEqual(['canvas', 'plan', 'document', 'design', 'space']);
+    expect(OPENS_IN_VALUES).toEqual([
+      'canvas',
+      'plan',
+      'document',
+      'design',
+      'space',
+      'knowledgebase',
+    ]);
     expect(appOfKind('space')).toBe('livehuddle');
   });
 

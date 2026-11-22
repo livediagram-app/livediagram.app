@@ -15,6 +15,7 @@ const OWN_NAMES = [
   'livepages',
   'livedesign',
   'livehuddle',
+  'liveknowledge',
 ] as const;
 
 // Well-known AI tools, each with the domains its real redirect URIs sit on.

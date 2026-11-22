@@ -2,7 +2,9 @@
 // "Reference index"): a top-level `type: 'image'` element whose `imageId` names a gallery row (or a `type: 'shape'`
 // one carrying a photo in `imageId`, livedocuments' quote portrait, docs/specs/009-elements/quote.md), or a top-level
 // Page whose `background.fill` is a picture (`kind: 'image'`) naming one
-// (docs/specs/007-editor/pages-mode.md "Image backgrounds"). A product without pages hands in none.
+// (docs/specs/007-editor/pages-mode.md "Image backgrounds"), or a tab's top-level `cover` whose `imageId` names one
+// (liveknowledge's docs/specs/030-knowledgebase/page-surface.md "The cover"). A product without pages or covers hands
+// in none.
 // The SQL twin of this extractor lives in each api's db/image-refs.ts; a parity test
 // holds the two to one corpus, because a reference either one misses is an
 // image the retention sweep would reap.
@@ -24,9 +26,9 @@ function pageImageId(page: unknown): unknown {
   return kind === 'image' ? imageId : undefined;
 }
 
-// Distinct, in document order: the elements' images, then the pages' pictures. Takes `unknown`
+// Distinct, in document order: the elements' images, then the pages' pictures, then the cover's. Takes `unknown`
 // because the copy path hands it whatever a stored body parsed to.
-export function imageRefIds(elements: unknown, pages?: unknown): string[] {
+export function imageRefIds(elements: unknown, pages?: unknown, cover?: unknown): string[] {
   const ids = new Set<string>();
   if (Array.isArray(elements)) {
     for (const el of elements) {
@@ -40,6 +42,10 @@ export function imageRefIds(elements: unknown, pages?: unknown): string[] {
       const imageId = pageImageId(page);
       if (isGalleryImageId(imageId)) ids.add(imageId);
     }
+  }
+  if (typeof cover === 'object' && cover !== null) {
+    const { imageId } = cover as { imageId?: unknown };
+    if (isGalleryImageId(imageId)) ids.add(imageId);
   }
   return [...ids];
 }
@@ -67,6 +73,6 @@ export function imageRefIdsFromData(data: string): string[] {
     return imageRefIdsFromText(data);
   }
   if (typeof parsed !== 'object' || parsed === null) return [];
-  const body = parsed as { elements?: unknown; pages?: unknown };
-  return imageRefIds(body.elements, body.pages);
+  const body = parsed as { elements?: unknown; pages?: unknown; cover?: unknown };
+  return imageRefIds(body.elements, body.pages, body.cover);
 }

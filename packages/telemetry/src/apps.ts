@@ -8,6 +8,7 @@ export const TELEMETRY_APPS = [
   'livedocuments.app',
   'livedesign.app',
   'livehuddle.app',
+  'liveknowledge.app',
 ] as const;
 
 // Apps registered before their launch (liveworkspace/docs/specs/002-architecture/integrating-an-app.md "Registered
@@ -66,6 +67,11 @@ export const TELEMETRY_APP_ORIGINS: Record<TelemetryApp, readonly string[]> = {
     'https://livehuddle.app',
     'https://www.livehuddle.app',
     'https://staging.livehuddle.app',
+  ],
+  'liveknowledge.app': [
+    'https://liveknowledge.app',
+    'https://www.liveknowledge.app',
+    'https://staging.liveknowledge.app',
   ],
 };
 

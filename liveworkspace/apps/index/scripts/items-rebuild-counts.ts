@@ -1,6 +1,6 @@
-// The items rebuild's rehearsal (migrations/0009_items_livehuddle.sql, Work Tracker #286): proves on a copy of the
-// index's data that the migration keeps every row of every table, every index, foreign key and cascade, and that
-// livehuddle's Spaces then go in. Reads local files only; it never reaches Cloudflare.
+// The items rebuild's rehearsal (the newest rebuild, migrations/0026_items_liveknowledge.sql; the first was
+// 0009_items_livehuddle.sql, Work Tracker #286): proves on a copy of the index's data that the migration keeps every
+// row of every table, every index, foreign key and cascade, and that liveknowledge's Knowledgebases then go in. Reads local files only; it never reaches Cloudflare.
 //
 //   # One step, on an export (wrangler d1 export liveworkspace-index --remote --output prod.sql, which only reads):
 //   node scripts/items-rebuild-counts.ts rehearse prod.sql
@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import {
   compare,
   foreignKeyProblems,
-  REBUILD_MIGRATION,
+  LATEST_REBUILD_MIGRATION as REBUILD_MIGRATION,
   rowCounts,
   snapshot,
   type Snapshot,
@@ -63,7 +63,7 @@ function rehearse(exportFile: string): number {
       { sql: string } | undefined
   )?.sql;
   if (!itemsSql) throw new Error('The export has no items table.');
-  if (itemsSql.includes("'livehuddle'"))
+  if (itemsSql.includes("'liveknowledge'"))
     throw new Error(`The export already has ${REBUILD_MIGRATION} applied.`);
 
   const before = snapshot(db);
@@ -75,21 +75,21 @@ function rehearse(exportFile: string): number {
   const after = snapshot(db);
   const status = report(before, after, db);
 
-  // A Space goes in, and an unknown app is still refused; neither is kept.
+  // A Knowledgebase goes in, and an unknown app is still refused; neither is kept.
   db.exec('SAVEPOINT probe');
   db.exec(`INSERT INTO items (id, app, kind, owner_id, scope, title, created_at, updated_at)
-           VALUES ('rehearsal-space', 'livehuddle', 'space', 'rehearsal', 'p:rehearsal', 'Space', 0, 0)`);
+           VALUES ('rehearsal-knowledgebase', 'liveknowledge', 'knowledgebase', 'rehearsal', 'p:rehearsal', 'Knowledgebase', 0, 0)`);
   let refused = false;
   try {
     db.exec(`INSERT INTO items (id, app, kind, owner_id, scope, title, created_at, updated_at)
-             VALUES ('rehearsal-nope', 'livenope', 'space', 'rehearsal', 'p:rehearsal', 'Nope', 0, 0)`);
+             VALUES ('rehearsal-nope', 'livenope', 'knowledgebase', 'rehearsal', 'p:rehearsal', 'Nope', 0, 0)`);
   } catch {
     refused = true;
   }
   db.exec('ROLLBACK TO probe');
   db.exec('RELEASE probe');
   console.log(
-    `A livehuddle Space goes in; an unknown app is ${refused ? 'refused' : 'NOT refused'}.`,
+    `A liveknowledge Knowledgebase goes in; an unknown app is ${refused ? 'refused' : 'NOT refused'}.`,
   );
   return refused ? status : 1;
 }

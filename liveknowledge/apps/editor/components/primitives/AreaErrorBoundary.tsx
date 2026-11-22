@@ -1,0 +1,32 @@
+'use client';
+
+// A render crash stays inside the area that threw, reported as `Error·Client·Render.<Area>.<ErrorName>`
+// (docs/specs/017-telemetry/telemetry.md): the workbench's boundary, bound once to this editor's areas and telemetry.
+import { createAreaErrorBoundary } from '@liveworkspace/workbench/components/primitives/AreaErrorBoundary';
+import { track } from '@/lib/telemetry';
+
+export const { AreaErrorBoundary, MenuErrorBoundary } = createAreaErrorBoundary({
+  track,
+  // Human names for the notice, so it reads as a place, not a component. Closed on purpose: the area is part of a
+  // public telemetry token.
+  labels: {
+    Canvas: 'the canvas',
+    Header: 'the header',
+    TabBar: 'the bottom bar',
+    TabDialogs: 'a page dialog',
+    Collaborators: 'the collaborators panel',
+    Presentation: 'the presentation',
+    VersionHistory: 'Version History',
+    Search: 'search',
+    QuickStyle: 'the Quick Style bar',
+    Modals: 'a dialog',
+    Popovers: 'a popover',
+    ContextMenu: 'the menu',
+    ElementDialogs: 'an element dialog',
+    Tour: 'the tour',
+    Menu: 'the menu',
+    ExplorerSidebar: 'the sidebar',
+    ExplorerPane: 'this page',
+    KnowledgeView: 'this view',
+  },
+});

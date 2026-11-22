@@ -56,6 +56,8 @@ export type EditorSearchConfig<K extends string, GK extends string> = {
   library: { kind: K; key: GK; label: string; untitled: string };
   // Whether a table with no label is found by the first of its cells that matches.
   tableCells: boolean;
+  // The group the open item's tabs are listed under: "Tabs", or "Pages" where a tab is a page (liveknowledge).
+  tabsLabel?: string;
 };
 
 export type EditorSearchInput<T extends SearchableTab<SearchableElement>, Add, X = never> = {
@@ -217,7 +219,7 @@ export function buildEditorSearchResults<
     if (tabMatches.length > 0) {
       groups.push({
         key: 'tabs',
-        label: 'Tabs',
+        label: config.tabsLabel ?? 'Tabs',
         items: tabMatches.map((t) => ({
           kind: 'tab',
           id: t.id,

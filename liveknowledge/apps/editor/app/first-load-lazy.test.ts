@@ -1,0 +1,45 @@
+// What every route of the editor app loads up front (docs/specs/016-platform/web-performance.md).
+// The root not-found slot and the root layout's providers ship with EVERY route, sign-in and the
+// workbench included, so a static import from either lands in all of their first loads. A static
+// import of the editor from not-found.tsx once put about 1,150 KiB gzipped on every page; these
+// keep the heavy pieces behind a dynamic import.
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+const root = join(__dirname, '..');
+const read = (path: string) => readFileSync(join(root, path), 'utf8');
+const staticImports = (src: string) =>
+  [...src.matchAll(/^import\s+(?!type\b)[^;]*?from\s+'([^']+)'/gms)].map((m) => m[1]!);
+
+describe('every route’s first load', () => {
+  it('loads the editor from the not-found slot only when the slot renders', () => {
+    const src = read('app/not-found.tsx');
+    expect(staticImports(src).some((p) => p.includes('editor-page'))).toBe(false);
+    expect(src).toContain("import('./document/[id]/editor-page')");
+  });
+});
+
+describe('the workbench Explorer’s first load', () => {
+  it('loads Settings and the move picker on first open', () => {
+    const imports = staticImports(read('app/embed/workbench/ExplorerHost.tsx'));
+    expect(imports).not.toContain('@/components/dialogs/SettingsDialog');
+    expect(imports).not.toContain('@/components/dialogs/MoveToFolderDialog');
+  });
+
+  // The root error boundary is in every route's first load too (Work Tracker 772). Measured from a production build
+  // on 14 November 2026 it adds 367 bytes gzipped per route over an import-free page: everything it imports is
+  // already in the root layout's chunks. A new import would land in every page, so it keeps to these, and the app has
+  // no app/error.tsx (which Next would also ship with every route).
+  it('keeps the root error boundary to what the layout already loads', () => {
+    expect(staticImports(read('app/global-error.tsx')).sort()).toEqual(
+      [
+        '@/lib/workbench-bindings',
+        '@liveknowledge/ui',
+        '@liveworkspace/workbench/lib/stale-build-navigation',
+        'react',
+      ].sort(),
+    );
+    expect(existsSync(join(root, 'app/error.tsx'))).toBe(false);
+  });
+});

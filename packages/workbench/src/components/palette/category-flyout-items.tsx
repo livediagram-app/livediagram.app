@@ -102,7 +102,7 @@ export function InfoFooter<T extends FlyoutTile<T>, A, P>({
   kit,
 }: {
   def: T | null;
-  kit: Pick<FlyoutKit<T, A, P>, 'displayName' | 'footerLine'>;
+  kit: Pick<FlyoutKit<T, A, P>, 'displayName' | 'footerLine' | 'hint'>;
 }) {
   const text = (d: T): ReactNode => {
     if (d.variants?.length)
@@ -114,8 +114,8 @@ export function InfoFooter<T extends FlyoutTile<T>, A, P>({
   return (
     <FlyoutFooter
       item={def ? { name: kit.displayName(def), text: text(def), shortcut: def.shortcut } : null}
-      hint={DEFAULT_HINT}
-      touchHint={TOUCH_HINT}
+      hint={kit.hint?.click ?? DEFAULT_HINT}
+      touchHint={kit.hint?.touch ?? TOUCH_HINT}
     />
   );
 }

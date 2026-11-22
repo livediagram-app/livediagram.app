@@ -11,6 +11,7 @@ import { DesignScene } from './DesignScene';
 import { DiagramScene } from './DiagramScene';
 import { DocumentScene } from './DocumentScene';
 import { HuddleScene } from './HuddleScene';
+import { KnowledgebaseScene } from './KnowledgebaseScene';
 
 const CheckIcon = lucideGlyph(lucideCheck, 16);
 
@@ -73,6 +74,14 @@ const SCENES: Record<
     status: 'Live · 4 here',
     people: [PRIYA, SAM, JO],
     scene: <HuddleScene />,
+  },
+  knowledgebase: {
+    brand: 'liveknowledge',
+    route: 'document',
+    title: 'Team Handbook',
+    status: 'Shared · 2 here',
+    people: [ADA, JO],
+    scene: <KnowledgebaseScene />,
   },
 };
 

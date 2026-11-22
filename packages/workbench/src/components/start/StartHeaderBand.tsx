@@ -118,6 +118,7 @@ function pieces(kind: HeroBackdropKind, band: StartBandColours): ReactNode {
   if (kind === 'typesetter') return <Typesetter band={band} />;
   if (kind === 'shapes') return <Shapes band={band} />;
   if (kind === 'huddle') return <Huddle band={band} />;
+  if (kind === 'tree') return <Tree band={band} />;
   return null;
 }
 
@@ -193,6 +194,45 @@ function Blueprint({ band }: { band: StartBandColours }) {
 }
 
 // Typesetter: the 8px baseline grid, a margin rule down the left edge, and a pilcrow in the gap.
+// A knowledgebase's pages: in the gap, a page and the two under it, joined as a page tree joins them.
+function Tree({ band }: { band: StartBandColours }) {
+  return (
+    <svg viewBox="0 0 72 56" className={`${GAP} h-14 w-[72px]`} fill="none">
+      <rect
+        x="1"
+        y="1"
+        width="26"
+        height="20"
+        rx="4"
+        fill={band.paper}
+        stroke={band.line}
+        strokeWidth="1.5"
+      />
+      <path d="M14 21V45H40M14 31H40" stroke={band.line} strokeWidth="1.5" />
+      <rect
+        x="40"
+        y="23"
+        width="26"
+        height="14"
+        rx="4"
+        fill={band.paper}
+        stroke={band.line}
+        strokeWidth="1.5"
+      />
+      <rect
+        x="40"
+        y="41"
+        width="26"
+        height="14"
+        rx="4"
+        fill={band.paper}
+        stroke={band.line}
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
 function Typesetter({ band }: { band: StartBandColours }) {
   return (
     <>

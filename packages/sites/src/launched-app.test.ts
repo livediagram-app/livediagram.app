@@ -19,9 +19,9 @@ import { APP_BARE_HOSTS } from './workspace-proxy';
 // HELD_APP_SITES into APP_SITES (liveworkspace/docs/specs/002-architecture/integrating-an-app.md "Registered before
 // launch"), so every list a person sees names it, and no app is held today.
 describe('a launched app (livehuddle)', () => {
-  it('has its port block and its emerald row, last among the listed sites', () => {
+  it('has its port block and its emerald row among the listed sites', () => {
     expect(LOCAL_PORTS['livehuddle.app']).toBe(3500);
-    expect(APP_SITES.at(-1)).toEqual({
+    expect(APP_SITES.find((s) => s.id === 'livehuddle.app')).toEqual({
       id: 'livehuddle.app',
       name: 'livehuddle',
       url: siteUrl('livehuddle.app', 'https://www.livehuddle.app'),
@@ -52,6 +52,7 @@ describe('a launched app (livehuddle)', () => {
       'livedocuments',
       'livedesign',
       'livehuddle',
+      'liveknowledge',
     ]);
     expect(isAppName('livehuddle')).toBe(true);
     expect(siteOfApp('livehuddle').name).toBe('livehuddle');

@@ -39,9 +39,16 @@ const refresh = Object.fromEntries(
 );
 
 describe('every product has its own auth cookies', () => {
-  it('covers all five products', () => {
+  it('covers all six products', () => {
     expect(Object.keys(hints).sort()).toEqual(
-      ['livedesign', 'livediagram', 'livedocuments', 'livehuddle', 'liveplanner'].sort(),
+      [
+        'livedesign',
+        'livediagram',
+        'livedocuments',
+        'livehuddle',
+        'liveknowledge',
+        'liveplanner',
+      ].sort(),
     );
   });
 

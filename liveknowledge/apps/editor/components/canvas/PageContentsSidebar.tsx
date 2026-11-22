@@ -1,0 +1,59 @@
+'use client';
+
+// Contents docked as a sidebar down the canvas's left (docs/specs/007-editor/pages-mode.md
+// "Contents"): the shared sidebar (@liveworkspace/workbench/components/canvas/PageContentsSidebar)
+// with this editor's Add Page and its rows' own marks. Where it sits is useContentsChrome's.
+import { useState } from 'react';
+import {
+  CONTENTS_SIDEBAR_SETTLE_MS,
+  ContentsSidebar,
+} from '@liveworkspace/workbench/components/canvas/PageContentsSidebar';
+import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
+import type { PagesModeView } from '@/hooks/editor/usePagesMode';
+import { usePageContents, type WritingStore } from '@/hooks/ui/usePageContents';
+import { ContentsAddPage } from './ContentsAddPage';
+import { contentsBadges } from './contents-badges';
+
+export function PageContentsSidebar({
+  view,
+  tab,
+  writing,
+  ...placement
+}: {
+  view: PagesModeView;
+  tab: PageThumbTab;
+  // The writing, read from its store so a typing commit renders this list and not the chrome placing it.
+  writing?: WritingStore;
+  // Where it starts, in screen px from the canvas's top: below the Toolbar strip.
+  top: number;
+  onMinimise: () => void;
+  // Joined to the menu box above it (docs/specs/007-editor/pages-mode.md "Joined to the menu box").
+  joined?: boolean;
+}) {
+  // Opened on the tab's first page; the sidebar then follows the page in view.
+  const [here] = useState<string | undefined>(() => view.pages[0]?.id);
+  const contents = usePageContents({
+    view,
+    tab,
+    writing,
+    here,
+    settleMs: CONTENTS_SIDEBAR_SETTLE_MS,
+  });
+  return (
+    <ContentsSidebar
+      contents={contents}
+      pages={view.pages}
+      focusPage={view.focusPage}
+      footer={(end) => <ContentsAddPage contents={contents} end={end} />}
+      badges={contentsBadges}
+      // Stack Pages in Contents Options: an Editor's, on a tab whose pages may stand either way
+      // (pages-mode.md "Stacked or side by side").
+      stack={
+        view.arrangement?.toggle
+          ? { on: view.arrangement.stacked, onToggle: view.arrangement.toggle }
+          : undefined
+      }
+      {...placement}
+    />
+  );
+}
